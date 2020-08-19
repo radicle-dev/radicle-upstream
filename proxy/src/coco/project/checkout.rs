@@ -70,11 +70,13 @@ where
             let remote = Remote::rad_remote(url, None).create(repo)?;
             Ok(remote)
         });
-        let _repo = git2::build::RepoBuilder::clone(
+        let repo = git2::build::RepoBuilder::clone(
             &mut builder,
             &LocalUrl::from_urn(self.project.urn(), peer_id).to_string(),
             &project_path,
         )?;
+
+        super::set_rad_upstream(&repo, self.project.default_branch())?;
 
         Ok(project_path)
     }

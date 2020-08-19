@@ -165,9 +165,15 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         // Test if the repo has setup rad remote.
         match repo.find_remote(config::RAD_REMOTE) {
             Ok(remote) => {
-                // Being defensive here and making sure that if the URLs don't match we're loud
-                // about it.
-                assert_eq!(remote.url(), Some(url.to_string().as_str()));
+                let url = url.to_string();
+                // Send a warning if the remote urls don't match
+                if let Some(remote_url) = remote.url() {
+                    if remote_url != url {
+                        log::warn!("Remote URL Mismatch: '{} /= '{}'", remote_url, url);
+                    }
+                };
+                // But set it with the new URL anyway.
+                repo.remote_set_url(config::RAD_REMOTE, &url)?;
             },
             Err(_err) => {
                 Self::setup_remote(&repo, url, &self.default_branch)?;
@@ -221,6 +227,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
 
         git_remote.push(&[default.to_string()], None)?;
+        super::set_rad_upstream(repo, default_branch)?;
 
         Ok(())
     }

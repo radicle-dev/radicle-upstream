@@ -393,6 +393,7 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 mod test {
     use std::env;
     use std::path::PathBuf;
+    use std::process::Command;
 
     use librad::keys::SecretKey;
 
@@ -590,19 +591,27 @@ mod test {
 
         let kalt = api.init_owner(&key, "kalt")?;
 
-        let _fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
 
-        assert!(repo_path.exists());
+        let copy_path = repo_path.join("copy");
 
-        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
-        let config = config::default(key.clone(), tmp_dir.path())?;
-        let api = Api::new(config).await?;
+        Command::new("cp")
+            .arg("-r")
+            .arg(repo_path.clone())
+            .arg(copy_path.clone())
+            .output()
+            .expect("failed to copy directory");
 
-        let kalt = api.init_owner(&key, "kalt")?;
-        let mut fakie_proj = fakie_project(repo_path);
-        fakie_proj.description = "so rad, dude!".to_string();
-        fakie_proj.default_branch = "rad".to_string();
-        let _fakie = api.init_project(&key, &kalt, &fakie_proj.into_existing())?;
+        let fake_fakie = copy_path.join("fake-fakie");
+        std::fs::rename(copy_path.join(fakie.name()), fake_fakie.clone())
+            .expect("failed to rename");
+
+        let fake_fakie = project::Create {
+            repo: project::Repo::Existing { path: fake_fakie },
+            description: "".to_string(),
+            default_branch: fakie.default_branch().to_owned(),
+        };
+        let _fakie = api.init_project(&key, &kalt, &fake_fakie)?;
 
         Ok(())
     }
