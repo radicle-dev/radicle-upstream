@@ -701,6 +701,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[allow(clippy::indexing_slicing)]
     async fn list_for_user() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = http::Context::tmp(&tmp_dir).await?;
@@ -711,7 +712,6 @@ mod test {
         let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
 
         coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
-        #[allow(clippy::indexing_slicing)]
         let project = &project::list_projects(&ctx.peer_api)?[0];
         let librad_project = ctx.peer_api.get_project(&project.id, None)?;
 
