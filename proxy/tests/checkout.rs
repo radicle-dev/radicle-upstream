@@ -17,7 +17,7 @@ async fn can_checkout() -> Result<(), error::Error> {
     let mut keystore =
         keystore::Keystorage::new(&paths, keystore::SecUtf8::from("radicle-upstream"));
     let key = keystore.init_librad_key()?;
-    let config = coco::config::configure(paths, key.clone());
+    let config = coco::config::configure(paths, key.clone(), vec![]);
     let api = coco::Api::new(config).await?;
 
     let handle = "cloudhead";
