@@ -7,6 +7,7 @@
 </script>
 
 <Button
+  dataCy="new-project-button"
   variant="transparent"
   icon={Icon.Plus}
   on:click={() => push(path.createProject())}>

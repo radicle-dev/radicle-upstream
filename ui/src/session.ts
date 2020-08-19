@@ -151,6 +151,15 @@ export const updateAppearance = (appearance: Appearance): void =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     settings: { ...get(settings), appearance },
   });
+
+export const dismissRemoteHelperHint = (): void => {
+  updateAppearance({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    ...get(settings).appearance,
+    hints: { showRemoteHelper: false },
+  });
+};
+
 export const updateRegistry = (registry: Registry): void =>
   event.create<Kind, Msg>(
     Kind.UpdateSettings,
