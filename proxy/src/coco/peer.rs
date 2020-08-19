@@ -593,18 +593,16 @@ mod test {
 
         let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
 
-        let copy_path = repo_path.join("copy");
+        let fake_fakie = repo_path.join("fake-fakie");
 
-        Command::new("cp")
-            .arg("-r")
-            .arg(repo_path.clone())
-            .arg(copy_path.clone())
-            .output()
+        let copy = Command::new("cp")
+            .arg("-rf")
+            .arg(repo_path.join(fakie.name()))
+            .arg(fake_fakie.clone())
+            .status()
             .expect("failed to copy directory");
 
-        let fake_fakie = copy_path.join("fake-fakie");
-        std::fs::rename(copy_path.join(fakie.name()), fake_fakie.clone())
-            .expect("failed to rename");
+        assert!(copy.success());
 
         let fake_fakie = project::Create {
             repo: project::Repo::Existing { path: fake_fakie },
