@@ -84,10 +84,6 @@
     if (localStateError.match("could not find repository")) {
       return "The directory should contain a git repository";
     }
-
-    if (localState.managed) {
-      return "This repository is already managed by Radicle";
-    }
   };
 
   const constraints = {
