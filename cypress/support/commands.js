@@ -3,7 +3,7 @@ Cypress.Commands.add("resetCache", async () => {
   await fetch("http://localhost:8080/v1/session/cache", { method: "DELETE" });
 });
 
-Cypress.Commands.add("reseetSession", async () => {
+Cypress.Commands.add("resetSession", async () => {
   console.log("Resetting Session state");
   await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
 });

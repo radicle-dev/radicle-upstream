@@ -56,7 +56,7 @@ impl Store {
     ///
     /// # Errors
     ///
-    /// * if the file system errors for any other reason than [`file::Error::NoSuckKey`]
+    /// * if the file system errors for any other reason than [`file::Error::NoSuchKey`]
     /// * if the write of the generated key fails
     pub fn init(paths: &paths::Paths, passphrase: SecUtf8) -> Result<Self, Error> {
         let path = paths.keys_dir();
