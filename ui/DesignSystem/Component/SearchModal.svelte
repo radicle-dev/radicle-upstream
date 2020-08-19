@@ -24,10 +24,12 @@
   };
 
   const onKeydown = ev => {
-    switch (ev.key) {
+    switch (ev.code) {
       case "Enter":
         navigateToProject();
         break;
+      case "Escape":
+        modal.hide();
     }
   };
 
@@ -80,6 +82,7 @@
   <div class="search-bar" bind:this={searchBar}>
     <!-- TODO(sos): fix autofocus / hotkey conflict -->
     <Input.Text
+      autofocus
       bind:value
       placeholder="Have a Radicle project ID? Paste it here..."
       showLeftItem
