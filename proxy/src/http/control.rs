@@ -241,7 +241,7 @@ mod test {
     use crate::session;
 
     #[tokio::test]
-    async fn create_project_after_nuke() -> Result<(), error::Error> {
+    async fn create_project_after_reset() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
@@ -253,7 +253,7 @@ mod test {
             session::set_identity(&ctx.store, owner)?;
         }
 
-        // Create project before nuke.
+        // Create project before reset.
         let res = request()
             .method("POST")
             .path("/create-project")
