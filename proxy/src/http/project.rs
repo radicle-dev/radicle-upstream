@@ -549,7 +549,19 @@ mod test {
         assert!(dir.path().exists());
 
         let repo = git2::Repository::open(dir.path().join("git-platinum"))?;
-        let remote = repo.find_remote("rad")?;
+        let refs = repo
+            .branches(None)?
+            .map(|branch| {
+                branch
+                    .expect("failed to get branch")
+                    .0
+                    .name()
+                    .expect("failed to get name")
+                    .expect("utf-8 error")
+                    .to_string()
+            })
+            .collect::<Vec<_>>();
+        let remote = repo.find_remote(coco::config::RAD_REMOTE)?;
         assert_eq!(
             remote.url(),
             Some(
@@ -558,6 +570,7 @@ mod test {
                     .as_str()
             )
         );
+        assert_eq!(refs, vec!["master", "rad/dev", "rad/master"]);
 
         Ok(())
     }

@@ -4,7 +4,7 @@ use std::path::{self, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use librad::git::local::url::LocalUrl;
-use librad::git::types::{remote::Remote, FlatRef, Force, NamespacedRef};
+use librad::git::types::{remote::Remote, FlatRef};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -207,8 +207,6 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         url: LocalUrl,
         default_branch: &str,
     ) -> Result<(), Error> {
-        let id = url.repo.clone();
-
         if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
             log::error!("error while trying to find default branch: {:?}", err);
             return Err(Error::MissingDefaultBranch {
@@ -217,15 +215,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
             });
         }
 
-        let working_copy_heads: FlatRef<String, _> = FlatRef::heads(PhantomData, None);
-        let namespace_heads = NamespacedRef::heads(id, None);
-        let fetch = working_copy_heads
-            .clone()
-            .refspec(namespace_heads.clone(), Force::True);
-        let push = namespace_heads.refspec(working_copy_heads, Force::True);
-
-        let mut remote = Remote::rad_remote(url, fetch.into_dyn());
-        remote.add_pushes(vec![push.into_dyn()].into_iter());
+        let remote = Remote::rad_remote(url, None);
         let mut git_remote = remote.create(repo)?;
 
         let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);

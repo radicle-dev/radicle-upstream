@@ -592,9 +592,9 @@ mod test {
 
         let _fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
 
-        std::fs::remove_dir_all(tmp_dir.path().join("git")).expect("failed to remove tmp path");
         assert!(repo_path.exists());
 
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 

@@ -1,9 +1,8 @@
 use std::ffi;
-use std::marker::PhantomData;
 use std::path::{self, PathBuf};
 
 use librad::git::local::url::LocalUrl;
-use librad::git::types::{remote::Remote, FlatRef, Force, NamespacedRef};
+use librad::git::types::remote::Remote;
 use librad::peer::PeerId;
 use radicle_surf::vcs::git::git2;
 
@@ -65,19 +64,11 @@ where
             path.join(&self.project.name().to_string())
         };
 
-        let id = self.project.urn().id;
         let mut builder = git2::build::RepoBuilder::new();
+        builder.branch(self.project.default_branch());
         builder.remote_create(|repo, _, url| {
-            let working_copy_heads: FlatRef<String, _> = FlatRef::heads(PhantomData, None);
-            let namespace_heads = NamespacedRef::heads(id.clone(), None);
-            let fetch = working_copy_heads
-                .clone()
-                .refspec(namespace_heads.clone(), Force::True);
-            let push = namespace_heads.refspec(working_copy_heads, Force::True);
-
-            let mut remote = Remote::rad_remote(url, fetch.into_dyn());
-            remote.add_pushes(vec![push.into_dyn()].into_iter());
-            remote.create(repo)
+            let remote = Remote::rad_remote(url, None).create(repo)?;
+            Ok(remote)
         });
         let _repo = git2::build::RepoBuilder::clone(
             &mut builder,
