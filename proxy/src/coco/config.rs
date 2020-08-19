@@ -11,6 +11,7 @@ use librad::paths;
 use librad::peer;
 
 use crate::error;
+use crate::seed::Seed;
 
 /// The environment variable that points to where librad data lives.
 pub const RAD_HOME: &str = "RAD_HOME";
@@ -45,7 +46,10 @@ impl TryFrom<Paths> for paths::Paths {
 
 /// Short-hand type for [`discovery::Static`] over a vector of [`peer::PeerId`]s and
 /// [`SocketAddr`].
-pub type Disco = discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>;
+pub type Disco = discovery::Static<
+    std::iter::Map<std::vec::IntoIter<Seed>, fn(Seed) -> (peer::PeerId, SocketAddr)>,
+    SocketAddr,
+>;
 
 /// Provide the default config.
 ///
@@ -62,14 +66,16 @@ pub fn default(
 ) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
     env::set_var(RAD_HOME, path.as_ref());
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, key))
+    Ok(configure(paths, key, vec![]))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
 #[must_use]
+#[allow(clippy::as_conversions)]
 pub fn configure(
     paths: paths::Paths,
     key: keys::SecretKey,
+    seeds: Vec<Seed>,
 ) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
@@ -78,9 +84,12 @@ pub fn configure(
     let gossip_params = net::gossip::MembershipParams::default();
     // TODO(finto): Read from config or passed as param
     let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
-    // TODO(finto): could we initialise with known seeds from a cache?
-    let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
-    let disco = discovery::Static::new(seeds);
+    let disco = discovery::Static::new(
+        seeds
+            .into_iter()
+            .map(Seed::into as fn(Seed) -> (peer::PeerId, SocketAddr)),
+    );
+
     // TODO(finto): read in from config or passed as param
     net::peer::PeerConfig {
         signer: key,

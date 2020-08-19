@@ -174,7 +174,7 @@ mod handler {
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init_librad_key().map_err(Error::from)?;
 
-        let config = coco::config::configure(paths, key.clone());
+        let config = coco::config::configure(paths, key.clone(), vec![]);
         let new_peer_api = coco::Api::new(config).await?;
 
         let mut ctx = ctx.write().await;
