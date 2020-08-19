@@ -3,7 +3,6 @@
   import { push } from "svelte-spa-router";
 
   import * as path from "../../../src/path.ts";
-
   import { RevisionType } from "../../../src/source.ts";
 
   import { Avatar, Icon } from "../../Primitive";
@@ -43,6 +42,14 @@
     // Any click *outside* the dropdown should hide the dropdown.
     if (dropdown !== ev.target && !dropdown.contains(ev.target)) {
       hideDropdown();
+    }
+  };
+
+  const handleOpenProfile = peerId => {
+    if (peerId === session.identity.peerId) {
+      push(path.profileProjects());
+    } else {
+      push(path.userProfile(peerId));
     }
   };
 
@@ -133,6 +140,7 @@
   .open-profile {
     display: flex;
     justify-content: center;
+    cursor: pointer;
   }
 </style>
 
@@ -189,7 +197,7 @@
           <div
             class="open-profile"
             on:click={() => {
-              repo.identity.peerId === session.identity.peerId ? push(path.profileProjects()) : push(path.userProfile(repo.identity.peerId));
+              handleOpenProfile(repo.identity.peerId);
             }}>
             <Icon.Open />
           </div>
