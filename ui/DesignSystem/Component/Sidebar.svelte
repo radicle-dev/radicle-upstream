@@ -156,11 +156,15 @@
     </li>
   </ul>
   <ul class="bottom">
-    <li class="item indicator" data-cy="search">
+    <li
+      class="item indicator"
+      data-cy="search"
+      on:click|stopPropagation={() => modal.toggle(path.search())}>
       <Tooltip value="Navigate to a project">
-        <div on:click|stopPropagation={() => modal.toggle(path.search())}>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
           <Icon.Search />
-        </div>
+        </a>
       </Tooltip>
     </li>
     <li
