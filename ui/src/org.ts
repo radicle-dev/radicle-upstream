@@ -21,7 +21,7 @@ export interface Project {
   name: string;
   orgId: string;
   shareableEntityIdentifier: string;
-  maybeProject: project.Project;
+  maybeProject?: project.Project;
 }
 
 type Projects = Project[];
@@ -210,3 +210,11 @@ export const orgTransactions = (
 ): [transaction.Transaction] | transaction.Transaction[] => {
   return transactions.filter(tx => involvesOrg(tx.messages[0], id, accountId));
 };
+
+export const formatProjectMetadata = (project: Project) =>
+  project.maybeProject
+    ? {
+        name: project.name,
+        description: project.maybeProject.metadata.description,
+      }
+    : { name: project.name };

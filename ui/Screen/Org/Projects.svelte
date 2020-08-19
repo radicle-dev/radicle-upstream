@@ -2,7 +2,11 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import { projects as store, fetchProjectList } from "../../src/org.ts";
+  import {
+    projects as store,
+    fetchProjectList,
+    formatProjectMetadata,
+  } from "../../src/org.ts";
   import * as path from "../../src/path.ts";
 
   import {
@@ -23,14 +27,6 @@
     }
   };
 
-  const formatMetadata = orgProject =>
-    orgProject.maybeProject
-      ? {
-          name: orgProject.name,
-          description: orgProject.maybeProject.metadata.description,
-        }
-      : { name: orgProject.name };
-
   const create = () => push(path.registerProject(params.id));
   const register = () => push(path.memberRegistration(params.id));
 
@@ -49,7 +45,7 @@
         state look like visually? -->
       <ProjectListItem
         dataCy={`project-${orgProject.name}`}
-        metadata={formatMetadata(orgProject)}
+        metadata={formatProjectMetadata(orgProject)}
         stats={orgProject.maybeProject && orgProject.maybeProject.stats}
         registration={true}
         shareableEntityIdentifier={orgProject.shareableEntityIdentifier} />
