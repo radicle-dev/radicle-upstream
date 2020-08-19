@@ -4,6 +4,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::error;
 use crate::identity;
 use crate::registry;
@@ -90,7 +91,7 @@ pub async fn current<R, S>(
 ) -> Result<Session, error::Error>
 where
     R: registry::Client,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     let mut session = get(store, KEY_CURRENT)?;

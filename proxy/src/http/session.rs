@@ -6,6 +6,7 @@ use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::identity;
 use crate::registry;
@@ -15,7 +16,7 @@ use crate::session;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     clear_cache_filter(ctx.clone())
@@ -31,7 +32,7 @@ fn clear_cache_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("cache")
@@ -54,7 +55,7 @@ fn delete_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     warp::delete()
@@ -76,7 +77,7 @@ fn get_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     warp::get()
@@ -102,7 +103,7 @@ fn update_settings_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("settings")
@@ -124,6 +125,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+use crate::coco::signer;
     use crate::http;
     use crate::registry;
     use crate::session;
@@ -132,7 +134,7 @@ mod handler {
     pub async fn clear_cache<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Cache,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -145,7 +147,7 @@ mod handler {
     pub async fn delete<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -158,7 +160,7 @@ mod handler {
     pub async fn get<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -175,7 +177,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;

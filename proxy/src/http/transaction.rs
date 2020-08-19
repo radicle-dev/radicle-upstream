@@ -7,6 +7,7 @@ use warp::filters::BoxedFilter;
 use warp::{Filter, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::registry;
 
@@ -14,7 +15,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     list_filter(ctx)
@@ -24,7 +25,7 @@ where
 fn list_filter<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -59,6 +60,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::coco::signer;
     use crate::http;
     use crate::registry;
 
@@ -69,7 +71,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Cache,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         // TODO(xla): Don't panic when trying to convert ids.

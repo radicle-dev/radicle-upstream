@@ -11,6 +11,7 @@ use librad::peer;
 use radicle_surf::vcs::git;
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::identity;
 use crate::registry;
@@ -19,7 +20,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     blob_filter(ctx.clone())
@@ -39,7 +40,7 @@ fn blob_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("blob")
@@ -75,7 +76,7 @@ fn branches_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("branches")
@@ -110,7 +111,7 @@ fn commit_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("commit")
@@ -139,7 +140,7 @@ fn commits_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("commits")
@@ -198,7 +199,7 @@ fn revisions_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("revisions")
@@ -233,7 +234,7 @@ fn tags_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("tags")
@@ -262,7 +263,7 @@ fn tree_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("tree")
@@ -300,6 +301,7 @@ mod handler {
     use radicle_surf::vcs::git;
 
     use crate::coco;
+    use crate::coco::signer;
     use crate::http;
     use crate::registry;
     use crate::session;
@@ -317,7 +319,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client + 'static,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -329,7 +331,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -353,7 +355,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -372,7 +374,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -391,7 +393,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -417,7 +419,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -443,7 +445,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -466,7 +468,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -475,7 +477,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 

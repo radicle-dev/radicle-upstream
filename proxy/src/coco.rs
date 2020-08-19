@@ -17,10 +17,7 @@ pub use peer::{verify_user, Api, User};
 
 pub mod project;
 
-mod signer;
-pub use signer::{
-    Error as SignerError, Reset as ResetSigner, SecUtf8, Signer, Store as StoreSigner,
-};
+pub mod signer;
 
 mod source;
 pub use source::{

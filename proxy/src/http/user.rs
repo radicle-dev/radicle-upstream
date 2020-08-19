@@ -7,6 +7,7 @@ use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::registry;
 
@@ -14,7 +15,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     list_orgs_filter(ctx.clone())
@@ -31,7 +32,7 @@ fn get_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     warp::get()
@@ -59,7 +60,7 @@ fn register_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     warp::post()
@@ -86,7 +87,7 @@ fn list_orgs_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     warp::get()
@@ -116,7 +117,7 @@ fn register_project_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -155,7 +156,7 @@ fn transfer_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -189,6 +190,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::coco::signer;
     use crate::error::Error;
     use crate::http;
     use crate::notification;
@@ -199,7 +201,7 @@ mod handler {
     pub async fn get<R, S>(ctx: http::Ctx<R, S>, handle: String) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -216,7 +218,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -234,7 +236,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         // TODO(xla): Get keypair from persistent storage.
@@ -272,7 +274,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         http::register_project(ctx, registry::DomainType::User, handle, project_name, input).await
@@ -286,7 +288,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         // TODO(xla): Get keypair from persistent storage.
@@ -614,7 +616,7 @@ mod test {
                 );
                 assert_eq!(domain_type.clone(), registry::DomainType::User);
                 assert_eq!(domain_id.clone(), handle);
-            },
+            }
             _ => panic!("The tx message is an unexpected variant."),
         }
 

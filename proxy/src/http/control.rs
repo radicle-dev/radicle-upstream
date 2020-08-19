@@ -5,6 +5,7 @@ use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::registry;
 
@@ -12,7 +13,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::ResetSigner,
+    S: signer::Reset,
     S::Error: coco::SignError,
 {
     create_project_filter(ctx.clone())
@@ -27,7 +28,7 @@ fn create_project_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path!("create-project")
@@ -43,7 +44,7 @@ fn register_user_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path!("register-user")
@@ -58,7 +59,7 @@ fn reset_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::ResetSigner,
+    S: signer::Reset,
     S::Error: coco::SignError,
 {
     path!("reset")
@@ -76,6 +77,7 @@ mod handler {
     use radicle_registry_client::CryptoPair;
 
     use crate::coco;
+    use crate::coco::signer;
     use crate::error::Error;
     use crate::http;
     use crate::project;
@@ -89,7 +91,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -127,7 +129,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -154,7 +156,7 @@ mod handler {
     pub async fn reset<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Client + 'static,
-        S: coco::ResetSigner,
+        S: signer::Reset,
         S::Error: coco::SignError,
     {
         let ctx = &mut *ctx.write().await;

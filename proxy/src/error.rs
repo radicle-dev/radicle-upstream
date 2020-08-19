@@ -9,6 +9,7 @@ use radicle_surf as surf;
 use radicle_surf::git::git2;
 
 use crate::coco;
+use crate::coco::signer;
 
 /// Project problems.
 #[derive(Debug, thiserror::Error)]
@@ -174,9 +175,9 @@ pub enum Error {
     )]
     EmptyRevisions,
 
-    /// Errors from [`coco::Signer`].
+    /// Errors from [`signer::Signer`].
     #[error(transparent)]
-    Signer(#[from] coco::SignerError),
+    Signer(#[from] signer::Error),
 }
 
 impl From<registry::DispatchError> for Error {

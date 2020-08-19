@@ -9,6 +9,7 @@ use radicle_registry_client::{ed25519, CryptoPair};
 
 use crate::avatar;
 use crate::coco;
+use crate::coco::signer;
 use crate::error;
 use crate::registry;
 
@@ -67,7 +68,7 @@ pub struct Metadata {
 /// # Errors
 pub fn create<S>(api: &coco::Api<S>, signer: &S, handle: &str) -> Result<Identity, error::Error>
 where
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     let user = api.init_owner(signer, handle)?;
@@ -81,7 +82,7 @@ where
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub fn get<S>(api: &coco::Api<S>, id: &coco::Urn) -> Result<Identity, error::Error>
 where
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     let user = api.get_user(id)?;
@@ -93,7 +94,7 @@ where
 /// # Errors
 pub fn list<S>(api: &coco::Api<S>) -> Result<Vec<Identity>, error::Error>
 where
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     let mut users = vec![];

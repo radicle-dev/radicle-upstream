@@ -9,7 +9,8 @@ use librad::meta::project;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::git2;
 
-use crate::coco::{SignError, Signer, User};
+use crate::coco::signer::Signer;
+use crate::coco::{SignError, User};
 
 /// The default name for a user's remote, which is `"rad"`.
 const RAD_REMOTE: &str = "rad";

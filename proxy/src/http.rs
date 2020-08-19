@@ -11,6 +11,7 @@ use warp::http::StatusCode;
 use warp::{path, reject, reply, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::registry;
 
 mod account;
@@ -55,7 +56,7 @@ pub fn api<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + registry::Client + 'static,
-    S: coco::ResetSigner,
+    S: signer::Reset,
     S::Error: coco::SignError,
 {
     let subscriptions = crate::notification::Subscriptions::default();
@@ -140,7 +141,7 @@ where
 fn with_owner_guard<R, S>(ctx: Ctx<R, S>) -> BoxedFilter<(coco::User,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     warp::any()
@@ -169,14 +170,14 @@ where
 /// Container to pass down dependencies into HTTP filter chains.
 pub struct Context<R, S>
 where
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     /// [`coco::Api`] to operate on the local monorepo.
     peer_api: coco::Api<S>,
     /// [`registry::Client`] to perform registry operations.
     registry: R,
-    /// [`coco::Signer`] to access methods on the [`coco::Api`].
+    /// [`signer::Signer`] to access methods on the [`coco::Api`].
     signer: S,
     /// [`kv::Store`] used for session state and cache.
     store: kv::Store,
@@ -192,7 +193,7 @@ pub type Ctx<R, S> = Arc<RwLock<Context<R, S>>>;
 fn with_context<R, S>(ctx: Ctx<R, S>) -> BoxedFilter<(Ctx<R, S>,)>
 where
     R: Send + Sync + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     warp::any().map(move || ctx.clone()).boxed()
@@ -201,7 +202,7 @@ where
 impl<R, S> Context<R, S>
 where
     R: registry::Client,
-    S: coco::ResetSigner,
+    S: signer::Reset,
     S::Error: coco::SignError,
 {
     /// Replaces the fields the [`Context`] holds onto in a new temporary location.
@@ -222,7 +223,7 @@ where
             librad::paths::Paths::from_root(tmp_path.clone()).map_err(crate::error::Error::from)?;
 
         // Reset signer.
-        let pw = coco::SecUtf8::from("radicle-upstream");
+        let pw = signer::SecUtf8::from("radicle-upstream");
         self.signer
             .reset(&paths, pw)
             .map_err(crate::error::Error::Signer)?;
@@ -242,13 +243,13 @@ where
     }
 }
 
-impl Context<registry::Cacher<registry::Registry>, coco::StoreSigner> {
+impl Context<registry::Cacher<registry::Registry>, signer::Store> {
     #[cfg(test)]
     async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
-        let pw = coco::SecUtf8::from("radicle-upstream");
-        let signer = coco::StoreSigner::init(&paths, pw)?;
+        let pw = signer::SecUtf8::from("radicle-upstream");
+        let signer = signer::Store::init(&paths, pw)?;
 
         let peer_api = {
             let config = coco::config::default(signer.clone(), tmp_dir.path())?;
@@ -275,7 +276,7 @@ impl Context<registry::Cacher<registry::Registry>, coco::StoreSigner> {
 
 impl<R, S> From<Context<R, S>> for Ctx<R, S>
 where
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     fn from(ctx: Context<R, S>) -> Self {
@@ -399,7 +400,7 @@ async fn register_project<R, S>(
 ) -> Result<impl Reply, Rejection>
 where
     R: registry::Client,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     // TODO(xla): Get keypair from persistent storage.

@@ -6,6 +6,7 @@ use warp::filters::BoxedFilter;
 use warp::{path, Filter, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::registry;
 
@@ -13,7 +14,7 @@ use crate::registry;
 pub fn get_status_filter<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -60,6 +61,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::coco::signer;
     use crate::error::Error;
     use crate::http;
     use crate::registry;
@@ -71,7 +73,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;

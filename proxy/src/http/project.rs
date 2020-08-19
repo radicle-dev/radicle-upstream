@@ -11,6 +11,7 @@ use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::project;
 use crate::registry;
@@ -19,7 +20,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     list_filter(ctx.clone())
@@ -36,7 +37,7 @@ fn checkout_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer + Clone,
+    S: signer::Signer + Clone,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -69,7 +70,7 @@ fn create_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx.clone())
@@ -99,7 +100,7 @@ fn get_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -133,7 +134,7 @@ fn list_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -166,7 +167,7 @@ fn discover_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     path("discover")
@@ -197,6 +198,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+use crate::coco::signer;
     use crate::error::Error;
     use crate::http;
     use crate::project;
@@ -209,7 +211,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -236,7 +238,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -251,7 +253,7 @@ mod handler {
     pub async fn get<R, S>(ctx: http::Ctx<R, S>, urn: String) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let urn = urn.parse().map_err(Error::from)?;
@@ -269,7 +271,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let query = opt_query.unwrap_or_default();
@@ -288,7 +290,7 @@ mod handler {
     pub async fn discover<R, S>(_ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let feed = project::discover()?;

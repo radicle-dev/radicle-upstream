@@ -9,6 +9,7 @@ use warp::{Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::identity;
 use crate::registry;
@@ -17,7 +18,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     get_filter(Arc::clone(&ctx))
@@ -32,7 +33,7 @@ fn create_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -61,7 +62,7 @@ fn get_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -97,7 +98,7 @@ fn list_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -123,6 +124,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::coco::signer;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -136,7 +138,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -159,7 +161,7 @@ mod handler {
     pub async fn get<R, S>(ctx: http::Ctx<R, S>, id: coco::Urn) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -171,7 +173,7 @@ mod handler {
     pub async fn list<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;

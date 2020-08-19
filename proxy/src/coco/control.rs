@@ -12,7 +12,8 @@ use radicle_surf::vcs::git::git2;
 
 use crate::coco;
 use crate::coco::config;
-use crate::coco::{Api, SignError, Signer, User};
+use crate::coco::signer::Signer;
+use crate::coco::{Api, SignError, User};
 use crate::error;
 
 /// Deletes the local git repsoitory coco uses to keep its state.

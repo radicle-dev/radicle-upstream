@@ -5,6 +5,7 @@ use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::coco::signer;
 use crate::http;
 use crate::registry;
 
@@ -12,7 +13,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     exists_filter(ctx.clone())
@@ -26,7 +27,7 @@ fn exists_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -54,7 +55,7 @@ fn get_balance_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     http::with_context(ctx)
@@ -95,6 +96,7 @@ mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::coco::signer;
     use crate::error;
     use crate::http;
     use crate::registry;
@@ -106,7 +108,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
@@ -130,7 +132,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        S: coco::Signer,
+        S: signer::Signer,
         S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;

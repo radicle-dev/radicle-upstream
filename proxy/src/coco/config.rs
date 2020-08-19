@@ -9,6 +9,7 @@ use librad::paths;
 use librad::peer;
 
 use crate::coco;
+use crate::coco::signer;
 use crate::error;
 use crate::seed::Seed;
 
@@ -58,7 +59,7 @@ pub fn default<S>(
     path: impl AsRef<std::path::Path>,
 ) -> Result<net::peer::PeerConfig<Disco, S>, error::Error>
 where
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     let paths = paths::Paths::from_root(path)?;
@@ -74,7 +75,7 @@ pub fn configure<S>(
     seeds: Vec<Seed>,
 ) -> net::peer::PeerConfig<Disco, S>
 where
-    S: coco::Signer,
+    S: signer::Signer,
     S::Error: coco::SignError,
 {
     // TODO(finto): There should be a coco::config module that knows how to parse the

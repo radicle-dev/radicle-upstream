@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use librad::git::local::url::LocalUrl;
 
 use crate::coco;
+use crate::coco::signer;
 use crate::config;
 use crate::error;
 use crate::registry;
@@ -94,7 +95,7 @@ pub enum Registration {
 ///   * Failed to get the stats of the project.
 pub fn get<S>(api: &coco::Api<S>, project_urn: &coco::Urn) -> Result<Project, error::Error>
 where
-    S: coco::Signer + Clone,
+    S: signer::Signer + Clone,
     S::Error: coco::SignError,
 {
     let project = api.get_project(project_urn, None)?;
@@ -226,7 +227,7 @@ where
 ///   * We couldn't get project stats.
 pub fn list_projects<S>(api: &coco::Api<S>) -> Result<Vec<Project>, error::Error>
 where
-    S: coco::Signer + Clone,
+    S: signer::Signer + Clone,
     S::Error: coco::SignError,
 {
     let project_meta = api.list_projects()?;
@@ -254,7 +255,7 @@ pub fn list_projects_for_user<S>(
     user: &coco::Urn,
 ) -> Result<Vec<Project>, error::Error>
 where
-    S: coco::Signer + Clone,
+    S: signer::Signer + Clone,
     S::Error: coco::SignError,
 {
     let all_projects = list_projects(api)?;
