@@ -50,7 +50,7 @@ impl Seed {
                 let peer_id = peer::PeerId::from_default_encoding(peer_id)
                     .map_err(|err| Error::InvalidSeed(seed.to_string(), Some(err)))?;
 
-                Ok(Seed { peer_id, addr })
+                Ok(Self { peer_id, addr })
             } else {
                 Err(Error::DnsLookupFailed(seed.to_string()))
             }
