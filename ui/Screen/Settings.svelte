@@ -139,7 +139,7 @@
             Discover page.
           </p>
         </div>
-        <div class="action">
+        <div class="action typo-mono">
           <Input.Textarea
             style="flex: 1; height: 6rem;"
             bind:value={seedInputValue}
