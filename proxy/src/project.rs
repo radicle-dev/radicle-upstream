@@ -234,6 +234,38 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
         .collect()
 }
 
+/// List all projects tracked by the given user.
+///
+/// # Errors
+///
+/// * We couldn't get a project list.
+/// * We couldn't get project stats.
+/// * We couldn't determine the tracking peers of a project.
+pub fn list_projects_for_user(
+    api: &coco::Api,
+    user: &coco::Urn,
+) -> Result<Vec<Project>, error::Error> {
+    let all_projects = list_projects(api)?;
+
+    // We’re using MapSet to deduplicate projects. This is a bug in librad.
+    // https://github.com/radicle-dev/radicle-link/issues/266.
+    let mut user_projects = std::collections::HashMap::new();
+
+    for project in all_projects {
+        if api
+            .tracked(&project.id)?
+            .into_iter()
+            .any(|(_, project_user)| project_user.urn() == *user)
+        {
+            user_projects.insert(project.id.clone(), project);
+        }
+    }
+    Ok(user_projects
+        .into_iter()
+        .map(|(_, project)| project)
+        .collect())
+}
+
 /// Returns a stubbed feed of `Project`s
 ///
 /// # Errors
