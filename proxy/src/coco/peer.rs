@@ -667,8 +667,6 @@ mod test {
 
     #[tokio::test]
     async fn test_can_clone_project() -> Result<(), Error> {
-        pretty_env_logger::init();
-
         let mut bob_addr = *config::LOCALHOST_ANY;
         bob_addr.set_port(8066);
 
