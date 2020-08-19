@@ -3,8 +3,6 @@
 
   import { ValidationStatus } from "../../../src/validation.ts";
 
-  let input;
-
   export let style = null;
   export let inputStyle = null;
   export let placeholder = null;
@@ -16,6 +14,8 @@
   export let showLeftItem = false;
   export let showSuccessCheck = false;
   export let autofocus = false;
+
+  let input;
 
   // Can't use normal `autofocus` attribute on the `input`:
   // "Autofocus processing was blocked because a document's URL has a fragment"
