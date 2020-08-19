@@ -35,6 +35,7 @@
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import Untracked from "./Screen/Project/Untracked.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
+  import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
     "/": Blank,
@@ -51,6 +52,8 @@
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
+    "/user/:id": UserProfile,
+    "/user/:id/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
     "/shortcuts": Shortcuts,
     "/user-registration": UserRegistration,

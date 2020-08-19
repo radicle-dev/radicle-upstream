@@ -14,35 +14,37 @@
 
   const toggleModal = destination => modal.toggle(destination);
 
+  // Don’t forget to update `ui/Screen/Shortcuts.svelte` if you update the key
+  // bindings.
   const onKeydown = event => {
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
-    if (event.target !== document.body) {
+    if (event.target !== document.body || event.repeat) {
       return false;
     }
 
-    // To open help => OS modifier key + /
-    if (event.shiftKey && event.code === "Slash") {
+    // To open help => ?
+    if (event.key === "?") {
       toggle(path.shortcuts());
     }
 
     // To open settings => OS modifier key + ,
-    if (modifierKey && event.code === "Comma") {
+    if (modifierKey && event.key === ",") {
       toggle(path.settings());
     }
 
     // To open search => OS modifier key + p
-    if (modifierKey && event.code === "KeyP") {
+    if (modifierKey && event.key === "p") {
       toggleModal(path.search());
     }
 
     // To open design system => OS modifier key + d
-    if (modifierKey && event.code === "KeyD") {
+    if (modifierKey && event.key === "d") {
       toggle(path.designSystemGuide());
     }
 
     // To create a new project => OS modifier key + n
-    if (modifierKey && event.code === "KeyN") {
+    if (modifierKey && event.key === "n") {
       toggle(path.createProject());
     }
 
