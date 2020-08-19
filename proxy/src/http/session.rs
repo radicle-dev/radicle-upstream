@@ -125,7 +125,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
-use crate::coco::signer;
+    use crate::coco::signer;
     use crate::http;
     use crate::registry;
     use crate::session;

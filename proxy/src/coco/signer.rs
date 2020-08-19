@@ -73,7 +73,7 @@ impl Store {
                 } else {
                     Err(err)
                 }
-            }
+            },
         }?;
 
         Ok(Self {
