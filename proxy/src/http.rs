@@ -1,7 +1,6 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use std::collections::HashMap;
-use std::convert::Infallible;
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
