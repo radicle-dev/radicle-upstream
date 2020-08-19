@@ -139,6 +139,12 @@ where
     http::with_context(ctx)
         .and(warp::get())
         .and(path::end())
+        .and(http::with_qs_opt::<ListQuery>())
+        .and(document::document(
+            document::query("user", document::string())
+                .required(false)
+                .description("Only list projects tracked by the user with this URN"),
+        ))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -255,14 +261,25 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
+    ///
+    /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
+    pub async fn list<R, S>(
+        ctx: http::Ctx<R, S>,
+        opt_query: Option<super::ListQuery>,
+    ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
         S: coco::Signer,
         S::Error: coco::SignError,
     {
+        let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
-        let projects = project::list_projects(&ctx.peer_api)?;
+
+        let projects = if let Some(user) = query.user {
+            project::list_projects_for_user(&ctx.peer_api, &user)?
+        } else {
+            project::list_projects(&ctx.peer_api)?
+        };
 
         Ok(reply::json(&projects))
     }
@@ -330,7 +347,7 @@ impl Serialize for project::Registration {
         match self {
             Self::Org(org_id) => {
                 serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            },
+            }
             Self::User(user_id) => serializer.serialize_newtype_variant(
                 "Registration",
                 1,
@@ -512,6 +529,13 @@ impl ToDocumentedType for MetadataInput {
     }
 }
 
+/// Query options for listing projects.
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct ListQuery {
+    /// Only include projects tracked by this user
+    user: Option<coco::Urn>,
+}
+
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
@@ -691,6 +715,41 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[allow(clippy::indexing_slicing)]
+    async fn list_for_user() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
+
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
+        let project = &project::list_projects(&ctx.peer_api)?[0];
+        let librad_project = ctx.peer_api.get_project(&project.id, None)?;
+
+        let fintohaps: identity::Identity = coco::control::track_fake_peer(
+            &ctx.peer_api,
+            &ctx.signer,
+            &librad_project,
+            "fintohaps",
+        )
+        .into();
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/?user={}", fintohaps.urn))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(vec![project]));
         });
 
         Ok(())

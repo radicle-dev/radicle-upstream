@@ -39,4 +39,5 @@ pub mod identity;
 mod notification;
 pub mod project;
 pub mod registry;
+pub mod seed;
 pub mod session;

@@ -228,7 +228,7 @@ where
             .map_err(crate::error::Error::Signer)?;
 
         // Reset peer api.
-        let coco_config = coco::config::configure(paths, self.signer.clone());
+        let coco_config = coco::config::configure(paths, self.signer.clone(), vec![]);
         self.peer_api = coco::Api::new(coco_config).await?;
 
         // Reset store.

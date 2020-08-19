@@ -10,6 +10,7 @@ use librad::peer;
 
 use crate::coco;
 use crate::error;
+use crate::seed::Seed;
 
 /// Path configuration
 pub enum Paths {
@@ -38,7 +39,10 @@ impl TryFrom<Paths> for paths::Paths {
 
 /// Short-hand type for [`discovery::Static`] over a vector of [`peer::PeerId`]s and
 /// [`SocketAddr`].
-pub type Disco = discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>;
+pub type Disco = discovery::Static<
+    std::iter::Map<std::vec::IntoIter<Seed>, fn(Seed) -> (peer::PeerId, SocketAddr)>,
+    SocketAddr,
+>;
 
 /// Provide the default config.
 ///
@@ -58,12 +62,17 @@ where
     S::Error: coco::SignError,
 {
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, signer))
+    Ok(configure(paths, signer, vec![]))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
+#[allow(clippy::as_conversions)]
 #[must_use]
-pub fn configure<S>(paths: paths::Paths, signer: S) -> net::peer::PeerConfig<Disco, S>
+pub fn configure<S>(
+    paths: paths::Paths,
+    signer: S,
+    seeds: Vec<Seed>,
+) -> net::peer::PeerConfig<Disco, S>
 where
     S: coco::Signer,
     S::Error: coco::SignError,
@@ -75,9 +84,12 @@ where
     let gossip_params = net::gossip::MembershipParams::default();
     // TODO(finto): Read from config or passed as param
     let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
-    // TODO(finto): could we initialise with known seeds from a cache?
-    let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
-    let disco = discovery::Static::new(seeds);
+    let disco = discovery::Static::new(
+        seeds
+            .into_iter()
+            .map(Seed::into as fn(Seed) -> (peer::PeerId, SocketAddr)),
+    );
+
     // TODO(finto): read in from config or passed as param
     net::peer::PeerConfig {
         signer,

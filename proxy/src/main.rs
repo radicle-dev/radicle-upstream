@@ -8,6 +8,8 @@ use proxy::config;
 use proxy::env;
 use proxy::http;
 use proxy::registry;
+use proxy::seed;
+use proxy::session;
 
 /// Flags accepted by the proxy binary.
 struct Args {
@@ -43,13 +45,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
 
             client
-        },
+        }
         host => {
             let host = url17::Host::parse(host)?;
             radicle_registry_client::Client::create_with_executor(host)
                 .await
                 .expect("unable to construct devnet client")
-        },
+        }
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
@@ -67,21 +69,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let paths = paths::Paths::try_from(paths_config)?;
 
-    let pw = SecUtf8::from("radicle-upstream");
-    let signer = coco::StoreSigner::init(&paths, pw)?;
-
-    let coco_api = {
-        let config = coco::config::configure(paths, signer.clone());
-        coco::Api::new(config).await?
-    };
-
-    if args.test {
-        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
-        // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(&signer, "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, &signer, &owner).expect("fixture creation failed");
-    }
-
     let store = {
         let store_path = if args.test {
             temp_dir.path().join("store")
@@ -93,6 +80,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         kv::Store::new(config)?
     };
+
+    let pw = SecUtf8::from("radicle-upstream");
+    let signer = coco::StoreSigner::init(&paths, pw)?;
+
+    let coco_api = {
+        let seeds = session::settings(&store).await?.coco.seeds;
+        let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
+            log::error!("Error parsing seed list {:?}: {}", seeds, err);
+            vec![]
+        });
+        let config = coco::config::configure(paths, signer.clone(), seeds);
+
+        coco::Api::new(config).await?
+    };
+
+    if args.test {
+        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
+        // evaluate how meaningful these fixtures are.
+        let owner = coco_api.init_owner(&signer, "cloudhead")?;
+        coco::control::setup_fixtures(&coco_api, &signer, &owner).expect("fixture creation failed");
+    }
 
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
