@@ -275,11 +275,11 @@ impl Api {
         let urn = meta.urn();
         if storage.has_urn(&urn)? {
             return Err(error::Error::EntityExists(urn));
-        } else {
-            let repo = storage.create_repo(&meta)?;
-            repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
-            log::debug!("Created project with Urn '{}'", urn);
         }
+
+        let repo = storage.create_repo(&meta)?;
+        repo.set_rad_self(librad::git::storage::RadSelfSpec::Default)?;
+        log::debug!("Created project with Urn '{}'", urn);
 
         let repo = project.setup_repo(LocalUrl::from_urn(urn, api.peer_id().clone()))?;
         log::debug!("Setup repository at path '{}'", repo.path().display());
@@ -636,7 +636,10 @@ mod test {
 
         // Create fakie project from the existing directory above.
         let kalt = api.init_owner(&key, "kalt")?;
-        let _fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
+
+        // Attempt to initialise a browser to ensure we can look at branches in the project
+        let _stats = api.with_browser(&fakie.urn(), |browser| Ok(browser.get_stats()?))?;
 
         Ok(())
     }

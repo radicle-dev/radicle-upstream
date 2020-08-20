@@ -93,15 +93,21 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
         default_branch: &str,
     ) -> Result<git2::Repository, git2::Error> {
         match &self {
-            Self::Existing { .. } => git2::Repository::open(self.full_path()),
+            Self::Existing { .. } => {
+                let path = self.full_path();
+                log::debug!("Setting up existing repository @ '{}'", path.display());
+                git2::Repository::open(path)
+            }
             Self::New { .. } => {
+                let path = self.full_path();
+                log::debug!("Setting up new repository @ '{}'", path.display());
                 let mut options = git2::RepositoryInitOptions::new();
                 options.no_reinit(true);
                 options.mkpath(true);
                 options.description(description);
                 options.initial_head(default_branch);
 
-                let repo = git2::Repository::init_opts(self.full_path(), &options)?;
+                let repo = git2::Repository::init_opts(path, &options)?;
                 // First use the config to initialize a commit signature for the user.
                 let sig = repo.signature()?;
                 // Now let's create an empty tree for this commit
@@ -127,7 +133,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 }
 
                 Ok(repo)
-            },
+            }
         }
     }
 
@@ -164,20 +170,22 @@ impl<Path: AsRef<path::Path>> Create<Path> {
 
         // Test if the repo has setup rad remote.
         match repo.find_remote(config::RAD_REMOTE) {
-            Ok(remote) => {
+            Ok(mut remote) => {
                 // Send a warning if the remote urls don't match
                 if let Some(remote_url) = remote.url() {
-                    if remote_url != url.to_string() {
+                    if remote_url == url.to_string() {
+                        Self::push_default(&mut remote, &self.default_branch)?;
+                    } else {
                         log::warn!("Remote URL Mismatch: '{} /= '{}'", remote_url, url);
                         log::warn!("Deleting original '{}' remote", config::RAD_REMOTE);
                         repo.remote_delete(config::RAD_REMOTE)?;
                         Self::setup_remote(&repo, url, &self.default_branch)?;
                     }
                 };
-            },
+            }
             Err(_err) => {
                 Self::setup_remote(&repo, url, &self.default_branch)?;
-            },
+            }
         }
 
         Ok(repo)
@@ -225,13 +233,19 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         let remote = Remote::rad_remote(url, None);
         let mut git_remote = remote.create(repo)?;
 
-        let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
-        log::debug!("Pushing default branch '{}'", default);
-        git_remote.push(&[default.to_string()], None)?;
+        Self::push_default(&mut git_remote, default_branch)?;
 
         log::debug!("Setting upstream to default branch");
         super::set_rad_upstream(repo, default_branch)?;
 
+        Ok(())
+    }
+
+    /// Push the default branch to the provided remote.
+    fn push_default(remote: &mut git2::Remote, default_branch: &str) -> Result<(), Error> {
+        let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
+        log::debug!("Pushing default branch '{}'", default);
+        remote.push(&[default.to_string()], None)?;
         Ok(())
     }
 }
