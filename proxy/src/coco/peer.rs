@@ -241,6 +241,8 @@ impl Api {
 
     /// Given some hints as to where you might find it, get the urn of the project found at `url`.
     ///
+    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
+    ///
     /// # Errors
     ///   * Could not successfully acquire a lock to the API.
     ///   * Could not open librad storage.
@@ -262,6 +264,8 @@ impl Api {
     }
 
     /// Given some hints as to where you might find it, get the urn of the user found at `url`.
+    ///
+    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
     ///
     /// # Errors
     ///
@@ -690,7 +694,7 @@ mod test {
         Ok(())
     }
 
-   #[tokio::test]
+    #[tokio::test]
     async fn can_clone_user() -> Result<(), Error> {
         let alice_key = SecretKey::new();
         let bob_key = SecretKey::new();
