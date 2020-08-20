@@ -97,7 +97,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 let path = self.full_path();
                 log::debug!("Setting up existing repository @ '{}'", path.display());
                 git2::Repository::open(path)
-            }
+            },
             Self::New { .. } => {
                 let path = self.full_path();
                 log::debug!("Setting up new repository @ '{}'", path.display());
@@ -133,7 +133,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 }
 
                 Ok(repo)
-            }
+            },
         }
     }
 
@@ -182,10 +182,10 @@ impl<Path: AsRef<path::Path>> Create<Path> {
                         Self::setup_remote(&repo, url, &self.default_branch)?;
                     }
                 };
-            }
+            },
             Err(_err) => {
                 Self::setup_remote(&repo, url, &self.default_branch)?;
-            }
+            },
         }
 
         Ok(repo)
