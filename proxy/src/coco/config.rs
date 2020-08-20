@@ -9,8 +9,8 @@ use librad::net::discovery;
 use librad::paths;
 use librad::peer;
 
+use crate::coco::seed;
 use crate::error;
-use crate::seed::Seed;
 
 /// Path configuration
 pub enum Paths {
@@ -40,7 +40,7 @@ impl TryFrom<Paths> for paths::Paths {
 /// Short-hand type for [`discovery::Static`] over a vector of [`peer::PeerId`]s and
 /// [`SocketAddr`].
 pub type Disco = discovery::Static<
-    std::iter::Map<std::vec::IntoIter<Seed>, fn(Seed) -> (peer::PeerId, SocketAddr)>,
+    std::iter::Map<std::vec::IntoIter<seed::Seed>, fn(seed::Seed) -> (peer::PeerId, SocketAddr)>,
     SocketAddr,
 >;
 
@@ -67,7 +67,7 @@ pub fn default(
 pub fn configure(
     paths: paths::Paths,
     key: keys::SecretKey,
-    seeds: Vec<Seed>,
+    seeds: Vec<seed::Seed>,
 ) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
@@ -79,7 +79,7 @@ pub fn configure(
     let disco = discovery::Static::new(
         seeds
             .into_iter()
-            .map(Seed::into as fn(Seed) -> (peer::PeerId, SocketAddr)),
+            .map(seed::Seed::into as fn(seed::Seed) -> (peer::PeerId, SocketAddr)),
     );
 
     // TODO(finto): read in from config or passed as param
