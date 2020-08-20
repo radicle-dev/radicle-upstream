@@ -67,6 +67,16 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
         .remove(KEY_CURRENT)?)
 }
 
+/// Read the current settings.
+///
+/// # Errors
+///
+/// Errors if access to the setttings fails.
+pub async fn settings(store: &kv::Store) -> Result<settings::Settings, error::Error> {
+    let session = get(store, KEY_CURRENT)?;
+    Ok(session.settings)
+}
+
 /// Reads the current session.
 ///
 /// # Errors
@@ -266,7 +276,7 @@ pub mod settings {
     /// `CoCo` config parameters subject to user preferences
     #[derive(Debug, Deserialize, Serialize, PartialEq)]
     pub struct CoCo {
-        /// Sources of feeds
+        /// Peers to connect to at startup.
         pub seeds: Vec<String>,
     }
 

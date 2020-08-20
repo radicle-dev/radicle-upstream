@@ -15,6 +15,8 @@ export const profileWallet = (): string => "/profile/wallet";
 export const registerUser = (): string => "/user-registration";
 export const createIdentity = (): string => "/identity/new";
 
+export const userProfile = (id: string): string => `/user/${id}`;
+
 export const orgs = (id: string): string => `/orgs/${id}`;
 export const orgOnboard = (id: string): string => `/orgs/${id}/onboard`;
 export const orgRegistration = (): string => `/orgs/register`;
