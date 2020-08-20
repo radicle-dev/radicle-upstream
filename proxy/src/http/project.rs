@@ -717,6 +717,87 @@ mod test {
     }
 
     #[tokio::test]
+    async fn create_existing_after_reset() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let dir = tempfile::tempdir_in(repos_dir.path())?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        {
+            let ctx = ctx.read().await;
+            let handle = "cloudhead";
+            let key = ctx.keystore.get_librad_key()?;
+            let id = identity::create(&ctx.peer_api, &key, handle)?;
+
+            session::set_identity(&ctx.store, id)?;
+        }
+
+        let project = coco::project::Create {
+            repo: coco::project::Repo::New {
+                path: dir.path(),
+                name: "Upstream".to_string(),
+            },
+            description: "Desktop client for radicle.".into(),
+            default_branch: "master".into(),
+        };
+
+        let _res = request()
+            .method("POST")
+            .path("/")
+            .json(&project)
+            .reply(&api)
+            .await;
+
+        http::reset_ctx_peer(ctx.clone()).await?;
+
+        {
+            let ctx = ctx.read().await;
+            let handle = "cloudhead";
+            let key = ctx.keystore.get_librad_key()?;
+            let id = identity::create(&ctx.peer_api, &key, handle)?;
+
+            session::set_identity(&ctx.store, id)?;
+        }
+
+        let res = request()
+            .method("POST")
+            .path("/")
+            .json(&project.into_existing())
+            .reply(&api)
+            .await;
+
+        let projects = {
+            let ctx = ctx.read().await;
+            project::list_projects(&ctx.peer_api)
+        }?;
+
+        let meta = projects.first().unwrap();
+
+        let want = json!({
+            "id": meta.id,
+            "metadata": {
+                "defaultBranch": "master",
+                "description": "Desktop client for radicle.",
+                "name": "Upstream",
+            },
+            "registration": Value::Null,
+            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
+            "stats": {
+                "branches": 1,
+                "commits": 1,
+                "contributors": 1,
+            },
+        });
+
+        http::test::assert_response(&res, StatusCode::CREATED, |have| {
+            assert_eq!(have, want);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = http::Context::tmp(&tmp_dir).await?;

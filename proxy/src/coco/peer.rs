@@ -613,4 +613,31 @@ mod test {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn create_with_existing_remote_with_reset() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let kalt = api.init_owner(&key, "kalt")?;
+
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+
+        assert!(repo_path.join(fakie.name()).exists());
+
+        // Simulate resetting the monorepo
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        // Create fakie project from the existing directory above.
+        let kalt = api.init_owner(&key, "kalt")?;
+        let _fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
+
+        Ok(())
+    }
 }

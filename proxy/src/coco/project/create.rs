@@ -165,15 +165,15 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         // Test if the repo has setup rad remote.
         match repo.find_remote(config::RAD_REMOTE) {
             Ok(remote) => {
-                let url = url.to_string();
                 // Send a warning if the remote urls don't match
                 if let Some(remote_url) = remote.url() {
-                    if remote_url != url {
+                    if remote_url != url.to_string() {
                         log::warn!("Remote URL Mismatch: '{} /= '{}'", remote_url, url);
+                        log::warn!("Deleting original '{}' remote", config::RAD_REMOTE);
+                        repo.remote_delete(config::RAD_REMOTE)?;
+                        Self::setup_remote(&repo, url, &self.default_branch)?;
                     }
                 };
-                // But set it with the new URL anyway.
-                repo.remote_set_url(config::RAD_REMOTE, &url)?;
             },
             Err(_err) => {
                 Self::setup_remote(&repo, url, &self.default_branch)?;
@@ -221,27 +221,33 @@ impl<Path: AsRef<path::Path>> Create<Path> {
             });
         }
 
+        log::debug!("Creating rad remote");
         let remote = Remote::rad_remote(url, None);
         let mut git_remote = remote.create(repo)?;
 
         let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
-
+        log::debug!("Pushing default branch '{}'", default);
         git_remote.push(&[default.to_string()], None)?;
+
+        log::debug!("Setting upstream to default branch");
         super::set_rad_upstream(repo, default_branch)?;
 
         Ok(())
     }
 }
 
-impl Create<PathBuf> {
-    #[cfg(test)]
+#[allow(clippy::use_self)]
+#[cfg(test)]
+impl<Path: AsRef<path::Path>> Create<Path> {
+    // Clippy is stupid and doesn't realise the `Create`s here are different types than `Self`.
     #[must_use]
-    pub fn into_existing(self) -> Self {
-        Self {
+    pub fn into_existing(self) -> Create<PathBuf> {
+        Create {
             repo: Repo::Existing {
                 path: self.repo.full_path(),
             },
-            ..self
+            description: self.description,
+            default_branch: self.default_branch,
         }
     }
 }
