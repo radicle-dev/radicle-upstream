@@ -242,7 +242,10 @@ impl Api {
     /// Given some hints as to where you might find it, get the urn of the project found at `url`.
     ///
     /// # Errors
-    // /   * Could not successfully acquire a lock to the API.
+    ///   * Could not successfully acquire a lock to the API.
+    ///   * Could not open librad storage.
+    ///   * Failed to clone the project.
+    ///   * Failed to set the rad/self of this project.
     pub fn clone_project<Addrs>(
         &self,
         url: RadUrl,
@@ -263,6 +266,8 @@ impl Api {
     /// # Errors
     ///
     ///   * Could not successfully acquire a lock to the API.
+    ///   * Could not open librad storage.
+    ///   * Failed to clone the user.
     pub fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, error::Error>
     where
         Addrs: IntoIterator<Item = SocketAddr>,
