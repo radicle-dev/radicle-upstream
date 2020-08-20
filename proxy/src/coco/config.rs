@@ -64,7 +64,6 @@ pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
 ) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
-    env::set_var(RAD_HOME, path.as_ref());
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, key, vec![]))
 }
