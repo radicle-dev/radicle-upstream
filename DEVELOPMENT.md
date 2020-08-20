@@ -74,8 +74,7 @@ Before running UI end-to-end tests locally you'll need to check out the latest
 test fixtures which are included in this repository as a git submodule:
 
 ```sh
-git submodule update --init --remote
-git submodule foreach "git fetch --all"
+./scripts/test-setup.sh
 ```
 
 💡 *You'll have to run the previous commands every time there are any updates

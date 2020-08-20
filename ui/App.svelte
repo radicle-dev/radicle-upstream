@@ -30,6 +30,7 @@
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
+  import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
     "/": Blank,
@@ -46,6 +47,8 @@
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
+    "/user/:id": UserProfile,
+    "/user/:id/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
     "/shortcuts": Shortcuts,
     "/user-registration": UserRegistration,
@@ -87,12 +90,12 @@
   }
 
   h2 {
-    margin-bottom: 32px;
+    margin-bottom: 2rem;
   }
 </style>
 
 <Hotkeys />
-<NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
+<NotificationFaucet />
 <Theme />
 <Remote {store} context="session">
   <Router {routes} />

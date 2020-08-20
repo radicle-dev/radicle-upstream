@@ -3,7 +3,7 @@
 
   import ModalLayout from "../DesignSystem/Component/ModalLayout.svelte";
 
-  const modifierKeys = isMac ? "⌘" : "ctrl";
+  const modifierKey = isMac ? "⌘" : "ctrl";
 </script>
 
 <style>
@@ -24,31 +24,29 @@
 
 <ModalLayout>
   <div class="shortcut">
-    <kbd>shift</kbd>
-    +
-    <kbd>/</kbd>
+    <kbd>?</kbd>
     - shortcuts
   </div>
   <div class="shortcut">
-    <kbd>{modifierKeys}</kbd>
+    <kbd>{modifierKey}</kbd>
     +
     <kbd>,</kbd>
     - settings
   </div>
   <div class="shortcut">
-    <kbd>{modifierKeys}</kbd>
+    <kbd>{modifierKey}</kbd>
     +
     <kbd>d</kbd>
     - design system
   </div>
   <div class="shortcut">
-    <kbd>{modifierKeys}</kbd>
+    <kbd>{modifierKey}</kbd>
     +
     <kbd>p</kbd>
     - search
   </div>
   <div class="shortcut">
-    <kbd>{modifierKeys}</kbd>
+    <kbd>{modifierKey}</kbd>
     +
     <kbd>n</kbd>
     - create new project

@@ -10,8 +10,12 @@ pub use radicle_surf::vcs::git::Stats;
 
 pub mod config;
 pub mod control;
+pub mod git_helper;
 mod peer;
 pub use peer::{verify_user, Api, User};
+
+pub mod project;
+pub mod seed;
 
 mod source;
 pub use source::{

@@ -109,8 +109,7 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ =
-                    coco::control::track_fake_peer(&ctx.peer_api, key.clone(), &meta, &user_handle);
+                let _ = coco::control::track_fake_peer(&ctx.peer_api, &key, &meta, &user_handle);
             }
         }
         let stats = ctx

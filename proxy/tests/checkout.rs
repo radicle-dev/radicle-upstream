@@ -21,7 +21,7 @@ async fn can_checkout() -> Result<(), error::Error> {
     let api = coco::Api::new(config).await?;
 
     let handle = "cloudhead";
-    let owner = api.init_owner(key.clone(), handle)?;
+    let owner = api.init_owner(&key, handle)?;
 
     let platinum_project = coco::control::replicate_platinum(
         &api,

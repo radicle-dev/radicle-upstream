@@ -33,26 +33,22 @@ serde_qs = "0.6"
 syntect = "4.2"
 tempfile = "3.1"
 thiserror = "1.0"
-tokio = { version = "0.2", features = [ "macros", "time" ] }
+tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
 url17 = { package = "url", version = "1.7" }
 url = "2.1"
 warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "1d9c4c107e6ac1816342a35c0558262fba4a96ff"
-
-[dependencies.librad-test]
-git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "1d9c4c107e6ac1816342a35c0558262fba4a96ff"
+rev = "e471952ec83579e313d77e5f428fa272da20fa4c"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "1d9c4c107e6ac1816342a35c0558262fba4a96ff"
+rev = "e471952ec83579e313d77e5f428fa272da20fa4c"
 
 [dependencies.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore.git"
-rev = "27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6"
+rev = "3377e666bde3130a06dd19343e7df2eaa774176a"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"

@@ -17,8 +17,9 @@ pub use librad::net::peer::{PeerApi, PeerConfig, RunLoop};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::uri::{RadUrl, RadUrn};
-use radicle_surf::vcs::git::{self, git2};
+use radicle_surf::vcs::git;
 
+use crate::coco;
 use crate::error;
 
 /// Export a verified [`user::User`] type.
@@ -139,7 +140,7 @@ impl Api {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub fn init_owner(&self, key: keys::SecretKey, handle: &str) -> Result<User, error::Error> {
+    pub fn init_owner(&self, key: &keys::SecretKey, handle: &str) -> Result<User, error::Error> {
         let user = self.init_user(key, handle)?;
         let user = verify_user(user)?;
 
@@ -307,56 +308,27 @@ impl Api {
     /// Will error if:
     ///     * The signing of the project metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
-    pub fn init_project(
+    pub fn init_project<P: AsRef<path::Path> + Send>(
         &self,
         key: &keys::SecretKey,
         owner: &User,
-        path: impl AsRef<path::Path> + Send,
-        name: &str,
-        description: &str,
-        default_branch: &str,
+        project: &coco::project::Create<P>,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
 
-        // Test if the repo has setup rad remote.
-        if let Ok(repo) = git2::Repository::open(&path) {
-            if repo.find_remote("rad").is_ok() {
-                return Err(error::Error::RadRemoteExists(format!(
-                    "{}",
-                    path.as_ref().display(),
-                )));
-            }
+        let mut meta = project.build(owner, key.public())?;
+        meta.sign_owned(key)?;
+
+        let urn = meta.urn();
+        if storage.has_urn(&urn)? {
+            return Err(error::Error::EntityExists(urn));
+        } else {
+            let repo = storage.create_repo(&meta)?;
+            repo.set_rad_self(storage::RadSelfSpec::Urn(owner.urn()))?;
         }
 
-        let meta: Result<project::Project<entity::Draft>, error::Error> = {
-            // Create the project meta
-            let mut meta =
-                project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
-                    .to_builder()
-                    .set_description(description.to_string())
-                    .set_default_branch(default_branch.to_string())
-                    .add_key(key.public())
-                    .add_certifier(owner.urn())
-                    .build()?;
-            meta.sign_owned(key)?;
-            let urn = meta.urn();
-
-            let storage = api.storage().reopen()?;
-
-            if storage.has_urn(&urn)? {
-                return Err(error::Error::EntityExists(urn));
-            } else {
-                let repo = storage.create_repo(&meta)?;
-                repo.set_rad_self(storage::RadSelfSpec::Urn(owner.urn()))?;
-            }
-            Ok(meta)
-        };
-
-        // Doing ? above breaks inference. Gaaaawwwwwd Rust!
-        let meta = meta?;
-
-        setup_remote(&api, path, &meta.urn().id, default_branch)?;
+        let _ = project.setup_repo(api.paths().git_dir(), &urn)?;
 
         Ok(meta)
     }
@@ -369,15 +341,14 @@ impl Api {
     /// Will error if:
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
     pub fn init_user(
         &self,
-        key: keys::SecretKey,
+        key: &keys::SecretKey,
         handle: &str,
     ) -> Result<user::User<entity::Draft>, error::Error> {
         // Create the project meta
         let mut user = user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
-        user.sign_owned(&key)?;
+        user.sign_owned(key)?;
         let urn = user.urn();
 
         // Initialising user in the storage.
@@ -444,75 +415,6 @@ pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error
     Ok(verified_user)
 }
 
-/// Equips a repository with a rad remote for the given id. If the directory at the given path
-/// is not managed by git yet we initialise it first.
-fn setup_remote(
-    peer: &PeerApi<keys::SecretKey>,
-    path: impl AsRef<std::path::Path>,
-    id: &librad::hash::Hash,
-    default_branch: &str,
-) -> Result<(), error::Error> {
-    // Check if directory at path is a git repo.
-    if git2::Repository::open(&path).is_err() {
-        let repo = git2::Repository::init(&path)?;
-        // First use the config to initialize a commit signature for the user.
-        let sig = repo.signature()?;
-        // Now let's create an empty tree for this commit
-        let tree_id = {
-            let mut index = repo.index()?;
-
-            // For our purposes, we'll leave the index empty for now.
-            index.write_tree()?
-        };
-        let tree = repo.find_tree(tree_id)?;
-        // Normally creating a commit would involve looking up the current HEAD
-        // commit and making that be the parent of the initial commit, but here this
-        // is the first commit so there will be no parent.
-        repo.commit(
-            Some(&format!("refs/heads/{}", default_branch)),
-            &sig,
-            &sig,
-            "Initial commit",
-            &tree,
-            &[],
-        )?;
-    }
-
-    let repo = git2::Repository::open(path)?;
-
-    if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
-        log::error!("error while trying to find default branch: {:?}", err);
-        return Err(error::Error::DefaultBranchMissing(
-            id.to_string(),
-            default_branch.to_string(),
-        ));
-    }
-
-    let monorepo = peer.paths().git_dir().join("");
-    let namespace_prefix = format!("refs/namespaces/{}/refs", id);
-    let mut remote = repo.remote_with_fetch(
-        "rad",
-        &format!(
-            "file://{}",
-            monorepo.to_str().expect("unable to get str for monorepo")
-        ),
-        &format!("+{}/heads/*:refs/heads/*", namespace_prefix),
-    )?;
-    repo.remote_add_push(
-        "rad",
-        &format!("+refs/heads/*:{}/heads/*", namespace_prefix),
-    )?;
-    remote.push(
-        &[&format!(
-            "refs/heads/{}:{}/heads/{}",
-            default_branch, namespace_prefix, default_branch
-        )],
-        None,
-    )?;
-
-    Ok(())
-}
-
 /// Acting as a fake resolver where a User resolves to itself.
 /// This allows us to check the history status of a single User.
 /// TODO(finto): Remove this once Resolvers are complete.
@@ -535,6 +437,8 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+    use std::path::PathBuf;
+
     use librad::keys::SecretKey;
     // use librad::meta::project;
     use librad::paths;
@@ -542,49 +446,101 @@ mod test {
 
     use crate::coco::config;
     use crate::coco::control;
+    use crate::coco::project;
     use crate::error::Error;
 
     use super::Api;
 
+    fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
+        project::Create {
+            repo: project::Repo::New {
+                path,
+                name: "fakie-nose-kickflip-backside-180-to-handplant".to_string(),
+            },
+            description: "rad git tricks".to_string(),
+            default_branch: "dope".to_string(),
+        }
+    }
+
+    fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+        project::Create {
+            repo: project::Repo::New {
+                path,
+                name: "radicalise".to_string(),
+            },
+            description: "the people".to_string(),
+            default_branch: "power".to_string(),
+        }
+    }
+
+    fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
+        project::Create {
+            repo: project::Repo::New {
+                path,
+                name: "just".to_string(),
+            },
+            description: "do".to_string(),
+            default_branch: "it".to_string(),
+        }
+    }
+
     #[tokio::test]
-    async fn test_can_create_user() -> Result<(), Error> {
+    async fn can_create_user() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let annie = api.init_user(key, "annie_are_you_ok?");
+        let annie = api.init_user(&key, "annie_are_you_ok?");
         assert!(annie.is_ok());
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_can_create_project() -> Result<(), Error> {
+    async fn can_create_project() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(key.clone(), "cloudhead")?;
-        let project =
-            api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
+        let user = api.init_owner(&key, "cloudhead")?;
+        let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
 
         assert!(project.is_ok());
+        assert!(repo_path.join("radicalise").exists());
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_cannot_create_user_twice() -> Result<(), Error> {
+    async fn can_create_project_directory_exists() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let repo_path = repo_path.join("radicalise");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let user = api.init_owner(&key, "cloudhead")?;
+        let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
+
+        assert!(project.is_ok());
+        assert!(repo_path.exists());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn cannot_create_user_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(key.clone(), "cloudhead")?;
-        let err = api.init_user(key, "cloudhead");
+        let user = api.init_owner(&key, "cloudhead")?;
+        let err = api.init_user(&key, "cloudhead");
 
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, user.urn())
@@ -599,21 +555,21 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_cannot_create_project_twice() -> Result<(), Error> {
+    async fn cannot_create_project_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(key.clone(), "cloudhead")?;
-        let _project =
-            api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power")?;
+        let user = api.init_owner(&key, "cloudhead")?;
+        let project_creation = radicle_project(repo_path.clone());
+        let project = api.init_project(&key, &user, &project_creation)?;
 
-        let err = api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
+        let err = api.init_project(&key, &user, &project_creation.into_existing());
 
-        if let Err(Error::RadRemoteExists(path)) = err {
-            assert_eq!(path, format!("{}", repo_path.display()))
+        if let Err(Error::EntityExists(urn)) = err {
+            assert_eq!(urn, project.urn())
         } else {
             panic!(
                 "unexpected error when creating the project a second time: {:?}",
@@ -633,20 +589,13 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(key.clone(), "cloudhead")?;
+        let user = api.init_owner(&key, "cloudhead")?;
 
-        control::setup_fixtures(&api, key.clone(), &user)?;
+        control::setup_fixtures(&api, &key, &user)?;
 
-        let kalt = api.init_user(key.clone(), "kalt")?;
+        let kalt = api.init_user(&key, "kalt")?;
         let kalt = super::verify_user(kalt)?;
-        let fakie = api.init_project(
-            &key,
-            &kalt,
-            &repo_path,
-            "fakie-nose-kickflip-backside-180-to-handplant",
-            "rad git tricks",
-            "dope",
-        )?;
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path))?;
 
         let projects = api.list_projects()?;
         let mut project_names = projects
@@ -682,9 +631,9 @@ mod test {
         let config = config::configure(paths, alice_key.clone(), alice_addr, vec![]);
         let alice_peer = Api::new(config).await?;
 
-        let alice = alice_peer.init_owner(alice_key.clone(), "alice")?;
+        let alice = alice_peer.init_owner(&alice_key, "alice")?;
         let project =
-            alice_peer.init_project(&alice_key, &alice, &alice_repo_path, "just", "do", "it")?;
+            alice_peer.init_project(&alice_key, &alice, &shia_le_pathbuf(alice_repo_path))?;
 
         let bob_key = SecretKey::new();
 
@@ -701,7 +650,7 @@ mod test {
         let bob_paths = paths::Paths::from_root(path)?;
         let bob_config = config::configure(bob_paths, bob_key.clone(), bob_addr, vec![]);
         let bob_peer = Api::new(bob_config).await?;
-        let _bob = bob_peer.init_owner(bob_key, "bob")?;
+        let _bob = bob_peer.init_owner(&bob_key, "bob")?;
 
         let bobby = bob_peer.clone();
 
@@ -730,15 +679,15 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_list_users() -> Result<(), Error> {
+    async fn list_users() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let cloudhead = api.init_user(key.clone(), "cloudhead")?;
+        let cloudhead = api.init_user(&key, "cloudhead")?;
         let _cloudhead = super::verify_user(cloudhead)?;
-        let kalt = api.init_user(key, "kalt")?;
+        let kalt = api.init_user(&key, "kalt")?;
         let _kalt = super::verify_user(kalt)?;
 
         let users = api.list_users()?;
@@ -780,16 +729,16 @@ mod test {
         let config = config::configure(paths, bob_key.clone(), bob_addr, vec![]);
         let bob_peer = Api::new(config).await?;
 
-        let alice = alice_peer.init_user(alice_key, "alice")?;
+        let alice = alice_peer.init_user(&alice_key, "alice")?;
         let bobby = bob_peer.clone();
         let user_urn = tokio::task::spawn_blocking(move || {
             bobby.clone_user(
-                alice.urn().into_rad_url(alice_peer.peer_id().clone()),
+                alice.urn().into_rad_url(alice_peer.peer_id()),
                 vec![alice_addr].into_iter(),
             )
         })
         .await
-        .unwrap()?;
+        .expect("failed to join thread")?;
 
         assert_eq!(
             bob_peer

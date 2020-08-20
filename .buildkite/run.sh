@@ -26,11 +26,7 @@ else
 fi
 
 echo "--- Updating submodules"
-time git submodule update --remote --init --recursive
-time git submodule foreach "git fetch --all"
-time git submodule foreach "git checkout -B dev -t origin/dev"
-time git submodule foreach "git checkout master"
-time git submodule foreach "git pull origin master"
+./scripts/test-setup.sh
 
 echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
@@ -43,7 +39,7 @@ echo "--- Run proxy fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy lints"
-(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options)
+(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings)
 
 echo "--- Run app eslint checks"
 time yarn lint

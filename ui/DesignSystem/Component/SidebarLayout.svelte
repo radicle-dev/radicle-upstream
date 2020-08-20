@@ -19,7 +19,6 @@
     position: relative;
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
-    overflow-x: hidden;
     height: 100%;
   }
 </style>
@@ -33,7 +32,7 @@
     orgs={session.orgs}
     registerOrgPermission={session.permissions.registerOrg} />
 
-  <div class="container" data-cy="scrollable-content">
+  <div class="container">
     <div class="content" {style}>
       <slot />
     </div>

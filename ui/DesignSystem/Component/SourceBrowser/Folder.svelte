@@ -34,23 +34,20 @@
   .folder {
     display: flex;
     cursor: pointer;
-    padding: 4px 4px 4px 4px;
-    margin: 4px 0;
+    padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+    margin: 0.25rem 0;
     color: var(--color-foreground-level-6);
     user-select: none;
     line-height: 1.5rem;
+    white-space: nowrap;
   }
   .folder:hover {
     background-color: var(--color-foreground-level-1);
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   .folder-name {
     margin-left: 0.25rem;
-  }
-
-  .expanded :global(svg) {
-    transform: rotate(90deg);
   }
 
   .container {
@@ -58,14 +55,17 @@
     margin: 0;
   }
   .container.toplevel {
+    display: inline-block;
     padding-left: 0;
   }
 </style>
 
 {#if !toplevel}
   <div class="folder" on:click={toggle}>
-    <span class:expanded class:active style="height: 24px">
-      <Icon.Chevron dataCy={`expand-${name}`} />
+    <span class:active style="height: 1.5rem">
+      <Icon.Chevron
+        variant={expanded ? 'down' : 'right'}
+        dataCy={`expand-${name}`} />
     </span>
     <span class="folder-name">{name}</span>
   </div>

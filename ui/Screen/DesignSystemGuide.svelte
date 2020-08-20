@@ -378,7 +378,7 @@
         <h4>Radicle Upstream</h4>
       </TypographySwatch>
 
-      <TypographySwatch title="<p>">
+      <TypographySwatch title={`<p> or <p class="typo-text">`}>
         <p>Radicle Upstream</p>
       </TypographySwatch>
 
@@ -643,6 +643,20 @@
         <Input.Text
           placeholder="Hey, I'm a full-width input."
           style="flex: 1" />
+      </Swatch>
+
+      <Swatch>
+        <Input.Text
+          style="flex: 1;"
+          disabled
+          placeholder="Hey, I'm a disabled input with a placeholder." />
+      </Swatch>
+
+      <Swatch>
+        <Input.Text
+          style="flex: 1;"
+          disabled
+          value="I'm a disabled input with a value." />
       </Swatch>
 
       <Swatch>

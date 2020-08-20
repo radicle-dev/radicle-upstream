@@ -4,11 +4,13 @@ use librad::paths;
 use radicle_keystore::pinentry::SecUtf8;
 
 use proxy::coco;
+use proxy::coco::seed;
 use proxy::config;
 use proxy::env;
 use proxy::http;
 use proxy::keystore;
 use proxy::registry;
+use proxy::session;
 
 /// Flags accepted by the proxy binary.
 struct Args {
@@ -72,19 +74,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut keystore = keystore::Keystorage::new(&paths, pw);
     let key = keystore.init_librad_key()?;
 
-    let coco_api = {
-        let config =
-            coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
-        coco::Api::new(config).await?
-    };
-
-    if args.test {
-        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
-        // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(key.clone(), "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, key, &owner).expect("fixture creation failed");
-    }
-
     let store = {
         let store_path = if args.test {
             temp_dir.path().join("store")
@@ -96,6 +85,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         kv::Store::new(config)?
     };
+
+    let coco_api = {
+        let seeds = session::settings(&store).await?.coco.seeds;
+        let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
+            log::error!("Error parsing seed list {:?}: {}", seeds, err);
+            vec![]
+        });
+        let config =
+            coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
+
+        coco::Api::new(config).await?
+    };
+
+    if args.test {
+        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
+        // evaluate how meaningful these fixtures are.
+        let owner = coco_api.init_owner(&key, "cloudhead")?;
+        coco::control::setup_fixtures(&coco_api, &key, &owner).expect("fixture creation failed");
+    }
+
+    let proxy_path = config::proxy_path()?;
+    let bin_dir = config::bin_dir()?;
+    coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
 
     log::info!("Starting API");
 

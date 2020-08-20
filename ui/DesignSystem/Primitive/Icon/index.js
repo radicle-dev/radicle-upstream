@@ -32,6 +32,7 @@ import Label from "./Label.svelte";
 import Member from "./Member.svelte";
 import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
+import Open from "./Open.svelte";
 import Peer from "./Peer.svelte";
 import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
@@ -80,6 +81,7 @@ export default {
   Member,
   Merge,
   Minus,
+  Open,
   Peer,
   Plus,
   Projects,
