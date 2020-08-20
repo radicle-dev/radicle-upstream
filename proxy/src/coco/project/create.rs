@@ -176,7 +176,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
                     if remote_url == url.to_string() {
                         Self::push_default(&mut remote, &self.default_branch)?;
                     } else {
-                        log::warn!("Remote URL Mismatch: '{} /= '{}'", remote_url, url);
+                        log::warn!("Remote URL Mismatch: '{}' /= '{}'", remote_url, url);
                         log::warn!("Deleting original '{}' remote", config::RAD_REMOTE);
                         repo.remote_delete(config::RAD_REMOTE)?;
                         Self::setup_remote(&repo, url, &self.default_branch)?;
