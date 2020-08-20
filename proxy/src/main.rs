@@ -4,12 +4,12 @@ use librad::paths;
 use radicle_keystore::pinentry::SecUtf8;
 
 use proxy::coco;
+use proxy::coco::seed;
 use proxy::config;
 use proxy::env;
 use proxy::http;
 use proxy::keystore;
 use proxy::registry;
-use proxy::seed;
 use proxy::session;
 
 /// Flags accepted by the proxy binary.
