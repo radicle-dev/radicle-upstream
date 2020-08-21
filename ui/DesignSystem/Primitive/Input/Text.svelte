@@ -1,5 +1,6 @@
 <script>
   import Icon from "../Icon";
+  import Spinner from "../../Component/Spinner.svelte";
 
   import { ValidationStatus } from "../../../src/validation.ts";
 
@@ -117,7 +118,7 @@
 
   {#if validation}
     {#if validation.status === ValidationStatus.Loading}
-      <Icon.Spinner
+      <Spinner
         style="justify-content: flex-start; position: absolute; top: 8px; right:
         10px;" />
     {:else if validation.status === ValidationStatus.Success && showSuccessCheck}

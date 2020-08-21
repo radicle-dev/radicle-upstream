@@ -13,6 +13,7 @@
     Rad,
     Row,
     SegmentedControl,
+    Spinner,
     Stats,
     SupportButton,
     TrackToggle,
@@ -517,7 +518,7 @@
     <Section
       title="Spinners"
       subTitle="Activity indicators of various sizes and shapes.">
-      <Icon.Spinner />
+      <Spinner />
       <TransactionSpinner state="positive" />
       <TransactionSpinner variant="small" />
       <TransactionSpinner />

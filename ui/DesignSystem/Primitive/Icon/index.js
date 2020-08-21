@@ -50,7 +50,6 @@ import Roadmap from "./Roadmap.svelte";
 import Search from "./Search.svelte";
 import Settings from "./Settings.svelte";
 import Source from "./Source.svelte";
-import Spinner from "./Spinner.svelte";
 import Trash from "./Trash.svelte";
 
 export default {
@@ -106,6 +105,5 @@ export default {
   Search,
   Settings,
   Source,
-  Spinner,
   Trash,
 };

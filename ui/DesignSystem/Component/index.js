@@ -22,6 +22,7 @@ import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
+import Spinner from "./Spinner.svelte";
 import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import Timeline from "./Timeline.svelte";
@@ -64,6 +65,7 @@ export {
   SegmentedControl,
   Sidebar,
   SidebarLayout,
+  Spinner,
   SupportButton,
   Timeline,
   Tooltip,
