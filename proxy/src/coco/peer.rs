@@ -689,7 +689,7 @@ mod test {
         let _bob = bob_peer.init_owner(&bob_key, "bob")?;
 
         let bobby = bob_peer.clone();
-        let cloned_project_urn = tokio::task::spawn_blocking(move || {
+        let project_urn = tokio::task::spawn_blocking(move || {
             bobby.clone_project(
                 project.urn().into_rad_url(alice_peer.peer_id()),
                 vec![alice_peer.listen_addr()].into_iter(),
@@ -704,7 +704,7 @@ mod test {
                 .into_iter()
                 .map(|project| project.urn())
                 .collect::<Vec<_>>(),
-            vec![cloned_project_urn.clone(), cloned_project_urn]
+            vec![project_urn]
         );
 
         Ok(())
@@ -740,7 +740,7 @@ mod test {
                 .into_iter()
                 .map(|user| user.urn())
                 .collect::<Vec<_>>(),
-            vec![user_urn.clone(), user_urn]
+            vec![user_urn]
         );
 
         Ok(())
