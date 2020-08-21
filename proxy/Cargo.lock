@@ -3524,8 +3524,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "hex",
+ "kv",
  "radicle-registry-client",
+ "serde",
+ "serde_cbor 0.11.1",
  "thiserror",
+ "tokio 0.2.21",
 ]
 
 [[package]]
