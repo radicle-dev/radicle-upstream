@@ -1,7 +1,6 @@
 //! Configuration for [`crate::coco`].
 
 use std::convert::TryFrom;
-use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use librad::keys;
