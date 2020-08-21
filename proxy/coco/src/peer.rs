@@ -58,9 +58,6 @@ pub enum Error {
 
     #[error(transparent)]
     Config(#[from] crate::config::Error),
-
-    #[error(transparent)]
-    Broswer(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 /// High-level interface to the coco monorepo and gossip layer.
@@ -348,10 +345,9 @@ impl Api {
     ///
     /// The function will result in an error if the mutex guard was poisoned. See
     /// [`std::sync::Mutex::lock`] for further details.
-    pub fn with_browser<E, F, T>(&self, urn: &RadUrn, callback: F) -> Result<T, Error>
+    pub fn with_browser<F, T>(&self, urn: &RadUrn, callback: F) -> Result<T, Error>
     where
-        E: std::error::Error + Send + Sync + 'static,
-        F: Send + FnOnce(&mut git::Browser) -> Result<T, E>,
+        F: Send + FnOnce(&mut git::Browser) -> Result<T, git::error::Error>,
     {
         let git_dir = self.monorepo();
 
@@ -361,7 +357,7 @@ impl Api {
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
-        callback(&mut browser).map_err(|err| Error::Broswer(Box::new(err)))
+        callback(&mut browser).map_err(Error::SurfGit)
     }
 
     /// Initialize a [`project::Project`] that is owned by the `owner`.
