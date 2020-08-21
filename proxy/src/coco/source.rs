@@ -368,8 +368,6 @@ pub fn branches<'repo>(
 pub struct LocalState {
     /// List of branches.
     branches: Vec<Branch>,
-    /// Indicator if the repository is associated to coco project.
-    managed: bool,
 }
 
 /// Given a path to a repo returns the list of branches and if it is managed by coco.
@@ -389,12 +387,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
 
     branches.sort();
 
-    let managed = {
-        let repo = git2::Repository::open(repo_path)?;
-        repo.remotes()?.into_iter().flatten().any(|r| r == "rad")
-    };
-
-    Ok(LocalState { branches, managed })
+    Ok(LocalState { branches })
 }
 
 /// Retrieves the [`CommitHeader`] for the given `sha1`.

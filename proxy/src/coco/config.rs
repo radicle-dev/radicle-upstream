@@ -18,6 +18,12 @@ lazy_static! {
         SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 0));
 }
 
+/// The environment variable that points to where librad data lives.
+pub const RAD_HOME: &str = "RAD_HOME";
+
+/// The default name for a user's remote, which is `"rad"`.
+pub const RAD_REMOTE: &str = "rad";
+
 /// Path configuration
 pub enum Paths {
     /// Select the default [`paths::Paths`] for configuration.

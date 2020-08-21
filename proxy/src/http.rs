@@ -10,6 +10,8 @@ use warp::filters::BoxedFilter;
 use warp::http::StatusCode;
 use warp::{path, reject, reply, Filter, Rejection, Reply};
 
+use librad::paths;
+
 use crate::coco;
 use crate::keystore;
 use crate::registry;
@@ -179,6 +181,49 @@ pub struct Context<R> {
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx<R> = Arc<RwLock<Context<R>>>;
+
+/// Resets the peer and keystore within the `Ctx`.
+///
+/// # Errors
+///
+///   * If we could not get the librad path.
+///   * If we could not initialise the librad key.
+///   * If we could not construct the peer API.
+///
+/// # Panics
+///
+///   * If we could not get the temporary directory.
+pub async fn reset_ctx_peer<R>(ctx: Ctx<R>) -> Result<(), crate::error::Error>
+where
+    R: Send + Sync,
+{
+    // TmpDir deletes the temporary directory once it DROPS.
+    // This means our new directory goes missing, and future calls will fail.
+    // The Peer creates the directory again.
+    //
+    // N.B. this may gather lot's of tmp files on your system. We're sorry.
+    let tmp_path = {
+        let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+        log::debug!("New temporary path is: {:?}", temp_dir.path());
+        std::env::set_var("RAD_HOME", temp_dir.path());
+        temp_dir.path().to_path_buf()
+    };
+
+    let paths = paths::Paths::from_root(tmp_path)?;
+
+    let pw = keystore::SecUtf8::from("radicle-upstream");
+    let mut new_keystore = keystore::Keystorage::new(&paths, pw);
+    let key = new_keystore.init_librad_key()?;
+
+    let config = coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+    let new_peer_api = coco::Api::new(config).await?;
+
+    let mut ctx = ctx.write().await;
+    ctx.peer_api = new_peer_api;
+    ctx.keystore = new_keystore;
+
+    Ok(())
+}
 
 /// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]

@@ -1196,7 +1196,6 @@ mod test {
                         "dev",
                         "master",
                     ],
-                    "managed": false,
                 }),
             );
         });
