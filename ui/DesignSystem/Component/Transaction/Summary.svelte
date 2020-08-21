@@ -1,5 +1,6 @@
 <script>
   import { Flex, Icon } from "../../Primitive";
+  import TransactionSpinner from "./Spinner.svelte";
 
   import * as transaction from "../../../src/transaction.ts";
 
@@ -29,7 +30,7 @@
 <div class="summary" on:click>
   <Flex>
     <div slot="left" class="text">
-      <Icon.TransactionState
+      <TransactionSpinner
         {progress}
         {rotate}
         {state}

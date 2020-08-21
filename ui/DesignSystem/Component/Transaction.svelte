@@ -10,6 +10,7 @@
   } from "../../src/transaction.ts";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
+  import TransactionSpinner from "./Transaction/Spinner.svelte";
 
   import Urn from "../../DesignSystem/Component/Urn.svelte";
 
@@ -115,7 +116,7 @@
           variant="filled"
           style="margin-right: 8px; fill: var(--color-positive)" />
       {:else}
-        <Icon.TransactionState
+        <TransactionSpinner
           progress={iconProgress(transaction.state)}
           style="margin-right: 8px;"
           variant="small"

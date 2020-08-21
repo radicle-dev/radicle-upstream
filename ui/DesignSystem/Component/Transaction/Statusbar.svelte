@@ -1,5 +1,6 @@
 <script>
   import { Icon } from "../../Primitive";
+  import TransactionSpinner from "./Spinner.svelte";
 
   export let progress = null; // only applys on variant: caution
   export let style = null;
@@ -41,7 +42,7 @@
       variant="filled"
       style="margin: 16px; fill: var(--color-background)" />
   {:else}
-    <Icon.TransactionState
+    <TransactionSpinner
       {progress}
       variant="inverted"
       style="margin: 16px; fill: var(--color-background)"

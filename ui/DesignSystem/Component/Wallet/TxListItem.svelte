@@ -15,6 +15,7 @@
   } from "../../../src/transaction.ts";
   import Rad from "../Rad.svelte";
   import { Avatar, Icon } from "../../Primitive";
+  import TransactionSpinner from "../Transaction/Spinner.svelte";
 
   export let tx = null;
   export let accountId = null;
@@ -123,7 +124,7 @@
             variant="filled"
             style="margin-right: 8px; fill: var(--color-positive)" />
         {:else}
-          <Icon.TransactionState
+          <TransactionSpinner
             progress={iconProgress(tx.state)}
             style="margin-right: 8px;"
             variant="small"

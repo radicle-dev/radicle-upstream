@@ -30,6 +30,7 @@ import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
 import TransactionCenter from "./Transaction/Center.svelte";
+import TransactionSpinner from "./Transaction/Spinner.svelte";
 import TransactionStatusbar from "./Transaction/Statusbar.svelte";
 import Row from "./Transaction/Row.svelte";
 import Urn from "./Urn.svelte";
@@ -70,6 +71,7 @@ export {
   TrackToggle,
   Transaction,
   TransactionCenter,
+  TransactionSpinner,
   TransactionStatusbar,
   Urn,
   Wallet,

@@ -17,6 +17,7 @@
     SupportButton,
     TrackToggle,
     TransactionCenter,
+    TransactionSpinner,
     TransactionStatusbar,
     Urn,
   } from "../DesignSystem/Component";
@@ -514,19 +515,18 @@
     </Section>
 
     <Section
-      title="Complex icons"
-      subTitle="Icons at 24px and 32px width and height with animations and
-      reactive coloring.">
+      title="Spinners"
+      subTitle="Activity indicators of various sizes and shapes.">
       <Icon.Spinner />
-      <Icon.TransactionState state="positive" />
-      <Icon.TransactionState variant="small" />
-      <Icon.TransactionState />
-      <Icon.TransactionState progress={(1 / 6) * 100} />
-      <Icon.TransactionState progress={(2 / 6) * 100} />
-      <Icon.TransactionState state="negative" progress={(2 / 6) * 100} rotate />
-      <Icon.TransactionState state="negative" progress={(4 / 6) * 100} />
-      <Icon.TransactionState state="negative" progress={100} />
-      <Icon.TransactionState state="negative" />
+      <TransactionSpinner state="positive" />
+      <TransactionSpinner variant="small" />
+      <TransactionSpinner />
+      <TransactionSpinner progress={(1 / 6) * 100} />
+      <TransactionSpinner progress={(2 / 6) * 100} />
+      <TransactionSpinner state="negative" progress={(2 / 6) * 100} rotate />
+      <TransactionSpinner state="negative" progress={(4 / 6) * 100} />
+      <TransactionSpinner state="negative" progress={100} />
+      <TransactionSpinner state="negative" />
     </Section>
 
     <Section
