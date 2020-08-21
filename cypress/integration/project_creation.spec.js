@@ -162,42 +162,6 @@ context("project creation", () => {
       });
     });
 
-    context("existing repository", () => {
-      it("prevents the user from picking an invalid directory", () => {
-        cy.pick("page", "existing-project").click();
-
-        // shows a validation message when existing project path is empty
-        cy.pick("page", "existing-project")
-          .contains("Pick a directory with an existing repository")
-          .should("exist");
-
-        withEmptyRepositoryStub(() => {
-          cy.pick("existing-project", "choose-path-button").click();
-
-          // shows a validation message when an empty directory is chosen
-          cy.pick("page", "existing-project")
-            .contains("The directory should contain a git repository")
-            .should("exist");
-        });
-
-        withPlatinumStub(() => {
-          cy.pick("existing-project", "choose-path-button").click();
-          cy.pick("create-project-button").click();
-          cy.pick("profile").click();
-
-          cy.pick("profile-context-menu").click();
-          cy.pick("dropdown-menu", "new-project").click();
-          cy.pick("page", "name").type("another-project");
-          cy.pick("page", "existing-project").click();
-          cy.pick("existing-project", "choose-path-button").click();
-
-          cy.pick("page", "existing-project")
-            .contains("This repository is already managed by Radicle")
-            .should("exist");
-        });
-      });
-    });
-
     context("form", () => {
       it("clears name input when switching from new to existing project", () => {
         cy.pick("name").clear();

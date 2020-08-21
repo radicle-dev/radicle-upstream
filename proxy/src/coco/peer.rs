@@ -5,6 +5,7 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use librad::git::local::{transport, url::LocalUrl};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -13,6 +14,7 @@ use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
+use librad::signer::SomeSigner;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git;
 
@@ -41,10 +43,19 @@ impl Api {
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
     {
+        let paths = config.paths.clone();
+        let signer = config.signer.clone();
+
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
         // publish events.
         let (api, _futures) = peer.accept()?;
+
+        // Register the rad:// transport protocol
+        transport::register(transport::Settings {
+            paths,
+            signer: SomeSigner { signer }.into(),
+        });
 
         Ok(Self {
             peer_api: Arc::new(Mutex::new(api)),
@@ -264,12 +275,14 @@ impl Api {
         let urn = meta.urn();
         if storage.has_urn(&urn)? {
             return Err(error::Error::EntityExists(urn));
-        } else {
-            let repo = storage.create_repo(&meta)?;
-            repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
         }
 
-        let _ = project.setup_repo(api.paths().git_dir(), &urn)?;
+        let repo = storage.create_repo(&meta)?;
+        repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
+        log::debug!("Created project with Urn '{}'", urn);
+
+        let repo = project.setup_repo(LocalUrl::from_urn(urn, api.peer_id().clone()))?;
+        log::debug!("Setup repository at path '{}'", repo.path().display());
 
         Ok(meta)
     }
@@ -378,7 +391,9 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+    use std::env;
     use std::path::PathBuf;
+    use std::process::Command;
 
     use librad::keys::SecretKey;
 
@@ -427,6 +442,7 @@ mod test {
     #[tokio::test]
     async fn can_create_project() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
@@ -561,6 +577,69 @@ mod test {
         user_handles.sort();
 
         assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_with_existing_remote() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let kalt = api.init_owner(&key, "kalt")?;
+
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+
+        let fake_fakie = repo_path.join("fake-fakie");
+
+        let copy = Command::new("cp")
+            .arg("-rf")
+            .arg(repo_path.join(fakie.name()))
+            .arg(fake_fakie.clone())
+            .status()
+            .expect("failed to copy directory");
+
+        assert!(copy.success());
+
+        let fake_fakie = project::Create {
+            repo: project::Repo::Existing { path: fake_fakie },
+            description: "".to_string(),
+            default_branch: fakie.default_branch().to_owned(),
+        };
+        let _fakie = api.init_project(&key, &kalt, &fake_fakie)?;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_with_existing_remote_with_reset() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let kalt = api.init_owner(&key, "kalt")?;
+
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+
+        assert!(repo_path.join(fakie.name()).exists());
+
+        // Simulate resetting the monorepo
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        // Create fakie project from the existing directory above.
+        let kalt = api.init_owner(&key, "kalt")?;
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
+
+        // Attempt to initialise a browser to ensure we can look at branches in the project
+        let _stats = api.with_browser(&fakie.urn(), |browser| Ok(browser.get_stats()?))?;
 
         Ok(())
     }

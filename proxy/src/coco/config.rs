@@ -12,6 +12,12 @@ use librad::peer;
 use crate::coco::seed;
 use crate::error;
 
+/// The environment variable that points to where librad data lives.
+pub const RAD_HOME: &str = "RAD_HOME";
+
+/// The default name for a user's remote, which is `"rad"`.
+pub const RAD_REMOTE: &str = "rad";
+
 /// Path configuration
 pub enum Paths {
     /// Select the default [`paths::Paths`] for configuration.
