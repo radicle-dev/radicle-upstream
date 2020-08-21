@@ -50,7 +50,9 @@
       </div>
     {:else if size === 'big'}
       <div class="big">
-        <Icon.Currency size="huge" style="fill: var(--color-secondary);" />
+        <Icon.Currency
+          variant="rad-huge"
+          style="fill: var(--color-secondary);" />
         <h1
           style="color: var(--color-secondary); margin-left: 2px;"
           data-cy="amount">

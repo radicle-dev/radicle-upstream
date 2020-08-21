@@ -483,9 +483,11 @@
         <Icon.Trash />
         <Icon.Label />
         <Icon.Verified size="large" />
-        <Icon.Currency size="normal" />
-        <Icon.Currency size="big" />
-        <Icon.Currency size="huge" />
+        <Icon.Currency variant="rad-normal" />
+        <Icon.Currency variant="rad-big" />
+        <Icon.Currency variant="rad-huge" />
+        <Icon.Currency variant="dollar" />
+        <Icon.Currency variant="euro" />
         <Icon.Roadmap />
       </IconSwatch>
       <Swatch>

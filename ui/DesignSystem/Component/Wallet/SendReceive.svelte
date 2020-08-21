@@ -125,7 +125,7 @@
         style="flex: 1; padding-bottom: 1rem;">
         <div slot="left" style="display: flex;">
           <Icon.Currency
-            size="big"
+            variant="rad-big"
             style="fill: var(--color-foreground-level-6)" />
         </div>
       </Input.Text>
