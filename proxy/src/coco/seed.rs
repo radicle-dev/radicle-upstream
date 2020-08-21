@@ -78,25 +78,30 @@ pub async fn resolve<T: AsRef<str> + Send + Sync>(seeds: &[T]) -> Result<Vec<See
     Ok(resolved)
 }
 
+#[allow(clippy::panic)]
 #[cfg(test)]
 mod tests {
     use std::net;
 
+    use pretty_assertions::assert_eq;
+
     #[tokio::test]
-    async fn test_resolve_seeds() {
+    async fn test_resolve_seeds() -> Result<(), super::Error> {
         let seeds = super::resolve(&[
             "hydsst3z3d5bc6pxq4gz1g4cu6sgbx38czwf3bmmk3ouz4ibjbbtds@localhost:9999",
         ])
-        .await
-        .expect("a valid seed doesn't return an error");
+        .await?;
 
-        let expected: net::SocketAddr = ([127, 0, 0, 1], 9999).into();
+        assert!(!seeds.is_empty(), "seeds should not be empty");
 
-        assert!(
-            matches!(seeds.first(), Some(super::Seed { addr, ..}) if *addr == expected),
-            "{:?}",
-            seeds
-        );
+        if let Some(super::Seed { addr, .. }) = seeds.first() {
+            let expected: net::SocketAddr = match *addr {
+                net::SocketAddr::V4(_addr) => ([127, 0, 0, 1], 9999).into(),
+                net::SocketAddr::V6(_addr) => "[::1]:9999".parse().expect("valid ivp6 address"),
+            };
+
+            assert_eq!(expected, *addr);
+        }
 
         super::resolve(&[String::from("hydsst3obtds@localhost:9999")])
             .await
@@ -110,5 +115,7 @@ mod tests {
         super::resolve(&[String::from("hydsst3obtds")])
             .await
             .expect_err("an invalid seed returns an error");
+
+        Ok(())
     }
 }

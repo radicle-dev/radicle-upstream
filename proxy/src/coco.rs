@@ -15,6 +15,7 @@ mod peer;
 pub use peer::{verify_user, Api, User};
 
 pub mod project;
+pub mod seed;
 
 mod source;
 pub use source::{

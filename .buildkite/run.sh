@@ -26,11 +26,7 @@ else
 fi
 
 echo "--- Updating submodules"
-time git submodule update --init --remote
-time git submodule foreach "git fetch --all"
-time git submodule foreach "git checkout -B dev -t origin/dev"
-time git submodule foreach "git checkout master"
-time git submodule foreach "git pull origin master"
+./scripts/test-setup.sh
 
 echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
