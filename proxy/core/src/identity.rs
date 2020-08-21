@@ -6,12 +6,9 @@ use librad::keys;
 use librad::meta::user;
 use librad::peer;
 
-use radicle_registry_client::{ed25519, CryptoPair};
-
 use crate::avatar;
-use crate::coco;
 use crate::error;
-use crate::registry;
+use coco;
 
 pub use shared_identifier::SharedIdentifier;
 
@@ -25,12 +22,8 @@ pub struct Identity {
     pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: SharedIdentifier,
-    /// Public key associated with this identity.
-    pub account_id: ed25519::Public,
     /// Bundle of user provided data.
     pub metadata: Metadata,
-    /// Indicator if the identity is registered on the Registry.
-    pub registered: Option<registry::Id>,
     /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
     pub avatar_fallback: avatar::Avatar,
 }
@@ -45,11 +38,9 @@ impl<S> From<(peer::PeerId, user::User<S>)> for Identity {
                 handle: user.name().to_string(),
                 peer_id,
             },
-            account_id: ed25519::Pair::from_legacy_string("//Alice", None).public(),
             metadata: Metadata {
                 handle: user.name().to_string(),
             },
-            registered: None,
             avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
         }
     }

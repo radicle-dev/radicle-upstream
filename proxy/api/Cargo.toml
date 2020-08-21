@@ -15,7 +15,6 @@ default-run = "proxy"
 coco = { path = "../coco" }
 core = { path = "../core" }
 http = { path = "../http" }
-registry = { path = "../registry" }
 
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }

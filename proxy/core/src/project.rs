@@ -3,9 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::coco;
 use crate::error;
-use crate::registry;
+use coco;
 
 /// Object the API returns for project metadata.
 #[derive(Deserialize, Serialize)]
@@ -43,9 +42,6 @@ pub struct Project {
     pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
-    /// Informs if the project is present in the Registry and under what top-level entity it can be
-    /// found.
-    pub registration: Option<Registration>,
     /// High-level statistics about the project
     pub stats: coco::Stats,
 }
@@ -64,19 +60,9 @@ where
             id: id.clone(),
             shareable_entity_identifier: format!("%{}", id),
             metadata: project.into(),
-            registration: None,
             stats,
         }
     }
-}
-
-/// Variants for possible registration states of a project.
-#[allow(dead_code)]
-pub enum Registration {
-    /// Project is registered under an Org.
-    Org(registry::Id),
-    /// Project is registered under a User.
-    User(registry::Id),
 }
 
 /// Fetch the project with a given urn from a peer
@@ -85,7 +71,7 @@ pub enum Registration {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::Error> {
+pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, coco::peer::Error> {
     let project = api.get_project(project_urn, None)?;
     let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
@@ -98,7 +84,7 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 ///
 ///   * We couldn't get a project list.
 ///   * We couldn't get project stats.
-pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
+pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, coco::peer::Error> {
     let project_meta = api.list_projects()?;
 
     project_meta
@@ -122,7 +108,7 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
 pub fn list_projects_for_user(
     api: &coco::Api,
     user: &coco::Urn,
-) -> Result<Vec<Project>, error::Error> {
+) -> Result<Vec<Project>, coco::peer::Error> {
     let all_projects = list_projects(api)?;
 
     // We’re using MapSet to deduplicate projects. This is a bug in librad.
@@ -153,13 +139,13 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
     let urn = coco::Urn::new(
         coco::Hash::hash(b"hash"),
         coco::uri::Protocol::Git,
-        coco::uri::Path::parse("")?,
+        coco::uri::Path::empty(),
     );
 
     let other_urn = coco::Urn::new(
         coco::Hash::hash(b"something_else"),
         coco::uri::Protocol::Git,
-        coco::uri::Path::parse("")?,
+        coco::uri::Path::empty(),
     );
 
     let projects = vec![
@@ -177,7 +163,6 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                     branches: 36,
                     commits: 216
                 },
-                registration: None,
             },
             Project {
                 id: other_urn,
@@ -195,7 +180,6 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                     branches: 49,
                     commits: 343
                 },
-                registration: None,
             },
         ];
 

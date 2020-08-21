@@ -6,12 +6,20 @@ edition = "2018"
 
 [dependencies]
 coco = { path = "../coco" }
-registry = { path = "../registry" }
 
 anyhow = "1.0"
+directories = "2.0"
 kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
 serde_cbor = "0.11.1"
 serde_json = "1.0"
 serde = { version = "1.0", features = [ "derive" ] }
 tempfile = "3.1"
 thiserror = "1.0"
+
+[dependencies.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+
+[dependencies.radicle-keystore]
+git = "https://github.com/radicle-dev/radicle-keystore.git"
+rev = "3377e666bde3130a06dd19343e7df2eaa774176a"
