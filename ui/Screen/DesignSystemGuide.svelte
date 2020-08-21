@@ -427,33 +427,41 @@
         <Icon.Member />
         <Icon.Issue />
         <Icon.Settings />
+        <Icon.Heart />
       </IconSwatch>
       <Swatch>
         <h5>Functional</h5>
       </Swatch>
       <IconSwatch>
+        <Icon.ArrowCollapse />
+        <Icon.ArrowExpand />
         <Icon.ArrowDown />
         <Icon.ArrowUp />
-        <Icon.Check />
+        <Icon.ArrowLeft />
+        <Icon.ArrowRight />
+        <Icon.Check variant="normal" />
         <Icon.Check variant="filled" />
-        <Icon.Chevron />
-        <Icon.Copy />
-        <Icon.Cross />
+        <Icon.CheckedBox />
+        <Icon.Copy size="small" />
+        <Icon.Copy size="normal" />
+        <Icon.Cross variant="small" />
         <Icon.Cross variant="medium" />
         <Icon.Cross variant="big" />
         <Icon.Cross variant="filled" />
         <Icon.Ellipses />
         <Icon.Expand />
-        <Icon.Important variant="no-circle" />
-        <Icon.Important />
+        <Icon.Important variant="regular" />
         <Icon.Important variant="big" />
-        <Icon.Info variant="no-circle" />
-        <Icon.Info />
+        <Icon.Important variant="no-circle" />
+        <Icon.Info variant="regular" />
         <Icon.Info variant="big" />
+        <Icon.Info variant="no-circle" />
+        <Icon.Info variant="circle-no-fill" />
         <Icon.Minus />
-        <Icon.Plus />
+        <Icon.Open />
+        <Icon.Plus variant="regular" />
         <Icon.Plus variant="small" />
-        <Icon.Search />
+        <Icon.Search variant="normal" />
         <Icon.Search variant="small" />
       </IconSwatch>
       <Swatch>
@@ -469,31 +477,40 @@
         <Icon.Folder />
         <Icon.At />
         <Icon.Key />
+        <Icon.Lock />
         <Icon.CloseIssue />
         <Icon.Projects />
-        <Icon.Eye />
+        <Icon.Eye variant="open" />
+        <Icon.Eye variant="closed" />
         <Icon.Trash />
         <Icon.Label />
         <Icon.Verified size="large" />
+        <Icon.Currency size="normal" />
+        <Icon.Currency size="big" />
+        <Icon.Currency size="huge" />
+        <Icon.Roadmap />
       </IconSwatch>
       <Swatch>
         <h5>Code</h5>
       </Swatch>
       <IconSwatch>
+        <Icon.Peer />
         <Icon.Commit />
         <Icon.Revision />
-        <Icon.Peer />
         <Icon.Branch />
         <Icon.Graph />
         <Icon.Merge />
+        <Icon.Review />
       </IconSwatch>
     </Section>
 
     <Section title="Small Icons" subTitle="Icons at 16px width and height">
       <IconSwatch>
         <Icon.Verified />
+        <Icon.HeartFace />
+        <Icon.Chevron variant="right" />
+        <Icon.Chevron variant="down" />
       </IconSwatch>
-
     </Section>
 
     <Section
