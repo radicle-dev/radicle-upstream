@@ -1,5 +1,8 @@
 //! Abstractions and utilities for git interactions through the API.
 
+#![macro_use]
+extern crate lazy_static;
+
 pub use librad::hash::Hash;
 pub use librad::meta::project::Project;
 pub use librad::peer::PeerId;

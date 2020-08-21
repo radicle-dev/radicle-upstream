@@ -10,7 +10,7 @@ pub use checkout::Checkout;
 
 use radicle_surf::vcs::git::git2;
 
-use crate::coco::config;
+use crate::config;
 
 /// Set the upstream of the default branch to the rad remote branch.
 fn set_rad_upstream(repo: &git2::Repository, default_branch: &str) -> Result<(), git2::Error> {

@@ -5,12 +5,24 @@ authors = ["Alexander Simmerl <a.simmerl@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+futures = { version = "0.3", features = [ "compat" ] }
+lazy_static = "1.4"
+log = "0.4"
+nonempty = "0.5"
 radicle-surf = { version = "0.4", features = [ "serialize" ] }
+serde = { version = "1.0", features = [ "derive" ] }
+syntect = "4.2"
+thiserror = "1.0"
+tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "e471952ec83579e313d77e5f428fa272da20fa4c"
+rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "e471952ec83579e313d77e5f428fa272da20fa4c"
+rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+
+[dev-dependencies]
+tempfile = "3.1"
+pretty_assertions = "0.6"

@@ -6,7 +6,7 @@ use librad::git::types::remote::Remote;
 use librad::peer::PeerId;
 use radicle_surf::vcs::git::git2;
 
-use crate::coco::Project;
+use crate::Project;
 
 /// When checking out a working copy, we can run into several I/O failures.
 #[derive(Debug, thiserror::Error)]

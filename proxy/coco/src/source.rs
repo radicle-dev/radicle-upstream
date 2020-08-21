@@ -14,12 +14,32 @@ use radicle_surf::{
 };
 
 use syntect::easy::HighlightLines;
-use syntect::highlighting::ThemeSet;
+use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
-use crate::error;
-use crate::session::settings::Theme;
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// We expect at least one [`coco::Revisions`] when looking at a project, however the
+    /// computation found none.
+    #[error(
+        "while trying to get user revisions we could not find any, there should be at least one"
+    )]
+    EmptyRevisions,
+
+    /// Trying to find a file path which could not be found.
+    #[error("the path '{0}' was not found")]
+    PathNotFound(file_system::Path),
+
+    #[error(transparent)]
+    SurfFS(#[from] file_system::Error),
+
+    #[error(transparent)]
+    SurfGit(#[from] git::error::Error),
+
+    #[error(transparent)]
+    Git(#[from] git2::Error),
+}
 
 lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
@@ -41,7 +61,7 @@ impl fmt::Display for Branch {
 /// Tag name representation.
 ///
 /// We still need full tag support.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
 pub struct Tag(pub(crate) String);
 
 impl fmt::Display for Tag {
@@ -230,7 +250,7 @@ impl<P> TryFrom<Revision<P>> for Rev
 where
     P: ToString,
 {
-    type Error = error::Error;
+    type Error = Error;
 
     fn try_from(other: Revision<P>) -> Result<Self, Self::Error> {
         match other {
@@ -262,15 +282,16 @@ pub struct Revisions<P, U> {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
-pub fn blob<P>(
+/// Will return [`Error`] if the project doesn't exist or a surf interaction fails.
+pub fn blob<T, P>(
     browser: &mut Browser,
     default_branch: git::Branch,
     maybe_revision: Option<Revision<P>>,
     path: &str,
-    theme: Option<&Theme>,
-) -> Result<Blob, error::Error>
+    theme: T,
+) -> Result<Blob, Error>
 where
+    T: Into<Option<Theme>>,
     P: ToString,
 {
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
@@ -281,7 +302,7 @@ where
 
     let file = root
         .find_file(p.clone())
-        .ok_or_else(|| error::Error::PathNotFound(p.clone()))?;
+        .ok_or_else(|| Error::PathNotFound(p.clone()))?;
 
     let mut commit_path = file_system::Path::root();
     commit_path.append(p.clone());
@@ -306,8 +327,8 @@ where
 
 /// Return a [`BlobContent`] given a file path, content and theme. Attempts to perform syntax
 /// highlighting when the theme is `Some`.
-fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobContent {
-    match (std::str::from_utf8(content), theme) {
+fn blob_content<T>(path: &str, content: &[u8], theme: T) -> BlobContent where T: Into<Option<Theme>> {
+    match (std::str::from_utf8(content), theme.into()) {
         (Ok(content), None) => BlobContent::Ascii(content.to_owned()),
         (Ok(content), Some(theme)) => {
             let syntax = path::Path::new(path)
@@ -315,15 +336,9 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
                 .and_then(std::ffi::OsStr::to_str)
                 .and_then(|ext| SYNTAX_SET.find_syntax_by_extension(ext));
 
-            let ts = ThemeSet::load_defaults();
-            let theme = match theme {
-                Theme::Light => ts.themes.get("base16-ocean.light"),
-                Theme::Dark => ts.themes.get("base16-ocean.dark"),
-            };
-
-            match (syntax, theme) {
-                (Some(syntax), Some(theme)) => {
-                    let mut highlighter = HighlightLines::new(syntax, theme);
+            match syntax {
+                Some(syntax) => {
+                    let mut highlighter = HighlightLines::new(syntax, &theme);
                     let mut html = String::with_capacity(content.len());
 
                     for line in LinesWithEndings::from(content) {
@@ -347,11 +362,11 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn branches<'repo>(
     browser: &Browser<'repo>,
     branch_type: Option<BranchType>,
-) -> Result<Vec<Branch>, error::Error> {
+) -> Result<Vec<Branch>, Error> {
     let mut branches = browser
         .list_branches(branch_type)?
         .into_iter()
@@ -374,8 +389,8 @@ pub struct LocalState {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the repository doesn't exist.
-pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
+/// Will return [`Error`] if the repository doesn't exist.
+pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
     let repo = git::Repository::new(repo_path)?;
     // TODO(finto): This should be the default branch of the project, possibly.
     let browser = Browser::new(&repo, git::Branch::local("master"))?;
@@ -394,11 +409,11 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit_header<'repo>(
     browser: &mut Browser<'repo>,
     sha1: &str,
-) -> Result<CommitHeader, error::Error> {
+) -> Result<CommitHeader, Error> {
     browser.commit(git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
@@ -411,8 +426,8 @@ pub fn commit_header<'repo>(
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, error::Error> {
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
+pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, Error> {
     let oid = git::Oid::from_str(sha1)?;
     browser.commit(oid)?;
 
@@ -472,11 +487,11 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commits<'repo>(
     browser: &mut Browser<'repo>,
     branch: git::Branch,
-) -> Result<Vec<CommitHeader>, error::Error> {
+) -> Result<Vec<CommitHeader>, Error> {
     browser.branch(branch)?;
 
     let commits = browser.get().iter().map(CommitHeader::from).collect();
@@ -488,8 +503,8 @@ pub fn commits<'repo>(
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
+pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, Error> {
     let tag_names = browser.list_tags()?;
     let mut tags: Vec<Tag> = tag_names
         .into_iter()
@@ -505,13 +520,13 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if any of the surf interactions fail.
+/// Will return [`Error`] if any of the surf interactions fail.
 pub fn tree<'repo, P>(
     browser: &mut Browser<'repo>,
     default_branch: git::Branch,
     maybe_revision: Option<Revision<P>>,
     maybe_prefix: Option<String>,
-) -> Result<Tree, error::Error>
+) -> Result<Tree, Error>
 where
     P: ToString,
 {
@@ -533,12 +548,12 @@ where
     } else {
         root_dir
             .find_directory(path.clone())
-            .ok_or_else(|| error::Error::PathNotFound(path.clone()))?
+            .ok_or_else(|| Error::PathNotFound(path.clone()))?
     };
     let mut prefix_contents = prefix_dir.list_directory();
     prefix_contents.sort();
 
-    let entries_results: Result<Vec<TreeEntry>, error::Error> = prefix_contents
+    let entries_results: Result<Vec<TreeEntry>, Error> = prefix_contents
         .iter()
         .map(|(label, system_type)| {
             let entry_path = if path.is_root() {
@@ -609,14 +624,14 @@ where
 ///
 /// # Errors
 ///
-///   * [`error::Error::LibradLock`]
-///   * [`error::Error::Git`]
+///   * [`Error::LibradLock`]
+///   * [`Error::Git`]
 pub fn revisions<P, U>(
     browser: &Browser,
     peer_id: P,
     owner: U,
     peers: Vec<(P, U)>,
-) -> Result<NonEmpty<Revisions<P, U>>, error::Error>
+) -> Result<NonEmpty<Revisions<P, U>>, Error>
 where
     P: Clone + ToString,
 {
@@ -645,7 +660,7 @@ where
         });
     }
 
-    NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyRevisions)
+    NonEmpty::from_vec(user_revisions).ok_or(Error::EmptyRevisions)
 }
 
 /// Turn an `Option<P>` into a [`BranchType`]. If the `P` is present then this is
@@ -663,31 +678,34 @@ where
 
 #[cfg(test)]
 mod tests {
+    use super::Error;
     use librad::keys::SecretKey;
     use radicle_surf::vcs::git;
 
-    use crate::coco;
-    use crate::error;
+    use crate::config;
+    use crate::control;
+    use crate::peer::Api;
 
+    /// TODO(finto): This should probably be an integration test.
     #[tokio::test]
-    async fn browse_commit() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
+    async fn browse_commit() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to get a tempdir");
         let key = SecretKey::new();
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let api = coco::Api::new(config).await?;
-        let owner = api.init_owner(&key, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
+        let config = config::default(key.clone(), tmp_dir).expect("failed to get default config");
+        let api = Api::new(config).await.expect("failed to initialise Peer API");
+        let owner = api.init_owner(&key, "cloudhead").expect("failed to initialise owner");
+        let platinum_project = control::replicate_platinum(
             &api,
             &key,
             &owner,
             "git-platinum",
             "fixture data",
             "master",
-        )?;
+        ).expect("failed to replicate platinum");
         let urn = platinum_project.urn();
         let sha = "91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1";
 
-        let commit = api.with_browser(&urn, |browser| super::commit_header(browser, sha))?;
+        let commit = api.with_browser(&urn, |browser| super::commit_header(browser, sha)).expect("failed to get commit");
 
         assert_eq!(commit.sha1, git::Oid::from_str(sha)?);
 

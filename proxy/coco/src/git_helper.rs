@@ -1,16 +1,21 @@
 //! git-remote-rad git helper related functionality.
 
+use std::io;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path;
 
-use crate::error;
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Io(#[from] io::Error),
+}
 
 /// Filename of the git helper binary.
 pub const GIT_REMOTE_RAD: &str = "git-remote-rad";
 
 /// Check if a path contains an executable file.
-fn is_executable(path: &std::path::PathBuf) -> Result<bool, error::Error> {
+fn is_executable(path: &std::path::PathBuf) -> Result<bool, Error> {
     let metadata = path.metadata()?;
     let permissions = metadata.permissions();
     Ok(permissions.mode() & 0o111 != 0)
@@ -25,7 +30,7 @@ fn is_executable(path: &std::path::PathBuf) -> Result<bool, error::Error> {
 ///   * Could not get the current working directory.
 ///   * Could not create the path to binary directory.
 ///   * Could not copy helper executable to the binary directory.
-pub fn setup(src_dir: &path::PathBuf, dst_dir: &path::PathBuf) -> Result<(), error::Error> {
+pub fn setup(src_dir: &path::PathBuf, dst_dir: &path::PathBuf) -> Result<(), Error> {
     log::info!("Making sure git-remote-rad helper is set up");
 
     let helper_bin_src = src_dir.join(GIT_REMOTE_RAD);
@@ -45,13 +50,13 @@ pub fn setup(src_dir: &path::PathBuf, dst_dir: &path::PathBuf) -> Result<(), err
 
 #[cfg(test)]
 mod test {
-    use crate::error;
+    use super::Error;
     use std::fs;
     use std::os::unix::fs::PermissionsExt;
 
     // when the ~/.radicle/bin directory doesn't exist at all
     #[tokio::test]
-    async fn setup_creates_destination_directory_if_none_exists() -> Result<(), error::Error> {
+    async fn setup_creates_destination_directory_if_none_exists() -> Result<(), Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
         let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
         let file = fs::File::create(src_git_helper_bin_path.clone())
@@ -76,7 +81,7 @@ mod test {
 
     // the ~/.radicle/bin directory exists, but there is no helper binary in it
     #[tokio::test]
-    async fn setup_copies_binary_if_none_exists() -> Result<(), error::Error> {
+    async fn setup_copies_binary_if_none_exists() -> Result<(), Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
         let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
         let file = fs::File::create(src_git_helper_bin_path.clone())
@@ -104,7 +109,7 @@ mod test {
 
     // the ~/.radicle/bin directory exists, and the binary is present, but not executable
     #[tokio::test]
-    async fn setup_makes_binary_executable() -> Result<(), error::Error> {
+    async fn setup_makes_binary_executable() -> Result<(), Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
         let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
         let file = fs::File::create(src_git_helper_bin_path.clone())

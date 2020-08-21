@@ -6,14 +6,25 @@ use std::io;
 use std::path;
 
 use librad::keys;
+use librad::meta;
 use librad::meta::entity;
-use librad::meta::project;
 use radicle_surf::vcs::git::git2;
 
-use crate::coco;
-use crate::coco::config;
-use crate::coco::peer::{Api, User};
-use crate::error;
+use crate::config;
+use crate::peer::{self, Api, User};
+use crate::project;
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Io(#[from] io::Error),
+
+    #[error(transparent)]
+    Git(#[from] git2::Error),
+
+    #[error(transparent)]
+    Peer(#[from] peer::Error),
+}
 
 /// Deletes the local git repsoitory coco uses to keep its state.
 ///
@@ -32,7 +43,7 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub fn setup_fixtures(api: &Api, key: &keys::SecretKey, owner: &User) -> Result<(), error::Error> {
+pub fn setup_fixtures(api: &Api, key: &keys::SecretKey, owner: &User) -> Result<(), Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -66,7 +77,7 @@ pub fn setup_fixtures(api: &Api, key: &keys::SecretKey, owner: &User) -> Result<
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
+/// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub fn replicate_platinum(
     api: &Api,
@@ -75,7 +86,7 @@ pub fn replicate_platinum(
     name: &str,
     description: &str,
     default_branch: &str,
-) -> Result<project::Project<entity::Draft>, error::Error> {
+) -> Result<meta::project::Project<entity::Draft>, Error> {
     // Construct path for fixtures to clone into.
     let monorepo = api.monorepo();
     let workspace = monorepo.join("../workspace");
@@ -83,10 +94,10 @@ pub fn replicate_platinum(
 
     clone_platinum(&platinum_into)?;
 
-    let project_creation = coco::project::Create {
+    let project_creation = project::Create {
         description: description.to_string(),
         default_branch: default_branch.to_string(),
-        repo: coco::project::Repo::Existing {
+        repo: project::Repo::Existing {
             path: platinum_into.clone(),
         },
     };
@@ -131,7 +142,7 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 pub fn track_fake_peer(
     api: &Api,
     key: &keys::SecretKey,
-    project: &project::Project<entity::Draft>,
+    project: &meta::project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (
     librad::peer::PeerId,
@@ -220,7 +231,7 @@ pub fn track_fake_peer(
 ///
 ///   * The platinum directory path was malformed
 ///   * Getting the branches fails
-pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), error::Error> {
+pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error> {
     let platinum_from = platinum_directory()?;
     let platinum_from = platinum_from
         .to_str()

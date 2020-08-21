@@ -471,6 +471,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "coco"
+version = "0.1.0"
+dependencies = [
+ "futures 0.3.5",
+ "lazy_static",
+ "librad",
+ "log 0.4.8",
+ "nonempty",
+ "pretty_assertions",
+ "radicle-git-helpers",
+ "radicle-surf",
+ "serde",
+ "syntect",
+ "tempfile",
+ "thiserror",
+ "tokio 0.2.21",
+]
+
+[[package]]
 name = "const-random"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -495,6 +514,21 @@ name = "constant_time_eq"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
+
+[[package]]
+name = "core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "coco",
+ "kv",
+ "registry",
+ "serde",
+ "serde_cbor 0.11.1",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+]
 
 [[package]]
 name = "core-foundation"
@@ -1266,7 +1300,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "futures-util",
- "http",
+ "http 0.2.1",
  "indexmap",
  "slab",
  "tokio 0.2.21",
@@ -1325,7 +1359,7 @@ dependencies = [
  "bitflags",
  "bytes 0.5.6",
  "headers-core",
- "http",
+ "http 0.2.1",
  "mime 0.3.16",
  "sha-1",
  "time",
@@ -1337,7 +1371,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
 dependencies = [
- "http",
+ "http 0.2.1",
 ]
 
 [[package]]
@@ -1387,6 +1421,14 @@ dependencies = [
 
 [[package]]
 name = "http"
+version = "0.1.0"
+dependencies = [
+ "core",
+ "warp",
+]
+
+[[package]]
+name = "http"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28d569972648b2c512421b5f2a405ad6ac9666547189d0c5477a3f200f3e02f9"
@@ -1403,7 +1445,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13d5ff830006f7646652e057693569bfe0d51760c0085a071769d142a205111b"
 dependencies = [
  "bytes 0.5.6",
- "http",
+ "http 0.2.1",
 ]
 
 [[package]]
@@ -1451,7 +1493,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "h2",
- "http",
+ "http 0.2.1",
  "http-body",
  "httparse",
  "itoa",
@@ -3006,16 +3048,14 @@ checksum = "d883f78645c21b7281d21305181aa1f4dd9e9363e7cf2566c93121552cff003e"
 name = "proxy"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "async-trait",
  "bytes 0.5.6",
+ "coco",
+ "core",
  "directories 2.0.2",
  "futures 0.3.5",
  "hex",
- "http",
- "kv",
+ "http 0.1.0",
  "lazy_static",
- "librad",
  "log 0.4.8",
  "nonempty",
  "parity-scale-codec",
@@ -3023,22 +3063,13 @@ dependencies = [
  "pico-args",
  "pretty_assertions",
  "pretty_env_logger",
- "radicle-git-helpers",
- "radicle-keystore",
- "radicle-registry-client",
- "radicle-surf",
  "rand 0.7.3",
- "serde",
- "serde_cbor 0.11.1",
- "serde_json",
+ "registry",
  "serde_qs",
  "syntect",
- "tempfile",
- "thiserror",
  "tokio 0.2.21",
  "url 1.7.2",
  "url 2.1.1",
- "warp",
 ]
 
 [[package]]
@@ -3486,6 +3517,16 @@ name = "regex-syntax"
 version = "0.6.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26412eb97c6b088a6997e05f69403a802a92d520de2f8e63c2b65f9e0f47c4e8"
+
+[[package]]
+name = "registry"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "radicle-registry-client",
+ "thiserror",
+]
 
 [[package]]
 name = "remove_dir_all"
@@ -5216,7 +5257,7 @@ dependencies = [
  "bytes 0.5.6",
  "futures 0.3.5",
  "headers",
- "http",
+ "http 0.2.1",
  "hyper 0.13.7",
  "indexmap",
  "log 0.4.8",
