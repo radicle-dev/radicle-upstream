@@ -1,0 +1,17 @@
+[package]
+name = "core"
+version = "0.1.0"
+authors = ["Alexander Simmerl <a.simmerl@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+coco = { path = "../coco" }
+registry = { path = "../registry" }
+
+anyhow = "1.0"
+kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
+serde_cbor = "0.11.1"
+serde_json = "1.0"
+serde = { version = "1.0", features = [ "derive" ] }
+tempfile = "3.1"
+thiserror = "1.0"
