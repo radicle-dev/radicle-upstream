@@ -453,18 +453,14 @@
         <Icon.Ellipses />
         <Icon.Expand />
         <Icon.Important variant="regular" />
-        <Icon.Important variant="big" />
         <Icon.Important variant="no-circle" />
         <Icon.Info variant="regular" />
-        <Icon.Info variant="big" />
         <Icon.Info variant="no-circle" />
-        <Icon.Info variant="circle-no-fill" />
         <Icon.Minus />
         <Icon.Open />
         <Icon.Plus variant="regular" />
         <Icon.Plus variant="small" />
-        <Icon.Search variant="normal" />
-        <Icon.Search variant="small" />
+        <Icon.Search />
       </IconSwatch>
       <Swatch>
         <h5>Representational</h5>

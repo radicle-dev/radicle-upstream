@@ -22,6 +22,6 @@
 </style>
 
 <div class="error">
-  <Icon.Important variant="big" style="fill: white" />
+  <Icon.Important style="fill: white" />
   <p>Error: {message}</p>
 </div>
