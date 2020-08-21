@@ -1,19 +1,17 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import { Icon } from "../Primitive";
+  import Hoverable from "./Hoverable.svelte";
 
   export let style = null;
   export let tracking = false;
+  export let expanded = false;
 
-  let hover = false;
+  // warning variant implies consequences of untracking are more severe
+  export let warning = false;
+
   let active = false;
-
-  const enter = () => {
-    hover = true;
-  };
-
-  const leave = () => {
-    hover = false;
-  };
 
   const down = () => {
     active = true;
@@ -22,7 +20,10 @@
   const up = () => {
     active = false;
     tracking = !tracking;
+    dispatch(tracking ? "track" : "untrack");
   };
+
+  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -57,6 +58,11 @@
     background-color: var(--color-foreground-level-2);
     box-shadow: 0 0 0 1px var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
+  }
+  .toggle.tracking.hover.warning {
+    color: var(--color-background);
+    border: none;
+    box-shadow: none;
   }
   .toggle.tracking.active {
     border: 1px solid var(--color-foreground-level-2);
@@ -98,27 +104,38 @@
   .left.tracking.active :global(svg) {
     fill: var(--color-foreground-level-4);
   }
+
+  .left.tracking.warning.hover {
+    background-color: var(--color-negative);
+  }
+  .left.tracking.warning.hover :global(svg) {
+    fill: var(--color-background);
+  }
 </style>
 
-<div
-  class:hover
-  class:active
-  class:tracking
-  class="toggle"
-  {style}
-  on:mouseenter={enter}
-  on:mousedown={down}
-  on:mouseup={up}
-  on:mouseleave={leave}>
-  <div class="left" class:hover class:active class:tracking>
-    {#if !tracking}
-      <Icon.Peer style="margin: 0 8px 0 12px" />
-      <p class="typo-text-bold" style="margin-right: 12px">Track</p>
-    {:else if hover}
-      <Icon.Peer style="margin: 0 8px 0 12px" />
-      <p class="typo-text-bold" style="margin-right: 12px">Untrack</p>
-    {:else}
-      <Icon.Peer style="margin: 0 12px" />
-    {/if}
+<Hoverable let:hovering={hover}>
+  <div
+    class:hover
+    class:active
+    class:tracking
+    class:warning
+    class="toggle"
+    {style}
+    on:mousedown={down}
+    on:mouseup={up}>
+    <div class="left" class:hover class:active class:tracking class:warning>
+      {#if !tracking}
+        <Icon.Peer style="margin: 0 8px 0 12px" />
+        <p class="typo-text-bold" style="margin-right: 12px">Track</p>
+      {:else if hover}
+        <Icon.Peer style="margin: 0 8px 0 12px" />
+        <p class="typo-text-bold" style="margin-right: 12px">Untrack</p>
+      {:else if expanded}
+        <Icon.Peer style="margin: 0 12px" />
+        <p class="typo-text-bold" style="margin-right: 12px">Tracking</p>
+      {:else}
+        <Icon.Peer style="margin: 0 12px" />
+      {/if}
+    </div>
   </div>
-</div>
+</Hoverable>

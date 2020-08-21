@@ -1,10 +1,14 @@
 <script>
+  import { fade } from "svelte/transition";
   import {
+    Hoverable,
     List,
     ProjectListItem,
     TrackToggle,
     Urn,
   } from "../../DesignSystem/Component";
+
+  import { fadeDuration } from "../../src/animation.ts";
 
   const projects = [
     {
@@ -25,6 +29,12 @@
       shareableEntityIdentifier: "lemuel@38590438594",
     },
   ];
+
+  const untracked = [
+    { urn: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k" },
+    { urn: "fjkldasjfkdlsajfio943we859043ikjioclesdjf" },
+    { urn: "fjkldasjfkdlsajfio39409340390we859043ikjioclesdjf" },
+  ];
 </script>
 
 <style>
@@ -42,10 +52,15 @@
   .undiscovered-project {
     padding: 1rem;
     flex: 1;
+    min-height: 4.5rem;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .undiscovered-project:hover {
+    background-color: var(--color-background);
   }
 </style>
 
@@ -58,19 +73,33 @@
       stats={{ branches: 2, commits: 4, contributors: 8 }} />
   </List>
 
-  <div class="header">
-    <p class="typo-text-bold">Still looking…&nbsp;</p>
-    <p style="color: var(--color-foreground-level-6);">
-      These projects haven't been found in your network yet or don't exist.
-    </p>
-  </div>
+  {#if untracked.length}
+    <div out:fade|local={{ duration: fadeDuration }}>
+      <div class="header">
+        <p class="typo-text-bold">Still looking…&nbsp;</p>
+        <p style="color: var(--color-foreground-level-6);">
+          These projects haven't been found in your network yet or don't exist.
+        </p>
+      </div>
 
-  <List
-    items={[{ urn: 'hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k' }]}
-    let:item={project}>
-    <div class="undiscovered-project">
-      <Urn urn={project.urn} />
-      <TrackToggle tracking={true} />
+      <List items={untracked} let:item={project}>
+        <Hoverable let:hovering={hover} style="flex: 1;">
+          <div
+            class="undiscovered-project"
+            out:fade|local={{ duration: fadeDuration }}>
+            <Urn urn={project.urn} />
+            {#if hover}
+              <div transition:fade={{ duration: fadeDuration }}>
+                <TrackToggle
+                  tracking={true}
+                  expanded
+                  warning
+                  on:untrack={() => console.log(`untrack ${project.urn}`)} />
+              </div>
+            {/if}
+          </div>
+        </Hoverable>
+      </List>
     </div>
-  </List>
+  {/if}
 </div>
