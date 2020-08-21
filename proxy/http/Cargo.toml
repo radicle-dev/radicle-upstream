@@ -8,4 +8,19 @@ edition = "2018"
 
 [dependencies]
 core = { path = "../core" }
+coco = { path = "../coco" }
+kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
+log = "0.4"
+percent-encoding = "2.1"
+radicle-surf = "0.4"
+serde = { version = "1.0", features = [ "derive" ] }
+serde_qs = "0.6"
+tempfile = "3.1"
+thiserror = "1.0"
+tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
 warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
+
+[dependencies.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+

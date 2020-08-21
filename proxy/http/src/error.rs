@@ -10,7 +10,7 @@ use warp::{reject, reply, Rejection, Reply};
 
 use radicle_surf as surf;
 
-use crate::error;
+use core::error;
 
 /// HTTP layer specific rejections.
 #[derive(Debug)]
@@ -34,6 +34,18 @@ pub enum Routing {
     QueryMissing,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum HttpError {
+    #[error(transparent)]
+    Core(#[from] error::Error),
+}
+
+impl HttpError {
+    pub fn into<E>(err: E) -> Self where E: Into<error::Error> {
+        HttpError::from(err.into())
+    }
+}
+
 impl reject::Reject for Routing {}
 
 impl From<Routing> for Rejection {
@@ -54,10 +66,10 @@ impl fmt::Display for Routing {
     }
 }
 
-impl reject::Reject for error::Error {}
+impl reject::Reject for HttpError {}
 
-impl From<error::Error> for Rejection {
-    fn from(err: error::Error) -> Self {
+impl From<HttpError> for Rejection {
+    fn from(err: HttpError) -> Self {
         reject::custom(err)
     }
 }

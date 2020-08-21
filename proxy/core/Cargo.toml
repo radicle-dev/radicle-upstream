@@ -15,6 +15,7 @@ serde_json = "1.0"
 serde = { version = "1.0", features = [ "derive" ] }
 tempfile = "3.1"
 thiserror = "1.0"
+warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"

@@ -63,7 +63,7 @@ pub async fn settings(store: &kv::Store) -> Result<settings::Settings, error::Er
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn current<R>(
+pub async fn current(
     api: &coco::Api,
     store: &kv::Store,
 ) -> Result<Session, error::Error>
@@ -124,7 +124,9 @@ fn set(store: &kv::Store, key: &str, sess: Session) -> Result<(), error::Error> 
 
 /// User controlled parameters for application appearance, behaviour and state.
 pub mod settings {
+    use std::collections::HashMap;
     use serde::{Deserialize, Serialize};
+    use warp::document::{self, ToDocumentedType};
 
     /// User controlled parameters for application appearance, behaviour and state.
     #[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
@@ -221,6 +223,67 @@ pub mod settings {
                     .map(std::string::ToString::to_string)
                     .collect(),
             }
+        }
+    }
+
+    /* ToDocumentedType Implementations */
+    impl ToDocumentedType for super::Session {
+        fn document() -> document::DocumentedType {
+            let mut properties = HashMap::with_capacity(1);
+            properties.insert(
+                "identity".into(),
+                crate::identity::Identity::document().nullable(true),
+            );
+            properties.insert("settings".into(), Settings::document());
+
+            document::DocumentedType::from(properties).description("Session")
+        }
+    }
+
+    impl ToDocumentedType for Settings {
+        fn document() -> document::DocumentedType {
+            let mut properties = HashMap::with_capacity(2);
+            properties.insert(
+                "appearance".into(),
+                Appearance::document(),
+            );
+            properties.insert("registry".into(), Registry::document());
+
+            document::DocumentedType::from(properties).description("Settings")
+        }
+    }
+
+    impl ToDocumentedType for Appearance {
+        fn document() -> document::DocumentedType {
+            let mut properties = HashMap::with_capacity(1);
+            properties.insert("theme".into(), Theme::document());
+
+            document::DocumentedType::from(properties).description("Appearance")
+        }
+    }
+
+    impl ToDocumentedType for Theme {
+        fn document() -> document::DocumentedType {
+            document::enum_string(vec!["dark".into(), "light".into()])
+                .description("Variants for possible color schemes.")
+                .example("dark")
+        }
+    }
+
+    impl ToDocumentedType for Registry {
+        fn document() -> document::DocumentedType {
+            let mut properties = HashMap::with_capacity(1);
+            properties.insert("network".into(), Network::document());
+
+            document::DocumentedType::from(properties).description("Registry")
+        }
+    }
+
+    impl ToDocumentedType for Network {
+        fn document() -> document::DocumentedType {
+            document::enum_string(vec!["emulator".into(), "ffnet".into(), "testnet".into()])
+                .description("Variants for possible networks of the Registry to connect to.")
+                .example("testnet")
         }
     }
 }

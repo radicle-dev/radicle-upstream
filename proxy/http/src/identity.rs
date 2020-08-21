@@ -7,16 +7,14 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{Filter, Rejection, Reply};
 
-use crate::avatar;
-use crate::coco;
-use crate::http;
-use crate::identity;
-use crate::registry;
+use core::avatar;
+use coco;
+use core::identity;
+
+use crate::{Ctx, with_context};
 
 /// Combination of all identity routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
+pub fn filters(ctx: Ctx) -> BoxedFilter<(impl Reply,)>
 {
     get_filter(Arc::clone(&ctx))
         .or(create_filter(Arc::clone(&ctx)))
@@ -25,13 +23,11 @@ where
 }
 
 /// `POST /`
-fn create_filter<R>(
-    ctx: http::Ctx<R>,
+fn create_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
-    http::with_context(ctx)
+    with_context(ctx)
         .and(warp::post())
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -52,11 +48,9 @@ where
 }
 
 /// `GET /<id>`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn get_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
-    http::with_context(ctx)
+    with_context(ctx)
         .and(document::param::<coco::Urn>(
             "id",
             "Unique ID of the Identity",
@@ -84,11 +78,9 @@ where
 }
 
 /// `GET /`
-fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn list_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
-    http::with_context(ctx)
+    with_context(ctx)
         .and(warp::get())
         .and(document::document(document::description(
             "List known Identities",
@@ -110,20 +102,18 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::coco;
+    use coco;
+    use core::identity;
+    use core::session;
+
     use crate::error;
-    use crate::http;
-    use crate::identity;
-    use crate::registry;
-    use crate::session;
+    use crate::Ctx;
 
     /// Create a new [`identity::Identity`].
-    pub async fn create<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create(
+        ctx: Ctx,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client,
     {
         let ctx = ctx.read().await;
 
@@ -143,9 +133,7 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, id: coco::Urn) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
+    pub async fn get(ctx: Ctx, id: coco::Urn) -> Result<impl Reply, Rejection>
     {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id)?;
@@ -153,101 +141,11 @@ mod handler {
     }
 
     /// Retrieve the list of identities known to the session user.
-    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
+    pub async fn list(ctx: Ctx) -> Result<impl Reply, Rejection>
     {
         let ctx = ctx.read().await;
         let users = identity::list(&ctx.peer_api)?;
         Ok(reply::json(&users))
-    }
-}
-
-impl ToDocumentedType for identity::Identity {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(6);
-        properties.insert("avatarFallback".into(), avatar::Avatar::document());
-        properties.insert(
-            "id".into(),
-            document::string()
-                .description("The id of the Identity")
-                .example("123abcd.git"),
-        );
-        properties.insert("metadata".into(), identity::Metadata::document());
-        properties.insert(
-            "registered".into(),
-            document::string()
-                .description("ID of the user on the Registry")
-                .example("cloudhead")
-                .nullable(true),
-        );
-        properties.insert(
-            "shareableEntityIdentifier".into(),
-            document::string()
-                .description("Unique identifier that can be shared and looked up")
-                .example("cloudhead@123abcd.git"),
-        );
-        properties.insert(
-            "accountId".into(),
-            document::string()
-                .description("Public key of identity")
-                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
-        );
-
-        document::DocumentedType::from(properties).description("Unique identity")
-    }
-}
-
-impl ToDocumentedType for identity::Metadata {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "handle".into(),
-            document::string()
-                .description("User chosen nickname")
-                .example("cloudhead"),
-        );
-        document::DocumentedType::from(properties)
-            .description("User provided metadata attached to the Identity")
-    }
-}
-
-#[allow(clippy::non_ascii_literal)]
-impl ToDocumentedType for avatar::Avatar {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
-        properties.insert("background".into(), avatar::Color::document());
-        properties.insert(
-            "emoji".into(),
-            document::string()
-                .description("String containing the actual emoji codepoint to display")
-                .example("🐽"),
-        );
-
-        document::DocumentedType::from(properties)
-            .description("Generated avatar based on unique information")
-    }
-}
-
-impl ToDocumentedType for avatar::Color {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "r".into(),
-            document::string().description("Red value").example(122),
-        );
-        properties.insert(
-            "g".into(),
-            document::string().description("Green value").example(112),
-        );
-        properties.insert(
-            "b".into(),
-            document::string()
-                .description("Blue value".to_string())
-                .example(90),
-        );
-
-        document::DocumentedType::from(properties).description("RGB color")
     }
 }
 
@@ -284,12 +182,13 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use crate::avatar;
-    use crate::coco;
+    use core::avatar;
+    use coco;
     use crate::error;
-    use crate::http;
-    use crate::identity;
-    use crate::session;
+    use core::identity;
+    use core::session;
+
+    use crate::Context;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {

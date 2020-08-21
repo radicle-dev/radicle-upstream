@@ -1,6 +1,7 @@
 //! Container to bundle and associate information around an identity.
 
 use serde::{Deserialize, Serialize};
+use warp::document::{self, ToDocumentedType};
 
 use librad::keys;
 use librad::meta::user;
@@ -199,5 +200,55 @@ pub mod shared_identifier {
 
             deserializer.deserialize_str(IdVisitor)
         }
+    }
+}
+
+/* ToDocumentedType Implementations */
+impl ToDocumentedType for Identity {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(6);
+        properties.insert("avatarFallback".into(), avatar::Avatar::document());
+        properties.insert(
+            "id".into(),
+            document::string()
+                .description("The id of the Identity")
+                .example("123abcd.git"),
+        );
+        properties.insert("metadata".into(), Metadata::document());
+        properties.insert(
+            "registered".into(),
+            document::string()
+                .description("ID of the user on the Registry")
+                .example("cloudhead")
+                .nullable(true),
+        );
+        properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("cloudhead@123abcd.git"),
+        );
+        properties.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of identity")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
+        );
+
+        document::DocumentedType::from(properties).description("Unique identity")
+    }
+}
+
+impl ToDocumentedType for Metadata {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "handle".into(),
+            document::string()
+                .description("User chosen nickname")
+                .example("cloudhead"),
+        );
+        document::DocumentedType::from(properties)
+            .description("User provided metadata attached to the Identity")
     }
 }

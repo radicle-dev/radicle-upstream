@@ -1,7 +1,11 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
-use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+use serde::ser::SerializeStruct as _;
+use serde::{Deserialize, Serialize, Serializer};
+use warp::document::{self, ToDocumentedType};
 
 use crate::error;
 use coco;
@@ -44,6 +48,23 @@ pub struct Project {
     pub metadata: Metadata,
     /// High-level statistics about the project
     pub stats: coco::Stats,
+}
+
+impl Serialize for Project {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Project", 4)?;
+        state.serialize_field("id", &self.id.to_string())?;
+        state.serialize_field(
+            "shareableEntityIdentifier",
+            &self.shareable_entity_identifier.to_string(),
+        )?;
+        state.serialize_field("metadata", &self.metadata)?;
+        state.serialize_field("stats", &self.stats)?;
+        state.end()
+    }
 }
 
 /// Construct a Project from its metadata and stats
@@ -184,4 +205,84 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
         ];
 
     Ok(projects)
+}
+
+/* ToDocumentedType Implementations */
+impl ToDocumentedType for Project {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(4);
+        properties.insert(
+            "id".into(),
+            document::string()
+                .description("ID of the project")
+                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
+        );
+        properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("%123abcd.git"),
+        );
+        properties.insert("metadata".into(), Metadata::document());
+        properties.insert("stats".into(), DocumentStats::document());
+
+        document::DocumentedType::from(properties)
+            .description("Radicle project for sharing and collaborating")
+    }
+}
+
+/// Documentation of project stats
+struct DocumentStats;
+
+impl ToDocumentedType for DocumentStats {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(3);
+        properties.insert(
+            "branches".into(),
+            document::string()
+                .description("Amount of known branches")
+                .example(7),
+        );
+        properties.insert(
+            "commits".into(),
+            document::string()
+                .description("Number of commits in the default branch")
+                .example(420),
+        );
+        properties.insert(
+            "contributors".into(),
+            document::string()
+                .description("Number of unique contributors on the default branch")
+                .example(11),
+        );
+
+        document::DocumentedType::from(properties)
+            .description("Coarse statistics for the Project source code")
+    }
+}
+
+impl ToDocumentedType for Metadata {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(3);
+        properties.insert(
+            "name".into(),
+            document::string()
+                .description("Project name")
+                .example("upstream"),
+        );
+        properties.insert(
+            "description".into(),
+            document::string()
+                .description("High-level description of the Project")
+                .example("Desktop client for radicle"),
+        );
+        properties.insert(
+            "defaultBranch".into(),
+            document::string()
+                .description("Default branch for checkouts, often used as mainline as well")
+                .example("master"),
+        );
+
+        document::DocumentedType::from(properties).description("Project metadata")
+    }
 }

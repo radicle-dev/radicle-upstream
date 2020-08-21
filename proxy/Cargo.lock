@@ -304,6 +304,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
+ "warp",
 ]
 
 [[package]]
@@ -347,6 +348,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "thiserror",
+ "warp",
 ]
 
 [[package]]
@@ -859,7 +861,18 @@ checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
 name = "http"
 version = "0.1.0"
 dependencies = [
+ "coco",
  "core",
+ "kv",
+ "librad",
+ "log",
+ "percent-encoding 2.1.0",
+ "radicle-surf",
+ "serde",
+ "serde_qs",
+ "tempfile",
+ "thiserror",
+ "tokio",
  "warp",
 ]
 

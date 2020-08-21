@@ -10,15 +10,13 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::coco;
-use crate::http;
-use crate::project;
-use crate::registry;
+use coco;
+use core::project;
+
+use crate::{Ctx, with_context, with_owner_guard, with_qs_opt};
 
 /// Combination of all routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
+pub fn filters(ctx: Ctx) -> BoxedFilter<(impl Reply,)>
 {
     list_filter(ctx.clone())
         .or(checkout_filter(ctx.clone()))
@@ -29,13 +27,11 @@ where
 }
 
 /// `POST /<id>/checkout`
-fn checkout_filter<R>(
-    ctx: http::Ctx<R>,
+fn checkout_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
-    http::with_context(ctx)
+    with_context(ctx)
         .and(warp::post())
         .and(document::param::<coco::Urn>("id", "Project id"))
         .and(warp::body::json())
@@ -60,14 +56,12 @@ where
 }
 
 /// `POST /`
-fn create_filter<R>(
-    ctx: http::Ctx<R>,
+fn create_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
-    http::with_context(ctx.clone())
-        .and(http::with_owner_guard(ctx))
+    with_context(ctx.clone())
+        .and(with_owner_guard(ctx))
         .and(warp::post())
         .and(path::end())
         .and(warp::body::json())
@@ -89,11 +83,9 @@ where
 }
 
 /// `GET /<id>`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn get_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
-    http::with_context(ctx)
+    with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Project id"))
         .and(path::end())
@@ -119,14 +111,12 @@ where
 }
 
 /// `GET /`
-fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn list_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
-    http::with_context(ctx)
+    with_context(ctx)
         .and(warp::get())
         .and(path::end())
-        .and(http::with_qs_opt::<ListQuery>())
+        .and(with_qs_opt::<ListQuery>())
         .and(document::document(
             document::query("user", document::string())
                 .required(false)
@@ -148,15 +138,13 @@ where
 }
 
 /// `GET /discover`
-fn discover_filter<R>(
-    ctx: http::Ctx<R>,
+fn discover_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
     path("discover")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(path::end())
         .and(document::document(document::description(
             "Fetch discovery feed",
@@ -181,19 +169,18 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::coco;
+    use coco;
     use crate::error::Error;
-    use crate::http;
-    use crate::project;
+    use core::project;
+
+    use crate::Ctx;
 
     /// Create a new [`project::Project`].
-    pub async fn create<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create(
+        ctx: Ctx,
         owner: coco::User,
         input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
 
@@ -214,13 +201,11 @@ mod handler {
     }
 
     /// Checkout a [`project::Project`]'s source code.
-    pub async fn checkout<R>(
-        ctx: http::Ctx<R>,
+    pub async fn checkout(
+        ctx: Ctx,
         urn: coco::Urn,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
         let project = ctx.peer_api.get_project(&urn, peer_id)?;
@@ -233,9 +218,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
+    pub async fn get(ctx: Ctx, urn: String) -> Result<impl Reply, Rejection>
     {
         let urn = urn.parse().map_err(Error::from)?;
         let ctx = ctx.read().await;
@@ -246,12 +229,10 @@ mod handler {
     /// List all known projects.
     ///
     /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
-    pub async fn list<R>(
-        ctx: http::Ctx<R>,
+    pub async fn list(
+        ctx: Ctx,
         opt_query: Option<super::ListQuery>,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
@@ -266,157 +247,11 @@ mod handler {
     }
 
     /// Get a feed of untracked projects.
-    pub async fn discover<R>(_ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
+    pub async fn discover(_ctx: Ctx) -> Result<impl Reply, Rejection>
     {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
-    }
-}
-
-impl Serialize for project::Project {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Project", 4)?;
-        state.serialize_field("id", &self.id.to_string())?;
-        state.serialize_field(
-            "shareableEntityIdentifier",
-            &self.shareable_entity_identifier.to_string(),
-        )?;
-        state.serialize_field("metadata", &self.metadata)?;
-        state.serialize_field("registration", &self.registration)?;
-        state.serialize_field("stats", &self.stats)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for project::Project {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(4);
-        properties.insert(
-            "id".into(),
-            document::string()
-                .description("ID of the project")
-                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
-        );
-        properties.insert(
-            "shareableEntityIdentifier".into(),
-            document::string()
-                .description("Unique identifier that can be shared and looked up")
-                .example("%123abcd.git"),
-        );
-        properties.insert("metadata".into(), project::Metadata::document());
-        properties.insert("registration".into(), project::Registration::document());
-        properties.insert("stats".into(), DocumentStats::document());
-
-        document::DocumentedType::from(properties)
-            .description("Radicle project for sharing and collaborating")
-    }
-}
-
-impl Serialize for project::Registration {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Org(org_id) => {
-                serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            },
-            Self::User(user_id) => serializer.serialize_newtype_variant(
-                "Registration",
-                1,
-                "User",
-                &user_id.to_string(),
-            ),
-        }
-    }
-}
-
-/// Documentation of project stats
-struct DocumentStats;
-
-impl ToDocumentedType for DocumentStats {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(3);
-        properties.insert(
-            "branches".into(),
-            document::string()
-                .description("Amount of known branches")
-                .example(7),
-        );
-        properties.insert(
-            "commits".into(),
-            document::string()
-                .description("Number of commits in the default branch")
-                .example(420),
-        );
-        properties.insert(
-            "contributors".into(),
-            document::string()
-                .description("Number of unique contributors on the default branch")
-                .example(11),
-        );
-
-        document::DocumentedType::from(properties)
-            .description("Coarse statistics for the Project source code")
-    }
-}
-
-impl ToDocumentedType for project::Registration {
-    fn document() -> document::DocumentedType {
-        let org = {
-            let mut fields = HashMap::with_capacity(1);
-            fields.insert(
-                "org".into(),
-                document::string().description("Org id").example("monadic"),
-            );
-            document::DocumentedType::from(fields).description("Registered under an Org")
-        };
-        let user = {
-            let mut fields = HashMap::with_capacity(1);
-            fields.insert(
-                "user".into(),
-                document::string().description("User id").example("monadic"),
-            );
-            document::DocumentedType::from(fields).description("Registered under a User")
-        };
-
-        document::one_of(vec![org, user])
-            .description("Variants for possible registration states of a Project on the Registry")
-            .example(Self::Org(
-                registry::Id::try_from("monadic").expect("unable to parse org id"),
-            ))
-    }
-}
-
-impl ToDocumentedType for project::Metadata {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Project name")
-                .example("upstream"),
-        );
-        properties.insert(
-            "description".into(),
-            document::string()
-                .description("High-level description of the Project")
-                .example("Desktop client for radicle"),
-        );
-        properties.insert(
-            "defaultBranch".into(),
-            document::string()
-                .description("Default branch for checkouts, often used as mainline as well")
-                .example("master"),
-        );
-
-        document::DocumentedType::from(properties).description("Project metadata")
     }
 }
 

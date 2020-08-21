@@ -5,15 +5,13 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::http;
-use crate::identity;
-use crate::registry;
-use crate::session;
+use core::identity;
+use core::session;
+
+use crate::{Ctx, with_context};
 
 /// Combination of all session filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Cache + registry::Client + 'static,
+pub fn filters(ctx: Ctx) -> BoxedFilter<(impl Reply,)>
 {
     clear_cache_filter(ctx.clone())
         .or(delete_filter(ctx.clone()))
@@ -23,16 +21,14 @@ where
 }
 
 /// `DELETE /cache`
-fn clear_cache_filter<R>(
-    ctx: http::Ctx<R>,
+fn clear_cache_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Cache + 'static,
 {
     path("cache")
         .and(warp::delete())
         .and(path::end())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::document(document::description(
             "Clear cached data",
         )))
@@ -44,15 +40,13 @@ where
 }
 
 /// `DELETE /`
-fn delete_filter<R>(
-    ctx: http::Ctx<R>,
+fn delete_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
     warp::delete()
         .and(path::end())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::document(document::description(
             "Clear current Session",
         )))
@@ -64,13 +58,11 @@ where
 }
 
 /// `GET /`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn get_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
     warp::get()
         .and(path::end())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::document(document::description(
             "Fetch current Session",
         )))
@@ -86,16 +78,14 @@ where
 }
 
 /// `Post /settings`
-fn update_settings_filter<R>(
-    ctx: http::Ctx<R>,
+fn update_settings_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
     path("settings")
         .and(warp::post())
         .and(path::end())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description("Update settings")))
         .and(document::document(document::tag("Session")))
@@ -110,14 +100,12 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::http;
-    use crate::registry;
-    use crate::session;
+    use core::session;
+
+    use crate::Ctx;
 
     /// Clear [`registry::Cache`].
-    pub async fn clear_cache<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Cache,
+    pub async fn clear_cache(ctx: Ctx) -> Result<impl Reply, Rejection>
     {
         let ctx = ctx.read().await;
         ctx.registry.clear()?;
@@ -126,9 +114,7 @@ mod handler {
     }
 
     /// Clear the current [`session::Session`].
-    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
+    pub async fn delete(ctx: Ctx) -> Result<impl Reply, Rejection>
     {
         let ctx = ctx.read().await;
         session::clear_current(&ctx.store)?;
@@ -137,9 +123,7 @@ mod handler {
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client,
+    pub async fn get(ctx: Ctx) -> Result<impl Reply, Rejection>
     {
         let ctx = ctx.read().await;
 
@@ -149,78 +133,15 @@ mod handler {
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.
-    pub async fn update_settings<R>(
-        ctx: http::Ctx<R>,
+    pub async fn update_settings(
+        ctx: Ctx,
         settings: session::settings::Settings,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
         session::set_settings(&ctx.store, settings)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
-    }
-}
-
-impl ToDocumentedType for session::Session {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(1);
-        properties.insert(
-            "identity".into(),
-            identity::Identity::document().nullable(true),
-        );
-        properties.insert("orgs".into(), document::array(registry::Org::document()));
-        properties.insert("settings".into(), session::settings::Settings::document());
-
-        document::DocumentedType::from(properties).description("Session")
-    }
-}
-
-impl ToDocumentedType for session::settings::Settings {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(2);
-        properties.insert(
-            "appearance".into(),
-            session::settings::Appearance::document(),
-        );
-        properties.insert("registry".into(), session::settings::Registry::document());
-
-        document::DocumentedType::from(properties).description("Settings")
-    }
-}
-
-impl ToDocumentedType for session::settings::Appearance {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(1);
-        properties.insert("theme".into(), session::settings::Theme::document());
-
-        document::DocumentedType::from(properties).description("Appearance")
-    }
-}
-
-impl ToDocumentedType for session::settings::Theme {
-    fn document() -> document::DocumentedType {
-        document::enum_string(vec!["dark".into(), "light".into()])
-            .description("Variants for possible color schemes.")
-            .example("dark")
-    }
-}
-
-impl ToDocumentedType for session::settings::Registry {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(1);
-        properties.insert("network".into(), session::settings::Network::document());
-
-        document::DocumentedType::from(properties).description("Registry")
-    }
-}
-
-impl ToDocumentedType for session::settings::Network {
-    fn document() -> document::DocumentedType {
-        document::enum_string(vec!["emulator".into(), "ffnet".into(), "testnet".into()])
-            .description("Variants for possible networks of the Registry to connect to.")
-            .example("testnet")
     }
 }
 
@@ -232,14 +153,15 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use crate::error;
-    use crate::http;
-    use crate::session;
+    use core::error;
+    use core::session;
+
+    use crate::Context;
 
     #[tokio::test]
     async fn delete() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -265,7 +187,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let res = request().method("GET").path("/").reply(&api).await;
@@ -315,7 +237,7 @@ mod test {
     #[tokio::test]
     async fn update_settings() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let mut settings = session::settings::Settings::default();

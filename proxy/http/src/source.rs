@@ -10,15 +10,13 @@ use librad::meta::user;
 use librad::peer;
 use radicle_surf::vcs::git;
 
-use crate::coco;
-use crate::http;
-use crate::identity;
-use crate::registry;
+use coco;
+use core::identity;
+
+use crate::{Ctx, with_context, with_qs, with_owner_guard};
 
 /// Combination of all source filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
+pub fn filters(ctx: Ctx) -> BoxedFilter<(impl Reply,)>
 {
     blob_filter(ctx.clone())
         .or(branches_filter(ctx.clone()))
@@ -32,18 +30,16 @@ where
 }
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
-fn blob_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn blob_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
     path("blob")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(http::with_qs::<BlobQuery>())
+        .and(with_qs::<BlobQuery>())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -64,15 +60,13 @@ where
 }
 
 /// `GET /branches/<project_id>`
-fn branches_filter<R>(
-    ctx: http::Ctx<R>,
+fn branches_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
     path("branches")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -97,15 +91,13 @@ where
 }
 
 /// `GET /commit/<project_id>/<sha1>`
-fn commit_filter<R>(
-    ctx: http::Ctx<R>,
+fn commit_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
     path("commit")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -124,15 +116,13 @@ where
 }
 
 /// `GET /commits/<project_id>?branch=<branch>`
-fn commits_filter<R>(
-    ctx: http::Ctx<R>,
+fn commits_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
     path("commits")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -181,16 +171,14 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 }
 
 /// `GET /revisions/<project_id>`
-fn revisions_filter<R>(
-    ctx: http::Ctx<R>,
+fn revisions_filter(
+    ctx: Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
 {
     path("revisions")
         .and(warp::get())
-        .and(http::with_context(ctx.clone()))
-        .and(http::with_owner_guard(ctx))
+        .and(with_context(ctx.clone()))
+        .and(with_owner_guard(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -214,13 +202,11 @@ where
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn tags_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
     path("tags")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -239,18 +225,16 @@ where
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
+fn tree_filter(ctx: Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
     path("tree")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(http::with_qs::<TreeQuery>())
+        .and(with_qs::<TreeQuery>())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -277,14 +261,16 @@ mod handler {
 
     use radicle_surf::vcs::git;
 
-    use crate::coco;
-    use crate::http;
-    use crate::registry;
-    use crate::session;
+    use coco;
+    use core::session;
+    use core::error::Error;
+
+    use crate::Ctx;
+    use crate::HttpError;
 
     /// Fetch a [`coco::Blob`].
-    pub async fn blob<R>(
-        ctx: http::Ctx<R>,
+    pub async fn blob(
+        ctx: Ctx,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -293,14 +279,12 @@ mod handler {
             highlight,
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client + 'static,
     {
         let ctx = ctx.read().await;
 
-        let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
+        let session = session::current(&ctx.peer_api, &ctx.store).await.map_err(HttpError::into)?;
 
-        let project = ctx.peer_api.get_project(&project_urn, None)?;
+        let project = ctx.peer_api.get_project(&project_urn, None).map_err(HttpError::into)?;
 
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
@@ -316,19 +300,17 @@ mod handler {
         };
         let blob = ctx.peer_api.with_browser(&project_urn, |mut browser| {
             coco::blob(&mut browser, default_branch, revision, &path, theme)
-        })?;
+        }).map_err(HttpError::into)?;
 
         Ok(reply::json(&blob))
     }
 
     /// Fetch the list [`coco::Branch`].
-    pub async fn branches<R>(
-        ctx: http::Ctx<R>,
+    pub async fn branches(
+        ctx: Ctx,
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
         let branches = ctx.peer_api.with_browser(&project_urn, |browser| {
@@ -339,13 +321,11 @@ mod handler {
     }
 
     /// Fetch a [`coco::Commit`].
-    pub async fn commit<R>(
-        ctx: http::Ctx<R>,
+    pub async fn commit(
+        ctx: Ctx,
         project_urn: coco::Urn,
         sha1: String,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
         let commit = ctx.peer_api.with_browser(&project_urn, |mut browser| {
@@ -356,13 +336,11 @@ mod handler {
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits<R>(
-        ctx: http::Ctx<R>,
+    pub async fn commits(
+        ctx: Ctx,
         project_urn: coco::Urn,
         query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
         let commits = ctx.peer_api.with_browser(&project_urn, |mut browser| {
@@ -380,16 +358,14 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions<R>(
-        ctx: http::Ctx<R>,
+    pub async fn revisions(
+        ctx: Ctx,
         owner: coco::User,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let peers = ctx.peer_api.tracked(&project_urn)?;
+        let peers = ctx.peer_api.tracked(&project_urn).map_err(HttpError::into)?;
         let peer_id = ctx.peer_api.peer_id();
         let revisions: Vec<super::Revisions> =
             ctx.peer_api.with_browser(&project_urn, |browser| {
@@ -399,27 +375,25 @@ mod handler {
                     .into_iter()
                     .map(|revision| revision.into())
                     .collect())
-            })?;
+            }).map_err(HttpError::into)?;
 
         Ok(reply::json(&revisions))
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags<R>(ctx: http::Ctx<R>, project_urn: coco::Urn) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
+    pub async fn tags(ctx: Ctx, project_urn: coco::Urn) -> Result<impl Reply, Rejection>
     {
         let ctx = ctx.read().await;
         let tags = ctx
             .peer_api
-            .with_browser(&project_urn, |browser| coco::tags(browser))?;
+            .with_browser(&project_urn, |browser| coco::tags(browser)).map_err(HttpError::into)?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree<R>(
-        ctx: http::Ctx<R>,
+    pub async fn tree(
+        ctx: Ctx,
         project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
@@ -427,8 +401,6 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
     {
         let ctx = ctx.read().await;
 
@@ -442,7 +414,7 @@ mod handler {
 
         let tree = ctx.peer_api.with_browser(&project_urn, |mut browser| {
             coco::tree(&mut browser, default_branch, revision, prefix)
-        })?;
+        }).map_err(HttpError::into)?;
 
         Ok(reply::json(&tree))
     }
@@ -498,316 +470,6 @@ pub struct TreeQuery {
     revision: Option<coco::Revision<peer::PeerId>>,
 }
 
-impl Serialize for coco::Blob {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Blob", 5)?;
-        state.serialize_field("binary", &self.is_binary())?;
-        state.serialize_field("html", &self.is_html())?;
-        state.serialize_field("content", &self.content)?;
-        state.serialize_field("info", &self.info)?;
-        state.serialize_field("path", &self.path)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Blob {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(4);
-        properties.insert(
-            "binary".into(),
-            document::boolean()
-                .description("Flag to indicate if the content of the Blob is binary")
-                .example(true),
-        );
-        properties.insert(
-            "html".into(),
-            document::boolean()
-                .description("Flag to indicate if the content of the Blob is HTML")
-                .example(true),
-        );
-        properties.insert("content".into(), coco::BlobContent::document());
-        properties.insert("info".into(), coco::Info::document());
-
-        document::DocumentedType::from(properties).description("Blob")
-    }
-}
-
-impl Serialize for coco::BlobContent {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Ascii(content) | Self::Html(content) => serializer.serialize_str(content),
-            Self::Binary => serializer.serialize_none(),
-        }
-    }
-}
-
-impl ToDocumentedType for coco::BlobContent {
-    fn document() -> document::DocumentedType {
-        document::string()
-            .description("BlobContent")
-            .example("print 'hello world'")
-            .nullable(true)
-    }
-}
-
-impl ToDocumentedType for coco::Branch {
-    fn document() -> document::DocumentedType {
-        document::string().description("Branch").example("master")
-    }
-}
-
-impl Serialize for coco::Commit {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut changeset = serializer.serialize_struct("Commit", 4)?;
-        changeset.serialize_field("header", &self.header)?;
-        changeset.serialize_field("stats", &self.stats)?;
-        changeset.serialize_field("diff", &self.diff)?;
-        changeset.serialize_field("branch", &self.branch)?;
-        changeset.end()
-    }
-}
-
-impl Serialize for coco::CommitHeader {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("CommitHeader", 6)?;
-        state.serialize_field("sha1", &self.sha1.to_string())?;
-        state.serialize_field("author", &self.author)?;
-        state.serialize_field("summary", &self.summary)?;
-        state.serialize_field("description", &self.description())?;
-        state.serialize_field("committer", &self.committer)?;
-        state.serialize_field("committerTime", &self.committer_time.seconds())?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::CommitHeader {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(6);
-        properties.insert(
-            "sha1".into(),
-            document::string()
-                .description("SHA1 of the Commit")
-                .example("1e0206da8571ca71c51c91154e2fee376e09b4e7"),
-        );
-        properties.insert("author".into(), coco::Person::document());
-        properties.insert(
-            "summary".into(),
-            document::string()
-                .description("Commit message summary")
-                .example("Add text files"),
-        );
-        properties.insert(
-            "description".into(),
-            document::string()
-                .description("Commit description text")
-                .example("Longer desription of the Commit changes."),
-        );
-        properties.insert("committer".into(), coco::Person::document());
-        properties.insert(
-            "committerTime".into(),
-            document::string()
-                .description("Time of the commit")
-                .example("1575283425"),
-        );
-        document::DocumentedType::from(properties).description("CommitHeader")
-    }
-}
-
-impl ToDocumentedType for coco::Commit {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("header".into(), coco::CommitHeader::document());
-        properties.insert(
-            "stats".into(),
-            document::string().description("Commit stats"),
-        );
-        properties.insert(
-            "diff".into(),
-            document::string().description("Commit changeset"),
-        );
-        document::DocumentedType::from(properties).description("Commit")
-    }
-}
-
-impl Serialize for coco::Info {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Info", 3)?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("objectType", &self.object_type)?;
-        state.serialize_field("lastCommit", &self.last_commit)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Info {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Name of the file")
-                .example("arrows.txt"),
-        );
-        properties.insert("objectType".into(), coco::ObjectType::document());
-        properties.insert("lastCommit".into(), coco::Commit::document());
-
-        document::DocumentedType::from(properties).description("Info")
-    }
-}
-
-impl Serialize for coco::ObjectType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Blob => serializer.serialize_unit_variant("ObjectType", 0, "BLOB"),
-            Self::Tree => serializer.serialize_unit_variant("ObjectType", 1, "TREE"),
-        }
-    }
-}
-
-impl ToDocumentedType for coco::ObjectType {
-    fn document() -> document::DocumentedType {
-        document::enum_string(vec!["BLOB".to_string(), "TREE".to_string()])
-            .description("Object type variants")
-            .example(Self::Blob)
-    }
-}
-
-impl Serialize for coco::Person {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Person", 3)?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("email", &self.email)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Person {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Name part of the commit signature.")
-                .example("Alexis Sellier"),
-        );
-        properties.insert(
-            "email".into(),
-            document::string()
-                .description("Email part of the commit signature.")
-                .example("self@cloudhead.io"),
-        );
-
-        document::DocumentedType::from(properties).description("Person")
-    }
-}
-
-impl Serialize for coco::Tag {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl ToDocumentedType for coco::Tag {
-    fn document() -> document::DocumentedType {
-        document::string().description("Tag").example("v0.1.0")
-    }
-}
-
-impl Serialize for coco::Tree {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Tree", 3)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("entries", &self.entries)?;
-        state.serialize_field("info", &self.info)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Tree {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Absolute path to the tree object from the repo root.")
-                .example("ui/src"),
-        );
-        properties.insert(
-            "entries".into(),
-            document::array(coco::TreeEntry::document())
-                .description("Entries listed in that tree result."),
-        );
-        properties.insert("info".into(), coco::Info::document());
-
-        document::DocumentedType::from(properties).description("Tree")
-    }
-}
-
-impl Serialize for coco::TreeEntry {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Tree", 2)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("info", &self.info)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::TreeEntry {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Absolute path to the object from the root of the repo.")
-                .example("ui/src/main.ts"),
-        );
-        properties.insert("info".into(), coco::Info::document());
-
-        document::DocumentedType::from(properties).description("TreeEntry")
-    }
-}
-
-impl<P, U> ToDocumentedType for coco::Revisions<P, U> {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("identity".into(), identity::Identity::document());
-        properties.insert("branches".into(), document::array(coco::Branch::document()));
-        properties.insert("tags".into(), document::array(coco::Tag::document()));
-
-        document::DocumentedType::from(properties).description("Revisions")
-    }
-}
-
 /// The output structure when calling the `/revisions` endpoint.
 #[derive(Serialize)]
 struct Revisions {
@@ -848,7 +510,7 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -892,7 +554,7 @@ mod test {
         // Get ASCII blob.
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -947,7 +609,7 @@ mod test {
 
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -983,7 +645,7 @@ mod test {
     #[tokio::test]
     async fn blob_dev_branch() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1027,7 +689,7 @@ mod test {
         // Get ASCII blob.
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
         });
 
@@ -1037,7 +699,7 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1063,7 +725,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(have, json!(["dev", "master"]));
         });
@@ -1075,7 +737,7 @@ mod test {
     #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1102,7 +764,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have["header"], json!(want));
             assert_eq!(
                 have["header"],
@@ -1129,7 +791,7 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1159,7 +821,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(have.as_array().unwrap().len(), 14);
             assert_eq!(
@@ -1175,7 +837,7 @@ mod test {
     #[tokio::test]
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let path = "../fixtures/git-platinum";
@@ -1187,7 +849,7 @@ mod test {
 
         let want = coco::local_state(path).unwrap();
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -1206,7 +868,7 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1240,7 +902,7 @@ mod test {
             .await;
 
         let owner = owner.to_data().build()?; // TODO(finto): Unverify owner, unfortunately
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
                 json!([
@@ -1273,7 +935,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!([coco::Branch("master".to_string())]));
         });
 
@@ -1283,7 +945,7 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1309,7 +971,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -1323,7 +985,7 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1364,7 +1026,7 @@ mod test {
         let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -1410,7 +1072,7 @@ mod test {
             .add(b'=');
 
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = super::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1449,7 +1111,7 @@ mod test {
         );
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
+        super::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
         });
 

@@ -11,6 +11,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use warp::document::{self, ToDocumentedType};
 
 /// Emoji whitelist for all usages.
 ///
@@ -193,7 +194,7 @@ fn generate_emoji(input: &str, usage: Usage) -> Emoji {
                         .expect("index of out of range"),
                 )
             }
-        },
+        }
         Usage::Any | Usage::Org => Emoji(
             EMOJIS
                 .get(ix as usize % EMOJIS.len())
@@ -293,5 +294,45 @@ mod test {
         );
         assert_eq!(Color::new(0, 0, 0).lighten(-1.), Color::new(0, 0, 0));
         assert_eq!(Color::new(0, 0, 0).lighten(0.5), Color::new(127, 127, 127));
+    }
+}
+
+/* ToDocumentedType Implementations */
+#[allow(clippy::non_ascii_literal)]
+impl ToDocumentedType for Avatar {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert("background".into(), Color::document());
+        properties.insert(
+            "emoji".into(),
+            document::string()
+                .description("String containing the actual emoji codepoint to display")
+                .example("🐽"),
+        );
+
+        document::DocumentedType::from(properties)
+            .description("Generated avatar based on unique information")
+    }
+}
+
+impl ToDocumentedType for Color {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "r".into(),
+            document::string().description("Red value").example(122),
+        );
+        properties.insert(
+            "g".into(),
+            document::string().description("Green value").example(112),
+        );
+        properties.insert(
+            "b".into(),
+            document::string()
+                .description("Blue value".to_string())
+                .example(90),
+        );
+
+        document::DocumentedType::from(properties).description("RGB color")
     }
 }

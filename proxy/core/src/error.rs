@@ -12,6 +12,9 @@ pub enum Error {
     #[error(transparent)]
     Peer(#[from] coco::peer::Error),
 
+    #[error(transparent)]
+    Source(#[from] coco::source::Error),
+
     /// Failure when interacting with [`crate::keystore`].
     #[error(transparent)]
     Keystorage(#[from] keystore::Error),

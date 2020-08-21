@@ -5,7 +5,7 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{Filter, Reply};
 
-use crate::avatar;
+use core::avatar;
 
 /// `GET /<id>?usage=<usage>`
 pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
@@ -47,8 +47,8 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::avatar;
-    use crate::http::error;
+    use core::avatar;
+    use crate::error;
 
     /// Get the avatar for the given `id`.
     #[allow(clippy::wildcard_enum_match_arm)]

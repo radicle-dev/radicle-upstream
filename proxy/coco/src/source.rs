@@ -6,7 +6,9 @@ use std::path;
 use std::str::FromStr;
 
 use nonempty::NonEmpty;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
+use serde::ser::SerializeStruct as _;
+use warp::document::{self, ToDocumentedType};
 
 use radicle_surf::{
     diff, file_system,
@@ -20,7 +22,7 @@ use syntect::util::LinesWithEndings;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// We expect at least one [`coco::Revisions`] when looking at a project, however the
+    /// We expect at least one [`Revisions`] when looking at a project, however the
     /// computation found none.
     #[error(
         "while trying to get user revisions we could not find any, there should be at least one"
@@ -79,6 +81,18 @@ pub struct Person {
     pub email: String,
 }
 
+impl Serialize for Person {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Person", 3)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("email", &self.email)?;
+        state.end()
+    }
+}
+
 /// Commit statistics.
 #[derive(Serialize)]
 pub struct CommitStats {
@@ -100,6 +114,20 @@ pub struct Commit {
     pub branch: Branch,
 }
 
+impl Serialize for Commit {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut changeset = serializer.serialize_struct("Commit", 4)?;
+        changeset.serialize_field("header", &self.header)?;
+        changeset.serialize_field("stats", &self.stats)?;
+        changeset.serialize_field("diff", &self.diff)?;
+        changeset.serialize_field("branch", &self.branch)?;
+        changeset.end()
+    }
+}
+
 /// Representation of a code commit.
 pub struct CommitHeader {
     /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object
@@ -116,6 +144,22 @@ pub struct CommitHeader {
     /// The recorded time of the committer signature. This is a convenience alias until we
     /// expose the actual author and commiter signatures.
     pub committer_time: git2::Time,
+}
+
+impl Serialize for CommitHeader {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CommitHeader", 6)?;
+        state.serialize_field("sha1", &self.sha1.to_string())?;
+        state.serialize_field("author", &self.author)?;
+        state.serialize_field("summary", &self.summary)?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("committer", &self.committer)?;
+        state.serialize_field("committerTime", &self.committer_time.seconds())?;
+        state.end()
+    }
 }
 
 impl CommitHeader {
@@ -159,6 +203,18 @@ pub enum ObjectType {
     Blob,
 }
 
+impl Serialize for ObjectType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::Blob => serializer.serialize_unit_variant("ObjectType", 0, "BLOB"),
+            Self::Tree => serializer.serialize_unit_variant("ObjectType", 1, "TREE"),
+        }
+    }
+}
+
 /// Set of extra information we carry for blob and tree objects returned from the API.
 pub struct Info {
     /// Name part of an object.
@@ -169,6 +225,20 @@ pub struct Info {
     pub last_commit: Option<CommitHeader>,
 }
 
+impl Serialize for Info {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Info", 3)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("objectType", &self.object_type)?;
+        state.serialize_field("lastCommit", &self.last_commit)?;
+        state.end()
+    }
+}
+
+
 /// File data abstraction.
 pub struct Blob {
     /// Actual content of the file, if the content is ASCII.
@@ -177,6 +247,21 @@ pub struct Blob {
     pub info: Info,
     /// Absolute path to the object from the root of the repo.
     pub path: String,
+}
+
+impl Serialize for Blob {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Blob", 5)?;
+        state.serialize_field("binary", &self.is_binary())?;
+        state.serialize_field("html", &self.is_html())?;
+        state.serialize_field("content", &self.content)?;
+        state.serialize_field("info", &self.info)?;
+        state.serialize_field("path", &self.path)?;
+        state.end()
+    }
 }
 
 impl Blob {
@@ -204,6 +289,18 @@ pub enum BlobContent {
     Binary,
 }
 
+impl Serialize for BlobContent {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::Ascii(content) | Self::Html(content) => serializer.serialize_str(content),
+            Self::Binary => serializer.serialize_none(),
+        }
+    }
+}
+
 /// Result of a directory listing, carries other trees and blobs.
 pub struct Tree {
     /// Absolute path to the tree object from the repo root.
@@ -214,6 +311,19 @@ pub struct Tree {
     pub info: Info,
 }
 
+impl Serialize for Tree {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Tree", 3)?;
+        state.serialize_field("path", &self.path)?;
+        state.serialize_field("entries", &self.entries)?;
+        state.serialize_field("info", &self.info)?;
+        state.end()
+    }
+}
+
 // TODO(xla): Ensure correct by construction.
 /// Entry in a Tree result.
 pub struct TreeEntry {
@@ -221,6 +331,18 @@ pub struct TreeEntry {
     pub info: Info,
     /// Absolute path to the object from the root of the repo.
     pub path: String,
+}
+
+impl Serialize for TreeEntry {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Tree", 2)?;
+        state.serialize_field("path", &self.path)?;
+        state.serialize_field("info", &self.info)?;
+        state.end()
+    }
 }
 
 /// A revision selector for a `Browser`.
@@ -712,3 +834,188 @@ mod tests {
         Ok(())
     }
 }
+
+/* ToDocumentedType Instances */
+impl ToDocumentedType for Blob {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(4);
+        properties.insert(
+            "binary".into(),
+            document::boolean()
+                .description("Flag to indicate if the content of the Blob is binary")
+                .example(true),
+        );
+        properties.insert(
+            "html".into(),
+            document::boolean()
+                .description("Flag to indicate if the content of the Blob is HTML")
+                .example(true),
+        );
+        properties.insert("content".into(), BlobContent::document());
+        properties.insert("info".into(), Info::document());
+
+        document::DocumentedType::from(properties).description("Blob")
+    }
+}
+
+impl ToDocumentedType for BlobContent {
+    fn document() -> document::DocumentedType {
+        document::string()
+            .description("BlobContent")
+            .example("print 'hello world'")
+            .nullable(true)
+    }
+}
+
+impl ToDocumentedType for Branch {
+    fn document() -> document::DocumentedType {
+        document::string().description("Branch").example("master")
+    }
+}
+
+impl ToDocumentedType for CommitHeader {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(6);
+        properties.insert(
+            "sha1".into(),
+            document::string()
+                .description("SHA1 of the Commit")
+                .example("1e0206da8571ca71c51c91154e2fee376e09b4e7"),
+        );
+        properties.insert("author".into(), Person::document());
+        properties.insert(
+            "summary".into(),
+            document::string()
+                .description("Commit message summary")
+                .example("Add text files"),
+        );
+        properties.insert(
+            "description".into(),
+            document::string()
+                .description("Commit description text")
+                .example("Longer desription of the Commit changes."),
+        );
+        properties.insert("committer".into(), Person::document());
+        properties.insert(
+            "committerTime".into(),
+            document::string()
+                .description("Time of the commit")
+                .example("1575283425"),
+        );
+        document::DocumentedType::from(properties).description("CommitHeader")
+    }
+}
+
+impl ToDocumentedType for Commit {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert("header".into(), CommitHeader::document());
+        properties.insert(
+            "stats".into(),
+            document::string().description("Commit stats"),
+        );
+        properties.insert(
+            "diff".into(),
+            document::string().description("Commit changeset"),
+        );
+        document::DocumentedType::from(properties).description("Commit")
+    }
+}
+
+impl ToDocumentedType for Info {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "name".into(),
+            document::string()
+                .description("Name of the file")
+                .example("arrows.txt"),
+        );
+        properties.insert("objectType".into(), ObjectType::document());
+        properties.insert("lastCommit".into(), Commit::document());
+
+        document::DocumentedType::from(properties).description("Info")
+    }
+}
+
+impl ToDocumentedType for ObjectType {
+    fn document() -> document::DocumentedType {
+        document::enum_string(vec!["BLOB".to_string(), "TREE".to_string()])
+            .description("Object type variants")
+            .example(Self::Blob)
+    }
+}
+
+impl ToDocumentedType for Person {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "name".into(),
+            document::string()
+                .description("Name part of the commit signature.")
+                .example("Alexis Sellier"),
+        );
+        properties.insert(
+            "email".into(),
+            document::string()
+                .description("Email part of the commit signature.")
+                .example("self@cloudhead.io"),
+        );
+
+        document::DocumentedType::from(properties).description("Person")
+    }
+}
+
+impl ToDocumentedType for Tag {
+    fn document() -> document::DocumentedType {
+        document::string().description("Tag").example("v0.1.0")
+    }
+}
+
+impl ToDocumentedType for Tree {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Absolute path to the tree object from the repo root.")
+                .example("ui/src"),
+        );
+        properties.insert(
+            "entries".into(),
+            document::array(TreeEntry::document())
+                .description("Entries listed in that tree result."),
+        );
+        properties.insert("info".into(), Info::document());
+
+        document::DocumentedType::from(properties).description("Tree")
+    }
+}
+
+impl ToDocumentedType for TreeEntry {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Absolute path to the object from the root of the repo.")
+                .example("ui/src/main.ts"),
+        );
+        properties.insert("info".into(), Info::document());
+
+        document::DocumentedType::from(properties).description("TreeEntry")
+    }
+}
+
+impl<P, U: ToDocumentedType> ToDocumentedType for Revisions<P, U> {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert("identity".into(), U::document());
+        properties.insert("branches".into(), document::array(Branch::document()));
+        properties.insert("tags".into(), document::array(Tag::document()));
+
+        document::DocumentedType::from(properties).description("Revisions")
+    }
+}
+
+
