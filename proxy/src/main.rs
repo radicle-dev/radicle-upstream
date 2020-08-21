@@ -92,7 +92,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
             vec![]
         });
-        let config = coco::config::configure(paths, key.clone(), seeds);
+        let config =
+            coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
         coco::Api::new(config).await?
     };
