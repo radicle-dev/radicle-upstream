@@ -345,7 +345,7 @@
               {:else}
                 <EmptyState
                   text="This project doesn't have a README yet."
-                  icon="eyes"
+                  illustration="eyes"
                   style="height: 320px;" />
               {/if}
             </Remote>

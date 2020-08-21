@@ -100,7 +100,7 @@
     </List>
   {:else}
     <EmptyState
-      icon="sight"
+      illustration="telescope"
       text="There’s nothing here yet, get started by creating your first issue."
       primaryActionText="Open a new issue" />
   {/if}

@@ -79,7 +79,7 @@
     </List>
   {:else if session.permissions.registerProject}
     <EmptyState
-      icon="tent"
+      illustration="tent"
       text="There's nothing here yet, get started by creating your first project
       or adding a member to your org."
       primaryActionText="Register a project"
@@ -88,7 +88,7 @@
       on:secondaryAction={register} />
   {:else}
     <EmptyState
-      icon="tent"
+      illustration="tent"
       text="Add a member to your org."
       primaryActionText="Add a member"
       on:primaryAction={register} />

@@ -103,7 +103,7 @@
   <div class="container">
     {#if blob.binary}
       <EmptyState
-        icon="eyes"
+        illustration="eyes"
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
     {:else if isMarkdown(path)}

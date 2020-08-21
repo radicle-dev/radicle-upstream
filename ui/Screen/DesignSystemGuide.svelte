@@ -5,6 +5,7 @@
   import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    EmptyState,
     Dropdown,
     ModalLayout,
     Notification,
@@ -1128,6 +1129,20 @@
           urn="%rad:git:copy-me-to-see-the-full-urn"
           showOnHover
           notificationText="The urn was copied to your clipboard" />
+      </Swatch>
+
+      <Swatch>
+        <EmptyState
+          illustration="plant"
+          primaryActionText="Take some action!" />
+        <EmptyState
+          illustration="eyes"
+          secondaryActionText="Take some other action!" />
+        <EmptyState
+          illustration="telescope"
+          primaryActionText="Take the first action!"
+          secondaryActionText="Take the secondary action!" />
+        <EmptyState text="Hey, I'm a tent." illustration="tent" />
       </Swatch>
     </Section>
   </div>
