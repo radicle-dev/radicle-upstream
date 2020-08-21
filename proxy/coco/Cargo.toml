@@ -1,0 +1,16 @@
+[package]
+name = "coco"
+version = "0.1.0"
+authors = ["Alexander Simmerl <a.simmerl@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+radicle-surf = { version = "0.4", features = [ "serialize" ] }
+
+[dependencies.radicle-git-helpers]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "e471952ec83579e313d77e5f428fa272da20fa4c"
+
+[dependencies.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "e471952ec83579e313d77e5f428fa272da20fa4c"
