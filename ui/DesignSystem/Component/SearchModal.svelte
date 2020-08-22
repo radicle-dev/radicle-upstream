@@ -70,7 +70,6 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-
     margin-bottom: 0.25rem;
   }
 </style>
