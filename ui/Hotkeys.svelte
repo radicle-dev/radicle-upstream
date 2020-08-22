@@ -48,7 +48,7 @@
       toggle(path.createProject());
     }
 
-    if (event.code === "Escape") {
+    if (event.key === "Escape") {
       modal.hide();
     }
   };
