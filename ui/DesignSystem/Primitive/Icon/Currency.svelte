@@ -3,7 +3,7 @@
 
   export let dataCy = null;
   export let style = null;
-  export let variant = "normal"; // rad-normal | rad-big | rad-huge | euro | dollar
+  export let variant = "rad-normal"; // rad-normal | rad-big | rad-huge | euro | dollar
 </script>
 
 {#if variant === 'rad-normal'}
