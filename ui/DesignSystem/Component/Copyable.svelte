@@ -7,7 +7,7 @@
   export let style = null;
   export let copyContent = null;
   export let notificationText = "Copied to your clipboard";
-  export let iconBeforeCopy = Icon.Copy;
+  export let iconBeforeCopy = Icon.CopySmall;
   export let iconAfterCopy = Icon.Check;
   export let iconSize = "small";
 
@@ -31,7 +31,7 @@
 
     copyIcon = Icon.Check;
     setTimeout(() => {
-      copyIcon = Icon.Copy;
+      copyIcon = Icon.CopySmall;
       copied = false;
     }, 1000);
   };

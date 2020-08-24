@@ -51,6 +51,6 @@
     <ItemDescription {message} state={tx.state.type} />
   </div>
   <div class="carret">
-    <Icon.Chevron />
+    <Icon.ChevronRight />
   </div>
 </div>

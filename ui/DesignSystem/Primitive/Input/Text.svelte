@@ -122,8 +122,7 @@
         style="justify-content: flex-start; position: absolute; top: 8px; right:
         10px;" />
     {:else if validation.status === ValidationStatus.Success && showSuccessCheck}
-      <Icon.Check
-        variant="filled"
+      <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
     {:else if validation.status === ValidationStatus.Error}

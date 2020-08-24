@@ -70,7 +70,7 @@
     registerProjectMenuItem,
     {
       title: "Add member",
-      icon: Icon.Plus,
+      icon: Icon.PlusBig,
       event: () => push(path.memberRegistration(params.id)),
     },
     sendFundsMenuItem,
@@ -80,14 +80,14 @@
     registerProjectMenuItem = {
       dataCy: "add-project",
       title: "Add project",
-      icon: Icon.Plus,
+      icon: Icon.PlusBig,
       event: () => push(path.registerProject(params.id)),
     };
   } else {
     registerProjectMenuItem = {
       dataCy: "add-project",
       title: "Add project",
-      icon: Icon.Plus,
+      icon: Icon.PlusBig,
       disabled: true,
       tooltip: "To unlock project registration, create a local project first.",
     };

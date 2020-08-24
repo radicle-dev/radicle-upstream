@@ -77,12 +77,12 @@
   const additionalActionsDropdownItems = [
     {
       title: "Add something",
-      icon: Icon.Plus,
+      icon: Icon.PlusBig,
       event: () => console.log("event(Add Something)"),
     },
     {
       title: "Add something else",
-      icon: Icon.Plus,
+      icon: Icon.PlusBig,
       event: () => console.log("event(Add Something Else)"),
     },
     {
@@ -440,25 +440,25 @@
         <Icon.ArrowUp />
         <Icon.ArrowLeft />
         <Icon.ArrowRight />
-        <Icon.Check variant="normal" />
-        <Icon.Check variant="filled" />
+        <Icon.Check />
+        <Icon.CheckCircle />
         <Icon.CheckedBox />
-        <Icon.Copy size="small" />
-        <Icon.Copy size="normal" />
-        <Icon.Cross variant="small" />
-        <Icon.Cross variant="medium" />
-        <Icon.Cross variant="filled" />
-        <Icon.Ellipses />
-        <Icon.Ellipses size="small" />
+        <Icon.CopySmall />
+        <Icon.CopyLarge />
+        <Icon.CrossSmall />
+        <Icon.CrossLarge />
+        <Icon.CrossCircle />
+        <Icon.EllipsesLarge />
+        <Icon.EllipsesSmall />
         <Icon.Expand />
-        <Icon.Important variant="regular" />
-        <Icon.Important variant="no-circle" />
-        <Icon.Info variant="regular" />
-        <Icon.Info variant="no-circle" />
+        <Icon.Important />
+        <Icon.ImportantNoCircle />
+        <Icon.Info />
+        <Icon.InfoNoCircle />
         <Icon.Minus />
         <Icon.Open />
-        <Icon.Plus variant="regular" />
-        <Icon.Plus variant="small" />
+        <Icon.PlusBig />
+        <Icon.PlusSmall />
         <Icon.Search />
       </IconSwatch>
       <Swatch>
@@ -477,24 +477,23 @@
         <Icon.Lock />
         <Icon.CloseIssue />
         <Icon.Projects />
-        <Icon.Eye variant="open" />
-        <Icon.Eye variant="closed" />
+        <Icon.EyeOpen />
+        <Icon.EyeClosed />
         <Icon.Heart />
         <Icon.HeartFace />
         <Icon.Trash />
         <Icon.Label />
-        <Icon.Verified size="small" />
-        <Icon.Verified size="large" />
-        <Icon.Currency variant="rad-normal" />
-        <Icon.Currency variant="rad-big" />
-        <Icon.Currency variant="rad-huge" />
-        <Icon.Currency variant="dollar" />
-        <Icon.Currency variant="euro" />
+        <Icon.RegisteredSmall />
+        <Icon.RegisteredLarge />
+        <Icon.CurrencyRadSmall />
+        <Icon.CurrencyRadLarge />
+        <Icon.CurrencyDollarLarge />
+        <Icon.CurrencyEuroLarge />
         <Icon.Roadmap />
-        <Icon.Chevron variant="right" />
-        <Icon.Chevron variant="left" />
-        <Icon.Chevron variant="up" />
-        <Icon.Chevron variant="down" />
+        <Icon.ChevronUp />
+        <Icon.ChevronDown />
+        <Icon.ChevronRight />
+        <Icon.ChevronLeft />
       </IconSwatch>
       <Swatch>
         <h5>Code</h5>
@@ -586,10 +585,12 @@
             <Button variant="vanilla" disabled>Vanilla</Button>
           </td>
           <td>
-            <Button icon={Icon.Plus} variant="vanilla">Vanilla</Button>
+            <Button icon={Icon.PlusBig} variant="vanilla">Vanilla</Button>
           </td>
           <td>
-            <Button icon={Icon.Plus} variant="vanilla" disabled>Vanilla</Button>
+            <Button icon={Icon.PlusBig} variant="vanilla" disabled>
+              Vanilla
+            </Button>
           </td>
         </tr>
         <tr>
@@ -632,10 +633,12 @@
             <Button variant="destructive" disabled>Destructive</Button>
           </td>
           <td>
-            <Button icon={Icon.Cross} variant="destructive">Destructive</Button>
+            <Button icon={Icon.CrossSmall} variant="destructive">
+              Destructive
+            </Button>
           </td>
           <td>
-            <Button icon={Icon.Cross} variant="destructive" disabled>
+            <Button icon={Icon.CrossSmall} variant="destructive" disabled>
               Destructive
             </Button>
           </td>

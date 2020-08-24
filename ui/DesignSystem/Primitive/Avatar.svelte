@@ -178,7 +178,7 @@
         {title}
       </p>
       {#if registered}
-        <Icon.Verified
+        <Icon.RegisteredSmall
           dataCy="registered-badge"
           style="margin-left: 8px; fill: var(--color-primary);" />
       {/if}
@@ -190,7 +190,7 @@
         {title}
       </p>
       {#if registered}
-        <Icon.Verified
+        <Icon.RegisteredSmall
           dataCy="registered-badge"
           style="margin-left: 8px; fill: var(--color-primary);" />
       {/if}

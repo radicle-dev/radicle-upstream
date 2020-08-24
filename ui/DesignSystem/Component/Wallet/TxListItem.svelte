@@ -120,8 +120,7 @@
           <Icon.Important
             style="margin-right: 8px; fill: var(--color-negative)" />
         {:else if iconState(tx.state) === IconState.positive}
-          <Icon.Check
-            variant="filled"
+          <Icon.CheckCircle
             style="margin-right: 8px; fill: var(--color-positive)" />
         {:else}
           <TransactionSpinner

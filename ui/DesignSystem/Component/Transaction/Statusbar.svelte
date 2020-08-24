@@ -38,9 +38,7 @@
   {#if variant === 'negative'}
     <Icon.Important style="margin: 16px; fill: var(--color-background)" />
   {:else if variant === 'positive'}
-    <Icon.Check
-      variant="filled"
-      style="margin: 16px; fill: var(--color-background)" />
+    <Icon.CheckCircle style="margin: 16px; fill: var(--color-background)" />
   {:else}
     <TransactionSpinner
       {progress}

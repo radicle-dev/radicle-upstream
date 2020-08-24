@@ -81,7 +81,7 @@
           &nbsp;{`/ ${project.metadata.name}`}
         </h3>
         <div class="registered">
-          <Icon.Verified
+          <Icon.RegisteredSmall
             style="fill: var(--color-primary); position: relative; bottom: -5px;" />
         </div>
       {:else}

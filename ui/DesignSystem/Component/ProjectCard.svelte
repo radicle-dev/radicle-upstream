@@ -45,7 +45,7 @@
       <p class="typo-text-bold">{title}</p>
       {#if showRegisteredBadge}
         <div data-cy="registered" class="registered">
-          <Icon.Verified
+          <Icon.RegisteredSmall
             style="fill: var(--color-primary); position: relative; bottom: -3px;" />
         </div>
       {/if}

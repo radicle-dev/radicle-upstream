@@ -42,7 +42,7 @@
     {#if urn.length > 24}
       {#if (showOnHover && !hover) || !showOnHover}
         <p class="typo-text-small-mono">{firstSix}</p>
-        <Icon.Ellipses size="small" />
+        <Icon.EllipsesSmall />
         <p class="typo-text-small-mono">{lastSix}</p>
       {:else if showOnHover && hover}
         <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>

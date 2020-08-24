@@ -20,14 +20,16 @@
       title={`${user.name} / ${title}`}
       variant="circle" />
 
-    <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
+    <Icon.Icon.RegisteredSmall
+      style="margin-left: 6px; fill: var(--color-primary);" />
   {:else if org}
     <Avatar
       avatarFallback={org.avatarFallback}
       title={`${org.name} / ${title}`}
       variant="square" />
 
-    <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
+    <Icon.RegisteredSmall
+      style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
     <Icon.Projects />
     <p class="typo-text-bold" style="white-space: nowrap; margin-left: 8px;">

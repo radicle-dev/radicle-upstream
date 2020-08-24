@@ -14,7 +14,7 @@
   dataCy="projects-menu-button"
   variant="transparent"
   disabled={!session.permissions.registerProject}
-  icon={Icon.Plus}
+  icon={Icon.PlusBig}
   on:click={() => push(path.registerProject(params.id))}>
   Add project
 </Button>
