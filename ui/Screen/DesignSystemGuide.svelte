@@ -431,21 +431,6 @@
     </Section>
 
     <Section
-      title="Spinners"
-      subTitle="Activity indicators of various sizes and shapes.">
-      <Spinner />
-      <TransactionSpinner state="positive" />
-      <TransactionSpinner variant="small" />
-      <TransactionSpinner />
-      <TransactionSpinner progress={(1 / 6) * 100} />
-      <TransactionSpinner progress={(2 / 6) * 100} />
-      <TransactionSpinner state="negative" progress={(2 / 6) * 100} rotate />
-      <TransactionSpinner state="negative" progress={(4 / 6) * 100} />
-      <TransactionSpinner state="negative" progress={100} />
-      <TransactionSpinner state="negative" />
-    </Section>
-
-    <Section
       title="Buttons"
       subTitle="Vanilla, Primary, Secondary, Cancel, disabled state">
 
@@ -1050,6 +1035,19 @@
       </Swatch>
 
       <Swatch>
+        <Spinner />
+        <TransactionSpinner state="positive" />
+        <TransactionSpinner variant="small" />
+        <TransactionSpinner />
+        <TransactionSpinner progress={(1 / 6) * 100} />
+        <TransactionSpinner progress={(2 / 6) * 100} />
+        <TransactionSpinner state="negative" progress={(2 / 6) * 100} rotate />
+        <TransactionSpinner state="negative" progress={(4 / 6) * 100} />
+        <TransactionSpinner state="negative" progress={100} />
+        <TransactionSpinner state="negative" />
+      </Swatch>
+
+      <Swatch>
         <EmptyState
           illustration="plant"
           primaryActionText="Take some action!" />
@@ -1062,6 +1060,7 @@
           secondaryActionText="Take the secondary action!" />
         <EmptyState text="Hey, I'm a tent." illustration="tent" />
       </Swatch>
+
     </Section>
   </div>
 </ModalLayout>
