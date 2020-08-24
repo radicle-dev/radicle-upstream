@@ -1,7 +1,6 @@
 //! Endpoints and serialisation for source code browsing.
 
 use serde::{Deserialize, Serialize};
-use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
@@ -37,27 +36,8 @@ where
     path("blob")
         .and(warp::get())
         .and(http::with_context(ctx))
-        .and(document::param::<coco::Urn>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
+        .and(path::param::<coco::Urn>())
         .and(http::with_qs::<BlobQuery>())
-        .and(document::document(
-            document::query("revision", document::string()).description("Git revision"),
-        ))
-        .and(document::document(
-            document::query("path", document::string())
-                .description("Location of the file in the repo tree"),
-        ))
-        .and(document::document(document::description("Fetch a Blob")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(coco::Blob::document()).mime("application/json"),
-            )
-            .description("Blob for path found"),
-        ))
         .and_then(handler::blob)
 }
 
@@ -71,26 +51,8 @@ where
     path("branches")
         .and(warp::get())
         .and(http::with_context(ctx))
-        .and(document::param::<coco::Urn>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(warp::filters::query::query::<BranchQuery>())
-        .and(document::document(
-            document::query("peerId", document::string()).description("The peer identifier"),
-        ))
-        .and(document::document(document::description("List Branches")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(
-                    document::array(coco::Branch::document()).description("List of branches"),
-                )
-                .mime("application/json"),
-            )
-            .description("List of branches"),
-        ))
+        .and(path::param::<coco::Urn>())
+        .and(warp::query::<BranchQuery>())
         .and_then(handler::branches)
 }
 
@@ -104,20 +66,8 @@ where
     path("commit")
         .and(warp::get())
         .and(http::with_context(ctx))
-        .and(document::param::<coco::Urn>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::param::<String>("sha1", "Git object id"))
-        .and(document::document(document::description("Fetch a Commit")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(coco::Commit::document()).mime("application/json"),
-            )
-            .description("Commit for SHA1 found"),
-        ))
+        .and(path::param::<coco::Urn>())
+        .and(path::param::<String>())
         .and_then(handler::commit)
 }
 
@@ -131,25 +81,8 @@ where
     path("commits")
         .and(warp::get())
         .and(http::with_context(ctx))
-        .and(document::param::<coco::Urn>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(warp::filters::query::query::<CommitsQuery>())
-        .and(document::document(
-            document::query("branch", document::string()).description("Git branch"),
-        ))
-        .and(document::document(document::description(
-            "Fetch Commits from a Branch",
-        )))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(document::array(coco::Commit::document())).mime("application/json"),
-            )
-            .description("Branch found"),
-        ))
+        .and(path::param::<coco::Urn>())
+        .and(warp::query::<CommitsQuery>())
         .and_then(handler::commits)
 }
 
@@ -157,24 +90,7 @@ where
 fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("local-state")
         .and(warp::get())
-        .and(document::tail(
-            "path",
-            "Location of the repository on the filesystem",
-        ))
-        .and(document::document(document::description(
-            "List Branches, Remotes and if it is managed by coco for a local Repository",
-        )))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(
-                    document::array(coco::Branch::document()).description("List of branches"),
-                )
-                .mime("application/json"),
-            )
-            .description("List of branches"),
-        ))
+        .and(path::tail())
         .and_then(handler::local_state)
 }
 
@@ -189,25 +105,7 @@ where
         .and(warp::get())
         .and(http::with_context(ctx.clone()))
         .and(http::with_owner_guard(ctx))
-        .and(document::param::<coco::Urn>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::document(document::description(
-            "List both branches and tags",
-        )))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(
-                    document::array(coco::Revisions::<(), ()>::document())
-                        .description("List of revisions per repo"),
-                )
-                .mime("application/json"),
-            )
-            .description("List of branches and tags"),
-        ))
+        .and(path::param::<coco::Urn>())
         .and_then(handler::revisions)
 }
 
@@ -219,20 +117,7 @@ where
     path("tags")
         .and(warp::get())
         .and(http::with_context(ctx))
-        .and(document::param::<coco::Urn>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::document(document::description("List Tags")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(document::array(coco::Tag::document()).description("List of tags"))
-                    .mime("application/json"),
-            )
-            .description("List of tags"),
-        ))
+        .and(path::param::<coco::Urn>())
         .and_then(handler::tags)
 }
 
@@ -244,27 +129,8 @@ where
     path("tree")
         .and(warp::get())
         .and(http::with_context(ctx))
-        .and(document::param::<coco::Urn>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
+        .and(path::param::<coco::Urn>())
         .and(http::with_qs::<TreeQuery>())
-        .and(document::document(
-            document::query("revision", document::string()).description("Git revision"),
-        ))
-        .and(document::document(
-            document::query("prefix", document::string())
-                .description("Prefix to filter files and folders by"),
-        ))
-        .and(document::document(document::description("Fetch a Tree")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(coco::Tree::document()).mime("application/json"),
-            )
-            .description("Tree for path found"),
-        ))
         .and_then(handler::tree)
 }
 
@@ -275,6 +141,7 @@ mod handler {
 
     use radicle_surf::vcs::git;
 
+    use crate::error;
     use crate::http;
     use crate::registry;
     use crate::session;
@@ -297,12 +164,15 @@ mod handler {
 
         let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
 
-        let project = ctx.peer_api.get_project(&project_urn, None)?;
+        let project = ctx
+            .peer_api
+            .get_project(&project_urn, None)
+            .map_err(error::Error::from)?;
 
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -311,9 +181,12 @@ mod handler {
         } else {
             None
         };
-        let blob = ctx.peer_api.with_browser(&project_urn, |mut browser| {
-            coco::blob(&mut browser, default_branch, revision, &path, theme)
-        })?;
+        let blob = ctx
+            .peer_api
+            .with_browser(&project_urn, |mut browser| {
+                coco::blob(&mut browser, default_branch, revision, &path, theme)
+            })
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&blob))
     }
@@ -328,9 +201,12 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let branches = ctx.peer_api.with_browser(&project_urn, |browser| {
-            coco::branches(browser, Some(coco::into_branch_type(peer_id)))
-        })?;
+        let branches = ctx
+            .peer_api
+            .with_browser(&project_urn, |browser| {
+                coco::branches(browser, Some(coco::into_branch_type(peer_id)))
+            })
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&branches))
     }
@@ -345,9 +221,12 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let commit = ctx.peer_api.with_browser(&project_urn, |mut browser| {
-            coco::commit(&mut browser, &sha1)
-        })?;
+        let commit = ctx
+            .peer_api
+            .with_browser(&project_urn, |mut browser| {
+                coco::commit(&mut browser, &sha1)
+            })
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&commit))
     }
@@ -362,16 +241,19 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let commits = ctx.peer_api.with_browser(&project_urn, |mut browser| {
-            coco::commits(&mut browser, query.into())
-        })?;
+        let commits = ctx
+            .peer_api
+            .with_browser(&project_urn, |mut browser| {
+                coco::commits(&mut browser, query.into())
+            })
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&commits))
     }
 
     /// Fetch the list [`coco::Branch`] for a local repository.
     pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
-        let state = coco::local_state(path.as_str())?;
+        let state = coco::local_state(path.as_str()).map_err(error::Error::from)?;
 
         Ok(reply::json(&state))
     }
@@ -386,17 +268,22 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let peers = ctx.peer_api.tracked(&project_urn)?;
+        let peers = ctx
+            .peer_api
+            .tracked(&project_urn)
+            .map_err(error::Error::from)?;
         let peer_id = ctx.peer_api.peer_id();
-        let revisions: Vec<super::Revisions> =
-            ctx.peer_api.with_browser(&project_urn, |browser| {
+        let revisions: Vec<super::Revisions> = ctx
+            .peer_api
+            .with_browser(&project_urn, |browser| {
                 // TODO(finto): downgraded verified user, which should not be needed.
                 let owner = owner.to_data().build()?;
                 Ok(coco::revisions(browser, peer_id, owner, peers)?
                     .into_iter()
                     .map(|revision| revision.into())
                     .collect())
-            })?;
+            })
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&revisions))
     }
@@ -409,7 +296,8 @@ mod handler {
         let ctx = ctx.read().await;
         let tags = ctx
             .peer_api
-            .with_browser(&project_urn, |browser| coco::tags(browser))?;
+            .with_browser(&project_urn, |browser| coco::tags(browser))
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&tags))
     }
@@ -429,17 +317,23 @@ mod handler {
     {
         let ctx = ctx.read().await;
 
-        let project = ctx.peer_api.get_project(&project_urn, None)?;
+        let project = ctx
+            .peer_api
+            .get_project(&project_urn, None)
+            .map_err(error::Error::from)?;
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
-        let tree = ctx.peer_api.with_browser(&project_urn, |mut browser| {
-            coco::tree(&mut browser, default_branch, revision, prefix)
-        })?;
+        let tree = ctx
+            .peer_api
+            .with_browser(&project_urn, |mut browser| {
+                coco::tree(&mut browser, default_branch, revision, prefix)
+            })
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&tree))
     }
@@ -513,17 +407,6 @@ impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
             branches: other.branches,
             tags: other.tags,
         }
-    }
-}
-
-impl ToDocumentedType for Revisions {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("identity".into(), identity::Identity::document());
-        properties.insert("branches".into(), document::array(coco::Branch::document()));
-        properties.insert("tags".into(), document::array(coco::Tag::document()));
-
-        document::DocumentedType::from(properties).description("Revisions")
     }
 }
 
@@ -1131,6 +1014,7 @@ mod test {
         let default_branch = git::Branch::local(platinum_project.default_branch());
         let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::tree(&mut browser, default_branch, Some(revision.clone()), None)
+                .map_err(coco::Error::from)
         })?;
 
         let query = super::TreeQuery {

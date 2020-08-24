@@ -11,24 +11,9 @@ use librad::meta::project as librad_project;
 use radicle_surf::vcs::git::git2;
 
 use crate::config;
+use crate::error::Error;
 use crate::peer;
 use crate::project;
-
-/// Control errors.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// Errors from I/O operations.
-    #[error(transparent)]
-    Io(#[from] io::Error),
-
-    /// Errors from Git oeprations.
-    #[error(transparent)]
-    Git(#[from] git2::Error),
-
-    /// Errors from peer interactins.
-    #[error(transparent)]
-    Peer(#[from] peer::Error),
-}
 
 /// Deletes the local git repsoitory coco uses to keep its state.
 ///

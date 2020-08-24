@@ -104,9 +104,10 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
         .into_iter()
         .map(|project| {
             api.with_browser(&project.urn(), |browser| {
-                let stats = browser.get_stats()?;
+                let stats = browser.get_stats().map_err(coco::Error::from)?;
                 Ok((project, stats).into())
             })
+            .map_err(error::Error::from)
         })
         .collect()
 }

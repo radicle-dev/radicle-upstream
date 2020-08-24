@@ -1,7 +1,6 @@
 //! Configuration for [`crate::coco`].
 
 use std::convert::TryFrom;
-use std::io;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 use librad::keys;
@@ -10,15 +9,8 @@ use librad::net::discovery;
 use librad::paths;
 use librad::peer;
 
+use crate::error::Error;
 use crate::seed;
-
-/// Config errors.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// Errors from I/O operations.
-    #[error(transparent)]
-    Io(#[from] io::Error),
-}
 
 lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.

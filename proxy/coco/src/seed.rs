@@ -3,21 +3,7 @@ use std::net::SocketAddr;
 
 use librad::peer;
 
-/// A seed-related error.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// Seed input is invalid.
-    #[error("the seed '{0}' is invalid: {:1}")]
-    InvalidSeed(String, Option<librad::peer::conversion::Error>),
-
-    /// Seed DNS failed to resolve to an address.
-    #[error("the seed '{0}' failed to resolve to an address")]
-    DnsLookupFailed(String),
-
-    /// I/O error.
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-}
+use crate::error::Error;
 
 /// A peer used to seed our client.
 #[derive(Debug, Clone)]

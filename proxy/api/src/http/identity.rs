@@ -129,7 +129,9 @@ mod handler {
             .await?
             .identity
         {
-            return Err(Rejection::from(error::Error::EntityExists(identity.urn)));
+            return Err(Rejection::from(error::Error::from(
+                coco::Error::EntityExists(identity.urn),
+            )));
         }
 
         let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;

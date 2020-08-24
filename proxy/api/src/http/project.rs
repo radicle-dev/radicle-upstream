@@ -197,12 +197,16 @@ mod handler {
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
 
-        let meta = ctx.peer_api.init_project(&key, &owner, &input)?;
+        let meta = ctx
+            .peer_api
+            .init_project(&key, &owner, &input)
+            .map_err(Error::from)?;
         let urn = meta.urn();
 
         let stats = ctx
             .peer_api
-            .with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
+            .with_browser(&urn, |browser| Ok(browser.get_stats()?))
+            .map_err(Error::from)?;
         let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
@@ -221,7 +225,10 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let project = ctx.peer_api.get_project(&urn, peer_id)?;
+        let project = ctx
+            .peer_api
+            .get_project(&urn, peer_id)
+            .map_err(Error::from)?;
 
         let path = coco::project::Checkout::new(project, path)
             .run(ctx.peer_api.peer_id())
@@ -324,7 +331,7 @@ impl Serialize for project::Registration {
         match self {
             Self::Org(org_id) => {
                 serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            },
+            }
             Self::User(user_id) => serializer.serialize_newtype_variant(
                 "Registration",
                 1,
@@ -569,9 +576,11 @@ mod test {
         http::test::assert_response(&res, StatusCode::CREATED, |_| {});
         assert!(dir.path().exists());
 
-        let repo = git2::Repository::open(dir.path().join("git-platinum"))?;
+        let repo =
+            git2::Repository::open(dir.path().join("git-platinum")).map_err(coco::Error::from)?;
         let refs = repo
-            .branches(None)?
+            .branches(None)
+            .map_err(coco::Error::from)?
             .map(|branch| {
                 branch
                     .expect("failed to get branch")
@@ -582,7 +591,9 @@ mod test {
                     .to_string()
             })
             .collect::<Vec<_>>();
-        let remote = repo.find_remote(coco::config::RAD_REMOTE)?;
+        let remote = repo
+            .find_remote(coco::config::RAD_REMOTE)
+            .map_err(coco::Error::from)?;
         assert_eq!(
             remote.url(),
             Some(

@@ -79,7 +79,7 @@ mod handler {
 
     use librad::paths;
 
-    use crate::error::Error;
+    use crate::error;
     use crate::http;
     use crate::keystore;
     use crate::project;
@@ -96,7 +96,7 @@ mod handler {
     {
         let ctx = ctx.read().await;
 
-        let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
+        let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
         let meta = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -104,7 +104,8 @@ mod handler {
             &input.name,
             &input.description,
             &input.default_branch,
-        )?;
+        )
+        .map_err(error::Error::from)?;
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
@@ -113,7 +114,8 @@ mod handler {
         }
         let stats = ctx
             .peer_api
-            .with_browser(&meta.urn(), |browser| Ok(browser.get_stats()?))?;
+            .with_browser(&meta.urn(), |browser| Ok(browser.get_stats()?))
+            .map_err(error::Error::from)?;
         let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
@@ -141,7 +143,7 @@ mod handler {
             &fake_pair.public()
         );
 
-        let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
+        let handle = registry::Id::try_from(input.handle).map_err(error::Error::from)?;
         ctx.registry
             .register_user(&fake_pair, handle.clone(), None, input.transaction_fee)
             .await
@@ -167,15 +169,15 @@ mod handler {
             temp_dir.path().to_path_buf()
         };
 
-        let paths = paths::Paths::from_root(tmp_path).map_err(Error::from)?;
+        let paths = paths::Paths::from_root(tmp_path).map_err(error::Error::from)?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-        let key = new_keystore.init_librad_key().map_err(Error::from)?;
+        let key = new_keystore.init_librad_key().map_err(error::Error::from)?;
 
         let config =
             coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
-        let new_peer_api = coco::Api::new(config).await?;
+        let new_peer_api = coco::Api::new(config).await.map_err(error::Error::from)?;
 
         let mut ctx = ctx.write().await;
         ctx.peer_api = new_peer_api;

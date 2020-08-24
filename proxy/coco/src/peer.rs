@@ -8,65 +8,21 @@ use std::sync::{Arc, Mutex};
 use futures::stream::StreamExt;
 
 use librad::git::local::{transport, url::LocalUrl};
-use librad::git::{repo, storage};
+use librad::git::storage;
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project as librad_project;
 use librad::meta::user;
+use librad::net::discovery;
 use librad::net::peer::{PeerApi, PeerConfig};
-use librad::net::{self, discovery};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::signer::SomeSigner;
 use librad::uri::{RadUrl, RadUrn};
 use radicle_surf::vcs::git;
 
-use crate::config;
+use crate::error::Error;
 use crate::project;
-
-/// Peer errors.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// Peer accept error.
-    #[error(transparent)]
-    Accept(#[from] net::peer::AcceptError),
-
-    /// Peer bootstrap error.
-    #[error(transparent)]
-    Bootstrap(#[from] net::peer::BootstrapError),
-
-    /// Config error.
-    #[error(transparent)]
-    Config(#[from] config::Error),
-
-    /// Returned when an attempt to create an identity was made and there is one present.
-    #[error("the identity '{0}' already exits")]
-    EntityExists(RadUrn),
-
-    /// Entity meta error.
-    #[error(transparent)]
-    Meta(#[from] entity::Error),
-
-    /// Project creation error.
-    #[error(transparent)]
-    ProjectCreate(#[from] project::create::Error),
-
-    /// Repo error.
-    #[error(transparent)]
-    Repo(#[from] repo::Error),
-
-    /// Storage error.
-    #[error(transparent)]
-    Storage(#[from] storage::Error),
-
-    /// Surf git error.
-    #[error(transparent)]
-    SurfGit(#[from] git::error::Error),
-
-    /// Verifcation error.
-    #[error(transparent)]
-    Verification(#[from] entity::HistoryVerificationError),
-}
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -181,7 +137,7 @@ impl Api {
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            },
+            }
         }
     }
 

@@ -18,6 +18,8 @@ use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
+use crate::error::Error;
+
 lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
     // It _will_ affect the latency of the first request that uses syntax highlighting,
@@ -25,36 +27,15 @@ lazy_static::lazy_static! {
     static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
 }
 
-/// Source errors.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// We expect at least one [`Revisions`] when looking at a project, however the
-    /// computation found none.
-    #[error(
-        "while trying to get user revisions we could not find any, there should be at least one"
-    )]
-    EmptyRevisions,
-
-    /// Originated from `radicle_surf::git::git2`.
-    #[error(transparent)]
-    Git(#[from] git2::Error),
-
-    /// Trying to find a file path which could not be found.
-    #[error("the path '{0}' was not found")]
-    PathNotFound(file_system::Path),
-
-    /// Originated from `radicle-surf`.
-    #[error(transparent)]
-    SurfFFS(#[from] file_system::Error),
-
-    /// Originated from `radicle_surf`.
-    #[error(transparent)]
-    SurfGit(#[from] git::error::Error),
-}
-
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
 pub struct Branch(pub(crate) String);
+
+impl From<String> for Branch {
+    fn from(name: String) -> Self {
+        Self(name)
+    }
+}
 
 impl fmt::Display for Branch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -67,6 +48,12 @@ impl fmt::Display for Branch {
 /// We still need full tag support.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Tag(pub(crate) String);
+
+impl From<String> for Tag {
+    fn from(name: String) -> Self {
+        Self(name)
+    }
+}
 
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -481,10 +468,10 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
                         );
                     }
                     BlobContent::Html(html)
-                },
+                }
                 None => BlobContent::Ascii(content.to_owned()),
             }
-        },
+        }
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -581,7 +568,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
             }

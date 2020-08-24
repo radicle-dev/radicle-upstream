@@ -8,8 +8,6 @@ use warp::document::{self, ToDocumentedType};
 use warp::http::StatusCode;
 use warp::{reject, reply, Rejection, Reply};
 
-use radicle_surf as surf;
-
 use crate::error;
 
 /// HTTP layer specific rejections.
@@ -48,7 +46,7 @@ impl fmt::Display for Routing {
             Self::MissingOwner => write!(f, "Owner is missing"),
             Self::InvalidQuery { query, error } => {
                 write!(f, "Invalid query string \"{}\": {}", query, error)
-            },
+            }
             Self::QueryMissing => write!(f, "Required query string is missing"),
         }
     }
@@ -105,30 +103,34 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             match err {
                 Routing::MissingOwner => {
                     (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
-                },
+                }
                 Routing::InvalidQuery { .. } => {
                     (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
-                },
+                }
                 Routing::QueryMissing { .. } => {
                     (StatusCode::BAD_REQUEST, "QUERY_MISSING", err.to_string())
-                },
+                }
             }
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
-                error::Error::EntityExists(_) => {
-                    (StatusCode::CONFLICT, "ENTITY_EXISTS", err.to_string())
-                },
-                error::Error::Git(git_error) => match git_error {
-                    surf::git::error::Error::Git(error) => (
+                error::Error::Coco(coco_err) => match coco_err {
+                    coco::Error::EntityExists(_) => {
+                        (StatusCode::CONFLICT, "ENTITY_EXISTS", err.to_string())
+                    }
+                    coco::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
-                        format!("Internal Git error: {:?}", error),
+                        format!("Internal Git error: {:?}", git_error),
                     ),
-                    _ => (
-                        StatusCode::BAD_REQUEST,
-                        "BAD_REQUEST",
-                        "Incorrect input".to_string(),
-                    ),
+                    _ => {
+                        // TODO(xla): Match all variants and properly transform similar to
+                        // gaphql::error.
+                        (
+                            StatusCode::BAD_REQUEST,
+                            "BAD_REQUEST",
+                            "Incorrect input".to_string(),
+                        )
+                    }
                 },
                 _ => {
                     // TODO(xla): Match all variants and properly transform similar to
@@ -138,7 +140,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "BAD_REQUEST",
                         "Incorrect input".to_string(),
                     )
-                },
+                }
             }
         } else {
             (

@@ -5,8 +5,6 @@ use std::time::SystemTimeError;
 use librad::meta::common::url;
 use librad::meta::entity;
 use radicle_registry_client as registry;
-use radicle_surf as surf;
-use radicle_surf::git::git2;
 
 use crate::keystore;
 
@@ -35,29 +33,8 @@ pub enum UserValidation {
 /// All error variants the API will return.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// Returned when an attempt to create an identity was made and there is one present.
-    #[error("the identity '{0}' already exits")]
-    EntityExists(coco::Urn),
-
-    /// Failed to create a librad project.
     #[error(transparent)]
-    ProjectCreation(#[from] coco::project::create::Error),
-
-    /// FileSystem errors from interacting with code in repository.
-    #[error(transparent)]
-    FS(#[from] surf::file_system::Error),
-
-    /// Trying to find a file path which could not be found.
-    #[error("the path '{0}' was not found")]
-    PathNotFound(surf::file_system::Path),
-
-    /// Originated from `radicle_surf`.
-    #[error(transparent)]
-    Git(#[from] surf::git::error::Error),
-
-    /// Originated from `radicle_surf::git::git2`.
-    #[error(transparent)]
-    Git2(#[from] git2::Error),
+    Coco(#[from] coco::Error),
 
     /// Integer conversion failed.
     #[error(transparent)]
