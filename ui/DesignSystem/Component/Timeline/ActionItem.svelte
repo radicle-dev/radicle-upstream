@@ -10,7 +10,7 @@
       "reopen-issue": Icon.Important,
       label: Icon.Label,
       assign: Icon.Member,
-      "close-issue": Icon.CloseIssue,
+      "close-issue": Icon.CrossCircle,
     }[variant];
   };
 

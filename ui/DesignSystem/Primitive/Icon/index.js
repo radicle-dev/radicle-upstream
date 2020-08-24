@@ -13,7 +13,6 @@ import ChevronDown from "./ChevronDown.svelte";
 import ChevronLeft from "./ChevronLeft.svelte";
 import ChevronRight from "./ChevronRight.svelte";
 import ChevronUp from "./ChevronUp.svelte";
-import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import CopyLarge from "./CopyLarge.svelte";
 import CopySmall from "./CopySmall.svelte";
@@ -43,7 +42,6 @@ import ImportantNoCircle from "./ImportantNoCircle.svelte";
 import Inbox from "./Inbox.svelte";
 import Info from "./Info.svelte";
 import InfoNoCircle from "./InfoNoCircle.svelte";
-import Issue from "./Issue.svelte";
 import Key from "./Key.svelte";
 import Label from "./Label.svelte";
 import Lock from "./Lock.svelte";
@@ -83,7 +81,6 @@ export default {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  CloseIssue,
   Commit,
   CopyLarge,
   CopySmall,
@@ -113,7 +110,6 @@ export default {
   Inbox,
   Info,
   InfoNoCircle,
-  Issue,
   Key,
   Label,
   Lock,
