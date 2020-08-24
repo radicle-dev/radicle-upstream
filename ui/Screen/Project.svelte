@@ -101,7 +101,7 @@
     registerProjectMenuItem = {
       dataCy: "register-project",
       title: "Register project",
-      icon: Icon.Register,
+      icon: Icon.Ledger,
       event: () =>
         push(
           path.registerExistingProject(projectId, session.identity.registered)
@@ -111,7 +111,7 @@
     registerProjectMenuItem = {
       dataCy: "register-project",
       title: "Register project",
-      icon: Icon.Register,
+      icon: Icon.Ledger,
       disabled: true,
       tooltip:
         "To unlock project registration, register your own handle first.",

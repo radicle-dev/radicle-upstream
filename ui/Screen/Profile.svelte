@@ -57,7 +57,7 @@
     dropdownMenuItems.push({
       title: "Register handle",
       dataCy: "register-handle",
-      icon: Icon.Register,
+      icon: Icon.Ledger,
       event: () => push(path.registerUser()),
     });
   }
