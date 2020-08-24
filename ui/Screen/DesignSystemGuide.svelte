@@ -449,6 +449,7 @@
         <Icon.Cross variant="medium" />
         <Icon.Cross variant="filled" />
         <Icon.Ellipses />
+        <Icon.Ellipses size="small" />
         <Icon.Expand />
         <Icon.Important variant="regular" />
         <Icon.Important variant="no-circle" />
