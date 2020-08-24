@@ -40,7 +40,7 @@
 
 <div class="issue-card">
   <div class="title">
-    <Icon.Issue
+    <Icon.Important
       style="margin-right: 12px; fill: var({issueIconColor(issue.open)})" />
     <div>
       <p class="typo-text-bold">{issue.title}</p>

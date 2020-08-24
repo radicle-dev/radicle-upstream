@@ -3,7 +3,7 @@
 
   export let dataCy = null;
   export let style = null;
-  export let variant = "regular"; // regular | big | no-circle
+  export let variant = "regular"; // regular | no-circle
 </script>
 
 <IconWrapper on:click {dataCy} {style}>

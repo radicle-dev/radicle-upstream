@@ -61,7 +61,7 @@
     isDev() &&
       items.push(
         {
-          icon: Icon.Issue,
+          icon: Icon.Important,
           title: "Issues",
           href: path.projectIssues(projectId),
           looseActiveStateMatching: false,
@@ -82,7 +82,7 @@
     codeCollabMenuItems = [
       {
         title: "New issue",
-        icon: Icon.Issue,
+        icon: Icon.Important,
         event: () => console.log("event(new-issue)"),
       },
       {

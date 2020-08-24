@@ -6,8 +6,8 @@
 
   const icon = variant => {
     return {
-      "open-issue": Icon.Issue,
-      "reopen-issue": Icon.Issue,
+      "open-issue": Icon.Important,
+      "reopen-issue": Icon.Important,
       label: Icon.Label,
       assign: Icon.Member,
       "close-issue": Icon.CloseIssue,

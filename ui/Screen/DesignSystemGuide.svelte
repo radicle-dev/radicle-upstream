@@ -428,7 +428,6 @@
         <Icon.Source />
         <Icon.Fund />
         <Icon.Member />
-        <Icon.Issue />
         <Icon.Settings />
         <Icon.Heart />
       </IconSwatch>
