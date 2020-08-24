@@ -107,7 +107,7 @@
         style="fill: var(--color-positive); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
     {:else if validation.status === ValidationStatus.Error}
-      <Icon.Important
+      <Icon.ExclamationCircle
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
       <div class="validation-row">

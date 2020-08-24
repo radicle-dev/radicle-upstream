@@ -68,7 +68,7 @@
 <div class={`notification ${level.toLowerCase()}`} {style}>
   {#if showIcon}
     <svelte:component
-      this={level === Level.Info ? Icon.Info : Icon.Important}
+      this={level === Level.Info ? Icon.Info : Icon.ExclamationCircle}
       style="margin-left: 8px; height: 24px" />
   {/if}
 

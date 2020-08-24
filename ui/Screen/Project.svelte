@@ -52,7 +52,7 @@
   const topbarMenuItems = projectId => {
     const items = [
       {
-        icon: Icon.Home,
+        icon: Icon.House,
         title: "Source",
         href: path.projectSource(projectId),
         looseActiveStateMatching: true,
@@ -61,7 +61,7 @@
     isDev() &&
       items.push(
         {
-          icon: Icon.Important,
+          icon: Icon.ExclamationCircle,
           title: "Issues",
           href: path.projectIssues(projectId),
           looseActiveStateMatching: false,
@@ -82,7 +82,7 @@
     codeCollabMenuItems = [
       {
         title: "New issue",
-        icon: Icon.Important,
+        icon: Icon.ExclamationCircle,
         event: () => console.log("event(new-issue)"),
       },
       {

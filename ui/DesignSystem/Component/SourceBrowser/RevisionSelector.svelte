@@ -174,7 +174,7 @@
       variant="circle" />
   </div>
   <div class="selector-expand">
-    <Icon.Expand
+    <Icon.ChevronUpDown
       style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
   </div>
 </div>
@@ -199,7 +199,7 @@
             on:click={() => {
               handleOpenProfile(repo.identity.peerId);
             }}>
-            <Icon.Open />
+            <Icon.BoxUpRight />
           </div>
         </Tooltip>
       </div>

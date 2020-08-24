@@ -43,6 +43,6 @@
     4V28C0 30.2091 1.79086 32 4 32H28C30.2091 32 32 30.2091 32 28V4C32 1.79086
     30.2091 0 28 0H4Z" />
   <g transform="translate(4,4)">
-    <Icon.PlusBig />
+    <Icon.PlusLarge />
   </g>
 </svg>

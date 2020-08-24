@@ -30,13 +30,13 @@
 
   const topbarMenuItems = [
     {
-      icon: Icon.Source,
+      icon: Icon.ChevronLeftRight,
       title: "Projects",
       href: path.profileProjects(),
       looseActiveStateMatching: true,
     },
     {
-      icon: Icon.Fund,
+      icon: Icon.Wallet,
       title: "Wallet",
       href: path.profileWallet(),
       looseActiveStateMatching: false,
@@ -47,7 +47,7 @@
     {
       title: "New project",
       dataCy: "new-project",
-      icon: Icon.PlusBig,
+      icon: Icon.PlusLarge,
       event: () => push(path.createProject()),
     },
   ];

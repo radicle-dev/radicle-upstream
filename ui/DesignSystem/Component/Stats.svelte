@@ -10,7 +10,7 @@
   const formattedStats = [
     { icon: Icon.Branch, count: branches },
     { icon: Icon.Commit, count: commits },
-    { icon: Icon.Member, count: contributors },
+    { icon: Icon.User, count: contributors },
   ];
 </script>
 

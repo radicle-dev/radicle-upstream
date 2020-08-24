@@ -115,7 +115,7 @@
         {placeholder}
       </p>
     {/if}
-    <Icon.Expand
+    <Icon.ChevronUpDown
       style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
   </div>
 

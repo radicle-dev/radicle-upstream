@@ -31,7 +31,7 @@
     <Icon.RegisteredSmall
       style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
-    <Icon.Projects />
+    <Icon.Box />
     <p class="typo-text-bold" style="white-space: nowrap; margin-left: 8px;">
       {title}
     </p>

@@ -117,7 +117,7 @@
     {#if tx.state.type !== StateType.Settled}
       <div class="status">
         {#if iconState(tx.state) === IconState.Negative}
-          <Icon.Important
+          <Icon.ExclamationCircle
             style="margin-right: 8px; fill: var(--color-negative)" />
         {:else if iconState(tx.state) === IconState.positive}
           <Icon.CheckCircle

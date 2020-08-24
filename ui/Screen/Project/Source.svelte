@@ -284,7 +284,7 @@
               <span class="stat typo-mono-bold">{project.stats.branches}</span>
             </div>
             <div class="repo-stat-item">
-              <Icon.Member />
+              <Icon.User />
               <p style="margin: 0 8px;">Contributors</p>
               <span class="stat typo-mono-bold">
                 {project.stats.contributors}

@@ -36,7 +36,8 @@
 
 <div {style} class="statusbar {variant}">
   {#if variant === 'negative'}
-    <Icon.Important style="margin: 16px; fill: var(--color-background)" />
+    <Icon.ExclamationCircle
+      style="margin: 16px; fill: var(--color-background)" />
   {:else if variant === 'positive'}
     <Icon.CheckCircle style="margin: 16px; fill: var(--color-background)" />
   {:else}

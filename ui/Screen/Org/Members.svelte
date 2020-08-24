@@ -12,7 +12,7 @@
   // TODO(sos): replace console.log's with actual navigation
   const menuItems = member => [
     {
-      icon: Icon.Member,
+      icon: Icon.User,
       title: "Go to member profile",
       event: () => console.log(`go to ${member.handle}'s profile`),
     },

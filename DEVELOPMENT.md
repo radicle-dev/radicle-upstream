@@ -172,7 +172,7 @@ complexity. Currently you'll find the following types of components in the
       import { Button, Title, Icon, Input } from "../DesignSystem/Primitive";
     </script>
 
-    <Icon.Home />
+    <Icon.House />
     <Button variant="secondary">OK</Button>
     ```
 

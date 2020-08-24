@@ -38,7 +38,7 @@
       <p class="typo-text-small-bold">{text}</p>
     </div>
     <div slot="right">
-      <Icon.Expand style="margin-right: 16px; vertical-align: middle;" />
+      <Icon.ChevronUpDown style="margin-right: 16px; vertical-align: middle;" />
     </div>
   </Flex>
 </div>

@@ -78,12 +78,12 @@
   const additionalActionsDropdownItems = [
     {
       title: "Add something",
-      icon: Icon.PlusBig,
+      icon: Icon.PlusLarge,
       event: () => console.log("event(Add Something)"),
     },
     {
       title: "Add something else",
-      icon: Icon.PlusBig,
+      icon: Icon.PlusLarge,
       event: () => console.log("event(Add Something Else)"),
     },
     {
@@ -459,10 +459,10 @@
             <Button variant="primary" disabled>Primary</Button>
           </td>
           <td>
-            <Button icon={Icon.Minus} variant="primary">Primary</Button>
+            <Button icon={Icon.MinusLarge} variant="primary">Primary</Button>
           </td>
           <td>
-            <Button icon={Icon.Minus} variant="primary" disabled>
+            <Button icon={Icon.MinusLarge} variant="primary" disabled>
               Primary
             </Button>
           </td>
@@ -475,10 +475,12 @@
             <Button variant="secondary" disabled>Secondary</Button>
           </td>
           <td>
-            <Button icon={Icon.Search} variant="secondary">Secondary</Button>
+            <Button icon={Icon.MagnifyingGlass} variant="secondary">
+              Secondary
+            </Button>
           </td>
           <td>
-            <Button icon={Icon.Search} variant="secondary" disabled>
+            <Button icon={Icon.MagnifyingGlass} variant="secondary" disabled>
               Secondary
             </Button>
           </td>
@@ -491,10 +493,10 @@
             <Button variant="vanilla" disabled>Vanilla</Button>
           </td>
           <td>
-            <Button icon={Icon.PlusBig} variant="vanilla">Vanilla</Button>
+            <Button icon={Icon.PlusLarge} variant="vanilla">Vanilla</Button>
           </td>
           <td>
-            <Button icon={Icon.PlusBig} variant="vanilla" disabled>
+            <Button icon={Icon.PlusLarge} variant="vanilla" disabled>
               Vanilla
             </Button>
           </td>
@@ -507,12 +509,10 @@
             <Button variant="outline" disabled>Outline</Button>
           </td>
           <td>
-            <Button icon={Icon.Graph} variant="outline">Outline</Button>
+            <Button icon={Icon.Fork} variant="outline">Outline</Button>
           </td>
           <td>
-            <Button icon={Icon.Graph} variant="outline" disabled>
-              Outline
-            </Button>
+            <Button icon={Icon.Fork} variant="outline" disabled>Outline</Button>
           </td>
         </tr>
         <tr>

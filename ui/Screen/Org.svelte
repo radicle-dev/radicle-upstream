@@ -41,7 +41,7 @@
   const topbarMenuItems = orgId => {
     const items = [
       {
-        icon: Icon.Source,
+        icon: Icon.ChevronLeftRight,
         title: "Projects",
         href: path.orgProjects(orgId),
         looseActiveStateMatching: true,
@@ -49,13 +49,13 @@
     ];
     isDev() &&
       items.push({
-        icon: Icon.Fund,
+        icon: Icon.Wallet,
         title: "Wallet",
         href: path.orgFund(orgId),
         looseActiveStateMatching: false,
       });
     items.push({
-      icon: Icon.Member,
+      icon: Icon.User,
       title: "Members",
       href: path.orgMembers(orgId),
       looseActiveStateMatching: false,
@@ -70,7 +70,7 @@
     registerProjectMenuItem,
     {
       title: "Add member",
-      icon: Icon.PlusBig,
+      icon: Icon.PlusLarge,
       event: () => push(path.memberRegistration(params.id)),
     },
     sendFundsMenuItem,
@@ -80,14 +80,14 @@
     registerProjectMenuItem = {
       dataCy: "add-project",
       title: "Add project",
-      icon: Icon.PlusBig,
+      icon: Icon.PlusLarge,
       event: () => push(path.registerProject(params.id)),
     };
   } else {
     registerProjectMenuItem = {
       dataCy: "add-project",
       title: "Add project",
-      icon: Icon.PlusBig,
+      icon: Icon.PlusLarge,
       disabled: true,
       tooltip: "To unlock project registration, create a local project first.",
     };

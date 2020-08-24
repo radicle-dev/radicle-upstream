@@ -10,7 +10,7 @@
 
 <Button
   variant="transparent"
-  icon={Icon.PlusBig}
+  icon={Icon.PlusLarge}
   on:click={() => push(path.memberRegistration(params.id))}>
   Add member
 </Button>
