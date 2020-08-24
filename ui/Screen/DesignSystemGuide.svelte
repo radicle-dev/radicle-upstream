@@ -429,7 +429,6 @@
         <Icon.Fund />
         <Icon.Member />
         <Icon.Settings />
-        <Icon.Heart />
       </IconSwatch>
       <Swatch>
         <h5>Functional</h5>
@@ -479,6 +478,8 @@
         <Icon.Projects />
         <Icon.Eye variant="open" />
         <Icon.Eye variant="closed" />
+        <Icon.Heart />
+        <Icon.HeartFace />
         <Icon.Trash />
         <Icon.Label />
         <Icon.Verified size="small" />
@@ -489,6 +490,10 @@
         <Icon.Currency variant="dollar" />
         <Icon.Currency variant="euro" />
         <Icon.Roadmap />
+        <Icon.Chevron variant="right" />
+        <Icon.Chevron variant="left" />
+        <Icon.Chevron variant="up" />
+        <Icon.Chevron variant="down" />
       </IconSwatch>
       <Swatch>
         <h5>Code</h5>
@@ -501,15 +506,6 @@
         <Icon.Graph />
         <Icon.Merge />
         <Icon.Review />
-      </IconSwatch>
-    </Section>
-
-    <Section title="Small Icons" subTitle="Icons at 16px width and height">
-      <IconSwatch>
-        <Icon.Verified />
-        <Icon.HeartFace />
-        <Icon.Chevron variant="right" />
-        <Icon.Chevron variant="down" />
       </IconSwatch>
     </Section>
 
