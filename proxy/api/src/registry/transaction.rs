@@ -14,7 +14,6 @@ use serde::{
 
 use radicle_registry_client as protocol;
 
-use crate::coco;
 use crate::error;
 use crate::registry;
 

@@ -6,7 +6,8 @@ use std::path;
 use std::str::FromStr;
 
 use nonempty::NonEmpty;
-use serde::{Deserialize, Serialize};
+use serde::ser::SerializeStruct as _;
+use serde::{Deserialize, Serialize, Serializer};
 
 use radicle_surf::vcs::git::git2;
 use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
@@ -24,6 +25,7 @@ lazy_static::lazy_static! {
     static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
 }
 
+/// Source errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// We expect at least one [`Revisions`] when looking at a project, however the
@@ -41,6 +43,7 @@ pub enum Error {
     #[error("the path '{0}' was not found")]
     PathNotFound(file_system::Path),
 
+    /// Originated from `radicle-surf`.
     #[error(transparent)]
     SurfFFS(#[from] file_system::Error),
 
@@ -62,12 +65,21 @@ impl fmt::Display for Branch {
 /// Tag name representation.
 ///
 /// We still need full tag support.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Tag(pub(crate) String);
 
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl Serialize for Tag {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
     }
 }
 
@@ -78,6 +90,18 @@ pub struct Person {
     pub name: String,
     /// Email part of the commit signature.
     pub email: String,
+}
+
+impl Serialize for Person {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Person", 3)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("email", &self.email)?;
+        state.end()
+    }
 }
 
 /// Commit statistics.
@@ -99,6 +123,20 @@ pub struct Commit {
     pub diff: diff::Diff,
     /// The branch this commit belongs to.
     pub branch: Branch,
+}
+
+impl Serialize for Commit {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut changeset = serializer.serialize_struct("Commit", 4)?;
+        changeset.serialize_field("header", &self.header)?;
+        changeset.serialize_field("stats", &self.stats)?;
+        changeset.serialize_field("diff", &self.diff)?;
+        changeset.serialize_field("branch", &self.branch)?;
+        changeset.end()
+    }
 }
 
 /// Representation of a code commit.
@@ -149,6 +187,22 @@ impl From<&git::Commit> for CommitHeader {
     }
 }
 
+impl Serialize for CommitHeader {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CommitHeader", 6)?;
+        state.serialize_field("sha1", &self.sha1.to_string())?;
+        state.serialize_field("author", &self.author)?;
+        state.serialize_field("summary", &self.summary)?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("committer", &self.committer)?;
+        state.serialize_field("committerTime", &self.committer_time.seconds())?;
+        state.end()
+    }
+}
+
 /// Git object types.
 ///
 /// `shafiul.github.io/gitbook/1_the_git_object_model.html`
@@ -160,6 +214,18 @@ pub enum ObjectType {
     Blob,
 }
 
+impl Serialize for ObjectType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::Blob => serializer.serialize_unit_variant("ObjectType", 0, "BLOB"),
+            Self::Tree => serializer.serialize_unit_variant("ObjectType", 1, "TREE"),
+        }
+    }
+}
+
 /// Set of extra information we carry for blob and tree objects returned from the API.
 pub struct Info {
     /// Name part of an object.
@@ -168,6 +234,19 @@ pub struct Info {
     pub object_type: ObjectType,
     /// The last commmit that touched this object.
     pub last_commit: Option<CommitHeader>,
+}
+
+impl Serialize for Info {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Info", 3)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("objectType", &self.object_type)?;
+        state.serialize_field("lastCommit", &self.last_commit)?;
+        state.end()
+    }
 }
 
 /// File data abstraction.
@@ -194,6 +273,21 @@ impl Blob {
     }
 }
 
+impl Serialize for Blob {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Blob", 5)?;
+        state.serialize_field("binary", &self.is_binary())?;
+        state.serialize_field("html", &self.is_html())?;
+        state.serialize_field("content", &self.content)?;
+        state.serialize_field("info", &self.info)?;
+        state.serialize_field("path", &self.path)?;
+        state.end()
+    }
+}
+
 /// Variants of blob content.
 #[derive(PartialEq)]
 pub enum BlobContent {
@@ -203,6 +297,18 @@ pub enum BlobContent {
     Html(String),
     /// Content is binary and needs special treatment.
     Binary,
+}
+
+impl Serialize for BlobContent {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::Ascii(content) | Self::Html(content) => serializer.serialize_str(content),
+            Self::Binary => serializer.serialize_none(),
+        }
+    }
 }
 
 /// Result of a directory listing, carries other trees and blobs.
@@ -215,6 +321,19 @@ pub struct Tree {
     pub info: Info,
 }
 
+impl Serialize for Tree {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Tree", 3)?;
+        state.serialize_field("path", &self.path)?;
+        state.serialize_field("entries", &self.entries)?;
+        state.serialize_field("info", &self.info)?;
+        state.end()
+    }
+}
+
 // TODO(xla): Ensure correct by construction.
 /// Entry in a Tree result.
 pub struct TreeEntry {
@@ -222,6 +341,18 @@ pub struct TreeEntry {
     pub info: Info,
     /// Absolute path to the object from the root of the repo.
     pub path: String,
+}
+
+impl Serialize for TreeEntry {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Tree", 2)?;
+        state.serialize_field("path", &self.path)?;
+        state.serialize_field("info", &self.info)?;
+        state.end()
+    }
 }
 
 /// A revision selector for a `Browser`.
@@ -350,10 +481,10 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
                         );
                     }
                     BlobContent::Html(html)
-                }
-                _ => BlobContent::Ascii(content.to_owned()),
+                },
+                None => BlobContent::Ascii(content.to_owned()),
             }
-        }
+        },
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -450,7 +581,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {}
+                        _ => {},
                     }
                 }
             }

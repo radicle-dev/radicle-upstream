@@ -8,7 +8,6 @@ use radicle_registry_client as registry;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
 
-use crate::coco;
 use crate::keystore;
 
 /// Project problems.

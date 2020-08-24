@@ -85,6 +85,45 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85bb70cc08ec97ca5450e6eba421deeea5f172c0fc61f78b5357b2a8e8be195f"
 
 [[package]]
+name = "api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes 0.5.6",
+ "coco",
+ "directories 2.0.2",
+ "futures 0.3.5",
+ "hex",
+ "http",
+ "kv",
+ "librad",
+ "log 0.4.8",
+ "nonempty",
+ "parity-scale-codec",
+ "percent-encoding 2.1.0",
+ "pico-args",
+ "pretty_assertions",
+ "pretty_env_logger",
+ "radicle-git-helpers",
+ "radicle-keystore",
+ "radicle-registry-client",
+ "radicle-surf",
+ "rand 0.7.3",
+ "serde",
+ "serde_cbor 0.11.1",
+ "serde_json",
+ "serde_qs",
+ "syntect",
+ "tempfile",
+ "thiserror",
+ "tokio 0.2.21",
+ "url 1.7.2",
+ "url 2.1.1",
+ "warp",
+]
+
+[[package]]
 name = "approx"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3020,45 +3059,6 @@ name = "protobuf"
 version = "2.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d883f78645c21b7281d21305181aa1f4dd9e9363e7cf2566c93121552cff003e"
-
-[[package]]
-name = "proxy"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytes 0.5.6",
- "coco",
- "directories 2.0.2",
- "futures 0.3.5",
- "hex",
- "http",
- "kv",
- "librad",
- "log 0.4.8",
- "nonempty",
- "parity-scale-codec",
- "percent-encoding 2.1.0",
- "pico-args",
- "pretty_assertions",
- "pretty_env_logger",
- "radicle-git-helpers",
- "radicle-keystore",
- "radicle-registry-client",
- "radicle-surf",
- "rand 0.7.3",
- "serde",
- "serde_cbor 0.11.1",
- "serde_json",
- "serde_qs",
- "syntect",
- "tempfile",
- "thiserror",
- "tokio 0.2.21",
- "url 1.7.2",
- "url 2.1.1",
- "warp",
-]
 
 [[package]]
 name = "quanta"

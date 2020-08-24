@@ -8,7 +8,6 @@ use warp::filters::BoxedFilter;
 use warp::{Filter, Rejection, Reply};
 
 use crate::avatar;
-use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
@@ -110,7 +109,6 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -285,7 +283,6 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
-    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;

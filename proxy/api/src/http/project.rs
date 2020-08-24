@@ -10,7 +10,6 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::coco;
 use crate::http;
 use crate::project;
 use crate::registry;
@@ -181,7 +180,6 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::coco;
     use crate::error::Error;
     use crate::http;
     use crate::project;
@@ -526,7 +524,6 @@ mod test {
     use librad::git::local::url::LocalUrl;
     use radicle_surf::vcs::git::git2;
 
-    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;

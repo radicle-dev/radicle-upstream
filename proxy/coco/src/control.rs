@@ -14,14 +14,18 @@ use crate::config;
 use crate::peer;
 use crate::project;
 
+/// Control errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// Errors from I/O operations.
     #[error(transparent)]
     Io(#[from] io::Error),
 
+    /// Errors from Git oeprations.
     #[error(transparent)]
     Git(#[from] git2::Error),
 
+    /// Errors from peer interactins.
     #[error(transparent)]
     Peer(#[from] peer::Error),
 }

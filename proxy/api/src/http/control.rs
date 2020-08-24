@@ -79,7 +79,6 @@ mod handler {
 
     use librad::paths;
 
-    use crate::coco;
     use crate::error::Error;
     use crate::http;
     use crate::keystore;

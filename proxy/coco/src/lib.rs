@@ -1,7 +1,22 @@
 //! Abstractions and utilities for git interactions through the API.
 
-#[macro_use]
-extern crate lazy_static;
+#![warn(
+    clippy::all,
+    // clippy::cargo,
+    clippy::nursery,
+    clippy::pedantic,
+    clippy::restriction,
+    clippy::unwrap_used,
+    missing_docs,
+    unused_import_braces,
+    unused_qualifications,
+)]
+#![allow(
+    clippy::expect_used,
+    clippy::implicit_return,
+    clippy::integer_arithmetic,
+    clippy::missing_inline_in_public_items
+)]
 
 pub use librad::hash::Hash;
 pub use librad::meta::project::Project;

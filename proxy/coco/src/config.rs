@@ -12,13 +12,15 @@ use librad::peer;
 
 use crate::seed;
 
+/// Config errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// Errors from I/O operations.
     #[error(transparent)]
     Io(#[from] io::Error),
 }
 
-lazy_static! {
+lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
     pub static ref LOCALHOST_ANY: SocketAddr =
         SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 0));

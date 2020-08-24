@@ -12,7 +12,6 @@ use warp::{path, reject, reply, Filter, Rejection, Reply};
 
 use librad::paths;
 
-use crate::coco;
 use crate::keystore;
 use crate::registry;
 

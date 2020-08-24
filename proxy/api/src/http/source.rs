@@ -1,7 +1,6 @@
 //! Endpoints and serialisation for source code browsing.
 
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
@@ -10,7 +9,6 @@ use librad::meta::user;
 use librad::peer;
 use radicle_surf::vcs::git;
 
-use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
@@ -277,7 +275,6 @@ mod handler {
 
     use radicle_surf::vcs::git;
 
-    use crate::coco;
     use crate::http;
     use crate::registry;
     use crate::session;
@@ -498,316 +495,6 @@ pub struct TreeQuery {
     revision: Option<coco::Revision<peer::PeerId>>,
 }
 
-impl Serialize for coco::Blob {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Blob", 5)?;
-        state.serialize_field("binary", &self.is_binary())?;
-        state.serialize_field("html", &self.is_html())?;
-        state.serialize_field("content", &self.content)?;
-        state.serialize_field("info", &self.info)?;
-        state.serialize_field("path", &self.path)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Blob {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(4);
-        properties.insert(
-            "binary".into(),
-            document::boolean()
-                .description("Flag to indicate if the content of the Blob is binary")
-                .example(true),
-        );
-        properties.insert(
-            "html".into(),
-            document::boolean()
-                .description("Flag to indicate if the content of the Blob is HTML")
-                .example(true),
-        );
-        properties.insert("content".into(), coco::BlobContent::document());
-        properties.insert("info".into(), coco::Info::document());
-
-        document::DocumentedType::from(properties).description("Blob")
-    }
-}
-
-impl Serialize for coco::BlobContent {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Ascii(content) | Self::Html(content) => serializer.serialize_str(content),
-            Self::Binary => serializer.serialize_none(),
-        }
-    }
-}
-
-impl ToDocumentedType for coco::BlobContent {
-    fn document() -> document::DocumentedType {
-        document::string()
-            .description("BlobContent")
-            .example("print 'hello world'")
-            .nullable(true)
-    }
-}
-
-impl ToDocumentedType for coco::Branch {
-    fn document() -> document::DocumentedType {
-        document::string().description("Branch").example("master")
-    }
-}
-
-impl Serialize for coco::Commit {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut changeset = serializer.serialize_struct("Commit", 4)?;
-        changeset.serialize_field("header", &self.header)?;
-        changeset.serialize_field("stats", &self.stats)?;
-        changeset.serialize_field("diff", &self.diff)?;
-        changeset.serialize_field("branch", &self.branch)?;
-        changeset.end()
-    }
-}
-
-impl Serialize for coco::CommitHeader {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("CommitHeader", 6)?;
-        state.serialize_field("sha1", &self.sha1.to_string())?;
-        state.serialize_field("author", &self.author)?;
-        state.serialize_field("summary", &self.summary)?;
-        state.serialize_field("description", &self.description())?;
-        state.serialize_field("committer", &self.committer)?;
-        state.serialize_field("committerTime", &self.committer_time.seconds())?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::CommitHeader {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(6);
-        properties.insert(
-            "sha1".into(),
-            document::string()
-                .description("SHA1 of the Commit")
-                .example("1e0206da8571ca71c51c91154e2fee376e09b4e7"),
-        );
-        properties.insert("author".into(), coco::Person::document());
-        properties.insert(
-            "summary".into(),
-            document::string()
-                .description("Commit message summary")
-                .example("Add text files"),
-        );
-        properties.insert(
-            "description".into(),
-            document::string()
-                .description("Commit description text")
-                .example("Longer desription of the Commit changes."),
-        );
-        properties.insert("committer".into(), coco::Person::document());
-        properties.insert(
-            "committerTime".into(),
-            document::string()
-                .description("Time of the commit")
-                .example("1575283425"),
-        );
-        document::DocumentedType::from(properties).description("CommitHeader")
-    }
-}
-
-impl ToDocumentedType for coco::Commit {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("header".into(), coco::CommitHeader::document());
-        properties.insert(
-            "stats".into(),
-            document::string().description("Commit stats"),
-        );
-        properties.insert(
-            "diff".into(),
-            document::string().description("Commit changeset"),
-        );
-        document::DocumentedType::from(properties).description("Commit")
-    }
-}
-
-impl Serialize for coco::Info {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Info", 3)?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("objectType", &self.object_type)?;
-        state.serialize_field("lastCommit", &self.last_commit)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Info {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Name of the file")
-                .example("arrows.txt"),
-        );
-        properties.insert("objectType".into(), coco::ObjectType::document());
-        properties.insert("lastCommit".into(), coco::Commit::document());
-
-        document::DocumentedType::from(properties).description("Info")
-    }
-}
-
-impl Serialize for coco::ObjectType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Blob => serializer.serialize_unit_variant("ObjectType", 0, "BLOB"),
-            Self::Tree => serializer.serialize_unit_variant("ObjectType", 1, "TREE"),
-        }
-    }
-}
-
-impl ToDocumentedType for coco::ObjectType {
-    fn document() -> document::DocumentedType {
-        document::enum_string(vec!["BLOB".to_string(), "TREE".to_string()])
-            .description("Object type variants")
-            .example(Self::Blob)
-    }
-}
-
-impl Serialize for coco::Person {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Person", 3)?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("email", &self.email)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Person {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Name part of the commit signature.")
-                .example("Alexis Sellier"),
-        );
-        properties.insert(
-            "email".into(),
-            document::string()
-                .description("Email part of the commit signature.")
-                .example("self@cloudhead.io"),
-        );
-
-        document::DocumentedType::from(properties).description("Person")
-    }
-}
-
-impl Serialize for coco::Tag {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl ToDocumentedType for coco::Tag {
-    fn document() -> document::DocumentedType {
-        document::string().description("Tag").example("v0.1.0")
-    }
-}
-
-impl Serialize for coco::Tree {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Tree", 3)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("entries", &self.entries)?;
-        state.serialize_field("info", &self.info)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::Tree {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Absolute path to the tree object from the repo root.")
-                .example("ui/src"),
-        );
-        properties.insert(
-            "entries".into(),
-            document::array(coco::TreeEntry::document())
-                .description("Entries listed in that tree result."),
-        );
-        properties.insert("info".into(), coco::Info::document());
-
-        document::DocumentedType::from(properties).description("Tree")
-    }
-}
-
-impl Serialize for coco::TreeEntry {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Tree", 2)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("info", &self.info)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for coco::TreeEntry {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Absolute path to the object from the root of the repo.")
-                .example("ui/src/main.ts"),
-        );
-        properties.insert("info".into(), coco::Info::document());
-
-        document::DocumentedType::from(properties).description("TreeEntry")
-    }
-}
-
-impl<P, U> ToDocumentedType for coco::Revisions<P, U> {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("identity".into(), identity::Identity::document());
-        properties.insert("branches".into(), document::array(coco::Branch::document()));
-        properties.insert("tags".into(), document::array(coco::Tag::document()));
-
-        document::DocumentedType::from(properties).description("Revisions")
-    }
-}
-
 /// The output structure when calling the `/revisions` endpoint.
 #[derive(Serialize)]
 struct Revisions {
@@ -829,6 +516,17 @@ impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
     }
 }
 
+impl ToDocumentedType for Revisions {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert("identity".into(), identity::Identity::document());
+        properties.insert("branches".into(), document::array(coco::Branch::document()));
+        properties.insert("tags".into(), document::array(coco::Tag::document()));
+
+        document::DocumentedType::from(properties).description("Revisions")
+    }
+}
+
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
@@ -839,7 +537,6 @@ mod test {
 
     use radicle_surf::vcs::git;
 
-    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -1247,20 +944,20 @@ mod test {
                     super::Revisions {
                         identity: (peer_id, owner).into(),
                         branches: vec![
-                            coco::Branch("dev".to_string()),
-                            coco::Branch("master".to_string())
+                            coco::Branch::from("dev".to_string()),
+                            coco::Branch::from("master".to_string())
                         ],
                         tags: vec![
-                            coco::Tag("v0.1.0".to_string()),
-                            coco::Tag("v0.2.0".to_string()),
-                            coco::Tag("v0.3.0".to_string()),
-                            coco::Tag("v0.4.0".to_string()),
-                            coco::Tag("v0.5.0".to_string())
+                            coco::Tag::from("v0.1.0".to_string()),
+                            coco::Tag::from("v0.2.0".to_string()),
+                            coco::Tag::from("v0.3.0".to_string()),
+                            coco::Tag::from("v0.4.0".to_string()),
+                            coco::Tag::from("v0.5.0".to_string())
                         ]
                     },
                     super::Revisions {
                         identity: (remote.clone(), fintohaps).into(),
-                        branches: vec![coco::Branch("master".to_string())],
+                        branches: vec![coco::Branch::from("master".to_string())],
                         tags: vec![]
                     },
                 ])
@@ -1274,7 +971,7 @@ mod test {
             .await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!([coco::Branch("master".to_string())]));
+            assert_eq!(have, json!([coco::Branch::from("master".to_string())]));
         });
 
         Ok(())

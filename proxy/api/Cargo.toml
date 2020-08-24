@@ -1,5 +1,5 @@
 [package]
-name = "proxy"
+name = "api"
 version = "0.1.0"
 license = "GPL-3.0-only"
 authors = ["radicle team <dev@radicle.xyz>"]
@@ -9,7 +9,7 @@ readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/proxy/READ
 categories = [ "crypto", "p2p" ]
 keywords = [ "radicle-upstream", "proxy" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
-default-run = "proxy"
+default-run = "api"
 
 [dependencies]
 async-trait = "0.1"

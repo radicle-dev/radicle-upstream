@@ -15,7 +15,7 @@ pub use radicle_registry_client::{
 };
 
 use crate::avatar;
-use crate::coco;
+
 use crate::error;
 
 mod transaction;
@@ -817,7 +817,7 @@ mod test {
     use std::convert::TryFrom as _;
 
     use crate::avatar;
-    use crate::coco;
+
     use crate::error;
 
     use super::{Client, Id, Metadata, ProjectDomain, ProjectName, Registry};

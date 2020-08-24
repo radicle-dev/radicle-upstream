@@ -9,7 +9,7 @@ use librad::peer;
 use radicle_registry_client::{ed25519, CryptoPair};
 
 use crate::avatar;
-use crate::coco;
+
 use crate::error;
 use crate::registry;
 

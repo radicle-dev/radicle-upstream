@@ -401,7 +401,7 @@ mod test {
     use radicle_registry_client as protocol;
 
     use crate::avatar;
-    use crate::coco;
+
     use crate::error;
     use crate::http;
     use crate::registry::{self, Cache as _, Client as _};

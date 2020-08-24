@@ -5,8 +5,10 @@ use std::io;
 use std::os::unix::fs::PermissionsExt as _;
 use std::path;
 
+/// Git helper errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// Errors from I/O operations.
     #[error(transparent)]
     Io(#[from] io::Error),
 }

@@ -3,7 +3,6 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::coco;
 use crate::error;
 use crate::identity;
 use crate::registry;
