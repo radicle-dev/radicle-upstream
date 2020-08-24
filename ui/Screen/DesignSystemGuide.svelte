@@ -481,6 +481,7 @@
         <Icon.Eye variant="closed" />
         <Icon.Trash />
         <Icon.Label />
+        <Icon.Verified size="small" />
         <Icon.Verified size="large" />
         <Icon.Currency variant="rad-normal" />
         <Icon.Currency variant="rad-big" />
