@@ -21,6 +21,7 @@
     TransactionCenter,
     TransactionSpinner,
     TransactionStatusbar,
+    Tooltip,
     Urn,
   } from "../DesignSystem/Component";
 
@@ -420,92 +421,12 @@
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
-      <Swatch>
-        <h5>Main</h5>
-      </Swatch>
       <IconSwatch>
-        <Icon.Home />
-        <Icon.Source />
-        <Icon.Fund />
-        <Icon.Member />
-        <Icon.Settings />
-      </IconSwatch>
-      <Swatch>
-        <h5>Functional</h5>
-      </Swatch>
-      <IconSwatch>
-        <Icon.ArrowCollapse />
-        <Icon.ArrowExpand />
-        <Icon.ArrowDown />
-        <Icon.ArrowUp />
-        <Icon.ArrowLeft />
-        <Icon.ArrowRight />
-        <Icon.Check />
-        <Icon.CheckCircle />
-        <Icon.CheckedBox />
-        <Icon.CopySmall />
-        <Icon.CopyLarge />
-        <Icon.CrossSmall />
-        <Icon.CrossLarge />
-        <Icon.CrossCircle />
-        <Icon.EllipsesLarge />
-        <Icon.EllipsesSmall />
-        <Icon.Expand />
-        <Icon.Important />
-        <Icon.ImportantNoCircle />
-        <Icon.Info />
-        <Icon.InfoNoCircle />
-        <Icon.Minus />
-        <Icon.Open />
-        <Icon.PlusBig />
-        <Icon.PlusSmall />
-        <Icon.Search />
-      </IconSwatch>
-      <Swatch>
-        <h5>Representational</h5>
-      </Swatch>
-      <IconSwatch>
-        <Icon.Replies />
-        <Icon.Register />
-        <Icon.Edit />
-        <Icon.Inbox />
-        <Icon.File />
-        <Icon.Feed />
-        <Icon.Folder />
-        <Icon.At />
-        <Icon.Key />
-        <Icon.Lock />
-        <Icon.CloseIssue />
-        <Icon.Projects />
-        <Icon.EyeOpen />
-        <Icon.EyeClosed />
-        <Icon.Heart />
-        <Icon.HeartFace />
-        <Icon.Trash />
-        <Icon.Label />
-        <Icon.RegisteredSmall />
-        <Icon.RegisteredLarge />
-        <Icon.CurrencyRadSmall />
-        <Icon.CurrencyRadLarge />
-        <Icon.CurrencyDollarLarge />
-        <Icon.CurrencyEuroLarge />
-        <Icon.Roadmap />
-        <Icon.ChevronUp />
-        <Icon.ChevronDown />
-        <Icon.ChevronRight />
-        <Icon.ChevronLeft />
-      </IconSwatch>
-      <Swatch>
-        <h5>Code</h5>
-      </Swatch>
-      <IconSwatch>
-        <Icon.Peer />
-        <Icon.Commit />
-        <Icon.Revision />
-        <Icon.Branch />
-        <Icon.Graph />
-        <Icon.Merge />
-        <Icon.Review />
+        {#each Object.keys(Icon) as iconName}
+          <Tooltip value={`<Icon.${iconName} />`} position="top">
+            <svelte:component this={Icon[iconName]} />
+          </Tooltip>
+        {/each}
       </IconSwatch>
     </Section>
 
