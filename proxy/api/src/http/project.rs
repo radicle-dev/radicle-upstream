@@ -331,7 +331,7 @@ impl Serialize for project::Registration {
         match self {
             Self::Org(org_id) => {
                 serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            }
+            },
             Self::User(user_id) => serializer.serialize_newtype_variant(
                 "Registration",
                 1,
