@@ -14,7 +14,7 @@ use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
 use radicle_surf::{diff, file_system};
 
 use syntect::easy::HighlightLines;
-use syntect::highlighting::Theme;
+use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
@@ -407,7 +407,7 @@ pub fn blob<P>(
     default_branch: git::Branch,
     maybe_revision: Option<Revision<P>>,
     path: &str,
-    theme: Option<&Theme>,
+    theme: Option<&str>,
 ) -> Result<Blob, Error>
 where
     P: ToString,
@@ -445,17 +445,20 @@ where
 
 /// Return a [`BlobContent`] given a file path, content and theme. Attempts to perform syntax
 /// highlighting when the theme is `Some`.
-fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobContent {
-    match (std::str::from_utf8(content), theme) {
+fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobContent {
+    match (std::str::from_utf8(content), theme_name) {
         (Ok(content), None) => BlobContent::Ascii(content.to_owned()),
-        (Ok(content), Some(theme)) => {
+        (Ok(content), Some(theme_name)) => {
             let syntax = path::Path::new(path)
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
                 .and_then(|ext| SYNTAX_SET.find_syntax_by_extension(ext));
 
-            match syntax {
-                Some(syntax) => {
+            let ts = ThemeSet::load_defaults();
+            let theme = ts.themes.get(theme_name);
+
+            match (syntax, theme) {
+                (Some(syntax), Some(theme)) => {
                     let mut highlighter = HighlightLines::new(syntax, theme);
                     let mut html = String::with_capacity(content.len());
 
@@ -469,7 +472,7 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
                     }
                     BlobContent::Html(html)
                 }
-                None => BlobContent::Ascii(content.to_owned()),
+                _ => BlobContent::Ascii(content.to_owned()),
             }
         }
         (Err(_), _) => BlobContent::Binary,

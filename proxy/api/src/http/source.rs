@@ -145,6 +145,7 @@ mod handler {
     use crate::http;
     use crate::registry;
     use crate::session;
+    use crate::session::settings;
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob<R>(
@@ -162,7 +163,7 @@ mod handler {
     {
         let ctx = ctx.read().await;
 
-        let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
+        let current_session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
 
         let project = ctx
             .peer_api
@@ -177,10 +178,14 @@ mod handler {
         };
 
         let theme = if let Some(true) = highlight {
-            Some(&session.settings.appearance.theme)
+            match &current_session.settings.appearance.theme {
+                settings::Theme::Dark => Some("base16-ocean.dark"),
+                settings::Theme::Light => Some("base16-ocean.light"),
+            }
         } else {
             None
         };
+
         let blob = ctx
             .peer_api
             .with_browser(&project_urn, |mut browser| {
