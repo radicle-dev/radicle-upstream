@@ -418,6 +418,8 @@ impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
+    use std::env;
+
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::http::StatusCode;
@@ -763,14 +765,16 @@ mod test {
         let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let path = "../fixtures/git-platinum";
+        let mut path = env::current_dir()?;
+        path.push("../../fixtures/git-platinum");
+
         let res = request()
             .method("GET")
-            .path(&format!("/local-state/{}", path))
+            .path(&format!("/local-state/{}", path.to_str().unwrap()))
             .reply(&api)
             .await;
 
-        let want = coco::local_state(path).unwrap();
+        let want = coco::local_state(path.to_str().unwrap()).unwrap();
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
