@@ -10,8 +10,8 @@ use librad::meta::entity;
 use librad::meta::project;
 use radicle_surf::vcs::git::git2;
 
-use crate::coco::config;
-use crate::coco::User;
+use crate::config;
+use crate::peer;
 
 /// Errors that can occur during project creation.
 #[derive(Debug, thiserror::Error)]
@@ -191,15 +191,15 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         Ok(repo)
     }
 
-    /// Build a [`project::Project`], where the provided [`User`] is the owner, and the set of keys
-    /// starts with the provided [`keys::PublicKey`].
+    /// Build a [`project::Project`], where the provided [`peer::User`] is the owner, and the set of
+    /// keys starts with the provided [`keys::PublicKey`].
     ///
     /// # Errors
     ///
     ///   * Failed to build the project entity.
     pub fn build(
         &self,
-        owner: &User,
+        owner: &peer::User,
         key: keys::PublicKey,
     ) -> Result<project::Project<entity::Draft>, Error> {
         let name = self.repo.project_name()?;

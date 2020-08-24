@@ -29,11 +29,7 @@
 )]
 #![feature(result_flattening)]
 
-#[macro_use]
-extern crate lazy_static;
-
 pub mod avatar;
-pub mod coco;
 pub mod config;
 pub mod env;
 pub mod error;

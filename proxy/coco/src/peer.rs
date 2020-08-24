@@ -8,21 +8,55 @@ use std::sync::{Arc, Mutex};
 use futures::stream::StreamExt;
 
 use librad::git::local::{transport, url::LocalUrl};
-use librad::git::storage;
+use librad::git::{repo, storage};
 use librad::keys;
 use librad::meta::entity;
-use librad::meta::project;
+use librad::meta::project as librad_project;
 use librad::meta::user;
-use librad::net::discovery;
-pub use librad::net::peer::{PeerApi, PeerConfig, RunLoop};
+use librad::net::peer::{PeerApi, PeerConfig};
+use librad::net::{self, discovery};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::signer::SomeSigner;
 use librad::uri::{RadUrl, RadUrn};
 use radicle_surf::vcs::git;
 
-use crate::coco;
-use crate::error;
+use crate::config;
+use crate::project;
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Accept(#[from] net::peer::AcceptError),
+
+    #[error(transparent)]
+    Bootstrap(#[from] net::peer::BootstrapError),
+
+    #[error(transparent)]
+    Config(#[from] config::Error),
+
+    /// Returned when an attempt to create an identity was made and there is one present.
+    #[error("the identity '{0}' already exits")]
+    EntityExists(RadUrn),
+
+    #[error(transparent)]
+    Meta(#[from] entity::Error),
+
+    #[error(transparent)]
+    ProjectCreate(#[from] project::create::Error),
+
+    #[error(transparent)]
+    Repo(#[from] repo::Error),
+
+    #[error(transparent)]
+    Storage(#[from] storage::Error),
+
+    #[error(transparent)]
+    SurfGit(#[from] git::error::Error),
+
+    #[error(transparent)]
+    Verification(#[from] entity::HistoryVerificationError),
+}
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -43,7 +77,7 @@ impl Api {
     /// If trying to accept on the socket fails
     pub async fn new<I>(
         config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
-    ) -> Result<Self, error::Error>
+    ) -> Result<Self, Error>
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
     {
@@ -106,7 +140,7 @@ impl Api {
     /// # Errors
     ///
     /// When the underlying lock acquisition fails or opening the storage.
-    pub fn reopen(&self) -> Result<(), error::Error> {
+    pub fn reopen(&self) -> Result<(), Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         api.storage().reopen()?;
 
@@ -137,7 +171,7 @@ impl Api {
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            },
+            }
         }
     }
 
@@ -146,7 +180,7 @@ impl Api {
     /// # Errors
     ///
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub fn set_default_owner(&self, user: User) -> Result<(), error::Error> {
+    pub fn set_default_owner(&self, user: User) -> Result<(), Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         Ok(api.storage().set_default_rad_self(user)?)
     }
@@ -158,7 +192,7 @@ impl Api {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub fn init_owner(&self, key: &keys::SecretKey, handle: &str) -> Result<User, error::Error> {
+    pub fn init_owner(&self, key: &keys::SecretKey, handle: &str) -> Result<User, Error> {
         let user = self.init_user(key, handle)?;
         let user = verify_user(user)?;
 
@@ -176,7 +210,7 @@ impl Api {
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
+    pub fn list_projects(&self) -> Result<Vec<librad_project::Project<entity::Draft>>, Error> {
         let project_meta = {
             let api = self.peer_api.lock().expect("unable to acquire lock");
             let storage = api.storage().reopen()?;
@@ -212,7 +246,7 @@ impl Api {
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
+    pub fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage();
 
@@ -240,7 +274,7 @@ impl Api {
         &self,
         urn: &RadUrn,
         peer: P,
-    ) -> Result<project::Project<entity::Draft>, error::Error>
+    ) -> Result<librad_project::Project<entity::Draft>, Error>
     where
         P: Into<Option<PeerId>>,
     {
@@ -259,17 +293,13 @@ impl Api {
     ///   * Could not open librad storage.
     ///   * Failed to clone the project.
     ///   * Failed to set the rad/self of this project.
-    pub fn clone_project<Addrs>(
-        &self,
-        url: RadUrl,
-        addr_hints: Addrs,
-    ) -> Result<RadUrn, error::Error>
+    pub fn clone_project<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
     where
         Addrs: IntoIterator<Item = SocketAddr>,
     {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
-        let repo = storage.clone_repo::<project::ProjectInfo, _>(url, addr_hints)?;
+        let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
         repo.set_rad_self(storage::RadSelfSpec::Default)?;
         Ok(repo.urn)
     }
@@ -283,7 +313,7 @@ impl Api {
     ///   * Could not successfully acquire a lock to the API.
     ///   * Could not open librad storage.
     ///   * Failed to clone the user.
-    pub fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, error::Error>
+    pub fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
     where
         Addrs: IntoIterator<Item = SocketAddr>,
     {
@@ -299,7 +329,7 @@ impl Api {
     ///
     ///   * Resolving the user fails.
     ///   * Could not successfully acquire a lock to the API.
-    pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
+    pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
 
@@ -312,9 +342,9 @@ impl Api {
     ///
     /// The function will result in an error if the mutex guard was poisoned. See
     /// [`std::sync::Mutex::lock`] for further details.
-    pub fn with_browser<F, T>(&self, urn: &RadUrn, callback: F) -> Result<T, error::Error>
+    pub fn with_browser<F, T>(&self, urn: &RadUrn, callback: F) -> Result<T, Error>
     where
-        F: Send + FnOnce(&mut git::Browser) -> Result<T, error::Error>,
+        F: Send + FnOnce(&mut git::Browser) -> Result<T, Error>,
     {
         let git_dir = self.monorepo();
 
@@ -339,8 +369,8 @@ impl Api {
         &self,
         key: &keys::SecretKey,
         owner: &User,
-        project: &coco::project::Create<P>,
-    ) -> Result<project::Project<entity::Draft>, error::Error> {
+        project: &project::Create<P>,
+    ) -> Result<librad_project::Project<entity::Draft>, Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
 
@@ -349,7 +379,7 @@ impl Api {
 
         let urn = meta.urn();
         if storage.has_urn(&urn)? {
-            return Err(error::Error::EntityExists(urn));
+            return Err(Error::EntityExists(urn));
         }
 
         let repo = storage.create_repo(&meta)?;
@@ -374,7 +404,7 @@ impl Api {
         &self,
         key: &keys::SecretKey,
         handle: &str,
-    ) -> Result<user::User<entity::Draft>, error::Error> {
+    ) -> Result<user::User<entity::Draft>, Error> {
         // Create the project meta
         let mut user = user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
         user.sign_owned(key)?;
@@ -386,7 +416,7 @@ impl Api {
             let storage = api.storage().reopen()?;
 
             if storage.has_urn(&urn)? {
-                return Err(error::Error::EntityExists(urn));
+                return Err(Error::EntityExists(urn));
             } else {
                 let _repo = storage.create_repo(&user)?;
             }
@@ -400,7 +430,7 @@ impl Api {
     /// # Errors
     ///
     /// * When the storage operation fails.
-    pub fn track(&self, urn: &RadUrn, remote: &PeerId) -> Result<(), error::Error> {
+    pub fn track(&self, urn: &RadUrn, remote: &PeerId) -> Result<(), Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         Ok(api.storage().track(urn, remote)?)
     }
@@ -414,10 +444,7 @@ impl Api {
     /// * If did not have the `urn` in storage
     /// * If we could not fetch the tracked peers
     /// * If we could not get the `rad/self` of the peer
-    pub fn tracked(
-        &self,
-        urn: &RadUrn,
-    ) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, error::Error> {
+    pub fn tracked(&self, urn: &RadUrn) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
         let repo = storage.open_repo(urn.clone())?;
@@ -425,7 +452,7 @@ impl Api {
             .map(move |peer_id| {
                 repo.get_rad_self_of(peer_id.clone())
                     .map(|user| (peer_id.clone(), user))
-                    .map_err(error::Error::from)
+                    .map_err(Error::from)
             })
             .collect()
     }
@@ -438,7 +465,7 @@ impl Api {
 /// # Errors
 ///
 /// If any of the verification steps fail
-pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error> {
+pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, Error> {
     let fake_resolver = FakeUserResolver(user.clone());
     let verified_user = user.check_history_status(&fake_resolver, &fake_resolver)?;
     Ok(verified_user)
@@ -472,12 +499,11 @@ mod test {
 
     use librad::keys::SecretKey;
 
-    use crate::coco::config;
-    use crate::coco::control;
-    use crate::coco::project;
-    use crate::error::Error;
+    use crate::config;
+    use crate::control;
+    use crate::project;
 
-    use super::Api;
+    use super::{Api, Error};
 
     fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
         project::Create {
@@ -620,7 +646,7 @@ mod test {
 
         let user = api.init_owner(&key, "cloudhead")?;
 
-        control::setup_fixtures(&api, &key, &user)?;
+        control::setup_fixtures(&api, &key, &user).expect("unable to setup fixtures");
 
         let kalt = api.init_user(&key, "kalt")?;
         let kalt = super::verify_user(kalt)?;

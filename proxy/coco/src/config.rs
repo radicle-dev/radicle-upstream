@@ -1,6 +1,7 @@
 //! Configuration for [`crate::coco`].
 
 use std::convert::TryFrom;
+use std::io;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 use librad::keys;
@@ -9,8 +10,13 @@ use librad::net::discovery;
 use librad::paths;
 use librad::peer;
 
-use crate::coco::seed;
-use crate::error;
+use crate::seed;
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Io(#[from] io::Error),
+}
 
 lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
@@ -39,7 +45,7 @@ impl Default for Paths {
 }
 
 impl TryFrom<Paths> for paths::Paths {
-    type Error = error::Error;
+    type Error = Error;
 
     fn try_from(config: Paths) -> Result<Self, Self::Error> {
         match config {
@@ -68,7 +74,7 @@ pub type Disco = discovery::Static<
 pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
+) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, Error> {
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, key, *LOCALHOST_ANY, vec![]))
 }
