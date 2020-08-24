@@ -1,35 +1,35 @@
+import ArrowCollapse from "./ArrowCollapse.svelte";
 import ArrowDown from "./ArrowDown.svelte";
+import ArrowExpand from "./ArrowExpand.svelte";
 import ArrowLeft from "./ArrowLeft.svelte";
 import ArrowRight from "./ArrowRight.svelte";
 import ArrowUp from "./ArrowUp.svelte";
-import ArrowCollapse from "./ArrowCollapse.svelte";
-import ArrowExpand from "./ArrowExpand.svelte";
 import At from "./At.svelte";
 import Branch from "./Branch.svelte";
 import Check from "./Check.svelte";
 import CheckCircle from "./CheckCircle.svelte";
 import CheckedBox from "./CheckedBox.svelte";
-import ChevronUp from "./ChevronUp.svelte";
 import ChevronDown from "./ChevronDown.svelte";
 import ChevronLeft from "./ChevronLeft.svelte";
 import ChevronRight from "./ChevronRight.svelte";
+import ChevronUp from "./ChevronUp.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import CopyLarge from "./CopyLarge.svelte";
 import CopySmall from "./CopySmall.svelte";
-import CrossSmall from "./CrossSmall.svelte";
-import CrossLarge from "./CrossLarge.svelte";
 import CrossCircle from "./CrossCircle.svelte";
-import CurrencyRadSmall from "./CurrencyRadSmall.svelte";
-import CurrencyRadLarge from "./CurrencyRadLarge.svelte";
+import CrossLarge from "./CrossLarge.svelte";
+import CrossSmall from "./CrossSmall.svelte";
 import CurrencyDollarLarge from "./CurrencyDollarLarge.svelte";
 import CurrencyEuroLarge from "./CurrencyEuroLarge.svelte";
+import CurrencyRadLarge from "./CurrencyRadLarge.svelte";
+import CurrencyRadSmall from "./CurrencyRadSmall.svelte";
 import Edit from "./Edit.svelte";
 import EllipsesLarge from "./EllipsesLarge.svelte";
 import EllipsesSmall from "./EllipsesSmall.svelte";
 import Expand from "./Expand.svelte";
-import EyeOpen from "./EyeOpen.svelte";
 import EyeClosed from "./EyeClosed.svelte";
+import EyeOpen from "./EyeOpen.svelte";
 import Feed from "./Feed.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
@@ -56,11 +56,11 @@ import PlusBig from "./PlusBig.svelte";
 import PlusSmall from "./PlusSmall.svelte";
 import Projects from "./Projects.svelte";
 import Register from "./Register.svelte";
-import RegisteredSmall from "./RegisteredSmall.svelte";
 import RegisteredLarge from "./RegisteredLarge.svelte";
+import RegisteredSmall from "./RegisteredSmall.svelte";
+import Replies from "./Replies.svelte";
 import Review from "./Review.svelte";
 import Revision from "./Revision.svelte";
-import Replies from "./Replies.svelte";
 import Roadmap from "./Roadmap.svelte";
 import Search from "./Search.svelte";
 import Settings from "./Settings.svelte";
@@ -68,38 +68,38 @@ import Source from "./Source.svelte";
 import Trash from "./Trash.svelte";
 
 export default {
+  ArrowCollapse,
   ArrowDown,
+  ArrowExpand,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  ArrowCollapse,
-  ArrowExpand,
   At,
   Branch,
   Check,
   CheckCircle,
   CheckedBox,
-  ChevronUp,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   CloseIssue,
   Commit,
   CopyLarge,
   CopySmall,
-  CrossSmall,
-  CrossLarge,
   CrossCircle,
-  CurrencyRadSmall,
-  CurrencyRadLarge,
+  CrossLarge,
+  CrossSmall,
   CurrencyDollarLarge,
   CurrencyEuroLarge,
+  CurrencyRadLarge,
+  CurrencyRadSmall,
   Edit,
   EllipsesLarge,
   EllipsesSmall,
   Expand,
-  EyeOpen,
   EyeClosed,
+  EyeOpen,
   Feed,
   File,
   Folder,
@@ -126,11 +126,11 @@ export default {
   PlusSmall,
   Projects,
   Register,
-  RegisteredSmall,
   RegisteredLarge,
+  RegisteredSmall,
+  Replies,
   Review,
   Revision,
-  Replies,
   Roadmap,
   Search,
   Settings,
