@@ -5,6 +5,7 @@
   import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    Copyable,
     EmptyState,
     Dropdown,
     ModalLayout,
@@ -424,7 +425,13 @@
       <IconSwatch>
         {#each Object.keys(Icon) as iconName}
           <Tooltip value={`<Icon.${iconName} />`} position="top">
-            <svelte:component this={Icon[iconName]} />
+            <Copyable
+              notificationText="Icon markup copied to your clipboard"
+              iconBeforeCopy={null}
+              styleContent={false}
+              copyContent={`<Icon.${iconName} />`}>
+              <svelte:component this={Icon[iconName]} />
+            </Copyable>
           </Tooltip>
         {/each}
       </IconSwatch>

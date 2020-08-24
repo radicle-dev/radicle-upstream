@@ -10,6 +10,7 @@
   export let iconBeforeCopy = Icon.CopySmall;
   export let iconAfterCopy = Icon.Check;
   export let iconSize = "small";
+  export let styleContent = true;
 
   let slotContent;
   let copyIcon = iconBeforeCopy;
@@ -55,7 +56,7 @@
 </style>
 
 <div class="wrapper" on:click|stopPropagation={copy}>
-  <span class="content" bind:this={slotContent} {style}>
+  <span class:content={styleContent} bind:this={slotContent} {style}>
     <slot />
     {#if iconBeforeCopy && iconAfterCopy}
       <svelte:component
