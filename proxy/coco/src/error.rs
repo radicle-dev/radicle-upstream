@@ -9,6 +9,7 @@ use radicle_surf::file_system;
 use radicle_surf::vcs::git;
 use radicle_surf::vcs::git::git2;
 
+/// Error emitted by one of the modules.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Peer accept error.

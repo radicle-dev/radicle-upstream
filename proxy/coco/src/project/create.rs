@@ -224,10 +224,10 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     }
 }
 
+// Clippy is stupid and doesn't realise the `Create`s here are different types than `Self`.
 #[allow(clippy::use_self)]
-#[cfg(test)]
 impl<Path: AsRef<path::Path>> Create<Path> {
-    // Clippy is stupid and doesn't realise the `Create`s here are different types than `Self`.
+    /// Transforms into an existing project.
     #[must_use]
     pub fn into_existing(self) -> Create<PathBuf> {
         Create {
