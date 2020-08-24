@@ -3,12 +3,12 @@ use std::convert::TryFrom;
 use librad::paths;
 
 use proxy::coco;
+use proxy::coco::seed;
 use proxy::coco::signer;
 use proxy::config;
 use proxy::env;
 use proxy::http;
 use proxy::registry;
-use proxy::seed;
 use proxy::session;
 
 /// Flags accepted by the proxy binary.
@@ -45,13 +45,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
 
             client
-        },
+        }
         host => {
             let host = url17::Host::parse(host)?;
             radicle_registry_client::Client::create_with_executor(host)
                 .await
                 .expect("unable to construct devnet client")
-        },
+        }
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
@@ -90,7 +90,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
             vec![]
         });
-        let config = coco::config::configure(paths, signer.clone(), seeds);
+        let config =
+            coco::config::configure(paths, signer.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
         coco::Api::new(config).await?
     };

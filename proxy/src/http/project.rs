@@ -76,6 +76,7 @@ where
     http::with_context(ctx.clone())
         .and(http::with_owner_guard(ctx))
         .and(warp::post())
+        .and(path::end())
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -244,7 +245,9 @@ mod handler {
         let ctx = ctx.read().await;
         let project = ctx.peer_api.get_project(&urn, peer_id)?;
 
-        let path = project::Checkout::new(project, path, None).run()?;
+        let path = coco::project::Checkout::new(project, path)
+            .run(ctx.peer_api.peer_id())
+            .map_err(Error::from)?;
 
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
     }
@@ -349,7 +352,7 @@ impl Serialize for project::Registration {
         match self {
             Self::Org(org_id) => {
                 serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            },
+            }
             Self::User(user_id) => serializer.serialize_newtype_variant(
                 "Registration",
                 1,
@@ -546,12 +549,80 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::git::local::url::LocalUrl;
+    use radicle_surf::vcs::git::git2;
+
     use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
     use crate::project;
     use crate::session;
+
+    #[tokio::test]
+    async fn checkout() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let dir = tempfile::tempdir_in(repos_dir.path())?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let handle = "cloudhead";
+
+        let owner = ctx.peer_api.init_owner(&ctx.signer, handle)?;
+        session::set_identity(&ctx.store, (ctx.peer_api.peer_id(), owner.clone()).into())?;
+
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.peer_api,
+            &ctx.signer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+        let urn = platinum_project.urn();
+
+        let input = super::CheckoutInput {
+            path: dir.path().to_path_buf(),
+            peer_id: None,
+        };
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/checkout", urn))
+            .json(&input)
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::CREATED, |_| {});
+        assert!(dir.path().exists());
+
+        let repo = git2::Repository::open(dir.path().join("git-platinum"))?;
+        let refs = repo
+            .branches(None)?
+            .map(|branch| {
+                branch
+                    .expect("failed to get branch")
+                    .0
+                    .name()
+                    .expect("failed to get name")
+                    .expect("utf-8 error")
+                    .to_string()
+            })
+            .collect::<Vec<_>>();
+        let remote = repo.find_remote(coco::config::RAD_REMOTE)?;
+        assert_eq!(
+            remote.url(),
+            Some(
+                LocalUrl::from_urn(urn, ctx.peer_api.peer_id())
+                    .to_string()
+                    .as_str()
+            )
+        );
+        assert_eq!(refs, vec!["master", "rad/dev", "rad/master"]);
+
+        Ok(())
+    }
 
     #[tokio::test]
     async fn create_new() -> Result<(), error::Error> {
@@ -664,6 +735,88 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, want);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_existing_after_reset() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let dir = tempfile::tempdir_in(repos_dir.path())?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
+        let api = super::filters(ctx.clone());
+
+        {
+            let ctx = ctx.read().await;
+            let handle = "cloudhead";
+            let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
+
+            session::set_identity(&ctx.store, id)?;
+        }
+
+        let project = coco::project::Create {
+            repo: coco::project::Repo::New {
+                path: dir.path(),
+                name: "Upstream".to_string(),
+            },
+            description: "Desktop client for radicle.".into(),
+            default_branch: "master".into(),
+        };
+
+        let _res = request()
+            .method("POST")
+            .path("/")
+            .json(&project)
+            .reply(&api)
+            .await;
+
+        {
+            let mut ctx = ctx.write().await;
+            ctx.reset().await?;
+        }
+
+        {
+            let ctx = ctx.read().await;
+            let handle = "cloudhead";
+            let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
+
+            session::set_identity(&ctx.store, id)?;
+        }
+
+        let res = request()
+            .method("POST")
+            .path("/")
+            .json(&project.into_existing())
+            .reply(&api)
+            .await;
+
+        let projects = {
+            let ctx = ctx.read().await;
+            project::list_projects(&ctx.peer_api)
+        }?;
+
+        let meta = projects.first().unwrap();
+
+        let want = json!({
+            "id": meta.id,
+            "metadata": {
+                "defaultBranch": "master",
+                "description": "Desktop client for radicle.",
+                "name": "Upstream",
+            },
+            "registration": Value::Null,
+            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
+            "stats": {
+                "branches": 1,
+                "commits": 1,
+                "contributors": 1,
+            },
+        });
+
+        http::test::assert_response(&res, StatusCode::CREATED, |have| {
+            assert_eq!(have, want);
+        });
 
         Ok(())
     }

@@ -42,7 +42,7 @@ pub enum Error {
 
     /// Failed to create a librad project.
     #[error(transparent)]
-    ProjectCreation(#[from] coco::project::Error),
+    ProjectCreation(#[from] coco::project::create::Error),
 
     /// FileSystem errors from interacting with code in repository.
     #[error(transparent)]
@@ -51,10 +51,6 @@ pub enum Error {
     /// Trying to find a file path which could not be found.
     #[error("the path '{0}' was not found")]
     PathNotFound(surf::file_system::Path),
-
-    /// Could not construct a path.
-    #[error(transparent)]
-    JoinPaths(#[from] std::env::JoinPathsError),
 
     /// Originated from `radicle_surf`.
     #[error(transparent)]
@@ -89,8 +85,8 @@ pub enum Error {
     BlockNotFound(registry::BlockHash),
 
     /// An error occurred while performing the checkout of a project.
-    #[error("checkout of the project failed")]
-    Checkout,
+    #[error(transparent)]
+    Checkout(#[from] coco::project::checkout::Error),
 
     /// Accept error from `librad`.
     #[error(transparent)]

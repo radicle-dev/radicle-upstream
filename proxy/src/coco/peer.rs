@@ -5,14 +5,19 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use futures::stream::StreamExt;
+
+use librad::git::local::{transport, url::LocalUrl};
+use librad::git::storage;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
-pub use librad::net::peer::{PeerApi, PeerConfig};
+use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
-use librad::uri::RadUrn;
+use librad::signer::SomeSigner;
+use librad::uri::{RadUrl, RadUrn};
 use radicle_surf::vcs::git;
 
 use crate::coco;
@@ -24,6 +29,7 @@ use crate::coco::signer::{SignError, Signer};
 pub type User = user::User<entity::Verified>;
 
 /// High-level interface to the coco monorepo and gossip layer.
+#[derive(Clone)]
 pub struct Api<S>
 where
     S: Signer,
@@ -50,10 +56,40 @@ where
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
     {
+        let paths = config.paths.clone();
+        let signer = config.signer.clone();
+
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
         // publish events.
-        let (api, _futures) = peer.accept()?;
+        let (api, run_loop) = peer.accept()?;
+
+        let protocol = api.protocol();
+        let protocol_subscriber = protocol.subscribe().await;
+        let protocol_notifications = protocol_subscriber.for_each(|notification| {
+            log::info!("protocol.notification = {:?}", notification);
+
+            futures::future::ready(())
+        });
+        tokio::spawn(protocol_notifications);
+
+        let subscriber = api.subscribe();
+        let api_notifications = subscriber.await.for_each(|notification| {
+            log::info!("peer.event = {:?}", notification);
+
+            futures::future::ready(())
+        });
+        tokio::spawn(api_notifications);
+
+        tokio::spawn(async move {
+            run_loop.await;
+        });
+
+        // Register the rad:// transport protocol
+        transport::register(transport::Settings {
+            paths,
+            signer: SomeSigner { signer }.into(),
+        });
 
         Ok(Self {
             peer_api: Arc::new(Mutex::new(api)),
@@ -93,6 +129,13 @@ where
         api.peer_id().clone()
     }
 
+    /// The address this peer is listening on.
+    #[must_use]
+    pub fn listen_addr(&self) -> SocketAddr {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        api.listen_addr()
+    }
+
     /// Get the default owner for this `PeerApi`.
     #[must_use]
     pub fn default_owner(&self) -> Option<user::User<entity::Draft>> {
@@ -103,7 +146,7 @@ where
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            },
+            }
         }
     }
 
@@ -216,6 +259,49 @@ where
         Ok(storage.metadata_of(urn, peer)?)
     }
 
+    /// Given some hints as to where you might find it, get the urn of the project found at `url`.
+    ///
+    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
+    ///
+    /// # Errors
+    ///   * Could not successfully acquire a lock to the API.
+    ///   * Could not open librad storage.
+    ///   * Failed to clone the project.
+    ///   * Failed to set the rad/self of this project.
+    pub fn clone_project<Addrs>(
+        &self,
+        url: RadUrl,
+        addr_hints: Addrs,
+    ) -> Result<RadUrn, error::Error>
+    where
+        Addrs: IntoIterator<Item = SocketAddr>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        let repo = storage.clone_repo::<project::ProjectInfo, _>(url, addr_hints)?;
+        repo.set_rad_self(storage::RadSelfSpec::Default)?;
+        Ok(repo.urn)
+    }
+
+    /// Given some hints as to where you might find it, get the urn of the user found at `url`.
+    ///
+    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
+    ///
+    /// # Errors
+    ///
+    ///   * Could not successfully acquire a lock to the API.
+    ///   * Could not open librad storage.
+    ///   * Failed to clone the user.
+    pub fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, error::Error>
+    where
+        Addrs: IntoIterator<Item = SocketAddr>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        let repo = storage.clone_repo::<user::UserInfo, _>(url, addr_hints)?;
+        Ok(repo.urn)
+    }
+
     /// Get the user found at `urn`.
     ///
     /// # Errors
@@ -267,18 +353,20 @@ where
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
 
-        let mut meta = project.build(owner, signer)?;
+        let mut meta = project.build(owner, signer.public_key().into())?;
         meta.sign_owned(signer)?;
 
         let urn = meta.urn();
         if storage.has_urn(&urn)? {
             return Err(error::Error::EntityExists(urn));
-        } else {
-            let repo = storage.create_repo(&meta)?;
-            repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
         }
 
-        let _ = project.setup_repo(api.paths().git_dir(), &urn)?;
+        let repo = storage.create_repo(&meta)?;
+        repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
+        log::debug!("Created project with Urn '{}'", urn);
+
+        let repo = project.setup_repo(LocalUrl::from_urn(urn, api.peer_id().clone()))?;
+        log::debug!("Setup repository at path '{}'", repo.path().display());
 
         Ok(meta)
     }
@@ -388,7 +476,9 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+    use std::env;
     use std::path::PathBuf;
+    use std::process::Command;
 
     use librad::keys::SecretKey;
 
@@ -421,6 +511,17 @@ mod test {
         }
     }
 
+    fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
+        project::Create {
+            repo: project::Repo::New {
+                path,
+                name: "just".to_string(),
+            },
+            description: "do".to_string(),
+            default_branch: "it".to_string(),
+        }
+    }
+
     #[tokio::test]
     async fn can_create_user() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
@@ -437,6 +538,7 @@ mod test {
     #[tokio::test]
     async fn can_create_project() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
@@ -571,6 +673,148 @@ mod test {
         user_handles.sort();
 
         assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn can_clone_project() -> Result<(), Error> {
+        let alice_key = SecretKey::new();
+
+        let alice_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let alice_repo_path = alice_tmp_dir.path().join("radicle");
+        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
+        let alice_peer = Api::new(config).await?;
+
+        let alice = alice_peer.init_owner(&alice_key, "alice")?;
+        let project =
+            alice_peer.init_project(&alice_key, &alice, &shia_le_pathbuf(alice_repo_path))?;
+
+        let bob_key = SecretKey::new();
+
+        let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+
+        let bob_config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
+        let bob_peer = Api::new(bob_config).await?;
+        let _bob = bob_peer.init_owner(&bob_key, "bob")?;
+
+        let bobby = bob_peer.clone();
+        let project_urn = tokio::task::spawn_blocking(move || {
+            bobby.clone_project(
+                project.urn().into_rad_url(alice_peer.peer_id()),
+                vec![alice_peer.listen_addr()].into_iter(),
+            )
+        })
+        .await
+        .expect("failed to join thread")?;
+
+        assert_eq!(
+            bob_peer
+                .list_projects()?
+                .into_iter()
+                .map(|project| project.urn())
+                .collect::<Vec<_>>(),
+            vec![project_urn]
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn can_clone_user() -> Result<(), Error> {
+        let alice_key = SecretKey::new();
+        let bob_key = SecretKey::new();
+
+        let alice_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
+        let alice_peer = Api::new(config).await?;
+
+        let bob_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
+        let bob_peer = Api::new(config).await?;
+
+        let alice = alice_peer.init_user(&alice_key, "alice")?;
+        let bobby = bob_peer.clone();
+        let user_urn = tokio::task::spawn_blocking(move || {
+            bobby.clone_user(
+                alice.urn().into_rad_url(alice_peer.peer_id()),
+                vec![alice_peer.listen_addr()].into_iter(),
+            )
+        })
+        .await
+        .expect("failed to join thread")?;
+
+        assert_eq!(
+            bob_peer
+                .list_users()?
+                .into_iter()
+                .map(|user| user.urn())
+                .collect::<Vec<_>>(),
+            vec![user_urn]
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_with_existing_remote_with_reset() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let kalt = api.init_owner(&key, "kalt")?;
+
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+
+        assert!(repo_path.join(fakie.name()).exists());
+
+        // Simulate resetting the monorepo
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        // Create fakie project from the existing directory above.
+        let kalt = api.init_owner(&key, "kalt")?;
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
+
+        // Attempt to initialise a browser to ensure we can look at branches in the project
+        let _stats = api.with_browser(&fakie.urn(), |browser| Ok(browser.get_stats()?))?;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_with_existing_remote() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let kalt = api.init_owner(&key, "kalt")?;
+
+        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+
+        let fake_fakie = repo_path.join("fake-fakie");
+
+        let copy = Command::new("cp")
+            .arg("-rf")
+            .arg(repo_path.join(fakie.name()))
+            .arg(fake_fakie.clone())
+            .status()
+            .expect("failed to copy directory");
+
+        assert!(copy.success());
+
+        let fake_fakie = project::Create {
+            repo: project::Repo::Existing { path: fake_fakie },
+            description: "".to_string(),
+            default_branch: fakie.default_branch().to_owned(),
+        };
+        let _fake_fakie = api.init_project(&key, &kalt, &fake_fakie)?;
 
         Ok(())
     }

@@ -29,6 +29,9 @@
 )]
 #![feature(result_flattening)]
 
+#[macro_use]
+extern crate lazy_static;
+
 pub mod avatar;
 pub mod coco;
 pub mod config;
@@ -39,5 +42,4 @@ pub mod identity;
 mod notification;
 pub mod project;
 pub mod registry;
-pub mod seed;
 pub mod session;
