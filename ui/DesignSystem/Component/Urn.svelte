@@ -34,11 +34,7 @@
   data-cy="urn"
   on:mouseover={showFullUrn}
   on:mouseout={hideFullUrn}>
-  <Copyable
-    iconSize="small"
-    style="align-items: center;"
-    copyContent={urn}
-    {notificationText}>
+  <Copyable style="align-items: center;" copyContent={urn} {notificationText}>
     {#if urn.length > 24}
       {#if (showOnHover && !hover) || !showOnHover}
         <p class="typo-text-small-mono">{firstSix}</p>

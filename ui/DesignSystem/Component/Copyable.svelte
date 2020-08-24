@@ -9,7 +9,6 @@
   export let notificationText = "Copied to your clipboard";
   export let iconBeforeCopy = Icon.CopySmall;
   export let iconAfterCopy = Icon.Check;
-  export let iconSize = "small";
   export let styleContent = true;
 
   let slotContent;
@@ -61,8 +60,7 @@
     {#if iconBeforeCopy && iconAfterCopy}
       <svelte:component
         this={copyIcon}
-        size={iconSize}
-        style="display: flex; margin-left: 0.25rem; min-width: {iconSize === 'small' ? '16px' : '24px'};" />
+        style="display: flex; margin-left: 0.25rem; min-width: 24px;" />
     {/if}
   </span>
 </div>

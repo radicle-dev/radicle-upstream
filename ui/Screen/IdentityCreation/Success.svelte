@@ -64,7 +64,7 @@
         <Avatar size="big" avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
           <p class="typo-text-bold">{identity.metadata.handle}</p>
-          <Copyable iconSize="normal">
+          <Copyable>
             <Flex align="left">
               <p
                 class="typo-overflow-ellipses"
