@@ -86,6 +86,7 @@ mod handler {
     use crate::registry;
 
     /// Create a project from the fixture repo.
+    #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project<R>(
         ctx: http::Ctx<R>,
         owner: coco::User,

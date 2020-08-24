@@ -33,6 +33,7 @@ pub enum UserValidation {
 /// All error variants the API will return.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// Coco errors.
     #[error(transparent)]
     Coco(#[from] coco::Error),
 

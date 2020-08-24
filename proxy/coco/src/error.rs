@@ -1,3 +1,5 @@
+//! Collection of all crate errors.
+
 use std::io;
 use std::path;
 

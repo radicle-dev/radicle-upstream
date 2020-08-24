@@ -4,9 +4,10 @@ use std::process::exit;
 
 use log::{info, trace};
 
-use proxy::coco::control;
-use proxy::config;
-use proxy::env;
+use coco::control;
+
+use api::config;
+use api::env;
 
 fn main() {
     env::set_if_unset("RUST_BACKTRACE", "full");
