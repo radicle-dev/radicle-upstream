@@ -69,7 +69,7 @@ mod handler {
                         }),
                         StatusCode::BAD_REQUEST,
                     ))
-                }
+                },
             },
         );
 

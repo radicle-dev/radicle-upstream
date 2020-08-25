@@ -138,7 +138,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            }
+            },
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -276,7 +276,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            }
+            },
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
