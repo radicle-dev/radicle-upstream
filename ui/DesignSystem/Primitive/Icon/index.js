@@ -59,7 +59,7 @@ import Registered from "./Registered.svelte";
 import RegisteredSmall from "./RegisteredSmall.svelte";
 import Review from "./Review.svelte";
 import Revision from "./Revision.svelte";
-import Roadmap from "./Roadmap.svelte";
+import Road from "./Road.svelte";
 import Server from "./Server.svelte";
 import Settings from "./Settings.svelte";
 import Trash from "./Trash.svelte";
@@ -128,7 +128,7 @@ export default {
   RegisteredSmall,
   Review,
   Revision,
-  Roadmap,
+  Road,
   Server,
   Settings,
   Trash,
