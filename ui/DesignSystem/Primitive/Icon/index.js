@@ -31,8 +31,8 @@ import CurrencyRadSmall from "./CurrencyRadSmall.svelte";
 import Ellipses from "./Ellipses.svelte";
 import EllipsesSmall from "./EllipsesSmall.svelte";
 import Envelope from "./Envelope.svelte";
+import Exclamation from "./Exclamation.svelte";
 import ExclamationCircle from "./ExclamationCircle.svelte";
-import ExclamationNoCircle from "./ExclamationNoCircle.svelte";
 import EyeClosed from "./EyeClosed.svelte";
 import EyeOpen from "./EyeOpen.svelte";
 import File from "./File.svelte";
@@ -99,8 +99,8 @@ export default {
   Ellipses,
   EllipsesSmall,
   Envelope,
+  Exclamation,
   ExclamationCircle,
-  ExclamationNoCircle,
   EyeClosed,
   EyeOpen,
   File,
