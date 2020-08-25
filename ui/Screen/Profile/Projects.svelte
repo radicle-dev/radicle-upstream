@@ -3,6 +3,7 @@
 
   import * as path from "../../src/path.ts";
   import { projects as projectsStore } from "../../src/project.ts";
+  import { BadgeType } from "../../src/badge.ts";
 
   import { Flex } from "../../DesignSystem/Primitive";
   import {
@@ -23,6 +24,9 @@
     title: project.metadata.name,
     description: project.metadata.description,
     showRegisteredBadge: project.registration,
+    badge:
+      project.metadata.maintainers.includes(session.identity.urn) &&
+      BadgeType.Maintainer,
   });
 
   const create = () => push(path.createProject());
