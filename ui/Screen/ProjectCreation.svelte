@@ -177,7 +177,7 @@
       );
     } finally {
       loading = false;
-      screen.unLock();
+      screen.unlock();
     }
   };
 
@@ -185,7 +185,7 @@
   // to make sure the screen gets unlocked in any case when the component gets
   // destroyed.
   onDestroy(() => {
-    screen.unLock();
+    screen.unlock();
   });
 
   const shortenUrn = string => {

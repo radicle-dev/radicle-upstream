@@ -101,7 +101,7 @@
     } catch (error) {
       notification.error(`Checkout failed: ${error.message}`, true);
     } finally {
-      screen.unLock();
+      screen.unlock();
     }
   };
 
