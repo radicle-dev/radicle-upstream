@@ -39,7 +39,7 @@
   <Tooltip value={`$${usd}`} position="bottom">
     {#if size === 'regular'}
       <div class="amount {variant}">
-        <Icon.CurrencyRadSmall
+        <Icon.CurrencyRADSmall
           style={variant === 'credit' ? 'fill: var(--color-negative);' : 'fill: var(--color-positive);'} />
         <p class="typo-text-small-bold" data-cy="amount">
           {variant === 'credit' ? `-${rad}` : `+${rad}`}
@@ -47,7 +47,7 @@
       </div>
     {:else if size === 'big'}
       <div class="big">
-        <Icon.CurrencyRad
+        <Icon.CurrencyRAD
           style="transform: scale(1.83); fill: var(--color-secondary);" />
         <h1
           style="color: var(--color-secondary); margin-left: 0.25rem;"
