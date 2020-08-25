@@ -1,8 +1,13 @@
 <script>
-  import { SidebarLayout } from "../DesignSystem/Component";
+  import { Header, Remote, SidebarLayout } from "../DesignSystem/Component";
+  import { fetch, identity as store } from "../src/identity.ts";
   export let params = null;
 
-  const id = params.id;
+  $: fetch({ urn: params.urn });
 </script>
 
-<SidebarLayout>User profile: {id}</SidebarLayout>
+<SidebarLayout>
+  <Remote {store} let:data={identity}>
+    <Header.Large variant="profile" entity={identity} />
+  </Remote>
+</SidebarLayout>
