@@ -8,6 +8,7 @@
   import { checkout } from "../../src/project.ts";
   import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
+  import * as screen from "../../src/screen.ts";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
@@ -81,6 +82,7 @@
 
   const handleCheckout = async event => {
     try {
+      screen.lock();
       const path = await checkout(
         id,
         event.detail.checkoutDirectoryPath,
@@ -98,6 +100,8 @@
       );
     } catch (error) {
       notification.error(`Checkout failed: ${error.message}`, true);
+    } finally {
+      screen.unLock();
     }
   };
 
