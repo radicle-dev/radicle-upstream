@@ -17,7 +17,7 @@
       event: () => console.log(`go to ${member.handle}'s profile`),
     },
     {
-      icon: Icon.CrossLarge,
+      icon: Icon.Cross,
       title: "Remove member",
       event: () => console.log(`remove ${member.handle}`),
     },

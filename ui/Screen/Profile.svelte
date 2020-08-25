@@ -47,7 +47,7 @@
     {
       title: "New project",
       dataCy: "new-project",
-      icon: Icon.PlusLarge,
+      icon: Icon.Plus,
       event: () => push(path.createProject()),
     },
   ];

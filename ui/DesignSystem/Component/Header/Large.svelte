@@ -101,7 +101,7 @@
             {/if}
           </h1>
           {#if variant === 'org' || entity.registered}
-            <Icon.RegisteredLarge
+            <Icon.Registered
               dataCy="verified-badge"
               style="fill: var(--color-primary); margin-left: 6px;" />
           {/if}

@@ -124,8 +124,7 @@
         showLeftItem
         style="flex: 1; padding-bottom: 1rem;">
         <div slot="left" style="display: flex;">
-          <Icon.CurrencyRadLarge
-            style="fill: var(--color-foreground-level-6)" />
+          <Icon.CurrencyRad style="fill: var(--color-foreground-level-6)" />
         </div>
       </Input.Text>
       <!-- TODO: Add note back in when implemented on registry

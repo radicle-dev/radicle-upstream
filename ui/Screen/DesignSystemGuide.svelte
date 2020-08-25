@@ -80,12 +80,12 @@
   const additionalActionsDropdownItems = [
     {
       title: "Add something",
-      icon: Icon.PlusLarge,
+      icon: Icon.Plus,
       event: () => console.log("event(Add Something)"),
     },
     {
       title: "Add something else",
-      icon: Icon.PlusLarge,
+      icon: Icon.Plus,
       event: () => console.log("event(Add Something Else)"),
     },
     {
@@ -467,10 +467,10 @@
             <Button variant="primary" disabled>Primary</Button>
           </td>
           <td>
-            <Button icon={Icon.MinusLarge} variant="primary">Primary</Button>
+            <Button icon={Icon.Minus} variant="primary">Primary</Button>
           </td>
           <td>
-            <Button icon={Icon.MinusLarge} variant="primary" disabled>
+            <Button icon={Icon.Minus} variant="primary" disabled>
               Primary
             </Button>
           </td>
@@ -501,12 +501,10 @@
             <Button variant="vanilla" disabled>Vanilla</Button>
           </td>
           <td>
-            <Button icon={Icon.PlusLarge} variant="vanilla">Vanilla</Button>
+            <Button icon={Icon.Plus} variant="vanilla">Vanilla</Button>
           </td>
           <td>
-            <Button icon={Icon.PlusLarge} variant="vanilla" disabled>
-              Vanilla
-            </Button>
+            <Button icon={Icon.Plus} variant="vanilla" disabled>Vanilla</Button>
           </td>
         </tr>
         <tr>
@@ -547,12 +545,10 @@
             <Button variant="destructive" disabled>Destructive</Button>
           </td>
           <td>
-            <Button icon={Icon.CrossLarge} variant="destructive">
-              Destructive
-            </Button>
+            <Button icon={Icon.Cross} variant="destructive">Destructive</Button>
           </td>
           <td>
-            <Button icon={Icon.CrossLarge} variant="destructive" disabled>
+            <Button icon={Icon.Cross} variant="destructive" disabled>
               Destructive
             </Button>
           </td>

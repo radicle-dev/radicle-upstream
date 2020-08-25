@@ -47,7 +47,7 @@
       </div>
     {:else if size === 'big'}
       <div class="big">
-        <Icon.CurrencyRadLarge
+        <Icon.CurrencyRad
           style="transform: scale(1.83); fill: var(--color-secondary);" />
         <h1
           style="color: var(--color-secondary); margin-left: 0.25rem;"

@@ -9,7 +9,7 @@
 <Button
   dataCy="new-project-button"
   variant="transparent"
-  icon={Icon.PlusLarge}
+  icon={Icon.Plus}
   on:click={() => push(path.createProject())}>
   New project
 </Button>

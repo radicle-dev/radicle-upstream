@@ -4,7 +4,7 @@
 
 <Button
   variant="transparent"
-  icon={Icon.PlusLarge}
+  icon={Icon.Plus}
   on:click={() => console.log('event(new-issue)')}>
   New issue
 </Button>

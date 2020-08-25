@@ -215,8 +215,7 @@
           style="flex: 1; padding-bottom: 0.5rem;"
           validation={$amountValidation}>
           <div slot="left" style="display: flex;">
-            <Icon.CurrencyRadLarge
-              style="fill: var(--color-foreground-level-6)" />
+            <Icon.CurrencyRad style="fill: var(--color-foreground-level-6)" />
           </div>
         </Input.Text>
         <p

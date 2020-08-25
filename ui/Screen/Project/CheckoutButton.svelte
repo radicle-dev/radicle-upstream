@@ -83,7 +83,7 @@
 
 <Button
   variant="transparent"
-  icon={Icon.CopyLarge}
+  icon={Icon.Copy}
   on:click={toggleDropdown}
   dataCy="checkout-modal-toggle">
   Checkout
