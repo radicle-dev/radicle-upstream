@@ -29,7 +29,6 @@
 
   .registered {
     display: flex;
-    margin-left: 9px;
   }
 
   .desc {
@@ -45,8 +44,7 @@
       <p class="typo-text-bold">{title}</p>
       {#if showRegisteredBadge}
         <div data-cy="registered" class="registered">
-          <Icon.RegisteredSmall
-            style="fill: var(--color-primary); position: relative; bottom: -3px;" />
+          <Icon.RegisteredSmall style="fill: var(--color-primary);" />
         </div>
       {/if}
     </div>

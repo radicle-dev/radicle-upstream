@@ -546,12 +546,12 @@
             <Button variant="destructive" disabled>Destructive</Button>
           </td>
           <td>
-            <Button icon={Icon.CrossSmall} variant="destructive">
+            <Button icon={Icon.CrossLarge} variant="destructive">
               Destructive
             </Button>
           </td>
           <td>
-            <Button icon={Icon.CrossSmall} variant="destructive" disabled>
+            <Button icon={Icon.CrossLarge} variant="destructive" disabled>
               Destructive
             </Button>
           </td>

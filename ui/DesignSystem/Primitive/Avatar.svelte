@@ -180,7 +180,7 @@
       {#if registered}
         <Icon.RegisteredSmall
           dataCy="registered-badge"
-          style="margin-left: 8px; fill: var(--color-primary);" />
+          style="fill: var(--color-primary);" />
       {/if}
     {:else}
       <p
@@ -192,7 +192,7 @@
       {#if registered}
         <Icon.RegisteredSmall
           dataCy="registered-badge"
-          style="margin-left: 8px; fill: var(--color-primary);" />
+          style="fill: var(--color-primary);" />
       {/if}
     {/if}
   {/if}

@@ -13,8 +13,8 @@
   .amount {
     display: flex;
     align-items: center;
-    border-radius: 4px;
-    padding: 2px 4px;
+    border-radius: 0.25rem;
+    padding-right: 0.25rem;
   }
 
   .amount.credit {
@@ -41,18 +41,16 @@
       <div class="amount {variant}">
         <Icon.CurrencyRadSmall
           style={variant === 'credit' ? 'fill: var(--color-negative);' : 'fill: var(--color-positive);'} />
-        <p
-          class="typo-text-small-bold"
-          data-cy="amount"
-          style="margin-left:2px;">
+        <p class="typo-text-small-bold" data-cy="amount">
           {variant === 'credit' ? `-${rad}` : `+${rad}`}
         </p>
       </div>
     {:else if size === 'big'}
       <div class="big">
-        <Icon.CurrencyRadLarge style="fill: var(--color-secondary);" />
+        <Icon.CurrencyRadLarge
+          style="transform: scale(1.83); fill: var(--color-secondary);" />
         <h1
-          style="color: var(--color-secondary); margin-left: 2px;"
+          style="color: var(--color-secondary); margin-left: 0.25rem;"
           data-cy="amount">
           {rad}
         </h1>
