@@ -33,8 +33,8 @@ pub enum Error {
     )]
     EmptyExistingPath(path::PathBuf),
 
-    /// We expect at least one [`Revisions`] when looking at a project, however the computation
-    /// found none.
+    /// We expect at least one [`crate::source::Revisions`] when looking at a project, however the
+    /// computation found none.
     #[error(
         "while trying to get user revisions we could not find any, there should be at least one"
     )]

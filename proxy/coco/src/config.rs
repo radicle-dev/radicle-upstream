@@ -1,4 +1,4 @@
-//! Configuration for [`crate::coco`].
+//! Crate configuration.
 
 use std::convert::TryFrom;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};

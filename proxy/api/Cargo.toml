@@ -12,6 +12,7 @@ repository = "git@github.com:radicle-dev/radicle-upstream.git"
 default-run = "api"
 
 [dependencies]
+anyhow = "1.0"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
 kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }

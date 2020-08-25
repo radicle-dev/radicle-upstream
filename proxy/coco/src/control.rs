@@ -68,7 +68,7 @@ pub fn setup_fixtures(
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
+/// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub fn replicate_platinum(
     api: &peer::Api,

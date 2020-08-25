@@ -227,7 +227,7 @@ impl Context {
 /// # Errors
 ///
 /// If the query string cannot be parsed into `T` the filter rejects with
-/// [`http::error::Routing::InvalidQuery`].
+/// [`error::Routing::InvalidQuery`].
 #[must_use]
 pub fn with_qs_opt<T>() -> BoxedFilter<(Option<T>,)>
 where
@@ -264,7 +264,7 @@ where
 /// Parses the query string with [`serde_qs`] and returns the result.
 ///
 /// Similar to [`with_qs_opt`] but requires a query string to be present.
-/// Otherwise the filter is rejected with [`http::error::Routing::QueryMissing`].
+/// Otherwise the filter is rejected with [`error::Routing::QueryMissing`].
 #[must_use]
 pub fn with_qs<T>() -> BoxedFilter<(T,)>
 where
