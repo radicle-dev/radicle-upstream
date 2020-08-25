@@ -8,7 +8,7 @@
   export let copyContent = null;
   export let notificationText = "Copied to your clipboard";
   export let iconBeforeCopy = Icon.CopySmall;
-  export let iconAfterCopy = Icon.Check;
+  export let iconAfterCopy = Icon.CheckSmall;
   export let styleContent = true;
 
   let slotContent;
@@ -29,7 +29,7 @@
 
     copied = true;
 
-    copyIcon = Icon.Check;
+    copyIcon = Icon.CheckSmall;
     setTimeout(() => {
       copyIcon = Icon.CopySmall;
       copied = false;

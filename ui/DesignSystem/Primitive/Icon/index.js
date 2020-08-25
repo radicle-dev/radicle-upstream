@@ -11,6 +11,7 @@ import Branch from "./Branch.svelte";
 import Chat from "./Chat.svelte";
 import Check from "./Check.svelte";
 import CheckCircle from "./CheckCircle.svelte";
+import CheckSmall from "./CheckSmall.svelte";
 import CheckedBox from "./CheckedBox.svelte";
 import ChevronDown from "./ChevronDown.svelte";
 import ChevronLeft from "./ChevronLeft.svelte";
@@ -80,6 +81,7 @@ export default {
   Chat,
   Check,
   CheckCircle,
+  CheckSmall,
   CheckedBox,
   ChevronDown,
   ChevronLeft,
