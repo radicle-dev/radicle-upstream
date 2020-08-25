@@ -6,10 +6,16 @@
   export let variant = Variant.Plant;
 </script>
 
+<style>
+  svg {
+    flex-shrink: 0;
+  }
+</style>
+
 <svg
   data-cy={dataCy}
   on:click
-  style={`flex-shrink: 0;${style ? style : ''}`}
+  {style}
   width="48"
   height="48"
   fill="var(--color-foreground-level-5)"
