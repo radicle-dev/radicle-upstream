@@ -151,7 +151,7 @@
   data-revision={currentRevision.name}
   on:click|stopPropagation={showDropdown}
   hidden={expanded}>
-  <div class="selector-avatar typo-overflow-ellipses">
+  <div class="selector-avatar typo-overflow-ellipsis">
     <div style="display: flex; overflow: hidden;">
       {#if currentRevision.type === RevisionType.Branch}
         <Icon.Branch
@@ -164,7 +164,7 @@
           style="vertical-align: bottom; fill: var(--color-foreground-level-4);
           flex-shrink: 0;" />
       {/if}
-      <p class="revision-name typo-overflow-ellipses">{currentRevision.name}</p>
+      <p class="revision-name typo-overflow-ellipsis">{currentRevision.name}</p>
     </div>
     <Avatar
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
@@ -189,7 +189,7 @@
             8px;"
             size="small"
             variant="circle" />
-          <p class="typo-text-bold typo-overflow-ellipses">
+          <p class="typo-text-bold typo-overflow-ellipsis">
             {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
           </p>
         </div>
@@ -206,7 +206,7 @@
       <ul>
         {#each repo.branches as branch}
           <li
-            class="branch typo-overflow-ellipses"
+            class="branch typo-overflow-ellipsis"
             class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
@@ -227,7 +227,7 @@
         {/each}
         {#each repo.tags as tag}
           <li
-            class="tag typo-overflow-ellipses"
+            class="tag typo-overflow-ellipsis"
             data-repo-handle={repo.identity.metadata.handle}
             class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-tag={tag}

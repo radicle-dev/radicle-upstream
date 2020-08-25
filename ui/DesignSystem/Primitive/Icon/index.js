@@ -28,8 +28,8 @@ import CurrencyDollar from "./CurrencyDollar.svelte";
 import CurrencyEuro from "./CurrencyEuro.svelte";
 import CurrencyRad from "./CurrencyRad.svelte";
 import CurrencyRadSmall from "./CurrencyRadSmall.svelte";
-import Ellipses from "./Ellipses.svelte";
-import EllipsesSmall from "./EllipsesSmall.svelte";
+import Ellipsis from "./Ellipsis.svelte";
+import EllipsisSmall from "./EllipsisSmall.svelte";
 import Envelope from "./Envelope.svelte";
 import Exclamation from "./Exclamation.svelte";
 import ExclamationCircle from "./ExclamationCircle.svelte";
@@ -97,8 +97,8 @@ export default {
   CurrencyEuro,
   CurrencyRad,
   CurrencyRadSmall,
-  Ellipses,
-  EllipsesSmall,
+  Ellipsis,
+  EllipsisSmall,
   Envelope,
   Exclamation,
   ExclamationCircle,

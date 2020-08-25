@@ -283,7 +283,7 @@ combinations. All the ones we're using in Figma are represented here.
 
 The modifiers give us some flexibility and allow us to create classes for
 certain css functionality we use over and over. Such as,
-`typo-overflow-ellipses` and `typo-all-caps`. These should be self-explanatory.
+`typo-overflow-ellipsis` and `typo-all-caps`. These should be self-explanatory.
 
 We also added a set of modifiers that allow you to add the font-family as a
 class where you need it, here again we would recommend not doing that as most

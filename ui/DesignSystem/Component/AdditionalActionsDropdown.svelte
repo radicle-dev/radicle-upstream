@@ -115,7 +115,7 @@
     class="additional-actions-dropdown-button"
     bind:this={triggerEl}
     on:click|stopPropagation={toggleModal}>
-    <svelte:component this={Icon.Ellipses} />
+    <svelte:component this={Icon.Ellipsis} />
   </button>
   {#if expanded}
     <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>

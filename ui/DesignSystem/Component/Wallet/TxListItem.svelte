@@ -106,7 +106,7 @@
         dataCy="subject-avatar" />
     {:else}
       <p
-        class="typo-text-bold typo-overflow-ellipses"
+        class="typo-text-bold typo-overflow-ellipsis"
         style="color: var(--color-foreground-level-5); max-width: 15rem;"
         data-cy="subject">
         {subject.name}

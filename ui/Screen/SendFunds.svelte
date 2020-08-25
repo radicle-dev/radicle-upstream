@@ -262,7 +262,7 @@
             <Icon.ArrowRight />
             <div class="to">
               <p
-                class="typo-text-bold typo-overflow-ellipses"
+                class="typo-text-bold typo-overflow-ellipsis"
                 style="color: var(--color-foreground-level-6);">
                 {$recipientStore}
               </p>

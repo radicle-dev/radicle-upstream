@@ -67,7 +67,7 @@
           <Copyable>
             <Flex align="left">
               <p
-                class="typo-overflow-ellipses"
+                class="typo-overflow-ellipsis"
                 style="color: var(--color-foreground-level-6); max-width: 350px;">
                 {identity.shareableEntityIdentifier}
               </p>
