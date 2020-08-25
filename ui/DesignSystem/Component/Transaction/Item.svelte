@@ -2,6 +2,7 @@
   import * as transaction from "../../../src/transaction.ts";
 
   import { Icon } from "../../Primitive";
+  import TransactionSpinner from "./Spinner.svelte";
 
   import ItemDescription from "./ItemDescription.svelte";
 
@@ -45,11 +46,11 @@
 <div class="item" on:click data-cy="transaction-item">
   <div class="info">
     <div class="icon">
-      <Icon.TransactionState {progress} state={iconState} />
+      <TransactionSpinner {progress} state={iconState} />
     </div>
     <ItemDescription {message} state={tx.state.type} />
   </div>
   <div class="carret">
-    <Icon.Chevron />
+    <Icon.ChevronRight />
   </div>
 </div>

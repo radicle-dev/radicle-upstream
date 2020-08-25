@@ -63,8 +63,8 @@
 {#if !toplevel}
   <div class="folder" on:click={toggle}>
     <span class:active style="height: 1.5rem">
-      <Icon.Chevron
-        variant={expanded ? 'down' : 'right'}
+      <svelte:component
+        this={expanded ? Icon.ChevronDown : Icon.ChevronRight}
         dataCy={`expand-${name}`} />
     </span>
     <span class="folder-name">{name}</span>

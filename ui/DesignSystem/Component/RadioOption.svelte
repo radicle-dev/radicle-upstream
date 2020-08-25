@@ -50,8 +50,7 @@
     <p class="typo-text-bold" style="color: var(--color-foreground-level-6)">
       {title}
     </p>
-    <Icon.Check
-      variant="filled"
+    <Icon.CheckCircle
       style={active ? 'display: block; fill: var(--color-primary)' : 'display: none'} />
   </div>
   {#if active}

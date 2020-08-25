@@ -51,7 +51,7 @@
       {disabled} />
   {:else}
     <p
-      class="typo-overflow-ellipses"
+      class="typo-overflow-ellipsis"
       style={`margin: 0 42px  0 12px; color: ${disabledColor}`}>
       {textProps.title}
     </p>

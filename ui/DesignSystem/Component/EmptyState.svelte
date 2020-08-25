@@ -1,11 +1,13 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { Button, Icon } from "../Primitive";
+  import { Button } from "../Primitive";
+  import Illustration from "./EmptyState/Illustration.svelte";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
 
   const dispatch = createEventDispatcher();
 
   export let style = null;
-  export let icon = "plant";
+  export let illustration = IllustrationVariant.Plant;
   export let text = "Nothing to see here";
   export let primaryActionText = null;
   export let secondaryActionText = null;
@@ -52,7 +54,7 @@
 </style>
 
 <div class="empty-state" data-cy="empty-state" {style}>
-  <Icon.EmptyState variant={icon} />
+  <Illustration variant={illustration} />
   <p class="text">{text}</p>
   {#if primaryActionText !== null}
     <Button

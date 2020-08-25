@@ -1,97 +1,139 @@
+import ArrowBoxUpRight from "./ArrowBoxUpRight.svelte";
+import ArrowCollapse from "./ArrowCollapse.svelte";
 import ArrowDown from "./ArrowDown.svelte";
+import ArrowExpand from "./ArrowExpand.svelte";
 import ArrowLeft from "./ArrowLeft.svelte";
 import ArrowRight from "./ArrowRight.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import At from "./At.svelte";
-import Verified from "./Verified.svelte";
+import Box from "./Box.svelte";
 import Branch from "./Branch.svelte";
+import Chat from "./Chat.svelte";
 import Check from "./Check.svelte";
-import Chevron from "./Chevron.svelte";
-import CloseIssue from "./CloseIssue.svelte";
+import CheckCircle from "./CheckCircle.svelte";
+import CheckSmall from "./CheckSmall.svelte";
+import CheckBox from "./CheckBox.svelte";
+import ChevronDown from "./ChevronDown.svelte";
+import ChevronLeft from "./ChevronLeft.svelte";
+import ChevronLeftRight from "./ChevronLeftRight.svelte";
+import ChevronRight from "./ChevronRight.svelte";
+import ChevronUp from "./ChevronUp.svelte";
+import ChevronUpDown from "./ChevronUpDown.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
+import CopySmall from "./CopySmall.svelte";
+import CrossCircle from "./CrossCircle.svelte";
 import Cross from "./Cross.svelte";
-import Currency from "./Currency.svelte";
-import Edit from "./Edit.svelte";
-import Ellipses from "./Ellipses.svelte";
-import EmptyState from "./EmptyState.svelte";
-import Expand from "./Expand.svelte";
-import Eye from "./Eye.svelte";
-import Feed from "./Feed.svelte";
+import CrossSmall from "./CrossSmall.svelte";
+import CurrencyUSD from "./CurrencyUSD.svelte";
+import CurrencyEUR from "./CurrencyEUR.svelte";
+import CurrencyRAD from "./CurrencyRAD.svelte";
+import CurrencyRADSmall from "./CurrencyRADSmall.svelte";
+import Ellipsis from "./Ellipsis.svelte";
+import EllipsisSmall from "./EllipsisSmall.svelte";
+import Envelope from "./Envelope.svelte";
+import Exclamation from "./Exclamation.svelte";
+import ExclamationCircle from "./ExclamationCircle.svelte";
+import EyeClosed from "./EyeClosed.svelte";
+import EyeOpen from "./EyeOpen.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
-import Fund from "./Fund.svelte";
-import Graph from "./Graph.svelte";
-import Home from "./Home.svelte";
-import Important from "./Important.svelte";
-import Inbox from "./Inbox.svelte";
+import Fork from "./Fork.svelte";
+import Heart from "./Heart.svelte";
+import HeartFaceSmall from "./HeartFaceSmall.svelte";
+import House from "./House.svelte";
 import Info from "./Info.svelte";
-import Issue from "./Issue.svelte";
+import InfoCircle from "./InfoCircle.svelte";
 import Key from "./Key.svelte";
 import Label from "./Label.svelte";
-import Member from "./Member.svelte";
+import Ledger from "./Ledger.svelte";
+import Lock from "./Lock.svelte";
+import LockSmall from "./LockSmall.svelte";
+import MagnifyingGlass from "./MagnifyingGlass.svelte";
 import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
-import Open from "./Open.svelte";
-import Peer from "./Peer.svelte";
+import Network from "./Network.svelte";
+import Pen from "./Pen.svelte";
 import Plus from "./Plus.svelte";
-import Projects from "./Projects.svelte";
-import Register from "./Register.svelte";
+import PlusSmall from "./PlusSmall.svelte";
+import Registered from "./Registered.svelte";
+import RegisteredSmall from "./RegisteredSmall.svelte";
+import Review from "./Review.svelte";
 import Revision from "./Revision.svelte";
-import Replies from "./Replies.svelte";
-import Search from "./Search.svelte";
+import Road from "./Road.svelte";
+import Server from "./Server.svelte";
 import Settings from "./Settings.svelte";
-import Source from "./Source.svelte";
-import Spinner from "./Spinner.svelte";
-import TransactionState from "./TransactionState.svelte";
 import Trash from "./Trash.svelte";
+import User from "./User.svelte";
+import Wallet from "./Wallet.svelte";
 
 export default {
+  ArrowBoxUpRight,
+  ArrowCollapse,
   ArrowDown,
+  ArrowExpand,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
   At,
-  Verified,
+  Box,
   Branch,
+  Chat,
   Check,
-  Chevron,
-  CloseIssue,
+  CheckCircle,
+  CheckSmall,
+  CheckBox,
+  ChevronDown,
+  ChevronLeft,
+  ChevronLeftRight,
+  ChevronRight,
+  ChevronUp,
+  ChevronUpDown,
   Commit,
   Copy,
+  CopySmall,
+  CrossCircle,
   Cross,
-  Currency,
-  Edit,
-  Ellipses,
-  EmptyState,
-  Expand,
-  Eye,
-  Feed,
+  CrossSmall,
+  CurrencyUSD,
+  CurrencyEUR,
+  CurrencyRAD,
+  CurrencyRADSmall,
+  Ellipsis,
+  EllipsisSmall,
+  Envelope,
+  Exclamation,
+  ExclamationCircle,
+  EyeClosed,
+  EyeOpen,
   File,
   Folder,
-  Fund,
-  Graph,
-  Home,
-  Important,
-  Inbox,
+  Fork,
+  Heart,
+  HeartFaceSmall,
+  House,
   Info,
-  Issue,
+  InfoCircle,
   Key,
   Label,
-  Member,
+  Ledger,
+  Lock,
+  LockSmall,
+  MagnifyingGlass,
   Merge,
   Minus,
-  Open,
-  Peer,
+  Network,
+  Pen,
   Plus,
-  Projects,
-  Register,
+  PlusSmall,
+  Registered,
+  RegisteredSmall,
+  Review,
   Revision,
-  Replies,
-  Search,
+  Road,
+  Server,
   Settings,
-  Source,
-  Spinner,
-  TransactionState,
   Trash,
+  User,
+  Wallet,
 };
