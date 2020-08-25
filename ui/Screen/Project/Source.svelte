@@ -10,6 +10,7 @@
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import {
     fetchCommits,
     fetchRevisions,
@@ -345,7 +346,7 @@
               {:else}
                 <EmptyState
                   text="This project doesn't have a README yet."
-                  illustration="eyes"
+                  illustration={IllustrationVariant.Eyes}
                   style="height: 320px;" />
               {/if}
             </Remote>

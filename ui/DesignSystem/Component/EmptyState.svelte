@@ -2,11 +2,12 @@
   import { createEventDispatcher } from "svelte";
   import { Button } from "../Primitive";
   import Illustration from "./EmptyState/Illustration.svelte";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
 
   const dispatch = createEventDispatcher();
 
   export let style = null;
-  export let illustration = "plant"; // eyes | plant | telescope | tent
+  export let illustration = IllustrationVariant.Plant;
   export let text = "Nothing to see here";
   export let primaryActionText = null;
   export let secondaryActionText = null;

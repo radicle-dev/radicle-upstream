@@ -1,7 +1,9 @@
 <script>
+  import { Variant } from "../../../src/illustration.ts";
+
   export let dataCy = null;
   export let style = null;
-  export let variant = "plant"; // eyes | plant | telescope | tent
+  export let variant = Variant.Plant;
 </script>
 
 <svg
@@ -13,7 +15,7 @@
   fill="var(--color-foreground-level-5)"
   viewBox="0 0 48 48"
   xmlns="http://www.w3.org/2000/svg">
-  {#if variant === 'plant'}
+  {#if variant === Variant.Plant}
     <path
       d="M22.5333 28H9.3335C9.3335 28 11.6221 36.7249 15.2231 40.9222C17.6751
       43.7788 21.7995 44 23.2671 44C26.1994 44 29.9376 43.7653 32.3895
@@ -50,7 +52,7 @@
       30.8586 13.8456C31.6455 13.0129 32.0704 11.4307 33.2933 10.8084C33.9386
       10.48 26.5281 8.68579 26.6402 12.6111Z"
       fill="#77B255" />
-  {:else if variant === 'tent'}
+  {:else if variant === Variant.Tent}
     <path
       d="M44 44C44 45.472 42.8053 46.6667 41.3333 46.6667H6.66667C5.19467
       46.6667 4 45.472 4 44L5.33333 28H42.6667L44 44Z"
@@ -124,7 +126,7 @@
       26.6663 29.3333V24C24.581 21.9147 24.1263 11.6787 24.0277 8.58799C24.013
       8.51199 23.9917 8.43732 23.9783 8.35999V8.35999Z"
       fill="#F5F8FA" />
-  {:else if variant === 'eyes'}
+  {:else if variant === Variant.Eyes}
     <svg
       width="48"
       height="48"
@@ -192,7 +194,7 @@
         22.492Z"
         fill="#F5F8FA" />
     </svg>
-  {:else if variant === 'telescope'}
+  {:else if variant === Variant.Telescope}
     <g clip-path="url(#clip0)">
       <path
         d="M22.6667 30.6666C24.8759 30.6666 26.6667 28.8758 26.6667

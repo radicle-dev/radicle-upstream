@@ -31,6 +31,7 @@
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
   import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
   import { ValidationStatus } from "../src/validation.ts";
+  import { Variant as IllustrationVariant } from "../src/illustration.ts";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -1056,16 +1057,18 @@
 
       <Swatch>
         <EmptyState
-          illustration="plant"
+          illustration={IllustrationVariant.Plant}
           primaryActionText="Take some action!" />
         <EmptyState
-          illustration="eyes"
+          illustration={IllustrationVariant.Eyes}
           secondaryActionText="Take some other action!" />
         <EmptyState
-          illustration="telescope"
+          illustration={IllustrationVariant.Telescope}
           primaryActionText="Take the first action!"
           secondaryActionText="Take the secondary action!" />
-        <EmptyState text="Hey, I'm a tent." illustration="tent" />
+        <EmptyState
+          text="Hey, I'm a tent."
+          illustration={IllustrationVariant.Tent} />
       </Swatch>
 
     </Section>
