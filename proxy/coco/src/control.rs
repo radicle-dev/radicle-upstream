@@ -124,7 +124,14 @@ pub fn replicate_platinum(
 ///   * Failed to get current directory
 pub fn platinum_directory() -> io::Result<path::PathBuf> {
     let mut platinum_path = env::current_dir()?;
-    platinum_path.push("../../fixtures/git-platinum");
+
+    if platinum_path.as_path().ends_with("proxy") {
+        platinum_path.push("..");
+    } else {
+        platinum_path.push("../..");
+    }
+
+    platinum_path.push("fixtures/git-platinum");
     Ok(path::Path::new("file://").join(platinum_path))
 }
 

@@ -122,6 +122,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "GIT_ERROR",
                         format!("Internal Git error: {:?}", git_error),
                     ),
+                    coco::Error::SurfGit(git_error) => (
+                        StatusCode::BAD_REQUEST,
+                        "GIT_ERROR",
+                        format!("Internal Git error: {:?}", git_error),
+                    ),
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
                         // gaphql::error.
