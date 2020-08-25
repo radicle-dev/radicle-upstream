@@ -24,7 +24,7 @@
 
   let currentSelection;
 
-  const projectNameMatch = "^[a-z0-9][a-z0-9_-]+$";
+  const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
   $: isNew = currentSelection === RepoType.New;
   $: isExisting = currentSelection === RepoType.Existing;
