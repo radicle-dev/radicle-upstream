@@ -42,5 +42,6 @@ pub mod identity;
 pub mod keystore;
 mod notification;
 pub mod project;
+pub mod queue;
 pub mod registry;
 pub mod session;
