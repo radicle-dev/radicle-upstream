@@ -44,8 +44,8 @@
       looseActiveStateMatching: false,
     },
     {
-      icon: Icon.Peer,
-      title: "Tracking",
+      icon: Icon.Network,
+      title: "Following",
       href: path.profileTracking(),
       looseActiveStateMatching: false,
     },

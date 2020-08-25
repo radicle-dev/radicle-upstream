@@ -1,7 +1,7 @@
 <script>
   export let style = null;
 
-  let hovering;
+  export let hovering;
 
   const enter = () => (hovering = true);
   const leave = () => (hovering = false);
