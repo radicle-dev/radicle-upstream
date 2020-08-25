@@ -164,9 +164,15 @@
         `Project ${response.metadata.name} successfully created`
       );
     } catch (error) {
-      push(path.profile());
-      notification.error("Could not create project");
+      push(path.profileProjects());
+      notification.error(
+        `Could not create project: ${shortenUrn(error.message)}`
+      );
     }
+  };
+
+  const shortenUrn = string => {
+    return string.replace(/(rad:git:[\w]{3})[\w]{53}([\w]{3})/, "$1…$2");
   };
 
   let localState;
