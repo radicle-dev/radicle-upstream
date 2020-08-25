@@ -343,17 +343,17 @@ export const headerIcon = (msg: Message): string => {
   switch (msg.type) {
     case MessageType.OrgRegistration:
     case MessageType.OrgUnregistration:
-      return "Register";
+      return "Ledger";
 
     case MessageType.MemberRegistration:
     case MessageType.MemberUnregistration:
     case MessageType.UserRegistration:
-      return "Member";
+      return "User";
 
     case MessageType.ProjectRegistration:
     case MessageType.Transfer:
     case MessageType.TransferFromOrg:
-      return "Source";
+      return "ChevronLeftRight";
   }
 };
 

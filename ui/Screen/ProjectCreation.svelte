@@ -339,7 +339,7 @@
 
       {#if validations && validations.currentSelection}
         <div class="validation-row">
-          <Icon.Important
+          <Icon.ExclamationCircle
             style="margin-right: 8px;fill: var(--color-negative)" />
           <p class="typo-text-bold" style="color: var(--color-negative)">
             {validations.currentSelection[0]}

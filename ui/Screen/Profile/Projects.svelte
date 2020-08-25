@@ -29,7 +29,7 @@
         {
           title: "Register project",
           dataCy: "register-project",
-          icon: Icon.Register,
+          icon: Icon.Ledger,
           event: () =>
             push(
               path.registerExistingProject(
@@ -44,7 +44,7 @@
         {
           title: "Register project",
           dataCy: "register-project",
-          icon: Icon.Register,
+          icon: Icon.Ledger,
           disabled: true,
           tooltip: "Register your handle to register a project.",
         },

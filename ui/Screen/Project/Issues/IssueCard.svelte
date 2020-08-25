@@ -40,7 +40,7 @@
 
 <div class="issue-card">
   <div class="title">
-    <Icon.Issue
+    <Icon.ExclamationCircle
       style="margin-right: 12px; fill: var({issueIconColor(issue.open)})" />
     <div>
       <p class="typo-text-bold">{issue.title}</p>
@@ -52,7 +52,7 @@
   <div class="right">
     {#if issue.replies > 0}
       <div class="reply-count">
-        <Icon.Replies />
+        <Icon.Chat />
         <p
           class="typo-text-bold"
           style="margin-left: 4px; color: var(--color-foreground-level-5);">

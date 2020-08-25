@@ -52,7 +52,7 @@
   const topbarMenuItems = projectId => {
     const items = [
       {
-        icon: Icon.Home,
+        icon: Icon.House,
         title: "Source",
         href: path.projectSource(projectId),
         looseActiveStateMatching: true,
@@ -61,7 +61,7 @@
     isDev() &&
       items.push(
         {
-          icon: Icon.Issue,
+          icon: Icon.ExclamationCircle,
           title: "Issues",
           href: path.projectIssues(projectId),
           looseActiveStateMatching: false,
@@ -82,7 +82,7 @@
     codeCollabMenuItems = [
       {
         title: "New issue",
-        icon: Icon.Issue,
+        icon: Icon.ExclamationCircle,
         event: () => console.log("event(new-issue)"),
       },
       {
@@ -101,7 +101,7 @@
     registerProjectMenuItem = {
       dataCy: "register-project",
       title: "Register project",
-      icon: Icon.Register,
+      icon: Icon.Ledger,
       event: () =>
         push(
           path.registerExistingProject(projectId, session.identity.registered)
@@ -111,7 +111,7 @@
     registerProjectMenuItem = {
       dataCy: "register-project",
       title: "Register project",
-      icon: Icon.Register,
+      icon: Icon.Ledger,
       disabled: true,
       tooltip:
         "To unlock project registration, register your own handle first.",
