@@ -30,3 +30,11 @@ a {
   --content-padding: 2rem;
   --content-max-width: 90rem;
 }
+
+.lock-screen > * {
+  pointer-events: none;
+}
+
+.lock-screen {
+  cursor: wait;
+}

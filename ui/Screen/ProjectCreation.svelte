@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy } from "svelte";
   import { pop, push } from "svelte-spa-router";
   import validatejs from "validate.js";
 
@@ -8,6 +9,7 @@
   import { create, RepoType } from "../src/project.ts";
   import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
+  import * as screen from "../src/screen.ts";
   import {
     dismissRemoteHelperHint,
     fetch as fetchSession,
@@ -37,6 +39,8 @@
 
   let validations = false;
   let beginValidation = false;
+
+  let loading = false;
 
   validatejs.options = {
     fullMessages: false,
@@ -147,6 +151,9 @@
     let response;
 
     try {
+      loading = true;
+      screen.lock();
+
       response = await create({
         description,
         defaultBranch,
@@ -168,8 +175,18 @@
       notification.error(
         `Could not create project: ${shortenUrn(error.message)}`
       );
+    } finally {
+      loading = false;
+      screen.unlock();
     }
   };
+
+  // We unlock the screen already after the request, this is just a fail-safe
+  // to make sure the screen gets unlocked in any case when the component gets
+  // destroyed.
+  onDestroy(() => {
+    screen.unlock();
+  });
 
   const shortenUrn = string => {
     return string.replace(/(rad:git:[\w]{3})[\w]{53}([\w]{3})/, "$1…$2");
@@ -368,7 +385,7 @@
             </Button>
             <Button
               dataCy="create-project-button"
-              disabled={!(name && currentSelection)}
+              disabled={!(name && currentSelection) || loading}
               variant="primary"
               on:click={createProject}>
               Create project
