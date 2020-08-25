@@ -93,6 +93,7 @@
             {name}
             {#if variant === 'profile' && !entity.registered}
               <Button
+                disabled="true"
                 variant="outline"
                 style="margin-left: 12px;"
                 on:click={() => onRegisterHandle()}>

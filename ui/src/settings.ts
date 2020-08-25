@@ -8,23 +8,12 @@ export interface Appearance {
   theme: Theme;
 }
 
-export enum Network {
-  Emulator = "emulator",
-  FFnet = "ffnet",
-  Testnet = "testnet",
-}
-
-export interface Registry {
-  network: Network;
-}
-
 export interface CoCo {
   seeds: string[];
 }
 
 export interface Settings {
   appearance: Appearance;
-  registry: Registry;
   coco: CoCo;
 }
 
@@ -32,21 +21,6 @@ interface Option {
   value: string;
   title: string;
 }
-
-export const networkOptions: Option[] = [
-  {
-    value: Network.Emulator,
-    title: "Emulator",
-  },
-  {
-    value: Network.FFnet,
-    title: "FFnet",
-  },
-  {
-    value: Network.Testnet,
-    title: "Testnet",
-  },
-];
 
 export const themeOptions: Option[] = [
   {

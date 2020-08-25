@@ -1,7 +1,6 @@
 <script>
-  import { getContext } from "svelte";
   import { isDev } from "../../native/ipc.js";
-  import Router, { link, push } from "svelte-spa-router";
+  import Router, { link } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
   import { fetch, project as store } from "../src/project.ts";
@@ -76,8 +75,6 @@
     return items;
   };
 
-  $: dropdownMenuItems = [registerProjectMenuItem].concat(codeCollabMenuItems);
-
   if (isDev()) {
     codeCollabMenuItems = [
       {
@@ -91,31 +88,6 @@
         event: () => console.log("event(new-revision)"),
       },
     ];
-  }
-
-  const session = getContext("session");
-
-  let registerProjectMenuItem;
-
-  if (session.permissions.registerProject) {
-    registerProjectMenuItem = {
-      dataCy: "register-project",
-      title: "Register project",
-      icon: Icon.Ledger,
-      event: () =>
-        push(
-          path.registerExistingProject(projectId, session.identity.registered)
-        ),
-    };
-  } else {
-    registerProjectMenuItem = {
-      dataCy: "register-project",
-      title: "Register project",
-      icon: Icon.Ledger,
-      disabled: true,
-      tooltip:
-        "To unlock project registration, register your own handle first.",
-    };
   }
 
   fetch({ id: projectId });
@@ -145,7 +117,7 @@
           dataCy="context-menu"
           style="margin: 0 24px 0 16px"
           headerTitle={project.shareableEntityIdentifier}
-          menuItems={dropdownMenuItems} />
+          menuItems={codeCollabMenuItems} />
       </div>
     </Topbar>
     <Router {routes} />
