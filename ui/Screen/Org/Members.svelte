@@ -17,7 +17,7 @@
       event: () => console.log(`go to ${member.handle}'s profile`),
     },
     {
-      icon: Icon.Cross,
+      icon: Icon.CrossLarge,
       title: "Remove member",
       event: () => console.log(`remove ${member.handle}`),
     },
@@ -70,8 +70,7 @@
     <div class="member">
       <div class="info">
         <p class="typo-text-bold">{member.handle}</p>
-        <Icon.RegisteredSmall
-          style="margin-left: 6px; fill: var(--color-primary);" />
+        <Icon.RegisteredSmall style="fill: var(--color-primary);" />
       </div>
 
       <div class="membership-details">
