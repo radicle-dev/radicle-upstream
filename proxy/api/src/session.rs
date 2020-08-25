@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::error;
 use crate::identity;
-use crate::registry;
 
 /// Name for the storage bucket used for all session data.
 const BUCKET_NAME: &str = "session";
@@ -18,41 +17,8 @@ const KEY_CURRENT: &str = "current";
 pub struct Session {
     /// The currently used [`identity::Identity`].
     pub identity: Option<identity::Identity>,
-    /// List of the orgs of the user associated with the current identity.
-    pub orgs: Vec<registry::Org>,
-    /// Permissions of the user to control actions.
-    pub permissions: Permissions,
     /// User controlled parameters to control the behaviour and state of the application.
     pub settings: settings::Settings,
-    /// Registration fee
-    pub registration_fee: RegistrationFee,
-    /// Minimum transaction fee.
-    pub minimum_transaction_fee: registry::Balance,
-}
-
-/// The Registration fee breakdown
-#[derive(Clone, Default, Debug, Deserialize, Serialize)]
-pub struct RegistrationFee {
-    /// The fee associated with registering an org
-    org: Option<registry::Balance>,
-    /// The fee associated with registering a user
-    user: Option<registry::Balance>,
-    /// The fee associated with registering a project
-    project: Option<registry::Balance>,
-    /// The fee associated with adding a member to an org
-    member: Option<registry::Balance>,
-}
-
-/// Set of permitted actions the user can perform.
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Permissions {
-    /// Permission to register a user handle
-    pub register_handle: bool,
-    /// Permission to register an org
-    pub register_org: bool,
-    /// Permission to register a project
-    pub register_project: bool,
 }
 
 /// Resets the session state.
@@ -82,69 +48,15 @@ pub async fn settings(store: &kv::Store) -> Result<settings::Settings, error::Er
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn current<R>(
-    api: &coco::Api,
-    registry: &R,
-    store: &kv::Store,
-) -> Result<Session, error::Error>
-where
-    R: registry::Client,
-{
+pub async fn current(api: &coco::Api, store: &kv::Store) -> Result<Session, error::Error> {
     let mut session = get(store, KEY_CURRENT)?;
-    session.registration_fee = RegistrationFee {
-        user: Some(registry::REGISTRATION_FEE),
-        org: Some(registry::REGISTRATION_FEE),
-        project: None,
-        member: None,
-    };
-    session.minimum_transaction_fee = registry::MINIMUM_TX_FEE;
-
-    // Reset the permissions
-    session.permissions = Permissions::default();
 
     if let Some(id) = session.identity.clone() {
         identity::get(api, &id.urn)?;
-    }
-
-    if let Some(mut id) = session.identity.clone() {
-        if let Some(handle) = id.registered.clone() {
-            if registry.get_user(handle.clone()).await?.is_some() {
-                session.orgs = registry.list_orgs(handle).await?;
-                session.permissions.register_org = true;
-                let projects = api.list_projects()?;
-                if !projects.is_empty() {
-                    session.permissions.register_project = true;
-                }
-            } else {
-                id.registered = None;
-                session.identity = Some(id);
-                session.permissions.register_handle = true;
-            }
-        } else {
-            session.permissions.register_handle = true;
-        }
+        session.identity = Some(id);
     }
 
     Ok(session)
-}
-
-/// Stores the [`registry::Id`] for the registered user handle in the current session.
-///
-/// # Errors
-///
-/// Errors if access to the session state fails.
-pub fn set_handle(store: &kv::Store, handle: registry::Id) -> Result<(), error::Error> {
-    let sess = get(store, KEY_CURRENT)?;
-    let registered = sess.identity.map(|mut id| {
-        id.registered = Some(handle);
-        id
-    });
-
-    if let Some(id) = registered {
-        set_identity(store, id)
-    } else {
-        Ok(())
-    }
 }
 
 /// Stores the [`identity::Identity`] in the current session.
@@ -198,8 +110,6 @@ pub mod settings {
     pub struct Settings {
         /// Currently set appearance parameters.
         pub appearance: Appearance,
-        /// Currently set registry parameters.
-        pub registry: Registry,
         /// User-determined p2p parameters.
         pub coco: CoCo,
     }
@@ -243,32 +153,6 @@ pub mod settings {
             Self {
                 show_remote_helper: true,
             }
-        }
-    }
-
-    /// Registry parameters.
-    #[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
-    #[serde(rename_all = "camelCase")]
-    pub struct Registry {
-        /// Currently configured network.
-        pub network: Network,
-    }
-
-    /// Known networks the application can connect to.
-    #[derive(Debug, PartialEq, Deserialize, Serialize)]
-    #[serde(rename_all = "lowercase")]
-    pub enum Network {
-        /// In-memory registry, which only lives as long as the app does.
-        Emulator,
-        /// The friends-n-family network. For the loved ones.
-        FFnet,
-        /// Test network.
-        Testnet,
-    }
-
-    impl Default for Network {
-        fn default() -> Self {
-            Self::Emulator
         }
     }
 

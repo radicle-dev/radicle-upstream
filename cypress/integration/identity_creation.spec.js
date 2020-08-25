@@ -6,7 +6,6 @@ context("identity creation", () => {
   beforeEach(() => {
     cy.nukeCocoState();
     cy.nukeSessionState();
-    cy.nukeRegistryState();
     cy.visit("./public/index.html");
   });
 
@@ -34,20 +33,6 @@ context("identity creation", () => {
       // Land on profile screen
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains(validUser.handle);
-    });
-
-    it("is possible to directly register your identity after creating it", () => {
-      cy.pick("get-started-button").click();
-
-      cy.pick("form", "handle").type(validUser.handle);
-      cy.pick("create-id-button").click();
-      cy.pick("register-identity-link").click();
-
-      cy.contains("Handle registration").should("exist");
-      cy.pick("next-button").click();
-      cy.pick("submit-button").click();
-      cy.pick("profile-screen", "entity-name").contains(validUser.handle);
-      cy.pick("profile-screen", "header", "verified-badge").should("exist");
     });
 
     context(

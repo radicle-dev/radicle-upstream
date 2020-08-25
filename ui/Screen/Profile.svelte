@@ -53,22 +53,11 @@
   ];
 
   const session = getContext("session");
-  if (session.permissions.registerHandle) {
-    dropdownMenuItems.push({
-      title: "Register handle",
-      dataCy: "register-handle",
-      icon: Icon.Ledger,
-      event: () => push(path.registerUser()),
-    });
-  }
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
 
-  <Header.Large
-    variant="profile"
-    entity={session.identity}
-    on:registerHandle={() => push(path.registerUser())}>
+  <Header.Large variant="profile" entity={session.identity}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

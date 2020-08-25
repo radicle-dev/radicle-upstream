@@ -10,13 +10,9 @@ use radicle_surf::vcs::git;
 
 use crate::http;
 use crate::identity;
-use crate::registry;
 
 /// Combination of all source filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
-{
+pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
     blob_filter(ctx.clone())
         .or(branches_filter(ctx.clone()))
         .or(commit_filter(ctx.clone()))
@@ -29,10 +25,7 @@ where
 }
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
-fn blob_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn blob_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -42,12 +35,7 @@ where
 }
 
 /// `GET /branches/<project_id>`
-fn branches_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn branches_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -57,12 +45,7 @@ where
 }
 
 /// `GET /commit/<project_id>/<sha1>`
-fn commit_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn commit_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -72,12 +55,7 @@ where
 }
 
 /// `GET /commits/<project_id>?branch=<branch>`
-fn commits_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn commits_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -95,12 +73,9 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 }
 
 /// `GET /revisions/<project_id>`
-fn revisions_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn revisions_filter(
+    ctx: http::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
         .and(http::with_context(ctx.clone()))
@@ -110,10 +85,7 @@ where
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn tags_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -122,10 +94,7 @@ where
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn tree_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -143,13 +112,12 @@ mod handler {
 
     use crate::error;
     use crate::http;
-    use crate::registry;
     use crate::session;
     use crate::session::settings;
 
     /// Fetch a [`coco::Blob`].
-    pub async fn blob<R>(
-        ctx: http::Ctx<R>,
+    pub async fn blob(
+        ctx: http::Ctx,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -157,13 +125,10 @@ mod handler {
             revision,
             highlight,
         }: super::BlobQuery,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client + 'static,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let current_session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
+        let current_session = session::current(&ctx.peer_api, &ctx.store).await?;
 
         let project = ctx
             .peer_api
@@ -197,14 +162,11 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`].
-    pub async fn branches<R>(
-        ctx: http::Ctx<R>,
+    pub async fn branches(
+        ctx: http::Ctx,
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let branches = ctx
             .peer_api
@@ -217,14 +179,11 @@ mod handler {
     }
 
     /// Fetch a [`coco::Commit`].
-    pub async fn commit<R>(
-        ctx: http::Ctx<R>,
+    pub async fn commit(
+        ctx: http::Ctx,
         project_urn: coco::Urn,
         sha1: String,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let commit = ctx
             .peer_api
@@ -237,14 +196,11 @@ mod handler {
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits<R>(
-        ctx: http::Ctx<R>,
+    pub async fn commits(
+        ctx: http::Ctx,
         project_urn: coco::Urn,
         query: super::CommitsQuery,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let commits = ctx
             .peer_api
@@ -264,14 +220,11 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions<R>(
-        ctx: http::Ctx<R>,
+    pub async fn revisions(
+        ctx: http::Ctx,
         owner: coco::User,
         project_urn: coco::Urn,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let peers = ctx
             .peer_api
@@ -294,10 +247,7 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags<R>(ctx: http::Ctx<R>, project_urn: coco::Urn) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    pub async fn tags(ctx: http::Ctx, project_urn: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let tags = ctx
             .peer_api
@@ -308,18 +258,15 @@ mod handler {
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree<R>(
-        ctx: http::Ctx<R>,
+    pub async fn tree(
+        ctx: http::Ctx,
         project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
             peer_id,
             revision,
         }: super::TreeQuery,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let project = ctx

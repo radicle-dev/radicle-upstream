@@ -189,9 +189,6 @@ context("project creation", () => {
 
   context("happy paths", () => {
     it("creates a new project from an empty directory", () => {
-      cy.registerUser();
-      cy.registerOrg();
-
       withEmptyRepositoryStub(() => {
         cy.pick("profile-context-menu").click();
         cy.pick("dropdown-menu", "new-project").click();
@@ -221,16 +218,6 @@ context("project creation", () => {
         );
         cy.pick("profile-screen", "project-list").contains(
           "My new fancy project"
-        );
-
-        // Make sure we can register the project right after creation.
-        cy.pick(
-          "project-list-entry-new-fancy-project.xyz",
-          "context-menu"
-        ).click();
-        cy.pick("dropdown-menu", "register-project").should(
-          "not.have.class",
-          "disabled"
         );
       });
     });

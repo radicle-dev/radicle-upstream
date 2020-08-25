@@ -1,34 +1,24 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tokio::sync::RwLock;
-use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
-use warp::http::StatusCode;
-use warp::{path, reject, reply, Filter, Rejection, Reply};
+use warp::{path, reject, Filter, Rejection, Reply};
 
 use librad::paths;
 
 use crate::keystore;
-use crate::registry;
 
-mod account;
 mod avatar;
 mod control;
 mod doc;
 mod error;
-mod id;
 mod identity;
-mod notification;
-mod org;
 mod project;
 mod session;
 mod source;
-mod transaction;
-mod user;
 
 /// Helper to combine the multiple filters together with Filter::or, possibly boxing the types in
 /// the process.
@@ -48,27 +38,19 @@ macro_rules! combine {
 }
 
 /// Main entry point for HTTP API.
-pub fn api<R>(
+pub fn api(
     peer_api: coco::Api,
     keystore: keystore::Keystorage,
-    registry: R,
     store: kv::Store,
     enable_control: bool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Cache + registry::Client + 'static,
-{
-    let subscriptions = crate::notification::Subscriptions::default();
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let ctx = Context {
         peer_api,
         keystore,
-        registry,
         store,
-        subscriptions: subscriptions.clone(),
     };
     let ctx = Arc::new(RwLock::new(ctx));
 
-    let account_filter = path("accounts").and(account::filters(ctx.clone()));
     let avatar_filter = path("avatars").and(avatar::get_filter());
     let control_filter = path("control")
         .map(move || enable_control)
@@ -81,29 +63,18 @@ where
         })
         .untuple_one()
         .and(control::filters(ctx.clone()));
-    let id_filter = path("ids").and(id::get_status_filter(ctx.clone()));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
-    let notification_filter = path("notifications").and(notification::filters(subscriptions));
-    let org_filter = path("orgs").and(org::filters(ctx.clone()));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
-    let source_filter = path("source").and(source::filters(ctx.clone()));
-    let transaction_filter = path("transactions").and(transaction::filters(ctx.clone()));
-    let user_filter = path("users").and(user::filters(ctx));
+    let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
-        account_filter,
         avatar_filter,
         control_filter,
-        id_filter,
         identity_filter,
-        notification_filter,
-        org_filter,
         project_filter,
         session_filter,
-        source_filter,
-        transaction_filter,
-        user_filter
+        source_filter
     ));
 
     // let docs = path("docs").and(doc::filters(&api));
@@ -137,15 +108,12 @@ where
 /// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard<R>(ctx: Ctx<R>) -> BoxedFilter<(coco::User,)>
-where
-    R: registry::Client + 'static,
-{
+fn with_owner_guard(ctx: Ctx) -> BoxedFilter<(coco::User,)> {
     warp::any()
         .and(with_context(ctx))
-        .and_then(|ctx: Ctx<R>| async move {
+        .and_then(|ctx: Ctx| async move {
             let ctx = ctx.read().await;
-            let session = crate::session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
+            let session = crate::session::current(&ctx.peer_api, &ctx.store)
                 .await
                 .expect("unable to get current sesison");
 
@@ -165,21 +133,17 @@ where
 }
 
 /// Container to pass down dependencies into HTTP filter chains.
-pub struct Context<R> {
+pub struct Context {
     /// [`coco::Api`] to operate on the local monorepo.
     peer_api: coco::Api,
     /// Storage to manage keys.
     keystore: keystore::Keystorage,
-    /// [`registry::Client`] to perform registry operations.
-    registry: R,
     /// [`kv::Store`] used for session state and cache.
     store: kv::Store,
-    /// Subscriptions for notification of significant events in the system.
-    subscriptions: crate::notification::Subscriptions,
 }
 
 /// Wrapper around the thread-safe handle on [`Context`].
-pub type Ctx<R> = Arc<RwLock<Context<R>>>;
+pub type Ctx = Arc<RwLock<Context>>;
 
 /// Resets the peer and keystore within the `Ctx`.
 ///
@@ -192,10 +156,7 @@ pub type Ctx<R> = Arc<RwLock<Context<R>>>;
 /// # Panics
 ///
 ///   * If we could not get the temporary directory.
-pub async fn reset_ctx_peer<R>(ctx: Ctx<R>) -> Result<(), crate::error::Error>
-where
-    R: Send + Sync,
-{
+pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
     // TmpDir deletes the temporary directory once it DROPS.
     // This means our new directory goes missing, and future calls will fail.
     // The Peer creates the directory again.
@@ -226,18 +187,13 @@ where
 
 /// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
-fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
-where
-    R: Send + Sync + 'static,
-{
+fn with_context(ctx: Ctx) -> BoxedFilter<(Ctx,)> {
     warp::any().map(move || ctx.clone()).boxed()
 }
 
-impl Context<registry::Cacher<registry::Registry>> {
+impl Context {
     #[cfg(test)]
-    async fn tmp(
-        tmp_dir: &tempfile::TempDir,
-    ) -> Result<Ctx<registry::Cacher<registry::Registry>>, crate::error::Error> {
+    async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Ctx, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
@@ -251,18 +207,10 @@ impl Context<registry::Cacher<registry::Registry>> {
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            let reg = registry::Registry::new(client);
-            registry::Cacher::new(reg, &store)
-        };
-
         Ok(Arc::new(RwLock::new(Self {
             keystore,
             peer_api,
-            registry,
             store,
-            subscriptions: crate::notification::Subscriptions::default(),
         })))
     }
 }
@@ -279,7 +227,7 @@ impl Context<registry::Cacher<registry::Registry>> {
 /// # Errors
 ///
 /// If the query string cannot be parsed into `T` the filter rejects with
-/// [`http::error::Routing::InvalidQuery`].
+/// [`error::Routing::InvalidQuery`].
 #[must_use]
 pub fn with_qs_opt<T>() -> BoxedFilter<(Option<T>,)>
 where
@@ -316,7 +264,7 @@ where
 /// Parses the query string with [`serde_qs`] and returns the result.
 ///
 /// Similar to [`with_qs_opt`] but requires a query string to be present.
-/// Otherwise the filter is rejected with [`http::error::Routing::QueryMissing`].
+/// Otherwise the filter is rejected with [`error::Routing::QueryMissing`].
 #[must_use]
 pub fn with_qs<T>() -> BoxedFilter<(T,)>
 where
@@ -327,89 +275,6 @@ where
             opt_query.ok_or(warp::reject::Rejection::from(error::Routing::QueryMissing))
         })
         .boxed()
-}
-
-/// State filter to expose [`notification::Subscriptions`] to handlers.
-#[must_use]
-fn with_subscriptions(
-    subscriptions: crate::notification::Subscriptions,
-) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = std::convert::Infallible> + Clone
-{
-    warp::any().map(move || crate::notification::Subscriptions::clone(&subscriptions))
-}
-
-/// Bundled input data for project registration, shared
-/// between users and orgs.
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RegisterProjectInput {
-    /// User specified transaction fee.
-    transaction_fee: registry::Balance,
-    /// Optionally passed coco id to store for attestion.
-    maybe_coco_id: Option<coco::Urn>,
-}
-
-impl ToDocumentedType for RegisterProjectInput {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(2);
-        properties.insert(
-            "transactionFee".into(),
-            document::string()
-                .description("User specified transaction fee")
-                .example(100),
-        );
-        properties.insert(
-            "maybeCocoId".into(),
-            document::string()
-                .description("Optionally passed coco id to store for attestion")
-                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
-        );
-
-        document::DocumentedType::from(properties).description("Input for Project registration")
-    }
-}
-
-/// Register a project in the registry under the given domain.
-///
-/// # Errors
-///
-/// Might return an http error
-async fn register_project<R>(
-    ctx: Ctx<R>,
-    domain_type: registry::DomainType,
-    domain_id: registry::Id,
-    project_name: registry::ProjectName,
-    input: RegisterProjectInput,
-) -> Result<impl Reply, Rejection>
-where
-    R: registry::Client,
-{
-    // TODO(xla): Get keypair from persistent storage.
-    let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-
-    let ctx = ctx.read().await;
-
-    let domain = match domain_type {
-        registry::DomainType::Org => registry::ProjectDomain::Org(domain_id),
-        registry::DomainType::User => registry::ProjectDomain::User(domain_id),
-    };
-
-    let tx = ctx
-        .registry
-        .register_project(
-            &fake_pair,
-            domain,
-            project_name,
-            input.maybe_coco_id,
-            input.transaction_fee,
-        )
-        .await?;
-
-    ctx.subscriptions
-        .broadcast(crate::notification::Notification::Transaction(tx.clone()))
-        .await;
-
-    Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
 }
 
 #[cfg(test)]

@@ -4,7 +4,6 @@ use std::time::SystemTimeError;
 
 use librad::meta::common::url;
 use librad::meta::entity;
-use radicle_registry_client as registry;
 
 use crate::keystore;
 
@@ -52,14 +51,6 @@ pub enum Error {
     /// Project name input is invalid, variant carries the reason.
     #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
-
-    /// The given account could not be found in the Registry.
-    #[error("the given account '{0}' could not be found in the Registry")]
-    AccountNotFound(registry::AccountId),
-
-    /// The given block could not be found in the Registry.
-    #[error("the given block '{0}' could not be found in the Registry")]
-    BlockNotFound(registry::BlockHash),
 
     /// An error occurred while performing the checkout of a project.
     #[error(transparent)]
@@ -121,14 +112,6 @@ pub enum Error {
     #[error(transparent)]
     UserValidation(#[from] UserValidation),
 
-    /// Issues with the Radicle protocol.
-    #[error(transparent)]
-    Protocol(#[from] registry::Error),
-
-    /// Issues with the Radicle runtime.
-    #[error("runtime error in registry: {0:?}")]
-    Runtime(registry::DispatchError),
-
     /// Issues when access persistent storage.
     #[error(transparent)]
     Store(#[from] kv::Error),
@@ -136,10 +119,6 @@ pub enum Error {
     /// Errors from handling time.
     #[error(transparent)]
     Time(#[from] SystemTimeError),
-
-    /// Errors from transactions.
-    #[error(transparent)]
-    Transaction(#[from] registry::TransactionError),
 
     /// Overflow while incrementing confirmed transaction.
     #[error("while calculating the number of confirmed transactions, we encountered an overflow")]
@@ -151,22 +130,4 @@ pub enum Error {
         "while trying to get user revisions we could not find any, there should be at least one"
     )]
     EmptyRevisions,
-}
-
-impl From<registry::DispatchError> for Error {
-    fn from(dispactch: registry::DispatchError) -> Self {
-        Self::Runtime(dispactch)
-    }
-}
-
-impl From<registry::InvalidIdError> for Error {
-    fn from(invalid_id: registry::InvalidIdError) -> Self {
-        Self::InvalidId(invalid_id.to_string())
-    }
-}
-
-impl From<registry::InvalidProjectNameError> for Error {
-    fn from(invalid_project_name: registry::InvalidProjectNameError) -> Self {
-        Self::InvalidProjectName(invalid_project_name.to_string())
-    }
 }

@@ -1,5 +1,3 @@
-import { get } from "svelte/store";
-
 import * as api from "./api";
 import * as session from "./session";
 import * as settings from "./settings";
@@ -8,7 +6,6 @@ jest.mock("./api");
 
 const defaultSettings = {
   appearance: { theme: "light" },
-  registry: { network: "emulator" },
   coco: { seeds: ["seed.radicle.xyz"] },
 };
 
@@ -16,11 +13,6 @@ describe("clearing", () => {
   it("sends a request to clear the session when clear() is called", () => {
     session.clear();
     expect(api.del).toHaveBeenCalledWith("session");
-  });
-
-  it("sends a request to clear the cache when clearCache() is called", () => {
-    session.clearCache();
-    expect(api.del).toHaveBeenCalledWith("session/cache");
   });
 });
 
@@ -31,17 +23,6 @@ describe("appearance settings", () => {
     expect(api.set).toHaveBeenCalledWith("session/settings", {
       ...defaultSettings,
       appearance: { theme: settings.Theme.Dark },
-    });
-  });
-});
-
-describe("registry settings", () => {
-  it("sends a request to update registry settings when updateRegistry is called", () => {
-    session.updateRegistry({ network: settings.Network.FFnet });
-
-    expect(api.set).toHaveBeenCalledWith("session/settings", {
-      ...defaultSettings,
-      registry: { network: settings.Network.FFnet },
     });
   });
 });

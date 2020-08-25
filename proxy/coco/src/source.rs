@@ -401,7 +401,7 @@ pub struct Revisions<P, U> {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob<P>(
     browser: &mut Browser,
     default_branch: git::Branch,
@@ -483,7 +483,7 @@ fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobCon
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn branches<'repo>(
     browser: &Browser<'repo>,
     branch_type: Option<BranchType>,
@@ -510,7 +510,7 @@ pub struct LocalState {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the repository doesn't exist.
+/// Will return [`Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
     let repo = git::Repository::new(repo_path)?;
     // TODO(finto): This should be the default branch of the project, possibly.
@@ -530,7 +530,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit_header<'repo>(
     browser: &mut Browser<'repo>,
     sha1: &str,
@@ -547,7 +547,7 @@ pub fn commit_header<'repo>(
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, Error> {
     let oid = git::Oid::from_str(sha1)?;
     browser.commit(oid)?;
@@ -608,7 +608,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commits<'repo>(
     browser: &mut Browser<'repo>,
     branch: git::Branch,
@@ -624,7 +624,7 @@ pub fn commits<'repo>(
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+/// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, Error> {
     let tag_names = browser.list_tags()?;
     let mut tags: Vec<Tag> = tag_names
@@ -641,7 +641,7 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, Error> {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if any of the surf interactions fail.
+/// Will return [`Error`] if any of the surf interactions fail.
 pub fn tree<'repo, P>(
     browser: &mut Browser<'repo>,
     default_branch: git::Branch,
@@ -745,8 +745,7 @@ where
 ///
 /// # Errors
 ///
-///   * [`error::Error::LibradLock`]
-///   * [`error::Error::Git`]
+///   * [`Error::Git`]
 pub fn revisions<P, U>(
     browser: &Browser,
     peer_id: P,

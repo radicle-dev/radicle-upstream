@@ -167,7 +167,7 @@ impl Api {
         Ok(user)
     }
 
-    /// Returns the list of [`project::Project`]s for your peer.
+    /// Returns the list of [`librad_project::Project`]s for your peer.
     ///
     /// # Errors
     ///
@@ -323,7 +323,7 @@ impl Api {
         callback(&mut browser)
     }
 
-    /// Initialize a [`project::Project`] that is owned by the `owner`.
+    /// Initialize a [`librad_project::Project`] that is owned by the `owner`.
     /// This kicks off the history of the project, tracked by `librad`'s mono-repo.
     ///
     /// # Errors

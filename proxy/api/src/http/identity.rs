@@ -10,13 +10,9 @@ use warp::{Filter, Rejection, Reply};
 use crate::avatar;
 use crate::http;
 use crate::identity;
-use crate::registry;
 
 /// Combination of all identity routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
-{
+pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
     get_filter(Arc::clone(&ctx))
         .or(create_filter(Arc::clone(&ctx)))
         .or(list_filter(ctx))
@@ -24,12 +20,7 @@ where
 }
 
 /// `POST /`
-fn create_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn create_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::post())
         .and(warp::body::json())
@@ -51,10 +42,7 @@ where
 }
 
 /// `GET /<id>`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(document::param::<coco::Urn>(
             "id",
@@ -83,10 +71,7 @@ where
 }
 
 /// `GET /`
-fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn list_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
         .and(document::document(document::description(
@@ -112,23 +97,16 @@ mod handler {
     use crate::error;
     use crate::http;
     use crate::identity;
-    use crate::registry;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
-    pub async fn create<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create(
+        ctx: http::Ctx,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        if let Some(identity) = session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
-            .await?
-            .identity
-        {
+        if let Some(identity) = session::current(&ctx.peer_api, &ctx.store).await?.identity {
             return Err(Rejection::from(error::Error::from(
                 coco::Error::EntityExists(identity.urn),
             )));
@@ -143,20 +121,14 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, id: coco::Urn) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    pub async fn get(ctx: http::Ctx, id: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id)?;
         Ok(reply::json(&id))
     }
 
     /// Retrieve the list of identities known to the session user.
-    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    pub async fn list(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let users = identity::list(&ctx.peer_api)?;
         Ok(reply::json(&users))
@@ -279,7 +251,6 @@ impl ToDocumentedType for CreateInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use radicle_registry_client::{ed25519, CryptoPair};
     use serde_json::{json, Value};
     use warp::http::StatusCode;
     use warp::test::request;
@@ -307,7 +278,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let peer_id = ctx.peer_api.peer_id();
-        let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
+        let session = session::current(&ctx.peer_api, &ctx.store).await?;
         let urn = session.identity.expect("failed to set identity").urn;
 
         // Assert that we set the default owner and it's the same one as the session
@@ -330,9 +301,7 @@ mod test {
                     "metadata": {
                         "handle": "cloudhead",
                     },
-                    "registered": Value::Null,
                     "shareableEntityIdentifier": &shareable_entity_identifier,
-                    "accountId": ed25519::Pair::from_legacy_string("//Alice", None).public()
                 })
             );
         });
@@ -369,9 +338,7 @@ mod test {
                 urn: urn.clone(),
                 shareable_entity_identifier,
                 metadata: identity::Metadata { handle },
-                registered: None,
                 avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
-                account_id: ed25519::Pair::from_legacy_string("//Alice", None).public(),
             })
         );
 

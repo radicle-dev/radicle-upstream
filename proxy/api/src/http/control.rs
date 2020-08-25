@@ -5,27 +5,18 @@ use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
-use crate::registry;
 
 /// Combination of all control filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
-{
+pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
     create_project_filter(ctx.clone())
-        .or(nuke_coco_filter(ctx.clone()))
-        .or(nuke_registry_filter(ctx.clone()))
-        .or(register_user_filter(ctx))
+        .or(nuke_coco_filter(ctx))
         .boxed()
 }
 
 /// POST /create-project
-fn create_project_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn create_project_filter(
+    ctx: http::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
         .and(super::with_context(ctx.clone()))
         .and(super::with_owner_guard(ctx))
@@ -33,47 +24,17 @@ where
         .and_then(handler::create_project)
 }
 
-/// POST /register-user
-fn register_user_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    path!("register-user")
-        .and(http::with_context(ctx))
-        .and(warp::body::json())
-        .and_then(handler::register_user)
-}
-
 /// GET /nuke/coco
-fn nuke_coco_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn nuke_coco_filter(
+    ctx: http::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_context(ctx))
         .and_then(handler::nuke_coco)
 }
 
-/// GET /nuke/registry
-fn nuke_registry_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    path!("nuke" / "registry")
-        .and(http::with_context(ctx))
-        .and_then(handler::nuke_registry)
-}
-
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use radicle_registry_client::CryptoPair;
-    use std::convert::TryFrom;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -83,18 +44,14 @@ mod handler {
     use crate::http;
     use crate::keystore;
     use crate::project;
-    use crate::registry;
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
-    pub async fn create_project<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create_project(
+        ctx: http::Ctx,
         owner: coco::User,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
@@ -125,39 +82,8 @@ mod handler {
         ))
     }
 
-    /// Register a user with another key
-    pub async fn register_user<R>(
-        ctx: http::Ctx<R>,
-        input: super::RegisterInput,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client,
-    {
-        let ctx = ctx.read().await;
-
-        let fake_pair =
-            radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
-
-        log::info!(
-            "Registering user handle {} with public key {}",
-            &input.handle,
-            &fake_pair.public()
-        );
-
-        let handle = registry::Id::try_from(input.handle).map_err(error::Error::from)?;
-        ctx.registry
-            .register_user(&fake_pair, handle.clone(), None, input.transaction_fee)
-            .await
-            .expect("unable to register user");
-
-        Ok(reply::json(&true))
-    }
-
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    pub async fn nuke_coco(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -183,18 +109,6 @@ mod handler {
         let mut ctx = ctx.write().await;
         ctx.peer_api = new_peer_api;
         ctx.keystore = new_keystore;
-
-        Ok(reply::json(&true))
-    }
-
-    /// Reset the Registry state by replacing the emulator in place.
-    pub async fn nuke_registry<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client,
-    {
-        let (client, _) = radicle_registry_client::Client::new_emulator();
-        let mut ctx = ctx.write().await;
-        ctx.registry.reset(client);
 
         Ok(reply::json(&true))
     }
@@ -251,15 +165,6 @@ pub struct CreateInput {
     default_branch: String,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
-}
-/// Input for user registration.
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RegisterInput {
-    /// Handle of the user.
-    handle: String,
-    /// User specified transaction fee.
-    transaction_fee: registry::Balance,
 }
 
 #[allow(clippy::unwrap_used)]

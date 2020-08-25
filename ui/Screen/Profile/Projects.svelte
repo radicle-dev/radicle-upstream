@@ -1,13 +1,11 @@
 <script>
-  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
   import { projects as projectsStore } from "../../src/project.ts";
 
-  import { Flex, Icon } from "../../DesignSystem/Primitive";
+  import { Flex } from "../../DesignSystem/Primitive";
   import {
-    AdditionalActionsDropdown,
     EmptyState,
     Error,
     List,
@@ -16,40 +14,9 @@
     Stats,
   } from "../../DesignSystem/Component";
 
-  const session = getContext("session");
-
   const select = event => {
     const project = event.detail;
     push(path.projectSource(project.id));
-  };
-
-  const contextMenuItems = (projectId, session) => {
-    if (session.permissions.registerProject) {
-      return [
-        {
-          title: "Register project",
-          dataCy: "register-project",
-          icon: Icon.Ledger,
-          event: () =>
-            push(
-              path.registerExistingProject(
-                projectId,
-                session.identity.registered
-              )
-            ),
-        },
-      ];
-    } else {
-      return [
-        {
-          title: "Register project",
-          dataCy: "register-project",
-          icon: Icon.Ledger,
-          disabled: true,
-          tooltip: "Register your handle to register a project.",
-        },
-      ];
-    }
   };
 
   const projectCardProps = project => ({
@@ -59,7 +26,6 @@
   });
 
   const create = () => push(path.createProject());
-  const register = () => push(path.registerUser());
 </script>
 
 <Remote store={projectsStore} let:data={projects}>
@@ -81,21 +47,9 @@
             branches={project.stats.branches}
             commits={project.stats.commits}
             contributors={project.stats.contributors} />
-          <AdditionalActionsDropdown
-            dataCy="context-menu"
-            headerTitle={project.shareableEntityIdentifier}
-            menuItems={contextMenuItems(project.id, session)} />
         </div>
       </Flex>
     </List>
-  {:else if session.permissions.registerHandle}
-    <EmptyState
-      text="There’s nothing here yet, get started by starting your first
-      project."
-      primaryActionText="Start your first project"
-      secondaryActionText="Or register your handle"
-      on:primaryAction={create}
-      on:secondaryAction={register} />
   {:else}
     <EmptyState
       text="There’s nothing here yet, get started by starting your first
