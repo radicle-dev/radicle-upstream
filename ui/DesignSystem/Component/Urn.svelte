@@ -36,17 +36,13 @@
   data-cy="urn"
   on:mouseover={handleHover}
   on:mouseout={handleHover}>
-  <Copyable
-    iconSize="small"
-    style="align-items: center;"
-    copyContent={urn}
-    {notificationText}>
+  <Copyable style="align-items: center;" copyContent={urn} {notificationText}>
     {#if urn.length > 24}
       {#if expanded}
         <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>
       {:else}
         <p class="typo-text-small-mono">{firstSix}</p>
-        <Icon.Ellipses size="small" />
+        <Icon.EllipsisSmall />
         <p class="typo-text-small-mono">{lastSix}</p>
       {/if}
     {:else}

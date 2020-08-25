@@ -12,7 +12,7 @@
   // TODO(sos): replace console.log's with actual navigation
   const menuItems = member => [
     {
-      icon: Icon.Member,
+      icon: Icon.User,
       title: "Go to member profile",
       event: () => console.log(`go to ${member.handle}'s profile`),
     },
@@ -70,7 +70,7 @@
     <div class="member">
       <div class="info">
         <p class="typo-text-bold">{member.handle}</p>
-        <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
+        <Icon.RegisteredSmall style="fill: var(--color-primary);" />
       </div>
 
       <div class="membership-details">

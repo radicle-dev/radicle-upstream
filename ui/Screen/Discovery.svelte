@@ -34,7 +34,7 @@
         showLeftItem
         style="margin-bottom: 8px;">
         <div slot="left" style="display: flex;">
-          <Icon.Search />
+          <Icon.MagnifyingGlass />
         </div>
       </Input.Text>
 

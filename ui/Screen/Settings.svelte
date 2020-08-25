@@ -3,23 +3,18 @@
 
   import {
     clear,
-    clearCache,
     parseSeedsInput,
     settings,
     updateAppearance,
     updateCoCo,
-    updateRegistry,
   } from "../src/session.ts";
-  import { networkOptions, themeOptions } from "../src/settings.ts";
+  import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
 
   import { Button, Input } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
   let seedInputValue = $settings.coco.seeds.join("\n");
-
-  const updateNetwork = event =>
-    updateRegistry({ ...$settings.registry, network: event.detail });
 
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
@@ -151,41 +146,8 @@
 
     <section>
       <header>
-        <h3>Registry</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p class="typo-text-bold">Network</p>
-        </div>
-        <div class="action">
-          <SegmentedControl
-            active={$settings.registry.network}
-            options={networkOptions}
-            on:select={updateNetwork} />
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <header>
         <h3>Session management</h3>
       </header>
-      <div class="section-item">
-        <div class="info">
-          <p class="typo-text-bold">Clear local cache</p>
-          <p style="color: var(--color-foreground-level-6);">
-            Removes all locally-stored temporary data from your device.
-          </p>
-        </div>
-        <div class="action">
-          <Button
-            dataCy="clear-cache-button"
-            variant="outline"
-            on:click={clearCache}>
-            Clear cache
-          </Button>
-        </div>
-      </div>
       <div class="section-item">
         <div class="info">
           <p class="typo-text-bold">Clears all authentication data</p>

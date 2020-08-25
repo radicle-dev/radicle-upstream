@@ -8,6 +8,7 @@
     formatProjectMetadata,
   } from "../../src/org.ts";
   import * as path from "../../src/path.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
 
   import {
     EmptyState,
@@ -52,7 +53,7 @@
     </List>
   {:else if session.permissions.registerProject}
     <EmptyState
-      icon="tent"
+      illustration={IllustrationVariant.Tent}
       text="There's nothing here yet, get started by creating your first project
       or adding a member to your org."
       primaryActionText="Register a project"
@@ -61,7 +62,7 @@
       on:secondaryAction={register} />
   {:else}
     <EmptyState
-      icon="tent"
+      illustration={IllustrationVariant.Tent}
       text="Add a member to your org."
       primaryActionText="Add a member"
       on:primaryAction={register} />

@@ -41,7 +41,6 @@ export const upstreamProjectMock: project.Project = {
     description:
       "Upstream is a cross-platform desktop client for the radicle code collaboration and registry protocols.",
   },
-  registration: undefined,
   stats: {
     branches: 2,
     commits: 22,
@@ -57,7 +56,6 @@ export const surfProjectMock: project.Project = {
     defaultBranch: "schildkroete",
     description: "A code browsing library for VCS file systems",
   },
-  registration: undefined,
   stats: {
     branches: 3,
     commits: 33,
@@ -66,28 +64,13 @@ export const surfProjectMock: project.Project = {
 };
 
 export const sessionMock: session.Session = {
-  orgs: [],
-  permissions: {
-    registerHandle: true,
-    registerOrg: false,
-    registerProject: false,
-  },
   settings: {
     appearance: {
       theme: settings.Theme.Light,
     },
-    registry: {
-      network: settings.Network.Emulator,
-    },
     coco: {
       seeds: ["seed.radicle.xyz"],
     },
-  },
-  registrationFee: {
-    user: 10,
-    org: 10,
-    project: undefined,
-    member: undefined,
   },
 };
 

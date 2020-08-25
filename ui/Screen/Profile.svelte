@@ -32,13 +32,13 @@
 
   const topbarMenuItems = [
     {
-      icon: Icon.Source,
+      icon: Icon.ChevronLeftRight,
       title: "Projects",
       href: path.profileProjects(),
       looseActiveStateMatching: true,
     },
     {
-      icon: Icon.Fund,
+      icon: Icon.Wallet,
       title: "Wallet",
       href: path.profileWallet(),
       looseActiveStateMatching: false,
@@ -61,22 +61,11 @@
   ];
 
   const session = getContext("session");
-  if (session.permissions.registerHandle) {
-    dropdownMenuItems.push({
-      title: "Register handle",
-      dataCy: "register-handle",
-      icon: Icon.Register,
-      event: () => push(path.registerUser()),
-    });
-  }
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
 
-  <Header.Large
-    variant="profile"
-    entity={session.identity}
-    on:registerHandle={() => push(path.registerUser())}>
+  <Header.Large variant="profile" entity={session.identity}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

@@ -2,6 +2,7 @@
   import { format } from "timeago.js";
   import { link } from "svelte-spa-router";
   import { isMarkdown } from "../../../src/source.ts";
+  import { Variant as IllustrationVariant } from "../../../src/illustration.ts";
 
   import { Icon, Markdown } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
@@ -103,7 +104,7 @@
   <div class="container">
     {#if blob.binary}
       <EmptyState
-        icon="eyes"
+        illustration={IllustrationVariant.Eyes}
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
     {:else if isMarkdown(path)}

@@ -7,9 +7,9 @@
   export let style = null;
   export let copyContent = null;
   export let notificationText = "Copied to your clipboard";
-  export let iconBeforeCopy = Icon.Copy;
-  export let iconAfterCopy = Icon.Check;
-  export let iconSize = "small";
+  export let iconBeforeCopy = Icon.CopySmall;
+  export let iconAfterCopy = Icon.CheckSmall;
+  export let styleContent = true;
 
   let slotContent;
   let copyIcon = iconBeforeCopy;
@@ -29,9 +29,9 @@
 
     copied = true;
 
-    copyIcon = Icon.Check;
+    copyIcon = Icon.CheckSmall;
     setTimeout(() => {
-      copyIcon = Icon.Copy;
+      copyIcon = Icon.CopySmall;
       copied = false;
     }, 1000);
   };
@@ -55,13 +55,12 @@
 </style>
 
 <div class="wrapper" on:click|stopPropagation={copy}>
-  <span class="content" bind:this={slotContent} {style}>
+  <span class:content={styleContent} bind:this={slotContent} {style}>
     <slot />
     {#if iconBeforeCopy && iconAfterCopy}
       <svelte:component
         this={copyIcon}
-        size={iconSize}
-        style="display: flex; margin-left: 0.25rem; min-width: {iconSize === 'small' ? '16px' : '24px'};" />
+        style="display: flex; margin-left: 0.25rem; min-width: 24px;" />
     {/if}
   </span>
 </div>

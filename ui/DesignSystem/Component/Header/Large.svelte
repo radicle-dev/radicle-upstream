@@ -93,6 +93,7 @@
             {name}
             {#if variant === 'profile' && !entity.registered}
               <Button
+                disabled
                 variant="outline"
                 style="margin-left: 12px;"
                 on:click={() => onRegisterHandle()}>
@@ -101,9 +102,8 @@
             {/if}
           </h1>
           {#if variant === 'org' || entity.registered}
-            <Icon.Verified
+            <Icon.Registered
               dataCy="verified-badge"
-              size="large"
               style="fill: var(--color-primary); margin-left: 6px;" />
           {/if}
         </div>

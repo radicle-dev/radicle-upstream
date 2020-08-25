@@ -125,16 +125,16 @@
     on:mouseup={up}>
     <div class="left" class:hover class:active class:tracking class:warning>
       {#if !tracking}
-        <Icon.Peer style="margin: 0 8px 0 12px" />
+        <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Track</p>
       {:else if hover}
-        <Icon.Peer style="margin: 0 8px 0 12px" />
+        <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Untrack</p>
       {:else if expanded}
-        <Icon.Peer style="margin: 0 12px" />
+        <Icon.Network style="margin: 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Tracking</p>
       {:else}
-        <Icon.Peer style="margin: 0 12px" />
+        <Icon.Network style="margin: 0 12px" />
       {/if}
     </div>
   </div>

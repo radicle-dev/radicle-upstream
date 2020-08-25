@@ -10,6 +10,7 @@
   } from "../../src/transaction.ts";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
+  import TransactionSpinner from "./Transaction/Spinner.svelte";
 
   import Urn from "../../DesignSystem/Component/Urn.svelte";
 
@@ -109,14 +110,13 @@
     </div>
     <div slot="right" style="display: flex; align-items: center;">
       {#if iconState(transaction.state) === 'negative'}
-        <Icon.Important
+        <Icon.ExclamationCircle
           style="margin-right: 8px; fill: var(--color-negative)" />
       {:else if iconState(transaction.state) === 'positive'}
-        <Icon.Check
-          variant="filled"
+        <Icon.CheckCircle
           style="margin-right: 8px; fill: var(--color-positive)" />
       {:else}
-        <Icon.TransactionState
+        <TransactionSpinner
           progress={iconProgress(transaction.state)}
           style="margin-right: 8px;"
           variant="small"

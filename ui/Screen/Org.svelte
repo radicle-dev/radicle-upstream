@@ -41,7 +41,7 @@
   const topbarMenuItems = orgId => {
     const items = [
       {
-        icon: Icon.Source,
+        icon: Icon.ChevronLeftRight,
         title: "Projects",
         href: path.orgProjects(orgId),
         looseActiveStateMatching: true,
@@ -49,13 +49,13 @@
     ];
     isDev() &&
       items.push({
-        icon: Icon.Fund,
+        icon: Icon.Wallet,
         title: "Wallet",
         href: path.orgFund(orgId),
         looseActiveStateMatching: false,
       });
     items.push({
-      icon: Icon.Member,
+      icon: Icon.User,
       title: "Members",
       href: path.orgMembers(orgId),
       looseActiveStateMatching: false,

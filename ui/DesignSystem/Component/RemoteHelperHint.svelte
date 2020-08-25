@@ -32,7 +32,7 @@
     on:click={() => {
       dispatch('hide');
     }}>
-    <Icon.Cross variant="small" />
+    <Icon.CrossSmall />
   </div>
   <p style="margin-bottom: 0.75rem; color: display: flex;">
     Before you get started, you need to add this to your shell configuration.

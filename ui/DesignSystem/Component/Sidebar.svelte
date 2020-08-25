@@ -160,7 +160,7 @@
       data-cy="discovery">
       <Tooltip value="Discover">
         <a href={path.discovery()} use:link>
-          <Icon.Peer />
+          <Icon.Network />
         </a>
       </Tooltip>
     </li>
@@ -170,7 +170,7 @@
       class:active={path.active(path.profileWallet(), $location)}>
       <Tooltip value="Wallet">
         <a href={path.profileWallet()} use:link>
-          <Icon.Fund />
+          <Icon.Wallet />
         </a>
       </Tooltip>
     </li>

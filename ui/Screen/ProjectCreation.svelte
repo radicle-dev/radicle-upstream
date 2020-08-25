@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy } from "svelte";
   import { pop, push } from "svelte-spa-router";
   import validatejs from "validate.js";
 
@@ -8,6 +9,7 @@
   import { create, RepoType } from "../src/project.ts";
   import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
+  import * as screen from "../src/screen.ts";
   import {
     dismissRemoteHelperHint,
     fetch as fetchSession,
@@ -24,7 +26,7 @@
 
   let currentSelection;
 
-  const projectNameMatch = "^[a-z0-9][a-z0-9_-]+$";
+  const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
   $: isNew = currentSelection === RepoType.New;
   $: isExisting = currentSelection === RepoType.Existing;
@@ -37,6 +39,8 @@
 
   let validations = false;
   let beginValidation = false;
+
+  let loading = false;
 
   validatejs.options = {
     fullMessages: false,
@@ -83,10 +87,6 @@
 
     if (localStateError.match("could not find repository")) {
       return "The directory should contain a git repository";
-    }
-
-    if (localState.managed) {
-      return "This repository is already managed by Radicle";
     }
   };
 
@@ -151,6 +151,9 @@
     let response;
 
     try {
+      loading = true;
+      screen.lock();
+
       response = await create({
         description,
         defaultBranch,
@@ -168,9 +171,25 @@
         `Project ${response.metadata.name} successfully created`
       );
     } catch (error) {
-      push(path.profile());
-      notification.error("Could not create project");
+      push(path.profileProjects());
+      notification.error(
+        `Could not create project: ${shortenUrn(error.message)}`
+      );
+    } finally {
+      loading = false;
+      screen.unlock();
     }
+  };
+
+  // We unlock the screen already after the request, this is just a fail-safe
+  // to make sure the screen gets unlocked in any case when the component gets
+  // destroyed.
+  onDestroy(() => {
+    screen.unlock();
+  });
+
+  const shortenUrn = string => {
+    return string.replace(/(rad:git:[\w]{3})[\w]{53}([\w]{3})/, "$1…$2");
   };
 
   let localState;
@@ -343,7 +362,7 @@
 
       {#if validations && validations.currentSelection}
         <div class="validation-row">
-          <Icon.Important
+          <Icon.ExclamationCircle
             style="margin-right: 8px;fill: var(--color-negative)" />
           <p class="typo-text-bold" style="color: var(--color-negative)">
             {validations.currentSelection[0]}
@@ -366,7 +385,7 @@
             </Button>
             <Button
               dataCy="create-project-button"
-              disabled={!(name && currentSelection)}
+              disabled={!(name && currentSelection) || loading}
               variant="primary"
               on:click={createProject}>
               Create project

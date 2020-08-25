@@ -64,10 +64,10 @@
         <Avatar size="big" avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
           <p class="typo-text-bold">{identity.metadata.handle}</p>
-          <Copyable iconSize="normal">
+          <Copyable>
             <Flex align="left">
               <p
-                class="typo-overflow-ellipses"
+                class="typo-overflow-ellipsis"
                 style="color: var(--color-foreground-level-6); max-width: 350px;">
                 {identity.shareableEntityIdentifier}
               </p>
