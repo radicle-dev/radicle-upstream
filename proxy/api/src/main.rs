@@ -9,14 +9,10 @@ use api::config;
 use api::env;
 use api::http;
 use api::keystore;
-use api::registry;
 use api::session;
 
 /// Flags accepted by the proxy binary.
 struct Args {
-    /// Host name or IP for the registry node to connect to. If the special value "emulator" is
-    /// provided the proxy will not connect to a node but emulate the chain in memory.
-    registry: String,
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
 }
@@ -29,30 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        registry: args.value_from_str("--registry")?,
         test: args.contains("--test"),
-    };
-
-    let registry_client = match args.registry.as_str() {
-        "emulator" => {
-            let (client, control) = radicle_registry_client::Client::new_emulator();
-
-            tokio::spawn(async move {
-                let mut interval = tokio::time::interval(std::time::Duration::from_secs(10));
-                loop {
-                    interval.tick().await;
-                    control.add_blocks(1);
-                }
-            });
-
-            client
-        },
-        host => {
-            let host = url17::Host::parse(host)?;
-            radicle_registry_client::Client::create_with_executor(host)
-                .await
-                .expect("unable to construct devnet client")
-        },
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
@@ -111,12 +84,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log::info!("Starting API");
 
-    let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(coco_api, keystore, cache.clone(), store, args.test);
-
-    tokio::spawn(async move {
-        cache.run().await.expect("cacher run failed");
-    });
+    let api = http::api(coco_api, keystore, store, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 

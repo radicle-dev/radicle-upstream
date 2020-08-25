@@ -17,7 +17,7 @@ pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
         .and(warp::filters::query::query::<GetAvatarQuery>())
         .and(document::document(
             document::query("usage", document::string())
-                .description("Usage of the Avatar: org, identity, any"),
+                .description("Usage of the Avatar: identity, any"),
         ))
         .and(warp::get())
         .and(document::document(document::description(
@@ -60,7 +60,6 @@ mod handler {
             &id,
             match usage.as_deref() {
                 Some("identity") => avatar::Usage::Identity,
-                Some("org") => avatar::Usage::Org,
                 Some("any") | None => avatar::Usage::Any,
                 _ => {
                     return Ok(reply::with_status(
@@ -70,7 +69,7 @@ mod handler {
                         }),
                         StatusCode::BAD_REQUEST,
                     ))
-                },
+                }
             },
         );
 
@@ -98,7 +97,7 @@ mod test {
         let api = super::get_filter();
         let res = request()
             .method("GET")
-            .path(&format!("/{}?usage={}", "monadic", "org"))
+            .path(&format!("/{}?usage={}", "monadic", "any"))
             .reply(&api)
             .await;
 

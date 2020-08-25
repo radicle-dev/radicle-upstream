@@ -1,24 +1,19 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
 
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
-use std::collections::HashMap;
-use std::convert::TryFrom;
 use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
 use crate::project;
-use crate::registry;
 
 /// Combination of all routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
-{
+pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
     list_filter(ctx.clone())
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
@@ -28,12 +23,7 @@ where
 }
 
 /// `POST /<id>/checkout`
-fn checkout_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn checkout_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::post())
         .and(document::param::<coco::Urn>("id", "Project id"))
@@ -59,12 +49,7 @@ where
 }
 
 /// `POST /`
-fn create_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn create_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx.clone())
         .and(http::with_owner_guard(ctx))
         .and(warp::post())
@@ -88,10 +73,7 @@ where
 }
 
 /// `GET /<id>`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Project id"))
@@ -118,10 +100,7 @@ where
 }
 
 /// `GET /`
-fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn list_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
         .and(path::end())
@@ -147,12 +126,7 @@ where
 }
 
 /// `GET /discover`
-fn discover_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn discover_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("discover")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -185,14 +159,11 @@ mod handler {
     use crate::project;
 
     /// Create a new [`project::Project`].
-    pub async fn create<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create(
+        ctx: http::Ctx,
         owner: coco::User,
         input: coco::project::Create<PathBuf>,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
@@ -216,14 +187,11 @@ mod handler {
     }
 
     /// Checkout a [`project::Project`]'s source code.
-    pub async fn checkout<R>(
-        ctx: http::Ctx<R>,
+    pub async fn checkout(
+        ctx: http::Ctx,
         urn: coco::Urn,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let project = ctx
             .peer_api
@@ -238,10 +206,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    pub async fn get(ctx: http::Ctx, urn: String) -> Result<impl Reply, Rejection> {
         let urn = urn.parse().map_err(Error::from)?;
         let ctx = ctx.read().await;
 
@@ -251,13 +216,10 @@ mod handler {
     /// List all known projects.
     ///
     /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
-    pub async fn list<R>(
-        ctx: http::Ctx<R>,
+    pub async fn list(
+        ctx: http::Ctx,
         opt_query: Option<super::ListQuery>,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
 
@@ -271,10 +233,7 @@ mod handler {
     }
 
     /// Get a feed of untracked projects.
-    pub async fn discover<R>(_ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    pub async fn discover(_ctx: http::Ctx) -> Result<impl Reply, Rejection> {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
@@ -293,7 +252,6 @@ impl Serialize for project::Project {
             &self.shareable_entity_identifier.to_string(),
         )?;
         state.serialize_field("metadata", &self.metadata)?;
-        state.serialize_field("registration", &self.registration)?;
         state.serialize_field("stats", &self.stats)?;
         state.end()
     }
@@ -315,33 +273,12 @@ impl ToDocumentedType for project::Project {
                 .example("%123abcd.git"),
         );
         properties.insert("metadata".into(), project::Metadata::document());
-        properties.insert("registration".into(), project::Registration::document());
         properties.insert("stats".into(), DocumentStats::document());
 
         document::DocumentedType::from(properties)
             .description("Radicle project for sharing and collaborating")
     }
 }
-
-impl Serialize for project::Registration {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Org(org_id) => {
-                serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            },
-            Self::User(user_id) => serializer.serialize_newtype_variant(
-                "Registration",
-                1,
-                "User",
-                &user_id.to_string(),
-            ),
-        }
-    }
-}
-
 /// Documentation of project stats
 struct DocumentStats;
 
@@ -369,33 +306,6 @@ impl ToDocumentedType for DocumentStats {
 
         document::DocumentedType::from(properties)
             .description("Coarse statistics for the Project source code")
-    }
-}
-
-impl ToDocumentedType for project::Registration {
-    fn document() -> document::DocumentedType {
-        let org = {
-            let mut fields = HashMap::with_capacity(1);
-            fields.insert(
-                "org".into(),
-                document::string().description("Org id").example("monadic"),
-            );
-            document::DocumentedType::from(fields).description("Registered under an Org")
-        };
-        let user = {
-            let mut fields = HashMap::with_capacity(1);
-            fields.insert(
-                "user".into(),
-                document::string().description("User id").example("monadic"),
-            );
-            document::DocumentedType::from(fields).description("Registered under a User")
-        };
-
-        document::one_of(vec![org, user])
-            .description("Variants for possible registration states of a Project on the Registry")
-            .example(Self::Org(
-                registry::Id::try_from("monadic").expect("unable to parse org id"),
-            ))
     }
 }
 
@@ -649,7 +559,6 @@ mod test {
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },
-            "registration": Value::Null,
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
                 "branches": 1,
@@ -709,7 +618,6 @@ mod test {
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },
-            "registration": Value::Null,
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
                 "branches": 1,
@@ -789,7 +697,6 @@ mod test {
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },
-            "registration": Value::Null,
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
                 "branches": 1,
@@ -915,7 +822,6 @@ mod test {
                     but vigilant and insomniac rationality.",
                     "name": "radicle-upstream"
                 },
-                "registration": serde_json::Value::Null,
                 "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
                 "stats": {
                     "branches": 36,
@@ -932,7 +838,6 @@ mod test {
                     of millions of communication protocols with every passing millisecond.",
                     "name": "radicle-link"
                 },
-                "registration": serde_json::Value::Null,
                 "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd",
                 "stats": {
                     "branches": 49,

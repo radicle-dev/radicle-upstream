@@ -7,49 +7,18 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
 use crate::identity;
-use crate::registry;
 use crate::session;
 
 /// Combination of all session filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Cache + registry::Client + 'static,
-{
-    clear_cache_filter(ctx.clone())
-        .or(delete_filter(ctx.clone()))
+pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
+    delete_filter(ctx.clone())
         .or(get_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
         .boxed()
 }
 
-/// `DELETE /cache`
-fn clear_cache_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Cache + 'static,
-{
-    path("cache")
-        .and(warp::delete())
-        .and(path::end())
-        .and(http::with_context(ctx))
-        .and(document::document(document::description(
-            "Clear cached data",
-        )))
-        .and(document::document(document::tag("Session")))
-        .and(document::document(
-            document::response(204, None).description("Cache cleared"),
-        ))
-        .and_then(handler::clear_cache)
-}
-
 /// `DELETE /`
-fn delete_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn delete_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::delete()
         .and(path::end())
         .and(http::with_context(ctx))
@@ -64,10 +33,7 @@ where
 }
 
 /// `GET /`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path::end())
         .and(http::with_context(ctx))
@@ -86,12 +52,9 @@ where
 }
 
 /// `Post /settings`
-fn update_settings_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
+fn update_settings_filter(
+    ctx: http::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("settings")
         .and(warp::post())
         .and(path::end())
@@ -111,25 +74,10 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
-    use crate::registry;
     use crate::session;
 
-    /// Clear [`registry::Cache`].
-    pub async fn clear_cache<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Cache,
-    {
-        let ctx = ctx.read().await;
-        ctx.registry.clear()?;
-
-        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
-    }
-
     /// Clear the current [`session::Session`].
-    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    pub async fn delete(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         session::clear_current(&ctx.store)?;
 
@@ -137,25 +85,19 @@ mod handler {
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client,
-    {
+    pub async fn get(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let sess = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
+        let sess = session::current(&ctx.peer_api, &ctx.store).await?;
 
         Ok(reply::json(&sess))
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.
-    pub async fn update_settings<R>(
-        ctx: http::Ctx<R>,
+    pub async fn update_settings(
+        ctx: http::Ctx,
         settings: session::settings::Settings,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         session::set_settings(&ctx.store, settings)?;
 
@@ -170,7 +112,6 @@ impl ToDocumentedType for session::Session {
             "identity".into(),
             identity::Identity::document().nullable(true),
         );
-        properties.insert("orgs".into(), document::array(registry::Org::document()));
         properties.insert("settings".into(), session::settings::Settings::document());
 
         document::DocumentedType::from(properties).description("Session")
@@ -184,7 +125,6 @@ impl ToDocumentedType for session::settings::Settings {
             "appearance".into(),
             session::settings::Appearance::document(),
         );
-        properties.insert("registry".into(), session::settings::Registry::document());
 
         document::DocumentedType::from(properties).description("Settings")
     }
@@ -204,23 +144,6 @@ impl ToDocumentedType for session::settings::Theme {
         document::enum_string(vec!["dark".into(), "light".into()])
             .description("Variants for possible color schemes.")
             .example("dark")
-    }
-}
-
-impl ToDocumentedType for session::settings::Registry {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(1);
-        properties.insert("network".into(), session::settings::Network::document());
-
-        document::DocumentedType::from(properties).description("Registry")
-    }
-}
-
-impl ToDocumentedType for session::settings::Network {
-    fn document() -> document::DocumentedType {
-        document::enum_string(vec!["emulator".into(), "ffnet".into(), "testnet".into()])
-            .description("Variants for possible networks of the Registry to connect to.")
-            .example("testnet")
     }
 }
 
@@ -251,7 +174,7 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let have = session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
+        let have = session::current(&ctx.peer_api, &ctx.store)
             .await
             .unwrap()
             .settings;
@@ -277,7 +200,6 @@ mod test {
             have,
             json!({
                 "identity": Value::Null,
-                "orgs": [],
                 "settings": {
                     "appearance": {
                         "theme": "light",
@@ -290,21 +212,6 @@ mod test {
                             "seed.radicle.xyz",
                         ]
                     },
-                    "registry": {
-                        "network": "emulator",
-                    },
-                },
-                "registrationFee": {
-                    "user": 10,
-                    "org": 10,
-                    "member": Value::Null,
-                    "project": Value::Null,
-                },
-                "minimumTransactionFee": 1,
-                "permissions": {
-                    "registerHandle": false,
-                    "registerOrg": false,
-                    "registerProject": false,
                 },
             }),
         );
@@ -336,7 +243,6 @@ mod test {
             have,
             json!({
                 "identity": Value::Null,
-                "orgs": [],
                 "settings": {
                     "appearance": {
                         "theme": "dark",
@@ -349,21 +255,6 @@ mod test {
                             "seed.radicle.xyz",
                         ],
                     },
-                    "registry": {
-                        "network": "emulator",
-                    },
-                },
-                "registrationFee": {
-                    "user": 10,
-                    "org": 10,
-                    "member": Value::Null,
-                    "project": Value::Null,
-                },
-                "minimumTransactionFee": 1,
-                "permissions": {
-                    "registerHandle": false,
-                    "registerOrg": false,
-                    "registerProject": false,
                 },
             }),
         );

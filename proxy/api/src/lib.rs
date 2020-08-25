@@ -32,7 +32,5 @@ pub mod error;
 pub mod http;
 pub mod identity;
 pub mod keystore;
-mod notification;
 pub mod project;
-pub mod registry;
 pub mod session;

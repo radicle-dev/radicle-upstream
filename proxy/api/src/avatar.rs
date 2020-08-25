@@ -7,7 +7,7 @@
     clippy::integer_arithmetic
 )]
 
-//! Org and user avatar generation.
+//! Avatar generation.
 
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -85,8 +85,6 @@ pub enum Usage {
     Any,
     /// An [`crate::identity::Identity`] avatar.
     Identity,
-    /// An org avatar.
-    Org,
 }
 
 /// An avatar.
@@ -194,7 +192,7 @@ fn generate_emoji(input: &str, usage: Usage) -> Emoji {
                 )
             }
         },
-        Usage::Any | Usage::Org => Emoji(
+        Usage::Any => Emoji(
             EMOJIS
                 .get(ix as usize % EMOJIS.len())
                 .expect("index of out of range"),
@@ -261,7 +259,7 @@ mod test {
     #[test]
     fn test_avatar_emoji() {
         assert_eq!(generate_emoji("cloudhead", Usage::Identity), Emoji("🌻"));
-        assert_eq!(generate_emoji("radicle", Usage::Org), Emoji("☕\u{fe0f}"));
+        assert_eq!(generate_emoji("radicle", Usage::Any), Emoji("☕\u{fe0f}"));
     }
 
     #[test]
