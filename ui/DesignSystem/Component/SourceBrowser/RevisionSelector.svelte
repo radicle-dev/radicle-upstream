@@ -199,7 +199,7 @@
             on:click={() => {
               handleOpenProfile(repo.identity.peerId);
             }}>
-            <Icon.BoxUpRight />
+            <Icon.ArrowBoxUpRight />
           </div>
         </Tooltip>
       </div>

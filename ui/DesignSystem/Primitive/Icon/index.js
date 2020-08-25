@@ -1,3 +1,4 @@
+import ArrowBoxUpRight from "./ArrowBoxUpRight.svelte";
 import ArrowCollapse from "./ArrowCollapse.svelte";
 import ArrowDown from "./ArrowDown.svelte";
 import ArrowExpand from "./ArrowExpand.svelte";
@@ -6,7 +7,6 @@ import ArrowRight from "./ArrowRight.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import At from "./At.svelte";
 import Box from "./Box.svelte";
-import BoxUpRight from "./BoxUpRight.svelte";
 import Branch from "./Branch.svelte";
 import Chat from "./Chat.svelte";
 import Check from "./Check.svelte";
@@ -42,7 +42,7 @@ import Heart from "./Heart.svelte";
 import HeartFaceSmall from "./HeartFaceSmall.svelte";
 import House from "./House.svelte";
 import Info from "./Info.svelte";
-import InfoNoCircle from "./InfoNoCircle.svelte";
+import InfoCircle from "./InfoCircle.svelte";
 import Key from "./Key.svelte";
 import Label from "./Label.svelte";
 import Ledger from "./Ledger.svelte";
@@ -66,6 +66,7 @@ import User from "./User.svelte";
 import Wallet from "./Wallet.svelte";
 
 export default {
+  ArrowBoxUpRight,
   ArrowCollapse,
   ArrowDown,
   ArrowExpand,
@@ -74,7 +75,6 @@ export default {
   ArrowUp,
   At,
   Box,
-  BoxUpRight,
   Branch,
   Chat,
   Check,
@@ -110,7 +110,7 @@ export default {
   HeartFaceSmall,
   House,
   Info,
-  InfoNoCircle,
+  InfoCircle,
   Key,
   Label,
   Ledger,
