@@ -47,6 +47,7 @@ import Key from "./Key.svelte";
 import Label from "./Label.svelte";
 import Ledger from "./Ledger.svelte";
 import Lock from "./Lock.svelte";
+import LockSmall from "./LockSmall.svelte";
 import MagnifyingGlass from "./MagnifyingGlass.svelte";
 import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
@@ -115,6 +116,7 @@ export default {
   Label,
   Ledger,
   Lock,
+  LockSmall,
   MagnifyingGlass,
   Merge,
   Minus,
