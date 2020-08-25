@@ -58,19 +58,14 @@ checksum = "85bb70cc08ec97ca5450e6eba421deeea5f172c0fc61f78b5357b2a8e8be195f"
 name = "api"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "async-trait",
  "bytes",
  "coco",
  "directories 2.0.2",
  "futures 0.3.5",
- "hex",
  "http",
  "kv",
  "librad",
  "log",
- "nonempty",
- "parity-scale-codec",
  "percent-encoding 2.1.0",
  "pico-args",
  "pretty_assertions",
@@ -78,17 +73,12 @@ dependencies = [
  "radicle-git-helpers",
  "radicle-keystore",
  "radicle-surf",
- "rand",
  "serde",
- "serde_cbor 0.11.1",
  "serde_json",
  "serde_qs",
- "syntect",
  "tempfile",
  "thiserror",
  "tokio",
- "url 1.7.2",
- "url 2.1.1",
  "warp",
 ]
 
@@ -193,16 +183,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
-name = "bitvec"
-version = "0.17.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41262f11d771fd4a61aa3ce019fca363b4b6c282fca9da2a31186d3965a47a5c"
-dependencies = [
- "either",
- "radium",
-]
-
-[[package]]
 name = "blake2b_simd"
 version = "0.5.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -256,12 +236,6 @@ name = "bumpalo"
 version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e8c087f005730276d1096a652e92a8bacee2e2472bcc9715a74d2bec38b5820"
-
-[[package]]
-name = "byte-slice-cast"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0a5e3906bcbf133e33c1d4d95afc664ad37fbdb9f6568d8043e7ea8c27d93d3"
 
 [[package]]
 name = "byte-tools"
@@ -1519,18 +1493,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "parity-scale-codec"
-version = "1.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a74f02beb35d47e0706155c9eac554b50c671e0d868fe8296bcdf44a9a4847bf"
-dependencies = [
- "arrayvec",
- "bitvec",
- "byte-slice-cast",
- "serde",
-]
-
-[[package]]
 name = "parking_lot"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1817,7 +1779,7 @@ dependencies = [
  "rpassword",
  "secstr",
  "serde",
- "serde_cbor 0.10.2",
+ "serde_cbor",
  "sodiumoxide",
  "thiserror",
 ]
@@ -1836,12 +1798,6 @@ dependencies = [
  "serde",
  "thiserror",
 ]
-
-[[package]]
-name = "radium"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "def50a86306165861203e7f84ecffbbdfdea79f0e51039b33de1e952358c47ac"
 
 [[package]]
 name = "rand"
@@ -2099,16 +2055,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7081ed758ec726a6ed8ee7e92f5d3f6e6f8c3901b1f972e3a4a2f2599fad14f"
 dependencies = [
  "byteorder",
- "half",
- "serde",
-]
-
-[[package]]
-name = "serde_cbor"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e18acfa2f90e8b735b2836ab8d538de304cbb6729a7360729ea5a895d15a622"
-dependencies = [
  "half",
  "serde",
 ]
