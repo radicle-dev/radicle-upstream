@@ -82,6 +82,7 @@ mod handler {
         ))
     }
 
+    /// Reset the coco state by creating a new temporary directory for the librad paths.
     pub async fn nuke_coco(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.

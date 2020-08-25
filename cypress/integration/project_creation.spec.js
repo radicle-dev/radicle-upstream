@@ -111,35 +111,35 @@ context("project creation", () => {
         // spaces are not allowed
         cy.pick("page", "name").type("no spaces");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
+          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
         );
 
         // special characters are disallowed
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("$bad");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
+          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
         );
 
         // can't start with an underscore
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("_nein");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
+          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
         );
 
         // can't start with a dash
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("-nope");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
+          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
         );
 
         // has to be at least two characters long
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("x");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
+          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
         );
       });
     });
@@ -193,7 +193,7 @@ context("project creation", () => {
         cy.pick("profile-context-menu").click();
         cy.pick("dropdown-menu", "new-project").click();
 
-        cy.pick("name").type("new-fancy-project");
+        cy.pick("name").type("new-fancy-project.xyz");
         cy.pick("description").type("My new fancy project");
 
         cy.pick("new-project").click();
@@ -209,13 +209,25 @@ context("project creation", () => {
         );
 
         cy.pick("notification").contains(
-          "Project new-fancy-project successfully created"
+          "Project new-fancy-project.xyz successfully created"
         );
 
         cy.pick("profile").click();
-        cy.pick("profile-screen", "project-list").contains("new-fancy-project");
+        cy.pick("profile-screen", "project-list").contains(
+          "new-fancy-project.xyz"
+        );
         cy.pick("profile-screen", "project-list").contains(
           "My new fancy project"
+        );
+
+        // Make sure we can register the project right after creation.
+        cy.pick(
+          "project-list-entry-new-fancy-project.xyz",
+          "context-menu"
+        ).click();
+        cy.pick("dropdown-menu", "register-project").should(
+          "not.have.class",
+          "disabled"
         );
       });
     });
@@ -252,6 +264,34 @@ context("project creation", () => {
         cy.pick("profile").click();
         cy.pick("profile-screen", "project-list").contains("git-platinum-copy");
         cy.pick("profile-screen", "project-list").contains("Best project");
+
+        cy.pick("notification")
+          .contains("Project git-platinum-copy successfully created")
+          .should("exist");
+        cy.pick("notification").contains("Close").click();
+
+        // Make sure we can't add the same project twice.
+        cy.pick("profile-context-menu").click();
+        cy.pick("dropdown-menu", "new-project").click();
+
+        cy.pick("existing-project").click();
+
+        cy.pick("existing-project", "choose-path-button").click();
+        // Make sure UI has time to update path value from stub,
+        // this prevents this spec from failing on CI.
+        cy.wait(500);
+
+        cy.pick("name").should("have.value", "git-platinum-copy");
+        cy.pick("description").type("Best project");
+
+        cy.pick("create-project-button").click();
+
+        cy.pick("notification")
+          .contains(
+            /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exits/
+          )
+          .should("exist");
+        cy.pick("notification").contains("Close").click();
       });
     });
   });
