@@ -89,6 +89,7 @@ interface Fetch extends event.Event<Kind> {
 
 interface FetchList extends event.Event<Kind> {
   kind: Kind.FetchList;
+  urn?: string;
 }
 
 type Msg = Create | Fetch | FetchList;
@@ -126,7 +127,7 @@ const update = (msg: Msg): void => {
     case Kind.FetchList:
       projectsStore.loading();
       api
-        .get<Projects>("projects")
+        .get<Projects>(msg.urn ? `projects/?user=${msg.urn}` : "projects")
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
@@ -192,7 +193,7 @@ export const register = (
 };
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
-const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);

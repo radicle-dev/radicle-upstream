@@ -49,7 +49,7 @@
     if (urn === session.identity.urn) {
       push(path.profileProjects());
     } else {
-      push(path.userProfile(urn));
+      push(path.userProfileProjects(urn));
     }
   };
 
