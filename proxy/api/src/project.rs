@@ -1,7 +1,11 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
+use std::collections::HashSet;
+
 use serde::{Deserialize, Serialize};
+
+use librad::uri::RadUrn;
 
 use crate::error;
 
@@ -15,6 +19,8 @@ pub struct Metadata {
     pub description: String,
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
+    /// List of maintainers.
+    pub maintainers: HashSet<RadUrn>,
 }
 
 impl<ST> From<coco::Project<ST>> for Metadata
@@ -29,6 +35,7 @@ where
                 .clone()
                 .unwrap_or_else(|| "".into()),
             default_branch: project_meta.default_branch().to_string(),
+            maintainers: project_meta.maintainers().clone(),
         }
     }
 }
@@ -156,7 +163,8 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                     name: "radicle-upstream".to_string(),
                     description: "It is not the slumber of reason that engenders monsters, \
                         but vigilant and insomniac rationality.".to_string(),
-                    default_branch: "main".to_string()
+                    default_branch: "main".to_string(),
+                    maintainers: HashSet::new(),
                 },
                 stats: coco::Stats {
                     contributors: 6,
@@ -173,7 +181,8 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                     cross-hatched with fibre-optic cables, radio and microwaves, \
                     oil and gas pipelines, aerial and shipping routes, and the unrelenting, \
                     simultaneous execution of millions of communication protocols with every passing millisecond.".to_string(),
-                    default_branch: "main".to_string()
+                    default_branch: "main".to_string(),
+                    maintainers: HashSet::new(),
                 },
                 stats: coco::Stats {
                     contributors: 7,
