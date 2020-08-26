@@ -35,12 +35,6 @@
       href: path.profileProjects(),
       looseActiveStateMatching: true,
     },
-    {
-      icon: Icon.Wallet,
-      title: "Wallet",
-      href: path.profileWallet(),
-      looseActiveStateMatching: false,
-    },
   ];
 
   const dropdownMenuItems = [
