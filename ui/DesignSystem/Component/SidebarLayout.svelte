@@ -1,8 +1,5 @@
 <script>
   import { getContext } from "svelte";
-  import { push } from "svelte-spa-router";
-
-  import * as path from "../../src/path.ts";
 
   import Sidebar from "./Sidebar.svelte";
 
@@ -22,10 +19,7 @@
 </style>
 
 <div data-cy={dataCy}>
-  <Sidebar
-    on:createorg={() => push(path.orgRegistration())}
-    identity={session.identity}
-    orgs={[]} />
+  <Sidebar identity={session.identity} />
 
   <div class="container">
     <div class="content" {style}>

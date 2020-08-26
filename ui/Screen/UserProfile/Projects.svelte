@@ -11,7 +11,7 @@
 </script>
 
 <Remote store={projectsStore} let:data={projects}>
-  <Projects {projects} />
+  <Projects {projects} urn={params.urn} />
 
   <div slot="error" let:error>
     <Error message={error.message} />

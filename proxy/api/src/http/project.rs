@@ -550,6 +550,7 @@ mod test {
 
         let projects = project::list_projects(&ctx.peer_api)?;
         let meta = projects.first().unwrap();
+        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
@@ -557,6 +558,9 @@ mod test {
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
+                "maintainers": [
+                    maintainer
+                ],
                 "name": "Upstream",
             },
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
@@ -609,6 +613,7 @@ mod test {
 
         let projects = project::list_projects(&ctx.peer_api)?;
         let meta = projects.first().unwrap();
+        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
@@ -617,6 +622,9 @@ mod test {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
+                "maintainers": [
+                    maintainer
+                ],
             },
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
@@ -689,6 +697,7 @@ mod test {
         }?;
 
         let meta = projects.first().unwrap();
+        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let want = json!({
             "id": meta.id,
@@ -696,6 +705,9 @@ mod test {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
+                "maintainers": [
+                    maintainer
+                ],
             },
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
@@ -820,7 +832,8 @@ mod test {
                     "defaultBranch": "main",
                     "description": "It is not the slumber of reason that engenders monsters, \
                     but vigilant and insomniac rationality.",
-                    "name": "radicle-upstream"
+                    "name": "radicle-upstream",
+                    "maintainers": [],
                 },
                 "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
                 "stats": {
@@ -836,7 +849,8 @@ mod test {
                     "description": "The monstrous complexity of our reality, a reality cross-hatched with fibre-optic cables, \
                     radio and microwaves, oil and gas pipelines, aerial and shipping routes, and the unrelenting, simultaneous execution \
                     of millions of communication protocols with every passing millisecond.",
-                    "name": "radicle-link"
+                    "name": "radicle-link",
+                    "maintainers": [],
                 },
                 "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd",
                 "stats": {

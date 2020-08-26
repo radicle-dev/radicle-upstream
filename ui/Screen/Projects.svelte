@@ -2,11 +2,13 @@
   import { push } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
+  import { BadgeType } from "../src/badge.ts";
 
   import { Flex } from "../DesignSystem/Primitive";
   import { List, ProjectCard, Stats } from "../DesignSystem/Component";
 
   export let projects = null;
+  export let urn = null;
 
   const select = event => {
     const project = event.detail;
@@ -17,6 +19,7 @@
     title: project.metadata.name,
     description: project.metadata.description,
     showRegisteredBadge: project.registration,
+    badge: project.metadata.maintainers.includes(urn) && BadgeType.Maintainer,
   });
 </script>
 
