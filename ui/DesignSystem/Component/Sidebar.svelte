@@ -2,7 +2,6 @@
   import { location, link } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
-  import { isDev } from "../../../native/ipc.js";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -120,18 +119,16 @@
     </li>
   </ul>
   <ul class="bottom">
-    {#if isDev()}
-      <li
-        class="item indicator"
-        class:active={path.active(path.discovery(), $location)}
-        data-cy="discovery">
-        <Tooltip value="Discover">
-          <a href={path.discovery()} use:link>
-            <Icon.Network />
-          </a>
-        </Tooltip>
-      </li>
-    {/if}
+    <li
+      class="item indicator"
+      class:active={path.active(path.discovery(), $location)}
+      data-cy="discovery">
+      <Tooltip value="Discover">
+        <a href={path.discovery()} use:link>
+          <Icon.Network />
+        </a>
+      </Tooltip>
+    </li>
     <li
       class="item indicator"
       data-cy="settings"
