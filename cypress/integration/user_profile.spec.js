@@ -1,0 +1,28 @@
+before(() => {
+  cy.nukeAllState();
+  cy.createIdentity("cloudhead");
+  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
+    "ele",
+    "abbey",
+  ]);
+});
+
+context("visitor view profile page", () => {
+  it("opens from the revision selector", () => {
+    // Go to the project source page
+    cy.visit("./public/index.html#/profile/projects");
+    cy.contains("platinum").click();
+    cy.contains("Source").click();
+
+    // Pick a user from the revision selector
+    cy.pick("revision-selector").click();
+    cy.get(".revision-dropdown").pick("abbey").click();
+
+    cy.pick("header").should("exist");
+  });
+
+  it("shows the right data", () => {
+    cy.pick("entity-name").contains("abbey");
+    cy.pick("project-list").contains("platinum").should("exist");
+  });
+});

@@ -195,6 +195,7 @@
         </div>
         <Tooltip value="Go to profile" position="top">
           <div
+            data-cy={repo.identity.metadata.handle}
             class="open-profile"
             on:click={() => {
               handleOpenProfile(repo.identity.urn);
