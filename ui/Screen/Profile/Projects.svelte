@@ -1,8 +1,10 @@
 <script>
+  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
   import { projects as projectsStore } from "../../src/project.ts";
+  import { BadgeType } from "../../src/badge.ts";
 
   import { Flex } from "../../DesignSystem/Primitive";
   import {
@@ -14,6 +16,8 @@
     Stats,
   } from "../../DesignSystem/Component";
 
+  const session = getContext("session");
+
   const select = event => {
     const project = event.detail;
     push(path.projectSource(project.id));
@@ -23,6 +27,9 @@
     title: project.metadata.name,
     description: project.metadata.description,
     showRegisteredBadge: project.registration,
+    badge:
+      project.metadata.maintainers.includes(session.identity.urn) &&
+      BadgeType.Maintainer,
   });
 
   const create = () => push(path.createProject());
