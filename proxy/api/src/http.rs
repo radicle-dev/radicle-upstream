@@ -9,6 +9,8 @@ use warp::{path, reject, Filter, Rejection, Reply};
 
 use librad::paths;
 
+use coco::signer;
+
 use crate::keystore;
 
 mod avatar;
@@ -40,13 +42,13 @@ macro_rules! combine {
 /// Main entry point for HTTP API.
 pub fn api(
     peer_api: coco::Api,
-    keystore: keystore::Keystorage,
+    signer: signer::BoxedSigner,
     store: kv::Store,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let ctx = Context {
         peer_api,
-        keystore,
+        signer,
         store,
     };
     let ctx = Arc::new(RwLock::new(ctx));
@@ -136,8 +138,7 @@ fn with_owner_guard(ctx: Ctx) -> BoxedFilter<(coco::User,)> {
 pub struct Context {
     /// [`coco::Api`] to operate on the local monorepo.
     peer_api: coco::Api,
-    /// Storage to manage keys.
-    keystore: keystore::Keystorage,
+    signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
     store: kv::Store,
 }
@@ -173,14 +174,15 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-    let key = new_keystore.init_librad_key()?;
+    let signer = new_keystore.init_librad_key()?;
 
-    let config = coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+    let config =
+        coco::config::configure(paths, signer.clone(), *coco::config::LOCALHOST_ANY, vec![]);
     let new_peer_api = coco::Api::new(config).await?;
 
     let mut ctx = ctx.write().await;
     ctx.peer_api = new_peer_api;
-    ctx.keystore = new_keystore;
+    ctx.signer = signer::BoxedSigner::new(signer);
 
     Ok(())
 }
@@ -198,18 +200,18 @@ impl Context {
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
+        let signer = keystore.init_librad_key()?;
 
         let peer_api = {
-            let config = coco::config::default(key, tmp_dir.path())?;
+            let config = coco::config::default(signer, tmp_dir.path())?;
             coco::Api::new(config).await?
         };
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         Ok(Arc::new(RwLock::new(Self {
-            keystore,
             peer_api,
+            signer,
             store,
         })))
     }
