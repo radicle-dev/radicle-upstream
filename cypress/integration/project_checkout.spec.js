@@ -112,6 +112,24 @@ context("project checkout", () => {
         cy.exec(`git -C ${checkoutPath}/platinum remote show`).then(result => {
           expect(result.stdout).to.equal(`rad`);
         });
+
+        // Make sure we can't check out a project to the same directory twice.
+        cy.pick("checkout-modal-toggle").click();
+
+        cy.pick("choose-path-button").click();
+        // Make sure UI has time to update path value from stub,
+        // prevents this spec from failing on CI.
+        cy.wait(500);
+
+        // Perform the checkout.
+        cy.pick("checkout-button").click();
+
+        // Notification should contain the full path to the working directory.
+        cy.pick("notification")
+          .contains(
+            /Checkout failed: '.*checkout\/platinum' exists and is not an empty directory/
+          )
+          .should("exist");
       });
     });
   });
