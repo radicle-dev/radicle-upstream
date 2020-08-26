@@ -78,7 +78,6 @@
     color: var(--color-foreground-level-5);
     display: flex;
     justify-content: space-between;
-    border-bottom: solid 1px var(--color-foreground-level-3);
   }
 
   .header:hover {
@@ -87,6 +86,7 @@
 
   .menu {
     cursor: pointer;
+    border-top: solid 1px var(--color-foreground-level-3);
   }
 
   .menu-item {
