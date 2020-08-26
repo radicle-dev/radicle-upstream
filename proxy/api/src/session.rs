@@ -166,10 +166,7 @@ pub mod settings {
     impl Default for CoCo {
         fn default() -> Self {
             Self {
-                seeds: vec!["seed.radicle.xyz"]
-                    .into_iter()
-                    .map(std::string::ToString::to_string)
-                    .collect(),
+                seeds: vec![],
             }
         }
     }
