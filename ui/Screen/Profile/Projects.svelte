@@ -1,4 +1,5 @@
 <script>
+  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
@@ -14,6 +15,8 @@
     Remote,
     Stats,
   } from "../../DesignSystem/Component";
+
+  const session = getContext("session");
 
   const select = event => {
     const project = event.detail;
