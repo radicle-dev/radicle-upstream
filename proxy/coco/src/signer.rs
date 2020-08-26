@@ -1,1 +1,1 @@
-pub use librad::signer::BoxedSigner;
+pub use librad::signer::{BoxedSigner, SomeSigner};

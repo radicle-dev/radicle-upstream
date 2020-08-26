@@ -9,9 +9,8 @@ use warp::{path, reject, Filter, Rejection, Reply};
 
 use librad::paths;
 
+use coco::keystore;
 use coco::signer;
-
-use crate::keystore;
 
 mod avatar;
 mod control;
@@ -182,7 +181,7 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
 
     let mut ctx = ctx.write().await;
     ctx.peer_api = new_peer_api;
-    ctx.signer = signer::BoxedSigner::new(signer);
+    ctx.signer = signer::BoxedSigner::from(signer::SomeSigner { signer });
 
     Ok(())
 }

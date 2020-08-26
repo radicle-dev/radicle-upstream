@@ -40,9 +40,10 @@ mod handler {
 
     use librad::paths;
 
+    use coco::keystore;
+
     use crate::error;
     use crate::http;
-    use crate::keystore;
     use crate::project;
 
     /// Create a project from the fixture repo.
@@ -54,10 +55,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
         let meta = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             &input.name,
             &input.description,

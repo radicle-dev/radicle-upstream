@@ -33,6 +33,7 @@ mod error;
 pub use error::Error;
 
 pub mod git_helper;
+pub mod keystore;
 mod peer;
 pub use peer::{verify_user, Api, User};
 pub mod project;
