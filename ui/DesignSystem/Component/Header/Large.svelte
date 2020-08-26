@@ -1,12 +1,6 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  import { Avatar, Button, Icon } from "../../Primitive";
+  import { Avatar, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
-
-  import { isDev } from "../../../../native/ipc.js";
-
-  const dispatch = createEventDispatcher();
 
   export let style = null;
   export let entity = null;
@@ -22,10 +16,6 @@
   } else if (variant === "org") {
     name = entity.id;
   }
-
-  const onRegisterHandle = () => {
-    dispatch("registerHandle");
-  };
 </script>
 
 <style>
@@ -93,15 +83,6 @@
         <div class="user">
           <h1 data-cy="entity-name" style="display: flex; align-items: center;">
             {name}
-            {#if variant === 'profile' && !entity.registered && isDev()}
-              <Button
-                disabled="true"
-                variant="outline"
-                style="margin-left: 12px;"
-                on:click={() => onRegisterHandle()}>
-                Register handle
-              </Button>
-            {/if}
           </h1>
           {#if variant === 'org' || entity.registered}
             <Icon.Registered
