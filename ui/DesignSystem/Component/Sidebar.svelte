@@ -3,6 +3,7 @@
   import { location, link } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
+  import { isDev } from "../../../native/ipc.js";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -125,55 +126,59 @@
       </Tooltip>
     </li>
 
-    {#each orgs as org}
+    {#if isDev()}
+      {#each orgs as org}
+        <li
+          class="item indicator"
+          data-cy={`org-${org.id}`}
+          class:active={path.active(path.orgs(org.id), $location, true)}>
+          <Tooltip value={org.id}>
+            <a href={path.orgProjects(org.id)} use:link>
+              <Avatar
+                avatarFallback={org.avatarFallback}
+                variant="square"
+                size="regular" />
+            </a>
+          </Tooltip>
+        </li>
+      {/each}
+
+      <li class="item" data-cy="add-org">
+        {#if registerOrgPermission}
+          <Tooltip value="Add org">
+            <AddOrgButton on:click={() => dispatch('createorg')} />
+          </Tooltip>
+        {:else}
+          <Tooltip value="Register your handle to create an org">
+            <AddOrgButton disabled={true} />
+          </Tooltip>
+        {/if}
+      </li>
+    {/if}
+  </ul>
+  <ul class="bottom">
+    {#if isDev()}
       <li
         class="item indicator"
-        data-cy={`org-${org.id}`}
-        class:active={path.active(path.orgs(org.id), $location, true)}>
-        <Tooltip value={org.id}>
-          <a href={path.orgProjects(org.id)} use:link>
-            <Avatar
-              avatarFallback={org.avatarFallback}
-              variant="square"
-              size="regular" />
+        class:active={path.active(path.discovery(), $location)}
+        data-cy="discovery">
+        <Tooltip value="Discover">
+          <a href={path.discovery()} use:link>
+            <Icon.Network />
           </a>
         </Tooltip>
       </li>
-    {/each}
-
-    <li class="item" data-cy="add-org">
-      {#if registerOrgPermission}
-        <Tooltip value="Add org">
-          <AddOrgButton on:click={() => dispatch('createorg')} />
+      <li
+        class="item indicator"
+        data-cy="wallet"
+        class:active={path.active(path.profileWallet(), $location)}>
+        <Tooltip value="Wallet">
+          <a href={path.profileWallet()} use:link>
+            <Icon.Wallet />
+          </a>
         </Tooltip>
-      {:else}
-        <Tooltip value="Register your handle to create an org">
-          <AddOrgButton disabled={true} />
-        </Tooltip>
-      {/if}
-    </li>
-  </ul>
-  <ul class="bottom">
-    <li
-      class="item indicator"
-      class:active={path.active(path.discovery(), $location)}
-      data-cy="discovery">
-      <Tooltip value="Discover">
-        <a href={path.discovery()} use:link>
-          <Icon.Network />
-        </a>
-      </Tooltip>
-    </li>
-    <li
-      class="item indicator"
-      data-cy="wallet"
-      class:active={path.active(path.profileWallet(), $location)}>
-      <Tooltip value="Wallet">
-        <a href={path.profileWallet()} use:link>
-          <Icon.Wallet />
-        </a>
-      </Tooltip>
-    </li>
+      </li>
+    {/if}
     <li
       class="item indicator"
       data-cy="settings"

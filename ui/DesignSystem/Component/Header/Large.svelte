@@ -4,6 +4,8 @@
   import { Avatar, Button, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
+  import { isDev } from "../../../../native/ipc.js";
+
   const dispatch = createEventDispatcher();
 
   export let style = null;
@@ -91,7 +93,7 @@
         <div class="user">
           <h1 data-cy="entity-name" style="display: flex; align-items: center;">
             {name}
-            {#if variant === 'profile' && !entity.registered}
+            {#if variant === 'profile' && !entity.registered && isDev()}
               <Button
                 disabled="true"
                 variant="outline"

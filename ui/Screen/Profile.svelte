@@ -3,6 +3,7 @@
   import Router, { push } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
+  import { isDev } from "../../native/ipc.js";
 
   import {
     AdditionalActionsDropdown,
@@ -35,13 +36,16 @@
       href: path.profileProjects(),
       looseActiveStateMatching: true,
     },
-    {
+  ];
+
+  if (isDev()) {
+    topbarMenuItems.push({
       icon: Icon.Wallet,
       title: "Wallet",
       href: path.profileWallet(),
       looseActiveStateMatching: false,
-    },
-  ];
+    });
+  }
 
   const dropdownMenuItems = [
     {
