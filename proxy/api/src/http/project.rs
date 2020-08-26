@@ -654,7 +654,7 @@ mod test {
             let key = ctx.keystore.get_librad_key()?;
             let id = identity::create(&ctx.peer_api, &key, handle)?;
 
-            session::set_identity(&ctx.store, id.clone())?;
+            session::set_identity(&ctx.store, id)?;
         }
 
         let project = coco::project::Create {
