@@ -50,11 +50,6 @@
         return;
     }
   };
-
-  const onRegister = () => {
-    replace(path.profileProjects());
-    complete(path.registerUser());
-  };
 </script>
 
 <style>
@@ -94,6 +89,6 @@
       on:error={onError}
       on:success={() => store.set(State.SuccessView)} />
   {:else if $store === State.SuccessView}
-    <Success on:close={onClose} on:register={onRegister} />
+    <Success on:close={onClose} />
   {/if}
 </ModalLayout>

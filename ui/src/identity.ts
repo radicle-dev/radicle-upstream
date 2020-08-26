@@ -17,7 +17,6 @@ export interface Identity {
   metadata: {
     handle: string;
   };
-  registered?: string;
   avatarFallback: Avatar;
 }
 

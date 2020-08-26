@@ -99,11 +99,7 @@
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(projectId)} use:link>
-        <!-- TODO(rudolfs): show whether the project is registered under user or org -->
-        <Breadcrumb
-          title={project.metadata.name}
-          user={project.registered}
-          org={project.registered} />
+        <Breadcrumb title={project.metadata.name} />
       </a>
 
       <div slot="middle">

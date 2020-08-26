@@ -35,29 +35,13 @@
   .identity-card-text-container {
     margin-left: 16px;
   }
-
-  .registration-link {
-    color: var(--color-secondary);
-    cursor: pointer;
-  }
-
-  .registration-link:hover {
-    color: var(--color-foreground-level-5);
-  }
 </style>
 
 <div class="container">
   <div class="content">
     <h2 style="text-align: center;">Identity created ✨</h2>
     <p style="margin: 20px 0; color: var(--color-foreground-level-5);">
-      This is your peer-to-peer identity. Even though your radicleID is unique,
-      your handle isn't. To get a unique handle, you have to
-      <span
-        data-cy="register-identity-link"
-        class="registration-link"
-        on:click={() => dispatch('register')}>
-        register it.
-      </span>
+      This is your peer-to-peer identity.
     </p>
     <Remote {store} let:data={identity}>
       <div class="identity-card" data-cy="identity-card">

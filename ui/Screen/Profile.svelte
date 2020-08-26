@@ -13,12 +13,10 @@
   import { Icon } from "../DesignSystem/Primitive";
 
   import Projects from "./Profile/Projects.svelte";
-  import Wallet from "./Profile/Wallet.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/projects": Projects,
-    "/profile/wallet": Wallet,
     "*": NotFound,
   };
 
@@ -34,12 +32,6 @@
       title: "Projects",
       href: path.profileProjects(),
       looseActiveStateMatching: true,
-    },
-    {
-      icon: Icon.Wallet,
-      title: "Wallet",
-      href: path.profileWallet(),
-      looseActiveStateMatching: false,
     },
   ];
 
@@ -57,7 +49,7 @@
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
 
-  <Header.Large variant="profile" entity={session.identity}>
+  <Header.Large entity={session.identity}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

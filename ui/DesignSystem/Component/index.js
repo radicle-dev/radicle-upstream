@@ -8,7 +8,6 @@ import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
-import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
@@ -29,14 +28,7 @@ import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
-import Transaction from "./Transaction.svelte";
-import TransactionCenter from "./Transaction/Center.svelte";
-import TransactionSpinner from "./Transaction/Spinner.svelte";
-import TransactionStatusbar from "./Transaction/Statusbar.svelte";
-import Row from "./Transaction/Row.svelte";
 import Urn from "./Urn.svelte";
-import Wallet from "./Wallet.svelte";
-import QR from "./QR.svelte";
 
 export {
   AdditionalActionsDropdown,
@@ -49,7 +41,6 @@ export {
   HorizontalMenu,
   Label,
   List,
-  NavigationButtons,
   Notification,
   NotificationFaucet,
   ModalLayout,
@@ -61,7 +52,6 @@ export {
   Stats,
   Remote,
   RemoteHelperHint,
-  Row,
   SegmentedControl,
   Sidebar,
   SidebarLayout,
@@ -71,11 +61,5 @@ export {
   Tooltip,
   Topbar,
   TrackToggle,
-  Transaction,
-  TransactionCenter,
-  TransactionSpinner,
-  TransactionStatusbar,
   Urn,
-  Wallet,
-  QR,
 };

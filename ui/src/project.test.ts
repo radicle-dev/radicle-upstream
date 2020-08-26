@@ -36,30 +36,6 @@ describe("creating a project", () => {
   });
 });
 
-describe("registering a project", () => {
-  it("sends a correctly-formatted POST request to the api", () => {
-    project
-      .register(
-        project.Domain.Org,
-        "radicle",
-        "radicle-link",
-        22,
-        "this_is_a_coco_id"
-      )
-      .catch(reason => {
-        console.error("Project registration failed: ", reason);
-      });
-
-    expect(api.post).toHaveBeenLastCalledWith(
-      "orgs/radicle/projects/radicle-link",
-      {
-        maybeCocoId: "this_is_a_coco_id",
-        transactionFee: 22,
-      }
-    );
-  });
-});
-
 describe("fetching a project", () => {
   it("creates and updates a store", () => {
     const store = project.project;

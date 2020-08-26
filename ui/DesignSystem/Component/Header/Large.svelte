@@ -1,29 +1,11 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  import { Avatar, Button, Icon } from "../../Primitive";
+  import { Avatar } from "../../Primitive";
   import Urn from "../Urn.svelte";
-
-  const dispatch = createEventDispatcher();
 
   export let style = null;
   export let entity = null;
-  export let variant = null; // profile | org
 
-  let name;
-  if (variant === "profile") {
-    if (entity.registered) {
-      name = entity.registered;
-    } else {
-      name = entity.metadata.handle;
-    }
-  } else if (variant === "org") {
-    name = entity.id;
-  }
-
-  const onRegisterHandle = () => {
-    dispatch("registerHandle");
-  };
+  const name = entity.metadata.handle;
 </script>
 
 <style>
@@ -84,28 +66,14 @@
       <Avatar
         style="margin-right: 32px"
         size="huge"
-        variant={variant === 'profile' ? 'circle' : 'square'}
+        variant="circle"
         avatarFallback={entity.avatarFallback} />
 
       <div class="metadata">
         <div class="user">
           <h1 data-cy="entity-name" style="display: flex; align-items: center;">
             {name}
-            {#if variant === 'profile' && !entity.registered}
-              <Button
-                disabled="true"
-                variant="outline"
-                style="margin-left: 12px;"
-                on:click={() => onRegisterHandle()}>
-                Register handle
-              </Button>
-            {/if}
           </h1>
-          {#if variant === 'org' || entity.registered}
-            <Icon.Registered
-              dataCy="verified-badge"
-              style="fill: var(--color-primary); margin-left: 6px;" />
-          {/if}
         </div>
         <div class="shareable-entity-identifier">
           <Urn

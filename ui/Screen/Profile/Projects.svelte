@@ -22,7 +22,6 @@
   const projectCardProps = project => ({
     title: project.metadata.name,
     description: project.metadata.description,
-    showRegisteredBadge: project.registration,
   });
 
   const create = () => push(path.createProject());

@@ -1,6 +1,5 @@
 <script>
   import twemoji from "twemoji";
-  import Icon from "./Icon";
 
   export let style = null;
   export let dataCy = null;
@@ -10,7 +9,6 @@
   export let imageUrl = null;
   export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
   export let title = null;
-  export let registered = false;
 
   export let variant = "circle"; // circle | square
   export let size = "regular"; // small | regular | medium | big | huge
@@ -177,11 +175,6 @@
         var(--title-color, var(--color-foreground))">
         {title}
       </p>
-      {#if registered}
-        <Icon.RegisteredSmall
-          dataCy="registered-badge"
-          style="fill: var(--color-primary);" />
-      {/if}
     {:else}
       <p
         class="typo-text-bold"
@@ -189,11 +182,6 @@
         var(--color-foreground))">
         {title}
       </p>
-      {#if registered}
-        <Icon.RegisteredSmall
-          dataCy="registered-badge"
-          style="fill: var(--color-primary);" />
-      {/if}
     {/if}
   {/if}
 </div>

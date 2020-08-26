@@ -18,18 +18,11 @@
   import Discovery from "./Screen/Discovery.svelte";
   import Shortcuts from "./Screen/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
-  import Org from "./Screen/Org.svelte";
-  import OrgRegistration from "./Screen/OrgRegistration.svelte";
-  import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
-  import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import Search from "./Screen/Search.svelte";
-  import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
-  import TransactionDetails from "./Screen/TransactionDetails.svelte";
-  import UserRegistration from "./Screen/UserRegistration.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -39,21 +32,12 @@
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
-    "/orgs/register": OrgRegistration,
-    "/orgs/:id/members/register": MemberRegistration,
-    "/orgs/:id": Org,
-    "/orgs/:id/*": Org,
     "/projects/new": ProjectCreation,
-    "/projects/register/:domainId": ProjectRegistration,
-    "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/user/:id": UserProfile,
     "/user/:id/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
     "/shortcuts": Shortcuts,
-    "/user-registration": UserRegistration,
-    "/transactions/:id": TransactionDetails,
-    "/send-funds": SendFunds,
     "*": NotFound,
   };
 

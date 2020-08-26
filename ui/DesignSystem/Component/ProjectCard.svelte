@@ -1,9 +1,6 @@
 <script>
-  import { Icon } from "../Primitive";
-
   export let title = null;
   export let description = null;
-  export let showRegisteredBadge = false;
 </script>
 
 <style>
@@ -27,10 +24,6 @@
     white-space: nowrap;
   }
 
-  .registered {
-    display: flex;
-  }
-
   .desc {
     color: var(--color-foreground-level-5);
     overflow: hidden;
@@ -42,11 +35,6 @@
   <div class="container">
     <div class="title-row">
       <p class="typo-text-bold">{title}</p>
-      {#if showRegisteredBadge}
-        <div data-cy="registered" class="registered">
-          <Icon.RegisteredSmall style="fill: var(--color-primary);" />
-        </div>
-      {/if}
     </div>
     <p class="desc">
       {#if description}{description}{/if}
