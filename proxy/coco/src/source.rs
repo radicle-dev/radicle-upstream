@@ -378,7 +378,10 @@ where
                 Some(peer) => git::Branch::remote(&name, &peer.to_string()).into(),
                 None => git::Branch::local(&name).into(),
             }),
-            Revision::Sha { sha } => Ok(sha.inner().into()),
+            Revision::Sha { sha } => {
+                let oid: git2::Oid = sha.into();
+                Ok(oid.into())
+            },
         }
     }
 }
@@ -555,7 +558,7 @@ pub fn commit_header<'repo>(
     browser: &mut Browser<'repo>,
     sha1: Oid,
 ) -> Result<CommitHeader, Error> {
-    browser.commit(sha1.inner())?;
+    browser.commit(sha1.into())?;
 
     let history = browser.get();
     let commit = history.first();
@@ -569,15 +572,15 @@ pub fn commit_header<'repo>(
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, Error> {
-    browser.commit(sha1.clone().inner())?;
+    browser.commit(sha1.into())?;
 
     let history = browser.get();
     let commit = history.first();
 
     let diff = if let Some(parent) = commit.parents.first() {
-        browser.diff(*parent, sha1.clone().inner())?
+        browser.diff(*parent, sha1.into())?
     } else {
-        browser.initial_diff(sha1.clone().inner())?
+        browser.initial_diff(sha1.into())?
     };
 
     let mut deletions = 0;
@@ -597,7 +600,8 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
         }
     }
 
-    let branches = browser.revision_branches(sha1.inner())?;
+    let oid: git2::Oid = sha1.into();
+    let branches = browser.revision_branches(oid)?;
 
     // If a commit figures in more than one branch, there's no real way to know
     // which branch to show without additional context. So, we choose the first
