@@ -1,12 +1,12 @@
 <script>
   import { push } from "svelte-spa-router";
+  import { createEventDispatcher } from "svelte";
 
   import { Icon, Input } from "../Primitive";
 
   import TrackToggle from "./TrackToggle.svelte";
   import Urn from "./Urn.svelte";
 
-  import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { Status } from "../../src/remote";
   import { updateUrn, validation } from "../../src/search";
@@ -16,10 +16,12 @@
 
   export let content;
 
+  const dispatch = createEventDispatcher();
+
   const navigateToProject = () => {
     if ($validation.status !== ValidationStatus.Success) return;
 
-    modal.hide();
+    dispatch("hide");
     push(path.projectUntracked(value));
   };
 
@@ -29,7 +31,7 @@
         navigateToProject();
         break;
       case "Escape":
-        modal.hide();
+        dispatch("hide");
     }
   };
 

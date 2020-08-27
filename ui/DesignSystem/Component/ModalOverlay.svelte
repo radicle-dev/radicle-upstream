@@ -45,6 +45,9 @@
 <div class="modal" class:hide={!$store.show}>
   <div class="overlay" on:click={clickOutside} />
   <div class="content">
-    <svelte:component this={$store.component} bind:content />
+    <svelte:component
+      this={$store.component}
+      bind:content
+      on:hide={modal.hide} />
   </div>
 </div>
