@@ -109,6 +109,7 @@ describe("display logic", () => {
           defaultBranch: "main",
           name: "my_other_project",
           description: "great project, possibly best in the world",
+          maintainers: [],
         },
         shareableEntityIdentifier: "349283904830",
         stats: {

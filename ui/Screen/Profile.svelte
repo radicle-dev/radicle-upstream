@@ -38,12 +38,6 @@
       looseActiveStateMatching: true,
     },
     {
-      icon: Icon.Wallet,
-      title: "Wallet",
-      href: path.profileWallet(),
-      looseActiveStateMatching: false,
-    },
-    {
       icon: Icon.Network,
       title: "Following",
       href: path.profileTracking(),

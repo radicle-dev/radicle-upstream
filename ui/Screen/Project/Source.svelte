@@ -38,6 +38,8 @@
 
   const { id, metadata } = getContext("project");
 
+  const maintainers = metadata.maintainers;
+
   let scrollY = 0;
   let headerHeight;
   let currentPeerId;
@@ -264,6 +266,7 @@
             <RevisionSelector
               {currentPeerId}
               {currentRevision}
+              {maintainers}
               {revisions}
               on:select={event => {
                 updateRevision(project.id, event.detail.revision, event.detail.peerId);

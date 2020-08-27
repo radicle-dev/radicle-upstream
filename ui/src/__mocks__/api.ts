@@ -40,6 +40,7 @@ export const upstreamProjectMock: project.Project = {
     defaultBranch: "eichhoernchen",
     description:
       "Upstream is a cross-platform desktop client for the radicle code collaboration and registry protocols.",
+    maintainers: [],
   },
   stats: {
     branches: 2,
@@ -55,6 +56,7 @@ export const surfProjectMock: project.Project = {
     name: "radicle-surf",
     defaultBranch: "schildkroete",
     description: "A code browsing library for VCS file systems",
+    maintainers: [],
   },
   stats: {
     branches: 3,

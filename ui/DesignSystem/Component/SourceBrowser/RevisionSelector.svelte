@@ -4,14 +4,16 @@
 
   import * as path from "../../../src/path.ts";
   import { RevisionType } from "../../../src/source.ts";
+  import { BadgeType } from "../../../src/badge.ts";
 
   import { Avatar, Icon } from "../../Primitive";
-  import { Tooltip } from "../../Component";
+  import { Tooltip, Badge } from "../../Component";
 
   export let currentRevision = null;
   export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
+  export let maintainers = [];
 
   let currentSelectedPeer;
 
@@ -45,11 +47,11 @@
     }
   };
 
-  const handleOpenProfile = peerId => {
-    if (peerId === session.identity.peerId) {
+  const handleOpenProfile = urn => {
+    if (urn === session.identity.urn) {
       push(path.profileProjects());
     } else {
-      push(path.userProfile(peerId));
+      push(path.userProfileProjects(urn));
     }
   };
 
@@ -192,12 +194,20 @@
           <p class="typo-text-bold typo-overflow-ellipsis">
             {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
           </p>
+          <p>
+            {#if maintainers.includes(repo.identity.urn)}
+              <Badge
+                style="margin-left: 0.5rem"
+                variant={BadgeType.Maintainer} />
+            {/if}
+          </p>
         </div>
         <Tooltip value="Go to profile" position="top">
           <div
+            data-cy={repo.identity.metadata.handle}
             class="open-profile"
             on:click={() => {
-              handleOpenProfile(repo.identity.peerId);
+              handleOpenProfile(repo.identity.urn);
             }}>
             <Icon.ArrowBoxUpRight />
           </div>

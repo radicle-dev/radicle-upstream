@@ -1,4 +1,5 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
+import Badge from "./Badge.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
@@ -15,7 +16,7 @@ import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
-import ProjectListItem from "./ProjectListItem.svelte";
+import ProjectList from "./ProjectList.svelte";
 import Rad from "./Rad.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
@@ -42,6 +43,7 @@ import QR from "./QR.svelte";
 
 export {
   AdditionalActionsDropdown,
+  Badge,
   Comment,
   Copyable,
   Dropdown,
@@ -58,7 +60,7 @@ export {
   ModalLayout,
   Placeholder,
   ProjectCard,
-  ProjectListItem,
+  ProjectList,
   Rad,
   RadicleLogo,
   RadioOption,

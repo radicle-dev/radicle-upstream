@@ -3,7 +3,7 @@
   import {
     Hoverable,
     List,
-    ProjectListItem,
+    ProjectList,
     TrackToggle,
     Urn,
   } from "../../DesignSystem/Component";
@@ -16,6 +16,7 @@
         name: "obediah",
         description:
           "Obediah Hinton is one of the village elders in a small village named Butcher Creek.",
+        maintainers: [],
       },
       registration: true,
       shareableEntityIdentifier: "obediah@38590438594",
@@ -24,9 +25,11 @@
       metadata: {
         name: "lemuel",
         description: "Lemuel is a villager from Butcher Creek.",
+        maintainers: [],
       },
       registration: false,
       shareableEntityIdentifier: "lemuel@38590438594",
+      maintainers: [],
     },
   ];
 
@@ -46,7 +49,7 @@
 
   .header {
     display: flex;
-    margin: 0.5rem 3rem;
+    margin: 1.5rem 3rem 0.5rem;
   }
 
   .undiscovered-project {
@@ -65,14 +68,7 @@
 </style>
 
 <div class="container">
-  <List items={projects} let:item={project} style="margin-bottom: 1.5rem;">
-    <ProjectListItem
-      metadata={project.metadata}
-      registration={project.registration}
-      shareableEntityIdentifier={project.shareableEntityIdentifier}
-      stats={{ branches: 2, commits: 4, contributors: 8 }} />
-  </List>
-
+  <ProjectList {projects} />
   {#if untracked.length}
     <div out:fade|local={{ duration: fadeDuration }}>
       <div class="header">

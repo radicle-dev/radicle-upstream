@@ -137,6 +137,13 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         )
                     },
                 },
+                error::Error::Checkout(checkout_error) => match checkout_error {
+                    coco::project::checkout::Error::Git(git_error) => (
+                        StatusCode::CONFLICT,
+                        "WORKING_DIRECTORY_EXISTS",
+                        git_error.message().to_string(),
+                    ),
+                },
                 _ => {
                     // TODO(xla): Match all variants and properly transform similar to
                     // gaphql::error.
