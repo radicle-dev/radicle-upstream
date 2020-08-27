@@ -1,0 +1,53 @@
+[package]
+name = "api"
+version = "0.1.0"
+license = "GPL-3.0-only"
+authors = ["radicle team <dev@radicle.xyz>"]
+edition = "2018"
+description = "Proxy to serve a specialised API to the Upstream UI."
+readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/proxy/README.md"
+categories = [ "crypto", "p2p" ]
+keywords = [ "radicle-upstream", "proxy" ]
+repository = "git@github.com:radicle-dev/radicle-upstream.git"
+default-run = "api"
+
+[dependencies]
+anyhow = "1.0"
+directories = "2.0"
+futures = { version = "0.3", features = [ "compat" ] }
+kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
+log = "0.4"
+percent-encoding = "2.1"
+pico-args = "0.3"
+pretty_env_logger = "0.3"
+serde = { version = "1.0", features = [ "derive" ] }
+serde_json = "1.0"
+serde_qs = "0.6"
+tempfile = "3.1"
+thiserror = "1.0"
+tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
+warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
+
+[dependencies.coco]
+path = "../coco"
+
+[dependencies.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+
+[dependencies.radicle-git-helpers]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+
+[dependencies.radicle-keystore]
+git = "https://github.com/radicle-dev/radicle-keystore.git"
+rev = "3377e666bde3130a06dd19343e7df2eaa774176a"
+
+[dependencies.radicle-surf]
+version = "0.4.1"
+features = ["serialize"]
+
+[dev-dependencies]
+bytes = "0.5"
+http = "0.2"
+pretty_assertions = "0.6"

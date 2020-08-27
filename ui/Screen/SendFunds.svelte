@@ -215,9 +215,7 @@
           style="flex: 1; padding-bottom: 0.5rem;"
           validation={$amountValidation}>
           <div slot="left" style="display: flex;">
-            <Icon.Currency
-              size="big"
-              style="fill: var(--color-foreground-level-6)" />
+            <Icon.CurrencyRAD style="fill: var(--color-foreground-level-6)" />
           </div>
         </Input.Text>
         <p
@@ -264,7 +262,7 @@
             <Icon.ArrowRight />
             <div class="to">
               <p
-                class="typo-text-bold typo-overflow-ellipses"
+                class="typo-text-bold typo-overflow-ellipsis"
                 style="color: var(--color-foreground-level-6);">
                 {$recipientStore}
               </p>

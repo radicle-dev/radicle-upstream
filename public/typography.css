@@ -119,7 +119,7 @@ p,
   font-family: var(--typeface-mono-bold);
 }
 
-.typo-overflow-ellipses {
+.typo-overflow-ellipsis {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

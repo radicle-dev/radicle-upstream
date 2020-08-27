@@ -8,8 +8,10 @@
   import { checkout } from "../../src/project.ts";
   import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
+  import * as screen from "../../src/screen.ts";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import {
     fetchCommits,
     fetchRevisions,
@@ -35,6 +37,8 @@
   import CheckoutButton from "./CheckoutButton.svelte";
 
   const { id, metadata } = getContext("project");
+
+  const maintainers = metadata.maintainers;
 
   let scrollY = 0;
   let headerHeight;
@@ -80,6 +84,7 @@
 
   const handleCheckout = async event => {
     try {
+      screen.lock();
       const path = await checkout(
         id,
         event.detail.checkoutDirectoryPath,
@@ -97,6 +102,8 @@
       );
     } catch (error) {
       notification.error(`Checkout failed: ${error.message}`, true);
+    } finally {
+      screen.unlock();
     }
   };
 
@@ -258,6 +265,7 @@
             <RevisionSelector
               {currentPeerId}
               {currentRevision}
+              {maintainers}
               {revisions}
               on:select={event => {
                 updateRevision(project.id, event.detail.revision, event.detail.peerId);
@@ -284,7 +292,7 @@
               <span class="stat typo-mono-bold">{project.stats.branches}</span>
             </div>
             <div class="repo-stat-item">
-              <Icon.Member />
+              <Icon.User />
               <p style="margin: 0 8px;">Contributors</p>
               <span class="stat typo-mono-bold">
                 {project.stats.contributors}
@@ -345,7 +353,7 @@
               {:else}
                 <EmptyState
                   text="This project doesn't have a README yet."
-                  icon="eyes"
+                  illustration={IllustrationVariant.Eyes}
                   style="height: 320px;" />
               {/if}
             </Remote>

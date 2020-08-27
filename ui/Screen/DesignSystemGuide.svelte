@@ -5,6 +5,8 @@
   import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    Copyable,
+    EmptyState,
     Dropdown,
     ModalLayout,
     Notification,
@@ -13,11 +15,14 @@
     Rad,
     Row,
     SegmentedControl,
+    Spinner,
     Stats,
     SupportButton,
     TrackToggle,
     TransactionCenter,
+    TransactionSpinner,
     TransactionStatusbar,
+    Tooltip,
     Urn,
   } from "../DesignSystem/Component";
 
@@ -26,6 +31,7 @@
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
   import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
   import { ValidationStatus } from "../src/validation.ts";
+  import { Variant as IllustrationVariant } from "../src/illustration.ts";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -417,99 +423,19 @@
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
-      <Swatch>
-        <h5>Main</h5>
-      </Swatch>
       <IconSwatch>
-        <Icon.Home />
-        <Icon.Source />
-        <Icon.Fund />
-        <Icon.Member />
-        <Icon.Issue />
-        <Icon.Settings />
+        {#each Object.keys(Icon) as iconName}
+          <Tooltip value={`<Icon.${iconName} />`} position="top">
+            <Copyable
+              notificationText="Icon markup copied to your clipboard"
+              iconBeforeCopy={null}
+              styleContent={false}
+              copyContent={`<Icon.${iconName} />`}>
+              <svelte:component this={Icon[iconName]} />
+            </Copyable>
+          </Tooltip>
+        {/each}
       </IconSwatch>
-      <Swatch>
-        <h5>Functional</h5>
-      </Swatch>
-      <IconSwatch>
-        <Icon.ArrowDown />
-        <Icon.ArrowUp />
-        <Icon.Check />
-        <Icon.Check variant="filled" />
-        <Icon.Chevron />
-        <Icon.Copy />
-        <Icon.Cross />
-        <Icon.Cross variant="medium" />
-        <Icon.Cross variant="big" />
-        <Icon.Cross variant="filled" />
-        <Icon.Ellipses />
-        <Icon.Expand />
-        <Icon.Important variant="no-circle" />
-        <Icon.Important />
-        <Icon.Important variant="big" />
-        <Icon.Info variant="no-circle" />
-        <Icon.Info />
-        <Icon.Info variant="big" />
-        <Icon.Minus />
-        <Icon.Plus />
-        <Icon.Plus variant="small" />
-        <Icon.Search />
-        <Icon.Search variant="small" />
-      </IconSwatch>
-      <Swatch>
-        <h5>Representational</h5>
-      </Swatch>
-      <IconSwatch>
-        <Icon.Replies />
-        <Icon.Register />
-        <Icon.Edit />
-        <Icon.Inbox />
-        <Icon.File />
-        <Icon.Feed />
-        <Icon.Folder />
-        <Icon.At />
-        <Icon.Key />
-        <Icon.CloseIssue />
-        <Icon.Projects />
-        <Icon.Eye />
-        <Icon.Trash />
-        <Icon.Label />
-        <Icon.Verified size="large" />
-      </IconSwatch>
-      <Swatch>
-        <h5>Code</h5>
-      </Swatch>
-      <IconSwatch>
-        <Icon.Commit />
-        <Icon.Revision />
-        <Icon.Peer />
-        <Icon.Branch />
-        <Icon.Graph />
-        <Icon.Merge />
-      </IconSwatch>
-    </Section>
-
-    <Section title="Small Icons" subTitle="Icons at 16px width and height">
-      <IconSwatch>
-        <Icon.Verified />
-      </IconSwatch>
-
-    </Section>
-
-    <Section
-      title="Complex icons"
-      subTitle="Icons at 24px and 32px width and height with animations and
-      reactive coloring.">
-      <Icon.Spinner />
-      <Icon.TransactionState state="positive" />
-      <Icon.TransactionState variant="small" />
-      <Icon.TransactionState />
-      <Icon.TransactionState progress={(1 / 6) * 100} />
-      <Icon.TransactionState progress={(2 / 6) * 100} />
-      <Icon.TransactionState state="negative" progress={(2 / 6) * 100} rotate />
-      <Icon.TransactionState state="negative" progress={(4 / 6) * 100} />
-      <Icon.TransactionState state="negative" progress={100} />
-      <Icon.TransactionState state="negative" />
     </Section>
 
     <Section
@@ -557,10 +483,12 @@
             <Button variant="secondary" disabled>Secondary</Button>
           </td>
           <td>
-            <Button icon={Icon.Search} variant="secondary">Secondary</Button>
+            <Button icon={Icon.MagnifyingGlass} variant="secondary">
+              Secondary
+            </Button>
           </td>
           <td>
-            <Button icon={Icon.Search} variant="secondary" disabled>
+            <Button icon={Icon.MagnifyingGlass} variant="secondary" disabled>
               Secondary
             </Button>
           </td>
@@ -587,12 +515,10 @@
             <Button variant="outline" disabled>Outline</Button>
           </td>
           <td>
-            <Button icon={Icon.Graph} variant="outline">Outline</Button>
+            <Button icon={Icon.Fork} variant="outline">Outline</Button>
           </td>
           <td>
-            <Button icon={Icon.Graph} variant="outline" disabled>
-              Outline
-            </Button>
+            <Button icon={Icon.Fork} variant="outline" disabled>Outline</Button>
           </td>
         </tr>
         <tr>
@@ -1111,6 +1037,36 @@
           showOnHover
           notificationText="The urn was copied to your clipboard" />
       </Swatch>
+
+      <Swatch>
+        <Spinner />
+        <TransactionSpinner state="positive" />
+        <TransactionSpinner variant="small" />
+        <TransactionSpinner />
+        <TransactionSpinner progress={(1 / 6) * 100} />
+        <TransactionSpinner progress={(2 / 6) * 100} />
+        <TransactionSpinner state="negative" progress={(2 / 6) * 100} rotate />
+        <TransactionSpinner state="negative" progress={(4 / 6) * 100} />
+        <TransactionSpinner state="negative" progress={100} />
+        <TransactionSpinner state="negative" />
+      </Swatch>
+
+      <Swatch>
+        <EmptyState
+          illustration={IllustrationVariant.Plant}
+          primaryActionText="Take some action!" />
+        <EmptyState
+          illustration={IllustrationVariant.Eyes}
+          secondaryActionText="Take some other action!" />
+        <EmptyState
+          illustration={IllustrationVariant.Telescope}
+          primaryActionText="Take the first action!"
+          secondaryActionText="Take the secondary action!" />
+        <EmptyState
+          text="Hey, I'm a tent."
+          illustration={IllustrationVariant.Tent} />
+      </Swatch>
+
     </Section>
   </div>
 </ModalLayout>

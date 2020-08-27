@@ -1,5 +1,6 @@
 <script>
   import Icon from "../Icon";
+  import Spinner from "../../Component/Spinner.svelte";
 
   import { ValidationStatus } from "../../../src/validation.ts";
 
@@ -128,16 +129,15 @@
 
   {#if validation}
     {#if validation.status === ValidationStatus.Loading}
-      <Icon.Spinner
-        style="justify-content: flex-start; height: 100%; position: absolute;
-        right: 10px;" />
+      <Spinner
+        style="justify-content: flex-start; position: absolute; top: 8px; right:
+        10px;" />
     {:else if validation.status === ValidationStatus.Success && showSuccessCheck}
-      <Icon.Check
-        variant="filled"
+      <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
     {:else if validation.status === ValidationStatus.Error}
-      <Icon.Important
+      <Icon.ExclamationCircle
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
       <div class="validation-row">

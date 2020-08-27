@@ -6,11 +6,11 @@
 
   const icon = variant => {
     return {
-      "open-issue": Icon.Issue,
-      "reopen-issue": Icon.Issue,
+      "open-issue": Icon.ExclamationCircle,
+      "reopen-issue": Icon.ExclamationCircle,
       label: Icon.Label,
-      assign: Icon.Member,
-      "close-issue": Icon.CloseIssue,
+      assign: Icon.User,
+      "close-issue": Icon.CrossCircle,
     }[variant];
   };
 

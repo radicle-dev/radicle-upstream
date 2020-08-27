@@ -108,22 +108,28 @@ context("project checkout", () => {
         // the OS file browser.
         cy.contains("platinum checked out to").should("not.exist");
 
-        // Get project URN and check that the working directory has the
-        // appropriate rad:// remotes set up.
-        cy.pick("project-screen", "urn")
-          .trigger("mouseover")
-          .pick("full-urn")
-          .invoke("text")
-          .then(urn => {
-            cy.exec(`git -C ${checkoutPath}/platinum remote -v`).then(
-              result => {
-                expect(result.stdout).to.equal(
-                  `rad\trad://${urn}.git (fetch)\n` +
-                    `rad\trad://${urn}.git (push)`
-                );
-              }
-            );
-          });
+        // Check that the working directory has the rad remote.
+        cy.exec(`git -C ${checkoutPath}/platinum remote show`).then(result => {
+          expect(result.stdout).to.equal(`rad`);
+        });
+
+        // Make sure we can't check out a project to the same directory twice.
+        cy.pick("checkout-modal-toggle").click();
+
+        cy.pick("choose-path-button").click();
+        // Make sure UI has time to update path value from stub,
+        // prevents this spec from failing on CI.
+        cy.wait(500);
+
+        // Perform the checkout.
+        cy.pick("checkout-button").click();
+
+        // Notification should contain the full path to the working directory.
+        cy.pick("notification")
+          .contains(
+            /Checkout failed: '.*checkout\/platinum' exists and is not an empty directory/
+          )
+          .should("exist");
       });
     });
   });

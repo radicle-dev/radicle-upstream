@@ -1,9 +1,11 @@
 <script>
   import { Icon } from "../Primitive";
+  import Badge from "../Component/Badge.svelte";
 
   export let title = null;
   export let description = null;
   export let showRegisteredBadge = false;
+  export let badge = null;
 </script>
 
 <style>
@@ -29,7 +31,6 @@
 
   .registered {
     display: flex;
-    margin-left: 9px;
   }
 
   .desc {
@@ -45,9 +46,11 @@
       <p class="typo-text-bold">{title}</p>
       {#if showRegisteredBadge}
         <div data-cy="registered" class="registered">
-          <Icon.Verified
-            style="fill: var(--color-primary); position: relative; bottom: -3px;" />
+          <Icon.RegisteredSmall style="fill: var(--color-primary);" />
         </div>
+      {/if}
+      {#if badge}
+        <Badge style="margin-left: 0.5rem" variant={badge} />
       {/if}
     </div>
     <p class="desc">

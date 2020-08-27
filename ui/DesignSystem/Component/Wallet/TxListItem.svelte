@@ -15,6 +15,7 @@
   } from "../../../src/transaction.ts";
   import Rad from "../Rad.svelte";
   import { Avatar, Icon } from "../../Primitive";
+  import TransactionSpinner from "../Transaction/Spinner.svelte";
 
   export let tx = null;
   export let accountId = null;
@@ -105,7 +106,7 @@
         dataCy="subject-avatar" />
     {:else}
       <p
-        class="typo-text-bold typo-overflow-ellipses"
+        class="typo-text-bold typo-overflow-ellipsis"
         style="color: var(--color-foreground-level-5); max-width: 15rem;"
         data-cy="subject">
         {subject.name}
@@ -116,14 +117,13 @@
     {#if tx.state.type !== StateType.Settled}
       <div class="status">
         {#if iconState(tx.state) === IconState.Negative}
-          <Icon.Important
+          <Icon.ExclamationCircle
             style="margin-right: 8px; fill: var(--color-negative)" />
         {:else if iconState(tx.state) === IconState.positive}
-          <Icon.Check
-            variant="filled"
+          <Icon.CheckCircle
             style="margin-right: 8px; fill: var(--color-positive)" />
         {:else}
-          <Icon.TransactionState
+          <TransactionSpinner
             progress={iconProgress(tx.state)}
             style="margin-right: 8px;"
             variant="small"

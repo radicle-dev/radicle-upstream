@@ -1,7 +1,6 @@
 <script>
-  import { getContext } from "svelte";
   import { isDev } from "../../native/ipc.js";
-  import Router, { link, push } from "svelte-spa-router";
+  import Router, { link } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
   import { fetch, project as store } from "../src/project.ts";
@@ -52,7 +51,7 @@
   const topbarMenuItems = projectId => {
     const items = [
       {
-        icon: Icon.Home,
+        icon: Icon.House,
         title: "Source",
         href: path.projectSource(projectId),
         looseActiveStateMatching: true,
@@ -61,7 +60,7 @@
     isDev() &&
       items.push(
         {
-          icon: Icon.Issue,
+          icon: Icon.ExclamationCircle,
           title: "Issues",
           href: path.projectIssues(projectId),
           looseActiveStateMatching: false,
@@ -76,13 +75,11 @@
     return items;
   };
 
-  $: dropdownMenuItems = [registerProjectMenuItem].concat(codeCollabMenuItems);
-
   if (isDev()) {
     codeCollabMenuItems = [
       {
         title: "New issue",
-        icon: Icon.Issue,
+        icon: Icon.ExclamationCircle,
         event: () => console.log("event(new-issue)"),
       },
       {
@@ -91,31 +88,6 @@
         event: () => console.log("event(new-revision)"),
       },
     ];
-  }
-
-  const session = getContext("session");
-
-  let registerProjectMenuItem;
-
-  if (session.permissions.registerProject) {
-    registerProjectMenuItem = {
-      dataCy: "register-project",
-      title: "Register project",
-      icon: Icon.Register,
-      event: () =>
-        push(
-          path.registerExistingProject(projectId, session.identity.registered)
-        ),
-    };
-  } else {
-    registerProjectMenuItem = {
-      dataCy: "register-project",
-      title: "Register project",
-      icon: Icon.Register,
-      disabled: true,
-      tooltip:
-        "To unlock project registration, register your own handle first.",
-    };
   }
 
   fetch({ id: projectId });
@@ -145,7 +117,7 @@
           dataCy="context-menu"
           style="margin: 0 24px 0 16px"
           headerTitle={project.shareableEntityIdentifier}
-          menuItems={dropdownMenuItems} />
+          menuItems={codeCollabMenuItems} />
       </div>
     </Topbar>
     <Router {routes} />

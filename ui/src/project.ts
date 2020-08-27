@@ -11,6 +11,7 @@ export interface Metadata {
   name: string;
   defaultBranch: string;
   description?: string;
+  maintainers: string[];
 }
 
 export enum RepoType {

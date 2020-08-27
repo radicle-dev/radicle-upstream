@@ -57,13 +57,13 @@
     border-radius: 0.5rem;
     height: 0;
     overflow: hidden;
+
     /* TODO(sos): replace with svelte transitions */
-    transition: height 0.25s ease;
+    transition: height 0.75s ease;
   }
 
   .showTrackingInfo {
     height: 13.5rem;
-    padding: 2rem;
   }
 
   .header {
@@ -89,7 +89,7 @@
       inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
       validation={$validation}>
       <div slot="left" style="display: flex;">
-        <Icon.Search />
+        <Icon.MagnifyingGlass />
       </div>
     </Input.Text>
   </div>
@@ -98,21 +98,23 @@
     class="tracking-info"
     class:showTrackingInfo
     on:click={navigateToProject}>
-    <div class="header">
-      <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
-      <TrackToggle variant="expanded" />
-    </div>
+    <div style="padding: 2rem;">
+      <div class="header">
+        <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
+        <TrackToggle variant="expanded" />
+      </div>
 
-    <div style="display: flex; margin-bottom: 1rem;">
-      <Urn
-        urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
-        notificationText="The project ID was copied to your clipboard"
-        showOnHover />
-    </div>
+      <div style="display: flex; margin-bottom: 1rem;">
+        <Urn
+          urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
+          notificationText="The project ID was copied to your clipboard"
+          showOnHover />
+      </div>
 
-    <p style="color: var(--color-foreground-level-6);">
-      You’re not tracking this project yet, so there’s nothing to show here.
-      Track it and you’ll be notified as soon as it’s available.
-    </p>
+      <p style="color: var(--color-foreground-level-6);">
+        You’re not tracking this project yet, so there’s nothing to show here.
+        Track it and you’ll be notified as soon as it’s available.
+      </p>
+    </div>
   </div>
 </div>

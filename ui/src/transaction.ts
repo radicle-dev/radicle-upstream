@@ -343,17 +343,17 @@ export const headerIcon = (msg: Message): string => {
   switch (msg.type) {
     case MessageType.OrgRegistration:
     case MessageType.OrgUnregistration:
-      return "Register";
+      return "Ledger";
 
     case MessageType.MemberRegistration:
     case MessageType.MemberUnregistration:
     case MessageType.UserRegistration:
-      return "Member";
+      return "User";
 
     case MessageType.ProjectRegistration:
     case MessageType.Transfer:
     case MessageType.TransferFromOrg:
-      return "Source";
+      return "ChevronLeftRight";
   }
 };
 
@@ -428,10 +428,7 @@ export const unkownIdentity: Identity = {
 // in the future we want to look it up on the network.
 export const getPayer = (msg: Message, session: Session): Payer | undefined => {
   const identity = session.identity ?? unkownIdentity;
-  const orgs = session.orgs;
-
-  const org = (org_id: string) =>
-    orgs.find(org => org.id == org_id) ?? unkownOrg;
+  const org = (org_id: string) => unkownOrg;
 
   switch (msg.type) {
     case MessageType.OrgRegistration:

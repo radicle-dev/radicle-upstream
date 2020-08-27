@@ -1,4 +1,5 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
+import Badge from "./Badge.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
@@ -24,6 +25,7 @@ import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
+import Spinner from "./Spinner.svelte";
 import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import Timeline from "./Timeline.svelte";
@@ -32,6 +34,7 @@ import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
 import TransactionCenter from "./Transaction/Center.svelte";
+import TransactionSpinner from "./Transaction/Spinner.svelte";
 import TransactionStatusbar from "./Transaction/Statusbar.svelte";
 import Row from "./Transaction/Row.svelte";
 import Urn from "./Urn.svelte";
@@ -40,6 +43,7 @@ import QR from "./QR.svelte";
 
 export {
   AdditionalActionsDropdown,
+  Badge,
   Comment,
   Copyable,
   Dropdown,
@@ -67,6 +71,7 @@ export {
   SegmentedControl,
   Sidebar,
   SidebarLayout,
+  Spinner,
   SupportButton,
   Timeline,
   Tooltip,
@@ -74,6 +79,7 @@ export {
   TrackToggle,
   Transaction,
   TransactionCenter,
+  TransactionSpinner,
   TransactionStatusbar,
   Urn,
   Wallet,

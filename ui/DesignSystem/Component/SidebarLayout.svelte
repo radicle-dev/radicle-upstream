@@ -1,10 +1,5 @@
 <script>
   import { getContext } from "svelte";
-  import { push } from "svelte-spa-router";
-
-  import * as path from "../../src/path.ts";
-
-  import TransactionCenter from "../../App/TransactionCenter.svelte";
 
   import Sidebar from "./Sidebar.svelte";
 
@@ -24,13 +19,7 @@
 </style>
 
 <div data-cy={dataCy}>
-  <TransactionCenter />
-
-  <Sidebar
-    on:createorg={() => push(path.orgRegistration())}
-    identity={session.identity}
-    orgs={session.orgs}
-    registerOrgPermission={session.permissions.registerOrg} />
+  <Sidebar identity={session.identity} />
 
   <div class="container" data-cy="scrollable-content">
     <div class="content" {style}>
