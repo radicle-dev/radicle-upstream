@@ -1,11 +1,10 @@
 <script>
-  import twemoji from "twemoji";
-
   import {
     SidebarLayout,
     TrackToggle,
     Urn,
   } from "../../DesignSystem/Component";
+  import { Emoji } from "../../DesignSystem/Primitive";
 
   export let params = null;
   const urn = params.urn;
@@ -19,19 +18,11 @@
     height: 100vh;
     flex-direction: column;
   }
-
-  .emoji {
-    height: 3rem;
-    width: 3rem;
-    margin-bottom: 1.5rem;
-  }
 </style>
 
 <SidebarLayout>
   <div class="container">
-    <div class="emoji">
-      {@html twemoji.parse('🎷', { base: '', folder: 'twemoji/', ext: '.svg' })}
-    </div>
+    <Emoji emoji={'🎷'} size="huge" style="margin-bottom: 1.5rem;" />
 
     <h3 style="color: var(--color-foreground-level-6); margin-bottom: 1.5rem;">
       my-new-project
