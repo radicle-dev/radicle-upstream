@@ -5,7 +5,7 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
-use warp::{Filter, Rejection, Reply};
+use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::http;
@@ -74,6 +74,7 @@ fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejec
 fn list_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
+        .and(path::end())
         .and(document::document(document::description(
             "List known Identities",
         )))
