@@ -1,13 +1,12 @@
 <script>
   import * as modal from "../../src/modal";
-  
+
   export let store = null;
 
   let content;
   const clickOutside = ev => {
-    if (content && ev.target !== content && !content.contains(ev.target)) {
+    if (content && ev.target !== content && !content.contains(ev.target))
       modal.hide();
-    }
   };
 </script>
 
