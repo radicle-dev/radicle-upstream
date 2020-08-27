@@ -516,15 +516,9 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
     let first_branch = repo
         .branches(Some(git2::BranchType::Local))?
         .filter_map(|branch_result| {
-            let branch = match branch_result {
-                Ok(s) => s,
-                Err(_) => return None,
-            };
-
-            match branch.0.name() {
-                Ok(Some(n)) => Some(n.to_owned()),
-                Ok(None) | Err(_) => None,
-            }
+            let (branch, _) = branch_result.ok()?;
+            let name = branch.name().ok()?;
+            name.map(String::from)
         })
         .min()
         .expect("Could not find any branches.");
