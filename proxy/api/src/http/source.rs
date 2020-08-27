@@ -628,9 +628,9 @@ mod test {
 
         let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")
             .map_err(coco::Error::from)?;
-        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
-            coco::commit_header(&mut browser, sha1)
-        })?;
+        let want = ctx
+            .peer_api
+            .with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
 
         let res = request()
             .method("GET")
