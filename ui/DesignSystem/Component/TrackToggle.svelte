@@ -8,10 +8,14 @@
   export let tracking = false;
   export let expanded = false;
 
-  // warning variant implies consequences of untracking are more severe
   export let warning = false;
 
   let active = false;
+
+  const TrackingEvent = {
+    Track: "track",
+    Untrack: "untrack",
+  };
 
   const down = () => {
     active = true;
@@ -20,7 +24,7 @@
   const up = () => {
     active = false;
     tracking = !tracking;
-    dispatch(tracking ? "track" : "untrack");
+    dispatch(tracking ? TrackingEvent.Track : TrackingEvent.Untrack);
   };
 
   const dispatch = createEventDispatcher();

@@ -1013,6 +1013,10 @@
       </Swatch>
 
       <Swatch>
+        <TrackToggle warning expanded />
+      </Swatch>
+
+      <Swatch>
         <SupportButton />
       </Swatch>
 
