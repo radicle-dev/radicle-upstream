@@ -8,7 +8,7 @@ before(() => {
 });
 
 context("visitor view profile page", () => {
-  it("opens from the revision selector", () => {
+  it("opens from the revision selector with the correct data", () => {
     // Go to the project source page
     cy.visit("./public/index.html#/profile/projects");
     cy.contains("platinum").click();
@@ -19,9 +19,8 @@ context("visitor view profile page", () => {
     cy.get(".revision-dropdown").pick("abbey").click();
 
     cy.pick("header").should("exist");
-  });
 
-  it("shows the right data", () => {
+    // Check for the correct data
     cy.pick("entity-name").contains("abbey");
     cy.pick("project-list").contains("platinum").should("exist");
   });
