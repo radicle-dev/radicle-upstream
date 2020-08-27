@@ -5,18 +5,26 @@
   import * as path from "../../src/path.ts";
   import { projects as projectsStore } from "../../src/project.ts";
 
-  import { EmptyState, Error, Remote } from "../../DesignSystem/Component";
-
-  import Projects from "../Projects.svelte";
+  import {
+    EmptyState,
+    Error,
+    ProjectsList,
+    Remote,
+  } from "../../DesignSystem/Component";
 
   const create = () => push(path.createProject());
+
+  const select = event => {
+    const project = event.detail;
+    push(path.projectSource(project.id));
+  };
 
   const session = getContext("session");
 </script>
 
 <Remote store={projectsStore} let:data={projects}>
   {#if projects.length > 0}
-    <Projects {projects} urn={session.identity.urn} />
+    <ProjectsList {projects} urn={session.identity.urn} on:select={select} />
   {:else}
     <EmptyState
       text="There’s nothing here yet, get started by starting your first

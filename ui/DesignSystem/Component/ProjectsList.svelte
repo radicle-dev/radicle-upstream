@@ -1,19 +1,13 @@
 <script>
-  import { push } from "svelte-spa-router";
+  import { BadgeType } from "../../src/badge.ts";
 
-  import * as path from "../src/path.ts";
-  import { BadgeType } from "../src/badge.ts";
-
-  import { Flex } from "../DesignSystem/Primitive";
-  import { List, ProjectCard, Stats } from "../DesignSystem/Component";
+  import { Flex } from "../Primitive";
+  import List from "./List.svelte";
+  import ProjectCard from "./ProjectCard.svelte";
+  import Stats from "./Stats.svelte";
 
   export let projects = null;
   export let urn = null;
-
-  const select = event => {
-    const project = event.detail;
-    push(path.projectSource(project.id));
-  };
 
   const projectCardProps = project => ({
     title: project.metadata.name,
@@ -26,7 +20,7 @@
 <List
   dataCy="project-list"
   items={projects}
-  on:select={select}
+  on:select
   let:item={project}
   style="margin: 0 auto;">
   <Flex
