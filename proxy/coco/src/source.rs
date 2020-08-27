@@ -155,11 +155,9 @@ impl CommitHeader {
     }
 }
 
-impl TryFrom<&git::Commit> for CommitHeader {
-    type Error = git2::Error;
-
-    fn try_from(commit: &git::Commit) -> Result<Self, Self::Error> {
-        Ok(Self {
+impl From<&git::Commit> for CommitHeader {
+    fn from(commit: &git::Commit) -> Self {
+        Self {
             sha1: Oid::from(commit.id),
             author: Person {
                 name: commit.author.name.clone(),
@@ -172,7 +170,7 @@ impl TryFrom<&git::Commit> for CommitHeader {
                 email: commit.committer.email.clone(),
             },
             committer_time: commit.author.time,
-        })
+        }
     }
 }
 
@@ -429,7 +427,7 @@ where
 
     let last_commit = browser
         .last_commit(commit_path)?
-        .map(|c| CommitHeader::try_from(&c).expect("unable to convert to commit header"));
+        .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
 
     let content = blob_content(path, &file.contents, theme);
@@ -562,7 +560,7 @@ pub fn commit_header<'repo>(
     let history = browser.get();
     let commit = history.first();
 
-    Ok(CommitHeader::try_from(commit)?)
+    Ok(CommitHeader::from(commit))
 }
 
 /// Retrieves a [`Commit`].
@@ -615,7 +613,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
     );
 
     Ok(Commit {
-        header: CommitHeader::try_from(commit)?,
+        header: CommitHeader::from(commit),
         stats: CommitStats {
             additions,
             deletions,
@@ -636,11 +634,7 @@ pub fn commits<'repo>(
 ) -> Result<Vec<CommitHeader>, Error> {
     browser.branch(branch)?;
 
-    let mut headers: Vec<CommitHeader> = vec![];
-
-    for commit in browser.get().iter() {
-        headers.push(CommitHeader::try_from(commit)?);
-    }
+    let headers = browser.get().iter().map(CommitHeader::from).collect();
 
     Ok(headers)
 }
@@ -737,7 +731,7 @@ where
     entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
     let last_commit = if path.is_root() {
-        Some(CommitHeader::try_from(browser.get().first())?)
+        Some(CommitHeader::from(browser.get().first()))
     } else {
         None
     };

@@ -62,8 +62,8 @@ impl<'de> Deserialize<'de> for Oid {
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
-        Self::try_from(s.as_ref()).map_err(de::Error::custom)
+        let s: &str = Deserialize::deserialize(deserializer)?;
+        Self::try_from(s).map_err(de::Error::custom)
     }
 }
 
