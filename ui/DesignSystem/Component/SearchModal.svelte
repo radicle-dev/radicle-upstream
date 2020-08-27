@@ -95,6 +95,9 @@
     </Input.Text>
   </div>
 
+  <!-- TODO(sos): Once we determine how searching works, make sure this looks right 
+    if user changes urn
+  -->
   <div
     class="tracking-info"
     class:showTrackingInfo
@@ -107,7 +110,7 @@
 
       <div style="display: flex; margin-bottom: 1rem;">
         <Urn
-          urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
+          urn={value || ''}
           notificationText="The project ID was copied to your clipboard"
           showOnHover />
       </div>
