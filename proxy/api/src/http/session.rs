@@ -208,9 +208,7 @@ mod test {
                         }
                     },
                     "coco": {
-                        "seeds": [
-                            "seed.radicle.xyz",
-                        ]
+                        "seeds": [],
                     },
                 },
             }),
@@ -251,9 +249,7 @@ mod test {
                         }
                     },
                     "coco": {
-                        "seeds": [
-                            "seed.radicle.xyz",
-                        ],
+                        "seeds": [],
                     },
                 },
             }),
