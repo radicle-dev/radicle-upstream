@@ -21,7 +21,7 @@
 <div data-cy={dataCy}>
   <Sidebar identity={session.identity} />
 
-  <div class="container" data-cy="scrollable-content">
+  <div class="container">
     <div class="content" {style}>
       <slot />
     </div>

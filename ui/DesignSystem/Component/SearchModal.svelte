@@ -12,7 +12,7 @@
   import { updateUrn, validation } from "../../src/search";
   import { ValidationStatus } from "../../src/validation";
 
-  let searchBar, value;
+  let searchBar, value, hasExpanded, showTrackingInfo;
 
   export let content;
 
@@ -38,8 +38,12 @@
   }
 
   // TODO(sos): animate & show/hide based on actual remote response
-  $: showTrackingInfo =
-    value && value.length > 0 && $validation.status === Status.Success;
+  $: {
+    showTrackingInfo = hasExpanded
+      ? true
+      : value && value.length > 0 && $validation.status === Status.Success;
+    if (showTrackingInfo && !hasExpanded) hasExpanded = true;
+  }
 </script>
 
 <style>
@@ -57,9 +61,7 @@
     border-radius: 0.5rem;
     height: 0;
     overflow: hidden;
-
-    /* TODO(sos): replace with svelte transitions */
-    transition: height 0.75s ease;
+    transition: height 0.5s linear;
   }
 
   .showTrackingInfo {
@@ -74,7 +76,6 @@
   }
 </style>
 
-<!-- TODO(sos) -->
 <svelte:window on:keydown={onKeydown} />
 
 <div class="container" bind:this={content}>

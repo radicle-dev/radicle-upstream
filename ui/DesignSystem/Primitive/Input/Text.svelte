@@ -14,6 +14,7 @@
   export let validation = null;
   export let showLeftItem = false;
   export let showSuccessCheck = false;
+  export let spellcheck = false;
   export let autofocus = false;
 
   let input;
@@ -118,7 +119,7 @@
     on:change
     on:input
     bind:this={input}
-    spellcheck={false}
+    {spellcheck}
     style={inputStyle} />
 
   {#if showLeftItem}
@@ -130,8 +131,8 @@
   {#if validation}
     {#if validation.status === ValidationStatus.Loading}
       <Spinner
-        style="justify-content: flex-start; position: absolute; top: 8px; right:
-        10px;" />
+        style="justify-content: flex-start; position: absolute; height: 100%;
+        right: 10px;" />
     {:else if validation.status === ValidationStatus.Success && showSuccessCheck}
       <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
