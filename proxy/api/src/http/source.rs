@@ -138,7 +138,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -276,7 +276,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -386,11 +386,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -521,11 +520,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -575,11 +573,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -613,11 +610,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -667,11 +663,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -746,10 +741,9 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
         let peer_id = ctx.peer_api.peer_id();
 
-        let id = identity::create(&ctx.peer_api, &key, "cloudhead")?;
+        let id = identity::create(&ctx.peer_api, &ctx.signer, "cloudhead")?;
 
         let owner = ctx.peer_api.get_user(&id.clone().urn)?;
         let owner = coco::verify_user(owner)?;
@@ -758,7 +752,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -766,8 +760,12 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let (remote, fintohaps) =
-            coco::control::track_fake_peer(&ctx.peer_api, &key, &platinum_project, "fintohaps");
+        let (remote, fintohaps) = coco::control::track_fake_peer(
+            &ctx.peer_api,
+            &ctx.signer,
+            &platinum_project,
+            "fintohaps",
+        );
 
         let res = request()
             .method("GET")
@@ -823,11 +821,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -863,11 +860,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -950,11 +946,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",

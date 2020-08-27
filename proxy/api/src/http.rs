@@ -199,7 +199,9 @@ impl Context {
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let signer = keystore.init_librad_key()?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: keystore.init_librad_key()?,
+        });
 
         let peer_api = {
             let config = coco::config::default(signer, tmp_dir.path())?;

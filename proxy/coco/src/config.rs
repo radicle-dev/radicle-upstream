@@ -11,6 +11,7 @@ use librad::peer;
 
 use crate::error::Error;
 use crate::seed;
+use crate::signer;
 
 lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
@@ -66,9 +67,9 @@ pub type Disco = discovery::Static<
 ///
 /// Results in an error if the [`paths::Paths`] could not be created.
 pub fn default(
-    key: keys::SecretKey,
+    key: signer::BoxedSigner,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, Error> {
+) -> Result<net::peer::PeerConfig<Disco, signer::BoxedSigner>, Error> {
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, key, *LOCALHOST_ANY, vec![]))
 }
@@ -78,10 +79,10 @@ pub fn default(
 #[allow(clippy::as_conversions)]
 pub fn configure(
     paths: paths::Paths,
-    key: keys::SecretKey,
+    signer: signer::BoxedSigner,
     listen_addr: SocketAddr,
     seeds: Vec<seed::Seed>,
-) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
+) -> net::peer::PeerConfig<Disco, signer::BoxedSigner> {
     let gossip_params = net::gossip::MembershipParams::default();
     let disco = discovery::Static::new(
         seeds
@@ -90,7 +91,7 @@ pub fn configure(
     );
 
     net::peer::PeerConfig {
-        signer: key,
+        signer,
         paths,
         listen_addr,
         gossip_params,

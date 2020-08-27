@@ -6,8 +6,9 @@ use librad::keys;
 use librad::meta::user;
 use librad::peer;
 
-use crate::avatar;
+use coco::signer;
 
+use crate::avatar;
 use crate::error;
 
 pub use shared_identifier::SharedIdentifier;
@@ -59,7 +60,7 @@ pub struct Metadata {
 /// # Errors
 pub fn create(
     api: &coco::Api,
-    key: &keys::SecretKey,
+    key: &signer::BoxedSigner,
     handle: &str,
 ) -> Result<Identity, error::Error> {
     let user = api.init_owner(key, handle)?;

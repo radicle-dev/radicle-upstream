@@ -74,8 +74,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.test {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(&key, "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, &key, &owner).expect("fixture creation failed");
+        let owner = coco_api.init_owner(&ctx.signer, "cloudhead")?;
+        coco::control::setup_fixtures(&coco_api, &ctx.signer, &owner).expect("fixture creation failed");
     }
 
     let proxy_path = config::proxy_path()?;

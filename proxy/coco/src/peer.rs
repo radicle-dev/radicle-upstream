@@ -19,10 +19,12 @@ use librad::paths;
 use librad::peer::PeerId;
 use librad::signer::SomeSigner;
 use librad::uri::{RadUrl, RadUrn};
+use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::git;
 
 use crate::error::Error;
 use crate::project;
+use crate::signer;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -42,7 +44,7 @@ impl Api {
     /// If turning the config into a `Peer` fails
     /// If trying to accept on the socket fails
     pub async fn new<I>(
-        config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
+        config: PeerConfig<discovery::Static<I, SocketAddr>, signer::BoxedSigner>,
     ) -> Result<Self, Error>
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
@@ -51,8 +53,6 @@ impl Api {
         let signer = config.signer.clone();
 
         let peer = config.try_into_peer().await?;
-        // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
-        // publish events.
         let (api, run_loop) = peer.accept()?;
 
         let protocol = api.protocol();
@@ -137,7 +137,7 @@ impl Api {
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            },
+            }
         }
     }
 
@@ -158,8 +158,8 @@ impl Api {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub fn init_owner(&self, key: &keys::SecretKey, handle: &str) -> Result<User, Error> {
-        let user = self.init_user(key, handle)?;
+    pub fn init_owner(&self, signer: &signer::BoxedSigner, handle: &str) -> Result<User, Error> {
+        let user = self.init_user(signer, handle)?;
         let user = verify_user(user)?;
 
         self.set_default_owner(user.clone())?;
@@ -333,15 +333,15 @@ impl Api {
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
     pub fn init_project<P: AsRef<path::Path> + Send>(
         &self,
-        key: &keys::SecretKey,
+        signer: &signer::BoxedSigner,
         owner: &User,
         project: &project::Create<P>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
 
-        let mut meta = project.build(owner, key.public())?;
-        meta.sign_owned(key)?;
+        let mut meta = project.build(owner, signer.public_key().into())?;
+        meta.sign_owned(signer)?;
 
         let urn = meta.urn();
         if storage.has_urn(&urn)? {
@@ -368,12 +368,13 @@ impl Api {
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
     pub fn init_user(
         &self,
-        key: &keys::SecretKey,
+        signer: &signer::BoxedSigner,
         handle: &str,
     ) -> Result<user::User<entity::Draft>, Error> {
         // Create the project meta
-        let mut user = user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
-        user.sign_owned(key)?;
+        let mut user =
+            user::User::<entity::Draft>::create(handle.to_string(), signer.public_key().into())?;
+        user.sign_owned(signer)?;
         let urn = user.urn();
 
         // Initialising user in the storage.
