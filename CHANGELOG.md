@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.12...v0.0.13) (2020-08-27)
+
+
+### Features
+
+* maintainer badge ([#818](https://github.com/radicle-dev/radicle-upstream/issues/818)) ([a431f5b](https://github.com/radicle-dev/radicle-upstream/commit/a431f5b3b02b542d15788cf839e5602231d676bf))
+* **ui:** lock screen during long backend activity ([#815](https://github.com/radicle-dev/radicle-upstream/issues/815)) ([22d52c1](https://github.com/radicle-dev/radicle-upstream/commit/22d52c17d74e3f73b8d679236b1825d3eb39bf13))
+
+
+### Bug Fixes
+
+* **proxy:** project creation from repo without master ([#825](https://github.com/radicle-dev/radicle-upstream/issues/825)) ([fa2e072](https://github.com/radicle-dev/radicle-upstream/commit/fa2e072bfcafad16d61009f601b100d68f2df01c))
+* **ui:** allow "." in project names ([#814](https://github.com/radicle-dev/radicle-upstream/issues/814)) ([d4b3c55](https://github.com/radicle-dev/radicle-upstream/commit/d4b3c558e5a6a9d97d162bc286afbb216cd15d48))
+* **ui:** improve error messaging in project creation ([#813](https://github.com/radicle-dev/radicle-upstream/issues/813)) ([ebbe2a8](https://github.com/radicle-dev/radicle-upstream/commit/ebbe2a898beb5a6f9c21f4191618fd6c9ef1bf0d))
+* **ui:** show real reason why checkout failed ([#823](https://github.com/radicle-dev/radicle-upstream/issues/823)) ([f3cfa0f](https://github.com/radicle-dev/radicle-upstream/commit/f3cfa0f0fa06a9b7cbd0f51fc034f89fe41a1f9b))
+
 ### [0.0.12](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.11...v0.0.12) (2020-08-24)
 
 
