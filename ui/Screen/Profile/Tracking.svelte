@@ -8,7 +8,7 @@
     Urn,
   } from "../../DesignSystem/Component";
 
-  import { fadeDuration } from "../../src/animation.ts";
+  import { FADE_DURATION } from "../../src/config.ts";
 
   const projects = [
     {
@@ -70,7 +70,7 @@
 <div class="container">
   <ProjectList {projects} />
   {#if untracked.length}
-    <div out:fade|local={{ duration: fadeDuration }}>
+    <div out:fade|local={{ duration: FADE_DURATION }}>
       <div class="header">
         <p class="typo-text-bold">Still looking…&nbsp;</p>
         <p style="color: var(--color-foreground-level-6);">
@@ -82,10 +82,10 @@
         <Hoverable let:hovering={hover} style="flex: 1;">
           <div
             class="undiscovered-project"
-            out:fade|local={{ duration: fadeDuration }}>
+            out:fade|local={{ duration: FADE_DURATION }}>
             <Urn urn={project.urn} />
             {#if hover}
-              <div transition:fade={{ duration: fadeDuration }}>
+              <div transition:fade={{ duration: FADE_DURATION }}>
                 <TrackToggle
                   tracking={true}
                   expanded
