@@ -18,7 +18,6 @@ export const store = writable<ModalOverlay>({ show: false, component: null });
 export const hide = () => store.set({ show: false, component: null });
 
 export const toggle = (path: ModalRoute): void => {
-  // hide
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (get(store).show) {
     hide();
