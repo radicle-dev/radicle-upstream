@@ -26,6 +26,7 @@ pub use librad::uri::{self, RadUrn as Urn};
 pub use radicle_surf::diff::{Diff, FileDiff};
 pub use radicle_surf::vcs::git::Stats;
 
+pub mod announce;
 pub mod config;
 pub mod control;
 
@@ -33,6 +34,7 @@ mod error;
 pub use error::Error;
 
 pub mod git_helper;
+pub mod oid;
 mod peer;
 pub use peer::{verify_user, Api, User};
 pub mod project;
