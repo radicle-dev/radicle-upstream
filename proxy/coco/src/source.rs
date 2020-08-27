@@ -381,7 +381,7 @@ where
             Revision::Sha { sha } => {
                 let oid: git2::Oid = sha.into();
                 Ok(oid.into())
-            },
+            }
         }
     }
 }
@@ -474,10 +474,10 @@ fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobCon
                         );
                     }
                     BlobContent::Html(html)
-                },
+                }
                 _ => BlobContent::Ascii(content.to_owned()),
             }
-        },
+        }
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -593,7 +593,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
             }
@@ -858,10 +858,7 @@ mod tests {
 
         let commit = api
             .with_browser(&urn, |browser| {
-                Ok(
-                    super::commit_header(browser, sha.clone())
-                        .expect("unable to get commit header"),
-                )
+                Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
             })
             .expect("failed to get commit");
 
