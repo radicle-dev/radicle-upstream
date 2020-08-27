@@ -1,5 +1,6 @@
 <script>
   import * as modal from "../../src/modal";
+  
   export let store = null;
 
   let content;

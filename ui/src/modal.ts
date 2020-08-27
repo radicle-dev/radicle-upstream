@@ -24,7 +24,6 @@ export const toggle = (path: ModalRoute): void => {
     return;
   }
 
-  // show
   const component = routes[path];
   store.set({ show: true, component });
 };

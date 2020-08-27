@@ -12,9 +12,9 @@
   import { updateUrn, validation } from "../../src/search";
   import { ValidationStatus } from "../../src/validation";
 
-  let searchBar, value, hasExpanded, showTrackingInfo;
-
   export let content;
+
+  let searchBar, value, hasExpanded, showTrackingInfo;
 
   const dispatch = createEventDispatcher();
 

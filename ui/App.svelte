@@ -100,9 +100,9 @@
 </style>
 
 <Hotkeys />
+<ModalOverlay store={modal.store} />
 <NotificationFaucet />
 <Theme />
-<ModalOverlay store={modal.store} />
 
 <Remote {store} context="session">
   <Router {routes} />
