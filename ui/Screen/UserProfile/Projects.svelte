@@ -4,7 +4,7 @@
   import * as path from "../../src/path.ts";
   import { fetchList, projects as projectsStore } from "../../src/project.ts";
 
-  import { Error, ProjectsList, Remote } from "../../DesignSystem/Component";
+  import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
 
   export let params = null;
 
@@ -17,7 +17,7 @@
 </script>
 
 <Remote store={projectsStore} let:data={projects}>
-  <ProjectsList {projects} urn={params.urn} on:select={select} />
+  <ProjectList {projects} urn={params.urn} on:select={select} />
 
   <div slot="error" let:error>
     <Error message={error.message} />

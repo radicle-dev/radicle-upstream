@@ -8,7 +8,7 @@
   import {
     EmptyState,
     Error,
-    ProjectsList,
+    ProjectList,
     Remote,
   } from "../../DesignSystem/Component";
 
@@ -24,7 +24,7 @@
 
 <Remote store={projectsStore} let:data={projects}>
   {#if projects.length > 0}
-    <ProjectsList {projects} urn={session.identity.urn} on:select={select} />
+    <ProjectList {projects} urn={session.identity.urn} on:select={select} />
   {:else}
     <EmptyState
       text="There’s nothing here yet, get started by starting your first

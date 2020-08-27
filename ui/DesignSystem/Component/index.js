@@ -15,7 +15,7 @@ import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
-import ProjectsList from "./ProjectsList.svelte";
+import ProjectList from "./ProjectList.svelte";
 import Rad from "./Rad.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
@@ -58,7 +58,7 @@ export {
   ModalLayout,
   Placeholder,
   ProjectCard,
-  ProjectsList,
+  ProjectList,
   Rad,
   RadicleLogo,
   RadioOption,
