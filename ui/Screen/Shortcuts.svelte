@@ -1,12 +1,20 @@
 <script>
   import { isMac } from "../src/settings.ts";
 
-  import ModalLayout from "../DesignSystem/Component/ModalLayout.svelte";
-
   const modifierKey = isMac ? "⌘" : "ctrl";
 </script>
 
 <style>
+  .container {
+    width: 616px;
+    background: var(--color-background);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+  }
+
   .shortcut {
     margin-bottom: 16px;
   }
@@ -22,37 +30,40 @@
   }
 </style>
 
-<ModalLayout>
-  <div class="shortcut">
-    <kbd>?</kbd>
-    - shortcuts
+<div class="container">
+  <h1>Keyboard shortcuts</h1>
+  <div class="shortcuts">
+    <div class="shortcut">
+      <kbd>?</kbd>
+      - Keyboard shortcuts
+    </div>
+    <div class="shortcut">
+      <kbd>{modifierKey}</kbd>
+      +
+      <kbd>,</kbd>
+      - settings
+    </div>
+    <div class="shortcut">
+      <kbd>{modifierKey}</kbd>
+      +
+      <kbd>d</kbd>
+      - design system
+    </div>
+    <div class="shortcut">
+      <kbd>{modifierKey}</kbd>
+      +
+      <kbd>p</kbd>
+      - search
+    </div>
+    <div class="shortcut">
+      <kbd>{modifierKey}</kbd>
+      +
+      <kbd>n</kbd>
+      - create new project
+    </div>
+    <div class="shortcut">
+      <kbd>esc</kbd>
+      - close modal
+    </div>
   </div>
-  <div class="shortcut">
-    <kbd>{modifierKey}</kbd>
-    +
-    <kbd>,</kbd>
-    - settings
-  </div>
-  <div class="shortcut">
-    <kbd>{modifierKey}</kbd>
-    +
-    <kbd>d</kbd>
-    - design system
-  </div>
-  <div class="shortcut">
-    <kbd>{modifierKey}</kbd>
-    +
-    <kbd>p</kbd>
-    - search
-  </div>
-  <div class="shortcut">
-    <kbd>{modifierKey}</kbd>
-    +
-    <kbd>n</kbd>
-    - create new project
-  </div>
-  <div class="shortcut">
-    <kbd>esc</kbd>
-    - close modal
-  </div>
-</ModalLayout>
+</div>

@@ -1,6 +1,4 @@
 <script>
-  import { link } from "svelte-spa-router";
-
   import {
     clear,
     parseSeedsInput,
@@ -10,6 +8,7 @@
   } from "../src/session.ts";
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
+  import * as modal from "../src/modal.ts";
 
   import { Button, Input } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
@@ -75,9 +74,11 @@
   <div class="container">
     <div class="title">
       <h1>Settings</h1>
-      <a class="typo-link" href={path.shortcuts()} use:link>
+      <div
+        class="typo-link"
+        on:click|stopPropagation={() => modal.toggle(path.shortcuts())}>
         Keyboard shortcuts
-      </a>
+      </div>
     </div>
 
     <section>
