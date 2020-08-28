@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 use futures::stream::StreamExt;
 
 use librad::git::local::{transport, url::LocalUrl};
+use librad::git::refs::Refs;
 use librad::git::storage;
 use librad::keys;
 use librad::meta::entity;
@@ -18,10 +19,11 @@ use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::signer::SomeSigner;
-use librad::uri::{RadUrl, RadUrn};
+use librad::uri::{Path, Protocol, RadUrl, RadUrn};
 use radicle_surf::vcs::git;
 
 use crate::error::Error;
+use crate::oid;
 use crate::project;
 
 /// Export a verified [`user::User`] type.
@@ -137,7 +139,7 @@ impl Api {
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            },
+            }
         }
     }
 
@@ -165,6 +167,70 @@ impl Api {
         self.set_default_owner(user.clone())?;
 
         Ok(user)
+    }
+
+    /// Announces a new updated project head via the [`librad::net::protocol::Protocol`].
+    ///
+    /// # Errors
+    ///
+    /// * if the parsing of the head to be included in the [`librad::uri::RadUrn`] fails
+    pub async fn announce_project_head(
+        &self,
+        project_urn: &RadUrn,
+        head: String,
+        hash: oid::Oid,
+    ) -> Result<(), Error> {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+
+        let urn = RadUrn::new(project_urn.id.clone(), Protocol::Git, Path::parse(head)?);
+        let have = librad::net::peer::Gossip {
+            urn,
+            rev: Some(librad::net::peer::Rev::Git(hash.into())),
+            origin: Some(api.storage().peer_id().clone()),
+        };
+
+        api.protocol().announce(have).await;
+
+        Ok(())
+    }
+
+    /// Given some hints as to where you might find it, get the urn of the project found at `url`.
+    ///
+    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
+    ///
+    /// # Errors
+    ///   * Could not successfully acquire a lock to the API.
+    ///   * Could not open librad storage.
+    ///   * Failed to clone the project.
+    ///   * Failed to set the rad/self of this project.
+    pub fn clone_project<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
+    where
+        Addrs: IntoIterator<Item = SocketAddr>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
+        repo.set_rad_self(storage::RadSelfSpec::Default)?;
+        Ok(repo.urn)
+    }
+
+    /// Get the project found at `urn`.
+    ///
+    /// # Errors
+    ///
+    ///   * Resolving the project fails.
+    pub fn get_project<P>(
+        &self,
+        urn: &RadUrn,
+        peer: P,
+    ) -> Result<librad_project::Project<entity::Draft>, Error>
+    where
+        P: Into<Option<PeerId>>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+
+        Ok(storage.metadata_of(urn, peer)?)
     }
 
     /// Returns the list of [`librad_project::Project`]s for your peer.
@@ -203,6 +269,19 @@ impl Api {
         Ok(project_meta)
     }
 
+    /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
+    ///
+    /// # Errors
+    ///
+    /// * if opening the storage fails
+    pub fn list_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        storage
+            .rad_signed_refs_of(urn, storage.peer_id().clone())
+            .map_err(Error::from)
+    }
+
     /// Returns the list of [`user::User`]s known for your peer.
     ///
     /// # Errors
@@ -229,45 +308,6 @@ impl Api {
         }
 
         Ok(entities)
-    }
-
-    /// Get the project found at `urn`.
-    ///
-    /// # Errors
-    ///
-    ///   * Resolving the project fails.
-    pub fn get_project<P>(
-        &self,
-        urn: &RadUrn,
-        peer: P,
-    ) -> Result<librad_project::Project<entity::Draft>, Error>
-    where
-        P: Into<Option<PeerId>>,
-    {
-        let api = self.peer_api.lock().expect("unable to acquire lock");
-        let storage = api.storage().reopen()?;
-
-        Ok(storage.metadata_of(urn, peer)?)
-    }
-
-    /// Given some hints as to where you might find it, get the urn of the project found at `url`.
-    ///
-    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
-    ///
-    /// # Errors
-    ///   * Could not successfully acquire a lock to the API.
-    ///   * Could not open librad storage.
-    ///   * Failed to clone the project.
-    ///   * Failed to set the rad/self of this project.
-    pub fn clone_project<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
-    where
-        Addrs: IntoIterator<Item = SocketAddr>,
-    {
-        let api = self.peer_api.lock().expect("unable to acquire lock");
-        let storage = api.storage().reopen()?;
-        let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
-        repo.set_rad_self(storage::RadSelfSpec::Default)?;
-        Ok(repo.urn)
     }
 
     /// Given some hints as to where you might find it, get the urn of the user found at `url`.

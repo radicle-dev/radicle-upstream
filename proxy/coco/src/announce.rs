@@ -1,36 +1,46 @@
 //! Compute, track and announce noteworthy changes to the network.
 
 use std::collections::HashSet;
+use std::ops::Deref as _;
 
 use librad::uri::RadUrn;
-use radicle_surf::git::git2;
 
+use crate::error::Error;
 use crate::oid::Oid;
+use crate::peer;
 
-#[derive(Debug, thiserror::Error)]
-enum Error {
-    #[error("announcement failed")]
-    AnnouncementFailed,
-
-    #[error(transparent)]
-    Git(#[from] git2::Error),
-
-    #[error(transparent)]
-    Parse(#[from] librad::uri::rad_urn::ParseError),
-}
-
+/// An update and all the required information that can be announced on the network.
 type Announcement = (RadUrn, String, Oid);
 
-type State = Vec<Announcement>;
-
 /// Announces the list of given `updates` with the [`librad::net::protocol`].
-async fn announce(_updates: Vec<Announcement>) -> Result<(), Error> {
-    Err(Error::AnnouncementFailed)
+async fn announce(api: &peer::Api, updates: Vec<Announcement>) -> Result<(), Error> {
+    for update in &updates {
+        api.announce_project_head(&update.0, update.1.clone(), update.2)
+            .await?;
+    }
+
+    Ok(())
+}
+
+/// Builds the latset list of [`Announcement`]s for the current state of the peer.
+fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
+    let projects = api.list_projects()?;
+    let mut list: Vec<Announcement> = vec![];
+
+    for project in &projects {
+        let refs = api.list_project_refs(&project.urn())?;
+
+        for (head, hash) in &refs.heads {
+            list.push((project.urn(), head.to_string(), Oid::from(*hash.deref())));
+        }
+    }
+
+    Ok(list)
 }
 
 /// Computes the list of announcements based on the difference of the `new` and `old` state. An
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
-fn diff(old_state: State, new_state: State) -> Vec<Announcement> {
+fn diff(old_state: Vec<Announcement>, new_state: Vec<Announcement>) -> Vec<Announcement> {
     let old: HashSet<_> = old_state.iter().collect();
     new_state.into_iter().filter(|a| !old.contains(a)).collect()
 }
@@ -40,21 +50,34 @@ mod test {
     use pretty_assertions::assert_eq;
 
     use librad::hash::Hash;
+    use librad::keys::SecretKey;
     use librad::uri;
 
+    use crate::config;
+    use crate::error::Error;
     use crate::oid;
+    use crate::peer;
 
     #[tokio::test]
-    async fn announce() -> Result<(), super::Error> {
-        let res = super::announce(vec![]).await;
+    async fn announce() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = peer::Api::new(config).await?;
 
-        assert!(res.is_err());
+        let _owner = api.init_owner(&key, "cloudhead")?;
+
+        // TODO(xla): Build up proper testnet to assert that haves are announced.
+        let updates = super::build(&api)?;
+        let res = super::announce(&api, updates).await;
+
+        assert!(res.is_ok());
 
         Ok(())
     }
 
     #[test]
-    fn diff() -> Result<(), super::Error> {
+    fn diff() -> Result<(), Error> {
         let project0 = || uri::RadUrn {
             id: Hash::hash("project0".as_bytes()),
             proto: uri::Protocol::Git,
