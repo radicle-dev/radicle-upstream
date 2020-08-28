@@ -1,5 +1,7 @@
 <script>
+  import { Illustration } from "../DesignSystem/Component";
   import { isMac } from "../src/settings.ts";
+  import { Variant as IllustrationVariant } from "../src/illustration.ts";
 
   const modifierKey = isMac ? "⌘" : "ctrl";
 </script>
@@ -44,6 +46,9 @@
 </style>
 
 <div class="container">
+  <Illustration
+    style="margin-bottom: 24px;"
+    variant={IllustrationVariant.Keyboard} />
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
     <div class="shortcut">
