@@ -9,7 +9,7 @@
     getValidationState,
   } from "../../src/validation.ts";
 
-  import { Button, Input } from "../../DesignSystem/Primitive";
+  import { Button, Emoji, Input } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();
 
@@ -81,8 +81,10 @@
     height: 100%;
   }
 
-  h2 {
+  h1 {
     text-align: center;
+    width: 11em;
+    margin: 0 auto;
   }
 
   p {
@@ -98,13 +100,18 @@
 
 <div class="container">
   <div data-cy="form">
-    <h2>Create an identity</h2>
+    <h1>
+      Hey
+      <Emoji emoji="👋 " size="big" style="display: inline;" />
+      what should we call you?
+    </h1>
     <p>
-      An identity is required to interact on the radicle network. Multiple
-      devices can be linked to a single identity.
+      You’ll need a name to interact on Radicle. This isn’t unique across the
+      platform, but it helps others recognize you a little easier. You can
+      change it in your profile at any time.
     </p>
     <Input.Text
-      placeholder="Enter a handle*"
+      placeholder="Enter a name"
       bind:value={handle}
       dataCy="handle"
       validation={handleValidation}
@@ -121,7 +128,7 @@
         dataCy="create-id-button"
         disabled={!handle || validations || $store.status === remote.Status.Loading}
         on:click={handleCreateButtonClick}>
-        Create
+        Looks good
       </Button>
     </div>
   </div>

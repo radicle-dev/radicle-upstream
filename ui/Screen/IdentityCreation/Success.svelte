@@ -4,7 +4,7 @@
   import { store } from "../../src/identity.ts";
 
   import { Copyable, Remote } from "../../DesignSystem/Component";
-  import { Avatar, Button, Flex } from "../../DesignSystem/Primitive";
+  import { Button, Flex } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();
 </script>
@@ -13,6 +13,7 @@
   .container {
     display: flex;
     align-items: center;
+    justify-content: center;
     height: 100%;
   }
 
@@ -21,64 +22,32 @@
     flex-direction: column;
     align-items: center;
   }
-
-  .identity-card {
-    display: flex;
-    align-items: center;
-    background-color: var(--color-foreground-level-1);
-    padding: 24px;
-    margin-bottom: 34px;
-    width: 100%;
-    border-radius: 2px;
-  }
-
-  .identity-card-text-container {
-    margin-left: 16px;
-  }
-
-  .registration-link {
-    color: var(--color-secondary);
-    cursor: pointer;
-  }
-
-  .registration-link:hover {
-    color: var(--color-foreground-level-5);
-  }
 </style>
 
 <div class="container">
   <div class="content">
-    <h2 style="text-align: center;">Identity created ✨</h2>
-    <p style="margin: 20px 0; color: var(--color-foreground-level-5);">
-      This is your peer-to-peer identity. Even though your radicleID is unique,
-      your handle isn't. To get a unique handle, you have to
-      <span
-        data-cy="register-identity-link"
-        class="registration-link"
-        on:click={() => dispatch('register')}>
-        register it.
-      </span>
+    <h1 style="text-align: center; margin-bottom: 24px;">All set!</h1>
+    <p
+      style="text-align: center; width: 370px; margin-bottom: 27px; color:
+      var(--color-foreground-level-6);">
+      This is your
+      <span class="typo-text-bold">Radicle ID</span>
+      . Click to copy it and share it with others so that they can find you.
     </p>
     <Remote {store} let:data={identity}>
-      <div class="identity-card" data-cy="identity-card">
-        <Avatar size="big" avatarFallback={identity.avatarFallback} />
-        <div class="identity-card-text-container">
-          <p class="typo-text-bold">{identity.metadata.handle}</p>
-          <Copyable>
-            <Flex align="left">
-              <p
-                class="typo-overflow-ellipsis"
-                style="color: var(--color-foreground-level-6); max-width: 350px;">
-                {identity.shareableEntityIdentifier}
-              </p>
-            </Flex>
-          </Copyable>
-        </div>
-      </div>
+      <Copyable style="margin-bottom: 27px;">
+        <Flex align="left">
+          <p
+            class="typo-overflow-ellipsis"
+            style="color: var(--color-foreground-level-6); max-width: 350px;">
+            {identity.shareableEntityIdentifier}
+          </p>
+        </Flex>
+      </Copyable>
     </Remote>
 
     <Button dataCy="go-to-profile-button" on:click={() => dispatch('close')}>
-      Go to profile
+      Go to my projects
     </Button>
   </div>
 </div>

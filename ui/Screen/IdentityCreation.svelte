@@ -74,7 +74,7 @@
   }
 </style>
 
-<ModalLayout escapable={$store !== State.Welcome} {onClose}>
+<ModalLayout escapable={false} {onClose}>
   {#if $store === State.Welcome}
     <div class="container">
       <RadicleLogo />
