@@ -1,11 +1,15 @@
 use std::convert::TryFrom;
+use std::sync::Arc;
+
+use tokio::sync::RwLock;
 
 use librad::paths;
-use radicle_keystore::pinentry::SecUtf8;
 
+use coco::announce;
 use coco::seed;
 
 use api::config;
+use api::context;
 use api::env;
 use api::http;
 use api::keystore;
@@ -40,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         coco::config::Paths::default()
     };
-    let pw = SecUtf8::from("radicle-upstream");
+    let pw = keystore::SecUtf8::from("radicle-upstream");
 
     let paths = paths::Paths::try_from(paths_config)?;
 
@@ -59,7 +63,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(config)?
     };
 
-    let coco_api = {
+    let peer_api = {
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
@@ -74,19 +78,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.test {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(&key, "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, &key, &owner).expect("fixture creation failed");
+        let owner = peer_api.init_owner(&key, "cloudhead")?;
+        coco::control::setup_fixtures(&peer_api, &key, &owner).expect("fixture creation failed");
     }
 
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
 
+    let ctx = Arc::new(RwLock::new(context::Context {
+        peer_api,
+        keystore,
+        store,
+    }));
+
+    let watcher_ctx = ctx.clone();
+    tokio::task::spawn_local(async move { announcement_watcher(watcher_ctx).await });
+
     log::info!("Starting API");
 
-    let api = http::api(coco_api, keystore, store, args.test);
+    let api = http::api(ctx, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 
     Ok(())
+}
+
+async fn announcement_watcher(ctx: context::Ctx) {
+    // TODO(xla): Take interval timings from config/settings.
+    let mut timer = tokio::time::interval(std::time::Duration::from_secs(1));
+
+    loop {
+        timer.tick().await;
+
+        let ctx = ctx.read().await;
+
+        // TODO(xla): get/load old state
+        let old: Vec<announce::Announcement> = vec![];
+        let new = announce::build(&ctx.peer_api).expect("unable to build state");
+        let updates = announce::diff(&old, &new);
+        ctx.peer_api.with_api(|api| {
+            announce::announce(api, updates)
+                .await
+                .expect("announce failed");
+        })?
+        // TODO(xla): save new state
+    }
 }

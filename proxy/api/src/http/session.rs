@@ -5,12 +5,13 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::context;
 use crate::http;
 use crate::identity;
 use crate::session;
 
 /// Combination of all session filters.
-pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
+pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     delete_filter(ctx.clone())
         .or(get_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
@@ -18,7 +19,9 @@ pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
 }
 
 /// `DELETE /`
-fn delete_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn delete_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::delete()
         .and(path::end())
         .and(http::with_context(ctx))
@@ -33,7 +36,7 @@ fn delete_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
 }
 
 /// `GET /`
-fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path::end())
         .and(http::with_context(ctx))
@@ -53,7 +56,7 @@ fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejec
 
 /// `Post /settings`
 fn update_settings_filter(
-    ctx: http::Ctx,
+    ctx: context::Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("settings")
         .and(warp::post())
@@ -73,11 +76,11 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::http;
+    use crate::context;
     use crate::session;
 
     /// Clear the current [`session::Session`].
-    pub async fn delete(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
+    pub async fn delete(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         session::clear_current(&ctx.store)?;
 
@@ -85,7 +88,7 @@ mod handler {
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
+    pub async fn get(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let sess = session::current(&ctx.peer_api, &ctx.store).await?;
@@ -95,7 +98,7 @@ mod handler {
 
     /// Set the [`session::settings::Settings`] to the passed value.
     pub async fn update_settings(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         settings: session::settings::Settings,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
@@ -155,6 +158,7 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use crate::context;
     use crate::error;
     use crate::http;
     use crate::session;
@@ -162,7 +166,7 @@ mod test {
     #[tokio::test]
     async fn delete() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -188,7 +192,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let res = request().method("GET").path("/").reply(&api).await;
@@ -220,7 +224,7 @@ mod test {
     #[tokio::test]
     async fn update_settings() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let mut settings = session::settings::Settings::default();

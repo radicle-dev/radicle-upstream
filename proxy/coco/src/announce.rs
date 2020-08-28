@@ -3,27 +3,52 @@
 use std::collections::HashSet;
 use std::ops::Deref as _;
 
-use librad::uri::RadUrn;
+use librad::keys;
+use librad::net;
+use librad::uri;
 
 use crate::error::Error;
 use crate::oid::Oid;
 use crate::peer;
 
 /// An update and all the required information that can be announced on the network.
-type Announcement = (RadUrn, String, Oid);
+pub type Announcement = (uri::RadUrn, String, Oid);
 
 /// Announces the list of given `updates` with the [`librad::net::protocol`].
-async fn announce(api: &peer::Api, updates: Vec<Announcement>) -> Result<(), Error> {
-    for update in &updates {
-        api.announce_project_head(&update.0, update.1.clone(), update.2)
-            .await?;
+///
+/// # Errors
+///
+/// * if the announcemnet of one of the project heads failed
+pub async fn announce(
+    protocol: &net::protocol::Protocol<net::peer::PeerStorage<keys::SecretKey>, net::peer::Gossip>,
+    peer_id: &librad::peer::PeerId,
+    updates: Vec<Announcement>,
+) -> Result<(), Error> {
+    for (project_urn, head, hash) in &updates {
+        let urn = uri::RadUrn::new(
+            project_urn.id.clone(),
+            uri::Protocol::Git,
+            uri::Path::parse(head)?,
+        );
+        let have = net::peer::Gossip {
+            urn,
+            rev: Some(net::peer::Rev::Git((*hash).into())),
+            origin: Some(peer_id.clone()),
+        };
+
+        protocol.announce(have).await;
     }
 
     Ok(())
 }
 
 /// Builds the latset list of [`Announcement`]s for the current state of the peer.
-fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
+///
+/// # Errors
+///
+/// * if listing of the projects fails
+/// * if listing of the Refs for a project fails
+pub fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
     let projects = api.list_projects()?;
     let mut list: Vec<Announcement> = vec![];
 
@@ -40,9 +65,14 @@ fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
 
 /// Computes the list of announcements based on the difference of the `new` and `old` state. An
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
-fn diff(old_state: Vec<Announcement>, new_state: Vec<Announcement>) -> Vec<Announcement> {
+#[must_use]
+pub fn diff(old_state: &[Announcement], new_state: &[Announcement]) -> Vec<Announcement> {
     let old: HashSet<_> = old_state.iter().collect();
-    new_state.into_iter().filter(|a| !old.contains(a)).collect()
+    new_state
+        .iter()
+        .filter(|a| !old.contains(a))
+        .cloned()
+        .collect()
 }
 
 #[cfg(test)]

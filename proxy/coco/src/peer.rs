@@ -169,19 +169,26 @@ impl Api {
         Ok(user)
     }
 
+    pub fn with_api<F, T>(&self, callback: F) -> Result<T, Error>
+    where
+        F: Send + FnOnce(&PeerApi<keys::SecretKey>) -> Result<T, Error>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+
+        callback(&api)
+    }
+
     /// Announces a new updated project head via the [`librad::net::protocol::Protocol`].
     ///
     /// # Errors
     ///
     /// * if the parsing of the head to be included in the [`librad::uri::RadUrn`] fails
     pub async fn announce_project_head(
-        &self,
+        api: PeerApi<keys::SecretKey>,
         project_urn: &RadUrn,
         head: String,
         hash: oid::Oid,
     ) -> Result<(), Error> {
-        let api = self.peer_api.lock().expect("unable to acquire lock");
-
         let urn = RadUrn::new(project_urn.id.clone(), Protocol::Git, Path::parse(head)?);
         let have = librad::net::peer::Gossip {
             urn,
@@ -189,7 +196,8 @@ impl Api {
             origin: Some(api.storage().peer_id().clone()),
         };
 
-        api.protocol().announce(have).await;
+        let protocol = api.protocol();
+        protocol.announce(have).await;
 
         Ok(())
     }
