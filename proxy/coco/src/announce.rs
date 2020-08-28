@@ -29,7 +29,6 @@ fn diff(old_state: State, new_state: State) -> Vec<Announcement> {
 
     // TODO(xla): Find a more elegant way to get a vec of values.
     new.difference(&old)
-        .cloned()
         .map(|a| (a.0.clone(), a.1.clone(), a.2))
         .collect()
 }
