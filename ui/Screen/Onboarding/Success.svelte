@@ -38,6 +38,7 @@
       <Copyable style="margin-bottom: 27px;">
         <Flex align="left">
           <p
+            data-cy="shareable-identifier"
             class="typo-overflow-ellipsis"
             style="color: var(--color-foreground-level-6); max-width: 350px;">
             {identity.shareableEntityIdentifier}

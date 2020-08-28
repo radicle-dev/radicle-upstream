@@ -125,7 +125,7 @@
         Cancel
       </Button>
       <Button
-        dataCy="create-id-button"
+        dataCy="next-button"
         disabled={!handle || validations || $store.status === remote.Status.Loading}
         on:click={handleCreateButtonClick}>
         Looks good

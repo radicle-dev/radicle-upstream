@@ -1,6 +1,7 @@
 context("identity creation", () => {
   const validUser = {
     handle: "rafalca",
+    passphrase: "curled unexposed daisy defacing",
   };
 
   beforeEach(() => {
@@ -22,76 +23,40 @@ context("identity creation", () => {
       // Intro screen
       cy.pick("get-started-button").click();
 
-      // Enter details screen
+      // Enter name screen
       cy.pick("form", "handle").type(validUser.handle);
-      cy.pick("create-id-button").click();
+      cy.pick("next-button").click();
 
-      // Confirmation screen
-      cy.get(`[data-cy="identity-card"]`).should("exist");
-      cy.pick("identity-card").contains(validUser.handle).should("exist");
+      // Enter passphrase screen
+      cy.pick("passphrase-input").type(validUser.passphrase);
+      cy.pick("repeat-passphrase-input").type(validUser.passphrase);
+      cy.pick("set-passphrase-button").click();
+
+      // Success screen
+      cy.pick("shareable-identifier")
+        .contains(/rafalca@/)
+        .should("exist");
 
       // Land on profile screen
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains(validUser.handle);
     });
 
-    context(
-      "when clicking cancel, close or hitting esc before the identity is created",
-      () => {
-        it("sends the user back to the intro screen", () => {
-          cy.pick("get-started-button").click();
-          cy.pick("cancel-button").click();
-
-          // We should land back on the intro screen
-          cy.pick("get-started-button").click();
-
-          // Now try to close the modal via the "x" button
-          cy.pick("modal-close-button").click();
-
-          // We should land back on the intro screen
-          cy.pick("get-started-button").click();
-
-          // Now try the escape key
-          cy.get("body").type("{esc}");
-
-          // We should land back on the intro screen
-          cy.pick("get-started-button").should("exist");
-        });
-      }
-    );
-
-    context(
-      "when clicking the modal close button on the success screen",
-      () => {
-        it("lands the user on the profile screen", () => {
-          cy.pick("get-started-button").click();
-
-          cy.pick("form", "handle").type(validUser.handle);
-          cy.pick("create-id-button").click();
-
-          cy.pick("identity-card").contains(validUser.handle).should("exist");
-
-          // Land on profile screen
-          cy.pick("modal-close-button").click();
-          cy.pick("entity-name").contains(validUser.handle);
-        });
-      }
-    );
-
-    context("when pressing escape on the success screen", () => {
-      it("lands the user on the profile screen", () => {
+    context("when clicking the cancel button", () => {
+      it("sends the user back to the welcome screen", () => {
+        // On the name entry screen.
         cy.pick("get-started-button").click();
+        cy.contains("what should we call you?").should("exist");
+        cy.pick("cancel-button").click();
+        cy.contains("A free and open-source way to host").should("exist");
 
+        // On the passphrase entry screen.
+        cy.pick("get-started-button").click();
         cy.pick("form", "handle").type(validUser.handle);
-        cy.pick("create-id-button").click();
-
-        cy.pick("identity-card").contains(validUser.handle).should("exist");
-
-        // Now try the escape key
-        cy.get("body").type("{esc}");
-
-        // Land on profile screen
-        cy.pick("entity-name").contains(validUser.handle);
+        cy.pick("next-button").click();
+        cy.contains("you'll enter a passphrase").should("exist");
+        cy.pick("cancel-button").click();
+        cy.contains("A free and open-source way to host").should("exist");
       });
     });
   });
@@ -100,7 +65,7 @@ context("identity creation", () => {
     beforeEach(() => {
       cy.pick("get-started-button").click();
       cy.pick("form", "handle").type("_rafalca");
-      cy.pick("create-id-button").click();
+      cy.pick("next-button").click();
     });
 
     context("handle", () => {

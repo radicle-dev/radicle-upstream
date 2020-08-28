@@ -13,7 +13,7 @@
   import EnterPassphrase from "./Onboarding/EnterPassphrase.svelte";
   import Success from "./Onboarding/Success.svelte";
 
-  const returnToWelcomeStep = () => {
+  const returnToWelcome = () => {
     store.set(State.Welcome);
   };
 
@@ -45,12 +45,12 @@
     <Welcome on:next={() => store.set(State.EnterName)} />
   {:else if $store === State.EnterName}
     <EnterName
-      on:cancel={returnToWelcomeStep}
+      on:cancel={returnToWelcome}
       on:error={onError}
       on:next={() => store.set(State.EnterPassphrase)} />
   {:else if $store === State.EnterPassphrase}
     <EnterPassphrase
-      on:cancel={returnToWelcomeStep}
+      on:cancel={returnToWelcome}
       on:next={() => store.set(State.SuccessView)} />
   {:else if $store === State.SuccessView}
     <Success

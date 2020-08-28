@@ -50,6 +50,7 @@
     </p>
 
     <Input.Password
+      dataCy="passphrase-input"
       placeholder="Enter a secure passphrase"
       style="margin-top: 1.5rem;"
       bind:value={passphrase} />
@@ -59,6 +60,7 @@
         And enter it again, just to be safe.
       </p>
       <Input.Password
+        dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
         bind:value={repeatedPassphrase} />
     </div>
@@ -73,7 +75,7 @@
       </Button>
 
       <Button
-        dataCy="create-id-button"
+        dataCy="set-passphrase-button"
         disabled={!passphrase || passphrase !== repeatedPassphrase}
         on:click={() => {
           dispatch('next');
