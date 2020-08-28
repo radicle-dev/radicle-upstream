@@ -34,11 +34,16 @@
       style="align-items: center; color: var(--color-foreground-level-4)"
       copyContent={urn}
       {notificationText}
-      styleContent={false}
+      styleContent={hover}
       {showIcon}>
       {#if urn.length > 24}
         {#if expanded}
-          <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>
+          <p
+            data-cy="full-urn"
+            class="typo-text-small-mono"
+            style="line-height: 25px;">
+            {cleanUrn}
+          </p>
         {:else}
           <p class="typo-text-small-mono">{firstSix}</p>
           <Icon.EllipsisSmall />
