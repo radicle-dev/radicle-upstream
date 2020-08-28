@@ -1,11 +1,7 @@
 //! Compute, track and announce noteworthy changes to the network.
 
 use std::collections::HashSet;
-use std::hash::Hash;
 
-use serde::{Deserialize, Serialize};
-
-use librad::net::peer::Rev;
 use librad::uri::RadUrn;
 
 use crate::oid::Oid;
@@ -16,20 +12,24 @@ enum Error {
     AnnouncementFailed,
 }
 
-#[derive(Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
-struct Announcement {
-    urn: RadUrn,
-    head: String,
-    hash: Oid,
-}
+// #[derive(Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
+// struct Announcement {
+//     urn: RadUrn,
+//     head: String,
+//     hash: Oid,
+// }
+
+type Announcement = (RadUrn, String, Oid);
 
 type State = Vec<Announcement>;
 
-/// Announces the list of given `updates` with the [`librad::net::protoco].
+/// Announces the list of given `updates` with the [`librad::net::protocol`].
 async fn announce(_updates: Vec<Announcement>) -> Result<(), Error> {
     Err(Error::AnnouncementFailed)
 }
 
+/// Computes the list of announcements based on the difference of the `new` and `old` state. An
+/// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
 fn diff(old_state: State, new_state: State) -> Vec<Announcement> {
     let old: HashSet<_> = old_state.iter().collect();
     let new: HashSet<_> = new_state.iter().collect();
@@ -37,11 +37,7 @@ fn diff(old_state: State, new_state: State) -> Vec<Announcement> {
     // TODO(xla): Find a more elegant way to get a vec of values.
     new.difference(&old)
         .cloned()
-        .map(|a| Announcement {
-            urn: a.urn.clone(),
-            head: a.head.clone(),
-            hash: a.hash.clone(),
-        })
+        .map(|a| (a.0.clone(), a.1.clone(), a.2))
         .collect()
 }
 
