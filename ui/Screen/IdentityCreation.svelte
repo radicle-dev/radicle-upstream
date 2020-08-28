@@ -8,8 +8,9 @@
 
   import { ModalLayout } from "../DesignSystem/Component";
 
-  import EnterName from "./IdentityCreation/EnterName.svelte";
   import Welcome from "./IdentityCreation/Welcome.svelte";
+  import EnterName from "./IdentityCreation/EnterName.svelte";
+  import EnterPassphrase from "./IdentityCreation/EnterPassphrase.svelte";
   import Success from "./IdentityCreation/Success.svelte";
 
   const returnToWelcomeStep = () => {
@@ -37,35 +38,24 @@
     store.set(State.Complete);
     replace(redirectPath);
   };
-
-  const onClose = () => {
-    switch ($store) {
-      case State.Welcome:
-        return;
-      case State.EnterName:
-        returnToWelcomeStep();
-        return;
-      case State.SuccessView:
-        complete(path.profileProjects());
-        return;
-    }
-  };
-
-  const onRegister = () => {
-    replace(path.profileProjects());
-    complete(path.registerUser());
-  };
 </script>
 
-<ModalLayout escapable={false} {onClose}>
+<ModalLayout escapable={false}>
   {#if $store === State.Welcome}
     <Welcome on:next={() => store.set(State.EnterName)} />
   {:else if $store === State.EnterName}
     <EnterName
       on:cancel={returnToWelcomeStep}
       on:error={onError}
-      on:success={() => store.set(State.SuccessView)} />
+      on:next={() => store.set(State.EnterPassphrase)} />
+  {:else if $store === State.EnterPassphrase}
+    <EnterPassphrase
+      on:cancel={returnToWelcomeStep}
+      on:next={() => store.set(State.SuccessView)} />
   {:else if $store === State.SuccessView}
-    <Success on:close={onClose} on:register={onRegister} />
+    <Success
+      on:close={() => {
+        complete(path.profileProjects());
+      }} />
   {/if}
 </ModalLayout>

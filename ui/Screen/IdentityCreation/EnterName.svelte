@@ -61,7 +61,7 @@
   $: validate(handle);
 
   $: if ($store.status === remote.Status.Success) {
-    dispatch("success");
+    dispatch("next");
   } else if ($store.status === remote.Status.Error) {
     dispatch("error", { message: $store.error.message });
   }
