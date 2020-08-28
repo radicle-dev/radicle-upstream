@@ -8,46 +8,46 @@
 
 <style>
   .container {
-    width: 616px;
+    width: 38.5rem;
     background: var(--color-background);
     border-radius: 0.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 32px;
+    padding: 2rem;
   }
 
   .shortcut {
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
   }
 
   .shortcut:first-child {
-    margin-top: 24px;
+    margin-top: 1.5rem;
   }
 
   kbd {
-    border: 1px solid var(--color-foreground-level-3);
+    border: 0.0625rem solid var(--color-foreground-level-3);
     color: var(--color-foreground-level-6);
-    padding: 8px 12px 8px 12px;
-    border-radius: 4px;
+    padding: 0.5rem 0.75rem 0.5rem 0.75rem;
+    border-radius: 0.25rem;
   }
 
   .plus {
     color: var(--color-foreground-level-4);
-    margin: 0px 10px;
+    margin: 0rem 0.625rem;
   }
 
   .description {
     color: var(--color-foreground-level-6);
-    margin: 0px 10px;
+    margin: 0rem 0.625rem;
   }
 </style>
 
 <div class="container">
   <Illustration
-    style="margin-bottom: 24px;"
+    style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
