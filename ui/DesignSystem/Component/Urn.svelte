@@ -5,6 +5,7 @@
 
   export let notificationText = "Copied to your clipboard";
   export let showOnHover = false;
+  export let showCopyOnlyOnHover = false;
   export let truncate = false;
   export let urn = null;
 
@@ -13,9 +14,10 @@
   const firstSix = cleanUrn.substring(0, 7);
   const lastSix = cleanUrn.substring(cleanUrn.length - 7, cleanUrn.length);
 
-  let hover;
+  let hover = false;
 
   $: expanded = truncate ? showOnHover && hover : true;
+  $: showIcon = showCopyOnlyOnHover ? hover : true;
 </script>
 
 <style>
@@ -28,7 +30,12 @@
 
 <Hoverable bind:hovering={hover}>
   <div class="wrapper urn" data-cy="urn">
-    <Copyable style="align-items: center;" copyContent={urn} {notificationText}>
+    <Copyable
+      style="align-items: center; color: var(--color-foreground-level-4)"
+      copyContent={urn}
+      {notificationText}
+      styleContent={false}
+      {showIcon}>
       {#if urn.length > 24}
         {#if expanded}
           <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>

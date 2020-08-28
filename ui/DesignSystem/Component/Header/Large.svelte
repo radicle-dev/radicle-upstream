@@ -59,7 +59,7 @@
   .shareable-entity-identifier {
     display: flex;
     align-items: center;
-    padding-top: 8px;
+    padding-top: 4px;
   }
 
   .action-bar {
@@ -106,8 +106,7 @@
           <div class="shareable-entity-identifier">
             <Urn
               urn={entity.shareableEntityIdentifier}
-              showOnHover
-              truncate
+              showCopyOnlyOnHover
               notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
           </div>
         </div>
