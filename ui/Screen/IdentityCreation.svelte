@@ -35,7 +35,7 @@
 
   const complete = redirectPath => {
     session.fetch();
-    store.set(State.Complete);
+    store.set(State.Welcome);
     replace(redirectPath);
   };
 </script>
