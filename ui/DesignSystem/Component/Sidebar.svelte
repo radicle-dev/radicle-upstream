@@ -134,16 +134,6 @@
     </li>
     <li
       class="item indicator"
-      class:active={path.active(path.discovery(), $location)}
-      data-cy="discovery">
-      <Tooltip value="Discover">
-        <a href={path.discovery()} use:link>
-          <Icon.Network />
-        </a>
-      </Tooltip>
-    </li>
-    <li
-      class="item indicator"
       data-cy="settings"
       class:active={path.active(path.settings(), $location)}>
       <Tooltip value="Settings">
