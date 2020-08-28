@@ -17,16 +17,29 @@
 
   .shortcut {
     margin-bottom: 16px;
+    display: flex;
+    align-items: center;
   }
 
   .shortcut:first-child {
-    margin-top: 6rem;
+    margin-top: 24px;
   }
 
   kbd {
     border: 1px solid var(--color-foreground-level-3);
-    padding: 4px 8px 4px 8px;
+    color: var(--color-foreground-level-6);
+    padding: 8px 12px 8px 12px;
     border-radius: 4px;
+  }
+
+  .plus {
+    color: var(--color-foreground-level-4);
+    margin: 0px 10px;
+  }
+
+  .description {
+    color: var(--color-foreground-level-6);
+    margin: 0px 10px;
   }
 </style>
 
@@ -34,36 +47,36 @@
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
     <div class="shortcut">
-      <kbd>?</kbd>
-      - Keyboard shortcuts
+      <kbd class="typo-text-bold">?</kbd>
+      <p class="description">Keyboard shortcuts</p>
     </div>
     <div class="shortcut">
-      <kbd>{modifierKey}</kbd>
-      +
-      <kbd>,</kbd>
-      - settings
+      <kbd class="typo-text-bold">{modifierKey}</kbd>
+      <p class="plus">+</p>
+      <kbd class="typo-text-bold">,</kbd>
+      <p class="description">Settings</p>
     </div>
     <div class="shortcut">
-      <kbd>{modifierKey}</kbd>
-      +
-      <kbd>d</kbd>
-      - design system
+      <kbd class="typo-text-bold">{modifierKey}</kbd>
+      <p class="plus">+</p>
+      <kbd class="typo-text-bold">d</kbd>
+      <p class="description">Design system</p>
     </div>
     <div class="shortcut">
-      <kbd>{modifierKey}</kbd>
-      +
-      <kbd>p</kbd>
-      - search
+      <kbd class="typo-text-bold">{modifierKey}</kbd>
+      <p class="plus">+</p>
+      <kbd class="typo-text-bold">p</kbd>
+      <p class="description">Search</p>
     </div>
     <div class="shortcut">
-      <kbd>{modifierKey}</kbd>
-      +
-      <kbd>n</kbd>
-      - create new project
+      <kbd class="typo-text-bold">{modifierKey}</kbd>
+      <p class="plus">+</p>
+      <kbd class="typo-text-bold">n</kbd>
+      <p class="description">New project</p>
     </div>
     <div class="shortcut">
-      <kbd>esc</kbd>
-      - close modal
+      <kbd class="typo-text-bold">esc</kbd>
+      <p class="description">Close modal</p>
     </div>
   </div>
 </div>
