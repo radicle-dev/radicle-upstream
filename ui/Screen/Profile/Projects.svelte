@@ -27,8 +27,7 @@
     <ProjectList {projects} urn={session.identity.urn} on:select={select} />
   {:else}
     <EmptyState
-      text="There’s nothing here yet, get started by starting your first
-      project."
+      text="You don't have any projects yet."
       primaryActionText="Start your first project"
       on:primaryAction={create} />
   {/if}
