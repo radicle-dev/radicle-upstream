@@ -9,6 +9,7 @@ export const discovery = (): string => "/discovery";
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
+export const profileTracking = (): string => "/profile/tracking";
 export const profileWallet = (): string => "/profile/wallet";
 export const registerUser = (): string => "/user-registration";
 export const createIdentity = (): string => "/identity/new";

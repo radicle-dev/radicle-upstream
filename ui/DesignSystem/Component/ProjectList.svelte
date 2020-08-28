@@ -24,16 +24,18 @@
   let:item={project}
   style="margin: 0 auto;">
   <Flex
-    style="flex: 1; padding: 24px 16px 24px 24px;"
+    style="flex: 1; padding: 1.375rem 1.5rem;"
     dataCy={`project-list-entry-${project.metadata.name}`}>
     <div slot="left">
       <ProjectCard {...projectCardProps(project)} />
     </div>
     <div slot="right" style="display: flex; align-items: center;">
-      <Stats
-        branches={project.stats.branches}
-        commits={project.stats.commits}
-        contributors={project.stats.contributors} />
+      {#if project.stats}
+        <Stats
+          branches={project.stats.branches}
+          commits={project.stats.commits}
+          contributors={project.stats.contributors} />
+      {/if}
     </div>
   </Flex>
 </List>

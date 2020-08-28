@@ -99,7 +99,8 @@
     <div slot="right">
       <Urn
         urn={transaction.id}
-        notificationText="The transaction ID is copied to your clipboard" />
+        notificationText="The transaction ID is copied to your clipboard"
+        truncate />
     </div>
   </Row>
 

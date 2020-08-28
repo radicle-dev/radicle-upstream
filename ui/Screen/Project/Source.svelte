@@ -252,6 +252,7 @@
         <Urn
           urn={project.shareableEntityIdentifier}
           showOnHover
+          truncate
           notificationText="The project ID was copied to your clipboard" />
       </div>
     </div>

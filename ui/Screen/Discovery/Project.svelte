@@ -97,7 +97,8 @@
   <div class="shareable-entity-identifier">
     <Urn
       urn={project.shareableEntityIdentifier}
-      notificationText="The project ID was copied to your clipboard" />
+      notificationText="The project ID was copied to your clipboard"
+      truncate />
   </div>
 
   <div class="description">
