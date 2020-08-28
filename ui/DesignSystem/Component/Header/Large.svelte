@@ -94,6 +94,7 @@
           <Urn
             urn={entity.shareableEntityIdentifier}
             showOnHover
+            truncate
             notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
         </div>
       </div>

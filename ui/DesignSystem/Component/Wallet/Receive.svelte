@@ -27,6 +27,7 @@
   <Flex align="center">
     <Urn
       urn={accountId}
+      truncate
       notificationText="The address was copied to your clipboard" />
   </Flex>
 </div>

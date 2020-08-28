@@ -7,6 +7,7 @@ import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
+import Hoverable from "./Hoverable.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
@@ -50,6 +51,7 @@ export {
   Error,
   Header,
   HorizontalMenu,
+  Hoverable,
   Label,
   List,
   NavigationButtons,
