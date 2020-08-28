@@ -2,7 +2,6 @@ import { parse, stringify, ParsedQs } from "qs";
 import regexparam from "regexparam";
 import { RevisionQuery } from "./source";
 
-export const search = (): string => "/search";
 export const settings = (): string => "/settings";
 
 export const discovery = (): string => "/discovery";
@@ -40,6 +39,8 @@ export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>
   `/projects/${id}/revisions`;
+export const projectUntracked = (urn: string): string =>
+  `/projects/untracked/${urn}`;
 
 export const projectSource = (
   projectId: string,
@@ -70,6 +71,9 @@ export const transactions = (id: string, viewerAccountId: string): string =>
 
 export const designSystemGuide = (): string => "/design-system-guide";
 export const shortcuts = (): string => "/shortcuts";
+
+// modal routes
+export const search = (): string => "/search";
 
 export const active = (
   path: string,
