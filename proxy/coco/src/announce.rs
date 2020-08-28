@@ -12,13 +12,6 @@ enum Error {
     AnnouncementFailed,
 }
 
-// #[derive(Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
-// struct Announcement {
-//     urn: RadUrn,
-//     head: String,
-//     hash: Oid,
-// }
-
 type Announcement = (RadUrn, String, Oid);
 
 type State = Vec<Announcement>;
