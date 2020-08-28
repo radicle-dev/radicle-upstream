@@ -1,5 +1,5 @@
 <script>
-  import { Variant } from "../../../src/illustration.ts";
+  import { Variant } from "../../src/illustration.ts";
 
   export let dataCy = null;
   export let style = null;
