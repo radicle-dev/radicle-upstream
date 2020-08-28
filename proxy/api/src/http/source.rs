@@ -50,7 +50,7 @@ fn commit_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
-        .and(path::param::<String>())
+        .and(path::param::<coco::oid::Oid>())
         .and_then(handler::commit)
 }
 
@@ -109,6 +109,8 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use radicle_surf::vcs::git;
+
+    use coco::oid;
 
     use crate::error;
     use crate::http;
@@ -182,14 +184,12 @@ mod handler {
     pub async fn commit(
         ctx: http::Ctx,
         project_urn: coco::Urn,
-        sha1: String,
+        sha1: oid::Oid,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let commit = ctx
             .peer_api
-            .with_browser(&project_urn, |mut browser| {
-                coco::commit(&mut browser, &sha1)
-            })
+            .with_browser(&project_urn, |mut browser| coco::commit(&mut browser, sha1))
             .map_err(error::Error::from)?;
 
         Ok(reply::json(&commit))
@@ -365,6 +365,7 @@ impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
+    use std::convert::TryFrom;
     use std::env;
 
     use pretty_assertions::assert_eq;
@@ -625,7 +626,8 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
+        let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")
+            .map_err(coco::Error::from)?;
         let want = ctx
             .peer_api
             .with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
@@ -680,7 +682,8 @@ mod test {
         let urn = platinum_project.urn();
 
         let branch = git::Branch::local("master");
-        let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+        let head = coco::oid::Oid::try_from("223aaf87d6ea62eef0014857640fd7c8dd0f80b5")
+            .map_err(coco::Error::from)?;
         let (want, head_commit) = ctx.peer_api.with_browser(&urn, |mut browser| {
             let want = coco::commits(&mut browser, branch.clone())?;
             let head_commit = coco::commit_header(&mut browser, head)?;
