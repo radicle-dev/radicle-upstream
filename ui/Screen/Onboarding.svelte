@@ -8,10 +8,10 @@
 
   import { ModalLayout } from "../DesignSystem/Component";
 
-  import Welcome from "./IdentityCreation/Welcome.svelte";
-  import EnterName from "./IdentityCreation/EnterName.svelte";
-  import EnterPassphrase from "./IdentityCreation/EnterPassphrase.svelte";
-  import Success from "./IdentityCreation/Success.svelte";
+  import Welcome from "./Onboarding/Welcome.svelte";
+  import EnterName from "./Onboarding/EnterName.svelte";
+  import EnterPassphrase from "./Onboarding/EnterPassphrase.svelte";
+  import Success from "./Onboarding/Success.svelte";
 
   const returnToWelcomeStep = () => {
     store.set(State.Welcome);

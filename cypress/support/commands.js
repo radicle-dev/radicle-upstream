@@ -46,7 +46,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
-  "createIdentity",
+  "onboarding",
   async (handle = "secretariat") =>
     await fetch("http://localhost:8080/v1/identities", {
       method: "POST",

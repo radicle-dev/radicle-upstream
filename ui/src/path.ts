@@ -12,7 +12,7 @@ export const profileProjects = (): string => "/profile/projects";
 export const profileTracking = (): string => "/profile/tracking";
 export const profileWallet = (): string => "/profile/wallet";
 export const registerUser = (): string => "/user-registration";
-export const createIdentity = (): string => "/identity/new";
+export const onboarding = (): string => "/onboarding";
 
 export const userProfile = (urn: string): string => `/user/${urn}`;
 export const userProfileProjects = (urn: string): string =>

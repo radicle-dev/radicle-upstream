@@ -18,7 +18,7 @@
   import Theme from "./Theme.svelte";
 
   import Blank from "./Screen/Blank.svelte";
-  import IdentityCreation from "./Screen/IdentityCreation.svelte";
+  import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
   import Shortcuts from "./Screen/Shortcuts.svelte";
@@ -39,7 +39,7 @@
 
   const routes = {
     "/": Blank,
-    "/identity/new": IdentityCreation,
+    "/onboarding": Onboarding,
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
@@ -69,7 +69,7 @@
 
     case remote.Status.Success:
       if ($store.data.identity === null) {
-        push(path.createIdentity());
+        push(path.onboarding());
       } else {
         if ($location === "/" || $location === "/identity/new") {
           push(path.profileProjects());
