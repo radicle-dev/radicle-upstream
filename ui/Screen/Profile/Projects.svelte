@@ -29,7 +29,7 @@
     <EmptyState
       text="There’s nothing here yet, get started by starting your first
       project."
-      primaryActionText="Create a new project"
+      primaryActionText="Start your first project"
       on:primaryAction={create} />
   {/if}
 
