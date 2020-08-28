@@ -2,7 +2,7 @@ import { writable } from "svelte/store";
 
 export enum State {
   Welcome = "WELCOME",
-  Form = "FORM",
+  EnterName = "ENTER_NAME",
   SuccessView = "SUCCESS_VIEW",
   Complete = "COMPLETE",
 }
