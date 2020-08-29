@@ -11,6 +11,12 @@ use crate::keystore;
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;
 
+impl From<Context> for Ctx {
+    fn from(ctx: Context) -> Self {
+        Arc::new(RwLock::new(ctx))
+    }
+}
+
 /// Container to pass down dependencies into HTTP filter chains.
 pub struct Context {
     /// [`coco::Api`] to operate on the local monorepo.

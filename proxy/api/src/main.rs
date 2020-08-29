@@ -6,6 +6,7 @@ use radicle_keystore::pinentry::SecUtf8;
 use coco::seed;
 
 use api::config;
+use api::context;
 use api::env;
 use api::http;
 use api::keystore;
@@ -59,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(config)?
     };
 
-    let coco_api = {
+    let peer_api = {
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
@@ -74,8 +75,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.test {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(&key, "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, &key, &owner).expect("fixture creation failed");
+        let owner = peer_api.init_owner(&key, "cloudhead")?;
+        coco::control::setup_fixtures(&peer_api, &key, &owner).expect("fixture creation failed");
     }
 
     let proxy_path = config::proxy_path()?;
@@ -83,8 +84,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
 
     log::info!("Starting API");
-
-    let api = http::api(coco_api, keystore, store, args.test);
+    let ctx = context::Ctx::from(context::Context {
+        peer_api,
+        keystore,
+        store,
+    });
+    let api = http::api(ctx, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 

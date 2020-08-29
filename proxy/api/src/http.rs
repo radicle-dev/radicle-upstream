@@ -1,14 +1,10 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use std::sync::Arc;
-
 use serde::Deserialize;
-use tokio::sync::RwLock;
 use warp::filters::BoxedFilter;
 use warp::{path, reject, Filter, Rejection, Reply};
 
 use crate::context;
-use crate::keystore;
 
 mod avatar;
 mod control;
@@ -38,18 +34,9 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api(
-    peer_api: coco::Api,
-    keystore: keystore::Keystorage,
-    store: kv::Store,
+    ctx: context::Ctx,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let ctx = context::Context {
-        peer_api,
-        keystore,
-        store,
-    };
-    let ctx = Arc::new(RwLock::new(ctx));
-
     let avatar_filter = path("avatars").and(avatar::get_filter());
     let control_filter = path("control")
         .map(move || enable_control)
