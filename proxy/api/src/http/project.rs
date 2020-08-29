@@ -9,11 +9,12 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::context;
 use crate::http;
 use crate::project;
 
 /// Combination of all routes.
-pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
+pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     list_filter(ctx.clone())
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
@@ -23,7 +24,9 @@ pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
 }
 
 /// `POST /<id>/checkout`
-fn checkout_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn checkout_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::post())
         .and(document::param::<coco::Urn>("id", "Project id"))
@@ -49,7 +52,9 @@ fn checkout_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = 
 }
 
 /// `POST /`
-fn create_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn create_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx.clone())
         .and(http::with_owner_guard(ctx))
         .and(warp::post())
@@ -73,7 +78,7 @@ fn create_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
 }
 
 /// `GET /<id>`
-fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Project id"))
@@ -100,7 +105,7 @@ fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejec
 }
 
 /// `GET /`
-fn list_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
         .and(path::end())
@@ -126,7 +131,9 @@ fn list_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Reje
 }
 
 /// `GET /discover`
-fn discover_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn discover_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("discover")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -154,13 +161,13 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::context;
     use crate::error::Error;
-    use crate::http;
     use crate::project;
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         owner: coco::User,
         input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection> {
@@ -188,7 +195,7 @@ mod handler {
 
     /// Checkout a [`project::Project`]'s source code.
     pub async fn checkout(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         urn: coco::Urn,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
@@ -206,7 +213,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(ctx: http::Ctx, urn: String) -> Result<impl Reply, Rejection> {
+    pub async fn get(ctx: context::Ctx, urn: String) -> Result<impl Reply, Rejection> {
         let urn = urn.parse().map_err(Error::from)?;
         let ctx = ctx.read().await;
 
@@ -217,7 +224,7 @@ mod handler {
     ///
     /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
     pub async fn list(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         opt_query: Option<super::ListQuery>,
     ) -> Result<impl Reply, Rejection> {
         let query = opt_query.unwrap_or_default();
@@ -233,7 +240,7 @@ mod handler {
     }
 
     /// Get a feed of untracked projects.
-    pub async fn discover(_ctx: http::Ctx) -> Result<impl Reply, Rejection> {
+    pub async fn discover(_ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
@@ -441,6 +448,7 @@ mod test {
     use librad::git::local::url::LocalUrl;
     use radicle_surf::vcs::git::git2;
 
+    use crate::context;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -452,7 +460,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -522,7 +530,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -583,7 +591,7 @@ mod test {
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let repo_path = dir.path().join("Upstream");
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -645,7 +653,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         {
@@ -673,7 +681,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::reset_ctx_peer(ctx.clone()).await?;
+        context::reset_ctx_peer(ctx.clone()).await?;
 
         {
             let ctx = ctx.read().await;
@@ -727,7 +735,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -761,7 +769,7 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -784,7 +792,7 @@ mod test {
     #[allow(clippy::indexing_slicing)]
     async fn list_for_user() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -815,7 +823,7 @@ mod test {
     #[tokio::test]
     async fn discover() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
