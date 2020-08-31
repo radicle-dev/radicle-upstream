@@ -6,6 +6,7 @@ use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use futures::stream::StreamExt;
+use futures::Future;
 
 use librad::git::local::{transport, url::LocalUrl};
 use librad::git::refs::Refs;
@@ -15,15 +16,15 @@ use librad::meta::entity;
 use librad::meta::project as librad_project;
 use librad::meta::user;
 use librad::net::discovery;
-use librad::net::peer::{PeerApi, PeerConfig};
+use librad::net::peer::{Gossip, PeerApi, PeerConfig, PeerStorage};
+use librad::net::protocol::Protocol;
 use librad::paths;
 use librad::peer::PeerId;
 use librad::signer::SomeSigner;
-use librad::uri::{Path, Protocol, RadUrl, RadUrn};
+use librad::uri::{RadUrl, RadUrn};
 use radicle_surf::vcs::git;
 
 use crate::error::Error;
-use crate::oid;
 use crate::project;
 
 /// Export a verified [`user::User`] type.
@@ -167,39 +168,6 @@ impl Api {
         self.set_default_owner(user.clone())?;
 
         Ok(user)
-    }
-
-    pub fn with_api<F, T>(&self, callback: F) -> Result<T, Error>
-    where
-        F: Send + FnOnce(&PeerApi<keys::SecretKey>) -> Result<T, Error>,
-    {
-        let api = self.peer_api.lock().expect("unable to acquire lock");
-
-        callback(&api)
-    }
-
-    /// Announces a new updated project head via the [`librad::net::protocol::Protocol`].
-    ///
-    /// # Errors
-    ///
-    /// * if the parsing of the head to be included in the [`librad::uri::RadUrn`] fails
-    pub async fn announce_project_head(
-        api: PeerApi<keys::SecretKey>,
-        project_urn: &RadUrn,
-        head: String,
-        hash: oid::Oid,
-    ) -> Result<(), Error> {
-        let urn = RadUrn::new(project_urn.id.clone(), Protocol::Git, Path::parse(head)?);
-        let have = librad::net::peer::Gossip {
-            urn,
-            rev: Some(librad::net::peer::Rev::Git(hash.into())),
-            origin: Some(api.storage().peer_id().clone()),
-        };
-
-        let protocol = api.protocol();
-        protocol.announce(have).await;
-
-        Ok(())
     }
 
     /// Given some hints as to where you might find it, get the urn of the project found at `url`.
@@ -369,6 +337,21 @@ impl Api {
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
         callback(&mut browser)
+    }
+
+    /// Get the underlying [`librad::net::protocol::Protocol`].
+    ///
+    /// # Errors
+    ///
+    /// * if they `callback` errors
+    pub async fn with_protocol<F, Fut, T>(&self, callback: F) -> Result<T, Error>
+    where
+        F: Send + FnOnce(Protocol<PeerStorage<keys::SecretKey>, Gossip>) -> Fut,
+        Fut: Future<Output = Result<T, Error>>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+
+        callback(api.protocol().clone()).await
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.

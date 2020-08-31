@@ -20,8 +20,7 @@ pub type Announcement = (uri::RadUrn, String, Oid);
 ///
 /// * if the announcemnet of one of the project heads failed
 pub async fn announce(
-    protocol: &net::protocol::Protocol<net::peer::PeerStorage<keys::SecretKey>, net::peer::Gossip>,
-    peer_id: &librad::peer::PeerId,
+    protocol: net::protocol::Protocol<net::peer::PeerStorage<keys::SecretKey>, net::peer::Gossip>,
     updates: Vec<Announcement>,
 ) -> Result<(), Error> {
     for (project_urn, head, hash) in &updates {
@@ -33,7 +32,7 @@ pub async fn announce(
         let have = net::peer::Gossip {
             urn,
             rev: Some(net::peer::Rev::Git((*hash).into())),
-            origin: Some(peer_id.clone()),
+            origin: Some(protocol.peer_id().clone()),
         };
 
         protocol.announce(have).await;
@@ -99,7 +98,9 @@ mod test {
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(&api)?;
-        let res = super::announce(&api, updates).await;
+        let res = api
+            .with_protocol(|protocol| async move { super::announce(protocol, updates).await })
+            .await;
 
         assert!(res.is_ok());
 
@@ -203,7 +204,7 @@ mod test {
 
         let left = [&both[..], &old[..]].concat();
         let right = [&both[..], &new[..]].concat();
-        let announcements = super::diff(left, right);
+        let announcements = super::diff(&left, &right);
 
         assert_eq!(announcements, new);
 
