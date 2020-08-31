@@ -10,6 +10,7 @@
 
   const dispatch = createEventDispatcher();
 
+  let repeatedPassphraseInput;
   let passphrase;
   let repeatedPassphrase;
 
@@ -73,6 +74,17 @@
     beginValidation = true;
     validate();
   }
+
+  $: allowNext =
+    passphrase && passphrase === repeatedPassphrase && !validations;
+
+  const next = () => {
+    if (!allowNext) {
+      return;
+    }
+
+    dispatch("next", passphrase);
+  };
 </script>
 
 <style>
@@ -116,6 +128,10 @@
     </p>
 
     <Input.Password
+      on:enterKeydown={() => {
+        repeatedPassphraseInput.focus();
+      }}
+      autofocus={true}
       dataCy="passphrase-input"
       placeholder="Enter a secure passphrase"
       style="margin-top: 1.5rem;"
@@ -127,6 +143,8 @@
         And enter it again, just to be safe.
       </p>
       <Input.Password
+        bind:inputElement={repeatedPassphraseInput}
+        on:enterKeydown={next}
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
         validation={repeatedPassphraseValidation}
@@ -144,10 +162,8 @@
 
       <Button
         dataCy="set-passphrase-button"
-        disabled={!passphrase || passphrase !== repeatedPassphrase || validations}
-        on:click={() => {
-          dispatch('next', passphrase);
-        }}>
+        disabled={!allowNext}
+        on:click={next}>
         Set passphrase
       </Button>
     </div>

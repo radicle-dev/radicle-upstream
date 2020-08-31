@@ -1,4 +1,6 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import Icon from "../Icon";
   import Spinner from "../../Component/Spinner.svelte";
 
@@ -17,11 +19,19 @@
   export let spellcheck = false;
   export let autofocus = false;
 
+  const dispatch = createEventDispatcher();
+
   let input;
 
   // Can't use normal `autofocus` attribute on the `input`:
   // "Autofocus processing was blocked because a document's URL has a fragment"
   $: if (autofocus) input && input.focus();
+
+  const onKeydown = event => {
+    if (event.key === "Enter") {
+      dispatch("enterKeydown");
+    }
+  };
 </script>
 
 <style>
@@ -118,6 +128,7 @@
     {disabled}
     on:change
     on:input
+    on:keydown={onKeydown}
     bind:this={input}
     {spellcheck}
     style={inputStyle} />

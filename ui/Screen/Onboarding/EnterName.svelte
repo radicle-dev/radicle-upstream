@@ -59,7 +59,13 @@
 
   $: validate(handle);
 
-  const handleCreateButtonClick = () => {
+  $: allowNext = handle && !validations;
+
+  const next = () => {
+    if (!allowNext) {
+      return;
+    }
+
     beginValidation = true;
     validate();
     if (!validatejs.isEmpty(validations)) return;
@@ -105,16 +111,15 @@
       change it in your profile at any time.
     </p>
     <Input.Text
+      autofocus={true}
       placeholder="Enter a name"
       bind:value={handle}
+      on:enterKeydown={next}
       dataCy="handle"
       validation={handleValidation}
       style="margin: 16px 0 32px 0;" />
     <div class="buttons">
-      <Button
-        dataCy="next-button"
-        disabled={!handle || validations}
-        on:click={handleCreateButtonClick}>
+      <Button dataCy="next-button" disabled={!allowNext} on:click={next}>
         Looks good
       </Button>
     </div>

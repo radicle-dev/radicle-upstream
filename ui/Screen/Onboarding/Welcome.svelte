@@ -5,6 +5,16 @@
 
   import { RadicleLogo } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
+
+  const onKeydown = event => {
+    if (event.key === "Enter") {
+      next();
+    }
+  };
+
+  const next = () => {
+    dispatch("next");
+  };
 </script>
 
 <style>
@@ -24,6 +34,8 @@
   }
 </style>
 
+<svelte:window on:keydown={onKeydown} />
+
 <div class="container">
   <RadicleLogo />
 
@@ -31,9 +43,7 @@
 
   <Button
     style="flex-shrink: 0; margin-bottom: 24px;"
-    on:click={() => {
-      dispatch('next');
-    }}
+    on:click={next}
     dataCy="get-started-button">
     Get started
   </Button>

@@ -7,6 +7,16 @@
   export let id = null;
 
   const dispatch = createEventDispatcher();
+
+  const onKeydown = event => {
+    if (event.key === "Enter") {
+      next();
+    }
+  };
+
+  const next = () => {
+    dispatch("close");
+  };
 </script>
 
 <style>
@@ -23,6 +33,8 @@
     align-items: center;
   }
 </style>
+
+<svelte:window on:keydown={onKeydown} />
 
 <div class="container">
   <div class="content">
@@ -47,7 +59,7 @@
       . Click to copy it and share it with others so that they can find you.
     </p>
 
-    <Button dataCy="go-to-profile-button" on:click={() => dispatch('close')}>
+    <Button dataCy="go-to-profile-button" on:click={next}>
       Go to my projects
     </Button>
   </div>
