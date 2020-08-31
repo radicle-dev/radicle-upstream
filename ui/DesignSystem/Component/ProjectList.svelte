@@ -9,8 +9,6 @@
   export let projects = null;
   export let urn = null;
 
-  console.log(projects);
-
   const projectCardProps = project => ({
     title: project.metadata.name,
     description: project.metadata.description,
