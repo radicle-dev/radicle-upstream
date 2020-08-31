@@ -40,6 +40,41 @@ context("identity creation", () => {
       // Land on profile screen.
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains(validUser.handle);
+
+      // Clear session to restart onboarding.
+      cy.pick("sidebar", "settings").click();
+      cy.pick("clear-session-button").click();
+      cy.contains("A free and open-source way to host").should("exist");
+
+      // When creating the same identity again without nuking all data, it
+      // should show an error and return to the name entry screen.
+      cy.pick("get-started-button").click();
+
+      cy.pick("form", "handle").type(validUser.handle);
+      cy.pick("next-button").click();
+
+      cy.pick("passphrase-input").type(validUser.passphrase);
+      cy.pick("repeat-passphrase-input").type(validUser.passphrase);
+      cy.pick("set-passphrase-button").click();
+      cy.pick("notification")
+        .contains(
+          /Could not create identity: the identity '[\w]*' already exits/
+        )
+        .should("exist");
+      cy.pick("notification").contains("Close").click();
+      cy.contains("what should we call you?").should("exist");
+
+      // We can create a different identity with a new handle.
+      cy.pick("form", "handle").type("cloudhead");
+      cy.pick("next-button").click();
+      cy.pick("passphrase-input").type("123");
+      cy.pick("repeat-passphrase-input").type("123");
+      cy.pick("set-passphrase-button").click();
+      cy.pick("shareable-identifier")
+        .contains(/cloudhead@/)
+        .should("exist");
+      cy.pick("go-to-profile-button").click();
+      cy.pick("entity-name").contains("cloudhead");
     });
 
     context("when clicking the cancel button", () => {
@@ -72,30 +107,30 @@ context("identity creation", () => {
       const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
 
       it("prevents the user from submitting an invalid handle", () => {
-        // handle is required
+        // Handle is required.
         cy.pick("form", "handle").clear();
         cy.pick("form").contains("You must provide a handle");
 
-        // no spaces
+        // No spaces.
         cy.pick("form", "handle").type("no spaces");
         cy.pick("form").contains(validationError);
 
-        // no special characters
+        // No special characters.
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("$bad");
         cy.pick("form").contains(validationError);
 
-        // can't start with an underscore
+        // Can't start with an underscore.
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("_nein");
         cy.pick("form").contains(validationError);
 
-        // can't start with a dash
+        // Can't start with a dash.
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("-não");
         cy.pick("form").contains(validationError);
 
-        // has to be at least two characters long
+        // Has to be at least two characters long.
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("x");
         cy.pick("form").contains(validationError);
