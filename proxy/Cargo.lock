@@ -1005,7 +1005,6 @@ version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cde1d1ce05b9169af359041cf834075ca4478f5917e6198d9454773e98aae143"
 dependencies = [
- "bincode",
  "serde",
  "serde_json",
  "sled",

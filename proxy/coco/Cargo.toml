@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 futures = { version = "0.3", features = [ "compat" ] }
-kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
+kv = { version = "0.20", features = [ "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.5"

@@ -88,10 +88,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         keystore,
         store,
     });
-    let watcher_ctx = ctx.clone();
 
-    log::info!("Starting Announcement watcher");
-    tokio::task::spawn(async move { announcement_watcher(watcher_ctx).await });
+    {
+        let ctx = ctx.clone();
+        log::info!("Starting Announcement watcher");
+        tokio::task::spawn(async move { announcement_watcher(ctx).await });
+    }
 
     log::info!("Starting API");
     let api = http::api(ctx, args.test);
