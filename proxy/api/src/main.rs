@@ -91,7 +91,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let watcher_ctx = ctx.clone();
 
     log::info!("Starting Announcement watcher");
-    tokio::task::spawn_local(async move { announcement_watcher(watcher_ctx).await });
+    tokio::task::spawn(async move { announcement_watcher(watcher_ctx).await });
 
     log::info!("Starting API");
     let api = http::api(ctx, args.test);
