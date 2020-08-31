@@ -3,6 +3,8 @@
 use std::collections::HashSet;
 use std::ops::Deref as _;
 
+use kv::Codec as _;
+
 use librad::keys;
 use librad::net;
 use librad::uri;
@@ -10,6 +12,11 @@ use librad::uri;
 use crate::error::Error;
 use crate::oid::Oid;
 use crate::peer;
+
+/// Name for the bucket used in [`kv::Store`].
+const BUCKET_NAME: &str = "announcements";
+/// Key for the single value used as cache.
+const KEY_NAME: &str = "latest";
 
 /// An update and all the required information that can be announced on the network.
 pub type Announcement = (uri::RadUrn, String, Oid);
@@ -81,6 +88,31 @@ pub fn diff(old_state: &[Announcement], new_state: &[Announcement]) -> Vec<Annou
         .collect()
 }
 
+/// Load the cached announcements from the [`kv::Store`].
+///
+/// # Errors
+///
+/// * if the [`kv::Bucket`] can't be accessed
+/// * if the access of the key in the [`kv::Bucket`] fails
+#[allow(clippy::or_fun_call)]
+pub fn load(store: &kv::Store) -> Result<Vec<Announcement>, Error> {
+    let bucket = store.bucket::<&'static str, kv::Json<Vec<Announcement>>>(Some(BUCKET_NAME))?;
+    let val: kv::Json<Vec<Announcement>> = bucket.get(KEY_NAME)?.unwrap_or(kv::Json(vec![]));
+
+    Ok(val.to_inner())
+}
+
+/// Update the cache with the latest announcements.
+///
+/// # Errors
+///
+/// * if the [`kv::Bucket`] can't be accessed
+/// * if the storage of the new updates fails
+pub fn save(store: &kv::Store, updates: Vec<Announcement>) -> Result<(), Error> {
+    let bucket = store.bucket::<&'static str, kv::Json<Vec<Announcement>>>(Some(BUCKET_NAME))?;
+    Ok(bucket.set(KEY_NAME, kv::Json(updates))?)
+}
+
 #[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
@@ -119,17 +151,6 @@ mod test {
 
     #[test]
     fn diff() -> Result<(), Error> {
-        let project0 = || uri::RadUrn {
-            id: Hash::hash(b"project0"),
-            proto: uri::Protocol::Git,
-            path: uri::Path::empty(),
-        };
-        let project1 = || uri::RadUrn {
-            id: Hash::hash(b"project1"),
-            proto: uri::Protocol::Git,
-            path: uri::Path::empty(),
-        };
-
         let both = vec![
             (
                 project0(),
@@ -219,5 +240,64 @@ mod test {
         assert_eq!(announcements, new);
 
         Ok(())
+    }
+
+    #[test]
+    fn save_and_load() -> Result<(), Error> {
+        let project0 = || uri::RadUrn {
+            id: Hash::hash(b"project0"),
+            proto: uri::Protocol::Git,
+            path: uri::Path::empty(),
+        };
+        let project1 = || uri::RadUrn {
+            id: Hash::hash(b"project1"),
+            proto: uri::Protocol::Git,
+            path: uri::Path::empty(),
+        };
+        let updates = vec![
+            (
+                project0(),
+                "cloudhead/new-language".to_string(),
+                "7dec3269".parse::<oid::Oid>()?,
+            ),
+            (
+                project0(),
+                "fintohaps/notations".to_string(),
+                "b4d3276d".parse::<oid::Oid>()?,
+            ),
+            (
+                project0(),
+                "kalt/eat-my-impls".to_string(),
+                "2206e5dc".parse::<oid::Oid>()?,
+            ),
+            (
+                project1(),
+                "backport".to_string(),
+                "869e5740".parse::<oid::Oid>()?,
+            ),
+        ];
+        let dir = tempfile::tempdir()?;
+        let store = kv::Store::new(kv::Config::new(dir.path().join("store")))?;
+
+        super::save(&store, updates.clone())?;
+
+        assert_eq!(super::load(&store)?, updates);
+
+        Ok(())
+    }
+
+    fn project0() -> uri::RadUrn {
+        uri::RadUrn {
+            id: Hash::hash(b"project0"),
+            proto: uri::Protocol::Git,
+            path: uri::Path::empty(),
+        }
+    }
+    fn project1() -> uri::RadUrn {
+        uri::RadUrn {
+            id: Hash::hash(b"project1"),
+            proto: uri::Protocol::Git,
+            path: uri::Path::empty(),
+        }
     }
 }

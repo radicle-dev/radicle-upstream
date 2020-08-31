@@ -305,6 +305,7 @@ name = "coco"
 version = "0.1.0"
 dependencies = [
  "futures 0.3.5",
+ "kv",
  "lazy_static",
  "librad",
  "log",
