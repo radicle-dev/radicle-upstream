@@ -74,6 +74,7 @@ pub fn diff(old_state: &[Announcement], new_state: &[Announcement]) -> Vec<Annou
         .collect()
 }
 
+#[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -112,12 +113,12 @@ mod test {
     #[test]
     fn diff() -> Result<(), Error> {
         let project0 = || uri::RadUrn {
-            id: Hash::hash("project0".as_bytes()),
+            id: Hash::hash(b"project0"),
             proto: uri::Protocol::Git,
             path: uri::Path::empty(),
         };
         let project1 = || uri::RadUrn {
-            id: Hash::hash("project1".as_bytes()),
+            id: Hash::hash(b"project1"),
             proto: uri::Protocol::Git,
             path: uri::Path::empty(),
         };
