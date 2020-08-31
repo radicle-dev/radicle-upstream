@@ -99,7 +99,9 @@ mod test {
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(&api)?;
         let res = api
-            .with_protocol(|protocol| async move { super::announce(protocol, updates).await })
+            .with_protocol(|protocol| {
+                Box::pin(async move { super::announce(protocol, updates).await })
+            })
             .await;
 
         assert!(res.is_ok());

@@ -83,15 +83,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
 
-    let watcher_ctx = ctx.clone();
-    tokio::task::spawn_local(async move { announcement_watcher(watcher_ctx).await });
-
-    log::info!("Starting API");
     let ctx = context::Ctx::from(context::Context {
         peer_api,
         keystore,
         store,
     });
+    let watcher_ctx = ctx.clone();
+
+    log::info!("Starting Announcement watcher");
+    tokio::task::spawn_local(async move { announcement_watcher(watcher_ctx).await });
+
+    log::info!("Starting API");
     let api = http::api(ctx, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
@@ -108,15 +110,18 @@ async fn announcement_watcher(ctx: context::Ctx) {
 
         let ctx = ctx.read().await;
 
-        // TODO(xla): get/load old state
+        // TODO(xla): get/load old state.
+
         let old: Vec<announce::Announcement> = vec![];
         let new = announce::build(&ctx.peer_api).expect("unable to build state");
         let updates = announce::diff(&old, &new);
-        ctx.peer_api.with_api(|api| {
-            announce::announce(api, updates)
-                .await
-                .expect("announce failed");
-        })?
+        ctx.peer_api
+            .with_protocol(|protocol| {
+                Box::pin(async move { announce::announce(protocol, updates).await })
+            })
+            .await
+            .expect("announce failed");
+
         // TODO(xla): save new state
     }
 }

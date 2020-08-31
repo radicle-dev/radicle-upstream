@@ -5,8 +5,8 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use futures::future::BoxFuture;
 use futures::stream::StreamExt;
-use futures::Future;
 
 use librad::git::local::{transport, url::LocalUrl};
 use librad::git::refs::Refs;
@@ -344,14 +344,17 @@ impl Api {
     /// # Errors
     ///
     /// * if they `callback` errors
-    pub async fn with_protocol<F, Fut, T>(&self, callback: F) -> Result<T, Error>
+    pub fn with_protocol<F, T>(&self, callback: F) -> BoxFuture<'static, Result<T, Error>>
     where
-        F: Send + FnOnce(Protocol<PeerStorage<keys::SecretKey>, Gossip>) -> Fut,
-        Fut: Future<Output = Result<T, Error>>,
+        T: 'static,
+        F: Send
+            + FnOnce(
+                Protocol<PeerStorage<keys::SecretKey>, Gossip>,
+            ) -> BoxFuture<'static, Result<T, Error>>,
     {
         let api = self.peer_api.lock().expect("unable to acquire lock");
 
-        callback(api.protocol().clone()).await
+        Box::pin(callback(api.protocol().clone()))
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.
