@@ -72,7 +72,7 @@ pub fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
             }
 
             Ok(list)
-        }
+        },
     }
 }
 
