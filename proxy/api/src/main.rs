@@ -92,7 +92,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         let ctx = ctx.clone();
         log::info!("Starting Announcement watcher");
-        tokio::task::spawn(async move { announcement_watcher(ctx).await });
+        tokio::task::spawn(announcement_watcher(ctx));
     }
 
     log::info!("Starting API");
@@ -112,7 +112,7 @@ async fn announcement_watcher(ctx: context::Ctx) {
 
         let ctx = ctx.read().await;
 
-        let old = announce::load(&ctx.store).expect("unable to load cached announcemnts");
+        let old = announce::load(&ctx.store).expect("unable to load cached announcements");
         let new = announce::build(&ctx.peer_api).expect("unable to build state");
 
         {
