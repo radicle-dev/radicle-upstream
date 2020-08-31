@@ -1,42 +1,32 @@
-{
-  "env": {
-    "browser": true,
-    "es6": true,
-    "node": true
-  },
-  "plugins": ["no-only-tests"],
-  "extends": ["eslint:recommended"],
-  "parserOptions": {
-    "ecmaVersion": 2017,
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "modules": true,
-      "experimentalObjectRestSpread": true
-    }
-  },
-  "overrides": [
-    {
-      "files": ["**/*.svelte"],
-      "plugins": ["svelte3"],
-      "processor": "svelte3/svelte3",
-      "parser": "babel-eslint"
-    },
-    {
-      "files": ["**/*.ts"],
-      "extends": [
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking"
-      ],
-      "plugins": ["@typescript-eslint"],
-      "parser": "@typescript-eslint/parser",
-      "parserOptions": {
-        "project": "./tsconfig.json"
-      }
-    }
+const eslintSveltePreprocess = require("eslint-svelte3-preprocess");
+const svelteConfig = require("./svelte.config");
+
+module.exports = {
+	env: {
+		node: true,
+		browser: true,
+	},
+	parser: "@typescript-eslint/parser",
+	parserOptions: {
+		createDefaultProgram: true,
+		ecmaVersion: 2019,
+		sourceType: "module",
+	},
+	extends: ["eslint:recommended"],
+	plugins: ["svelte3", "@typescript-eslint"],
+	overrides: [
+		{
+			files: ["*.svelte"],
+			processor: "svelte3/svelte3",
+		},
+		{
+			files: ["*.ts", "*.json"],
+			extends: [
+				"plugin:@typescript-eslint/recommended"
+			],
+		},
   ],
-  "rules": {
-    "no-only-tests/no-only-tests": "error",
+  rules: {
     // Disallow Unused Variables
     // https://eslint.org/docs/rules/no-unused-vars
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
@@ -59,5 +49,8 @@
     // require at least one whitespace after comments( // and /*)
     // https://eslint.org/docs/rules/spaced-comment
     "spaced-comment": ["warn", "always"]
-  }
-}
+  },
+	settings: {
+		"svelte3/preprocess": eslintSveltePreprocess(svelteConfig.preprocess),
+  },
+};
