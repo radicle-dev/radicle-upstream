@@ -103,7 +103,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn announcement_watcher(ctx: context::Ctx) {
     // TODO(xla): Take interval timings from config/settings.
-    let mut timer = tokio::time::interval(std::time::Duration::from_secs(1));
+    let mut timer = tokio::time::interval(std::time::Duration::from_secs(10));
 
     loop {
         timer.tick().await;
@@ -115,6 +115,7 @@ async fn announcement_watcher(ctx: context::Ctx) {
         let old: Vec<announce::Announcement> = vec![];
         let new = announce::build(&ctx.peer_api).expect("unable to build state");
         let updates = announce::diff(&old, &new);
+        let update_len = updates.len();
         ctx.peer_api
             .with_protocol(|protocol| {
                 Box::pin(async move { announce::announce(protocol, updates).await })
@@ -123,5 +124,7 @@ async fn announcement_watcher(ctx: context::Ctx) {
             .expect("announce failed");
 
         // TODO(xla): save new state
+
+        log::debug!("announced {} updates", update_len);
     }
 }
