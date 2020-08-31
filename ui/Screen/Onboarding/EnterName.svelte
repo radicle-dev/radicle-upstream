@@ -2,8 +2,6 @@
   import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
 
-  import { create, store } from "../../src/identity.ts";
-  import * as remote from "../../src/remote.ts";
   import {
     ValidationStatus,
     getValidationState,
@@ -60,17 +58,12 @@
 
   $: validate(handle);
 
-  $: if ($store.status === remote.Status.Success) {
-    dispatch("next");
-  } else if ($store.status === remote.Status.Error) {
-    dispatch("error", { message: $store.error.message });
-  }
-
   const handleCreateButtonClick = () => {
     beginValidation = true;
     validate();
     if (!validatejs.isEmpty(validations)) return;
-    create({ handle: handle });
+
+    dispatch("next", handle);
   };
 </script>
 
@@ -126,7 +119,7 @@
       </Button>
       <Button
         dataCy="next-button"
-        disabled={!handle || validations || $store.status === remote.Status.Loading}
+        disabled={!handle || validations}
         on:click={handleCreateButtonClick}>
         Looks good
       </Button>

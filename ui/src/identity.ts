@@ -30,13 +30,7 @@ export const identity = identityStore.readable;
 
 // EVENTS
 enum Kind {
-  Create = "CREATE",
   Fetch = "FETCH",
-}
-
-interface Create extends event.Event<Kind> {
-  kind: Kind.Create;
-  handle: string;
 }
 
 interface Fetch extends event.Event<Kind> {
@@ -44,27 +38,17 @@ interface Fetch extends event.Event<Kind> {
   urn: string;
 }
 
-type Msg = Create | Fetch;
+type Msg = Fetch;
 
 interface CreateInput {
   handle: string;
+  passphrase: string;
 }
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 
 function update(msg: Msg): void {
   switch (msg.kind) {
-    case Kind.Create:
-      creationStore.loading();
-      api
-        .post<CreateInput, Identity>("identities", {
-          handle: msg.handle,
-        })
-        .then(id => {
-          creationStore.success(id);
-        })
-        .catch(creationStore.error);
-      break;
     case Kind.Fetch:
       identityStore.loading();
       api
@@ -75,7 +59,9 @@ function update(msg: Msg): void {
   }
 }
 
-export const create = event.create<Kind, Msg>(Kind.Create, update);
+export const createIdentity = (input: CreateInput): Promise<Identity> => {
+  return api.post<CreateInput, Identity>("identities", input);
+};
 
 // MOCK
 export const fallback = {

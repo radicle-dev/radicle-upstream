@@ -78,7 +78,7 @@
         dataCy="set-passphrase-button"
         disabled={!passphrase || passphrase !== repeatedPassphrase}
         on:click={() => {
-          dispatch('next');
+          dispatch('next', passphrase);
         }}>
         Set passphrase
       </Button>

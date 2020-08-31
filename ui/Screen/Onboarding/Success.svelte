@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { store } from "../../src/identity.ts";
-
-  import { Copyable, Remote } from "../../DesignSystem/Component";
+  import { Copyable } from "../../DesignSystem/Component";
   import { Button, Flex } from "../../DesignSystem/Primitive";
+
+  export let id = null;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -34,18 +34,16 @@
       <span class="typo-text-bold">Radicle ID</span>
       . Click to copy it and share it with others so that they can find you.
     </p>
-    <Remote {store} let:data={identity}>
-      <Copyable style="margin-bottom: 27px;">
-        <Flex align="left">
-          <p
-            data-cy="shareable-identifier"
-            class="typo-overflow-ellipsis"
-            style="color: var(--color-foreground-level-6); max-width: 350px;">
-            {identity.shareableEntityIdentifier}
-          </p>
-        </Flex>
-      </Copyable>
-    </Remote>
+    <Copyable style="margin-bottom: 27px;">
+      <Flex align="left">
+        <p
+          data-cy="shareable-identifier"
+          class="typo-overflow-ellipsis"
+          style="color: var(--color-foreground-level-6); max-width: 350px;">
+          {id}
+        </p>
+      </Flex>
+    </Copyable>
 
     <Button dataCy="go-to-profile-button" on:click={() => dispatch('close')}>
       Go to my projects

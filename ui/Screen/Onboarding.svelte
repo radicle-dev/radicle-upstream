@@ -2,7 +2,8 @@
   import { replace } from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
-  import { State, store } from "../src/onboard.ts";
+  import { State } from "../src/onboarding.ts";
+  import { createIdentity } from "../src/identity.ts";
   import * as path from "../src/path.ts";
   import * as session from "../src/session.ts";
 
@@ -13,8 +14,12 @@
   import EnterPassphrase from "./Onboarding/EnterPassphrase.svelte";
   import Success from "./Onboarding/Success.svelte";
 
+  let identity;
+  let handle;
+  let state = State.Welcome;
+
   const returnToWelcome = () => {
-    store.set(State.Welcome);
+    state = State.Welcome;
   };
 
   const truncateUrn = message => {
@@ -27,35 +32,48 @@
     }
   };
 
-  const onError = event => {
-    notification.error(
-      `Could not create identity: ${truncateUrn(event.detail.message)}`
-    );
+  const complete = () => {
+    session.fetch();
+    state = State.Welcome;
+    replace(path.profileProjects());
   };
 
-  const complete = redirectPath => {
-    session.fetch();
-    store.set(State.Welcome);
-    replace(redirectPath);
+  const onCreateIdentity = async (handle, passphrase) => {
+    try {
+      identity = await createIdentity({
+        handle: handle,
+        passphrase: passphrase,
+      });
+      state = State.SuccessView;
+    } catch (error) {
+      state = State.EnterName;
+      notification.error(
+        `Could not create identity: ${truncateUrn(error.message)}`
+      );
+    }
   };
 </script>
 
 <ModalLayout escapable={false}>
-  {#if $store === State.Welcome}
-    <Welcome on:next={() => store.set(State.EnterName)} />
-  {:else if $store === State.EnterName}
+  {#if state === State.Welcome}
+    <Welcome
+      on:next={() => {
+        state = State.EnterName;
+      }} />
+  {:else if state === State.EnterName}
     <EnterName
       on:cancel={returnToWelcome}
-      on:error={onError}
-      on:next={() => store.set(State.EnterPassphrase)} />
-  {:else if $store === State.EnterPassphrase}
+      on:next={event => {
+        handle = event.detail;
+        state = State.EnterPassphrase;
+      }} />
+  {:else if state === State.EnterPassphrase}
     <EnterPassphrase
       on:cancel={returnToWelcome}
-      on:next={() => store.set(State.SuccessView)} />
-  {:else if $store === State.SuccessView}
-    <Success
-      on:close={() => {
-        complete(path.profileProjects());
+      on:next={event => {
+        onCreateIdentity(handle, event.detail);
       }} />
+  {:else if state === State.SuccessView}
+    <Success id={identity.shareableEntityIdentifier} on:close={complete} />
   {/if}
 </ModalLayout>
