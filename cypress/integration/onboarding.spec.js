@@ -20,24 +20,24 @@ context("identity creation", () => {
 
   context("navigation", () => {
     it("is possible to step through the identity creation flow", () => {
-      // Intro screen
+      // Intro screen.
       cy.pick("get-started-button").click();
 
-      // Enter name screen
+      // Enter name screen.
       cy.pick("form", "handle").type(validUser.handle);
       cy.pick("next-button").click();
 
-      // Enter passphrase screen
+      // Enter passphrase screen.
       cy.pick("passphrase-input").type(validUser.passphrase);
       cy.pick("repeat-passphrase-input").type(validUser.passphrase);
       cy.pick("set-passphrase-button").click();
 
-      // Success screen
+      // Success screen.
       cy.pick("shareable-identifier")
         .contains(/rafalca@/)
         .should("exist");
 
-      // Land on profile screen
+      // Land on profile screen.
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains(validUser.handle);
     });

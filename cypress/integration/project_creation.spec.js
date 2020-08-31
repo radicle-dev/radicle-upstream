@@ -61,7 +61,7 @@ const withPlatinumStub = callback => {
 
 beforeEach(() => {
   cy.nukeAllState();
-  cy.onboarding();
+  cy.onboardUser();
   cy.visit("./public/index.html");
 });
 

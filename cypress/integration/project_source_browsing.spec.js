@@ -1,6 +1,6 @@
 before(() => {
   cy.nukeAllState();
-  cy.onboarding("cloudhead");
+  cy.onboardUser("cloudhead");
   cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
     "ele",
     "abbey",

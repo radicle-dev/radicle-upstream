@@ -2,7 +2,7 @@ context("settings", () => {
   beforeEach(() => {
     cy.nukeCocoState();
     cy.nukeSessionState();
-    cy.onboarding();
+    cy.onboardUser();
 
     cy.visit("public/index.html");
     cy.pick("sidebar", "settings").click();
