@@ -28,6 +28,12 @@ pub struct Context {
 }
 
 impl Context {
+    /// Initialises a new [`Ctx`] the given temporary directory.
+    ///
+    /// # Errors
+    ///
+    /// * coco key creation fails
+    /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Ctx, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
