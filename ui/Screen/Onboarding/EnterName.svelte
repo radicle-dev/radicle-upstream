@@ -9,12 +9,13 @@
 
   import { Button, Emoji, Input } from "../../DesignSystem/Primitive";
 
+  export let handle = null;
+
   const dispatch = createEventDispatcher();
 
   const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
 
-  let handle,
-    validations,
+  let validations,
     beginValidation = false;
 
   validatejs.options = {
@@ -110,13 +111,6 @@
       validation={handleValidation}
       style="margin: 16px 0 32px 0;" />
     <div class="buttons">
-      <Button
-        dataCy="cancel-button"
-        variant="transparent"
-        style="margin-right: 16px;"
-        on:click={() => dispatch('cancel')}>
-        Cancel
-      </Button>
       <Button
         dataCy="next-button"
         disabled={!handle || validations}

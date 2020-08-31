@@ -67,11 +67,11 @@
 
     <div class="buttons">
       <Button
-        dataCy="cancel-button"
+        dataCy="back-button"
         variant="transparent"
         style="margin-right: 16px;"
-        on:click={() => dispatch('cancel')}>
-        Cancel
+        on:click={() => dispatch('previous')}>
+        Back
       </Button>
 
       <Button

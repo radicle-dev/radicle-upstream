@@ -18,10 +18,6 @@
   let handle;
   let state = State.Welcome;
 
-  const returnToWelcome = () => {
-    state = State.Welcome;
-  };
-
   const truncateUrn = message => {
     const urn = message.match(/(rad:git:\w{59})/)[1];
 
@@ -62,14 +58,16 @@
       }} />
   {:else if state === State.EnterName}
     <EnterName
-      on:cancel={returnToWelcome}
+      {handle}
       on:next={event => {
         handle = event.detail;
         state = State.EnterPassphrase;
       }} />
   {:else if state === State.EnterPassphrase}
     <EnterPassphrase
-      on:cancel={returnToWelcome}
+      on:previous={() => {
+        state = State.EnterName;
+      }}
       on:next={event => {
         onCreateIdentity(handle, event.detail);
       }} />

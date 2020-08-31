@@ -77,21 +77,15 @@ context("identity creation", () => {
       cy.pick("entity-name").contains("cloudhead");
     });
 
-    context("when clicking the cancel button", () => {
-      it("sends the user back to the welcome screen", () => {
-        // On the name entry screen.
-        cy.pick("get-started-button").click();
-        cy.contains("what should we call you?").should("exist");
-        cy.pick("cancel-button").click();
-        cy.contains("A free and open-source way to host").should("exist");
-
-        // On the passphrase entry screen.
+    context("when clicking the back button on the passphrase screen", () => {
+      it("sends the user back to the previous screen", () => {
         cy.pick("get-started-button").click();
         cy.pick("form", "handle").type(validUser.handle);
         cy.pick("next-button").click();
         cy.contains("you'll enter a passphrase").should("exist");
-        cy.pick("cancel-button").click();
-        cy.contains("A free and open-source way to host").should("exist");
+        cy.pick("back-button").click();
+        cy.contains("what should we call you?").should("exist");
+        cy.pick("form", "handle").should("have.value", validUser.handle);
       });
     });
   });
