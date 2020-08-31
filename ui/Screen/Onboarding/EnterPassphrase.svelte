@@ -1,5 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import validatejs from "validate.js";
+  import {
+    ValidationStatus,
+    getValidationState,
+  } from "../../src/validation.ts";
 
   import { Button, Input } from "../../DesignSystem/Primitive";
 
@@ -7,6 +12,67 @@
 
   let passphrase;
   let repeatedPassphrase;
+
+  let validations = false;
+  let beginValidation = false;
+
+  validatejs.options = {
+    fullMessages: false,
+  };
+
+  validatejs.validators.optional = (value, options) => {
+    return !validatejs.isEmpty(value)
+      ? validatejs.single(value, options)
+      : null;
+  };
+
+  const constraints = {
+    passphrase: {
+      length: {
+        minimum: 4,
+        message: "Passphrase must be at least 4 characters",
+      },
+    },
+    repeatedPassphrase: {
+      equality: {
+        message: "Passphrases should match",
+        attribute: "passphrase",
+      },
+    },
+  };
+
+  let passphraseValidation = { status: ValidationStatus.NotStarted };
+  let repeatedPassphraseValidation = { status: ValidationStatus.NotStarted };
+
+  const validate = () => {
+    if (!beginValidation) {
+      return;
+    }
+
+    validations = validatejs(
+      {
+        passphrase: passphrase,
+        repeatedPassphrase: repeatedPassphrase,
+      },
+      constraints
+    );
+
+    passphraseValidation = getValidationState("passphrase", validations);
+    repeatedPassphraseValidation = getValidationState(
+      "repeatedPassphrase",
+      validations
+    );
+  };
+
+  $: validate(passphrase, repeatedPassphrase);
+  $: if (
+    passphrase &&
+    repeatedPassphrase &&
+    repeatedPassphrase.length >= passphrase.length
+  ) {
+    beginValidation = true;
+    validate();
+  }
 </script>
 
 <style>
@@ -53,6 +119,7 @@
       dataCy="passphrase-input"
       placeholder="Enter a secure passphrase"
       style="margin-top: 1.5rem;"
+      validation={passphraseValidation}
       bind:value={passphrase} />
 
     <div class="repeat" hidden={!passphrase}>
@@ -62,6 +129,7 @@
       <Input.Password
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
+        validation={repeatedPassphraseValidation}
         bind:value={repeatedPassphrase} />
     </div>
 
@@ -76,7 +144,7 @@
 
       <Button
         dataCy="set-passphrase-button"
-        disabled={!passphrase || passphrase !== repeatedPassphrase}
+        disabled={!passphrase || passphrase !== repeatedPassphrase || validations}
         on:click={() => {
           dispatch('next', passphrase);
         }}>

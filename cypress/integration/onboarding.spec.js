@@ -1,7 +1,7 @@
 context("identity creation", () => {
   const validUser = {
     handle: "rafalca",
-    passphrase: "curled unexposed daisy defacing",
+    passphrase: "curled",
   };
 
   beforeEach(() => {
@@ -65,10 +65,11 @@ context("identity creation", () => {
       cy.contains("what should we call you?").should("exist");
 
       // We can create a different identity with a new handle.
+      cy.pick("form", "handle").clear();
       cy.pick("form", "handle").type("cloudhead");
       cy.pick("next-button").click();
-      cy.pick("passphrase-input").type("123");
-      cy.pick("repeat-passphrase-input").type("123");
+      cy.pick("passphrase-input").type("1234");
+      cy.pick("repeat-passphrase-input").type("1234");
       cy.pick("set-passphrase-button").click();
       cy.pick("shareable-identifier")
         .contains(/cloudhead@/)
@@ -93,14 +94,15 @@ context("identity creation", () => {
   context("validations", () => {
     beforeEach(() => {
       cy.pick("get-started-button").click();
-      cy.pick("form", "handle").type("_rafalca");
-      cy.pick("next-button").click();
     });
 
     context("handle", () => {
-      const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
-
       it("prevents the user from submitting an invalid handle", () => {
+        const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
+
+        cy.pick("form", "handle").type("_rafalca");
+        cy.pick("next-button").click();
+
         // Handle is required.
         cy.pick("form", "handle").clear();
         cy.pick("form").contains("You must provide a handle");
@@ -128,6 +130,31 @@ context("identity creation", () => {
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("x");
         cy.pick("form").contains(validationError);
+      });
+    });
+
+    context("passphrase", () => {
+      it("prevents the user from submitting an invalid passphrase", () => {
+        cy.pick("handle").type("cloudhead");
+        cy.pick("next-button").click();
+
+        // Only entered once.
+        cy.pick("passphrase-input").type("123");
+        cy.pick("set-passphrase-button").should("be.disabled");
+
+        // Too short.
+        cy.pick("repeat-passphrase-input").type("123");
+        cy.contains("Passphrase must be at least 4 characters").should("exist");
+
+        // Does not match.
+        cy.pick("passphrase-input").type("4");
+        cy.pick("repeat-passphrase-input").type("5");
+        cy.contains("Passphrases should match").should("exist");
+
+        // Valid passphrase.
+        cy.pick("passphrase-input").clear().type("abcd");
+        cy.pick("repeat-passphrase-input").clear().type("abcd");
+        cy.pick("set-passphrase-button").should("not.be.disabled");
       });
     });
   });

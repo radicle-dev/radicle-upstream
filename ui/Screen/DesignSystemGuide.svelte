@@ -645,6 +645,23 @@
       </Swatch>
 
       <Swatch>
+        <Input.Password
+          style="width: 100%;"
+          placeholder="Please enter a password" />
+      </Swatch>
+
+      <Swatch>
+        <Input.Password style="width: 100%;" value="my super long password" />
+      </Swatch>
+
+      <Swatch>
+        <Input.Password
+          style="width: 100%;"
+          value="too short"
+          validation={{ status: ValidationStatus.Error, message: 'Password too short.' }} />
+      </Swatch>
+
+      <Swatch>
         <Input.Checkbox>How about a checkbox?</Input.Checkbox>
       </Swatch>
 
