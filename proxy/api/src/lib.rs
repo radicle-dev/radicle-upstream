@@ -27,6 +27,7 @@
 
 pub mod avatar;
 pub mod config;
+pub mod context;
 pub mod env;
 pub mod error;
 pub mod http;
