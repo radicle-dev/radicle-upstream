@@ -48,18 +48,25 @@ pub async fn announce(
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
 pub fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
-    let projects = api.list_projects()?;
     let mut list: Vec<Announcement> = vec![];
 
-    for project in &projects {
-        let refs = api.list_project_refs(&project.urn())?;
+    // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
+    // should be machinery to kick off these routines only if our app state is ready for it.
+    match api.list_projects() {
+        Err(Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
+        Err(err) => Err(err),
+        Ok(projects) => {
+            for project in &projects {
+                let refs = api.list_project_refs(&project.urn())?;
 
-        for (head, hash) in &refs.heads {
-            list.push((project.urn(), head.to_string(), Oid::from(*hash.deref())));
+                for (head, hash) in &refs.heads {
+                    list.push((project.urn(), head.to_string(), Oid::from(*hash.deref())));
+                }
+            }
+
+            Ok(list)
         }
     }
-
-    Ok(list)
 }
 
 /// Computes the list of announcements based on the difference of the `new` and `old` state. An
