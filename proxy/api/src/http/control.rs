@@ -120,7 +120,6 @@ mod handler {
 
         use crate::context;
         use crate::error;
-        use crate::http;
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {

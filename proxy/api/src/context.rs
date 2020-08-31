@@ -8,6 +8,15 @@ use librad::paths;
 
 use crate::keystore;
 
+/// Wrapper around the thread-safe handle on [`Context`].
+pub type Ctx = Arc<RwLock<Context>>;
+
+impl From<Context> for Ctx {
+    fn from(ctx: Context) -> Self {
+        Arc::new(RwLock::new(ctx))
+    }
+}
+
 /// Container to pass down dependencies into HTTP filter chains.
 pub struct Context {
     /// [`coco::Api`] to operate on the local monorepo.
@@ -19,8 +28,14 @@ pub struct Context {
 }
 
 impl Context {
+    /// Initialises a new [`Ctx`] the given temporary directory.
+    ///
+    /// # Errors
+    ///
+    /// * coco key creation fails
+    /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
-    async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Ctx, crate::error::Error> {
+    pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Ctx, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
@@ -41,9 +56,6 @@ impl Context {
         })))
     }
 }
-
-/// Wrapper around the thread-safe handle on [`Context`].
-pub type Ctx = Arc<RwLock<Context>>;
 
 /// Resets the peer and keystore within the `Ctx`.
 ///

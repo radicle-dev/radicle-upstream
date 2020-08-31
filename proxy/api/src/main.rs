@@ -1,7 +1,4 @@
 use std::convert::TryFrom;
-use std::sync::Arc;
-
-use tokio::sync::RwLock;
 
 use librad::paths;
 
@@ -86,17 +83,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
 
-    let ctx = Arc::new(RwLock::new(context::Context {
-        peer_api,
-        keystore,
-        store,
-    }));
-
     let watcher_ctx = ctx.clone();
     tokio::task::spawn_local(async move { announcement_watcher(watcher_ctx).await });
 
     log::info!("Starting API");
-
+    let ctx = context::Ctx::from(context::Context {
+        peer_api,
+        keystore,
+        store,
+    });
     let api = http::api(ctx, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;

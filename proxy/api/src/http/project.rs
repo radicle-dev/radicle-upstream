@@ -681,7 +681,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::reset_ctx_peer(ctx.clone()).await?;
+        context::reset_ctx_peer(ctx.clone()).await?;
 
         {
             let ctx = ctx.read().await;

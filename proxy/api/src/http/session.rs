@@ -160,7 +160,6 @@ mod test {
 
     use crate::context;
     use crate::error;
-    use crate::http;
     use crate::session;
 
     #[tokio::test]
