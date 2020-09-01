@@ -74,11 +74,11 @@
   <div class="container">
     <div class="title">
       <h1>Settings</h1>
-      <div
+      <span
         class="typo-link"
         on:click|stopPropagation={() => modal.toggle(path.shortcuts())}>
         Keyboard shortcuts
-      </div>
+      </span>
     </div>
 
     <section>

@@ -11,8 +11,9 @@
   const dispatch = createEventDispatcher();
 
   const onKeydown = ev => {
-    switch (ev.code) {
+    switch (ev.key) {
       case "Escape":
+      case "?":
         dispatch("hide");
         break;
     }
