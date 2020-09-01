@@ -1,17 +1,15 @@
 //! Source code related functionality.
 
+use nonempty::NonEmpty;
+use radicle_surf::vcs::git::git2;
+use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
+use radicle_surf::{diff, file_system};
+use serde::ser::SerializeStruct as _;
+use serde::{Deserialize, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::fmt;
 use std::path;
 use std::str::FromStr;
-
-use nonempty::NonEmpty;
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
-
-use radicle_surf::vcs::git::git2;
-use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
-use radicle_surf::{diff, file_system};
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::ThemeSet;
@@ -804,6 +802,7 @@ mod tests {
     use crate::config;
     use crate::control;
     use crate::peer;
+    use crate::signer;
 
     use super::Error;
 
@@ -811,17 +810,20 @@ mod tests {
     #[tokio::test]
     async fn browse_commit() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir).expect("unable to get default config");
+        let signer = signer::BoxedSigner::new(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config =
+            config::default(signer.clone(), tmp_dir).expect("unable to get default config");
         let api = peer::Api::new(config)
             .await
             .expect("failed to init peer API");
         let owner = api
-            .init_owner(&key, "cloudhead")
+            .init_owner(&signer, "cloudhead")
             .expect("failed to init owner");
         let platinum_project = control::replicate_platinum(
             &api,
-            &key,
+            &signer,
             &owner,
             "git-platinum",
             "fixture data",

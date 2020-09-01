@@ -3,7 +3,6 @@
 use std::convert::TryFrom;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
-use librad::keys;
 use librad::net;
 use librad::net::discovery;
 use librad::paths;

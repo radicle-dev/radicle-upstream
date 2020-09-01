@@ -9,7 +9,6 @@ use futures::stream::StreamExt;
 
 use librad::git::local::{transport, url::LocalUrl};
 use librad::git::storage;
-use librad::keys;
 use librad::meta::entity;
 use librad::meta::project as librad_project;
 use librad::meta::user;
@@ -33,7 +32,7 @@ pub type User = user::User<entity::Verified>;
 #[derive(Clone)]
 pub struct Api {
     /// Thread-safe wrapper around [`PeerApi`].
-    peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
+    peer_api: Arc<Mutex<PeerApi<signer::BoxedSigner>>>,
 }
 
 impl Api {
@@ -137,7 +136,7 @@ impl Api {
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            }
+            },
         }
     }
 
@@ -469,6 +468,7 @@ mod test {
     use crate::config;
     use crate::control;
     use crate::project;
+    use crate::signer;
 
     use super::{Api, Error};
 
@@ -508,11 +508,13 @@ mod test {
     #[tokio::test]
     async fn can_create_user() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let annie = api.init_user(&key, "annie_are_you_ok?");
+        let annie = api.init_user(&signer, "annie_are_you_ok?");
         assert!(annie.is_ok());
 
         Ok(())
@@ -523,12 +525,14 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         env::set_var("RAD_HOME", tmp_dir.path());
         let repo_path = tmp_dir.path().join("radicle");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
-        let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
+        let user = api.init_owner(&signer, "cloudhead")?;
+        let project = api.init_project(&signer, &user, &radicle_project(repo_path.clone()));
 
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
@@ -541,12 +545,14 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let repo_path = repo_path.join("radicalise");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
-        let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
+        let user = api.init_owner(&signer, "cloudhead")?;
+        let project = api.init_project(&signer, &user, &radicle_project(repo_path.clone()));
 
         assert!(project.is_ok());
         assert!(repo_path.exists());
@@ -557,12 +563,14 @@ mod test {
     #[tokio::test]
     async fn cannot_create_user_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
-        let err = api.init_user(&key, "cloudhead");
+        let user = api.init_owner(&signer, "cloudhead")?;
+        let err = api.init_user(&signer, "cloudhead");
 
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, user.urn())
@@ -580,15 +588,17 @@ mod test {
     async fn cannot_create_project_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
+        let user = api.init_owner(&signer, "cloudhead")?;
         let project_creation = radicle_project(repo_path.clone());
-        let project = api.init_project(&key, &user, &project_creation)?;
+        let project = api.init_project(&signer, &user, &project_creation)?;
 
-        let err = api.init_project(&key, &user, &project_creation.into_existing());
+        let err = api.init_project(&signer, &user, &project_creation.into_existing());
 
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, project.urn())
@@ -607,17 +617,19 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
 
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
+        let user = api.init_owner(&signer, "cloudhead")?;
 
-        control::setup_fixtures(&api, &key, &user).expect("unable to setup fixtures");
+        control::setup_fixtures(&api, &signer, &user).expect("unable to setup fixtures");
 
-        let kalt = api.init_user(&key, "kalt")?;
+        let kalt = api.init_user(&signer, "kalt")?;
         let kalt = super::verify_user(kalt)?;
-        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path))?;
+        let fakie = api.init_project(&signer, &kalt, &fakie_project(repo_path))?;
 
         let projects = api.list_projects()?;
         let mut project_names = projects
@@ -639,13 +651,15 @@ mod test {
     #[tokio::test]
     async fn list_users() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let cloudhead = api.init_user(&key, "cloudhead")?;
+        let cloudhead = api.init_user(&signer, "cloudhead")?;
         let _cloudhead = super::verify_user(cloudhead)?;
-        let kalt = api.init_user(&key, "kalt")?;
+        let kalt = api.init_user(&signer, "kalt")?;
         let _kalt = super::verify_user(kalt)?;
 
         let users = api.list_users()?;
@@ -662,24 +676,28 @@ mod test {
 
     #[tokio::test]
     async fn can_clone_project() -> Result<(), Error> {
-        let alice_key = SecretKey::new();
+        let alice_signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
 
         let alice_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let alice_repo_path = alice_tmp_dir.path().join("radicle");
-        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
+        let config = config::default(alice_signer.clone(), alice_tmp_dir.path())?;
         let alice_peer = Api::new(config).await?;
 
-        let alice = alice_peer.init_owner(&alice_key, "alice")?;
+        let alice = alice_peer.init_owner(&alice_signer, "alice")?;
         let project =
-            alice_peer.init_project(&alice_key, &alice, &shia_le_pathbuf(alice_repo_path))?;
+            alice_peer.init_project(&alice_signer, &alice, &shia_le_pathbuf(alice_repo_path))?;
 
-        let bob_key = SecretKey::new();
+        let bob_signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
 
         let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
 
-        let bob_config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
+        let bob_config = config::default(bob_signer.clone(), bob_tmp_dir.path())?;
         let bob_peer = Api::new(bob_config).await?;
-        let _bob = bob_peer.init_owner(&bob_key, "bob")?;
+        let _bob = bob_peer.init_owner(&bob_signer, "bob")?;
 
         let bobby = bob_peer.clone();
         let project_urn = tokio::task::spawn_blocking(move || {
@@ -705,18 +723,22 @@ mod test {
 
     #[tokio::test]
     async fn can_clone_user() -> Result<(), Error> {
-        let alice_key = SecretKey::new();
-        let bob_key = SecretKey::new();
+        let alice_signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let bob_signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
 
         let alice_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
+        let config = config::default(alice_signer.clone(), alice_tmp_dir.path())?;
         let alice_peer = Api::new(config).await?;
 
         let bob_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
+        let config = config::default(bob_signer.clone(), bob_tmp_dir.path())?;
         let bob_peer = Api::new(config).await?;
 
-        let alice = alice_peer.init_user(&alice_key, "alice")?;
+        let alice = alice_peer.init_user(&alice_signer, "alice")?;
         let bobby = bob_peer.clone();
         let user_urn = tokio::task::spawn_blocking(move || {
             bobby.clone_user(
@@ -743,25 +765,27 @@ mod test {
     async fn create_with_existing_remote_with_reset() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let kalt = api.init_owner(&key, "kalt")?;
+        let kalt = api.init_owner(&signer, "kalt")?;
 
-        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+        let fakie = api.init_project(&signer, &kalt, &fakie_project(repo_path.clone()))?;
 
         assert!(repo_path.join(fakie.name()).exists());
 
         // Simulate resetting the monorepo
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
         // Create fakie project from the existing directory above.
-        let kalt = api.init_owner(&key, "kalt")?;
-        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
+        let kalt = api.init_owner(&signer, "kalt")?;
+        let fakie = api.init_project(&signer, &kalt, &fakie_project(repo_path).into_existing())?;
 
         // Attempt to initialise a browser to ensure we can look at branches in the project
         let _stats = api.with_browser(&fakie.urn(), |browser| Ok(browser.get_stats()?))?;
@@ -773,13 +797,15 @@ mod test {
     async fn create_with_existing_remote() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let kalt = api.init_owner(&key, "kalt")?;
+        let kalt = api.init_owner(&signer, "kalt")?;
 
-        let fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
+        let fakie = api.init_project(&signer, &kalt, &fakie_project(repo_path.clone()))?;
 
         let fake_fakie = repo_path.join("fake-fakie");
 
@@ -797,7 +823,7 @@ mod test {
             description: "".to_string(),
             default_branch: fakie.default_branch().to_owned(),
         };
-        let _fake_fakie = api.init_project(&key, &kalt, &fake_fakie)?;
+        let _fake_fakie = api.init_project(&signer, &kalt, &fake_fakie)?;
 
         Ok(())
     }
