@@ -58,7 +58,7 @@ context("identity creation", () => {
       cy.pick("set-passphrase-button").click();
       cy.pick("notification")
         .contains(
-          /Could not create identity: the identity '[\w]*' already exits/
+          /Could not create identity: the identity 'rad:git:[\w]{3}…[\w]{3}' already exits/
         )
         .should("exist");
       cy.pick("notification").contains("Close").click();
