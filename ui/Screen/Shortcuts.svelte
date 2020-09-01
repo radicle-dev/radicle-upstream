@@ -1,7 +1,9 @@
 <script>
   import { Illustration } from "../DesignSystem/Component";
   import { isMac } from "../src/settings.ts";
-  import { Variant as IllustrationVariant } from "../src/illustration.ts";
+  import { Variant as IllustrationVariant } from "../src/illustration";
+
+  export let content;
 
   const modifierKey = isMac ? "⌘" : "ctrl";
 </script>
@@ -45,7 +47,7 @@
   }
 </style>
 
-<div class="container">
+<div class="container" bind:this={content}>
   <Illustration
     style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />
