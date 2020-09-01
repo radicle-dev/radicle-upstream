@@ -69,7 +69,7 @@
       if ($store.data.identity === null) {
         push(path.onboarding());
       } else {
-        if ($location === "/" || $location === "/identity/new") {
+        if ($location === path.blank() || $location === path.onboarding()) {
           push(path.profileProjects());
         }
       }
