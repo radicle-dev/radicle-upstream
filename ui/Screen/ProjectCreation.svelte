@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { onDestroy } from "svelte";
   import { pop, push } from "svelte-spa-router";
   import validatejs from "validate.js";
@@ -239,6 +240,10 @@
     validations
   );
 
+  onMount(() => {
+    content.focus();
+  });
+
   // Use the directory name for existing projects as the project name.
   $: name = existingRepositoryPath.split("/").slice(-1)[0];
 
@@ -281,32 +286,16 @@
 
 <div class="container" bind:this={content} data-cy="page">
   <div class="create-project" data-cy="create-project">
-    <h2 style="margin-bottom: 32px;">Create a new project</h2>
-
-    <Input.Text
-      placeholder="Project name*"
-      dataCy="name"
-      bind:value={name}
-      validation={nameValidation}
-      disabled={isExisting} />
-
-    <Input.Text
-      dataCy="description"
-      style="margin-top: 16px; margin-bottom: 16px;"
-      placeholder="Project description"
-      bind:value={description} />
-
-    <p
-      class="typo-text-bold"
-      style="margin: 16px 0 12px 16px; text-align: left">
-      Select one:
-    </p>
+    <h2 style="margin-bottom: 32px;">Start a new project</h2>
 
     <div class="radio-selector">
       <RadioOption
-        title="Start with a new repository"
+        title="Create a new repository"
         active={isNew}
-        on:click={() => (currentSelection = RepoType.New)}
+        on:click={ev => {
+          ev.stopPropagation();
+          currentSelection = RepoType.New;
+        }}
         dataCy="new-project">
         <div slot="option-body">
           <p
@@ -324,7 +313,10 @@
       <RadioOption
         title="Continue with an existing repository"
         active={isExisting}
-        on:click={() => (currentSelection = RepoType.Existing)}
+        on:click={ev => {
+          ev.stopPropagation();
+          currentSelection = RepoType.Existing;
+        }}
         dataCy="existing-project">
         <div slot="option-body">
           <p
@@ -363,6 +355,19 @@
       {/if}
     </div>
 
+    <Input.Text
+      placeholder="Project name*"
+      dataCy="name"
+      bind:value={name}
+      validation={nameValidation}
+      disabled={isExisting} />
+
+    <Input.Text
+      dataCy="description"
+      style="margin-top: 16px; margin-bottom: 16px;"
+      placeholder="Project description"
+      bind:value={description} />
+
     {#if validations && validations.currentSelection}
       <div class="validation-row">
         <Icon.ExclamationCircle
@@ -374,13 +379,6 @@
     {/if}
 
     <Flex style="margin-top: 32px">
-      <div slot="left">
-        <p
-          class="typo-text-small"
-          style="color: var(--color-foreground-level-5); padding-left: 15px;">
-          * required
-        </p>
-      </div>
       <div slot="right">
         <div class="double-button">
           <Button dataCy="cancel-button" variant="transparent" on:click={pop}>
