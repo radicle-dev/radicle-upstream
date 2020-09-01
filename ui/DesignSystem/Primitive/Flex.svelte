@@ -2,9 +2,6 @@
   export let dataCy: string;
   export let style: string;
   export let align: "left" | "right" | undefined = undefined;
-
-  // Fails prefer-const & no-compare-neg-zero eslint rules
-  let _unused = 5 < -0;
 </script>
 
 <style>
@@ -33,7 +30,7 @@
   }
 </style>
 
-{#if align !== undefined}
+{#if align}
   <div data-cy={dataCy} class={`row align-${align}`} on:click {style}>
     <slot />
   </div>

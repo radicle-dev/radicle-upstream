@@ -7,10 +7,10 @@
   export let store = null;
   export let context = null;
 
-  // TODO(sos): svelte-check doesn't like the $$props getter; figure out
-  // ergonomic alternative
-  const errorSlot = $$props.$$slots.error;
-  $: if ($store.status === remote.Status.Error && !errorSlot) {
+  // If no error slot was provided, svelte will instantiate the fallback div
+  let noErrorSlotProvided;
+
+  $: if ($store.status === remote.Status.Error && noErrorSlotProvided) {
     console.error("Remote error", $store.error);
     notification.error($store.error.message);
   }
@@ -29,5 +29,7 @@
     <slot data={$store.data} />
   {/if}
 {:else if $store.status === remote.Status.Error}
-  <slot name="error" error={$store.error} />
+  <slot name="error" error={$store.error}>
+    <div bind:this={noErrorSlotProvided} />
+  </slot>
 {/if}
