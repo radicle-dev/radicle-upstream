@@ -962,7 +962,6 @@ checksum = "86b45e59b16c76b11bf9738fd5d38879d3bd28ad292d7b313608becb17ae2df9"
 dependencies = [
  "autocfg",
  "hashbrown",
- "serde",
 ]
 
 [[package]]
@@ -1533,18 +1532,6 @@ name = "opaque-debug"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
-
-[[package]]
-name = "openapiv3"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ee9a17eebdd923c4cf74145cd31b2b1d3aa019262c9e8669a843b1d629a9a3c"
-dependencies = [
- "indexmap",
- "serde",
- "serde_json",
- "serde_yaml",
-]
 
 [[package]]
 name = "output_vt100"
@@ -2161,18 +2148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_yaml"
-version = "0.8.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae3e2dd40a7cdc18ca80db804b7f461a39bb721160a85c9a1fa30134bf3c02a5"
-dependencies = [
- "dtoa",
- "linked-hash-map",
- "serde",
- "yaml-rust",
-]
-
-[[package]]
 name = "sha-1"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2646,19 +2621,18 @@ dependencies = [
 
 [[package]]
 name = "warp"
-version = "0.2.3"
-source = "git+https://github.com/radicle-dev/warp?branch=openapi#03808979f7f266b2057c096839bd0715de3725b4"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f41be6df54c97904af01aa23e613d4521eed7ab23537cede692d4058f6449407"
 dependencies = [
  "bytes",
  "futures 0.3.5",
  "headers",
  "http",
  "hyper",
- "indexmap",
  "log",
  "mime",
  "mime_guess",
- "openapiv3",
  "pin-project",
  "scoped-tls",
  "serde",
@@ -2666,6 +2640,8 @@ dependencies = [
  "serde_urlencoded",
  "tokio",
  "tower-service",
+ "tracing",
+ "tracing-futures",
  "urlencoding",
 ]
 
