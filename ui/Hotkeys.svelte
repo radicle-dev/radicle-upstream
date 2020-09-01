@@ -25,7 +25,7 @@
 
     // To open help => ?
     if (event.key === "?") {
-      toggle(path.shortcuts());
+      toggleModal(path.shortcuts());
     }
 
     // To open settings => OS modifier key + ,
