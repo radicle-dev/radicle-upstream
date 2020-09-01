@@ -83,7 +83,7 @@
           <div
             class="undiscovered-project"
             out:fade|local={{ duration: FADE_DURATION }}>
-            <Urn urn={project.urn} />
+            <Urn urn={project.urn} showCopyOnlyOnHover />
             {#if hover}
               <div transition:fade={{ duration: FADE_DURATION }}>
                 <TrackToggle
