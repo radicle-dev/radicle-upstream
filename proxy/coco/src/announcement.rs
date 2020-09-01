@@ -19,7 +19,7 @@ const BUCKET_NAME: &str = "announcements";
 const KEY_NAME: &str = "latest";
 
 /// An update and all the required information that can be announced on the network.
-pub type Announcement = (uri::RadUrn, String, Oid);
+pub type Announcement = (uri::RadUrn, Oid);
 
 /// Announces the list of given `updates` with the [`librad::net::protocol`].
 ///
@@ -30,13 +30,9 @@ pub async fn announce(
     protocol: net::protocol::Protocol<net::peer::PeerStorage<keys::SecretKey>, net::peer::Gossip>,
     updates: impl Iterator<Item = &Announcement> + Send,
 ) -> Result<(), Error> {
-    for (project_urn, head, hash) in updates {
-        let urn = uri::RadUrn {
-            path: uri::Path::parse(head)?,
-            ..project_urn.clone()
-        };
+    for (urn, hash) in updates {
         let have = net::peer::Gossip {
-            urn,
+            urn: urn.clone(),
             rev: Some(net::peer::Rev::Git((*hash).into())),
             origin: None,
         };
@@ -66,7 +62,13 @@ pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
                 let refs = api.list_project_refs(&project.urn())?;
 
                 for (head, hash) in &refs.heads {
-                    list.insert((project.urn(), head.to_string(), Oid::from(*hash.deref())));
+                    list.insert((
+                        uri::RadUrn {
+                            path: head.parse::<uri::Path>()?,
+                            ..project.urn()
+                        },
+                        Oid::from(*hash.deref()),
+                    ));
                 }
             }
 
@@ -96,10 +98,11 @@ pub fn diff<'a>(
 pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
     let bucket =
         store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
-    let val: kv::Json<HashSet<Announcement>> =
-        bucket.get(KEY_NAME)?.unwrap_or(kv::Json(HashSet::new()));
+    let value = bucket
+        .get(KEY_NAME)?
+        .map_or(HashSet::new(), kv::Json::to_inner);
 
-    Ok(val.to_inner())
+    Ok(value)
 }
 
 /// Update the cache with the latest announcements.
@@ -112,7 +115,7 @@ pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
 pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Error> {
     let bucket =
         store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
-    Ok(bucket.set(KEY_NAME, kv::Json(updates))?)
+    bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
 
 #[allow(clippy::panic)]
@@ -156,85 +159,43 @@ mod test {
     #[test]
     fn diff() -> Result<(), Error> {
         let both = vec![
+            (project0("dev"), "68986574".parse::<oid::Oid>()?),
+            (project0("master"), "c8d2ad44".parse::<oid::Oid>()?),
+            (project0("stable"), "2d2e1408".parse::<oid::Oid>()?),
             (
-                project0(),
-                "dev".to_string(),
+                project0("cloudhead/cool-feature"),
                 "68986574".parse::<oid::Oid>()?,
             ),
             (
-                project0(),
-                "master".to_string(),
-                "c8d2ad44".parse::<oid::Oid>()?,
-            ),
-            (
-                project0(),
-                "stable".to_string(),
-                "2d2e1408".parse::<oid::Oid>()?,
-            ),
-            (
-                project0(),
-                "cloudhead/cool-feature".to_string(),
-                "68986574".parse::<oid::Oid>()?,
-            ),
-            (
-                project0(),
-                "fintohaps/doc-tests".to_string(),
+                project0("fintohaps/doc-tests"),
                 "f90353ba".parse::<oid::Oid>()?,
             ),
-            (
-                project1(),
-                "dev".to_string(),
-                "c8d2ad44".parse::<oid::Oid>()?,
-            ),
-            (
-                project0(),
-                "master".to_string(),
-                "2d2e1408".parse::<oid::Oid>()?,
-            ),
-            (
-                project1(),
-                "stable".to_string(),
-                "a3403e2d".parse::<oid::Oid>()?,
-            ),
+            (project1("dev"), "c8d2ad44".parse::<oid::Oid>()?),
+            (project0("master"), "2d2e1408".parse::<oid::Oid>()?),
+            (project1("stable"), "a3403e2d".parse::<oid::Oid>()?),
         ];
         let old = vec![
             (
-                project0(),
-                "igor/zero-assertions".to_string(),
+                project0("igor/zero-assertions"),
                 "72a78226".parse::<oid::Oid>()?,
             ),
-            (
-                project0(),
-                "thoshol/remove".to_string(),
-                "7c69d71a".parse::<oid::Oid>()?,
-            ),
-            (
-                project1(),
-                "rudolfs/release".to_string(),
-                "8c085d58".parse::<oid::Oid>()?,
-            ),
+            (project0("thoshol/remove"), "7c69d71a".parse::<oid::Oid>()?),
+            (project1("rudolfs/release"), "8c085d58".parse::<oid::Oid>()?),
         ];
         let new = vec![
             (
-                project0(),
-                "cloudhead/new-language".to_string(),
+                project0("cloudhead/new-language"),
                 "7dec3269".parse::<oid::Oid>()?,
             ),
             (
-                project0(),
-                "fintohaps/notations".to_string(),
+                project0("fintohaps/notations"),
                 "b4d3276d".parse::<oid::Oid>()?,
             ),
             (
-                project0(),
-                "kalt/eat-my-impls".to_string(),
+                project0("kalt/eat-my-impls"),
                 "2206e5dc".parse::<oid::Oid>()?,
             ),
-            (
-                project1(),
-                "backport".to_string(),
-                "869e5740".parse::<oid::Oid>()?,
-            ),
+            (project1("backport"), "869e5740".parse::<oid::Oid>()?),
         ];
 
         let left: HashSet<_> = [&both[..], &old[..]].concat().iter().cloned().collect();
@@ -248,37 +209,20 @@ mod test {
 
     #[test]
     fn save_and_load() -> Result<(), Error> {
-        let project0 = || uri::RadUrn {
-            id: Hash::hash(b"project0"),
-            proto: uri::Protocol::Git,
-            path: uri::Path::empty(),
-        };
-        let project1 = || uri::RadUrn {
-            id: Hash::hash(b"project1"),
-            proto: uri::Protocol::Git,
-            path: uri::Path::empty(),
-        };
         let updates: HashSet<_> = vec![
             (
-                project0(),
-                "cloudhead/new-language".to_string(),
+                project0("cloudhead/new-language"),
                 "7dec3269".parse::<oid::Oid>()?,
             ),
             (
-                project0(),
-                "fintohaps/notations".to_string(),
+                project0("fintohaps/notations"),
                 "b4d3276d".parse::<oid::Oid>()?,
             ),
             (
-                project0(),
-                "kalt/eat-my-impls".to_string(),
+                project0("kalt/eat-my-impls"),
                 "2206e5dc".parse::<oid::Oid>()?,
             ),
-            (
-                project1(),
-                "backport".to_string(),
-                "869e5740".parse::<oid::Oid>()?,
-            ),
+            (project1("backport"), "869e5740".parse::<oid::Oid>()?),
         ]
         .iter()
         .cloned()
@@ -293,18 +237,18 @@ mod test {
         Ok(())
     }
 
-    fn project0() -> uri::RadUrn {
+    fn project0(head: &str) -> uri::RadUrn {
         uri::RadUrn {
             id: Hash::hash(b"project0"),
             proto: uri::Protocol::Git,
-            path: uri::Path::empty(),
+            path: head.parse::<uri::Path>().expect("unable to parse head"),
         }
     }
-    fn project1() -> uri::RadUrn {
+    fn project1(head: &str) -> uri::RadUrn {
         uri::RadUrn {
             id: Hash::hash(b"project1"),
             proto: uri::Protocol::Git,
-            path: uri::Path::empty(),
+            path: head.parse::<uri::Path>().expect("unable to parse head"),
         }
     }
 }
