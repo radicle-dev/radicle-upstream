@@ -69,17 +69,15 @@ context("project creation", () => {
   context("project creation modal", () => {
     // TODO(rudolfs): test empty project listing has wording and button
 
-    it("can be opened via the profile context menu and closed by pressing cancel", () => {
-      cy.pick("profile-context-menu").click();
-      cy.pick("dropdown-menu", "new-project").click();
+    it("can be opened via the profile header action button and closed by pressing cancel", () => {
+      cy.pick("new-project-button").click();
       cy.pick("page", "create-project").should("exist");
       cy.pick("create-project", "cancel-button").click();
       cy.pick("profile-screen").should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
-      cy.pick("profile-context-menu").click();
-      cy.pick("dropdown-menu", "new-project").click();
+      cy.pick("new-project-button").click();
       cy.pick("page", "create-project").should("exist");
       cy.get("body").type("{esc}");
       cy.pick("profile-screen").should("exist");
@@ -88,8 +86,7 @@ context("project creation", () => {
 
   context("validations", () => {
     beforeEach(() => {
-      cy.pick("profile-context-menu").click();
-      cy.pick("dropdown-menu", "new-project").click();
+      cy.pick("new-project-button").click();
 
       // Set up minimal form input to show validations
       cy.pick("page", "name").type("this-name-is-valid");
@@ -190,8 +187,7 @@ context("project creation", () => {
   context("happy paths", () => {
     it("creates a new project from an empty directory", () => {
       withEmptyRepositoryStub(() => {
-        cy.pick("profile-context-menu").click();
-        cy.pick("dropdown-menu", "new-project").click();
+        cy.pick("new-project-button").click();
 
         cy.pick("name").type("new-fancy-project.xyz");
         cy.pick("description").type("My new fancy project");
@@ -224,8 +220,7 @@ context("project creation", () => {
 
     it("creates a new project from an existing repository", () => {
       withPlatinumStub(() => {
-        cy.pick("profile-context-menu").click();
-        cy.pick("dropdown-menu", "new-project").click();
+        cy.pick("new-project-button").click();
 
         cy.pick("name").should("not.be.disabled");
 
@@ -261,8 +256,7 @@ context("project creation", () => {
         cy.pick("notification").contains("Close").click();
 
         // Make sure we can't add the same project twice.
-        cy.pick("profile-context-menu").click();
-        cy.pick("dropdown-menu", "new-project").click();
+        cy.pick("new-project-button").click();
 
         cy.pick("existing-project").click();
 
