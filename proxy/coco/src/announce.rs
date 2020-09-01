@@ -33,7 +33,7 @@ pub async fn announce(
     for (project_urn, head, hash) in updates {
         let urn = uri::RadUrn::new(
             project_urn.id.clone(),
-            project_urn.protocol(),
+            project_urn.proto,
             uri::Path::parse(head)?,
         );
         let have = net::peer::Gossip {
