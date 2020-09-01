@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher, onMount } from "svelte";
   import { Illustration } from "../DesignSystem/Component";
   import { isMac } from "../src/settings.ts";
   import { Variant as IllustrationVariant } from "../src/illustration";
@@ -6,6 +7,20 @@
   export let content;
 
   const modifierKey = isMac ? "⌘" : "ctrl";
+
+  const dispatch = createEventDispatcher();
+
+  const onKeydown = ev => {
+    switch (ev.code) {
+      case "Escape":
+        dispatch("hide");
+        break;
+    }
+  };
+
+  onMount(() => {
+    content.focus();
+  });
 </script>
 
 <style>
@@ -45,9 +60,13 @@
     color: var(--color-foreground-level-6);
     margin: 0rem 0.625rem;
   }
+
+  .container:focus {
+    outline: none;
+  }
 </style>
 
-<div class="container" bind:this={content}>
+<div tabindex="0" class="container" bind:this={content} on:keydown={onKeydown}>
   <Illustration
     style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />
