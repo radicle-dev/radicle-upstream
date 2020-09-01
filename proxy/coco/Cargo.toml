@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 futures = { version = "0.3", features = [ "compat" ] }
+kv = { version = "0.20", features = [ "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.5"
@@ -16,7 +17,7 @@ tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+rev = "295efc256029096f2d6a0de41ffd7c2db7f57832"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"

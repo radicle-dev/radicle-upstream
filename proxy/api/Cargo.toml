@@ -15,7 +15,7 @@ default-run = "api"
 anyhow = "1.0"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
-kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
+kv = { version = "0.20", features = [ "json-value" ] }
 log = "0.4"
 percent-encoding = "2.1"
 pico-args = "0.3"
@@ -33,7 +33,7 @@ path = "../coco"
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+rev = "295efc256029096f2d6a0de41ffd7c2db7f57832"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
