@@ -3,14 +3,16 @@ import { SvelteComponent } from "svelte";
 
 import SearchModal from "../DesignSystem/Component/SearchModal.svelte";
 import ShortcutsModal from "../DesignSystem/Component/Shortcuts.svelte";
+import ProjectCreation from "../Screen/ProjectCreation.svelte";
 
 type ModalOverlay =
   | { show: true; component: typeof SvelteComponent }
   | { show: false; component: null };
 
-type ModalRoute = "/search" | "/shortcuts";
+type ModalRoute = "/projects/new" | "/search" | "/shortcuts";
 
 const routes: Record<ModalRoute, typeof SvelteComponent> = {
+  "/projects/new": ProjectCreation,
   "/search": SearchModal,
   "/shortcuts": ShortcutsModal,
 };

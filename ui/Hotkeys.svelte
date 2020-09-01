@@ -45,7 +45,7 @@
 
     // To create a new project => OS modifier key + n
     if (modifierKey && event.key === "n") {
-      toggle(path.createProject());
+      toggleModal(path.createProject());
     }
 
     if (event.key === "Escape") {

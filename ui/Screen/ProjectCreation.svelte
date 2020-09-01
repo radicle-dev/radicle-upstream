@@ -19,12 +19,12 @@
   import { Button, Flex, Icon, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
-    ModalLayout,
     RadioOption,
     RemoteHelperHint,
   } from "../DesignSystem/Component";
 
   let currentSelection;
+  export let content;
 
   const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
@@ -247,16 +247,18 @@
 </script>
 
 <style>
-  .wrapper {
-    display: flex;
-    justify-content: center;
-    margin: 92px 0 72px 0;
+  .container {
+    width: 37.5rem;
+    background: var(--color-background);
+    border-radius: 8px;
+    padding: 32px;
   }
 
   .create-project {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     text-align: center;
-    flex: 1;
-    width: 540px;
   }
 
   .double-button {
@@ -277,125 +279,122 @@
   }
 </style>
 
-<ModalLayout dataCy="page">
-  <div class="wrapper" data-cy="create-project">
-    <div class="create-project">
-      <h2 style="margin-bottom: 32px;">Create a new project</h2>
+<div class="container" bind:this={content} data-cy="page">
+  <div class="create-project" data-cy="create-project">
+    <h2 style="margin-bottom: 32px;">Create a new project</h2>
 
-      <Input.Text
-        placeholder="Project name*"
-        dataCy="name"
-        bind:value={name}
-        validation={nameValidation}
-        disabled={isExisting} />
+    <Input.Text
+      placeholder="Project name*"
+      dataCy="name"
+      bind:value={name}
+      validation={nameValidation}
+      disabled={isExisting} />
 
-      <Input.Text
-        dataCy="description"
-        style="margin-top: 16px; margin-bottom: 16px;"
-        placeholder="Project description"
-        bind:value={description} />
+    <Input.Text
+      dataCy="description"
+      style="margin-top: 16px; margin-bottom: 16px;"
+      placeholder="Project description"
+      bind:value={description} />
 
-      <p
-        class="typo-text-bold"
-        style="margin: 16px 0 12px 16px; text-align: left">
-        Select one:
-      </p>
+    <p
+      class="typo-text-bold"
+      style="margin: 16px 0 12px 16px; text-align: left">
+      Select one:
+    </p>
 
-      <div class="radio-selector">
-        <RadioOption
-          title="Start with a new repository"
-          active={isNew}
-          on:click={() => (currentSelection = RepoType.New)}
-          dataCy="new-project">
-          <div slot="option-body">
-            <p
-              style="margin-bottom: 12px; color:
-              var(--color-foreground-level-6); text-align: left">
-              Choose where you'd like to create the repository
-            </p>
-            <Input.Directory
-              placeholder="~/path/to/folder"
-              validation={newRepositoryPathValidation}
-              bind:path={newRepositoryPath} />
-          </div>
-        </RadioOption>
-
-        <RadioOption
-          title="Continue with an existing repository"
-          active={isExisting}
-          on:click={() => (currentSelection = RepoType.Existing)}
-          dataCy="existing-project">
-          <div slot="option-body">
-            <p
-              style="margin-bottom: 12px; color:
-              var(--color-foreground-level-6); text-align:left">
-              Choose an existing repository
-            </p>
-            <Input.Directory
-              placeholder="~/path/to/folder"
-              validation={existingRepositoryPathValidation}
-              bind:path={existingRepositoryPath} />
-            <div class="default-branch-row">
-              <p
-                style="margin-right: 16px; color:
-                var(--color-foreground-level-6)">
-                Default branch
-              </p>
-              {#if localState.branches && localState.branches.length > 0}
-                <Dropdown
-                  style="max-width: 22.9rem;"
-                  options={localState.branches.map(branch => {
-                    return { variant: 'text', value: branch, textProps: { title: branch } };
-                  })}
-                  bind:value={defaultBranch} />
-              {:else}
-                <Dropdown
-                  style="max-width: 22.9rem;"
-                  placeholder={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
-                  options={[]}
-                  disabled />
-              {/if}
-            </div>
-          </div>
-        </RadioOption>
-        {#if $settings.appearance.hints.showRemoteHelper}
-          <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
-        {/if}
-      </div>
-
-      {#if validations && validations.currentSelection}
-        <div class="validation-row">
-          <Icon.ExclamationCircle
-            style="margin-right: 8px;fill: var(--color-negative)" />
-          <p class="typo-text-bold" style="color: var(--color-negative)">
-            {validations.currentSelection[0]}
-          </p>
-        </div>
-      {/if}
-
-      <Flex style="margin-top: 32px">
-        <div slot="left">
+    <div class="radio-selector">
+      <RadioOption
+        title="Start with a new repository"
+        active={isNew}
+        on:click={() => (currentSelection = RepoType.New)}
+        dataCy="new-project">
+        <div slot="option-body">
           <p
-            class="typo-text-small"
-            style="color: var(--color-foreground-level-5); padding-left: 15px;">
-            * required
+            style="margin-bottom: 12px; color: var(--color-foreground-level-6);
+            text-align: left">
+            Choose where you'd like to create the repository
           </p>
+          <Input.Directory
+            placeholder="~/path/to/folder"
+            validation={newRepositoryPathValidation}
+            bind:path={newRepositoryPath} />
         </div>
-        <div slot="right">
-          <div class="double-button">
-            <Button dataCy="cancel-button" variant="transparent" on:click={pop}>
-              Cancel
-            </Button>
-            <Button
-              dataCy="create-project-button"
-              disabled={!(name && currentSelection) || loading}
-              variant="primary"
-              on:click={createProject}>
-              Create project
-            </Button>
+      </RadioOption>
+
+      <RadioOption
+        title="Continue with an existing repository"
+        active={isExisting}
+        on:click={() => (currentSelection = RepoType.Existing)}
+        dataCy="existing-project">
+        <div slot="option-body">
+          <p
+            style="margin-bottom: 12px; color: var(--color-foreground-level-6);
+            text-align:left">
+            Choose an existing repository
+          </p>
+          <Input.Directory
+            placeholder="~/path/to/folder"
+            validation={existingRepositoryPathValidation}
+            bind:path={existingRepositoryPath} />
+          <div class="default-branch-row">
+            <p
+              style="margin-right: 16px; color: var(--color-foreground-level-6)">
+              Default branch
+            </p>
+            {#if localState.branches && localState.branches.length > 0}
+              <Dropdown
+                style="max-width: 22.9rem;"
+                options={localState.branches.map(branch => {
+                  return { variant: 'text', value: branch, textProps: { title: branch } };
+                })}
+                bind:value={defaultBranch} />
+            {:else}
+              <Dropdown
+                style="max-width: 22.9rem;"
+                placeholder={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
+                options={[]}
+                disabled />
+            {/if}
           </div>
         </div>
-      </Flex>
+      </RadioOption>
+      {#if $settings.appearance.hints.showRemoteHelper}
+        <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
+      {/if}
     </div>
+
+    {#if validations && validations.currentSelection}
+      <div class="validation-row">
+        <Icon.ExclamationCircle
+          style="margin-right: 8px;fill: var(--color-negative)" />
+        <p class="typo-text-bold" style="color: var(--color-negative)">
+          {validations.currentSelection[0]}
+        </p>
+      </div>
+    {/if}
+
+    <Flex style="margin-top: 32px">
+      <div slot="left">
+        <p
+          class="typo-text-small"
+          style="color: var(--color-foreground-level-5); padding-left: 15px;">
+          * required
+        </p>
+      </div>
+      <div slot="right">
+        <div class="double-button">
+          <Button dataCy="cancel-button" variant="transparent" on:click={pop}>
+            Cancel
+          </Button>
+          <Button
+            dataCy="create-project-button"
+            disabled={!(name && currentSelection) || loading}
+            variant="primary"
+            on:click={createProject}>
+            Create project
+          </Button>
+        </div>
+      </div>
+    </Flex>
   </div>
-</ModalLayout>
+</div>
