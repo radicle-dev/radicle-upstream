@@ -1,8 +1,8 @@
 <script>
   import { createEventDispatcher, onMount } from "svelte";
-  import { Illustration } from "../DesignSystem/Component";
-  import { isMac } from "../src/settings.ts";
-  import { Variant as IllustrationVariant } from "../src/illustration";
+  import Illustration from "./Illustration.svelte";
+  import { isMac } from "../../src/settings.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration";
 
   export let content;
 

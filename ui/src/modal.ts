@@ -2,7 +2,7 @@ import { get, writable } from "svelte/store";
 import { SvelteComponent } from "svelte";
 
 import SearchModal from "../DesignSystem/Component/SearchModal.svelte";
-import ShortcutsModal from "../Screen/Shortcuts.svelte";
+import ShortcutsModal from "../DesignSystem/Component/Shortcuts.svelte";
 
 type ModalOverlay =
   | { show: true; component: typeof SvelteComponent }
