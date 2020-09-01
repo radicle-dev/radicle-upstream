@@ -5,6 +5,7 @@
   import validatejs from "validate.js";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
+  import { Variant as IllustrationVariant } from "../src/illustration.ts";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import { create, RepoType } from "../src/project.ts";
@@ -20,6 +21,7 @@
   import { Button, Flex, Icon, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
+    Illustration,
     RadioOption,
     RemoteHelperHint,
   } from "../DesignSystem/Component";
@@ -286,6 +288,9 @@
 
 <div class="container" bind:this={content} data-cy="page">
   <div class="create-project" data-cy="create-project">
+    <Illustration
+      style="align-self: center; margin-bottom: 16px;"
+      variant={IllustrationVariant.Star} />
     <h2 style="margin-bottom: 32px;">Start a new project</h2>
 
     <div class="radio-selector">
