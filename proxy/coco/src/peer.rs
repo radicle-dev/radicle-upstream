@@ -269,6 +269,7 @@ impl Api {
     /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
     ///
     /// # Errors
+    ///
     ///   * Could not successfully acquire a lock to the API.
     ///   * Could not open librad storage.
     ///   * Failed to fetch the updates.
