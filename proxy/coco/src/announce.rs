@@ -33,13 +33,13 @@ pub async fn announce(
     for (project_urn, head, hash) in updates {
         let urn = uri::RadUrn::new(
             project_urn.id.clone(),
-            uri::Protocol::Git,
+            project_urn.protocol(),
             uri::Path::parse(head)?,
         );
         let have = net::peer::Gossip {
             urn,
             rev: Some(net::peer::Rev::Git((*hash).into())),
-            origin: Some(protocol.peer_id().clone()),
+            origin: None,
         };
 
         protocol.announce(have).await;
@@ -48,7 +48,7 @@ pub async fn announce(
     Ok(())
 }
 
-/// Builds the latset list of [`Announcement`]s for the current state of the peer.
+/// Builds the latest list of [`Announcement`]s for the current state of the peer.
 ///
 /// # Errors
 ///
@@ -79,7 +79,10 @@ pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
 /// Computes the list of announcements based on the difference of the `new` and `old` state. An
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
 #[must_use]
-pub fn diff<'a>(old_state: &'a HashSet<Announcement>, new_state: &'a HashSet<Announcement>) -> HashSet<Announcement> {
+pub fn diff<'a>(
+    old_state: &'a HashSet<Announcement>,
+    new_state: &'a HashSet<Announcement>,
+) -> HashSet<Announcement> {
     old_state.difference(&new_state).cloned().collect()
 }
 
@@ -91,8 +94,10 @@ pub fn diff<'a>(old_state: &'a HashSet<Announcement>, new_state: &'a HashSet<Ann
 /// * if the access of the key in the [`kv::Bucket`] fails
 #[allow(clippy::or_fun_call)]
 pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
-    let bucket = store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
-    let val: kv::Json<HashSet<Announcement>> = bucket.get(KEY_NAME)?.unwrap_or(kv::Json(HashSet::new()));
+    let bucket =
+        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+    let val: kv::Json<HashSet<Announcement>> =
+        bucket.get(KEY_NAME)?.unwrap_or(kv::Json(HashSet::new()));
 
     Ok(val.to_inner())
 }
@@ -104,7 +109,8 @@ pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Error> {
-    let bucket = store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+    let bucket =
+        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
     Ok(bucket.set(KEY_NAME, kv::Json(updates))?)
 }
 

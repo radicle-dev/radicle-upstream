@@ -111,7 +111,6 @@ async fn announcement_watcher(ctx: context::Ctx) {
         timer.tick().await;
 
         let ctx = ctx.read().await;
-
         let old = announce::load(&ctx.store).expect("unable to load cached announcements");
         let new = announce::build(&ctx.peer_api).expect("unable to build state");
         let updates = announce::diff(&old, &new);
