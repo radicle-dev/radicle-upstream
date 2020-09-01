@@ -772,6 +772,42 @@ mod test {
     }
 
     #[tokio::test]
+    async fn can_clone_user() -> Result<(), Error> {
+        let alice_key = SecretKey::new();
+        let bob_key = SecretKey::new();
+
+        let alice_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
+        let alice_peer = Api::new(config).await?;
+
+        let bob_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
+        let bob_peer = Api::new(config).await?;
+
+        let alice = alice_peer.init_user(&alice_key, "alice")?;
+        let bobby = bob_peer.clone();
+        let user_urn = tokio::task::spawn_blocking(move || {
+            bobby.clone_user(
+                alice.urn().into_rad_url(alice_peer.peer_id()),
+                vec![alice_peer.listen_addr()].into_iter(),
+            )
+        })
+        .await
+        .expect("failed to join thread")?;
+
+        assert_eq!(
+            bob_peer
+                .list_users()?
+                .into_iter()
+                .map(|user| user.urn())
+                .collect::<Vec<_>>(),
+            vec![user_urn]
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn can_fetch_project_changes() -> Result<(), Error> {
         let alice_key = SecretKey::new();
 
@@ -863,42 +899,6 @@ mod test {
             },
             commit_id
         )?);
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn can_clone_user() -> Result<(), Error> {
-        let alice_key = SecretKey::new();
-        let bob_key = SecretKey::new();
-
-        let alice_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
-        let alice_peer = Api::new(config).await?;
-
-        let bob_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
-        let bob_peer = Api::new(config).await?;
-
-        let alice = alice_peer.init_user(&alice_key, "alice")?;
-        let bobby = bob_peer.clone();
-        let user_urn = tokio::task::spawn_blocking(move || {
-            bobby.clone_user(
-                alice.urn().into_rad_url(alice_peer.peer_id()),
-                vec![alice_peer.listen_addr()].into_iter(),
-            )
-        })
-        .await
-        .expect("failed to join thread")?;
-
-        assert_eq!(
-            bob_peer
-                .list_users()?
-                .into_iter()
-                .map(|user| user.urn())
-                .collect::<Vec<_>>(),
-            vec![user_urn]
-        );
 
         Ok(())
     }
