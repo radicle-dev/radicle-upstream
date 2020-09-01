@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { Button } from "../Primitive";
-  import Illustration from "./EmptyState/Illustration.svelte";
+  import Illustration from "./Illustration.svelte";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
 
   const dispatch = createEventDispatcher();
