@@ -114,7 +114,7 @@
       autofocus={true}
       placeholder="Enter a name"
       bind:value={handle}
-      on:enterKeydown={next}
+      on:enter={next}
       dataCy="handle"
       validation={handleValidation}
       style="margin: 16px 0 32px 0;" />

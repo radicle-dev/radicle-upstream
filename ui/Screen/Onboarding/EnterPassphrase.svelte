@@ -128,7 +128,7 @@
     </p>
 
     <Input.Password
-      on:enterKeydown={() => {
+      on:enter={() => {
         repeatedPassphraseInput.focus();
       }}
       autofocus={true}
@@ -144,7 +144,7 @@
       </p>
       <Input.Password
         bind:inputElement={repeatedPassphraseInput}
-        on:enterKeydown={next}
+        on:enter={next}
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
         validation={repeatedPassphraseValidation}

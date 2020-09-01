@@ -29,7 +29,7 @@
 
   const onKeydown = event => {
     if (event.key === "Enter") {
-      dispatch("enterKeydown");
+      dispatch("enter");
     }
   };
 </script>
