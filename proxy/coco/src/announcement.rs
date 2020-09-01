@@ -3,8 +3,6 @@
 use std::collections::HashSet;
 use std::ops::Deref as _;
 
-use kv::Codec as _;
-
 use librad::keys;
 use librad::net;
 use librad::uri;
@@ -12,11 +10,6 @@ use librad::uri;
 use crate::error::Error;
 use crate::oid::Oid;
 use crate::peer;
-
-/// Name for the bucket used in [`kv::Store`].
-const BUCKET_NAME: &str = "announcements";
-/// Key for the single value used as cache.
-const KEY_NAME: &str = "latest";
 
 /// An update and all the required information that can be announced on the network.
 pub type Announcement = (uri::RadUrn, Oid);
@@ -73,7 +66,7 @@ pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
             }
 
             Ok(list)
-        },
+        }
     }
 }
 
@@ -86,36 +79,6 @@ pub fn diff<'a>(
     new_state: &'a HashSet<Announcement>,
 ) -> HashSet<Announcement> {
     new_state.difference(old_state).cloned().collect()
-}
-
-/// Load the cached announcements from the [`kv::Store`].
-///
-/// # Errors
-///
-/// * if the [`kv::Bucket`] can't be accessed
-/// * if the access of the key in the [`kv::Bucket`] fails
-#[allow(clippy::or_fun_call)]
-pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
-    let bucket =
-        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
-    let value = bucket
-        .get(KEY_NAME)?
-        .map_or(HashSet::new(), kv::Json::to_inner);
-
-    Ok(value)
-}
-
-/// Update the cache with the latest announcements.
-///
-/// # Errors
-///
-/// * if the [`kv::Bucket`] can't be accessed
-/// * if the storage of the new updates fails
-#[allow(clippy::implicit_hasher)]
-pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Error> {
-    let bucket =
-        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
-    bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
 
 #[allow(clippy::panic)]
@@ -203,36 +166,6 @@ mod test {
         let announcements = super::diff(&left, &right);
 
         assert_eq!(announcements, new.iter().cloned().collect::<HashSet<_>>());
-
-        Ok(())
-    }
-
-    #[test]
-    fn save_and_load() -> Result<(), Error> {
-        let updates: HashSet<_> = vec![
-            (
-                project0("cloudhead/new-language"),
-                "7dec3269".parse::<oid::Oid>()?,
-            ),
-            (
-                project0("fintohaps/notations"),
-                "b4d3276d".parse::<oid::Oid>()?,
-            ),
-            (
-                project0("kalt/eat-my-impls"),
-                "2206e5dc".parse::<oid::Oid>()?,
-            ),
-            (project1("backport"), "869e5740".parse::<oid::Oid>()?),
-        ]
-        .iter()
-        .cloned()
-        .collect();
-        let dir = tempfile::tempdir()?;
-        let store = kv::Store::new(kv::Config::new(dir.path().join("store")))?;
-
-        super::save(&store, updates.clone())?;
-
-        assert_eq!(super::load(&store)?, updates);
 
         Ok(())
     }
