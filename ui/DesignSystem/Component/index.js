@@ -8,6 +8,7 @@ import Error from "./Error.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
+import Illustration from "./Illustration.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
@@ -54,6 +55,7 @@ export {
   Header,
   HorizontalMenu,
   Hoverable,
+  Illustration,
   Label,
   List,
   ModalOverlay,

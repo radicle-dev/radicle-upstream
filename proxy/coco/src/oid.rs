@@ -9,7 +9,7 @@ use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use radicle_surf::vcs::git::git2;
 
 /// Unique identity of any object (commit, tree, blob, tag).
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Oid(git2::Oid);
 
 impl fmt::Display for Oid {

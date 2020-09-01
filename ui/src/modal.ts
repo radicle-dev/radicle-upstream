@@ -2,15 +2,17 @@ import { get, writable } from "svelte/store";
 import { SvelteComponent } from "svelte";
 
 import SearchModal from "../DesignSystem/Component/SearchModal.svelte";
+import ShortcutsModal from "../DesignSystem/Component/Shortcuts.svelte";
 
 type ModalOverlay =
   | { show: true; component: typeof SvelteComponent }
   | { show: false; component: null };
 
-type ModalRoute = "/search";
+type ModalRoute = "/search" | "/shortcuts";
 
 const routes: Record<ModalRoute, typeof SvelteComponent> = {
   "/search": SearchModal,
+  "/shortcuts": ShortcutsModal,
 };
 
 export const store = writable<ModalOverlay>({ show: false, component: null });

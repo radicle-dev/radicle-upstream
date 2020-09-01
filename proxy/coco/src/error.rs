@@ -6,7 +6,7 @@ use std::path;
 use librad::git::{repo, storage};
 use librad::meta::entity;
 use librad::net;
-use librad::uri::RadUrn;
+use librad::uri;
 use radicle_surf::file_system;
 use radicle_surf::vcs::git;
 use radicle_surf::vcs::git::git2;
@@ -42,7 +42,7 @@ pub enum Error {
 
     /// Returned when an attempt to create an identity was made and there is one present.
     #[error("the identity '{0}' already exits")]
-    EntityExists(RadUrn),
+    EntityExists(uri::RadUrn),
 
     /// An error occurred when performing git operations.
     #[error(transparent)]
@@ -90,6 +90,10 @@ pub enum Error {
     /// Originated from `radicle_surf`.
     #[error(transparent)]
     SurfGit(#[from] git::error::Error),
+
+    /// Emitted when the parsing of a [`librad::uri::Path`] failed.
+    #[error(transparent)]
+    UriParse(#[from] uri::path::ParseError),
 
     /// Verifcation error.
     #[error(transparent)]

@@ -1,11 +1,10 @@
 <script>
   import { getContext } from "svelte";
-  import Router, { push } from "svelte-spa-router";
+  import Router from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
 
   import {
-    AdditionalActionsDropdown,
     Header,
     HorizontalMenu,
     SidebarLayout,
@@ -45,15 +44,6 @@
     },
   ];
 
-  const dropdownMenuItems = [
-    {
-      title: "New project",
-      dataCy: "new-project",
-      icon: Icon.Plus,
-      event: () => push(path.createProject()),
-    },
-  ];
-
   const session = getContext("session");
 </script>
 
@@ -63,13 +53,8 @@
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>
-    <div slot="right" style="display: flex">
+    <div slot="top">
       <Router routes={menuRoutes} />
-      <AdditionalActionsDropdown
-        dataCy="profile-context-menu"
-        style="margin: 0 16px"
-        headerTitle={session.identity.shareableEntityIdentifier}
-        menuItems={dropdownMenuItems} />
     </div>
   </Header.Large>
 
