@@ -6,6 +6,7 @@
   import { createIdentity } from "../src/identity.ts";
   import * as path from "../src/path.ts";
   import * as session from "../src/session.ts";
+  import * as urn from "../src/urn.ts";
 
   import { ModalLayout } from "../DesignSystem/Component";
 
@@ -17,16 +18,6 @@
   let identity;
   let handle;
   let state = State.Welcome;
-
-  const truncateUrn = message => {
-    const urn = message.match(/(rad:git:\w{59})/)[1];
-
-    if (urn) {
-      return message.replace(/(rad:git:\w{59})/, urn.substr(-5));
-    } else {
-      return message;
-    }
-  };
 
   const complete = () => {
     session.fetch();
@@ -44,7 +35,7 @@
     } catch (error) {
       state = State.EnterName;
       notification.error(
-        `Could not create identity: ${truncateUrn(error.message)}`
+        `Could not create identity: ${urn.shorten(error.message)}`
       );
     }
   };
