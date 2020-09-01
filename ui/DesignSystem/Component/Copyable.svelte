@@ -47,12 +47,14 @@
 
   .basic {
     display: flex;
+    min-height: 24px;
   }
 
   .content {
     align-items: center;
     background-color: var(--color-foreground-level-2);
     padding: 0 4px;
+    margin-left: -4px;
     border-radius: 4px;
     color: var(--color-foreground-level-6);
   }

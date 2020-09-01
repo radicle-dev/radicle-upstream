@@ -38,12 +38,7 @@
       {showIcon}>
       {#if urn.length > 24}
         {#if expanded}
-          <p
-            data-cy="full-urn"
-            class="typo-text-small-mono"
-            style="line-height: 25px;">
-            {cleanUrn}
-          </p>
+          <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>
         {:else}
           <p class="typo-text-small-mono">{firstSix}</p>
           <Icon.EllipsisSmall />
