@@ -117,10 +117,7 @@ pub fn list_projects_for_user(
     user: &coco::Urn,
 ) -> Result<Vec<Project>, error::Error> {
     let all_projects = list_projects(api)?;
-
-    // We’re using MapSet to deduplicate projects. This is a bug in librad.
-    // https://github.com/radicle-dev/radicle-link/issues/266.
-    let mut user_projects = std::collections::HashMap::new();
+    let mut projects = vec![];
 
     for project in all_projects {
         if api
@@ -128,13 +125,10 @@ pub fn list_projects_for_user(
             .into_iter()
             .any(|(_, project_user)| project_user.urn() == *user)
         {
-            user_projects.insert(project.id.clone(), project);
+            projects.push(project);
         }
     }
-    Ok(user_projects
-        .into_iter()
-        .map(|(_, project)| project)
-        .collect())
+    Ok(projects)
 }
 
 /// Returns a stubbed feed of `Project`s
