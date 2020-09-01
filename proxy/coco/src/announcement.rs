@@ -66,7 +66,7 @@ pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
             }
 
             Ok(list)
-        }
+        },
     }
 }
 
