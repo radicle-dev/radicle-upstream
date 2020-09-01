@@ -28,7 +28,7 @@ pub type Announcement = (uri::RadUrn, String, Oid);
 /// * if the announcemnet of one of the project heads failed
 pub async fn announce(
     protocol: net::protocol::Protocol<net::peer::PeerStorage<keys::SecretKey>, net::peer::Gossip>,
-    updates: impl Iterator<Item = &Announcement>,
+    updates: impl Iterator<Item = &Announcement> + Send,
 ) -> Result<(), Error> {
     for (project_urn, head, hash) in updates {
         let urn = uri::RadUrn::new(
@@ -72,18 +72,19 @@ pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
             }
 
             Ok(list)
-        },
+        }
     }
 }
 
 /// Computes the list of announcements based on the difference of the `new` and `old` state. An
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
+#[allow(clippy::implicit_hasher)]
 #[must_use]
 pub fn diff<'a>(
     old_state: &'a HashSet<Announcement>,
     new_state: &'a HashSet<Announcement>,
 ) -> HashSet<Announcement> {
-    old_state.difference(&new_state).cloned().collect()
+    new_state.difference(old_state).cloned().collect()
 }
 
 /// Load the cached announcements from the [`kv::Store`].
@@ -108,6 +109,7 @@ pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
+#[allow(clippy::implicit_hasher)]
 pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Error> {
     let bucket =
         store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
@@ -117,6 +119,8 @@ pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Err
 #[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
+    use std::collections::HashSet;
+
     use pretty_assertions::assert_eq;
 
     use librad::hash::Hash;
@@ -141,7 +145,7 @@ mod test {
         let updates = super::build(&api)?;
         let res = api
             .with_protocol(|protocol| {
-                Box::pin(async move { super::announce(protocol, updates).await })
+                Box::pin(async move { super::announce(protocol, updates.iter()).await })
             })
             .await;
 
@@ -234,11 +238,11 @@ mod test {
             ),
         ];
 
-        let left = [&both[..], &old[..]].concat();
-        let right = [&both[..], &new[..]].concat();
+        let left: HashSet<_> = [&both[..], &old[..]].concat().iter().cloned().collect();
+        let right: HashSet<_> = [&both[..], &new[..]].concat().iter().cloned().collect();
         let announcements = super::diff(&left, &right);
 
-        assert_eq!(announcements, new);
+        assert_eq!(announcements, new.iter().cloned().collect::<HashSet<_>>());
 
         Ok(())
     }
@@ -255,7 +259,7 @@ mod test {
             proto: uri::Protocol::Git,
             path: uri::Path::empty(),
         };
-        let updates = vec![
+        let updates: HashSet<_> = vec![
             (
                 project0(),
                 "cloudhead/new-language".to_string(),
@@ -276,7 +280,10 @@ mod test {
                 "backport".to_string(),
                 "869e5740".parse::<oid::Oid>()?,
             ),
-        ];
+        ]
+        .iter()
+        .cloned()
+        .collect();
         let dir = tempfile::tempdir()?;
         let store = kv::Store::new(kv::Config::new(dir.path().join("store")))?;
 

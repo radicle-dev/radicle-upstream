@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use librad::paths;
 
-use coco::announce;
+use coco::announcement;
 use coco::seed;
 
 use api::config;
@@ -111,22 +111,22 @@ async fn announcement_watcher(ctx: context::Ctx) {
         timer.tick().await;
 
         let ctx = ctx.read().await;
-        let old = announce::load(&ctx.store).expect("unable to load cached announcements");
-        let new = announce::build(&ctx.peer_api).expect("unable to build state");
-        let updates = announce::diff(&old, &new);
+        let old = announcement::load(&ctx.store).expect("unable to load cached announcements");
+        let new = announcement::build(&ctx.peer_api).expect("unable to build state");
+        let updates = announcement::diff(&old, &new);
         let count = updates.len();
 
         {
             let updates = updates.clone();
             ctx.peer_api
                 .with_protocol(|protocol| {
-                    Box::pin(async move { announce::announce(protocol, updates.iter()).await })
+                    Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
                 })
                 .await
                 .expect("announce failed");
         }
 
-        announce::save(&ctx.store, updates).expect("unable to save updated announcements");
+        announcement::save(&ctx.store, updates).expect("unable to save updated announcements");
         log::debug!("announced {} updates", count);
     }
 }
