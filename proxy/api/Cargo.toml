@@ -4,10 +4,10 @@ version = "0.1.0"
 license = "GPL-3.0-only"
 authors = ["radicle team <dev@radicle.xyz>"]
 edition = "2018"
-description = "Proxy to serve a specialised API to the Upstream UI."
+description = "Proxy to serve Upstream domain."
 readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/proxy/README.md"
-categories = [ "crypto", "p2p" ]
-keywords = [ "radicle-upstream", "proxy" ]
+categories = [ "code-collaboration", "p2p" ]
+keywords = [ "radicle", "upstream", "proxy", "git" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 default-run = "api"
 
