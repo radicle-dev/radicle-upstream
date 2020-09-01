@@ -110,23 +110,30 @@ async fn announcement_watcher(ctx: context::Ctx) {
     loop {
         timer.tick().await;
 
-        let ctx = ctx.read().await;
-        let old = announcement::load(&ctx.store).expect("unable to load cached announcements");
-        let new = announcement::build(&ctx.peer_api).expect("unable to build state");
-        let updates = announcement::diff(&old, &new);
-        let count = updates.len();
-
-        {
-            let updates = updates.clone();
-            ctx.peer_api
-                .with_protocol(|protocol| {
-                    Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
-                })
-                .await
-                .expect("announce failed");
+        if let Err(err) = announce(ctx.clone()).await {
+            log::info!("Announcement watcher errored: {:?}", err);
         }
-
-        announcement::save(&ctx.store, updates).expect("unable to save updated announcements");
-        log::debug!("announced {} updates", count);
     }
+}
+
+async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
+    let ctx = ctx.read().await;
+    let old = announcement::load(&ctx.store)?;
+    let new = announcement::build(&ctx.peer_api)?;
+    let updates = announcement::diff(&old, &new);
+    let count = updates.len();
+
+    {
+        let updates = updates.clone();
+        ctx.peer_api
+            .with_protocol(|protocol| {
+                Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
+            })
+            .await?;
+    }
+
+    announcement::save(&ctx.store, updates)?;
+    log::debug!("announced {} updates", count);
+
+    Ok(())
 }
