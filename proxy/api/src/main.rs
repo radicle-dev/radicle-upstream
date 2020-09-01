@@ -118,7 +118,7 @@ async fn announcement_watcher(ctx: context::Ctx) {
 
 async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
     let ctx = ctx.read().await;
-    let old = announcement::load(&ctx.store)?;
+    let old = session::announcements::load(&ctx.store)?;
     let new = announcement::build(&ctx.peer_api)?;
     let updates = announcement::diff(&old, &new);
     let count = updates.len();
@@ -132,7 +132,7 @@ async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
             .await?;
     }
 
-    announcement::save(&ctx.store, updates)?;
+    session::announcements::save(&ctx.store, updates)?;
     log::debug!("announced {} updates", count);
 
     Ok(())

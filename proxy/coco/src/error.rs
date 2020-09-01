@@ -56,10 +56,6 @@ pub enum Error {
     #[error(transparent)]
     Io(#[from] io::Error),
 
-    /// Kv error.
-    #[error(transparent)]
-    Kv(#[from] kv::Error),
-
     /// Entity meta error.
     #[error(transparent)]
     Meta(#[from] entity::Error),
