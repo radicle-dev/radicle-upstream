@@ -10,15 +10,37 @@ context("identity creation", () => {
     cy.visit("./public/index.html");
   });
 
-  context("modal", () => {
-    it("can't be closed by pressing escape key", () => {
+  context("navigation", () => {
+    it("is not possible to exit the flow by pressing escape key", () => {
       cy.pick("get-started-button").should("exist");
       cy.get("body").type("{esc}");
       cy.pick("get-started-button").should("exist");
     });
-  });
 
-  context("navigation", () => {
+    it("is possible to use the keyboard for navigation", () => {
+      // Intro screen.
+      cy.get("body").type("{enter}");
+
+      // Enter name screen.
+      cy.get("body").type(validUser.handle);
+      cy.get("body").type("{enter}");
+
+      // Enter passphrase screen.
+      cy.get("body").type(validUser.passphrase);
+      cy.get("body").type("{enter}");
+      cy.get("body").type(validUser.passphrase);
+      cy.get("body").type("{enter}");
+
+      // Success screen.
+      cy.pick("shareable-identifier")
+        .contains(/rafalca@/)
+        .should("exist");
+
+      // Land on profile screen.
+      cy.get("body").type("{enter}");
+      cy.pick("entity-name").contains(validUser.handle);
+    });
+
     it("is possible to step through the identity creation flow", () => {
       // Intro screen.
       cy.pick("get-started-button").click();
