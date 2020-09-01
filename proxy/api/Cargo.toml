@@ -26,7 +26,7 @@ serde_qs = "0.6"
 tempfile = "3.1"
 thiserror = "1.0"
 tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
-warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
+warp = { version = "0.2", default-features = false }
 
 [dependencies.coco]
 path = "../coco"

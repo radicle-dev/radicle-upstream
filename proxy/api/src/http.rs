@@ -8,7 +8,6 @@ use crate::context;
 
 mod avatar;
 mod control;
-mod doc;
 mod error;
 mod identity;
 mod project;
@@ -63,8 +62,6 @@ pub fn api(
         source_filter
     ));
 
-    // let docs = path("docs").and(doc::filters(&api));
-    let docs = path("docs").and(doc::filters(&api));
     let cors = warp::cors()
         .allow_any_origin()
         .allow_headers(&[warp::http::header::CONTENT_TYPE])
@@ -86,7 +83,7 @@ pub fn api(
         );
     });
 
-    let recovered = combine!(api, docs).recover(error::recover);
+    let recovered = api.recover(error::recover);
 
     recovered.with(cors).with(log)
 }

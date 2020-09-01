@@ -1,43 +1,15 @@
 //! Endpoints for Avatar.
 
 use serde::Deserialize;
-use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
-use warp::{Filter, Reply};
-
-use crate::avatar;
+use warp::{path, Filter, Reply};
 
 /// `GET /<id>?usage=<usage>`
 pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
     warp::any()
-        .and(document::param::<String>(
-            "id",
-            "ID for the Avatar creation",
-        ))
-        .and(warp::filters::query::query::<GetAvatarQuery>())
-        .and(document::document(
-            document::query("usage", document::string())
-                .description("Usage of the Avatar: identity, any"),
-        ))
         .and(warp::get())
-        .and(document::document(document::description(
-            "Return the avatar for the ID",
-        )))
-        .and(document::document(document::tag("Avatar")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(avatar::Avatar::document()).mime("application/json"),
-            )
-            .description("Successful retrieval"),
-        ))
-        .and(document::document(
-            document::response(
-                400,
-                document::body(super::error::Error::document()).mime("application/json"),
-            )
-            .description("Wrong usage for Avatar"),
-        ))
+        .and(path::param::<String>())
+        .and(warp::filters::query::query::<GetAvatarQuery>())
         .and_then(handler::get)
         .boxed()
 }
