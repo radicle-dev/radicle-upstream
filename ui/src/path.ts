@@ -70,10 +70,10 @@ export const transactions = (id: string, viewerAccountId: string): string =>
   `/transactions/${id}?${stringify({ viewerAccountId })}`;
 
 export const designSystemGuide = (): string => "/design-system-guide";
-export const shortcuts = (): string => "/shortcuts";
 
 // modal routes
 export const search = (): string => "/search";
+export const shortcuts = (): string => "/shortcuts";
 
 export const active = (
   path: string,

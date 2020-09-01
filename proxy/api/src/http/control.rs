@@ -4,10 +4,10 @@ use serde::{Deserialize, Serialize};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::http;
+use crate::context;
 
 /// Combination of all control filters.
-pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
+pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     create_project_filter(ctx.clone())
         .or(nuke_coco_filter(ctx))
         .boxed()
@@ -15,7 +15,7 @@ pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
 
 /// POST /create-project
 fn create_project_filter(
-    ctx: http::Ctx,
+    ctx: context::Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
         .and(super::with_context(ctx.clone()))
@@ -26,7 +26,7 @@ fn create_project_filter(
 
 /// GET /nuke/coco
 fn nuke_coco_filter(
-    ctx: http::Ctx,
+    ctx: context::Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_context(ctx))
@@ -40,15 +40,15 @@ mod handler {
 
     use librad::paths;
 
+    use crate::context;
     use crate::error;
-    use crate::http;
     use crate::keystore;
     use crate::project;
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
@@ -83,7 +83,7 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_coco(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -118,13 +118,13 @@ mod handler {
     mod test {
         use pretty_assertions::assert_ne;
 
+        use crate::context;
         use crate::error;
-        use crate::http;
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
             let tmp_dir = tempfile::tempdir()?;
-            let ctx = http::Context::tmp(&tmp_dir).await?;
+            let ctx = context::Context::tmp(&tmp_dir).await?;
 
             let (old_paths, old_peer_id) = {
                 let ctx = ctx.read().await;
@@ -174,6 +174,7 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use crate::context;
     use crate::error;
     use crate::http;
 
@@ -184,7 +185,7 @@ mod test {
     #[tokio::test]
     async fn create_project_after_nuke() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx);
 
         // Create project before nuke.

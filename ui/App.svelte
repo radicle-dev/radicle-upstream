@@ -21,7 +21,6 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import Shortcuts from "./Screen/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -55,7 +54,6 @@
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
-    "/shortcuts": Shortcuts,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
     "/send-funds": SendFunds,
