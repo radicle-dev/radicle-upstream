@@ -33,5 +33,6 @@ pub mod error;
 pub mod http;
 pub mod identity;
 pub mod keystore;
+pub mod notification;
 pub mod project;
 pub mod session;
