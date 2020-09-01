@@ -28,9 +28,9 @@ pub type Announcement = (uri::RadUrn, String, Oid);
 /// * if the announcemnet of one of the project heads failed
 pub async fn announce(
     protocol: net::protocol::Protocol<net::peer::PeerStorage<keys::SecretKey>, net::peer::Gossip>,
-    updates: Vec<Announcement>,
+    updates: impl Iterator<Item = &Announcement>,
 ) -> Result<(), Error> {
-    for (project_urn, head, hash) in &updates {
+    for (project_urn, head, hash) in updates {
         let urn = uri::RadUrn::new(
             project_urn.id.clone(),
             uri::Protocol::Git,
@@ -54,8 +54,8 @@ pub async fn announce(
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
-    let mut list: Vec<Announcement> = vec![];
+pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
+    let mut list: HashSet<Announcement> = HashSet::new();
 
     // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
     // should be machinery to kick off these routines only if our app state is ready for it.
@@ -67,7 +67,7 @@ pub fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
                 let refs = api.list_project_refs(&project.urn())?;
 
                 for (head, hash) in &refs.heads {
-                    list.push((project.urn(), head.to_string(), Oid::from(*hash.deref())));
+                    list.insert((project.urn(), head.to_string(), Oid::from(*hash.deref())));
                 }
             }
 
@@ -79,13 +79,8 @@ pub fn build(api: &peer::Api) -> Result<Vec<Announcement>, Error> {
 /// Computes the list of announcements based on the difference of the `new` and `old` state. An
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
 #[must_use]
-pub fn diff(old_state: &[Announcement], new_state: &[Announcement]) -> Vec<Announcement> {
-    let old: HashSet<_> = old_state.iter().collect();
-    new_state
-        .iter()
-        .filter(|a| !old.contains(a))
-        .cloned()
-        .collect()
+pub fn diff<'a>(old_state: &'a HashSet<Announcement>, new_state: &'a HashSet<Announcement>) -> HashSet<Announcement> {
+    old_state.difference(&new_state).cloned().collect()
 }
 
 /// Load the cached announcements from the [`kv::Store`].
@@ -95,9 +90,9 @@ pub fn diff(old_state: &[Announcement], new_state: &[Announcement]) -> Vec<Annou
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
 #[allow(clippy::or_fun_call)]
-pub fn load(store: &kv::Store) -> Result<Vec<Announcement>, Error> {
-    let bucket = store.bucket::<&'static str, kv::Json<Vec<Announcement>>>(Some(BUCKET_NAME))?;
-    let val: kv::Json<Vec<Announcement>> = bucket.get(KEY_NAME)?.unwrap_or(kv::Json(vec![]));
+pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
+    let bucket = store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+    let val: kv::Json<HashSet<Announcement>> = bucket.get(KEY_NAME)?.unwrap_or(kv::Json(HashSet::new()));
 
     Ok(val.to_inner())
 }
@@ -108,8 +103,8 @@ pub fn load(store: &kv::Store) -> Result<Vec<Announcement>, Error> {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
-pub fn save(store: &kv::Store, updates: Vec<Announcement>) -> Result<(), Error> {
-    let bucket = store.bucket::<&'static str, kv::Json<Vec<Announcement>>>(Some(BUCKET_NAME))?;
+pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Error> {
+    let bucket = store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
     Ok(bucket.set(KEY_NAME, kv::Json(updates))?)
 }
 

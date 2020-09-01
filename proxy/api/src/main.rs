@@ -114,20 +114,20 @@ async fn announcement_watcher(ctx: context::Ctx) {
 
         let old = announce::load(&ctx.store).expect("unable to load cached announcements");
         let new = announce::build(&ctx.peer_api).expect("unable to build state");
+        let updates = announce::diff(&old, &new);
+        let count = updates.len();
 
         {
-            let updates = announce::diff(&old, &new);
-
+            let updates = updates.clone();
             ctx.peer_api
                 .with_protocol(|protocol| {
-                    Box::pin(async move { announce::announce(protocol, updates).await })
+                    Box::pin(async move { announce::announce(protocol, updates.iter()).await })
                 })
                 .await
                 .expect("announce failed");
         }
 
-        let updates = announce::diff(&old, &new);
-        announce::save(&ctx.store, updates.clone()).expect("unable to save updated announcements");
-        log::debug!("announced {} updates", updates.len());
+        announce::save(&ctx.store, updates).expect("unable to save updated announcements");
+        log::debug!("announced {} updates", count);
     }
 }
