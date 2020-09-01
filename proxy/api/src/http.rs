@@ -1,16 +1,10 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use std::sync::Arc;
-
 use serde::Deserialize;
-use tokio::sync::RwLock;
 use warp::filters::BoxedFilter;
 use warp::{path, reject, Filter, Rejection, Reply};
 
-use librad::paths;
-
-use coco::keystore;
-use coco::signer;
+use crate::context;
 
 mod avatar;
 mod control;
@@ -40,18 +34,9 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api(
-    peer_api: coco::Api,
-    signer: signer::BoxedSigner,
-    store: kv::Store,
+    ctx: context::Ctx,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let ctx = Context {
-        peer_api,
-        signer,
-        store,
-    };
-    let ctx = Arc::new(RwLock::new(ctx));
-
     let avatar_filter = path("avatars").and(avatar::get_filter());
     let control_filter = path("control")
         .map(move || enable_control)
@@ -109,10 +94,10 @@ pub fn api(
 /// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard(ctx: Ctx) -> BoxedFilter<(coco::User,)> {
+fn with_owner_guard(ctx: context::Ctx) -> BoxedFilter<(coco::User,)> {
     warp::any()
         .and(with_context(ctx))
-        .and_then(|ctx: Ctx| async move {
+        .and_then(|ctx: context::Ctx| async move {
             let ctx = ctx.read().await;
             let session = crate::session::current(&ctx.peer_api, &ctx.store)
                 .await
@@ -133,89 +118,10 @@ fn with_owner_guard(ctx: Ctx) -> BoxedFilter<(coco::User,)> {
         .boxed()
 }
 
-/// Container to pass down dependencies into HTTP filter chains.
-pub struct Context {
-    /// [`coco::Api`] to operate on the local monorepo.
-    peer_api: coco::Api,
-    signer: signer::BoxedSigner,
-    /// [`kv::Store`] used for session state and cache.
-    store: kv::Store,
-}
-
-/// Wrapper around the thread-safe handle on [`Context`].
-pub type Ctx = Arc<RwLock<Context>>;
-
-/// Resets the peer and keystore within the `Ctx`.
-///
-/// # Errors
-///
-///   * If we could not get the librad path.
-///   * If we could not initialise the librad key.
-///   * If we could not construct the peer API.
-///
-/// # Panics
-///
-///   * If we could not get the temporary directory.
-pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
-    // TmpDir deletes the temporary directory once it DROPS.
-    // This means our new directory goes missing, and future calls will fail.
-    // The Peer creates the directory again.
-    //
-    // N.B. this may gather lot's of tmp files on your system. We're sorry.
-    let tmp_path = {
-        let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-        log::debug!("New temporary path is: {:?}", temp_dir.path());
-        std::env::set_var("RAD_HOME", temp_dir.path());
-        temp_dir.path().to_path_buf()
-    };
-
-    let paths = paths::Paths::from_root(tmp_path)?;
-
-    let pw = keystore::SecUtf8::from("radicle-upstream");
-    let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-    let signer = new_keystore.init_librad_key()?;
-
-    let config =
-        coco::config::configure(paths, signer.clone(), *coco::config::LOCALHOST_ANY, vec![]);
-    let new_peer_api = coco::Api::new(config).await?;
-
-    let mut ctx = ctx.write().await;
-    ctx.peer_api = new_peer_api;
-    ctx.signer = signer::BoxedSigner::from(signer::SomeSigner { signer });
-
-    Ok(())
-}
-
 /// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
-fn with_context(ctx: Ctx) -> BoxedFilter<(Ctx,)> {
+fn with_context(ctx: context::Ctx) -> BoxedFilter<(context::Ctx,)> {
     warp::any().map(move || ctx.clone()).boxed()
-}
-
-impl Context {
-    #[cfg(test)]
-    async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Ctx, crate::error::Error> {
-        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
-
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let signer = signer::BoxedSigner::from(signer::SomeSigner {
-            signer: keystore.init_librad_key()?,
-        });
-
-        let peer_api = {
-            let config = coco::config::default(signer, tmp_dir.path())?;
-            coco::Api::new(config).await?
-        };
-
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-
-        Ok(Arc::new(RwLock::new(Self {
-            peer_api,
-            signer,
-            store,
-        })))
-    }
 }
 
 /// Parses an optional query string with [`serde_qs`] and returns the result.

@@ -1,11 +1,10 @@
 <script>
   import { getContext } from "svelte";
-  import Router, { push } from "svelte-spa-router";
+  import Router from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
 
   import {
-    AdditionalActionsDropdown,
     Header,
     HorizontalMenu,
     SidebarLayout,
@@ -13,12 +12,14 @@
   import { Icon } from "../DesignSystem/Primitive";
 
   import Projects from "./Profile/Projects.svelte";
+  import Tracking from "./Profile/Tracking.svelte";
   import Wallet from "./Profile/Wallet.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
+    "/profile/tracking": Tracking,
     "*": NotFound,
   };
 
@@ -35,14 +36,11 @@
       href: path.profileProjects(),
       looseActiveStateMatching: true,
     },
-  ];
-
-  const dropdownMenuItems = [
     {
-      title: "New project",
-      dataCy: "new-project",
-      icon: Icon.Plus,
-      event: () => push(path.createProject()),
+      icon: Icon.Network,
+      title: "Following",
+      href: path.profileTracking(),
+      looseActiveStateMatching: false,
     },
   ];
 
@@ -55,13 +53,8 @@
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>
-    <div slot="right" style="display: flex">
+    <div slot="top">
       <Router routes={menuRoutes} />
-      <AdditionalActionsDropdown
-        dataCy="profile-context-menu"
-        style="margin: 0 16px"
-        headerTitle={session.identity.shareableEntityIdentifier}
-        menuItems={dropdownMenuItems} />
     </div>
   </Header.Large>
 

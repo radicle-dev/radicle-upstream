@@ -44,7 +44,7 @@
     margin-right: 20px;
   }
 
-  .shareableEntityIdentifier {
+  .shareable-entity-identifier {
     margin-bottom: 16px;
     display: flex;
     justify-content: flex-start;
@@ -94,10 +94,11 @@
     {/if}
 
   </div>
-  <div class="shareableEntityIdentifier">
+  <div class="shareable-entity-identifier">
     <Urn
       urn={project.shareableEntityIdentifier}
-      notificationText="The project ID was copied to your clipboard" />
+      notificationText="The project ID was copied to your clipboard"
+      truncate />
   </div>
 
   <div class="description">

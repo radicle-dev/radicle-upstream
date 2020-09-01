@@ -214,6 +214,9 @@
 
     try {
       localState = await getLocalState(path);
+      if (!localState.branches.includes(defaultBranch)) {
+        defaultBranch = localState.branches[0];
+      }
     } catch (error) {
       localStateError = error.message;
     }

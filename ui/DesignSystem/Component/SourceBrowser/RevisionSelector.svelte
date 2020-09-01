@@ -47,11 +47,11 @@
     }
   };
 
-  const handleOpenProfile = peerId => {
-    if (peerId === session.identity.peerId) {
+  const handleOpenProfile = urn => {
+    if (urn === session.identity.urn) {
       push(path.profileProjects());
     } else {
-      push(path.userProfile(peerId));
+      push(path.userProfileProjects(urn));
     }
   };
 
@@ -204,9 +204,10 @@
         </div>
         <Tooltip value="Go to profile" position="top">
           <div
+            data-cy={repo.identity.metadata.handle}
             class="open-profile"
             on:click={() => {
-              handleOpenProfile(repo.identity.peerId);
+              handleOpenProfile(repo.identity.urn);
             }}>
             <Icon.ArrowBoxUpRight />
           </div>

@@ -7,6 +7,7 @@
   export let style = null;
   export let copyContent = null;
   export let notificationText = "Copied to your clipboard";
+  export let showIcon = true;
   export let iconBeforeCopy = Icon.CopySmall;
   export let iconAfterCopy = Icon.CheckSmall;
   export let styleContent = true;
@@ -44,20 +45,29 @@
     white-space: nowrap;
   }
 
-  .content {
+  .basic {
     display: flex;
+    min-height: 24px;
+  }
+
+  .content {
+    align-items: center;
     background-color: var(--color-foreground-level-2);
     padding: 0 4px;
+    margin-left: -4px;
     border-radius: 4px;
     color: var(--color-foreground-level-6);
-    align-items: center;
   }
 </style>
 
 <div class="wrapper" on:click|stopPropagation={copy}>
-  <span class:content={styleContent} bind:this={slotContent} {style}>
+  <span
+    class="basic"
+    class:content={styleContent}
+    bind:this={slotContent}
+    {style}>
     <slot />
-    {#if iconBeforeCopy && iconAfterCopy}
+    {#if showIcon && iconBeforeCopy && iconAfterCopy}
       <svelte:component
         this={copyIcon}
         style="display: flex; margin-left: 0.25rem; min-width: 24px;" />

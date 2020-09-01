@@ -1,5 +1,5 @@
 <script>
-  import twemoji from "twemoji";
+  import Emoji from "./Emoji.svelte";
   import Icon from "./Icon";
 
   export let style = null;
@@ -115,31 +115,6 @@
     height: 32px;
     border-radius: 16px;
   }
-
-  .avatar :global(.emoji.small) {
-    height: 12px;
-    width: 12px;
-  }
-
-  .avatar :global(.emoji.regular) {
-    height: 16px;
-    width: 16px;
-  }
-
-  .avatar :global(.emoji.medium) {
-    height: 18px;
-    width: 18px;
-  }
-
-  .avatar :global(.emoji.big) {
-    height: 36px;
-    width: 36px;
-  }
-
-  .avatar :global(.emoji.huge) {
-    height: 60px;
-    width: 60px;
-  }
 </style>
 
 <div data-cy={dataCy} class={`container ${size}`} {style}>
@@ -154,12 +129,7 @@
       class={`avatar ${avatarClass}`}
       style="background: {fmt(avatarFallback.background)}"
       data-cy="emoji">
-      {@html twemoji.parse(avatarFallback.emoji, {
-        className: `emoji ${size}`,
-        base: '',
-        folder: 'twemoji/',
-        ext: '.svg',
-      })}
+      <Emoji {size} emoji={avatarFallback.emoji} />
     </div>
   {:else}
     <div

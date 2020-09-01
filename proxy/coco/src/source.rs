@@ -1,22 +1,24 @@
 //! Source code related functionality.
 
-use nonempty::NonEmpty;
-use radicle_surf::vcs::git::git2;
-use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
-use radicle_surf::{diff, file_system};
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::fmt;
 use std::path;
 use std::str::FromStr;
 
+use nonempty::NonEmpty;
+use serde::ser::SerializeStruct as _;
+use serde::{Deserialize, Serialize, Serializer};
 use syntect::easy::HighlightLines;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
+use radicle_surf::vcs::git::git2;
+use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
+use radicle_surf::{diff, file_system};
+
 use crate::error::Error;
+use crate::oid::Oid;
 
 lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
@@ -128,7 +130,7 @@ impl Serialize for Commit {
 pub struct CommitHeader {
     /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object
     /// id.
-    pub sha1: git2::Oid,
+    pub sha1: Oid,
     /// The author of the commit.
     pub author: Person,
     /// The summary of the commit message body.
@@ -156,7 +158,7 @@ impl CommitHeader {
 impl From<&git::Commit> for CommitHeader {
     fn from(commit: &git::Commit) -> Self {
         Self {
-            sha1: commit.id,
+            sha1: Oid::from(commit.id),
             author: Person {
                 name: commit.author.name.clone(),
                 email: commit.author.email.clone(),
@@ -359,7 +361,7 @@ pub enum Revision<P> {
     /// Select a SHA1 under the name provided.
     Sha {
         /// The SHA1 value.
-        sha: String,
+        sha: Oid,
     },
 }
 
@@ -376,7 +378,10 @@ where
                 Some(peer) => git::Branch::remote(&name, &peer.to_string()).into(),
                 None => git::Branch::local(&name).into(),
             }),
-            Revision::Sha { sha } => Ok(git::Oid::from_str(&sha)?.into()),
+            Revision::Sha { sha } => {
+                let oid: git2::Oid = sha.into();
+                Ok(oid.into())
+            }
         }
     }
 }
@@ -469,10 +474,10 @@ fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobCon
                         );
                     }
                     BlobContent::Html(html)
-                },
+                }
                 _ => BlobContent::Ascii(content.to_owned()),
             }
-        },
+        }
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -510,9 +515,29 @@ pub struct LocalState {
 ///
 /// Will return [`Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
+    let repo = git2::Repository::open(repo_path)?;
+    let first_branch = repo
+        .branches(Some(git2::BranchType::Local))?
+        .filter_map(|branch_result| {
+            let (branch, _) = branch_result.ok()?;
+            let name = branch.name().ok()?;
+            name.map(String::from)
+        })
+        .min()
+        .expect("Could not find any branches.");
+
+    log::debug!(
+        "The fallback branch for this repository is: {:?}",
+        first_branch
+    );
+
     let repo = git::Repository::new(repo_path)?;
-    // TODO(finto): This should be the default branch of the project, possibly.
-    let browser = Browser::new(&repo, git::Branch::local("master"))?;
+
+    let browser = match Browser::new(&repo, git::Branch::local("master")) {
+        Ok(browser) => browser,
+        Err(_) => Browser::new(&repo, git::Branch::local(&first_branch))?,
+    };
+
     let mut branches = browser
         .list_branches(Some(BranchType::Local))?
         .into_iter()
@@ -531,9 +556,9 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit_header<'repo>(
     browser: &mut Browser<'repo>,
-    sha1: &str,
+    sha1: Oid,
 ) -> Result<CommitHeader, Error> {
-    browser.commit(git::Oid::from_str(sha1)?)?;
+    browser.commit(sha1.into())?;
 
     let history = browser.get();
     let commit = history.first();
@@ -546,17 +571,16 @@ pub fn commit_header<'repo>(
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, Error> {
-    let oid = git::Oid::from_str(sha1)?;
-    browser.commit(oid)?;
+pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, Error> {
+    browser.commit(sha1.into())?;
 
     let history = browser.get();
     let commit = history.first();
 
     let diff = if let Some(parent) = commit.parents.first() {
-        browser.diff(*parent, oid)?
+        browser.diff(*parent, sha1.into())?
     } else {
-        browser.initial_diff(oid)?
+        browser.initial_diff(sha1.into())?
     };
 
     let mut deletions = 0;
@@ -569,13 +593,14 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
             }
         }
     }
 
+    let oid: git2::Oid = sha1.into();
     let branches = browser.revision_branches(oid)?;
 
     // If a commit figures in more than one branch, there's no real way to know
@@ -592,7 +617,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
     );
 
     Ok(Commit {
-        header: commit.into(),
+        header: CommitHeader::from(commit),
         stats: CommitStats {
             additions,
             deletions,
@@ -613,9 +638,9 @@ pub fn commits<'repo>(
 ) -> Result<Vec<CommitHeader>, Error> {
     browser.branch(branch)?;
 
-    let commits = browser.get().iter().map(CommitHeader::from).collect();
+    let headers = browser.get().iter().map(CommitHeader::from).collect();
 
-    Ok(commits)
+    Ok(headers)
 }
 
 /// Retrieves the list of [`Tag`] for the given project `id`.
@@ -796,11 +821,13 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::convert::TryFrom;
+
     use librad::keys::SecretKey;
-    use radicle_surf::vcs::git;
 
     use crate::config;
     use crate::control;
+    use crate::oid;
     use crate::peer;
     use crate::signer;
 
@@ -831,7 +858,7 @@ mod tests {
         )
         .expect("unable to replicate");
         let urn = platinum_project.urn();
-        let sha = "91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1";
+        let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
         let commit = api
             .with_browser(&urn, |browser| {
@@ -839,7 +866,7 @@ mod tests {
             })
             .expect("failed to get commit");
 
-        assert_eq!(commit.sha1, git::Oid::from_str(sha)?);
+        assert_eq!(commit.sha1, sha);
 
         Ok(())
     }

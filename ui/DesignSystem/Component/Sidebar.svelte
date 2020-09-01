@@ -1,6 +1,7 @@
 <script>
   import { location, link } from "svelte-spa-router";
 
+  import * as modal from "../../src/modal.ts";
   import * as path from "../../src/path.ts";
 
   import Tooltip from "./Tooltip.svelte";
@@ -59,6 +60,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
   }
 
   .indicator:hover:before {
@@ -121,11 +123,12 @@
   <ul class="bottom">
     <li
       class="item indicator"
-      class:active={path.active(path.discovery(), $location)}
-      data-cy="discovery">
-      <Tooltip value="Discover">
-        <a href={path.discovery()} use:link>
-          <Icon.Network />
+      data-cy="search"
+      on:click|stopPropagation={() => modal.toggle(path.search())}>
+      <Tooltip value="Navigate to a project">
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <Icon.MagnifyingGlass />
         </a>
       </Tooltip>
     </li>

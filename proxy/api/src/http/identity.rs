@@ -5,14 +5,15 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
-use warp::{Filter, Rejection, Reply};
+use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::context;
 use crate::http;
 use crate::identity;
 
 /// Combination of all identity routes.
-pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
+pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     get_filter(Arc::clone(&ctx))
         .or(create_filter(Arc::clone(&ctx)))
         .or(list_filter(ctx))
@@ -20,7 +21,9 @@ pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
 }
 
 /// `POST /`
-fn create_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn create_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::post())
         .and(warp::body::json())
@@ -42,7 +45,7 @@ fn create_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
 }
 
 /// `GET /<id>`
-fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(document::param::<coco::Urn>(
             "id",
@@ -71,9 +74,10 @@ fn get_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejec
 }
 
 /// `GET /`
-fn list_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
+        .and(path::end())
         .and(document::document(document::description(
             "List known Identities",
         )))
@@ -94,14 +98,14 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::context;
     use crate::error;
-    use crate::http;
     use crate::identity;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
@@ -120,14 +124,14 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(ctx: http::Ctx, id: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn get(ctx: context::Ctx, id: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id)?;
         Ok(reply::json(&id))
     }
 
     /// Retrieve the list of identities known to the session user.
-    pub async fn list(ctx: http::Ctx) -> Result<impl Reply, Rejection> {
+    pub async fn list(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let users = identity::list(&ctx.peer_api)?;
         Ok(reply::json(&users))
@@ -255,6 +259,7 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
+    use crate::context;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -263,7 +268,7 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let res = request()
@@ -311,7 +316,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -346,7 +351,7 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;

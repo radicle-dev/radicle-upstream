@@ -7,18 +7,23 @@ import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
+import Hoverable from "./Hoverable.svelte";
+import Illustration from "./Illustration.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
+import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
+import ProjectList from "./ProjectList.svelte";
 import Rad from "./Rad.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
+import SearchModal from "./SearchModal.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
@@ -49,14 +54,18 @@ export {
   Error,
   Header,
   HorizontalMenu,
+  Hoverable,
+  Illustration,
   Label,
   List,
+  ModalOverlay,
   NavigationButtons,
   Notification,
   NotificationFaucet,
   ModalLayout,
   Placeholder,
   ProjectCard,
+  ProjectList,
   Rad,
   RadicleLogo,
   RadioOption,
@@ -64,6 +73,7 @@ export {
   Remote,
   RemoteHelperHint,
   Row,
+  SearchModal,
   SegmentedControl,
   Sidebar,
   SidebarLayout,

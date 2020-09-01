@@ -2,7 +2,6 @@ import { parse, stringify, ParsedQs } from "qs";
 import regexparam from "regexparam";
 import { RevisionQuery } from "./source";
 
-export const search = (): string => "/search";
 export const settings = (): string => "/settings";
 
 export const discovery = (): string => "/discovery";
@@ -10,11 +9,14 @@ export const discovery = (): string => "/discovery";
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
+export const profileTracking = (): string => "/profile/tracking";
 export const profileWallet = (): string => "/profile/wallet";
 export const registerUser = (): string => "/user-registration";
 export const createIdentity = (): string => "/identity/new";
 
-export const userProfile = (id: string): string => `/user/${id}`;
+export const userProfile = (urn: string): string => `/user/${urn}`;
+export const userProfileProjects = (urn: string): string =>
+  `/user/${urn}/projects`;
 
 export const orgs = (id: string): string => `/orgs/${id}`;
 export const orgOnboard = (id: string): string => `/orgs/${id}/onboard`;
@@ -37,6 +39,8 @@ export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>
   `/projects/${id}/revisions`;
+export const projectUntracked = (urn: string): string =>
+  `/projects/untracked/${urn}`;
 
 export const projectSource = (
   projectId: string,
@@ -66,6 +70,9 @@ export const transactions = (id: string, viewerAccountId: string): string =>
   `/transactions/${id}?${stringify({ viewerAccountId })}`;
 
 export const designSystemGuide = (): string => "/design-system-guide";
+
+// modal routes
+export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
 
 export const active = (

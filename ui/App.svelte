@@ -1,12 +1,17 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
+  import * as modal from "./src/modal.ts";
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
   import { clear, fetch, session as store } from "./src/session.ts";
 
-  import { NotificationFaucet, Remote } from "./DesignSystem/Component";
+  import {
+    NotificationFaucet,
+    Remote,
+    ModalOverlay,
+  } from "./DesignSystem/Component";
   import { Button } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
@@ -16,7 +21,6 @@
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import Shortcuts from "./Screen/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -25,17 +29,16 @@
   import Project from "./Screen/Project.svelte";
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
-  import Search from "./Screen/Search.svelte";
   import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
+  import Untracked from "./Screen/Project/Untracked.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
     "/": Blank,
     "/identity/new": IdentityCreation,
-    "/search": Search,
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
@@ -43,14 +46,14 @@
     "/orgs/:id/members/register": MemberRegistration,
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
+    "/projects/untracked/:urn": Untracked,
     "/projects/new": ProjectCreation,
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
-    "/user/:id": UserProfile,
-    "/user/:id/*": UserProfile,
+    "/user/:urn": UserProfile,
+    "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
-    "/shortcuts": Shortcuts,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
     "/send-funds": SendFunds,
@@ -95,8 +98,10 @@
 </style>
 
 <Hotkeys />
+<ModalOverlay store={modal.store} />
 <NotificationFaucet />
 <Theme />
+
 <Remote {store} context="session">
   <Router {routes} />
 

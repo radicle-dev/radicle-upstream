@@ -8,11 +8,12 @@ use librad::meta::user;
 use librad::peer;
 use radicle_surf::vcs::git;
 
+use crate::context;
 use crate::http;
 use crate::identity;
 
 /// Combination of all source filters.
-pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
+pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     blob_filter(ctx.clone())
         .or(branches_filter(ctx.clone()))
         .or(commit_filter(ctx.clone()))
@@ -25,7 +26,7 @@ pub fn filters(ctx: http::Ctx) -> BoxedFilter<(impl Reply,)> {
 }
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
-fn blob_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn blob_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -35,7 +36,9 @@ fn blob_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Reje
 }
 
 /// `GET /branches/<project_id>`
-fn branches_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn branches_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -45,17 +48,21 @@ fn branches_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = 
 }
 
 /// `GET /commit/<project_id>/<sha1>`
-fn commit_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn commit_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
-        .and(path::param::<String>())
+        .and(path::param::<coco::oid::Oid>())
         .and_then(handler::commit)
 }
 
 /// `GET /commits/<project_id>?branch=<branch>`
-fn commits_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn commits_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -74,7 +81,7 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
-    ctx: http::Ctx,
+    ctx: context::Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
@@ -85,7 +92,7 @@ fn revisions_filter(
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn tags_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -94,7 +101,7 @@ fn tags_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Reje
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter(ctx: http::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn tree_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -110,14 +117,16 @@ mod handler {
 
     use radicle_surf::vcs::git;
 
+    use coco::oid;
+
+    use crate::context;
     use crate::error;
-    use crate::http;
     use crate::session;
     use crate::session::settings;
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -163,7 +172,7 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
@@ -180,16 +189,14 @@ mod handler {
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         project_urn: coco::Urn,
-        sha1: String,
+        sha1: oid::Oid,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let commit = ctx
             .peer_api
-            .with_browser(&project_urn, |mut browser| {
-                coco::commit(&mut browser, &sha1)
-            })
+            .with_browser(&project_urn, |mut browser| coco::commit(&mut browser, sha1))
             .map_err(error::Error::from)?;
 
         Ok(reply::json(&commit))
@@ -197,7 +204,7 @@ mod handler {
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         project_urn: coco::Urn,
         query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
@@ -221,7 +228,7 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         owner: coco::User,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
@@ -247,7 +254,7 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags(ctx: http::Ctx, project_urn: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn tags(ctx: context::Ctx, project_urn: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let tags = ctx
             .peer_api
@@ -259,7 +266,7 @@ mod handler {
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        ctx: http::Ctx,
+        ctx: context::Ctx,
         project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
@@ -365,6 +372,7 @@ impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
+    use std::convert::TryFrom;
     use std::env;
 
     use pretty_assertions::assert_eq;
@@ -374,6 +382,7 @@ mod test {
 
     use radicle_surf::vcs::git;
 
+    use crate::context;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -382,7 +391,7 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -516,7 +525,7 @@ mod test {
     #[tokio::test]
     async fn blob_dev_branch() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -569,7 +578,7 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -606,7 +615,7 @@ mod test {
     #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -621,7 +630,8 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
+        let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")
+            .map_err(coco::Error::from)?;
         let want = ctx
             .peer_api
             .with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
@@ -659,7 +669,7 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -675,7 +685,8 @@ mod test {
         let urn = platinum_project.urn();
 
         let branch = git::Branch::local("master");
-        let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+        let head = coco::oid::Oid::try_from("223aaf87d6ea62eef0014857640fd7c8dd0f80b5")
+            .map_err(coco::Error::from)?;
         let (want, head_commit) = ctx.peer_api.with_browser(&urn, |mut browser| {
             let want = coco::commits(&mut browser, branch.clone())?;
             let head_commit = coco::commit_header(&mut browser, head)?;
@@ -704,7 +715,7 @@ mod test {
     #[tokio::test]
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let mut path = env::current_dir()?;
@@ -737,7 +748,7 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -817,7 +828,7 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -856,7 +867,7 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -942,7 +953,7 @@ mod test {
             .add(b'=');
 
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;

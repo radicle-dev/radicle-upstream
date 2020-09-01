@@ -8,7 +8,7 @@
 
 <Button
   dataCy="new-project-button"
-  variant="transparent"
+  variant="outline"
   icon={Icon.Plus}
   on:click={() => push(path.createProject())}>
   New project

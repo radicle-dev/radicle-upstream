@@ -5,6 +5,7 @@
   import { ValidationStatus } from "../../../src/validation.ts";
 
   export let style = null;
+  export let inputStyle = null;
   export let placeholder = null;
   export let value = null;
   export let dataCy = null;
@@ -13,6 +14,14 @@
   export let validation = null;
   export let showLeftItem = false;
   export let showSuccessCheck = false;
+  export let spellcheck = false;
+  export let autofocus = false;
+
+  let input;
+
+  // Can't use normal `autofocus` attribute on the `input`:
+  // "Autofocus processing was blocked because a document's URL has a fragment"
+  $: if (autofocus) input && input.focus();
 </script>
 
 <style>
@@ -90,7 +99,7 @@
   .left-item-wrapper {
     align-items: center;
     display: flex;
-    height: 40px;
+    height: 100%;
     justify-content: center;
     left: 0px;
     padding-left: 8px;
@@ -108,7 +117,10 @@
     bind:value
     {disabled}
     on:change
-    on:input />
+    on:input
+    bind:this={input}
+    {spellcheck}
+    style={inputStyle} />
 
   {#if showLeftItem}
     <div class="left-item-wrapper">
@@ -119,8 +131,8 @@
   {#if validation}
     {#if validation.status === ValidationStatus.Loading}
       <Spinner
-        style="justify-content: flex-start; position: absolute; top: 8px; right:
-        10px;" />
+        style="justify-content: flex-start; position: absolute; height: 100%;
+        right: 10px;" />
     {:else if validation.status === ValidationStatus.Success && showSuccessCheck}
       <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;

@@ -1,6 +1,6 @@
 {
   "name": "radicle-upstream",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": {
     "name": "radicle team",
     "email": "dev@radicle.xyz",
@@ -111,7 +111,7 @@
     "test:unit:watch": "jest --watchAll",
     "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",
     "wait:debug": "wait-on tcp:8080 && yarn cypress:open",
-    "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/proxy dist && cp proxy/target/release/git-remote-rad dist && electron-builder --publish never",
+    "dist": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && electron-builder --publish never",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:8080 && NODE_ENV=development electron .",
     "svelte:check": "svelte-check",
     "svelte:clean": "rm -rf public/bundle.*",
@@ -119,6 +119,7 @@
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
     "proxy:build": "cd proxy && cargo build --all-features --all-targets",
     "proxy:build:release": "cd proxy && cargo build --release --all-features --all-targets",
+    "proxy:clean": "cd proxy && cargo clean",
     "proxy:start": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --registry=emulator",
     "proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --registry=emulator --test",
     "proxy:start:ffnet": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --registry=rpc.ff.radicle.network",
