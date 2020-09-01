@@ -31,11 +31,10 @@ pub async fn announce(
     updates: impl Iterator<Item = &Announcement> + Send,
 ) -> Result<(), Error> {
     for (project_urn, head, hash) in updates {
-        let urn = uri::RadUrn::new(
-            project_urn.id.clone(),
-            project_urn.proto,
-            uri::Path::parse(head)?,
-        );
+        let urn = uri::RadUrn {
+            path: uri::Path::parse(head)?,
+            ..project_urn.clone()
+        };
         let have = net::peer::Gossip {
             urn,
             rev: Some(net::peer::Rev::Git((*hash).into())),
