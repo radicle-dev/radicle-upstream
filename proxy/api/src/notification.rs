@@ -28,7 +28,7 @@ pub struct Subscriptions {
 impl Subscriptions {
     /// Broadcast [`Notification`] to all active subscriptions.
     pub async fn broadcast(&self, notification: Notification) {
-        // We use retain to remain all closed subscriptions.
+        // We use retain to discard all closed subscriptions.
         self.subs
             .write()
             .await
