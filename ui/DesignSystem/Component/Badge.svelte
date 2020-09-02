@@ -1,6 +1,8 @@
-<script>
-  export let variant = null;
-  export let style = null;
+<script lang="ts">
+  import { BadgeType } from "../../src/badge";
+
+  export let variant: BadgeType;
+  export let style: string;
 
   const caption = String(variant);
 </script>

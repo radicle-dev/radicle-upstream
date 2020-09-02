@@ -1,11 +1,13 @@
-<script>
+<script lang="ts">
   import { Icon } from "../Primitive";
   import Badge from "../Component/Badge.svelte";
+  import { BadgeType } from "../../src/badge";
 
-  export let title = null;
-  export let description = null;
+  export let title: string;
+
+  export let badge: BadgeType | undefined = undefined;
+  export let description: string | undefined = undefined;
   export let showRegisteredBadge = false;
-  export let badge = null;
 </script>
 
 <style>
@@ -50,7 +52,7 @@
         </div>
       {/if}
       {#if badge}
-        <Badge style="margin-left: 0.5rem" variant={badge} />
+        <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </div>
     <p class="desc">

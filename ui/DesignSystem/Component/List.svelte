@@ -1,11 +1,12 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let dataCy = null;
-  export let items = null;
-  export let style = null;
+  export let items: any[];
+
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
 </script>
 
 <style>

@@ -1,19 +1,22 @@
-<script>
-  import { BadgeType } from "../../src/badge.ts";
+<script lang="ts">
+  import { BadgeType } from "../../src/badge";
+  import * as project from "../../src/project";
 
   import { Flex } from "../Primitive";
   import List from "./List.svelte";
   import ProjectCard from "./ProjectCard.svelte";
   import Stats from "./Stats.svelte";
 
-  export let projects = null;
-  export let urn = null;
+  export let projects: project.Project[];
+  export let urn: string;
 
-  const projectCardProps = project => ({
+  const projectCardProps = (project: project.Project) => ({
     title: project.metadata.name,
     description: project.metadata.description,
-    showRegisteredBadge: project.registration,
-    badge: project.metadata.maintainers.includes(urn) && BadgeType.Maintainer,
+    showRegisteredBadge: !!project.registration,
+    badge:
+      (project.metadata.maintainers.includes(urn) && BadgeType.Maintainer) ||
+      undefined,
   });
 </script>
 
