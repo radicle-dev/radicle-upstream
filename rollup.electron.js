@@ -1,4 +1,4 @@
-import babel from "rollup-plugin-babel";
+import babel from "@rollup/plugin-babel";
 import externals from "rollup-plugin-node-externals";
 
 export default {
@@ -9,16 +9,8 @@ export default {
   },
   plugins: [
     babel({
+      babelHelpers: 'runtime',
       exclude: "node_modules/**",
-      // We need the runtimeHelpers to avoid
-      // "ReferenceError: regeneratorRuntime is not defined"
-      // when using ipcMain.handle
-      //
-      // The following babel plugins (and .babelrc config) are also required
-      // for this to work:
-      // @babel/plugin-transform-runtime
-      // @babel/runtime
-      runtimeHelpers: true,
     }),
 
     // This avoids the following warning:

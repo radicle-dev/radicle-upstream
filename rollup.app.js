@@ -1,6 +1,6 @@
-import commonjs from "rollup-plugin-commonjs";
+import commonjs from "@rollup/plugin-commonjs";
 import livereload from "rollup-plugin-livereload";
-import resolve from "rollup-plugin-node-resolve";
+import resolve from "@rollup/plugin-node-resolve";
 import svelte from "rollup-plugin-svelte";
 import { terser } from "rollup-plugin-terser";
 import typescript from "@rollup/plugin-typescript";
@@ -28,19 +28,15 @@ export default {
       preprocess: autoPreprocess(),
     }),
 
-    typescript(),
+    commonjs(),
 
-    // If you have external dependencies installed from
-    // npm, you'll most likely need these plugins. In
-    // some cases you'll need additional configuration —
-    // consult the documentation for details:
-    // https://github.com/rollup/rollup-plugin-commonjs
     resolve({
       browser: true,
       dedupe: importee =>
         importee === "svelte" || importee.startsWith("svelte/"),
     }),
-    commonjs(),
+
+    typescript(),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
