@@ -22,7 +22,7 @@ use librad::paths;
 use librad::peer::PeerId;
 use librad::signer::SomeSigner;
 use librad::uri::{RadUrl, RadUrn};
-use radicle_surf::vcs::git;
+use radicle_surf::vcs::git::{self, git2};
 
 use crate::error::Error;
 use crate::project;
@@ -114,6 +114,20 @@ impl Api {
         api.storage().reopen()?;
 
         Ok(())
+    }
+
+    /// Check the storage to see if we have the given commit for project at `urn`.
+    ///
+    /// # Errors
+    ///
+    ///   * Checking the storage for the commit fails.
+    ///
+    /// # Panics
+    ///
+    ///   * Unable to acquire the lock.
+    pub fn has_commit(&self, urn: &RadUrn, oid: impl Into<git2::Oid>) -> Result<bool, Error> {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        Ok(api.storage().has_commit(urn, oid.into())?)
     }
 
     /// Our current peers [`PeerId`].
@@ -318,6 +332,25 @@ impl Api {
         Ok(storage.metadata(urn)?)
     }
 
+    /// Fetch any updates at the given `RadUrl`, providing address hints if we have them.
+    ///
+    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
+    ///
+    /// # Errors
+    ///
+    ///   * Could not successfully acquire a lock to the API.
+    ///   * Could not open librad storage.
+    ///   * Failed to fetch the updates.
+    ///   * Failed to set the rad/self of this project.
+    pub fn fetch<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<(), Error>
+    where
+        Addrs: IntoIterator<Item = SocketAddr>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        Ok(storage.fetch_repo(url, addr_hints)?)
+    }
+
     /// Get a repo browser for a project.
     ///
     /// # Errors
@@ -498,6 +531,8 @@ mod test {
     use std::process::Command;
 
     use librad::keys::SecretKey;
+    use librad::uri;
+    use radicle_surf::vcs::git::git2;
 
     use crate::config;
     use crate::control;
@@ -768,6 +803,102 @@ mod test {
                 .collect::<Vec<_>>(),
             vec![user_urn]
         );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn can_fetch_project_changes() -> Result<(), Error> {
+        let alice_key = SecretKey::new();
+
+        let alice_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let alice_repo_path = alice_tmp_dir.path().join("radicle");
+        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
+        let alice_peer = Api::new(config).await?;
+        let alice_peer_id = alice_peer.peer_id().clone();
+        let alice_addr = alice_peer.listen_addr();
+
+        let alice = alice_peer.init_owner(&alice_key, "alice")?;
+        let project = alice_peer.init_project(
+            &alice_key,
+            &alice,
+            &shia_le_pathbuf(alice_repo_path.clone()),
+        )?;
+        let urn = project.urn();
+
+        let bob_key = SecretKey::new();
+
+        let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+
+        let bob_config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
+        let bob_peer = Api::new(bob_config).await?;
+        let _bob = bob_peer.init_owner(&bob_key, "bob")?;
+
+        let bobby = bob_peer.clone();
+        let url = urn.into_rad_url(alice_peer_id.clone());
+        let project_urn = tokio::task::spawn_blocking(move || {
+            bobby.clone_project(url, vec![alice_addr].into_iter())
+        })
+        .await
+        .expect("failed to join thread")?;
+
+        assert_eq!(
+            bob_peer
+                .list_projects()?
+                .into_iter()
+                .map(|project| project.urn())
+                .collect::<Vec<_>>(),
+            vec![project_urn.clone()]
+        );
+
+        let commit_id = {
+            let repo = git2::Repository::open(alice_repo_path.join(project.name()))?;
+            let oid = repo
+                .find_reference(&format!("refs/heads/{}", project.default_branch()))?
+                .target()
+                .expect("Missing first commit");
+            let commit = repo.find_commit(oid)?;
+            let commit_id = {
+                let empty_tree = {
+                    let mut index = repo.index()?;
+                    let oid = index.write_tree()?;
+                    repo.find_tree(oid)?
+                };
+
+                let author = git2::Signature::now(alice.name(), "alice@example.com")?;
+                repo.commit(
+                    Some(&format!("refs/heads/{}", project.default_branch())),
+                    &author,
+                    &author,
+                    "Successor commit",
+                    &empty_tree,
+                    &[&commit],
+                )?
+            };
+
+            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+            commit_id
+        };
+
+        let bobby = bob_peer.clone();
+        let url = project_urn.into_rad_url(alice_peer_id.clone());
+        tokio::task::spawn_blocking(move || bobby.fetch(url, vec![alice_addr]))
+            .await
+            .expect("failed to join thread")?;
+
+        assert!(bob_peer.has_commit(
+            &uri::RadUrn {
+                path: uri::Path::parse(format!(
+                    "refs/remotes/{}/heads/{}",
+                    alice_peer_id,
+                    project.default_branch()
+                ))
+                .expect("failed to parse uri::Path"),
+                ..project.urn()
+            },
+            commit_id
+        )?);
 
         Ok(())
     }
