@@ -5,7 +5,7 @@ import * as remote from "./remote";
 const projectsStore = remote.createStore<project.Project[]>();
 export const projects = projectsStore.readable;
 
-export const fetch = () =>
+export const fetch = (): Promise<void> =>
   api
     .get<project.Project[]>("projects/discover")
     .then(projectsStore.success)

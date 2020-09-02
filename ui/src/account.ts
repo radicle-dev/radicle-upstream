@@ -18,7 +18,7 @@ export const exists = (id: string): Promise<boolean> => {
 const balanceStore = remote.createStore<number>();
 export const balance = balanceStore.readable;
 
-export const updateBalance = (id: string) => {
+export const updateBalance = (id: string): void => {
   balanceStore.loading();
   getBalance(id).then(balanceStore.success).catch(balanceStore.error);
 };
