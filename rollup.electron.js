@@ -9,7 +9,7 @@ export default {
   },
   plugins: [
     babel({
-      babelHelpers: 'runtime',
+      babelHelpers: "runtime",
       exclude: "node_modules/**",
     }),
 
