@@ -211,7 +211,9 @@ export const orgTransactions = (
   return transactions.filter(tx => involvesOrg(tx.messages[0], id, accountId));
 };
 
-export const formatProjectMetadata = (project: Project) =>
+export const formatProjectMetadata = (
+  project: Project
+): { name: string; description?: string } =>
   project.maybeProject
     ? {
         name: project.name,

@@ -4,7 +4,6 @@
 use serde::Serialize;
 use std::convert::Infallible;
 use std::fmt;
-use warp::document::{self, ToDocumentedType};
 use warp::http::StatusCode;
 use warp::{reject, reply, Rejection, Reply};
 
@@ -67,25 +66,6 @@ pub struct Error {
     pub message: String,
     /// The triggered error variant.
     pub variant: String,
-}
-
-impl ToDocumentedType for Error {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
-        properties.insert(
-            "message".into(),
-            document::string()
-                .description("Human readable description of the error case")
-                .example("Malformed ID, supported charactes: [a-zA-Z0-9]"),
-        );
-        properties.insert(
-            "variant".into(),
-            document::string()
-                .description("Enum of the error for the client to vary on")
-                .example("INVALID_ID"),
-        );
-        properties.into()
-    }
 }
 
 /// Handler to convert [`error::Error`] to [`Error`] response.

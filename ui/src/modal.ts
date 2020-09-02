@@ -19,7 +19,7 @@ const routes: Record<ModalRoute, typeof SvelteComponent> = {
 
 export const store = writable<ModalOverlay>({ show: false, component: null });
 
-export const hide = () => store.set({ show: false, component: null });
+export const hide = (): void => store.set({ show: false, component: null });
 
 export const toggle = (path: ModalRoute): void => {
   const newComponent = routes[path];

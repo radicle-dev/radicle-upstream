@@ -9,7 +9,7 @@ cypress/videos
 cypress/screenshots
 cypress/fixtures/example.json
 cypress/workspace
-proxy/target
+proxy/**/target
 proxy/**/*.rs.bk
 schema.gql
 ui/src/*.js

@@ -1,14 +1,10 @@
 //! Endpoints and serialisation for [`session::Session`] related types.
 
-use std::collections::HashMap;
-use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::context;
 use crate::http;
-use crate::identity;
-use crate::session;
 
 /// Combination of all session filters.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -25,13 +21,6 @@ fn delete_filter(
     warp::delete()
         .and(path::end())
         .and(http::with_context(ctx))
-        .and(document::document(document::description(
-            "Clear current Session",
-        )))
-        .and(document::document(document::tag("Session")))
-        .and(document::document(
-            document::response(204, None).description("Current session deleted"),
-        ))
         .and_then(handler::delete)
 }
 
@@ -40,17 +29,6 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
     warp::get()
         .and(path::end())
         .and(http::with_context(ctx))
-        .and(document::document(document::description(
-            "Fetch current Session",
-        )))
-        .and(document::document(document::tag("Session")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(session::Session::document()).mime("application/json"),
-            )
-            .description("Currently active Session"),
-        ))
         .and_then(handler::get)
 }
 
@@ -63,11 +41,6 @@ fn update_settings_filter(
         .and(path::end())
         .and(http::with_context(ctx))
         .and(warp::body::json())
-        .and(document::document(document::description("Update settings")))
-        .and(document::document(document::tag("Session")))
-        .and(document::document(
-            document::response(204, None).description("Settings successfully updated"),
-        ))
         .and_then(handler::update_settings)
 }
 
@@ -105,48 +78,6 @@ mod handler {
         session::set_settings(&ctx.store, settings)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
-    }
-}
-
-impl ToDocumentedType for session::Session {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(1);
-        properties.insert(
-            "identity".into(),
-            identity::Identity::document().nullable(true),
-        );
-        properties.insert("settings".into(), session::settings::Settings::document());
-
-        document::DocumentedType::from(properties).description("Session")
-    }
-}
-
-impl ToDocumentedType for session::settings::Settings {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(2);
-        properties.insert(
-            "appearance".into(),
-            session::settings::Appearance::document(),
-        );
-
-        document::DocumentedType::from(properties).description("Settings")
-    }
-}
-
-impl ToDocumentedType for session::settings::Appearance {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(1);
-        properties.insert("theme".into(), session::settings::Theme::document());
-
-        document::DocumentedType::from(properties).description("Appearance")
-    }
-}
-
-impl ToDocumentedType for session::settings::Theme {
-    fn document() -> document::DocumentedType {
-        document::enum_string(vec!["dark".into(), "light".into()])
-            .description("Variants for possible color schemes.")
-            .example("dark")
     }
 }
 

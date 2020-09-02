@@ -1,8 +1,14 @@
 [package]
 name = "coco"
 version = "0.1.0"
-authors = ["Alexander Simmerl <a.simmerl@gmail.com>"]
+license = "GPL-3.0-only"
+authors = ["radicle team <dev@radicle.xyz>"]
 edition = "2018"
+description = "Abstractions and utilities to run and interact with link and surf."
+readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/proxy/README.md"
+categories = [ "code", "p2p" ]
+keywords = [ "radicle", "upstream", "proxy", "git", "quic" ]
+repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
 futures = { version = "0.3", features = [ "compat" ] }
@@ -16,7 +22,7 @@ tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+rev = "295efc256029096f2d6a0de41ffd7c2db7f57832"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"

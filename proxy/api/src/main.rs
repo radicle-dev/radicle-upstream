@@ -1,8 +1,8 @@
 use std::convert::TryFrom;
 
 use librad::paths;
-use radicle_keystore::pinentry::SecUtf8;
 
+use coco::announcement;
 use coco::seed;
 
 use api::config;
@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         coco::config::Paths::default()
     };
-    let pw = SecUtf8::from("radicle-upstream");
+    let pw = keystore::SecUtf8::from("radicle-upstream");
 
     let paths = paths::Paths::try_from(paths_config)?;
 
@@ -83,15 +83,57 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
 
-    log::info!("Starting API");
     let ctx = context::Ctx::from(context::Context {
         peer_api,
         keystore,
         store,
     });
+
+    {
+        let ctx = ctx.clone();
+        log::info!("Starting Announcement watcher");
+        tokio::task::spawn(announcement_watcher(ctx));
+    }
+
+    log::info!("Starting API");
     let api = http::api(ctx, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
+
+    Ok(())
+}
+
+async fn announcement_watcher(ctx: context::Ctx) {
+    // TODO(xla): Take interval timings from config/settings.
+    let mut timer = tokio::time::interval(std::time::Duration::from_secs(10));
+
+    loop {
+        timer.tick().await;
+
+        if let Err(err) = announce(ctx.clone()).await {
+            log::info!("Announcement watcher errored: {:?}", err);
+        }
+    }
+}
+
+async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
+    let ctx = ctx.read().await;
+    let old = session::announcements::load(&ctx.store)?;
+    let new = announcement::build(&ctx.peer_api)?;
+    let updates = announcement::diff(&old, &new);
+    let count = updates.len();
+
+    {
+        let updates = updates.clone();
+        ctx.peer_api
+            .with_protocol(|protocol| {
+                Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
+            })
+            .await?;
+    }
+
+    session::announcements::save(&ctx.store, updates)?;
+    log::debug!("announced {} updates", count);
 
     Ok(())
 }
