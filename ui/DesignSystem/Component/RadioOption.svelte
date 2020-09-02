@@ -1,5 +1,4 @@
 <script>
-  import { Icon } from "../Primitive";
   import { slide } from "svelte/transition";
 
   export let title = null;
@@ -9,17 +8,13 @@
 
 <style>
   .option {
-    border: 1px solid var(--color-foreground-level-3);
-    margin-bottom: 16px;
-    border-radius: 4px;
+    border: 0.0625rem solid var(--color-foreground-level-3);
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
   }
 
   .option.active {
-    border: 1px solid var(--color-foreground-level-3);
-  }
-
-  .option.active:hover {
-    background-color: var(--color-background);
+    background-color: var(--color-foreground-level-1);
   }
 
   .option:hover {
@@ -29,19 +24,17 @@
 
   .header {
     display: flex;
-    justify-content: space-between;
-    height: 72px;
-    align-items: center;
-    padding: 0 24px 0 24px;
+    flex-direction: column;
+    justify-content: center;
+    height: 4.5rem;
     cursor: pointer;
     user-select: none;
   }
 
   .body {
-    border-top: 1px solid var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-1);
-    padding: 16px 22px 24px 22px;
-    border-radius: 0 0 4px 4px;
+    padding: 0 1rem 1rem 1rem;
+    border-radius: 0 0 0.25rem 0.25rem;
   }
 </style>
 
@@ -50,8 +43,6 @@
     <p class="typo-text-bold" style="color: var(--color-foreground-level-6)">
       {title}
     </p>
-    <Icon.CheckCircle
-      style={active ? 'display: block; fill: var(--color-primary)' : 'display: none'} />
   </div>
   {#if active}
     <div class="body" in:slide>
