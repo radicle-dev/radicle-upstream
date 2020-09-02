@@ -29,21 +29,23 @@ mod handler {
 
     use crate::notification::{Notification, Subscriptions};
 
-    /// Provides an SSE events endpoint providing a stream of [`crate::notification::Notification`]s.
+    /// Provides an SSE events endpoint providing a stream of
+    /// [`crate::notification::Notification`]s.
     pub async fn stream(subscriptions: Subscriptions) -> Result<impl Reply, Rejection> {
         let subscriber = subscriptions.subscribe().await;
 
         Ok(sse::reply(sse::keep_alive().stream(map(subscriber))))
     }
 
-    /// Maps the [`crate::notification::Notification`] from a subscription to an [`sse::ServerSideEvent`].
+    /// Maps the [`crate::notification::Notification`] from a subscription to an
+    /// [`sse::ServerSideEvent`].
     fn map(
         subscriber: mpsc::UnboundedReceiver<Notification>,
     ) -> impl Stream<Item = Result<impl sse::ServerSentEvent, Infallible>> {
         subscriber.map(|notification| match notification {
             Notification::LocalPeerListening(addr) => {
                 Ok((sse::event("LOCAL_PEER_LISTENING"), sse::json(addr)))
-            }
+            },
         })
     }
 }
