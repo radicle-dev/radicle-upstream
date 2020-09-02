@@ -5,8 +5,10 @@
 
   let content;
   const clickOutside = ev => {
-    if (content && ev.target !== content && !content.contains(ev.target))
+    if (content && ev.target !== content && !content.contains(ev.target)) {
       modal.hide();
+    }
+    ev.stopPropagation();
   };
 </script>
 

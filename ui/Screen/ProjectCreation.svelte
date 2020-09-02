@@ -24,6 +24,7 @@
     Illustration,
     RadioOption,
     RemoteHelperHint,
+    Tooltip,
   } from "../DesignSystem/Component";
 
   let currentSelection;
@@ -361,12 +362,16 @@
       {/if}
     </div>
 
-    <Input.Text
-      placeholder="Project name*"
-      dataCy="name"
-      bind:value={name}
-      validation={nameValidation}
-      disabled={isExisting} />
+    <Tooltip
+      value={isExisting && 'The project name is taken from the the repository you selected'}
+      position="top">
+      <Input.Text
+        placeholder="Project name*"
+        dataCy="name"
+        bind:value={name}
+        validation={nameValidation}
+        disabled={isExisting} />
+    </Tooltip>
 
     <Input.Text
       dataCy="description"
