@@ -21,7 +21,8 @@
 
   // Can't use normal `autofocus` attribute on the `input`:
   // "Autofocus processing was blocked because a document's URL has a fragment"
-  $: if (autofocus) inputElement && inputElement.focus();
+  // preventScroll is necessary for onboarding animations to work.
+  $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
 
   const onKeydown = event => {
     if (event.key === "Enter") {
