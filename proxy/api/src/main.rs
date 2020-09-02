@@ -10,6 +10,7 @@ use api::context;
 use api::env;
 use api::http;
 use api::keystore;
+use api::notification;
 use api::session;
 
 /// Flags accepted by the proxy binary.
@@ -29,6 +30,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         test: args.contains("--test"),
     };
 
+    let proxy_path = config::proxy_path()?;
+    let bin_dir = config::bin_dir()?;
+    coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
+
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
     log::debug!(
         "Temporary path being used for this run is: {:?}",
@@ -41,12 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         coco::config::Paths::default()
     };
-    let pw = keystore::SecUtf8::from("radicle-upstream");
-
     let paths = paths::Paths::try_from(paths_config)?;
-
-    let mut keystore = keystore::Keystorage::new(&paths, pw);
-    let key = keystore.init_librad_key()?;
 
     let store = {
         let store_path = if args.test {
@@ -59,6 +59,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         kv::Store::new(config)?
     };
+
+    let pw = keystore::SecUtf8::from("radicle-upstream");
+    let mut keystore = keystore::Keystorage::new(&paths, pw);
+    let key = keystore.init_librad_key()?;
 
     let peer_api = {
         let seeds = session::settings(&store).await?.coco.seeds;
@@ -79,9 +83,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         coco::control::setup_fixtures(&peer_api, &key, &owner).expect("fixture creation failed");
     }
 
-    let proxy_path = config::proxy_path()?;
-    let bin_dir = config::bin_dir()?;
-    coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
+    let subscriptions = notification::Subscriptions::default();
 
     let ctx = context::Ctx::from(context::Context {
         peer_api,
@@ -96,7 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     log::info!("Starting API");
-    let api = http::api(ctx, args.test);
+    let api = http::api(ctx, subscriptions, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 
