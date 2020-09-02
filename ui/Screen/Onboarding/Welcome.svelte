@@ -6,9 +6,12 @@
   import { RadicleLogo } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
 
+  let ran = false;
+
   const onKeydown = event => {
-    if (event.key === "Enter") {
+    if (!ran && event.key === "Enter") {
       next();
+      ran = true;
     }
   };
 

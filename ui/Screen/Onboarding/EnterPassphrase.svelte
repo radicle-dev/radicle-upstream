@@ -78,12 +78,13 @@
   $: allowNext =
     passphrase && passphrase === repeatedPassphrase && !validations;
 
-  const next = () => {
-    if (!allowNext) {
-      return;
-    }
+  let ran = false;
 
-    dispatch("next", passphrase);
+  const next = () => {
+    if (!ran && allowNext) {
+      ran = true;
+      dispatch("next", passphrase);
+    }
   };
 </script>
 

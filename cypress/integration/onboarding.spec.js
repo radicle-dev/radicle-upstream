@@ -5,8 +5,7 @@ context("identity creation", () => {
   };
 
   beforeEach(() => {
-    cy.nukeCocoState();
-    cy.nukeSessionState();
+    cy.nukeAllState();
     cy.visit("./public/index.html");
   });
 
@@ -23,20 +22,18 @@ context("identity creation", () => {
       cy.get("body").type("{enter}");
 
       // Enter name screen.
-      cy.contains("what should we call you").should("exist");
-      cy.get("body").type(validUser.handle);
-      cy.get("body").type("{enter}");
+      cy.focused().type(validUser.handle);
+      cy.focused().type("{enter}");
 
       // Enter passphrase screen.
       cy.contains("Next, you'll enter a passphrase.").should("exist");
-      cy.get("body").type(validUser.passphrase);
-      cy.get("body").type("{enter}");
-      cy.get("body").type(validUser.passphrase);
-      cy.get("body").type("{enter}");
+      cy.focused().type(validUser.passphrase);
+      cy.focused().type("{enter}");
+      cy.focused().type(validUser.passphrase);
+      cy.focused().type("{enter}");
 
       // Success screen.
-      cy.contains("All set!").should("exist");
-      cy.pick("shareable-identifier")
+      cy.pick("urn")
         .contains(/rafalca@/)
         .should("exist");
 
@@ -59,7 +56,7 @@ context("identity creation", () => {
       cy.pick("set-passphrase-button").click();
 
       // Success screen.
-      cy.pick("shareable-identifier")
+      cy.pick("urn")
         .contains(/rafalca@/)
         .should("exist");
 
@@ -97,7 +94,7 @@ context("identity creation", () => {
       cy.pick("passphrase-input").type("1234");
       cy.pick("repeat-passphrase-input").type("1234");
       cy.pick("set-passphrase-button").click();
-      cy.pick("shareable-identifier")
+      cy.pick("urn")
         .contains(/cloudhead@/)
         .should("exist");
       cy.pick("go-to-profile-button").click();
