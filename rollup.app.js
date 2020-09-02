@@ -1,6 +1,9 @@
 import commonjs from "@rollup/plugin-commonjs";
 import livereload from "rollup-plugin-livereload";
 import resolve from "@rollup/plugin-node-resolve";
+import inject from "@rollup/plugin-inject";
+import json from "@rollup/plugin-json";
+import * as browserifyNodeBuiltins from "browserify/lib/builtins";
 import svelte from "rollup-plugin-svelte";
 import { terser } from "rollup-plugin-terser";
 import typescript from "@rollup/plugin-typescript";
@@ -30,16 +33,39 @@ export default {
 
     resolve({
       browser: true,
+      preferBuiltins: true,
       dedupe: importee =>
         importee === "svelte" || importee.startsWith("svelte/"),
     }),
 
     commonjs(),
 
+    inject({
+      modules: {
+        process: "_process",
+        Buffer: ["buffer", "Buffer"],
+      },
+    }),
+
+    {
+      name: "node-builtins",
+      resolveId(importee) {
+        if (importee == "util") {
+          return { id: require.resolve("util/util.js") };
+        }
+        const builtinPath = browserifyNodeBuiltins[importee];
+        if (builtinPath) {
+          return { id: builtinPath };
+        }
+      },
+    },
+
     typescript({
       // See https://github.com/rollup/plugins/issues/272
       noEmitOnError: production,
     }),
+
+    json(),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
