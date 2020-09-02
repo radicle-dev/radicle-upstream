@@ -1,7 +1,7 @@
-<script>
-  export let dataCy = null;
-  export let style = null;
-  export let align = null; // left | right
+<script lang="ts">
+  export let dataCy: string;
+  export let style: string;
+  export let align: "left" | "right" | undefined = undefined;
 </script>
 
 <style>
@@ -30,7 +30,7 @@
   }
 </style>
 
-{#if align !== null}
+{#if align}
   <div data-cy={dataCy} class={`row align-${align}`} on:click {style}>
     <slot />
   </div>

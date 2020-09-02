@@ -1,8 +1,14 @@
 [package]
 name = "coco"
 version = "0.1.0"
-authors = ["Alexander Simmerl <a.simmerl@gmail.com>"]
+license = "GPL-3.0-only"
+authors = ["radicle team <dev@radicle.xyz>"]
 edition = "2018"
+description = "Abstractions and utilities to run and interact with link and surf."
+readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/proxy/README.md"
+categories = [ "code", "p2p" ]
+keywords = [ "radicle", "upstream", "proxy", "git", "quic" ]
+repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
 futures = { version = "0.3", features = [ "compat" ] }
