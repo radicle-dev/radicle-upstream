@@ -256,7 +256,7 @@
     width: 37.5rem;
     background: var(--color-background);
     border-radius: 0.5rem;
-    padding: 2rem;
+    padding: 3rem 2rem 2rem 2rem;
   }
 
   .create-project {
@@ -386,7 +386,7 @@
       </div>
     {/if}
 
-    <Flex style="margin-top: 2rem">
+    <Flex style="margin-top: 1rem">
       <div slot="right">
         <div class="double-button">
           <Button
