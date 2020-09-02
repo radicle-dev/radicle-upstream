@@ -257,8 +257,8 @@
   .container {
     width: 37.5rem;
     background: var(--color-background);
-    border-radius: 8px;
-    padding: 32px;
+    border-radius: 0.5rem;
+    padding: 2rem;
   }
 
   .create-project {
@@ -269,19 +269,19 @@
   }
 
   .radio-selector {
-    margin-bottom: 32px;
+    margin-bottom: 2rem;
   }
 
   .double-button {
     display: grid;
     grid-template-columns: auto auto;
-    grid-column-gap: 16px;
+    grid-column-gap: 1rem;
   }
 
   .default-branch-row {
     display: flex;
     align-items: center;
-    margin-top: 16px;
+    margin-top: 1rem;
   }
 
   .validation-row {
@@ -293,9 +293,9 @@
 <div class="container" bind:this={content} data-cy="page">
   <div class="create-project" data-cy="create-project">
     <Illustration
-      style="align-self: center; margin-bottom: 16px;"
+      style="align-self: center; margin-bottom: 1rem;"
       variant={IllustrationVariant.Star} />
-    <h2 style="margin-bottom: 48px;">Start a new project</h2>
+    <h2 style="margin-bottom: 3rem;">Start a new project</h2>
 
     <div class="radio-selector">
       <RadioOption
@@ -307,15 +307,17 @@
         }}
         dataCy="new-project">
         <div slot="option-body">
-          <p
-            style="margin-bottom: 12px; color: var(--color-foreground-level-6);
-            text-align: left">
-            Choose where you'd like to create the repository
-          </p>
           <Input.Directory
-            placeholder="~/path/to/folder"
+            placeholder="Where to create the repository"
             validation={newRepositoryPathValidation}
             bind:path={newRepositoryPath} />
+          <p
+            style="margin-top: 1rem; color: var(--color-foreground-level-6);
+            text-align: center">
+            A new repository will be created inside this directory
+            <br />
+            and named after the project name.
+          </p>
         </div>
       </RadioOption>
 
@@ -328,18 +330,13 @@
         }}
         dataCy="existing-project">
         <div slot="option-body">
-          <p
-            style="margin-bottom: 12px; color: var(--color-foreground-level-6);
-            text-align:left">
-            Choose an existing repository
-          </p>
           <Input.Directory
-            placeholder="~/path/to/folder"
+            placeholder="Choose an existing repository"
             validation={existingRepositoryPathValidation}
             bind:path={existingRepositoryPath} />
           <div class="default-branch-row">
             <p
-              style="margin-right: 16px; color: var(--color-foreground-level-6)">
+              style="margin-right: 1rem; color: var(--color-foreground-level-6)">
               Default branch
             </p>
             {#if localState.branches && localState.branches.length > 0}
@@ -373,21 +370,21 @@
 
     <Input.Text
       dataCy="description"
-      style="margin-top: 16px; margin-bottom: 16px;"
+      style="margin-top: 1rem; margin-bottom: 1rem;"
       placeholder="Project description"
       bind:value={description} />
 
     {#if validations && validations.currentSelection}
       <div class="validation-row">
         <Icon.ExclamationCircle
-          style="margin-right: 8px;fill: var(--color-negative)" />
+          style="margin-right: 0.5rem; fill: var(--color-negative)" />
         <p class="typo-text-bold" style="color: var(--color-negative)">
           {validations.currentSelection[0]}
         </p>
       </div>
     {/if}
 
-    <Flex style="margin-top: 32px">
+    <Flex style="margin-top: 2rem">
       <div slot="right">
         <div class="double-button">
           <Button dataCy="cancel-button" variant="transparent" on:click={pop}>
