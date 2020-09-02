@@ -2,7 +2,7 @@
   import IconWrapper from "./IconWrapper.svelte";
 
   export let dataCy: string | undefined = undefined;
-  export let style: string;
+  export let style = "";
 </script>
 
 <IconWrapper on:click {dataCy} {style}>

@@ -6,7 +6,7 @@
   export let items: any[];
 
   export let dataCy: string | undefined = undefined;
-  export let style: string | undefined = undefined;
+  export let style = "";
 </script>
 
 <style>

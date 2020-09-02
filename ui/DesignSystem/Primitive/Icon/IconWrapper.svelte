@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let dataCy: string | undefined;
-  export let style: string;
+  export let dataCy: string | undefined = undefined;
+  export let style = "";
 </script>
 
 <svg
