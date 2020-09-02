@@ -3,6 +3,7 @@
 
   import * as modal from "./src/modal.ts";
   import * as path from "./src/path.ts";
+  import * as screen from "./src/screen.ts";
   import { isMac } from "./src/settings.ts";
 
   const toggle = destination => {
@@ -19,7 +20,7 @@
   const onKeydown = event => {
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
-    if (event.target !== document.body || event.repeat) {
+    if (screen.isLocked() || event.target !== document.body || event.repeat) {
       return false;
     }
 

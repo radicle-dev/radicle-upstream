@@ -42,7 +42,7 @@
   }
 </style>
 
-<svelte:window on:click={clickOutside} />
+<svelte:body on:click={clickOutside} />
 
 <div class="modal" class:hide={!$store.show}>
   <div class="overlay" on:click={clickOutside} />
