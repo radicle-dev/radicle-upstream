@@ -22,12 +22,12 @@ export const store = writable<ModalOverlay>({ show: false, component: null });
 export const hide = () => store.set({ show: false, component: null });
 
 export const toggle = (path: ModalRoute): void => {
+  const newComponent = routes[path];
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (get(store).show) {
+  if (get(store).show && get(store).component === newComponent) {
     hide();
     return;
   }
 
-  const component = routes[path];
-  store.set({ show: true, component });
+  store.set({ show: true, component: newComponent });
 };
