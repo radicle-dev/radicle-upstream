@@ -46,7 +46,7 @@
 
 <div class="modal" class:hide={!$store.show}>
   <div class="overlay" on:click={clickOutside} />
-  <div class="content">
+  <div class="content" style="overflow: scroll;">
     <svelte:component
       this={$store.component}
       bind:content

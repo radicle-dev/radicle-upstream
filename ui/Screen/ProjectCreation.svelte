@@ -1,7 +1,6 @@
 <script>
-  import { onMount } from "svelte";
-  import { onDestroy } from "svelte";
-  import { pop, push } from "svelte-spa-router";
+  import { createEventDispatcher, onDestroy } from "svelte";
+  import { push } from "svelte-spa-router";
   import validatejs from "validate.js";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
@@ -31,6 +30,7 @@
   export let content;
 
   const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
+  const dispatch = createEventDispatcher();
 
   $: isNew = currentSelection === RepoType.New;
   $: isExisting = currentSelection === RepoType.Existing;
@@ -180,6 +180,7 @@
         `Could not create project: ${shortenUrn(error.message)}`
       );
     } finally {
+      dispatch("hide");
       loading = false;
       screen.unlock();
     }
@@ -242,10 +243,6 @@
     "existingRepositoryPath",
     validations
   );
-
-  onMount(() => {
-    content.focus();
-  });
 
   // Use the directory name for existing projects as the project name.
   $: name = existingRepositoryPath.split("/").slice(-1)[0];
@@ -357,7 +354,7 @@
           </div>
         </div>
       </RadioOption>
-      {#if $settings.appearance.hints.showRemoteHelper}
+      {#if $settings && $settings.appearance.hints.showRemoteHelper}
         <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
       {/if}
     </div>
@@ -392,7 +389,10 @@
     <Flex style="margin-top: 2rem">
       <div slot="right">
         <div class="double-button">
-          <Button dataCy="cancel-button" variant="transparent" on:click={pop}>
+          <Button
+            dataCy="cancel-button"
+            variant="transparent"
+            on:click={() => dispatch('hide')}>
             Cancel
           </Button>
           <Button
