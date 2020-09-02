@@ -2,7 +2,6 @@
 
 use serde::{Deserialize, Serialize};
 
-use librad::keys;
 use librad::meta::user;
 use librad::peer;
 

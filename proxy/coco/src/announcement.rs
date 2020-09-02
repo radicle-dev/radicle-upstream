@@ -101,10 +101,11 @@ mod test {
     #[tokio::test]
     async fn announce() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner {
-            signer: SecretKey::new(),
+            signer: key.clone(),
         });
-        let config = config::default(signer.clone(), tmp_dir.path())?;
+        let config = config::default(key, tmp_dir.path())?;
         let api = peer::Api::new(config).await?;
 
         let _owner = api.init_owner(&signer, "cloudhead")?;

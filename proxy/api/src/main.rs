@@ -3,13 +3,14 @@ use std::convert::TryFrom;
 use librad::paths;
 
 use coco::announcement;
+use coco::keystore;
 use coco::seed;
+use coco::signer;
 
 use api::config;
 use api::context;
 use api::env;
 use api::http;
-use api::keystore;
 use api::session;
 
 /// Flags accepted by the proxy binary.
@@ -47,6 +48,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut keystore = keystore::Keystorage::new(&paths, pw);
     let key = keystore.init_librad_key()?;
+    let signer = signer::BoxedSigner::new(signer::SomeSigner {
+        signer: key.clone(),
+    });
 
     let store = {
         let store_path = if args.test {
@@ -75,9 +79,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.test {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        coco::control::setup_fixtures(&peer_api, &ctx.signer, &owner)
-            .expect("fixture creation failed");
+        let owner = peer_api.init_owner(&signer, "cloudhead")?;
+        coco::control::setup_fixtures(&peer_api, &signer, &owner).expect("fixture creation failed");
     }
 
     let proxy_path = config::proxy_path()?;
@@ -86,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ctx = context::Ctx::from(context::Context {
         peer_api,
-        keystore,
+        signer,
         store,
     });
 

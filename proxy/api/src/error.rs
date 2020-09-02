@@ -54,6 +54,10 @@ pub enum Error {
     #[error(transparent)]
     Checkout(#[from] coco::project::checkout::Error),
 
+    /// Keystore error.
+    #[error(transparent)]
+    Keystore(#[from] coco::keystore::Error),
+
     /// Accept error from `librad`.
     #[error(transparent)]
     LibradAccept(#[from] librad::net::peer::AcceptError),

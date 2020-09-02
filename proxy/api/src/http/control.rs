@@ -40,16 +40,11 @@ mod handler {
 
     use librad::paths;
 
-<<<<<<< HEAD
     use coco::keystore;
+    use coco::signer;
 
-    use crate::error;
-    use crate::http;
-=======
     use crate::context;
     use crate::error;
-    use crate::keystore;
->>>>>>> master
     use crate::project;
 
     /// Create a project from the fixture repo.
@@ -108,14 +103,16 @@ mod handler {
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init_librad_key().map_err(error::Error::from)?;
+        let signer = signer::BoxedSigner::new(signer::SomeSigner {
+            signer: key.clone(),
+        });
 
-        let config =
-            coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+        let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
         let new_peer_api = coco::Api::new(config).await.map_err(error::Error::from)?;
 
         let mut ctx = ctx.write().await;
         ctx.peer_api = new_peer_api;
-        ctx.keystore = new_keystore;
+        ctx.signer = signer;
 
         Ok(reply::json(&true))
     }

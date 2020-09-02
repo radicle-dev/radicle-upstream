@@ -837,11 +837,11 @@ mod tests {
     #[tokio::test]
     async fn browse_commit() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
+        let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner {
-            signer: SecretKey::new(),
+            signer: key.clone(),
         });
-        let config =
-            config::default(signer.clone(), tmp_dir).expect("unable to get default config");
+        let config = config::default(key, tmp_dir).expect("unable to get default config");
         let api = peer::Api::new(config)
             .await
             .expect("failed to init peer API");

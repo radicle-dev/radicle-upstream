@@ -6,7 +6,8 @@ use tokio::sync::RwLock;
 
 use librad::paths;
 
-use crate::keystore;
+use coco::keystore;
+use coco::signer;
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;
@@ -21,7 +22,8 @@ impl From<Context> for Ctx {
 pub struct Context {
     /// [`coco::Api`] to operate on the local monorepo.
     pub peer_api: coco::Api,
-    signer: signer::BoxedSigner,
+    /// [`coco::signer::BoxedSigner`] for write operations on the monorepo.
+    pub signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
 }
@@ -39,12 +41,13 @@ impl Context {
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
         let signer = signer::BoxedSigner::from(signer::SomeSigner {
-            signer: keystore.init_librad_key()?,
+            signer: key.clone(),
         });
 
         let peer_api = {
-            let config = coco::config::default(signer, tmp_dir.path())?;
+            let config = coco::config::default(key, tmp_dir.path())?;
             coco::Api::new(config).await?
         };
 
