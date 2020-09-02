@@ -1,11 +1,9 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
 
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
-use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
@@ -29,25 +27,8 @@ fn checkout_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::post())
-        .and(document::param::<coco::Urn>("id", "Project id"))
+        .and(path::param::<coco::Urn>())
         .and(warp::body::json())
-        .and(document::document(document::description(
-            "Create a new working copy for a project",
-        )))
-        .and(document::document(document::tag("Project")))
-        .and(document::document(
-            document::body(CheckoutInput::document()).mime("application/json"),
-        ))
-        .and(document::document(
-            document::response(201, None).description("Checkout succeeded"),
-        ))
-        .and(document::document(
-            document::response(
-                404,
-                document::body(super::error::Error::document()).mime("application/json"),
-            )
-            .description("Project not found"),
-        ))
         .and_then(handler::checkout)
 }
 
@@ -60,20 +41,6 @@ fn create_filter(
         .and(warp::post())
         .and(path::end())
         .and(warp::body::json())
-        .and(document::document(document::description(
-            "Create a new project",
-        )))
-        .and(document::document(document::tag("Project")))
-        .and(document::document(
-            document::body(CreateInput::document()).mime("application/json"),
-        ))
-        .and(document::document(
-            document::response(
-                201,
-                document::body(project::Project::document()).mime("application/json"),
-            )
-            .description("Creation succeeded"),
-        ))
         .and_then(handler::create)
 }
 
@@ -81,26 +48,8 @@ fn create_filter(
 fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
-        .and(document::param::<String>("id", "Project id"))
+        .and(path::param::<coco::Urn>())
         .and(path::end())
-        .and(document::document(document::description(
-            "Find Project by ID",
-        )))
-        .and(document::document(document::tag("Project")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(project::Project::document()).mime("application/json"),
-            )
-            .description("Project found"),
-        ))
-        .and(document::document(
-            document::response(
-                404,
-                document::body(super::error::Error::document()).mime("application/json"),
-            )
-            .description("Project not found"),
-        ))
         .and_then(handler::get)
 }
 
@@ -110,23 +59,6 @@ fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = R
         .and(warp::get())
         .and(path::end())
         .and(http::with_qs_opt::<ListQuery>())
-        .and(document::document(
-            document::query("user", document::string())
-                .required(false)
-                .description("Only list projects tracked by the user with this URN"),
-        ))
-        .and(document::document(document::description("List projects")))
-        .and(document::document(document::tag("Project")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(
-                    document::array(project::Project::document()).description("List of projects"),
-                )
-                .mime("application/json"),
-            )
-            .description("Creation succeeded"),
-        ))
         .and_then(handler::list)
 }
 
@@ -138,18 +70,6 @@ fn discover_filter(
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::end())
-        .and(document::document(document::description(
-            "Fetch discovery feed",
-        )))
-        .and(document::document(document::tag("Project")))
-        .and(document::document(document::response(
-            200,
-            document::body(
-                document::array(project::Project::document())
-                    .description("Feed of untracked projects"),
-            )
-            .mime("application/json"),
-        )))
         .and_then(handler::discover)
 }
 
@@ -211,8 +131,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(ctx: context::Ctx, urn: String) -> Result<impl Reply, Rejection> {
-        let urn = urn.parse().map_err(Error::from)?;
+    pub async fn get(ctx: context::Ctx, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         Ok(reply::json(&project::get(&ctx.peer_api, &urn)?))
@@ -262,84 +181,6 @@ impl Serialize for project::Project {
     }
 }
 
-impl ToDocumentedType for project::Project {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(4);
-        properties.insert(
-            "id".into(),
-            document::string()
-                .description("ID of the project")
-                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
-        );
-        properties.insert(
-            "shareableEntityIdentifier".into(),
-            document::string()
-                .description("Unique identifier that can be shared and looked up")
-                .example("%123abcd.git"),
-        );
-        properties.insert("metadata".into(), project::Metadata::document());
-        properties.insert("stats".into(), DocumentStats::document());
-
-        document::DocumentedType::from(properties)
-            .description("Radicle project for sharing and collaborating")
-    }
-}
-/// Documentation of project stats
-struct DocumentStats;
-
-impl ToDocumentedType for DocumentStats {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(3);
-        properties.insert(
-            "branches".into(),
-            document::string()
-                .description("Amount of known branches")
-                .example(7),
-        );
-        properties.insert(
-            "commits".into(),
-            document::string()
-                .description("Number of commits in the default branch")
-                .example(420),
-        );
-        properties.insert(
-            "contributors".into(),
-            document::string()
-                .description("Number of unique contributors on the default branch")
-                .example(11),
-        );
-
-        document::DocumentedType::from(properties)
-            .description("Coarse statistics for the Project source code")
-    }
-}
-
-impl ToDocumentedType for project::Metadata {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Project name")
-                .example("upstream"),
-        );
-        properties.insert(
-            "description".into(),
-            document::string()
-                .description("High-level description of the Project")
-                .example("Desktop client for radicle"),
-        );
-        properties.insert(
-            "defaultBranch".into(),
-            document::string()
-                .description("Default branch for checkouts, often used as mainline as well")
-                .example("master"),
-        );
-
-        document::DocumentedType::from(properties).description("Project metadata")
-    }
-}
-
 /// Bundled input data for project creation.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -349,21 +190,6 @@ pub struct CreateInput {
     path: PathBuf,
     /// User provided metadata for the project.
     metadata: MetadataInput,
-}
-
-impl ToDocumentedType for CreateInput {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(2);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Filesystem location of the git repository")
-                .example("/home/xla/dev/src/github.com/radicle-dev/radicle-upstream"),
-        );
-        properties.insert("metadata".into(), MetadataInput::document());
-
-        document::DocumentedType::from(properties).description("Input for project creation")
-    }
 }
 
 /// Bundled input data for project checkout.
@@ -376,20 +202,6 @@ pub struct CheckoutInput {
     peer_id: Option<coco::PeerId>,
 }
 
-impl ToDocumentedType for CheckoutInput {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(3);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Filesystem location where the working copy should be created")
-                .example("/Users/rudolfs/work/radicle-tests/upstream-checkout"),
-        );
-
-        document::DocumentedType::from(properties).description("Input for project checkout")
-    }
-}
-
 /// User provided metadata for project manipulation.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -400,32 +212,6 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
-}
-
-impl ToDocumentedType for MetadataInput {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Name of the project")
-                .example("upstream"),
-        );
-        properties.insert(
-            "description".into(),
-            document::string()
-                .description("Long-form text describing the project")
-                .example("Desktop client for radicle"),
-        );
-        properties.insert(
-            "defaultBranch".into(),
-            document::string()
-                .description("Projects mainline branch")
-                .example("stable"),
-        );
-
-        document::DocumentedType::from(properties).description("Input for project creation")
-    }
 }
 
 /// Query options for listing projects.

@@ -1,21 +1,22 @@
-//! Abstractions and utilities for git interactions through the API.
+//! Abstractions and utilities to run and interact with link and surf.
 
 #![warn(
     clippy::all,
-    // clippy::cargo,
+    clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
     clippy::restriction,
     clippy::unwrap_used,
     missing_docs,
     unused_import_braces,
-    unused_qualifications,
+    unused_qualifications
 )]
 #![allow(
     clippy::expect_used,
     clippy::implicit_return,
     clippy::integer_arithmetic,
-    clippy::missing_inline_in_public_items
+    clippy::missing_inline_in_public_items,
+    clippy::multiple_crate_versions
 )]
 
 pub use librad::hash::Hash;
@@ -26,6 +27,7 @@ pub use librad::uri::{self, RadUrn as Urn};
 pub use radicle_surf::diff::{Diff, FileDiff};
 pub use radicle_surf::vcs::git::Stats;
 
+pub mod announcement;
 pub mod config;
 pub mod control;
 

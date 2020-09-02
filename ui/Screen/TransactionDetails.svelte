@@ -2,7 +2,6 @@
   import { getContext } from "svelte";
   import { querystring } from "svelte-spa-router";
 
-  import { fallback } from "../src/identity.ts";
   import { parseQueryString } from "../src/path.ts";
   import * as transaction from "../src/transaction.ts";
 
@@ -11,12 +10,6 @@
   export let params = null;
 
   const session = getContext("session");
-  // TODO(xla): Can go once we get proper transaction participants.
-  let identity = fallback;
-
-  if (session.identity !== null) {
-    identity = session.identity;
-  }
 
   const getPlayer = tx => {
     return transaction.getPayer(tx.messages[0], session);

@@ -3,14 +3,11 @@
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::avatar;
 use crate::context;
 use crate::http;
-use crate::identity;
 
 /// Combination of all identity routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -27,49 +24,14 @@ fn create_filter(
     http::with_context(ctx)
         .and(warp::post())
         .and(warp::body::json())
-        .and(document::document(document::description(
-            "Create a new unique Identity",
-        )))
-        .and(document::document(document::tag("Identity")))
-        .and(document::document(
-            document::body(CreateInput::document()).mime("application/json"),
-        ))
-        .and(document::document(
-            document::response(
-                201,
-                document::body(identity::Identity::document()).mime("application/json"),
-            )
-            .description("Creation succeeded"),
-        ))
         .and_then(handler::create)
 }
 
 /// `GET /<id>`
 fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
-        .and(document::param::<coco::Urn>(
-            "id",
-            "Unique ID of the Identity",
-        ))
         .and(warp::get())
-        .and(document::document(document::description(
-            "Find Identity by ID",
-        )))
-        .and(document::document(document::tag("Identity")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(identity::Identity::document()).mime("application/json"),
-            )
-            .description("Successful retrieval"),
-        ))
-        .and(document::document(
-            document::response(
-                404,
-                document::body(super::error::Error::document()).mime("application/json"),
-            )
-            .description("Identity not found"),
-        ))
+        .and(path::param::<coco::Urn>())
         .and_then(handler::get)
 }
 
@@ -78,18 +40,6 @@ fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = R
     http::with_context(ctx)
         .and(warp::get())
         .and(path::end())
-        .and(document::document(document::description(
-            "List known Identities",
-        )))
-        .and(document::document(document::tag("Identity")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(document::array(identity::Identity::document()))
-                    .mime("application/json"),
-            )
-            .description("Successful retrieval"),
-        ))
         .and_then(handler::list)
 }
 
@@ -138,94 +88,6 @@ mod handler {
     }
 }
 
-impl ToDocumentedType for identity::Identity {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(6);
-        properties.insert("avatarFallback".into(), avatar::Avatar::document());
-        properties.insert(
-            "id".into(),
-            document::string()
-                .description("The id of the Identity")
-                .example("123abcd.git"),
-        );
-        properties.insert("metadata".into(), identity::Metadata::document());
-        properties.insert(
-            "registered".into(),
-            document::string()
-                .description("ID of the user on the Registry")
-                .example("cloudhead")
-                .nullable(true),
-        );
-        properties.insert(
-            "shareableEntityIdentifier".into(),
-            document::string()
-                .description("Unique identifier that can be shared and looked up")
-                .example("cloudhead@123abcd.git"),
-        );
-        properties.insert(
-            "accountId".into(),
-            document::string()
-                .description("Public key of identity")
-                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
-        );
-
-        document::DocumentedType::from(properties).description("Unique identity")
-    }
-}
-
-impl ToDocumentedType for identity::Metadata {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "handle".into(),
-            document::string()
-                .description("User chosen nickname")
-                .example("cloudhead"),
-        );
-        document::DocumentedType::from(properties)
-            .description("User provided metadata attached to the Identity")
-    }
-}
-
-#[allow(clippy::non_ascii_literal)]
-impl ToDocumentedType for avatar::Avatar {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
-        properties.insert("background".into(), avatar::Color::document());
-        properties.insert(
-            "emoji".into(),
-            document::string()
-                .description("String containing the actual emoji codepoint to display")
-                .example("🐽"),
-        );
-
-        document::DocumentedType::from(properties)
-            .description("Generated avatar based on unique information")
-    }
-}
-
-impl ToDocumentedType for avatar::Color {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "r".into(),
-            document::string().description("Red value").example(122),
-        );
-        properties.insert(
-            "g".into(),
-            document::string().description("Green value").example(112),
-        );
-        properties.insert(
-            "b".into(),
-            document::string()
-                .description("Blue value".to_string())
-                .example(90),
-        );
-
-        document::DocumentedType::from(properties).description("RGB color")
-    }
-}
-
 // TODO(xla): Implement Deserialize on identity::Metadata and drop this type entirely, this will
 // help to avoid duplicate efforts for documentation.
 /// Bundled input data for identity creation.
@@ -234,20 +96,6 @@ impl ToDocumentedType for avatar::Color {
 pub struct CreateInput {
     /// Handle the user wants to go by.
     handle: String,
-}
-
-impl ToDocumentedType for CreateInput {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "handle".into(),
-            document::string()
-                .description("User chosen nickname")
-                .example("cloudhead"),
-        );
-        document::DocumentedType::from(properties)
-            .description("User provided metadata attached to the Identity")
-    }
 }
 
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
