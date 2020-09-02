@@ -259,6 +259,29 @@ impl Api {
         Ok(project_meta)
     }
 
+    /// Returns the list of [`librad_project::Project`]s that you have contributed to.
+    ///
+    /// # Errors
+    ///
+    /// * if opening the storage fails
+    pub fn list_my_projects(&self) -> Result<Vec<librad_project::Project<entity::Draft>>, Error> {
+        let projects = self
+            .list_projects()?
+            .into_iter()
+            .filter(|project| {
+                // TODO(sos): either update list_project_refs() to return an Option
+                // that can be filtered here, or make a new function to determine
+                // whether or not a project contains signed refs
+                let _has_signed_refs = self
+                    .list_project_refs(&project.urn())
+                    .expect("unable to get refs");
+                true
+            })
+            .collect();
+
+        Ok(projects)
+    }
+
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
     ///
     /// # Errors

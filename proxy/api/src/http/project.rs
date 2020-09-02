@@ -151,6 +151,8 @@ mod handler {
 
         let projects = if let Some(user) = query.user {
             project::list_projects_for_user(&ctx.peer_api, &user)?
+        } else if let Some(_status) = query.status {
+            project::list_my_projects(&ctx.peer_api)?
         } else {
             project::list_projects(&ctx.peer_api)?
         };
@@ -216,11 +218,30 @@ pub struct MetadataInput {
     default_branch: String,
 }
 
+/// The status of a project in your monorepo.
+#[derive(Deserialize, Serialize, Debug)]
+pub enum Status {
+    /// The project exists in your monorepo and you're interested in it, but you've
+    /// not yet contributed to it.
+    Tracked,
+    /// You've contributed to this project and it exists in your monorepo.
+    Mine,
+}
+
 /// Query options for listing projects.
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct ListQuery {
     /// Only include projects tracked by this user
     user: Option<coco::Urn>,
+    /// Only include projects of the given `Status`
+    ///
+    /// **N.B.** This only works for _your_ projects; if you provide a `user`,
+    /// it will be ignored
+    ///
+    /// TODO(sos): If this becomes Option<Status>, I get a MissingOwner error 🤔
+    /// I think the error happens in `with_qs_opt` at the `match
+    /// serde_qs::from_str(&query)`
+    status: Option<String>,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
@@ -601,6 +622,51 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(vec![project]));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list_my_projects() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+
+        coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
+
+        let res = request()
+            .method("GET")
+            .path("/?status=tracked")
+            .reply(&api)
+            .await;
+
+        // TODO(sos): replace with tracked project
+        let want = json!([
+            {
+                "id": "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c",
+                "metadata": {
+                    "defaultBranch": "main",
+                    "description": "It is not the slumber of reason that engenders monsters, \
+                    but vigilant and insomniac rationality.",
+                    "name": "radicle-upstream",
+                    "maintainers": [],
+                },
+                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                "stats": {
+                    "branches": 36,
+                    "commits": 216,
+                    "contributors": 6,
+                },
+            },
+        ]);
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, want);
         });
 
         Ok(())

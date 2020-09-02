@@ -71,6 +71,9 @@ where
     }
 }
 
+/// A Radicle project that you're interested in but haven't contributed to.
+struct Tracked(Project);
+
 /// Fetch the project with a given urn from a peer
 ///
 /// # Errors
@@ -95,6 +98,26 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
 
     project_meta
         .into_iter()
+        .map(|project| {
+            api.with_browser(&project.urn(), |browser| {
+                let stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, stats).into())
+            })
+            .map_err(error::Error::from)
+        })
+        .collect()
+}
+
+/// List all projects you have contributed to.
+///
+/// # Errors
+///
+///   * We couldn't get a project list
+///   * We couldn't get project stats
+pub fn list_my_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
+    let meta = api.list_my_projects()?;
+
+    meta.into_iter()
         .map(|project| {
             api.with_browser(&project.urn(), |browser| {
                 let stats = browser.get_stats().map_err(coco::Error::from)?;
