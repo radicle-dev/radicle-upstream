@@ -41,14 +41,14 @@ echo "--- Run proxy fmt"
 echo "--- Run proxy lints"
 (cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings)
 
+echo "--- Run app svelte checks"
+time yarn svelte:check
+
 echo "--- Run app eslint checks"
 time yarn lint
 
 echo "--- Run app prettier checks"
 time yarn prettier:check
-
-echo "--- Run app svelte checks"
-time yarn svelte:check
 
 echo "--- Run proxy tests"
 (cd proxy && time cargo test --all --all-features --all-targets)

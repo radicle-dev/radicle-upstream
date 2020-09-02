@@ -392,7 +392,7 @@ const payerFromOrg = (org: Org): Payer => {
   };
 };
 
-const unkownAvatar: EmojiAvatar = {
+const unknownAvatar: EmojiAvatar = {
   background: {
     r: 245,
     g: 245,
@@ -406,29 +406,29 @@ const unkownAvatar: EmojiAvatar = {
 // component of such entities. To reproduce, register an org, transfer
 // something from it to the (registered) user, restart the app, and
 // now look at the 'Incoming Transfer' in the user wallet.
-export const unkownOrg: Org = {
-  id: "Unkown org",
+export const unknownOrg: Org = {
+  id: "unknown org",
   accountId: "5CNskZBkQcJzwjJ1sgWPpByThABe3wKrsBJoe8wi1kKzGGpS",
   shareableEntityIdentifier: "org@radicle",
   members: [{ handle: "user" }],
-  avatarFallback: unkownAvatar,
+  avatarFallback: unknownAvatar,
 };
 
-// Identity counter part of `unkownOrg`.
-export const unkownIdentity: Identity = {
-  id: "user@unkown.git",
+// Identity counter part of `unknownOrg`.
+export const unknownIdentity: Identity = {
+  id: "user@unknown.git",
   metadata: {
-    handle: "Unkown user",
+    handle: "unknown user",
   },
-  avatarFallback: unkownAvatar,
+  avatarFallback: unknownAvatar,
 };
 
 // Get the payer of a transaction.
 // Note: It now looks the payer up based on the local session, whereas
 // in the future we want to look it up on the network.
 export const getPayer = (msg: Message, session: Session): Payer | undefined => {
-  const identity = session.identity ?? unkownIdentity;
-  const org = (org_id: string) => unkownOrg;
+  const identity = session.identity ?? unknownIdentity;
+  const org = (_org_id: string) => unknownOrg;
 
   switch (msg.type) {
     case MessageType.OrgRegistration:
