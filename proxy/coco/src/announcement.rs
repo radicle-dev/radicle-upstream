@@ -66,7 +66,7 @@ pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
             }
 
             Ok(list)
-        },
+        }
     }
 }
 
@@ -96,15 +96,18 @@ mod test {
     use crate::error::Error;
     use crate::oid;
     use crate::peer;
+    use crate::signer;
 
     #[tokio::test]
     async fn announce() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let signer = signer::BoxedSigner::new(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let api = peer::Api::new(config).await?;
 
-        let _owner = api.init_owner(&key, "cloudhead")?;
+        let _owner = api.init_owner(&signer, "cloudhead")?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(&api)?;

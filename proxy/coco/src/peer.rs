@@ -834,30 +834,34 @@ mod test {
 
     #[tokio::test]
     async fn can_fetch_project_changes() -> Result<(), Error> {
-        let alice_key = SecretKey::new();
+        let alice_signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
 
         let alice_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let alice_repo_path = alice_tmp_dir.path().join("radicle");
-        let config = config::default(alice_key.clone(), alice_tmp_dir.path())?;
+        let config = config::default(alice_signer.clone(), alice_tmp_dir.path())?;
         let alice_peer = Api::new(config).await?;
         let alice_peer_id = alice_peer.peer_id().clone();
         let alice_addr = alice_peer.listen_addr();
 
-        let alice = alice_peer.init_owner(&alice_key, "alice")?;
+        let alice = alice_peer.init_owner(&alice_signer, "alice")?;
         let project = alice_peer.init_project(
-            &alice_key,
+            &alice_signer,
             &alice,
             &shia_le_pathbuf(alice_repo_path.clone()),
         )?;
         let urn = project.urn();
 
-        let bob_key = SecretKey::new();
+        let bob_signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: SecretKey::new(),
+        });
 
         let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
 
-        let bob_config = config::default(bob_key.clone(), bob_tmp_dir.path())?;
+        let bob_config = config::default(bob_signer.clone(), bob_tmp_dir.path())?;
         let bob_peer = Api::new(bob_config).await?;
-        let _bob = bob_peer.init_owner(&bob_key, "bob")?;
+        let _bob = bob_peer.init_owner(&bob_signer, "bob")?;
 
         let bobby = bob_peer.clone();
         let url = urn.into_rad_url(alice_peer_id.clone());
