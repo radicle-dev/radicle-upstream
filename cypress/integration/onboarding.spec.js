@@ -19,19 +19,23 @@ context("identity creation", () => {
 
     it("is possible to use the keyboard for navigation", () => {
       // Intro screen.
+      cy.contains("A free and open-source way to host").should("exist");
       cy.get("body").type("{enter}");
 
       // Enter name screen.
+      cy.contains("what should we call you").should("exist");
       cy.get("body").type(validUser.handle);
       cy.get("body").type("{enter}");
 
       // Enter passphrase screen.
+      cy.contains("Next, you'll enter a passphrase.").should("exist");
       cy.get("body").type(validUser.passphrase);
       cy.get("body").type("{enter}");
       cy.get("body").type(validUser.passphrase);
       cy.get("body").type("{enter}");
 
       // Success screen.
+      cy.contains("All set!").should("exist");
       cy.pick("shareable-identifier")
         .contains(/rafalca@/)
         .should("exist");
