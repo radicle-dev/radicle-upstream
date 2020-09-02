@@ -268,6 +268,10 @@
     text-align: center;
   }
 
+  .radio-selector {
+    margin-bottom: 32px;
+  }
+
   .double-button {
     display: grid;
     grid-template-columns: auto auto;
@@ -291,7 +295,7 @@
     <Illustration
       style="align-self: center; margin-bottom: 16px;"
       variant={IllustrationVariant.Star} />
-    <h2 style="margin-bottom: 32px;">Start a new project</h2>
+    <h2 style="margin-bottom: 48px;">Start a new project</h2>
 
     <div class="radio-selector">
       <RadioOption
