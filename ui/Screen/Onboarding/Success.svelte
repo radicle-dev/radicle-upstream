@@ -1,8 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Copyable } from "../../DesignSystem/Component";
-  import { Button, Flex } from "../../DesignSystem/Primitive";
+  import { Urn } from "../../DesignSystem/Component";
+  import { Button } from "../../DesignSystem/Primitive";
 
   export let id = null;
 
@@ -40,19 +40,13 @@
   <div class="content">
     <h1 style="text-align: center; margin-bottom: 24px;">All set!</h1>
 
-    <Copyable style="margin-bottom: 27px;">
-      <Flex align="left">
-        <p
-          data-cy="shareable-identifier"
-          class="typo-overflow-ellipsis"
-          style="color: var(--color-foreground-level-6); max-width: 350px;">
-          {id}
-        </p>
-      </Flex>
-    </Copyable>
+    <Urn
+      urn={id}
+      showCopyOnlyOnHover
+      notificationText={`Radicle ID copied to your clipboard.`} />
 
     <p
-      style="text-align: center; width: 370px; margin-bottom: 27px; color:
+      style="text-align: center; width: 370px; margin: 27px 0 27px 0; color:
       var(--color-foreground-level-6);">
       This is your
       <span class="typo-text-bold">Radicle ID</span>
