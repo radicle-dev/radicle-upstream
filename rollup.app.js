@@ -28,13 +28,13 @@ export default {
       preprocess: autoPreprocess(),
     }),
 
-    commonjs(),
-
     resolve({
       browser: true,
       dedupe: importee =>
         importee === "svelte" || importee.startsWith("svelte/"),
     }),
+
+    commonjs(),
 
     typescript(),
 
