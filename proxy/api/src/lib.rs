@@ -31,5 +31,6 @@ pub mod env;
 pub mod error;
 pub mod http;
 pub mod identity;
+pub mod notification;
 pub mod project;
 pub mod session;
