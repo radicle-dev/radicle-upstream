@@ -36,14 +36,11 @@
   </div>
   <p style="margin-bottom: 0.75rem; color: display: flex;">
     Before you get started, you need to add this to your shell configuration.
-    Not sure how?
-    <a
+    Not sure how? <a
       style="color: var(--color-foreground-level-6);"
       class="typo-link"
       href="https://radicle.xyz/#upstream-faq">
-      Read more
-    </a>
-    .
+      Read more</a>.
   </p>
   <Copyable>
     <p class="typo-text-small-mono">export PATH="$HOME/.radicle/bin:$PATH"</p>

@@ -48,9 +48,8 @@
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
       color: var(--color-foreground-level-6);">
-      This is your
-      <span class="typo-text-bold">Radicle ID</span>
-      . Click to copy it and share it with others so that they can find you.
+      This is your <span class="typo-text-bold">Radicle ID</span>. Click to copy
+      it and share it with others so that they can find you.
     </p>
 
     <Button dataCy="go-to-profile-button" on:click={next}>
