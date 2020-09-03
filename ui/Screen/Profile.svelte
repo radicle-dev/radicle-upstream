@@ -27,6 +27,8 @@
 
   const menuRoutes = {
     "/profile/projects": ProjectsMenu,
+    "/profile/tracking": ProjectsMenu,
+    "*": ProjectsMenu,
   };
 
   const topbarMenuItems = [
