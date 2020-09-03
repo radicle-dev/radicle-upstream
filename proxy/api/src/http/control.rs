@@ -40,9 +40,11 @@ mod handler {
 
     use librad::paths;
 
+    use coco::keystore;
+    use coco::signer;
+
     use crate::context;
     use crate::error;
-    use crate::keystore;
     use crate::project;
 
     /// Create a project from the fixture repo.
@@ -54,10 +56,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
         let meta = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             &input.name,
             &input.description,
@@ -67,7 +68,8 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ = coco::control::track_fake_peer(&ctx.peer_api, &key, &meta, &user_handle);
+                let _ =
+                    coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &meta, &user_handle);
             }
         }
         let stats = ctx
@@ -101,14 +103,16 @@ mod handler {
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init_librad_key().map_err(error::Error::from)?;
+        let signer = signer::BoxedSigner::new(signer::SomeSigner {
+            signer: key.clone(),
+        });
 
-        let config =
-            coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+        let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
         let new_peer_api = coco::Api::new(config).await.map_err(error::Error::from)?;
 
         let mut ctx = ctx.write().await;
         ctx.peer_api = new_peer_api;
-        ctx.keystore = new_keystore;
+        ctx.signer = signer;
 
         Ok(reply::json(&true))
     }

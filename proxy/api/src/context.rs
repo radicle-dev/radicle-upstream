@@ -6,7 +6,8 @@ use tokio::sync::RwLock;
 
 use librad::paths;
 
-use crate::keystore;
+use coco::keystore;
+use coco::signer;
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;
@@ -21,8 +22,8 @@ impl From<Context> for Ctx {
 pub struct Context {
     /// [`coco::Api`] to operate on the local monorepo.
     pub peer_api: coco::Api,
-    /// Storage to manage keys.
-    pub keystore: keystore::Keystorage,
+    /// [`coco::signer::BoxedSigner`] for write operations on the monorepo.
+    pub signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
 }
@@ -41,6 +42,9 @@ impl Context {
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
         let key = keystore.init_librad_key()?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: key.clone(),
+        });
 
         let peer_api = {
             let config = coco::config::default(key, tmp_dir.path())?;
@@ -50,8 +54,8 @@ impl Context {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         Ok(Arc::new(RwLock::new(Self {
-            keystore,
             peer_api,
+            signer,
             store,
         })))
     }
@@ -85,14 +89,15 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-    let key = new_keystore.init_librad_key()?;
+    let signer = new_keystore.init_librad_key()?;
 
-    let config = coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+    let config =
+        coco::config::configure(paths, signer.clone(), *coco::config::LOCALHOST_ANY, vec![]);
     let new_peer_api = coco::Api::new(config).await?;
 
     let mut ctx = ctx.write().await;
     ctx.peer_api = new_peer_api;
-    ctx.keystore = new_keystore;
+    ctx.signer = signer::BoxedSigner::from(signer::SomeSigner { signer });
 
     Ok(())
 }
