@@ -27,7 +27,6 @@
   import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
-  import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
@@ -47,7 +46,6 @@
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
     "/projects/untracked/:urn": Untracked,
-    "/projects/new": ProjectCreation,
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,

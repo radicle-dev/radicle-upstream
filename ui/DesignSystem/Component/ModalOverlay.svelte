@@ -4,11 +4,8 @@
   export let store = null;
 
   let content;
-  const clickOutside = ev => {
-    if (content && ev.target !== content && !content.contains(ev.target)) {
-      modal.hide();
-    }
-    ev.stopPropagation();
+  const clickOutside = () => {
+    modal.hide();
   };
 </script>
 
@@ -18,6 +15,9 @@
     width: 100vw;
     position: fixed;
     z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .overlay {
@@ -29,11 +29,6 @@
   }
 
   .content {
-    position: relative;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 200;
   }
 
@@ -41,8 +36,6 @@
     display: none;
   }
 </style>
-
-<svelte:body on:click={clickOutside} />
 
 <div class="modal" class:hide={!$store.show}>
   <div class="overlay" on:click={clickOutside} />
