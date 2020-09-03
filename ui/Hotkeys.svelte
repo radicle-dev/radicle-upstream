@@ -20,7 +20,11 @@
   const onKeydown = event => {
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
-    if (screen.isLocked() || event.target !== document.body || event.repeat) {
+    if (
+      screen.isLocked() ||
+      (!modifierKey && event.target.type === "text") ||
+      event.repeat
+    ) {
       return false;
     }
 
