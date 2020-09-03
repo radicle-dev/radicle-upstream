@@ -89,7 +89,7 @@
 
   p {
     margin: 1.25rem 0;
-    color: var(--color-foreground-level-5);
+    color: var(--color-foreground-level-6);
   }
 
   .buttons {

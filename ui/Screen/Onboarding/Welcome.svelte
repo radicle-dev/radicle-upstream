@@ -29,9 +29,9 @@
     height: 100%;
   }
 
-  .container p {
+  p {
     text-align: center;
-    color: var(--color-foreground-level-5);
+    color: var(--color-foreground-level-6);
     margin: 2.5rem 0;
     max-width: 20rem;
   }

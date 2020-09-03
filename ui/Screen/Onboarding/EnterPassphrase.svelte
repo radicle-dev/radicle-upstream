@@ -119,7 +119,7 @@
 
 <div class="container">
   <div>
-    <h1>Next, you'll enter a passphrase.</h1>
+    <h1>Next, you'll need a passphrase.</h1>
 
     <p>
       This is used to protect your account on this computer. Think of it like a
@@ -140,7 +140,7 @@
       bind:value={passphrase} />
 
     <div class="repeat" hidden={!passphrase}>
-      <p style="color: var(--color-foreground-level-5); margin-bottom: 0.5rem;">
+      <p style="color: margin-bottom: 0.5rem;">
         And enter it again, just to be safe.
       </p>
       <Input.Password
