@@ -30,6 +30,7 @@
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
   import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
+  import ColorSwatch from "./DesignSystemGuide/ColorSwatch.svelte";
   import { ValidationStatus } from "../src/validation.ts";
   import { Variant as IllustrationVariant } from "../src/illustration.ts";
 
@@ -58,6 +59,14 @@
         ]),
       []
     );
+
+  const colorGroups = [
+    ...new Set(
+      colors.map(color => {
+        return color.match(/--color-(\w*)-?/)[1];
+      })
+    ),
+  ];
 
   const avatarFallback1 = {
     emoji: "📐",
@@ -350,13 +359,14 @@
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
     <Section title="Colors" subTitle="Primary, secondary and grays">
-
-      {#each colors as color}
-        <p
-          style="background-color: var({color}); margin-bottom: 8px;
-          border-radius: 2px; padding: 4px 8px;">
-          {color}
-        </p>
+      {#each colorGroups as colorGroup}
+        <div>
+          {#each colors.filter(color => {
+            return color.match(colorGroup);
+          }) as color}
+            <ColorSwatch {color} style="margin: 0 1rem 1rem 0;" />
+          {/each}
+        </div>
       {/each}
     </Section>
 
