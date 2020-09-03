@@ -5,8 +5,6 @@ use std::time::SystemTimeError;
 use librad::meta::common::url;
 use librad::meta::entity;
 
-use crate::keystore;
-
 /// Project problems.
 #[derive(Debug, thiserror::Error)]
 pub enum ProjectValidation {
@@ -56,6 +54,10 @@ pub enum Error {
     #[error(transparent)]
     Checkout(#[from] coco::project::checkout::Error),
 
+    /// Keystore error.
+    #[error(transparent)]
+    Keystore(#[from] coco::keystore::Error),
+
     /// Accept error from `librad`.
     #[error(transparent)]
     LibradAccept(#[from] librad::net::peer::AcceptError),
@@ -91,10 +93,6 @@ pub enum Error {
     /// Failure during the verification of a `librad` entity.
     #[error(transparent)]
     LibradVerification(#[from] entity::HistoryVerificationError),
-
-    /// Failure when interacting with [`crate::keystore`].
-    #[error(transparent)]
-    Keystorage(#[from] keystore::Error),
 
     /// Common I/O errors.
     #[error(transparent)]

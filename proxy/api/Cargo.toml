@@ -39,10 +39,6 @@ rev = "295efc256029096f2d6a0de41ffd7c2db7f57832"
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
 
-[dependencies.radicle-keystore]
-git = "https://github.com/radicle-dev/radicle-keystore.git"
-rev = "3377e666bde3130a06dd19343e7df2eaa774176a"
-
 [dependencies.radicle-surf]
 version = "0.4.1"
 features = ["serialize"]
