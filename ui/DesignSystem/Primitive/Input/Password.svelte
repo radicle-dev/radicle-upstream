@@ -39,13 +39,13 @@
   }
 
   input {
-    border: 1px solid var(--color-foreground-level-3);
-    padding: 8px;
-    border-radius: 4px;
+    border: 0.0625rem solid var(--color-foreground-level-3);
+    padding: 0.5rem;
+    border-radius: 0.25rem;
     width: 100%;
-    height: 40px;
-    line-height: 48px;
-    padding: 0 12px;
+    height: 2.5rem;
+    line-height: 3rem;
+    padding: 0 0.75rem;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);
   }
@@ -70,7 +70,7 @@
   input:focus,
   input:hover {
     outline: none;
-    border: 1px solid
+    border: 0.0625rem solid
       var(--focus-outline-color, var(--color-foreground-level-3));
     background-color: var(--color-foreground-level-1);
   }
@@ -78,10 +78,10 @@
   input.invalid:focus,
   input.invalid {
     outline: none;
-    border: 1px solid var(--color-negative);
+    border: 0.0625rem solid var(--color-negative);
     background: var(--color-background);
-    background-position: right 14px top 55%;
-    padding-right: 38px;
+    background-position: right 0.875rem top 55%;
+    padding-right: 2.375rem;
   }
 
   input.invalid:focus {
@@ -91,8 +91,8 @@
   .validation-row {
     display: flex;
     align-items: center;
-    margin-top: 12px;
-    margin-left: 12px;
+    margin-top: 0.75rem;
+    margin-left: 0.75rem;
   }
 
   .validation-row p {
@@ -119,7 +119,7 @@
   {#if validation && validation.status === ValidationStatus.Error}
     <Icon.ExclamationCircle
       style="fill: var(--color-negative); justify-content: flex-start; position:
-      absolute; top: 8px; right: 10px;" />
+      absolute; top: 0.5rem; right: 0.625rem;" />
     <div class="validation-row">
       <p>{validation.message}</p>
     </div>

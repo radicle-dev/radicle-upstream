@@ -83,12 +83,12 @@
 
   h1 {
     text-align: center;
-    width: 11em;
+    width: 22rem;
     margin: 0 auto;
   }
 
   p {
-    margin: 20px 0;
+    margin: 1.25rem 0;
     color: var(--color-foreground-level-5);
   }
 
@@ -117,7 +117,7 @@
       on:enter={next}
       dataCy="handle"
       validation={handleValidation}
-      style="margin: 16px 0 32px 0;" />
+      style="margin: 1rem 0 2rem 0;" />
     <div class="buttons">
       <Button dataCy="next-button" disabled={!allowNext} on:click={next}>
         Looks good

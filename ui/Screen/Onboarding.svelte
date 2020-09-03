@@ -67,7 +67,7 @@
   }
 
   .inner {
-    width: 540px;
+    width: 33.75rem;
   }
 </style>
 

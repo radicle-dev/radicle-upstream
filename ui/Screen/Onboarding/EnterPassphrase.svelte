@@ -156,7 +156,7 @@
       <Button
         dataCy="back-button"
         variant="transparent"
-        style="margin-right: 16px;"
+        style="margin-right: 1rem;"
         on:click={() => dispatch('previous')}>
         Back
       </Button>

@@ -45,7 +45,7 @@
   <p>A free and open-source way to host, share, and build software together.</p>
 
   <Button
-    style="flex-shrink: 0; margin-bottom: 24px;"
+    style="flex-shrink: 0; margin-bottom: 1.5rem;"
     on:click={next}
     dataCy="get-started-button">
     Get started

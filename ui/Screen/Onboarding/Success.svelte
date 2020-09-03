@@ -38,7 +38,7 @@
 
 <div class="container">
   <div class="content">
-    <h1 style="text-align: center; margin-bottom: 24px;">All set!</h1>
+    <h1 style="text-align: center; margin-bottom: 1.5rem;">All set!</h1>
 
     <Urn
       urn={id}
@@ -46,8 +46,8 @@
       notificationText={`Radicle ID copied to your clipboard.`} />
 
     <p
-      style="text-align: center; width: 370px; margin: 27px 0 27px 0; color:
-      var(--color-foreground-level-6);">
+      style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
+      color: var(--color-foreground-level-6);">
       This is your
       <span class="typo-text-bold">Radicle ID</span>
       . Click to copy it and share it with others so that they can find you.
