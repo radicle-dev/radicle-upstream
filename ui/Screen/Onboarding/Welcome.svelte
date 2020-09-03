@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  const dispatch = createEventDispatcher();
-
   import { RadicleLogo } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
+
+  const dispatch = createEventDispatcher();
 
   let ran = false;
 
