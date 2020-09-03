@@ -39,7 +39,7 @@
 
 <svelte:window on:keydown={onKeydown} />
 
-<div class="container">
+<div class="container" data-cy="welcome-screen">
   <RadicleLogo />
 
   <p>A free and open-source way to host, share, and build software together.</p>

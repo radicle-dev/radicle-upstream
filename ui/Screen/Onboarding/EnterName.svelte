@@ -98,8 +98,8 @@
   }
 </style>
 
-<div class="container">
-  <div data-cy="form">
+<div class="container" data-cy="enter-name-screen">
+  <div>
     <h1>
       Hey
       <Emoji emoji="👋 " size="big" style="display: inline;" />
@@ -115,7 +115,7 @@
       placeholder="Enter a name"
       bind:value={handle}
       on:enter={next}
-      dataCy="handle"
+      dataCy="handle-input"
       validation={handleValidation}
       style="margin: 1rem 0 2rem 0;" />
     <div class="buttons">

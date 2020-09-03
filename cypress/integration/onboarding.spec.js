@@ -7,6 +7,7 @@ context("identity creation", () => {
   beforeEach(() => {
     cy.nukeAllState();
     cy.visit("./public/index.html");
+    cy.pick("welcome-screen").should("exist");
   });
 
   context("navigation", () => {
@@ -18,7 +19,6 @@ context("identity creation", () => {
 
     it("is possible to use the keyboard for navigation", () => {
       // Intro screen.
-      cy.contains("A free and open-source way to host").should("exist");
       cy.get("body").type("{enter}");
 
       // Enter name screen.
@@ -26,7 +26,7 @@ context("identity creation", () => {
       cy.focused().type("{enter}");
 
       // Enter passphrase screen.
-      cy.contains("Next, you'll enter a passphrase.").should("exist");
+      cy.pick("enter-name-screen").should("exist");
       cy.focused().type(validUser.passphrase);
       cy.focused().type("{enter}");
       cy.focused().type(validUser.passphrase);
@@ -47,7 +47,7 @@ context("identity creation", () => {
       cy.pick("get-started-button").click();
 
       // Enter name screen.
-      cy.pick("form", "handle").type(validUser.handle);
+      cy.pick("handle-input").type(validUser.handle);
       cy.pick("next-button").click();
 
       // Enter passphrase screen.
@@ -73,7 +73,7 @@ context("identity creation", () => {
       // should show an error and return to the name entry screen.
       cy.pick("get-started-button").click();
 
-      cy.pick("form", "handle").type(validUser.handle);
+      cy.pick("handle-input").type(validUser.handle);
       cy.pick("next-button").click();
 
       cy.pick("passphrase-input").type(validUser.passphrase);
@@ -88,8 +88,8 @@ context("identity creation", () => {
       cy.contains("what should we call you?").should("exist");
 
       // We can create a different identity with a new handle.
-      cy.pick("form", "handle").clear();
-      cy.pick("form", "handle").type("cloudhead");
+      cy.pick("handle-input").clear();
+      cy.pick("handle-input").type("cloudhead");
       cy.pick("next-button").click();
       cy.pick("passphrase-input").type("1234");
       cy.pick("repeat-passphrase-input").type("1234");
@@ -104,12 +104,12 @@ context("identity creation", () => {
     context("when clicking the back button on the passphrase screen", () => {
       it("sends the user back to the previous screen", () => {
         cy.pick("get-started-button").click();
-        cy.pick("form", "handle").type(validUser.handle);
+        cy.pick("handle-input").type(validUser.handle);
         cy.pick("next-button").click();
-        cy.contains("you'll enter a passphrase").should("exist");
+        cy.pick("enter-passphrase-screen").should("exist");
         cy.pick("back-button").click();
         cy.contains("what should we call you?").should("exist");
-        cy.pick("form", "handle").should("have.value", validUser.handle);
+        cy.pick("handle-input").should("have.value", validUser.handle);
       });
     });
   });
@@ -123,42 +123,42 @@ context("identity creation", () => {
       it("prevents the user from submitting an invalid handle", () => {
         const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
 
-        cy.pick("form", "handle").type("_rafalca");
+        cy.pick("handle-input").type("_rafalca");
         cy.pick("next-button").click();
 
         // Handle is required.
-        cy.pick("form", "handle").clear();
-        cy.pick("form").contains("You must provide a handle");
+        cy.pick("handle-input").clear();
+        cy.pick("enter-name-screen").contains("You must provide a handle");
 
         // No spaces.
-        cy.pick("form", "handle").type("no spaces");
-        cy.pick("form").contains(validationError);
+        cy.pick("handle-input").type("no spaces");
+        cy.pick("enter-name-screen").contains(validationError);
 
         // No special characters.
-        cy.pick("form", "handle").clear();
-        cy.pick("form", "handle").type("$bad");
-        cy.pick("form").contains(validationError);
+        cy.pick("handle-input").clear();
+        cy.pick("handle-input").type("$bad");
+        cy.pick("enter-name-screen").contains(validationError);
 
         // Can't start with an underscore.
-        cy.pick("form", "handle").clear();
-        cy.pick("form", "handle").type("_nein");
-        cy.pick("form").contains(validationError);
+        cy.pick("handle-input").clear();
+        cy.pick("handle-input").type("_nein");
+        cy.pick("enter-name-screen").contains(validationError);
 
         // Can't start with a dash.
-        cy.pick("form", "handle").clear();
-        cy.pick("form", "handle").type("-não");
-        cy.pick("form").contains(validationError);
+        cy.pick("handle-input").clear();
+        cy.pick("handle-input").type("-não");
+        cy.pick("enter-name-screen").contains(validationError);
 
         // Has to be at least two characters long.
-        cy.pick("form", "handle").clear();
-        cy.pick("form", "handle").type("x");
-        cy.pick("form").contains(validationError);
+        cy.pick("handle-input").clear();
+        cy.pick("handle-input").type("x");
+        cy.pick("enter-name-screen").contains(validationError);
       });
     });
 
     context("passphrase", () => {
       it("prevents the user from submitting an invalid passphrase", () => {
-        cy.pick("handle").type("cloudhead");
+        cy.pick("handle-input").type("cloudhead");
         cy.pick("next-button").click();
 
         // Only entered once.

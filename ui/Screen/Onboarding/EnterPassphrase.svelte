@@ -117,7 +117,7 @@
   }
 </style>
 
-<div class="container">
+<div class="container" data-cy="enter-passphrase-screen">
   <div>
     <h1>Next, you'll need a passphrase.</h1>
 
