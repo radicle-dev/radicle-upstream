@@ -2,6 +2,7 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
+  import * as modal from "../../src/modal.ts";
   import * as path from "../../src/path.ts";
   import { projects as projectsStore } from "../../src/project.ts";
 
@@ -12,7 +13,9 @@
     Remote,
   } from "../../DesignSystem/Component";
 
-  const create = () => push(path.createProject());
+  const create = () => {
+    modal.toggle(path.createProject());
+  };
 
   const select = event => {
     const project = event.detail;
