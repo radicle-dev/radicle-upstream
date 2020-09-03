@@ -1,9 +1,9 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import Icon from "../Icon";
-
   import { ValidationStatus } from "../../../src/validation.ts";
+
+  import Icon from "../Icon";
 
   export let style = null;
   export let inputStyle = null;
