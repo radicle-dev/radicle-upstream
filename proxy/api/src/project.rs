@@ -2,6 +2,7 @@
 //! abstraction.
 
 use std::collections::HashSet;
+use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
 
@@ -41,6 +42,9 @@ where
 }
 
 /// Radicle project for sharing and collaborating.
+///
+/// See [`Projects`] for a detailed breakdown of both kinds of projects.
+#[derive(Serialize)]
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: coco::Urn,
@@ -72,7 +76,74 @@ where
 }
 
 /// A Radicle project that you're interested in but haven't contributed to.
-struct Tracked(Project);
+///
+/// See [`Projects`] for a detailed breakdown of both kinds of projects.
+#[derive(Serialize)]
+pub struct Tracked(Project);
+
+impl Deref for Tracked {
+    type Target = Project;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+/// A user can view projects that are in different states in their application.
+pub struct Projects {
+    /// A project that is tracked is one that the user has replicated onto their device but has not
+    /// made any changes to. A project is still considered tracked if they checked out a working copy but
+    /// have not performed any commits to the references.
+    pub tracked: Vec<Tracked>,
+    /// A project that is "mine" is one that the user has either:
+    ///     a. Created themselves using the application.
+    ///     b. Replicated (see tracked above), checked out a working copy, and push changes to
+    ///     references.
+    ///
+    /// The conditions imply that a project is "mine" if I am the maintainer or I have contributed
+    /// to the project.
+    pub mine: Vec<Project>,
+}
+
+impl Projects {
+    /// List all the projects that are located on your device. These projects could either be "tracked"
+    /// or "mine".
+    ///
+    /// See [`Projects`] for a detailed breakdown of both kinds of projects.
+    ///
+    /// # Errors
+    ///
+    ///   * We couldn't get the list of projects
+    ///   * We couldn't inspect the `signed_refs` of the project
+    ///   * We couldn't get stats for a project
+    pub fn list(api: &coco::Api) -> Result<Self, error::Error> {
+        let mut projects = Self {
+            tracked: vec![],
+            mine: vec![],
+        };
+        for project in api.list_projects()? {
+            let refs = api.list_project_refs(&project.urn())?;
+            let project = api.with_browser(&project.urn(), |browser| {
+                let stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, stats).into())
+            })?;
+            if refs.heads.is_empty() {
+                projects.tracked.push(Tracked(project))
+            } else {
+                projects.mine.push(project)
+            }
+        }
+
+        Ok(projects)
+    }
+
+    /// Give back an iterator over all the [`Project`]s.
+    pub fn into_iter(self) -> impl Iterator<Item = Project> {
+        self.mine
+            .into_iter()
+            .chain(self.tracked.into_iter().map(|tracked| tracked.0))
+    }
+}
 
 /// Fetch the project with a given urn from a peer
 ///
@@ -87,54 +158,6 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
     Ok((project, stats).into())
 }
 
-/// Returns a list of `Project`s for your peer.
-///
-/// # Errors
-///
-///   * We couldn't get a project list.
-///   * We couldn't get project stats.
-pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
-    let project_meta = api.list_projects()?;
-
-    project_meta
-        .into_iter()
-        .map(|project| {
-            api.with_browser(&project.urn(), |browser| {
-                let stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, stats).into())
-            })
-            .map_err(error::Error::from)
-        })
-        .collect()
-}
-
-/// List all projects you have contributed to.
-///
-/// # Errors
-///
-///   * We couldn't get a project list
-///   * We couldn't get project stats
-pub fn my_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
-    let mut projects = vec![];
-    for project in api.list_projects()? {
-        let refs = api.list_project_refs(&project.urn())?;
-        if !refs.heads.is_empty() {
-            projects.push(project)
-        }
-    }
-
-    projects
-        .into_iter()
-        .map(|project| {
-            api.with_browser(&project.urn(), |browser| {
-                let stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, stats).into())
-            })
-            .map_err(error::Error::from)
-        })
-        .collect()
-}
-
 /// List all projects tracked by the given user.
 ///
 /// # Errors
@@ -146,10 +169,9 @@ pub fn list_projects_for_user(
     api: &coco::Api,
     user: &coco::Urn,
 ) -> Result<Vec<Project>, error::Error> {
-    let all_projects = list_projects(api)?;
     let mut projects = vec![];
 
-    for project in all_projects {
+    for project in Projects::list(api)?.into_iter() {
         if api
             .tracked(&project.id)?
             .into_iter()

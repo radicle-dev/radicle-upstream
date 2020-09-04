@@ -2,14 +2,12 @@
 
 use std::path::PathBuf;
 
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::context;
 use crate::http;
-use crate::project;
 
 /// Combination of all routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -149,15 +147,17 @@ mod handler {
         let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
 
+        /*
         let projects = if let Some(user) = query.user {
             project::list_projects_for_user(&ctx.peer_api, &user)?
-        } else if let Some(_status) = query.status {
-            project::my_projects(&ctx.peer_api)?
-        } else {
-            project::list_projects(&ctx.peer_api)?
         };
+        */
 
-        Ok(reply::json(&projects))
+        let projects = project::Projects::list(&ctx.peer_api)?;
+        match query.status {
+            super::Status::Tracked => Ok(reply::json(&projects.tracked)),
+            super::Status::Mine => Ok(reply::json(&projects.mine)),
+        }
     }
 
     /// Get a feed of untracked projects.
@@ -165,23 +165,6 @@ mod handler {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
-    }
-}
-
-impl Serialize for project::Project {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Project", 4)?;
-        state.serialize_field("id", &self.id.to_string())?;
-        state.serialize_field(
-            "shareableEntityIdentifier",
-            &self.shareable_entity_identifier.to_string(),
-        )?;
-        state.serialize_field("metadata", &self.metadata)?;
-        state.serialize_field("stats", &self.stats)?;
-        state.end()
     }
 }
 
@@ -228,6 +211,12 @@ pub enum Status {
     Mine,
 }
 
+impl Default for Status {
+    fn default() -> Self {
+        Status::Mine
+    }
+}
+
 /// Query options for listing projects.
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct ListQuery {
@@ -241,7 +230,7 @@ pub struct ListQuery {
     /// TODO(sos): If this becomes Option<Status>, I get a MissingOwner error 🤔
     /// I think the error happens in `with_qs_opt` at the `match
     /// serde_qs::from_str(&query)`
-    status: Option<String>,
+    status: Status,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
