@@ -20,7 +20,7 @@
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import Modal from "./Screen/Modal";
+  import Modal from "./Modal";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";

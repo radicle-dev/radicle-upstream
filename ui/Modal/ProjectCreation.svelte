@@ -3,28 +3,28 @@
   import { push } from "svelte-spa-router";
   import validatejs from "validate.js";
 
-  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../../src/config.ts";
-  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
-  import * as notification from "../../src/notification.ts";
-  import * as path from "../../src/path.ts";
-  import { create, RepoType } from "../../src/project.ts";
-  import { getLocalState } from "../../src/source.ts";
-  import { getValidationState } from "../../src/validation.ts";
-  import * as screen from "../../src/screen.ts";
+  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
+  import { Variant as IllustrationVariant } from "../src/illustration.ts";
+  import * as notification from "../src/notification.ts";
+  import * as path from "../src/path.ts";
+  import { create, RepoType } from "../src/project.ts";
+  import { getLocalState } from "../src/source.ts";
+  import { getValidationState } from "../src/validation.ts";
+  import * as screen from "../src/screen.ts";
   import {
     dismissRemoteHelperHint,
     fetch as fetchSession,
     settings,
-  } from "../../src/session.ts";
+  } from "../src/session.ts";
 
-  import { Button, Flex, Icon, Input } from "../../DesignSystem/Primitive";
+  import { Button, Flex, Icon, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
     Illustration,
     RadioOption,
     RemoteHelperHint,
     Tooltip,
-  } from "../../DesignSystem/Component";
+  } from "../DesignSystem/Component";
 
   let currentSelection;
   export let content;
