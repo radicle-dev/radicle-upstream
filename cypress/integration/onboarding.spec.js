@@ -17,6 +17,12 @@ context("identity creation", () => {
       cy.pick("get-started-button").should("exist");
     });
 
+    it("makes sure global hotkeys are disabled during onboarding", () => {
+      cy.pick("get-started-button").should("exist");
+      cy.get("body").type("?");
+      cy.pick("hotkey-modal").should("not.exist");
+    });
+
     it("is possible to use the keyboard for navigation", () => {
       // Intro screen.
       cy.get("body").type("{enter}");

@@ -4,6 +4,7 @@
   import * as modal from "./src/modal.ts";
   import * as path from "./src/path.ts";
   import { isMac } from "./src/settings.ts";
+  import * as hotkeys from "./src/hotkeys.ts";
 
   const toggle = destination => {
     if (path.active(destination, $location)) {
@@ -17,11 +18,15 @@
   // Don’t forget to update `ui/Screen/Shortcuts.svelte` if you update the key
   // bindings.
   const onKeydown = event => {
-    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
-
-    if (event.target !== document.body || event.repeat) {
+    if (
+      !hotkeys.areEnabled() ||
+      event.target !== document.body ||
+      event.repeat
+    ) {
       return false;
     }
+
+    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
     // To open help => ?
     if (event.key === "?") {

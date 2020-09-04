@@ -5,6 +5,8 @@
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
+  import * as hotkeys from "./src/hotkeys.ts";
+
   import { clear, fetch, session as store } from "./src/session.ts";
 
   import {
@@ -67,8 +69,10 @@
 
     case remote.Status.Success:
       if ($store.data.identity === null) {
+        hotkeys.disable();
         push(path.onboarding());
       } else {
+        hotkeys.enable();
         if ($location === path.blank() || $location === path.onboarding()) {
           push(path.profileProjects());
         }

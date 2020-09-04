@@ -67,7 +67,12 @@
   }
 </style>
 
-<div tabindex="0" class="container" bind:this={content} on:keydown={onKeydown}>
+<div
+  data-cy="hotkey-modal"
+  tabindex="0"
+  class="container"
+  bind:this={content}
+  on:keydown={onKeydown}>
   <Illustration
     style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />
