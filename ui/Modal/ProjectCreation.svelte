@@ -7,6 +7,7 @@
   import { Variant as IllustrationVariant } from "../src/illustration.ts";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
+  import * as urn from "../src/urn.ts";
   import { create, RepoType } from "../src/project.ts";
   import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
@@ -177,7 +178,7 @@
     } catch (error) {
       push(path.profileProjects());
       notification.error(
-        `Could not create project: ${shortenUrn(error.message)}`
+        `Could not create project: ${urn.shorten(error.message)}`
       );
     } finally {
       dispatch("hide");
@@ -192,10 +193,6 @@
   onDestroy(() => {
     screen.unlock();
   });
-
-  const shortenUrn = string => {
-    return string.replace(/(rad:git:[\w]{3})[\w]{53}([\w]{3})/, "$1…$2");
-  };
 
   let localState;
   let localStateError;
@@ -312,9 +309,8 @@
           <p
             style="margin-top: 1rem; color: var(--color-foreground-level-6);
             text-align: center">
-            A new repository will be created inside this directory
-            <br />
-            and named after the project name.
+            A new repository will be created inside this directory <br /> and named
+            after the project name.
           </p>
         </div>
       </RadioOption>

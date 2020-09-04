@@ -350,7 +350,6 @@
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
     <Section title="Colors" subTitle="Primary, secondary and grays">
-
       {#each colors as color}
         <p
           style="background-color: var({color}); margin-bottom: 8px;
@@ -363,7 +362,6 @@
     <Section
       title="Typography"
       subTitle="Using Inter and Source Code Pro fonts">
-
       <TypographySwatch title="<h1>">
         <h1>Radicle Upstream</h1>
       </TypographySwatch>
@@ -419,7 +417,6 @@
       <TypographySwatch title={`<p class="typo-all-caps">`}>
         <p class="typo-all-caps">Radicle Upstream</p>
       </TypographySwatch>
-
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
@@ -441,7 +438,6 @@
     <Section
       title="Buttons"
       subTitle="Vanilla, Primary, Secondary, Cancel, disabled state">
-
       <table>
         <thead>
           <tr>
@@ -553,14 +549,12 @@
             </Button>
           </td>
         </tr>
-
       </table>
     </Section>
 
     <Section
       title="Form elements"
       subTitle="Inputs, text areas, dropdowns, etc.">
-
       <Swatch>
         <Input.Text placeholder="Hey, I'm an input." />
       </Swatch>
@@ -645,6 +639,23 @@
       </Swatch>
 
       <Swatch>
+        <Input.Password
+          style="width: 100%;"
+          placeholder="Please enter a password" />
+      </Swatch>
+
+      <Swatch>
+        <Input.Password style="width: 100%;" value="my super long password" />
+      </Swatch>
+
+      <Swatch>
+        <Input.Password
+          style="width: 100%;"
+          value="too short"
+          validation={{ status: ValidationStatus.Error, message: 'Password too short.' }} />
+      </Swatch>
+
+      <Swatch>
         <Input.Checkbox>How about a checkbox?</Input.Checkbox>
       </Swatch>
 
@@ -672,7 +683,6 @@
     <Section
       title="Avatars"
       subTitle="User, project, etc avatars in various sizes and shapes.">
-
       <Swatch>
         <Avatar
           style="margin-right: 16px"
@@ -855,7 +865,6 @@
           description="Best project in the world"
           showRegisteredBadge={true} />
       </Swatch>
-
     </Section>
 
     <Section title="Transaction" subTitle="Row, Accordion and Statusbar">
@@ -977,7 +986,6 @@
     </Section>
 
     <Section title="Misc" subTitle="Everything else">
-
       <Swatch>
         <Placeholder style="width: 300px; height: 100px" />
       </Swatch>
@@ -1071,7 +1079,6 @@
           text="Hey, I'm a tent."
           illustration={IllustrationVariant.Tent} />
       </Swatch>
-
     </Section>
   </div>
 </ModalLayout>
