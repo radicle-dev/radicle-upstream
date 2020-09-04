@@ -152,7 +152,7 @@ mod handler {
         let projects = if let Some(user) = query.user {
             project::list_projects_for_user(&ctx.peer_api, &user)?
         } else if let Some(_status) = query.status {
-            project::list_my_projects(&ctx.peer_api)?
+            project::my_projects(&ctx.peer_api)?
         } else {
             project::list_projects(&ctx.peer_api)?
         };

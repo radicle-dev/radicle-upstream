@@ -114,10 +114,17 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
 ///
 ///   * We couldn't get a project list
 ///   * We couldn't get project stats
-pub fn list_my_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
-    let meta = api.list_my_projects()?;
+pub fn my_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
+    let mut projects = vec![];
+    for project in api.list_projects()? {
+        let refs = api.list_project_refs(&project.urn())?;
+        if !refs.heads.is_empty() {
+            projects.push(project)
+        }
+    }
 
-    meta.into_iter()
+    projects
+        .into_iter()
         .map(|project| {
             api.with_browser(&project.urn(), |browser| {
                 let stats = browser.get_stats().map_err(coco::Error::from)?;
