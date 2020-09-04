@@ -1,12 +1,12 @@
 <script>
   import * as modal from "../../src/modal";
 
-  export let store = null;
+  export let modalRoutes = {};
+  const store = modal.store;
 
   let content;
-  const clickOutside = ev => {
-    if (content && ev.target !== content && !content.contains(ev.target))
-      modal.hide();
+  const clickOutside = () => {
+    modal.hide();
   };
 </script>
 
@@ -16,6 +16,10 @@
     width: 100vw;
     position: fixed;
     z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: scroll;
   }
 
   .overlay {
@@ -27,11 +31,6 @@
   }
 
   .content {
-    position: relative;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 200;
   }
 
@@ -40,13 +39,11 @@
   }
 </style>
 
-<svelte:window on:click={clickOutside} />
-
 <div class="modal" class:hide={!$store.show}>
   <div class="overlay" on:click={clickOutside} />
   <div class="content">
     <svelte:component
-      this={$store.component}
+      this={modalRoutes[$store.route]}
       bind:content
       on:hide={modal.hide} />
   </div>

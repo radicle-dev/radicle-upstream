@@ -91,7 +91,7 @@ context("project creation", () => {
       // Set up minimal form input to show validations
       cy.pick("page", "name").type("this-name-is-valid");
       cy.pick("page", "new-project").click();
-      cy.pick("page", "create-project-button").click();
+      cy.pick("page", "create-project-button").scrollIntoView().click();
     });
 
     afterEach(() => {

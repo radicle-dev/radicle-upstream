@@ -3,6 +3,7 @@
 
   import * as modal from "./src/modal.ts";
   import * as path from "./src/path.ts";
+  import * as screen from "./src/screen.ts";
   import { isMac } from "./src/settings.ts";
   import * as hotkeys from "./src/hotkeys.ts";
 
@@ -18,15 +19,16 @@
   // Don’t forget to update `ui/Screen/Shortcuts.svelte` if you update the key
   // bindings.
   const onKeydown = event => {
+    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
+
     if (
       !hotkeys.areEnabled() ||
-      event.target !== document.body ||
+      screen.isLocked() ||
+      (!modifierKey && event.target.type === "text") ||
       event.repeat
     ) {
       return false;
     }
-
-    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
     // To open help => ?
     if (event.key === "?") {
@@ -50,7 +52,7 @@
 
     // To create a new project => OS modifier key + n
     if (modifierKey && event.key === "n") {
-      toggle(path.createProject());
+      toggleModal(path.newProject());
     }
 
     if (event.key === "Escape") {

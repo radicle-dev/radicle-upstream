@@ -1,7 +1,6 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
-  import * as modal from "./src/modal.ts";
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
@@ -23,13 +22,13 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
+  import Modal from "./Modal";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
   import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
-  import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
@@ -49,7 +48,6 @@
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
     "/projects/untracked/:urn": Untracked,
-    "/projects/new": ProjectCreation,
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
@@ -60,6 +58,12 @@
     "/transactions/:id": TransactionDetails,
     "/send-funds": SendFunds,
     "*": NotFound,
+  };
+
+  const modalRoutes = {
+    "/new-project": Modal.NewProject,
+    "/search": Modal.Search,
+    "/shortcuts": Modal.Shortcuts,
   };
 
   $: switch ($store.status) {
@@ -102,7 +106,7 @@
 </style>
 
 <Hotkeys />
-<ModalOverlay store={modal.store} />
+<ModalOverlay {modalRoutes} />
 <NotificationFaucet />
 <Theme />
 
