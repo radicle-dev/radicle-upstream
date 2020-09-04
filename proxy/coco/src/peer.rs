@@ -1,7 +1,8 @@
 //! Utility to work with the peer api of librad.
 
 use std::convert::TryFrom;
-use std::net::SocketAddr;
+use std::future::Future;
+use std::net::{IpAddr, SocketAddr};
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -16,6 +17,7 @@ use librad::meta::entity;
 use librad::meta::project as librad_project;
 use librad::meta::user;
 use librad::net::discovery;
+use librad::net::gossip::PeerInfo;
 use librad::net::peer::{Gossip, PeerApi, PeerConfig, PeerStorage};
 use librad::net::protocol::Protocol;
 use librad::paths;
@@ -258,6 +260,25 @@ impl Api {
         };
 
         Ok(project_meta)
+    }
+
+    /// Query the network for providers of the given [`RadUrn`].
+    ///
+    /// This is a convenience for the special case of issuing a gossip `Want`
+    /// message where we don't know a specific revision, nor an origin peer.
+    /// Consequently, any `Have` message with a matching `urn` should do for
+    /// attempting a clone, even if it isn't a direct response to our query.
+    ///
+    /// Note that there is no guarantee that a peer who claims to provide the
+    /// [`RadUrn`] actually has it, nor that it is reachable using any of
+    /// the addresses contained in [`PeerInfo`]. The implementation may~F
+    /// change in the future to answer the query from a local cache first.
+    pub fn providers(
+        &self,
+        urn: RadUrn,
+    ) -> impl Future<Output = impl futures::Stream<Item = PeerInfo<IpAddr>>> {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        api.providers(urn)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
