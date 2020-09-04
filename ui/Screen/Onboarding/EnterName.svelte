@@ -1,74 +1,36 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import validatejs from "validate.js";
 
-  import {
-    ValidationStatus,
-    getValidationState,
-  } from "../../src/validation.ts";
+  import { ValidationStatus } from "../../src/validation.ts";
+  import * as onboarding from "../../src/onboarding.ts";
 
   import { Button, Emoji, Input } from "../../DesignSystem/Primitive";
 
-  export let handle = null;
-
   const dispatch = createEventDispatcher();
 
-  const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
+  export let handle = null;
 
-  let validations,
-    beginValidation = false;
+  let beginValidation = false;
+  const validationStore = onboarding.createHandleValidationStore();
 
-  validatejs.options = {
-    fullMessages: false,
+  $: beginValidation && validationStore.validate(handle);
+  $: allowNext = (handle && validationPasses()) || !validationStarted();
+
+  const validationPasses = () => {
+    return $validationStore.status === ValidationStatus.Success;
   };
 
-  validatejs.validators.optional = (value, options) => {
-    return !validatejs.isEmpty(value)
-      ? validatejs.single(value, options)
-      : null;
+  const validationStarted = () => {
+    return $validationStore.status !== ValidationStatus.NotStarted;
   };
-
-  const constraints = {
-    handle: {
-      presence: {
-        message: "You must provide a handle",
-        allowEmpty: false,
-      },
-      format: {
-        pattern: new RegExp(HANDLE_MATCH, "i"),
-        message: `Handle should match ${HANDLE_MATCH}`,
-      },
-    },
-  };
-
-  let handleValidation = { status: ValidationStatus.NotStarted };
-
-  const validate = () => {
-    if (!beginValidation) {
-      return;
-    }
-    validations = validatejs(
-      {
-        handle: handle,
-      },
-      constraints
-    );
-
-    handleValidation = getValidationState("handle", validations);
-  };
-
-  $: validate(handle);
-
-  $: allowNext = handle && !validations;
 
   const next = () => {
-    if (!allowNext) {
-      return;
-    }
+    if (!allowNext) return;
 
     beginValidation = true;
-    validate();
-    if (!validatejs.isEmpty(validations)) return;
+    validationStore.validate(handle);
+
+    if (!validationPasses()) return;
 
     dispatch("next", handle);
   };
@@ -116,7 +78,7 @@
       bind:value={handle}
       on:enter={next}
       dataCy="handle-input"
-      validation={handleValidation}
+      validation={$validationStore}
       style="margin: 1rem 0 2rem 0;" />
     <div class="buttons">
       <Button dataCy="next-button" disabled={!allowNext} on:click={next}>
