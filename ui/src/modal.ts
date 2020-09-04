@@ -1,33 +1,19 @@
 import { get, writable } from "svelte/store";
-import { SvelteComponent } from "svelte";
-
-import SearchModal from "../DesignSystem/Component/SearchModal.svelte";
-import ShortcutsModal from "../DesignSystem/Component/Shortcuts.svelte";
-import ProjectCreation from "../Screen/ProjectCreation.svelte";
 
 type ModalOverlay =
-  | { show: true; component: typeof SvelteComponent }
-  | { show: false; component: null };
+  | { show: true; route: string }
+  | { show: false; route: null };
 
-type ModalRoute = "/projects/new" | "/search" | "/shortcuts";
+export const store = writable<ModalOverlay>({ show: false, route: null });
 
-const routes: Record<ModalRoute, typeof SvelteComponent> = {
-  "/projects/new": ProjectCreation,
-  "/search": SearchModal,
-  "/shortcuts": ShortcutsModal,
-};
+export const hide = (): void => store.set({ show: false, route: null });
 
-export const store = writable<ModalOverlay>({ show: false, component: null });
-
-export const hide = (): void => store.set({ show: false, component: null });
-
-export const toggle = (path: ModalRoute): void => {
-  const newComponent = routes[path];
+export const toggle = (route: string): void => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (get(store).show && get(store).component === newComponent) {
+  if (get(store).show && get(store).route === route) {
     hide();
     return;
   }
 
-  store.set({ show: true, component: newComponent });
+  store.set({ show: true, route });
 };

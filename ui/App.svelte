@@ -1,7 +1,6 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
-  import * as modal from "./src/modal.ts";
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
@@ -21,6 +20,7 @@
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
+  import Modal from "./Screen/Modal";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -56,6 +56,12 @@
     "/transactions/:id": TransactionDetails,
     "/send-funds": SendFunds,
     "*": NotFound,
+  };
+
+  const modalRoutes = {
+    "/new-project": Modal.NewProject,
+    "/search": Modal.Search,
+    "/shortcuts": Modal.Shortcuts,
   };
 
   $: switch ($store.status) {
@@ -96,7 +102,7 @@
 </style>
 
 <Hotkeys />
-<ModalOverlay store={modal.store} />
+<ModalOverlay {modalRoutes} />
 <NotificationFaucet />
 <Theme />
 

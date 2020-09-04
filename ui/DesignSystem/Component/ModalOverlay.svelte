@@ -1,7 +1,8 @@
 <script>
   import * as modal from "../../src/modal";
 
-  export let store = null;
+  export let modalRoutes = {};
+  const store = modal.store;
 
   let content;
   const clickOutside = () => {
@@ -41,7 +42,7 @@
   <div class="overlay" on:click={clickOutside} />
   <div class="content" style="overflow: scroll;">
     <svelte:component
-      this={$store.component}
+      this={modalRoutes[$store.route]}
       bind:content
       on:hide={modal.hide} />
   </div>

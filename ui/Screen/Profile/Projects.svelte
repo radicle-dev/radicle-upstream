@@ -14,7 +14,7 @@
   } from "../../DesignSystem/Component";
 
   const create = () => {
-    modal.toggle(path.createProject());
+    modal.toggle(path.newProject());
   };
 
   const select = event => {
