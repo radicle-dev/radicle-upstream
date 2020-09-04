@@ -19,6 +19,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: scroll;
   }
 
   .overlay {
@@ -40,7 +41,7 @@
 
 <div class="modal" class:hide={!$store.show}>
   <div class="overlay" on:click={clickOutside} />
-  <div class="content" style="overflow: scroll;">
+  <div class="content">
     <svelte:component
       this={modalRoutes[$store.route]}
       bind:content
