@@ -5,11 +5,13 @@ use warp::filters::BoxedFilter;
 use warp::{path, reject, Filter, Rejection, Reply};
 
 use crate::context;
+use crate::notification::Subscriptions;
 
 mod avatar;
 mod control;
 mod error;
 mod identity;
+mod notification;
 mod project;
 mod session;
 mod source;
@@ -34,6 +36,7 @@ macro_rules! combine {
 /// Main entry point for HTTP API.
 pub fn api(
     ctx: context::Ctx,
+    subscriptions: Subscriptions,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let avatar_filter = path("avatars").and(avatar::get_filter());
@@ -49,6 +52,7 @@ pub fn api(
         .untuple_one()
         .and(control::filters(ctx.clone()));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
+    let notification_filter = path("notifications").and(notification::filters(subscriptions));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
     let source_filter = path("source").and(source::filters(ctx));
@@ -57,6 +61,7 @@ pub fn api(
         avatar_filter,
         control_filter,
         identity_filter,
+        notification_filter,
         project_filter,
         session_filter,
         source_filter
