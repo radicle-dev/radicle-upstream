@@ -140,9 +140,7 @@
       bind:value={passphrase} />
 
     <div class="repeat" hidden={!passphrase}>
-      <p style="color: margin-bottom: 0.5rem;">
-        And enter it again, just to be safe.
-      </p>
+      <p style="margin-bottom: 0.5rem;">And enter it again, just to be safe.</p>
       <Input.Password
         bind:inputElement={repeatedPassphraseInput}
         on:enter={next}
