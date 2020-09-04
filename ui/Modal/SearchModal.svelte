@@ -2,15 +2,14 @@
   import { push } from "svelte-spa-router";
   import { createEventDispatcher } from "svelte";
 
-  import { Icon, Input } from "../Primitive";
+  import { Icon, Input } from "../DesignSystem/Primitive";
 
-  import TrackToggle from "./TrackToggle.svelte";
-  import Urn from "./Urn.svelte";
+  import { TrackToggle, Urn } from "../DesignSystem/Component";
 
-  import * as path from "../../src/path";
-  import { Status } from "../../src/remote";
-  import { updateUrn, validation } from "../../src/search";
-  import { ValidationStatus } from "../../src/validation";
+  import * as path from "../src/path";
+  import { Status } from "../src/remote";
+  import { updateUrn, validation } from "../src/search";
+  import { ValidationStatus } from "../src/validation";
 
   export let content;
 

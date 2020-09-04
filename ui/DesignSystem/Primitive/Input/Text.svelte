@@ -45,6 +45,7 @@
   input[disabled] {
     cursor: not-allowed;
     color: var(--color-foreground-level-4);
+    background-color: var(--color-foreground-level-1);
   }
 
   input[disabled]::placeholder {
@@ -52,7 +53,7 @@
   }
 
   input[disabled]:hover {
-    background-color: var(--color-background);
+    background-color: var(--color-foreground-level-1);
   }
 
   input::placeholder {

@@ -3,6 +3,7 @@
 
   import * as modal from "./src/modal.ts";
   import * as path from "./src/path.ts";
+  import * as screen from "./src/screen.ts";
   import { isMac } from "./src/settings.ts";
 
   const toggle = destination => {
@@ -19,7 +20,11 @@
   const onKeydown = event => {
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
-    if (event.target !== document.body || event.repeat) {
+    if (
+      screen.isLocked() ||
+      (!modifierKey && event.target.type === "text") ||
+      event.repeat
+    ) {
       return false;
     }
 
@@ -45,7 +50,7 @@
 
     // To create a new project => OS modifier key + n
     if (modifierKey && event.key === "n") {
-      toggle(path.createProject());
+      toggleModal(path.newProject());
     }
 
     if (event.key === "Escape") {

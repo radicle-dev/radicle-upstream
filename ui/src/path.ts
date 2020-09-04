@@ -27,7 +27,6 @@ export const orgMembers = (id: string): string => `/orgs/${id}/members`;
 export const memberRegistration = (id: string): string =>
   `/orgs/${id}/members/register`;
 
-export const createProject = (): string => "/projects/new";
 export const sendFunds = (): string => "/send-funds";
 export const registerProject = (domainId: string): string =>
   `/projects/register/${domainId}`;
@@ -72,6 +71,7 @@ export const transactions = (id: string, viewerAccountId: string): string =>
 export const designSystemGuide = (): string => "/design-system-guide";
 
 // modal routes
+export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
 
