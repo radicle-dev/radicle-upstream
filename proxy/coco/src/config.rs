@@ -74,8 +74,8 @@ pub fn default(
 }
 
 /// Configure a [`net::peer::PeerConfig`].
-#[must_use]
 #[allow(clippy::as_conversions)]
+#[must_use]
 pub fn configure(
     paths: paths::Paths,
     key: keys::SecretKey,

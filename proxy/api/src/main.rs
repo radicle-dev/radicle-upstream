@@ -66,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         signer: key.clone(),
     });
 
-    let peer_api = {
+    let (peer, peer_api) = {
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
@@ -75,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let config =
             coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
-        coco::Api::new(config).await?
+        coco::try_from(config).await?
     };
 
     if args.test {

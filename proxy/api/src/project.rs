@@ -75,9 +75,9 @@ where
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::Error> {
-    let project = api.get_project(project_urn, None)?;
-    let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
+pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, error::Error> {
+    let project = state.get_project(project_urn, None)?;
+    let stats = state.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
     Ok((project, stats).into())
 }
@@ -88,17 +88,18 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 ///
 ///   * We couldn't get a project list.
 ///   * We couldn't get project stats.
-pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
-    let project_meta = api.list_projects()?;
+pub fn list_projects(state: &coco::State) -> Result<Vec<Project>, error::Error> {
+    let project_meta = state.list_projects()?;
 
     project_meta
         .into_iter()
         .map(|project| {
-            api.with_browser(&project.urn(), |browser| {
-                let stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, stats).into())
-            })
-            .map_err(error::Error::from)
+            state
+                .with_browser(&project.urn(), |browser| {
+                    let stats = browser.get_stats().map_err(coco::Error::from)?;
+                    Ok((project, stats).into())
+                })
+                .map_err(error::Error::from)
         })
         .collect()
 }
@@ -111,14 +112,14 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
 pub fn list_projects_for_user(
-    api: &coco::Api,
+    state: &coco::State,
     user: &coco::Urn,
 ) -> Result<Vec<Project>, error::Error> {
-    let all_projects = list_projects(api)?;
+    let all_projects = list_projects(state)?;
     let mut projects = vec![];
 
     for project in all_projects {
-        if api
+        if state
             .tracked(&project.id)?
             .into_iter()
             .any(|(_, project_user)| project_user.urn() == *user)

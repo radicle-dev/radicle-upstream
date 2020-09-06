@@ -12,6 +12,7 @@
     unused_qualifications
 )]
 #![allow(
+    clippy::clone_on_ref_ptr,
     clippy::expect_used,
     clippy::implicit_return,
     clippy::integer_arithmetic,
@@ -43,7 +44,9 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 mod peer;
-pub use peer::{verify_user, Api, User};
+pub use peer::Peer;
+mod state;
+pub use state::{Lock, State};
 pub mod project;
 
 pub mod seed;
@@ -55,3 +58,33 @@ pub use source::{
     tree, Blob, BlobContent, Branch, Commit, CommitHeader, Info, ObjectType, Person, Revision,
     Revisions, Tag, Tree, TreeEntry,
 };
+
+pub mod user;
+
+use librad::keys;
+use librad::net::discovery;
+use librad::net::peer::PeerConfig;
+use std::net::SocketAddr;
+
+/// Constructs a [`Peer`] and [`State`] pair from a [`PeerConfig`].
+///
+/// # Errors
+///
+/// * peer construction from config fails.
+/// * accept on the peer fails.
+pub async fn try_from<I>(
+    config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
+    signer: librad::signer::BoxedSigner,
+) -> Result<(Peer, Lock), Error>
+where
+    I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
+{
+    let peer = config.try_into_peer().await?;
+    let (api, run_loop) = peer.accept()?;
+
+    let state = State::new(api, signer);
+    let state = state::Lock::from(state);
+    let peer = Peer::new(run_loop, state.clone());
+
+    Ok((peer, state))
+}

@@ -9,7 +9,7 @@ use librad::uri;
 
 use crate::error::Error;
 use crate::oid::Oid;
-use crate::peer;
+use crate::state::State;
 
 /// An update and all the required information that can be announced on the network.
 pub type Announcement = (uri::RadUrn, Oid);
@@ -42,7 +42,7 @@ pub async fn announce(
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
+pub fn build(api: &State) -> Result<HashSet<Announcement>, Error> {
     let mut list: HashSet<Announcement> = HashSet::new();
 
     // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
@@ -95,8 +95,8 @@ mod test {
     use crate::config;
     use crate::error::Error;
     use crate::oid;
-    use crate::peer;
     use crate::signer;
+    use crate::state::State;
 
     #[tokio::test]
     async fn announce() -> Result<(), Error> {
@@ -106,13 +106,14 @@ mod test {
             signer: key.clone(),
         });
         let config = config::default(key, tmp_dir.path())?;
-        let api = peer::Api::new(config).await?;
+        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let state = State::new(api, signer.clone());
 
-        let _owner = api.init_owner(&signer, "cloudhead")?;
+        let _owner = state.init_owner(&signer, "cloudhead")?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
-        let updates = super::build(&api)?;
-        let res = api
+        let updates = super::build(&state)?;
+        let res = state
             .with_protocol(|protocol| {
                 Box::pin(async move { super::announce(protocol, updates.iter()).await })
             })

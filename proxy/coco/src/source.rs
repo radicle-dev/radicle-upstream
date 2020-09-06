@@ -828,8 +828,8 @@ mod tests {
     use crate::config;
     use crate::control;
     use crate::oid;
-    use crate::peer;
     use crate::signer;
+    use crate::state::State;
 
     use super::Error;
 
@@ -842,25 +842,21 @@ mod tests {
             signer: key.clone(),
         });
         let config = config::default(key, tmp_dir).expect("unable to get default config");
-        let api = peer::Api::new(config)
-            .await
-            .expect("failed to init peer API");
-        let owner = api
-            .init_owner(&signer, "cloudhead")
-            .expect("failed to init owner");
+        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let state = State::new(api, signer.clone());
+        let owner = state.init_owner(&signer, "cloudhead")?;
         let platinum_project = control::replicate_platinum(
-            &api,
+            &state,
             &signer,
             &owner,
             "git-platinum",
             "fixture data",
             "master",
-        )
-        .expect("unable to replicate");
+        )?;
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
-        let commit = api
+        let commit = state
             .with_browser(&urn, |browser| {
                 Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
             })
