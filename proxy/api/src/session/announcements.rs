@@ -51,10 +51,8 @@ pub fn save(
 mod test {
     use std::collections::HashSet;
 
-    use librad::hash::Hash;
-    use librad::uri;
-
     use coco::oid;
+    use coco::uri;
 
     use crate::error;
 
@@ -63,7 +61,7 @@ mod test {
         let updates: HashSet<_> = vec![
             (
                 uri::RadUrn {
-                    id: Hash::hash(b"project0"),
+                    id: coco::Hash::hash(b"project0"),
                     proto: uri::Protocol::Git,
                     path: "cloudhead/new-language"
                         .parse::<uri::Path>()
@@ -73,7 +71,7 @@ mod test {
             ),
             (
                 uri::RadUrn {
-                    id: Hash::hash(b"project0"),
+                    id: coco::Hash::hash(b"project0"),
                     proto: uri::Protocol::Git,
                     path: "fintohaps/notations"
                         .parse::<uri::Path>()
@@ -83,7 +81,7 @@ mod test {
             ),
             (
                 uri::RadUrn {
-                    id: Hash::hash(b"project0"),
+                    id: coco::Hash::hash(b"project0"),
                     proto: uri::Protocol::Git,
                     path: "kalt/loops"
                         .parse::<uri::Path>()
@@ -93,7 +91,7 @@ mod test {
             ),
             (
                 uri::RadUrn {
-                    id: Hash::hash(b"project1"),
+                    id: coco::Hash::hash(b"project1"),
                     proto: uri::Protocol::Git,
                     path: "backport".parse::<uri::Path>().map_err(coco::Error::from)?,
                 },

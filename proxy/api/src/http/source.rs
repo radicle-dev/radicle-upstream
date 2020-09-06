@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
-use librad::meta::user;
-use librad::peer;
 use radicle_surf::vcs::git;
 
 use crate::context;
@@ -147,7 +145,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -283,7 +281,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -302,7 +300,7 @@ mod handler {
 #[derive(Debug, Deserialize)]
 pub struct CommitsQuery {
     /// PeerId to scope the query by.
-    peer_id: Option<peer::PeerId>,
+    peer_id: Option<coco::PeerId>,
     /// Branch to get the commit history for.
     branch: String,
 }
@@ -322,9 +320,9 @@ pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
     /// PeerId to scope the query by.
-    peer_id: Option<peer::PeerId>,
+    peer_id: Option<coco::PeerId>,
     /// Revision to query at.
-    revision: Option<coco::Revision<peer::PeerId>>,
+    revision: Option<coco::Revision<coco::PeerId>>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
 }
@@ -334,7 +332,7 @@ pub struct BlobQuery {
 #[serde(rename_all = "camelCase")]
 pub struct BranchQuery {
     /// PeerId to scope the query by.
-    peer_id: Option<peer::PeerId>,
+    peer_id: Option<coco::PeerId>,
 }
 
 /// Bundled query params to pass to the tree handler.
@@ -343,9 +341,9 @@ pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
     /// PeerId to scope the query by.
-    peer_id: Option<peer::PeerId>,
+    peer_id: Option<coco::PeerId>,
     /// Revision to query at.
-    revision: Option<coco::Revision<peer::PeerId>>,
+    revision: Option<coco::Revision<coco::PeerId>>,
 }
 
 /// The output structure when calling the `/revisions` endpoint.
@@ -359,8 +357,8 @@ struct Revisions {
     tags: Vec<coco::Tag>,
 }
 
-impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
-    fn from(other: coco::Revisions<peer::PeerId, user::User<S>>) -> Self {
+impl<S> From<coco::Revisions<coco::PeerId, coco::MetaUser<S>>> for Revisions {
+    fn from(other: coco::Revisions<coco::PeerId, coco::MetaUser<S>>) -> Self {
         Self {
             identity: (other.peer_id, other.user).into(),
             branches: other.branches,
@@ -784,7 +782,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let owner = owner.to_data().build()?; // TODO(finto): Unverify owner, unfortunately
+        let owner = owner.to_data().build().map_err(coco::Error::from)?; // TODO(finto): Unverify owner, unfortunately
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
