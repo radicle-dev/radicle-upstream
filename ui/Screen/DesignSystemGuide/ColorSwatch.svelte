@@ -1,6 +1,5 @@
 <script>
-  import { Tooltip } from "../../DesignSystem/Component";
-  import CopyToClipboard from "./CopyToClipboard.svelte";
+  import { Copyable, Tooltip } from "../../DesignSystem/Component";
 
   export let style = null;
   export let color = null;
@@ -21,14 +20,16 @@
 </style>
 
 <div class="wrapper" {style}>
-  <CopyToClipboard
-    value={`var(${color});`}
-    notificationText="The color was copied to your clipboard">
+  <Copyable
+    notificationText="The color was copied to your clipboard"
+    iconBeforeCopy={null}
+    styleContent={false}
+    copyContent={`var(${color});`}>
     <Tooltip value={`var(${color})`} position="top">
       <div
         class:border={color === '--color-background'}
         class="color"
         style={`background-color: var(${color});`} />
     </Tooltip>
-  </CopyToClipboard>
+  </Copyable>
 </div>
