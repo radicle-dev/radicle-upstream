@@ -50,7 +50,6 @@
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-
   <Header.Large variant="profile" entity={session.identity}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
