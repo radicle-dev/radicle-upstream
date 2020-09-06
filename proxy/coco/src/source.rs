@@ -829,6 +829,7 @@ mod tests {
     use crate::control;
     use crate::oid;
     use crate::peer;
+    use crate::signer;
 
     use super::Error;
 
@@ -837,16 +838,19 @@ mod tests {
     async fn browse_commit() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
         let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir).expect("unable to get default config");
+        let signer = signer::BoxedSigner::new(signer::SomeSigner {
+            signer: key.clone(),
+        });
+        let config = config::default(key, tmp_dir).expect("unable to get default config");
         let api = peer::Api::new(config)
             .await
             .expect("failed to init peer API");
         let owner = api
-            .init_owner(&key, "cloudhead")
+            .init_owner(&signer, "cloudhead")
             .expect("failed to init owner");
         let platinum_project = control::replicate_platinum(
             &api,
-            &key,
+            &signer,
             &owner,
             "git-platinum",
             "fixture data",
