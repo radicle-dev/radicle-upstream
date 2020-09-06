@@ -33,13 +33,16 @@ impl Peer {
     ///
     /// * if one of the handlers of the select loop fails
     pub async fn run(self) -> Result<(), Error> {
+        // FIXME(xla): As soon as we attempt to subscribe to the API we run into missing `Send`
+        // issue for the underlying git repo.
+        //
         // Subscribe to lower level events.
-        let api_subscriber = {
-            let state = self.state.lock().await;
-            state.api.subscribe().await
-        };
+        // let api_subscriber = {
+        //     let state = self.state.lock().await;
+        //     state.api.subscribe().await
+        // };
 
-        tokio::pin!(api_subscriber);
+        // tokio::pin!(api_subscriber);
 
         // Subscribe to protocol events.
         let protocol_subscriber = {
@@ -58,12 +61,11 @@ impl Peer {
         loop {
             let res: Result<(), Error> = tokio::select! {
                 _ = announce_timer.tick() => {
-                    // load data
                     Ok(())
                 },
-                Some(_event) = api_subscriber.next() => {
-                    Ok(())
-                },
+                // Some(_event) = api_subscriber.next() => {
+                //     Ok(())
+                // },
                 Some(_event) = protocol_subscriber.next() => {
                     Ok(())
                 },
