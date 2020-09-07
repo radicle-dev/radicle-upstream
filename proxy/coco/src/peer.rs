@@ -1,7 +1,6 @@
 //! Utility to work with the peer api of librad.
 
 use std::convert::TryFrom;
-use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -273,12 +272,9 @@ impl Api {
     /// [`RadUrn`] actually has it, nor that it is reachable using any of
     /// the addresses contained in [`PeerInfo`]. The implementation may~F
     /// change in the future to answer the query from a local cache first.
-    pub fn providers(
-        &self,
-        urn: RadUrn,
-    ) -> impl Future<Output = impl futures::Stream<Item = PeerInfo<IpAddr>>> {
+    pub async fn providers(&self, urn: RadUrn) -> impl futures::Stream<Item = PeerInfo<IpAddr>> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
-        api.providers(urn)
+        api.providers(urn).await
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
