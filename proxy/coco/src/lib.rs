@@ -33,7 +33,6 @@ pub use radicle_git_helpers::remote_helper;
 pub use radicle_surf::diff::{Diff, FileDiff};
 pub use radicle_surf::vcs::git::Stats;
 
-pub mod announcement;
 pub mod config;
 pub mod control;
 mod error;

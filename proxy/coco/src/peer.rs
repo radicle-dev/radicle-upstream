@@ -5,7 +5,10 @@ use futures::StreamExt as _;
 
 use librad::net::peer::RunLoop;
 
+use crate::error;
 use crate::state::Lock;
+
+mod announcement;
 
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
@@ -32,7 +35,7 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(self) -> Result<(), Error> {
+    pub async fn run(self) -> Result<(), error::Error> {
         // Subscribe to protocol events.
         let protocol_subscriber = {
             let state = self.state.lock().await;
@@ -48,8 +51,17 @@ impl Peer {
         tokio::spawn(self.run_loop);
 
         loop {
-            let res: Result<(), Error> = tokio::select! {
+            let res: Result<(), error::Error> = tokio::select! {
                 _ = announce_timer.tick() => {
+                    // load state
+                    let old = std::collections::HashSet::new();
+                    let new = announcement::build(self.state.clone()).await?;
+                    let updates = announcement::diff(&old, &new);
+
+                    announcement::announce(self.state.clone(), updates.iter()).await?;
+
+                    log::info!("announcements = {}", updates.len());
+
                     Ok(())
                 },
                 Some(event) = protocol_subscriber.next() => {

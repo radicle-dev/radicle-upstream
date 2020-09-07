@@ -5,7 +5,6 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::Arc;
 
-use futures::future::BoxFuture;
 use tokio::sync::Mutex;
 
 use librad::git::local::{transport, url::LocalUrl};
@@ -15,8 +14,7 @@ use librad::keys;
 use librad::meta::entity;
 use librad::meta::project as librad_project;
 use librad::meta::user;
-use librad::net::peer::{Gossip, PeerApi, PeerStorage};
-use librad::net::protocol::Protocol;
+use librad::net::peer::PeerApi;
 use librad::paths;
 use librad::peer::PeerId;
 use librad::uri::{RadUrl, RadUrn};
@@ -324,22 +322,6 @@ impl State {
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
         callback(&mut browser)
-    }
-
-    /// Get the underlying [`librad::net::protocol::Protocol`].
-    ///
-    /// # Errors
-    ///
-    /// * if they `callback` errors
-    pub fn with_protocol<F, T>(&self, callback: F) -> BoxFuture<'static, Result<T, Error>>
-    where
-        T: 'static,
-        F: Send
-            + FnOnce(
-                Protocol<PeerStorage<keys::SecretKey>, Gossip>,
-            ) -> BoxFuture<'static, Result<T, Error>>,
-    {
-        Box::pin(callback(self.api.protocol().clone()))
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.
