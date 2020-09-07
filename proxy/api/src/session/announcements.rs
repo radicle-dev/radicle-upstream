@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use kv::Codec as _;
 
-use coco::announcement;
+use coco::{Announcement, AnnouncementStore};
 
 use crate::error;
 
@@ -13,21 +13,55 @@ const BUCKET_NAME: &str = "announcements";
 /// Key for the single value used as cache.
 const KEY_NAME: &str = "latest";
 
+struct Store {
+    store: kv::Store,
+}
+
+impl Store {
+    fn new(store: kv::Store) -> Self {
+        Self { store }
+    }
+}
+
+impl AnnouncementStore for Store {
+    type Error = error::Error;
+
+    fn load(&self) -> Result<HashSet<Announcement>, error::Error> {
+        let bucket = self
+            .store
+            .bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+        let value = bucket
+            .get(KEY_NAME)?
+            .map_or(HashSet::new(), kv::Json::to_inner);
+
+        Ok(value)
+    }
+
+    fn save(&self, updates: HashSet<Announcement>) -> Result<(), error::Error> {
+        let bucket = self
+            .store
+            .bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+        bucket
+            .set(KEY_NAME, kv::Json(updates))
+            .map_err(error::Error::from)
+    }
+}
+
 /// Load the cached announcements from the [`kv::Store`].
 ///
 /// # Errors
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load(store: &kv::Store) -> Result<HashSet<announcement::Announcement>, error::Error> {
-    let bucket = store
-        .bucket::<&'static str, kv::Json<HashSet<announcement::Announcement>>>(Some(BUCKET_NAME))?;
-    let value = bucket
-        .get(KEY_NAME)?
-        .map_or(HashSet::new(), kv::Json::to_inner);
+// pub fn load(store: &kv::Store) -> Result<HashSet<announcement::Announcement>, error::Error> {
+//     let bucket = store
+//         .bucket::<&'static str,
+// kv::Json<HashSet<announcement::Announcement>>>(Some(BUCKET_NAME))?;     let value = bucket
+//         .get(KEY_NAME)?
+//         .map_or(HashSet::new(), kv::Json::to_inner);
 
-    Ok(value)
-}
+//     Ok(value)
+// }
 
 /// Update the cache with the latest announcements.
 ///
@@ -35,17 +69,17 @@ pub fn load(store: &kv::Store) -> Result<HashSet<announcement::Announcement>, er
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
-#[allow(clippy::implicit_hasher)]
-pub fn save(
-    store: &kv::Store,
-    updates: HashSet<announcement::Announcement>,
-) -> Result<(), error::Error> {
-    let bucket = store
-        .bucket::<&'static str, kv::Json<HashSet<announcement::Announcement>>>(Some(BUCKET_NAME))?;
-    bucket
-        .set(KEY_NAME, kv::Json(updates))
-        .map_err(error::Error::from)
-}
+// #[allow(clippy::implicit_hasher)]
+// pub fn save(
+//     store: &kv::Store,
+//     updates: HashSet<announcement::Announcement>,
+// ) -> Result<(), error::Error> {
+//     let bucket = store
+//         .bucket::<&'static str,
+// kv::Json<HashSet<announcement::Announcement>>>(Some(BUCKET_NAME))?;     bucket
+//         .set(KEY_NAME, kv::Json(updates))
+//         .map_err(error::Error::from)
+// }
 
 #[cfg(test)]
 mod test {
@@ -53,6 +87,7 @@ mod test {
 
     use coco::oid;
     use coco::uri;
+    use coco::AnnouncementStore as _;
 
     use crate::error;
 
@@ -102,11 +137,14 @@ mod test {
         .cloned()
         .collect();
         let dir = tempfile::tempdir()?;
-        let store = kv::Store::new(kv::Config::new(dir.path().join("store")))?;
+        let store = {
+            let store = kv::Store::new(kv::Config::new(dir.path().join("store")))?;
+            super::Store::new(store)
+        };
 
-        super::save(&store, updates.clone())?;
+        store.save(updates.clone())?;
 
-        assert_eq!(super::load(&store)?, updates);
+        assert_eq!(store.load()?, updates);
 
         Ok(())
     }

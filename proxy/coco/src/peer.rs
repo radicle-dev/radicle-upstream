@@ -9,24 +9,36 @@ use crate::error;
 use crate::state::Lock;
 
 mod announcement;
+pub use announcement::{Announcement, Store as AnnouncementStore};
 
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {}
 
 /// Local peer to participate in the radicle code-collaboration network.
-pub struct Peer {
+pub struct Peer<A>
+where
+    A: AnnouncementStore,
+{
+    announcement_store: A,
     /// Peer [`RunLoop`] to advance the network protocol.
     run_loop: RunLoop,
     /// Underlying state access.
     state: Lock,
 }
 
-impl Peer {
+impl<A> Peer<A>
+where
+    A: AnnouncementStore,
+{
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: Lock) -> Self {
-        Self { run_loop, state }
+    pub fn new(run_loop: RunLoop, state: Lock, announcement_store: A) -> Self {
+        Self {
+            announcement_store,
+            run_loop,
+            state,
+        }
     }
 
     /// Start up the internal machinery to advance the underlying protocol, react to significant
@@ -53,14 +65,14 @@ impl Peer {
         loop {
             let res: Result<(), error::Error> = tokio::select! {
                 _ = announce_timer.tick() => {
-                    // load state
-                    let old = std::collections::HashSet::new();
+                    let old = self.announcement_store.load().map_err(Error::from)?;
                     let new = announcement::build(self.state.clone()).await?;
                     let updates = announcement::diff(&old, &new);
 
-                    announcement::announce(self.state.clone(), updates.iter()).await?;
-
+                    announcement::announce(self.state.clone(), updates.iter()).await;
                     log::info!("announcements = {}", updates.len());
+
+                    self.announcement_store.save(updates).map_err(Error::from)?;
 
                     Ok(())
                 },

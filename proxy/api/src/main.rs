@@ -1,6 +1,5 @@
 use std::convert::TryFrom;
 
-use coco::announcement;
 use coco::keystore;
 use coco::seed;
 use coco::signer;
@@ -102,43 +101,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let api = http::api(ctx, subscriptions, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
-
-    Ok(())
-}
-
-async fn announcement_watcher(ctx: context::Ctx) {
-    // TODO(xla): Take interval timings from config/settings.
-    let mut timer = tokio::time::interval(std::time::Duration::from_secs(10));
-
-    loop {
-        timer.tick().await;
-
-        if let Err(err) = announce(ctx.clone()).await {
-            log::info!("Announcement watcher errored: {:?}", err);
-        }
-    }
-}
-
-async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
-    let ctx = ctx.read().await;
-    let state = ctx.state.lock().await;
-
-    let old = session::announcements::load(&ctx.store)?;
-    let new = announcement::build(&state)?;
-    let updates = announcement::diff(&old, &new);
-    let count = updates.len();
-
-    {
-        let updates = updates.clone();
-        state
-            .with_protocol(|protocol| {
-                Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
-            })
-            .await?;
-    }
-
-    session::announcements::save(&ctx.store, updates)?;
-    log::debug!("announced {} updates", count);
 
     Ok(())
 }

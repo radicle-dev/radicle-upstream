@@ -43,7 +43,7 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 mod peer;
-pub use peer::Peer;
+pub use peer::{Announcement, AnnouncementStore, Peer};
 mod state;
 pub use state::{Lock, State};
 pub mod project;

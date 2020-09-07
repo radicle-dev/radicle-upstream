@@ -18,10 +18,7 @@ pub type Announcement = (uri::RadUrn, Oid);
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(
-    state: Lock,
-    updates: impl Iterator<Item = &Announcement> + Send,
-) -> Result<(), Error> {
+pub async fn announce(state: Lock, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
         let have = net::peer::Gossip {
             urn: urn.clone(),
@@ -33,8 +30,6 @@ pub async fn announce(
         let protocol = state.api.protocol();
         protocol.announce(have).await;
     }
-
-    Ok(())
 }
 
 /// Builds the latest list of [`Announcement`]s for the current state of the peer.
@@ -44,9 +39,9 @@ pub async fn announce(
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
 pub async fn build(state: Lock) -> Result<HashSet<Announcement>, Error> {
+    let state = state.lock().await;
     let mut list: HashSet<Announcement> = HashSet::new();
 
-    let state = state.lock().await;
     // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
     // should be machinery to kick off these routines only if our app state is ready for it.
     match state.list_projects() {
@@ -83,6 +78,13 @@ pub fn diff<'a>(
     new_state.difference(old_state).cloned().collect()
 }
 
+pub trait Store {
+    type Error;
+
+    fn load(&self) -> Result<HashSet<Announcement>, Self::Error>;
+    fn save(&self, upates: HashSet<Announcement>) -> Result<(), Self::Error>;
+}
+
 #[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
@@ -116,9 +118,7 @@ mod test {
         let state = Lock::from(state);
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(state.clone()).await?;
-        let res = super::announce(state, updates.iter()).await;
-
-        assert!(res.is_ok());
+        super::announce(state, updates.iter()).await;
 
         Ok(())
     }
