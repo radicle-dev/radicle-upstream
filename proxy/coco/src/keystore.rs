@@ -10,7 +10,7 @@ use radicle_keystore::{
     file, FileStorage, Keystore, SecretKeyExt,
 };
 
-/// Last component of the file path to the key.
+/// File name component of the file path to the key.
 const KEY_PATH: &str = "librad.key";
 
 /// Storage for putting and getting the necessary cryptographic keys.
