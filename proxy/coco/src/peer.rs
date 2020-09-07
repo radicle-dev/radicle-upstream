@@ -29,6 +29,7 @@ use radicle_surf::vcs::git::git2;
 
 use crate::error::Error;
 use crate::project;
+use crate::seed::Seed;
 use crate::signer;
 
 /// Export a verified [`user::User`] type.
@@ -97,6 +98,14 @@ impl Api {
     pub fn monorepo(&self) -> PathBuf {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         api.paths().git_dir().join("")
+    }
+
+    pub fn into_seed(&self) -> Seed {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        Seed {
+            peer_id: api.peer_id().clone(),
+            addr: api.listen_addr(),
+        }
     }
 
     /// Returns the underlying [`paths::Paths`].
@@ -545,7 +554,9 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+
     use futures::stream::StreamExt;
+    use std::convert::TryInto;
     use std::env;
     use std::path::PathBuf;
     use std::process::Command;
@@ -774,10 +785,11 @@ mod test {
         Ok(())
     }
 
-    /// Verify that asking the network for a urn owned by the local peer returns the local peer.
+    /// Verify that asking the network for a urn owned by another peer returns said peer.
     #[tokio::test]
     #[allow(clippy::unwrap_used)]
-    async fn get_urn_providers_local_peer() -> Result<(), Error> {
+    async fn get_urn_providers_works() -> Result<(), Error> {
+        // Peer #1
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         env::set_var("RAD_HOME", tmp_dir.path());
         let repo_path = tmp_dir.path().join("radicle");
@@ -786,25 +798,36 @@ mod test {
             signer: key.clone(),
         });
         let config = config::default(key, tmp_dir.path())?;
-        let api = Api::new(config).await?;
+        let alice = Api::new(config).await?;
+
+        // Init a project
         let project = radicle_project(repo_path.clone());
 
-        let user = api.init_owner(&signer, "cloudhead")?;
-        let created_project = api.init_project(&signer, &user, &project)?;
+        let user = alice.init_owner(&signer, "cloudhead")?;
+        let created_project = alice.init_project(&signer, &user, &project)?;
 
-        assert!(repo_path
-            .join(project.repo.project_name().unwrap())
-            .exists());
+        // Peer #2
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
+        let key = SecretKey::new();
+        let config = config::configure(
+            config::Paths::FromRoot(tmp_dir.path().to_path_buf()).try_into()?,
+            key,
+            *config::LOCALHOST_ANY,
+            vec![alice.into_seed()],
+        );
+        let bob = Api::new(config).await?;
 
         let res = timeout(
-            Duration::from_millis(1000),
-            api.providers(created_project.urn()).await.next(),
+            Duration::from_millis(10000),
+            bob.providers(created_project.urn()).await.next(),
         )
         .await;
+
         match res {
             Ok(Some(peer_info)) => assert_eq!(
                 peer_info.peer_id,
-                api.peer_id(),
+                alice.peer_id(),
                 "Expected it to be the local peer"
             ),
             Ok(None) => {
@@ -814,6 +837,7 @@ mod test {
                 panic!(format!("Didn't find any peer before the timeout: {}", e));
             },
         }
+
         Ok(())
     }
 
