@@ -36,7 +36,10 @@ export default {
 
     commonjs(),
 
-    typescript(),
+    typescript({
+      // See https://github.com/rollup/plugins/issues/272
+      noEmitOnError: production,
+    }),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
