@@ -47,12 +47,6 @@ export default {
     production && terser(),
   ],
   watch: {
-    // Temporary until
-    // https://github.com/rollup/rollup/issues/2988#issuecomment-536388590 is
-    // addressed.
-    chokidar: {
-      usePolling: true,
-    },
     clearScreen: false,
   },
 };
