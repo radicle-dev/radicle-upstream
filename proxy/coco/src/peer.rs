@@ -772,6 +772,40 @@ mod test {
         Ok(())
     }
 
+    /// Verify that asking the network for a urn owned by the local peer returns the local peer.
+    #[tokio::test]
+    #[allow(clippy::unwrap_used)]
+    async fn get_urn_providers_local_peer() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: key.clone(),
+        });
+        let config = config::default(key, tmp_dir.path())?;
+        let api = Api::new(config).await?;
+        let project = radicle_project(repo_path.clone());
+
+        let user = api.init_owner(&signer, "cloudhead")?;
+        let created_project = api.init_project(&signer, &user, &project)?;
+
+        assert!(repo_path
+            .join(project.repo.project_name().unwrap())
+            .exists());
+
+        let mut peers = api.providers(created_project.urn()).await;
+        match peers.next().await {
+            Some(peer_info) => assert_eq!(
+                peer_info.peer_id,
+                api.peer_id(),
+                "Expected it to be the local peer"
+            ),
+            None => panic!("Expected to have obtained the local peer as a provider"),
+        }
+        Ok(())
+    }
+
     #[tokio::test]
     async fn list_users() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
