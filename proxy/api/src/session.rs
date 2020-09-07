@@ -51,11 +51,12 @@ pub async fn settings(store: &kv::Store) -> Result<settings::Settings, error::Er
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn current(state: &coco::State, store: &kv::Store) -> Result<Session, error::Error> {
+pub async fn current(state: coco::Lock, store: &kv::Store) -> Result<Session, error::Error> {
+    let state = state.lock().await;
     let mut session = get(store, KEY_CURRENT)?;
 
     if let Some(id) = session.identity.clone() {
-        identity::get(state, &id.urn)?;
+        identity::get(&state, &id.urn)?;
         session.identity = Some(id);
     }
 

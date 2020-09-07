@@ -66,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         signer: key.clone(),
     });
 
-    let (peer, peer_api) = {
+    let (peer, state) = {
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
@@ -75,29 +75,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let config =
             coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
-        coco::try_from(config).await?
+        coco::into_peer_state(config, signer.clone()).await?
     };
 
     if args.test {
+        let state = state.lock().await;
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = peer_api.init_owner(&signer, "cloudhead")?;
-        coco::control::setup_fixtures(&peer_api, &signer, &owner)?;
+        let owner = state.init_owner(&signer, "cloudhead")?;
+        coco::control::setup_fixtures(&state, &signer, &owner)?;
     }
 
     let subscriptions = notification::Subscriptions::default();
-
     let ctx = context::Ctx::from(context::Context {
-        peer_api,
+        state,
         signer,
         store,
     });
 
-    {
-        let ctx = ctx.clone();
-        log::info!("Starting Announcement watcher");
-        tokio::task::spawn(announcement_watcher(ctx));
-    }
+    log::info!("starting coco peer");
+    tokio::spawn(peer.run());
 
     log::info!("Starting API");
     let api = http::api(ctx, subscriptions, args.test);
@@ -122,14 +119,16 @@ async fn announcement_watcher(ctx: context::Ctx) {
 
 async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
     let ctx = ctx.read().await;
+    let state = ctx.state.lock().await;
+
     let old = session::announcements::load(&ctx.store)?;
-    let new = announcement::build(&ctx.peer_api)?;
+    let new = announcement::build(&state)?;
     let updates = announcement::diff(&old, &new);
     let count = updates.len();
 
     {
         let updates = updates.clone();
-        ctx.peer_api
+        state
             .with_protocol(|protocol| {
                 Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
             })

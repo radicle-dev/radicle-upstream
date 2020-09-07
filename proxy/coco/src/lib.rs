@@ -72,7 +72,7 @@ use std::net::SocketAddr;
 ///
 /// * peer construction from config fails.
 /// * accept on the peer fails.
-pub async fn try_from<I>(
+pub async fn into_peer_state<I>(
     config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
 ) -> Result<(Peer, Lock), Error>
@@ -82,11 +82,9 @@ where
     let peer = config.try_into_peer().await?;
     let (api, run_loop) = peer.accept()?;
 
-    let api_subscriber = api.subscribe();
-
     let state = State::new(api, signer);
     let state = state::Lock::from(state);
-    let peer = Peer::new(run_loop, api_subscriber, state.clone()).await;
+    let peer = Peer::new(run_loop, state.clone());
 
     Ok((peer, state))
 }

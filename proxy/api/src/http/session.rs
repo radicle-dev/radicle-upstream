@@ -64,7 +64,7 @@ mod handler {
     pub async fn get(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let sess = session::current(&ctx.peer_api, &ctx.store).await?;
+        let sess = session::current(ctx.state.clone(), &ctx.store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -81,7 +81,6 @@ mod handler {
     }
 }
 
-#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -100,17 +99,17 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
+
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
-        session::set_settings(&ctx.store, settings).unwrap();
+        session::set_settings(&ctx.store, settings)?;
 
         let res = request().method("DELETE").path("/").reply(&api).await;
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let have = session::current(&ctx.peer_api, &ctx.store)
-            .await
-            .unwrap()
+        let have = session::current(ctx.state.clone(), &ctx.store)
+            .await?
             .settings;
         let want = session::settings::Settings::default();
 

@@ -239,11 +239,9 @@ async fn build_peer(
     let conf = config::default(key, tmp_dir.path())?;
     let (api, run_loop) = conf.try_into_peer().await?.accept()?;
 
-    let api_subcriber = api.subscribe();
-
     let state = State::new(api, signer.clone());
     let state = Lock::from(state);
-    let peer = Peer::new(run_loop, api_subcriber, state.clone()).await;
+    let peer = Peer::new(run_loop, state.clone());
 
     Ok((peer, state, signer))
 }

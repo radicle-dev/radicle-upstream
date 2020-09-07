@@ -40,6 +40,7 @@ mod handler {
 
     use coco::keystore;
     use coco::signer;
+    use coco::user;
 
     use crate::context;
     use crate::error;
@@ -49,13 +50,13 @@ mod handler {
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Ctx,
-        owner: coco::User,
+        owner: user::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let meta = coco::control::replicate_platinum(
-            &ctx.peer_api,
+            &(*ctx.state.lock().await),
             &ctx.signer,
             &owner,
             &input.name,
@@ -66,12 +67,18 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ =
-                    coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &meta, &user_handle);
+                let _ = coco::control::track_fake_peer(
+                    &(*ctx.state.lock().await),
+                    &ctx.signer,
+                    &meta,
+                    &user_handle,
+                );
             }
         }
         let stats = ctx
-            .peer_api
+            .state
+            .lock()
+            .await
             .with_browser(&meta.urn(), |browser| Ok(browser.get_stats()?))
             .map_err(error::Error::from)?;
         let project: project::Project = (meta, stats).into();
@@ -101,15 +108,18 @@ mod handler {
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init().map_err(error::Error::from)?;
-        let signer = signer::BoxedSigner::new(signer::SomeSigner {
-            signer: key.clone(),
-        });
+        let signer = signer::BoxedSigner::from(key.clone());
 
-        let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
-        let new_peer_api = coco::Api::new(config).await.map_err(error::Error::from)?;
+        let (_new_peer, new_state) = {
+            let config =
+                coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+            coco::into_peer_state(config, signer.clone())
+                .await
+                .map_err(error::Error::from)?
+        };
 
         let mut ctx = ctx.write().await;
-        ctx.peer_api = new_peer_api;
+        ctx.state = new_state;
         ctx.signer = signer;
 
         Ok(reply::json(&true))
@@ -130,14 +140,16 @@ mod handler {
 
             let (old_paths, old_peer_id) = {
                 let ctx = ctx.read().await;
-                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
+                let state = ctx.state.lock().await;
+                (state.paths(), state.peer_id())
             };
 
             super::nuke_coco(ctx.clone()).await.unwrap();
 
             let (new_paths, new_peer_id) = {
                 let ctx = ctx.read().await;
-                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
+                let state = ctx.state.lock().await;
+                (state.paths(), state.peer_id())
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
@@ -145,7 +157,7 @@ mod handler {
 
             let can_open = {
                 let ctx = ctx.read().await;
-                ctx.peer_api.reopen()?;
+                ctx.state.lock().await.reopen()?;
                 true
             };
             assert!(can_open);

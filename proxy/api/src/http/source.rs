@@ -135,17 +135,17 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let current_session = session::current(&ctx.peer_api, &ctx.store).await?;
+        let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
 
-        let project = ctx
-            .peer_api
+        let state = ctx.state.lock().await;
+        let project = state
             .get_project(&project_urn, None)
             .map_err(error::Error::from)?;
 
         let default_branch = match peer_id {
-            Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
+            Some(peer_id) if peer_id != state.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -158,8 +158,7 @@ mod handler {
             None
         };
 
-        let blob = ctx
-            .peer_api
+        let blob = state
             .with_browser(&project_urn, |mut browser| {
                 coco::blob(&mut browser, default_branch, revision, &path, theme)
             })
@@ -175,8 +174,9 @@ mod handler {
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let branches = ctx
-            .peer_api
+        let state = ctx.state.lock().await;
+
+        let branches = state
             .with_browser(&project_urn, |browser| {
                 coco::branches(browser, Some(coco::into_branch_type(peer_id)))
             })
@@ -192,8 +192,9 @@ mod handler {
         sha1: oid::Oid,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let commit = ctx
-            .peer_api
+        let state = ctx.state.lock().await;
+
+        let commit = state
             .with_browser(&project_urn, |mut browser| coco::commit(&mut browser, sha1))
             .map_err(error::Error::from)?;
 
@@ -207,8 +208,9 @@ mod handler {
         query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let commits = ctx
-            .peer_api
+        let state = ctx.state.lock().await;
+
+        let commits = state
             .with_browser(&project_urn, |mut browser| {
                 coco::commits(&mut browser, query.into())
             })
@@ -227,17 +229,15 @@ mod handler {
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
         ctx: context::Ctx,
-        owner: coco::User,
+        owner: coco::user::User,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let peers = ctx
-            .peer_api
-            .tracked(&project_urn)
-            .map_err(error::Error::from)?;
-        let peer_id = ctx.peer_api.peer_id();
-        let revisions: Vec<super::Revisions> = ctx
-            .peer_api
+        let state = ctx.state.lock().await;
+
+        let peers = state.tracked(&project_urn).map_err(error::Error::from)?;
+        let peer_id = state.peer_id();
+        let revisions: Vec<super::Revisions> = state
             .with_browser(&project_urn, |browser| {
                 // TODO(finto): downgraded verified user, which should not be needed.
                 let owner = owner.to_data().build()?;
@@ -254,8 +254,9 @@ mod handler {
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(ctx: context::Ctx, project_urn: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let tags = ctx
-            .peer_api
+        let state = ctx.state.lock().await;
+
+        let tags = state
             .with_browser(&project_urn, |browser| coco::tags(browser))
             .map_err(error::Error::from)?;
 
@@ -273,20 +274,19 @@ mod handler {
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
+        let state = ctx.state.lock().await;
 
-        let project = ctx
-            .peer_api
+        let project = state
             .get_project(&project_urn, None)
             .map_err(error::Error::from)?;
         let default_branch = match peer_id {
-            Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
+            Some(peer_id) if peer_id != state.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
-        let tree = ctx
-            .peer_api
+        let tree = state
             .with_browser(&project_urn, |mut browser| {
                 coco::tree(&mut browser, default_branch, revision, prefix)
             })
@@ -393,24 +393,33 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
+
+        let (default_branch, urn) = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+
+            (
+                platinum_project.default_branch().to_string(),
+                platinum_project.urn(),
+            )
+        };
 
         let revision = coco::Revision::Branch {
             name: "master".to_string(),
             peer_id: None,
         };
-        let default_branch = git::Branch::local(platinum_project.default_branch());
+        let default_branch = git::Branch::local(&default_branch);
         let path = "text/arrows.txt";
-        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
+        let want = ctx.state.lock().await.with_browser(&urn, |mut browser| {
             coco::blob(
                 &mut browser,
                 default_branch.clone(),
@@ -472,7 +481,7 @@ mod test {
 
         // Get binary blob.
         let path = "bin/ls";
-        let want = ctx.peer_api.with_browser(&urn, |browser| {
+        let want = ctx.state.lock().await.with_browser(&urn, |browser| {
             coco::blob(browser, default_branch, Some(revision.clone()), path, None)
         })?;
 
@@ -527,44 +536,59 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
+
+        let (default_branch, urn) = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            (
+                platinum_project.default_branch().to_string(),
+                platinum_project.urn(),
+            )
+        };
 
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
             peer_id: None,
         };
-        let default_branch = git::Branch::local(platinum_project.default_branch());
+        let default_branch = git::Branch::local(&default_branch);
         let path = "here-we-are-on-a-dev-branch.lol";
-        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
-            coco::blob(
-                &mut browser,
-                default_branch.clone(),
-                Some(revision.clone()),
-                path,
-                None,
-            )
-        })?;
 
         let query = super::BlobQuery {
             path: path.to_string(),
             peer_id: None,
-            revision: Some(revision),
+            revision: Some(revision.clone()),
             highlight: Some(false),
         };
 
-        let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
-
         // Get ASCII blob.
-        let res = request().method("GET").path(&path).reply(&api).await;
+        let res = request()
+            .method("GET")
+            .path(&format!(
+                "/blob/{}?{}",
+                urn,
+                serde_qs::to_string(&query).unwrap()
+            ))
+            .reply(&api)
+            .await;
+
+        let want = ctx.state.lock().await.with_browser(&urn, |mut browser| {
+            coco::blob(
+                &mut browser,
+                default_branch.clone(),
+                Some(revision),
+                path,
+                None,
+            )
+        })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -580,26 +604,33 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
 
-        let want = ctx
-            .peer_api
-            .with_browser(&urn, |browser| coco::branches(browser, None))?;
+        let urn = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            platinum_project.urn()
+        };
 
         let res = request()
             .method("GET")
             .path(&format!("/branches/{}", urn))
             .reply(&api)
             .await;
+
+        let want = ctx
+            .state
+            .lock()
+            .await
+            .with_browser(&urn, |browser| coco::branches(browser, None))?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -617,28 +648,36 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
+
+        let urn = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            platinum_project.urn()
+        };
 
         let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")
             .map_err(coco::Error::from)?;
-        let want = ctx
-            .peer_api
-            .with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
 
         let res = request()
             .method("GET")
             .path(&format!("/commit/{}/{}", urn, sha1))
             .reply(&api)
             .await;
+
+        let want = ctx
+            .state
+            .lock()
+            .await
+            .with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have["header"], json!(want));
@@ -671,31 +710,36 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
+
+        let urn = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            platinum_project.urn()
+        };
 
         let branch = git::Branch::local("master");
         let head = coco::oid::Oid::try_from("223aaf87d6ea62eef0014857640fd7c8dd0f80b5")
             .map_err(coco::Error::from)?;
-        let (want, head_commit) = ctx.peer_api.with_browser(&urn, |mut browser| {
-            let want = coco::commits(&mut browser, branch.clone())?;
-            let head_commit = coco::commit_header(&mut browser, head)?;
-            Ok((want, head_commit))
-        })?;
-
         let res = request()
             .method("GET")
             .path(&format!("/commits/{}?branch={}", urn, branch.name))
             .reply(&api)
             .await;
+
+        let (want, head_commit) = ctx.state.lock().await.with_browser(&urn, |mut browser| {
+            let want = coco::commits(&mut browser, branch.clone())?;
+            let head_commit = coco::commit_header(&mut browser, head)?;
+            Ok((want, head_commit))
+        })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -750,17 +794,17 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let peer_id = ctx.peer_api.peer_id();
 
-        let id = identity::create(&ctx.peer_api, &ctx.signer, "cloudhead")?;
+        let peer_id = ctx.state.lock().await.peer_id();
+        let id = identity::create(&(*ctx.state.lock().await), &ctx.signer, "cloudhead")?;
 
-        let owner = ctx.peer_api.get_user(&id.clone().urn)?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.state.lock().await.get_user(&id.clone().urn)?;
+        let owner = coco::user::verify(owner)?;
 
         session::set_identity(&ctx.store, id)?;
 
         let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
+            &(*ctx.state.lock().await),
             &ctx.signer,
             &owner,
             "git-platinum",
@@ -770,7 +814,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let (remote, fintohaps) = coco::control::track_fake_peer(
-            &ctx.peer_api,
+            &(*ctx.state.lock().await),
             &ctx.signer,
             &platinum_project,
             "fintohaps",
@@ -830,20 +874,21 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
 
-        let want = ctx
-            .peer_api
-            .with_browser(&urn, |browser| coco::tags(browser))?;
+        let urn = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            platinum_project.urn()
+        };
 
         let res = request()
             .method("GET")
@@ -851,6 +896,11 @@ mod test {
             .reply(&api)
             .await;
 
+        let want = ctx
+            .state
+            .lock()
+            .await
+            .with_browser(&urn, |browser| coco::tags(browser))?;
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
@@ -869,41 +919,46 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
 
+        let (default_branch, urn) = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            (
+                platinum_project.default_branch().to_string(),
+                platinum_project.urn(),
+            )
+        };
+
+        let prefix = "src";
         let revision = coco::Revision::Branch {
             name: "master".to_string(),
             peer_id: None,
         };
-        let prefix = "src";
-
-        let default_branch = git::Branch::local(platinum_project.default_branch());
-        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
-            coco::tree(
-                &mut browser,
-                default_branch,
-                Some(revision.clone()),
-                Some(prefix.to_string()),
-            )
-        })?;
-
         let query = super::TreeQuery {
             prefix: Some(prefix.to_string()),
             peer_id: None,
-            revision: Some(revision),
+            revision: Some(revision.clone()),
         };
-
         let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
         let res = request().method("GET").path(&path).reply(&api).await;
+
+        let want = ctx.state.lock().await.with_browser(&urn, |mut browser| {
+            coco::tree(
+                &mut browser,
+                git::Branch::local(&default_branch),
+                Some(revision),
+                Some(prefix.to_string()),
+            )
+        })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -955,40 +1010,46 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
+
+        let (default_branch, urn) = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            (
+                platinum_project.default_branch().to_string(),
+                platinum_project.urn(),
+            )
+        };
 
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
             peer_id: None,
         };
-
-        let default_branch = git::Branch::local(platinum_project.default_branch());
-        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
-            coco::tree(&mut browser, default_branch, Some(revision.clone()), None)
-                .map_err(coco::Error::from)
-        })?;
-
         let query = super::TreeQuery {
             prefix: None,
             peer_id: None,
-            revision: Some(revision),
+            revision: Some(revision.clone()),
         };
-
         let path = format!(
             "/tree/{}?{}",
             urn,
             percent_encoding::utf8_percent_encode(&serde_qs::to_string(&query).unwrap(), FRAGMENT)
         );
         let res = request().method("GET").path(&path).reply(&api).await;
+
+        let default_branch = git::Branch::local(&default_branch);
+        let want = ctx.state.lock().await.with_browser(&urn, |mut browser| {
+            coco::tree(&mut browser, default_branch, Some(revision), None)
+                .map_err(coco::Error::from)
+        })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
