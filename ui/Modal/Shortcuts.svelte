@@ -51,7 +51,7 @@
   }
 </style>
 
-<div class="container" bind:this={content}>
+<div data-cy="hotkey-modal" class="container" bind:this={content}>
   <Illustration
     style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />

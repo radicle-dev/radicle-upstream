@@ -46,6 +46,5 @@
           active={path.active(item.href, $location, item.looseActiveStateMatching)} />
       </li>
     {/each}
-
   </ul>
 </nav>

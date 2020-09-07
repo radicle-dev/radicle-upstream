@@ -5,6 +5,7 @@
   import * as path from "./src/path.ts";
   import * as screen from "./src/screen.ts";
   import { isMac } from "./src/settings.ts";
+  import * as hotkeys from "./src/hotkeys.ts";
 
   const toggle = destination => {
     if (path.active(destination, $location)) {
@@ -21,6 +22,7 @@
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
     if (
+      !hotkeys.areEnabled() ||
       screen.isLocked() ||
       (!modifierKey && event.target.type === "text") ||
       event.repeat
