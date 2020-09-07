@@ -549,6 +549,8 @@ mod test {
     use std::env;
     use std::path::PathBuf;
     use std::process::Command;
+    use std::time::Duration;
+    use tokio::time::timeout;
 
     use librad::hash::Hash;
     use librad::keys::SecretKey;
@@ -759,9 +761,13 @@ mod test {
                 .map_err(Error::from)?,
         };
 
-        let mut peers = api.providers(unkown_urn).await;
         assert!(
-            peers.next().await.is_none(),
+            timeout(
+                Duration::from_millis(10),
+                api.providers(unkown_urn).await.next()
+            )
+            .await
+            .is_err(),
             "Didn't expect any peer to have this urn"
         );
 
@@ -790,14 +796,23 @@ mod test {
             .join(project.repo.project_name().unwrap())
             .exists());
 
-        let mut peers = api.providers(created_project.urn()).await;
-        match peers.next().await {
-            Some(peer_info) => assert_eq!(
+        let res = timeout(
+            Duration::from_millis(1000),
+            api.providers(created_project.urn()).await.next(),
+        )
+        .await;
+        match res {
+            Ok(Some(peer_info)) => assert_eq!(
                 peer_info.peer_id,
                 api.peer_id(),
                 "Expected it to be the local peer"
             ),
-            None => panic!("Expected to have obtained the local peer as a provider"),
+            Ok(None) => {
+                panic!("Expected to have obtained the local peer, found none");
+            },
+            Err(e) => {
+                panic!(format!("Didn't find any peer before the timeout: {}", e));
+            },
         }
         Ok(())
     }
