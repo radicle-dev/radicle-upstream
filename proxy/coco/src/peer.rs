@@ -159,7 +159,7 @@ impl Api {
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            }
+            },
         }
     }
 
