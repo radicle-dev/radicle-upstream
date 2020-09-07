@@ -80,11 +80,9 @@ impl Api {
             run_loop.await;
         });
 
-        // Turns out we don't need to call the git commands from the command line.
-        // All we need is to register the git transport and this is the same
-        // thing. This means we can use git2 to execute actions. So instead of
-        // implementing the checkout via git clone as a Command, we use
-        // [`git2::RepoBuilder`].
+        // This registers the `rad://` transport protocol so that we can perform git actions between
+        // the Monorepo and a working copy. This means that we can easily use the git2 library to
+        // perform these actions and be sure that the signer is used to sign any git artifacts.
         transport::register(transport::Settings {
             paths,
             signer: SomeSigner { signer }.into(),
