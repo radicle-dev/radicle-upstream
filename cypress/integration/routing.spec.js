@@ -14,7 +14,7 @@ context("routing", () => {
         "when there is no additional routing information stored in the browser location",
         () => {
           it("opens the app on the profile screen", () => {
-            cy.createIdentity();
+            cy.onboardUser();
             cy.visit("./public/index.html");
 
             cy.location().should(loc => {
@@ -28,7 +28,7 @@ context("routing", () => {
         "when there is additional routing information stored in the browser location",
         () => {
           it("resumes the app from the browser location", () => {
-            cy.createIdentity();
+            cy.onboardUser();
             cy.visit("./public/index.html");
 
             cy.pick("sidebar", "settings").click();

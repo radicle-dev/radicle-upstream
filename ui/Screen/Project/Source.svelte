@@ -309,7 +309,6 @@
 
     <div class="container center-content">
       <div class="column-left">
-
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
@@ -323,7 +322,6 @@
       </div>
 
       <div class="column-right">
-
         <!-- Object -->
         <Remote store={objectStore} let:data={object}>
           {#if object.info.objectType === ObjectType.Blob}

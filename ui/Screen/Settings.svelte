@@ -200,6 +200,5 @@
         </div>
       </div>
     </section>
-
   </div>
 </SidebarLayout>
