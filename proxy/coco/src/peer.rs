@@ -764,9 +764,10 @@ mod test {
         };
 
         let mut peers = api.providers(unkown_urn).await;
-        while let Some(_) = peers.next().await {
-            panic!("Didn't expect any peer to have this urn");
-        }
+        assert!(
+            peers.next().await.is_none(),
+            "Didn't expect any peer to have this urn"
+        );
 
         Ok(())
     }
