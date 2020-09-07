@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use crate::error;
 use crate::identity;
 
-pub mod announcements;
 pub mod settings;
 
 /// Name for the storage bucket used for all session data.

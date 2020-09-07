@@ -103,8 +103,10 @@ mod handler {
             temp_dir.path().to_path_buf()
         };
 
-        let paths = coco::Paths::from_root(tmp_path).map_err(error::Error::from)?;
+        let paths = coco::Paths::from_root(tmp_path.clone()).map_err(error::Error::from)?;
 
+        let store =
+            kv::Store::new(kv::Config::new(tmp_path.join("store"))).map_err(error::Error::from)?;
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init().map_err(error::Error::from)?;
@@ -113,7 +115,7 @@ mod handler {
         let (_new_peer, new_state) = {
             let config =
                 coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
-            coco::into_peer_state(config, signer.clone())
+            coco::into_peer_state(config, signer.clone(), store.clone())
                 .await
                 .map_err(error::Error::from)?
         };
@@ -121,6 +123,7 @@ mod handler {
         let mut ctx = ctx.write().await;
         ctx.state = new_state;
         ctx.signer = signer;
+        ctx.store = store;
 
         Ok(reply::json(&true))
     }

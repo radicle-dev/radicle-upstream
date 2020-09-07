@@ -15,7 +15,7 @@ default-run = "api"
 anyhow = "1.0"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
-kv = { version = "0.20", features = [ "json-value" ] }
+# kv = { version = "0.21", features = [ "json-value" ] }
 log = "0.4"
 percent-encoding = "2.1"
 pico-args = "0.3"
@@ -30,6 +30,12 @@ warp = { version = "0.2", default-features = false }
 
 [dependencies.coco]
 path = "../coco"
+
+[dependencies.kv]
+version = "0.21"
+git = "https://github.com/radicle-dev/rust-kv.git"
+rev = "4550a807f7f95aa588687fcc085372cfe7cbda8e"
+features = [ "json-value" ]
 
 [dependencies.radicle-surf]
 version = "0.4.1"

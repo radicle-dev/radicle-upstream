@@ -3,12 +3,31 @@
 use std::collections::HashSet;
 use std::ops::Deref as _;
 
+use kv::Codec as _;
+
 use librad::net;
 use librad::uri;
 
-use crate::error::Error;
 use crate::oid::Oid;
 use crate::state::Lock;
+
+/// Name for the bucket used in [`kv::Store`].
+const BUCKET_NAME: &str = "announcements";
+/// Key for the single value used as cache.
+const KEY_NAME: &str = "latest";
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    // TODO(xla): Remove once we transitioned to per module errors.
+    #[error(transparent)]
+    Crate(#[from] crate::error::Error),
+
+    #[error(transparent)]
+    Kv(#[from] kv::Error),
+
+    #[error(transparent)]
+    Parse(#[from] uri::path::ParseError),
+}
 
 /// An update and all the required information that can be announced on the network.
 pub type Announcement = (uri::RadUrn, Oid);
@@ -42,11 +61,11 @@ pub async fn build(state: Lock) -> Result<HashSet<Announcement>, Error> {
     let state = state.lock().await;
     let mut list: HashSet<Announcement> = HashSet::new();
 
-    // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
-    // should be machinery to kick off these routines only if our app state is ready for it.
     match state.list_projects() {
-        Err(Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
-        Err(err) => Err(err),
+        // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
+        // should be machinery to kick off these routines only if our app state is ready for it.
+        Err(crate::error::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
+        Err(err) => Err(err.into()),
         Ok(projects) => {
             for project in &projects {
                 let refs = state.list_project_refs(&project.urn())?;
@@ -78,11 +97,33 @@ pub fn diff<'a>(
     new_state.difference(old_state).cloned().collect()
 }
 
-pub trait Store {
-    type Error;
+/// Load the cached announcements from the [`kv::Store`].
+///
+/// # Errors
+///
+/// * if the [`kv::Bucket`] can't be accessed
+/// * if the access of the key in the [`kv::Bucket`] fails
+pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
+    let bucket =
+        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+    let value = bucket
+        .get(KEY_NAME)?
+        .map_or(HashSet::new(), kv::Json::to_inner);
 
-    fn load(&self) -> Result<HashSet<Announcement>, Self::Error>;
-    fn save(&self, upates: HashSet<Announcement>) -> Result<(), Self::Error>;
+    Ok(value)
+}
+
+/// Update the cache with the latest announcements.
+///
+/// # Errors
+///
+/// * if the [`kv::Bucket`] can't be accessed
+/// * if the storage of the new updates fails
+#[allow(clippy::implicit_hasher)]
+pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Error> {
+    let bucket =
+        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+    bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
 
 #[allow(clippy::panic)]
@@ -97,13 +138,12 @@ mod test {
     use librad::uri;
 
     use crate::config;
-    use crate::error::Error;
     use crate::oid;
     use crate::signer;
     use crate::state::{Lock, State};
 
     #[tokio::test]
-    async fn announce() -> Result<(), Error> {
+    async fn announce() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner {
@@ -124,7 +164,7 @@ mod test {
     }
 
     #[test]
-    fn diff() -> Result<(), Error> {
+    fn diff() -> Result<(), Box<dyn std::error::Error>> {
         let both = vec![
             (project0("dev"), "68986574".parse::<oid::Oid>()?),
             (project0("master"), "c8d2ad44".parse::<oid::Oid>()?),
@@ -170,6 +210,55 @@ mod test {
         let announcements = super::diff(&left, &right);
 
         assert_eq!(announcements, new.iter().cloned().collect::<HashSet<_>>());
+
+        Ok(())
+    }
+
+    #[test]
+    fn save_and_load() -> Result<(), Box<dyn std::error::Error>> {
+        let updates: HashSet<_> = vec![
+            (
+                uri::RadUrn {
+                    id: Hash::hash(b"project0"),
+                    proto: uri::Protocol::Git,
+                    path: "cloudhead/new-language".parse::<uri::Path>()?,
+                },
+                "7dec3269".parse::<oid::Oid>()?,
+            ),
+            (
+                uri::RadUrn {
+                    id: Hash::hash(b"project0"),
+                    proto: uri::Protocol::Git,
+                    path: "fintohaps/notations".parse::<uri::Path>()?,
+                },
+                "b4d3276d".parse::<oid::Oid>()?,
+            ),
+            (
+                uri::RadUrn {
+                    id: Hash::hash(b"project0"),
+                    proto: uri::Protocol::Git,
+                    path: "kalt/loops".parse::<uri::Path>()?,
+                },
+                "2206e5dc".parse::<oid::Oid>()?,
+            ),
+            (
+                uri::RadUrn {
+                    id: Hash::hash(b"project1"),
+                    proto: uri::Protocol::Git,
+                    path: "backport".parse::<uri::Path>()?,
+                },
+                "869e5740".parse::<oid::Oid>()?,
+            ),
+        ]
+        .iter()
+        .cloned()
+        .collect();
+        let dir = tempfile::tempdir()?;
+        let store = kv::Store::new(kv::Config::new(dir.path().join("store")))?;
+
+        super::save(&store, updates.clone())?;
+
+        assert_eq!(super::load(&store)?, updates);
 
         Ok(())
     }

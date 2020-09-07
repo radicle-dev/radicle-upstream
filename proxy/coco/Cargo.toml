@@ -12,6 +12,7 @@ repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
 futures = { version = "0.3", features = [ "compat" ] }
+# kv = { version = "0.21", features = [ "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.5"
@@ -19,6 +20,12 @@ serde = { version = "1.0", features = [ "derive" ] }
 syntect = "4.2"
 thiserror = "1.0"
 tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
+
+[dependencies.kv]
+version = "0.21"
+git = "https://github.com/radicle-dev/rust-kv.git"
+rev = "4550a807f7f95aa588687fcc085372cfe7cbda8e"
+features = [ "json-value" ]
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"

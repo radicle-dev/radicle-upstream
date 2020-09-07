@@ -5,39 +5,35 @@ use futures::StreamExt as _;
 
 use librad::net::peer::RunLoop;
 
-use crate::error;
 use crate::state::Lock;
 
 mod announcement;
-pub use announcement::{Announcement, Store as AnnouncementStore};
+pub use announcement::Announcement;
 
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
-pub enum Error {}
+pub enum Error {
+    #[error(transparent)]
+    Announcement(#[from] announcement::Error),
+}
 
 /// Local peer to participate in the radicle code-collaboration network.
-pub struct Peer<A>
-where
-    A: AnnouncementStore,
-{
-    announcement_store: A,
+pub struct Peer {
     /// Peer [`RunLoop`] to advance the network protocol.
     run_loop: RunLoop,
     /// Underlying state access.
     state: Lock,
+    store: kv::Store,
 }
 
-impl<A> Peer<A>
-where
-    A: AnnouncementStore,
-{
+impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: Lock, announcement_store: A) -> Self {
+    pub fn new(run_loop: RunLoop, state: Lock, store: kv::Store) -> Self {
         Self {
-            announcement_store,
             run_loop,
             state,
+            store,
         }
     }
 
@@ -47,7 +43,7 @@ where
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(self) -> Result<(), error::Error> {
+    pub async fn run(self) -> Result<(), Error> {
         // Subscribe to protocol events.
         let protocol_subscriber = {
             let state = self.state.lock().await;
@@ -63,16 +59,16 @@ where
         tokio::spawn(self.run_loop);
 
         loop {
-            let res: Result<(), error::Error> = tokio::select! {
+            let res = tokio::select! {
                 _ = announce_timer.tick() => {
-                    let old = self.announcement_store.load().map_err(Error::from)?;
+                    let old = announcement::load(&self.store)?;
                     let new = announcement::build(self.state.clone()).await?;
                     let updates = announcement::diff(&old, &new);
 
                     announcement::announce(self.state.clone(), updates.iter()).await;
                     log::info!("announcements = {}", updates.len());
 
-                    self.announcement_store.save(updates).map_err(Error::from)?;
+                    announcement::save(&self.store, updates)?;
 
                     Ok(())
                 },
