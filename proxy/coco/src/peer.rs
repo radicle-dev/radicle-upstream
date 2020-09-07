@@ -549,10 +549,12 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+    use futures::stream::StreamExt;
     use std::env;
     use std::path::PathBuf;
     use std::process::Command;
 
+    use librad::hash::Hash;
     use librad::keys::SecretKey;
     use librad::uri;
     use radicle_surf::vcs::git::git2;
@@ -742,6 +744,29 @@ mod test {
         );
 
         assert!(!project_names.contains(&fakie.name().to_string()));
+
+        Ok(())
+    }
+
+    /// Verify that asking the network for an unkown urn returns no providers.
+    #[tokio::test]
+    async fn get_urn_providers_none() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = config::default(key, tmp_dir.path())?;
+        let api = Api::new(config).await?;
+        let unkown_urn = uri::RadUrn {
+            id: Hash::hash(b"project0"),
+            proto: uri::Protocol::Git,
+            path: "user/imperative-language"
+                .parse::<uri::Path>()
+                .map_err(Error::from)?,
+        };
+
+        let mut peers = api.providers(unkown_urn).await;
+        while let Some(_) = peers.next().await {
+            panic!("Didn't expect any peer to have this urn");
+        }
 
         Ok(())
     }
