@@ -82,9 +82,11 @@ where
     let peer = config.try_into_peer().await?;
     let (api, run_loop) = peer.accept()?;
 
+    let api_subscriber = api.subscribe();
+
     let state = State::new(api, signer);
     let state = state::Lock::from(state);
-    let peer = Peer::new(run_loop, state.clone());
+    let peer = Peer::new(run_loop, api_subscriber, state.clone()).await;
 
     Ok((peer, state))
 }
