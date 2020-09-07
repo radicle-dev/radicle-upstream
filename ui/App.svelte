@@ -4,6 +4,8 @@
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
+  import * as hotkeys from "./src/hotkeys.ts";
+
   import { clear, fetch, session as store } from "./src/session.ts";
 
   import {
@@ -17,7 +19,7 @@
   import Theme from "./Theme.svelte";
 
   import Blank from "./Screen/Blank.svelte";
-  import IdentityCreation from "./Screen/IdentityCreation.svelte";
+  import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
   import Modal from "./Modal";
@@ -37,7 +39,7 @@
 
   const routes = {
     "/": Blank,
-    "/identity/new": IdentityCreation,
+    "/onboarding": Onboarding,
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
@@ -71,9 +73,11 @@
 
     case remote.Status.Success:
       if ($store.data.identity === null) {
-        push(path.createIdentity());
+        hotkeys.disable();
+        push(path.onboarding());
       } else {
-        if ($location === "/" || $location === "/identity/new") {
+        hotkeys.enable();
+        if ($location === path.blank() || $location === path.onboarding()) {
           push(path.profileProjects());
         }
       }

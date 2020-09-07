@@ -127,28 +127,26 @@
       </div>
     </Header.Back>
     <div class="content" data-cy="commit-header">
-      <pre class="typo-mono" style="margin-bottom: 1rem">
+      <pre
+        class="typo-mono"
+        style="margin-bottom: 1rem">
         {commit.header.summary}
       </pre>
-      <pre class="description" style="margin-bottom: 1rem">
+      <pre
+        class="description"
+        style="margin-bottom: 1rem">
         {commit.header.description}
       </pre>
       <hr />
       <Flex style="align-items: flex-end">
         <div slot="left">
           <p class="field">
-            Authored by
-            <span class="author typo-semi-bold">
-              {commit.header.author.name}
-            </span>
+            Authored by <span class="author typo-semi-bold"> {commit.header.author.name} </span>
             <span class="typo-mono">&lt;{commit.header.author.email}&gt;</span>
           </p>
           {#if commit.header.committer.email != commit.header.author.email}
             <p class="field">
-              Committed by
-              <span class="author typo-semi-bold">
-                {commit.header.committer.name}
-              </span>
+              Committed by <span class="author typo-semi-bold"> {commit.header.committer.name} </span>
               <span class="typo-mono">
                 &lt;{commit.header.committer.email}&gt;
               </span>
@@ -158,8 +156,7 @@
         <div slot="right">
           <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
           <p class="field">
-            Commit
-            <span class="hash">{commit.header.sha1}</span>
+            Commit <span class="hash">{commit.header.sha1}</span>
           </p>
         </div>
       </Flex>
@@ -170,13 +167,9 @@
         {#if commit.diff.modified.length > 0}
           <span class="typo-semi-bold">
             {commit.diff.modified.length} file(s) changed
-          </span>
-          with
-          <span class="additions typo-semi-bold">
+          </span> with <span class="additions typo-semi-bold">
             {commit.stats.additions} additions
-          </span>
-          and
-          <span class="deletions typo-semi-bold">
+          </span> and <span class="deletions typo-semi-bold">
             {commit.stats.deletions} deletions
           </span>
         {/if}
