@@ -48,11 +48,16 @@
   let existingRepositoryPath = "";
 
   let validatingName = false;
+  let nameValidation = nameValidationStore();
+  const currentSelectionValidation = currentSelectionValidationStore();
 
   let loading = false;
 
   const setSelection = type => {
     currentSelection = type;
+    // Reset the name validation on selection switch
+    validatingName = false;
+    nameValidation = nameValidationStore();
   };
 
   const createProject = async () => {
@@ -96,9 +101,6 @@
   onDestroy(() => {
     screen.unlock();
   });
-
-  const nameValidation = nameValidationStore();
-  const currentSelectionValidation = currentSelectionValidationStore();
 
   $: pathValidation = repositoryPathValidationStore(isNew);
 
