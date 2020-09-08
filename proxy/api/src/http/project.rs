@@ -229,7 +229,6 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::git::local::url::LocalUrl;
     use radicle_surf::vcs::git::git2;
 
     use crate::context;
@@ -298,7 +297,7 @@ mod test {
         assert_eq!(
             remote.url(),
             Some(
-                LocalUrl::from_urn(urn, ctx.peer_api.peer_id())
+                coco::LocalUrl::from_urn(urn, ctx.peer_api.peer_id())
                     .to_string()
                     .as_str()
             )
@@ -577,15 +576,11 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
         let project = &project::list_projects(&ctx.peer_api)?[0];
-        let librad_project = ctx.peer_api.get_project(&project.id, None)?;
+        let coco_project = ctx.peer_api.get_project(&project.id, None)?;
 
-        let fintohaps: identity::Identity = coco::control::track_fake_peer(
-            &ctx.peer_api,
-            &ctx.signer,
-            &librad_project,
-            "fintohaps",
-        )
-        .into();
+        let fintohaps: identity::Identity =
+            coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &coco_project, "fintohaps")
+                .into();
 
         let res = request()
             .method("GET")

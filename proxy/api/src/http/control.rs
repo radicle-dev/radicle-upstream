@@ -38,8 +38,6 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use librad::paths;
-
     use coco::keystore;
     use coco::signer;
 
@@ -84,7 +82,7 @@ mod handler {
         ))
     }
 
-    /// Reset the coco state by creating a new temporary directory for the librad paths.
+    /// Reset the coco state.
     pub async fn nuke_coco(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
@@ -98,11 +96,11 @@ mod handler {
             temp_dir.path().to_path_buf()
         };
 
-        let paths = paths::Paths::from_root(tmp_path).map_err(error::Error::from)?;
+        let paths = coco::Paths::from_root(tmp_path).map_err(error::Error::from)?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-        let key = new_keystore.init_librad_key().map_err(error::Error::from)?;
+        let key = new_keystore.init().map_err(error::Error::from)?;
         let signer = signer::BoxedSigner::new(signer::SomeSigner {
             signer: key.clone(),
         });

@@ -36,7 +36,10 @@ export default {
 
     commonjs(),
 
-    typescript(),
+    typescript({
+      // See https://github.com/rollup/plugins/issues/272
+      noEmitOnError: production,
+    }),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
@@ -47,12 +50,6 @@ export default {
     production && terser(),
   ],
   watch: {
-    // Temporary until
-    // https://github.com/rollup/rollup/issues/2988#issuecomment-536388590 is
-    // addressed.
-    chokidar: {
-      usePolling: true,
-    },
     clearScreen: false,
   },
 };

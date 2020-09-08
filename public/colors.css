@@ -23,7 +23,6 @@
   --color-negative-level-1: #ffeded;
   --color-negative-level-2: #ff8787;
   --color-negative-level-6: #803d3d;
-  --color-background: #ffffff;
   --color-foreground: #28333d;
   --color-foreground-level-1: #f8f8f8;
   --color-foreground-level-2: #ebeff3;
@@ -31,6 +30,7 @@
   --color-foreground-level-4: #a9b9c7;
   --color-foreground-level-5: #90a0af;
   --color-foreground-level-6: #546474;
+  --color-background: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -58,7 +58,6 @@
   --color-negative-level-1: #38282f;
   --color-negative-level-2: #623237;
   --color-negative-level-6: #ffd4d4;
-  --color-background: #182129;
   --color-foreground: #ffffff;
   --color-foreground-level-1: #242e38;
   --color-foreground-level-2: #29343d;
@@ -66,4 +65,5 @@
   --color-foreground-level-4: #5e6d7a;
   --color-foreground-level-5: #8594a1;
   --color-foreground-level-6: #d3dee8;
+  --color-background: #182129;
 }

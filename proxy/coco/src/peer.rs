@@ -82,7 +82,9 @@ impl Api {
             run_loop.await;
         });
 
-        // Register the rad:// transport protocol
+        // This registers the `rad://` transport protocol so that we can perform git actions between
+        // the Monorepo and a working copy. This means that we can easily use the git2 library to
+        // perform these actions and be sure that the signer is used to sign any git artifacts.
         transport::register(transport::Settings {
             paths,
             signer: SomeSigner { signer }.into(),
