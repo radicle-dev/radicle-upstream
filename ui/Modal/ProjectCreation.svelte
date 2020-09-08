@@ -185,9 +185,8 @@
           <p
             style="margin-top: 1rem; color: var(--color-foreground-level-6);
             text-align: center">
-            A new repository will be created inside this directory
-            <br />
-            and named after the project name.
+            A new repository will be created inside this directory <br /> and named
+            after the project name.
           </p>
         </div>
       </RadioOption>
