@@ -303,6 +303,7 @@ dependencies = [
  "log",
  "nonempty",
  "pretty_assertions",
+ "pretty_env_logger",
  "radicle-git-helpers",
  "radicle-keystore",
  "radicle-surf",

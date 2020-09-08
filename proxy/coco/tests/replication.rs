@@ -229,21 +229,3 @@ fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
         default_branch: "it".to_string(),
     }
 }
-
-async fn build_peer(
-    tmp_dir: &tempfile::TempDir,
-) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
-    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-
-    let key = SecretKey::new();
-    let signer = signer::BoxedSigner::from(key.clone());
-
-    let conf = config::default(key, tmp_dir.path())?;
-    let (api, run_loop) = conf.try_into_peer().await?.accept()?;
-
-    let state = State::new(api, signer.clone());
-    let state = Lock::from(state);
-    let peer = Peer::new(run_loop, state.clone(), store);
-
-    Ok((peer, state, signer))
-}

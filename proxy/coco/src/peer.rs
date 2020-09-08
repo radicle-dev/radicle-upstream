@@ -6,6 +6,7 @@ use std::fmt;
 use futures::StreamExt as _;
 use tokio::sync::broadcast;
 
+use librad::net::peer::Gossip;
 use librad::net::peer::RunLoop;
 use librad::net::protocol;
 
@@ -17,22 +18,20 @@ pub use announcement::Announcement;
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("{0:?}")]
+    Broadcast(broadcast::SendError<Event>),
+
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
 }
 
-pub enum Event<A>
-where
-    A: fmt::Debug,
-{
+#[derive(Clone)]
+pub enum Event {
     Announced(usize),
-    Protocol(protocol::ProtocolEvent<A>),
+    Protocol(protocol::ProtocolEvent<Gossip>),
 }
 
-impl<A> fmt::Debug for Event<A>
-where
-    A: fmt::Debug,
-{
+impl fmt::Debug for Event {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Announced(updates) => write!(f, "announcements = {}", updates),
@@ -42,22 +41,16 @@ where
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
-pub struct Peer<A>
-where
-    A: fmt::Debug,
-{
+pub struct Peer {
     /// Peer [`RunLoop`] to advance the network protocol.
     run_loop: RunLoop,
     /// Underlying state access.
     state: Lock,
     store: kv::Store,
-    subscriber: broadcast::Sender<Event<A>>,
+    subscriber: broadcast::Sender<Event>,
 }
 
-impl<A> Peer<A>
-where
-    A: fmt::Debug,
-{
+impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
     pub fn new(run_loop: RunLoop, state: Lock, store: kv::Store) -> Self {
@@ -70,7 +63,7 @@ where
         }
     }
 
-    pub fn subscribe(&self) -> broadcast::Receiver<Event<A>> {
+    pub fn subscribe(&self) -> broadcast::Receiver<Event> {
         self.subscriber.subscribe()
     }
 
@@ -113,7 +106,7 @@ where
                 Ok(event) => {
                     log::info!("{:?}", event);
 
-                    // Broadcast the event to subscribers.
+                    self.subscriber.send(event).map_err(Error::Broadcast)?;
                 }
             }
         }

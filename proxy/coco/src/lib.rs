@@ -45,7 +45,7 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 mod peer;
-pub use peer::Peer;
+pub use peer::{Peer, Event as PeerEvent};
 mod state;
 pub use state::{Lock, State};
 pub mod project;
@@ -73,13 +73,12 @@ use std::net::SocketAddr;
 ///
 /// * peer construction from config fails.
 /// * accept on the peer fails.
-pub async fn into_peer_state<I, A>(
+pub async fn into_peer_state<I>(
     config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
     store: kv::Store,
-) -> Result<(Peer<A>, Lock), Error>
+) -> Result<(Peer, Lock), Error>
 where
-    A: fmt::Debug,
     I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
 {
     let peer = config.try_into_peer().await?;
