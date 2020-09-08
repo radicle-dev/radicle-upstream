@@ -12,6 +12,8 @@ use librad::peer::PeerId;
 use librad::signer;
 
 use coco::config;
+use coco::seed::Seed;
+use coco::Paths;
 use coco::{Lock, Peer, PeerEvent};
 
 pub async fn build_peer(
@@ -22,6 +24,21 @@ pub async fn build_peer(
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let conf = config::default(key, tmp_dir.path())?;
+    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store).await?;
+
+    Ok((peer, state, signer))
+}
+
+pub async fn build_peer_with_seeds(
+    tmp_dir: &tempfile::TempDir,
+    seeds: Vec<Seed>,
+) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
+    let key = SecretKey::new();
+    let signer = signer::BoxedSigner::from(key.clone());
+    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+
+    let paths = Paths::from_root(tmp_dir.path())?;
+    let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
     let (peer, state) = coco::into_peer_state(conf, signer.clone(), store).await?;
 
     Ok((peer, state, signer))

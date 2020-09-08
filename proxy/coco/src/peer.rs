@@ -107,7 +107,7 @@ impl Peer {
                     log::info!("{:?}", event);
 
                     self.subscriber.send(event).map_err(Error::Broadcast)?;
-                }
+                },
             }
         }
 

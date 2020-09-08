@@ -83,7 +83,7 @@ pub async fn build(state: Lock) -> Result<HashSet<Announcement>, Error> {
             }
 
             Ok(list)
-        }
+        },
     }
 }
 
