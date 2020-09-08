@@ -11,7 +11,6 @@
     create,
     defaultBranch,
     localState,
-    currentSelectionValidationStore,
     nameValidationStore,
     repositoryPathValidationStore,
     RepoType,
@@ -24,7 +23,7 @@
     settings,
   } from "../src/session.ts";
 
-  import { Button, Flex, Icon, Input } from "../DesignSystem/Primitive";
+  import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
     Illustration,
@@ -49,7 +48,6 @@
 
   let validatingName = false;
   let nameValidation = nameValidationStore();
-  const currentSelectionValidation = currentSelectionValidationStore();
 
   let loading = false;
 
@@ -110,9 +108,10 @@
     }
     if (validatingName) nameValidation.validate(name);
   }
-  $: if (validatingName) currentSelectionValidation.validate(currentSelection);
+
   $: repositoryPath = isNew ? newRepositoryPath : existingRepositoryPath;
-  $: if (repositoryPath.length > 0) pathValidation.validate(repositoryPath);
+  $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0))
+    pathValidation.validate(repositoryPath);
 
   // Use the directory name for existing projects as the project name.
   $: name = existingRepositoryPath.split("/").slice(-1)[0];
@@ -122,7 +121,6 @@
 
   $: disableSubmit =
     $nameValidation.status !== ValidationStatus.Success ||
-    $currentSelectionValidation.status !== ValidationStatus.Success ||
     $pathValidation.status !== ValidationStatus.Success ||
     loading;
 </script>
@@ -156,11 +154,6 @@
     display: flex;
     align-items: center;
     margin-top: 1rem;
-  }
-
-  .validation-row {
-    display: flex;
-    align-items: center;
   }
 </style>
 
@@ -252,16 +245,6 @@
       style="margin-top: 1rem; margin-bottom: 1rem;"
       placeholder="Project description"
       bind:value={description} />
-
-    {#if $currentSelectionValidation.status === ValidationStatus.Error}
-      <div class="validation-row">
-        <Icon.ExclamationCircle
-          style="margin-right: 0.5rem; fill: var(--color-negative)" />
-        <p class="typo-text-bold" style="color: var(--color-negative)">
-          {$currentSelectionValidation.message}
-        </p>
-      </div>
-    {/if}
 
     <Flex style="margin-top: 1rem">
       <div slot="right">

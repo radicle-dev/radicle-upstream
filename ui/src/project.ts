@@ -261,16 +261,6 @@ export const nameValidationStore = (): validation.ValidationStore => {
   });
 };
 
-export const currentSelectionValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore({
-    presence: {
-      message:
-        "Select whether to start a new repository or use an existing one",
-      allowEmpty: false,
-    },
-  });
-};
-
 export const repositoryPathValidationStore = (
   newRepository: boolean
 ): validation.ValidationStore => {
