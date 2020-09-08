@@ -45,6 +45,7 @@ where
 ///
 /// See [`Projects`] for a detailed breakdown of both kinds of projects.
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: coco::Urn,
@@ -79,6 +80,7 @@ where
 ///
 /// See [`Projects`] for a detailed breakdown of both kinds of projects.
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Tracked(Project);
 
 impl Deref for Tracked {

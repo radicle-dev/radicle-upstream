@@ -55,8 +55,8 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
 fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
+        .and(warp::query::<Status>())
         .and(path::end())
-        .and(http::with_qs_opt::<ListQuery>())
         .and_then(handler::list)
 }
 
@@ -142,22 +142,23 @@ mod handler {
     /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
     pub async fn list(
         ctx: context::Ctx,
-        opt_query: Option<super::ListQuery>,
+        status: super::Status,
     ) -> Result<impl Reply, Rejection> {
-        let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
 
-        /*
-        let projects = if let Some(user) = query.user {
-            project::list_projects_for_user(&ctx.peer_api, &user)?
-        };
-        */
-
         let projects = project::Projects::list(&ctx.peer_api)?;
-        match query.status {
+        match status {
             super::Status::Tracked => Ok(reply::json(&projects.tracked)),
             super::Status::Mine => Ok(reply::json(&projects.mine)),
         }
+    }
+
+    pub async fn list_user_projects(
+        ctx: context::Ctx,
+        user: coco::Urn,
+    ) -> Result<impl Reply, Rejection> {
+        let ctx = ctx.read().await;
+        Ok(reply::json(&project::list_projects_for_user(&ctx.peer_api, &user)?))
     }
 
     /// Get a feed of untracked projects.
@@ -202,7 +203,8 @@ pub struct MetadataInput {
 }
 
 /// The status of a project in your monorepo.
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Status {
     /// The project exists in your monorepo and you're interested in it, but you've
     /// not yet contributed to it.
