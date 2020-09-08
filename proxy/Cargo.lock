@@ -1005,7 +1005,7 @@ dependencies = [
 [[package]]
 name = "kv"
 version = "0.21.1"
-source = "git+https://github.com/radicle-dev/rust-kv.git?rev=4550a807f7f95aa588687fcc085372cfe7cbda8e#4550a807f7f95aa588687fcc085372cfe7cbda8e"
+source = "git+https://github.com/zshipko/rust-kv.git?rev=a98e1ace84b22ceaac276abf796633bd8e735500#a98e1ace84b22ceaac276abf796633bd8e735500"
 dependencies = [
  "serde",
  "serde_json",
