@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let dataCy: string | undefined = undefined;
+  export let dataCy = "";
   export let style = "";
 </script>
 

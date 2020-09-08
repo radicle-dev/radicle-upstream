@@ -1,6 +1,6 @@
 <script lang="ts">
   export let align: "left" | "right" | undefined = undefined;
-  export let dataCy: string | undefined = undefined;
+  export let dataCy = "";
   export let style = "";
 </script>
 
