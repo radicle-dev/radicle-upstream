@@ -5,8 +5,9 @@ use std::ops::Deref as _;
 
 use kv::Codec as _;
 
-use librad::net;
-use librad::uri;
+use librad::net::peer::{Gossip, Rev};
+use librad::uri::path::ParseError;
+use librad::uri::{Path, RadUrn};
 
 use crate::oid::Oid;
 use crate::state::Lock;
@@ -26,11 +27,11 @@ pub enum Error {
     Kv(#[from] kv::Error),
 
     #[error(transparent)]
-    Parse(#[from] uri::path::ParseError),
+    Parse(#[from] ParseError),
 }
 
 /// An update and all the required information that can be announced on the network.
-pub type Announcement = (uri::RadUrn, Oid);
+pub type Announcement = (RadUrn, Oid);
 
 /// Announces the list of given `updates` with the [`librad::net::protocol`].
 ///
@@ -39,14 +40,14 @@ pub type Announcement = (uri::RadUrn, Oid);
 /// * if the announcemnet of one of the project heads failed
 pub async fn announce(state: Lock, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
-        let have = net::peer::Gossip {
-            urn: urn.clone(),
-            rev: Some(net::peer::Rev::Git((*hash).into())),
-            origin: None,
-        };
-
         let state = state.lock().await;
         let protocol = state.api.protocol();
+
+        let have = Gossip {
+            urn: urn.clone(),
+            rev: Some(Rev::Git((*hash).into())),
+            origin: None,
+        };
         protocol.announce(have).await;
     }
 }
@@ -72,8 +73,8 @@ pub async fn build(state: Lock) -> Result<HashSet<Announcement>, Error> {
 
                 for (head, hash) in &refs.heads {
                     list.insert((
-                        uri::RadUrn {
-                            path: head.parse::<uri::Path>()?,
+                        RadUrn {
+                            path: head.parse::<Path>()?,
                             ..project.urn()
                         },
                         Oid::from(*hash.deref()),

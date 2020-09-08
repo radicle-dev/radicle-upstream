@@ -1,9 +1,12 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
+use std::fmt;
+
 use futures::StreamExt as _;
 
 use librad::net::peer::RunLoop;
+use librad::net::protocol;
 
 use crate::state::Lock;
 
@@ -15,6 +18,26 @@ pub use announcement::Announcement;
 pub enum Error {
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
+}
+
+pub enum Event<A>
+where
+    A: fmt::Debug,
+{
+    Announced(usize),
+    Protocol(protocol::ProtocolEvent<A>),
+}
+
+impl<A> fmt::Debug for Event<A>
+where
+    A: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Announced(updates) => write!(f, "announcements = {}", updates),
+            Self::Protocol(event) => write!(f, "protocol = {:?}", event),
+        }
+    }
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
@@ -61,30 +84,39 @@ impl Peer {
         loop {
             let res = tokio::select! {
                 _ = announce_timer.tick() => {
-                    let old = announcement::load(&self.store)?;
-                    let new = announcement::build(self.state.clone()).await?;
-                    let updates = announcement::diff(&old, &new);
-
-                    announcement::announce(self.state.clone(), updates.iter()).await;
-                    log::info!("announcements = {}", updates.len());
-
-                    announcement::save(&self.store, updates)?;
-
-                    Ok(())
+                    let updates = Self::announce(self.state.clone(), &self.store).await?;
+                    Ok(Event::Announced(updates))
                 },
                 Some(event) = protocol_subscriber.next() => {
-                    log::info!("protocol.event = {:?}", event);
-                    Ok(())
+                    Ok(Event::Protocol(event))
                 },
                 else => break,
             };
 
-            // Propagate if one of the select failed.
-            if res.is_err() {
-                return res;
+            match res {
+                // Propagate if one of the select failed.
+                Err(err) => return Err(err),
+                Ok(event) => {
+                    log::info!("{:?}", event);
+
+                    // Broadcast the event to subscribers.
+                }
             }
         }
 
         Ok(())
+    }
+
+    async fn announce(state: Lock, store: &kv::Store) -> Result<usize, Error> {
+        let updates = {
+            let old = announcement::load(store)?;
+            let new = announcement::build(state.clone()).await?;
+            announcement::diff(&old, &new)
+        };
+
+        announcement::announce(state, updates.iter()).await;
+        announcement::save(&store, updates.clone()).map_err(Error::from)?;
+
+        Ok(updates.len())
     }
 }
