@@ -1,7 +1,8 @@
+use std::path::PathBuf;
 use std::time::Duration;
 
 use futures::future;
-use futures::{Stream, StreamExt as _};
+use futures::StreamExt as _;
 use tokio::sync::broadcast;
 use tokio::time::{timeout, Elapsed};
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
@@ -12,6 +13,7 @@ use librad::peer::PeerId;
 use librad::signer;
 
 use coco::config;
+use coco::project;
 use coco::seed::Seed;
 use coco::Paths;
 use coco::{Lock, Peer, PeerEvent};
@@ -54,24 +56,30 @@ pub fn init_logging() {
     }
 }
 
+pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
+    project::Create {
+        repo: project::Repo::New {
+            path,
+            name: "just".to_string(),
+        },
+        description: "do".to_string(),
+        default_branch: "it".to_string(),
+    }
+}
+
 pub async fn wait_connected(
     receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,
 ) -> Result<(), Elapsed> {
     let filtered = receiver
         .into_stream()
-        .filter_map(|res| {
-            let event = res.unwrap();
-            println!("EVENT {:?}", event);
-
-            match event {
-                PeerEvent::Protocol(ProtocolEvent::Connected(remote_id))
-                    if remote_id == *expected_id =>
-                {
-                    future::ready(Some(()))
-                }
-                _ => future::ready(None),
-            }
+        .filter_map(|res| match res.unwrap() {
+            PeerEvent::Protocol(ProtocolEvent::Connected(remote_id))
+                if remote_id == *expected_id =>
+            {
+                future::ready(Some(()))
+            },
+            _ => future::ready(None),
         })
         .map(|_| ());
     tokio::pin!(filtered);

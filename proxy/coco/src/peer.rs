@@ -54,7 +54,7 @@ impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
     pub fn new(run_loop: RunLoop, state: Lock, store: kv::Store) -> Self {
-        let (subscriber, _receiver) = broadcast::channel(32);
+        let (subscriber, _receiver) = broadcast::channel(128);
         Self {
             run_loop,
             state,
@@ -83,7 +83,7 @@ impl Peer {
         tokio::pin!(protocol_subscriber);
 
         // Start announcement timer.
-        let mut announce_timer = tokio::time::interval(std::time::Duration::from_secs(10));
+        let mut announce_timer = tokio::time::interval(std::time::Duration::from_secs(1));
 
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
