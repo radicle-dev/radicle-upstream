@@ -127,14 +127,8 @@ async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
     let updates = announcement::diff(&old, &new);
     let count = updates.len();
 
-    {
-        let updates = updates.clone();
-        ctx.peer_api
-            .with_protocol(|protocol| {
-                Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
-            })
-            .await?;
-    }
+    let updates = updates.clone();
+    announcement::announce(ctx.peer_api.protocol(), updates.iter()).await?;
 
     session::announcements::save(&ctx.store, updates)?;
     log::debug!("announced {} updates", count);
