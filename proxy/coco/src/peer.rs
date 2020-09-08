@@ -5,7 +5,6 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use futures::future::BoxFuture;
 use futures::stream::StreamExt;
 
 use librad::git::local::{transport, url::LocalUrl};
@@ -80,7 +79,9 @@ impl Api {
             run_loop.await;
         });
 
-        // Register the rad:// transport protocol
+        // This registers the `rad://` transport protocol so that we can perform git actions between
+        // the Monorepo and a working copy. This means that we can easily use the git2 library to
+        // perform these actions and be sure that the signer is used to sign any git artifacts.
         transport::register(transport::Settings {
             paths,
             signer: SomeSigner { signer }.into(),
@@ -374,21 +375,10 @@ impl Api {
     }
 
     /// Get the underlying [`librad::net::protocol::Protocol`].
-    ///
-    /// # Errors
-    ///
-    /// * if they `callback` errors
-    pub fn with_protocol<F, T>(&self, callback: F) -> BoxFuture<'static, Result<T, Error>>
-    where
-        T: 'static,
-        F: Send
-            + FnOnce(
-                Protocol<PeerStorage<keys::SecretKey>, Gossip>,
-            ) -> BoxFuture<'static, Result<T, Error>>,
-    {
+    #[must_use]
+    pub fn protocol(&self) -> Protocol<PeerStorage<keys::SecretKey>, Gossip> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
-
-        Box::pin(callback(api.protocol().clone()))
+        api.protocol().clone()
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.

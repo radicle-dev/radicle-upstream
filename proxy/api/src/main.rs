@@ -1,7 +1,5 @@
 use std::convert::TryFrom;
 
-use librad::paths;
-
 use coco::announcement;
 use coco::keystore;
 use coco::seed;
@@ -33,9 +31,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
-    coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
+    coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
-    let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+    let temp_dir = tempfile::tempdir()?;
     log::debug!(
         "Temporary path being used for this run is: {:?}",
         temp_dir.path()
@@ -47,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         coco::config::Paths::default()
     };
-    let paths = paths::Paths::try_from(paths_config)?;
+    let paths = coco::Paths::try_from(paths_config)?;
 
     let store = {
         let store_path = if args.test {
@@ -63,7 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut keystore = keystore::Keystorage::new(&paths, pw);
-    let key = keystore.init_librad_key()?;
+    let key = keystore.init()?;
     let signer = signer::BoxedSigner::new(signer::SomeSigner {
         signer: key.clone(),
     });
@@ -84,7 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
         let owner = peer_api.init_owner(&signer, "cloudhead")?;
-        coco::control::setup_fixtures(&peer_api, &signer, &owner).expect("fixture creation failed");
+        coco::control::setup_fixtures(&peer_api, &signer, &owner)?;
     }
 
     let subscriptions = notification::Subscriptions::default();
@@ -129,14 +127,8 @@ async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
     let updates = announcement::diff(&old, &new);
     let count = updates.len();
 
-    {
-        let updates = updates.clone();
-        ctx.peer_api
-            .with_protocol(|protocol| {
-                Box::pin(async move { announcement::announce(protocol, updates.iter()).await })
-            })
-            .await?;
-    }
+    let updates = updates.clone();
+    announcement::announce(ctx.peer_api.protocol(), updates.iter()).await?;
 
     session::announcements::save(&ctx.store, updates)?;
     log::debug!("announced {} updates", count);

@@ -22,11 +22,11 @@ tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "295efc256029096f2d6a0de41ffd7c2db7f57832"
+rev = "dabbec104273eda48e943c1ff9fae8eedd8ba917"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+rev = "dabbec104273eda48e943c1ff9fae8eedd8ba917"
 
 [dependencies.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore.git"
