@@ -20,6 +20,8 @@
     clippy::multiple_crate_versions
 )]
 
+use std::fmt;
+
 pub use librad::git::local::url::LocalUrl;
 pub use librad::hash::Hash;
 pub use librad::meta::project::Project;
@@ -71,12 +73,13 @@ use std::net::SocketAddr;
 ///
 /// * peer construction from config fails.
 /// * accept on the peer fails.
-pub async fn into_peer_state<I>(
+pub async fn into_peer_state<I, A>(
     config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
     store: kv::Store,
-) -> Result<(Peer, Lock), Error>
+) -> Result<(Peer<A>, Lock), Error>
 where
+    A: fmt::Debug,
     I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
 {
     let peer = config.try_into_peer().await?;

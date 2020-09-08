@@ -4,6 +4,7 @@
 use std::fmt;
 
 use futures::StreamExt as _;
+use tokio::sync::broadcast;
 
 use librad::net::peer::RunLoop;
 use librad::net::protocol;
@@ -41,23 +42,36 @@ where
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
-pub struct Peer {
+pub struct Peer<A>
+where
+    A: fmt::Debug,
+{
     /// Peer [`RunLoop`] to advance the network protocol.
     run_loop: RunLoop,
     /// Underlying state access.
     state: Lock,
     store: kv::Store,
+    subscriber: broadcast::Sender<Event<A>>,
 }
 
-impl Peer {
+impl<A> Peer<A>
+where
+    A: fmt::Debug,
+{
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
     pub fn new(run_loop: RunLoop, state: Lock, store: kv::Store) -> Self {
+        let (subscriber, _receiver) = broadcast::channel(32);
         Self {
             run_loop,
             state,
             store,
+            subscriber,
         }
+    }
+
+    pub fn subscribe(&self) -> broadcast::Receiver<Event<A>> {
+        self.subscriber.subscribe()
     }
 
     /// Start up the internal machinery to advance the underlying protocol, react to significant
