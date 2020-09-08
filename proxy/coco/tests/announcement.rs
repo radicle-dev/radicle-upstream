@@ -1,9 +1,5 @@
-use librad::net::protocol::ProtocolEvent;
-
-use coco::PeerEvent;
-
 mod common;
-use common::build_peer;
+use common::{build_peer, wait_connected};
 
 #[tokio::test]
 async fn announces_updates() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,22 +15,11 @@ async fn announces_updates() -> Result<(), Box<dyn std::error::Error>> {
     let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
     let _bob = bob_state.lock().await.init_owner(&bob_signer, "bob")?;
 
-    let mut bob_events = bob_peer.subscribe();
+    let bob_events = bob_peer.subscribe();
 
     tokio::task::spawn(bob_peer.run());
 
-    let event = bob_events.recv().await?;
-    if !expect_event(event, PeerEvent::Protocol(ProtocolEvent::Listening())) {
-        panic!("wrong event");
-    }
-    println!("EVENT {:?}", event);
+    wait_connected(bob_events, &alice_state.lock().await.peer_id()).await?;
 
     Ok(())
-}
-
-fn expect_event(got: PeerEvent, expect: PeerEvent) -> bool {
-    match got {
-        expect => true,
-        _ => false,
-    }
 }
