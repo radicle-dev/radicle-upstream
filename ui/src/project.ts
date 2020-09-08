@@ -1,10 +1,15 @@
+import { get, writable } from "svelte/store";
+
 import * as api from "./api";
+import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 import * as currency from "./currency";
 import * as event from "./event";
 import * as org from "./org";
 import * as remote from "./remote";
+import { getLocalState, LocalState } from "./source";
 import * as transaction from "./transaction";
 import * as user from "./user";
+import * as validation from "./validation";
 
 // TYPES.
 export interface Metadata {
@@ -198,3 +203,106 @@ export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);
+
+// NEW PROJECT
+
+export const localState = writable<LocalState | string>("");
+export const localStateError = writable<string>("");
+export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
+
+const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
+
+const fetchBranches = async (path: string) => {
+  // Revert to defaults whenever the path changes in case this query fails
+  // or the user clicks cancel in the directory selection dialog.
+  localState.set("");
+  localStateError.set("");
+  defaultBranch.set(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
+
+  // This is just a safe guard. Since the validations on the constraints are
+  // executed first, an empty path should not make it this far.
+  if (path === "") {
+    return;
+  }
+
+  try {
+    const state = await getLocalState(path);
+    localState.set(state);
+    if (!state.branches.includes(get(defaultBranch))) {
+      defaultBranch.set(state.branches[0]);
+    }
+  } catch (error) {
+    localStateError.set(error.message);
+  }
+};
+
+const validateExistingRepository = (path: string): Promise<boolean> => {
+  return fetchBranches(path).then(
+    () => !get(localStateError).match("could not find repository")
+  );
+};
+
+const validateNewRepository = (path: string): Promise<boolean> => {
+  return fetchBranches(path).then(() =>
+    get(localStateError).match("could not find repository")
+  );
+};
+
+export const nameValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore({
+    presence: {
+      message: "Project name is required",
+      allowEmpty: false,
+    },
+    format: {
+      pattern: new RegExp(projectNameMatch, "i"),
+      message: `Project name should match ${projectNameMatch}`,
+    },
+  });
+};
+
+export const currentSelectionValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore({
+    presence: {
+      message:
+        "Select whether to start a new repository or use an existing one",
+      allowEmpty: false,
+    },
+  });
+};
+
+export const repositoryPathValidationStore = (
+  newRepository: boolean
+): validation.ValidationStore => {
+  if (newRepository) {
+    return validation.createValidationStore(
+      {
+        presence: {
+          message: "Pick a directory for the new project",
+          allowEmpty: false,
+        },
+      },
+      [
+        {
+          promise: validateNewRepository,
+          validationMessage: "The directory should be empty",
+        },
+      ]
+    );
+  } else {
+    return validation.createValidationStore(
+      {
+        presence: {
+          message: "Pick a directory with an existing repository",
+          allowEmpty: false,
+        },
+      },
+      [
+        {
+          promise: validateExistingRepository,
+          validationMessage: "The directory should contain a git repository",
+        },
+      ]
+    );
+  }
+};
