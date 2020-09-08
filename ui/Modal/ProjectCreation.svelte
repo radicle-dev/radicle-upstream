@@ -46,7 +46,6 @@
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
 
-  let validatingName = false;
   let nameValidation = nameValidationStore();
 
   let loading = false;
@@ -54,7 +53,6 @@
   const setSelection = type => {
     currentSelection = type;
     // Reset the name validation on selection switch
-    validatingName = false;
     nameValidation = nameValidationStore();
   };
 
@@ -103,10 +101,7 @@
   $: pathValidation = repositoryPathValidationStore(isNew);
 
   $: {
-    if (name.length > 0) {
-      validatingName = true;
-    }
-    if (validatingName) nameValidation.validate(name);
+    if (name.length > 0) nameValidation.validate(name);
   }
 
   $: repositoryPath = isNew ? newRepositoryPath : existingRepositoryPath;
@@ -119,8 +114,12 @@
   // Reset the project name when switching between new and existing repo.
   $: isExisting && (name = "");
 
+  // The presence check is outside the validations since we don't want to show the validation error message for it.
+  $: validName =
+    name.length > 0 && $nameValidation.status === ValidationStatus.Success;
+
   $: disableSubmit =
-    $nameValidation.status !== ValidationStatus.Success ||
+    !validName ||
     $pathValidation.status !== ValidationStatus.Success ||
     loading;
 </script>

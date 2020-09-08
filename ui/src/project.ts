@@ -250,10 +250,6 @@ const validateNewRepository = (path: string): Promise<boolean> => {
 
 export const nameValidationStore = (): validation.ValidationStore => {
   return validation.createValidationStore({
-    presence: {
-      message: "Project name is required",
-      allowEmpty: false,
-    },
     format: {
       pattern: new RegExp(projectNameMatch, "i"),
       message: `Project name should match ${projectNameMatch}`,
