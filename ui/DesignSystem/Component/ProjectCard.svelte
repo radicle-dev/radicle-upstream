@@ -6,8 +6,10 @@
   export let title: string;
 
   export let description = "";
-  export let showRegisteredBadge = false;
-  export let showMaintainerBadge = false;
+
+  /* eslint-disable @typescript-eslint/no-inferrable-types */
+  export let showRegisteredBadge: boolean = false;
+  export let showMaintainerBadge: boolean = false;
 </script>
 
 <style>
