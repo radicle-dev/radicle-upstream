@@ -34,6 +34,7 @@
   } from "../DesignSystem/Component";
 
   let currentSelection;
+  let nameInput;
   export let content;
 
   const dispatch = createEventDispatcher();
@@ -181,7 +182,8 @@
           <Input.Directory
             placeholder="Where to create the repository"
             validation={$pathValidation}
-            bind:path={newRepositoryPath} />
+            bind:path={newRepositoryPath}
+            on:chosen={() => nameInput.focus()} />
           <p
             style="margin-top: 1rem; color: var(--color-foreground-level-6);
             text-align: center">
@@ -238,6 +240,7 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
+        bind:inputElement={nameInput}
         validation={$nameValidation}
         disabled={isExisting} />
     </Tooltip>

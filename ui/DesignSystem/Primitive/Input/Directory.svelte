@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import { getDirectoryPath } from "../../../../native/ipc.js";
 
   import Button from "../Button.svelte";
@@ -10,8 +11,11 @@
   export let validation = null;
   export let buttonVariant = "primary";
 
+  const dispatch = createEventDispatcher();
+
   const openFileDialog = async () => {
     path = await getDirectoryPath();
+    if (path) dispatch("chosen");
   };
 </script>
 
