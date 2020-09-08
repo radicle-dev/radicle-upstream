@@ -3,20 +3,27 @@
 
   import { Icon } from "../../DesignSystem/Primitive";
   import Copyable from "./Copyable.svelte";
+  import Hoverable from "./Hoverable.svelte";
 
   const dispatch = createEventDispatcher();
 
   export let style = null;
+  let hover = false;
 </script>
 
 <style>
   .info {
     margin-top: 1rem;
     background-color: var(--color-foreground-level-1);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     padding: 0.5rem;
     align-items: left;
     text-align: left;
+  }
+
+  .description {
+    margin-bottom: 0.75rem;
+    color: var(--color-foreground-level-6);
   }
 
   .close-hint-button {
@@ -34,18 +41,22 @@
     }}>
     <Icon.CrossSmall />
   </div>
-  <p style="margin-bottom: 0.75rem; color: display: flex;">
-    Before you get started, you need to add this to your shell configuration.
-    Not sure how?
-    <a
-      style="color: var(--color-foreground-level-6);"
+  <p class="description">
+    Before you get started, you need to add this to your shell configuration
+    file. Not sure how? <a
+      style="color: var(--color-foreground-level-5);"
       class="typo-link"
       href="https://radicle.xyz/#upstream-faq">
       Read more
     </a>
-    .
   </p>
-  <Copyable>
-    <p class="typo-text-small-mono">export PATH="$HOME/.radicle/bin:$PATH"</p>
-  </Copyable>
+  <Hoverable bind:hovering={hover}>
+    <Copyable showIcon={hover} styleContent={hover}>
+      <p
+        class="typo-text-small-mono"
+        style="color: var(--color-foreground-level-6)">
+        export PATH="$HOME/.radicle/bin:$PATH"
+      </p>
+    </Copyable>
+  </Hoverable>
 </div>

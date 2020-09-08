@@ -19,10 +19,15 @@
     clippy::multiple_crate_versions
 )]
 
+pub use librad::git::local::url::LocalUrl;
 pub use librad::hash::Hash;
 pub use librad::meta::project::Project;
+pub use librad::meta::user::User as MetaUser;
+pub use librad::paths::Paths;
 pub use librad::peer::PeerId;
 pub use librad::uri::{self, RadUrn as Urn};
+
+pub use radicle_git_helpers::remote_helper;
 
 pub use radicle_surf::diff::{Diff, FileDiff};
 pub use radicle_surf::vcs::git::Stats;
@@ -30,17 +35,19 @@ pub use radicle_surf::vcs::git::Stats;
 pub mod announcement;
 pub mod config;
 pub mod control;
-
 mod error;
 pub use error::Error;
-
 pub mod git_helper;
+mod identifier;
+pub use identifier::Identifier;
+pub mod keystore;
 pub mod oid;
 mod peer;
 pub use peer::{verify_user, Api, User};
 pub mod project;
 
 pub mod seed;
+pub mod signer;
 
 mod source;
 pub use source::{

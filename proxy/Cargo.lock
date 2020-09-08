@@ -59,14 +59,11 @@ dependencies = [
  "futures 0.3.5",
  "http",
  "kv",
- "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=295efc256029096f2d6a0de41ffd7c2db7f57832)",
  "log",
  "percent-encoding 2.1.0",
  "pico-args",
  "pretty_assertions",
  "pretty_env_logger",
- "radicle-git-helpers",
- "radicle-keystore",
  "radicle-surf",
  "serde",
  "serde_json",
@@ -310,11 +307,12 @@ version = "0.1.0"
 dependencies = [
  "futures 0.3.5",
  "lazy_static",
- "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=295efc256029096f2d6a0de41ffd7c2db7f57832)",
+ "librad",
  "log",
  "nonempty",
  "pretty_assertions",
  "radicle-git-helpers",
+ "radicle-keystore",
  "radicle-surf",
  "serde",
  "syntect",
@@ -866,12 +864,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hex"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
-
-[[package]]
 name = "http"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1077,7 +1069,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=295efc256029096f2d6a0de41ffd7c2db7f57832#295efc256029096f2d6a0de41ffd7c2db7f57832"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=dabbec104273eda48e943c1ff9fae8eedd8ba917#dabbec104273eda48e943c1ff9fae8eedd8ba917"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1100,58 +1092,6 @@ dependencies = [
  "multihash",
  "nom",
  "nonempty",
- "percent-encoding 2.1.0",
- "quinn",
- "radicle-keystore",
- "rand",
- "rand_pcg",
- "rcgen",
- "regex",
- "rustls",
- "serde",
- "serde_bytes",
- "serde_json",
- "sodiumoxide",
- "thiserror",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-futures",
- "unicode-normalization",
- "url 2.1.1",
- "urltemplate",
- "webpki",
- "yasna",
-]
-
-[[package]]
-name = "librad"
-version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=577e9943fa704895b47fe4e1c862bf0bd51d58a9#577e9943fa704895b47fe4e1c862bf0bd51d58a9"
-dependencies = [
- "async-trait",
- "bit-vec",
- "bs58",
- "bytes",
- "directories 3.0.1",
- "dyn-clone",
- "either",
- "futures 0.3.5",
- "futures-timer",
- "futures_codec",
- "git2",
- "governor",
- "hex",
- "lazy_static",
- "libc",
- "libgit2-sys",
- "log",
- "minicbor",
- "multibase",
- "multihash",
- "nom",
- "nonempty",
- "olpc-cjson",
  "percent-encoding 2.1.0",
  "quinn",
  "radicle-keystore",
@@ -1482,17 +1422,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ab52be62400ca80aa00285d25253d7f7c437b7375c4de678f5405d3afe82ca5"
 
 [[package]]
-name = "olpc-cjson"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9409e2493366c8f19387c98c5189ab9c937541b5bf48f11390d038a59fdfd9c1"
-dependencies = [
- "serde",
- "serde_json",
- "unicode-normalization",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1806,12 +1735,12 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=577e9943fa704895b47fe4e1c862bf0bd51d58a9#577e9943fa704895b47fe4e1c862bf0bd51d58a9"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=dabbec104273eda48e943c1ff9fae8eedd8ba917#dabbec104273eda48e943c1ff9fae8eedd8ba917"
 dependencies = [
  "anyhow",
  "git2",
  "libgit2-sys",
- "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=577e9943fa704895b47fe4e1c862bf0bd51d58a9)",
+ "librad",
  "radicle-keystore",
 ]
 

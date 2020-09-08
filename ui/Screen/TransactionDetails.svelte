@@ -30,6 +30,5 @@
     <Remote {store} let:data={tx}>
       <Transaction transaction={tx} payer={getPlayer(tx)} {viewerAccountId} />
     </Remote>
-
   </div>
 </ModalLayout>

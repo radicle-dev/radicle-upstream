@@ -2,11 +2,6 @@
 
 use std::time::SystemTimeError;
 
-use librad::meta::common::url;
-use librad::meta::entity;
-
-use crate::keystore;
-
 /// Project problems.
 #[derive(Debug, thiserror::Error)]
 pub enum ProjectValidation {
@@ -56,53 +51,13 @@ pub enum Error {
     #[error(transparent)]
     Checkout(#[from] coco::project::checkout::Error),
 
-    /// Accept error from `librad`.
+    /// Keystore error.
     #[error(transparent)]
-    LibradAccept(#[from] librad::net::peer::AcceptError),
-
-    /// Bootstrap error from `librad`.
-    #[error(transparent)]
-    LibradBootstrap(#[from] librad::net::peer::BootstrapError),
-
-    /// Originated from `librad`.
-    #[error(transparent)]
-    LibradRepo(#[from] librad::git::repo::Error),
-
-    /// Originated from `librad::Storage`.
-    #[error(transparent)]
-    LibradStorage(#[from] librad::git::storage::Error),
-
-    /// Parse error for `librad::uri::path::Path`.
-    #[error(transparent)]
-    LibradParse(#[from] librad::uri::path::ParseError),
-
-    /// Parse error for [`coco::Urn`].
-    #[error(transparent)]
-    LibradParseUrn(#[from] coco::uri::rad_urn::ParseError),
-
-    /// Project error from `librad`.
-    #[error(transparent)]
-    LibradProject(#[from] entity::Error),
-
-    /// Failure to acquire [`std::sync::Mutex`] lock for the peer.
-    #[error("failed to acquire lock for peer")]
-    LibradLock,
-
-    /// Failure during the verification of a `librad` entity.
-    #[error(transparent)]
-    LibradVerification(#[from] entity::HistoryVerificationError),
-
-    /// Failure when interacting with [`crate::keystore`].
-    #[error(transparent)]
-    Keystorage(#[from] keystore::Error),
+    Keystore(#[from] coco::keystore::Error),
 
     /// Common I/O errors.
     #[error(transparent)]
     Io(#[from] std::io::Error),
-
-    /// Url parse error.
-    #[error(transparent)]
-    Url(#[from] url::ParseError),
 
     /// Project name validation.
     #[error(transparent)]

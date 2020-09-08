@@ -4,9 +4,8 @@ use std::sync::Arc;
 
 use tokio::sync::RwLock;
 
-use librad::paths;
-
-use crate::keystore;
+use coco::keystore;
+use coco::signer;
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;
@@ -21,8 +20,8 @@ impl From<Context> for Ctx {
 pub struct Context {
     /// [`coco::Api`] to operate on the local monorepo.
     pub peer_api: coco::Api,
-    /// Storage to manage keys.
-    pub keystore: keystore::Keystorage,
+    /// [`coco::signer::BoxedSigner`] for write operations on the monorepo.
+    pub signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
 }
@@ -36,11 +35,14 @@ impl Context {
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Ctx, crate::error::Error> {
-        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
+        let paths = coco::Paths::from_root(tmp_dir.path())?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
+        let key = keystore.init()?;
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: key.clone(),
+        });
 
         let peer_api = {
             let config = coco::config::default(key, tmp_dir.path())?;
@@ -50,8 +52,8 @@ impl Context {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         Ok(Arc::new(RwLock::new(Self {
-            keystore,
             peer_api,
+            signer,
             store,
         })))
     }
@@ -61,8 +63,8 @@ impl Context {
 ///
 /// # Errors
 ///
-///   * If we could not get the librad path.
-///   * If we could not initialise the librad key.
+///   * If we could not create a new temporary path.
+///   * If we could not initialise the key.
 ///   * If we could not construct the peer API.
 ///
 /// # Panics
@@ -81,18 +83,19 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
         temp_dir.path().to_path_buf()
     };
 
-    let paths = paths::Paths::from_root(tmp_path)?;
+    let paths = coco::Paths::from_root(tmp_path)?;
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-    let key = new_keystore.init_librad_key()?;
+    let signer = new_keystore.init()?;
 
-    let config = coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+    let config =
+        coco::config::configure(paths, signer.clone(), *coco::config::LOCALHOST_ANY, vec![]);
     let new_peer_api = coco::Api::new(config).await?;
 
     let mut ctx = ctx.write().await;
     ctx.peer_api = new_peer_api;
-    ctx.keystore = new_keystore;
+    ctx.signer = signer::BoxedSigner::from(signer::SomeSigner { signer });
 
     Ok(())
 }
