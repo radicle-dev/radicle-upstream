@@ -307,7 +307,7 @@ version = "0.1.0"
 dependencies = [
  "futures 0.3.5",
  "lazy_static",
- "librad",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=555de1a1157a9341e82708049247cb8dfeb7f962)",
  "log",
  "nonempty",
  "pretty_assertions",
@@ -1069,6 +1069,56 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=555de1a1157a9341e82708049247cb8dfeb7f962#555de1a1157a9341e82708049247cb8dfeb7f962"
+dependencies = [
+ "async-trait",
+ "bit-vec",
+ "bs58",
+ "bytes",
+ "directories 3.0.1",
+ "dyn-clone",
+ "either",
+ "futures 0.3.5",
+ "futures-timer",
+ "futures_codec",
+ "git2",
+ "governor",
+ "lazy_static",
+ "libc",
+ "libgit2-sys",
+ "log",
+ "minicbor",
+ "multibase",
+ "multihash",
+ "nom",
+ "nonempty",
+ "percent-encoding 2.1.0",
+ "quinn",
+ "radicle-keystore",
+ "rand",
+ "rand_pcg",
+ "rcgen",
+ "regex",
+ "rustls",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "sodiumoxide",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-futures",
+ "unicode-normalization",
+ "url 2.1.1",
+ "urltemplate",
+ "webpki",
+ "yasna",
+]
+
+[[package]]
+name = "librad"
+version = "0.1.0"
 source = "git+https://github.com/radicle-dev/radicle-link.git?rev=dabbec104273eda48e943c1ff9fae8eedd8ba917#dabbec104273eda48e943c1ff9fae8eedd8ba917"
 dependencies = [
  "async-trait",
@@ -1740,7 +1790,7 @@ dependencies = [
  "anyhow",
  "git2",
  "libgit2-sys",
- "librad",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=dabbec104273eda48e943c1ff9fae8eedd8ba917)",
  "radicle-keystore",
 ]
 
