@@ -783,7 +783,7 @@ mod test {
     /// Verify that asking the network for a URN owned by a seed peer returns said peer.
     #[tokio::test]
     #[allow(clippy::unwrap_used)]
-    async fn get_urn_providers_works() -> Result<(), Error> {
+    async fn get_urn_providers() -> Result<(), Error> {
         // Peer #1
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         env::set_var("RAD_HOME", tmp_dir.path());
