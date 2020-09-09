@@ -21,7 +21,8 @@ thiserror = "1.0"
 tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
 
 [dependencies.librad]
-path = "/home/nuno/link/librad"
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "dabbec104273eda48e943c1ff9fae8eedd8ba917"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"

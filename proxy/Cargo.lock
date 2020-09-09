@@ -307,7 +307,7 @@ version = "0.1.0"
 dependencies = [
  "futures 0.3.5",
  "lazy_static",
- "librad 0.1.0",
+ "librad",
  "log",
  "nonempty",
  "pretty_assertions",
@@ -1117,55 +1117,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "librad"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "bit-vec",
- "bs58",
- "bytes",
- "directories 3.0.1",
- "dyn-clone",
- "either",
- "futures 0.3.5",
- "futures-timer",
- "futures_codec",
- "git2",
- "governor",
- "lazy_static",
- "libc",
- "libgit2-sys",
- "log",
- "minicbor",
- "multibase",
- "multihash",
- "nom",
- "nonempty",
- "percent-encoding 2.1.0",
- "quinn",
- "radicle-keystore",
- "rand",
- "rand_pcg",
- "rcgen",
- "regex",
- "rustls",
- "serde",
- "serde_bytes",
- "serde_json",
- "sodiumoxide",
- "thiserror",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-futures",
- "unicode-normalization",
- "url 2.1.1",
- "urltemplate",
- "webpki",
- "yasna",
-]
-
-[[package]]
 name = "libsodium-sys"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1789,7 +1740,7 @@ dependencies = [
  "anyhow",
  "git2",
  "libgit2-sys",
- "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=dabbec104273eda48e943c1ff9fae8eedd8ba917)",
+ "librad",
  "radicle-keystore",
 ]
 
