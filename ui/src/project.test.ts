@@ -3,12 +3,55 @@ import { get } from "svelte/store";
 import * as api from "./api";
 import * as project from "./project";
 import * as remote from "./remote";
+import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 
-import { surfProjectMock, upstreamProjectMock } from "./__mocks__/api";
+import {
+  localStateMock,
+  surfProjectMock,
+  upstreamProjectMock,
+} from "./__mocks__/api";
 
 jest.mock("./api");
 
 describe("creating a project", () => {
+  describe("path validation", () => {
+    it("sets the local state", () => {
+      project.localState.set("test");
+      const validation = project.repositoryPathValidationStore(false);
+      validation.validate("/repository/path");
+
+      // resetting the local state on validation start
+      expect(get(project.localState)).toEqual("");
+
+      process.nextTick(() => {
+        expect(get(project.localState)).toEqual(localStateMock);
+      });
+    });
+
+    it("re-sets the local state error on validation start", () => {
+      project.localStateError.set("test-error");
+      const validation = project.repositoryPathValidationStore(false);
+      validation.validate("/repository/path");
+
+      expect(get(project.localStateError)).toEqual("");
+    });
+
+    it("sets the default branch", () => {
+      project.defaultBranch.set("");
+      const validation = project.repositoryPathValidationStore(false);
+      validation.validate("/repository/path");
+
+      // resetting the default branch on validation start
+      expect(get(project.defaultBranch)).toEqual(
+        DEFAULT_BRANCH_FOR_NEW_PROJECTS
+      );
+
+      process.nextTick(() => {
+        expect(get(project.defaultBranch)).toEqual("main");
+      });
+    });
+  });
+
   it("sends a correctly-formatted POST request to api", () => {
     project
       .create({
