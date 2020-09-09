@@ -177,7 +177,7 @@
             placeholder="Where to create the repository"
             validation={$pathValidation}
             bind:path={newRepositoryPath}
-            on:chosen={() => nameInput.focus()} />
+            on:selected={() => nameInput.focus()} />
           <p
             style="margin-top: 1rem; color: var(--color-foreground-level-6);
             text-align: center">
