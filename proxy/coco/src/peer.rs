@@ -283,7 +283,6 @@ impl Api {
     ///   * there is no guarantee that any peer ever replies to the query, meaning that awaiting for
     ///     a reply might never terminate, requiring callers of this function to timeout on
     ///     `next()`.
-    #[warn(clippy::future_not_send)]
     pub async fn providers(
         &self,
         urn: RadUrn,
