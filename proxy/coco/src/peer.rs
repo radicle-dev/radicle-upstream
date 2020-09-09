@@ -754,7 +754,7 @@ mod test {
 
     /// Verify that asking the network for an unkown urn returns no providers.
     #[tokio::test]
-    async fn get_urn_providers_none() -> Result<(), Error> {
+    async fn get_urn_providers_is_none() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = config::default(key, tmp_dir.path())?;
