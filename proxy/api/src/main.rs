@@ -46,14 +46,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let paths = coco::Paths::try_from(paths_config)?;
 
-    let store_config = {
+    let store = {
         let store_path = if args.test {
             temp_dir.path().join("store")
         } else {
             let dirs = config::dirs();
             dirs.data_dir().join("store")
         };
-        kv::Config::new(store_path).flush_every_ms(100)
+
+        kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?
     };
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
@@ -64,7 +65,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let (peer, state) = {
-        let store = kv::Store::new(store_config.clone())?;
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
@@ -73,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let config =
             coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
-        coco::into_peer_state(config, signer.clone(), store).await?
+        coco::into_peer_state(config, signer.clone(), store.clone()).await?
     };
 
     if args.test {
@@ -88,7 +88,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = context::Ctx::from(context::Context {
         state,
         signer,
-        store: kv::Store::new(store_config)?,
+        store,
     });
 
     log::info!("starting coco peer");

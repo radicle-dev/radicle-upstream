@@ -1022,8 +1022,9 @@ dependencies = [
 
 [[package]]
 name = "kv"
-version = "0.21.1"
-source = "git+https://github.com/zshipko/rust-kv.git?rev=a98e1ace84b22ceaac276abf796633bd8e735500#a98e1ace84b22ceaac276abf796633bd8e735500"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c56bac60e13594bf7a8f12f7d592ece96ab30daa0fcaf533dfba2815838fc8e"
 dependencies = [
  "serde",
  "serde_json",
