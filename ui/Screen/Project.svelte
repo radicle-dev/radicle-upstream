@@ -1,9 +1,11 @@
 <script>
-  import { isDev } from "../../native/ipc.js";
+  import { isDev, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
+  import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
-  import { fetch, project as store } from "../src/project.ts";
+  import { checkout, fetch, project as store } from "../src/project.ts";
+  import * as screen from "../src/screen.ts";
 
   import {
     Header,
@@ -20,6 +22,7 @@
   import Revisions from "./Project/Revisions.svelte";
   import Commit from "./Project/Commit.svelte";
   import Commits from "./Project/Commits.svelte";
+  import CheckoutButton from "./Project/CheckoutButton.svelte";
 
   const routes = {
     "/projects/:id/": Source,
@@ -76,6 +79,31 @@
     ];
   }
 
+  const handleCheckout = async (event, project) => {
+    try {
+      screen.lock();
+      const path = await checkout(
+        project.id,
+        event.detail.checkoutDirectoryPath,
+        "PEER_ID_GOES_HERE",
+        "BRANCH_TO_CHECK_OUT_GOES_HERE"
+      );
+
+      notification.info(
+        `${project.metadata.name} checked out to ${path}`,
+        true,
+        "Open folder",
+        () => {
+          openPath(path);
+        }
+      );
+    } catch (error) {
+      notification.error(`Checkout failed: ${error.message}`, true);
+    } finally {
+      screen.unlock();
+    }
+  };
+
   fetch({ id: projectId });
 </script>
 
@@ -87,6 +115,11 @@
       style="position: fixed; top: 0;">
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems(project.id)} />
+      </div>
+      <div slot="right">
+        <CheckoutButton
+          on:checkout={ev => handleCheckout(ev, project)}
+          projectName={project.metadata.name} />
       </div>
       <div slot="top">
         <TrackToggle />

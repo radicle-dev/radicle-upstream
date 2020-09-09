@@ -3,12 +3,7 @@
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import { openPath } from "../../../native/ipc.js";
-
-  import { checkout } from "../../src/project.ts";
-  import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
-  import * as screen from "../../src/screen.ts";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
@@ -33,8 +28,6 @@
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
-
-  import CheckoutButton from "./CheckoutButton.svelte";
 
   const { id, metadata } = getContext("project");
 
@@ -79,31 +72,6 @@
         currentObjectPath
       )
     );
-  };
-
-  const handleCheckout = async event => {
-    try {
-      screen.lock();
-      const path = await checkout(
-        id,
-        event.detail.checkoutDirectoryPath,
-        "PEER_ID_GOES_HERE",
-        "BRANCH_TO_CHECK_OUT_GOES_HERE"
-      );
-
-      notification.info(
-        `${metadata.name} checked out to ${path}`,
-        true,
-        "Open folder",
-        () => {
-          openPath(path);
-        }
-      );
-    } catch (error) {
-      notification.error(`Checkout failed: ${error.message}`, true);
-    } finally {
-      screen.unlock();
-    }
   };
 
   // TODO(rudolfs): this functionality should be part of navigation/routing.
@@ -265,9 +233,6 @@
               <span class="stat typo-mono-bold">{project.stats.commits}</span>
             </div>
           </div>
-          <CheckoutButton
-            on:checkout={handleCheckout}
-            projectName={project.metadata.name} />
         </div>
       </div>
     </div>
