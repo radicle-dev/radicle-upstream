@@ -119,14 +119,14 @@ mod test {
     }
 
     #[tokio::test]
-    async fn get() -> Result<(), error::Error> {
+    async fn get() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let res = request().method("GET").path("/").reply(&api).await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let have: Value = serde_json::from_slice(res.body())?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(
@@ -151,7 +151,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn update_settings() -> Result<(), error::Error> {
+    async fn update_settings() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -169,7 +169,7 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         let res = request().method("GET").path("/").reply(&api).await;
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let have: Value = serde_json::from_slice(res.body())?;
         assert_eq!(
             have,
             json!({

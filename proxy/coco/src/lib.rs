@@ -20,8 +20,6 @@
     clippy::multiple_crate_versions
 )]
 
-use std::fmt;
-
 pub use librad::git::local::url::LocalUrl;
 pub use librad::hash::Hash;
 pub use librad::meta::project::Project;

@@ -334,7 +334,7 @@ mod test {
             let handle = "cloudhead";
             let id = identity::create(&state, &ctx.signer, handle)?;
 
-            session::set_identity(&ctx.store, id.clone())?;
+            session::set_identity(&ctx.store, id)?;
         };
 
         let project = coco::project::Create {

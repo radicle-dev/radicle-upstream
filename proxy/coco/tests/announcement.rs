@@ -26,16 +26,20 @@ async fn solo() -> Result<(), Box<dyn std::error::Error>> {
         .lock()
         .await
         .init_owner(&alice_signer, "alice")?;
-    alice_state.lock().await.init_project(
-        &alice_signer,
-        &alice,
-        &shia_le_pathbuf(alice_repo_path),
-    )?;
+
+    {
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            ally.init_project(&alice_signer, &alice, &shia_le_pathbuf(alice_repo_path))
+                .expect("unable to init project")
+        })
+        .await?;
+    }
 
     let announced = alice_events
         .into_stream()
         .filter_map(|res| match res.unwrap() {
-            coco::PeerEvent::Announced(updates) if updates == 1 => future::ready(Some(())),
+            coco::PeerEvent::Announced(updates) if updates.len() == 1 => future::ready(Some(())),
             _ => future::ready(None),
         })
         .map(|_| ());

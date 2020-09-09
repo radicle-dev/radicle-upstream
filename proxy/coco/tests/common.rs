@@ -31,6 +31,7 @@ pub async fn build_peer(
     Ok((peer, state, signer))
 }
 
+#[allow(dead_code)]
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
@@ -67,6 +68,7 @@ pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
     }
 }
 
+#[allow(dead_code)]
 pub async fn wait_connected(
     receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,

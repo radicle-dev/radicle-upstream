@@ -217,6 +217,11 @@ impl State {
         Ok(project_meta)
     }
 
+    /// Retrieves the [`librad::git::refs::Refs`] for the state owner.
+    ///
+    /// # Errors
+    ///
+    /// * if opening the storage fails
     pub fn list_owner_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
         let storage = self.api.storage().reopen()?;
         storage.rad_signed_refs(urn).map_err(Error::from)

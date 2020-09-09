@@ -77,9 +77,9 @@ where
 ///   * Failed to get the stats of the project.
 pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, error::Error> {
     let project = state.get_project(project_urn, None)?;
-    let stats = state.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
+    let project_stats = state.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
-    Ok((project, stats).into())
+    Ok((project, project_stats).into())
 }
 
 /// Returns a list of `Project`s for your peer.
@@ -96,8 +96,8 @@ pub fn list_projects(state: &coco::State) -> Result<Vec<Project>, error::Error> 
         .map(|project| {
             state
                 .with_browser(&project.urn(), |browser| {
-                    let stats = browser.get_stats().map_err(coco::Error::from)?;
-                    Ok((project, stats).into())
+                    let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                    Ok((project, project_stats).into())
                 })
                 .map_err(error::Error::from)
         })

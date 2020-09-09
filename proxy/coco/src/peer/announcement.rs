@@ -17,21 +17,28 @@ const BUCKET_NAME: &str = "announcements";
 /// Key for the single value used as cache.
 const KEY_NAME: &str = "latest";
 
+/// Announcement errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// Stop-gap until we get rid of crate level errors.
     // TODO(xla): Remove once we transitioned to per module errors.
     #[error(transparent)]
     Crate(#[from] crate::error::Error),
 
+    /// Failures from [`kv`].
     #[error(transparent)]
     Kv(#[from] kv::Error),
 
+    /// Failures parsing.
     #[error(transparent)]
     Parse(#[from] ParseError),
 }
 
 /// An update and all the required information that can be announced on the network.
 pub type Announcement = (RadUrn, Oid);
+
+/// Unique list of [`Announcement`]s.
+pub type Updates = HashSet<Announcement>;
 
 /// Announces the list of given `updates` with the [`librad::net::protocol`].
 ///
@@ -58,9 +65,9 @@ pub async fn announce(state: Lock, updates: impl Iterator<Item = &Announcement> 
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build(state: Lock) -> Result<HashSet<Announcement>, Error> {
+pub async fn build(state: Lock) -> Result<Updates, Error> {
     let state = state.lock().await;
-    let mut list: HashSet<Announcement> = HashSet::new();
+    let mut list: Updates = HashSet::new();
 
     match state.list_projects() {
         // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
@@ -91,10 +98,7 @@ pub async fn build(state: Lock) -> Result<HashSet<Announcement>, Error> {
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
 #[allow(clippy::implicit_hasher)]
 #[must_use]
-pub fn diff<'a>(
-    old_state: &'a HashSet<Announcement>,
-    new_state: &'a HashSet<Announcement>,
-) -> HashSet<Announcement> {
+pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
     new_state.difference(old_state).cloned().collect()
 }
 
@@ -104,9 +108,8 @@ pub fn diff<'a>(
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
-    let bucket =
-        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+pub fn load(store: &kv::Store) -> Result<Updates, Error> {
+    let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
         .map_or(HashSet::new(), kv::Json::to_inner);
@@ -121,9 +124,8 @@ pub fn load(store: &kv::Store) -> Result<HashSet<Announcement>, Error> {
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save(store: &kv::Store, updates: HashSet<Announcement>) -> Result<(), Error> {
-    let bucket =
-        store.bucket::<&'static str, kv::Json<HashSet<Announcement>>>(Some(BUCKET_NAME))?;
+pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
+    let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
 

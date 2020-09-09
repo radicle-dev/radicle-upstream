@@ -1,5 +1,3 @@
-#![feature(async_closure)]
-
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 

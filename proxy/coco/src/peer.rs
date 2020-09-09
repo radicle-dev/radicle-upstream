@@ -15,26 +15,35 @@ use crate::state::Lock;
 mod announcement;
 pub use announcement::Announcement;
 
+/// Upper bound of messages stored in receiver channels.
+const RECEIVER_CAPACITY: usize = 128;
+
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("{0:?}")]
-    Broadcast(broadcast::SendError<Event>),
-
+    /// Failed to build and announce state updates.
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
+
+    /// Failed to distribute new events to subscribers.
+    #[error("{0:?}")]
+    Broadcast(broadcast::SendError<Event>),
 }
 
+/// Significant events that occur during [`Peer`] lifetime.
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone)]
 pub enum Event {
-    Announced(usize),
+    /// Gossiped a list of updates of new heads in our [`crate::state::State`]`.
+    Announced(announcement::Updates),
+    /// Received a low-level protocol event.
     Protocol(protocol::ProtocolEvent<Gossip>),
 }
 
 impl fmt::Debug for Event {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Announced(updates) => write!(f, "announcements = {}", updates),
+            Self::Announced(updates) => write!(f, "announcements = {}", updates.len()),
             Self::Protocol(event) => write!(f, "protocol = {:?}", event),
         }
     }
@@ -42,11 +51,13 @@ impl fmt::Debug for Event {
 
 /// Local peer to participate in the radicle code-collaboration network.
 pub struct Peer {
-    /// Peer [`RunLoop`] to advance the network protocol.
+    /// Peer [`librad::net::peer::RunLoop`] to advance the network protocol.
     run_loop: RunLoop,
-    /// Underlying state access.
+    /// Underlying state that is passed to subroutines.
     state: Lock,
+    /// On-disk storage  for caching.
     store: kv::Store,
+    /// Handle used to broadcast [`Event`].
     subscriber: broadcast::Sender<Event>,
 }
 
@@ -54,7 +65,7 @@ impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
     pub fn new(run_loop: RunLoop, state: Lock, store: kv::Store) -> Self {
-        let (subscriber, _receiver) = broadcast::channel(128);
+        let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         Self {
             run_loop,
             state,
@@ -63,6 +74,12 @@ impl Peer {
         }
     }
 
+    /// Subscribe to peer events.
+    ///
+    /// NB(xla): A caller must call this before run the loop is started, as that consumes the peer.
+    /// There is also a configured [`RECEIVER_CAPACITY`], which prevents from unbounded queues
+    /// filling up.
+    #[must_use = "eat your events"]
     pub fn subscribe(&self) -> broadcast::Receiver<Event> {
         self.subscriber.subscribe()
     }
@@ -119,7 +136,8 @@ impl Peer {
         Ok(())
     }
 
-    async fn announce(state: Lock, store: &kv::Store) -> Result<usize, Error> {
+    /// Announcement subroutine.
+    async fn announce(state: Lock, store: &kv::Store) -> Result<announcement::Updates, Error> {
         let old = announcement::load(store)?;
         let new = announcement::build(state.clone()).await?;
         let updates = announcement::diff(&old, &new);
@@ -127,9 +145,9 @@ impl Peer {
         announcement::announce(state, updates.iter()).await;
 
         if !updates.is_empty() {
-            announcement::save(&store, updates.clone()).map_err(Error::from)?;
+            announcement::save(store, updates.clone()).map_err(Error::from)?;
         }
 
-        Ok(updates.len())
+        Ok(updates)
     }
 }
