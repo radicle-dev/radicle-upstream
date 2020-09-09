@@ -26,7 +26,7 @@
   } from "../../src/source.ts";
 
   import { Icon } from "../../DesignSystem/Primitive";
-  import { EmptyState, Remote, Urn } from "../../DesignSystem/Component";
+  import { EmptyState, Remote } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
@@ -41,7 +41,6 @@
   const maintainers = metadata.maintainers;
 
   let scrollY = 0;
-  let headerHeight;
   let currentPeerId;
   let currentRevision;
   let currentObjectType;
@@ -136,20 +135,11 @@
 </script>
 
 <style>
-  .header-wrapper {
-    background-color: var(--color-foreground-level-1);
+  .wrapper {
+    position: relative;
+    top: var(--bigheader-height);
   }
-  .header {
-    padding: var(--content-padding);
-  }
-  .project-id {
-    color: var(--color-foreground-level-5);
-    margin-top: 0.5rem;
-    display: inline-block;
-  }
-  .description {
-    margin: 0.5rem 0;
-  }
+
   .center-content {
     margin: 0 auto;
     max-width: var(--content-max-width);
@@ -158,7 +148,7 @@
 
   .repo-header-wrapper {
     position: sticky;
-    top: var(--topbar-height);
+    top: var(--bigheader-height);
     background-color: var(--color-background);
   }
 
@@ -194,12 +184,14 @@
     justify-content: space-evenly;
     cursor: pointer;
   }
+
   .repo-stat-item {
     display: flex;
     color: var(--color-foreground-level-6);
     padding: 0.5rem 1rem;
     margin-right: 1rem;
   }
+
   .stat {
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
@@ -242,23 +234,8 @@
 <svelte:window bind:scrollY />
 
 <Remote store={projectStore} let:data={project}>
-  <div class="header-wrapper">
-    <div bind:clientHeight={headerHeight} class="header center-content">
-      <h2>{project.metadata.name}</h2>
-      <div class="description">
-        <p>{project.metadata.description}</p>
-      </div>
-      <div class="project-id">
-        <Urn
-          urn={project.shareableEntityIdentifier}
-          showOnHover
-          truncate
-          notificationText="The project ID was copied to your clipboard" />
-      </div>
-    </div>
-  </div>
   <div class="wrapper">
-    <div class="repo-header-wrapper" class:elevation={scrollY > headerHeight}>
+    <div class="repo-header-wrapper" class:elevation={scrollY > 0}>
       <div class="repo-header center-content">
         <!-- Revision selector -->
         <Remote store={revisionsStore} let:data={revisions}>
@@ -286,18 +263,6 @@
                 </a>
               </p>
               <span class="stat typo-mono-bold">{project.stats.commits}</span>
-            </div>
-            <div class="repo-stat-item">
-              <Icon.Branch />
-              <p style="margin: 0 8px;">Branches</p>
-              <span class="stat typo-mono-bold">{project.stats.branches}</span>
-            </div>
-            <div class="repo-stat-item">
-              <Icon.User />
-              <p style="margin: 0 8px;">Contributors</p>
-              <span class="stat typo-mono-bold">
-                {project.stats.contributors}
-              </span>
             </div>
           </div>
           <CheckoutButton

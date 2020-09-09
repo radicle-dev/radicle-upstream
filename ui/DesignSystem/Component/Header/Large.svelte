@@ -4,7 +4,7 @@
 
   export let style = null;
   export let entity = null;
-  export let variant = null; // profile | org
+  export let variant = null; // profile | project | org
 
   let name;
   if (variant === "profile") {
@@ -15,6 +15,8 @@
     }
   } else if (variant === "org") {
     name = entity.id;
+  } else if (variant === "project") {
+    name = entity.metadata.name;
   }
 </script>
 
@@ -51,6 +53,11 @@
     align-self: center;
   }
 
+  .description {
+    margin-top: 1rem;
+    color: var(--color-foreground-level-6);
+  }
+
   .user {
     display: flex;
     align-items: center;
@@ -60,6 +67,26 @@
     display: flex;
     align-items: center;
     padding-top: 4px;
+  }
+
+  .project-stats {
+    height: 2.5rem;
+    margin: 0.5rem 0;
+    display: flex;
+  }
+
+  .project-stat-item {
+    display: flex;
+    color: var(--color-foreground-level-6);
+    padding: 0.5rem 0;
+    margin-right: 1rem;
+  }
+
+  .stat {
+    background-color: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-6);
+    padding: 0 0.5rem;
+    border-radius: 0.75rem;
   }
 
   .action-bar {
@@ -84,11 +111,13 @@
   <div class="banner">
     <div class="banner-content">
       <div class="left">
-        <Avatar
-          style="margin-right: 32px"
-          size="huge"
-          variant={variant === 'profile' ? 'circle' : 'square'}
-          avatarFallback={entity.avatarFallback} />
+        {#if variant !== 'project'}
+          <Avatar
+            style="margin-right: 32px"
+            size="huge"
+            variant={variant === 'profile' ? 'circle' : 'square'}
+            avatarFallback={entity.avatarFallback} />
+        {/if}
 
         <div class="metadata">
           <div class="user">
@@ -109,6 +138,23 @@
               showCopyOnlyOnHover
               notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
           </div>
+          {#if variant === 'project' && entity.metadata.description}
+            <p class="description">{entity.metadata.description}</p>
+            <div class="project-stats">
+              <div class="project-stat-item">
+                <Icon.Branch />
+                <p style="margin: 0 8px;">Branches</p>
+                <span class="stat typo-mono-bold">{entity.stats.branches}</span>
+              </div>
+              <div class="project-stat-item">
+                <Icon.User />
+                <p style="margin: 0 8px;">Contributors</p>
+                <span class="stat typo-mono-bold">
+                  {entity.stats.contributors}
+                </span>
+              </div>
+            </div>
+          {/if}
         </div>
       </div>
       <div class="banner-action">

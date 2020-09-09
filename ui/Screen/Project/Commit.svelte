@@ -30,6 +30,8 @@
     margin: 0 auto;
     padding: var(--content-padding);
     min-width: var(--content-min-width);
+    position: relative;
+    top: var(--bigheader-height);
   }
 
   .content {

@@ -20,6 +20,7 @@
     min-width: var(--content-min-width);
     padding: 2rem var(--content-padding) 0;
     position: relative;
+    top: var(--bigheader-height);
   }
   .commit-group header {
     padding-bottom: 0.75rem;
