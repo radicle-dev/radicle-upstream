@@ -553,7 +553,7 @@ mod test {
     use std::path::PathBuf;
     use std::process::Command;
     use std::time::Duration;
-    
+
     use futures::stream::StreamExt;
     use tokio::time::timeout;
 
