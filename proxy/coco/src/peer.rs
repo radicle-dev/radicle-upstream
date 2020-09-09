@@ -549,13 +549,13 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
-
-    use futures::stream::StreamExt;
     use std::convert::TryInto;
     use std::env;
     use std::path::PathBuf;
     use std::process::Command;
     use std::time::Duration;
+    
+    use futures::stream::StreamExt;
     use tokio::time::timeout;
 
     use librad::hash::Hash;
