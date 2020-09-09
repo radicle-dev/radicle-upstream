@@ -115,14 +115,15 @@ impl Peer {
     }
 
     async fn announce(state: Lock, store: &kv::Store) -> Result<usize, Error> {
-        let updates = {
-            let old = announcement::load(store)?;
-            let new = announcement::build(state.clone()).await?;
-            announcement::diff(&old, &new)
-        };
+        let old = announcement::load(store)?;
+        let new = announcement::build(state.clone()).await?;
+        let updates = announcement::diff(&old, &new);
 
         announcement::announce(state, updates.iter()).await;
-        announcement::save(&store, updates.clone()).map_err(Error::from)?;
+
+        if !updates.is_empty() {
+            announcement::save(&store, updates.clone()).map_err(Error::from)?;
+        }
 
         Ok(updates.len())
     }

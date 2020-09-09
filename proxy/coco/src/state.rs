@@ -217,15 +217,20 @@ impl State {
         Ok(project_meta)
     }
 
+    pub fn list_owner_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
+        let storage = self.api.storage().reopen()?;
+        storage.rad_signed_refs(urn).map_err(Error::from)
+    }
+
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
     ///
     /// # Errors
     ///
     /// * if opening the storage fails
-    pub fn list_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
+    pub fn list_peer_project_refs(&self, urn: &RadUrn, peer_id: PeerId) -> Result<Refs, Error> {
         let storage = self.api.storage().reopen()?;
         storage
-            .rad_signed_refs_of(urn, storage.peer_id().clone())
+            .rad_signed_refs_of(urn, peer_id)
             .map_err(Error::from)
     }
 

@@ -69,7 +69,7 @@ pub async fn build(state: Lock) -> Result<HashSet<Announcement>, Error> {
         Err(err) => Err(err.into()),
         Ok(projects) => {
             for project in &projects {
-                let refs = state.list_project_refs(&project.urn())?;
+                let refs = state.list_owner_project_refs(&project.urn())?;
 
                 for (head, hash) in &refs.heads {
                     list.insert((
