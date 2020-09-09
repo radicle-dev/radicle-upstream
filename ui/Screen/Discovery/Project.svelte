@@ -92,7 +92,6 @@
     {#if showTrackButton}
       <TrackToggle style="z-index: 10;" tracking={project.tracked} />
     {/if}
-
   </div>
   <div class="shareable-entity-identifier">
     <Urn

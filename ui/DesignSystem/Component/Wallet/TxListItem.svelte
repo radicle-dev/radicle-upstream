@@ -144,6 +144,5 @@
         rad={summary.total.rad}
         usd="{summary.total.usd}}" />
     {/if}
-
   </div>
 </div>

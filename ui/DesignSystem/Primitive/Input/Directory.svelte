@@ -28,7 +28,7 @@
     {validation}
     value={path}
     disabled
-    style="margin-right: 16px; flex: 1" />
+    style="margin-right: 0.5rem; flex: 1" />
 
   <Button
     dataCy="choose-path-button"

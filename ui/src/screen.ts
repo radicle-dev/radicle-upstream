@@ -5,3 +5,7 @@ export const lock = (): void => {
 export const unlock = (): void => {
   document.documentElement.classList.remove("lock-screen");
 };
+
+export const isLocked = (): boolean => {
+  return document.documentElement.classList.contains("lock-screen");
+};

@@ -6567,12 +6567,7 @@ prepend-http@^2.0.0:
   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
   integrity sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
 
-prettier-plugin-svelte@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/prettier-plugin-svelte/-/prettier-plugin-svelte-1.1.0.tgz#e6ec282d8457598b0c02164083b11ad8cb8ab304"
-  integrity sha512-wmIggG/ryV0wcmE9D5p+k5TwKDpS2SGKJpF6IV1aYHK7dkBJD+di1w47Ci00DRsI4RrXZRC2Ef37DSyrTb6Zqg==
-
-prettier-plugin-svelte@~1.2.0:
+prettier-plugin-svelte@^1.2.0, prettier-plugin-svelte@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/prettier-plugin-svelte/-/prettier-plugin-svelte-1.2.0.tgz#64088163656470e7d5c83106aea804a1c2c71efb"
   integrity sha512-D6Yh8WIk/8BDtJ6BN5vFMylCcdbiQbB2px5UPIiBCp1MbEqpEbVfWyOJPKnVc0xkvlr2CoCRXJcNbHtnh0JM9w==

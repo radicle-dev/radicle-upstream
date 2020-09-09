@@ -4,4 +4,5 @@ export enum Variant {
   Keyboard = "KEYBOARD",
   Telescope = "TELESCOPE",
   Tent = "TENT",
+  Star = "STAR",
 }
