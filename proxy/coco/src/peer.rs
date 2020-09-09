@@ -5,6 +5,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use futures::future::BoxFuture;
 use futures::stream::StreamExt;
 
 use librad::git::local::{transport, url::LocalUrl};
@@ -101,7 +102,9 @@ impl Api {
         api.paths().git_dir().join("")
     }
 
-    pub fn into_seed(&self) -> Seed {
+    /// Get the [Seed] representation for this [Api] instance.
+    #[must_use]
+    pub fn seed(&self) -> Seed {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         Seed {
             peer_id: api.peer_id().clone(),
@@ -273,18 +276,16 @@ impl Api {
 
     /// Query the network for providers of the given [`RadUrn`].
     ///
-    /// This is a convenience for the special case of issuing a gossip `Want`
-    /// message where we don't know a specific revision, nor an origin peer.
-    /// Consequently, any `Have` message with a matching `urn` should do for
-    /// attempting a clone, even if it isn't a direct response to our query.
-    ///
     /// Note that there is no guarantee that a peer who claims to provide the
     /// [`RadUrn`] actually has it, nor that it is reachable using any of
-    /// the addresses contained in [`PeerInfo`]. The implementation may~F
-    /// change in the future to answer the query from a local cache first.
-    pub async fn providers(&self, urn: RadUrn) -> impl futures::Stream<Item = PeerInfo<IpAddr>> {
+    /// the addresses contained in [`PeerInfo`].
+    #[warn(clippy::future_not_send)]
+    pub async fn providers(
+        &self,
+        urn: RadUrn,
+    ) -> BoxFuture<'static, impl futures::Stream<Item = PeerInfo<IpAddr>>> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
-        api.providers(urn).await
+        Box::pin(api.providers(urn))
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -764,7 +765,7 @@ mod test {
 
         let res = timeout(
             Duration::from_secs(5),
-            api.providers(unkown_urn).await.next(),
+            api.providers(unkown_urn).await.await.next(),
         )
         .await;
 
@@ -800,7 +801,7 @@ mod test {
             config::Paths::FromRoot(tmp_dir.path().to_path_buf()).try_into()?,
             key,
             *config::LOCALHOST_ANY,
-            vec![alice.into_seed()],
+            vec![alice.seed()],
         );
         let bob = Api::new(config).await?;
 
@@ -817,7 +818,7 @@ mod test {
         // Have peer 2 ask the network for providers for `target_urn`
         let res = timeout(
             Duration::from_secs(3),
-            bob.providers(target_urn).await.next(),
+            bob.providers(target_urn).await.await.next(),
         )
         .await;
 
