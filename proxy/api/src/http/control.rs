@@ -1,8 +1,7 @@
 //! Endpoints to manipulate app state in test mode.
 
 use serde::{Deserialize, Serialize};
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::context;
 
@@ -35,15 +34,11 @@ fn nuke_coco_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use warp::http::StatusCode;
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use coco::keystore;
-    use coco::signer;
+    use coco::{keystore, signer};
 
-    use crate::context;
-    use crate::error;
-    use crate::project;
+    use crate::{context, error, project};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
@@ -120,8 +115,7 @@ mod handler {
     mod test {
         use pretty_assertions::assert_ne;
 
-        use crate::context;
-        use crate::error;
+        use crate::{context, error};
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
@@ -173,12 +167,9 @@ pub struct CreateInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
-    use crate::context;
-    use crate::error;
-    use crate::http;
+    use crate::{context, error, http};
 
     // TODO(xla): This can't hold true anymore, given that we nuke the owner. Which is required in
     // order to register a project. Should we rework the test? How do we make sure an owner is

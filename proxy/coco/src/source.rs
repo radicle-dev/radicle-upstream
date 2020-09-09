@@ -1,24 +1,19 @@
 //! Source code related functionality.
 
-use std::convert::TryFrom;
-use std::fmt;
-use std::path;
-use std::str::FromStr;
+use std::{convert::TryFrom, fmt, path, str::FromStr};
 
 use nonempty::NonEmpty;
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
-use syntect::easy::HighlightLines;
-use syntect::highlighting::ThemeSet;
-use syntect::parsing::SyntaxSet;
-use syntect::util::LinesWithEndings;
+use serde::{ser::SerializeStruct as _, Deserialize, Serialize, Serializer};
+use syntect::{
+    easy::HighlightLines, highlighting::ThemeSet, parsing::SyntaxSet, util::LinesWithEndings,
+};
 
-use radicle_surf::vcs::git::git2;
-use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
-use radicle_surf::{diff, file_system};
+use radicle_surf::{
+    diff, file_system,
+    vcs::git::{self, git2, BranchType, Browser, Rev},
+};
 
-use crate::error::Error;
-use crate::oid::Oid;
+use crate::{error::Error, oid::Oid};
 
 lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
@@ -825,11 +820,7 @@ mod tests {
 
     use librad::keys::SecretKey;
 
-    use crate::config;
-    use crate::control;
-    use crate::oid;
-    use crate::peer;
-    use crate::signer;
+    use crate::{config, control, oid, peer, signer};
 
     use super::Error;
 

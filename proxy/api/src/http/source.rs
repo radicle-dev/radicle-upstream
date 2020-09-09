@@ -1,14 +1,11 @@
 //! Endpoints and serialisation for source code browsing.
 
 use serde::{Deserialize, Serialize};
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use radicle_surf::vcs::git;
 
-use crate::context;
-use crate::http;
-use crate::identity;
+use crate::{context, http, identity};
 
 /// Combination of all source filters.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -110,17 +107,13 @@ fn tree_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = R
 
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::path::Tail;
-    use warp::{reply, Rejection, Reply};
+    use warp::{path::Tail, reply, Rejection, Reply};
 
     use radicle_surf::vcs::git;
 
     use coco::oid;
 
-    use crate::context;
-    use crate::error;
-    use crate::session;
-    use crate::session::settings;
+    use crate::{context, error, session, session::settings};
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
@@ -370,21 +363,15 @@ impl<S> From<coco::Revisions<coco::PeerId, coco::MetaUser<S>>> for Revisions {
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::convert::TryFrom;
-    use std::env;
+    use std::{convert::TryFrom, env};
 
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
     use radicle_surf::vcs::git;
 
-    use crate::context;
-    use crate::error;
-    use crate::http;
-    use crate::identity;
-    use crate::session;
+    use crate::{context, error, http, identity, session};
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {

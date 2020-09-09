@@ -1,33 +1,36 @@
 //! Utility to work with the peer api of librad.
 
-use std::convert::TryFrom;
-use std::net::SocketAddr;
-use std::path::{self, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::{
+    convert::TryFrom,
+    net::SocketAddr,
+    path::{self, PathBuf},
+    sync::{Arc, Mutex},
+};
 
 use futures::stream::StreamExt;
 
-use librad::git::local::{transport, url::LocalUrl};
-use librad::git::refs::Refs;
-use librad::git::storage;
-use librad::keys;
-use librad::meta::entity;
-use librad::meta::project as librad_project;
-use librad::meta::user;
-use librad::net::discovery;
-use librad::net::peer::{Gossip, PeerApi, PeerConfig, PeerStorage};
-use librad::net::protocol::Protocol;
-use librad::paths;
-use librad::peer::PeerId;
-use librad::signer::SomeSigner;
-use librad::uri::{RadUrl, RadUrn};
+use librad::{
+    git::{
+        local::{transport, url::LocalUrl},
+        refs::Refs,
+        storage,
+    },
+    keys,
+    meta::{entity, project as librad_project, user},
+    net::{
+        discovery,
+        peer::{Gossip, PeerApi, PeerConfig, PeerStorage},
+        protocol::Protocol,
+    },
+    paths,
+    peer::PeerId,
+    signer::SomeSigner,
+    uri::{RadUrl, RadUrn},
+};
 use radicle_keystore::sign::Signer as _;
-use radicle_surf::vcs::git;
-use radicle_surf::vcs::git::git2;
+use radicle_surf::vcs::{git, git::git2};
 
-use crate::error::Error;
-use crate::project;
-use crate::signer;
+use crate::{error::Error, project, signer};
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -518,18 +521,12 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
-    use std::env;
-    use std::path::PathBuf;
-    use std::process::Command;
+    use std::{env, path::PathBuf, process::Command};
 
-    use librad::keys::SecretKey;
-    use librad::uri;
+    use librad::{keys::SecretKey, uri};
     use radicle_surf::vcs::git::git2;
 
-    use crate::config;
-    use crate::control;
-    use crate::project;
-    use crate::signer;
+    use crate::{config, control, project, signer};
 
     use super::{Api, Error};
 

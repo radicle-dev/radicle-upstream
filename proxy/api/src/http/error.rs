@@ -2,10 +2,8 @@
 //! for API consumers to act on.
 
 use serde::Serialize;
-use std::convert::Infallible;
-use std::fmt;
-use warp::http::StatusCode;
-use warp::{reject, reply, Rejection, Reply};
+use std::{convert::Infallible, fmt};
+use warp::{http::StatusCode, reject, reply, Rejection, Reply};
 
 use crate::error;
 
@@ -160,8 +158,7 @@ mod tests {
     use futures::stream::TryStreamExt;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use warp::reply::Reply as _;
-    use warp::Rejection;
+    use warp::{reply::Reply as _, Rejection};
 
     #[tokio::test]
     async fn recover_custom() {

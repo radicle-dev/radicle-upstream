@@ -1,10 +1,8 @@
 //! Endpoints and serialisation for [`session::Session`] related types.
 
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use crate::context;
-use crate::http;
+use crate::{context, http};
 
 /// Combination of all session filters.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -46,11 +44,9 @@ fn update_settings_filter(
 
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
-    use warp::http::StatusCode;
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::context;
-    use crate::session;
+    use crate::{context, session};
 
     /// Clear the current [`session::Session`].
     pub async fn delete(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
@@ -86,12 +82,9 @@ mod handler {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
-    use crate::context;
-    use crate::error;
-    use crate::session;
+    use crate::{context, error, session};
 
     #[tokio::test]
     async fn delete() -> Result<(), error::Error> {

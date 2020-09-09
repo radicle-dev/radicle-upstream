@@ -1,8 +1,7 @@
 //! Endpoints for Avatar.
 
 use serde::Deserialize;
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Reply};
 
 /// `GET /<id>?usage=<usage>`
 pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
@@ -16,11 +15,9 @@ pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
 
 /// Avatar handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::http::StatusCode;
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::avatar;
-    use crate::http::error;
+    use crate::{avatar, http::error};
 
     /// Get the avatar for the given `id`.
     #[allow(clippy::wildcard_enum_match_arm)]
@@ -61,8 +58,7 @@ pub struct GetAvatarQuery {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
     #[tokio::test]
     async fn get() {

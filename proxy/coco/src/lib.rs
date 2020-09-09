@@ -19,18 +19,21 @@
     clippy::multiple_crate_versions
 )]
 
-pub use librad::git::local::url::LocalUrl;
-pub use librad::hash::Hash;
-pub use librad::meta::project::Project;
-pub use librad::meta::user::User as MetaUser;
-pub use librad::paths::Paths;
-pub use librad::peer::PeerId;
-pub use librad::uri::{self, RadUrn as Urn};
+pub use librad::{
+    git::local::url::LocalUrl,
+    hash::Hash,
+    meta::{project::Project, user::User as MetaUser},
+    paths::Paths,
+    peer::PeerId,
+    uri::{self, RadUrn as Urn},
+};
 
 pub use radicle_git_helpers::remote_helper;
 
-pub use radicle_surf::diff::{Diff, FileDiff};
-pub use radicle_surf::vcs::git::Stats;
+pub use radicle_surf::{
+    diff::{Diff, FileDiff},
+    vcs::git::Stats,
+};
 
 pub mod announcement;
 pub mod config;
