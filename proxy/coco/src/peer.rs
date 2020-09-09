@@ -762,20 +762,21 @@ mod test {
                 .map_err(Error::from)?,
         };
 
+        let res = timeout(
+            Duration::from_secs(5),
+            api.providers(unkown_urn).await.next(),
+        )
+        .await;
+
         assert!(
-            timeout(
-                Duration::from_millis(10),
-                api.providers(unkown_urn).await.next()
-            )
-            .await
-            .is_err(),
-            "Didn't expect any peer to have this urn"
+            res.is_err(),
+            "Should have timed out without obtaining any provider",
         );
 
         Ok(())
     }
 
-    /// Verify that asking the network for a urn owned by another peer returns said peer.
+    /// Verify that asking the network for a URN owned by a seed peer returns said peer.
     #[tokio::test]
     #[allow(clippy::unwrap_used)]
     async fn get_urn_providers_works() -> Result<(), Error> {
@@ -787,14 +788,9 @@ mod test {
         let signer = signer::BoxedSigner::from(signer::SomeSigner {
             signer: key.clone(),
         });
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let alice = Api::new(config).await?;
-
-        // Init a project
-        let project = radicle_project(repo_path.clone());
-
-        let user = alice.init_owner(&signer, "cloudhead")?;
-        let created_project = alice.init_project(&signer, &user, &project)?;
+        let alice_peer_id = alice.peer_id();
 
         // Peer #2
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
@@ -808,20 +804,30 @@ mod test {
         );
         let bob = Api::new(config).await?;
 
+        // Create the targeted project in peer 1
+        let target_urn = tokio::task::spawn_blocking(move || {
+            let project = radicle_project(repo_path.clone());
+            let user = alice.init_owner(&signer, "cloudhead").unwrap();
+            let created_project = alice.init_project(&signer, &user, &project).unwrap();
+            created_project.urn()
+        })
+        .await
+        .unwrap();
+
+        // Have peer 2 ask the network for providers for `target_urn`
         let res = timeout(
-            Duration::from_millis(10000),
-            bob.providers(created_project.urn()).await.next(),
+            Duration::from_secs(3),
+            bob.providers(target_urn).await.next(),
         )
         .await;
 
         match res {
             Ok(Some(peer_info)) => assert_eq!(
-                peer_info.peer_id,
-                alice.peer_id(),
-                "Expected it to be the local peer"
+                peer_info.peer_id, alice_peer_id,
+                "Got an unexpected peer id as provider",
             ),
             Ok(None) => {
-                panic!("Expected to have obtained the local peer, found none");
+                panic!("Expected to have obtained the peer1 but got None instead");
             },
             Err(e) => {
                 panic!(format!("Didn't find any peer before the timeout: {}", e));
