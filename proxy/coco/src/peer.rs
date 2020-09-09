@@ -1,11 +1,11 @@
 //! Utility to work with the peer api of librad.
 
 use std::convert::TryFrom;
+use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use futures::future::BoxFuture;
 use futures::stream::StreamExt;
 
 use librad::git::local::{transport, url::LocalUrl};
@@ -283,12 +283,12 @@ impl Api {
     ///   * there is no guarantee that any peer ever replies to the query, meaning that awaiting for
     ///     a reply might never terminate, requiring callers of this function to timeout on
     ///     `next()`.
-    pub async fn providers(
+    pub fn providers(
         &self,
         urn: RadUrn,
-    ) -> BoxFuture<'static, impl futures::Stream<Item = PeerInfo<IpAddr>>> {
+    ) -> impl Future<Output = impl futures::Stream<Item = PeerInfo<IpAddr>>> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
-        Box::pin(api.providers(urn))
+        api.providers(urn)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -768,7 +768,7 @@ mod test {
 
         let res = timeout(
             Duration::from_secs(5),
-            api.providers(unkown_urn).await.await.next(),
+            api.providers(unkown_urn).await.next(),
         )
         .await;
 
@@ -821,7 +821,7 @@ mod test {
         // Have peer 2 ask the network for providers for `target_urn`
         let res = timeout(
             Duration::from_secs(3),
-            bob.providers(target_urn).await.await.next(),
+            bob.providers(target_urn).await.next(),
         )
         .await;
 
