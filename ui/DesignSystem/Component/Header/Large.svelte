@@ -138,9 +138,11 @@
               showCopyOnlyOnHover
               notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
           </div>
-          {#if variant === 'project' && entity.metadata.description}
-            <p class="description">{entity.metadata.description}</p>
-            <div class="project-stats">
+          {#if variant === 'project'}
+            {#if entity.metadata.description}
+              <p class="description">{entity.metadata.description}</p>
+            {/if}
+            <div class="project-stats" data-cy="project-stats">
               <div class="project-stat-item">
                 <Icon.Branch />
                 <p style="margin: 0 8px;">Branches</p>

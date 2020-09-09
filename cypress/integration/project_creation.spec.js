@@ -200,9 +200,7 @@ context("project creation", () => {
 
         cy.pick("create-project-button").click();
 
-        cy.pick("project-screen", "topbar", "project-avatar").contains(
-          "new-fancy-project"
-        );
+        cy.pick("project-screen", "header").contains("new-fancy-project");
 
         cy.pick("notification").contains(
           "Project new-fancy-project.xyz successfully created"
@@ -236,11 +234,9 @@ context("project creation", () => {
         cy.pick("description").type("Best project");
 
         cy.pick("create-project-button").click();
-        cy.pick("project-screen", "topbar", "project-avatar").contains(
-          "git-platinum-copy"
-        );
+        cy.pick("project-screen", "header").contains("git-platinum-copy");
 
-        cy.pick("project-screen").contains("Best project");
+        cy.pick("project-screen", "header").contains("Best project");
 
         cy.pick("notification").contains(
           "Project git-platinum-copy successfully created"

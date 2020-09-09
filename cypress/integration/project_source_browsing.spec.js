@@ -16,8 +16,8 @@ beforeEach(() => {
 context("repository stats", () => {
   it("shows the correct numbers", () => {
     cy.pick("repo-stats").contains("Commits 14");
-    cy.pick("repo-stats").contains("Branches 2");
-    cy.pick("repo-stats").contains("Contributors 4");
+    cy.pick("header", "project-stats").contains("Branches 2");
+    cy.pick("header", "project-stats").contains("Contributors 4");
   });
 });
 
@@ -168,7 +168,7 @@ context("source code browsing", () => {
           cy.pick("project-screen", "file-source").contains(
             "platinum / .i-too-am-hidden"
           );
-          cy.pick("topbar", "project-avatar").contains("platinum").click();
+          cy.pick("horizontal-menu", "Source").click();
           cy.pick("project-screen", "file-source").contains("README.md");
 
           // Switching between different revisions shows the correct README
@@ -305,8 +305,8 @@ context("source code browsing", () => {
       });
     });
 
-    it("doesn't interfere with the top-bar menu item active state", () => {
-      cy.pick("topbar", "horizontal-menu", "Source")
+    it("doesn't interfere with the horizontal menu item active state", () => {
+      cy.pick("horizontal-menu", "Source")
         .get("p")
         .should("have.class", "active");
 
@@ -316,13 +316,13 @@ context("source code browsing", () => {
         cy.contains("arrows.txt").should("have.class", "active");
       });
 
-      cy.pick("topbar", "horizontal-menu", "Source")
+      cy.pick("horizontal-menu", "Source")
         .get("p")
         .should("have.class", "active");
 
       cy.pick("file-source", "file-header").contains("platinum").click();
 
-      cy.pick("topbar", "horizontal-menu", "Source")
+      cy.pick("horizontal-menu", "Source")
         .get("p")
         .should("have.class", "active");
     });
