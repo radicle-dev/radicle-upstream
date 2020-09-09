@@ -92,7 +92,7 @@ fn get(store: &kv::Store, key: &str) -> Result<Session, error::Error> {
     Ok(store
         .bucket::<&str, kv::Json<Session>>(Some(BUCKET_NAME))?
         .get(key)?
-        .map(kv::Codec::to_inner)
+        .map(kv::Codec::into_inner)
         .unwrap_or_default())
 }
 
