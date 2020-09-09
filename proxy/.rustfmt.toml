@@ -5,6 +5,7 @@ comment_width = 100
 wrap_comments = true
 
 # imports
+merge_imports = true
 reorder_imports = true
 
 # strings
