@@ -1,4 +1,4 @@
-//! Endpoints and serialisation for [`session::Session`] related types.
+//! Endpoints and serialisation for [`crate::session::Session`] related types.
 
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};

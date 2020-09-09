@@ -1,4 +1,4 @@
-//! Endpoints and serialisation for [`identity::Identity`] related types.
+//! Endpoints and serialisation for [`crate::identity::Identity`] related types.
 
 use std::sync::Arc;
 
