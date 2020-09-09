@@ -102,7 +102,7 @@ impl Api {
         api.paths().git_dir().join("")
     }
 
-    /// Get the [Seed] representation for this [Api] instance.
+    /// Get the [`Seed`] representation for this [`Api`] instance.
     #[must_use]
     pub fn seed(&self) -> Seed {
         let api = self.peer_api.lock().expect("unable to acquire lock");
