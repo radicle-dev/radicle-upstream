@@ -276,9 +276,13 @@ impl Api {
 
     /// Query the network for providers of the given [`RadUrn`].
     ///
-    /// Note that there is no guarantee that a peer who claims to provide the
-    /// [`RadUrn`] actually has it, nor that it is reachable using any of
-    /// the addresses contained in [`PeerInfo`].
+    /// Notes:
+    ///   * there is no guarantee that a peer who claims to provide the [`RadUrn`] actually has it,
+    ///     nor that it is reachable using any of the addresses contained in [`PeerInfo`].
+    ///
+    ///   * there is no guarantee that any peer ever replies to the query, meaning that awaiting for
+    ///     a reply might never terminate, requiring callers of this function to timeout on
+    ///     `next()`.
     #[warn(clippy::future_not_send)]
     pub async fn providers(
         &self,
