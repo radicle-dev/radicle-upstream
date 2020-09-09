@@ -50,7 +50,7 @@
 
   let loading = false;
 
-  const setSelection = type => {
+  const setCurrentSelection = type => {
     currentSelection = type;
     // Reset the name validation on selection switch
     nameValidation = nameValidationStore();
@@ -169,7 +169,7 @@
         active={isNew}
         on:click={ev => {
           ev.stopPropagation();
-          setSelection(RepoType.New);
+          setCurrentSelection(RepoType.New);
         }}
         dataCy="new-project">
         <div slot="option-body">
@@ -192,7 +192,7 @@
         active={isExisting}
         on:click={ev => {
           ev.stopPropagation();
-          setSelection(RepoType.Existing);
+          setCurrentSelection(RepoType.Existing);
         }}
         dataCy="existing-project">
         <div slot="option-body">
