@@ -106,7 +106,12 @@ impl Peer {
                 Ok(event) => {
                     log::info!("{:?}", event);
 
-                    self.subscriber.send(event).map_err(Error::Broadcast)?;
+                    // Send will fail, if there are no active receivers.
+                    if self.subscriber.receiver_count() > 0 {
+                        if let Err(err) = self.subscriber.send(event).map_err(Error::Broadcast) {
+                            return Err(err);
+                        }
+                    }
                 },
             }
         }
