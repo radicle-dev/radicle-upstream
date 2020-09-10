@@ -27,7 +27,7 @@ rev = "c16ce900776975e3de017af71763dc4e2e129d3f"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "dabbec104273eda48e943c1ff9fae8eedd8ba917"
+rev = "c16ce900776975e3de017af71763dc4e2e129d3f"
 
 [dependencies.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore.git"
