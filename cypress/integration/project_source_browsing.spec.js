@@ -225,51 +225,34 @@ context("source code browsing", () => {
         cy.contains(".i-too-am-hidden").should("exist");
       });
 
-      it("allows selecting different peers", () => {
+      it("updates when selecting different peers", () => {
         cy.pick("revision-selector").click();
         // Default revision is highlighted.
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="cloudhead"]'
-        ).should("have.class", "selected");
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="abbey"]'
-        ).click();
+        cy.get('.revision-dropdown [data-branch="master"]').should(
+          "have.class",
+          "selected"
+        );
+        // Switch to another peer
+        cy.pick("peer-selector").click();
+        cy.get('.peer-dropdown [data-peer-handle="abbey"]').click();
 
         cy.pick("revision-selector").contains("master");
         cy.pick("revision-selector", "branch-icon").should("exist");
-        // TODO(rudolfs): check for the actual avatar once we have a way to
-        // mock peers that don't get a random avatar every time.
-        cy.pick("revision-selector", "avatar-abbey").should("exist");
 
-        cy.pick("revision-selector").click();
-        // Previous selection is highlighted.
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="abbey"]'
-        ).should("have.class", "selected");
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="ele"]'
-        ).click();
+        cy.pick("peer-selector").click();
+        cy.get('.peer-dropdown [data-peer-handle="ele"]').click();
 
         cy.pick("revision-selector").contains("master");
         cy.pick("revision-selector", "branch-icon").should("exist");
-        // TODO(rudolfs): check for the actual avatar once we have a way to
-        // mock peers that don't get a random avatar every time.
-        cy.pick("revision-selector", "avatar-ele").should("exist");
 
-        cy.pick("revision-selector").click();
-        // Previous selection is highlighted.
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="ele"]'
-        ).should("have.class", "selected");
+        cy.pick("peer-selector").click();
+        cy.get('.peer-dropdown [data-peer-handle="cloudhead"]').click();
         cy.get(
           '.revision-dropdown [data-tag="v0.1.0"][data-repo-handle="cloudhead"]'
         ).click();
 
         cy.pick("revision-selector").contains("v0.1.0");
         cy.pick("revision-selector", "tag-icon").should("exist");
-        // TODO(rudolfs): check for the actual avatar once we have a way to
-        // mock peers that don't get a random avatar every time.
-        cy.pick("revision-selector", "avatar-cloudhead").should("exist");
 
         cy.pick("revision-selector").click();
         // Previous selection is highlighted.

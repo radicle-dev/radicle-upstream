@@ -1,23 +1,16 @@
 <script>
-  import { createEventDispatcher, getContext } from "svelte";
-  import { push } from "svelte-spa-router";
+  import { createEventDispatcher } from "svelte";
 
-  import * as path from "../../../src/path.ts";
   import { RevisionType } from "../../../src/source.ts";
-  import { BadgeType } from "../../../src/badge.ts";
 
-  import { Avatar, Icon } from "../../Primitive";
-  import { Tooltip, Badge } from "../../Component";
+  import { Icon } from "../../Primitive";
 
   export let currentRevision = null;
   export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
-  export let maintainers = [];
 
   let currentSelectedPeer;
-
-  const session = getContext("session");
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
@@ -44,14 +37,6 @@
     // Any click *outside* the dropdown should hide the dropdown.
     if (dropdown !== ev.target && !dropdown.contains(ev.target)) {
       hideDropdown();
-    }
-  };
-
-  const handleOpenProfile = urn => {
-    if (urn === session.identity.urn) {
-      push(path.profileProjects());
-    } else {
-      push(path.userProfileProjects(urn));
     }
   };
 
@@ -110,14 +95,6 @@
     height: 100%;
     min-width: 100%;
   }
-  .peer {
-    display: flex;
-    color: var(--color-foreground-level-6);
-    padding: 0.5rem;
-    user-select: none;
-    align-items: center;
-    justify-content: space-between;
-  }
   .branch,
   .tag {
     color: var(--color-foreground-level-6);
@@ -138,11 +115,6 @@
   }
   .revision-dropdown ul:last-child li {
     border-radius: 0 0 3px 3px;
-  }
-  .open-profile {
-    display: flex;
-    justify-content: center;
-    cursor: pointer;
   }
 </style>
 
@@ -168,12 +140,6 @@
       {/if}
       <p class="revision-name typo-overflow-ellipsis">{currentRevision.name}</p>
     </div>
-    <Avatar
-      avatarFallback={currentSelectedPeer.identity.avatarFallback}
-      dataCy={`avatar-${currentSelectedPeer.identity.metadata.handle}`}
-      size="small"
-      style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
-      variant="circle" />
   </div>
   <div class="selector-expand">
     <Icon.ChevronUpDown
@@ -182,80 +148,48 @@
 </div>
 <div class="revision-dropdown-container" bind:this={dropdown}>
   <div class="revision-dropdown" hidden={!expanded}>
-    {#each revisions as repo}
-      <div class="peer">
-        <div style="display: flex;">
-          <Avatar
-            avatarFallback={repo.identity.avatarFallback}
-            style="display: flex; justify-content: flex-start; margin-right:
-            8px;"
-            size="small"
-            variant="circle" />
-          <p class="typo-text-bold typo-overflow-ellipsis">
-            {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
-          </p>
-          <p>
-            {#if maintainers.includes(repo.identity.urn)}
-              <Badge
-                style="margin-left: 0.5rem"
-                variant={BadgeType.Maintainer} />
-            {/if}
-          </p>
-        </div>
-        <Tooltip value="Go to profile" position="top">
-          <div
-            data-cy={repo.identity.metadata.handle}
-            class="open-profile"
-            on:click={() => {
-              handleOpenProfile(repo.identity.urn);
-            }}>
-            <Icon.ArrowBoxUpRight />
-          </div>
-        </Tooltip>
-      </div>
-      <ul>
-        {#each repo.branches as branch}
-          <li
-            class="branch typo-overflow-ellipsis"
-            class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === repo.identity.peerId}
-            data-repo-handle={repo.identity.metadata.handle}
-            data-branch={branch}
-            on:click|stopPropagation={() => selectRevision(
-                repo.identity.peerId,
-                {
-                  type: RevisionType.Branch,
-                  peerId: repo.identity.peerId,
-                  name: branch,
-                }
-              )}>
-            <Icon.Branch
-              dataCy="branch-icon"
-              style="vertical-align: bottom; fill:
-              var(--color-foreground-level-4)" />
-            <span style="line-height: 1.5rem">{branch}</span>
-          </li>
-        {/each}
-        {#each repo.tags as tag}
-          <li
-            class="tag typo-overflow-ellipsis"
-            data-repo-handle={repo.identity.metadata.handle}
-            class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === repo.identity.peerId}
-            data-tag={tag}
-            on:click|stopPropagation={() => selectRevision(
-                repo.identity.peerId,
-                {
-                  type: RevisionType.Tag,
-                  name: tag,
-                }
-              )}>
-            <Icon.Label
-              dataCy="tag-icon"
-              style="vertical-align: bottom; fill:
-              var(--color-foreground-level-4)" />
-            <span style="line-height: 1.5rem">{tag}</span>
-          </li>
-        {/each}
-      </ul>
-    {/each}
+    <ul>
+      {#each currentSelectedPeer.branches as branch}
+        <li
+          class="branch typo-overflow-ellipsis"
+          class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
+          data-repo-handle={currentSelectedPeer.identity.metadata.handle}
+          data-branch={branch}
+          on:click|stopPropagation={() => selectRevision(
+              currentSelectedPeer.identity.peerId,
+              {
+                type: RevisionType.Branch,
+                peerId: currentSelectedPeer.identity.peerId,
+                name: branch,
+              }
+            )}>
+          <Icon.Branch
+            dataCy="branch-icon"
+            style="vertical-align: bottom; fill:
+            var(--color-foreground-level-4)" />
+          <span style="line-height: 1.5rem">{branch}</span>
+        </li>
+      {/each}
+      {#each currentSelectedPeer.tags as tag}
+        <li
+          class="tag typo-overflow-ellipsis"
+          data-repo-handle={currentSelectedPeer.identity.metadata.handle}
+          class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
+          data-tag={tag}
+          on:click|stopPropagation={() => selectRevision(
+              currentSelectedPeer.identity.peerId,
+              {
+                type: RevisionType.Tag,
+                name: tag,
+              }
+            )}>
+          <Icon.Label
+            dataCy="tag-icon"
+            style="vertical-align: bottom; fill:
+            var(--color-foreground-level-4)" />
+          <span style="line-height: 1.5rem">{tag}</span>
+        </li>
+      {/each}
+    </ul>
   </div>
 </div>

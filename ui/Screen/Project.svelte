@@ -1,11 +1,12 @@
 <script>
   import { isDev, openPath } from "../../native/ipc.js";
-  import Router from "svelte-spa-router";
+  import Router, { push } from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import { checkout, fetch, project as store } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
+  import { revisions as revisionsStore } from "../src/source.ts";
 
   import {
     Header,
@@ -23,6 +24,7 @@
   import Commit from "./Project/Commit.svelte";
   import Commits from "./Project/Commits.svelte";
   import CheckoutButton from "./Project/CheckoutButton.svelte";
+  import PeerSelector from "./Project/PeerSelector.svelte";
 
   const routes = {
     "/projects/:id/": Source,
@@ -37,12 +39,14 @@
   export let params = null;
   const projectId = params.id;
   let codeCollabMenuItems;
-  const topbarMenuItems = projectId => {
+  let currentPeerId;
+
+  $: topbarMenuItems = projectId => {
     const items = [
       {
         icon: Icon.House,
         title: "Source",
-        href: path.projectSource(projectId),
+        href: path.projectSource(projectId, currentPeerId),
         looseActiveStateMatching: true,
       },
     ];
@@ -122,7 +126,19 @@
           projectName={project.metadata.name} />
       </div>
       <div slot="top">
-        <TrackToggle />
+        <div style="display: flex">
+          <Remote store={revisionsStore} let:data={revisions}>
+            <PeerSelector
+              {currentPeerId}
+              maintainers={project.maintainers}
+              {revisions}
+              on:select={event => {
+                currentPeerId = event.detail.peerId;
+                push(path.projectSource(projectId, currentPeerId));
+              }} />
+          </Remote>
+          <TrackToggle />
+        </div>
       </div>
     </Header.Large>
     <Router {routes} />
