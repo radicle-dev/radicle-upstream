@@ -24,10 +24,6 @@ pub enum Error {
     /// Failed to build and announce state updates.
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
-
-    /// Failed to distribute new events to subscribers.
-    #[error("{0:?}")]
-    Broadcast(broadcast::SendError<Event>),
 }
 
 /// Significant events that occur during [`Peer`] lifetime.
@@ -122,13 +118,10 @@ impl Peer {
                 Ok(event) => {
                     log::info!("{:?}", event);
 
-                    // Send will fail, if there are no active receivers.
-                    if self.subscriber.receiver_count() > 0 {
-                        if let Err(err) = self.subscriber.send(event).map_err(Error::Broadcast) {
-                            return Err(err);
-                        }
-                    }
-                },
+                    // Send will error if there are no active receivers. This case is expected and
+                    // should not crash the run loop.
+                    self.subscriber.send(event).ok();
+                }
             }
         }
 
