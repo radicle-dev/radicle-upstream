@@ -815,14 +815,13 @@ mod test {
             .next()
             .await;
 
-        match res {
-            Some(peer_info) => assert_eq!(
+        if let Some(peer_info) = res {
+            assert_eq!(
                 peer_info.peer_id, alice_peer_id,
                 "Got an unexpected peer id as provider",
-            ),
-            None => {
-                panic!("Expected to have obtained the peer1 but got None instead");
-            },
+            )
+        } else {
+            panic!("Expected to have obtained the peer1 but got None instead");
         }
 
         Ok(())
