@@ -349,8 +349,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::list(&ctx.peer_api)?;
-        let meta = projects.into_iter().first();
+        let projects = project::Projects::list(&ctx.peer_api)?;
+        let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -411,8 +411,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::list_projects(&ctx.peer_api)?;
-        let meta = projects.first().unwrap();
+        let projects = project::Projects::list(&ctx.peer_api)?;
+        let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -491,10 +491,10 @@ mod test {
 
         let projects = {
             let ctx = ctx.read().await;
-            project::list_projects(&ctx.peer_api)
+            project::Projects::list(&ctx.peer_api)
         }?;
 
-        let meta = projects.first().unwrap();
+        let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let want = json!({
@@ -566,7 +566,7 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
 
-        let projects = project::list_projects(&ctx.peer_api)?;
+        let projects = project::Projects::list(&ctx.peer_api)?;
         let res = request().method("GET").path("/").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -587,7 +587,8 @@ mod test {
         let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
         coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
-        let project = &project::list_projects(&ctx.peer_api)?[0];
+        let projects = project::Projects::list(&ctx.peer_api)?;
+        let project = projects.into_iter().next().unwrap();
         let coco_project = ctx.peer_api.get_project(&project.id, None)?;
 
         let fintohaps: identity::Identity =
@@ -614,10 +615,9 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
 
         let res = request()
             .method("GET")

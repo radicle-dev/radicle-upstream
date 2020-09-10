@@ -90,6 +90,7 @@ impl Deref for Tracked {
 }
 
 /// All projects contained in a user's monorepo.
+#[derive(Serialize)]
 pub struct Projects {
     /// A project that is tracked is one that the user has replicated onto their device but has not
     /// made any changes to. A project is still considered tracked if they checked out a working
@@ -105,47 +106,55 @@ pub struct Projects {
     pub mine: Vec<Project>,
 }
 
+impl Projects {
+    /// List all the projects that are located on your device. These projects could either be
+    /// "tracked" or "mine".
+    ///
+    /// See [`Projects`] for a detailed breakdown of both kinds of projects.
+    ///
+    /// # Errors
+    ///
+    ///   * We couldn't get the list of projects
+    ///   * We couldn't inspect the `signed_refs` of the project
+    ///   * We couldn't get stats for a project
+    pub fn list(api: &coco::Api) -> Result<Self, error::Error> {
+        let mut projects = Self {
+            tracked: vec![],
+            mine: vec![],
+        };
+        for project in api.list_projects()? {
+            let refs = api.list_project_refs(&project.urn())?;
+            let project = api.with_browser(&project.urn(), |browser| {
+                let stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, stats).into())
+            })?;
+            if refs.heads.is_empty() {
+                projects.tracked.push(Tracked(project))
+            } else {
+                projects.mine.push(project)
+            }
+        }
+
+        Ok(projects)
+    }
+}
+
 impl IntoIterator for Projects {
     type Item = Project;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     // Give back an iterator over all the [`Project`]s.
     fn into_iter(self) -> Self::IntoIter {
-        let mine = self.mine.into_iter();
-        let tracked = self.tracked.into_iter().map(|tracked| tracked.0);
-        mine.chain(tracked)
-    }
-}
+        // TODO(sos): chain two iterators together here
+        //
+        // e.g.
+        //
+        // let mine = self.mine.into_iter();
+        // let tracked = self.tracked.into_iter().map(|tracked| tracked.0);
+        // mine.chain(tracked)
 
-/// List all the projects that are located on your device. These projects could either be "tracked"
-/// or "mine".
-///
-/// See [`Projects`] for a detailed breakdown of both kinds of projects.
-///
-/// # Errors
-///
-///   * We couldn't get the list of projects
-///   * We couldn't inspect the `signed_refs` of the project
-///   * We couldn't get stats for a project
-pub fn list(api: &coco::Api) -> Result<Projects, error::Error> {
-    let mut projects = Projects {
-        tracked: vec![],
-        mine: vec![],
-    };
-    for project in api.list_projects()? {
-        let refs = api.list_project_refs(&project.urn())?;
-        let project = api.with_browser(&project.urn(), |browser| {
-            let stats = browser.get_stats().map_err(coco::Error::from)?;
-            Ok((project, stats).into())
-        })?;
-        if refs.heads.is_empty() {
-            projects.tracked.push(Tracked(project))
-        } else {
-            projects.mine.push(project)
-        }
+        self.mine.into_iter()
     }
-
-    Ok(projects)
 }
 
 /// Fetch the project with a given urn from a peer
