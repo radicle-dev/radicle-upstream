@@ -1,9 +1,11 @@
 //! Utility to work with the peer api of librad.
 
 use std::convert::TryFrom;
-use std::net::SocketAddr;
+use std::future::Future;
+use std::net::{IpAddr, SocketAddr};
 use std::path::{self, PathBuf};
 use std::sync::Arc;
+use std::time::Duration;
 
 use tokio::sync::Mutex;
 
@@ -14,6 +16,7 @@ use librad::keys;
 use librad::meta::entity;
 use librad::meta::project as librad_project;
 use librad::meta::user;
+use librad::net::gossip::PeerInfo;
 use librad::net::peer::PeerApi;
 use librad::paths;
 use librad::peer::PeerId;
@@ -24,6 +27,7 @@ use radicle_surf::vcs::git::git2;
 
 use crate::error::Error;
 use crate::project;
+use crate::seed::Seed;
 use crate::signer;
 use crate::user::{verify as verify_user, User};
 
@@ -401,6 +405,15 @@ impl State {
         Ok(user)
     }
 
+    /// Query the network for providers of the given [`RadUrn`] within a given `timeout`.
+    pub fn providers(
+        &self,
+        urn: RadUrn,
+        timeout: Duration,
+    ) -> impl Future<Output = impl futures::Stream<Item = PeerInfo<IpAddr>>> {
+        self.api.providers(urn, timeout)
+    }
+
     /// Wrapper around the storage track.
     ///
     /// # Errors
@@ -432,14 +445,29 @@ impl State {
     }
 }
 
+impl From<&State> for Seed {
+    fn from(state: &State) -> Self {
+        Self {
+            peer_id: state.peer_id(),
+            addr: state.listen_addr(),
+        }
+    }
+}
+
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+    use std::convert::TryInto;
     use std::env;
     use std::path::PathBuf;
     use std::process::Command;
+    use std::time::Duration;
 
+    use futures::StreamExt as _;
+
+    use librad::hash::Hash;
     use librad::keys::SecretKey;
+    use librad::uri;
 
     use crate::config;
     use crate::control;
@@ -705,6 +733,87 @@ mod test {
             default_branch: fakie.default_branch().to_owned(),
         };
         let _fake_fakie = state.init_project(&signer, &kalt, &fake_fakie)?;
+
+        Ok(())
+    }
+
+    /// Verify that asking the network for an unkown urn returns no providers.
+    #[tokio::test]
+    async fn get_urn_providers_is_none() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let signer = signer::BoxedSigner::from(key.clone());
+        let config = config::default(key, tmp_dir.path())?;
+        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let state = State::new(api, signer.clone());
+
+        let unkown_urn = uri::RadUrn {
+            id: Hash::hash(b"project0"),
+            proto: uri::Protocol::Git,
+            path: "user/imperative-language"
+                .parse::<uri::Path>()
+                .map_err(Error::from)?,
+        };
+
+        let res = state
+            .providers(unkown_urn, Duration::from_secs(5))
+            .await
+            .next()
+            .await;
+
+        assert!(res.is_none(), "Shouldn't have obtained any provider",);
+
+        Ok(())
+    }
+
+    // TODO(xla): This needs to go into an integration test.
+    #[ignore]
+    #[tokio::test]
+    #[allow(clippy::unwrap_used)]
+    async fn get_urn_providers() -> Result<(), Error> {
+        // Peer #1
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
+        let repo_path = tmp_dir.path().join("radicle");
+        let alice_key = SecretKey::new();
+        let alice_signer = signer::BoxedSigner::from(alice_key.clone());
+        let alice_config = config::default(alice_key, tmp_dir.path())?;
+        let (alice_api, _run_loop) = alice_config.try_into_peer().await?.accept()?;
+        let alice = State::new(alice_api, alice_signer.clone());
+        let alice_peer_id = alice.peer_id();
+
+        // Peer #2
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
+        let key = SecretKey::new();
+        let bob_signer = signer::BoxedSigner::from(key.clone());
+        let config = config::configure(
+            config::Paths::FromRoot(tmp_dir.path().to_path_buf()).try_into()?,
+            key,
+            *config::LOCALHOST_ANY,
+            vec![(&alice).into()],
+        );
+        let (bob_api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let bob = State::new(bob_api, bob_signer.clone());
+
+        // Create the targeted project in peer 1
+        let target_urn = tokio::task::spawn_blocking(move || {
+            let project = radicle_project(repo_path.clone());
+            let user = alice.init_owner(&alice_signer, "cloudhead").unwrap();
+            let created_project = alice.init_project(&alice_signer, &user, &project).unwrap();
+            created_project.urn()
+        })
+        .await
+        .unwrap();
+
+        // Have peer 2 ask the network for providers for `target_urn`
+        let res = bob
+            .providers(target_urn, Duration::from_secs(5))
+            .await
+            .next()
+            .await;
+
+        assert_eq!(res.map(|info| info.peer_id), Some(alice_peer_id));
 
         Ok(())
     }
