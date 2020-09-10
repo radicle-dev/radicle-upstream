@@ -108,8 +108,7 @@ impl Peer {
         loop {
             let res = tokio::select! {
                 _ = announce_timer.tick() => {
-                    let updates = Self::announce(self.state.clone(), &self.store).await?;
-                    Ok(Event::Announced(updates))
+                    Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
                 },
                 Some(event) = protocol_subscriber.next() => {
                     Ok(Event::Protocol(event))
@@ -129,7 +128,7 @@ impl Peer {
                             return Err(err);
                         }
                     }
-                },
+                }
             }
         }
 
