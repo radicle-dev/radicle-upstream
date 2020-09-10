@@ -1,16 +1,21 @@
 <script>
   import { createEventDispatcher, onDestroy } from "svelte";
   import { push } from "svelte-spa-router";
-  import validatejs from "validate.js";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
   import { Variant as IllustrationVariant } from "../src/illustration.ts";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import * as urn from "../src/urn.ts";
-  import { create, RepoType } from "../src/project.ts";
-  import { getLocalState } from "../src/source.ts";
-  import { getValidationState } from "../src/validation.ts";
+  import {
+    create,
+    defaultBranch,
+    localState,
+    nameValidationStore,
+    repositoryPathValidationStore,
+    RepoType,
+  } from "../src/project.ts";
+  import { ValidationStatus } from "../src/validation.ts";
   import * as screen from "../src/screen.ts";
   import {
     dismissRemoteHelperHint,
@@ -18,7 +23,7 @@
     settings,
   } from "../src/session.ts";
 
-  import { Button, Flex, Icon, Input } from "../DesignSystem/Primitive";
+  import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
     Illustration,
@@ -28,9 +33,9 @@
   } from "../DesignSystem/Component";
 
   let currentSelection;
+  let nameInput;
   export let content;
 
-  const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
   const dispatch = createEventDispatcher();
 
   $: isNew = currentSelection === RepoType.New;
@@ -38,121 +43,20 @@
 
   let name;
   let description = "";
-  let defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
 
-  let validations = false;
-  let beginValidation = false;
+  let nameValidation = nameValidationStore();
 
   let loading = false;
 
-  validatejs.options = {
-    fullMessages: false,
+  const setCurrentSelection = type => {
+    currentSelection = type;
+    // Reset the name validation on selection switch
+    nameValidation = nameValidationStore();
   };
-
-  validatejs.validators.optional = (value, options) => {
-    return !validatejs.isEmpty(value)
-      ? validatejs.single(value, options)
-      : null;
-  };
-
-  validatejs.validators.validateNewRepositoryPath = (
-    value,
-    _options,
-    _key,
-    _attributes
-  ) => {
-    if (isExisting) {
-      return;
-    }
-
-    if (validatejs.isEmpty(value)) {
-      return "Pick a directory for the new project";
-    }
-
-    if (!localStateError.match("could not find repository")) {
-      return "The directory should be empty";
-    }
-  };
-
-  validatejs.validators.validateExistingRepositoryPath = (
-    value,
-    _options,
-    _key,
-    _attributes
-  ) => {
-    if (isNew) {
-      return;
-    }
-
-    if (validatejs.isEmpty(value)) {
-      return "Pick a directory with an existing repository";
-    }
-
-    if (localStateError.match("could not find repository")) {
-      return "The directory should contain a git repository";
-    }
-  };
-
-  const constraints = {
-    name: {
-      presence: {
-        message: "Project name is required",
-        allowEmpty: false,
-      },
-      format: {
-        pattern: new RegExp(projectNameMatch, "i"),
-        message: `Project name should match ${projectNameMatch}`,
-      },
-    },
-    currentSelection: {
-      presence: {
-        message:
-          "Select whether to start a new repository or use an existing one",
-      },
-    },
-    newRepositoryPath: {
-      validateNewRepositoryPath: true,
-    },
-    existingRepositoryPath: {
-      validateExistingRepositoryPath: true,
-    },
-  };
-
-  const validate = () => {
-    if (!beginValidation) {
-      return;
-    }
-
-    validations = validatejs(
-      {
-        name: name,
-        currentSelection: currentSelection,
-        newRepositoryPath: newRepositoryPath,
-        existingRepositoryPath: existingRepositoryPath,
-      },
-      constraints
-    );
-  };
-
-  // Note: the arguments are actually not passed to the function, they are
-  // only needed to make the function reactive to when they're changed.
-  $: validate(
-    name,
-    currentSelection,
-    newRepositoryPath,
-    existingRepositoryPath
-  );
 
   const createProject = async () => {
-    beginValidation = true;
-    validate();
-
-    if (!validatejs.isEmpty(validations)) {
-      return;
-    }
-
     let response;
 
     try {
@@ -161,7 +65,7 @@
 
       response = await create({
         description,
-        defaultBranch,
+        defaultBranch: $defaultBranch,
         repo: isNew
           ? { type: RepoType.New, name, path: newRepositoryPath }
           : { type: RepoType.Existing, path: existingRepositoryPath },
@@ -194,58 +98,30 @@
     screen.unlock();
   });
 
-  let localState;
-  let localStateError;
+  $: pathValidation = repositoryPathValidationStore(isNew);
 
-  const fetchBranches = async path => {
-    // Revert to defaults whenever the path changes in case this query fails
-    // or the user clicks cancel in the directory selection dialog.
-    localState = "";
-    localStateError = "";
-    defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
+  $: {
+    if (name.length > 0) nameValidation.validate(name);
+  }
 
-    // This function gets executed even for the first path change on page load
-    // which sets the path variable to an empty string. We shouldn't query the
-    // backend when the path is not given.
-    if (path === "") {
-      return;
-    }
-
-    // Start validating all the form fields when the user chooses a path.
-    beginValidation = true;
-
-    try {
-      localState = await getLocalState(path);
-      if (!localState.branches.includes(defaultBranch)) {
-        defaultBranch = localState.branches[0];
-      }
-    } catch (error) {
-      localStateError = error.message;
-    }
-
-    // Now that we have a response with potential branches or an error from the
-    // backend, we can perform path validation.
-    validate();
-  };
-
-  // Re-fetch branches whenever the user selects a new path.
-  $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
-
-  $: nameValidation = getValidationState("name", validations);
-  $: newRepositoryPathValidation = getValidationState(
-    "newRepositoryPath",
-    validations
-  );
-  $: existingRepositoryPathValidation = getValidationState(
-    "existingRepositoryPath",
-    validations
-  );
+  $: repositoryPath = isNew ? newRepositoryPath : existingRepositoryPath;
+  $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0))
+    pathValidation.validate(repositoryPath);
 
   // Use the directory name for existing projects as the project name.
   $: name = existingRepositoryPath.split("/").slice(-1)[0];
 
   // Reset the project name when switching between new and existing repo.
   $: isExisting && (name = "");
+
+  // The presence check is outside the validations since we don't want to show the validation error message for it.
+  $: validName =
+    name.length > 0 && $nameValidation.status === ValidationStatus.Success;
+
+  $: disableSubmit =
+    !validName ||
+    $pathValidation.status !== ValidationStatus.Success ||
+    loading;
 </script>
 
 <style>
@@ -278,11 +154,6 @@
     align-items: center;
     margin-top: 1rem;
   }
-
-  .validation-row {
-    display: flex;
-    align-items: center;
-  }
 </style>
 
 <div class="container" bind:this={content} data-cy="page">
@@ -298,14 +169,15 @@
         active={isNew}
         on:click={ev => {
           ev.stopPropagation();
-          currentSelection = RepoType.New;
+          setCurrentSelection(RepoType.New);
         }}
         dataCy="new-project">
         <div slot="option-body">
           <Input.Directory
             placeholder="Where to create the repository"
-            validation={newRepositoryPathValidation}
-            bind:path={newRepositoryPath} />
+            validation={$pathValidation}
+            bind:path={newRepositoryPath}
+            on:selected={() => nameInput.focus()} />
           <p
             style="margin-top: 1rem; color: var(--color-foreground-level-6);
             text-align: center">
@@ -320,26 +192,26 @@
         active={isExisting}
         on:click={ev => {
           ev.stopPropagation();
-          currentSelection = RepoType.Existing;
+          setCurrentSelection(RepoType.Existing);
         }}
         dataCy="existing-project">
         <div slot="option-body">
           <Input.Directory
             placeholder="Choose an existing repository"
-            validation={existingRepositoryPathValidation}
+            validation={$pathValidation}
             bind:path={existingRepositoryPath} />
           <div class="default-branch-row">
             <p
               style="margin-right: 1rem; color: var(--color-foreground-level-6)">
               Default branch
             </p>
-            {#if localState.branches && localState.branches.length > 0}
+            {#if $localState.branches && $localState.branches.length > 0}
               <Dropdown
                 style="max-width: 22.9rem;"
-                options={localState.branches.map(branch => {
+                options={$localState.branches.map(branch => {
                   return { variant: 'text', value: branch, textProps: { title: branch } };
                 })}
-                bind:value={defaultBranch} />
+                bind:value={$defaultBranch} />
             {:else}
               <Dropdown
                 style="max-width: 22.9rem;"
@@ -362,7 +234,8 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        validation={nameValidation}
+        bind:inputElement={nameInput}
+        validation={$nameValidation}
         disabled={isExisting} />
     </Tooltip>
 
@@ -371,16 +244,6 @@
       style="margin-top: 1rem; margin-bottom: 1rem;"
       placeholder="Project description"
       bind:value={description} />
-
-    {#if validations && validations.currentSelection}
-      <div class="validation-row">
-        <Icon.ExclamationCircle
-          style="margin-right: 0.5rem; fill: var(--color-negative)" />
-        <p class="typo-text-bold" style="color: var(--color-negative)">
-          {validations.currentSelection[0]}
-        </p>
-      </div>
-    {/if}
 
     <Flex style="margin-top: 1rem">
       <div slot="right">
@@ -393,7 +256,7 @@
           </Button>
           <Button
             dataCy="create-project-button"
-            disabled={!(name && currentSelection) || loading}
+            disabled={disableSubmit}
             variant="primary"
             on:click={createProject}>
             Create project

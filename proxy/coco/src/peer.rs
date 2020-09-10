@@ -1,10 +1,12 @@
 //! Utility to work with the peer api of librad.
 
 use std::{
-    convert::TryFrom,
-    net::SocketAddr,
+    convert::{From, TryFrom},
+    future::Future,
+    net::{IpAddr, SocketAddr},
     path::{self, PathBuf},
     sync::{Arc, Mutex},
+    time::Duration,
 };
 
 use futures::stream::StreamExt;
@@ -19,6 +21,7 @@ use librad::{
     meta::{entity, project as librad_project, user},
     net::{
         discovery,
+        gossip::PeerInfo,
         peer::{Gossip, PeerApi, PeerConfig, PeerStorage},
         protocol::Protocol,
     },
@@ -30,7 +33,7 @@ use librad::{
 use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
 
-use crate::{error::Error, project, signer};
+use crate::{error::Error, project, seed::Seed, signer};
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -40,6 +43,16 @@ pub type User = user::User<entity::Verified>;
 pub struct Api {
     /// Thread-safe wrapper around [`PeerApi`].
     peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
+}
+
+//TODO(nuno): Switch to TryFrom once we handle a failed `lock()` on the `peer_api`.
+impl From<&Api> for Seed {
+    fn from(api: &Api) -> Self {
+        Self {
+            peer_id: api.peer_id(),
+            addr: api.listen_addr(),
+        }
+    }
 }
 
 impl Api {
@@ -262,6 +275,16 @@ impl Api {
         };
 
         Ok(project_meta)
+    }
+
+    /// Query the network for providers of the given [`RadUrn`] within a given `timeout`.
+    pub fn providers(
+        &self,
+        urn: RadUrn,
+        timeout: Duration,
+    ) -> impl Future<Output = impl futures::Stream<Item = PeerInfo<IpAddr>>> {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        api.providers(urn, timeout)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -521,9 +544,11 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
-    use std::{env, path::PathBuf, process::Command};
+    use std::{convert::TryInto, env, path::PathBuf, process::Command, time::Duration};
 
-    use librad::{keys::SecretKey, uri};
+    use futures::stream::StreamExt;
+
+    use librad::{hash::Hash, keys::SecretKey, uri};
     use radicle_surf::vcs::git::git2;
 
     use crate::{config, control, project, signer};
@@ -708,6 +733,82 @@ mod test {
         );
 
         assert!(!project_names.contains(&fakie.name().to_string()));
+
+        Ok(())
+    }
+
+    /// Verify that asking the network for an unkown urn returns no providers.
+    #[tokio::test]
+    async fn get_urn_providers_is_none() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = config::default(key, tmp_dir.path())?;
+        let api = Api::new(config).await?;
+        let unkown_urn = uri::RadUrn {
+            id: Hash::hash(b"project0"),
+            proto: uri::Protocol::Git,
+            path: "user/imperative-language"
+                .parse::<uri::Path>()
+                .map_err(Error::from)?,
+        };
+
+        let res = api
+            .providers(unkown_urn, Duration::from_secs(5))
+            .await
+            .next()
+            .await;
+
+        assert!(res.is_none(), "Shouldn't have obtained any provider",);
+
+        Ok(())
+    }
+
+    /// Verify that asking the network for a URN owned by a seed peer returns said peer.
+    #[tokio::test]
+    #[allow(clippy::unwrap_used)]
+    async fn get_urn_providers() -> Result<(), Error> {
+        // Peer #1
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let signer = signer::BoxedSigner::from(signer::SomeSigner {
+            signer: key.clone(),
+        });
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let alice = Api::new(config).await?;
+        let alice_peer_id = alice.peer_id();
+
+        // Peer #2
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
+        let key = SecretKey::new();
+        let config = config::configure(
+            config::Paths::FromRoot(tmp_dir.path().to_path_buf()).try_into()?,
+            key,
+            *config::LOCALHOST_ANY,
+            vec![(&alice).into()],
+        );
+        let bob = Api::new(config).await?;
+
+        // Create the targeted project in peer 1
+        let target_urn = tokio::task::spawn_blocking(move || {
+            let project = radicle_project(repo_path.clone());
+            let user = alice.init_owner(&signer, "cloudhead").unwrap();
+            let created_project = alice.init_project(&signer, &user, &project).unwrap();
+            created_project.urn()
+        })
+        .await
+        .unwrap();
+
+        // Have peer 2 ask the network for providers for `target_urn`
+        let res = bob
+            .providers(target_urn, Duration::from_secs(5))
+            .await
+            .next()
+            .await;
+
+        assert_eq!(res.map(|info| info.peer_id), Some(alice_peer_id));
 
         Ok(())
     }

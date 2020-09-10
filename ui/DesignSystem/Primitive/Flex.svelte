@@ -1,7 +1,7 @@
 <script lang="ts">
-  export let dataCy: string;
-  export let style: string;
   export let align: "left" | "right" | undefined = undefined;
+  export let dataCy = "";
+  export let style = "";
 </script>
 
 <style>
