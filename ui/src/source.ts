@@ -55,7 +55,7 @@ interface Info {
   };
 }
 
-interface LocalState {
+export interface LocalState {
   branches: string[];
   managed: boolean;
 }
