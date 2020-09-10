@@ -138,10 +138,7 @@ mod handler {
     /// List all known projects.
     ///
     /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
-    pub async fn list(
-        ctx: context::Ctx,
-        status: super::Status,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn list(ctx: context::Ctx, status: super::Status) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let projects = project::Projects::list(&ctx.peer_api)?;
@@ -156,7 +153,10 @@ mod handler {
         user: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        Ok(reply::json(&project::list_projects_for_user(&ctx.peer_api, &user)?))
+        Ok(reply::json(&project::list_projects_for_user(
+            &ctx.peer_api,
+            &user,
+        )?))
     }
 
     /// Get a feed of untracked projects.
@@ -349,8 +349,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::list_projects(&ctx.peer_api)?;
-        let meta = projects.first().unwrap();
+        let projects = project::list(&ctx.peer_api)?;
+        let meta = projects.into_iter().first();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();

@@ -89,60 +89,63 @@ impl Deref for Tracked {
     }
 }
 
-/// A user can view projects that are in different states in their application.
+/// All projects contained in a user's monorepo.
 pub struct Projects {
     /// A project that is tracked is one that the user has replicated onto their device but has not
-    /// made any changes to. A project is still considered tracked if they checked out a working copy but
-    /// have not performed any commits to the references.
+    /// made any changes to. A project is still considered tracked if they checked out a working
+    /// copy but have not performed any commits to the references.
     pub tracked: Vec<Tracked>,
-    /// A project that is "mine" is one that the user has either:
+    /// A project that has been *contributed* to is one that the user has either:
     ///     a. Created themselves using the application.
-    ///     b. Replicated (see tracked above), checked out a working copy, and push changes to
-    ///     references.
+    ///     b. Has replicated (see tracked above), checked out a working copy, and pushed changes
+    /// to     references.
     ///
-    /// The conditions imply that a project is "mine" if I am the maintainer or I have contributed
-    /// to the project.
+    /// The conditions imply that a project is "contributed" if I am the maintainer or I have
+    /// contributed to the project.
     pub mine: Vec<Project>,
 }
 
-impl Projects {
-    /// List all the projects that are located on your device. These projects could either be "tracked"
-    /// or "mine".
-    ///
-    /// See [`Projects`] for a detailed breakdown of both kinds of projects.
-    ///
-    /// # Errors
-    ///
-    ///   * We couldn't get the list of projects
-    ///   * We couldn't inspect the `signed_refs` of the project
-    ///   * We couldn't get stats for a project
-    pub fn list(api: &coco::Api) -> Result<Self, error::Error> {
-        let mut projects = Self {
-            tracked: vec![],
-            mine: vec![],
-        };
-        for project in api.list_projects()? {
-            let refs = api.list_project_refs(&project.urn())?;
-            let project = api.with_browser(&project.urn(), |browser| {
-                let stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, stats).into())
-            })?;
-            if refs.heads.is_empty() {
-                projects.tracked.push(Tracked(project))
-            } else {
-                projects.mine.push(project)
-            }
+impl IntoIterator for Projects {
+    type Item = Project;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    // Give back an iterator over all the [`Project`]s.
+    fn into_iter(self) -> Self::IntoIter {
+        let mine = self.mine.into_iter();
+        let tracked = self.tracked.into_iter().map(|tracked| tracked.0);
+        mine.chain(tracked)
+    }
+}
+
+/// List all the projects that are located on your device. These projects could either be "tracked"
+/// or "mine".
+///
+/// See [`Projects`] for a detailed breakdown of both kinds of projects.
+///
+/// # Errors
+///
+///   * We couldn't get the list of projects
+///   * We couldn't inspect the `signed_refs` of the project
+///   * We couldn't get stats for a project
+pub fn list(api: &coco::Api) -> Result<Projects, error::Error> {
+    let mut projects = Projects {
+        tracked: vec![],
+        mine: vec![],
+    };
+    for project in api.list_projects()? {
+        let refs = api.list_project_refs(&project.urn())?;
+        let project = api.with_browser(&project.urn(), |browser| {
+            let stats = browser.get_stats().map_err(coco::Error::from)?;
+            Ok((project, stats).into())
+        })?;
+        if refs.heads.is_empty() {
+            projects.tracked.push(Tracked(project))
+        } else {
+            projects.mine.push(project)
         }
-
-        Ok(projects)
     }
 
-    /// Give back an iterator over all the [`Project`]s.
-    pub fn into_iter(self) -> impl Iterator<Item = Project> {
-        self.mine
-            .into_iter()
-            .chain(self.tracked.into_iter().map(|tracked| tracked.0))
-    }
+    Ok(projects)
 }
 
 /// Fetch the project with a given urn from a peer
