@@ -12,7 +12,7 @@ mod common;
 use common::{build_peer, build_peer_with_seeds, init_logging, shia_le_pathbuf, wait_connected};
 
 #[tokio::test]
-async fn solo() -> Result<(), Box<dyn std::error::Error>> {
+async fn announce_solo() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
@@ -50,7 +50,7 @@ async fn solo() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
-async fn connected() -> Result<(), Box<dyn std::error::Error>> {
+async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
