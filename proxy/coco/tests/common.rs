@@ -57,6 +57,18 @@ pub fn init_logging() {
     }
 }
 
+#[allow(dead_code)]
+pub fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+    project::Create {
+        repo: project::Repo::New {
+            path,
+            name: "radicalise".to_string(),
+        },
+        description: "the people".to_string(),
+        default_branch: "power".to_string(),
+    }
+}
+
 pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
     project::Create {
         repo: project::Repo::New {

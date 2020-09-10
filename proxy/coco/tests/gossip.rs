@@ -7,9 +7,13 @@ use tokio::time::timeout;
 use librad::net::protocol::ProtocolEvent;
 
 use coco::seed::Seed;
+use coco::{Hash, Urn};
 
 mod common;
-use common::{build_peer, build_peer_with_seeds, init_logging, shia_le_pathbuf, wait_connected};
+use common::{
+    build_peer, build_peer_with_seeds, init_logging, radicle_project, shia_le_pathbuf,
+    wait_connected,
+};
 
 #[tokio::test]
 async fn announce_solo() -> Result<(), Box<dyn std::error::Error>> {
@@ -104,6 +108,82 @@ async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
         .map(|_| ());
     tokio::pin!(announced);
     timeout(Duration::from_secs(1), announced.next()).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
+
+    let tmp_dir = tempfile::tempdir()?;
+    let (peer, state, _signer) = build_peer(&tmp_dir).await?;
+
+    tokio::task::spawn(peer.run());
+
+    let unkown_urn = Urn {
+        id: Hash::hash(b"project0"),
+        proto: librad::uri::Protocol::Git,
+        path: "user/imperative-language".parse::<librad::uri::Path>()?,
+    };
+
+    let res = state
+        .lock()
+        .await
+        .providers(unkown_urn, Duration::from_secs(5))
+        .await
+        .next()
+        .await;
+
+    assert!(res.is_none(), "expected no results",);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn providers() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
+
+    let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
+    let alice_addr = alice_state.lock().await.listen_addr();
+    let alice_peer_id = alice_state.lock().await.peer_id();
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let (bob_peer, bob_state, _bob_signer) = build_peer_with_seeds(
+        &bob_tmp_dir,
+        vec![Seed {
+            addr: alice_addr,
+            peer_id: alice_peer_id.clone(),
+        }],
+    )
+    .await?;
+    let bob_events = bob_peer.subscribe();
+
+    tokio::task::spawn(alice_peer.run());
+    tokio::task::spawn(bob_peer.run());
+
+    wait_connected(bob_events, &alice_peer_id).await?;
+
+    let ally = alice_state.lock_owned().await;
+    let target_urn = tokio::task::spawn_blocking(move || {
+        let project = radicle_project(alice_repo_path.clone());
+        let user = ally.init_owner(&alice_signer, "cloudhead").unwrap();
+        let created_project = ally.init_project(&alice_signer, &user, &project).unwrap();
+        created_project.urn()
+    })
+    .await?;
+
+    let res = bob_state
+        .lock()
+        .await
+        .providers(target_urn, Duration::from_secs(5))
+        .await
+        .next()
+        .await;
+
+    assert_eq!(res.map(|info| info.peer_id), Some(alice_peer_id));
 
     Ok(())
 }
