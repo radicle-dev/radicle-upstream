@@ -1,11 +1,16 @@
-<script>
+<script lang="ts">
   import { Icon } from "../Primitive";
   import Badge from "../Component/Badge.svelte";
+  import { BadgeType } from "../../src/badge";
 
-  export let title = null;
-  export let description = null;
-  export let showRegisteredBadge = false;
-  export let badge = null;
+  export let title: string;
+
+  export let description = "";
+
+  /* This is annoying, but svelte-check needs the explicit type annotation for boolean props with default values. */
+  /* eslint-disable @typescript-eslint/no-inferrable-types */
+  export let showRegisteredBadge: boolean = false;
+  export let showMaintainerBadge: boolean = false;
 </script>
 
 <style>
@@ -25,7 +30,6 @@
 
   .title-row {
     display: flex;
-    margin-bottom: 2px;
     white-space: nowrap;
   }
 
@@ -37,6 +41,7 @@
     color: var(--color-foreground-level-5);
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 0.125rem;
   }
 </style>
 
@@ -49,12 +54,12 @@
           <Icon.RegisteredSmall style="fill: var(--color-primary);" />
         </div>
       {/if}
-      {#if badge}
-        <Badge style="margin-left: 0.5rem" variant={badge} />
+      {#if showMaintainerBadge}
+        <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </div>
-    <p class="desc">
-      {#if description}{description}{/if}
-    </p>
+    {#if description.length > 0}
+      <p class="desc">{description}</p>
+    {/if}
   </div>
 </div>
