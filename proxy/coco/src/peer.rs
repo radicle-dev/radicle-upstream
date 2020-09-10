@@ -46,9 +46,8 @@ pub struct Api {
 //TODO(nuno): Switch to TryFrom once we handle a failed `lock()` on the `peer_api`.
 impl From<&Api> for Seed {
     fn from(api: &Api) -> Self {
-        let api = api.peer_api.lock().expect("unable to acquire lock");
         Self {
-            peer_id: api.peer_id().clone(),
+            peer_id: api.peer_id(),
             addr: api.listen_addr(),
         }
     }
