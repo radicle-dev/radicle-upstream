@@ -1,6 +1,6 @@
-<script>
-  export let dataCy = null;
-  export let style = null;
+<script lang="ts">
+  export let dataCy = "";
+  export let style = "";
 </script>
 
 <svg
