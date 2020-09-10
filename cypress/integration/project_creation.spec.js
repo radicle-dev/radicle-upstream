@@ -61,7 +61,7 @@ const withPlatinumStub = callback => {
 
 beforeEach(() => {
   cy.nukeAllState();
-  cy.createIdentity();
+  cy.onboardUser();
   cy.visit("./public/index.html");
 });
 
@@ -91,7 +91,6 @@ context("project creation", () => {
       // Set up minimal form input to show validations
       cy.pick("page", "name").type("this-name-is-valid");
       cy.pick("page", "new-project").click();
-      cy.pick("page", "create-project-button").click();
     });
 
     afterEach(() => {
@@ -100,9 +99,9 @@ context("project creation", () => {
 
     context("name", () => {
       it("prevents the user from creating a project with an invalid name", () => {
-        // shows a validation message when name is not present
+        // the submit button is disabled when name is not present
         cy.pick("page", "name").clear();
-        cy.pick("page").contains("Project name is required");
+        cy.pick("create-project-button").should("be.disabled");
 
         // shows a validation message when name contains invalid characters
         // spaces are not allowed
@@ -150,7 +149,6 @@ context("project creation", () => {
 
         withPlatinumStub(() => {
           cy.pick("new-project", "choose-path-button").click();
-          cy.pick("create-project-button").click();
 
           cy.pick("page", "new-project")
             .contains("The directory should be empty")
@@ -173,12 +171,6 @@ context("project creation", () => {
         // shows a validation message when new project path is empty
         cy.pick("page", "new-project")
           .contains("Pick a directory for the new project")
-          .should("exist");
-
-        cy.pick("page", "existing-project").click();
-        // shows a validation message when existing project path is empty
-        cy.pick("page", "existing-project")
-          .contains("Pick a directory with an existing repository")
           .should("exist");
       });
     });

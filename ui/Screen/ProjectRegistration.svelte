@@ -90,7 +90,6 @@
   <ModalLayout dataCy="project-registration-screen">
     <div class="wrapper">
       <div class="project-registration">
-
         {#if showRegistrationDetails === true}
           <h2 style="text-align: center; margin-bottom: 24px;">
             Project registration

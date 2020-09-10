@@ -91,11 +91,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
-
         let meta = ctx
             .peer_api
-            .init_project(&key, &owner, &input)
+            .init_project(&ctx.signer, &owner, &input)
             .map_err(Error::from)?;
         let urn = meta.urn();
 
@@ -243,7 +241,6 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::git::local::url::LocalUrl;
     use radicle_surf::vcs::git::git2;
 
     use crate::context;
@@ -263,14 +260,13 @@ mod test {
 
         let ctx = ctx.read().await;
         let handle = "cloudhead";
-        let key = ctx.keystore.get_librad_key()?;
 
-        let owner = ctx.peer_api.init_owner(&key, handle)?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, handle)?;
         session::set_identity(&ctx.store, (ctx.peer_api.peer_id(), owner.clone()).into())?;
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -313,7 +309,7 @@ mod test {
         assert_eq!(
             remote.url(),
             Some(
-                LocalUrl::from_urn(urn, ctx.peer_api.peer_id())
+                coco::LocalUrl::from_urn(urn, ctx.peer_api.peer_id())
                     .to_string()
                     .as_str()
             )
@@ -333,8 +329,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let handle = "cloudhead";
-        let key = ctx.keystore.get_librad_key()?;
-        let id = identity::create(&ctx.peer_api, &key, handle)?;
+        let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -394,8 +389,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let handle = "cloudhead";
-        let key = ctx.keystore.get_librad_key()?;
-        let id = identity::create(&ctx.peer_api, &key, handle)?;
+        let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -457,8 +451,7 @@ mod test {
         {
             let ctx = ctx.read().await;
             let handle = "cloudhead";
-            let key = ctx.keystore.get_librad_key()?;
-            let id = identity::create(&ctx.peer_api, &key, handle)?;
+            let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
             session::set_identity(&ctx.store, id)?;
         }
@@ -484,8 +477,7 @@ mod test {
         {
             let ctx = ctx.read().await;
             let handle = "cloudhead";
-            let key = ctx.keystore.get_librad_key()?;
-            let id = identity::create(&ctx.peer_api, &key, handle)?;
+            let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
             session::set_identity(&ctx.store, id)?;
         }
@@ -537,11 +529,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -571,10 +562,9 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
 
         let projects = project::list_projects(&ctx.peer_api)?;
         let res = request().method("GET").path("/").reply(&api).await;
@@ -594,15 +584,14 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
         let project = &project::list_projects(&ctx.peer_api)?[0];
-        let librad_project = ctx.peer_api.get_project(&project.id, None)?;
+        let coco_project = ctx.peer_api.get_project(&project.id, None)?;
 
         let fintohaps: identity::Identity =
-            coco::control::track_fake_peer(&ctx.peer_api, &key, &librad_project, "fintohaps")
+            coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &coco_project, "fintohaps")
                 .into();
 
         let res = request()
@@ -670,10 +659,9 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
 
         let res = request().method("GET").path("/discover").reply(&api).await;
         let want = json!([

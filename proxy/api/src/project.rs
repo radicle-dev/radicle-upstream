@@ -6,8 +6,6 @@ use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
 
-use librad::uri::RadUrn;
-
 use crate::error;
 
 /// Object the API returns for project metadata.
@@ -21,7 +19,7 @@ pub struct Metadata {
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
     /// List of maintainers.
-    pub maintainers: HashSet<RadUrn>,
+    pub maintainers: HashSet<coco::Urn>,
 }
 
 impl<ST> From<coco::Project<ST>> for Metadata
@@ -62,7 +60,7 @@ impl<ST> From<(coco::Project<ST>, coco::Stats)> for Project
 where
     ST: Clone,
 {
-    /// Create a `Project` given a `librad` defined [`coco::Project`] and the [`coco::Stats`]
+    /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
         let id = project.urn();
@@ -194,13 +192,13 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
     let urn = coco::Urn::new(
         coco::Hash::hash(b"hash"),
         coco::uri::Protocol::Git,
-        coco::uri::Path::parse("")?,
+        coco::uri::Path::parse("").map_err(coco::Error::from)?,
     );
 
     let other_urn = coco::Urn::new(
         coco::Hash::hash(b"something_else"),
         coco::uri::Protocol::Git,
-        coco::uri::Path::parse("")?,
+        coco::uri::Path::parse("").map_err(coco::Error::from)?,
     );
 
     let projects = vec![

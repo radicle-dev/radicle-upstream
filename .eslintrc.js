@@ -5,6 +5,7 @@ module.exports = {
   env: {
     node: true,
     browser: true,
+    es6: true,
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -44,7 +45,6 @@ module.exports = {
     // require let or const instead of var
     // https://eslint.org/docs/rules/no-var
     "no-var": "error",
-
     // require at least one whitespace after comments( // and /*)
     // https://eslint.org/docs/rules/spaced-comment
     "spaced-comment": ["warn", "always"],

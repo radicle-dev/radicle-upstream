@@ -1,4 +1,6 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import Icon from "../Icon";
   import Spinner from "../../Component/Spinner.svelte";
 
@@ -9,6 +11,7 @@
   export let placeholder = null;
   export let value = null;
   export let dataCy = null;
+  export let inputElement = null;
 
   export let disabled = null;
   export let validation = null;
@@ -17,11 +20,18 @@
   export let spellcheck = false;
   export let autofocus = false;
 
-  let input;
+  const dispatch = createEventDispatcher();
 
-  // Can't use normal `autofocus` attribute on the `input`:
-  // "Autofocus processing was blocked because a document's URL has a fragment"
-  $: if (autofocus) input && input.focus();
+  // Can't use normal `autofocus` attribute on the `inputElement`:
+  // "Autofocus processing was blocked because a document's URL has a fragment".
+  // preventScroll is necessary for onboarding animations to work.
+  $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
+
+  const onKeydown = event => {
+    if (event.key === "Enter") {
+      dispatch("enter");
+    }
+  };
 </script>
 
 <style>
@@ -45,6 +55,7 @@
   input[disabled] {
     cursor: not-allowed;
     color: var(--color-foreground-level-4);
+    background-color: var(--color-foreground-level-1);
   }
 
   input[disabled]::placeholder {
@@ -52,7 +63,7 @@
   }
 
   input[disabled]:hover {
-    background-color: var(--color-background);
+    background-color: var(--color-foreground-level-1);
   }
 
   input::placeholder {
@@ -118,7 +129,8 @@
     {disabled}
     on:change
     on:input
-    bind:this={input}
+    on:keydown={onKeydown}
+    bind:this={inputElement}
     {spellcheck}
     style={inputStyle} />
 
