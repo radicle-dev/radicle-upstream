@@ -1,6 +1,6 @@
 //! Utility to work with the peer api of librad.
 
-use std::convert::TryFrom;
+use std::convert::{From, TryFrom};
 use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
 use std::path::{self, PathBuf};
@@ -40,6 +40,17 @@ pub type User = user::User<entity::Verified>;
 pub struct Api {
     /// Thread-safe wrapper around [`PeerApi`].
     peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
+}
+
+//TODO(nuno): Switch to TryFrom once we handle a failed `lock()` on the `peer_api`.
+impl From<&Api> for Seed {
+    fn from(api: &Api) -> Self {
+        let api = api.peer_api.lock().expect("unable to acquire lock");
+        Self {
+            peer_id: api.peer_id().clone(),
+            addr: api.listen_addr(),
+        }
+    }
 }
 
 impl Api {
@@ -100,16 +111,6 @@ impl Api {
     pub fn monorepo(&self) -> PathBuf {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         api.paths().git_dir().join("")
-    }
-
-    /// Get the [`Seed`] representation for this [`Api`] instance.
-    #[must_use]
-    pub fn seed(&self) -> Seed {
-        let api = self.peer_api.lock().expect("unable to acquire lock");
-        Seed {
-            peer_id: api.peer_id().clone(),
-            addr: api.listen_addr(),
-        }
     }
 
     /// Returns the underlying [`paths::Paths`].
@@ -804,7 +805,7 @@ mod test {
             config::Paths::FromRoot(tmp_dir.path().to_path_buf()).try_into()?,
             key,
             *config::LOCALHOST_ANY,
-            vec![alice.seed()],
+            vec![(&alice).into()],
         );
         let bob = Api::new(config).await?;
 
