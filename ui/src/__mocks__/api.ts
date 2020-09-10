@@ -2,6 +2,7 @@ import * as org from "../org";
 import * as project from "../project";
 import * as session from "../session";
 import * as settings from "../settings";
+import * as source from "../source";
 import * as user from "../user";
 
 type MockedResponse =
@@ -9,6 +10,7 @@ type MockedResponse =
   | project.Project
   | project.Project[]
   | session.Session
+  | source.LocalState
   | user.User
   | null;
 
@@ -76,6 +78,11 @@ export const sessionMock: session.Session = {
   },
 };
 
+export const localStateMock: source.LocalState = {
+  branches: ["main", "other-branch"],
+  managed: false,
+};
+
 export const get = async (endpoint: string): Promise<MockedResponse> => {
   const [prefix, param] = endpoint.split("/");
 
@@ -96,6 +103,10 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
       break;
     case "session":
       response = sessionMock;
+      break;
+    case "source":
+      response = param === "local-state" ? localStateMock : null;
+      break;
   }
 
   return new Promise(resolve => resolve(response));
