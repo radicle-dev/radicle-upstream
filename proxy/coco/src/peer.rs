@@ -5,6 +5,7 @@ use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use futures::stream::StreamExt;
 
@@ -275,21 +276,14 @@ impl Api {
         Ok(project_meta)
     }
 
-    /// Query the network for providers of the given [`RadUrn`].
-    ///
-    /// Notes:
-    ///   * there is no guarantee that a peer who claims to provide the [`RadUrn`] actually has it,
-    ///     nor that it is reachable using any of the addresses contained in [`PeerInfo`].
-    ///
-    ///   * there is no guarantee that any peer ever replies to the query, meaning that awaiting for
-    ///     a reply might never terminate, requiring callers of this function to timeout on
-    ///     `next()`.
+    /// Query the network for providers of the given [`RadUrn`] within a given `timeout`.
     pub fn providers(
         &self,
         urn: RadUrn,
+        timeout: Duration,
     ) -> impl Future<Output = impl futures::Stream<Item = PeerInfo<IpAddr>>> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
-        api.providers(urn)
+        api.providers(urn, timeout)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -556,7 +550,6 @@ mod test {
     use std::time::Duration;
 
     use futures::stream::StreamExt;
-    use tokio::time::timeout;
 
     use librad::hash::Hash;
     use librad::keys::SecretKey;
@@ -767,16 +760,13 @@ mod test {
                 .map_err(Error::from)?,
         };
 
-        let res = timeout(
-            Duration::from_secs(5),
-            api.providers(unkown_urn).await.next(),
-        )
-        .await;
+        let res = api
+            .providers(unkown_urn, Duration::from_secs(5))
+            .await
+            .next()
+            .await;
 
-        assert!(
-            res.is_err(),
-            "Should have timed out without obtaining any provider",
-        );
+        assert!(res.is_none(), "Shouldn't have obtained any provider",);
 
         Ok(())
     }
@@ -820,22 +810,19 @@ mod test {
         .unwrap();
 
         // Have peer 2 ask the network for providers for `target_urn`
-        let res = timeout(
-            Duration::from_secs(3),
-            bob.providers(target_urn).await.next(),
-        )
-        .await;
+        let res = bob
+            .providers(target_urn, Duration::from_secs(5))
+            .await
+            .next()
+            .await;
 
         match res {
-            Ok(Some(peer_info)) => assert_eq!(
+            Some(peer_info) => assert_eq!(
                 peer_info.peer_id, alice_peer_id,
                 "Got an unexpected peer id as provider",
             ),
-            Ok(None) => {
+            None => {
                 panic!("Expected to have obtained the peer1 but got None instead");
-            },
-            Err(e) => {
-                panic!(format!("Didn't find any peer before the timeout: {}", e));
             },
         }
 

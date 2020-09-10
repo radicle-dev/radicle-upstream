@@ -307,7 +307,7 @@ version = "0.1.0"
 dependencies = [
  "futures 0.3.5",
  "lazy_static",
- "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=555de1a1157a9341e82708049247cb8dfeb7f962)",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=c16ce900776975e3de017af71763dc4e2e129d3f)",
  "log",
  "nonempty",
  "pretty_assertions",
@@ -1075,7 +1075,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=555de1a1157a9341e82708049247cb8dfeb7f962#555de1a1157a9341e82708049247cb8dfeb7f962"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c16ce900776975e3de017af71763dc4e2e129d3f#c16ce900776975e3de017af71763dc4e2e129d3f"
 dependencies = [
  "async-trait",
  "bit-vec",
