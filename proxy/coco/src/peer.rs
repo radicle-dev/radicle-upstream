@@ -72,8 +72,8 @@ impl Peer {
 
     /// Subscribe to peer events.
     ///
-    /// NB(xla): A caller must call this before run the loop is started, as that consumes the peer.
-    /// There is also a configured [`RECEIVER_CAPACITY`], which prevents from unbounded queues
+    /// NB(xla): A caller must call this before the run loop is started, as that consumes the peer.
+    /// There is also a configured [`RECEIVER_CAPACITY`], which prevents unbounded queues fron
     /// filling up.
     #[must_use = "eat your events"]
     pub fn subscribe(&self) -> broadcast::Receiver<Event> {
