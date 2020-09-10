@@ -128,7 +128,7 @@ impl Peer {
                             return Err(err);
                         }
                     }
-                }
+                },
             }
         }
 
