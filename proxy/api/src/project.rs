@@ -103,12 +103,12 @@ pub struct Projects {
     ///
     /// The conditions imply that a project is "contributed" if I am the maintainer or I have
     /// contributed to the project.
-    pub mine: Vec<Project>,
+    pub contributed: Vec<Project>,
 }
 
 impl Projects {
     /// List all the projects that are located on your device. These projects could either be
-    /// "tracked" or "mine".
+    /// "tracked" or "contributed".
     ///
     /// See [`Projects`] for a detailed breakdown of both kinds of projects.
     ///
@@ -120,10 +120,10 @@ impl Projects {
     pub fn list(api: &coco::Api) -> Result<Self, error::Error> {
         let mut projects = Self {
             tracked: vec![],
-            mine: vec![],
+            contributed: vec![],
         };
         for project in api.list_projects()? {
-            let refs = api.list_project_refs(&project.urn())?;
+            let refs = api.list_owner_project_refs(&project.urn())?;
             let project = api.with_browser(&project.urn(), |browser| {
                 let stats = browser.get_stats().map_err(coco::Error::from)?;
                 Ok((project, stats).into())
@@ -131,7 +131,7 @@ impl Projects {
             if refs.heads.is_empty() {
                 projects.tracked.push(Tracked(project))
             } else {
-                projects.mine.push(project)
+                projects.contributed.push(project)
             }
         }
 
@@ -145,15 +145,12 @@ impl IntoIterator for Projects {
 
     // Give back an iterator over all the [`Project`]s.
     fn into_iter(self) -> Self::IntoIter {
-        // TODO(sos): chain two iterators together here
-        //
-        // e.g.
-        //
-        // let mine = self.mine.into_iter();
-        // let tracked = self.tracked.into_iter().map(|tracked| tracked.0);
-        // mine.chain(tracked)
+        let mut contributed = self.contributed;
+        let mut tracked = self.tracked.into_iter().map(|tracked| tracked.0).collect();
 
-        self.mine.into_iter()
+        contributed.append(&mut tracked);
+
+        contributed.into_iter()
     }
 }
 

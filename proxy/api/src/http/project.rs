@@ -11,10 +11,12 @@ use crate::http;
 
 /// Combination of all routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
-    list_filter(ctx.clone())
+    tracked_filter(ctx.clone())
+        .or(contributed_filter(ctx.clone()))
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
+        .or(peer_filter(ctx.clone()))
         .or(get_filter(ctx))
         .boxed()
 }
@@ -34,10 +36,10 @@ fn checkout_filter(
 fn create_filter(
     ctx: context::Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx.clone())
-        .and(http::with_owner_guard(ctx))
-        .and(warp::post())
+    warp::post()
         .and(path::end())
+        .and(http::with_context(ctx.clone()))
+        .and(http::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create)
 }
@@ -51,13 +53,37 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
         .and_then(handler::get)
 }
 
-/// `GET /`
-fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+/// TODO(sos): move this to identity/ ? feels awkward here
+/// `GET /peer/<id>`
+fn peer_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("peer")
+        .and(http::with_context(ctx))
         .and(warp::get())
-        .and(warp::query::<Status>())
+        .and(path::param::<coco::Urn>())
         .and(path::end())
-        .and_then(handler::list)
+        .and_then(handler::list_peer_projects)
+}
+
+/// `GET /tracked`
+fn tracked_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("tracked")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and_then(handler::list_tracked)
+}
+
+/// `GET /contributed`
+fn contributed_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("contributed")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and_then(handler::list_contributed)
 }
 
 /// `GET /discover`
@@ -135,20 +161,26 @@ mod handler {
         Ok(reply::json(&project::get(&ctx.peer_api, &urn)?))
     }
 
-    /// List all known projects.
-    ///
-    /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
-    pub async fn list(ctx: context::Ctx, status: super::Status) -> Result<impl Reply, Rejection> {
+    /// List all projects the current user is tracking.
+    pub async fn list_tracked(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let projects = project::Projects::list(&ctx.peer_api)?;
-        match status {
-            super::Status::Tracked => Ok(reply::json(&projects.tracked)),
-            super::Status::Mine => Ok(reply::json(&projects.mine)),
-        }
+
+        Ok(reply::json(&projects.tracked))
     }
 
-    pub async fn list_user_projects(
+    /// List all projects the current user has contributed to.
+    pub async fn list_contributed(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
+        let ctx = ctx.read().await;
+
+        let projects = project::Projects::list(&ctx.peer_api)?;
+
+        Ok(reply::json(&projects.contributed))
+    }
+
+    /// List all projects tracked by given peer.
+    pub async fn list_peer_projects(
         ctx: context::Ctx,
         user: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
@@ -198,39 +230,6 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
-}
-
-/// The status of a project in your monorepo.
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum Status {
-    /// The project exists in your monorepo and you're interested in it, but you've
-    /// not yet contributed to it.
-    Tracked,
-    /// You've contributed to this project and it exists in your monorepo.
-    Mine,
-}
-
-impl Default for Status {
-    fn default() -> Self {
-        Status::Mine
-    }
-}
-
-/// Query options for listing projects.
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct ListQuery {
-    /// Only include projects tracked by this user
-    user: Option<coco::Urn>,
-    /// Only include projects of the given `Status`
-    ///
-    /// **N.B.** This only works for _your_ projects; if you provide a `user`,
-    /// it will be ignored
-    ///
-    /// TODO(sos): If this becomes Option<Status>, I get a MissingOwner error 🤔
-    /// I think the error happens in `with_qs_opt` at the `match
-    /// serde_qs::from_str(&query)`
-    status: Status,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
@@ -556,27 +555,6 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-
-        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
-
-        let projects = project::Projects::list(&ctx.peer_api)?;
-        let res = request().method("GET").path("/").reply(&api).await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(projects));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
     #[allow(clippy::indexing_slicing)]
     async fn list_for_user() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
@@ -597,12 +575,33 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/?user={}", fintohaps.urn))
+            .path(&format!("/peer/{}", fintohaps.urn))
             .reply(&api)
             .await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(vec![project]));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list_tracked() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
+
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
+        let projects = project::Projects::list(&ctx.peer_api)?;
+
+        let res = request().method("GET").path("/tracked").reply(&api).await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(projects.tracked));
         });
 
         Ok(())
@@ -621,32 +620,14 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path("/?status=tracked")
+            .path("/contributed")
             .reply(&api)
             .await;
 
-        // TODO(sos): replace with tracked project
-        let want = json!([
-            {
-                "id": "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c",
-                "metadata": {
-                    "defaultBranch": "main",
-                    "description": "It is not the slumber of reason that engenders monsters, \
-                    but vigilant and insomniac rationality.",
-                    "name": "radicle-upstream",
-                    "maintainers": [],
-                },
-                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-                "stats": {
-                    "branches": 36,
-                    "commits": 216,
-                    "contributors": 6,
-                },
-            },
-        ]);
+        let projects = project::Projects::list(&ctx.peer_api)?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, want);
+            assert_eq!(have, json!(projects.contributed));
         });
 
         Ok(())
