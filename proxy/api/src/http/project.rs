@@ -16,7 +16,6 @@ pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(peer_filter(ctx.clone()))
         .or(get_filter(ctx))
         .boxed()
 }
@@ -51,17 +50,6 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
         .and(path::param::<coco::Urn>())
         .and(path::end())
         .and_then(handler::get)
-}
-
-/// TODO(sos): move this to identity/ ? feels awkward here
-/// `GET /peer/<id>`
-fn peer_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("peer")
-        .and(http::with_context(ctx))
-        .and(warp::get())
-        .and(path::param::<coco::Urn>())
-        .and(path::end())
-        .and_then(handler::list_peer_projects)
 }
 
 /// `GET /tracked`
@@ -177,18 +165,6 @@ mod handler {
         let projects = project::Projects::list(&ctx.peer_api)?;
 
         Ok(reply::json(&projects.contributed))
-    }
-
-    /// List all projects tracked by given peer.
-    pub async fn list_peer_projects(
-        ctx: context::Ctx,
-        user: coco::Urn,
-    ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-        Ok(reply::json(&project::list_projects_for_user(
-            &ctx.peer_api,
-            &user,
-        )?))
     }
 
     /// Get a feed of untracked projects.
@@ -549,38 +525,6 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(project));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    #[allow(clippy::indexing_slicing)]
-    async fn list_for_user() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-
-        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
-        let projects = project::Projects::list(&ctx.peer_api)?;
-        let project = projects.into_iter().next().unwrap();
-        let coco_project = ctx.peer_api.get_project(&project.id, None)?;
-
-        let fintohaps: identity::Identity =
-            coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &coco_project, "fintohaps")
-                .into();
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/peer/{}", fintohaps.urn))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(vec![project]));
         });
 
         Ok(())

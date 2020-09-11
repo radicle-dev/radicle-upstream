@@ -180,13 +180,18 @@ pub fn list_projects_for_user(
 ) -> Result<Vec<Project>, error::Error> {
     let mut projects = vec![];
 
-    for project in Projects::list(api)?.into_iter() {
+    for project in api.list_projects()? {
         if api
-            .tracked(&project.id)?
+            .tracked(&project.urn())?
             .into_iter()
             .any(|(_, project_user)| project_user.urn() == *user)
         {
-            projects.push(project);
+            let proj = api.with_browser(&project.urn(), |browser| {
+                let stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, stats).into())
+            })?;
+
+            projects.push(proj);
         }
     }
     Ok(projects)
