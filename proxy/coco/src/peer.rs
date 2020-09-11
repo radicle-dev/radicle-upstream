@@ -1,6 +1,7 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
+use std::collections::HashSet;
 use std::fmt;
 use std::time::Instant;
 
@@ -104,7 +105,7 @@ impl Peer {
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
 
-        let mut state = State::Offline(None);
+        let mut state = State::default();
 
         loop {
             let maybe_input = tokio::select! {
@@ -123,10 +124,7 @@ impl Peer {
                 else => break,
             };
 
-            let (new_state, maybe_output) =
-                maybe_input.map_or((state, None), |input| transition(state, input));
-
-            state = new_state;
+            let maybe_output = maybe_input.map_or(None, |input| state.transition(input));
 
             if let Some(output) = maybe_output {
                 let event = match output {
@@ -164,13 +162,14 @@ impl Peer {
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum State {
+#[derive(Clone)]
+pub enum Status {
     Offline(Option<Instant>),
     Syncing(Instant, usize),
-    Online(Instant, usize),
+    Online(Instant),
 }
 
+#[derive(Clone)]
 pub enum Input {
     AnnouncementTick,
     Connected(PeerId),
@@ -183,14 +182,45 @@ pub enum Output {
     Sync(PeerId),
 }
 
-fn transition(state: State, input: Input) -> (State, Option<Output>) {
-    match (state, input) {
-        (State::Offline(_since), Input::Connected(peer_id)) => (
-            State::Syncing(Instant::now(), 1),
-            Some(Output::Sync(peer_id)),
-        ),
-        (State::Online(_since, num_connections), Input::Disconnected()) if num_connections == 1 => {
-            (State::Offline(Some(Instant::now())), None)
+struct State {
+    connected_peers: HashSet<PeerId>,
+    status: Status,
+}
+
+impl State {
+    fn transition(&mut self, input: Input) -> Option<Output> {
+        match (&self.status, input) {
+            // First connection after startup, which we know from the recorded `since` being
+            // `None`.
+            (Status::Offline(None), Input::Connected(peer_id)) => {
+                self.connected_peers.insert(peer_id.clone());
+                self.status = Status::Syncing(Instant::now(), 1);
+
+                Some(Output::Sync(peer_id))
+            }
+            // Go offline if we have no more connected peers left. We produce no output.
+            (_, Input::Disconnected(peer_id)) if self.connected_peers.len() == 1 => {
+                self.connected_peers.remove(&peer_id);
+                self.status = Status::Offline(Some(Instant::now()));
+
+                None
+            }
+            // Remove peer that just disconnected.
+            (_, Input::Disconnected(peer_id)) => {
+                self.connected_peers.remove(&peer_id);
+
+                None
+            }
+            _ => None,
+        }
+    }
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            connected_peers: HashSet::new(),
+            status: Status::Offline(None),
         }
     }
 }
