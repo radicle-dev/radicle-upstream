@@ -52,7 +52,7 @@ pub fn build(api: &peer::Api) -> Result<HashSet<Announcement>, Error> {
         Err(err) => Err(err),
         Ok(projects) => {
             for project in &projects {
-                let refs = api.list_project_refs(&project.urn())?;
+                let refs = api.list_owner_project_refs(&project.urn())?;
 
                 for (head, hash) in &refs.heads {
                     list.insert((
