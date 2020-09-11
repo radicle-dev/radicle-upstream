@@ -2,13 +2,16 @@
 //! prorper state updates.
 
 use std::fmt;
+use std::time::Instant;
 
 use futures::StreamExt as _;
 use tokio::sync::broadcast;
 
+use librad::keys;
 use librad::net::peer::Gossip;
-use librad::net::peer::RunLoop;
-use librad::net::protocol;
+use librad::net::peer::{PeerStorage, RunLoop};
+use librad::net::protocol::{Protocol, ProtocolEvent};
+use librad::peer::PeerId;
 
 use crate::state::Lock;
 
@@ -33,7 +36,7 @@ pub enum Event {
     /// Gossiped a list of updates of new heads in our [`crate::state::State`]`.
     Announced(announcement::Updates),
     /// Received a low-level protocol event.
-    Protocol(protocol::ProtocolEvent<Gossip>),
+    Protocol(ProtocolEvent<Gossip>),
 }
 
 impl fmt::Debug for Event {
@@ -101,27 +104,44 @@ impl Peer {
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
 
+        let mut state = State::Offline(None);
+
         loop {
-            let res = tokio::select! {
+            let maybe_input = tokio::select! {
                 _ = announce_timer.tick() => {
-                    Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
+                    Some(Input::AnnouncementTick)
+                    // Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
                 },
-                Some(event) = protocol_subscriber.next() => {
-                    Ok(Event::Protocol(event))
+                Some(event) = protocol_subscriber.next() => match event {
+                    ProtocolEvent::Connected(peer_id) => Some(Input::Connected(peer_id)),
+                    _ => None,
                 },
+
+                    // None
+                    // Ok(Event::Protocol(event))
+                // },
                 else => break,
             };
 
-            match res {
-                // Propagate if one of the select failed.
-                Err(err) => return Err(err),
-                Ok(event) => {
-                    log::info!("{:?}", event);
+            let (new_state, maybe_output) =
+                maybe_input.map_or((state, None), |input| transition(state, input));
 
-                    // Send will error if there are no active receivers. This case is expected and
-                    // should not crash the run loop.
-                    self.subscriber.send(event).ok();
-                },
+            state = new_state;
+
+            if let Some(output) = maybe_output {
+                let event = match output {
+                    Output::Announce => {
+                        let updates = Self::announce(self.state.clone(), &self.store).await?;
+                        Event::Announced(updates)
+                    }
+                    _ => todo!(),
+                };
+
+                log::debug!("{:?}", event);
+
+                // Send will error if there are no active receivers. This case is expected and
+                // should not crash the run loop.
+                self.subscriber.send(event).ok();
             }
         }
 
@@ -141,5 +161,36 @@ impl Peer {
         }
 
         Ok(updates)
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum State {
+    Offline(Option<Instant>),
+    Syncing(Instant, usize),
+    Online(Instant, usize),
+}
+
+pub enum Input {
+    AnnouncementTick,
+    Connected(PeerId),
+    Disconnected(PeerId),
+    SyncTimeout,
+}
+
+pub enum Output {
+    Announce,
+    Sync(PeerId),
+}
+
+fn transition(state: State, input: Input) -> (State, Option<Output>) {
+    match (state, input) {
+        (State::Offline(_since), Input::Connected(peer_id)) => (
+            State::Syncing(Instant::now(), 1),
+            Some(Output::Sync(peer_id)),
+        ),
+        (State::Online(_since, num_connections), Input::Disconnected()) if num_connections == 1 => {
+            (State::Offline(Some(Instant::now())), None)
+        }
     }
 }
