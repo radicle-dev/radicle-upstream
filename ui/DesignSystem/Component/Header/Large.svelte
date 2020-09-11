@@ -82,11 +82,11 @@
     margin-right: 1rem;
   }
 
-  .stat {
-    background-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-6);
-    padding: 0 0.5rem;
-    border-radius: 0.75rem;
+  .project-stat-separator {
+    display: flex;
+    color: var(--color-foreground-level-3);
+    padding: 0.5rem 0;
+    margin-right: 1rem;
   }
 
   .action-bar {
@@ -145,15 +145,14 @@
             <div class="project-stats" data-cy="project-stats">
               <div class="project-stat-item">
                 <Icon.Branch />
-                <p style="margin: 0 8px;">Branches</p>
-                <span class="stat typo-mono-bold">{entity.stats.branches}</span>
+                <p style="margin: 0 8px;">{entity.stats.branches} Branches</p>
               </div>
+              <span class="typo-mono-bold project-stat-separator">•</span>
               <div class="project-stat-item">
                 <Icon.User />
-                <p style="margin: 0 8px;">Contributors</p>
-                <span class="stat typo-mono-bold">
-                  {entity.stats.contributors}
-                </span>
+                <p style="margin: 0 8px;">
+                  {entity.stats.contributors} Contributors
+                </p>
               </div>
             </div>
           {/if}

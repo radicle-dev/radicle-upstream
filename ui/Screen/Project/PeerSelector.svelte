@@ -65,6 +65,7 @@
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     padding: 0.5rem;
+    margin-right: 1rem;
     display: flex;
     cursor: pointer;
     justify-content: space-between;
