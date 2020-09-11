@@ -30,8 +30,8 @@
 <style>
   .clone-dropdown {
     margin-top: 0.5rem;
-    top: 3.25rem;
-    right: 0;
+    top: var(--bigheader-height);
+    right: 2rem;
     position: absolute;
     border-radius: 8px;
     background: var(--color-background);
