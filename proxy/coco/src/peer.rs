@@ -216,6 +216,8 @@ impl State {
 
                 None
             }
+            // Announce new updates while the peer is online.
+            (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
             _ => None,
         }
     }
