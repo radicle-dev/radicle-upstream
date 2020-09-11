@@ -32,6 +32,7 @@
   .banner {
     height: 200px;
     background-color: var(--color-foreground-level-1);
+    display: flex;
   }
 
   .banner-content {
@@ -40,7 +41,7 @@
     max-width: var(--content-max-width);
     width: 100%;
     margin: 0 auto;
-    padding: 40px var(--content-padding);
+    padding: 0 var(--content-padding);
   }
 
   .left {
