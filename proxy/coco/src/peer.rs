@@ -8,10 +8,9 @@ use std::time::Instant;
 use futures::StreamExt as _;
 use tokio::sync::broadcast;
 
-use librad::keys;
 use librad::net::peer::Gossip;
-use librad::net::peer::{PeerStorage, RunLoop};
-use librad::net::protocol::{Protocol, ProtocolEvent};
+use librad::net::peer::RunLoop;
+use librad::net::protocol::ProtocolEvent;
 use librad::peer::PeerId;
 
 use crate::state::Lock;
@@ -124,11 +123,11 @@ impl Peer {
                 else => break,
             };
 
-            let maybe_output = maybe_input.map_or(None, |input| state.transition(input));
+            let maybe_cmd = maybe_input.and_then(|input| state.transition(input));
 
-            if let Some(output) = maybe_output {
-                let event = match output {
-                    Output::Announce => {
+            if let Some(cmd) = maybe_cmd {
+                let event = match cmd {
+                    Command::Announce => {
                         let updates = Self::announce(self.state.clone(), &self.store).await?;
                         Event::Announced(updates)
                     }
@@ -162,22 +161,21 @@ impl Peer {
     }
 }
 
-#[derive(Clone)]
-pub enum Status {
+enum Status {
     Offline(Option<Instant>),
     Syncing(Instant, usize),
     Online(Instant),
 }
 
-#[derive(Clone)]
-pub enum Input {
+enum Input {
     AnnouncementTick,
     Connected(PeerId),
     Disconnected(PeerId),
     SyncTimeout,
 }
 
-pub enum Output {
+#[derive(Debug, PartialEq)]
+enum Command {
     Announce,
     Sync(PeerId),
 }
@@ -188,7 +186,14 @@ struct State {
 }
 
 impl State {
-    fn transition(&mut self, input: Input) -> Option<Output> {
+    fn new(connected_peers: HashSet<PeerId>, status: Status) -> Self {
+        Self {
+            connected_peers,
+            status,
+        }
+    }
+
+    fn transition(&mut self, input: Input) -> Option<Command> {
         match (&self.status, input) {
             // First connection after startup, which we know from the recorded `since` being
             // `None`.
@@ -196,7 +201,7 @@ impl State {
                 self.connected_peers.insert(peer_id.clone());
                 self.status = Status::Syncing(Instant::now(), 1);
 
-                Some(Output::Sync(peer_id))
+                Some(Command::Sync(peer_id))
             }
             // Go offline if we have no more connected peers left. We produce no output.
             (_, Input::Disconnected(peer_id)) if self.connected_peers.len() == 1 => {
@@ -222,5 +227,42 @@ impl Default for State {
             connected_peers: HashSet::new(),
             status: Status::Offline(None),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::collections::HashSet;
+    use std::time::Instant;
+
+    use librad::keys::SecretKey;
+    use librad::peer::PeerId;
+
+    use super::{Command, Input, State, Status};
+
+    #[test]
+    fn sync_on_startup() {
+        let key = SecretKey::new();
+        let peer_id = PeerId::from(key);
+
+        // Startup can be inferred by the `Offline` state which doesn't have a recorded timestamp.
+        let status = Status::Offline(None);
+        let mut state = State::new(HashSet::new(), status);
+        let cmd = state
+            .transition(Input::Connected(peer_id.clone()))
+            .expect("expected command");
+
+        assert_eq!(cmd, Command::Sync(peer_id));
+    }
+
+    #[test]
+    fn announce_when_online() {
+        let status = Status::Online(Instant::now());
+        let mut state = State::new(HashSet::new(), status);
+        let cmd = state
+            .transition(Input::AnnouncementTick)
+            .expect("expected command");
+
+        assert_eq!(cmd, Command::Announce);
     }
 }
