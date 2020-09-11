@@ -13,7 +13,6 @@ use crate::http;
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     get_filter(Arc::clone(&ctx))
         .or(create_filter(Arc::clone(&ctx)))
-        .or(projects_filter(Arc::clone(&ctx)))
         .or(list_filter(ctx))
         .boxed()
 }
@@ -33,20 +32,7 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
     http::with_context(ctx)
         .and(warp::get())
         .and(path::param::<coco::Urn>())
-        .and(path::end())
         .and_then(handler::get)
-}
-
-/// `GET /<id>/projects`
-fn projects_filter(
-    ctx: context::Ctx,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
-        .and(warp::get())
-        .and(path::param::<coco::Urn>())
-        .and(path("projects"))
-        .and(path::end())
-        .and_then(handler::get_projects)
 }
 
 /// `GET /`
@@ -65,7 +51,6 @@ mod handler {
     use crate::context;
     use crate::error;
     use crate::identity;
-    use crate::project;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
@@ -93,19 +78,6 @@ mod handler {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id)?;
         Ok(reply::json(&id))
-    }
-
-    /// Get all projects tracked by the identity of the given `peer_urn`.
-    pub async fn get_projects(
-        ctx: context::Ctx,
-        peer_urn: coco::Urn,
-    ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-
-        Ok(reply::json(&project::list_projects_for_user(
-            &ctx.peer_api,
-            &peer_urn,
-        )?))
     }
 
     /// Retrieve the list of identities known to the session user.
@@ -139,7 +111,6 @@ mod test {
     use crate::error;
     use crate::http;
     use crate::identity;
-    use crate::project;
     use crate::session;
 
     #[tokio::test]
@@ -221,38 +192,6 @@ mod test {
                 avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
             })
         );
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    #[allow(clippy::indexing_slicing)]
-    async fn projects() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-
-        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
-
-        let projects = project::Projects::list(&ctx.peer_api)?;
-        let project = projects.into_iter().next().unwrap();
-        let coco_project = ctx.peer_api.get_project(&project.id, None)?;
-
-        let peer: identity::Identity =
-            coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &coco_project, "rafalca")
-                .into();
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/{}/projects", peer.urn))
-            .reply(&api)
-            .await;
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        assert_eq!(have, json!(vec![project]));
 
         Ok(())
     }

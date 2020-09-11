@@ -177,7 +177,7 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 pub fn list_projects_for_user(
     api: &coco::Api,
     user: &coco::Urn,
-) -> Result<Vec<Project>, error::Error> {
+) -> Result<Vec<Tracked>, error::Error> {
     let mut projects = vec![];
 
     for project in api.list_projects()? {
@@ -188,7 +188,7 @@ pub fn list_projects_for_user(
         {
             let proj = api.with_browser(&project.urn(), |browser| {
                 let stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, stats).into())
+                Ok(Tracked((project, stats).into()))
             })?;
 
             projects.push(proj);

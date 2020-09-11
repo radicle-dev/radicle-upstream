@@ -60,6 +60,7 @@ fn tracked_filter(
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::end())
+        .and(http::with_qs_opt::<ListQuery>())
         .and_then(handler::list_tracked)
 }
 
@@ -149,13 +150,22 @@ mod handler {
         Ok(reply::json(&project::get(&ctx.peer_api, &urn)?))
     }
 
-    /// List all projects the current user is tracking.
-    pub async fn list_tracked(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
+    /// List all projects tracked by a user. If no `id` is provided, defaults to
+    /// local repo owner.
+    pub async fn list_tracked(
+        ctx: context::Ctx,
+        opt_query: Option<super::ListQuery>,
+    ) -> Result<impl Reply, Rejection> {
+        let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
 
-        let projects = project::Projects::list(&ctx.peer_api)?;
+        let projects = if let Some(user) = query.user {
+            project::list_projects_for_user(&ctx.peer_api, &user)?
+        } else {
+            project::Projects::list(&ctx.peer_api)?.tracked
+        };
 
-        Ok(reply::json(&projects.tracked))
+        Ok(reply::json(&projects))
     }
 
     /// List all projects the current user has contributed to.
@@ -206,6 +216,13 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
+}
+
+/// Query options for listing projects.
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct ListQuery {
+    /// Only include projects tracked by this user
+    user: Option<coco::Urn>,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
@@ -552,7 +569,38 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_my_projects() -> Result<(), error::Error> {
+    async fn list_tracked_by_other_peer() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
+
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
+
+        let projects = project::Projects::list(&ctx.peer_api)?;
+        let project = projects.into_iter().next().unwrap();
+        let coco_project = ctx.peer_api.get_project(&project.id, None)?;
+
+        let peer: identity::Identity =
+            coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &coco_project, "rafalca")
+                .into();
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/tracked/?user={}", peer.urn))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(have, json!(vec![project]));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list_contributed() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
