@@ -180,6 +180,7 @@ pub fn list_projects_for_user(
 ) -> Result<Vec<Tracked>, error::Error> {
     let mut projects = vec![];
 
+    /// TODO(sos): differentiate tracked & contributed projects for other peers
     for project in api.list_projects()? {
         if api
             .tracked(&project.urn())?

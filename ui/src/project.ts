@@ -80,7 +80,8 @@ export const projects = projectsStore.readable;
 enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
-  FetchList = "FETCH_LIST",
+  FetchContributed = "FETCH_CONTRIBUTED",
+  FetchTracking = "FETCH_TTRACKING",
 }
 
 interface Create extends event.Event<Kind> {
@@ -93,12 +94,17 @@ interface Fetch extends event.Event<Kind> {
   id: string;
 }
 
-interface FetchList extends event.Event<Kind> {
-  kind: Kind.FetchList;
+interface FetchContributed extends event.Event<Kind> {
+  kind: Kind.FetchContributed;
   urn?: string;
 }
 
-type Msg = Create | Fetch | FetchList;
+interface FetchTracking extends event.Event<Kind> {
+  kind: Kind.FetchTracking;
+  urn?: string;
+}
+
+type Msg = Create | Fetch | FetchContributed | FetchTracking;
 
 interface CreateInput {
   repo: Repo;
@@ -130,10 +136,24 @@ const update = (msg: Msg): void => {
 
       break;
 
-    case Kind.FetchList:
+    // TODO(sos): determine if viewing another user's profile shows you tracked || contributed || (tracked && contributed)
+    case Kind.FetchContributed:
       projectsStore.loading();
       api
-        .get<Projects>(msg.urn ? `projects/?user=${msg.urn}` : "projects")
+        .get<Projects>(
+          msg.urn ? `projects/tracked/?user=${msg.urn}` : "projects/contributed"
+        )
+        .then(projectsStore.success)
+        .catch(projectsStore.error);
+
+      break;
+
+    case Kind.FetchTracking:
+      projectsStore.loading();
+      api
+        .get<Projects>(
+          msg.urn ? `projects/tracked/?user=${msg.urn}` : "projects/tracked"
+        )
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
@@ -199,7 +219,7 @@ export const register = (
 };
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
-export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchList = event.create<Kind, Msg>(Kind.FetchContributed, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);
