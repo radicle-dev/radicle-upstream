@@ -2,14 +2,10 @@
 
 use std::path::PathBuf;
 
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use serde::{ser::SerializeStruct as _, Deserialize, Serialize, Serializer};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use crate::context;
-use crate::http;
-use crate::project;
+use crate::{context, http, project};
 
 /// Combination of all routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -78,12 +74,9 @@ fn discover_filter(
 mod handler {
     use std::path::PathBuf;
 
-    use warp::http::StatusCode;
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::context;
-    use crate::error::Error;
-    use crate::project;
+    use crate::{context, error::Error, project};
 
     /// Create a new [`project::Project`].
     pub async fn create(
@@ -226,17 +219,11 @@ pub struct ListQuery {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
     use radicle_surf::vcs::git::git2;
 
-    use crate::context;
-    use crate::error;
-    use crate::http;
-    use crate::identity;
-    use crate::project;
-    use crate::session;
+    use crate::{context, error, http, identity, project, session};
 
     #[tokio::test]
     async fn checkout() -> Result<(), error::Error> {

@@ -1,15 +1,16 @@
 //! Collection of all crate errors.
 
-use std::io;
-use std::path;
+use std::{io, path};
 
-use librad::git::{repo, storage};
-use librad::meta::entity;
-use librad::net;
-use librad::uri;
-use radicle_surf::file_system;
-use radicle_surf::vcs::git;
-use radicle_surf::vcs::git::git2;
+use librad::{
+    git::{repo, storage},
+    meta::entity,
+    net, uri,
+};
+use radicle_surf::{
+    file_system,
+    vcs::{git, git::git2},
+};
 
 /// Error emitted by one of the modules.
 #[derive(Debug, thiserror::Error)]

@@ -1,8 +1,7 @@
 //! Unidirectional stream of events happening in the proxy. This enables exposing tailing logs to
 //! users, or widgets which show topology information like how many and what peers are connected.
 
-use warp::filters::BoxedFilter;
-use warp::{Filter, Reply};
+use warp::{filters::BoxedFilter, Filter, Reply};
 
 use crate::notification::Subscriptions;
 
@@ -55,8 +54,7 @@ mod test {
     use pretty_assertions::assert_eq;
     use warp::test::request;
 
-    use crate::error;
-    use crate::notification;
+    use crate::{error, notification};
 
     /// This test blocks as we don't have a termination condition for the stream. We need to find
     /// a way to test this properly. Warp does have test utility for websockets but not for SSE

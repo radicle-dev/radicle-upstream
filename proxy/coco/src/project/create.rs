@@ -1,18 +1,21 @@
-use std::marker::PhantomData;
-use std::path::{self, PathBuf};
+use std::{
+    marker::PhantomData,
+    path::{self, PathBuf},
+};
 
 use serde::{Deserialize, Serialize};
 
-use librad::git::local::url::LocalUrl;
-use librad::git::types::{remote::Remote, FlatRef};
-use librad::keys;
-use librad::meta::entity;
-use librad::meta::project;
+use librad::{
+    git::{
+        local::url::LocalUrl,
+        types::{remote::Remote, FlatRef},
+    },
+    keys,
+    meta::{entity, project},
+};
 use radicle_surf::vcs::git::git2;
 
-use crate::config;
-use crate::error::Error;
-use crate::peer;
+use crate::{config, error::Error, peer};
 
 /// The data required to either open an existing repository or create a new one.
 #[derive(Debug, Clone, Serialize, Deserialize)]
