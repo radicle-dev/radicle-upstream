@@ -8,7 +8,7 @@ use librad::{
 };
 use radicle_surf::vcs::git::git2;
 
-use crate::{config, error::Error, peer, project, signer};
+use crate::{config, error::Error, project, signer, state::State, user::User};
 
 /// Deletes the local git repsoitory coco uses to keep its state.
 ///
@@ -28,9 +28,9 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
 pub fn setup_fixtures(
-    api: &peer::Api,
+    api: &State,
     signer: &signer::BoxedSigner,
-    owner: &peer::User,
+    owner: &User,
 ) -> Result<(), Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
@@ -66,9 +66,9 @@ pub fn setup_fixtures(
 /// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub fn replicate_platinum(
-    api: &peer::Api,
+    api: &State,
     signer: &signer::BoxedSigner,
-    owner: &peer::User,
+    owner: &User,
     name: &str,
     description: &str,
     default_branch: &str,
@@ -133,7 +133,7 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 /// Create and track a fake peer.
 #[must_use]
 pub fn track_fake_peer(
-    api: &peer::Api,
+    state: &State,
     signer: &signer::BoxedSigner,
     project: &librad_project::Project<entity::Draft>,
     fake_user_handle: &str,
@@ -149,9 +149,9 @@ pub fn track_fake_peer(
     //   to fake_user
     let urn = project.urn();
     let fake_user =
-        api.init_user(signer, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+        state.init_user(signer, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
     let remote = librad::peer::PeerId::from(keys::SecretKey::new());
-    let monorepo = git2::Repository::open(api.monorepo()).expect("failed to open monorepo");
+    let monorepo = git2::Repository::open(state.monorepo()).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
     // Grab the Oid of master for the given project.
@@ -207,7 +207,7 @@ pub fn track_fake_peer(
         )
         .expect("failed to create rad/refs");
 
-    api.track(&urn, &remote).expect("failed to track peer");
+    state.track(&urn, &remote).expect("failed to track peer");
 
     (remote, fake_user)
 }
