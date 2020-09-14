@@ -114,7 +114,6 @@
         </div>
         <div class="action">
           <a
-            style="color: var(--color-foreground-level-5);"
             class="typo-link"
             href="https://github.com/radicle-dev/radicle-upstream">
             github.com/radicle-dev/radicle-upstream
@@ -131,11 +130,7 @@
             iconBeforeCopy={null}
             styleContent={false}
             copyContent="community@radicle.xyz">
-            <p
-              style="color: var(--color-foreground-level-5);"
-              class="typo-link">
-              community@radicle.xyz
-            </p>
+            <p class="typo-link">community@radicle.xyz</p>
           </Copyable>
         </div>
       </div>
@@ -144,10 +139,7 @@
           <p class="typo-text-bold">Reach out on twitter</p>
         </div>
         <div class="action">
-          <a
-            style="color: var(--color-foreground-level-5);"
-            class="typo-link"
-            href="https://www.twitter.com/radicle_xyz">
+          <a class="typo-link" href="https://www.twitter.com/radicle_xyz">
             @radicle_xyz
           </a>
         </div>
