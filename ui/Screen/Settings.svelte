@@ -92,19 +92,6 @@
 
     <section>
       <header>
-        <h3>Version</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p style="color: var(--color-foreground-level-6);">
-            Version {version}
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <header>
         <h3>Appearance</h3>
       </header>
       <div class="section-item">
@@ -167,6 +154,19 @@
             on:click={clear}>
             Clear session
           </Button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Version</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p style="color: var(--color-foreground-level-6);">
+            Version {version}
+          </p>
         </div>
       </div>
     </section>
