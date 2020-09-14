@@ -131,7 +131,7 @@ impl Peer {
                     Command::Announce => {
                         let updates = Self::announce(self.state.clone(), &self.store).await?;
                         Event::Announced(updates)
-                    },
+                    }
                     _ => todo!(),
                 };
 
@@ -203,20 +203,20 @@ impl State {
                 self.status = Status::Syncing(Instant::now(), 1);
 
                 Some(Command::Sync(peer_id))
-            },
+            }
             // Go offline if we have no more connected peers left. We produce no output.
             (_, Input::Disconnected(peer_id)) if self.connected_peers.len() == 1 => {
                 self.connected_peers.remove(&peer_id);
                 self.status = Status::Offline(Some(Instant::now()));
 
                 None
-            },
+            }
             // Remove peer that just disconnected.
             (_, Input::Disconnected(peer_id)) => {
                 self.connected_peers.remove(&peer_id);
 
                 None
-            },
+            }
             // Announce new updates while the peer is online.
             (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
             _ => None,

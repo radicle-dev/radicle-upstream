@@ -164,7 +164,7 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr>,
     {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
         repo.set_rad_self(storage::RadSelfSpec::Default)?;
         Ok(repo.urn)
@@ -183,7 +183,7 @@ impl State {
     where
         P: Into<Option<PeerId>>,
     {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         Ok(storage.metadata_of(urn, peer)?)
     }
 
@@ -198,7 +198,7 @@ impl State {
     )]
     pub fn list_projects(&self) -> Result<Vec<librad_project::Project<entity::Draft>>, Error> {
         let project_meta = {
-            let storage = self.api.storage().reopen()?;
+            let storage = self.api.storage();
             let owner = storage.default_rad_self()?;
 
             let meta = storage.all_metadata()?;
@@ -228,7 +228,7 @@ impl State {
     ///
     /// * if opening the storage fails
     pub fn list_owner_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         storage.rad_signed_refs(urn).map_err(Error::from)
     }
 
@@ -238,7 +238,7 @@ impl State {
     ///
     /// * if opening the storage fails
     pub fn list_peer_project_refs(&self, urn: &RadUrn, peer_id: PeerId) -> Result<Refs, Error> {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         storage
             .rad_signed_refs_of(urn, peer_id)
             .map_err(Error::from)
@@ -284,7 +284,7 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr>,
     {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         let repo = storage.clone_repo::<user::UserInfo, _>(url, addr_hints)?;
         Ok(repo.urn)
     }
@@ -296,7 +296,7 @@ impl State {
     ///   * Resolving the user fails.
     ///   * Could not successfully acquire a lock to the API.
     pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, Error> {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         Ok(storage.metadata(urn)?)
     }
 
@@ -314,7 +314,7 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr>,
     {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         Ok(storage.fetch_repo(url, addr_hints)?)
     }
 
@@ -353,7 +353,7 @@ impl State {
         owner: &User,
         project: &project::Create<P>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
 
         let mut meta = project.build(owner, signer.public_key().into())?;
         meta.sign_owned(signer)?;
@@ -392,7 +392,7 @@ impl State {
         let urn = user.urn();
 
         {
-            let storage = self.api.storage().reopen()?;
+            let storage = self.api.storage();
             if storage.has_urn(&urn)? {
                 return Err(Error::EntityExists(urn));
             } else {
@@ -431,7 +431,7 @@ impl State {
     /// * If we could not fetch the tracked peers
     /// * If we could not get the `rad/self` of the peer
     pub fn tracked(&self, urn: &RadUrn) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, Error> {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
         let repo = storage.open_repo(urn.clone())?;
         repo.tracked()?
             .map(move |peer_id| {
