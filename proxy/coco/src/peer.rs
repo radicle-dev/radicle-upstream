@@ -1,10 +1,12 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
+use std::time::Duration;
 use std::{collections::HashSet, fmt, time::Instant};
 
 use futures::StreamExt as _;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, mpsc};
+use tokio::time::interval;
 
 use librad::{
     net::{
@@ -21,6 +23,11 @@ pub use announcement::Announcement;
 
 /// Upper bound of messages stored in receiver channels.
 const RECEIVER_CAPACITY: usize = 128;
+
+/// Duration we delay until we go online regardless if and how many syncs have succeeded.
+// TODO(xla): Review duration.
+// TODO(xla): Make configurable as part of peer configuration.
+const SYNC_PERIOD: Duration = Duration::from_secs(10);
 
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
@@ -100,7 +107,10 @@ impl Peer {
         tokio::pin!(protocol_subscriber);
 
         // Start announcement timer.
-        let mut announce_timer = tokio::time::interval(std::time::Duration::from_secs(1));
+        let mut announce_timer = interval(std::time::Duration::from_secs(1));
+
+        let (mut timeout_sender, mut timeout_receiver) =
+            mpsc::channel::<Timeout>(RECEIVER_CAPACITY);
 
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
@@ -114,6 +124,7 @@ impl Peer {
                     // Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
                 },
                 Some(event) = protocol_subscriber.next() => Some(Input::Protocol(event)),
+                Some(timeout) = timeout_receiver.recv() => Some(Input::Timeout(timeout)),
                 else => break,
             };
 
@@ -125,7 +136,17 @@ impl Peer {
                         let updates = Self::announce(self.state.clone(), &self.store).await?;
                         Event::Announced(updates)
                     }
-                    Command::Sync(_peer_id) => todo!(),
+                    Command::Sync(_peer_id) => {
+                        tokio::spawn(async move {
+                            tokio::time::delay_for(SYNC_PERIOD).await;
+                            timeout_sender
+                                .send(Timeout::SyncPeriod)
+                                .await
+                                .expect("unable to send SyncPeriod timeout");
+                        });
+                        // TODO(xla): Initiate sync for peer_id.
+                        todo!()
+                    }
                 };
 
                 log::debug!("{:?}", event);
@@ -157,6 +178,7 @@ impl Peer {
 
 enum Status {
     Stopped(Instant),
+    Started(Instant),
     Offline(Instant),
     Syncing(Instant, usize),
     Online(Instant),
@@ -166,13 +188,18 @@ enum Status {
 enum Input {
     AnnouncementTick,
     Protocol(ProtocolEvent<Gossip>),
-    SyncTimeout,
+    Timeout(Timeout),
 }
 
 #[derive(Debug, PartialEq)]
 enum Command {
     Announce,
     Sync(PeerId),
+}
+
+#[derive(Debug)]
+enum Timeout {
+    SyncPeriod,
 }
 
 struct State {
@@ -196,19 +223,19 @@ impl State {
         match (&self.status, input) {
             // Go from [`Input::Stopped`] to [`Input::Offline`] once we are listening.
             (Status::Stopped(_since), Input::Protocol(ProtocolEvent::Listening(_addr))) => {
-                self.status = Status::Offline(Instant::now());
+                self.status = Status::Started(Instant::now());
 
                 None
             }
             // Sync with first incoming peer.
-            //
-            // TODO(xla): Avoid resyncing when we loose connectivity in short intervals.
-            (Status::Offline(_since), Input::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
+            (Status::Started(_since), Input::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
                 self.connected_peers.insert(peer_id.clone());
                 self.status = Status::Syncing(Instant::now(), 1);
 
                 Some(Command::Sync(peer_id.clone()))
             }
+            // TODO(xla): Also issue sync if we come online after a certain period of being
+            // disconnected from any peers.
             // Announce new updates while the peer is online.
             (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
             // Issue more syncs if we connect to new peers while syncing.
@@ -221,7 +248,7 @@ impl State {
                 Some(Command::Sync(peer_id.clone()))
             }
             // Go online if we exceed the sync period.
-            (Status::Syncing(_since, _syncs), Input::SyncTimeout) => {
+            (Status::Syncing(_since, _syncs), Input::Timeout(Timeout::SyncPeriod)) => {
                 self.status = Status::Online(Instant::now());
 
                 None
@@ -267,10 +294,10 @@ mod test {
     use librad::net::protocol::ProtocolEvent;
     use librad::peer::PeerId;
 
-    use super::{Command, Input, State, Status};
+    use super::{Command, Input, State, Status, Timeout};
 
     #[test]
-    fn transitions_to_offline() -> Result<(), Box<dyn std::error::Error>> {
+    fn transitions_to_started_on_listen() -> Result<(), Box<dyn std::error::Error>> {
         let addr = "127.0.0.1:12345".parse::<SocketAddr>()?;
 
         let status = Status::Stopped(Instant::now());
@@ -278,7 +305,7 @@ mod test {
 
         let cmd = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert_eq!(cmd, None);
-        assert!(matches!(state.status, Status::Offline(_)));
+        assert!(matches!(state.status, Status::Started(_)));
 
         Ok(())
     }
@@ -288,7 +315,7 @@ mod test {
         let key = SecretKey::new();
         let peer_id = PeerId::from(key);
 
-        let status = Status::Offline(Instant::now());
+        let status = Status::Started(Instant::now());
         let mut state = State::new(HashSet::new(), status);
 
         // We expect to sync with the first connected peer.
@@ -299,6 +326,15 @@ mod test {
         assert!(matches!(state.status, Status::Syncing(_, 1)));
 
         Ok(())
+    }
+
+    #[test]
+    fn transitions_to_online_after_sync_period() {
+        let status = Status::Syncing(Instant::now(), 3);
+        let mut state = State::new(HashSet::new(), status);
+
+        let _cmd = state.transition(Input::Timeout(Timeout::SyncPeriod));
+        assert!(matches!(state.status, Status::Online(_)));
     }
 
     #[test]
