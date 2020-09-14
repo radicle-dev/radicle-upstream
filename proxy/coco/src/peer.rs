@@ -157,7 +157,7 @@ impl Peer {
 
 enum Status {
     Stopped(Instant),
-    Offline(Option<Instant>),
+    Offline(Instant),
     Syncing(Instant, usize),
     Online(Instant),
 }
@@ -196,17 +196,18 @@ impl State {
         match (&self.status, input) {
             // Go from [`Input::Stopped`] to [`Input::Offline`] once we are listening.
             (Status::Stopped(_since), Input::Protocol(ProtocolEvent::Listening(_addr))) => {
-                self.status = Status::Offline(Some(Instant::now()));
+                self.status = Status::Offline(Instant::now());
 
                 None
             }
-            // First connection after startup, which we know from the recorded `since` being
-            // `None`.
-            (Status::Offline(None), Input::Protocol(ProtocolEvent::Connected(peer_id))) => {
+            // Sync with first incoming peer.
+            //
+            // TODO(xla): Avoid resyncing when we loose connectivity in short intervals.
+            (Status::Offline(_since), Input::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
                 self.connected_peers.insert(peer_id.clone());
                 self.status = Status::Syncing(Instant::now(), 1);
 
-                Some(Command::Sync(peer_id))
+                Some(Command::Sync(peer_id.clone()))
             }
             // Announce new updates while the peer is online.
             (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
@@ -230,7 +231,7 @@ impl State {
                 if self.connected_peers.len() == 1 =>
             {
                 self.connected_peers.remove(&peer_id);
-                self.status = Status::Offline(Some(Instant::now()));
+                self.status = Status::Offline(Instant::now());
 
                 None
             }
@@ -254,9 +255,13 @@ impl Default for State {
     }
 }
 
+#[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
+    use std::net::SocketAddr;
     use std::{collections::HashSet, time::Instant};
+
+    use pretty_assertions::assert_eq;
 
     use librad::keys::SecretKey;
     use librad::net::protocol::ProtocolEvent;
@@ -265,18 +270,35 @@ mod test {
     use super::{Command, Input, State, Status};
 
     #[test]
-    fn sync_on_startup() {
+    fn transitions_to_offline() -> Result<(), Box<dyn std::error::Error>> {
+        let addr = "127.0.0.1:12345".parse::<SocketAddr>()?;
+
+        let status = Status::Stopped(Instant::now());
+        let mut state = State::new(HashSet::new(), status);
+
+        let cmd = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
+        assert_eq!(cmd, None);
+        assert!(matches!(state.status, Status::Offline(_)));
+
+        Ok(())
+    }
+
+    #[test]
+    fn sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
         let key = SecretKey::new();
         let peer_id = PeerId::from(key);
 
-        // Startup can be inferred by the `Offline` state which doesn't have a recorded timestamp.
-        let status = Status::Offline(None);
+        let status = Status::Offline(Instant::now());
         let mut state = State::new(HashSet::new(), status);
+
+        // We expect to sync with the first connected peer.
         let cmd = state
             .transition(Input::Protocol(ProtocolEvent::Connected(peer_id.clone())))
             .expect("expected command");
-
         assert_eq!(cmd, Command::Sync(peer_id));
+        assert!(matches!(state.status, Status::Syncing(_, 1)));
+
+        Ok(())
     }
 
     #[test]
