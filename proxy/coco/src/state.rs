@@ -1,35 +1,39 @@
 //! Utility to work with the peer api of librad.
 
-use std::convert::TryFrom;
-use std::future::Future;
-use std::net::{IpAddr, SocketAddr};
-use std::path::{self, PathBuf};
-use std::sync::Arc;
-use std::time::Duration;
+use std::{
+    convert::TryFrom,
+    future::Future,
+    net::{IpAddr, SocketAddr},
+    path::{self, PathBuf},
+    sync::Arc,
+    time::Duration,
+};
 
 use tokio::sync::Mutex;
 
-use librad::git::local::{transport, url::LocalUrl};
-use librad::git::refs::Refs;
-use librad::git::storage;
-use librad::keys;
-use librad::meta::entity;
-use librad::meta::project as librad_project;
-use librad::meta::user;
-use librad::net::gossip::PeerInfo;
-use librad::net::peer::PeerApi;
-use librad::paths;
-use librad::peer::PeerId;
-use librad::uri::{RadUrl, RadUrn};
+use librad::{
+    git::{
+        local::{transport, url::LocalUrl},
+        refs::Refs,
+        storage,
+    },
+    keys,
+    meta::{entity, project as librad_project, user},
+    net::{gossip::PeerInfo, peer::PeerApi},
+    paths,
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 use radicle_keystore::sign::Signer as _;
-use radicle_surf::vcs::git;
-use radicle_surf::vcs::git::git2;
+use radicle_surf::vcs::{git, git::git2};
 
-use crate::error::Error;
-use crate::project;
-use crate::seed::Seed;
-use crate::signer;
-use crate::user::{verify as verify_user, User};
+use crate::{
+    error::Error,
+    project,
+    seed::Seed,
+    signer,
+    user::{verify as verify_user, User},
+};
 
 /// Thread-safe wrapper for [`State`].
 pub type Lock = Arc<Mutex<State>>;
@@ -457,16 +461,11 @@ impl From<&State> for Seed {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
-    use std::env;
-    use std::path::PathBuf;
-    use std::process::Command;
+    use std::{env, path::PathBuf, process::Command};
 
     use librad::keys::SecretKey;
 
-    use crate::config;
-    use crate::control;
-    use crate::project;
-    use crate::signer;
+    use crate::{config, control, project, signer};
 
     use super::{Error, State};
 

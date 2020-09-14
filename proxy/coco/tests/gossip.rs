@@ -1,13 +1,11 @@
 use std::time::Duration;
 
-use futures::future;
-use futures::StreamExt as _;
+use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::seed::Seed;
-use coco::{Hash, Urn};
+use coco::{seed::Seed, Hash, Urn};
 
 mod common;
 use common::{

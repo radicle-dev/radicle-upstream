@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use coco::signer;
 
-use crate::avatar;
-use crate::error;
+use crate::{avatar, error};
 
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]

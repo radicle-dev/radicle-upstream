@@ -1,14 +1,15 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::fmt;
+use std::{convert::From, fmt};
 
 use futures::StreamExt as _;
 use tokio::sync::broadcast;
 
-use librad::net::peer::Gossip;
-use librad::net::peer::RunLoop;
-use librad::net::protocol;
+use librad::net::{
+    peer::{Gossip, RunLoop},
+    protocol,
+};
 
 use crate::state::Lock;
 
@@ -121,7 +122,7 @@ impl Peer {
                     // Send will error if there are no active receivers. This case is expected and
                     // should not crash the run loop.
                     self.subscriber.send(event).ok();
-                },
+                }
             }
         }
 

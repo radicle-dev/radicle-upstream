@@ -4,8 +4,7 @@ use std::sync::Arc;
 
 use tokio::sync::RwLock;
 
-use coco::keystore;
-use coco::signer;
+use coco::{keystore, signer};
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;

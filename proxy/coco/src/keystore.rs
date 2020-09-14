@@ -2,8 +2,7 @@
 
 use std::convert::Infallible;
 
-use librad::keys;
-use librad::paths;
+use librad::{keys, paths};
 pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{Pwhash, SecretBoxError},

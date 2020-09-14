@@ -1,16 +1,13 @@
 //! Crate configuration.
 
-use std::convert::TryFrom;
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::{
+    convert::TryFrom,
+    net::{Ipv4Addr, SocketAddr, SocketAddrV4},
+};
 
-use librad::keys;
-use librad::net;
-use librad::net::discovery;
-use librad::paths;
-use librad::peer;
+use librad::{keys, net, net::discovery, paths, peer};
 
-use crate::error::Error;
-use crate::seed;
+use crate::{error::Error, seed};
 
 lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.

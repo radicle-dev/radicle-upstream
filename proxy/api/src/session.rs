@@ -3,8 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::error;
-use crate::identity;
+use crate::{error, identity};
 
 pub mod settings;
 

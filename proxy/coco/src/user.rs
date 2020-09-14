@@ -1,8 +1,9 @@
 //! Commonly used vesions of [`librad::meta::user::User`].
 
-use librad::meta::entity;
-use librad::meta::user;
-use librad::uri::RadUrn;
+use librad::{
+    meta::{entity, user},
+    uri::RadUrn,
+};
 
 use crate::error::Error;
 
