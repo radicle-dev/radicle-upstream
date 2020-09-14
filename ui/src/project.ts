@@ -145,9 +145,7 @@ const update = (msg: Msg): void => {
     case Kind.FetchContributed:
       projectsStore.loading();
       api
-        .get<Projects>(
-          msg.urn ? `projects/tracked/?user=${msg.urn}` : "projects/contributed"
-        )
+        .get<Projects>("projects/contributed")
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
@@ -230,6 +228,7 @@ export const register = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchContributed, update);
+export const fetchPeerList = event.create<Kind, Msg>(Kind.FetchPeer, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);

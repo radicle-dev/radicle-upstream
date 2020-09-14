@@ -2,7 +2,10 @@
   import { push } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
-  import { fetchList, projects as projectsStore } from "../../src/project.ts";
+  import {
+    fetchPeerList,
+    projects as projectsStore,
+  } from "../../src/project.ts";
 
   import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
 
@@ -13,7 +16,7 @@
     push(path.projectSource(project.id));
   };
 
-  $: fetchList({ urn: params.urn });
+  $: fetchPeerList({ urn: params.urn });
 </script>
 
 <Remote store={projectsStore} let:data={projects}>
