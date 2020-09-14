@@ -98,7 +98,7 @@ async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
                     val: librad::net::peer::Gossip { urn, .. },
                 }) if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
                     future::ready(Some(()))
-                },
+                }
                 _ => future::ready(None),
             },
             _ => future::ready(None),
@@ -110,6 +110,7 @@ async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+/// Verify that asking the network for an unkown urn returns no providers.
 #[tokio::test]
 async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
@@ -133,11 +134,12 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
         .next()
         .await;
 
-    assert!(res.is_none(), "expected no results",);
+    assert!(res.is_none(), "didn't expected to obtain any providers");
 
     Ok(())
 }
 
+/// Verify that asking the network for a URN owned by a seed peer returns said peer.
 #[tokio::test]
 async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();

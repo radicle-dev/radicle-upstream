@@ -1,4 +1,4 @@
-//! Endpoints and serialisation for [`crate::identity::Identity`] related types.
+//! Manage the state and stateful interactions with the underlying peer API of librad.
 
 use std::sync::Arc;
 
@@ -209,8 +209,10 @@ mod test {
             let state = ctx.state.lock().await;
             let id = identity::create(&state, &ctx.signer, "cloudhead")?;
 
-            let owner = state.get_user(&id.urn)?;
-            let owner = coco::user::verify(owner)?;
+            let owner = {
+                let user = state.get_user(&id.urn)?;
+                coco::user::verify(user)?
+            };
 
             session::set_identity(&ctx.store, id)?;
 
