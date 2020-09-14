@@ -119,20 +119,23 @@
 
     <section>
       <header>
-        <h3>Seeds</h3>
-        <!-- TODO(sos): link to actual docs abt seeds -->
-        <a class="typo-link" href="link/to/docs">Learn about seeds</a>
+        <h3>Network</h3>
       </header>
       <div class="section-item" style="align-items: flex-start;">
         <div class="info">
           <p class="typo-text-bold">
             Seeds help you see more projects and people on the network
           </p>
+          <!-- TODO(julien): link to actual docs abt seeds -->
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
-            Have some seed addresses you’d like to join? Enter them here and new
-            projects from the seeds you’re subscribed to will appear in the
-            Discover page.
+            Enter seed addresses that you’d like to subscribe to here. Projects
+            replicated by seeds will appear in the Discover page. <a
+              style="color: var(--color-foreground-level-5);"
+              class="typo-link"
+              href="https://radicle.xyz/#upstream-faq">
+              Learn more about seeds
+            </a>
           </p>
         </div>
         <div class="action typo-mono">
@@ -140,7 +143,7 @@
             style="flex: 1; height: 6rem;"
             bind:value={seedInputValue}
             on:change={updateSeeds}
-            placeholder="Enter seeds here" />
+            placeholder="Enter seed addresses here" />
         </div>
       </div>
     </section>
