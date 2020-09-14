@@ -129,8 +129,10 @@
           <!-- TODO(julien): link to actual docs abt seeds -->
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
-            Enter seed addresses that you’d like to subscribe to here. Projects
-            replicated by seeds will appear in the Discover page. <a
+            Enter seed addresses that you’d like to subscribe to here.
+            <!-- Projects
+            replicated by seeds will appear in the Discover page. -->
+            <a
               style="color: var(--color-foreground-level-5);"
               class="typo-link"
               href="https://radicle.xyz/#upstream-faq">
@@ -143,7 +145,7 @@
             style="flex: 1; height: 6rem;"
             bind:value={seedInputValue}
             on:change={updateSeeds}
-            placeholder="Enter seed addresses here" />
+            placeholder="Enter seeds here" />
         </div>
       </div>
     </section>

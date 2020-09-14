@@ -69,8 +69,7 @@
     </h1>
     <p>
       You’ll need a display name to interact on Radicle. This isn’t unique
-      across the platform, but it helps others recognize you a little easier.
-      You can change it in your profile at any time.
+      across the network, but it helps others recognize you a little easier.
     </p>
     <Input.Text
       autofocus={true}
