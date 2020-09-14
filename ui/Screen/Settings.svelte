@@ -11,7 +11,11 @@
   import * as modal from "../src/modal.ts";
 
   import { Button, Input } from "../DesignSystem/Primitive";
-  import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
+  import {
+    Copyable,
+    SidebarLayout,
+    SegmentedControl,
+  } from "../DesignSystem/Component";
 
   let seedInputValue = $settings.coco.seeds.join("\n");
 
@@ -96,6 +100,56 @@
             There’s a new version of Radicle Upstream
           </p>
           <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Feedback</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Submit an issue</p>
+        </div>
+        <div class="action">
+          <a
+            style="color: var(--color-foreground-level-5);"
+            class="typo-link"
+            href="https://github.com/radicle-dev/radicle-upstream">
+            github.com/radicle-dev/radicle-upstream
+          </a>
+        </div>
+      </div>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Get in touch directly</p>
+        </div>
+        <div class="action">
+          <Copyable
+            notificationText="community@radicle.xyz was copied to your clipboard"
+            iconBeforeCopy={null}
+            styleContent={false}
+            copyContent="community@radicle.xyz">
+            <p
+              style="color: var(--color-foreground-level-5);"
+              class="typo-link">
+              community@radicle.xyz
+            </p>
+          </Copyable>
+        </div>
+      </div>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Reach out on twitter</p>
+        </div>
+        <div class="action">
+          <a
+            style="color: var(--color-foreground-level-5);"
+            class="typo-link"
+            href="https://www.twitter.com/radicle_xyz">
+            @radicle_xyz
+          </a>
         </div>
       </div>
     </section>
