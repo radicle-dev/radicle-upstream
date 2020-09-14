@@ -56,7 +56,8 @@ impl State {
     pub fn new(api: PeerApi<keys::SecretKey>, signer: signer::BoxedSigner) -> Self {
         let paths = api.paths();
 
-        // Register the transport so to use git2 to execute actions such as checkouts, fetch, and push. The transport will then handle the interaction with the monorepo.
+        // Register the transport so to use git2 to execute actions such as checkouts, fetch, and
+        // push. The transport will then handle the interaction with the monorepo.
         transport::register(transport::Settings {
             paths: paths.clone(),
             signer,

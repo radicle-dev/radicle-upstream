@@ -122,7 +122,7 @@ impl Peer {
                     // Send will error if there are no active receivers. This case is expected and
                     // should not crash the run loop.
                     self.subscriber.send(event).ok();
-                }
+                },
             }
         }
 

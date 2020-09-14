@@ -98,7 +98,7 @@ async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
                     val: librad::net::peer::Gossip { urn, .. },
                 }) if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
                     future::ready(Some(()))
-                }
+                },
                 _ => future::ready(None),
             },
             _ => future::ready(None),
