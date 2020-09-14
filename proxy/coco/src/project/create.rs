@@ -15,7 +15,7 @@ use librad::{
 };
 use radicle_surf::vcs::git::git2;
 
-use crate::{config, error::Error, peer};
+use crate::{config, error::Error, user::User};
 
 /// The data required to either open an existing repository or create a new one.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -168,7 +168,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         Ok(repo)
     }
 
-    /// Build a [`project::Project`], where the provided [`peer::User`] is the owner, and the set of
+    /// Build a [`project::Project`], where the provided [`User`] is the owner, and the set of
     /// keys starts with the provided [`keys::PublicKey`].
     ///
     /// # Errors
@@ -176,7 +176,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     ///   * Failed to build the project entity.
     pub fn build(
         &self,
-        owner: &peer::User,
+        owner: &User,
         key: keys::PublicKey,
     ) -> Result<project::Project<entity::Draft>, Error> {
         let name = self.repo.project_name()?;

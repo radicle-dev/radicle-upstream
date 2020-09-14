@@ -27,7 +27,7 @@ impl Seed {
     ///
     /// If the supplied seed cannot be parsed or resolved, an error is returned.
     #[allow(clippy::indexing_slicing)]
-    async fn from_str(seed: &str) -> Result<Self, Error> {
+    pub async fn from_str(seed: &str) -> Result<Self, Error> {
         if let Some(ix) = seed.chars().position(|c| c == '@') {
             let (peer_id, rest) = seed.split_at(ix);
             let host = &rest[1..]; // Skip '@'

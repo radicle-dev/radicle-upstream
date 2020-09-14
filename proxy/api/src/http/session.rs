@@ -1,4 +1,4 @@
-//! Endpoints and serialisation for [`session::Session`] related types.
+//! Endpoints and serialisation for [`crate::session::Session`] related types.
 
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
@@ -60,7 +60,7 @@ mod handler {
     pub async fn get(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        let sess = session::current(&ctx.peer_api, &ctx.store).await?;
+        let sess = session::current(ctx.state.clone(), &ctx.store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -77,7 +77,6 @@ mod handler {
     }
 }
 
-#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -93,17 +92,17 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
+
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
-        session::set_settings(&ctx.store, settings).unwrap();
+        session::set_settings(&ctx.store, settings)?;
 
         let res = request().method("DELETE").path("/").reply(&api).await;
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let have = session::current(&ctx.peer_api, &ctx.store)
-            .await
-            .unwrap()
+        let have = session::current(ctx.state.clone(), &ctx.store)
+            .await?
             .settings;
         let want = session::settings::Settings::default();
 
@@ -113,14 +112,14 @@ mod test {
     }
 
     #[tokio::test]
-    async fn get() -> Result<(), error::Error> {
+    async fn get() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let res = request().method("GET").path("/").reply(&api).await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let have: Value = serde_json::from_slice(res.body())?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(
@@ -145,7 +144,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn update_settings() -> Result<(), error::Error> {
+    async fn update_settings() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -163,7 +162,7 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         let res = request().method("GET").path("/").reply(&api).await;
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let have: Value = serde_json::from_slice(res.body())?;
         assert_eq!(
             have,
             json!({
