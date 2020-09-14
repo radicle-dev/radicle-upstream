@@ -32,6 +32,9 @@ echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 
+echo "--- Starting proxy daemon and runing app tests"
+time ELECTRON_ENABLE_LOGGING=1 yarn test
+
 echo "--- Run proxy docs"
 (cd proxy && time cargo doc --no-deps)
 
@@ -52,9 +55,6 @@ time yarn prettier:check
 
 echo "--- Run proxy tests"
 (cd proxy && time cargo test --all --all-features --all-targets)
-
-echo "--- Starting proxy daemon and runing app tests"
-time ELECTRON_ENABLE_LOGGING=1 yarn test
 
 if [[ "${BUILDKITE_BRANCH:-}" == "master" ]]; then
   echo "--- Packaging and uploading app binaries"
