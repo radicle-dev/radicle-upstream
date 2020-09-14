@@ -405,5 +405,11 @@ mod test {
             .expect("expected command");
 
         assert_matches!(cmd, Command::Announce);
+
+        let status = Status::Offline(Instant::now());
+        let mut state = State::new(HashSet::new(), status);
+        let cmd = state.transition(Input::AnnouncementTick);
+
+        assert_matches!(cmd, None);
     }
 }
