@@ -13,6 +13,7 @@ use crate::http;
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     tracked_filter(ctx.clone())
         .or(contributed_filter(ctx.clone()))
+        .or(peer_filter(ctx.clone()))
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
@@ -60,7 +61,6 @@ fn tracked_filter(
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::end())
-        .and(http::with_qs_opt::<ListQuery>())
         .and_then(handler::list_tracked)
 }
 
@@ -73,6 +73,16 @@ fn contributed_filter(
         .and(http::with_context(ctx))
         .and(path::end())
         .and_then(handler::list_contributed)
+}
+
+/// `GET /peer/<id>
+fn peer_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("peer")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::list_peer)
 }
 
 /// `GET /discover`
@@ -152,18 +162,9 @@ mod handler {
 
     /// List all projects tracked by a user. If no `id` is provided, defaults to
     /// local repo owner.
-    pub async fn list_tracked(
-        ctx: context::Ctx,
-        opt_query: Option<super::ListQuery>,
-    ) -> Result<impl Reply, Rejection> {
-        let query = opt_query.unwrap_or_default();
+    pub async fn list_tracked(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-
-        let projects = if let Some(user) = query.user {
-            project::list_projects_for_user(&ctx.peer_api, &user)?
-        } else {
-            project::Projects::list(&ctx.peer_api)?.tracked
-        };
+        let projects = project::Projects::list(&ctx.peer_api)?.tracked;
 
         Ok(reply::json(&projects))
     }
@@ -175,6 +176,17 @@ mod handler {
         let projects = project::Projects::list(&ctx.peer_api)?;
 
         Ok(reply::json(&projects.contributed))
+    }
+
+    /// List all known projects tracked by peer of given `peer_id`
+    pub async fn list_peer(
+        ctx: context::Ctx,
+        peer_urn: coco::Urn,
+    ) -> Result<impl Reply, Rejection> {
+        let ctx = ctx.read().await;
+        let projects = project::list_projects_for_user(&ctx.peer_api, &peer_urn)?;
+
+        Ok(reply::json(&projects))
     }
 
     /// Get a feed of untracked projects.
@@ -216,13 +228,6 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
-}
-
-/// Query options for listing projects.
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct ListQuery {
-    /// Only include projects tracked by this user
-    user: Option<coco::Urn>,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
@@ -589,7 +594,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/tracked/?user={}", peer.urn))
+            .path(&format!("/peer/{}", peer.urn))
             .reply(&api)
             .await;
 

@@ -82,6 +82,7 @@ enum Kind {
   Fetch = "FETCH",
   FetchContributed = "FETCH_CONTRIBUTED",
   FetchTracking = "FETCH_TTRACKING",
+  FetchPeer = "FETCH_PEER",
 }
 
 interface Create extends event.Event<Kind> {
@@ -101,10 +102,14 @@ interface FetchContributed extends event.Event<Kind> {
 
 interface FetchTracking extends event.Event<Kind> {
   kind: Kind.FetchTracking;
-  urn?: string;
 }
 
-type Msg = Create | Fetch | FetchContributed | FetchTracking;
+interface FetchPeer extends event.Event<Kind> {
+  kind: Kind.FetchPeer;
+  urn: string;
+}
+
+type Msg = Create | Fetch | FetchContributed | FetchPeer | FetchTracking;
 
 interface CreateInput {
   repo: Repo;
@@ -151,13 +156,18 @@ const update = (msg: Msg): void => {
     case Kind.FetchTracking:
       projectsStore.loading();
       api
-        .get<Projects>(
-          msg.urn ? `projects/tracked/?user=${msg.urn}` : "projects/tracked"
-        )
+        .get<Projects>("projects/tracked")
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
       break;
+
+    case Kind.FetchPeer:
+      projectsStore.loading();
+      api
+        .get<Projects>(`projects/peer/${msg.urn}`)
+        .then(projectsStore.success)
+        .catch(projectsStore.error);
   }
 };
 
