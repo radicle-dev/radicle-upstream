@@ -5,7 +5,7 @@ use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, Hash, Urn};
+use coco::{seed::Seed, Hash, PeerInput, Urn};
 
 mod common;
 use common::{
@@ -92,15 +92,17 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let announced = bob_events
         .into_stream()
         .filter_map(|res| match res.unwrap() {
-            coco::PeerEvent::Protocol(ProtocolEvent::Gossip(info)) => match info {
-                librad::net::gossip::Info::Has(librad::net::gossip::Has {
-                    provider,
-                    val: librad::net::peer::Gossip { urn, .. },
-                }) if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
-                    future::ready(Some(()))
-                },
-                _ => future::ready(None),
-            },
+            coco::PeerEvent::Input(PeerInput::Protocol(ProtocolEvent::Gossip(info))) => {
+                match info {
+                    librad::net::gossip::Info::Has(librad::net::gossip::Has {
+                        provider,
+                        val: librad::net::peer::Gossip { urn, .. },
+                    }) if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
+                        future::ready(Some(()))
+                    }
+                    _ => future::ready(None),
+                }
+            }
             _ => future::ready(None),
         })
         .map(|_| ());

@@ -48,6 +48,7 @@ pub enum Error {
 pub enum Event {
     /// Gossiped a list of updates of new heads in our [`crate::state::State`]`.
     Announced(announcement::Updates),
+    Input(Input),
     /// Received a low-level protocol event.
     Protocol(ProtocolEvent<Gossip>),
     /// Sync with the `PeerId` has been initiated.
@@ -58,6 +59,7 @@ impl fmt::Debug for Event {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Announced(updates) => write!(f, "announcements = {}", updates.len()),
+            Self::Input(input) => write!(f, "input = {:?}", input),
             Self::Protocol(event) => write!(f, "protocol = {:?}", event),
             Self::SyncStarted(peer_id) => write!(f, "sync.started = {:?}", peer_id),
         }
@@ -125,17 +127,19 @@ impl Peer {
 
         let mut state = RunState::default();
         loop {
-            let maybe_input = tokio::select! {
-                _ = announce_timer.tick() => {
-                    Some(Input::AnnouncementTick)
-                },
-                Some(event) = protocol_subscriber.next() => Some(Input::Protocol(event)),
-                Some(peer_id) = syncs.recv() => Some(Input::Synced(peer_id)),
-                Some(timeout) = timeouts.recv() => Some(Input::Timeout(timeout)),
+            let input = tokio::select! {
+                _ = announce_timer.tick() => Input::AnnouncementTick,
+                Some(event) = protocol_subscriber.next() => Input::Protocol(event),
+                Some(peer_id) = syncs.recv() => Input::Synced(peer_id),
+                Some(timeout) = timeouts.recv() => Input::Timeout(timeout),
                 else => break,
             };
 
-            let maybe_cmd = maybe_input.and_then(|input| state.transition(input));
+            // Send will error if there are no active receivers. This case is expected and
+            // ssh the run loop.
+            self.subscriber.send(Event::Input(input.clone())).ok();
+
+            let maybe_cmd = state.transition(input);
 
             if let Some(cmd) = maybe_cmd {
                 let event = match cmd {
@@ -199,7 +203,8 @@ enum Status {
 }
 
 #[allow(clippy::large_enum_variant)]
-enum Input {
+#[derive(Clone, Debug)]
+pub enum Input {
     AnnouncementTick,
     Protocol(ProtocolEvent<Gossip>),
     Synced(PeerId),
@@ -212,8 +217,8 @@ enum Command {
     Sync(PeerId),
 }
 
-#[derive(Debug)]
-enum Timeout {
+#[derive(Clone, Debug)]
+pub enum Timeout {
     SyncPeriod,
 }
 
@@ -295,7 +300,10 @@ impl RunState {
                 None
             }
             // Announce new updates while the peer is online.
-            (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
+            (
+                Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
+                Input::AnnouncementTick,
+            ) => Some(Command::Announce),
             _ => None,
         }
     }

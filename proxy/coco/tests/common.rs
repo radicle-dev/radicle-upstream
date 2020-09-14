@@ -9,7 +9,7 @@ use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer};
 
-use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent};
+use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent, PeerInput};
 
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
@@ -81,11 +81,11 @@ pub async fn wait_connected(
     let filtered = receiver
         .into_stream()
         .filter_map(|res| match res.unwrap() {
-            PeerEvent::Protocol(ProtocolEvent::Connected(remote_id))
+            PeerEvent::Input(PeerInput::Protocol(ProtocolEvent::Connected(remote_id)))
                 if remote_id == *expected_id =>
             {
                 future::ready(Some(()))
-            },
+            }
             _ => future::ready(None),
         })
         .map(|_| ());

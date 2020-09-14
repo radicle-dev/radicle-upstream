@@ -19,6 +19,7 @@
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions
 )]
+#![feature(or_patterns)]
 
 pub use librad::{
     git::local::url::LocalUrl,
@@ -46,7 +47,7 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 mod peer;
-pub use peer::{Event as PeerEvent, Peer};
+pub use peer::{Event as PeerEvent, Input as PeerInput, Peer};
 mod state;
 pub use state::{Lock, State};
 pub mod project;
