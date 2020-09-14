@@ -14,7 +14,7 @@ use common::{
 };
 
 #[tokio::test]
-async fn announce_solo() -> Result<(), Box<dyn std::error::Error>> {
+async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
@@ -52,7 +52,7 @@ async fn announce_solo() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
-async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
+async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
