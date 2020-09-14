@@ -574,7 +574,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_tracked_by_other_peer() -> Result<(), error::Error> {
+    async fn list_for_peer() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
