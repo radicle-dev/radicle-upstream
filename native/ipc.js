@@ -10,10 +10,10 @@ export const OPEN_PATH = "IPC_OPEN_PATH";
 //
 // The workaround is to use the electron native open dialog. As a bonus we
 // can configure it to allow users to create new directories.
-export const getVersion = () => window.electron.ipcRenderer.invoke(GET_VERSION);
-
 export const getDirectoryPath = () =>
   window.electron.ipcRenderer.invoke(DIALOG_SHOWOPENDIALOG);
+
+export const getVersion = () => window.electron.ipcRenderer.invoke(GET_VERSION);
 
 export const copyToClipboard = text =>
   window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);
