@@ -1,15 +1,10 @@
 //! Compute, track and announce noteworthy changes to the network.
 
-use std::collections::HashSet;
-use std::ops::Deref as _;
+use std::{collections::HashSet, ops::Deref as _};
 
-use librad::keys;
-use librad::net;
-use librad::uri;
+use librad::{keys, net, uri};
 
-use crate::error::Error;
-use crate::oid::Oid;
-use crate::peer;
+use crate::{error::Error, oid::Oid, peer};
 
 /// An update and all the required information that can be announced on the network.
 pub type Announcement = (uri::RadUrn, Oid);
@@ -88,15 +83,9 @@ mod test {
 
     use pretty_assertions::assert_eq;
 
-    use librad::hash::Hash;
-    use librad::keys::SecretKey;
-    use librad::uri;
+    use librad::{hash::Hash, keys::SecretKey, uri};
 
-    use crate::config;
-    use crate::error::Error;
-    use crate::oid;
-    use crate::peer;
-    use crate::signer;
+    use crate::{config, error::Error, oid, peer, signer};
 
     #[tokio::test]
     async fn announce() -> Result<(), Error> {

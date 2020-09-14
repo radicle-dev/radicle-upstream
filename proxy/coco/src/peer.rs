@@ -1,37 +1,39 @@
 //! Utility to work with the peer api of librad.
 
-use std::convert::{From, TryFrom};
-use std::future::Future;
-use std::net::{IpAddr, SocketAddr};
-use std::path::{self, PathBuf};
-use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::{
+    convert::{From, TryFrom},
+    future::Future,
+    net::{IpAddr, SocketAddr},
+    path::{self, PathBuf},
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 use futures::stream::StreamExt;
 
-use librad::git::local::{transport, url::LocalUrl};
-use librad::git::refs::Refs;
-use librad::git::storage;
-use librad::keys;
-use librad::meta::entity;
-use librad::meta::project as librad_project;
-use librad::meta::user;
-use librad::net::discovery;
-use librad::net::gossip::PeerInfo;
-use librad::net::peer::{Gossip, PeerApi, PeerConfig, PeerStorage};
-use librad::net::protocol::Protocol;
-use librad::paths;
-use librad::peer::PeerId;
-use librad::signer::SomeSigner;
-use librad::uri::{RadUrl, RadUrn};
+use librad::{
+    git::{
+        local::{transport, url::LocalUrl},
+        refs::Refs,
+        storage,
+    },
+    keys,
+    meta::{entity, project as librad_project, user},
+    net::{
+        discovery,
+        gossip::PeerInfo,
+        peer::{Gossip, PeerApi, PeerConfig, PeerStorage},
+        protocol::Protocol,
+    },
+    paths,
+    peer::PeerId,
+    signer::SomeSigner,
+    uri::{RadUrl, RadUrn},
+};
 use radicle_keystore::sign::Signer as _;
-use radicle_surf::vcs::git;
-use radicle_surf::vcs::git::git2;
+use radicle_surf::vcs::{git, git::git2};
 
-use crate::error::Error;
-use crate::project;
-use crate::seed::Seed;
-use crate::signer;
+use crate::{error::Error, project, seed::Seed, signer};
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -561,23 +563,14 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
-    use std::convert::TryInto;
-    use std::env;
-    use std::path::PathBuf;
-    use std::process::Command;
-    use std::time::Duration;
+    use std::{convert::TryInto, env, path::PathBuf, process::Command, time::Duration};
 
     use futures::stream::StreamExt;
 
-    use librad::hash::Hash;
-    use librad::keys::SecretKey;
-    use librad::uri;
+    use librad::{hash::Hash, keys::SecretKey, uri};
     use radicle_surf::vcs::git::git2;
 
-    use crate::config;
-    use crate::control;
-    use crate::project;
-    use crate::signer;
+    use crate::{config, control, project, signer};
 
     use super::{Api, Error};
 

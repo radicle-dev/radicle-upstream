@@ -51,8 +51,7 @@ pub fn save(
 mod test {
     use std::collections::HashSet;
 
-    use coco::oid;
-    use coco::uri;
+    use coco::{oid, uri};
 
     use crate::error;
 

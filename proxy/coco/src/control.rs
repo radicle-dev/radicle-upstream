@@ -1,20 +1,14 @@
 //! Utility for fixture data in the monorepo.
 
-use std::convert::TryFrom;
-use std::env;
-use std::io;
-use std::path;
+use std::{convert::TryFrom, env, io, path};
 
-use librad::keys;
-use librad::meta::entity;
-use librad::meta::project as librad_project;
+use librad::{
+    keys,
+    meta::{entity, project as librad_project},
+};
 use radicle_surf::vcs::git::git2;
 
-use crate::config;
-use crate::error::Error;
-use crate::peer;
-use crate::project;
-use crate::signer;
+use crate::{config, error::Error, peer, project, signer};
 
 /// Deletes the local git repsoitory coco uses to keep its state.
 ///
