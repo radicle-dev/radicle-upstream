@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use coco::{announcement, keystore, seed, signer};
+use coco::{keystore, seed, signer};
 
 use api::{config, context, env, http, notification, session};
 
@@ -46,9 +46,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let dirs = config::dirs();
             dirs.data_dir().join("store")
         };
-        let config = kv::Config::new(store_path).flush_every_ms(100);
 
-        kv::Store::new(config)?
+        kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?
     };
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
@@ -58,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         signer: key.clone(),
     });
 
-    let peer_api = {
+    let (peer, state) = {
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
@@ -67,63 +66,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let config =
             coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
-        coco::Api::new(config).await?
+        coco::into_peer_state(config, signer.clone(), store.clone()).await?
     };
 
     if args.test {
+        let state = state.lock().await;
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = peer_api.init_owner(&signer, "cloudhead")?;
-        coco::control::setup_fixtures(&peer_api, &signer, &owner)?;
+        let owner = state.init_owner(&signer, "cloudhead")?;
+        coco::control::setup_fixtures(&state, &signer, &owner)?;
     }
 
     let subscriptions = notification::Subscriptions::default();
-
     let ctx = context::Ctx::from(context::Context {
-        peer_api,
+        state,
         signer,
         store,
     });
 
-    {
-        let ctx = ctx.clone();
-        log::info!("Starting Announcement watcher");
-        tokio::task::spawn(announcement_watcher(ctx));
-    }
+    log::info!("starting coco peer");
+    tokio::spawn(async move {
+        peer.run().await.expect("peer run loop crashed");
+    });
 
     log::info!("Starting API");
     let api = http::api(ctx, subscriptions, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
-
-    Ok(())
-}
-
-async fn announcement_watcher(ctx: context::Ctx) {
-    // TODO(xla): Take interval timings from config/settings.
-    let mut timer = tokio::time::interval(std::time::Duration::from_secs(10));
-
-    loop {
-        timer.tick().await;
-
-        if let Err(err) = announce(ctx.clone()).await {
-            log::info!("Announcement watcher errored: {:?}", err);
-        }
-    }
-}
-
-async fn announce(ctx: context::Ctx) -> Result<(), Box<dyn std::error::Error>> {
-    let ctx = ctx.read().await;
-    let old = session::announcements::load(&ctx.store)?;
-    let new = announcement::build(&ctx.peer_api)?;
-    let updates = announcement::diff(&old, &new);
-    let count = updates.len();
-
-    let updates = updates.clone();
-    announcement::announce(ctx.peer_api.protocol(), updates.iter()).await?;
-
-    session::announcements::save(&ctx.store, updates)?;
-    log::debug!("announced {} updates", count);
 
     Ok(())
 }

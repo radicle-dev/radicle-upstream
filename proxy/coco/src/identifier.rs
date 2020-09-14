@@ -1,5 +1,5 @@
-//! A `Identifier` is the combination of a user handle and the [`coco::Urn`] that identifies
-//! the user.
+//! A `Identifier` is the combination of a user handle and the [`librad::uri::RadUrn`] that
+//! identifies the user.
 
 use std::{fmt, str::FromStr};
 

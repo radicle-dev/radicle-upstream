@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::{error, identity};
 
-pub mod announcements;
 pub mod settings;
 
 /// Name for the storage bucket used for all session data.
@@ -50,11 +49,12 @@ pub async fn settings(store: &kv::Store) -> Result<settings::Settings, error::Er
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn current(api: &coco::Api, store: &kv::Store) -> Result<Session, error::Error> {
+pub async fn current(state: coco::Lock, store: &kv::Store) -> Result<Session, error::Error> {
+    let state = state.lock().await;
     let mut session = get(store, KEY_CURRENT)?;
 
     if let Some(id) = session.identity.clone() {
-        identity::get(api, &id.urn)?;
+        identity::get(&state, &id.urn)?;
         session.identity = Some(id);
     }
 
@@ -91,7 +91,7 @@ fn get(store: &kv::Store, key: &str) -> Result<Session, error::Error> {
     Ok(store
         .bucket::<&str, kv::Json<Session>>(Some(BUCKET_NAME))?
         .get(key)?
-        .map(kv::Codec::to_inner)
+        .map(kv::Codec::into_inner)
         .unwrap_or_default())
 }
 

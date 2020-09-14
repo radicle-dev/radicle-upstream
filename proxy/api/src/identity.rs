@@ -52,12 +52,12 @@ pub struct Metadata {
 ///
 /// # Errors
 pub fn create(
-    api: &coco::Api,
+    state: &coco::State,
     key: &signer::BoxedSigner,
     handle: &str,
 ) -> Result<Identity, error::Error> {
-    let user = api.init_owner(key, handle)?;
-    Ok((api.peer_id(), user).into())
+    let user = state.init_owner(key, handle)?;
+    Ok((state.peer_id(), user).into())
 }
 
 /// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
@@ -65,19 +65,19 @@ pub fn create(
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(api: &coco::Api, id: &coco::Urn) -> Result<Identity, error::Error> {
-    let user = api.get_user(id)?;
-    Ok((api.peer_id(), user).into())
+pub fn get(state: &coco::State, id: &coco::Urn) -> Result<Identity, error::Error> {
+    let user = state.get_user(id)?;
+    Ok((state.peer_id(), user).into())
 }
 
 /// Retrieve the list of identities known to the session user.
 ///
 /// # Errors
-pub fn list(api: &coco::Api) -> Result<Vec<Identity>, error::Error> {
+pub fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
-    for project in api.list_projects()? {
+    for project in state.list_projects()? {
         let project_urn = project.urn();
-        for peer in api.tracked(&project_urn)? {
+        for peer in state.tracked(&project_urn)? {
             let user = peer.into();
             if !users.contains(&user) {
                 users.push(user)

@@ -81,19 +81,23 @@ mod handler {
     /// Create a new [`project::Project`].
     pub async fn create(
         ctx: context::Ctx,
-        owner: coco::User,
+        owner: coco::user::User,
         input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let meta = ctx
-            .peer_api
+            .state
+            .lock()
+            .await
             .init_project(&ctx.signer, &owner, &input)
             .map_err(Error::from)?;
         let urn = meta.urn();
 
         let stats = ctx
-            .peer_api
+            .state
+            .lock()
+            .await
             .with_browser(&urn, |browser| Ok(browser.get_stats()?))
             .map_err(Error::from)?;
         let project: project::Project = (meta, stats).into();
@@ -112,12 +116,14 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let project = ctx
-            .peer_api
+            .state
+            .lock()
+            .await
             .get_project(&urn, peer_id)
             .map_err(Error::from)?;
 
         let path = coco::project::Checkout::new(project, path)
-            .run(ctx.peer_api.peer_id())
+            .run(ctx.state.lock().await.peer_id())
             .map_err(Error::from)?;
 
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
@@ -126,8 +132,9 @@ mod handler {
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(ctx: context::Ctx, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
+        let state = ctx.state.lock().await;
 
-        Ok(reply::json(&project::get(&ctx.peer_api, &urn)?))
+        Ok(reply::json(&project::get(&state, &urn)?))
     }
 
     /// List all known projects.
@@ -139,11 +146,12 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
+        let state = ctx.state.lock().await;
 
         let projects = if let Some(user) = query.user {
-            project::list_projects_for_user(&ctx.peer_api, &user)?
+            project::list_projects_for_user(&state, &user)?
         } else {
-            project::list_projects(&ctx.peer_api)?
+            project::list_projects(&state)?
         };
 
         Ok(reply::json(&projects))
@@ -234,20 +242,23 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let handle = "cloudhead";
 
-        let owner = ctx.peer_api.init_owner(&ctx.signer, handle)?;
-        session::set_identity(&ctx.store, (ctx.peer_api.peer_id(), owner.clone()).into())?;
+        let urn = {
+            let state = ctx.state.lock().await;
+            let handle = "cloudhead";
+            let owner = state.init_owner(&ctx.signer, handle)?;
+            session::set_identity(&ctx.store, (state.peer_id(), owner.clone()).into())?;
 
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            platinum_project.urn()
+        };
 
         let input = super::CheckoutInput {
             path: dir.path().to_path_buf(),
@@ -284,7 +295,7 @@ mod test {
         assert_eq!(
             remote.url(),
             Some(
-                coco::LocalUrl::from_urn(urn, ctx.peer_api.peer_id())
+                coco::LocalUrl::from_urn(urn, ctx.state.lock().await.peer_id())
                     .to_string()
                     .as_str()
             )
@@ -303,10 +314,15 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let handle = "cloudhead";
-        let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
-        session::set_identity(&ctx.store, id.clone())?;
+        {
+            let state = ctx.state.lock().await;
+
+            let handle = "cloudhead";
+            let id = identity::create(&state, &ctx.signer, handle)?;
+
+            session::set_identity(&ctx.store, id)?;
+        };
 
         let project = coco::project::Create {
             repo: coco::project::Repo::New {
@@ -324,7 +340,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::list_projects(&ctx.peer_api)?;
+        let projects = project::list_projects(&(*ctx.state.lock().await))?;
         let meta = projects.first().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
@@ -363,10 +379,15 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let handle = "cloudhead";
-        let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
-        session::set_identity(&ctx.store, id.clone())?;
+        {
+            let state = ctx.state.lock().await;
+
+            let handle = "cloudhead";
+            let id = identity::create(&state, &ctx.signer, handle)?;
+
+            session::set_identity(&ctx.store, id)?;
+        };
 
         let project = coco::project::Create {
             repo: coco::project::Repo::Existing {
@@ -386,7 +407,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::list_projects(&ctx.peer_api)?;
+        let projects = project::list_projects(&(*ctx.state.lock().await))?;
         let meta = projects.first().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
@@ -425,8 +446,10 @@ mod test {
 
         {
             let ctx = ctx.read().await;
+            let state = ctx.state.lock().await;
+
             let handle = "cloudhead";
-            let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
+            let id = identity::create(&state, &ctx.signer, handle)?;
 
             session::set_identity(&ctx.store, id)?;
         }
@@ -451,8 +474,10 @@ mod test {
 
         {
             let ctx = ctx.read().await;
+            let state = ctx.state.lock().await;
+
             let handle = "cloudhead";
-            let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
+            let id = identity::create(&state, &ctx.signer, handle)?;
 
             session::set_identity(&ctx.store, id)?;
         }
@@ -466,7 +491,9 @@ mod test {
 
         let projects = {
             let ctx = ctx.read().await;
-            project::list_projects(&ctx.peer_api)
+            let state = ctx.state.lock().await;
+
+            project::list_projects(&state)
         }?;
 
         let meta = projects.first().unwrap();
@@ -504,18 +531,23 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
 
-        let project = project::get(&ctx.peer_api, &urn)?;
+        let urn = {
+            let state = ctx.state.lock().await;
+
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+            platinum_project.urn()
+        };
+
+        let project = project::get(&(*ctx.state.lock().await), &urn)?;
 
         let res = request()
             .method("GET")
@@ -537,13 +569,16 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
+        {
+            let state = ctx.state.lock().await;
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            coco::control::setup_fixtures(&state, &ctx.signer, &owner)?;
+        };
 
-        let projects = project::list_projects(&ctx.peer_api)?;
         let res = request().method("GET").path("/").reply(&api).await;
 
+        let projects = project::list_projects(&(*ctx.state.lock().await))?;
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));
         });
@@ -559,15 +594,18 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
-        let project = &project::list_projects(&ctx.peer_api)?[0];
-        let coco_project = ctx.peer_api.get_project(&project.id, None)?;
+        let fintohaps: identity::Identity = {
+            let state = ctx.state.lock().await;
 
-        let fintohaps: identity::Identity =
-            coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &coco_project, "fintohaps")
-                .into();
+            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+
+            coco::control::setup_fixtures(&state, &ctx.signer, &owner)?;
+            let project = &project::list_projects(&state)?[0];
+            let coco_project = state.get_project(&project.id, None)?;
+
+            coco::control::track_fake_peer(&state, &ctx.signer, &coco_project, "fintohaps").into()
+        };
 
         let res = request()
             .method("GET")
@@ -575,6 +613,7 @@ mod test {
             .reply(&api)
             .await;
 
+        let project = &project::list_projects(&(*ctx.state.lock().await))?[0];
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(vec![project]));
         });
@@ -589,9 +628,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
+        let owner = ctx
+            .state
+            .lock()
+            .await
+            .init_owner(&ctx.signer, "cloudhead")?;
+        coco::control::setup_fixtures(&(*ctx.state.lock().await), &ctx.signer, &owner)?;
 
         let res = request().method("GET").path("/discover").reply(&api).await;
         let want = json!([
