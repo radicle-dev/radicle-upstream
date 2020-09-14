@@ -113,14 +113,7 @@ impl Peer {
                     Some(Input::AnnouncementTick)
                     // Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
                 },
-                Some(event) = protocol_subscriber.next() => match event {
-                    ProtocolEvent::Connected(peer_id) => Some(Input::Connected(peer_id)),
-                    _ => None,
-                },
-
-                    // None
-                    // Ok(Event::Protocol(event))
-                // },
+                Some(event) = protocol_subscriber.next() => Some(Input::Protocol(event)),
                 else => break,
             };
 
@@ -132,7 +125,7 @@ impl Peer {
                         let updates = Self::announce(self.state.clone(), &self.store).await?;
                         Event::Announced(updates)
                     }
-                    _ => todo!(),
+                    Command::Sync(_peer_id) => todo!(),
                 };
 
                 log::debug!("{:?}", event);
@@ -163,15 +156,16 @@ impl Peer {
 }
 
 enum Status {
+    Stopped(Instant),
     Offline(Option<Instant>),
     Syncing(Instant, usize),
     Online(Instant),
 }
 
+#[allow(clippy::large_enum_variant)]
 enum Input {
     AnnouncementTick,
-    Connected(PeerId),
-    Disconnected(PeerId),
+    Protocol(ProtocolEvent<Gossip>),
     SyncTimeout,
 }
 
@@ -187,38 +181,65 @@ struct State {
 }
 
 impl State {
-    fn new(connected_peers: HashSet<PeerId>, status: Status) -> Self {
+    /// Constructs a new state.
+    #[cfg(test)]
+    const fn new(connected_peers: HashSet<PeerId>, status: Status) -> Self {
         Self {
             connected_peers,
             status,
         }
     }
 
+    /// Applies the `input` and based on the current state transforms to the new state and in some
+    /// cases produes commands which should be executed in the appropriate sub-routines.
     fn transition(&mut self, input: Input) -> Option<Command> {
         match (&self.status, input) {
+            // Go from [`Input::Stopped`] to [`Input::Offline`] once we are listening.
+            (Status::Stopped(_since), Input::Protocol(ProtocolEvent::Listening(_addr))) => {
+                self.status = Status::Offline(Some(Instant::now()));
+
+                None
+            }
             // First connection after startup, which we know from the recorded `since` being
             // `None`.
-            (Status::Offline(None), Input::Connected(peer_id)) => {
+            (Status::Offline(None), Input::Protocol(ProtocolEvent::Connected(peer_id))) => {
                 self.connected_peers.insert(peer_id.clone());
                 self.status = Status::Syncing(Instant::now(), 1);
 
                 Some(Command::Sync(peer_id))
             }
-            // Go offline if we have no more connected peers left. We produce no output.
-            (_, Input::Disconnected(peer_id)) if self.connected_peers.len() == 1 => {
+            // Announce new updates while the peer is online.
+            (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
+            // Issue more syncs if we connect to new peers while syncing.
+            (
+                Status::Syncing(since, syncs),
+                Input::Protocol(ProtocolEvent::Connected(ref peer_id)),
+            ) => {
+                self.status = Status::Syncing(*since, syncs + 1);
+
+                Some(Command::Sync(peer_id.clone()))
+            }
+            // Go online if we exceed the sync period.
+            (Status::Syncing(_since, _syncs), Input::SyncTimeout) => {
+                self.status = Status::Online(Instant::now());
+
+                None
+            }
+            // Go offline if we have no more connected peers left.
+            (_, Input::Protocol(ProtocolEvent::Disconnecting(peer_id)))
+                if self.connected_peers.len() == 1 =>
+            {
                 self.connected_peers.remove(&peer_id);
                 self.status = Status::Offline(Some(Instant::now()));
 
                 None
             }
             // Remove peer that just disconnected.
-            (_, Input::Disconnected(peer_id)) => {
+            (_, Input::Protocol(ProtocolEvent::Disconnecting(peer_id))) => {
                 self.connected_peers.remove(&peer_id);
 
                 None
             }
-            // Announce new updates while the peer is online.
-            (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
             _ => None,
         }
     }
@@ -228,7 +249,7 @@ impl Default for State {
     fn default() -> Self {
         Self {
             connected_peers: HashSet::new(),
-            status: Status::Offline(None),
+            status: Status::Stopped(Instant::now()),
         }
     }
 }
@@ -237,7 +258,9 @@ impl Default for State {
 mod test {
     use std::{collections::HashSet, time::Instant};
 
-    use librad::{keys::SecretKey, peer::PeerId};
+    use librad::keys::SecretKey;
+    use librad::net::protocol::ProtocolEvent;
+    use librad::peer::PeerId;
 
     use super::{Command, Input, State, Status};
 
@@ -250,7 +273,7 @@ mod test {
         let status = Status::Offline(None);
         let mut state = State::new(HashSet::new(), status);
         let cmd = state
-            .transition(Input::Connected(peer_id.clone()))
+            .transition(Input::Protocol(ProtocolEvent::Connected(peer_id.clone())))
             .expect("expected command");
 
         assert_eq!(cmd, Command::Sync(peer_id));
