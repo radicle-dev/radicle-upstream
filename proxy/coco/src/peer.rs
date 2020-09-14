@@ -50,6 +50,8 @@ pub enum Event {
     Announced(announcement::Updates),
     /// Received a low-level protocol event.
     Protocol(ProtocolEvent<Gossip>),
+    /// Sync with the `PeerId` has been initiated.
+    SyncStarted(PeerId),
 }
 
 impl fmt::Debug for Event {
@@ -57,6 +59,7 @@ impl fmt::Debug for Event {
         match self {
             Self::Announced(updates) => write!(f, "announcements = {}", updates.len()),
             Self::Protocol(event) => write!(f, "protocol = {:?}", event),
+            Self::SyncStarted(peer_id) => write!(f, "sync.started = {:?}", peer_id),
         }
     }
 }
@@ -114,22 +117,21 @@ impl Peer {
         // Start announcement timer.
         let mut announce_timer = interval(std::time::Duration::from_secs(1));
 
-        let (mut timeout_sender, mut timeout_receiver) =
-            mpsc::channel::<Timeout>(RECEIVER_CAPACITY);
+        let (sync_sender, mut syncs) = mpsc::channel::<PeerId>(RECEIVER_CAPACITY);
+        let (timeout_sender, mut timeouts) = mpsc::channel::<Timeout>(RECEIVER_CAPACITY);
 
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
 
-        let mut state = State::default();
-
+        let mut state = RunState::default();
         loop {
             let maybe_input = tokio::select! {
                 _ = announce_timer.tick() => {
                     Some(Input::AnnouncementTick)
-                    // Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
                 },
                 Some(event) = protocol_subscriber.next() => Some(Input::Protocol(event)),
-                Some(timeout) = timeout_receiver.recv() => Some(Input::Timeout(timeout)),
+                Some(peer_id) = syncs.recv() => Some(Input::Synced(peer_id)),
+                Some(timeout) = timeouts.recv() => Some(Input::Timeout(timeout)),
                 else => break,
             };
 
@@ -141,16 +143,22 @@ impl Peer {
                         let updates = Self::announce(self.state.clone(), &self.store).await?;
                         Event::Announced(updates)
                     }
-                    Command::Sync(_peer_id) => {
+                    Command::Sync(peer_id) => {
+                        let mut sync_tx = sync_sender.clone();
+                        let mut timeout_tx = timeout_sender.clone();
+                        let peer = peer_id.clone();
+
+                        // TODO(xla): Find a more structured approach to timeout management.
                         tokio::spawn(async move {
                             tokio::time::delay_for(SYNC_PERIOD).await;
-                            timeout_sender
-                                .send(Timeout::SyncPeriod)
-                                .await
-                                .expect("unable to send SyncPeriod timeout");
+                            timeout_tx.send(Timeout::SyncPeriod).await.ok();
                         });
-                        // TODO(xla): Initiate sync for peer_id.
-                        todo!()
+                        tokio::spawn(async move {
+                            // TODO(xla): Initiate sync for peer_id.
+                            sync_tx.send(peer).await.ok();
+                        });
+
+                        Event::SyncStarted(peer_id.clone())
                     }
                 };
 
@@ -194,6 +202,7 @@ enum Status {
 enum Input {
     AnnouncementTick,
     Protocol(ProtocolEvent<Gossip>),
+    Synced(PeerId),
     Timeout(Timeout),
 }
 
@@ -208,12 +217,12 @@ enum Timeout {
     SyncPeriod,
 }
 
-struct State {
+struct RunState {
     connected_peers: HashSet<PeerId>,
     status: Status,
 }
 
-impl State {
+impl RunState {
     /// Constructs a new state.
     #[cfg(test)]
     const fn new(connected_peers: HashSet<PeerId>, status: Status) -> Self {
@@ -254,7 +263,7 @@ impl State {
                 Some(Command::Sync(peer_id))
             }
             // TODO(xla): Also issue sync if we come online after a certain period of being
-            // disconnected from any peers.
+            // disconnected from any peer.
             // Issue more syncs if we connect to new peers while syncing.
             (
                 Status::Syncing(since, syncs),
@@ -292,7 +301,7 @@ impl State {
     }
 }
 
-impl Default for State {
+impl Default for RunState {
     fn default() -> Self {
         Self {
             connected_peers: HashSet::new(),
@@ -314,14 +323,14 @@ mod test {
     use librad::net::protocol::ProtocolEvent;
     use librad::peer::PeerId;
 
-    use super::{Command, Input, State, Status, Timeout, SYNC_MAX_PEERS};
+    use super::{Command, Input, RunState, Status, Timeout, SYNC_MAX_PEERS};
 
     #[test]
     fn transition_to_started_on_listen() -> Result<(), Box<dyn std::error::Error>> {
         let addr = "127.0.0.1:12345".parse::<SocketAddr>()?;
 
         let status = Status::Stopped(Instant::now());
-        let mut state = State::new(HashSet::new(), status);
+        let mut state = RunState::new(HashSet::new(), status);
 
         let cmd = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert_eq!(cmd, None);
@@ -333,7 +342,7 @@ mod test {
     #[test]
     fn transition_to_online_after_sync_max_peers() {
         let status = Status::Syncing(Instant::now(), SYNC_MAX_PEERS - 1);
-        let mut state = State::new(HashSet::new(), status);
+        let mut state = RunState::new(HashSet::new(), status);
 
         let _cmd = {
             let key = SecretKey::new();
@@ -346,7 +355,7 @@ mod test {
     #[test]
     fn transition_to_online_after_sync_period() {
         let status = Status::Syncing(Instant::now(), 3);
-        let mut state = State::new(HashSet::new(), status);
+        let mut state = RunState::new(HashSet::new(), status);
 
         let _cmd = state.transition(Input::Timeout(Timeout::SyncPeriod));
         assert_matches!(state.status, Status::Online(_));
@@ -355,7 +364,7 @@ mod test {
     #[test]
     fn issue_sync_command_until_max_peers() -> Result<(), Box<dyn std::error::Error>> {
         let status = Status::Started(Instant::now());
-        let mut state = State::new(HashSet::new(), status);
+        let mut state = RunState::new(HashSet::new(), status);
 
         for i in 0..(SYNC_MAX_PEERS - 1) {
             let key = SecretKey::new();
@@ -399,7 +408,7 @@ mod test {
     #[test]
     fn issue_announce_while_online() {
         let status = Status::Online(Instant::now());
-        let mut state = State::new(HashSet::new(), status);
+        let mut state = RunState::new(HashSet::new(), status);
         let cmd = state
             .transition(Input::AnnouncementTick)
             .expect("expected command");
@@ -407,7 +416,7 @@ mod test {
         assert_matches!(cmd, Command::Announce);
 
         let status = Status::Offline(Instant::now());
-        let mut state = State::new(HashSet::new(), status);
+        let mut state = RunState::new(HashSet::new(), status);
         let cmd = state.transition(Input::AnnouncementTick);
 
         assert_matches!(cmd, None);
