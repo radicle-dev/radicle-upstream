@@ -29,6 +29,11 @@ const RECEIVER_CAPACITY: usize = 128;
 // TODO(xla): Make configurable as part of peer configuration.
 const SYNC_PERIOD: Duration = Duration::from_secs(10);
 
+/// Number of peers a full sync is attempting with up on startup.
+/// TODO(xla): Revise number.
+/// TODO(xla): Make configurable as part of peer configuration.
+const SYNC_MAX_PEERS: usize = 5;
+
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -176,6 +181,7 @@ impl Peer {
     }
 }
 
+#[derive(Debug)]
 enum Status {
     Stopped(Instant),
     Started(Instant),
@@ -234,10 +240,21 @@ impl State {
 
                 Some(Command::Sync(peer_id.clone()))
             }
+            // Sync until configured maximum of peers is reached.
+            (Status::Syncing(since, syncs), Input::Protocol(ProtocolEvent::Connected(peer_id)))
+                if *syncs < SYNC_MAX_PEERS =>
+            {
+                self.connected_peers.insert(peer_id.clone());
+                if *syncs + 1 == SYNC_MAX_PEERS {
+                    self.status = Status::Online(Instant::now());
+                } else {
+                    self.status = Status::Syncing(*since, syncs + 1);
+                }
+
+                Some(Command::Sync(peer_id))
+            }
             // TODO(xla): Also issue sync if we come online after a certain period of being
             // disconnected from any peers.
-            // Announce new updates while the peer is online.
-            (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
             // Issue more syncs if we connect to new peers while syncing.
             (
                 Status::Syncing(since, syncs),
@@ -268,6 +285,8 @@ impl State {
 
                 None
             }
+            // Announce new updates while the peer is online.
+            (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
             _ => None,
         }
     }
@@ -288,16 +307,17 @@ mod test {
     use std::net::SocketAddr;
     use std::{collections::HashSet, time::Instant};
 
+    use assert_matches::assert_matches;
     use pretty_assertions::assert_eq;
 
     use librad::keys::SecretKey;
     use librad::net::protocol::ProtocolEvent;
     use librad::peer::PeerId;
 
-    use super::{Command, Input, State, Status, Timeout};
+    use super::{Command, Input, State, Status, Timeout, SYNC_MAX_PEERS};
 
     #[test]
-    fn transitions_to_started_on_listen() -> Result<(), Box<dyn std::error::Error>> {
+    fn transition_to_started_on_listen() -> Result<(), Box<dyn std::error::Error>> {
         let addr = "127.0.0.1:12345".parse::<SocketAddr>()?;
 
         let status = Status::Stopped(Instant::now());
@@ -305,46 +325,85 @@ mod test {
 
         let cmd = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert_eq!(cmd, None);
-        assert!(matches!(state.status, Status::Started(_)));
+        assert_matches!(state.status, Status::Started(_));
 
         Ok(())
     }
 
     #[test]
-    fn sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
-        let key = SecretKey::new();
-        let peer_id = PeerId::from(key);
-
-        let status = Status::Started(Instant::now());
+    fn transition_to_online_after_sync_max_peers() {
+        let status = Status::Syncing(Instant::now(), SYNC_MAX_PEERS - 1);
         let mut state = State::new(HashSet::new(), status);
 
-        // We expect to sync with the first connected peer.
-        let cmd = state
-            .transition(Input::Protocol(ProtocolEvent::Connected(peer_id.clone())))
-            .expect("expected command");
-        assert_eq!(cmd, Command::Sync(peer_id));
-        assert!(matches!(state.status, Status::Syncing(_, 1)));
-
-        Ok(())
+        let _cmd = {
+            let key = SecretKey::new();
+            let peer_id = PeerId::from(key);
+            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+        };
+        assert_matches!(state.status, Status::Online(_));
     }
 
     #[test]
-    fn transitions_to_online_after_sync_period() {
+    fn transition_to_online_after_sync_period() {
         let status = Status::Syncing(Instant::now(), 3);
         let mut state = State::new(HashSet::new(), status);
 
         let _cmd = state.transition(Input::Timeout(Timeout::SyncPeriod));
-        assert!(matches!(state.status, Status::Online(_)));
+        assert_matches!(state.status, Status::Online(_));
     }
 
     #[test]
-    fn announce_when_online() {
+    fn issue_sync_command_until_max_peers() -> Result<(), Box<dyn std::error::Error>> {
+        let status = Status::Started(Instant::now());
+        let mut state = State::new(HashSet::new(), status);
+
+        for i in 0..(SYNC_MAX_PEERS - 1) {
+            let key = SecretKey::new();
+            let peer_id = PeerId::from(key);
+
+            // Expect to sync with the first connected peer.
+            let cmd = state
+                .transition(Input::Protocol(ProtocolEvent::Connected(peer_id.clone())))
+                .expect("expected command");
+            assert_matches!(cmd, Command::Sync(sync_id) => {
+                assert_eq!(sync_id, peer_id);
+            });
+            assert_matches!(state.status, Status::Syncing(_, syncing_peers) => {
+                assert_eq!(i + 1, syncing_peers);
+            });
+        }
+
+        // Issue last sync.
+        let cmd = {
+            let key = SecretKey::new();
+            let peer_id = PeerId::from(key);
+            state
+                .transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+                .expect("expected command")
+        };
+        assert_matches!(cmd, Command::Sync(_));
+        // Expect to be online at this point.
+        assert_matches!(state.status, Status::Online(_));
+
+        // No more syncs should be expected after the maximum of peers have connected.
+        let cmd = {
+            let key = SecretKey::new();
+            let peer_id = PeerId::from(key);
+            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+        };
+        assert_matches!(cmd, None);
+
+        Ok(())
+    }
+
+    #[test]
+    fn issue_announce_while_online() {
         let status = Status::Online(Instant::now());
         let mut state = State::new(HashSet::new(), status);
         let cmd = state
             .transition(Input::AnnouncementTick)
             .expect("expected command");
 
-        assert_eq!(cmd, Command::Announce);
+        assert_matches!(cmd, Command::Announce);
     }
 }
