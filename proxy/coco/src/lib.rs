@@ -50,6 +50,7 @@ pub use peer::{Event as PeerEvent, Peer};
 mod state;
 pub use state::{Lock, State};
 pub mod project;
+pub mod request;
 
 pub mod seed;
 pub mod signer;
