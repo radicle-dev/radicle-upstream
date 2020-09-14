@@ -20,18 +20,21 @@
     clippy::multiple_crate_versions
 )]
 
-pub use librad::git::local::url::LocalUrl;
-pub use librad::hash::Hash;
-pub use librad::meta::project::Project;
-pub use librad::meta::user::User as MetaUser;
-pub use librad::paths::Paths;
-pub use librad::peer::PeerId;
-pub use librad::uri::{self, RadUrn as Urn};
+pub use librad::{
+    git::local::url::LocalUrl,
+    hash::Hash,
+    meta::{project::Project, user::User as MetaUser},
+    paths::Paths,
+    peer::PeerId,
+    uri::{self, RadUrn as Urn},
+};
 
 pub use radicle_git_helpers::remote_helper;
 
-pub use radicle_surf::diff::{Diff, FileDiff};
-pub use radicle_surf::vcs::git::Stats;
+pub use radicle_surf::{
+    diff::{Diff, FileDiff},
+    vcs::git::Stats,
+};
 
 pub mod config;
 pub mod control;
@@ -60,9 +63,10 @@ pub use source::{
 
 pub mod user;
 
-use librad::keys;
-use librad::net::discovery;
-use librad::net::peer::PeerConfig;
+use librad::{
+    keys,
+    net::{discovery, peer::PeerConfig},
+};
 use std::net::SocketAddr;
 
 /// Constructs a [`Peer`] and [`State`] pair from a [`PeerConfig`].

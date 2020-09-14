@@ -1,13 +1,11 @@
-//! Endpoints and serialisation for [`crate::identity::Identity`] related types.
+//! Manage the state and stateful interactions with the underlying peer API of librad.
 
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use crate::context;
-use crate::http;
+use crate::{context, http};
 
 /// Combination of all identity routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -45,13 +43,9 @@ fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = R
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::http::StatusCode;
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::context;
-    use crate::error;
-    use crate::identity;
-    use crate::session;
+    use crate::{context, error, identity, session};
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
@@ -108,15 +102,9 @@ pub struct CreateInput {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
-    use crate::avatar;
-    use crate::context;
-    use crate::error;
-    use crate::http;
-    use crate::identity;
-    use crate::session;
+    use crate::{avatar, context, error, http, identity, session};
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
@@ -221,8 +209,10 @@ mod test {
             let state = ctx.state.lock().await;
             let id = identity::create(&state, &ctx.signer, "cloudhead")?;
 
-            let owner = state.get_user(&id.urn)?;
-            let owner = coco::user::verify(owner)?;
+            let owner = {
+                let user = state.get_user(&id.urn)?;
+                coco::user::verify(user)?
+            };
 
             session::set_identity(&ctx.store, id)?;
 

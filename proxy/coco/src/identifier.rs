@@ -5,8 +5,7 @@ use std::{fmt, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-use librad::meta::user;
-use librad::peer;
+use librad::{meta::user, peer};
 
 /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
 #[derive(Debug, thiserror::Error)]

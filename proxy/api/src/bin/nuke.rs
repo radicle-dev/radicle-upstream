@@ -1,13 +1,10 @@
-use std::fs::remove_dir_all;
-use std::io::ErrorKind;
-use std::process::exit;
+use std::{fs::remove_dir_all, io::ErrorKind, process::exit};
 
 use log::{info, trace};
 
 use coco::control;
 
-use api::config;
-use api::env;
+use api::{config, env};
 
 fn main() {
     env::set_if_unset("RUST_BACKTRACE", "full");

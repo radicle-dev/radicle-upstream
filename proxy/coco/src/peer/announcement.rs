@@ -1,16 +1,15 @@
 //! Compute, track and announce noteworthy changes to the network.
 
-use std::collections::HashSet;
-use std::ops::Deref as _;
+use std::{collections::HashSet, ops::Deref as _};
 
 use kv::Codec as _;
 
-use librad::net::peer::{Gossip, Rev};
-use librad::uri::path::ParseError;
-use librad::uri::{Path, RadUrn};
+use librad::{
+    net::peer::{Gossip, Rev},
+    uri::{path::ParseError, Path, RadUrn},
+};
 
-use crate::oid::Oid;
-use crate::state::Lock;
+use crate::{oid::Oid, state::Lock};
 
 /// Name for the bucket used in [`kv::Store`].
 const BUCKET_NAME: &str = "announcements";
@@ -136,14 +135,12 @@ mod test {
 
     use pretty_assertions::assert_eq;
 
-    use librad::hash::Hash;
-    use librad::keys::SecretKey;
-    use librad::uri;
+    use librad::{hash::Hash, keys::SecretKey, uri};
 
-    use crate::config;
-    use crate::oid;
-    use crate::signer;
-    use crate::state::{Lock, State};
+    use crate::{
+        config, oid, signer,
+        state::{Lock, State},
+    };
 
     #[tokio::test]
     async fn announce() -> Result<(), Box<dyn std::error::Error>> {

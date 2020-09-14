@@ -1,13 +1,11 @@
 use std::time::Duration;
 
-use futures::future;
-use futures::StreamExt as _;
+use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::seed::Seed;
-use coco::{Hash, Urn};
+use coco::{seed::Seed, Hash, Urn};
 
 mod common;
 use common::{
@@ -16,7 +14,7 @@ use common::{
 };
 
 #[tokio::test]
-async fn announce_solo() -> Result<(), Box<dyn std::error::Error>> {
+async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
@@ -54,7 +52,7 @@ async fn announce_solo() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
-async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
+async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
@@ -112,6 +110,7 @@ async fn announce_connected() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+/// Verify that asking the network for an unkown urn returns no providers.
 #[tokio::test]
 async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
@@ -135,11 +134,12 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
         .next()
         .await;
 
-    assert!(res.is_none(), "expected no results",);
+    assert!(res.is_none(), "didn't expected to obtain any providers");
 
     Ok(())
 }
 
+/// Verify that asking the network for a URN owned by a seed peer returns said peer.
 #[tokio::test]
 async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();

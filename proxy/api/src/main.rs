@@ -1,15 +1,8 @@
 use std::convert::TryFrom;
 
-use coco::keystore;
-use coco::seed;
-use coco::signer;
+use coco::{keystore, seed, signer};
 
-use api::config;
-use api::context;
-use api::env;
-use api::http;
-use api::notification;
-use api::session;
+use api::{config, context, env, http, notification, session};
 
 /// Flags accepted by the proxy binary.
 struct Args {

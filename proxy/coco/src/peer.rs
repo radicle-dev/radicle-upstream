@@ -1,17 +1,18 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::collections::HashSet;
-use std::fmt;
-use std::time::Instant;
+use std::{collections::HashSet, fmt, time::Instant};
 
 use futures::StreamExt as _;
 use tokio::sync::broadcast;
 
-use librad::net::peer::Gossip;
-use librad::net::peer::RunLoop;
-use librad::net::protocol::ProtocolEvent;
-use librad::peer::PeerId;
+use librad::{
+    net::{
+        peer::{Gossip, RunLoop},
+        protocol::ProtocolEvent,
+    },
+    peer::PeerId,
+};
 
 use crate::state::Lock;
 
@@ -130,7 +131,7 @@ impl Peer {
                     Command::Announce => {
                         let updates = Self::announce(self.state.clone(), &self.store).await?;
                         Event::Announced(updates)
-                    }
+                    },
                     _ => todo!(),
                 };
 
@@ -202,20 +203,20 @@ impl State {
                 self.status = Status::Syncing(Instant::now(), 1);
 
                 Some(Command::Sync(peer_id))
-            }
+            },
             // Go offline if we have no more connected peers left. We produce no output.
             (_, Input::Disconnected(peer_id)) if self.connected_peers.len() == 1 => {
                 self.connected_peers.remove(&peer_id);
                 self.status = Status::Offline(Some(Instant::now()));
 
                 None
-            }
+            },
             // Remove peer that just disconnected.
             (_, Input::Disconnected(peer_id)) => {
                 self.connected_peers.remove(&peer_id);
 
                 None
-            }
+            },
             // Announce new updates while the peer is online.
             (Status::Online(_since), Input::AnnouncementTick) => Some(Command::Announce),
             _ => None,
@@ -234,11 +235,9 @@ impl Default for State {
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashSet;
-    use std::time::Instant;
+    use std::{collections::HashSet, time::Instant};
 
-    use librad::keys::SecretKey;
-    use librad::peer::PeerId;
+    use librad::{keys::SecretKey, peer::PeerId};
 
     use super::{Command, Input, State, Status};
 

@@ -1,22 +1,15 @@
-use std::path::PathBuf;
-use std::time::Duration;
+use std::{path::PathBuf, time::Duration};
 
-use futures::future;
-use futures::StreamExt as _;
-use tokio::sync::broadcast;
-use tokio::time::{timeout, Elapsed};
+use futures::{future, StreamExt as _};
+use tokio::{
+    sync::broadcast,
+    time::{timeout, Elapsed},
+};
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
-use librad::keys::SecretKey;
-use librad::net::protocol::ProtocolEvent;
-use librad::peer::PeerId;
-use librad::signer;
+use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer};
 
-use coco::config;
-use coco::project;
-use coco::seed::Seed;
-use coco::Paths;
-use coco::{Lock, Peer, PeerEvent};
+use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent};
 
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,

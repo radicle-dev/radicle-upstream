@@ -1,11 +1,9 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use serde::Deserialize;
-use warp::filters::BoxedFilter;
-use warp::{path, reject, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
-use crate::context;
-use crate::notification::Subscriptions;
+use crate::{context, notification::Subscriptions};
 
 mod avatar;
 mod control;

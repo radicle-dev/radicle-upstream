@@ -1,35 +1,39 @@
 //! Utility to work with the peer api of librad.
 
-use std::convert::TryFrom;
-use std::future::Future;
-use std::net::{IpAddr, SocketAddr};
-use std::path::{self, PathBuf};
-use std::sync::Arc;
-use std::time::Duration;
+use std::{
+    convert::TryFrom,
+    future::Future,
+    net::{IpAddr, SocketAddr},
+    path::{self, PathBuf},
+    sync::Arc,
+    time::Duration,
+};
 
 use tokio::sync::Mutex;
 
-use librad::git::local::{transport, url::LocalUrl};
-use librad::git::refs::Refs;
-use librad::git::storage;
-use librad::keys;
-use librad::meta::entity;
-use librad::meta::project as librad_project;
-use librad::meta::user;
-use librad::net::gossip::PeerInfo;
-use librad::net::peer::PeerApi;
-use librad::paths;
-use librad::peer::PeerId;
-use librad::uri::{RadUrl, RadUrn};
+use librad::{
+    git::{
+        local::{transport, url::LocalUrl},
+        refs::Refs,
+        storage,
+    },
+    keys,
+    meta::{entity, project as librad_project, user},
+    net::{gossip::PeerInfo, peer::PeerApi},
+    paths,
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 use radicle_keystore::sign::Signer as _;
-use radicle_surf::vcs::git;
-use radicle_surf::vcs::git::git2;
+use radicle_surf::vcs::{git, git::git2};
 
-use crate::error::Error;
-use crate::project;
-use crate::seed::Seed;
-use crate::signer;
-use crate::user::{verify as verify_user, User};
+use crate::{
+    error::Error,
+    project,
+    seed::Seed,
+    signer,
+    user::{verify as verify_user, User},
+};
 
 /// Thread-safe wrapper for [`State`].
 pub type Lock = Arc<Mutex<State>>;
@@ -52,11 +56,8 @@ impl State {
     pub fn new(api: PeerApi<keys::SecretKey>, signer: signer::BoxedSigner) -> Self {
         let paths = api.paths();
 
-        // Turns out we don't need to call the git commands from the command line.
-        // All we need is to register the git transport and this is the same
-        // thing. This means we can use git2 to execute actions. So instead of
-        // implementing the checkout via git clone as a Command, we use
-        // [`git2::RepoBuilder`].
+        // Register the transport so to use git2 to execute actions such as checkouts, fetch, and
+        // push. The transport will then handle the interaction with the monorepo.
         transport::register(transport::Settings {
             paths: paths.clone(),
             signer,
@@ -100,13 +101,13 @@ impl State {
         Ok(self.api.storage().has_commit(urn, oid.into())?)
     }
 
-    /// Our current peers [`PeerId`].
+    /// The local machine's [`PeerId`].
     #[must_use]
     pub fn peer_id(&self) -> PeerId {
         self.api.peer_id().clone()
     }
 
-    /// The address this peer is listening on.
+    /// The [`SocketAddr`] this [`PeerApi`] is listening on.
     #[must_use]
     pub fn listen_addr(&self) -> SocketAddr {
         self.api.listen_addr()
@@ -115,13 +116,11 @@ impl State {
     /// Get the default owner for this `PeerApi`.
     #[must_use]
     pub fn default_owner(&self) -> Option<user::User<entity::Draft>> {
-        match self.api.storage().default_rad_self() {
-            Ok(user) => Some(user),
-            Err(err) => {
-                log::warn!("an error occurred while trying to get 'rad/self': {}", err);
-                None
-            },
-        }
+        self.api
+            .storage()
+            .default_rad_self()
+            .map_err(|err| log::warn!("an error occurred while trying to get 'rad/self': {}", err))
+            .ok()
     }
 
     /// Set the default owner for this `PeerApi`.
@@ -130,10 +129,13 @@ impl State {
     ///
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
     pub fn set_default_owner(&self, user: User) -> Result<(), Error> {
-        Ok(self.api.storage().set_default_rad_self(user)?)
+        self.api
+            .storage()
+            .set_default_rad_self(user)
+            .map_err(Error::from)
     }
 
-    /// Initialise a [`User`] and make them the default owner of this `PeerApi`.
+    /// Initialise a [`User`] and make them the default owner of this [`PeerApi`].
     ///
     /// # Errors
     ///
@@ -182,11 +184,10 @@ impl State {
         P: Into<Option<PeerId>>,
     {
         let storage = self.api.storage().reopen()?;
-
         Ok(storage.metadata_of(urn, peer)?)
     }
 
-    /// Returns the list of [`librad_project::Project`]s for your peer.
+    /// Returns the list of [`librad_project::Project`]s for the local peer.
     ///
     /// # Errors
     ///
@@ -317,21 +318,21 @@ impl State {
         Ok(storage.fetch_repo(url, addr_hints)?)
     }
 
-    /// Get a repo browser for a project.
+    /// Provide a a repo [`git::Browser`] for the project of `urn`.
     ///
     /// # Errors
     ///
-    /// The function will result in an error if the mutex guard was poisoned. See
-    /// [`std::sync::Mutex::lock`] for further details.
+    /// * If no project for the `urn` was found.
+    /// * If the [`git::Browser`] fails.
+    /// * If the passed `callback` errors.
     pub fn with_browser<F, T>(&self, urn: &RadUrn, callback: F) -> Result<T, Error>
     where
         F: Send + FnOnce(&mut git::Browser) -> Result<T, Error>,
     {
-        let git_dir = self.monorepo();
-
+        let monorepo = self.monorepo();
         let project = self.get_project(urn, None)?;
         let default_branch = git::Branch::local(project.default_branch());
-        let repo = git::Repository::new(git_dir)?;
+        let repo = git::Repository::new(monorepo)?;
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
@@ -385,20 +386,17 @@ impl State {
         signer: &signer::BoxedSigner,
         handle: &str,
     ) -> Result<user::User<entity::Draft>, Error> {
-        // Create the project meta
         let mut user =
             user::User::<entity::Draft>::create(handle.to_string(), signer.public_key().into())?;
         user.sign_owned(signer)?;
         let urn = user.urn();
 
-        // Initialising user in the storage.
         {
             let storage = self.api.storage().reopen()?;
-
             if storage.has_urn(&urn)? {
                 return Err(Error::EntityExists(urn));
             } else {
-                let _repo = storage.create_repo(&user)?;
+                storage.create_repo(&user)?;
             }
         }
 
@@ -457,16 +455,11 @@ impl From<&State> for Seed {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
-    use std::env;
-    use std::path::PathBuf;
-    use std::process::Command;
+    use std::{env, path::PathBuf, process::Command};
 
     use librad::keys::SecretKey;
 
-    use crate::config;
-    use crate::control;
-    use crate::project;
-    use crate::signer;
+    use crate::{config, control, project, signer};
 
     use super::{Error, State};
 
@@ -707,11 +700,8 @@ mod test {
         let state = State::new(api, signer.clone());
 
         let kalt = state.init_owner(&signer, "kalt")?;
-
         let fakie = state.init_project(&signer, &kalt, &fakie_project(repo_path.clone()))?;
-
         let fake_fakie = repo_path.join("fake-fakie");
-
         let copy = Command::new("cp")
             .arg("-rf")
             .arg(repo_path.join(fakie.name()))
