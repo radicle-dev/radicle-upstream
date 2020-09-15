@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use std::marker::PhantomData;
 use std::time::Duration;
 
+use librad::net::peer::types::Gossip;
 use librad::uri::RadUrn;
 
 type PeerId = String;
@@ -72,6 +73,16 @@ pub struct Request<S, T> {
     attempts: Attempts,
     timestamp: T,
     internal: Option<State>,
+}
+
+impl<S, T> From<Request<S, T>> for Gossip {
+    fn from(request: Request<S, T>) -> Self {
+        Self {
+            urn: request.urn,
+            rev: None,
+            origin: None,
+        }
+    }
 }
 
 impl<S, T> Request<S, T> {
