@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::convert::TryFrom;
 use std::marker::PhantomData;
 use std::time::Duration;
 
@@ -16,8 +17,9 @@ const MAX_QUERIES: usize = 1;
 const MAX_CLONES: usize = 1;
 const PERIOD: Duration = Duration::from_secs(1); // Not for the whole request but for re-request
 
-fn exponential_backoff(attempts: Attempts, period: Duration) -> Duration {
-    todo!()
+pub fn exponential_backoff(attempts: Attempts, interval: Duration) -> Duration {
+    let exp = u32::try_from(attempts.queries + attempts.clones).unwrap_or(u32::MAX);
+    Duration::from_millis(u64::pow(2, exp)) + interval
 }
 
 #[derive(Clone, Debug, Hash, PartialEq)]
