@@ -14,6 +14,7 @@ use librad::{
         protocol::ProtocolEvent,
     },
     peer::PeerId,
+    uri::RadUrl,
 };
 
 use crate::state::Lock;
@@ -40,6 +41,10 @@ pub enum Error {
     /// Failed to build and announce state updates.
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
+    /// Stop-gap until we get rid of crate level errors.
+    // TODO(xla): Remove once we transitioned to per module errors.
+    #[error(transparent)]
+    Crate(#[from] crate::error::Error),
 }
 
 /// Significant events that occur during [`Peer`] lifetime.
@@ -49,8 +54,6 @@ pub enum Event {
     /// Gossiped a list of updates of new heads in our [`crate::state::State`]`.
     Announced(announcement::Updates),
     Input(Input),
-    /// Received a low-level protocol event.
-    Protocol(ProtocolEvent<Gossip>),
     /// Sync with the `PeerId` has been initiated.
     SyncStarted(PeerId),
 }
@@ -60,7 +63,6 @@ impl fmt::Debug for Event {
         match self {
             Self::Announced(updates) => write!(f, "announcements = {}", updates.len()),
             Self::Input(input) => write!(f, "input = {:?}", input),
-            Self::Protocol(event) => write!(f, "protocol = {:?}", event),
             Self::SyncStarted(peer_id) => write!(f, "sync.started = {:?}", peer_id),
         }
     }
@@ -119,7 +121,7 @@ impl Peer {
         // Start announcement timer.
         let mut announce_timer = interval(std::time::Duration::from_secs(1));
 
-        let (sync_sender, mut syncs) = mpsc::channel::<PeerId>(RECEIVER_CAPACITY);
+        let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<PeerSync>(RECEIVER_CAPACITY);
         let (timeout_sender, mut timeouts) = mpsc::channel::<Timeout>(RECEIVER_CAPACITY);
 
         // Advance the librad protocol.
@@ -130,7 +132,7 @@ impl Peer {
             let input = tokio::select! {
                 _ = announce_timer.tick() => Input::AnnouncementTick,
                 Some(event) = protocol_subscriber.next() => Input::Protocol(event),
-                Some(peer_id) = syncs.recv() => Input::Synced(peer_id),
+                Some(peer_sync) = peer_syncs.recv() => Input::PeerSync(peer_sync),
                 Some(timeout) = timeouts.recv() => Input::Timeout(timeout),
                 else => break,
             };
@@ -147,10 +149,11 @@ impl Peer {
                         let updates = Self::announce(self.state.clone(), &self.store).await?;
                         Event::Announced(updates)
                     }
-                    Command::Sync(peer_id) => {
-                        let mut sync_tx = sync_sender.clone();
+                    Command::SyncPeer(peer_id) => {
+                        let mut sync_tx = peer_sync_sender.clone();
                         let mut timeout_tx = timeout_sender.clone();
                         let peer = peer_id.clone();
+                        let sync_state = self.state.clone();
 
                         // TODO(xla): Find a more structured approach to timeout management.
                         tokio::spawn(async move {
@@ -158,8 +161,12 @@ impl Peer {
                             timeout_tx.send(Timeout::SyncPeriod).await.ok();
                         });
                         tokio::spawn(async move {
-                            // TODO(xla): Initiate sync for peer_id.
-                            sync_tx.send(peer).await.ok();
+                            sync_tx.send(PeerSync::Started(peer.clone())).await.ok();
+
+                            match Self::sync(sync_state, peer.clone()).await {
+                                Ok(_) => sync_tx.send(PeerSync::Succeeded(peer)).await.ok(),
+                                Err(_) => sync_tx.send(PeerSync::Failed(peer)).await.ok(),
+                            }
                         });
 
                         Event::SyncStarted(peer_id.clone())
@@ -191,6 +198,25 @@ impl Peer {
 
         Ok(updates)
     }
+
+    async fn sync(state: Lock, peer_id: PeerId) -> Result<(), Error> {
+        let state = state.lock().await;
+        let urls = state
+            .list_projects()
+            .map_err(Error::from)?
+            .iter()
+            .map(|project| RadUrl {
+                authority: peer_id.clone(),
+                urn: project.urn(),
+            })
+            .collect::<Vec<RadUrl>>();
+
+        for url in urls {
+            state.fetch(url, vec![])?;
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Debug)]
@@ -207,14 +233,21 @@ enum Status {
 pub enum Input {
     AnnouncementTick,
     Protocol(ProtocolEvent<Gossip>),
-    Synced(PeerId),
+    PeerSync(PeerSync),
     Timeout(Timeout),
 }
 
 #[derive(Debug, PartialEq)]
 enum Command {
     Announce,
-    Sync(PeerId),
+    SyncPeer(PeerId),
+}
+
+#[derive(Clone, Debug)]
+pub enum PeerSync {
+    Started(PeerId),
+    Failed(PeerId),
+    Succeeded(PeerId),
 }
 
 #[derive(Clone, Debug)]
@@ -252,7 +285,7 @@ impl RunState {
                 self.connected_peers.insert(peer_id.clone());
                 self.status = Status::Syncing(Instant::now(), 1);
 
-                Some(Command::Sync(peer_id.clone()))
+                Some(Command::SyncPeer(peer_id.clone()))
             }
             // Sync until configured maximum of peers is reached.
             (Status::Syncing(since, syncs), Input::Protocol(ProtocolEvent::Connected(peer_id)))
@@ -265,7 +298,7 @@ impl RunState {
                     self.status = Status::Syncing(*since, syncs + 1);
                 }
 
-                Some(Command::Sync(peer_id))
+                Some(Command::SyncPeer(peer_id))
             }
             // TODO(xla): Also issue sync if we come online after a certain period of being
             // disconnected from any peer.
@@ -276,7 +309,7 @@ impl RunState {
             ) => {
                 self.status = Status::Syncing(*since, syncs + 1);
 
-                Some(Command::Sync(peer_id.clone()))
+                Some(Command::SyncPeer(peer_id.clone()))
             }
             // Go online if we exceed the sync period.
             (Status::Syncing(_since, _syncs), Input::Timeout(Timeout::SyncPeriod)) => {
@@ -382,7 +415,7 @@ mod test {
             let cmd = state
                 .transition(Input::Protocol(ProtocolEvent::Connected(peer_id.clone())))
                 .expect("expected command");
-            assert_matches!(cmd, Command::Sync(sync_id) => {
+            assert_matches!(cmd, Command::SyncPeer(sync_id) => {
                 assert_eq!(sync_id, peer_id);
             });
             assert_matches!(state.status, Status::Syncing(_, syncing_peers) => {
@@ -398,7 +431,7 @@ mod test {
                 .transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
                 .expect("expected command")
         };
-        assert_matches!(cmd, Command::Sync(_));
+        assert_matches!(cmd, Command::SyncPeer(_));
         // Expect to be online at this point.
         assert_matches!(state.status, Status::Online(_));
 
