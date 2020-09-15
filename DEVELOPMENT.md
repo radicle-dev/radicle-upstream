@@ -309,8 +309,8 @@ Read more about the colors used in Upstream in the [Color System post][cg].
 ## Proxy
 
 All of Upstream's business logic tying together the radicle code collaboration
-and registry protocols is provided to the UI via an HTTP API by a rust binary
-called the proxy. It uses [warp][wa] to serve a RESTish JSON API.
+is provided to the UI via an HTTP API by a rust binary called the proxy. It
+uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To
 get up to speed with common functionality and manifest file intricacies consult
@@ -326,25 +326,8 @@ application package by [electron-builder][eb].
 To be able to build the proxy first install all required dependencies from the
 [Running Upstream](#running-upstream) section.
 
-To start the proxy binary, run: `cd proxy && cargo run -- --registry=emulator`.
+To start the proxy binary, run: `cd proxy && cargo run`.
 After that the API docs are served under `http://127.0.0.1:8080/docs`.
-
-### Registry chains
-
-The proxy connects to a registry node to get data from a registry chain. The
-node host is configured via the `--registry` option.
-
-The `--registry` option accepts a special value `emulator`. If set the proxy
-simulates the registry chain in memory on the node.
-
-We provide the following shortcuts.
-
-* `yarn run proxy:start`. Runs the proxy with the emulator.
-* `yarn run proxy:start:ffnet` Connects to a node in the cloud that runs the
-  ffnet chain.
-* `yarn run proxy:start:devnet` Connects to a node in the cloud that runs the
-  devnet chain. This chain is frequently reset and contains the latest master
-  version.
 
 
 ### Testing
@@ -374,11 +357,9 @@ Rust book [test chapter][rt].
 The API exposes the application's domain logic. Therefore we try to treat it as
 a thin layer exposing well-typed entities. The heavy lifting is done in the
 modules named after the protocols we consume - [radicle-link][rl] through it
-[radicle-surf][rs], for code collaboration and [radicle-registry][rr] for
-global unique entries for users, projects and organisations. By isolating
-concerns this way, we hope to enable ease-of-contribution to downstream teams.
-Empowering them to reflect changes in their public APIs easily with code
-contributions to Upstream.
+[radicle-surf][rs], for code collaboration. By isolating concerns this way, we
+hope to enable ease-of-contribution to downstream teams. Empowering them to
+reflect changes in their public APIs easily with code contributions to Upstream.
 
 
 ## CI setup
@@ -506,7 +487,6 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
 [rl]: https://github.com/radicle-dev/radicle-link
-[rr]: https://github.com/radicle-dev/radicle-registry
 [rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev
