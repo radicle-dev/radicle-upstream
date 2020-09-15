@@ -1,4 +1,4 @@
-//! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
+//! Combine the domain `CoCo` domain specific understanding of a Project into a single
 //! abstraction.
 
 use std::collections::HashSet;
