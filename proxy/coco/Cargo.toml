@@ -12,7 +12,6 @@ repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
 futures = { version = "0.3", features = [ "compat" ] }
-# kv = { version = "0.21", features = [ "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.5"

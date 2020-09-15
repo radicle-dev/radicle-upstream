@@ -15,7 +15,6 @@ default-run = "api"
 anyhow = "1.0"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
-# kv = { version = "0.21", features = [ "json-value" ] }
 log = "0.4"
 percent-encoding = "2.1"
 pico-args = "0.3"
