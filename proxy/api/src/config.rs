@@ -1,9 +1,6 @@
 //! Configuration vital to the setup and alteration of the application.
 
-use std::env;
-use std::ffi;
-use std::io;
-use std::path;
+use std::{env, ffi, io, path};
 
 use directories::ProjectDirs;
 

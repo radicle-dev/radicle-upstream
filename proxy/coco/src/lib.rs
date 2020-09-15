@@ -12,6 +12,7 @@
     unused_qualifications
 )]
 #![allow(
+    clippy::clone_on_ref_ptr,
     clippy::expect_used,
     clippy::implicit_return,
     clippy::integer_arithmetic,
@@ -19,20 +20,22 @@
     clippy::multiple_crate_versions
 )]
 
-pub use librad::git::local::url::LocalUrl;
-pub use librad::hash::Hash;
-pub use librad::meta::project::Project;
-pub use librad::meta::user::User as MetaUser;
-pub use librad::paths::Paths;
-pub use librad::peer::PeerId;
-pub use librad::uri::{self, RadUrn as Urn};
+pub use librad::{
+    git::local::url::LocalUrl,
+    hash::Hash,
+    meta::{project::Project, user::User as MetaUser},
+    paths::Paths,
+    peer::PeerId,
+    uri::{self, RadUrn as Urn},
+};
 
 pub use radicle_git_helpers::remote_helper;
 
-pub use radicle_surf::diff::{Diff, FileDiff};
-pub use radicle_surf::vcs::git::Stats;
+pub use radicle_surf::{
+    diff::{Diff, FileDiff},
+    vcs::git::Stats,
+};
 
-pub mod announcement;
 pub mod config;
 pub mod control;
 mod error;
@@ -43,7 +46,9 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 mod peer;
-pub use peer::{verify_user, Api, User};
+pub use peer::{Event as PeerEvent, Peer};
+mod state;
+pub use state::{Lock, State};
 pub mod project;
 
 pub mod seed;
@@ -55,3 +60,35 @@ pub use source::{
     tree, Blob, BlobContent, Branch, Commit, CommitHeader, Info, ObjectType, Person, Revision,
     Revisions, Tag, Tree, TreeEntry,
 };
+
+pub mod user;
+
+use librad::{
+    keys,
+    net::{discovery, peer::PeerConfig},
+};
+use std::net::SocketAddr;
+
+/// Constructs a [`Peer`] and [`State`] pair from a [`PeerConfig`].
+///
+/// # Errors
+///
+/// * peer construction from config fails.
+/// * accept on the peer fails.
+pub async fn into_peer_state<I>(
+    config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
+    signer: librad::signer::BoxedSigner,
+    store: kv::Store,
+) -> Result<(Peer, Lock), Error>
+where
+    I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
+{
+    let peer = config.try_into_peer().await?;
+    let (api, run_loop) = peer.accept()?;
+
+    let state = State::new(api, signer);
+    let state = state::Lock::from(state);
+    let peer = Peer::new(run_loop, state.clone(), store);
+
+    Ok((peer, state))
+}

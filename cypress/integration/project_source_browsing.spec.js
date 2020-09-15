@@ -1,7 +1,11 @@
 before(() => {
   cy.nukeAllState();
   cy.onboardUser("cloudhead");
-  cy.createProjectWithFixture();
+
+  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
+    "ele",
+    "abbey",
+  ]);
 });
 
 beforeEach(() => {
@@ -222,8 +226,7 @@ context("source code browsing", () => {
         cy.contains(".i-too-am-hidden").should("exist");
       });
 
-      // TODO(sos): unskip when we have a proxy testnet; will require fake peers
-      //   in project mock
+      // TODO(sos): unskip when we have a proxy testnet
       it.skip("allows selecting different peers", () => {
         cy.pick("revision-selector").click();
         // Default revision is highlighted.

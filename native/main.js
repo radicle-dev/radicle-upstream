@@ -46,6 +46,10 @@ ipcMain.handle(ipc.OPEN_PATH, async (_event, path) => {
   shell.openPath(path);
 });
 
+ipcMain.handle(ipc.GET_VERSION, () => {
+  return app.getVersion();
+});
+
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1200,

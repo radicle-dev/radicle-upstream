@@ -4,8 +4,7 @@ use std::sync::Arc;
 
 use tokio::sync::RwLock;
 
-use coco::keystore;
-use coco::signer;
+use coco::{keystore, signer};
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;
@@ -18,8 +17,8 @@ impl From<Context> for Ctx {
 
 /// Container to pass down dependencies into HTTP filter chains.
 pub struct Context {
-    /// [`coco::Api`] to operate on the local monorepo.
-    pub peer_api: coco::Api,
+    /// [`coco::State`] to operate on the local monorepo.
+    pub state: coco::Lock,
     /// [`coco::signer::BoxedSigner`] for write operations on the monorepo.
     pub signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
@@ -37,6 +36,7 @@ impl Context {
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Ctx, crate::error::Error> {
         let paths = coco::Paths::from_root(tmp_dir.path())?;
 
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
         let key = keystore.init()?;
@@ -44,15 +44,13 @@ impl Context {
             signer: key.clone(),
         });
 
-        let peer_api = {
+        let (_peer, state) = {
             let config = coco::config::default(key, tmp_dir.path())?;
-            coco::Api::new(config).await?
+            coco::into_peer_state(config, signer.clone(), store.clone()).await?
         };
 
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-
         Ok(Arc::new(RwLock::new(Self {
-            peer_api,
+            state,
             signer,
             store,
         })))
@@ -83,19 +81,23 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
         temp_dir.path().to_path_buf()
     };
 
-    let paths = coco::Paths::from_root(tmp_path)?;
+    let paths = coco::Paths::from_root(tmp_path.clone())?;
 
+    let store = kv::Store::new(kv::Config::new(tmp_path.join("store")))?;
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-    let signer = new_keystore.init()?;
+    let key = new_keystore.init()?;
+    let signer = signer::BoxedSigner::from(key.clone());
 
-    let config =
-        coco::config::configure(paths, signer.clone(), *coco::config::LOCALHOST_ANY, vec![]);
-    let new_peer_api = coco::Api::new(config).await?;
+    let (_new_peer, new_state) = {
+        let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
+        coco::into_peer_state(config, signer.clone(), store.clone()).await?
+    };
 
     let mut ctx = ctx.write().await;
-    ctx.peer_api = new_peer_api;
-    ctx.signer = signer::BoxedSigner::from(signer::SomeSigner { signer });
+    ctx.state = new_state;
+    ctx.signer = signer;
+    ctx.store = store;
 
     Ok(())
 }

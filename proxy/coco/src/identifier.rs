@@ -1,12 +1,11 @@
-//! A `Identifier` is the combination of a user handle and the [`coco::Urn`] that identifies
-//! the user.
+//! A `Identifier` is the combination of a user handle and the [`librad::uri::RadUrn`] that
+//! identifies the user.
 
 use std::{fmt, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-use librad::meta::user;
-use librad::peer;
+use librad::{meta::user, peer};
 
 /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
 #[derive(Debug, thiserror::Error)]

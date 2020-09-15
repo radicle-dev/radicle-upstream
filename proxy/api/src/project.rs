@@ -1,14 +1,13 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
-use std::collections::HashSet;
-use std::ops::Deref;
+use std::{collections::HashSet, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
 use crate::error;
 
-/// Object the API returns for project metadata.
+/// Object encapsualating project metadata.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
@@ -117,16 +116,16 @@ impl Projects {
     ///   * We couldn't get the list of projects
     ///   * We couldn't inspect the `signed_refs` of the project
     ///   * We couldn't get stats for a project
-    pub fn list(api: &coco::Api) -> Result<Self, error::Error> {
+    pub fn list(state: &coco::State) -> Result<Self, error::Error> {
         let mut projects = Self {
             tracked: vec![],
             contributed: vec![],
         };
-        for project in api.list_projects()? {
-            let refs = api.list_owner_project_refs(&project.urn())?;
-            let project = api.with_browser(&project.urn(), |browser| {
-                let stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, stats).into())
+        for project in state.list_projects()? {
+            let refs = state.list_owner_project_refs(&project.urn())?;
+            let project = state.with_browser(&project.urn(), |browser| {
+                let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, project_stats).into())
             })?;
             if refs.heads.is_empty() {
                 projects.tracked.push(Tracked(project))
@@ -160,11 +159,11 @@ impl IntoIterator for Projects {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::Error> {
-    let project = api.get_project(project_urn, None)?;
-    let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
+pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, error::Error> {
+    let project = state.get_project(project_urn, None)?;
+    let project_stats = state.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
-    Ok((project, stats).into())
+    Ok((project, project_stats).into())
 }
 
 /// List all projects tracked by the given user.
@@ -175,20 +174,20 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
 pub fn list_projects_for_user(
-    api: &coco::Api,
+    state: &coco::State,
     user: &coco::Urn,
 ) -> Result<Vec<Project>, error::Error> {
     let mut projects = vec![];
 
-    for project in api.list_projects()? {
-        if api
+    for project in state.list_projects()? {
+        if state
             .tracked(&project.urn())?
             .into_iter()
             .any(|(_, project_user)| project_user.urn() == *user)
         {
-            let proj = api.with_browser(&project.urn(), |browser| {
-                let stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, stats).into())
+            let proj = state.with_browser(&project.urn(), |browser| {
+                let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, project_stats).into())
             })?;
 
             projects.push(proj);

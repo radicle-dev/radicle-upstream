@@ -1,24 +1,19 @@
 //! Source code related functionality.
 
-use std::convert::TryFrom;
-use std::fmt;
-use std::path;
-use std::str::FromStr;
+use std::{convert::TryFrom, fmt, path, str::FromStr};
 
 use nonempty::NonEmpty;
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
-use syntect::easy::HighlightLines;
-use syntect::highlighting::ThemeSet;
-use syntect::parsing::SyntaxSet;
-use syntect::util::LinesWithEndings;
+use serde::{ser::SerializeStruct as _, Deserialize, Serialize, Serializer};
+use syntect::{
+    easy::HighlightLines, highlighting::ThemeSet, parsing::SyntaxSet, util::LinesWithEndings,
+};
 
-use radicle_surf::vcs::git::git2;
-use radicle_surf::vcs::git::{self, BranchType, Browser, Rev};
-use radicle_surf::{diff, file_system};
+use radicle_surf::{
+    diff, file_system,
+    vcs::git::{self, git2, BranchType, Browser, Rev},
+};
 
-use crate::error::Error;
-use crate::oid::Oid;
+use crate::{error::Error, oid::Oid};
 
 lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
@@ -825,11 +820,7 @@ mod tests {
 
     use librad::keys::SecretKey;
 
-    use crate::config;
-    use crate::control;
-    use crate::oid;
-    use crate::peer;
-    use crate::signer;
+    use crate::{config, control, oid, signer, state::State};
 
     use super::Error;
 
@@ -842,25 +833,21 @@ mod tests {
             signer: key.clone(),
         });
         let config = config::default(key, tmp_dir).expect("unable to get default config");
-        let api = peer::Api::new(config)
-            .await
-            .expect("failed to init peer API");
-        let owner = api
-            .init_owner(&signer, "cloudhead")
-            .expect("failed to init owner");
+        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let state = State::new(api, signer.clone());
+        let owner = state.init_owner(&signer, "cloudhead")?;
         let platinum_project = control::replicate_platinum(
-            &api,
+            &state,
             &signer,
             &owner,
             "git-platinum",
             "fixture data",
             "master",
-        )
-        .expect("unable to replicate");
+        )?;
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
-        let commit = api
+        let commit = state
             .with_browser(&urn, |browser| {
                 Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
             })
