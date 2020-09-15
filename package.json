@@ -126,8 +126,6 @@
     "proxy:clean": "cd proxy && cargo clean",
     "proxy:start": "cd proxy && cargo build --bin git-remote-rad && cargo run",
     "proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
-    "proxy:start:ffnet": "cd proxy && cargo build --bin git-remote-rad && cargo run",
-    "proxy:start:devnet": "cd proxy && cargo build --bin git-remote-rad && cargo run",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
     "release": "babel-node --presets \"@babel/env\" scripts/release.js",
