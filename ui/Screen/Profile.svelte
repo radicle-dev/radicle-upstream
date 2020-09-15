@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
@@ -9,7 +9,7 @@
     HorizontalMenu,
     SidebarLayout,
   } from "../DesignSystem/Component";
-  import { Icon } from "../DesignSystem/Primitive";
+  import { Flex, Icon } from "../DesignSystem/Primitive";
 
   import Projects from "./Profile/Projects.svelte";
   import Tracking from "./Profile/Tracking.svelte";
