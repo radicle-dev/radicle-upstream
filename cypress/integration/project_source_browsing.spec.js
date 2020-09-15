@@ -1,10 +1,9 @@
 before(() => {
   cy.nukeAllState();
   cy.onboardUser("cloudhead");
-  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
-    "ele",
-    "abbey",
-  ]);
+
+  // TODO(sos): add fake peers back to fixture; temporarily removed to demonstrate problem
+  cy.createProjectWithFixture();
 });
 
 beforeEach(() => {
