@@ -1,8 +1,6 @@
 before(() => {
   cy.nukeAllState();
   cy.onboardUser("cloudhead");
-
-  // TODO(sos): add fake peers back to fixture; temporarily removed to demonstrate problem
   cy.createProjectWithFixture();
 });
 
@@ -224,7 +222,9 @@ context("source code browsing", () => {
         cy.contains(".i-too-am-hidden").should("exist");
       });
 
-      it("allows selecting different peers", () => {
+      // TODO(sos): unskip when we have a proxy testnet; will require fake peers
+      //   in project mock
+      it.skip("allows selecting different peers", () => {
         cy.pick("revision-selector").click();
         // Default revision is highlighted.
         cy.get(
