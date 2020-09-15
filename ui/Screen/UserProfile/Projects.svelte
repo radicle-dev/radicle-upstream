@@ -3,7 +3,7 @@
 
   import * as path from "../../src/path.ts";
   import {
-    fetchPeerList,
+    fetchUserList,
     projects as projectsStore,
   } from "../../src/project.ts";
 
@@ -16,7 +16,7 @@
     push(path.projectSource(project.id));
   };
 
-  $: fetchPeerList({ urn: params.urn });
+  $: fetchUserList({ urn: params.urn });
 </script>
 
 <Remote store={projectsStore} let:data={projects}>

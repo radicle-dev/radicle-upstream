@@ -2,10 +2,8 @@ before(() => {
   cy.nukeAllState();
   cy.onboardUser("cloudhead");
 
-  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
-    "ele",
-    "abbey",
-  ]);
+  // TODO(sos): add fake peers again when we have a peer testnet
+  cy.createProjectWithFixture();
 });
 
 beforeEach(() => {

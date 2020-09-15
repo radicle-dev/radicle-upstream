@@ -80,9 +80,8 @@ export const projects = projectsStore.readable;
 enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
-  FetchContributed = "FETCH_CONTRIBUTED",
-  FetchTracking = "FETCH_TTRACKING",
-  FetchPeer = "FETCH_PEER",
+  FetchList = "FETCH_LIST",
+  FetchUser = "FETCH_User",
 }
 
 interface Create extends event.Event<Kind> {
@@ -95,21 +94,17 @@ interface Fetch extends event.Event<Kind> {
   id: string;
 }
 
-interface FetchContributed extends event.Event<Kind> {
-  kind: Kind.FetchContributed;
+interface FetchList extends event.Event<Kind> {
+  kind: Kind.FetchList;
   urn?: string;
 }
 
-interface FetchTracking extends event.Event<Kind> {
-  kind: Kind.FetchTracking;
-}
-
-interface FetchPeer extends event.Event<Kind> {
-  kind: Kind.FetchPeer;
+interface FetchUser extends event.Event<Kind> {
+  kind: Kind.FetchUser;
   urn: string;
 }
 
-type Msg = Create | Fetch | FetchContributed | FetchPeer | FetchTracking;
+type Msg = Create | Fetch | FetchList | FetchUser;
 
 interface CreateInput {
   repo: Repo;
@@ -142,7 +137,7 @@ const update = (msg: Msg): void => {
       break;
 
     // TODO(sos): determine if viewing another user's profile shows you tracked || contributed || (tracked && contributed)
-    case Kind.FetchContributed:
+    case Kind.FetchList:
       projectsStore.loading();
       api
         .get<Projects>("projects/contributed")
@@ -151,19 +146,10 @@ const update = (msg: Msg): void => {
 
       break;
 
-    case Kind.FetchTracking:
+    case Kind.FetchUser:
       projectsStore.loading();
       api
-        .get<Projects>("projects/tracked")
-        .then(projectsStore.success)
-        .catch(projectsStore.error);
-
-      break;
-
-    case Kind.FetchPeer:
-      projectsStore.loading();
-      api
-        .get<Projects>(`projects/peer/${msg.urn}`)
+        .get<Projects>(`projects/user/${msg.urn}`)
         .then(projectsStore.success)
         .catch(projectsStore.error);
   }
@@ -227,8 +213,8 @@ export const register = (
 };
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
-export const fetchList = event.create<Kind, Msg>(Kind.FetchContributed, update);
-export const fetchPeerList = event.create<Kind, Msg>(Kind.FetchPeer, update);
+export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);

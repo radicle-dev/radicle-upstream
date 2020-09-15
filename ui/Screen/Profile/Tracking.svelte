@@ -4,13 +4,34 @@
     Hoverable,
     List,
     ProjectList,
-    Remote,
     TrackToggle,
     Urn,
   } from "../../DesignSystem/Component";
 
   import { FADE_DURATION } from "../../src/config.ts";
-  import { projects as projectsStore } from "../../src/project.ts";
+
+  const projects = [
+    {
+      metadata: {
+        name: "obediah",
+        description:
+          "Obediah Hinton is one of the village elders in a small village named Butcher Creek.",
+        maintainers: [],
+      },
+      registration: true,
+      shareableEntityIdentifier: "obediah@38590438594",
+    },
+    {
+      metadata: {
+        name: "lemuel",
+        description: "Lemuel is a villager from Butcher Creek.",
+        maintainers: [],
+      },
+      registration: false,
+      shareableEntityIdentifier: "lemuel@38590438594",
+      maintainers: [],
+    },
+  ];
 
   const untracked = [
     { urn: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k" },
@@ -47,10 +68,7 @@
 </style>
 
 <div class="container">
-  <Remote store={projectsStore} let:data={projects}>
-    <ProjectList {projects} />
-  </Remote>
-
+  <ProjectList {projects} />
   {#if untracked.length}
     <div out:fade|local={{ duration: FADE_DURATION }}>
       <div class="header">

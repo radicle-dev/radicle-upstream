@@ -72,14 +72,14 @@ fn contributed_filter(
         .and_then(handler::list_contributed)
 }
 
-/// `GET /peer/<id>
+/// `GET /user/<id>
 fn peer_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("peer")
+    path("user")
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
-        .and_then(handler::list_peer)
+        .and_then(handler::list_for_user)
 }
 
 /// `GET /discover`
@@ -161,8 +161,7 @@ mod handler {
         Ok(reply::json(&project::get(&state, &urn)?))
     }
 
-    /// List all projects tracked by a user. If no `id` is provided, defaults to
-    /// local repo owner.
+    /// List all projects tracked by the current.
     pub async fn list_tracked(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let state = ctx.state.lock().await;
@@ -180,14 +179,14 @@ mod handler {
         Ok(reply::json(&projects.contributed))
     }
 
-    /// List all known projects tracked by peer of given `peer_id`
-    pub async fn list_peer(
+    /// List all known projects tracked by user of given `user_id`
+    pub async fn list_for_user(
         ctx: context::Ctx,
-        peer_urn: coco::Urn,
+        user_id: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let state = ctx.state.lock().await;
-        let projects = project::list_projects_for_user(&state, &peer_urn)?;
+        let projects = project::list_projects_for_user(&state, &user_id)?;
 
         Ok(reply::json(&projects))
     }
@@ -567,30 +566,6 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(project));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn list_tracked() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
-
-        {
-            let state = ctx.state.lock().await;
-            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
-            coco::control::setup_fixtures(&state, &ctx.signer, &owner)?;
-        };
-        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
-
-        let res = request().method("GET").path("/tracked").reply(&api).await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(projects.tracked));
         });
 
         Ok(())
