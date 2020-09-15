@@ -1,7 +1,7 @@
 # Proxy
 
 A background service that implements all business logic tying together the
-radicle code collaboration and registry protocols.
+radicle code collaboration protocol.
 
 ### Run
 

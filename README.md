@@ -2,7 +2,7 @@
 [![Build status][ba]][st]
 
 Upstream is a cross-platform desktop client for the radicle code collaboration
-and registry protocols.
+protocol.
 
 At the moment we support Linux and macOS. Later on we'll provide ready-made
 packages for both platforms, however for now a good way to explore the project
