@@ -123,9 +123,10 @@
 
     <p>
       This is used to protect your account on this computer. Think of it like a
-      computer’s password. You can’t recover your account with it, but it
-      prevents someone from accessing your account if this computer is stolen or
-      hacked.
+      computer’s password. <span class="typo-text-bold">
+        You can’t recover your account with it,
+      </span> but it prevents someone from accessing your account if this computer
+      is stolen or hacked.
     </p>
 
     <Input.Password

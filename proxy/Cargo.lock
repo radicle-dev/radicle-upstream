@@ -1022,9 +1022,8 @@ dependencies = [
 
 [[package]]
 name = "kv"
-version = "0.22.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c56bac60e13594bf7a8f12f7d592ece96ab30daa0fcaf533dfba2815838fc8e"
+version = "0.21.1"
+source = "git+https://github.com/zshipko/rust-kv.git?rev=a98e1ace84b22ceaac276abf796633bd8e735500#a98e1ace84b22ceaac276abf796633bd8e735500"
 dependencies = [
  "serde",
  "serde_json",
@@ -2148,9 +2147,9 @@ checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 
 [[package]]
 name = "sled"
-version = "0.34.3"
+version = "0.34.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcbf56c35b0c3f9bc208fab35e45c3bc03137d3c1a4a85bdf0b8db69aecffb45"
+checksum = "f72c064e63fbca3138ad07f3588c58093f1684f3a99f60dcfa6d46b87e60fde7"
 dependencies = [
  "crc32fast",
  "crossbeam-epoch",

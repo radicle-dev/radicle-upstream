@@ -96,7 +96,7 @@
     </Input.Text>
   </div>
 
-  <!-- TODO(sos): Once we determine how searching works, make sure this looks right 
+  <!-- TODO(sos): Once we determine how searching works, make sure this looks right
     if user changes urn
   -->
   <div
@@ -117,8 +117,8 @@
       </div>
 
       <p style="color: var(--color-foreground-level-6);">
-        You’re not tracking this project yet, so there’s nothing to show here.
-        Track it and you’ll be notified as soon as it’s available.
+        You’re not following this project yet, so there’s nothing to show here.
+        Follow it and you’ll be notified as soon as it’s available.
       </p>
     </div>
   </div>
