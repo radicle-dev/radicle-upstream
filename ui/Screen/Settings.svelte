@@ -129,15 +129,8 @@
           <!-- TODO(julien): link to actual docs abt seeds -->
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
-            Enter seed addresses that you’d like to subscribe to here.
-            <!-- Projects
-            replicated by seeds will appear in the Discover page. -->
-            <a
-              style="color: var(--color-foreground-level-5);"
-              class="typo-link"
-              href="https://radicle.xyz/#upstream-faq">
-              Learn more about seeds
-            </a>
+            Enter seed addresses that you’d like to subscribe to here. <a style="color: var(--color-foreground-level-5);" class="typo-link" href="https://radicle.xyz/#upstream-faq"> Learn
+              more about seeds </a>
           </p>
         </div>
         <div class="action typo-mono">
