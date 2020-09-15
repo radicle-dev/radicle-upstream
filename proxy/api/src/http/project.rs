@@ -3,11 +3,9 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use crate::context;
-use crate::http;
+use crate::{context, http};
 /// Combination of all routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     tracked_filter(ctx.clone())
