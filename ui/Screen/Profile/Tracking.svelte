@@ -35,24 +35,21 @@
 
   const untracked = [
     {
-      urn: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k",
+      urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
       metadata: {
         name: "snickers",
-        description: "project description",
       },
     },
     {
-      urn: "fjkldasjfkdlsajfio943we859043ikjioclesdjf",
+      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
       metadata: {
         name: "marsbar",
-        description: "project description",
       },
     },
     {
-      urn: "fjkldasjfkdlsajfio39409340390we859043ikjioclesdjf",
+      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
       metadata: {
         name: "nougati",
-        description: "project description",
       },
     },
   ];
