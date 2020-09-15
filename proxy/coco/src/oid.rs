@@ -1,8 +1,6 @@
 //! Machinery to handle object ids conversion and serialization.
 
-use std::convert::TryFrom;
-use std::fmt;
-use std::str;
+use std::{convert::TryFrom, fmt, str};
 
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 

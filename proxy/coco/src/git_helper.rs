@@ -1,9 +1,6 @@
 //! git-remote-rad git helper related functionality.
 
-use std::fs;
-use std::io;
-use std::os::unix::fs::PermissionsExt as _;
-use std::path;
+use std::{fs, io, os::unix::fs::PermissionsExt as _, path};
 
 /// Git helper errors.
 #[derive(Debug, thiserror::Error)]
@@ -52,8 +49,7 @@ pub fn setup(src_dir: &path::PathBuf, dst_dir: &path::PathBuf) -> Result<(), Err
 
 #[cfg(test)]
 mod test {
-    use std::fs;
-    use std::os::unix::fs::PermissionsExt as _;
+    use std::{fs, os::unix::fs::PermissionsExt as _};
 
     use super::Error;
 

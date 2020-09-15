@@ -2,8 +2,12 @@ before(() => {
   cy.nukeAllState();
   cy.onboardUser("cloudhead");
 
+  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
+    "ele",
+    "abbey",
+  ]);
   // TODO(sos): add fake peers back to fixture; temporarily removed to demonstrate problem
-  cy.createProjectWithFixture();
+  // cy.createProjectWithFixture();
 });
 
 beforeEach(() => {
@@ -224,7 +228,7 @@ context("source code browsing", () => {
         cy.contains(".i-too-am-hidden").should("exist");
       });
 
-      it("allows selecting different peers", () => {
+      it.only("allows selecting different peers", () => {
         cy.pick("revision-selector").click();
         // Default revision is highlighted.
         cy.get(

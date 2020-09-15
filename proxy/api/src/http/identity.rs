@@ -1,13 +1,11 @@
-//! Endpoints and serialisation for [`identity::Identity`] related types.
+//! Manage the state and stateful interactions with the underlying peer API of librad.
 
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use crate::context;
-use crate::http;
+use crate::{context, http};
 
 /// Combination of all identity routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
@@ -45,13 +43,9 @@ fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = R
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::http::StatusCode;
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::context;
-    use crate::error;
-    use crate::identity;
-    use crate::session;
+    use crate::{context, error, identity, session};
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
@@ -60,13 +54,16 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
-        if let Some(identity) = session::current(&ctx.peer_api, &ctx.store).await?.identity {
+        if let Some(identity) = session::current(ctx.state.clone(), &ctx.store)
+            .await?
+            .identity
+        {
             return Err(Rejection::from(error::Error::from(
                 coco::Error::EntityExists(identity.urn),
             )));
         }
 
-        let id = identity::create(&ctx.peer_api, &ctx.signer, &input.handle)?;
+        let id = identity::create(&(*ctx.state.lock().await), &ctx.signer, &input.handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -76,14 +73,16 @@ mod handler {
     /// Get the [`identity::Identity`] for the given `id`.
     pub async fn get(ctx: context::Ctx, id: coco::Urn) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let id = identity::get(&ctx.peer_api, &id)?;
+        let state = ctx.state.lock().await;
+        let id = identity::get(&state, &id)?;
         Ok(reply::json(&id))
     }
 
     /// Retrieve the list of identities known to the session user.
     pub async fn list(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let users = identity::list(&ctx.peer_api)?;
+        let state = ctx.state.lock().await;
+        let users = identity::list(&state)?;
         Ok(reply::json(&users))
     }
 }
@@ -103,15 +102,9 @@ pub struct CreateInput {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
-    use crate::avatar;
-    use crate::context;
-    use crate::error;
-    use crate::http;
-    use crate::identity;
-    use crate::session;
+    use crate::{avatar, context, error, http, identity, session};
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
@@ -129,16 +122,18 @@ mod test {
             .await;
 
         let ctx = ctx.read().await;
-        let peer_id = ctx.peer_api.peer_id();
-        let session = session::current(&ctx.peer_api, &ctx.store).await?;
-        let urn = session.identity.expect("failed to set identity").urn;
+
+        let urn = {
+            let session = session::current(ctx.state.clone(), &ctx.store).await?;
+            session.identity.expect("failed to set identity").urn
+        };
+
+        let state = ctx.state.lock().await;
+        let peer_id = state.peer_id();
 
         // Assert that we set the default owner and it's the same one as the session
         {
-            assert_eq!(
-                ctx.peer_api.default_owner(),
-                Some(ctx.peer_api.get_user(&urn)?)
-            );
+            assert_eq!(state.default_owner(), Some(state.get_user(&urn)?));
         }
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
@@ -168,17 +163,23 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let user = ctx.peer_api.init_user(&ctx.signer, "cloudhead")?;
-        let urn = user.urn();
-        let handle = user.name().to_string();
-        let peer_id = ctx.peer_api.peer_id();
-        let shareable_entity_identifier = (peer_id.clone(), user).into();
+
+        let user = {
+            let state = ctx.state.lock().await;
+            state.init_user(&ctx.signer, "cloudhead")?
+        };
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}", urn))
+            .path(&format!("/{}", user.urn()))
             .reply(&api)
             .await;
+
+        let state = ctx.state.lock().await;
+        let handle = user.name().to_string();
+        let peer_id = state.peer_id();
+        let urn = user.urn();
+        let shareable_entity_identifier = (peer_id.clone(), user).into();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         assert_eq!(res.status(), StatusCode::OK);
@@ -203,29 +204,30 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let id = identity::create(&ctx.peer_api, &ctx.signer, "cloudhead")?;
 
-        let owner = ctx.peer_api.get_user(&id.clone().urn)?;
-        let owner = coco::verify_user(owner)?;
+        let fintohaps: identity::Identity = {
+            let state = ctx.state.lock().await;
+            let id = identity::create(&state, &ctx.signer, "cloudhead")?;
 
-        session::set_identity(&ctx.store, id)?;
+            let owner = {
+                let user = state.get_user(&id.urn)?;
+                coco::user::verify(user)?
+            };
 
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &ctx.signer,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
+            session::set_identity(&ctx.store, id)?;
 
-        let fintohaps: identity::Identity = coco::control::track_fake_peer(
-            &ctx.peer_api,
-            &ctx.signer,
-            &platinum_project,
-            "fintohaps",
-        )
-        .into();
+            let platinum_project = coco::control::replicate_platinum(
+                &state,
+                &ctx.signer,
+                &owner,
+                "git-platinum",
+                "fixture data",
+                "master",
+            )?;
+
+            coco::control::track_fake_peer(&state, &ctx.signer, &platinum_project, "fintohaps")
+                .into()
+        };
 
         let res = request().method("GET").path("/").reply(&api).await;
 

@@ -1,8 +1,7 @@
 //! Endpoints to manipulate app state in test mode.
 
 use serde::{Deserialize, Serialize};
-use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::context;
 
@@ -35,27 +34,23 @@ fn nuke_coco_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use warp::http::StatusCode;
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use coco::keystore;
-    use coco::signer;
+    use coco::{keystore, signer, user};
 
-    use crate::context;
-    use crate::error;
-    use crate::project;
+    use crate::{context, error, project};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Ctx,
-        owner: coco::User,
+        owner: user::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
 
         let meta = coco::control::replicate_platinum(
-            &ctx.peer_api,
+            &(*ctx.state.lock().await),
             &ctx.signer,
             &owner,
             &input.name,
@@ -66,12 +61,18 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ =
-                    coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &meta, &user_handle);
+                let _ = coco::control::track_fake_peer(
+                    &(*ctx.state.lock().await),
+                    &ctx.signer,
+                    &meta,
+                    &user_handle,
+                );
             }
         }
         let stats = ctx
-            .peer_api
+            .state
+            .lock()
+            .await
             .with_browser(&meta.urn(), |browser| Ok(browser.get_stats()?))
             .map_err(error::Error::from)?;
         let project: project::Project = (meta, stats).into();
@@ -96,21 +97,27 @@ mod handler {
             temp_dir.path().to_path_buf()
         };
 
-        let paths = coco::Paths::from_root(tmp_path).map_err(error::Error::from)?;
+        let paths = coco::Paths::from_root(tmp_path.clone()).map_err(error::Error::from)?;
 
+        let store =
+            kv::Store::new(kv::Config::new(tmp_path.join("store"))).map_err(error::Error::from)?;
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init().map_err(error::Error::from)?;
-        let signer = signer::BoxedSigner::new(signer::SomeSigner {
-            signer: key.clone(),
-        });
+        let signer = signer::BoxedSigner::from(key.clone());
 
-        let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
-        let new_peer_api = coco::Api::new(config).await.map_err(error::Error::from)?;
+        let (_new_peer, new_state) = {
+            let config =
+                coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+            coco::into_peer_state(config, signer.clone(), store.clone())
+                .await
+                .map_err(error::Error::from)?
+        };
 
         let mut ctx = ctx.write().await;
-        ctx.peer_api = new_peer_api;
+        ctx.state = new_state;
         ctx.signer = signer;
+        ctx.store = store;
 
         Ok(reply::json(&true))
     }
@@ -120,8 +127,7 @@ mod handler {
     mod test {
         use pretty_assertions::assert_ne;
 
-        use crate::context;
-        use crate::error;
+        use crate::{context, error};
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
@@ -130,14 +136,16 @@ mod handler {
 
             let (old_paths, old_peer_id) = {
                 let ctx = ctx.read().await;
-                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
+                let state = ctx.state.lock().await;
+                (state.paths(), state.peer_id())
             };
 
             super::nuke_coco(ctx.clone()).await.unwrap();
 
             let (new_paths, new_peer_id) = {
                 let ctx = ctx.read().await;
-                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
+                let state = ctx.state.lock().await;
+                (state.paths(), state.peer_id())
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
@@ -145,7 +153,7 @@ mod handler {
 
             let can_open = {
                 let ctx = ctx.read().await;
-                ctx.peer_api.reopen()?;
+                ctx.state.lock().await.reopen()?;
                 true
             };
             assert!(can_open);
@@ -173,12 +181,9 @@ pub struct CreateInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use warp::http::StatusCode;
-    use warp::test::request;
+    use warp::{http::StatusCode, test::request};
 
-    use crate::context;
-    use crate::error;
-    use crate::http;
+    use crate::{context, error, http};
 
     // TODO(xla): This can't hold true anymore, given that we nuke the owner. Which is required in
     // order to register a project. Should we rework the test? How do we make sure an owner is
