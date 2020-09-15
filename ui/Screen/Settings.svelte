@@ -1,4 +1,6 @@
 <script>
+  import { onMount } from "svelte";
+
   import {
     clear,
     parseSeedsInput,
@@ -9,6 +11,7 @@
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
+  import { getVersion } from "../../native/ipc.js";
 
   import { Button, Input } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
@@ -23,6 +26,12 @@
     updateCoCo({ ...$settings.coco, seeds });
     seedInputValue = seeds.join("\n");
   };
+
+  let version;
+
+  onMount(async () => {
+    version = await getVersion();
+  });
 </script>
 
 <style>
@@ -80,25 +89,6 @@
         Keyboard shortcuts
       </span>
     </div>
-
-    <section>
-      <header>
-        <h3>Version</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p style="color: var(--color-foreground-level-6);">
-            Version 01.45.02
-          </p>
-        </div>
-        <div class="action">
-          <p style="color: var(--color-foreground-level-6);">
-            There’s a new version of Radicle Upstream
-          </p>
-          <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
-        </div>
-      </div>
-    </section>
 
     <section>
       <header>
@@ -164,6 +154,19 @@
             on:click={clear}>
             Clear session
           </Button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Version</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p style="color: var(--color-foreground-level-6);">
+            Version {version}
+          </p>
         </div>
       </div>
     </section>
