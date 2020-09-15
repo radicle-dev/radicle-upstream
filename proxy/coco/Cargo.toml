@@ -16,6 +16,7 @@ kv = { version = "0.22", features = [ "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.5"
+rand = "0.7"
 serde = { version = "1.0", features = [ "derive" ] }
 syntect = "4.2"
 thiserror = "1.0"

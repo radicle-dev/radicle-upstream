@@ -67,7 +67,7 @@ pub enum Attempt {
     CloneRepo,
 }
 
-#[derive(Clone, Debug, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error, PartialEq)]
 pub enum Error {
     #[error("the URN found '{actual}' was not the expected URN '{expected}'")]
     UrnMismatch { expected: RadUrn, actual: RadUrn },

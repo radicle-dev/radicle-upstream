@@ -316,6 +316,7 @@ dependencies = [
  "radicle-git-helpers",
  "radicle-keystore",
  "radicle-surf",
+ "rand",
  "serde",
  "syntect",
  "tempfile",

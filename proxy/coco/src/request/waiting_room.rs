@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use rand::{seq::IteratorRandom as _, Rng};
+
 use librad::uri::RadUrn;
 
 use crate::request::{
@@ -7,7 +9,7 @@ use crate::request::{
     TimedOut,
 };
 
-#[derive(Clone, Debug, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error, PartialEq)]
 pub enum Error {
     #[error(transparent)]
     Request(#[from] request::Error),
@@ -21,8 +23,30 @@ pub struct WaitingRoom<T> {
     requests: HashMap<RadUrn, SomeRequest<T>>,
 }
 
-// TODO(finto): Consider fairness of selection, e.g. rando sample, fifo, lifo, instant
-// comparison, etc.
+pub enum Strategy<R> {
+    First,
+    Newest,
+    Oldest,
+    Random(R),
+}
+
+impl<R> Strategy<R> {
+    pub fn next<'a, S: 'a, T: 'a + Clone + Ord>(
+        self,
+        mut requests: impl Iterator<Item = &'a Request<S, T>>,
+    ) -> Option<&'a Request<S, T>>
+    where
+        R: Rng,
+    {
+        match self {
+            Self::First => requests.next(),
+            Self::Newest => requests.max_by_key(|request| request.timestamp.clone()),
+            Self::Oldest => requests.min_by_key(|request| request.timestamp.clone()),
+            Self::Random(mut rng) => requests.choose(&mut rng),
+        }
+    }
+}
+
 // TODO(finto): Test scenario of "running" a request and updating the waiting room. Testing state
 // transitions.
 // TODO(finto): De/Serialize for waiting room.
@@ -191,14 +215,18 @@ impl<T> WaitingRoom<T> {
         self.requests.keys()
     }
 
-    pub fn next(&self) -> Option<&Request<Created, T>> {
-        self.requests
-            .iter()
-            .filter_map(|(_, request)| match request {
-                SomeRequest::Created(request) => Some(request),
-                _ => None,
-            })
-            .next()
+    pub fn next<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<Created, T>>
+    where
+        T: Clone + Ord,
+    {
+        strategy.next(
+            self.requests
+                .iter()
+                .filter_map(|(_, request)| match request {
+                    SomeRequest::Created(request) => Some(request),
+                    _ => None,
+                }),
+        )
     }
 }
 
@@ -218,7 +246,8 @@ mod test {
 
         assert_eq!(request, None);
 
-        let created = waiting_room.next();
+        let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
+        let created = waiting_room.next(strategy);
         assert_eq!(created, Some(&Request::new(urn.clone(), ())),);
 
         let requested = waiting_room.requested(&urn, ());
@@ -269,6 +298,6 @@ mod test {
             .attempt(Attempt::CloneRepo)
             .cloning("peer1".to_string(), ())
             .fulfilled(repo, ());
-        assert_eq!(fulfilled, expected);
+        assert_eq!(fulfilled, expected.map_err(Error::from));
     }
 }
