@@ -14,11 +14,7 @@
   import { getVersion } from "../../native/ipc.js";
 
   import { Button, Input } from "../DesignSystem/Primitive";
-  import {
-    Copyable,
-    SidebarLayout,
-    SegmentedControl,
-  } from "../DesignSystem/Component";
+  import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
   let seedInputValue = $settings.coco.seeds.join("\n");
 
@@ -119,37 +115,23 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <p class="typo-text-bold">Submit an issue</p>
+          <p class="typo-text-bold">Get in touch directly</p>
         </div>
         <div class="action">
           <a
             class="typo-link"
-            href="https://github.com/radicle-dev/radicle-upstream">
-            github.com/radicle-dev/radicle-upstream
+            href="https://radicle.community/c/site-feedback/2">
+            radicle.community
           </a>
         </div>
       </div>
       <div class="section-item">
         <div class="info">
-          <p class="typo-text-bold">Get in touch directly</p>
+          <p class="typo-text-bold">Join the developer chat</p>
         </div>
         <div class="action">
-          <Copyable
-            notificationText="community@radicle.xyz was copied to your clipboard"
-            iconBeforeCopy={null}
-            styleContent={false}
-            copyContent="community@radicle.xyz">
-            <p class="typo-link">community@radicle.xyz</p>
-          </Copyable>
-        </div>
-      </div>
-      <div class="section-item">
-        <div class="info">
-          <p class="typo-text-bold">Reach out on twitter</p>
-        </div>
-        <div class="action">
-          <a class="typo-link" href="https://www.twitter.com/radicle_xyz">
-            @radicle_xyz
+          <a class="typo-link" href="irc://freenode:1/radicle">
+            #radicle on freenode
           </a>
         </div>
       </div>
