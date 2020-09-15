@@ -111,7 +111,7 @@ pub fn load(store: &kv::Store) -> Result<Updates, Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
-        .map_or(HashSet::new(), kv::Json::into_inner);
+        .map_or(HashSet::new(), kv::Json::to_inner);
 
     Ok(value)
 }
