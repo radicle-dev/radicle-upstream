@@ -1,4 +1,6 @@
 <script>
+  import { onMount } from "svelte";
+
   import {
     clear,
     parseSeedsInput,
@@ -9,6 +11,7 @@
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
+  import { getVersion } from "../../native/ipc.js";
 
   import { Button, Input } from "../DesignSystem/Primitive";
   import {
@@ -27,6 +30,12 @@
     updateCoCo({ ...$settings.coco, seeds });
     seedInputValue = seeds.join("\n");
   };
+
+  let version;
+
+  onMount(async () => {
+    version = await getVersion();
+  });
 </script>
 
 <style>
@@ -210,6 +219,19 @@
             on:click={clear}>
             Clear session
           </Button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Version</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p style="color: var(--color-foreground-level-6);">
+            Version {version}
+          </p>
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
-export const DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG";
 export const CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT";
+export const DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG";
+export const GET_VERSION = "GET_VERSION";
 export const OPEN_PATH = "IPC_OPEN_PATH";
 
 // We have to be able to select empty directories when we create new
@@ -11,6 +12,8 @@ export const OPEN_PATH = "IPC_OPEN_PATH";
 // can configure it to allow users to create new directories.
 export const getDirectoryPath = () =>
   window.electron.ipcRenderer.invoke(DIALOG_SHOWOPENDIALOG);
+
+export const getVersion = () => window.electron.ipcRenderer.invoke(GET_VERSION);
 
 export const copyToClipboard = text =>
   window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);
