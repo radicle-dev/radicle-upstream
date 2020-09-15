@@ -34,9 +34,27 @@
   ];
 
   const untracked = [
-    { urn: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k" },
-    { urn: "fjkldasjfkdlsajfio943we859043ikjioclesdjf" },
-    { urn: "fjkldasjfkdlsajfio39409340390we859043ikjioclesdjf" },
+    {
+      urn: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k",
+      metadata: {
+        name: "snickers",
+        description: "project description",
+      },
+    },
+    {
+      urn: "fjkldasjfkdlsajfio943we859043ikjioclesdjf",
+      metadata: {
+        name: "marsbar",
+        description: "project description",
+      },
+    },
+    {
+      urn: "fjkldasjfkdlsajfio39409340390we859043ikjioclesdjf",
+      metadata: {
+        name: "nougati",
+        description: "project description",
+      },
+    },
   ];
 </script>
 
@@ -53,7 +71,7 @@
   }
 
   .undiscovered-project {
-    padding: 1rem;
+    padding: 1.5rem;
     flex: 1;
     min-height: 4.5rem;
 
@@ -64,6 +82,11 @@
 
   .undiscovered-project:hover {
     background-color: var(--color-background);
+  }
+
+  .project-name {
+    color: var(--color-foreground-level-6);
+    padding-bottom: 0.375rem;
   }
 </style>
 
@@ -83,7 +106,10 @@
           <div
             class="undiscovered-project"
             out:fade|local={{ duration: FADE_DURATION }}>
-            <Urn urn={project.urn} showCopyOnlyOnHover />
+            <div>
+              <p class="project-name typo-text-bold">{project.metadata.name}</p>
+              <Urn urn={project.urn} showCopyOnlyOnHover />
+            </div>
             {#if hover}
               <div transition:fade={{ duration: FADE_DURATION }}>
                 <TrackToggle
