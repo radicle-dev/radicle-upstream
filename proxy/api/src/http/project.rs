@@ -572,7 +572,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_for_peer() -> Result<(), error::Error> {
+    async fn list_for_user() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -590,14 +590,14 @@ mod test {
         let project = projects.into_iter().next().unwrap();
         let coco_project = ctx.state.lock().await.get_project(&project.id, None)?;
 
-        let peer: identity::Identity = {
+        let user: identity::Identity = {
             let state = ctx.state.lock().await;
             coco::control::track_fake_peer(&state, &ctx.signer, &coco_project, "rafalca").into()
         };
 
         let res = request()
             .method("GET")
-            .path(&format!("/peer/{}", peer.urn))
+            .path(&format!("/user/{}", user.urn))
             .reply(&api)
             .await;
 
