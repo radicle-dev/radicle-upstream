@@ -33,12 +33,16 @@
     white-space: nowrap;
   }
 
+  .title-row p {
+    color: var(--color-foreground-level-6);
+  }
+
   .registered {
     display: flex;
   }
 
   .desc {
-    color: var(--color-foreground-level-5);
+    color: var(--color-foreground-level-6);
     overflow: hidden;
     text-overflow: ellipsis;
     margin-top: 0.125rem;
