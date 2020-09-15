@@ -92,25 +92,6 @@
 
     <section>
       <header>
-        <h3>Version</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p style="color: var(--color-foreground-level-6);">
-            Version 01.45.02
-          </p>
-        </div>
-        <div class="action">
-          <p style="color: var(--color-foreground-level-6);">
-            There’s a new version of Radicle Upstream
-          </p>
-          <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <header>
         <h3>Feedback</h3>
       </header>
       <div class="section-item">
