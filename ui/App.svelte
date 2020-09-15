@@ -1,5 +1,6 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
+  import "./src/wallet.ts";
 
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
@@ -65,6 +66,8 @@
     "/search": Modal.Search,
     "/shortcuts": Modal.Shortcuts,
   };
+
+  push(path.profileWallet());
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
