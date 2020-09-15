@@ -326,7 +326,7 @@ application package by [electron-builder][eb].
 To be able to build the proxy first install all required dependencies from the
 [Running Upstream](#running-upstream) section.
 
-To start the proxy binary, run: `cd proxy && cargo run -- --registry=emulator`.
+To start the proxy binary, run: `cd proxy && cargo run`.
 After that the API docs are served under `http://127.0.0.1:8080/docs`.
 
 ### Registry chains
