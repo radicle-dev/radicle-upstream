@@ -151,7 +151,9 @@ context("project creation", () => {
           cy.pick("new-project", "choose-path-button").click();
 
           cy.pick("page", "new-project")
-            .contains("The directory should be empty")
+            .contains(
+              "Please choose a directory that's not already a git repository."
+            )
             .should("exist");
         });
       });

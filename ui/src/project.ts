@@ -300,7 +300,8 @@ export const repositoryPathValidationStore = (
       [
         {
           promise: validateNewRepository,
-          validationMessage: "The directory should be empty",
+          validationMessage:
+            "Please choose a directory that's not already a git repository.",
         },
       ]
     );
