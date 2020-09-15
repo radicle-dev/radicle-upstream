@@ -42,7 +42,7 @@
     <Icon.CrossSmall />
   </div>
   <p class="description">
-    Before you get started, you need to add this to your shell configuration
+    To publish code to Radicle, you need to add this to your shell configuration
     file. Not sure how? <a
       style="color: var(--color-foreground-level-5);"
       class="typo-link"

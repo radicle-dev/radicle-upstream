@@ -181,8 +181,8 @@
           <p
             style="margin-top: 1rem; color: var(--color-foreground-level-6);
             text-align: center">
-            A new repository will be created inside this directory <br /> and named
-            after the project name.
+            A new repository will be created on your machine inside a directory
+            and named after the project name.
           </p>
         </div>
       </RadioOption>
@@ -220,6 +220,11 @@
                 disabled />
             {/if}
           </div>
+          <p
+            style="margin-top: 1rem; color: var(--color-foreground-level-6);
+            text-align: left;">
+            This will publish the chosen repository to the Radicle network.
+          </p>
         </div>
       </RadioOption>
       {#if $settings && $settings.appearance.hints.showRemoteHelper}
