@@ -1,10 +1,13 @@
-use std::ffi;
-use std::path::{self, PathBuf};
+use std::{
+    ffi,
+    path::{self, PathBuf},
+};
 
-use librad::git::local::url::LocalUrl;
-use librad::git::types::remote::Remote;
 pub use librad::meta::project::Project;
-use librad::peer::PeerId;
+use librad::{
+    git::{local::url::LocalUrl, types::remote::Remote},
+    peer::PeerId,
+};
 use radicle_surf::vcs::git::git2;
 
 /// When checking out a working copy, we can run into several I/O failures.

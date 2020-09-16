@@ -46,6 +46,10 @@ ipcMain.handle(ipc.OPEN_PATH, async (_event, path) => {
   shell.openPath(path);
 });
 
+ipcMain.handle(ipc.GET_VERSION, () => {
+  return app.getVersion();
+});
+
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -104,15 +108,11 @@ const startProxy = () => {
 
   const proxyPath = path.join(__dirname, "../../proxy");
   const { execFile } = require("child_process");
-  proxyChildProcess = execFile(
-    proxyPath,
-    ["--registry=emulator"],
-    (error, _stdout, _stderr) => {
-      if (error) {
-        console.log(error);
-      }
+  proxyChildProcess = execFile(proxyPath, [], (error, _stdout, _stderr) => {
+    if (error) {
+      console.log(error);
     }
-  );
+  });
 };
 
 app.on("will-quit", () => {

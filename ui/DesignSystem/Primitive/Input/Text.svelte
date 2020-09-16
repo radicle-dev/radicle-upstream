@@ -11,6 +11,7 @@
   export let placeholder = null;
   export let value = null;
   export let dataCy = null;
+  export let inputElement = null;
 
   export let disabled = null;
   export let validation = null;
@@ -21,12 +22,10 @@
 
   const dispatch = createEventDispatcher();
 
-  let input;
-
-  // Can't use normal `autofocus` attribute on the `input`:
+  // Can't use normal `autofocus` attribute on the `inputElement`:
   // "Autofocus processing was blocked because a document's URL has a fragment".
   // preventScroll is necessary for onboarding animations to work.
-  $: if (autofocus) input && input.focus({ preventScroll: true });
+  $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
 
   const onKeydown = event => {
     if (event.key === "Enter") {
@@ -131,7 +130,7 @@
     on:change
     on:input
     on:keydown={onKeydown}
-    bind:this={input}
+    bind:this={inputElement}
     {spellcheck}
     style={inputStyle} />
 

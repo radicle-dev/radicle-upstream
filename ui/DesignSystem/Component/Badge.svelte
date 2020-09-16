@@ -1,6 +1,8 @@
-<script>
-  export let variant = null;
-  export let style = null;
+<script lang="ts">
+  import { BadgeType } from "../../src/badge";
+
+  export let variant = BadgeType.Maintainer;
+  export let style = "";
 
   const caption = String(variant);
 </script>
@@ -10,8 +12,8 @@
     color: var(--color-secondary);
     background: var(--color-secondary-level-1);
     border-radius: 4px;
-    padding: 0.25rem 0.25rem;
-    height: 1.5rem;
+    padding: 0.125rem 0.25rem 0.25rem;
+    margin-top: 0.125rem;
   }
 </style>
 

@@ -130,13 +130,13 @@
     <div class="left" class:hover class:active class:tracking class:warning>
       {#if !tracking}
         <Icon.Network style="margin: 0 8px 0 12px" />
-        <p class="typo-text-bold" style="margin-right: 12px">Track</p>
+        <p class="typo-text-bold" style="margin-right: 12px">Follow</p>
       {:else if hover}
         <Icon.Network style="margin: 0 8px 0 12px" />
-        <p class="typo-text-bold" style="margin-right: 12px">Untrack</p>
+        <p class="typo-text-bold" style="margin-right: 12px">Unfollow</p>
       {:else if expanded}
         <Icon.Network style="margin: 0 12px" />
-        <p class="typo-text-bold" style="margin-right: 12px">Tracking</p>
+        <p class="typo-text-bold" style="margin-right: 12px">Following</p>
       {:else}
         <Icon.Network style="margin: 0 12px" />
       {/if}
