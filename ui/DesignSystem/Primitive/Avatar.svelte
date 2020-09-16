@@ -10,7 +10,7 @@
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
   export let imageUrl = "";
-  export let avatarFallback: EmojiAvatar | undefined = undefined; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
+  export let avatarFallback: EmojiAvatar | undefined = undefined;
   export let title = "";
   export let registered = false;
 
