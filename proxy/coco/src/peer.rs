@@ -1,12 +1,16 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::time::Duration;
-use std::{collections::HashSet, fmt, time::Instant};
+use std::{
+    collections::HashSet,
+    time::{Duration, Instant},
+};
 
 use futures::StreamExt as _;
-use tokio::sync::{broadcast, mpsc};
-use tokio::time::interval;
+use tokio::{
+    sync::{broadcast, mpsc},
+    time::interval,
+};
 
 use librad::{
     net::{
@@ -111,8 +115,7 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(self, state: Lock, store: kv::Store, name: &str) -> Result<(), Error> {
-        let peer_id = state.lock().await.peer_id();
+    pub async fn run(self, state: Lock, store: kv::Store) -> Result<(), Error> {
         // Subscribe to protocol events.
         let protocol_subscriber = {
             let state = state.lock().await;
@@ -135,7 +138,6 @@ impl Peer {
 
         let mut run_state = RunState::default();
         loop {
-            log::warn!("LOOP: {} - {}", name, peer_id);
             let event = tokio::select! {
                 _ = announce_timer.tick() => Event::Announce(AnnounceEvent::Tick),
                 Some(announce_event) = announcements.recv() => Event::Announce(announce_event),
@@ -143,7 +145,6 @@ impl Peer {
                 Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
                 Some(timeout_event) = timeouts.recv() => Event::Timeout(timeout_event),
                 else => {
-                    log::debug!("BREAK");
                     break
                 },
             };
@@ -151,7 +152,7 @@ impl Peer {
             // Send will error if there are no active receivers. This case is expected and
             // ssh the run loop.
             self.subscriber.send(event.clone()).ok();
-            log::debug!("{} - {:?}", name, event);
+            log::debug!("{:?}", event);
 
             let maybe_cmd = run_state.transition(event);
 
@@ -166,11 +167,11 @@ impl Peer {
                             match Self::announce(announce_state, store).await {
                                 Ok(updates) => {
                                     sender.send(AnnounceEvent::Succeeded(updates)).await.ok()
-                                }
+                                },
                                 Err(_err) => sender.send(AnnounceEvent::Failed).await.ok(),
                             }
                         });
-                    }
+                    },
                     Command::SyncPeer(peer_id) => {
                         let mut sync_tx = peer_sync_sender.clone();
                         let mut timeout_tx = timeout_sender.clone();
@@ -190,7 +191,7 @@ impl Peer {
                                 Err(_) => sync_tx.send(SyncEvent::Failed(peer)).await.ok(),
                             }
                         });
-                    }
+                    },
                 };
             }
         }
@@ -200,15 +201,14 @@ impl Peer {
 
     /// Announcement subroutine.
     async fn announce(state: Lock, store: kv::Store) -> Result<announcement::Updates, Error> {
-        log::debug!("GOT TO ANNOUNCE");
-        let old = announcement::load(store.clone())?;
+        let old = announcement::load(&store)?;
         let new = announcement::build(state.clone()).await?;
         let updates = announcement::diff(&old, &new);
 
         announcement::announce(state, updates.iter()).await;
 
         if !updates.is_empty() {
-            announcement::save(store.clone(), updates.clone()).map_err(Error::from)?;
+            announcement::save(&store, updates.clone()).map_err(Error::from)?;
         }
 
         Ok(updates)
@@ -274,14 +274,14 @@ impl RunState {
                 self.status = Status::Started(Instant::now());
 
                 None
-            }
+            },
             // Sync with first incoming peer.
             (Status::Started(_since), Event::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
                 self.connected_peers.insert(peer_id.clone());
                 self.status = Status::Syncing(Instant::now(), 1);
 
                 Some(Command::SyncPeer(peer_id.clone()))
-            }
+            },
             // Sync until configured maximum of peers is reached.
             (Status::Syncing(since, syncs), Event::Protocol(ProtocolEvent::Connected(peer_id)))
                 if *syncs < SYNC_MAX_PEERS =>
@@ -305,13 +305,13 @@ impl RunState {
                 self.status = Status::Syncing(*since, syncs + 1);
 
                 Some(Command::SyncPeer(peer_id.clone()))
-            }
+            },
             // Go online if we exceed the sync period.
             (Status::Syncing(_since, _syncs), Event::Timeout(TimeoutEvent::SyncPeriod)) => {
                 self.status = Status::Online(Instant::now());
 
                 None
-            }
+            },
             // Go offline if we have no more connected peers left.
             (_, Event::Protocol(ProtocolEvent::Disconnecting(peer_id)))
                 if self.connected_peers.len() == 1 =>
@@ -326,7 +326,7 @@ impl RunState {
                 self.connected_peers.remove(&peer_id);
 
                 None
-            }
+            },
             // Announce new updates while the peer is online.
             (
                 Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
@@ -349,15 +349,12 @@ impl Default for RunState {
 #[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
-    use std::net::SocketAddr;
-    use std::{collections::HashSet, time::Instant};
+    use std::{collections::HashSet, net::SocketAddr, time::Instant};
 
     use assert_matches::assert_matches;
     use pretty_assertions::assert_eq;
 
-    use librad::keys::SecretKey;
-    use librad::net::protocol::ProtocolEvent;
-    use librad::peer::PeerId;
+    use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId};
 
     use super::{AnnounceEvent, Command, Event, RunState, Status, TimeoutEvent, SYNC_MAX_PEERS};
 

@@ -68,8 +68,6 @@ pub async fn build(state: Lock) -> Result<Updates, Error> {
     let state = state.lock().await;
     let mut list: Updates = HashSet::new();
 
-    log::debug!("BUILDING PUNCEMENTS");
-
     match state.list_projects() {
         // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
         // should be machinery to kick off these routines only if our app state is ready for it.
@@ -91,7 +89,7 @@ pub async fn build(state: Lock) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        }
+        },
     }
 }
 
@@ -109,7 +107,7 @@ pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load(store: kv::Store) -> Result<Updates, Error> {
+pub fn load(store: &kv::Store) -> Result<Updates, Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
@@ -125,7 +123,7 @@ pub fn load(store: kv::Store) -> Result<Updates, Error> {
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save(store: kv::Store, updates: Updates) -> Result<(), Error> {
+pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }

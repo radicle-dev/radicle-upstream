@@ -66,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let config =
             coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
-        coco::into_peer_state(config, signer.clone(), store.clone()).await?
+        coco::into_peer_state(config, signer.clone()).await?
     };
 
     if args.test {
@@ -79,14 +79,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let subscriptions = notification::Subscriptions::default();
     let ctx = context::Ctx::from(context::Context {
-        state,
+        state: state.clone(),
         signer,
-        store,
+        store: store.clone(),
     });
 
     log::info!("starting coco peer");
     tokio::spawn(async move {
-        peer.run().await.expect("peer run loop crashed");
+        peer.run(state, store).await.expect("peer run loop crashed");
     });
 
     log::info!("Starting API");

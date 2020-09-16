@@ -77,7 +77,7 @@ pub async fn wait_connected(
                 if remote_id == *expected_id =>
             {
                 future::ready(Some(()))
-            }
+            },
             _ => future::ready(None),
         })
         .map(|_| ());
