@@ -21,6 +21,15 @@ export const copyToClipboard = text =>
 export const openPath = path =>
   window.electron.ipcRenderer.invoke(OPEN_PATH, path);
 
+// Informs whether it's running in a development environment.
 export const isDev = () => {
   return window.electron.isDev;
+};
+
+// Informs whether it's running in experimental mode, where
+// features under construction are enabled and can thus be used.
+// This option can only be enaled iff `isDev()` as we should only
+// want to toggle it while in development mode.
+export const isExperimental = () => {
+  return isDev() && window.electron.isExperimental;
 };

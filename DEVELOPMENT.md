@@ -101,6 +101,7 @@ Here is a list of the most commonly used ones:
 
 ```sh
 yarn start                  # Start Upstream in development mode
+yarn start:public           # Start Upstream in the public mode, hidding experimental features.
 
 yarn test                   # Run all ui tests
 yarn test:integration       # Run only integration tests
