@@ -81,7 +81,7 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
-  FetchUser = "FETCH_User",
+  FetchUser = "FETCH_USER",
 }
 
 interface Create extends event.Event<Kind> {
