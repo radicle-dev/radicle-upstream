@@ -4,7 +4,7 @@
   import { link } from "svelte-spa-router";
 
   export let href: string;
-  export let icon: SvelteComponent;
+  export let icon: typeof SvelteComponent;
   export let title: string;
   export let active: boolean;
 </script>

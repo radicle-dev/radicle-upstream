@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteComponent } from "svelte";
   import { location } from "svelte-spa-router";
 
   import * as path from "../../src/path";
@@ -6,7 +7,7 @@
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
   export let items: {
-    icon: any;
+    icon: typeof SvelteComponent;
     title: string;
     href: string;
     looseActiveStateMatching: boolean;
