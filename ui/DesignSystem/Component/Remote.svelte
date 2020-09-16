@@ -1,11 +1,13 @@
 <script lang="ts">
+  import type { Readable } from "svelte/store";
+
   import * as notification from "../../src/notification";
   import * as error from "../../src/error";
   import * as remote from "../../src/remote";
 
   import WithContext from "./WithContext.svelte";
 
-  export let store: remote.Store<any>;
+  export let store: Readable<remote.Data<any>>;
   export let context: string | undefined = undefined;
 
   // Shorthand for casting these states
@@ -21,10 +23,14 @@
   }
 
   $: data =
-    $store.status === remote.Status.Success && ($store as SuccessState).data;
+    $store.status === remote.Status.Success
+      ? ($store as SuccessState).data
+      : undefined;
 
   $: remoteError =
-    $store.status === remote.Status.Error && ($store as ErrorState).error;
+    $store.status === remote.Status.Error
+      ? ($store as ErrorState).error
+      : undefined;
 </script>
 
 {#if $store.status === remote.Status.NotAsked}

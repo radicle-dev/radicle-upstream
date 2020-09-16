@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SvelteComponent } from "svelte";
+  import type { SvelteComponent } from "svelte";
 
   import { copyToClipboard } from "../../../native/ipc.js";
   import * as notification from "../../src/notification";
@@ -13,8 +13,6 @@
   export let iconAfterCopy: typeof SvelteComponent | undefined =
     Icon.CheckSmall;
 
-  /* This is annoying, but svelte-check needs the explicit type annotation for boolean props with default values. */
-  /* eslint-disable @typescript-eslint/no-inferrable-types */
   export let styleContent: boolean = true;
   export let showIcon: boolean = true;
 
