@@ -47,7 +47,6 @@
   ];
 
   const session = getContext("session");
-  console.log(session);
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
