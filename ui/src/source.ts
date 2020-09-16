@@ -1,4 +1,4 @@
-import { Readable } from "svelte/store";
+import { Readable, writable } from "svelte/store";
 
 import * as api from "./api";
 import * as event from "./event";
@@ -126,6 +126,9 @@ export const object = objectStore.readable;
 
 const revisionsStore = remote.createStore<Revisions>();
 export const revisions = revisionsStore.readable;
+
+export const objectType = writable(ObjectType.Tree);
+export const objectPath = writable(null);
 
 // EVENTS
 enum Kind {

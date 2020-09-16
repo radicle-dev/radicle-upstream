@@ -13,8 +13,9 @@
     commits as commitsStore,
     object as objectStore,
     ObjectType,
+    objectPath,
+    objectType,
     readme,
-    revisions as revisionsStore,
     fetchObject,
     revisionQueryEq,
     RevisionType,
@@ -27,24 +28,17 @@
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
-  import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
   const { id, metadata } = getContext("project");
-
-  const maintainers = metadata.maintainers;
 
   let scrollY = 0;
   let currentPeerId;
   let currentRevision;
-  let currentObjectType;
-  let currentObjectPath;
 
   $: {
     const parsed = path.parseQueryString($querystring);
 
     currentPeerId = parsed.peerId || null;
-    currentObjectType = parsed.objectType || ObjectType.Tree;
-    currentObjectPath = parsed.objectPath || null;
 
     if (currentRevision && parsed.revision) {
       // Only perform assignment if there is a change to the revision.
@@ -61,18 +55,6 @@
       };
     }
   }
-
-  const updateRevision = (projectId, revision, peerId) => {
-    push(
-      path.projectSource(
-        projectId,
-        peerId,
-        revision,
-        currentObjectType,
-        currentObjectPath
-      )
-    );
-  };
 
   // TODO(rudolfs): this functionality should be part of navigation/routing.
   let unsubscribe;
@@ -92,11 +74,11 @@
   };
 
   $: fetchObject({
-    path: currentObjectPath,
+    path: $objectPath,
     peerId: currentPeerId,
     projectId: id,
     revision: currentRevision,
-    type: currentObjectType,
+    type: $objectType,
   });
 
   fetchRevisions({ projectId: id });
@@ -136,13 +118,6 @@
     justify-content: space-between;
     width: 100%;
     align-items: center;
-  }
-
-  .revision-selector-wrapper {
-    min-width: 18rem;
-    margin: var(--content-padding) 0;
-    position: relative;
-    padding-right: 0.75rem;
   }
 
   .repo-stats {
@@ -205,19 +180,6 @@
   <div class="wrapper">
     <div class="repo-header-wrapper" class:elevation={scrollY > 0}>
       <div class="repo-header center-content">
-        <!-- Revision selector -->
-        <Remote store={revisionsStore} let:data={revisions}>
-          <div class="revision-selector-wrapper">
-            <RevisionSelector
-              {currentPeerId}
-              {currentRevision}
-              {maintainers}
-              {revisions}
-              on:select={event => {
-                updateRevision(project.id, event.detail.revision, event.detail.peerId);
-              }} />
-          </div>
-        </Remote>
         <div class="header-right">
           <div class="repo-stats" data-cy="repo-stats">
             <div class="repo-stat-item">
@@ -243,7 +205,6 @@
         <div class="source-tree" data-cy="source-tree">
           <Folder
             {currentRevision}
-            {currentObjectPath}
             {currentPeerId}
             projectId={project.id}
             toplevel
@@ -257,7 +218,7 @@
           {#if object.info.objectType === ObjectType.Blob}
             <FileSource
               blob={object}
-              path={currentObjectPath}
+              path={$objectPath}
               rootPath={path.projectSource(project.id)}
               projectName={project.metadata.name}
               projectId={project.id} />

@@ -6,12 +6,13 @@
   import * as path from "../src/path.ts";
   import { checkout, fetch, project as store } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
-  import { revisions as revisionsStore } from "../src/source.ts";
+  import { revisions as revisionsStore, RevisionType } from "../src/source.ts";
 
   import {
     Header,
     HorizontalMenu,
     Remote,
+    RevisionSelector,
     SidebarLayout,
     TrackToggle,
   } from "../DesignSystem/Component";
@@ -40,6 +41,15 @@
   const projectId = params.id;
   let codeCollabMenuItems;
   let currentPeerId;
+
+  let currentRevision = null;
+  const defaultRevision = project => {
+    return {
+      type: RevisionType.Branch,
+      name: project.metadata.defaultBranch,
+      peerId: currentPeerId || "",
+    };
+  };
 
   $: topbarMenuItems = projectId => {
     const items = [
@@ -108,39 +118,66 @@
     }
   };
 
+  const updateRevision = (projectId, revision, peerId) => {
+    push(path.projectSource(projectId, peerId, revision));
+  };
+
   fetch({ id: projectId });
 </script>
 
+<style>
+  .revision-selector-wrapper {
+    min-width: 18rem;
+    margin: var(--content-padding) 0;
+    position: relative;
+    padding-right: 0.75rem;
+  }
+</style>
+
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
-    <Header.Large
-      variant="project"
-      entity={project}
-      style="position: fixed; top: 0;">
-      <div slot="left">
-        <HorizontalMenu items={topbarMenuItems(project.id)} />
-      </div>
-      <div slot="right">
-        <CheckoutButton
-          on:checkout={ev => handleCheckout(ev, project)}
-          projectName={project.metadata.name} />
-      </div>
-      <div slot="top">
-        <div style="display: flex">
-          <Remote store={revisionsStore} let:data={revisions}>
+    <Remote store={revisionsStore} let:data={revisions}>
+      <Header.Large
+        variant="project"
+        entity={project}
+        style="position: fixed; top: 0;">
+        <div slot="left">
+          <div style="display: flex">
+            <div class="revision-selector-wrapper">
+              <RevisionSelector
+                {currentPeerId}
+                currentRevision={currentRevision || defaultRevision(project)}
+                maintainers={project.metadata.maintainers}
+                {revisions}
+                on:select={event => {
+                  currentRevision = event.detail.revision;
+                  updateRevision(project.id, event.detail.revision, event.detail.peerId);
+                }} />
+            </div>
+            <HorizontalMenu items={topbarMenuItems(project.id)} />
+          </div>
+        </div>
+        <div slot="right">
+          <CheckoutButton
+            on:checkout={ev => handleCheckout(ev, project)}
+            projectName={project.metadata.name} />
+        </div>
+        <div slot="top">
+          <div style="display: flex">
             <PeerSelector
               {currentPeerId}
               maintainers={project.maintainers}
               {revisions}
               on:select={event => {
                 currentPeerId = event.detail.peerId;
+                currentRevision = null;
                 push(path.projectSource(projectId, currentPeerId));
               }} />
-          </Remote>
-          <TrackToggle />
+            <TrackToggle />
+          </div>
         </div>
-      </div>
-    </Header.Large>
+      </Header.Large>
+    </Remote>
     <Router {routes} />
   </Remote>
 </SidebarLayout>
