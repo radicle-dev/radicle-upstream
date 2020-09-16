@@ -161,7 +161,7 @@ mod handler {
         Ok(reply::json(&project::get(&state, &urn)?))
     }
 
-    /// List all projects tracked by the current.
+    /// List all projects tracked by the current user.
     pub async fn list_tracked(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let state = ctx.state.lock().await;
