@@ -6,7 +6,7 @@
   import Icon from "../Primitive/Icon";
 
   export let style = "";
-  export let copyContent: string | undefined = undefined;
+  export let copyContent = "";
   export let notificationText = "Copied to your clipboard";
   export let iconBeforeCopy: typeof SvelteComponent | undefined =
     Icon.CopySmall;
@@ -24,7 +24,7 @@
   const copy = () => {
     if (copied) return;
 
-    const content = copyContent || slotContent.textContent;
+    const content = copyContent.length ? copyContent : slotContent.textContent;
     if (content) copyToClipboard(content.trim());
 
     notification.info(notificationText);

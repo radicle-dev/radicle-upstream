@@ -168,13 +168,11 @@
     ],
     "*.svelte": [
       "prettier --plugin-search-dir=. --write",
-      "eslint --fix",
-      "svelte-check"
+      "eslint --fix"
     ],
     "*.ts": [
       "prettier --write",
-      "eslint --fix",
-      "svelte-check"
+      "eslint --fix"
     ]
   }
 }
