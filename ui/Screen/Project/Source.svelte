@@ -1,16 +1,13 @@
 <script>
   import { getContext } from "svelte";
-  import { querystring, push } from "svelte-spa-router";
+  import { querystring } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
-  import * as remote from "../../src/remote.ts";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import {
-    fetchCommits,
     fetchRevisions,
-    commits as commitsStore,
     object as objectStore,
     ObjectType,
     objectPath,
@@ -21,7 +18,6 @@
     RevisionType,
   } from "../../src/source.ts";
 
-  import { Icon } from "../../DesignSystem/Primitive";
   import { EmptyState, Remote } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
@@ -56,23 +52,6 @@
     }
   }
 
-  // TODO(rudolfs): this functionality should be part of navigation/routing.
-  let unsubscribe;
-  const navigateOnReady = (path, store) => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
-
-    fetchCommits({ projectId: id, revision: currentRevision });
-
-    unsubscribe = store.subscribe(state => {
-      if (state.status === remote.Status.Success) {
-        push(path);
-        unsubscribe();
-      }
-    });
-  };
-
   $: fetchObject({
     path: $objectPath,
     peerId: currentPeerId,
@@ -94,52 +73,6 @@
     margin: 0 auto;
     max-width: var(--content-max-width);
     min-width: var(--content-min-width);
-  }
-
-  .repo-header-wrapper {
-    position: sticky;
-    top: var(--bigheader-height);
-    background-color: var(--color-background);
-  }
-
-  .elevation {
-    box-shadow: var(--elevation-low);
-  }
-
-  .repo-header {
-    display: flex;
-    align-items: center;
-    height: 4rem;
-    padding: 0 var(--content-padding);
-  }
-
-  .header-right {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    align-items: center;
-  }
-
-  .repo-stats {
-    height: 2.5rem;
-    margin: 1.5rem 0;
-    display: flex;
-    justify-content: space-evenly;
-    cursor: pointer;
-  }
-
-  .repo-stat-item {
-    display: flex;
-    color: var(--color-foreground-level-6);
-    padding: 0.5rem 1rem;
-    margin-right: 1rem;
-  }
-
-  .stat {
-    background-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-6);
-    padding: 0 0.5rem;
-    border-radius: 0.75rem;
   }
 
   .container {
@@ -178,27 +111,6 @@
 
 <Remote store={projectStore} let:data={project}>
   <div class="wrapper">
-    <div class="repo-header-wrapper" class:elevation={scrollY > 0}>
-      <div class="repo-header center-content">
-        <div class="header-right">
-          <div class="repo-stats" data-cy="repo-stats">
-            <div class="repo-stat-item">
-              <Icon.Commit />
-              <p style="margin: 0 8px;">
-                <!-- svelte-ignore a11y-missing-attribute -->
-                <a
-                  data-cy="commits-button"
-                  on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
-                  Commits
-                </a>
-              </p>
-              <span class="stat typo-mono-bold">{project.stats.commits}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="container center-content">
       <div class="column-left">
         <!-- Tree -->

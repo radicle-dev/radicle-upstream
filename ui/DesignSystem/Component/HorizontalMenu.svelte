@@ -42,6 +42,7 @@
         <MenuItem
           icon={item.icon}
           title={item.title}
+          counter={item.counter}
           href={item.href}
           active={path.active(item.href, $location, item.looseActiveStateMatching)} />
       </li>

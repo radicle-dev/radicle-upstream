@@ -6,7 +6,11 @@
   import * as path from "../src/path.ts";
   import { checkout, fetch, project as store } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
-  import { revisions as revisionsStore, RevisionType } from "../src/source.ts";
+  import {
+    fetchCommits,
+    revisions as revisionsStore,
+    RevisionType,
+  } from "../src/source.ts";
 
   import {
     Header,
@@ -51,12 +55,20 @@
     };
   };
 
-  $: topbarMenuItems = projectId => {
+  $: topbarMenuItems = (project, revision) => {
+    fetchCommits({ projectId: project.id, revision });
     const items = [
       {
         icon: Icon.House,
         title: "Source",
-        href: path.projectSource(projectId, currentPeerId),
+        href: path.projectSource(project.id, currentPeerId),
+        looseActiveStateMatching: true,
+      },
+      {
+        icon: Icon.Commit,
+        title: "Commits",
+        counter: project.stats.commits,
+        href: path.projectCommits(project.id, revision),
         looseActiveStateMatching: true,
       },
     ];
@@ -154,7 +166,8 @@
                   updateRevision(project.id, event.detail.revision, event.detail.peerId);
                 }} />
             </div>
-            <HorizontalMenu items={topbarMenuItems(project.id)} />
+            <HorizontalMenu
+              items={topbarMenuItems(project, currentRevision || defaultRevision(project))} />
           </div>
         </div>
         <div slot="right">
