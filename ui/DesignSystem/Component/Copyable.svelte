@@ -1,30 +1,33 @@
-<script>
-  // TODO(sarah): write tests for this once it's implemented in the ui somewhere
+<script lang="ts">
+  import { SvelteComponent } from "svelte";
+
   import { copyToClipboard } from "../../../native/ipc.js";
-  import * as notification from "../../src/notification.ts";
+  import * as notification from "../../src/notification";
   import Icon from "../Primitive/Icon";
 
-  export let style = null;
-  export let copyContent = null;
+  export let style = "";
+  export let copyContent: string | undefined = undefined;
   export let notificationText = "Copied to your clipboard";
-  export let showIcon = true;
-  export let iconBeforeCopy = Icon.CopySmall;
-  export let iconAfterCopy = Icon.CheckSmall;
-  export let styleContent = true;
+  export let iconBeforeCopy: typeof SvelteComponent | undefined =
+    Icon.CopySmall;
+  export let iconAfterCopy: typeof SvelteComponent | undefined =
+    Icon.CheckSmall;
 
-  let slotContent;
+  /* This is annoying, but svelte-check needs the explicit type annotation for boolean props with default values. */
+  /* eslint-disable @typescript-eslint/no-inferrable-types */
+  export let styleContent: boolean = true;
+  export let showIcon: boolean = true;
+
+  let slotContent: HTMLElement;
   let copyIcon = iconBeforeCopy;
 
   let copied = false;
 
   const copy = () => {
-    if (copied) {
-      return;
-    }
+    if (copied) return;
 
-    const content =
-      copyContent !== null ? copyContent : slotContent.textContent;
-    copyToClipboard(content.trim());
+    const content = copyContent || slotContent.textContent;
+    if (content) copyToClipboard(content.trim());
 
     notification.info(notificationText);
 

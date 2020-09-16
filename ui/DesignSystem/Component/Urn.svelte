@@ -1,13 +1,17 @@
-<script>
+<script lang="ts">
   import Copyable from "./Copyable.svelte";
   import Hoverable from "./Hoverable.svelte";
   import { Icon } from "../Primitive";
 
+  export let urn: string;
+
   export let notificationText = "Copied to your clipboard";
-  export let showOnHover = false;
-  export let showCopyOnlyOnHover = false;
-  export let truncate = false;
-  export let urn = null;
+
+  /* This is annoying, but svelte-check needs the explicit type annotation for boolean props with default values. */
+  /* eslint-disable @typescript-eslint/no-inferrable-types */
+  export let showOnHover: boolean = false;
+  export let showCopyOnlyOnHover: boolean = false;
+  export let truncate: boolean = false;
 
   const cleanUrn = urn.replace(/^%?rad:git:/, "");
 

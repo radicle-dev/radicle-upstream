@@ -2,14 +2,14 @@
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
-  import * as path from "../src/path.ts";
+  import * as path from "../src/path";
 
   import {
     Header,
     HorizontalMenu,
     SidebarLayout,
   } from "../DesignSystem/Component";
-  import { Flex, Icon } from "../DesignSystem/Primitive";
+  import { Icon } from "../DesignSystem/Primitive";
 
   import Projects from "./Profile/Projects.svelte";
   import Tracking from "./Profile/Tracking.svelte";
@@ -47,10 +47,11 @@
   ];
 
   const session = getContext("session");
+  console.log(session);
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-  <Header.Large variant="profile" entity={session.identity}>
+  <Header.Large entity={session.identity}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

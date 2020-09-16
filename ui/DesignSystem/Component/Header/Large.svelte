@@ -1,21 +1,16 @@
-<script>
+<script lang="ts">
+  import type { Identity } from "../../../src/identity";
+  import type { Org } from "../../../src/org";
+
   import { Avatar, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
-  export let style = null;
-  export let entity = null;
-  export let variant = null; // profile | org
+  export let style = "";
+  export let entity: Identity | Org;
 
-  let name;
-  if (variant === "profile") {
-    if (entity.registered) {
-      name = entity.registered;
-    } else {
-      name = entity.metadata.handle;
-    }
-  } else if (variant === "org") {
-    name = entity.id;
-  }
+  const isIdentity = (entity as Identity).metadata !== undefined;
+
+  const name = "metadata" in entity ? entity.metadata.handle : entity.id;
 </script>
 
 <style>
@@ -87,7 +82,7 @@
         <Avatar
           style="margin-right: 32px"
           size="huge"
-          variant={variant === 'profile' ? 'circle' : 'square'}
+          variant={isIdentity ? 'circle' : 'square'}
           avatarFallback={entity.avatarFallback} />
 
         <div class="metadata">
@@ -97,7 +92,7 @@
               style="display: flex; align-items: center;">
               {name}
             </h1>
-            {#if variant === 'org' || entity.registered}
+            {#if !isIdentity}
               <Icon.Registered
                 dataCy="verified-badge"
                 style="fill: var(--color-primary); margin-left: 6px;" />
