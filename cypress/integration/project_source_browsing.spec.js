@@ -15,16 +15,16 @@ beforeEach(() => {
 
 context("repository stats", () => {
   it("shows the correct numbers", () => {
-    cy.pick("repo-stats").contains("Commits 14");
-    cy.pick("header", "project-stats").contains("Branches 2");
-    cy.pick("header", "project-stats").contains("Contributors 4");
+    cy.pick("horizontal-menu", "Commits").contains("Commits 14");
+    cy.pick("header", "project-stats").contains("2 Branches");
+    cy.pick("header", "project-stats").contains("4 Contributors");
   });
 });
 
 context("commit browsing", () => {
   context("commit history", () => {
     it("shows the commit history for the default branch", () => {
-      cy.pick("commits-button").click();
+      cy.pick("horizontal-menu", "Commits").click();
       cy.pick("commits-page").should("exist");
       cy.pick("commit-teaser")
         .contains("Commit on the dev branch")
@@ -41,7 +41,7 @@ context("commit browsing", () => {
     it("shows the commit history for another branch", () => {
       cy.pick("revision-selector").click();
       cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
-      cy.pick("commits-button").click();
+      cy.pick("horizontal-menu", "Commits").click();
 
       cy.pick("commits-page").should("exist");
       cy.pick("commit-teaser")
