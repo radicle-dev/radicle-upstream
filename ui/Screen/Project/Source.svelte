@@ -89,8 +89,8 @@
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
-            {$currentRevision}
-            {$currentPeerId}
+            currentRevision={$currentRevision}
+            currentPeerId={$currentPeerId}
             projectId={project.id}
             toplevel
             name={project.metadata.name} />
