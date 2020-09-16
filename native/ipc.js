@@ -28,7 +28,7 @@ export const isDev = () => {
 
 // Informs whether it's running in experimental mode, where
 // features under construction are enabled and can thus be used.
-// This option can only be enaled iff `isDev()` as we should only
+// This option can only be enabled iff `isDev()` as we should only
 // want to toggle it while in development mode.
 export const isExperimental = () => {
   return isDev() && window.electron.isExperimental;
