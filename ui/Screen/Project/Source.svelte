@@ -2,7 +2,6 @@
   import { getContext } from "svelte";
   import { format } from "timeago.js";
 
-  import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import {
@@ -13,6 +12,8 @@
     objectPath,
     objectType,
     readme,
+    resetObjectPath,
+    resetObjectType,
     fetchObject,
   } from "../../src/source.ts";
 
@@ -26,6 +27,10 @@
   const { id } = getContext("project");
 
   let scrollY = 0;
+
+  // Reset some stores on first load
+  resetObjectPath();
+  resetObjectType();
 
   $: fetchObject({
     path: $objectPath,
@@ -104,7 +109,6 @@
             <FileSource
               blob={object}
               path={$objectPath}
-              rootPath={path.projectSource(project.id)}
               projectName={project.metadata.name}
               projectId={project.id} />
           {:else if object.path === ''}

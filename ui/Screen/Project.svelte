@@ -11,6 +11,8 @@
     currentPeerId,
     fetchCommits,
     fetchRevisions,
+    resetCurrentRevision,
+    resetCurrentPeerId,
     revisions as revisionsStore,
     RevisionType,
   } from "../src/source.ts";
@@ -48,6 +50,10 @@
   export let params = null;
   const projectId = params.id;
   let codeCollabMenuItems;
+
+  // Reset some stores on first load
+  resetCurrentRevision();
+  resetCurrentPeerId();
 
   const defaultRevision = (project, peerId) => {
     return {

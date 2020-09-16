@@ -1,7 +1,10 @@
 <script>
   import { format } from "timeago.js";
-  import { link } from "svelte-spa-router";
-  import { isMarkdown } from "../../../src/source.ts";
+  import {
+    isMarkdown,
+    resetObjectPath,
+    resetObjectType,
+  } from "../../../src/source.ts";
   import { Variant as IllustrationVariant } from "../../../src/illustration.ts";
 
   import { Icon, Markdown } from "../../Primitive";
@@ -10,7 +13,6 @@
 
   export let blob = null;
   export let path = null;
-  export let rootPath = null;
   export let projectId = null;
   export let projectName = null;
 </script>
@@ -35,11 +37,12 @@
     margin-left: 0.5rem;
   }
 
-  header .file-name a {
+  header .root-link {
     color: var(--color-foreground-level-5);
+    text-decoration: none;
   }
 
-  header .file-name a:hover {
+  header .root-link:hover {
     text-decoration: underline;
   }
 
@@ -87,7 +90,12 @@
     <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />
       <span class="file-name">
-        <a href={rootPath} use:link>{projectName}</a>
+        <span
+          class="typo-link root-link"
+          on:click={() => {
+            resetObjectPath();
+            resetObjectType();
+          }}>{projectName}</span>
         <span>/ {path.split('/').join(' / ')}</span>
       </span>
     </div>
