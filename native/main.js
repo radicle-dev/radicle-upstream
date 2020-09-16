@@ -108,15 +108,11 @@ const startProxy = () => {
 
   const proxyPath = path.join(__dirname, "../../proxy");
   const { execFile } = require("child_process");
-  proxyChildProcess = execFile(
-    proxyPath,
-    ["--registry=emulator"],
-    (error, _stdout, _stderr) => {
-      if (error) {
-        console.log(error);
-      }
+  proxyChildProcess = execFile(proxyPath, [], (error, _stdout, _stderr) => {
+    if (error) {
+      console.log(error);
     }
-  );
+  });
 };
 
 app.on("will-quit", () => {

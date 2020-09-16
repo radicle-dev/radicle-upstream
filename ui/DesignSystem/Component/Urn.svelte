@@ -31,7 +31,7 @@
 <Hoverable bind:hovering={hover}>
   <div class="wrapper urn" data-cy="urn">
     <Copyable
-      style="align-items: center; color: var(--color-foreground-level-4)"
+      style="align-items: center; color: var(--color-foreground-level-6)"
       copyContent={urn}
       {notificationText}
       styleContent={hover}
