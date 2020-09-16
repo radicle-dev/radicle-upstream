@@ -106,8 +106,8 @@
     "wait-on": "^5.1.0"
   },
   "scripts": {
-    "start": "RADICLE_UPSTREAM_EXPERIMENTAL=true start:app",
-    "start:public": "RADICLE_UPSTREAM_EXPERIMENTAL=false start:app",
+    "start": "RADICLE_UPSTREAM_EXPERIMENTAL=false start:app",
+    "start:experimental": "RADICLE_UPSTREAM_EXPERIMENTAL=true start:app",
     "start:app": "run-p --race svelte:watch proxy:start electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
