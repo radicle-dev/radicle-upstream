@@ -228,8 +228,14 @@ impl State {
     ///
     /// * if opening the storage fails
     pub fn list_owner_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
-        let storage = self.api.storage();
-        storage.rad_signed_refs(urn).map_err(Error::from)
+        log::debug!("BEFORE REFS");
+
+        let storage = self.api.storage().reopen()?;
+        let refs = storage.rad_signed_refs(urn).map_err(Error::from)?;
+
+        log::debug!("GOT REFS: {:?}", refs);
+
+        Ok(refs)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -353,7 +359,7 @@ impl State {
         owner: &User,
         project: &project::Create<P>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
-        let storage = self.api.storage();
+        let storage = self.api.storage().reopen()?;
 
         let mut meta = project.build(owner, signer.public_key().into())?;
         meta.sign_owned(signer)?;

@@ -9,19 +9,12 @@ use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer};
 
-use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent, PeerInput};
+use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent};
 
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
 ) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
-    let key = SecretKey::new();
-    let signer = signer::BoxedSigner::from(key.clone());
-    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-
-    let conf = config::default(key, tmp_dir.path())?;
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store).await?;
-
-    Ok((peer, state, signer))
+    build_peer_with_seeds(tmp_dir, vec![]).await
 }
 
 #[allow(dead_code)]
@@ -31,11 +24,10 @@ pub async fn build_peer_with_seeds(
 ) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key.clone());
-    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store).await?;
+    let (peer, state) = coco::into_peer_state(conf, signer.clone()).await?;
 
     Ok((peer, state, signer))
 }
@@ -81,7 +73,7 @@ pub async fn wait_connected(
     let filtered = receiver
         .into_stream()
         .filter_map(|res| match res.unwrap() {
-            PeerEvent::Input(PeerInput::Protocol(ProtocolEvent::Connected(remote_id)))
+            PeerEvent::Protocol(ProtocolEvent::Connected(remote_id))
                 if remote_id == *expected_id =>
             {
                 future::ready(Some(()))
