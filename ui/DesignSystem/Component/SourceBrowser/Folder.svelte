@@ -89,7 +89,7 @@
         {:else}
           <File
             active={entry.path === $objectPath}
-            href={path.projectSource(projectId, currentPeerId, currentRevision)}
+            href={path.projectSource(projectId)}
             name={entry.info.name}
             on:click={() => {
               objectPath.set(entry.path);

@@ -129,6 +129,8 @@ export const revisions = revisionsStore.readable;
 
 export const objectType = writable(ObjectType.Tree);
 export const objectPath = writable(null);
+export const currentRevision = writable(null);
+export const currentPeerId = writable(null);
 
 // EVENTS
 enum Kind {

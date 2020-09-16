@@ -1,13 +1,16 @@
 <script>
   import { isDev, openPath } from "../../native/ipc.js";
-  import Router, { push } from "svelte-spa-router";
+  import Router from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import { checkout, fetch, project as store } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
   import {
+    currentRevision,
+    currentPeerId,
     fetchCommits,
+    fetchRevisions,
     revisions as revisionsStore,
     RevisionType,
   } from "../src/source.ts";
@@ -37,6 +40,7 @@
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
     "/projects/:id/commit/:hash": Commit,
+    "/projects/:id/commits": Commits,
     "/projects/:id/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,
   };
@@ -44,31 +48,30 @@
   export let params = null;
   const projectId = params.id;
   let codeCollabMenuItems;
-  let currentPeerId;
 
-  let currentRevision = null;
-  const defaultRevision = project => {
+  const defaultRevision = (project, peerId) => {
     return {
       type: RevisionType.Branch,
       name: project.metadata.defaultBranch,
-      peerId: currentPeerId || "",
+      peerId: peerId || "",
     };
   };
 
-  $: topbarMenuItems = (project, revision) => {
+  $: topbarMenuItems = (project, peerId, revision) => {
+    revision = revision || defaultRevision(project, peerId);
     fetchCommits({ projectId: project.id, revision });
     const items = [
       {
         icon: Icon.House,
         title: "Source",
-        href: path.projectSource(project.id, currentPeerId),
+        href: path.projectSource(project.id),
         looseActiveStateMatching: true,
       },
       {
         icon: Icon.Commit,
         title: "Commits",
         counter: project.stats.commits,
-        href: path.projectCommits(project.id, revision),
+        href: path.projectCommits(project.id),
         looseActiveStateMatching: true,
       },
     ];
@@ -130,11 +133,8 @@
     }
   };
 
-  const updateRevision = (projectId, revision, peerId) => {
-    push(path.projectSource(projectId, peerId, revision));
-  };
-
   fetch({ id: projectId });
+  fetchRevisions({ projectId });
 </script>
 
 <style>
@@ -157,17 +157,16 @@
           <div style="display: flex">
             <div class="revision-selector-wrapper">
               <RevisionSelector
-                {currentPeerId}
-                currentRevision={currentRevision || defaultRevision(project)}
+                currentPeerId={$currentPeerId}
+                currentRevision={$currentRevision || defaultRevision(project, $currentPeerId)}
                 maintainers={project.metadata.maintainers}
                 {revisions}
                 on:select={event => {
-                  currentRevision = event.detail.revision;
-                  updateRevision(project.id, event.detail.revision, event.detail.peerId);
+                  currentRevision.set(event.detail.revision);
                 }} />
             </div>
             <HorizontalMenu
-              items={topbarMenuItems(project, currentRevision || defaultRevision(project))} />
+              items={topbarMenuItems(project, $currentPeerId, $currentRevision)} />
           </div>
         </div>
         <div slot="right">
@@ -178,13 +177,12 @@
         <div slot="top">
           <div style="display: flex">
             <PeerSelector
-              {currentPeerId}
+              currentPeerId={$currentPeerId}
               maintainers={project.maintainers}
               {revisions}
               on:select={event => {
-                currentPeerId = event.detail.peerId;
-                currentRevision = null;
-                push(path.projectSource(projectId, currentPeerId));
+                currentPeerId.set(event.detail.peerId);
+                currentRevision.set(defaultRevision(project, event.detail.peerId));
               }} />
             <TrackToggle />
           </div>

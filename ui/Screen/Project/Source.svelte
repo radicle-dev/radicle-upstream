@@ -1,21 +1,19 @@
 <script>
   import { getContext } from "svelte";
-  import { querystring } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import {
-    fetchRevisions,
+    currentPeerId,
+    currentRevision,
     object as objectStore,
     ObjectType,
     objectPath,
     objectType,
     readme,
     fetchObject,
-    revisionQueryEq,
-    RevisionType,
   } from "../../src/source.ts";
 
   import { EmptyState, Remote } from "../../DesignSystem/Component";
@@ -25,42 +23,17 @@
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
 
-  const { id, metadata } = getContext("project");
+  const { id } = getContext("project");
 
   let scrollY = 0;
-  let currentPeerId;
-  let currentRevision;
-
-  $: {
-    const parsed = path.parseQueryString($querystring);
-
-    currentPeerId = parsed.peerId || null;
-
-    if (currentRevision && parsed.revision) {
-      // Only perform assignment if there is a change to the revision.
-      // Otherwise an assignment triggers this reacitve statement to update
-      // the source browser even if there are no changes.
-      if (!revisionQueryEq(currentRevision, parsed.revision)) {
-        currentRevision = parsed.revision;
-      }
-    } else {
-      currentRevision = {
-        type: RevisionType.Branch,
-        name: metadata.defaultBranch,
-        peerId: "",
-      };
-    }
-  }
 
   $: fetchObject({
     path: $objectPath,
-    peerId: currentPeerId,
+    peerId: $currentPeerId,
     projectId: id,
-    revision: currentRevision,
+    revision: $currentRevision,
     type: $objectType,
   });
-
-  fetchRevisions({ projectId: id });
 </script>
 
 <style>
@@ -116,8 +89,8 @@
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
-            {currentRevision}
-            {currentPeerId}
+            {$currentRevision}
+            {$currentPeerId}
             projectId={project.id}
             toplevel
             name={project.metadata.name} />
@@ -148,7 +121,7 @@
 
             <!-- Readme -->
             <Remote
-              store={readme(id, currentPeerId, currentRevision)}
+              store={readme(id, $currentPeerId, $currentRevision)}
               let:data={readme}>
               {#if readme}
                 <Readme content={readme.content} path={readme.path} />
