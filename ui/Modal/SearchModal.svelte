@@ -7,6 +7,7 @@
   import { TrackToggle, Urn } from "../DesignSystem/Component";
 
   import * as path from "../src/path";
+  import { isMac } from "../src/settings.ts";
   import { Status } from "../src/remote";
   import { updateUrn, validation } from "../src/search";
   import { ValidationStatus } from "../src/validation";
@@ -38,6 +39,8 @@
     updateUrn({ urn: value });
   }
 
+  const modifierKey = isMac ? "⌘" : "ctrl";
+
   // TODO(sos): animate & show/hide based on actual remote response
   $: {
     showTrackingInfo = hasExpanded
@@ -54,6 +57,7 @@
 
   .search-bar {
     margin-bottom: 1rem;
+    position: relative;
   }
 
   .tracking-info {
@@ -89,7 +93,8 @@
       showLeftItem
       style="height: 3rem;"
       inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
-      validation={$validation}>
+      validation={$validation}
+      hint={`${modifierKey}+v`}>
       <div slot="left" style="display: flex;">
         <Icon.MagnifyingGlass />
       </div>

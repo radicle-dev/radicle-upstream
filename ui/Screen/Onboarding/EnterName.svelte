@@ -78,6 +78,7 @@
       on:enter={next}
       dataCy="handle-input"
       validation={$validationStore}
+      hint="Press enter"
       style="margin: 1rem 0 2rem 0;" />
     <div class="buttons">
       <Button dataCy="next-button" disabled={!allowNext} on:click={next}>

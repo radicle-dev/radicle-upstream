@@ -12,6 +12,7 @@
   export let value = null;
   export let dataCy = null;
   export let inputElement = null;
+  export let hint = null;
 
   export let disabled = null;
   export let validation = null;
@@ -71,7 +72,7 @@
   }
 
   input.left-item {
-    padding: 0 40px 0 38px;
+    padding-left: 2.5rem;
   }
 
   input:focus,
@@ -117,12 +118,24 @@
     position: absolute;
     top: 0px;
   }
+
+  .hint {
+    justify-content: flex-start;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-5);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+  }
 </style>
 
 <div {style} class="wrapper">
   <input
     data-cy={dataCy}
-    class:invalid={validation && validation.status === ValidationStatus.Error}
+    class:invalid={validation && validation.status !== ValidationStatus.NotStarted}
     class:left-item={showLeftItem}
     {placeholder}
     bind:value
@@ -138,6 +151,10 @@
     <div class="left-item-wrapper">
       <slot name="left" />
     </div>
+  {/if}
+
+  {#if hint !== null && (value === '' || value === null) && !validation}
+    <p class="typo-text hint">{hint}</p>
   {/if}
 
   {#if validation}
@@ -156,6 +173,8 @@
       <div class="validation-row">
         <p>{validation.message}</p>
       </div>
+    {:else if hint !== null && (value === '' || value === null)}
+      <p class="typo-text hint">{hint}</p>
     {/if}
   {/if}
 </div>

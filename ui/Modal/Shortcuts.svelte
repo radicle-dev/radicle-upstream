@@ -30,15 +30,10 @@
   }
 
   kbd {
-    border: 0.0625rem solid var(--color-foreground-level-3);
-    color: var(--color-foreground-level-6);
-    padding: 0.5rem 0.75rem 0.5rem 0.75rem;
+    background-color: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-5);
+    padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
-  }
-
-  .plus {
-    color: var(--color-foreground-level-4);
-    margin: 0rem 0.625rem;
   }
 
   .description {
@@ -58,35 +53,27 @@
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
     <div class="shortcut">
-      <kbd class="typo-text-bold">?</kbd>
+      <kbd class="typo-text">?</kbd>
       <p class="description">Keyboard shortcuts</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">,</kbd>
+      <kbd class="typo-text">{modifierKey}+,</kbd>
       <p class="description">Settings</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">d</kbd>
+      <kbd class="typo-text">{modifierKey}+d</kbd>
       <p class="description">Design system</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">p</kbd>
+      <kbd class="typo-text">{modifierKey}+p</kbd>
       <p class="description">Search</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">n</kbd>
+      <kbd class="typo-text">{modifierKey}+n</kbd>
       <p class="description">New project</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">esc</kbd>
+      <kbd class="typo-text">esc</kbd>
       <p class="description">Close modal</p>
     </div>
   </div>
