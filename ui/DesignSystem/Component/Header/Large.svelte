@@ -6,6 +6,9 @@
   export let entity = null;
   export let variant = null; // profile | project | org
 
+  let scrollY = 0;
+  let headerHeight;
+
   let name;
   if (variant === "profile") {
     if (entity.registered) {
@@ -55,7 +58,6 @@
   }
 
   .description {
-    position: relative;
     margin-top: 1rem;
     color: var(--color-foreground-level-6);
 
@@ -93,6 +95,12 @@
     margin-right: 1rem;
   }
 
+  .action-bar-wrapper {
+    /* position: sticky;
+    top: calc(var(--bigheader-height) - var(--topbar-height)); */
+    background-color: var(--color-background);
+  }
+
   .action-bar {
     display: flex;
     justify-content: space-between;
@@ -102,7 +110,10 @@
     padding: 0 var(--content-padding);
     margin: 0 auto;
     align-items: center;
-    background-color: var(--color-background);
+  }
+
+  .elevation {
+    box-shadow: var(--elevation-low);
   }
 
   .banner-action {
@@ -111,8 +122,10 @@
   }
 </style>
 
+<svelte:window bind:scrollY />
+
 <div data-cy="header" class="header" {style}>
-  <div class="banner">
+  <div class="banner" bind:clientHeight={headerHeight}>
     <div class="banner-content">
       <div class="left">
         {#if variant !== 'project'}
@@ -169,8 +182,10 @@
       </div>
     </div>
   </div>
-  <div class="action-bar">
-    <slot name="left" />
-    <slot name="right" />
+  <div class="action-bar-wrapper" class:elevation={scrollY > 0}>
+    <div class="action-bar">
+      <slot name="left" />
+      <slot name="right" />
+    </div>
   </div>
 </div>
