@@ -131,7 +131,7 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    pub fn found_peer(
+    pub fn first_peer(
         &mut self,
         urn: &RadUrn,
         peer: PeerId,
@@ -145,7 +145,7 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Requested(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.found_peer(peer, timestamp)),
+            |previous| Ok(previous.first_peer(peer, timestamp)),
             urn,
         )
     }
@@ -259,16 +259,16 @@ mod test {
         let requested = waiting_room.requested(&urn, ());
         assert_eq!(requested, Ok(Request::new(urn.clone(), ()).request(())));
 
-        let found = waiting_room.found_peer(&urn, peer_id.clone(), ());
+        let found = waiting_room.first_peer(&urn, peer_id.clone(), ());
         let expected = Request::new(urn.clone(), ())
             .request(())
-            .found_peer(peer_id.clone(), ());
+            .first_peer(peer_id.clone(), ());
         assert_eq!(found, Ok(expected),);
 
         let requested = waiting_room.cloning(&urn, peer_id.clone(), ());
         let expected = Request::new(urn.clone(), ())
             .request(())
-            .found_peer(peer_id.clone(), ())
+            .first_peer(peer_id.clone(), ())
             .cloning(peer_id.clone(), ());
         assert_eq!(requested, Ok(expected));
 
@@ -277,7 +277,7 @@ mod test {
         let fulfilled = waiting_room.cloned(&urn, found_repo.clone(), ());
         let expected = Request::new(urn, ())
             .request(())
-            .found_peer(peer_id.clone(), ())
+            .first_peer(peer_id.clone(), ())
             .cloning(peer_id, ())
             .cloned(found_repo, ());
         assert_eq!(fulfilled, expected.map_err(Error::from));
