@@ -7,9 +7,9 @@
 
   export let notificationText = "Copied to your clipboard";
 
-  export let showOnHover = false;
+  export let showOnHover: boolean = false;
   export let showCopyOnlyOnHover: boolean = false;
-  export let truncate = false;
+  export let truncate: boolean = false;
 
   const cleanUrn = urn.replace(/^%?rad:git:/, "");
 

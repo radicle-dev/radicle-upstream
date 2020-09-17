@@ -1,16 +1,20 @@
 <script lang="ts">
+  import type { EmojiAvatar } from "../../../src/avatar";
+
   import type { Identity } from "../../../src/identity";
   import type { Org } from "../../../src/org";
 
   import { Avatar, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
+  export let name: string;
+  export let urn: string;
+  export let registered: boolean = false;
+
+  export let avatarFallback: EmojiAvatar;
+  export let avatarShape: "circle" | "square" = "circle";
+
   export let style = "";
-  export let entity: Identity | Org;
-
-  const isIdentity = (entity as Identity).metadata !== undefined;
-
-  const name = "metadata" in entity ? entity.metadata.handle : entity.id;
 </script>
 
 <style>
@@ -82,8 +86,8 @@
         <Avatar
           style="margin-right: 32px"
           size="huge"
-          variant={isIdentity ? 'circle' : 'square'}
-          avatarFallback={entity.avatarFallback} />
+          variant={avatarShape}
+          {avatarFallback} />
 
         <div class="metadata">
           <div class="user">
@@ -92,7 +96,7 @@
               style="display: flex; align-items: center;">
               {name}
             </h1>
-            {#if !isIdentity}
+            {#if registered}
               <Icon.Registered
                 dataCy="verified-badge"
                 style="fill: var(--color-primary); margin-left: 6px;" />
@@ -100,7 +104,7 @@
           </div>
           <div class="shareable-entity-identifier">
             <Urn
-              urn={entity.shareableEntityIdentifier}
+              {urn}
               showCopyOnlyOnHover
               notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
           </div>

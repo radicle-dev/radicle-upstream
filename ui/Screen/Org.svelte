@@ -106,7 +106,12 @@
 
 <SidebarLayout dataCy="org-screen" style="margin-top: 0;">
   <Remote {store} let:data={org}>
-    <Header.Large variant="org" entity={org}>
+    <Header.Large
+      name={org.id}
+      avatarShape="square"
+      avatarFallback={org.avatarFallback}
+      urn={org.shareableEntityIdentifier}
+      registered>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>

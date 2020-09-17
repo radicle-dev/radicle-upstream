@@ -46,11 +46,14 @@
     },
   ];
 
-  const session = getContext("session");
+  const identity = getContext("session").identity;
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-  <Header.Large entity={session.identity}>
+  <Header.Large
+    name={identity.metadata.handle}
+    urn={identity.shareableEntityIdentifier}
+    avatarFallback={identity.avatarFallback}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>
