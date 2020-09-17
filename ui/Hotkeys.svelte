@@ -6,6 +6,7 @@
   import * as screen from "./src/screen.ts";
   import { isMac } from "./src/settings.ts";
   import * as hotkeys from "./src/hotkeys.ts";
+  import { isDev } from "../native/ipc.js";
 
   const toggle = destination => {
     if (path.active(destination, $location)) {
@@ -46,7 +47,7 @@
     }
 
     // To open design system => OS modifier key + d
-    if (modifierKey && event.key === "d") {
+    if (isDev() && modifierKey && event.key === "d") {
       toggle(path.designSystemGuide());
     }
 
