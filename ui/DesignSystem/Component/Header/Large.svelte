@@ -30,7 +30,7 @@
     z-index: 2;
   }
   .banner {
-    height: 200px;
+    height: 12.5rem;
     background-color: var(--color-foreground-level-1);
     display: flex;
   }
@@ -55,10 +55,16 @@
   }
 
   .description {
+    position: relative;
     margin-top: 1rem;
     color: var(--color-foreground-level-6);
-  }
 
+    height: 1.5rem; /* 1 line */
+    max-width: 60vw;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
   .user {
     display: flex;
     align-items: center;
@@ -67,26 +73,23 @@
   .shareable-entity-identifier {
     display: flex;
     align-items: center;
-    padding-top: 4px;
+    padding-top: 0.25rem;
   }
 
   .project-stats {
-    height: 2.5rem;
-    margin: 0.5rem 0;
     display: flex;
+    margin-top: 1rem;
   }
 
   .project-stat-item {
     display: flex;
     color: var(--color-foreground-level-6);
-    padding: 0.5rem 0;
     margin-right: 1rem;
   }
 
   .project-stat-separator {
     display: flex;
     color: var(--color-foreground-level-3);
-    padding: 0.5rem 0;
     margin-right: 1rem;
   }
 
@@ -146,12 +149,14 @@
             <div class="project-stats" data-cy="project-stats">
               <div class="project-stat-item">
                 <Icon.Branch />
-                <p style="margin: 0 8px;">{entity.stats.branches} Branches</p>
+                <p style="margin-left: 0.5rem;">
+                  {entity.stats.branches} Branches
+                </p>
               </div>
               <span class="typo-mono-bold project-stat-separator">•</span>
               <div class="project-stat-item">
                 <Icon.User />
-                <p style="margin: 0 8px;">
+                <p style="margin-left: 0.5rem;">
                   {entity.stats.contributors} Contributors
                 </p>
               </div>
