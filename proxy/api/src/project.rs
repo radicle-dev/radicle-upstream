@@ -228,7 +228,7 @@ pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, erro
 /// for those projects.
 ///
 /// TODO(finto): We would like to also differentiate whether these are tracked or contributed to
-/// for this given user. See https://github.com/radicle-dev/radicle-upstream/issues/915
+/// for this given user. See <https://github.com/radicle-dev/radicle-upstream/issues/915>
 ///
 /// # Errors
 ///

@@ -1,4 +1,4 @@
-//! Endpoints and serialisation for [`project::Project`] related types.
+//! Endpoints and serialisation for [`crate::project::Project`] related types.
 
 use std::path::PathBuf;
 
