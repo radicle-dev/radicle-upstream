@@ -118,7 +118,7 @@ Part of #277
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: 0 auto;
+    margin: var(--bigheader-height) auto 0;
     padding: var(--content-padding);
     min-width: var(--content-min-width);
   }
