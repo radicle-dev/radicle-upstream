@@ -202,6 +202,7 @@ impl<T> WaitingRoom<T> {
         )
     }
 
+    /* TODO(finto): Something different needs to be worked out here
     pub fn timed_out(&mut self, urn: &RadUrn, timestamp: T) -> Result<Request<TimedOut, T>, Error>
     where
         T: Clone,
@@ -215,6 +216,7 @@ impl<T> WaitingRoom<T> {
             urn,
         )
     }
+    */
 
     pub fn list(&self) -> impl Iterator<Item = &RadUrn> {
         self.requests.keys()

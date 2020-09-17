@@ -1,5 +1,7 @@
 use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, time::Duration};
 
+use either::Either;
+
 use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
 
 pub mod waiting_room;
@@ -179,6 +181,27 @@ impl<S, T> Request<S, T> {
         self.timestamp = timestamp;
         self
     }
+
+    pub fn timed_out(mut self, timestamp: T) -> Either<Request<TimedOut, T>, Self> {
+        if self.attempts.queries > MAX_QUERIES {
+            Either::Left(Request {
+                urn: self.urn,
+                attempts: self.attempts,
+                timestamp,
+                state: TimedOut { kind: Kind::Query },
+            })
+        } else if self.attempts.queries > MAX_CLONES {
+            Either::Left(Request {
+                urn: self.urn,
+                attempts: self.attempts,
+                timestamp,
+                state: TimedOut { kind: Kind::Clone },
+            })
+        } else {
+            self.timestamp = timestamp;
+            Either::Right(self)
+        }
+    }
 }
 
 impl<T> Request<IsCreated, T> {
@@ -229,17 +252,6 @@ impl<T> Request<Found, T> {
                 peers: self.state.peers,
             },
         }
-    }
-}
-
-impl<T> Request<IsRequested, T> {
-    pub fn timed_out(self, timestamp: T) -> Request<TimedOut, T> {
-        todo!()
-    }
-
-    pub fn query_attempt(mut self) -> Self {
-        self.attempts.queries += 1;
-        self
     }
 }
 
