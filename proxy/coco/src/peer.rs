@@ -17,7 +17,7 @@ mod announcement;
 pub use announcement::Announcement;
 
 mod run_state;
-pub use run_state::{AnnounceEvent, Event, SyncEvent, TimeoutEvent};
+pub use run_state::{AnnounceEvent, Config as RunConfig, Event, SyncEvent, TimeoutEvent};
 use run_state::{Command, RunState};
 
 mod sync;
@@ -77,7 +77,12 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(self, state: Lock, store: kv::Store) -> Result<(), Error> {
+    pub async fn run(
+        self,
+        state: Lock,
+        store: kv::Store,
+        run_config: RunConfig,
+    ) -> Result<(), Error> {
         // Subscribe to protocol events.
         let protocol_subscriber = {
             let state = state.lock().await;
@@ -98,7 +103,7 @@ impl Peer {
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
 
-        let mut run_state = RunState::default();
+        let mut run_state = RunState::from(run_config);
         loop {
             let event = tokio::select! {
                 _ = announce_timer.tick() => Event::Announce(AnnounceEvent::Tick),
@@ -114,7 +119,7 @@ impl Peer {
             // Send will error if there are no active receivers. This case is expected and
             // ssh the run loop.
             self.subscriber.send(event.clone()).ok();
-            log::debug!("{:?}", event);
+            // log::debug!("{:?}", event);
 
             for cmd in run_state.transition(event) {
                 match cmd {

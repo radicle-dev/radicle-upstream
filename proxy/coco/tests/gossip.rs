@@ -5,7 +5,7 @@ use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, AnnounceEvent, Hash, Urn};
+use coco::{seed::Seed, AnnounceEvent, Hash, RunConfig, Urn};
 
 mod common;
 use common::{
@@ -23,7 +23,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
     let alice_events = alice_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store));
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
 
     let alice = alice_state
         .lock()
@@ -78,8 +78,8 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store));
-    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store));
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
     wait_connected(bob_connected, &alice_peer_id).await?;
 
     let alice = alice_state
@@ -118,7 +118,6 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 }
 
 /// Verify that asking the network for an unkown urn returns no providers.
-#[ignore]
 #[tokio::test]
 async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
@@ -127,7 +126,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let (peer, state, _signer) = build_peer(&tmp_dir).await?;
 
-    tokio::task::spawn(peer.run(state.clone(), store));
+    tokio::task::spawn(peer.run(state.clone(), store, RunConfig::default()));
 
     let unkown_urn = Urn {
         id: Hash::hash(b"project0"),
@@ -159,12 +158,6 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
     let alice_addr = alice_state.lock().await.listen_addr();
     let alice_peer_id = alice_state.lock().await.peer_id();
-    let alice = {
-        let alice_signer = alice_signer.clone();
-        let alice_state = alice_state.clone();
-        let ally = alice_state.lock_owned().await;
-        tokio::task::spawn_blocking(move || ally.init_owner(&alice_signer, "alice")).await??
-    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
@@ -178,13 +171,14 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_events = bob_peer.subscribe();
 
-    tokio::spawn(alice_peer.run(alice_state.clone(), alice_store));
-    tokio::spawn(bob_peer.run(bob_state.clone(), bob_store));
+    tokio::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
     wait_connected(bob_events, &alice_peer_id).await?;
 
     let target_urn = {
         let ally = alice_state.lock_owned().await;
         tokio::task::spawn_blocking(move || {
+            let alice = ally.init_owner(&alice_signer, "alice").unwrap();
             let project = radicle_project(alice_repo_path.clone());
             ally.init_project(&alice_signer, &alice, &project)
         })

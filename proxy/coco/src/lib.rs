@@ -21,10 +21,14 @@
 )]
 #![feature(or_patterns)]
 
+use std::net::SocketAddr;
+
 pub use librad::{
     git::local::url::LocalUrl,
     hash::Hash,
+    keys,
     meta::{project::Project, user::User as MetaUser},
+    net::{self, discovery},
     paths::Paths,
     peer::PeerId,
     uri::{self, RadUrn as Urn},
@@ -47,7 +51,7 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 mod peer;
-pub use peer::{AnnounceEvent, Event as PeerEvent, Peer};
+pub use peer::{AnnounceEvent, Event as PeerEvent, Peer, RunConfig};
 mod state;
 pub use state::{Lock, State};
 pub mod project;
@@ -64,12 +68,6 @@ pub use source::{
 
 pub mod user;
 
-use librad::{
-    keys,
-    net::{discovery, peer::PeerConfig},
-};
-use std::net::SocketAddr;
-
 /// Constructs a [`Peer`] and [`State`] pair from a [`PeerConfig`].
 ///
 /// # Errors
@@ -77,7 +75,7 @@ use std::net::SocketAddr;
 /// * peer construction from config fails.
 /// * accept on the peer fails.
 pub async fn into_peer_state<I>(
-    config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
+    config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
 ) -> Result<(Peer, Lock), Error>
 where

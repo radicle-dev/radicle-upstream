@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use coco::{keystore, seed, signer};
+use coco::{keystore, seed, signer, RunConfig};
 
 use api::{config, context, env, http, notification, session};
 
@@ -86,7 +86,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log::info!("starting coco peer");
     tokio::spawn(async move {
-        peer.run(state, store).await.expect("peer run loop crashed");
+        peer.run(
+            state,
+            store,
+            RunConfig {
+                sync_on_startup: true,
+            },
+        )
+        .await
+        .expect("peer run loop crashed");
     });
 
     log::info!("Starting API");

@@ -1,7 +1,7 @@
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::config;
+use coco::{config, RunConfig};
 
 mod common;
 use common::{build_peer, init_logging, shia_le_pathbuf};
@@ -31,8 +31,8 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
     };
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store));
-    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store));
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
 
     let project = {
         let alice_state = alice_state.clone();
@@ -91,8 +91,8 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
     let (bob_peer, bob_state, _bob_signer) = build_peer(&bob_tmp_dir).await?;
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store));
-    tokio::task::spawn(bob_peer.run(alice_state.clone(), bob_store));
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(alice_state.clone(), bob_store, RunConfig::default()));
 
     let cloned_urn = {
         let alice_peer_id = alice_state.lock().await.peer_id();
@@ -143,8 +143,8 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
     };
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store));
-    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store));
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
 
     let project = {
         let alice = alice.clone();
