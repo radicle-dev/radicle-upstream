@@ -42,11 +42,6 @@
 </script>
 
 <style>
-  .wrapper {
-    position: relative;
-    top: var(--bigheader-height);
-  }
-
   .center-content {
     margin: 0 auto;
     max-width: var(--content-max-width);

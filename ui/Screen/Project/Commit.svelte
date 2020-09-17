@@ -28,10 +28,8 @@
   .commit-page {
     max-width: var(--content-max-width);
     margin: 0 auto;
-    padding: var(--content-padding);
+    padding: 0 var(--content-padding);
     min-width: var(--content-min-width);
-    position: relative;
-    top: var(--bigheader-height);
   }
 
   .content {

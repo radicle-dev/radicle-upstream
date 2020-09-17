@@ -72,7 +72,7 @@
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: var(--bigheader-height) auto 0;
+    margin: 0 auto;
     min-width: var(--content-min-width);
   }
   .filters {
