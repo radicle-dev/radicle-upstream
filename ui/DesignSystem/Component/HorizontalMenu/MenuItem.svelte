@@ -31,8 +31,9 @@
   .counter {
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
-    padding: 0 0.5rem;
+    padding: 0.1875rem 0.5rem;
     border-radius: 0.75rem;
+    margin-left: 0.5rem;
   }
 </style>
 
