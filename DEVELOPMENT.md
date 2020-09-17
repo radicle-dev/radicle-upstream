@@ -490,6 +490,30 @@ Finalizing release v0.0.11:
 Release v0.0.11 successfully completed! 👏 🎉 🚀
 ```
 
+## Quality assurance
+
+We already have an extensive end-to-end test suite which covers most features
+and a good amount of edgecases, however it is impossible to eliminate every bug
+and regression this way because Upstream isn't self-contained and interactions
+with the OS and network.
+
+To be more confident that nothing has slipped thrugh our regular testing
+methods, and we don't ship a buggy release to our users we perform QA on the
+finished packages.
+
+After every release we create a new GitHub issue per platform that contains a
+checklist which guides a QA engineer through the app touching all of the
+happy-paths and some important edgecases.
+
+Title: `QA: v0.0.14 macOS`
+Body: [QA.md][qa]
+
+Title: `QA: v0.0.14 Linux`
+Body: [QA.md][qa]
+
+Before we publish Upstream packages to a wider audience we go through this
+checklist and create follow up issues for any bugs we find. The checklist must
+be completed for each supported platform independently.
 
 
 [ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
@@ -509,6 +533,7 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [ls]: https://github.com/okonet/lint-staged
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
+[qa]: QA.md
 [rl]: https://github.com/radicle-dev/radicle-link
 [rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
