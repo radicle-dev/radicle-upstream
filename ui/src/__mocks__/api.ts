@@ -97,9 +97,10 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
       response = userMock;
       break;
     case "projects":
-      response = param
-        ? upstreamProjectMock
-        : [upstreamProjectMock, surfProjectMock];
+      response =
+        param === "contributed"
+          ? [upstreamProjectMock, surfProjectMock]
+          : upstreamProjectMock;
       break;
     case "session":
       response = sessionMock;
