@@ -11,7 +11,7 @@ keywords = [ "radicle", "upstream", "proxy", "git", "quic" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
-either = "1.0"
+either = "1.6"
 futures = { version = "0.3", features = [ "compat" ] }
 kv = { version = "0.22", features = [ "json-value" ] }
 lazy_static = "1.4"
