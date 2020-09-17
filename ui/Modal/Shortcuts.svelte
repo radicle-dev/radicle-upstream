@@ -1,6 +1,7 @@
 <script>
   import { Illustration, KeyHint } from "../DesignSystem/Component";
   import { Variant as IllustrationVariant } from "../src/illustration";
+  import { isDev } from "../../native/ipc.js";
 
   export let content;
 </script>
@@ -50,10 +51,12 @@
       <KeyHint modifier hint="," />
       <p class="description">Settings</p>
     </div>
-    <div class="shortcut">
-      <KeyHint modifier hint="d" />
-      <p class="description">Design system</p>
-    </div>
+    {#if isDev()}
+      <div class="shortcut">
+        <KeyHint modifier hint="d" />
+        <p class="description">Design system</p>
+      </div>
+    {/if}
     <div class="shortcut">
       <KeyHint modifier hint="p" />
       <p class="description">Search</p>

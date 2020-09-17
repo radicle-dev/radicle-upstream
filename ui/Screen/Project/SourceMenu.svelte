@@ -1,9 +1,9 @@
 <script>
-  import { isDev } from "../../../native/ipc.js";
+  import { isExperimental } from "../../../native/ipc.js";
 
   import { SupportButton } from "../../DesignSystem/Component";
 </script>
 
-{#if isDev()}
+{#if isExperimental()}
   <SupportButton on:click={() => console.log('event(support-project)')} />
 {/if}
