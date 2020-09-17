@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error;
 
-/// Object encapsualating project metadata.
+/// Object encapsulating project metadata.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
@@ -95,10 +95,11 @@ pub struct Projects {
     /// made any changes to. A project is still considered tracked if they checked out a working
     /// copy but have not performed any commits to the references.
     pub tracked: Vec<Tracked>,
+
     /// A project that has been *contributed* to is one that the user has either:
     ///     a. Created themselves using the application.
     ///     b. Has replicated (see tracked above), checked out a working copy, and pushed changes
-    /// to     references.
+    ///     to references.
     ///
     /// The conditions imply that a project is "contributed" if I am the maintainer or I have
     /// contributed to the project.
