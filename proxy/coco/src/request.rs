@@ -4,7 +4,11 @@ use either::Either;
 
 use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
 
+pub mod states;
+pub use states::*;
+pub mod existential;
 pub mod waiting_room;
+pub use existential::SomeRequest;
 
 mod sealed;
 
@@ -16,106 +20,6 @@ pub fn exponential_backoff(attempt: usize, interval: Duration) -> Duration {
     let exp = u32::try_from(attempt).unwrap_or(u32::MAX);
     Duration::from_millis(u64::pow(2, exp)) + interval
 }
-
-impl sealed::Sealed for IsCreated {}
-impl sealed::Sealed for IsRequested {}
-impl sealed::Sealed for Found {}
-impl sealed::Sealed for Cloning {}
-impl sealed::Sealed for IsCanceled {}
-
-pub trait HasPeers: sealed::Sealed
-where
-    Self: Sized,
-{
-    fn peers(&mut self) -> &mut HashMap<PeerId, Status>;
-}
-
-impl HasPeers for Found {
-    fn peers(&mut self) -> &mut HashMap<PeerId, Status> {
-        &mut self.peers
-    }
-}
-
-impl HasPeers for Cloning {
-    fn peers(&mut self) -> &mut HashMap<PeerId, Status> {
-        &mut self.peers
-    }
-}
-
-pub trait Cancel: sealed::Sealed
-where
-    Self: Sized,
-{
-    fn cancel(self) -> IsCanceled {
-        PhantomData
-    }
-}
-
-impl Cancel for IsCreated {}
-impl Cancel for IsRequested {}
-impl Cancel for Found {}
-impl Cancel for Cloning {}
-impl Cancel for IsCanceled {}
-
-pub trait TimeOut: sealed::Sealed
-where
-    Self: Sized,
-{
-    fn time_out(self, kind: Kind) -> TimedOut {
-        TimedOut { kind }
-    }
-}
-
-impl TimeOut for IsRequested {}
-impl TimeOut for Found {}
-impl TimeOut for Cloning {}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Status {
-    Available,
-    InProgress,
-    Failed,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Found {
-    peers: HashMap<PeerId, Status>,
-}
-
-// TODO(finto): Should Cloning know which PeerId it's cloning?
-#[derive(Clone, Debug, PartialEq)]
-pub struct Cloning {
-    peers: HashMap<PeerId, Status>,
-}
-
-#[derive(Clone, Debug, Hash, PartialEq)]
-pub struct Cloned {
-    repo: RadUrn,
-}
-
-#[derive(Clone, Debug, Hash, PartialEq)]
-pub struct Created;
-pub type IsCreated = PhantomData<Created>;
-
-#[derive(Clone, Debug, Hash, PartialEq)]
-pub struct Canceled;
-pub type IsCanceled = PhantomData<Canceled>;
-
-// TODO(finto): Better naming to please the people who will inevitably give out about it.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum Kind {
-    Query,
-    Clone,
-}
-
-#[derive(Clone, Debug, Hash, PartialEq)]
-pub struct TimedOut {
-    kind: Kind,
-}
-
-#[derive(Clone, Debug, Hash, PartialEq)]
-pub struct Requested;
-pub type IsRequested = PhantomData<Requested>;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
 pub struct Attempts {
@@ -289,118 +193,6 @@ impl<T> Request<Cloning, T> {
             attempts: self.attempts,
             timestamp,
             state: Cloned { repo },
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum SomeRequest<T> {
-    Created(Request<IsCreated, T>),
-    Requested(Request<IsRequested, T>),
-    Found(Request<Found, T>),
-    Cloning(Request<Cloning, T>),
-    Cloned(Request<Cloned, T>),
-    Canceled(Request<IsCanceled, T>),
-    TimedOut(Request<TimedOut, T>),
-}
-
-impl<T> From<Request<IsCreated, T>> for SomeRequest<T> {
-    fn from(request: Request<IsCreated, T>) -> Self {
-        Self::Created(request)
-    }
-}
-
-impl<T> From<Request<IsRequested, T>> for SomeRequest<T> {
-    fn from(request: Request<IsRequested, T>) -> Self {
-        Self::Requested(request)
-    }
-}
-
-impl<T> From<Request<Found, T>> for SomeRequest<T> {
-    fn from(request: Request<Found, T>) -> Self {
-        Self::Found(request)
-    }
-}
-
-impl<T> From<Request<Cloning, T>> for SomeRequest<T> {
-    fn from(request: Request<Cloning, T>) -> Self {
-        Self::Cloning(request)
-    }
-}
-
-impl<T> From<Request<Cloned, T>> for SomeRequest<T> {
-    fn from(request: Request<Cloned, T>) -> Self {
-        Self::Cloned(request)
-    }
-}
-
-impl<T> From<Request<IsCanceled, T>> for SomeRequest<T> {
-    fn from(request: Request<IsCanceled, T>) -> Self {
-        Self::Canceled(request)
-    }
-}
-
-impl<T> From<Request<TimedOut, T>> for SomeRequest<T> {
-    fn from(request: Request<TimedOut, T>) -> Self {
-        Self::TimedOut(request)
-    }
-}
-
-impl<T> SomeRequest<T> {
-    pub fn urn(&self) -> &RadUrn {
-        match self {
-            SomeRequest::Created(request) => request.urn(),
-            SomeRequest::Requested(request) => request.urn(),
-            SomeRequest::Found(request) => request.urn(),
-            SomeRequest::Cloning(request) => request.urn(),
-            SomeRequest::Cloned(request) => request.urn(),
-            SomeRequest::Canceled(request) => request.urn(),
-            SomeRequest::TimedOut(request) => request.urn(),
-        }
-    }
-
-    pub fn cancel(self, timestamp: T) -> Either<SomeRequest<T>, Request<IsCanceled, T>> {
-        match self {
-            SomeRequest::Created(request) => Either::Right(request.cancel(timestamp)),
-            SomeRequest::Requested(request) => Either::Right(request.cancel(timestamp)),
-            SomeRequest::Found(request) => Either::Right(request.cancel(timestamp)),
-            SomeRequest::Cloning(request) => Either::Right(request.cancel(timestamp)),
-            SomeRequest::Canceled(request) => Either::Right(request.cancel(timestamp)),
-            request => Either::Left(request),
-        }
-    }
-
-    pub fn timed_out(
-        self,
-        max_queries: usize,
-        max_clones: usize,
-        timestamp: T,
-    ) -> Either<SomeRequest<T>, Request<TimedOut, T>> {
-        match self {
-            SomeRequest::Requested(request) => request
-                .timed_out(max_queries, max_clones, timestamp)
-                .map_left(SomeRequest::Requested),
-            SomeRequest::Found(request) => request
-                .timed_out(max_queries, max_clones, timestamp)
-                .map_left(SomeRequest::Found),
-            SomeRequest::Cloning(request) => request
-                .timed_out(max_queries, max_clones, timestamp)
-                .map_left(SomeRequest::Cloning),
-            request => Either::Left(request),
-        }
-    }
-
-    pub fn transition<Prev, Next>(
-        self,
-        matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
-        transition: impl FnOnce(Prev) -> Next,
-    ) -> Either<SomeRequest<T>, Next>
-    where
-        T: Clone,
-    {
-        match matcher(self.clone()) {
-            Some(previous) => Either::Right(transition(previous)),
-            None => Either::Left(self),
         }
     }
 }
