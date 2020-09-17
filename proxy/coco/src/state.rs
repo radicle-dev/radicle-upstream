@@ -228,12 +228,8 @@ impl State {
     ///
     /// * if opening the storage fails
     pub fn list_owner_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
-        log::debug!("BEFORE REFS");
-
         let storage = self.api.storage().reopen()?;
         let refs = storage.rad_signed_refs(urn).map_err(Error::from)?;
-
-        log::debug!("GOT REFS: {:?}", refs);
 
         Ok(refs)
     }
