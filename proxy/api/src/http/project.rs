@@ -73,7 +73,7 @@ fn contributed_filter(
 }
 
 /// `GET /user/<id>
-fn peer_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn user_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("user")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -179,7 +179,10 @@ mod handler {
         Ok(reply::json(&projects.contributed))
     }
 
-    /// List all known projects tracked by user of given `user_id`
+    /// This lists all the projects for a given `user`. This `user` should not be your particular
+    /// `user` (i.e. the "default user"), but rather should be another user that you are tracking.
+    ///
+    /// See [`project::list_projects_for_user`] for more information.
     pub async fn list_for_user(
         ctx: context::Ctx,
         user_id: coco::Urn,

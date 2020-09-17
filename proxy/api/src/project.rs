@@ -220,17 +220,22 @@ pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, erro
     Ok((project, project_stats).into())
 }
 
-/// List all projects tracked by the given user.
+/// This lists all the projects for a given `user`. This `user` should not be your particular
+/// `user` (i.e. the "default user"), but rather should be another user that you are tracking.
+///
+/// The resulting list of projects will be a subset of the projects that you track or contribute
+/// to. This is because we can only know our projects (local-first) and the users that we track
+/// for those projects.
+///
+/// TODO(finto): We would like to also differentiate whether these are tracked or contributed to
+/// for this given user. See https://github.com/radicle-dev/radicle-upstream/issues/915
 ///
 /// # Errors
 ///
 /// * We couldn't get a project list.
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
-pub fn list_projects_for_user(
-    state: &coco::State,
-    user: &coco::Urn,
-) -> Result<Vec<Project>, error::Error> {
+pub fn list_for_user(state: &coco::State, user: &coco::Urn) -> Result<Vec<Project>, error::Error> {
     let mut projects = vec![];
 
     for project in state.list_projects()? {
