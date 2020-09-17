@@ -1,10 +1,9 @@
 before(() => {
   cy.nukeAllState();
   cy.onboardUser("cloudhead");
-  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
-    "ele",
-    "abbey",
-  ]);
+
+  // TODO(sos): add fake peers again when we have a peer testnet
+  cy.createProjectWithFixture();
 });
 
 beforeEach(() => {
@@ -225,7 +224,8 @@ context("source code browsing", () => {
         cy.contains(".i-too-am-hidden").should("exist");
       });
 
-      it("allows selecting different peers", () => {
+      // TODO(sos): unskip when we have a proxy testnet
+      it.skip("allows selecting different peers", () => {
         cy.pick("revision-selector").click();
         // Default revision is highlighted.
         cy.get(
