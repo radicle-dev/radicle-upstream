@@ -83,7 +83,7 @@ pub async fn wait_connected(
         .map(|_| ());
     tokio::pin!(filtered);
 
-    timeout(Duration::from_secs(10), filtered.next())
+    timeout(Duration::from_secs(1), filtered.next())
         .await
         .map(|_| ())
 }

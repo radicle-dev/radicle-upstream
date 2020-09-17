@@ -54,7 +54,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[tokio::test(core_threads = 4)]
+#[tokio::test]
 async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
@@ -118,6 +118,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 }
 
 /// Verify that asking the network for an unkown urn returns no providers.
+#[ignore]
 #[tokio::test]
 async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
@@ -148,7 +149,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// Verify that asking the network for a URN owned by a seed peer returns said peer.
-#[tokio::test(core_threads = 4)]
+#[tokio::test]
 async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
@@ -158,6 +159,12 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
     let alice_addr = alice_state.lock().await.listen_addr();
     let alice_peer_id = alice_state.lock().await.peer_id();
+    let alice = {
+        let alice_signer = alice_signer.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || ally.init_owner(&alice_signer, "alice")).await??
+    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
@@ -175,14 +182,15 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(bob_peer.run(bob_state.clone(), bob_store));
     wait_connected(bob_events, &alice_peer_id).await?;
 
-    let ally = alice_state.lock_owned().await;
-    let target_urn = tokio::task::spawn_blocking(move || {
-        let project = radicle_project(alice_repo_path.clone());
-        let user = ally.init_owner(&alice_signer, "cloudhead").unwrap();
-        let created_project = ally.init_project(&alice_signer, &user, &project).unwrap();
-        created_project.urn()
-    })
-    .await?;
+    let target_urn = {
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            let project = radicle_project(alice_repo_path.clone());
+            ally.init_project(&alice_signer, &alice, &project)
+        })
+        .await??
+        .urn()
+    };
 
     let res = bob_state
         .lock()

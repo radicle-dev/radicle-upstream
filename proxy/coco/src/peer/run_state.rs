@@ -1,3 +1,5 @@
+//! State machine to manage the current mode of operation during peer lifecycle.
+
 use std::{collections::HashSet, time::Instant};
 
 use librad::{
@@ -12,10 +14,14 @@ use crate::peer::announcement;
 /// TODO(xla): Make configurable as part of peer configuration.
 const SYNC_MAX_PEERS: usize = 5;
 
+/// Instructions to issue side-effectful operations which are the results from state transitions.
 #[derive(Debug, PartialEq)]
 pub enum Command {
+    /// Start the announcement subroutine.
     Announce,
+    /// Initiate a full sync with `PeerId`.
     SyncPeer(PeerId),
+    /// Start sync timeout.
     StartSyncTimeout,
 }
 
@@ -23,42 +29,66 @@ pub enum Command {
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
 pub enum Event {
+    /// Announcement subroutine lifecycle events.
     Announce(AnnounceEvent),
+    /// Events from the underlying coco protocol.
     Protocol(ProtocolEvent<Gossip>),
+    /// Lifecycle events during peer sync operations.
     PeerSync(SyncEvent),
+    /// Scheduled timeouts which can occur.
     Timeout(TimeoutEvent),
 }
 
+/// Announcement subroutine lifecycle events.
 #[derive(Clone, Debug)]
 pub enum AnnounceEvent {
+    /// Operation failed.
     Failed,
+    /// Operation succeeded and emitted the enclosed list of updates.
     Succeeded(announcement::Updates),
+    /// The ticker duration has elapsed.
     Tick,
 }
 
+/// Lifecycle events during peer sync operations.
 #[derive(Clone, Debug)]
 pub enum SyncEvent {
+    /// A sync has been initiated for `PeerId`.
     Started(PeerId),
+    /// A sync has failed for `PeerId`.
     Failed(PeerId),
+    /// A sync has succeeded for `PeerId`.
     Succeeded(PeerId),
 }
 
+/// Scheduled timeouts which can occur.
 #[derive(Clone, Debug)]
 pub enum TimeoutEvent {
+    /// Grace period is over signaling that we should go offline, no matter how many syncs have
+    /// succeeded.
     SyncPeriod,
 }
 
+/// Internal state representation the current mode of operation for the local peer.
 #[derive(Debug)]
 enum Status {
+    /// Nothing is setup, not even a socket to listen on.
     Stopped(Instant),
+    /// Local peer is listening on a socket, but no connected peers yet.
     Started(Instant),
+    /// The loccal peer lost connections to all peers.
     Offline(Instant),
+    /// Phase where the local peer tries get up-to-date.
     Syncing(Instant, usize),
+    /// Normal operation with other other peers being connected.
     Online(Instant),
 }
 
+/// State kept for a running local peer.
 pub struct RunState {
+    /// Track peers that we have a connection to.
     connected_peers: HashSet<PeerId>,
+    /// Current internal status.
     status: Status,
 }
 
@@ -156,7 +186,7 @@ impl RunState {
     }
 }
 
-#[allow(clippy::panic)]
+#[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use std::{collections::HashSet, net::SocketAddr, time::Instant};
@@ -252,9 +282,9 @@ mod test {
         let cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id.clone())))
+            state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
-        assert_matches!(cmds[1], Command::StartSyncTimeout);
+        assert_matches!(cmds.get(1), Some(Command::StartSyncTimeout));
     }
 
     #[test]

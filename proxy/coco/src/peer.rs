@@ -132,6 +132,7 @@ impl Peer {
         Ok(())
     }
 
+    /// Announcement subroutine.
     fn announce(state: Lock, store: kv::Store, mut sender: mpsc::Sender<AnnounceEvent>) {
         tokio::spawn(async move {
             match announcement::run(state, &store).await {
@@ -141,7 +142,7 @@ impl Peer {
         });
     }
 
-    /// Sync subroutine.
+    /// Peer syncing subroutine.
     async fn sync(state: Lock, mut sender: mpsc::Sender<SyncEvent>, peer_id: PeerId) {
         sender.send(SyncEvent::Started(peer_id.clone())).await.ok();
 
@@ -156,6 +157,7 @@ impl Peer {
         });
     }
 
+    /// Sync timeout subroutine.
     fn start_sync_timeout(sender: mpsc::Sender<TimeoutEvent>) {
         tokio::spawn(async move {
             tokio::time::delay_for(SYNC_PERIOD).await;
