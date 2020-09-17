@@ -19,6 +19,7 @@ const withEmptyRepositoryStub = callback => {
           },
         },
         isDev: true,
+        isExperimental: true,
       };
     });
 
@@ -50,6 +51,7 @@ const withPlatinumStub = callback => {
           },
         },
         isDev: true,
+        isExperimental: true,
       };
     });
 

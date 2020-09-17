@@ -1,5 +1,5 @@
 <script>
-  import { isDev, openPath } from "../../native/ipc.js";
+  import { isExperimental, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
@@ -81,7 +81,7 @@
         looseActiveStateMatching: true,
       },
     ];
-    isDev() &&
+    isExperimental() &&
       items.push(
         {
           icon: Icon.ExclamationCircle,
@@ -99,7 +99,7 @@
     return items;
   };
 
-  if (isDev()) {
+  if (isExperimental()) {
     codeCollabMenuItems = [
       {
         title: "New issue",
