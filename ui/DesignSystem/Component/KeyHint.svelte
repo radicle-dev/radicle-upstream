@@ -2,7 +2,7 @@
   import { isMac } from "./../../src/settings.ts";
 
   export let hint = null;
-  export let modifier = false;
+  export let noModifier = false;
   export let style = null;
 
   const modifierKey = isMac ? "⌘" : "ctrl";
@@ -26,7 +26,7 @@
 </style>
 
 <div class="hint-container" {style}>
-  {#if modifier}
+  {#if hint.length === 1 && !noModifier && hint !== '↵'}
     <p class="typo-text hint">{modifierKey}</p>
   {/if}
   <p class="typo-text hint">{hint}</p>

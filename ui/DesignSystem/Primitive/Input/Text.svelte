@@ -154,7 +154,7 @@
 
   {#if showHint && !validation}
     <div class="hint">
-      <KeyHint modifier {hint} />
+      <KeyHint {hint} />
     </div>
   {/if}
 
@@ -176,7 +176,7 @@
       </div>
     {:else if showHint}
       <div class="hint">
-        <KeyHint modifier {hint} />
+        <KeyHint {hint} />
       </div>
     {/if}
   {/if}

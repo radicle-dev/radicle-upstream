@@ -44,25 +44,25 @@
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
     <div class="shortcut">
-      <KeyHint hint="?" />
+      <KeyHint noModifier hint="?" />
       <p class="description">Keyboard shortcuts</p>
     </div>
     <div class="shortcut">
-      <KeyHint modifier hint="," />
+      <KeyHint hint="," />
       <p class="description">Settings</p>
     </div>
     {#if isDev()}
       <div class="shortcut">
-        <KeyHint modifier hint="d" />
+        <KeyHint hint="d" />
         <p class="description">Design system</p>
       </div>
     {/if}
     <div class="shortcut">
-      <KeyHint modifier hint="p" />
+      <KeyHint hint="p" />
       <p class="description">Search</p>
     </div>
     <div class="shortcut">
-      <KeyHint modifier hint="n" />
+      <KeyHint hint="n" />
       <p class="description">New project</p>
     </div>
     <div class="shortcut">
