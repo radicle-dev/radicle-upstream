@@ -168,7 +168,7 @@ context("source code browsing", () => {
           cy.pick("project-screen", "file-source").contains(
             "platinum / .i-too-am-hidden"
           );
-          cy.pick("horizontal-menu", "Source").click();
+          cy.pick("project-screen", "file-source").get(".root-link").click();
           cy.pick("project-screen", "file-source").contains("README.md");
 
           // Switching between different revisions shows the correct README
@@ -232,6 +232,7 @@ context("source code browsing", () => {
           "have.class",
           "selected"
         );
+        cy.get('.revision-dropdown [data-branch="dev"]').click();
         // Switch to another peer
         cy.pick("peer-selector").click();
         cy.get('.peer-dropdown [data-peer-handle="abbey"]').click();
@@ -240,13 +241,8 @@ context("source code browsing", () => {
         cy.pick("revision-selector", "branch-icon").should("exist");
 
         cy.pick("peer-selector").click();
-        cy.get('.peer-dropdown [data-peer-handle="ele"]').click();
-
-        cy.pick("revision-selector").contains("master");
-        cy.pick("revision-selector", "branch-icon").should("exist");
-
-        cy.pick("peer-selector").click();
         cy.get('.peer-dropdown [data-peer-handle="cloudhead"]').click();
+        cy.pick("revision-selector").click();
         cy.get(
           '.revision-dropdown [data-tag="v0.1.0"][data-repo-handle="cloudhead"]'
         ).click();
@@ -327,6 +323,7 @@ context("source code browsing", () => {
         cy.contains(".gitkeep").should("have.class", "active");
 
         // Preserve expanded folder state when selecting a different file.
+        cy.scrollTo("top");
         cy.pick("expand-text").click();
         cy.contains("arrows.txt").click();
         cy.contains("arrows.txt").should("have.class", "active");

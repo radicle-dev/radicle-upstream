@@ -146,7 +146,6 @@
 <style>
   .revision-selector-wrapper {
     min-width: 18rem;
-    margin: var(--content-padding) 0;
     position: relative;
     padding-right: 0.75rem;
   }
