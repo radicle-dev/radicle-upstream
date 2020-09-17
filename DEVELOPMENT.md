@@ -68,6 +68,20 @@ On Linux:
 3. Start Upstream in development mode: `yarn start`.
 
 
+### Feature flagging
+
+UI features that are experimental or under construction that find their way into the main
+branch must be placed behind the feature flag, to make them inaccessible for the general public.
+
+We do that by using `native > ipc.js > isExperimental` as a feature flag to enable or
+disable said features accordingly to the mode in which we are running the app.
+
+See the [scripts](#scripts) section below to learn which commands to use to toggle this flag
+accordingly to your current workflow.
+
+The feature flag is only available in development mode. It is always disabled in production.
+
+
 ### Running tests
 
 Before running UI end-to-end tests locally you'll need to check out the latest
@@ -101,7 +115,7 @@ Here is a list of the most commonly used ones:
 
 ```sh
 yarn start                  # Start Upstream in development mode
-yarn start:experimental           # Start Upstream in experimental mode, showing unfinished features
+yarn start:experimental     # Start Upstream in experimental mode, showing unfinished features
 
 yarn test                   # Run all ui tests
 yarn test:integration       # Run only integration tests
