@@ -89,7 +89,7 @@ pub async fn build(state: Lock) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        },
+        }
     }
 }
 
@@ -114,6 +114,20 @@ pub fn load(store: &kv::Store) -> Result<Updates, Error> {
         .map_or(HashSet::new(), kv::Json::to_inner);
 
     Ok(value)
+}
+
+pub async fn run(state: Lock, store: &kv::Store) -> Result<Updates, Error> {
+    let old = load(&store)?;
+    let new = build(state.clone()).await?;
+    let updates = diff(&old, &new);
+
+    announce(state, updates.iter()).await;
+
+    if !updates.is_empty() {
+        save(&store, updates.clone()).map_err(Error::from)?;
+    }
+
+    Ok(updates)
 }
 
 /// Update the cache with the latest announcements.
