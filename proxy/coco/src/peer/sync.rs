@@ -1,5 +1,4 @@
-use librad::peer::PeerId;
-use librad::uri::RadUrl;
+use librad::{peer::PeerId, uri::RadUrl};
 
 use crate::state::Lock;
 

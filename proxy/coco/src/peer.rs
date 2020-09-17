@@ -120,10 +120,10 @@ impl Peer {
                 match cmd {
                     Command::Announce => {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
-                    }
+                    },
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
-                    }
+                    },
                     Command::StartSyncTimeout => Self::start_sync_timeout(timeout_sender.clone()),
                 };
             }

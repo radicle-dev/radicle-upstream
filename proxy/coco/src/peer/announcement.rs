@@ -89,7 +89,7 @@ pub async fn build(state: Lock) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        }
+        },
     }
 }
 
