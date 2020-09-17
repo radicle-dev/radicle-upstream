@@ -2,12 +2,14 @@ import * as api from "./api";
 
 // TYPES
 export interface EmojiAvatar {
-  background: {
-    r: number;
-    g: number;
-    b: number;
-  };
+  background: RGBValue;
   emoji: string;
+}
+
+export interface RGBValue {
+  r: number;
+  g: number;
+  b: number;
 }
 
 export interface RemoteAvatar {

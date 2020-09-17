@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as modal from "../../src/modal.ts";
-  import * as path from "../../src/path.ts";
-  import { projects as projectsStore } from "../../src/project.ts";
+  import * as modal from "../../src/modal";
+  import * as path from "../../src/path";
+  import { projects as projectsStore } from "../../src/project";
+  import type { Project } from "../../src/project";
 
   import {
     EmptyState,
@@ -17,10 +18,8 @@
     modal.toggle(path.newProject());
   };
 
-  const select = event => {
-    const project = event.detail;
-    push(path.projectSource(project.id));
-  };
+  const select = (event: { detail: Project }) =>
+    push(path.projectSource(event.detail.id));
 
   const session = getContext("session");
 </script>
@@ -36,6 +35,6 @@
   {/if}
 
   <div slot="error" let:error>
-    <Error message={error.message} />
+    <Error message={error && error.message} />
   </div>
 </Remote>
