@@ -17,6 +17,12 @@ pub fn exponential_backoff(attempt: usize, interval: Duration) -> Duration {
     Duration::from_millis(u64::pow(2, exp)) + interval
 }
 
+impl sealed::Sealed for IsCreated {}
+impl sealed::Sealed for IsRequested {}
+impl sealed::Sealed for Found {}
+impl sealed::Sealed for Cloning {}
+impl sealed::Sealed for IsCanceled {}
+
 pub trait HasPeers: sealed::Sealed
 where
     Self: Sized,
@@ -45,17 +51,24 @@ where
     }
 }
 
-impl sealed::Sealed for IsCreated {}
-impl sealed::Sealed for IsRequested {}
-impl sealed::Sealed for Found {}
-impl sealed::Sealed for Cloning {}
-impl sealed::Sealed for IsCanceled {}
-
 impl Cancel for IsCreated {}
 impl Cancel for IsRequested {}
 impl Cancel for Found {}
 impl Cancel for Cloning {}
 impl Cancel for IsCanceled {}
+
+pub trait TimeOut: sealed::Sealed
+where
+    Self: Sized,
+{
+    fn time_out(self, kind: Kind) -> TimedOut {
+        TimedOut { kind }
+    }
+}
+
+impl TimeOut for IsRequested {}
+impl TimeOut for Found {}
+impl TimeOut for Cloning {}
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Status {
@@ -69,6 +82,7 @@ pub struct Found {
     peers: HashMap<PeerId, Status>,
 }
 
+// TODO(finto): Should Cloning know which PeerId it's cloning?
 #[derive(Clone, Debug, PartialEq)]
 pub struct Cloning {
     peers: HashMap<PeerId, Status>,
@@ -118,12 +132,6 @@ impl Attempts {
     }
 }
 
-#[derive(Clone, Debug, thiserror::Error, PartialEq)]
-pub enum Error {
-    #[error("the URN found '{actual}' was not the expected URN '{expected}'")]
-    UrnMismatch { expected: RadUrn, actual: RadUrn },
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Request<S, T> {
     urn: RadUrn,
@@ -138,17 +146,6 @@ impl<S, T> From<Request<S, T>> for Gossip {
             urn: request.urn,
             rev: None,
             origin: None,
-        }
-    }
-}
-
-impl<S, T> Request<PhantomData<S>, T> {
-    fn coerce<R>(self, timestamp: T) -> Request<PhantomData<R>, T> {
-        Request {
-            urn: self.urn,
-            attempts: self.attempts,
-            timestamp,
-            state: PhantomData,
         }
     }
 }
@@ -182,24 +179,32 @@ impl<S, T> Request<S, T> {
         self
     }
 
-    pub fn timed_out(mut self, timestamp: T) -> Either<Request<TimedOut, T>, Self> {
-        if self.attempts.queries > MAX_QUERIES {
-            Either::Left(Request {
+    pub fn timed_out(
+        mut self,
+        max_queries: usize,
+        max_clones: usize,
+        timestamp: T,
+    ) -> Either<Self, Request<TimedOut, T>>
+    where
+        S: TimeOut,
+    {
+        if self.attempts.queries > max_queries {
+            Either::Right(Request {
                 urn: self.urn,
                 attempts: self.attempts,
                 timestamp,
-                state: TimedOut { kind: Kind::Query },
+                state: self.state.time_out(Kind::Query),
             })
-        } else if self.attempts.queries > MAX_CLONES {
-            Either::Left(Request {
+        } else if self.attempts.queries > max_clones {
+            Either::Right(Request {
                 urn: self.urn,
                 attempts: self.attempts,
                 timestamp,
-                state: TimedOut { kind: Kind::Clone },
+                state: self.state.time_out(Kind::Clone),
             })
         } else {
             self.timestamp = timestamp;
-            Either::Right(self)
+            Either::Left(self)
         }
     }
 }
@@ -215,9 +220,15 @@ impl<T> Request<IsCreated, T> {
     }
 
     pub fn request(self, timestamp: T) -> Request<IsRequested, T> {
-        let mut this = self.coerce(timestamp);
-        this.attempts.queries + 1;
-        this
+        Request {
+            urn: self.urn,
+            attempts: Attempts {
+                queries: self.attempts.queries + 1,
+                ..self.attempts
+            },
+            timestamp,
+            state: PhantomData,
+        }
     }
 }
 
@@ -234,13 +245,14 @@ impl<T> Request<IsRequested, T> {
     }
 
     pub fn queried(mut self, timestamp: T) -> Self {
-        self.attempts.queries + 1;
+        self.attempts.queries += 1;
+        self.timestamp = timestamp;
         self
     }
 }
 
 impl<T> Request<Found, T> {
-    pub fn cloning(self, peer_id: PeerId, timestamp: T) -> Request<Cloning, T> {
+    pub fn cloning(self, timestamp: T) -> Request<Cloning, T> {
         Request {
             urn: self.urn,
             attempts: Attempts {
@@ -271,21 +283,13 @@ impl<T> Request<Cloning, T> {
         }
     }
 
-    pub fn cloned(self, repo: RadUrn, timestamp: T) -> Result<Request<Cloned, T>, Error> {
-        // TODO(finto): Consider removing this and assume that it's for the correct RadUrn
-        if repo != self.urn {
-            return Err(Error::UrnMismatch {
-                expected: self.urn,
-                actual: repo,
-            });
-        }
-
-        Ok(Request {
+    pub fn cloned(self, repo: RadUrn, timestamp: T) -> Request<Cloned, T> {
+        Request {
             urn: self.urn,
             attempts: self.attempts,
             timestamp,
             state: Cloned { repo },
-        })
+        }
     }
 }
 
@@ -352,6 +356,51 @@ impl<T> SomeRequest<T> {
             SomeRequest::Cloned(request) => request.urn(),
             SomeRequest::Canceled(request) => request.urn(),
             SomeRequest::TimedOut(request) => request.urn(),
+        }
+    }
+
+    pub fn cancel(self, timestamp: T) -> Either<SomeRequest<T>, Request<IsCanceled, T>> {
+        match self {
+            SomeRequest::Created(request) => Either::Right(request.cancel(timestamp)),
+            SomeRequest::Requested(request) => Either::Right(request.cancel(timestamp)),
+            SomeRequest::Found(request) => Either::Right(request.cancel(timestamp)),
+            SomeRequest::Cloning(request) => Either::Right(request.cancel(timestamp)),
+            SomeRequest::Canceled(request) => Either::Right(request.cancel(timestamp)),
+            request => Either::Left(request),
+        }
+    }
+
+    pub fn timed_out(
+        self,
+        max_queries: usize,
+        max_clones: usize,
+        timestamp: T,
+    ) -> Either<SomeRequest<T>, Request<TimedOut, T>> {
+        match self {
+            SomeRequest::Requested(request) => request
+                .timed_out(max_queries, max_clones, timestamp)
+                .map_left(SomeRequest::Requested),
+            SomeRequest::Found(request) => request
+                .timed_out(max_queries, max_clones, timestamp)
+                .map_left(SomeRequest::Found),
+            SomeRequest::Cloning(request) => request
+                .timed_out(max_queries, max_clones, timestamp)
+                .map_left(SomeRequest::Cloning),
+            request => Either::Left(request),
+        }
+    }
+
+    pub fn transition<Prev, Next>(
+        self,
+        matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
+        transition: impl FnOnce(Prev) -> Next,
+    ) -> Either<SomeRequest<T>, Next>
+    where
+        T: Clone,
+    {
+        match matcher(self.clone()) {
+            Some(previous) => Either::Right(transition(previous)),
+            None => Either::Left(self),
         }
     }
 }

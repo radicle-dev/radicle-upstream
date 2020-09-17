@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use either::Either;
 use rand::{seq::IteratorRandom as _, Rng};
 
 use librad::peer::PeerId;
@@ -12,8 +13,6 @@ use crate::request::{
 
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
 pub enum Error {
-    #[error(transparent)]
-    Request(#[from] request::Error),
     #[error("the URN '{0}' was not found in the waiting room")]
     MissingUrn(RadUrn),
     #[error("the state fetched from the waiting room was not the expected state")]
@@ -78,23 +77,23 @@ impl<T> WaitingRoom<T> {
 
     fn transition<Prev, Next>(
         &mut self,
-        matcher: impl FnOnce(&SomeRequest<T>) -> Option<&Prev>,
-        transition: impl FnOnce(Prev) -> Result<Next, request::Error>,
+        matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
+        transition: impl FnOnce(Prev) -> Next,
         urn: &RadUrn,
     ) -> Result<Next, Error>
     where
+        T: Clone,
         Prev: Clone,
         Next: Into<SomeRequest<T>> + Clone,
     {
         match self.requests.get(urn) {
             None => Err(Error::MissingUrn(urn.clone())),
-            Some(request) => match matcher(request) {
-                Some(previous) => {
-                    let next = transition(previous.clone())?;
+            Some(request) => match request.clone().transition(matcher, transition) {
+                Either::Right(next) => {
                     self.requests.insert(urn.clone(), next.clone().into());
                     Ok(next)
                 }
-                None => Err(Error::StateMismatch),
+                Either::Left(_mismatch) => Err(Error::StateMismatch),
             },
         }
     }
@@ -112,7 +111,7 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Created(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.request(timestamp)),
+            |previous| previous.request(timestamp),
             urn,
         )
     }
@@ -126,7 +125,7 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Requested(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.queried(timestamp)),
+            |previous| previous.queried(timestamp),
             urn,
         )
     }
@@ -145,17 +144,12 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Requested(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.first_peer(peer, timestamp)),
+            |previous| previous.first_peer(peer, timestamp),
             urn,
         )
     }
 
-    pub fn cloning(
-        &mut self,
-        urn: &RadUrn,
-        peer: PeerId,
-        timestamp: T,
-    ) -> Result<Request<Cloning, T>, Error>
+    pub fn cloning(&mut self, urn: &RadUrn, timestamp: T) -> Result<Request<Cloning, T>, Error>
     where
         T: Clone,
     {
@@ -164,7 +158,26 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Found(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.cloning(peer, timestamp)),
+            |previous| previous.cloning(timestamp),
+            urn,
+        )
+    }
+
+    pub fn failed(
+        &mut self,
+        peer_id: PeerId,
+        urn: &RadUrn,
+        timestamp: T,
+    ) -> Result<Request<Found, T>, Error>
+    where
+        T: Clone,
+    {
+        self.transition(
+            |request| match request {
+                SomeRequest::Cloning(request) => Some(request),
+                _ => None,
+            },
+            |previous| previous.failed(peer_id, timestamp),
             urn,
         )
     }
@@ -193,30 +206,31 @@ impl<T> WaitingRoom<T> {
         T: Clone,
     {
         self.transition(
-            |request| match request {
-                SomeRequest::Requested(request) => Some(request),
-                _ => None,
-            },
-            |prev| Ok(prev.cancel(timestamp)),
+            |request| request.clone().cancel(timestamp).right(),
+            |prev| prev,
             urn,
         )
     }
 
-    /* TODO(finto): Something different needs to be worked out here
+    // TODO(finto): These semantics aren't quite right. We "may" have timed_out or we may not have.
+    // So if we `Error` it's not correct.
     pub fn timed_out(&mut self, urn: &RadUrn, timestamp: T) -> Result<Request<TimedOut, T>, Error>
     where
         T: Clone,
     {
+        let max_queries = self.max_queries;
+        let max_clones = self.max_clones;
         self.transition(
-            |request| match request {
-                SomeRequest::Requested(request) => Some(request),
-                _ => None,
+            |request| {
+                request
+                    .clone()
+                    .timed_out(max_queries, max_clones, timestamp)
+                    .right()
             },
-            |prev| Ok(prev.timed_out(timestamp)),
+            |prev| prev,
             urn,
         )
     }
-    */
 
     pub fn list(&self) -> impl Iterator<Item = &RadUrn> {
         self.requests.keys()
@@ -267,11 +281,11 @@ mod test {
             .first_peer(peer_id.clone(), ());
         assert_eq!(found, Ok(expected),);
 
-        let requested = waiting_room.cloning(&urn, peer_id.clone(), ());
+        let requested = waiting_room.cloning(&urn, ());
         let expected = Request::new(urn.clone(), ())
             .request(())
             .first_peer(peer_id.clone(), ())
-            .cloning(peer_id.clone(), ());
+            .cloning(());
         assert_eq!(requested, Ok(expected));
 
         let found_repo = urn.clone();
@@ -280,8 +294,8 @@ mod test {
         let expected = Request::new(urn, ())
             .request(())
             .first_peer(peer_id.clone(), ())
-            .cloning(peer_id, ())
+            .cloning(())
             .cloned(found_repo, ());
-        assert_eq!(fulfilled, expected.map_err(Error::from));
+        assert_eq!(fulfilled, Ok(expected));
     }
 }
