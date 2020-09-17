@@ -85,12 +85,20 @@
     margin-bottom: 1rem;
   }
 
-  .file-header .diff-type.created {
+  .file-header .diff-type {
     margin-left: 1rem;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
+  }
+
+  .file-header .diff-type.created {
     color: var(--color-positive);
     background-color: var(--color-positive-level-1);
+  }
+
+  .file-header .diff-type.deleted {
+    color: var(--color-negative);
+    background-color: var(--color-negative-level-1);
   }
 
   /* TODO(cloudhead): These should be global */
@@ -180,6 +188,15 @@
             <Icon.File style="margin-right: 8px;" />
             <p class="typo-text-bold">{path}</p>
             <span class="diff-type created">created</span>
+          </header>
+        {/each}
+      </div>
+      <div>
+        {#each commit.diff.deleted as path}
+          <header class="file-header">
+            <Icon.File style="margin-right: 8px;" />
+            <p class="typo-text-bold">{path}</p>
+            <span class="diff-type deleted">deleted</span>
           </header>
         {/each}
       </div>
