@@ -44,7 +44,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
         .filter_map(|res| match res.unwrap() {
             coco::PeerEvent::Announce(AnnounceEvent::Succeeded(updates)) if updates.len() == 1 => {
                 future::ready(Some(()))
-            },
+            }
             _ => future::ready(None),
         })
         .map(|_| ());
@@ -54,7 +54,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(core_threads = 4)]
 async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
@@ -105,7 +105,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
                     val: librad::net::peer::Gossip { urn, .. },
                 }) if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
                     future::ready(Some(()))
-                },
+                }
                 _ => future::ready(None),
             },
             _ => future::ready(None),
@@ -148,7 +148,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// Verify that asking the network for a URN owned by a seed peer returns said peer.
-#[tokio::test]
+#[tokio::test(core_threads = 4)]
 async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
