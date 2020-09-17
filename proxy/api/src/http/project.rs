@@ -10,7 +10,7 @@ use crate::{context, http};
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     tracked_filter(ctx.clone())
         .or(contributed_filter(ctx.clone()))
-        .or(peer_filter(ctx.clone()))
+        .or(user_filter(ctx.clone()))
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
@@ -182,14 +182,14 @@ mod handler {
     /// This lists all the projects for a given `user`. This `user` should not be your particular
     /// `user` (i.e. the "default user"), but rather should be another user that you are tracking.
     ///
-    /// See [`project::list_projects_for_user`] for more information.
+    /// See [`project::list_for_user`] for more information.
     pub async fn list_for_user(
         ctx: context::Ctx,
         user_id: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let state = ctx.state.lock().await;
-        let projects = project::list_projects_for_user(&state, &user_id)?;
+        let projects = project::list_for_user(&state, &user_id)?;
 
         Ok(reply::json(&projects))
     }
