@@ -1,11 +1,8 @@
 <script>
-  import { Illustration } from "../DesignSystem/Component";
-  import { isMac } from "../src/settings.ts";
+  import { Illustration, KeyHint } from "../DesignSystem/Component";
   import { Variant as IllustrationVariant } from "../src/illustration";
 
   export let content;
-
-  const modifierKey = isMac ? "⌘" : "ctrl";
 </script>
 
 <style>
@@ -29,13 +26,6 @@
     margin-top: 1.5rem;
   }
 
-  kbd {
-    background-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-5);
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-  }
-
   .description {
     color: var(--color-foreground-level-6);
     margin: 0rem 0.625rem;
@@ -53,27 +43,27 @@
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
     <div class="shortcut">
-      <kbd class="typo-text">?</kbd>
+      <KeyHint hint="?" />
       <p class="description">Keyboard shortcuts</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text">{modifierKey}+,</kbd>
+      <KeyHint modifier hint="," />
       <p class="description">Settings</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text">{modifierKey}+d</kbd>
+      <KeyHint modifier hint="d" />
       <p class="description">Design system</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text">{modifierKey}+p</kbd>
+      <KeyHint modifier hint="p" />
       <p class="description">Search</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text">{modifierKey}+n</kbd>
+      <KeyHint modifier hint="n" />
       <p class="description">New project</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text">esc</kbd>
+      <KeyHint hint="esc" />
       <p class="description">Close modal</p>
     </div>
   </div>

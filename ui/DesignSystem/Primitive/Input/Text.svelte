@@ -3,6 +3,7 @@
 
   import Icon from "../Icon";
   import Spinner from "../../Component/Spinner.svelte";
+  import KeyHint from "../../Component/KeyHint.svelte";
 
   import { ValidationStatus } from "../../../src/validation.ts";
 
@@ -127,10 +128,6 @@
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    background-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-5);
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
   }
 </style>
 
@@ -156,7 +153,9 @@
   {/if}
 
   {#if showHint && !validation}
-    <p class="typo-text hint">{hint}</p>
+    <div class="hint">
+      <KeyHint modifier {hint} />
+    </div>
   {/if}
 
   {#if validation}
@@ -176,7 +175,9 @@
         <p>{validation.message}</p>
       </div>
     {:else if showHint}
-      <p class="typo-text hint">{hint}</p>
+      <div class="hint">
+        <KeyHint modifier {hint} />
+      </div>
     {/if}
   {/if}
 </div>
