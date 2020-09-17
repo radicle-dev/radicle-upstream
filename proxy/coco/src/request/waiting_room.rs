@@ -7,8 +7,8 @@ use librad::peer::PeerId;
 use librad::uri::RadUrn;
 
 use crate::request::{
-    self, Cloned, Cloning, Found, IsCanceled, IsCreated, IsRequested, Request, SomeRequest,
-    TimedOut, MAX_CLONES, MAX_QUERIES,
+    Cloned, Cloning, Found, IsCanceled, IsCreated, IsRequested, Request, SomeRequest, TimedOut,
+    MAX_CLONES, MAX_QUERIES,
 };
 
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
@@ -236,17 +236,44 @@ impl<T> WaitingRoom<T> {
         self.requests.keys()
     }
 
-    pub fn next<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<IsCreated, T>>
+    fn filter<R: Rng, S>(
+        &self,
+        mut matcher: impl FnMut(&SomeRequest<T>) -> Option<&Request<S, T>>,
+        strategy: Strategy<R>,
+    ) -> Option<&Request<S, T>>
     where
         T: Clone + Ord,
     {
         strategy.next(
             self.requests
                 .iter()
-                .filter_map(|(_, request)| match request {
-                    SomeRequest::Created(request) => Some(request),
-                    _ => None,
-                }),
+                .filter_map(|(_, request)| matcher(request)),
+        )
+    }
+
+    pub fn next<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<IsCreated, T>>
+    where
+        T: Clone + Ord,
+    {
+        self.filter(
+            |request| match request {
+                SomeRequest::Created(request) => Some(request),
+                _ => None,
+            },
+            strategy,
+        )
+    }
+
+    pub fn ready<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<Cloned, T>>
+    where
+        T: Clone + Ord,
+    {
+        self.filter(
+            |request| match request {
+                SomeRequest::Cloned(request) => Some(request),
+                _ => None,
+            },
+            strategy,
         )
     }
 }
