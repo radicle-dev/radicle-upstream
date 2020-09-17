@@ -33,6 +33,8 @@
       dispatch("enter");
     }
   };
+
+  $: showHint = hint !== null && (value === "" || value === null);
 </script>
 
 <style>
@@ -153,7 +155,7 @@
     </div>
   {/if}
 
-  {#if hint !== null && (value === '' || value === null) && !validation}
+  {#if showHint && !validation}
     <p class="typo-text hint">{hint}</p>
   {/if}
 
@@ -173,7 +175,7 @@
       <div class="validation-row">
         <p>{validation.message}</p>
       </div>
-    {:else if hint !== null && (value === '' || value === null)}
+    {:else if showHint}
       <p class="typo-text hint">{hint}</p>
     {/if}
   {/if}
