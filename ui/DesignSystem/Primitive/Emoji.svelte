@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
   import twemoji from "twemoji";
 
-  export let emoji = null;
+  export let emoji: string;
 
-  export let size = "regular";
-  export let style = null;
+  type EmojiSize = "small" | "regular" | "medium" | "big" | "huge";
+  export let size: EmojiSize = "regular";
+
+  export let style = "";
 </script>
 
 <style>
