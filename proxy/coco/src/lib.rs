@@ -19,6 +19,7 @@
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions
 )]
+#![feature(hash_set_entry)]
 
 pub use librad::{
     git::local::url::LocalUrl,

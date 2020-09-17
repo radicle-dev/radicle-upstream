@@ -1,4 +1,4 @@
-use std::{collections::HashSet, convert::TryFrom, marker::PhantomData, time::Duration};
+use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, time::Duration};
 
 use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
 
@@ -13,16 +13,21 @@ pub fn exponential_backoff(attempt: usize, interval: Duration) -> Duration {
     Duration::from_millis(u64::pow(2, exp)) + interval
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Status {
+    Available,
+    InProgress,
+    Failed,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Found {
-    peer_id: PeerId,
-    found_peers: HashSet<PeerId>,
+    peers: HashMap<PeerId, Status>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Cloning {
-    peer_id: PeerId,
-    found_peers: HashSet<PeerId>,
+    peers: HashMap<PeerId, Status>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq)]
@@ -38,9 +43,18 @@ pub type IsCreated = PhantomData<Created>;
 pub struct Canceled;
 pub type IsCanceled = PhantomData<Canceled>;
 
+// TODO(finto): Better naming to please the people who will inevitably give out about it.
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum Kind {
+    Query,
+    Clone,
+}
+
+// TODO(finto): Time outs for multiple operations
 #[derive(Clone, Debug, Hash, PartialEq)]
-pub struct TimedOut;
-pub type IsTimedOut = PhantomData<TimedOut>;
+pub struct TimedOut {
+    kind: Kind,
+}
 
 #[derive(Clone, Debug, Hash, PartialEq)]
 pub struct Requested;
@@ -59,11 +73,6 @@ impl Attempts {
             clones: 0,
         }
     }
-}
-
-pub enum Attempt {
-    Query,
-    CloneRepo,
 }
 
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
@@ -118,22 +127,27 @@ impl<T> Request<IsCreated, T> {
     }
 
     pub fn request(self, timestamp: T) -> Request<IsRequested, T> {
-        self.coerce(timestamp)
+        let mut this = self.coerce(timestamp);
+        this.attempts.queries + 1;
+        this
     }
 }
 
 impl<T> Request<IsRequested, T> {
     pub fn found_peer(self, peer_id: PeerId, timestamp: T) -> Request<Found, T> {
-        let found_peers = vec![peer_id.clone()].into_iter().collect();
+        let mut peers = HashMap::new();
+        peers.insert(peer_id, Status::Available);
         Request {
             urn: self.urn,
             attempts: self.attempts,
             timestamp,
-            state: Found {
-                peer_id,
-                found_peers,
-            },
+            state: Found { peers },
         }
+    }
+
+    pub fn queried(mut self, timestamp: T) -> Self {
+        self.attempts.queries + 1;
+        self
     }
 }
 
@@ -141,28 +155,38 @@ impl<T> Request<Found, T> {
     pub fn cloning(self, peer_id: PeerId, timestamp: T) -> Request<Cloning, T> {
         Request {
             urn: self.urn,
-            attempts: self.attempts,
+            attempts: Attempts {
+                queries: self.attempts.queries,
+                clones: self.attempts.clones + 1,
+            },
             timestamp,
             state: Cloning {
-                peer_id,
-                found_peers: self.state.found_peers,
+                peers: self.state.peers,
             },
         }
     }
 
-    pub fn clone_attempt(mut self) -> Self {
-        self.attempts.clones += 1;
+    pub fn found_peer(mut self, peer_id: PeerId, timestamp: T) -> Self {
+        self.state.peers.entry(peer_id).or_insert(Status::Available);
         self
     }
 }
 
+/* TODO(finto): Try this out TYPE FAMILIES
+ * trait Cancelable
+ *
+ * impl<S: Cancelable>
+ *
+ * trait CanFindPeer
+ */
 impl<T> Request<IsRequested, T> {
+    // TODO(finto): Everything except cloned
     pub fn cancel(self, timestamp: T) -> Request<IsCanceled, T> {
         self.coerce(timestamp)
     }
 
-    pub fn timed_out(self, timestamp: T) -> Request<IsTimedOut, T> {
-        self.coerce(timestamp)
+    pub fn timed_out(self, timestamp: T) -> Request<TimedOut, T> {
+        todo!()
     }
 
     pub fn query_attempt(mut self) -> Self {
@@ -172,7 +196,23 @@ impl<T> Request<IsRequested, T> {
 }
 
 impl<T> Request<Cloning, T> {
+    pub fn failed(self, peer_id: PeerId, timestamp: T) -> Request<Found, T> {
+        let mut peers = self.state.peers;
+        // TODO(finto): It's weird if it didn't exist but buh
+        peers
+            .entry(peer_id)
+            .and_modify(|status| *status = Status::Failed)
+            .or_insert(Status::Failed);
+        Request {
+            urn: self.urn,
+            attempts: self.attempts,
+            timestamp,
+            state: Found { peers },
+        }
+    }
+
     pub fn cloned(self, repo: RadUrn, timestamp: T) -> Result<Request<Cloned, T>, Error> {
+        // TODO(finto): Consider removing this and assume that it's for the correct RadUrn
         if repo != self.urn {
             return Err(Error::UrnMismatch {
                 expected: self.urn,
@@ -187,6 +227,11 @@ impl<T> Request<Cloning, T> {
             state: Cloned { repo },
         })
     }
+
+    pub fn found_peer(mut self, peer_id: PeerId, timestamp: T) -> Self {
+        self.state.peers.entry(peer_id).or_insert(Status::Available);
+        self
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -197,7 +242,7 @@ pub enum SomeRequest<T> {
     Cloning(Request<Cloning, T>),
     Cloned(Request<Cloned, T>),
     Canceled(Request<IsCanceled, T>),
-    TimedOut(Request<IsTimedOut, T>),
+    TimedOut(Request<TimedOut, T>),
 }
 
 impl<T> From<Request<IsCreated, T>> for SomeRequest<T> {
@@ -236,8 +281,8 @@ impl<T> From<Request<IsCanceled, T>> for SomeRequest<T> {
     }
 }
 
-impl<T> From<Request<IsTimedOut, T>> for SomeRequest<T> {
-    fn from(request: Request<IsTimedOut, T>) -> Self {
+impl<T> From<Request<TimedOut, T>> for SomeRequest<T> {
+    fn from(request: Request<TimedOut, T>) -> Self {
         Self::TimedOut(request)
     }
 }
