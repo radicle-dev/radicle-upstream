@@ -70,16 +70,19 @@ On Linux:
 
 ### Feature flagging
 
-UI features that are experimental or under construction that find their way into the main
-branch must be placed behind the feature flag, to make them inaccessible for the general public.
+UI features that are experimental or under construction that find their way
+into the main branch must be placed behind the feature flag, to make them
+inaccessible for the general public.
 
-We do that by using `native > ipc.js > isExperimental` as a feature flag to enable or
-disable said features accordingly to the mode in which we are running the app.
+We do that by using `native > ipc.js > isExperimental` as a feature flag to
+enable or disable said features accordingly to the mode in which we are running
+the app.
 
-See the [scripts](#scripts) section below to learn which commands to use to toggle this flag
-accordingly to your current workflow.
+See the [scripts](#scripts) section below to learn which commands to use to
+toggle this flag accordingly to your current workflow.
 
-The feature flag is only available in development mode. It is always disabled in production.
+The feature flag is only available in development mode. It is always disabled
+in production.
 
 
 ### Running tests
@@ -94,11 +97,15 @@ test fixtures which are included in this repository as a git submodule:
 💡 *You'll have to run the previous commands every time there are any updates
 to the test fixture repository.*
 
-We use [Cypress](https://www.cypress.io/) for integration tests and [Jest](jestjs.io) for unit tests. You can find integration tests in the `cypress/` directory and unit tests next to the modules they correspond to.
+We use [Cypress](https://www.cypress.io/) for integration tests and
+[Jest](jestjs.io) for unit tests. You can find integration tests in the
+`cypress/` directory and unit tests next to the modules they correspond to.
 
 - To run all ui tests call: `yarn test`.
-- To troubleshoot integration tests via the Cypress GUI, run: `yarn test:integration:debug`.
-- To isolate a single integration test for debugging purposes, use the [`.only` method][on].
+- To troubleshoot integration tests via the Cypress GUI, run:
+  `yarn test:integration:debug`.
+- To isolate a single integration test for debugging purposes, use
+  the [`.only` method][on].
 - To develop unit tests in watch mode, run: `yarn test:unit:watch`
 
 
@@ -115,7 +122,8 @@ Here is a list of the most commonly used ones:
 
 ```sh
 yarn start                  # Start Upstream in development mode
-yarn start:experimental     # Start Upstream in experimental mode, showing unfinished features
+yarn start:experimental     # Start Upstream in experimental mode, showing
+                            # unfinished features
 
 yarn test                   # Run all ui tests
 yarn test:integration       # Run only integration tests
@@ -125,8 +133,8 @@ yarn test:unit:watch        # Run Jest tests in watch mode
 
 yarn dist                   # Bundles Upstream into an installable package
 
-yarn release                # Start a two-step process to cut a new release, for more
-                            # details have a look at ../DEVELOPMENT.md
+yarn release                # Start a two-step process to cut a new release,
+                            # for more details have a look at ../DEVELOPMENT.md
 
 yarn prettier:check         # Check UI code formatting
 yarn prettier:write         # Auto-format UI code
@@ -304,10 +312,10 @@ We also added a set of modifiers that allow you to add the font-family as a
 class where you need it, here again we would recommend not doing that as most
 styles should fit into one of the two categories above.
 
-The only place in the app where we're not using this is in `<Markdown />`, since the
-library we use doesn't allow us to overwrite the styles without using global
-declarations. If you have any questions or improvements, open an issue and we're
-happy to help you along.
+The only place in the app where we're not using this is in `<Markdown />`,
+since the library we use doesn't allow us to overwrite the styles without using
+global declarations. If you have any questions or improvements, open an issue
+and we're happy to help you along.
 
 #### Colors
 
