@@ -47,12 +47,12 @@
 
   input {
     border: 1px solid var(--color-foreground-level-3);
-    padding: 8px;
-    border-radius: 4px;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
     width: 100%;
-    height: 40px;
-    line-height: 48px;
-    padding: 0 12px;
+    height: 2.5rem;
+    line-height: 3rem;
+    padding: 0 0.75rem;
     background-color: var(--color-background);
   }
 
@@ -91,8 +91,11 @@
     outline: none;
     border: 1px solid var(--color-negative);
     background: var(--color-background);
-    background-position: right 14px top 55%;
-    padding-right: 38px;
+    background-position: right 0.875rem top 55%;
+  }
+
+  input.padding {
+    padding-right: 2.375rem;
   }
 
   input.invalid:focus {
@@ -102,8 +105,8 @@
   .validation-row {
     display: flex;
     align-items: center;
-    margin-top: 12px;
-    margin-left: 12px;
+    margin-top: 0.75rem;
+    margin-left: 0.75rem;
   }
 
   .validation-row p {
@@ -117,7 +120,7 @@
     height: 100%;
     justify-content: center;
     left: 0px;
-    padding-left: 8px;
+    padding-left: 0.5rem;
     position: absolute;
     top: 0px;
   }
@@ -125,7 +128,7 @@
   .hint {
     justify-content: flex-start;
     position: absolute;
-    right: 10px;
+    right: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
   }
@@ -134,7 +137,8 @@
 <div {style} class="wrapper">
   <input
     data-cy={dataCy}
-    class:invalid={validation && validation.status !== ValidationStatus.NotStarted}
+    class:invalid={validation && validation.status === ValidationStatus.Error}
+    class:padding={validation && validation.status !== ValidationStatus.NotStarted}
     class:left-item={showLeftItem}
     {placeholder}
     bind:value

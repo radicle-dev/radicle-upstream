@@ -85,6 +85,9 @@
     border: 0.0625rem solid var(--color-negative);
     background: var(--color-background);
     background-position: right 0.875rem top 55%;
+  }
+
+  input.padding {
     padding-right: 2.375rem;
   }
 
@@ -107,7 +110,7 @@
   .hint {
     justify-content: flex-start;
     position: absolute;
-    right: 10px;
+    right: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
   }
@@ -118,6 +121,7 @@
     type="password"
     data-cy={dataCy}
     class:invalid={validation && validation.status === ValidationStatus.Error}
+    class:padding={validation && validation.status !== ValidationStatus.NotStarted}
     {placeholder}
     bind:value
     {disabled}
