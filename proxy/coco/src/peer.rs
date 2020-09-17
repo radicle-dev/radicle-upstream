@@ -117,9 +117,9 @@ impl Peer {
             };
 
             // Send will error if there are no active receivers. This case is expected and
-            // ssh the run loop.
+            // should not terminate the run loop.
             self.subscriber.send(event.clone()).ok();
-            // log::debug!("{:?}", event);
+            log::debug!("{:?}", event);
 
             for cmd in run_state.transition(event) {
                 match cmd {
