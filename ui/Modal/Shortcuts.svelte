@@ -2,6 +2,7 @@
   import { Illustration } from "../DesignSystem/Component";
   import { isMac } from "../src/settings.ts";
   import { Variant as IllustrationVariant } from "../src/illustration";
+  import { isDev } from "../../native/ipc.js";
 
   export let content;
 
@@ -67,12 +68,14 @@
       <kbd class="typo-text-bold">,</kbd>
       <p class="description">Settings</p>
     </div>
-    <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">d</kbd>
-      <p class="description">Design system</p>
-    </div>
+    {#if isDev()}
+      <div class="shortcut">
+        <kbd class="typo-text-bold">{modifierKey}</kbd>
+        <p class="plus">+</p>
+        <kbd class="typo-text-bold">d</kbd>
+        <p class="description">Design system</p>
+      </div>
+    {/if}
     <div class="shortcut">
       <kbd class="typo-text-bold">{modifierKey}</kbd>
       <p class="plus">+</p>
