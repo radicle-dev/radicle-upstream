@@ -9,6 +9,7 @@ import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Illustration from "./Illustration.svelte";
+import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
@@ -56,6 +57,7 @@ export {
   HorizontalMenu,
   Hoverable,
   Illustration,
+  KeyHint,
   Label,
   List,
   ModalOverlay,
