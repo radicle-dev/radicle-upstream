@@ -1,21 +1,19 @@
 <script lang="ts">
   import type { EmojiAvatar } from "../../../src/avatar";
-
-  import type { Identity } from "../../../src/identity";
-  import type { Org } from "../../../src/org";
+  import type { Stats } from "../../../src/project";
 
   import { Avatar, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
   export let name: string;
   export let urn: string;
-  export let description: string;
+  export let description: string | undefined = undefined;
   export let registered: boolean = false;
 
-  export let avatarFallback: EmojiAvatar;
+  export let avatarFallback: EmojiAvatar | undefined = undefined;
   export let avatarShape: "circle" | "square" = "circle";
 
-  export let stats: { string: string };
+  export let stats: Stats | undefined = undefined;
 
   let scrollY = 0;
   let headerHeight;

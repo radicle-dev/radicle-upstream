@@ -49,7 +49,6 @@
 
   export let params = null;
   const projectId = params.id;
-  let codeCollabMenuItems;
 
   // Reset some stores on first load
   resetCurrentRevision();
@@ -98,21 +97,6 @@
       );
     return items;
   };
-
-  if (isExperimental()) {
-    codeCollabMenuItems = [
-      {
-        title: "New issue",
-        icon: Icon.ExclamationCircle,
-        event: () => console.log("event(new-issue)"),
-      },
-      {
-        title: "New revision",
-        icon: Icon.Revision,
-        event: () => console.log("event(new-revision)"),
-      },
-    ];
-  }
 
   const handleCheckout = async (event, project) => {
     try {

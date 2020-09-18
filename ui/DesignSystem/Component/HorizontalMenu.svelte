@@ -11,6 +11,7 @@
     title: string;
     href: string;
     looseActiveStateMatching: boolean;
+    counter?: string;
   }[];
 </script>
 
