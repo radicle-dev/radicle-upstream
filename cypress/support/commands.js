@@ -1,18 +1,18 @@
-Cypress.Commands.add("nukeCocoState", async () => {
-  console.log("Nuking CoCo state");
-  await fetch("http://localhost:8080/v1/control/nuke/coco");
+Cypress.Commands.add("resetCocoState", async () => {
+  console.log("Reset CoCo state");
+  await fetch("http://localhost:8080/v1/control/reset/coco");
 });
 
-Cypress.Commands.add("nukeSessionState", async () => {
-  console.log("Nuking Session state");
+Cypress.Commands.add("resetSessionState", async () => {
+  console.log("Reset Session state");
   await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
 });
 
-Cypress.Commands.add("nukeAllState", async () => {
-  console.log("Nuking CoCo, Registry and session state");
+Cypress.Commands.add("resteAllState", async () => {
+  console.log("Reset CoCo, Registry and session state");
   try {
     await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
-    await fetch("http://localhost:8080/v1/control/nuke/coco");
+    await fetch("http://localhost:8080/v1/control/reset/coco");
   } catch (error) {
     console.error(error);
   }

@@ -1,12 +1,14 @@
-use std::convert::TryFrom;
+use std::{convert::TryFrom, fs::remove_dir_all, io};
 
-use coco::{keystore, seed, signer};
+use coco::{control, keystore, seed, signer};
 
 use api::{config, context, env, http, notification, session};
 
 /// Flags accepted by the proxy binary.
 struct Args {
-    /// Put proxy in test mode to use certain fixtures to serve.
+    /// Wipe all local state, use with caution.
+    factory_reset: bool,
+    /// Put proxy in test mode to use certain fixtures.
     test: bool,
 }
 
@@ -18,8 +20,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
+        factory_reset: args.contains("--factory-reset"),
         test: args.contains("--test"),
     };
+
+    if args.factory_reset {
+        return Ok(factory_reset()?);
+    }
 
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
@@ -93,6 +100,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let api = http::api(ctx, subscriptions, args.test);
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
+
+    Ok(())
+}
+
+fn factory_reset() -> Result<(), io::Error> {
+    log::info!("Resetting application state...");
+    if let Err(err) = remove_dir_all(config::dirs().data_dir()) {
+        if err.kind() == io::ErrorKind::NotFound {
+            log::info!("already gone");
+        } else {
+            log::error!("{:?}", err);
+            return Err(err);
+        }
+    };
+    log::info!("done");
+
+    log::info!("Resetting CoCo state...");
+    if let Err(err) = control::wipe_monorepo() {
+        if err.kind() == io::ErrorKind::NotFound {
+            log::info!("already gone");
+        } else {
+            log::error!("{:?}", err);
+            return Err(err);
+        }
+    };
+    log::info!("done");
 
     Ok(())
 }

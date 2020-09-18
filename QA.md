@@ -19,10 +19,10 @@
       look like this:
 
   ```
-  INFO  nuke > Nuking application state...
-  INFO  nuke > done
-  INFO  nuke > Nuking coco state...
-  INFO  nuke > done
+  INFO  api > Resetting application state...
+  INFO  api > done
+  INFO  api > Resetting CoCo state...
+  INFO  api > done
   ```
 
 
