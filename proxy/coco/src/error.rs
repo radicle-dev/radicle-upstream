@@ -42,7 +42,7 @@ pub enum Error {
     EmptyRevisions,
 
     /// Returned when an attempt to create an identity was made and there is one present.
-    #[error("the identity '{0}' already exits")]
+    #[error("the identity '{0}' already exists")]
     EntityExists(uri::RadUrn),
 
     /// An error occurred when performing git operations.

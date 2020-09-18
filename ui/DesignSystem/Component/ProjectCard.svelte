@@ -7,8 +7,6 @@
 
   export let description = "";
 
-  /* This is annoying, but svelte-check needs the explicit type annotation for boolean props with default values. */
-  /* eslint-disable @typescript-eslint/no-inferrable-types */
   export let showRegisteredBadge: boolean = false;
   export let showMaintainerBadge: boolean = false;
 </script>
