@@ -91,6 +91,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             store,
             RunConfig {
                 sync_on_startup: true,
+                ..RunConfig::default()
             },
         )
         .await

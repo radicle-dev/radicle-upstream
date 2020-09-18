@@ -9,10 +9,9 @@ use librad::{
 
 use crate::peer::announcement;
 
-/// Number of peers a full sync is attempting with up on startup.
+/// Default number of peers a full sync is attempting with up on startup.
 /// TODO(xla): Revise number.
-/// TODO(xla): Make configurable as part of peer configuration.
-const SYNC_MAX_PEERS: usize = 5;
+const DEFAULT_SYNC_MAX_PEERS: usize = 5;
 
 /// Instructions to issue side-effectful operations which are the results from state transitions.
 #[derive(Debug, PartialEq)]
@@ -85,10 +84,20 @@ enum Status {
 }
 
 /// Set of knobs to change the behaviour of the [`RunState`].
-#[derive(Default)]
 pub struct Config {
+    /// Number of peers a full sync is attempting with up on startup.
+    pub sync_max_peers: usize,
     /// Enables the syncing stage when coming online.
     pub sync_on_startup: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            sync_max_peers: DEFAULT_SYNC_MAX_PEERS,
+            sync_on_startup: false,
+        }
+    }
 }
 
 /// State kept for a running local peer.
@@ -158,10 +167,10 @@ impl RunState {
             },
             // Sync until configured maximum of peers is reached.
             (Status::Syncing(since, syncs), Event::Protocol(ProtocolEvent::Connected(peer_id)))
-                if *syncs < SYNC_MAX_PEERS =>
+                if *syncs < self.config.sync_max_peers =>
             {
                 self.connected_peers.insert(peer_id.clone());
-                if syncs + 1 == SYNC_MAX_PEERS {
+                if syncs + 1 == self.config.sync_max_peers {
                     self.status = Status::Online(Instant::now());
                 } else {
                     self.status = Status::Syncing(*since, syncs + 1);
@@ -207,7 +216,8 @@ mod test {
     use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId};
 
     use super::{
-        AnnounceEvent, Command, Config, Event, RunState, Status, TimeoutEvent, SYNC_MAX_PEERS,
+        AnnounceEvent, Command, Config, Event, RunState, Status, TimeoutEvent,
+        DEFAULT_SYNC_MAX_PEERS,
     };
 
     #[test]
@@ -247,7 +257,7 @@ mod test {
 
     #[test]
     fn transition_to_online_after_sync_max_peers() {
-        let status = Status::Syncing(Instant::now(), SYNC_MAX_PEERS - 1);
+        let status = Status::Syncing(Instant::now(), DEFAULT_SYNC_MAX_PEERS - 1);
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
 
         let _cmds = {
@@ -269,16 +279,19 @@ mod test {
 
     #[test]
     fn issue_sync_command_until_max_peers() {
+        let max_peers = 13;
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(
             Config {
+                sync_max_peers: max_peers,
                 sync_on_startup: true,
+                ..Config::default()
             },
             HashSet::new(),
             status,
         );
 
-        for i in 0..(SYNC_MAX_PEERS - 1) {
+        for i in 0..(max_peers - 1) {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
 
@@ -319,6 +332,7 @@ mod test {
         let mut state = RunState::new(
             Config {
                 sync_on_startup: true,
+                ..Config::default()
             },
             HashSet::new(),
             status,

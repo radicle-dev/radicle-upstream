@@ -306,6 +306,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
             alice_store,
             RunConfig {
                 sync_on_startup: true,
+                ..RunConfig::default()
             },
         ));
         tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
