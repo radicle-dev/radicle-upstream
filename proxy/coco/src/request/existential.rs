@@ -56,6 +56,12 @@ impl<T> From<Request<TimedOut, T>> for SomeRequest<T> {
     }
 }
 
+impl<T, L: Into<SomeRequest<T>>, R: Into<SomeRequest<T>>> From<Either<L, R>> for SomeRequest<T> {
+    fn from(other: Either<L, R>) -> Self {
+        other.either(|l| l.into(), |r| r.into())
+    }
+}
+
 impl<T> SomeRequest<T> {
     pub fn urn(&self) -> &RadUrn {
         match self {

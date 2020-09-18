@@ -171,3 +171,9 @@ impl Attempts {
         }
     }
 }
+
+impl sealed::Sealed for Attempts {}
+
+pub trait QueryAttempt: sealed::Sealed {}
+impl QueryAttempt for IsRequested {}
+impl QueryAttempt for Found {}

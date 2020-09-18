@@ -119,16 +119,42 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    pub fn queried(&mut self, urn: &RadUrn, timestamp: T) -> Result<Request<IsRequested, T>, Error>
+    pub fn queried_requested(
+        &mut self,
+        urn: &RadUrn,
+        timestamp: T,
+    ) -> Result<Either<Request<TimedOut, T>, Request<IsRequested, T>>, Error>
     where
         T: Clone,
     {
+        let max_queries = self.max_queries;
+        let max_clones = self.max_clones;
         self.transition(
             |request| match request {
                 SomeRequest::Requested(request) => Some(request),
                 _ => None,
             },
-            |previous| previous.queried(timestamp),
+            |previous| previous.queried(max_queries, max_clones, timestamp),
+            urn,
+        )
+    }
+
+    pub fn queried_found(
+        &mut self,
+        urn: &RadUrn,
+        timestamp: T,
+    ) -> Result<Either<Request<TimedOut, T>, Request<Found, T>>, Error>
+    where
+        T: Clone,
+    {
+        let max_queries = self.max_queries;
+        let max_clones = self.max_clones;
+        self.transition(
+            |request| match request {
+                SomeRequest::Found(request) => Some(request),
+                _ => None,
+            },
+            |previous| previous.queried(max_queries, max_clones, timestamp),
             urn,
         )
     }
@@ -152,16 +178,22 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    pub fn cloning(&mut self, urn: &RadUrn, timestamp: T) -> Result<Request<Cloning, T>, Error>
+    pub fn cloning(
+        &mut self,
+        urn: &RadUrn,
+        timestamp: T,
+    ) -> Result<Either<Request<TimedOut, T>, Request<Cloning, T>>, Error>
     where
         T: Clone,
     {
+        let max_queries = self.max_queries;
+        let max_clones = self.max_clones;
         self.transition(
             |request| match request {
                 SomeRequest::Found(request) => Some(request),
                 _ => None,
             },
-            |previous| previous.cloning(timestamp),
+            |previous| previous.cloning(max_queries, max_clones, timestamp),
             urn,
         )
     }
@@ -210,26 +242,6 @@ impl<T> WaitingRoom<T> {
     {
         self.transition(
             |request| request.clone().cancel(timestamp).right(),
-            |prev| prev,
-            urn,
-        )
-    }
-
-    // TODO(finto): These semantics aren't quite right. We "may" have timed_out or we may not have.
-    // So if we `Error` it's not correct.
-    pub fn timed_out(&mut self, urn: &RadUrn, timestamp: T) -> Result<Request<TimedOut, T>, Error>
-    where
-        T: Clone,
-    {
-        let max_queries = self.max_queries;
-        let max_clones = self.max_clones;
-        self.transition(
-            |request| {
-                request
-                    .clone()
-                    .timed_out(max_queries, max_clones, timestamp)
-                    .right()
-            },
             |prev| prev,
             urn,
         )
@@ -315,7 +327,7 @@ mod test {
         let expected = Request::new(urn.clone(), ())
             .request(())
             .first_peer(peer_id.clone(), ())
-            .cloning(());
+            .cloning(MAX_QUERIES, MAX_CLONES, ());
         assert_eq!(requested, Ok(expected));
 
         let found_repo = urn.clone();
@@ -324,7 +336,8 @@ mod test {
         let expected = Request::new(urn, ())
             .request(())
             .first_peer(peer_id.clone(), ())
-            .cloning(())
+            .cloning(MAX_QUERIES, MAX_CLONES, ())
+            .unwrap_right()
             .cloned(found_repo, ());
         assert_eq!(fulfilled, Ok(expected));
     }

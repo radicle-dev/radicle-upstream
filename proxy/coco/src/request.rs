@@ -98,6 +98,19 @@ impl<S, T> Request<S, T> {
             Either::Left(self)
         }
     }
+
+    pub fn queried(
+        mut self,
+        max_queries: Queries,
+        max_clones: Clones,
+        timestamp: T,
+    ) -> Either<Request<TimedOut, T>, Self>
+    where
+        S: TimeOut + QueryAttempt,
+    {
+        self.attempts.queries += 1;
+        self.timed_out(max_queries, max_clones, timestamp).flip()
+    }
 }
 
 impl<T> Request<IsCreated, T> {
@@ -134,27 +147,30 @@ impl<T> Request<IsRequested, T> {
             state: Found { peers },
         }
     }
-
-    pub fn queried(mut self, timestamp: T) -> Self {
-        self.attempts.queries += 1;
-        self.timestamp = timestamp;
-        self
-    }
 }
 
 impl<T> Request<Found, T> {
-    pub fn cloning(self, timestamp: T) -> Request<Cloning, T> {
-        Request {
+    pub fn cloning(
+        self,
+        max_queries: Queries,
+        max_clones: Clones,
+        timestamp: T,
+    ) -> Either<Request<TimedOut, T>, Request<Cloning, T>>
+    where
+        T: Clone,
+    {
+        let this = Request {
             urn: self.urn,
             attempts: Attempts {
                 queries: self.attempts.queries,
                 clones: self.attempts.clones + 1,
             },
-            timestamp,
+            timestamp: timestamp.clone(),
             state: Cloning {
                 peers: self.state.peers,
             },
-        }
+        };
+        this.timed_out(max_queries, max_clones, timestamp).flip()
     }
 }
 
