@@ -1,30 +1,30 @@
-- OS version: (eg. `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)
-- Link to build: (eg. https://buildkite.com/monadic/radicle-upstream/builds/4727)
+OS version: (eg. `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)
+
+Link to build: (eg. https://buildkite.com/monadic/radicle-upstream/builds/4727)
+
 
 ### Prerequisites
 
 - [ ] download the binary package from the location provided above
 - [ ] remove any old configuration and user data
-  - on macOS:
-    - mount the `.dmg` and install Upstream in the default location
-      `/Applications`, then run:
-      ```
-      /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
-      ```
-  - on Linux:
-    - run the `.AppImage` like so:
-      ```
-      /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
-      ```
+  - on macOS: mount the `.dmg` and install Upstream in the default location
+    `/Applications`, then run:
+    ```
+    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
+    ```
+  - on Linux: run the `.AppImage` like so:
+    ```
+    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
+    ```
 - [ ] confirm that the factory reset was actually performed, the output should
       look like this:
-
       ```
       INFO  nuke > Nuking application state...
       INFO  nuke > done
       INFO  nuke > Nuking coco state...
       INFO  nuke > done
       ```
+
 
 ### Packaging and distribution
 
@@ -36,6 +36,7 @@
     app icon, "About radicle-upstream" window
   - [ ] Linux: dock, menu bar
 - [ ] Version in the Settings screen matches version in package filename
+
 
 ### Onboarding
 
@@ -52,6 +53,7 @@
 - [ ] After completion we land on our profile page which contains a placeholder
   with instructions on how to create your first project
 
+
 ### Settings
 
 - [ ] Preferences are persisted across app reboots
@@ -61,6 +63,7 @@
     shown after app restart once it is closed
 - [ ] Links to external help resources open in an external browser
 
+
 ### Projects
 
 - [ ] Can create a new project with a new repository
@@ -68,12 +71,14 @@
   - [ ] Adding larger projects don't crash the app
   - [ ] UI interaction is blocked while project creation is in progress
 
+
 #### Working directory (from which a new project was initialised)
 
 - [ ] When pushing changes to Radicle via `git push rad` they should appear in
   the app (a page refresh is still needed for the changes to show up)
 - [ ] Pulling changes from Radicle work (to test this you'll need to have a
   checked out another working copy in a different folder)
+
 
 #### Checkout (a separate working copy)
 
@@ -85,6 +90,7 @@
     - [ ] Pulling changes work: make changes in the project folder you created
       in project creation, push them to Radicle with `git push rad`, switch to
       the checkout working directory, do a `git pull`
+
 
 #### Source browsing
 
@@ -98,15 +104,18 @@
 - [ ] It's possible to navigate to deeper hierarchies via the tree browser
 - [ ] It's possible to select different branches
 
+
 #### Commit browsing
 
 - [ ] Commit tab shows a list of all the commits in the branch that was
   selected
 - [ ] Clicking on a commit shows the commit metadata as well as the diff
 
+
 ### Misc UI
 
 - [ ] Clicking on an identifier copies it to the clipboard
+
 
 #### Global keyboard shortcuts
 

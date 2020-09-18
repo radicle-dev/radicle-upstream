@@ -508,6 +508,7 @@ afterwards the team can evaluate whether the release is up to our standards.
 - Title: `QA: v0.0.14 macOS`
 - Body: [QA.md][qa]
 
+
 - Title: `QA: v0.0.14 Linux`
 - Body: [QA.md][qa]
 
