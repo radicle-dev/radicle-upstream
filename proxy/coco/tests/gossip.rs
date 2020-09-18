@@ -9,8 +9,7 @@ use coco::{seed::Seed, AnnounceEvent, Hash, RunConfig, Urn};
 
 mod common;
 use common::{
-    build_peer, build_peer_with_seeds, init_logging, radicle_project, shia_le_pathbuf,
-    wait_connected,
+    build_peer, build_peer_with_seeds, connected, init_logging, radicle_project, shia_le_pathbuf,
 };
 
 #[tokio::test]
@@ -80,7 +79,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
     tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
     tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
-    wait_connected(bob_connected, &alice_peer_id).await?;
+    connected(bob_connected, &alice_peer_id).await?;
 
     let alice = alice_state
         .lock()
@@ -173,7 +172,7 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
     tokio::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
-    wait_connected(bob_events, &alice_peer_id).await?;
+    connected(bob_events, &alice_peer_id).await?;
 
     let target_urn = {
         let ally = alice_state.lock_owned().await;

@@ -11,6 +11,44 @@ use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer
 
 use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent};
 
+#[doc(hidden)]
+#[macro_export]
+macro_rules! await_event {
+    ( $receiver:expr , $filter:expr ) => {{
+        let filtered = $receiver.into_stream().filter_map($filter).map(|_| ());
+        tokio::pin!(filtered);
+        timeout(Duration::from_secs(1), filtered.next())
+            .await
+            .map(|_| ())
+    }};
+}
+
+macro_rules! assert_event {
+    ( $receiver:expr , $pattern:pat ) => {{
+        $crate::await_event!($receiver, |res| match res.unwrap() {
+            $pattern => future::ready(Some(())),
+            _ => future::ready(None),
+        })
+    }};
+    ( $receiver:expr , $pattern:pat if $cond:expr ) => {{
+        $crate::await_event!($receiver, |res| match res.unwrap() {
+            $pattern if $cond => future::ready(Some(())),
+            _ => future::ready(None),
+        })
+    }};
+}
+
+#[allow(dead_code)]
+pub async fn connected(
+    receiver: broadcast::Receiver<PeerEvent>,
+    expected_id: &PeerId,
+) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::Protocol(ProtocolEvent::Connected(remote_id)) if remote_id == *expected_id
+    )
+}
+
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
 ) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
@@ -63,27 +101,4 @@ pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
         description: "do".to_string(),
         default_branch: "it".to_string(),
     }
-}
-
-#[allow(dead_code)]
-pub async fn wait_connected(
-    receiver: broadcast::Receiver<PeerEvent>,
-    expected_id: &PeerId,
-) -> Result<(), Elapsed> {
-    let filtered = receiver
-        .into_stream()
-        .filter_map(|res| match res.unwrap() {
-            PeerEvent::Protocol(ProtocolEvent::Connected(remote_id))
-                if remote_id == *expected_id =>
-            {
-                future::ready(Some(()))
-            },
-            _ => future::ready(None),
-        })
-        .map(|_| ());
-    tokio::pin!(filtered);
-
-    timeout(Duration::from_secs(1), filtered.next())
-        .await
-        .map(|_| ())
 }

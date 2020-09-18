@@ -51,7 +51,7 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 mod peer;
-pub use peer::{AnnounceEvent, Event as PeerEvent, Peer, RunConfig};
+pub use peer::{AnnounceEvent, Event as PeerEvent, Peer, RunConfig, SyncEvent};
 mod state;
 pub use state::{Lock, State};
 pub mod project;
