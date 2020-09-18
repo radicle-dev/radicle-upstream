@@ -28,8 +28,8 @@
 ### Packaging and distribution
 
 - [ ] Check that unreleased features are not visible in the UI
-  - [ ] Issues, Revisions, Wallets, and anything else that's in the UI but
-    clearly not wired up
+  - [ ] Issues, Revisions, Wallets, Design Sytem Guide, and anything else
+        that's in the UI but clearly not wired up
 - [ ] App icon is shown correctly
   - [ ] macOS: dock, <kbd>⌘</kbd> + <kbd>tab</kbd> task switcher, mounted dmg,
     app icon, "About radicle-upstream" window
