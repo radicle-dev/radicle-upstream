@@ -43,7 +43,7 @@
   $: isNew = currentSelection === RepoType.New;
   $: isExisting = currentSelection === RepoType.Existing;
 
-  let name;
+  let name = "";
   let description = "";
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
@@ -107,7 +107,7 @@
     pathValidation.validate(repositoryPath);
 
   $: {
-    if (name && name.length > 0) {
+    if (name.length > 0) {
       name = formatNameInput(name);
       nameValidation.validate(name);
     }
@@ -121,9 +121,7 @@
 
   // The presence check is outside the validations since we don't want to show the validation error message for it.
   $: validName =
-    name &&
-    name.length > 0 &&
-    $nameValidation.status === ValidationStatus.Success;
+    name.length > 0 && $nameValidation.status === ValidationStatus.Success;
 
   $: disableSubmit =
     !validName ||
