@@ -6,9 +6,11 @@
 
   import { Illustration, KeyHint } from "../DesignSystem/Component";
 
-  const shortcuts = isDev()
-    ? [...hotkeys.keyboardShortcuts, ...hotkeys.devShortcuts, hotkeys.escape]
-    : [...hotkeys.keyboardShortcuts, hotkeys.escape];
+  const shortcuts = [
+    ...hotkeys.shortcuts,
+    ...(isDev() ? hotkeys.devShortcuts : []),
+    hotkeys.escape,
+  ];
 </script>
 
 <style>

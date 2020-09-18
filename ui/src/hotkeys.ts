@@ -1,4 +1,6 @@
 import { get, writable } from "svelte/store";
+
+import { isDev } from "../../native/ipc.js";
 import { isMac } from "./settings";
 
 const state = writable(true);
@@ -31,7 +33,7 @@ export interface KeyboardShortcut {
   modifierKey?: boolean;
 }
 
-export const keyboardShortcuts: KeyboardShortcut[] = [
+export const shortcuts: KeyboardShortcut[] = [
   { description: "Keyboard shortcuts", key: ShortcutKey.Help },
   {
     description: "New project",
