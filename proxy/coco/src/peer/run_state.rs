@@ -74,13 +74,13 @@ pub enum TimeoutEvent {
 enum Status {
     /// Nothing is setup, not even a socket to listen on.
     Stopped(Instant),
-    /// Local peer is listening on a socket, but no connected peers yet.
+    /// Local peer is listening on a socket but has not connected to any peers yet.
     Started(Instant),
-    /// The loccal peer lost connections to all peers.
+    /// The local peer lost its connections to all its peers.
     Offline(Instant),
     /// Phase where the local peer tries get up-to-date.
     Syncing(Instant, usize),
-    /// Normal operation with other other peers being connected.
+    /// The local peer is operational and is able to interact with the peers it has connected to.
     Online(Instant),
 }
 
@@ -122,7 +122,7 @@ impl RunState {
         }
     }
 
-    /// Applies the `input` and based on the current state transforms to the new state and in some
+    /// Applies the `event` and based on the current state transforms to the new state and in some
     /// cases produes commands which should be executed in the appropriate sub-routines.
     pub fn transition(&mut self, event: Event) -> Vec<Command> {
         match (&self.status, event) {
