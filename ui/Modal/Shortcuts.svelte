@@ -1,12 +1,25 @@
-<script>
-  import { Illustration } from "../DesignSystem/Component";
-  import { isMac } from "../src/settings.ts";
-  import { Variant as IllustrationVariant } from "../src/illustration";
+<script lang="ts">
   import { isDev } from "../../native/ipc.js";
 
-  export let content;
+  import {
+    devShortcuts,
+    keyboardShortcuts,
+    OSModifierKey,
+    ShortcutKey,
+  } from "../src/hotkeys";
+  import { Variant as IllustrationVariant } from "../src/illustration";
 
-  const modifierKey = isMac ? "⌘" : "ctrl";
+  import { Illustration } from "../DesignSystem/Component";
+
+  const escape = { title: "Close modal", key: ShortcutKey.Escape };
+
+  const shortcuts: {
+    title: string;
+    key: string;
+    modifierKey?: boolean;
+  }[] = isDev()
+    ? [...keyboardShortcuts, ...devShortcuts, escape]
+    : [...keyboardShortcuts, escape];
 </script>
 
 <style>
@@ -52,45 +65,21 @@
   }
 </style>
 
-<div data-cy="hotkey-modal" class="container" bind:this={content}>
+<div data-cy="hotkey-modal" class="container">
   <Illustration
     style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
-    <div class="shortcut">
-      <kbd class="typo-text-bold">?</kbd>
-      <p class="description">Keyboard shortcuts</p>
-    </div>
-    <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">,</kbd>
-      <p class="description">Settings</p>
-    </div>
-    {#if isDev()}
+    {#each shortcuts as shortcut}
       <div class="shortcut">
-        <kbd class="typo-text-bold">{modifierKey}</kbd>
-        <p class="plus">+</p>
-        <kbd class="typo-text-bold">d</kbd>
-        <p class="description">Design system</p>
+        {#if shortcut.modifierKey}
+          <kbd class="typo-text-bold">{OSModifierKey}</kbd>
+          <p class="plus">+</p>
+        {/if}
+        <kbd class="typo-text-bold">{shortcut.key}</kbd>
+        <p class="description">{shortcut.title}</p>
       </div>
-    {/if}
-    <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">p</kbd>
-      <p class="description">Search</p>
-    </div>
-    <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">n</kbd>
-      <p class="description">New project</p>
-    </div>
-    <div class="shortcut">
-      <kbd class="typo-text-bold">esc</kbd>
-      <p class="description">Close modal</p>
-    </div>
+    {/each}
   </div>
 </div>
