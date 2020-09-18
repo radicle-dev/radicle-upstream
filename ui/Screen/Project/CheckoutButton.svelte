@@ -29,8 +29,7 @@
 
 <style>
   .clone-dropdown {
-    margin-top: 0.5rem;
-    top: var(--bigheader-height);
+    margin-top: 3rem;
     right: 2rem;
     position: absolute;
     border-radius: 8px;
