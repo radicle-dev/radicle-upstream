@@ -190,8 +190,6 @@
             <span class="diff-type created">created</span>
           </header>
         {/each}
-      </div>
-      <div>
         {#each commit.diff.deleted as path}
           <header class="file-header">
             <Icon.File style="margin-right: 8px;" />
