@@ -92,6 +92,7 @@
       <span class="file-name">
         <span
           class="typo-link root-link"
+          data-cy="root-link"
           on:click={() => {
             resetObjectPath();
             resetObjectType();

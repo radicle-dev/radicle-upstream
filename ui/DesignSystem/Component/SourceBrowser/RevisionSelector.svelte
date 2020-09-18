@@ -153,7 +153,6 @@
         <li
           class="branch typo-overflow-ellipsis"
           class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-          data-repo-handle={currentSelectedPeer.identity.metadata.handle}
           data-branch={branch}
           on:click|stopPropagation={() => selectRevision(
               currentSelectedPeer.identity.peerId,
@@ -173,7 +172,6 @@
       {#each currentSelectedPeer.tags as tag}
         <li
           class="tag typo-overflow-ellipsis"
-          data-repo-handle={currentSelectedPeer.identity.metadata.handle}
           class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
           data-tag={tag}
           on:click|stopPropagation={() => selectRevision(

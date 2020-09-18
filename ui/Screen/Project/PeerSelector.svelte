@@ -133,7 +133,6 @@
   <div class="selector-avatar typo-overflow-ellipsis">
     <Avatar
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
-      dataCy={`avatar-${currentSelectedPeer.identity.metadata.handle}`}
       size="small"
       style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
       variant="circle" />
