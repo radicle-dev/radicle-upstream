@@ -227,6 +227,10 @@ export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
+export const formatNameInput = (input: string) => input.replace(" ", "-");
+export const formatFromExistingRepo = (path: string) =>
+  path.split("/").slice(-1)[0];
+
 const fetchBranches = async (path: string) => {
   // Revert to defaults whenever the path changes in case this query fails
   // or the user clicks cancel in the directory selection dialog.

@@ -12,6 +12,8 @@
     defaultBranch,
     localState,
     nameValidationStore,
+    formatNameInput,
+    formatFromExistingRepo,
     repositoryPathValidationStore,
     RepoType,
   } from "../src/project.ts";
@@ -100,23 +102,28 @@
 
   $: pathValidation = repositoryPathValidationStore(isNew);
 
-  $: {
-    if (name.length > 0) nameValidation.validate(name);
-  }
-
   $: repositoryPath = isNew ? newRepositoryPath : existingRepositoryPath;
   $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0))
     pathValidation.validate(repositoryPath);
 
+  $: {
+    if (name && name.length > 0) {
+      name = formatNameInput(name);
+      nameValidation.validate(name);
+    }
+  }
+
   // Use the directory name for existing projects as the project name.
-  $: name = existingRepositoryPath.split("/").slice(-1)[0];
+  $: name = formatFromExistingRepo(existingRepositoryPath);
 
   // Reset the project name when switching between new and existing repo.
   $: isExisting && (name = "");
 
   // The presence check is outside the validations since we don't want to show the validation error message for it.
   $: validName =
-    name.length > 0 && $nameValidation.status === ValidationStatus.Success;
+    name &&
+    name.length > 0 &&
+    $nameValidation.status === ValidationStatus.Success;
 
   $: disableSubmit =
     !validName ||
