@@ -1,6 +1,5 @@
 import { get, writable } from "svelte/store";
 
-import { isDev } from "../../native/ipc.js";
 import { isMac } from "./settings";
 
 const state = writable(true);

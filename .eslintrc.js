@@ -24,9 +24,10 @@ module.exports = {
       files: ["*.ts", "*.json"],
       extends: ["plugin:@typescript-eslint/recommended"],
       rules: {
-        // TODO(sos): this rule is ignored unless it's explicitly associated with the override.
-        // this is not the case for @typescript-eslint/no-unused-vars.
-        // svelte-check needs explicit type annotations for boolean props with default values.
+        // TODO(sos): typescript rule changes are ignored unless explicitly associated with the override.
+        //
+        // we need to turn this one off because svelte-check needs explicit type annotations for boolean
+        // props with default values.
         // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-inferrable-types.md
         "@typescript-eslint/no-inferrable-types": "off",
       },
