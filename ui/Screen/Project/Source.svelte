@@ -56,7 +56,6 @@
   .column-left {
     display: flex;
     flex-direction: column;
-    min-width: 18rem;
     padding-right: 0.75rem;
   }
 
@@ -75,6 +74,7 @@
 
   .source-tree {
     overflow-x: auto;
+    width: 18rem;
   }
 </style>
 
