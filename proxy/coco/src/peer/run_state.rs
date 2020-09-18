@@ -69,7 +69,7 @@ pub enum TimeoutEvent {
     SyncPeriod,
 }
 
-/// Internal state representation the current mode of operation for the local peer.
+/// The current status of the local peer and its relation to the network.
 #[derive(Debug)]
 enum Status {
     /// Nothing is setup, not even a socket to listen on.
