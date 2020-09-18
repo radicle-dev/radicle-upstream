@@ -1,5 +1,5 @@
-- OS version: (for example: `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)
-- Link to build: (for example: https://buildkite.com/monadic/radicle-upstream/builds/4727)
+- OS version: (eg. `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)
+- Link to build: (eg. https://buildkite.com/monadic/radicle-upstream/builds/4727)
 
 ### Prerequisites
 
@@ -20,13 +20,14 @@
       look like this:
 
       ```
-       INFO  nuke > Nuking application state...
-       INFO  nuke > done
-       INFO  nuke > Nuking coco state...
-       INFO  nuke > done
+      INFO  nuke > Nuking application state...
+      INFO  nuke > done
+      INFO  nuke > Nuking coco state...
+      INFO  nuke > done
       ```
 
 ### Packaging and distribution
+
 - [ ] Check that unreleased features are not visible in the UI
   - [ ] Issues, Revisions, Wallets, and anything else that's in the UI but
     clearly not wired up
@@ -37,6 +38,7 @@
 - [ ] Version in the Settings screen matches version in package filename
 
 ### Onboarding
+
 - [ ] Always shown when no identity is set up
   - [ ] First app start
   - [ ] Subsequent app starts if the identity creation was not completed
@@ -51,6 +53,7 @@
   with instructions on how to create your first project
 
 ### Settings
+
 - [ ] Preferences are persisted across app reboots
   - [ ] Color theme selection
   - [ ] Peer entries
@@ -59,18 +62,21 @@
 - [ ] Links to external help resources open in an external browser
 
 ### Projects
+
 - [ ] Can create a new project with a new repository
 - [ ] Can create a new project from an existing repository
   - [ ] Adding larger projects don't crash the app
   - [ ] UI interaction is blocked while project creation is in progress
 
 #### Working directory (from which a new project was initialised)
+
 - [ ] When pushing changes to Radicle via `git push rad` they should appear in
   the app (a page refresh is still needed for the changes to show up)
 - [ ] Pulling changes from Radicle work (to test this you'll need to have a
   checked out another working copy in a different folder)
 
 #### Checkout (a separate working copy)
+
   - [ ] Follow instructions in the UI to set up the path to the git helper in
     your shell
   - [ ] It's possible to create a new working copy from an existing project
@@ -81,6 +87,7 @@
       the checkout working directory, do a `git pull`
 
 #### Source browsing
+
 - [ ] Metadata and stats in UI reflect what is in the actual repository
 - [ ] `README.md` files are shown by default and markdown is rendered as HTML
   - [ ] Links to external resources open in external browser
@@ -92,14 +99,17 @@
 - [ ] It's possible to select different branches
 
 #### Commit browsing
+
 - [ ] Commit tab shows a list of all the commits in the branch that was
   selected
 - [ ] Clicking on a commit shows the commit metadata as well as the diff
 
 ### Misc UI
+
 - [ ] Clicking on an identifier copies it to the clipboard
 
 #### Global keyboard shortcuts
+
 - [ ] All documented shortcuts (a list is provided by pressing `?`) work
 - [ ] Only one modal is allowed at a time (no modal stacking possible)
 
