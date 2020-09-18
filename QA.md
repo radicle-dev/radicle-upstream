@@ -32,7 +32,7 @@
         that's in the UI but clearly not wired up
 - [ ] App icon is shown correctly
   - [ ] macOS: dock, <kbd>⌘</kbd> + <kbd>tab</kbd> task switcher, mounted dmg,
-    app icon, "About radicle-upstream" window
+        app icon, "About radicle-upstream" window
   - [ ] Linux: dock, menu bar
 - [ ] Version in the Settings screen matches version in package filename
 
@@ -43,14 +43,14 @@
   - [ ] First app start
   - [ ] Subsequent app starts if the identity creation was not completed
   - [ ] Can't exit onboarding before identity is created and global keyboard
-    shortcuts are disabled
+        shortcuts are disabled
 - [ ] It's possible to go to the next screen by pressing <kbd>enter</kbd> if
-  the input field validations allow it
+      the input field validations allow it
 - [ ] Handle and passphrase validations work
 - [ ] After passphrase input the identity is created and a copyable URN is
-  provided
+      provided
 - [ ] After completion we land on our profile page which contains a placeholder
-  with instructions on how to create your first project
+      with instructions on how to create your first project
 
 
 ### Settings
@@ -59,7 +59,7 @@
   - [ ] Color theme selection
   - [ ] Peer entries
   - [ ] Remote helper hint (in the Checkout and "New project" modals) is not
-    shown after app restart once it is closed
+        shown after app restart once it is closed
 - [ ] Links to external help resources open in an external browser
 
 
@@ -74,21 +74,21 @@
 #### Working directory (from which a new project was initialised)
 
 - [ ] When pushing changes to Radicle via `git push rad` they should appear in
-  the app (a page refresh is still needed for the changes to show up)
+      the app (a page refresh is still needed for the changes to show up)
 - [ ] Pulling changes from Radicle work (to test this you'll need to have a
-  checked out another working copy in a different folder)
+      checked out another working copy in a different folder)
 
 
 #### Checkout (a separate working copy)
 
   - [ ] Follow instructions in the UI to set up the path to the git helper in
-    your shell
+        your shell
   - [ ] It's possible to create a new working copy from an existing project
     - [ ] Pushing new commits to Radicle via `git push rad` work (temporary
-      password until we have passphrases: `radicle-upstream`)
+          password until we have passphrases: `radicle-upstream`)
     - [ ] Pulling changes work: make changes in the project folder you created
-      in project creation, push them to Radicle with `git push rad`, switch to
-      the checkout working directory, do a `git pull`
+          in project creation, push them to Radicle with `git push rad`, switch
+          to the checkout working directory, do a `git pull`
 
 
 #### Source browsing
@@ -107,7 +107,7 @@
 #### Commit browsing
 
 - [ ] Commit tab shows a list of all the commits in the branch that was
-  selected
+      selected
 - [ ] Clicking on a commit shows the commit metadata as well as the diff
 
 
