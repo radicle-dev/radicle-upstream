@@ -8,7 +8,7 @@ Cypress.Commands.add("resetSessionState", async () => {
   await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
 });
 
-Cypress.Commands.add("resteAllState", async () => {
+Cypress.Commands.add("resetAllState", async () => {
   console.log("Reset CoCo, Registry and session state");
   try {
     await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
