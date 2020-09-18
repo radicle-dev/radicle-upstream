@@ -124,7 +124,7 @@
     "svelte:build": "yarn svelte:clean && rollup -c",
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
     "proxy:build": "cd proxy && cargo build --all-features --all-targets",
-    "proxy:build:release": "cd proxy && cargo build --release --all-features --all-targets",
+    "proxy:build:release": "cd proxy && cargo build --release",
     "proxy:clean": "cd proxy && cargo clean",
     "proxy:start": "cd proxy && cargo build --bin git-remote-rad && cargo run",
     "proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
