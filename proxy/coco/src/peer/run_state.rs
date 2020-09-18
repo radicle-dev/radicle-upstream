@@ -136,6 +136,8 @@ impl RunState {
             //
             // In case the peer is configured to sync on startup we start syncing, otherwise we go
             // online straight away.
+            // TODO(xla): Also issue sync if we come online after a certain period of being
+            // disconnected from any peer.
             (Status::Started(_since), Event::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
                 self.connected_peers.insert(peer_id.clone());
 
@@ -165,17 +167,6 @@ impl RunState {
 
                 vec![Command::SyncPeer(peer_id)]
             }
-            // TODO(xla): Also issue sync if we come online after a certain period of being
-            // disconnected from any peer.
-            // Issue more syncs if we connect to new peers while syncing.
-            (
-                Status::Syncing(since, syncs),
-                Event::Protocol(ProtocolEvent::Connected(ref peer_id)),
-            ) => {
-                self.status = Status::Syncing(*since, syncs + 1);
-
-                vec![Command::SyncPeer(peer_id.clone())]
-            },
             // Go online if we exceed the sync period.
             (Status::Syncing(_since, _syncs), Event::Timeout(TimeoutEvent::SyncPeriod)) => {
                 self.status = Status::Online(Instant::now());
