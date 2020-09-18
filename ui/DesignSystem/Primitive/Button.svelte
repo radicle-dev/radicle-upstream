@@ -190,6 +190,10 @@
     color: var(--color-foreground-level-6);
   }
 
+  .transparent :global(svg) {
+    fill: var(--color-foreground-level-5);
+  }
+
   .transparent:hover {
     background-color: var(--color-foreground-level-2);
     border-color: var(--color-foreground-level-2);

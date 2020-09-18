@@ -43,18 +43,6 @@
     margin-top: 1.5rem;
   }
 
-  kbd {
-    border: 0.0625rem solid var(--color-foreground-level-3);
-    color: var(--color-foreground-level-6);
-    padding: 0.5rem 0.75rem 0.5rem 0.75rem;
-    border-radius: 0.25rem;
-  }
-
-  .plus {
-    color: var(--color-foreground-level-4);
-    margin: 0rem 0.625rem;
-  }
-
   .description {
     color: var(--color-foreground-level-6);
     margin: 0rem 0.625rem;

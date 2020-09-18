@@ -9,6 +9,7 @@ import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Illustration from "./Illustration.svelte";
+import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
@@ -24,6 +25,7 @@ import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
+import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
@@ -55,6 +57,7 @@ export {
   HorizontalMenu,
   Hoverable,
   Illustration,
+  KeyHint,
   Label,
   List,
   ModalOverlay,
@@ -71,6 +74,7 @@ export {
   Stats,
   Remote,
   RemoteHelperHint,
+  RevisionSelector,
   Row,
   SegmentedControl,
   Sidebar,

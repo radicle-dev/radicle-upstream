@@ -73,7 +73,6 @@
   .container {
     max-width: var(--content-max-width);
     margin: 0 auto;
-    padding: var(--content-padding);
     min-width: var(--content-min-width);
   }
   .filters {
