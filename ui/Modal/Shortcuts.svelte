@@ -1,12 +1,9 @@
 <script>
-  import { Illustration } from "../DesignSystem/Component";
-  import { isMac } from "../src/settings.ts";
+  import { Illustration, KeyHint } from "../DesignSystem/Component";
   import { Variant as IllustrationVariant } from "../src/illustration";
   import { isDev } from "../../native/ipc.js";
 
   export let content;
-
-  const modifierKey = isMac ? "⌘" : "ctrl";
 </script>
 
 <style>
@@ -30,18 +27,6 @@
     margin-top: 1.5rem;
   }
 
-  kbd {
-    border: 0.0625rem solid var(--color-foreground-level-3);
-    color: var(--color-foreground-level-6);
-    padding: 0.5rem 0.75rem 0.5rem 0.75rem;
-    border-radius: 0.25rem;
-  }
-
-  .plus {
-    color: var(--color-foreground-level-4);
-    margin: 0rem 0.625rem;
-  }
-
   .description {
     color: var(--color-foreground-level-6);
     margin: 0rem 0.625rem;
@@ -59,37 +44,29 @@
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
     <div class="shortcut">
-      <kbd class="typo-text-bold">?</kbd>
+      <KeyHint noModifier hint="?" />
       <p class="description">Keyboard shortcuts</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">,</kbd>
+      <KeyHint hint="," />
       <p class="description">Settings</p>
     </div>
     {#if isDev()}
       <div class="shortcut">
-        <kbd class="typo-text-bold">{modifierKey}</kbd>
-        <p class="plus">+</p>
-        <kbd class="typo-text-bold">d</kbd>
+        <KeyHint hint="d" />
         <p class="description">Design system</p>
       </div>
     {/if}
     <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">p</kbd>
+      <KeyHint hint="p" />
       <p class="description">Search</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">{modifierKey}</kbd>
-      <p class="plus">+</p>
-      <kbd class="typo-text-bold">n</kbd>
+      <KeyHint hint="n" />
       <p class="description">New project</p>
     </div>
     <div class="shortcut">
-      <kbd class="typo-text-bold">esc</kbd>
+      <KeyHint hint="esc" />
       <p class="description">Close modal</p>
     </div>
   </div>
