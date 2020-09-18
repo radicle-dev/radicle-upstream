@@ -1,6 +1,9 @@
+use serde::{Deserialize, Serialize};
+
 use super::*;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
 pub enum SomeRequest<T> {
     Created(Request<IsCreated, T>),
     Requested(Request<IsRequested, T>),

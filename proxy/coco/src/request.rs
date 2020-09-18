@@ -1,6 +1,7 @@
 use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, time::Duration};
 
 use either::Either;
+use serde::{Deserialize, Serialize};
 
 use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
 
@@ -21,7 +22,8 @@ pub fn exponential_backoff(attempt: usize, interval: Duration) -> Duration {
     Duration::from_millis(u64::pow(2, exp)) + interval
 }
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Attempts {
     queries: usize, // how often we gossip
     clones: usize,  // how often we try to clone
@@ -36,7 +38,8 @@ impl Attempts {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Request<S, T> {
     urn: RadUrn,
     attempts: Attempts,
@@ -97,14 +100,14 @@ impl<S, T> Request<S, T> {
                 urn: self.urn,
                 attempts: self.attempts,
                 timestamp,
-                state: self.state.time_out(Kind::Query),
+                state: self.state.time_out(TimedOut::Query),
             })
         } else if self.attempts.queries > max_clones {
             Either::Right(Request {
                 urn: self.urn,
                 attempts: self.attempts,
                 timestamp,
-                state: self.state.time_out(Kind::Clone),
+                state: self.state.time_out(TimedOut::Clone),
             })
         } else {
             self.timestamp = timestamp;

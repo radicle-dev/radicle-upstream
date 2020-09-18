@@ -1,5 +1,7 @@
 use std::{collections::HashMap, marker::PhantomData};
 
+use serde::{Deserialize, Serialize};
+
 use librad::peer::PeerId;
 use librad::uri::RadUrn;
 
@@ -49,8 +51,8 @@ pub trait TimeOut: sealed::Sealed
 where
     Self: Sized,
 {
-    fn time_out(self, kind: Kind) -> TimedOut {
-        TimedOut { kind }
+    fn time_out(self, kind: TimedOut) -> TimedOut {
+        kind
     }
 }
 
@@ -58,49 +60,51 @@ impl TimeOut for IsRequested {}
 impl TimeOut for Found {}
 impl TimeOut for Cloning {}
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Status {
     Available,
     InProgress,
     Failed,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Found {
     pub(crate) peers: HashMap<PeerId, Status>,
 }
 
 // TODO(finto): Should Cloning know which PeerId it's cloning?
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Cloning {
     pub(crate) peers: HashMap<PeerId, Status>,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Cloned {
     pub(crate) repo: RadUrn,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Created;
 pub type IsCreated = PhantomData<Created>;
 
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Canceled;
 pub type IsCanceled = PhantomData<Canceled>;
 
-// TODO(finto): Better naming to please the people who will inevitably give out about it.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum Kind {
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TimedOut {
     Query,
     Clone,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq)]
-pub struct TimedOut {
-    pub(crate) kind: Kind,
-}
-
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Requested;
 pub type IsRequested = PhantomData<Requested>;

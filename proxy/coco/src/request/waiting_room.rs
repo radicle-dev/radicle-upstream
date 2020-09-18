@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use either::Either;
 use rand::{seq::IteratorRandom as _, Rng};
+use serde::{Deserialize, Serialize};
 
 use librad::peer::PeerId;
 use librad::uri::RadUrn;
@@ -19,12 +20,15 @@ pub enum Error {
     StateMismatch,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WaitingRoom<T> {
     requests: HashMap<RadUrn, SomeRequest<T>>,
     max_queries: usize,
     max_clones: usize,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Strategy<R> {
     First,
     Newest,
@@ -51,7 +55,6 @@ impl<R> Strategy<R> {
 
 // TODO(finto): Test scenario of "running" a request and updating the waiting room. Testing state
 // transitions.
-// TODO(finto): De/Serialize for waiting room.
 impl<T> WaitingRoom<T> {
     pub fn new() -> Self {
         Self {
