@@ -468,12 +468,15 @@ Cutting release v0.0.11:
   ✔ git push origin release-v0.0.11
   ✔ hub pull-request -p --no-edit
 
-Now ask a peer to review the following pull request,
-but don't merge it just yet:
+Now fix up CHANGELOG.md if necessary and update QA.md
+to cover the latest changes in functionality.
+
+When everything is in shape, ask a peer to review the
+pull request, but don't merge it via the GitHub UI:
 
   👉 https://github.com/radicle-upstream/pull/417
 
-To merge the pull request and finalize this release run:
+Finally, complete the release by running:
 
   👉 yarn release:finalize v0.0.11 417
 
@@ -494,26 +497,19 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 
 We already have an extensive end-to-end test suite which covers most features
 and a good amount of edgecases, however it is impossible to eliminate every bug
-and regression this way because Upstream isn't self-contained and interactions
-with the OS and network.
+and regression this way, that's why we perform a QA procedure before publishing
+a release.
 
-To be more confident that nothing has slipped thrugh our regular testing
-methods, and we don't ship a buggy release to our users we perform QA on the
-finished packages.
+After a release is cut, we create a GitHub issue for every supported platform
+which contains a QA checklist. Before publishing packages for a wider audience
+someone from the team goes through the checklist and manually tests the app,
+afterwards the team can evaluate whether the release is up to our standards.
 
-After every release we create a new GitHub issue per platform that contains a
-checklist which guides a QA engineer through the app touching all of the
-happy-paths and some important edgecases.
+- Title: `QA: v0.0.14 macOS`
+- Body: [QA.md][qa]
 
-Title: `QA: v0.0.14 macOS`
-Body: [QA.md][qa]
-
-Title: `QA: v0.0.14 Linux`
-Body: [QA.md][qa]
-
-Before we publish Upstream packages to a wider audience we go through this
-checklist and create follow up issues for any bugs we find. The checklist must
-be completed for each supported platform independently.
+- Title: `QA: v0.0.14 Linux`
+- Body: [QA.md][qa]
 
 
 [ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master

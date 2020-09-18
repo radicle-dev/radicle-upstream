@@ -1,5 +1,30 @@
-This checklist should be updated with every release, any changes to
-functionality should be reflected here.
+- OS version: (for example: `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)
+- Link to build: (for example: https://buildkite.com/monadic/radicle-upstream/builds/4727)
+
+### Prerequisites
+
+- [ ] download the binary package from the location provided above
+- [ ] remove any old configuration and user data
+  - on macOS:
+    - mount the `.dmg` and install Upstream in the default location
+      `/Applications`, then run:
+      ```
+      /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
+      ```
+  - on Linux:
+    - run the `.AppImage` like so:
+      ```
+      /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
+      ```
+- [ ] confirm that the factory reset was actually performed, the output should
+      look like this:
+
+      ```
+       INFO  nuke > Nuking application state...
+       INFO  nuke > done
+       INFO  nuke > Nuking coco state...
+       INFO  nuke > done
+      ```
 
 ### Packaging and distribution
 - [ ] Check that unreleased features are not visible in the UI

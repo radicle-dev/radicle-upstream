@@ -50,12 +50,15 @@ async function main() {
     const pullRequestId = prUrl.match(PULL_REQUEST_MATCH)[1];
 
     console.log();
-    console.log("Now ask a peer to review the following pull request,");
-    console.log("but don't merge it just yet:");
+    console.log("Now fix up CHANGELOG.md if necessary and update QA.md");
+    console.log("to cover the latest changes in functionality.");
+    console.log();
+    console.log("When everything is in shape, ask a peer to review the");
+    console.log("pull request, but don't merge it via the GitHub UI:");
     console.log();
     console.log(`  👉 ${prUrl}`);
     console.log();
-    console.log("To merge the pull request and finalize this release run:");
+    console.log("Finally, complete the release by running:");
     console.log();
     console.log(`  👉 yarn release:finalize ${toVersion} ${pullRequestId}`);
   } else {
