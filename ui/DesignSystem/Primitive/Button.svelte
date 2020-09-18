@@ -1,17 +1,25 @@
-<script>
-  // vanilla | primary | secondary | transparent | outline | destructive
-  export let variant = "primary";
+<script lang="ts">
+  import type { SvelteComponent } from "svelte";
 
-  export let disabled = null;
-  export let icon = null;
-  export let style = null;
-  export let dataCy = null;
-  export let title = null;
+  type Variant =
+    | "vanilla"
+    | "primary"
+    | "secondary"
+    | "transparent"
+    | "outline"
+    | "destructive";
+  export let variant: Variant = "primary";
 
-  const iconClass = icon ? "icon" : null;
+  export let disabled = false;
+  export let icon: typeof SvelteComponent | undefined = undefined;
+  export let style = "";
+  export let dataCy = "";
+  export let title = "";
+
+  const iconClass = icon ? "icon" : undefined;
 
   // we want to dynamically change whether a button is disabled or not
-  $: disabledClass = disabled ? "disabled" : null;
+  $: disabledClass = disabled ? "disabled" : undefined;
   $: buttonClass = [variant, iconClass, disabledClass].join(" ");
 </script>
 

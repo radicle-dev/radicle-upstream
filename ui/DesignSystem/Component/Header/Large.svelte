@@ -1,23 +1,23 @@
-<script>
+<script lang="ts">
+  import type { EmojiAvatar } from "../../../src/avatar";
+
+  import type { Identity } from "../../../src/identity";
+  import type { Org } from "../../../src/org";
+
   import { Avatar, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
-  export let style = null;
-  export let entity = null;
-  export let variant = null; // profile | project | org
+  export let name: string;
+  export let urn: string;
+  export let description: string;
+  export let registered: boolean = false;
 
-  let name;
-  if (variant === "profile") {
-    if (entity.registered) {
-      name = entity.registered;
-    } else {
-      name = entity.metadata.handle;
-    }
-  } else if (variant === "org") {
-    name = entity.id;
-  } else if (variant === "project") {
-    name = entity.metadata.name;
-  }
+  export let avatarFallback: EmojiAvatar;
+  export let avatarShape: "circle" | "square" = "circle";
+
+  export let stats: { string: string };
+
+  export let style = "";
 </script>
 
 <style>
@@ -117,12 +117,12 @@
   <div class="banner">
     <div class="banner-content">
       <div class="left">
-        {#if variant !== 'project'}
+        {#if avatarFallback}
           <Avatar
             style="margin-right: 32px"
             size="huge"
-            variant={variant === 'profile' ? 'circle' : 'square'}
-            avatarFallback={entity.avatarFallback} />
+            variant={avatarShape}
+            {avatarFallback} />
         {/if}
 
         <div class="metadata">
@@ -132,7 +132,7 @@
               style="display: flex; align-items: center;">
               {name}
             </h1>
-            {#if variant === 'org' || entity.registered}
+            {#if registered}
               <Icon.Registered
                 dataCy="verified-badge"
                 style="fill: var(--color-primary); margin-left: 6px;" />
@@ -140,26 +140,24 @@
           </div>
           <div class="shareable-entity-identifier">
             <Urn
-              urn={entity.shareableEntityIdentifier}
+              {urn}
               showCopyOnlyOnHover
               notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
           </div>
-          {#if variant === 'project'}
-            {#if entity.metadata.description}
-              <p class="description">{entity.metadata.description}</p>
-            {/if}
+          {#if description}
+            <p class="description">{description}</p>
+          {/if}
+          {#if stats}
             <div class="project-stats" data-cy="project-stats">
               <div class="project-stat-item">
                 <Icon.Branch />
-                <p style="margin-left: 0.5rem;">
-                  {entity.stats.branches} Branches
-                </p>
+                <p style="margin-left: 0.5rem;">{stats.branches} Branches</p>
               </div>
               <span class="typo-mono-bold project-stat-separator">•</span>
               <div class="project-stat-item">
                 <Icon.User />
                 <p style="margin-left: 0.5rem;">
-                  {entity.stats.contributors} Contributors
+                  {stats.contributors} Contributors
                 </p>
               </div>
             </div>

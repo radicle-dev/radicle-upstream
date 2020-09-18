@@ -1,13 +1,13 @@
 //! Combine the domain `CoCo` domain specific understanding of a Project into a single
 //! abstraction.
 
-use std::collections::HashSet;
+use std::{collections::HashSet, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
 use crate::error;
 
-/// Object the API returns for project metadata.
+/// Object encapsulating project metadata.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
@@ -39,6 +39,10 @@ where
 }
 
 /// Radicle project for sharing and collaborating.
+///
+/// See [`Projects`] for a detailed breakdown of both kinds of projects.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: coco::Urn,
@@ -69,6 +73,140 @@ where
     }
 }
 
+/// A Radicle project that you're interested in but haven't contributed to.
+///
+/// See [`Projects`] for a detailed breakdown of both kinds of projects.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Tracked(Project);
+
+impl Deref for Tracked {
+    type Target = Project;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+/// All projects contained in a user's monorepo.
+#[derive(Serialize)]
+pub struct Projects {
+    /// A project that is tracked is one that the user has replicated onto their device but has not
+    /// made any changes to. A project is still considered tracked if they checked out a working
+    /// copy but have not performed any commits to the references.
+    pub tracked: Vec<Tracked>,
+
+    /// A project that has been *contributed* to is one that the user has either:
+    ///     a. Created themselves using the application.
+    ///     b. Has replicated (see tracked above), checked out a working copy, and pushed changes
+    ///     to references.
+    ///
+    /// The conditions imply that a project is "contributed" if I am the maintainer or I have
+    /// contributed to the project.
+    pub contributed: Vec<Project>,
+}
+
+impl Projects {
+    /// List all the projects that are located on your device. These projects could either be
+    /// "tracked" or "contributed".
+    ///
+    /// See [`Projects`] for a detailed breakdown of both kinds of projects.
+    ///
+    /// # Errors
+    ///
+    ///   * We couldn't get the list of projects
+    ///   * We couldn't inspect the `signed_refs` of the project
+    ///   * We couldn't get stats for a project
+    pub fn list(state: &coco::State) -> Result<Self, error::Error> {
+        let mut projects = Self {
+            tracked: vec![],
+            contributed: vec![],
+        };
+        for project in state.list_projects()? {
+            let refs = state.list_owner_project_refs(&project.urn())?;
+            let project = state.with_browser(&project.urn(), |browser| {
+                let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, project_stats).into())
+            })?;
+            if refs.heads.is_empty() {
+                projects.tracked.push(Tracked(project))
+            } else {
+                projects.contributed.push(project)
+            }
+        }
+
+        Ok(projects)
+    }
+
+    /// Give back an `Iter` that can be used to iterate over the projects. It first yields
+    /// contributed projects and then tracked projects.
+    pub fn iter(&self) -> Iter<'_> {
+        Iter {
+            contributed: self.contributed.iter(),
+            tracked: self.tracked.iter(),
+        }
+    }
+}
+
+/// An iterator over [`Projects`] that first yields contributed projects and then tracked projects.
+#[must_use = "iterators are lazy and do nothing unless consumed"]
+pub struct Iter<'a> {
+    /// Iterator over contributed projects.
+    contributed: std::slice::Iter<'a, Project>,
+
+    /// Iterator over tracked projects.
+    tracked: std::slice::Iter<'a, Tracked>,
+}
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = &'a Project;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.contributed
+            .next()
+            .or_else(|| match self.tracked.next() {
+                Some(tracked) => Some(&tracked.0),
+                None => None,
+            })
+    }
+}
+
+impl IntoIterator for Projects {
+    type Item = Project;
+    type IntoIter = IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter {
+            contributed: self.contributed.into_iter(),
+            tracked: self.tracked.into_iter(),
+        }
+    }
+}
+
+/// An iterator over [`Projects`] that moves the values into the iterator.
+/// It first yields contributed projects and then tracked projects.
+#[must_use = "iterators are lazy and do nothing unless consumed"]
+pub struct IntoIter {
+    /// Iterator over contributed projects.
+    contributed: std::vec::IntoIter<Project>,
+
+    /// Iterator over tracked projects.
+    tracked: std::vec::IntoIter<Tracked>,
+}
+
+impl Iterator for IntoIter {
+    type Item = Project;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.contributed
+            .next()
+            .or_else(|| match self.tracked.next() {
+                Some(tracked) => Some(tracked.0),
+                None => None,
+            })
+    }
+}
+
 /// Fetch the project with a given urn from a peer
 ///
 /// # Errors
@@ -82,49 +220,36 @@ pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, erro
     Ok((project, project_stats).into())
 }
 
-/// Returns a list of `Project`s for your peer.
+/// This lists all the projects for a given `user`. This `user` should not be your particular
+/// `user` (i.e. the "default user"), but rather should be another user that you are tracking.
 ///
-/// # Errors
+/// The resulting list of projects will be a subset of the projects that you track or contribute
+/// to. This is because we can only know our projects (local-first) and the users that we track
+/// for those projects.
 ///
-///   * We couldn't get a project list.
-///   * We couldn't get project stats.
-pub fn list_projects(state: &coco::State) -> Result<Vec<Project>, error::Error> {
-    let project_meta = state.list_projects()?;
-
-    project_meta
-        .into_iter()
-        .map(|project| {
-            state
-                .with_browser(&project.urn(), |browser| {
-                    let project_stats = browser.get_stats().map_err(coco::Error::from)?;
-                    Ok((project, project_stats).into())
-                })
-                .map_err(error::Error::from)
-        })
-        .collect()
-}
-
-/// List all projects tracked by the given user.
+/// TODO(finto): We would like to also differentiate whether these are tracked or contributed to
+/// for this given user. See <https://github.com/radicle-dev/radicle-upstream/issues/915>
 ///
 /// # Errors
 ///
 /// * We couldn't get a project list.
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
-pub fn list_projects_for_user(
-    state: &coco::State,
-    user: &coco::Urn,
-) -> Result<Vec<Project>, error::Error> {
-    let all_projects = list_projects(state)?;
+pub fn list_for_user(state: &coco::State, user: &coco::Urn) -> Result<Vec<Project>, error::Error> {
     let mut projects = vec![];
 
-    for project in all_projects {
+    for project in state.list_projects()? {
         if state
-            .tracked(&project.id)?
+            .tracked(&project.urn())?
             .into_iter()
             .any(|(_, project_user)| project_user.urn() == *user)
         {
-            projects.push(project);
+            let proj = state.with_browser(&project.urn(), |browser| {
+                let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                Ok((project, project_stats).into())
+            })?;
+
+            projects.push(proj);
         }
     }
     Ok(projects)

@@ -81,6 +81,7 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchUser = "FETCH_USER",
 }
 
 interface Create extends event.Event<Kind> {
@@ -98,7 +99,12 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
-type Msg = Create | Fetch | FetchList;
+interface FetchUser extends event.Event<Kind> {
+  kind: Kind.FetchUser;
+  urn: string;
+}
+
+type Msg = Create | Fetch | FetchList | FetchUser;
 
 interface CreateInput {
   repo: Repo;
@@ -130,14 +136,22 @@ const update = (msg: Msg): void => {
 
       break;
 
+    // TODO(sos): determine if viewing another user's profile shows you tracked || contributed || (tracked && contributed)
     case Kind.FetchList:
       projectsStore.loading();
       api
-        .get<Projects>(msg.urn ? `projects/?user=${msg.urn}` : "projects")
+        .get<Projects>("projects/contributed")
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
       break;
+
+    case Kind.FetchUser:
+      projectsStore.loading();
+      api
+        .get<Projects>(`projects/user/${msg.urn}`)
+        .then(projectsStore.success)
+        .catch(projectsStore.error);
   }
 };
 
@@ -200,6 +214,7 @@ export const register = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);

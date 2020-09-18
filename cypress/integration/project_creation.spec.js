@@ -264,7 +264,7 @@ context("project creation", () => {
 
         cy.pick("notification")
           .contains(
-            /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exits/
+            /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
           )
           .should("exist");
         cy.pick("notification").contains("Close").click();

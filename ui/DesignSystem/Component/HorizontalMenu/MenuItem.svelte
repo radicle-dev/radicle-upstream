@@ -1,10 +1,13 @@
-<script>
+<script lang="ts">
+  import { SvelteComponent } from "svelte";
+
   import { link } from "svelte-spa-router";
-  export let href = null;
-  export let icon = null;
-  export let title = null;
-  export let active = null;
-  export let counter = null;
+
+  export let href: string;
+  export let icon: typeof SvelteComponent;
+  export let title: string;
+  export let active: boolean;
+  export let counter: string;
 </script>
 
 <style>

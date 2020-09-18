@@ -154,7 +154,11 @@
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Remote store={revisionsStore} let:data={revisions}>
-      <Header.Large variant="project" entity={project}>
+      <Header.Large
+        name={project.metadata.name}
+        urn={project.shareableEntityIdentifier}
+        description={project.metadata.description}
+        stats={project.stats}>
         <div slot="left">
           <div style="display: flex">
             <div class="revision-selector-wrapper">
