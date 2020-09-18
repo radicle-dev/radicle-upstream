@@ -1,6 +1,9 @@
 //! State machine to manage the current mode of operation during peer lifecycle.
 
-use std::{collections::HashSet, time::Instant};
+use std::{
+    collections::HashSet,
+    time::{Duration, Instant},
+};
 
 use librad::{
     net::{peer::Gossip, protocol::ProtocolEvent},
@@ -13,6 +16,11 @@ use crate::peer::announcement;
 /// TODO(xla): Revise number.
 const DEFAULT_SYNC_MAX_PEERS: usize = 5;
 
+/// Default Duration until the local peer goes online regardless if and how many syncs have
+/// succeeded.
+// TODO(xla): Review duration.
+const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
+
 /// Instructions to issue side-effectful operations which are the results from state transitions.
 #[derive(Debug, PartialEq)]
 pub enum Command {
@@ -21,7 +29,7 @@ pub enum Command {
     /// Initiate a full sync with `PeerId`.
     SyncPeer(PeerId),
     /// Start sync timeout.
-    StartSyncTimeout,
+    StartSyncTimeout(Duration),
 }
 
 /// Significant events that occur during [`Peer`] lifetime.
@@ -89,6 +97,8 @@ pub struct Config {
     pub sync_max_peers: usize,
     /// Enables the syncing stage when coming online.
     pub sync_on_startup: bool,
+    /// Duration until the local peer goes online regardless if and how many syncs have succeeded.
+    pub sync_period: Duration,
 }
 
 impl Default for Config {
@@ -96,6 +106,7 @@ impl Default for Config {
         Self {
             sync_max_peers: DEFAULT_SYNC_MAX_PEERS,
             sync_on_startup: false,
+            sync_period: DEFAULT_SYNC_PERIOD,
         }
     }
 }
@@ -157,7 +168,7 @@ impl RunState {
 
                     vec![
                         Command::SyncPeer(peer_id.clone()),
-                        Command::StartSyncTimeout,
+                        Command::StartSyncTimeout(self.config.sync_period),
                     ]
                 } else {
                     self.status = Status::Online(Instant::now());
@@ -208,7 +219,11 @@ impl RunState {
 #[allow(clippy::needless_update, clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::{collections::HashSet, net::SocketAddr, time::Instant};
+    use std::{
+        collections::HashSet,
+        net::SocketAddr,
+        time::{Duration, Instant},
+    };
 
     use assert_matches::assert_matches;
     use pretty_assertions::assert_eq;
@@ -328,9 +343,11 @@ mod test {
 
     #[test]
     fn issue_sync_timeout_when_transitioning_to_syncing() {
+        let sync_period = Duration::from_secs(60 * 10);
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(
             Config {
+                sync_period,
                 sync_on_startup: true,
                 ..Config::default()
             },
@@ -343,7 +360,9 @@ mod test {
             let peer_id = PeerId::from(key);
             state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
-        assert_matches!(cmds.get(1), Some(Command::StartSyncTimeout));
+        assert_matches!(cmds.get(1), Some(Command::StartSyncTimeout(period)) => {
+            assert_eq!(*period, sync_period);
+        });
     }
 
     #[test]

@@ -25,11 +25,6 @@ mod sync;
 /// Upper bound of messages stored in receiver channels.
 const RECEIVER_CAPACITY: usize = 128;
 
-/// Duration we delay until we go online regardless if and how many syncs have succeeded.
-// TODO(xla): Review duration.
-// TODO(xla): Make configurable as part of peer configuration.
-const SYNC_PERIOD: Duration = Duration::from_secs(5);
-
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -129,7 +124,9 @@ impl Peer {
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
                     },
-                    Command::StartSyncTimeout => Self::start_sync_timeout(timeout_sender.clone()),
+                    Command::StartSyncTimeout(sync_period) => {
+                        Self::start_sync_timeout(sync_period, timeout_sender.clone())
+                    },
                 };
             }
         }
@@ -163,9 +160,9 @@ impl Peer {
     }
 
     /// Sync timeout subroutine.
-    fn start_sync_timeout(sender: mpsc::Sender<TimeoutEvent>) {
+    fn start_sync_timeout(sync_period: Duration, sender: mpsc::Sender<TimeoutEvent>) {
         tokio::spawn(async move {
-            tokio::time::delay_for(SYNC_PERIOD).await;
+            tokio::time::delay_for(sync_period).await;
             sender.clone().send(TimeoutEvent::SyncPeriod).await.ok();
         });
     }
