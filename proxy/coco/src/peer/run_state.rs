@@ -173,18 +173,14 @@ impl RunState {
 
                 vec![]
             },
-            // Go offline if we have no more connected peers left.
-            (_, Event::Protocol(ProtocolEvent::Disconnecting(peer_id)))
-                if self.connected_peers.len() == 1 =>
-            {
-                self.connected_peers.remove(&peer_id);
-                self.status = Status::Offline(Instant::now());
-
-                vec![]
-            }
             // Remove peer that just disconnected.
             (_, Event::Protocol(ProtocolEvent::Disconnecting(peer_id))) => {
                 self.connected_peers.remove(&peer_id);
+
+                // Go offline if we have no more connected peers left.
+                if self.connected_peers.is_empty() {
+                    self.status = Status::Offline(Instant::now());
+                }
 
                 vec![]
             },
