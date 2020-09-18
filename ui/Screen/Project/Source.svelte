@@ -26,8 +26,6 @@
 
   const { id } = getContext("project");
 
-  let scrollY = 0;
-
   // Reset some stores on first load
   resetObjectPath();
   resetObjectType();
@@ -79,8 +77,6 @@
     overflow-x: auto;
   }
 </style>
-
-<svelte:window bind:scrollY />
 
 <Remote store={projectStore} let:data={project}>
   <div class="wrapper">
