@@ -1,9 +1,6 @@
 <script lang="ts">
   import type { EmojiAvatar } from "../../../src/avatar";
 
-  import type { Identity } from "../../../src/identity";
-  import type { Org } from "../../../src/org";
-
   import { Avatar, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
