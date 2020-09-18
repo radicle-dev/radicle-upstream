@@ -17,12 +17,13 @@
     ```
 - [ ] confirm that the factory reset was actually performed, the output should
       look like this:
-      ```
-      INFO  nuke > Nuking application state...
-      INFO  nuke > done
-      INFO  nuke > Nuking coco state...
-      INFO  nuke > done
-      ```
+
+  ```
+  INFO  nuke > Nuking application state...
+  INFO  nuke > done
+  INFO  nuke > Nuking coco state...
+  INFO  nuke > done
+  ```
 
 
 ### Packaging and distribution
