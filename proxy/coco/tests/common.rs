@@ -38,7 +38,6 @@ macro_rules! assert_event {
     }};
 }
 
-#[allow(dead_code)]
 pub async fn connected(
     receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,
@@ -55,7 +54,6 @@ pub async fn build_peer(
     build_peer_with_seeds(tmp_dir, vec![]).await
 }
 
-#[allow(dead_code)]
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
