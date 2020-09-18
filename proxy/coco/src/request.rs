@@ -1,3 +1,4 @@
+use std::ops::{Add, AddAssign};
 use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, time::Duration};
 
 use either::Either;
@@ -13,8 +14,8 @@ pub use existential::SomeRequest;
 
 mod sealed;
 
-const MAX_QUERIES: usize = 1;
-const MAX_CLONES: usize = 1;
+const MAX_QUERIES: Queries = Queries(1);
+const MAX_CLONES: Clones = Clones(1);
 const PERIOD: Duration = Duration::from_secs(1); // Not for the whole request but for re-request
 
 pub fn exponential_backoff(attempt: usize, interval: Duration) -> Duration {
@@ -22,18 +23,64 @@ pub fn exponential_backoff(attempt: usize, interval: Duration) -> Duration {
     Duration::from_millis(u64::pow(2, exp)) + interval
 }
 
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct Queries(usize);
+
+impl Queries {
+    pub fn new(n: usize) -> Self {
+        Self(n)
+    }
+}
+
+impl Add<usize> for Queries {
+    type Output = Self;
+
+    fn add(self, other: usize) -> Self::Output {
+        Self(self.0 + other)
+    }
+}
+
+impl AddAssign<usize> for Queries {
+    fn add_assign(&mut self, other: usize) {
+        *self = Self(self.0 + other)
+    }
+}
+
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct Clones(usize);
+
+impl Clones {
+    pub fn new(n: usize) -> Self {
+        Self(n)
+    }
+}
+
+impl Add<usize> for Clones {
+    type Output = Self;
+
+    fn add(self, other: usize) -> Self::Output {
+        Self(self.0 + other)
+    }
+}
+
+impl AddAssign<usize> for Clones {
+    fn add_assign(&mut self, other: usize) {
+        *self = Self(self.0 + other)
+    }
+}
+
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Attempts {
-    queries: usize, // how often we gossip
-    clones: usize,  // how often we try to clone
+    queries: Queries, // how often we gossip
+    clones: Clones,   // how often we try to clone
 }
 
 impl Attempts {
     pub fn new() -> Self {
         Attempts {
-            queries: 0,
-            clones: 0,
+            queries: Queries(0),
+            clones: Clones(0),
         }
     }
 }
@@ -88,8 +135,8 @@ impl<S, T> Request<S, T> {
 
     pub fn timed_out(
         mut self,
-        max_queries: usize,
-        max_clones: usize,
+        max_queries: Queries,
+        max_clones: Clones,
         timestamp: T,
     ) -> Either<Self, Request<TimedOut, T>>
     where
@@ -102,7 +149,7 @@ impl<S, T> Request<S, T> {
                 timestamp,
                 state: self.state.time_out(TimedOut::Query),
             })
-        } else if self.attempts.queries > max_clones {
+        } else if self.attempts.clones > max_clones {
             Either::Right(Request {
                 urn: self.urn,
                 attempts: self.attempts,

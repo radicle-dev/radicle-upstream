@@ -8,8 +8,8 @@ use librad::peer::PeerId;
 use librad::uri::RadUrn;
 
 use crate::request::{
-    Cloned, Cloning, Found, IsCanceled, IsCreated, IsRequested, Request, SomeRequest, TimedOut,
-    MAX_CLONES, MAX_QUERIES,
+    Cloned, Clones, Cloning, Found, IsCanceled, IsCreated, IsRequested, Queries, Request,
+    SomeRequest, TimedOut, MAX_CLONES, MAX_QUERIES,
 };
 
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
@@ -24,8 +24,8 @@ pub enum Error {
 #[serde(rename_all = "camelCase")]
 pub struct WaitingRoom<T> {
     requests: HashMap<RadUrn, SomeRequest<T>>,
-    max_queries: usize,
-    max_clones: usize,
+    max_queries: Queries,
+    max_clones: Clones,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

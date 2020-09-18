@@ -82,8 +82,8 @@ impl<T> SomeRequest<T> {
 
     pub fn timed_out(
         self,
-        max_queries: usize,
-        max_clones: usize,
+        max_queries: Queries,
+        max_clones: Clones,
         timestamp: T,
     ) -> Either<SomeRequest<T>, Request<TimedOut, T>> {
         match self {
