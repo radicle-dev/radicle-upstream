@@ -125,6 +125,8 @@ impl RunState {
     /// Applies the `event` and based on the current state transforms to the new state and in some
     /// cases produes commands which should be executed in the appropriate sub-routines.
     pub fn transition(&mut self, event: Event) -> Vec<Command> {
+        log::trace!("run_state: ({:?}, {:?})", self.status, event);
+
         match (&self.status, event) {
             // Go from [`Input::Stopped`] to [`Input::Offline`] once we are listening.
             (Status::Stopped(_since), Event::Protocol(ProtocolEvent::Listening(_addr))) => {
