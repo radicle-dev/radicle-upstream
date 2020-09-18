@@ -85,6 +85,7 @@ const createWindow = () => {
   mainWindow.webContents.on("will-navigate", (event, url) => {
     event.preventDefault();
     if (
+      url.toLowerCase().startsWith("irc://") ||
       url.toLowerCase().startsWith("http://") ||
       url.toLowerCase().startsWith("https://")
     ) {

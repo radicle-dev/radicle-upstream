@@ -1,10 +1,9 @@
 before(() => {
   cy.nukeAllState();
   cy.onboardUser("cloudhead");
-  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
-    "ele",
-    "abbey",
-  ]);
+
+  // TODO(sos): add fake peers again when we have a peer testnet
+  cy.createProjectWithFixture();
 });
 
 beforeEach(() => {
@@ -15,16 +14,16 @@ beforeEach(() => {
 
 context("repository stats", () => {
   it("shows the correct numbers", () => {
-    cy.pick("repo-stats").contains("Commits 14");
-    cy.pick("repo-stats").contains("Branches 2");
-    cy.pick("repo-stats").contains("Contributors 4");
+    cy.pick("horizontal-menu", "Commits").contains("Commits 14");
+    cy.pick("header", "project-stats").contains("2 Branches");
+    cy.pick("header", "project-stats").contains("4 Contributors");
   });
 });
 
 context("commit browsing", () => {
   context("commit history", () => {
     it("shows the commit history for the default branch", () => {
-      cy.pick("commits-button").click();
+      cy.pick("horizontal-menu", "Commits").click();
       cy.pick("commits-page").should("exist");
       cy.pick("commit-teaser")
         .contains("Commit on the dev branch")
@@ -40,8 +39,8 @@ context("commit browsing", () => {
 
     it("shows the commit history for another branch", () => {
       cy.pick("revision-selector").click();
-      cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
-      cy.pick("commits-button").click();
+      cy.get('[data-branch="dev"]').click();
+      cy.pick("horizontal-menu", "Commits").click();
 
       cy.pick("commits-page").should("exist");
       cy.pick("commit-teaser")
@@ -61,7 +60,7 @@ context("source code browsing", () => {
       it("shows timeframe in hours", () => {
         cy.clock(Date.parse("5 dec 2019"));
         cy.pick("revision-selector").click();
-        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
+        cy.get('[data-tag="v0.5.0"]').click();
         cy.contains("9 hours ago").should("exist");
       });
     });
@@ -70,7 +69,7 @@ context("source code browsing", () => {
       it("shows timeframe in days", () => {
         cy.clock(Date.parse("6 dec 2019"));
         cy.pick("revision-selector").click();
-        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
+        cy.get('[data-tag="v0.5.0"]').click();
         cy.contains("1 day ago").should("exist");
       });
     });
@@ -79,7 +78,7 @@ context("source code browsing", () => {
       it("shows timeframe in days", () => {
         cy.clock(Date.parse("10 dec 2019"));
         cy.pick("revision-selector").click();
-        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
+        cy.get('[data-tag="v0.5.0"]').click();
         cy.contains("5 days ago").should("exist");
       });
     });
@@ -88,7 +87,7 @@ context("source code browsing", () => {
       it("shows timeframe in weeks", () => {
         cy.clock(Date.parse("15 dec 2019"));
         cy.pick("revision-selector").click();
-        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
+        cy.get('[data-tag="v0.5.0"]').click();
         cy.contains("1 week ago").should("exist");
       });
     });
@@ -97,7 +96,7 @@ context("source code browsing", () => {
       it("shows timeframe in weeks", () => {
         cy.clock(Date.parse("21 dec 2019"));
         cy.pick("revision-selector").click();
-        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
+        cy.get('[data-tag="v0.5.0"]').click();
         cy.contains("2 weeks ago").should("exist");
       });
     });
@@ -168,14 +167,12 @@ context("source code browsing", () => {
           cy.pick("project-screen", "file-source").contains(
             "platinum / .i-too-am-hidden"
           );
-          cy.pick("topbar", "project-avatar").contains("platinum").click();
+          cy.pick("project-screen", "file-source", "root-link").click();
           cy.pick("project-screen", "file-source").contains("README.md");
 
           // Switching between different revisions shows the correct README
           cy.pick("revision-selector").click();
-          cy.get(
-            '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
-          ).click();
+          cy.get('.revision-dropdown [data-branch="dev"]').click();
           cy.pick("project-screen", "file-source").contains("README.md");
           cy.pick("project-screen", "file-source").contains(
             "This repository is a data source for the Upstream front-end tests."
@@ -187,95 +184,84 @@ context("source code browsing", () => {
     context("revision selector", () => {
       it("allows switching to a different branch", () => {
         cy.pick("revision-selector").click();
-        cy.get(
-          '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
-        ).click();
+        cy.get('.revision-dropdown [data-branch="dev"]').click();
         cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
 
         cy.pick("revision-selector").click();
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="cloudhead"]'
-        ).click();
+        cy.get('.revision-dropdown [data-branch="master"]').click();
         cy.contains("here-we-are-on-a-dev-branch.lol").should("not.exist");
       });
 
       it("allows switching to a different tag", () => {
         cy.pick("revision-selector").click();
-        cy.get(
-          '.revision-dropdown [data-tag="v0.4.0"][data-repo-handle="cloudhead"]'
-        ).click();
+        cy.get('.revision-dropdown [data-tag="v0.4.0"]').click();
         cy.contains("test-file-deletion.txt").should("exist");
 
         cy.pick("revision-selector").click();
-        cy.get(
-          '.revision-dropdown [data-tag="v0.5.0"][data-repo-handle="cloudhead"]'
-        ).click();
+        cy.get('.revision-dropdown [data-tag="v0.5.0"]').click();
         cy.contains("test-file-deletion.txt").should("not.exist");
       });
 
       it("does not crash on a page reload", () => {
         cy.pick("revision-selector").click();
-        cy.get(
-          '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
-        ).click();
+        cy.get('.revision-dropdown [data-branch="dev"]').click();
 
         cy.reload();
 
         // Make sure the revision selector still loads.
         cy.contains(".i-too-am-hidden").should("exist");
       });
+    });
 
-      it("allows selecting different peers", () => {
+    context("peer selector", () => {
+      // TODO(sos): unskip when we have a proxy testnet
+      it.skip("highlights the selected peer", () => {
+        cy.pick("peer-selector").click();
+        // Default peer is highlighted.
+        cy.get('.peer-dropdown [data-peer-handle="cloudhead"]').should(
+          "have.class",
+          "selected"
+        );
+        // Switch to another peer
+        cy.get('.peer-dropdown [data-peer-handle="abbey"]').click();
+        cy.pick("peer-selector").click();
+        // Selected peer is highlighted.
+        cy.get('.peer-dropdown [data-peer-handle="abbey"]').should(
+          "have.class",
+          "selected"
+        );
+      });
+
+      // TODO(sos): unskip when we have a proxy testnet
+      it.skip("updates the revision selector", () => {
         cy.pick("revision-selector").click();
         // Default revision is highlighted.
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="cloudhead"]'
-        ).should("have.class", "selected");
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="abbey"]'
-        ).click();
+        cy.get('.revision-dropdown [data-branch="master"]').should(
+          "have.class",
+          "selected"
+        );
+        cy.get('.revision-dropdown [data-branch="dev"]').click();
+        // Switch to another peer
+        cy.pick("peer-selector").click();
+        cy.get('.peer-dropdown [data-peer-handle="abbey"]').click();
 
         cy.pick("revision-selector").contains("master");
         cy.pick("revision-selector", "branch-icon").should("exist");
-        // TODO(rudolfs): check for the actual avatar once we have a way to
-        // mock peers that don't get a random avatar every time.
-        cy.pick("revision-selector", "avatar-abbey").should("exist");
 
+        cy.pick("peer-selector").click();
+        cy.get('.peer-dropdown [data-peer-handle="cloudhead"]').click();
         cy.pick("revision-selector").click();
-        // Previous selection is highlighted.
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="abbey"]'
-        ).should("have.class", "selected");
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="ele"]'
-        ).click();
-
-        cy.pick("revision-selector").contains("master");
-        cy.pick("revision-selector", "branch-icon").should("exist");
-        // TODO(rudolfs): check for the actual avatar once we have a way to
-        // mock peers that don't get a random avatar every time.
-        cy.pick("revision-selector", "avatar-ele").should("exist");
-
-        cy.pick("revision-selector").click();
-        // Previous selection is highlighted.
-        cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="ele"]'
-        ).should("have.class", "selected");
-        cy.get(
-          '.revision-dropdown [data-tag="v0.1.0"][data-repo-handle="cloudhead"]'
-        ).click();
+        cy.get('.revision-dropdown [data-tag="v0.1.0"]').click();
 
         cy.pick("revision-selector").contains("v0.1.0");
         cy.pick("revision-selector", "tag-icon").should("exist");
-        // TODO(rudolfs): check for the actual avatar once we have a way to
-        // mock peers that don't get a random avatar every time.
-        cy.pick("revision-selector", "avatar-cloudhead").should("exist");
 
         cy.pick("revision-selector").click();
         // Previous selection is highlighted.
-        cy.get(
-          '.revision-dropdown [data-tag="v0.1.0"][data-repo-handle="cloudhead"]'
-        ).should("have.class", "selected");
+        cy.get('.revision-dropdown [data-tag="v0.1.0"]').should(
+          "have.class",
+          "selected"
+        );
       });
     });
 
@@ -283,7 +269,7 @@ context("source code browsing", () => {
       it("opens the selected project on the default repository and branch", () => {
         cy.createProjectWithFixture("gold");
         cy.pick("revision-selector").click();
-        cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
+        cy.get('[data-branch="dev"]').click();
         cy.pick("sidebar", "profile").click();
         cy.pick("project-list", "project-list-entry-gold").click();
         cy.pick("revision-selector").contains("master");
@@ -305,8 +291,8 @@ context("source code browsing", () => {
       });
     });
 
-    it("doesn't interfere with the top-bar menu item active state", () => {
-      cy.pick("topbar", "horizontal-menu", "Source")
+    it("doesn't interfere with the horizontal menu item active state", () => {
+      cy.pick("horizontal-menu", "Source")
         .get("p")
         .should("have.class", "active");
 
@@ -316,13 +302,13 @@ context("source code browsing", () => {
         cy.contains("arrows.txt").should("have.class", "active");
       });
 
-      cy.pick("topbar", "horizontal-menu", "Source")
+      cy.pick("horizontal-menu", "Source")
         .get("p")
         .should("have.class", "active");
 
       cy.pick("file-source", "file-header").contains("platinum").click();
 
-      cy.pick("topbar", "horizontal-menu", "Source")
+      cy.pick("horizontal-menu", "Source")
         .get("p")
         .should("have.class", "active");
     });
@@ -344,6 +330,7 @@ context("source code browsing", () => {
         cy.contains(".gitkeep").should("have.class", "active");
 
         // Preserve expanded folder state when selecting a different file.
+        cy.scrollTo("top");
         cy.pick("expand-text").click();
         cy.contains("arrows.txt").click();
         cy.contains("arrows.txt").should("have.class", "active");

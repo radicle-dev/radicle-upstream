@@ -19,6 +19,7 @@ export interface Identity {
   };
   registered?: string;
   avatarFallback: Avatar;
+  shareableEntityIdentifier: string;
 }
 
 // STATE

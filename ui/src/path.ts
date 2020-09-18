@@ -42,20 +42,8 @@ export const projectRevisions = (id: string): string =>
 export const projectUntracked = (urn: string): string =>
   `/projects/untracked/${urn}`;
 
-export const projectSource = (
-  projectId: string,
-  peerId?: string,
-  revision?: RevisionQuery,
-  objectType?: string,
-  objectPath?: string
-): string => {
-  return `/projects/${projectId}/source?${stringify({
-    peerId,
-    revision,
-    objectType,
-    objectPath,
-  })}`;
-};
+export const projectSource = (projectId: string): string =>
+  `/projects/${projectId}/source`;
 
 export const parseQueryString = (querystring: string): ParsedQs => {
   return parse(querystring);
@@ -63,8 +51,7 @@ export const parseQueryString = (querystring: string): ParsedQs => {
 
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
-export const projectCommits = (id: string, revision: RevisionQuery): string =>
-  `/projects/${id}/commits/${JSON.stringify(revision)}`;
+export const projectCommits = (id: string): string => `/projects/${id}/commits`;
 
 export const transactions = (id: string, viewerAccountId: string): string =>
   `/transactions/${id}?${stringify({ viewerAccountId })}`;
