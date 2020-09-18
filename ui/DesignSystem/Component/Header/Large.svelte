@@ -17,8 +17,6 @@
 
   export let stats: { string: string };
 
-  export let style = "";
-
   let scrollY = 0;
   let headerHeight;
 </script>
