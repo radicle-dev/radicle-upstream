@@ -308,7 +308,7 @@ dependencies = [
  "futures 0.3.5",
  "kv",
  "lazy_static",
- "librad",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=ccce7b3f98b5bab29b43c2df59dbcb5995643d8f)",
  "log",
  "nonempty",
  "pretty_assertions",
@@ -382,6 +382,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-queue"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "774ba60a54c213d409d5353bda12d49cd68d14e45036a285234c8d6f91f92570"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+ "maybe-uninit",
+]
+
+[[package]]
 name = "crossbeam-utils"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -400,6 +411,19 @@ checksum = "39858aa5bac06462d4dd4b9164848eb81ffc4aa5c479746393598fd193afa227"
 dependencies = [
  "quote",
  "syn",
+]
+
+[[package]]
+name = "curve25519-dalek"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8492de420e9e60bc9a1d66e2dbb91825390b738a388606600663fc529b4b307"
+dependencies = [
+ "byteorder",
+ "digest 0.9.0",
+ "rand_core",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -439,6 +463,18 @@ dependencies = [
  "data-encoding",
  "proc-macro-hack",
  "syn",
+]
+
+[[package]]
+name = "deadpool"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4aaff9a7a1de9893f4004fa08527b31cb2ae4121c44e053cf53f29203c73bd23"
+dependencies = [
+ "async-trait",
+ "crossbeam-queue",
+ "num_cpus",
+ "tokio",
 ]
 
 [[package]]
@@ -506,6 +542,19 @@ name = "dyn-clone"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c53dc3a653e0f64081026e4bf048d48fec9fce90c66e8326ca7292df0ff2d82"
+
+[[package]]
+name = "ed25519-zebra"
+version = "2.1.2"
+source = "git+https://github.com/radicle-dev/ed25519-zebra?branch=main#cec6956c8f6c73431140fb78c7e06364c14d3057"
+dependencies = [
+ "curve25519-dalek",
+ "hex",
+ "rand_core",
+ "serde",
+ "sha2",
+ "thiserror",
+]
 
 [[package]]
 name = "either"
@@ -874,6 +923,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hex"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
+
+[[package]]
 name = "http"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1096,7 +1151,7 @@ dependencies = [
  "libc",
  "libgit2-sys",
  "log",
- "minicbor",
+ "minicbor 0.4.1",
  "multibase",
  "multihash",
  "nom",
@@ -1113,6 +1168,58 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "sodiumoxide",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-futures",
+ "unicode-normalization",
+ "url 2.1.1",
+ "urltemplate",
+ "webpki",
+ "yasna",
+]
+
+[[package]]
+name = "librad"
+version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ccce7b3f98b5bab29b43c2df59dbcb5995643d8f#ccce7b3f98b5bab29b43c2df59dbcb5995643d8f"
+dependencies = [
+ "async-trait",
+ "bit-vec",
+ "bs58",
+ "bytes",
+ "deadpool",
+ "directories 3.0.1",
+ "dyn-clone",
+ "ed25519-zebra",
+ "either",
+ "futures 0.3.5",
+ "futures-timer",
+ "futures_codec",
+ "git2",
+ "governor",
+ "lazy_static",
+ "libc",
+ "libgit2-sys",
+ "log",
+ "minicbor 0.5.1",
+ "multibase",
+ "multihash",
+ "nom",
+ "nonempty",
+ "num_cpus",
+ "percent-encoding 2.1.0",
+ "quinn",
+ "radicle-keystore",
+ "rand",
+ "rand_pcg",
+ "rcgen",
+ "regex",
+ "rustls",
+ "serde",
+ "serde_bytes",
+ "serde_json",
  "thiserror",
  "tokio",
  "tokio-util",
@@ -1239,7 +1346,16 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "062055f5f2fa4659e0337f8f7cee17c3d068a99ea4eaed9bedf37ee6dde191e4"
 dependencies = [
- "minicbor-derive",
+ "minicbor-derive 0.3.0",
+]
+
+[[package]]
+name = "minicbor"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fc03ad6f8f548db7194a5ff5a6f96342ecae4e3ef67d2bf18bacc0e245cd041"
+dependencies = [
+ "minicbor-derive 0.4.1",
 ]
 
 [[package]]
@@ -1247,6 +1363,17 @@ name = "minicbor-derive"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3436a67b46fbf4b5cc25a37341b3daf0371496dac1161422b96225dde8f603ee"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "minicbor-derive"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c214bf3d90099b52f3e4b328ae0fe34837fd0fab683ad1e10fceb4629106df48"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1725,7 +1852,7 @@ dependencies = [
  "anyhow",
  "git2",
  "libgit2-sys",
- "librad",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=c16ce900776975e3de017af71763dc4e2e129d3f)",
  "radicle-keystore",
 ]
 
@@ -2201,6 +2328,12 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "subtle"
+version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "343f3f510c2915908f155e94f17220b19ccfacf2a64a2a5d8004f2c3e311e7fd"
 
 [[package]]
 name = "syn"
@@ -2782,3 +2915,9 @@ dependencies = [
  "bit-vec",
  "chrono",
 ]
+
+[[package]]
+name = "zeroize"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05f33972566adbd2d3588b0491eb94b98b43695c4ef897903470ede4f3f5a28a"

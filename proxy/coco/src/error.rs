@@ -72,6 +72,10 @@ pub enum Error {
         branch: String,
     },
 
+    /// Peer API error
+    #[error(transparent)]
+    PeerApi(#[from] net::peer::ApiError),
+
     /// Trying to find a file path which could not be found.
     #[error("the path '{0}' was not found")]
     PathNotFound(file_system::Path),

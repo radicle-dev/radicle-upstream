@@ -16,6 +16,7 @@ use librad::{
         local::{transport, url::LocalUrl},
         refs::Refs,
         storage,
+        repo,
     },
     keys,
     meta::{entity, project as librad_project, user},
@@ -78,16 +79,6 @@ impl State {
         self.api.paths().clone()
     }
 
-    /// Convenience method to trigger a reopen of the storage.
-    ///
-    /// # Errors
-    ///
-    /// When the underlying lock acquisition fails or opening the storage.
-    pub fn reopen(&self) -> Result<(), Error> {
-        self.api.storage().reopen()?;
-        Ok(())
-    }
-
     /// Check the storage to see if we have the given commit for project at `urn`.
     ///
     /// # Errors
@@ -97,8 +88,9 @@ impl State {
     /// # Panics
     ///
     ///   * Unable to acquire the lock.
-    pub fn has_commit(&self, urn: &RadUrn, oid: impl Into<git2::Oid>) -> Result<bool, Error> {
-        Ok(self.api.storage().has_commit(urn, oid.into())?)
+    pub async fn has_commit(&self, urn: RadUrn, oid: impl Into<git2::Oid>) -> Result<bool, Error> {
+        let oid = oid.into();
+        Ok(self.api.with_storage(move |storage| storage.has_commit(&urn, oid)).await??)
     }
 
     /// The local machine's [`PeerId`].
@@ -115,12 +107,13 @@ impl State {
 
     /// Get the default owner for this `PeerApi`.
     #[must_use]
-    pub fn default_owner(&self) -> Option<user::User<entity::Draft>> {
-        self.api
-            .storage()
+    pub async fn default_owner(&self) -> Option<user::User<entity::Draft>> {
+        self.api.with_storage(move |storage|
+            storage
             .default_rad_self()
             .map_err(|err| log::warn!("an error occurred while trying to get 'rad/self': {}", err))
             .ok()
+        ).await.ok().flatten()
     }
 
     /// Set the default owner for this `PeerApi`.
@@ -128,11 +121,11 @@ impl State {
     /// # Errors
     ///
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub fn set_default_owner(&self, user: User) -> Result<(), Error> {
-        self.api
-            .storage()
-            .set_default_rad_self(user)
+    pub async fn set_default_owner(&self, user: User) -> Result<(), Error> {
+        self.api.with_storage(move |storage|
+            storage.set_default_rad_self(user)
             .map_err(Error::from)
+        ).await?
     }
 
     /// Initialise a [`User`] and make them the default owner of this [`PeerApi`].
@@ -142,32 +135,33 @@ impl State {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub fn init_owner(&self, signer: &signer::BoxedSigner, handle: &str) -> Result<User, Error> {
-        let user = self.init_user(signer, handle)?;
+    pub async fn init_owner(&self, signer: &signer::BoxedSigner, handle: &str) -> Result<User, Error> {
+        let user = self.init_user(signer, handle).await?;
         let user = verify_user(user)?;
 
-        self.set_default_owner(user.clone())?;
+        self.set_default_owner(user.clone()).await?;
 
         Ok(user)
     }
 
     /// Given some hints as to where you might find it, get the urn of the project found at `url`.
     ///
-    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
-    ///
     /// # Errors
     ///   * Could not successfully acquire a lock to the API.
     ///   * Could not open librad storage.
     ///   * Failed to clone the project.
     ///   * Failed to set the rad/self of this project.
-    pub fn clone_project<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
+    pub async fn clone_project<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr>,
+        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        let storage = self.api.storage();
-        let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
-        repo.set_rad_self(storage::RadSelfSpec::Default)?;
-        Ok(repo.urn)
+        let urn = self.api.with_storage(move |storage| {
+            let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
+            repo.set_rad_self(storage::RadSelfSpec::Default)?;
+            Ok::<_, repo::Error>(repo.urn)
+        }).await??;
+
+        Ok(urn)
     }
 
     /// Get the project found at `urn`.
@@ -175,16 +169,15 @@ impl State {
     /// # Errors
     ///
     ///   * Resolving the project fails.
-    pub fn get_project<P>(
+    pub async fn get_project<P>(
         &self,
-        urn: &RadUrn,
+        urn: RadUrn,
         peer: P,
     ) -> Result<librad_project::Project<entity::Draft>, Error>
     where
-        P: Into<Option<PeerId>>,
+        P: Into<Option<PeerId>> + Send + 'static,
     {
-        let storage = self.api.storage();
-        Ok(storage.metadata_of(urn, peer)?)
+        Ok(self.api.with_storage(move |storage| storage.metadata_of(&urn, peer)).await??)
     }
 
     /// Returns the list of [`librad_project::Project`]s for the local peer.
@@ -196,13 +189,12 @@ impl State {
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub fn list_projects(&self) -> Result<Vec<librad_project::Project<entity::Draft>>, Error> {
-        let project_meta = {
-            let storage = self.api.storage();
+    pub async fn list_projects(&self) -> Result<Vec<librad_project::Project<entity::Draft>>, Error> {
+        let project_meta = self.api.with_storage(move |storage| {
             let owner = storage.default_rad_self()?;
 
-            let meta = storage.all_metadata()?;
-            meta.flat_map(|entity| {
+            let meta = storage.all_metadata()?
+            .flat_map(|entity| {
                 let entity = entity.ok()?;
                 let rad_self = storage.get_rad_self(&entity.urn()).ok()?;
 
@@ -216,8 +208,10 @@ impl State {
                     _ => None,
                 })
             })
-            .collect::<Vec<_>>()
-        };
+            .collect::<Vec<_>>();
+
+            Ok::<_, storage::Error>(meta)
+        }).await??;
 
         Ok(project_meta)
     }
@@ -227,9 +221,8 @@ impl State {
     /// # Errors
     ///
     /// * if opening the storage fails
-    pub fn list_owner_project_refs(&self, urn: &RadUrn) -> Result<Refs, Error> {
-        let storage = self.api.storage();
-        storage.rad_signed_refs(urn).map_err(Error::from)
+    pub async fn list_owner_project_refs(&self, urn: RadUrn) -> Result<Refs, Error> {
+        Ok(self.api.with_storage(move |storage| storage.rad_signed_refs(&urn)).await??)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -237,11 +230,8 @@ impl State {
     /// # Errors
     ///
     /// * if opening the storage fails
-    pub fn list_peer_project_refs(&self, urn: &RadUrn, peer_id: PeerId) -> Result<Refs, Error> {
-        let storage = self.api.storage();
-        storage
-            .rad_signed_refs_of(urn, peer_id)
-            .map_err(Error::from)
+    pub async fn list_peer_project_refs(&self, urn: RadUrn, peer_id: PeerId) -> Result<Refs, Error> {
+        Ok(self.api.with_storage(move |storage| storage .rad_signed_refs_of(&urn, peer_id)).await??)
     }
 
     /// Returns the list of [`user::User`]s known for your peer.
@@ -253,40 +243,38 @@ impl State {
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, Error> {
-        let storage = self.api.storage();
+    pub async fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, Error> {
+        let entities = self.api.with_storage(move |storage| {
+            let mut entities = vec![];
+            for entity in storage.all_metadata()? {
+                let entity = entity?;
 
-        let mut entities = vec![];
-        for entity in storage.all_metadata()? {
-            let entity = entity?;
-
-            if let Some(e) = entity.try_map(|info| match info {
-                entity::data::EntityInfo::User(info) => Some(info),
-                _ => None,
-            }) {
-                entities.push(e);
+                if let Some(e) = entity.try_map(|info| match info {
+                    entity::data::EntityInfo::User(info) => Some(info),
+                    _ => None,
+                }) {
+                    entities.push(e);
+                }
             }
-        }
+
+            Ok::<_, storage::Error>(entities)
+        }).await??;
 
         Ok(entities)
     }
 
     /// Given some hints as to where you might find it, get the urn of the user found at `url`.
     ///
-    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
-    ///
     /// # Errors
     ///
     ///   * Could not successfully acquire a lock to the API.
     ///   * Could not open librad storage.
     ///   * Failed to clone the user.
-    pub fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
+    pub async fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr>,
+        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        let storage = self.api.storage();
-        let repo = storage.clone_repo::<user::UserInfo, _>(url, addr_hints)?;
-        Ok(repo.urn)
+        Ok(self.api.with_storage(move |storage| storage.clone_repo::<user::UserInfo, _>(url, addr_hints).map(|repo| repo.urn)).await??)
     }
 
     /// Get the user found at `urn`.
@@ -295,14 +283,11 @@ impl State {
     ///
     ///   * Resolving the user fails.
     ///   * Could not successfully acquire a lock to the API.
-    pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, Error> {
-        let storage = self.api.storage();
-        Ok(storage.metadata(urn)?)
+    pub async fn get_user(&self, urn: RadUrn) -> Result<user::User<entity::Draft>, Error> {
+        Ok(self.api.with_storage(move |storage| storage.metadata(&urn)).await??)
     }
 
     /// Fetch any updates at the given `RadUrl`, providing address hints if we have them.
-    ///
-    /// **N.B.** This needs to be run with `tokio::spawn_blocking`.
     ///
     /// # Errors
     ///
@@ -310,12 +295,11 @@ impl State {
     ///   * Could not open librad storage.
     ///   * Failed to fetch the updates.
     ///   * Failed to set the rad/self of this project.
-    pub fn fetch<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<(), Error>
+    pub async fn fetch<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<(), Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr>,
+        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        let storage = self.api.storage();
-        Ok(storage.fetch_repo(url, addr_hints)?)
+        Ok(self.api.with_storage(move |storage| storage.fetch_repo(url, addr_hints)).await??)
     }
 
     /// Provide a a repo [`git::Browser`] for the project of `urn`.
@@ -325,12 +309,12 @@ impl State {
     /// * If no project for the `urn` was found.
     /// * If the [`git::Browser`] fails.
     /// * If the passed `callback` errors.
-    pub fn with_browser<F, T>(&self, urn: &RadUrn, callback: F) -> Result<T, Error>
+    pub async fn with_browser<F, T>(&self, urn: RadUrn, callback: F) -> Result<T, Error>
     where
         F: Send + FnOnce(&mut git::Browser) -> Result<T, Error>,
     {
         let monorepo = self.monorepo();
-        let project = self.get_project(urn, None)?;
+        let project = self.get_project(urn, None).await?;
         let default_branch = git::Branch::local(project.default_branch());
         let repo = git::Repository::new(monorepo)?;
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
@@ -347,28 +331,33 @@ impl State {
     /// Will error if:
     ///     * The signing of the project metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub fn init_project<P: AsRef<path::Path> + Send>(
+    pub async fn init_project<P: AsRef<path::Path> + Send + Sync + 'static>(
         &self,
         signer: &signer::BoxedSigner,
         owner: &User,
-        project: &project::Create<P>,
+        project: project::Create<P>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
-        let storage = self.api.storage();
-
         let mut meta = project.build(owner, signer.public_key().into())?;
         meta.sign_owned(signer)?;
 
-        let urn = meta.urn();
-        if storage.has_urn(&urn)? {
-            return Err(Error::EntityExists(urn));
-        }
+        let owner_urn = owner.urn();
+        let project_urn = meta.urn();
+        let local_peer_id = self.api.peer_id().clone();
 
-        let repo = storage.create_repo(&meta)?;
-        repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
-        log::debug!("Created project with Urn '{}'", urn);
+        let meta = self.api.with_storage(move |storage| {
+            if storage.has_urn(&project_urn)? {
+                return Err(Error::EntityExists(project_urn));
+            }
 
-        let repo = project.setup_repo(LocalUrl::from_urn(urn, self.api.peer_id().clone()))?;
-        log::debug!("Setup repository at path '{}'", repo.path().display());
+            let repo = storage.create_repo(&meta)?;
+            repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner_urn))?;
+            log::debug!("Created project with Urn '{}'", project_urn);
+
+            let repo = project.setup_repo(LocalUrl::from_urn(project_urn, local_peer_id))?;
+            log::debug!("Setup repository at path '{}'", repo.path().display());
+
+            Ok(meta)
+        }).await??;
 
         Ok(meta)
     }
@@ -381,7 +370,7 @@ impl State {
     /// Will error if:
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub fn init_user(
+    pub async fn init_user(
         &self,
         signer: &signer::BoxedSigner,
         handle: &str,
@@ -391,16 +380,14 @@ impl State {
         user.sign_owned(signer)?;
         let urn = user.urn();
 
-        {
-            let storage = self.api.storage();
+        Ok(self.api.with_storage(move |storage| {
             if storage.has_urn(&urn)? {
                 return Err(Error::EntityExists(urn));
             } else {
-                storage.create_repo(&user)?;
+                let _ = storage.create_repo(&user)?;
+                Ok(user)
             }
-        }
-
-        Ok(user)
+        }).await??)
     }
 
     /// Query the network for providers of the given [`RadUrn`] within a given `timeout`.
@@ -417,8 +404,8 @@ impl State {
     /// # Errors
     ///
     /// * When the storage operation fails.
-    pub fn track(&self, urn: &RadUrn, remote: &PeerId) -> Result<(), Error> {
-        Ok(self.api.storage().track(urn, remote)?)
+    pub async fn track(&self, urn: RadUrn, remote: PeerId) -> Result<(), Error> {
+        Ok(self.api.with_storage(move |storage| storage.track(&urn, &remote)).await??)
     }
 
     /// Get the [`user::User`]s that are tracking this project, including their [`PeerId`].
@@ -430,16 +417,16 @@ impl State {
     /// * If did not have the `urn` in storage
     /// * If we could not fetch the tracked peers
     /// * If we could not get the `rad/self` of the peer
-    pub fn tracked(&self, urn: &RadUrn) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, Error> {
-        let storage = self.api.storage();
-        let repo = storage.open_repo(urn.clone())?;
-        repo.tracked()?
-            .map(move |peer_id| {
-                repo.get_rad_self_of(peer_id.clone())
-                    .map(|user| (peer_id.clone(), user))
-                    .map_err(Error::from)
-            })
-            .collect()
+    pub async fn tracked(&self, urn: RadUrn) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, Error> {
+        Ok(self.api.with_storage(move |storage| {
+            let repo = storage.open_repo(urn)?;
+            repo.tracked()?
+                .map(move |peer_id| {
+                    repo.get_rad_self_of(peer_id.clone())
+                        .map(|user| (peer_id.clone(), user))
+                })
+                .collect::<Result<Vec<_>, _>>()
+        }).await??)
     }
 }
 
