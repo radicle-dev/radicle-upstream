@@ -43,7 +43,6 @@
     "/projects/:id/issue": Issue,
     "/projects/:id/commit/:hash": Commit,
     "/projects/:id/commits": Commits,
-    "/projects/:id/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,
   };
 

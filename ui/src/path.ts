@@ -42,20 +42,8 @@ export const projectRevisions = (id: string): string =>
 export const projectUntracked = (urn: string): string =>
   `/projects/untracked/${urn}`;
 
-export const projectSource = (
-  projectId: string,
-  peerId?: string,
-  revision?: RevisionQuery,
-  objectType?: string,
-  objectPath?: string
-): string => {
-  return `/projects/${projectId}/source?${stringify({
-    peerId,
-    revision,
-    objectType,
-    objectPath,
-  })}`;
-};
+export const projectSource = (projectId: string): string =>
+  `/projects/${projectId}/source`;
 
 export const parseQueryString = (querystring: string): ParsedQs => {
   return parse(querystring);

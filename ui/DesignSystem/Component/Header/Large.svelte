@@ -48,7 +48,6 @@
   .description {
     margin-top: 1rem;
     color: var(--color-foreground-level-6);
-
     height: 1.5rem; /* 1 line */
     max-width: 60vw;
     text-overflow: ellipsis;
