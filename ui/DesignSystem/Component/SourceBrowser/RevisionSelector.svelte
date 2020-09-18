@@ -102,6 +102,7 @@
     cursor: pointer;
     overflow-x: hidden;
     user-select: none;
+    display: flex;
   }
   .branch:hover,
   .tag:hover {
@@ -166,7 +167,7 @@
             dataCy="branch-icon"
             style="vertical-align: bottom; fill:
             var(--color-foreground-level-4)" />
-          <span style="line-height: 1.5rem">{branch}</span>
+          <span class="revision-name typo-text">{branch}</span>
         </li>
       {/each}
       {#each currentSelectedPeer.tags as tag}
@@ -185,7 +186,7 @@
             dataCy="tag-icon"
             style="vertical-align: bottom; fill:
             var(--color-foreground-level-4)" />
-          <span style="line-height: 1.5rem">{tag}</span>
+          <span class="revision-name typo-text">{tag}</span>
         </li>
       {/each}
     </ul>
