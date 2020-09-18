@@ -1,6 +1,5 @@
-OS version: (eg. `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)
-
-Link to build: (eg. https://buildkite.com/monadic/radicle-upstream/builds/4727)
+**OS version:** (eg. `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)\
+**Link to build:** (eg. https://buildkite.com/monadic/radicle-upstream/builds/4727)
 
 
 ### Prerequisites

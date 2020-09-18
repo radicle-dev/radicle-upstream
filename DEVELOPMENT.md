@@ -505,12 +505,11 @@ which contains a QA checklist. Before publishing packages for a wider audience
 someone from the team goes through the checklist and manually tests the app,
 afterwards the team can evaluate whether the release is up to our standards.
 
-- Title: `QA: v0.0.14 macOS`
-- Body: [QA.md][qa]
+**Title:** `QA: v0.0.14 macOS`\
+**Body** [QA.md][qa]
 
-
-- Title: `QA: v0.0.14 Linux`
-- Body: [QA.md][qa]
+**Title:** `QA: v0.0.14 Linux`\
+**Body:** [QA.md][qa]
 
 
 [ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
