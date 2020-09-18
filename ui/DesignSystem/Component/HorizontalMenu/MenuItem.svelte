@@ -7,6 +7,7 @@
   export let icon: typeof SvelteComponent;
   export let title: string;
   export let active: boolean;
+  export let counter: string | undefined;
 </script>
 
 <style>
@@ -29,6 +30,14 @@
   .item.active {
     color: var(--color-secondary);
   }
+
+  .counter {
+    background-color: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-6);
+    padding: 0.1875rem 0.5rem;
+    border-radius: 0.75rem;
+    margin-left: 0.5rem;
+  }
 </style>
 
 <!-- svelte-ignore a11y-missing-attribute -->
@@ -44,6 +53,7 @@
   {/if}
 
   <p class="item typo-text-bold" class:active>{title}</p>
+  {#if counter}<span class="counter typo-mono-bold">{counter}</span>{/if}
 </a>
 
 {#if active}

@@ -46,7 +46,7 @@
 </style>
 
 <!-- svelte-ignore a11y-missing-attribute -->
-<a class="file" class:active use:link={href}>
+<a class="file" class:active use:link={href} on:click>
   <Icon.File />
   <span class="file-name">{name}</span>
 </a>
