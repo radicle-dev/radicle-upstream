@@ -7,7 +7,7 @@
 
   export let name: string;
   export let urn: string;
-  export let description: string | undefined = undefined;
+  export let description: string = "";
   export let registered: boolean = false;
 
   export let avatarFallback: EmojiAvatar | undefined = undefined;
@@ -139,7 +139,7 @@
             showCopyOnlyOnHover
             notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
         </div>
-        {#if description}
+        {#if description.length > 0}
           <p class="description">{description}</p>
         {/if}
         {#if stats}
