@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { isMac } from "./../../src/settings";
+  import { OSModifierKey } from "../../src/hotkeys";
 
   export let hint = "";
   export let noModifier: boolean = false;
   export let style = "";
 
-  const modifierKey = isMac ? "⌘" : "ctrl";
   const addModifier = hint.length === 1 && !noModifier && hint !== "↵";
 </script>
 
@@ -28,7 +27,7 @@
 
 <div class="hint-container" {style}>
   {#if addModifier}
-    <p class="typo-text hint">{modifierKey}</p>
+    <p class="typo-text hint">{OSModifierKey}</p>
   {/if}
   <p class="typo-text hint">{hint}</p>
 </div>
