@@ -24,19 +24,36 @@ export enum ShortcutKey {
   Settings = ",",
 }
 
-export const keyboardShortcuts = [
-  { title: "Keyboard shortcuts", key: ShortcutKey.Help },
-  { title: "New project", key: ShortcutKey.NewProjects, modifierKey: true },
-  { title: "Search", key: ShortcutKey.Search, modifierKey: true },
-  { title: "Settings", key: ShortcutKey.Settings, modifierKey: true },
+export interface KeyboardShortcut {
+  description: string;
+  key: ShortcutKey;
+  displayKey?: string; // if this is not the same as the encoded key value
+  modifierKey?: boolean;
+}
+
+export const keyboardShortcuts: KeyboardShortcut[] = [
+  { description: "Keyboard shortcuts", key: ShortcutKey.Help },
+  {
+    description: "New project",
+    key: ShortcutKey.NewProjects,
+    modifierKey: true,
+  },
+  { description: "Search", key: ShortcutKey.Search, modifierKey: true },
+  { description: "Settings", key: ShortcutKey.Settings, modifierKey: true },
 ];
 
-export const devShortcuts = [
+export const devShortcuts: KeyboardShortcut[] = [
   {
-    title: "Design system",
+    description: "Design system",
     key: ShortcutKey.DesignSystem,
     modifierKey: true,
   },
 ];
+
+export const escape: KeyboardShortcut = {
+  description: "Close modal",
+  key: ShortcutKey.Escape,
+  displayKey: "esc",
+};
 
 export const OSModifierKey = isMac ? "⌘" : "ctrl";

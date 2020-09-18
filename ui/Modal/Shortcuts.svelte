@@ -1,25 +1,14 @@
 <script lang="ts">
   import { isDev } from "../../native/ipc.js";
 
-  import {
-    devShortcuts,
-    keyboardShortcuts,
-    OSModifierKey,
-    ShortcutKey,
-  } from "../src/hotkeys";
+  import * as hotkeys from "../src/hotkeys";
   import { Variant as IllustrationVariant } from "../src/illustration";
 
-  import { Illustration } from "../DesignSystem/Component";
+  import { Illustration, KeyHint } from "../DesignSystem/Component";
 
-  const escape = { title: "Close modal", key: ShortcutKey.Escape };
-
-  const shortcuts: {
-    title: string;
-    key: string;
-    modifierKey?: boolean;
-  }[] = isDev()
-    ? [...keyboardShortcuts, ...devShortcuts, escape]
-    : [...keyboardShortcuts, escape];
+  const shortcuts = isDev()
+    ? [...hotkeys.keyboardShortcuts, ...hotkeys.devShortcuts, hotkeys.escape]
+    : [...hotkeys.keyboardShortcuts, hotkeys.escape];
 </script>
 
 <style>
@@ -61,12 +50,10 @@
   <div class="shortcuts">
     {#each shortcuts as shortcut}
       <div class="shortcut">
-        {#if shortcut.modifierKey}
-          <kbd class="typo-text-bold">{OSModifierKey}</kbd>
-          <p class="plus">+</p>
-        {/if}
-        <kbd class="typo-text-bold">{shortcut.key}</kbd>
-        <p class="description">{shortcut.title}</p>
+        <KeyHint
+          noModifier={!shortcut.modifierKey}
+          hint={shortcut.displayKey || shortcut.key} />
+        <p class="description">{shortcut.description}</p>
       </div>
     {/each}
   </div>
