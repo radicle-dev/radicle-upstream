@@ -1,3 +1,4 @@
+use std::ops::{Add, AddAssign};
 use std::{collections::HashMap, marker::PhantomData};
 
 use serde::{Deserialize, Serialize};
@@ -108,3 +109,65 @@ pub enum TimedOut {
 #[serde(rename_all = "camelCase")]
 pub struct Requested;
 pub type IsRequested = PhantomData<Requested>;
+
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct Queries(usize);
+
+impl Queries {
+    pub const fn new(n: usize) -> Self {
+        Self(n)
+    }
+}
+
+impl Add<usize> for Queries {
+    type Output = Self;
+
+    fn add(self, other: usize) -> Self::Output {
+        Self(self.0 + other)
+    }
+}
+
+impl AddAssign<usize> for Queries {
+    fn add_assign(&mut self, other: usize) {
+        *self = Self(self.0 + other)
+    }
+}
+
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct Clones(usize);
+
+impl Clones {
+    pub const fn new(n: usize) -> Self {
+        Self(n)
+    }
+}
+
+impl Add<usize> for Clones {
+    type Output = Self;
+
+    fn add(self, other: usize) -> Self::Output {
+        Self(self.0 + other)
+    }
+}
+
+impl AddAssign<usize> for Clones {
+    fn add_assign(&mut self, other: usize) {
+        *self = Self(self.0 + other)
+    }
+}
+
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Attempts {
+    pub(super) queries: Queries, // how often we gossip
+    pub(super) clones: Clones,   // how often we try to clone
+}
+
+impl Attempts {
+    pub fn new() -> Self {
+        Attempts {
+            queries: Queries(0),
+            clones: Clones(0),
+        }
+    }
+}
