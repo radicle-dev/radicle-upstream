@@ -8,7 +8,8 @@ before(() => {
 });
 
 context("visitor view profile page", () => {
-  it("opens from the revision selector with the correct data", () => {
+  // TODO(sos): unskip when we have a proxy testnet
+  it.skip("opens from the revision selector with the correct data", () => {
     // Go to the project source page
     cy.visit("./public/index.html#/profile/projects");
     cy.contains("platinum").click();

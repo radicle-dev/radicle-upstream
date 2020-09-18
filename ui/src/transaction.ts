@@ -421,6 +421,7 @@ export const unknownIdentity: Identity = {
     handle: "unknown user",
   },
   avatarFallback: unknownAvatar,
+  shareableEntityIdentifier: "someone@somewhere",
 };
 
 // Get the payer of a transaction.

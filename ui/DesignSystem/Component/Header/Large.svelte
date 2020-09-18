@@ -1,21 +1,20 @@
-<script>
+<script lang="ts">
+  import type { EmojiAvatar } from "../../../src/avatar";
+
+  import type { Identity } from "../../../src/identity";
+  import type { Org } from "../../../src/org";
+
   import { Avatar, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
-  export let style = null;
-  export let entity = null;
-  export let variant = null; // profile | org
+  export let name: string;
+  export let urn: string;
+  export let registered: boolean = false;
 
-  let name;
-  if (variant === "profile") {
-    if (entity.registered) {
-      name = entity.registered;
-    } else {
-      name = entity.metadata.handle;
-    }
-  } else if (variant === "org") {
-    name = entity.id;
-  }
+  export let avatarFallback: EmojiAvatar;
+  export let avatarShape: "circle" | "square" = "circle";
+
+  export let style = "";
 </script>
 
 <style>
@@ -87,8 +86,8 @@
         <Avatar
           style="margin-right: 32px"
           size="huge"
-          variant={variant === 'profile' ? 'circle' : 'square'}
-          avatarFallback={entity.avatarFallback} />
+          variant={avatarShape}
+          {avatarFallback} />
 
         <div class="metadata">
           <div class="user">
@@ -97,7 +96,7 @@
               style="display: flex; align-items: center;">
               {name}
             </h1>
-            {#if variant === 'org' || entity.registered}
+            {#if registered}
               <Icon.Registered
                 dataCy="verified-badge"
                 style="fill: var(--color-primary); margin-left: 6px;" />
@@ -105,7 +104,7 @@
           </div>
           <div class="shareable-entity-identifier">
             <Urn
-              urn={entity.shareableEntityIdentifier}
+              {urn}
               showCopyOnlyOnHover
               notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
           </div>

@@ -1,15 +1,16 @@
-//! Endpoints and serialisation for [`project::Project`] related types.
+//! Endpoints and serialisation for [`crate::project::Project`] related types.
 
 use std::path::PathBuf;
 
-use serde::{ser::SerializeStruct as _, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use crate::{context, http, project};
-
+use crate::{context, http};
 /// Combination of all routes.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
-    list_filter(ctx.clone())
+    tracked_filter(ctx.clone())
+        .or(contributed_filter(ctx.clone()))
+        .or(user_filter(ctx.clone()))
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
@@ -32,10 +33,10 @@ fn checkout_filter(
 fn create_filter(
     ctx: context::Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx.clone())
-        .and(http::with_owner_guard(ctx))
-        .and(warp::post())
+    warp::post()
         .and(path::end())
+        .and(http::with_context(ctx.clone()))
+        .and(http::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create)
 }
@@ -49,13 +50,36 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
         .and_then(handler::get)
 }
 
-/// `GET /`
-fn list_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+/// `GET /tracked`
+fn tracked_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("tracked")
         .and(warp::get())
+        .and(http::with_context(ctx))
         .and(path::end())
-        .and(http::with_qs_opt::<ListQuery>())
-        .and_then(handler::list)
+        .and_then(handler::list_tracked)
+}
+
+/// `GET /contributed`
+fn contributed_filter(
+    ctx: context::Ctx,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("contributed")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and_then(handler::list_contributed)
+}
+
+/// `GET /user/<id>
+fn user_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("user")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::list_for_user)
 }
 
 /// `GET /discover`
@@ -137,22 +161,35 @@ mod handler {
         Ok(reply::json(&project::get(&state, &urn)?))
     }
 
-    /// List all known projects.
-    ///
-    /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
-    pub async fn list(
-        ctx: context::Ctx,
-        opt_query: Option<super::ListQuery>,
-    ) -> Result<impl Reply, Rejection> {
-        let query = opt_query.unwrap_or_default();
+    /// List all projects tracked by the current user.
+    pub async fn list_tracked(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
         let state = ctx.state.lock().await;
+        let projects = project::Projects::list(&state)?.tracked;
 
-        let projects = if let Some(user) = query.user {
-            project::list_projects_for_user(&state, &user)?
-        } else {
-            project::list_projects(&state)?
-        };
+        Ok(reply::json(&projects))
+    }
+
+    /// List all projects the current user has contributed to.
+    pub async fn list_contributed(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
+        let ctx = ctx.read().await;
+        let state = ctx.state.lock().await;
+        let projects = project::Projects::list(&state)?;
+
+        Ok(reply::json(&projects.contributed))
+    }
+
+    /// This lists all the projects for a given `user`. This `user` should not be your particular
+    /// `user` (i.e. the "default user"), but rather should be another user that you are tracking.
+    ///
+    /// See [`project::list_for_user`] for more information.
+    pub async fn list_for_user(
+        ctx: context::Ctx,
+        user_id: coco::Urn,
+    ) -> Result<impl Reply, Rejection> {
+        let ctx = ctx.read().await;
+        let state = ctx.state.lock().await;
+        let projects = project::list_for_user(&state, &user_id)?;
 
         Ok(reply::json(&projects))
     }
@@ -162,23 +199,6 @@ mod handler {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
-    }
-}
-
-impl Serialize for project::Project {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Project", 4)?;
-        state.serialize_field("id", &self.id.to_string())?;
-        state.serialize_field(
-            "shareableEntityIdentifier",
-            &self.shareable_entity_identifier.to_string(),
-        )?;
-        state.serialize_field("metadata", &self.metadata)?;
-        state.serialize_field("stats", &self.stats)?;
-        state.end()
     }
 }
 
@@ -213,13 +233,6 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
-}
-
-/// Query options for listing projects.
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct ListQuery {
-    /// Only include projects tracked by this user
-    user: Option<coco::Urn>,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
@@ -340,8 +353,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::list_projects(&(*ctx.state.lock().await))?;
-        let meta = projects.first().unwrap();
+        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+        let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -407,8 +420,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::list_projects(&(*ctx.state.lock().await))?;
-        let meta = projects.first().unwrap();
+        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+        let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -492,11 +505,10 @@ mod test {
         let projects = {
             let ctx = ctx.read().await;
             let state = ctx.state.lock().await;
-
-            project::list_projects(&state)
+            project::Projects::list(&state)
         }?;
 
-        let meta = projects.first().unwrap();
+        let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
         let want = json!({
@@ -563,31 +575,6 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
-
-        {
-            let state = ctx.state.lock().await;
-            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
-            coco::control::setup_fixtures(&state, &ctx.signer, &owner)?;
-        };
-
-        let res = request().method("GET").path("/").reply(&api).await;
-
-        let projects = project::list_projects(&(*ctx.state.lock().await))?;
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(projects));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    #[allow(clippy::indexing_slicing)]
     async fn list_for_user() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
@@ -595,27 +582,59 @@ mod test {
 
         let ctx = ctx.read().await;
 
-        let fintohaps: identity::Identity = {
+        let owner = ctx
+            .state
+            .lock()
+            .await
+            .init_owner(&ctx.signer, "cloudhead")?;
+        coco::control::setup_fixtures(&(*ctx.state.lock().await), &ctx.signer, &owner)?;
+
+        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+        let project = projects.into_iter().next().unwrap();
+        let coco_project = ctx.state.lock().await.get_project(&project.id, None)?;
+
+        let user: identity::Identity = {
             let state = ctx.state.lock().await;
-
-            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
-
-            coco::control::setup_fixtures(&state, &ctx.signer, &owner)?;
-            let project = &project::list_projects(&state)?[0];
-            let coco_project = state.get_project(&project.id, None)?;
-
-            coco::control::track_fake_peer(&state, &ctx.signer, &coco_project, "fintohaps").into()
+            coco::control::track_fake_peer(&state, &ctx.signer, &coco_project, "rafalca").into()
         };
 
         let res = request()
             .method("GET")
-            .path(&format!("/?user={}", fintohaps.urn))
+            .path(&format!("/user/{}", user.urn))
             .reply(&api)
             .await;
 
-        let project = &project::list_projects(&(*ctx.state.lock().await))?[0];
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(have, json!(vec![project]));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list_contributed() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let owner = ctx
+            .state
+            .lock()
+            .await
+            .init_owner(&ctx.signer, "cloudhead")?;
+
+        coco::control::setup_fixtures(&(*ctx.state.lock().await), &ctx.signer, &owner)?;
+
+        let res = request()
+            .method("GET")
+            .path("/contributed")
+            .reply(&api)
+            .await;
+
+        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(vec![project]));
+            assert_eq!(have, json!(projects.contributed));
         });
 
         Ok(())
