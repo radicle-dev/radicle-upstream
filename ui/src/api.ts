@@ -26,7 +26,6 @@ const request = (endpoint: string, init?: Init): Request => {
 
 const http = async <T>(req: RequestInfo): Promise<T> => {
   const res = await fetch(req);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const body = await res.json();
 
   // For non-success status codes we throw the body as it carries the error type.
@@ -34,7 +33,6 @@ const http = async <T>(req: RequestInfo): Promise<T> => {
     throw body;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return body;
 };
 
@@ -42,7 +40,6 @@ const noContent = async (req: RequestInfo): Promise<null> => {
   const res = await fetch(req);
 
   if (res.status !== 204) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const body = await res.json();
     throw body;
   }

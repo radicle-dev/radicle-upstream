@@ -100,6 +100,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "GIT_ERROR",
                         format!("Internal Git error: {:?}", git_error),
                     ),
+                    coco::Error::PathNotFound(path) => (
+                        StatusCode::NOT_FOUND,
+                        "NOT_FOUND",
+                        format!("object not found under '{}'", path),
+                    ),
                     coco::Error::SurfGit(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",

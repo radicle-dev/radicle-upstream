@@ -1,4 +1,6 @@
 export enum Variant {
+  EntityExists = "ENTITY_EXISTS",
+  GitError = "GIT_ERROR",
   NotFound = "NOT_FOUND",
 }
 

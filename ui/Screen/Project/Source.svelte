@@ -128,6 +128,12 @@
               {/if}
             </Remote>
           {/if}
+          <div slot="error" let:error>
+            <EmptyState
+              text={JSON.stringify(error)}
+              illustration={IllustrationVariant.Eyes}
+              style="height: 320px;" />
+          </div>
         </Remote>
       </div>
     </div>
