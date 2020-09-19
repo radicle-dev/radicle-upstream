@@ -99,18 +99,17 @@ context("project creation", () => {
       cy.get("body").type("{esc}", { force: true });
     });
 
-    context("name", () => {
+    context.only("name", () => {
       it("prevents the user from creating a project with an invalid name", () => {
         // the submit button is disabled when name is not present
         cy.pick("page", "name").clear();
         cy.pick("create-project-button").should("be.disabled");
 
-        // shows a validation message when name contains invalid characters
-        // spaces are not allowed
+        // spaces should be changed into dashes
         cy.pick("page", "name").type("no spaces");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page", "name").should("have.value", "no-spaces");
+
+        // shows a validation message when name contains invalid characters
 
         // special characters are disallowed
         cy.pick("page", "name").clear();
