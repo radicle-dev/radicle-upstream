@@ -38,6 +38,12 @@ macro_rules! assert_event {
     }};
 }
 
+/// Given one peers stream of events and another peers id, it will succeed once a connection from
+/// the given id has been observed.
+///
+/// # Errors
+///
+/// * if the timeout waiting for the [`ProtocolEvent::Connected`] has been reached.
 pub async fn connected(
     receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,
