@@ -141,7 +141,10 @@ impl Peer {
         tokio::spawn(async move {
             match announcement::run(state, &store).await {
                 Ok(updates) => sender.send(AnnounceEvent::Succeeded(updates)).await.ok(),
-                Err(_err) => sender.send(AnnounceEvent::Failed).await.ok(),
+                Err(err) => {
+                    log::error!("announce error: {:?}", err);
+                    sender.send(AnnounceEvent::Failed).await.ok()
+                },
             };
         });
     }
@@ -156,7 +159,10 @@ impl Peer {
                     .send(SyncEvent::Succeeded(peer_id.clone()))
                     .await
                     .ok(),
-                Err(_) => sender.send(SyncEvent::Failed(peer_id.clone())).await.ok(),
+                Err(err) => {
+                    log::error!("sync error for {}: {:?}", peer_id, err);
+                    sender.send(SyncEvent::Failed(peer_id.clone())).await.ok()
+                },
             };
         });
     }
