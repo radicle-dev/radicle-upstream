@@ -93,7 +93,7 @@ enum Status {
 
 /// Set of knobs to change the behaviour of the [`RunState`].
 pub struct Config {
-    /// Number of peers a full sync is attempting with up on startup.
+    /// Number of peers that a full sync is attempted with upon startup.
     pub sync_max_peers: usize,
     /// Enables the syncing stage when coming online.
     pub sync_on_startup: bool,
