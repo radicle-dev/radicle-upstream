@@ -148,7 +148,7 @@ impl RunState {
         log::trace!("run_state: ({:?}, {:?})", self.status, event);
 
         match (&self.status, event) {
-            // Go from [`Input::Stopped`] to [`Input::Offline`] once we are listening.
+            // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
             (Status::Stopped(_since), Event::Protocol(ProtocolEvent::Listening(_addr))) => {
                 self.status = Status::Started(Instant::now());
 
