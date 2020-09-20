@@ -92,21 +92,26 @@ enum Status {
 }
 
 /// Set of knobs to change the behaviour of the [`RunState`].
+#[derive(Default)]
 pub struct Config {
-    /// Number of peers that a full sync is attempted with upon startup.
-    pub sync_max_peers: usize,
-    /// Enables the syncing stage when coming online.
-    pub sync_on_startup: bool,
-    /// Duration until the local peer goes online regardless if and how many syncs have succeeded.
-    pub sync_period: Duration,
+    pub sync: SyncConfig,
 }
 
-impl Default for Config {
+pub struct SyncConfig {
+    /// Number of peers that a full sync is attempted with upon startup.
+    pub max_peers: usize,
+    /// Enables the syncing stage when coming online.
+    pub on_startup: bool,
+    /// Duration until the local peer goes online regardless if and how many syncs have succeeded.
+    pub period: Duration,
+}
+
+impl Default for SyncConfig {
     fn default() -> Self {
         Self {
-            sync_max_peers: DEFAULT_SYNC_MAX_PEERS,
-            sync_on_startup: false,
-            sync_period: DEFAULT_SYNC_PERIOD,
+            max_peers: DEFAULT_SYNC_MAX_PEERS,
+            on_startup: false,
+            period: DEFAULT_SYNC_PERIOD,
         }
     }
 }
@@ -163,12 +168,12 @@ impl RunState {
             (Status::Started(_since), Event::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
                 self.connected_peers.insert(peer_id.clone());
 
-                if self.config.sync_on_startup {
+                if self.config.sync.on_startup {
                     self.status = Status::Syncing(Instant::now(), 1);
 
                     vec![
                         Command::SyncPeer(peer_id.clone()),
-                        Command::StartSyncTimeout(self.config.sync_period),
+                        Command::StartSyncTimeout(self.config.sync.period),
                     ]
                 } else {
                     self.status = Status::Online(Instant::now());
@@ -178,10 +183,10 @@ impl RunState {
             },
             // Sync until configured maximum of peers is reached.
             (Status::Syncing(since, syncs), Event::Protocol(ProtocolEvent::Connected(peer_id)))
-                if *syncs < self.config.sync_max_peers =>
+                if *syncs < self.config.sync.max_peers =>
             {
                 self.connected_peers.insert(peer_id.clone());
-                if syncs + 1 == self.config.sync_max_peers {
+                if syncs + 1 == self.config.sync.max_peers {
                     self.status = Status::Online(Instant::now());
                 } else {
                     self.status = Status::Syncing(*since, syncs + 1);
@@ -231,7 +236,7 @@ mod test {
     use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId};
 
     use super::{
-        AnnounceEvent, Command, Config, Event, RunState, Status, TimeoutEvent,
+        AnnounceEvent, Command, Config, Event, RunState, Status, SyncConfig, TimeoutEvent,
         DEFAULT_SYNC_MAX_PEERS,
     };
 
@@ -254,7 +259,10 @@ mod test {
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(
             Config {
-                sync_on_startup: false,
+                sync: SyncConfig {
+                    on_startup: false,
+                    ..SyncConfig::default()
+                },
                 ..Config::default()
             },
             HashSet::new(),
@@ -298,8 +306,11 @@ mod test {
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(
             Config {
-                sync_max_peers: max_peers,
-                sync_on_startup: true,
+                sync: SyncConfig {
+                    max_peers,
+                    on_startup: true,
+                    ..SyncConfig::default()
+                },
                 ..Config::default()
             },
             HashSet::new(),
@@ -347,8 +358,11 @@ mod test {
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(
             Config {
-                sync_period,
-                sync_on_startup: true,
+                sync: SyncConfig {
+                    on_startup: true,
+                    period: sync_period,
+                    ..SyncConfig::default()
+                },
                 ..Config::default()
             },
             HashSet::new(),

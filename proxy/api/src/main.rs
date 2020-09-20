@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use coco::{keystore, seed, signer, RunConfig};
+use coco::{keystore, seed, signer, RunConfig, SyncConfig};
 
 use api::{config, context, env, http, notification, session};
 
@@ -90,7 +90,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             state,
             store,
             RunConfig {
-                sync_on_startup: true,
+                sync: SyncConfig {
+                    on_startup: true,
+                    ..SyncConfig::default()
+                },
                 ..RunConfig::default()
             },
         )

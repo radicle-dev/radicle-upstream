@@ -17,7 +17,9 @@ mod announcement;
 pub use announcement::Announcement;
 
 mod run_state;
-pub use run_state::{AnnounceEvent, Config as RunConfig, Event, SyncEvent, TimeoutEvent};
+pub use run_state::{
+    AnnounceEvent, Config as RunConfig, Event, SyncConfig, SyncEvent, TimeoutEvent,
+};
 use run_state::{Command, RunState};
 
 mod sync;

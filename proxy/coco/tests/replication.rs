@@ -6,7 +6,7 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, RunConfig, SyncEvent};
+use coco::{config, seed::Seed, RunConfig, SyncConfig, SyncEvent};
 
 #[macro_use]
 mod common;
@@ -305,7 +305,10 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
             alice_state.clone(),
             alice_store,
             RunConfig {
-                sync_on_startup: true,
+                sync: SyncConfig {
+                    on_startup: true,
+                    ..SyncConfig::default()
+                },
                 ..RunConfig::default()
             },
         ));
