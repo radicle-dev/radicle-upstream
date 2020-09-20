@@ -8,7 +8,7 @@ use super::Error;
 
 /// Initiaites a fetch for all locally tracked projects from the given [`PeerId`].
 pub async fn sync(state: Lock, peer_id: PeerId) -> Result<(), Error> {
-    log::debug!("Starting sync for {}", peer_id);
+    log::debug!("Starting sync from {}", peer_id);
 
     let urls = state
         .lock()
