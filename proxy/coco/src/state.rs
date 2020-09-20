@@ -355,7 +355,7 @@ impl State {
         owner: &User,
         project: &project::Create<P>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
-        let storage = self.api.storage().reopen()?;
+        let storage = self.api.storage();
 
         let mut meta = project.build(owner, signer.public_key().into())?;
         meta.sign_owned(signer)?;
