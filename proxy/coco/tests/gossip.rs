@@ -5,7 +5,7 @@ use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, AnnounceEvent, Hash, RunConfig, Urn};
+use coco::{seed::Seed, AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn};
 
 mod common;
 use common::{
@@ -77,7 +77,17 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(alice_peer.run(
+        alice_state.clone(),
+        alice_store,
+        RunConfig {
+            announce: AnnounceConfig {
+                interval: Duration::from_millis(100),
+                ..AnnounceConfig::default()
+            },
+            ..RunConfig::default()
+        },
+    ));
     tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
     connected(bob_connected, &alice_peer_id).await?;
 

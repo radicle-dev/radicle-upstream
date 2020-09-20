@@ -18,7 +18,7 @@ pub use announcement::Announcement;
 
 mod run_state;
 pub use run_state::{
-    AnnounceEvent, Config as RunConfig, Event, SyncConfig, SyncEvent, TimeoutEvent,
+    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, SyncConfig, SyncEvent, TimeoutEvent,
 };
 use run_state::{Command, RunState};
 
@@ -90,7 +90,7 @@ impl Peer {
 
         // Start announcement timer.
         // TODO(xla): Find a more structured approach to manage timings.
-        let mut announce_timer = interval(std::time::Duration::from_secs(1));
+        let mut announce_timer = interval(run_config.announce.interval);
 
         let (announce_sender, mut announcements) =
             mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
