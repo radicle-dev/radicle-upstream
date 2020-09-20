@@ -247,6 +247,7 @@ impl RunState {
 mod test {
     use std::{
         collections::HashSet,
+        iter::FromIterator,
         net::SocketAddr,
         time::{Duration, Instant},
     };
@@ -319,6 +320,20 @@ mod test {
 
         let _cmds = state.transition(Event::Timeout(TimeoutEvent::SyncPeriod));
         assert_matches!(state.status, Status::Online(_));
+    }
+
+    #[test]
+    fn transition_to_offline_when_last_peer_disconnects() {
+        let peer_id = PeerId::from(SecretKey::new());
+        let status = Status::Online(Instant::now());
+        let mut state = RunState::new(
+            Config::default(),
+            HashSet::from_iter(vec![peer_id.clone()]),
+            status,
+        );
+
+        let _cmds = state.transition(Event::Protocol(ProtocolEvent::Disconnecting(peer_id)));
+        assert_matches!(state.status, Status::Offline(_));
     }
 
     #[test]
