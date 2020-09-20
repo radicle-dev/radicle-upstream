@@ -83,7 +83,6 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         RunConfig {
             announce: AnnounceConfig {
                 interval: Duration::from_millis(100),
-                ..AnnounceConfig::default()
             },
             ..RunConfig::default()
         },
