@@ -24,8 +24,8 @@ let mainWindow;
 let proxyChildProcess;
 
 const startApp = () => {
-  if (app.commandLine.hasSwitch("factory-reset")) {
-    factoryReset();
+  if (app.commandLine.hasSwitch("reset-state")) {
+    resetState();
   } else {
     startProxy();
     createWindow();
@@ -120,8 +120,8 @@ const startProxy = () => {
   });
 };
 
-const factoryReset = () => {
-  execFile(proxyPath, ["--factory-reset"], (error, stdout, stderr) => {
+const resetState = () => {
+  execFile(proxyPath, ["--reset-state"], (error, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
     app.exit();

@@ -137,7 +137,7 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
-    "wipe": "cd proxy && cargo run -- --factory-reset"
+    "wipe": "cd proxy && cargo run -- --reset-state"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",

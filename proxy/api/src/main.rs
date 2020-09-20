@@ -7,7 +7,7 @@ use api::{config, context, env, http, notification, session};
 /// Flags accepted by the proxy binary.
 struct Args {
     /// Wipe all local state, use with caution.
-    factory_reset: bool,
+    reset_state: bool,
     /// Put proxy in test mode to use certain fixtures.
     test: bool,
 }
@@ -20,12 +20,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        factory_reset: args.contains("--factory-reset"),
+        reset_state: args.contains("--reset-state"),
         test: args.contains("--test"),
     };
 
-    if args.factory_reset {
-        return Ok(factory_reset()?);
+    if args.reset_state {
+        return Ok(reset_state()?);
     }
 
     let proxy_path = config::proxy_path()?;
@@ -104,7 +104,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn factory_reset() -> Result<(), io::Error> {
+fn reset_state() -> Result<(), io::Error> {
     log::info!("Resetting application state...");
     if let Err(err) = remove_dir_all(config::dirs().data_dir()) {
         if err.kind() == io::ErrorKind::NotFound {
