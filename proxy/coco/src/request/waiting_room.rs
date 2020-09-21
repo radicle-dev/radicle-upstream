@@ -69,8 +69,6 @@ impl<R> Strategy<R> {
     }
 }
 
-// TODO(finto): Test scenario of "running" a request and updating the waiting room. Testing state
-// transitions.
 impl<T> WaitingRoom<T> {
     pub fn new(config: Config) -> Self {
         Self {
@@ -307,6 +305,14 @@ impl<T> WaitingRoom<T> {
             strategy,
         )
     }
+
+    #[cfg(test)]
+    pub fn insert<R>(&mut self, urn: RadUrn, request: R)
+    where
+        R: Into<SomeRequest<T>>,
+    {
+        self.requests.insert(urn, request.into());
+    }
 }
 
 #[cfg(test)]
@@ -315,9 +321,12 @@ mod test {
 
     use librad::{keys::SecretKey, peer::PeerId, uri::RadUrn};
     use pretty_assertions::assert_eq;
+    use proptest::{collection, prelude::prop_assert_eq};
 
     use super::*;
     use crate::request::Attempts;
+
+    // TODO(finto): Test queried_found
 
     #[test]
     fn happy_path_of_full_request() {
@@ -360,5 +369,203 @@ mod test {
             .unwrap_right()
             .cloned(found_repo, ());
         assert_eq!(fulfilled, Ok(expected));
+    }
+
+    #[test]
+    fn cannot_create_twice() {
+        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config::default());
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        waiting_room.create(urn.clone(), ());
+        let request = waiting_room.create(urn.clone(), ());
+        assert_eq!(request, Some(SomeRequest::Created(Request::new(urn, ()))));
+    }
+
+    #[test]
+    fn timeout_on_requests() -> Result<(), Box<dyn error::Error + 'static>> {
+        const NUM_QUERIES: usize = 16;
+        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+            max_queries: Queries::new(NUM_QUERIES),
+            max_clones: Clones::new(0),
+        });
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+
+        let _ = waiting_room.create(urn.clone(), ());
+        let mut request = Either::Right(waiting_room.requested(&urn, ())?);
+
+        for _ in 0..NUM_QUERIES {
+            request = waiting_room.queried_requested(&urn, ())?;
+        }
+
+        assert_eq!(
+            request,
+            Either::Left(Request {
+                urn,
+                attempts: Attempts {
+                    queries: Queries::new(NUM_QUERIES + 1),
+                    clones: Clones::new(0),
+                },
+                timestamp: (),
+                state: TimedOut::Query,
+            })
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn timeout_on_clones() -> Result<(), Box<dyn error::Error + 'static>> {
+        const NUM_CLONES: usize = 16;
+        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+            max_queries: Queries::new(1),
+            max_clones: Clones::new(NUM_CLONES),
+        });
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let peer_id = PeerId::from(SecretKey::new());
+
+        let _ = waiting_room.create(urn.clone(), ());
+        let _ = waiting_room.requested(&urn, ())?;
+        let _ = waiting_room.first_peer(&urn, peer_id.clone(), ())?;
+        let mut request = waiting_room.cloning(&urn, ())?;
+
+        for _ in 0..NUM_CLONES {
+            let _ = waiting_room.failed(peer_id.clone(), &urn, ())?;
+            request = waiting_room.cloning(&urn, ())?;
+        }
+
+        assert_eq!(
+            request,
+            Either::Left(Request {
+                urn,
+                attempts: Attempts {
+                    queries: Queries::new(1),
+                    clones: Clones::new(NUM_CLONES + 1),
+                },
+                timestamp: (),
+                state: TimedOut::Clone,
+            })
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn cancel_transitions() -> Result<(), Box<dyn error::Error + 'static>> {
+        let config = Config::default();
+        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(config);
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let peer_id = PeerId::from(SecretKey::new());
+
+        // created
+        let _ = waiting_room.create(urn.clone(), ());
+        let request = waiting_room.canceled(&urn, ())?;
+        assert_eq!(request, Request::new(urn.clone(), ()).cancel(()));
+
+        // requested
+        let is_requested = Request::new(urn.clone(), ()).request(());
+        waiting_room.insert(urn.clone(), is_requested.clone());
+        let request = waiting_room.canceled(&urn, ())?;
+        assert_eq!(request, is_requested.clone().cancel(()));
+
+        // found
+        let found = is_requested.first_peer(peer_id.clone(), ());
+        waiting_room.insert(urn.clone(), found.clone());
+        let request = waiting_room.canceled(&urn, ())?;
+        assert_eq!(request, found.clone().cancel(()));
+
+        // cloning
+        let cloning = found
+            .cloning(config.max_queries, config.max_clones, ())
+            .unwrap_right();
+        waiting_room.insert(urn.clone(), cloning.clone());
+        let request = waiting_room.canceled(&urn, ())?;
+        assert_eq!(request, cloning.clone().cancel(()));
+
+        // cloned
+        let cloned = cloning.cloned(urn.clone(), ());
+        waiting_room.insert(urn.clone(), cloned.clone());
+        let request = waiting_room.canceled(&urn, ());
+        assert_eq!(request, Err(Error::StateMismatch));
+
+        // cancel
+        let cancelled = Request::new(urn.clone(), ()).cancel(());
+        waiting_room.insert(urn.clone(), cancelled.clone());
+        let request = waiting_room.canceled(&urn, ())?;
+        assert_eq!(request, cancelled);
+
+        Ok(())
+    }
+
+    #[test]
+    fn can_get_request_that_is_ready() -> Result<(), Box<dyn error::Error + 'static>> {
+        let config = Config::default();
+        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(config);
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let peer_id = PeerId::from(SecretKey::new());
+        let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
+
+        let ready = waiting_room.ready(strategy.clone());
+        assert_eq!(ready, None);
+
+        let _ = waiting_room.create(urn.clone(), ());
+        waiting_room.requested(&urn, ())?;
+        waiting_room.first_peer(&urn, peer_id, ())?;
+        waiting_room.cloning(&urn, ())?;
+        let cloned = waiting_room.cloned(&urn, urn.clone(), ())?;
+
+        let ready = waiting_room.ready(strategy);
+        assert_eq!(ready, Some(&cloned));
+
+        Ok(())
+    }
+
+    fn strategy_first(xs: &[u32]) -> (Option<&u32>, Option<&u32>) {
+        let first = xs.first();
+        let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
+
+        (strategy.next(xs.iter(), |i| *i), first)
+    }
+
+    fn strategy_newest(xs: &[u32]) -> (Option<&u32>, Option<&u32>) {
+        let newest = xs.iter().max();
+        let strategy: Strategy<rand::rngs::StdRng> = Strategy::Newest;
+
+        (strategy.next(xs.iter(), |i| *i), newest)
+    }
+
+    fn strategy_oldest(xs: &[u32]) -> (Option<&u32>, Option<&u32>) {
+        let oldest = xs.iter().min();
+        let strategy: Strategy<rand::rngs::StdRng> = Strategy::Oldest;
+
+        (strategy.next(xs.iter(), |i| *i), oldest)
+    }
+
+    proptest! {
+        #[test]
+        fn prop_strategy_first(xs in collection::vec(0u32..1000, 1..100)) {
+            let (got, expected) = strategy_first(&xs);
+            prop_assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn prop_strategy_newest(xs in collection::vec(0u32..1000, 1..100)) {
+            let (got, expected) = strategy_newest(&xs);
+            prop_assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn prop_strategy_oldest(xs in collection::vec(0u32..1000, 1..100)) {
+            let (got, expected) = strategy_oldest(&xs);
+            prop_assert_eq!(got, expected);
+        }
     }
 }

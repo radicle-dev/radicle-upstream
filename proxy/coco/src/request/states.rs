@@ -1,3 +1,21 @@
+//! A `Request` can be in multiple states and these states have specified transitions.
+//!
+//!      +----------------------------------v
+//!      |                             +---------+
+//!      |                   +-------->+cancelled+<------+
+//!      |                   |         +----+----+       |
+//!      |                   |              ^            |
+//!      |                   |              |            |
+//! +----+----+       +------+--+       +---+-+      +---+---+       +------+
+//! | created +------>+requested+------>+found+----->+cloning+------>+cloned|
+//! +---------+       +------+--+       +--+--+      +---+---+       +------+
+//!                          |             |  ^------+   |
+//!                          |             |   failed    |
+//!                          |             v             |
+//!                          |          +--+------+      |
+//!                          +--------->+timed out+------+
+//!                                     +---------+
+
 use std::ops::{Add, AddAssign};
 use std::{collections::HashMap, marker::PhantomData};
 

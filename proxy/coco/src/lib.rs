@@ -21,6 +21,10 @@
 )]
 #![feature(hash_set_entry)]
 
+#[cfg(test)]
+#[macro_use]
+extern crate proptest;
+
 pub use librad::{
     git::local::url::LocalUrl,
     hash::Hash,
