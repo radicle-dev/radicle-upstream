@@ -73,7 +73,7 @@
     </p>
     <Input.Text
       autofocus={true}
-      placeholder="Enter a display name (i.e. coolprogrammer3000)"
+      placeholder="Enter a display name (e.g. coolprogrammer3000)"
       bind:value={handle}
       on:enter={next}
       dataCy="handle-input"
