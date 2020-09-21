@@ -57,4 +57,4 @@ export const escape: KeyboardShortcut = {
   displayKey: "esc",
 };
 
-export const OSModifierKey = isMac ? "⌘" : "ctrl";
+export const osModifierKey = isMac ? "⌘" : "ctrl";
