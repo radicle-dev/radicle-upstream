@@ -49,6 +49,18 @@
 - [ ] It's possible to go to the next screen by pressing <kbd>enter</kbd> if
       the input field validations allow it
 - [ ] Handle and passphrase validations work
+  - handle
+    - starts with a letter or digit
+    - is at least 2 characters long
+    - can contain the letters `a`-`z`, `A`-`Z`, digits `0`-`9` and special
+      characters `-`, `_`
+    - all of the following examples should show a validation error:
+      `_john`, `x`, `linu$$$`, `-moira`
+  - passphrase
+    - is at least 4 characters long
+    - the repeated passphrase is equal to the first one
+    - all of the following example pairs should show a validation error:
+      `1`/`1`, `12`/`12`, `123`/`123`, `supersecret`/`supersceret`
 - [ ] After passphrase input the identity is created and a copyable URN is
       provided
 - [ ] After completion we land on our profile page which contains a placeholder
@@ -68,6 +80,13 @@
 ### Projects
 
 - [ ] Can create a new project with a new repository
+  - [ ] Name validations work
+      - starts with a letter or digit
+      - is at least 2 characters long
+      - can contain the letters `a`-`z`, `A`-`Z`, digits `0`-`9` and special
+        characters `-`, `_`, `.`
+      - all of the following examples should show a validation error:
+        `1`, `-fancy-`, `_doh_`, `rx~pixels`, `💁👌🎍😍`
 - [ ] Can create a new project from an existing repository
   - [ ] Adding larger projects don't crash the app
   - [ ] UI interaction is blocked while project creation is in progress
@@ -95,11 +114,23 @@
 
 #### Source browsing
 
-- [ ] Metadata and stats in UI reflect what is in the actual repository
+- [ ] Metadata and stats in UI reflect what is in the actual repository; here
+      are a couple commands that will help you get the numbers from
+      a repository:
+  - local branch count
+    `git branch | wc -l`
+  - all unique contributors across all branches
+    `git shortlog --summary --numbered --email --all`
+  - all unique contributors in a specific branch
+    `git shortlog --summary --numbered --email myfunkybranch`
+  - unique commit count across all branches
+    `git rev-list --all --count`
+  - commit count in a specific branch
+    `git rev-list --count myfunkybranch`
 - [ ] `README.md` files are shown by default and markdown is rendered as HTML
   - [ ] Links to external resources open in external browser
   - [ ] Links to internal resources don't do anything
-  - [ ] If the project doesn't have a readme, a placeholder is shown
+  - [ ] If the project doesn't have a `README.md`, a placeholder is shown
 - [ ] Syntax highlighting works for source files
 - [ ] Binary files show a placeholder
 - [ ] It's possible to navigate to deeper hierarchies via the tree browser
