@@ -74,12 +74,7 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(
-        self,
-        state: Lock,
-        store: kv::Store,
-        run_config: RunConfig,
-    ) -> Result<(), Error> {
+    pub async fn run(self, state: Lock, store: kv::Store, run_config: RunConfig) {
         // Subscribe to protocol events.
         let protocol_subscriber = {
             let state = state.lock().await;
@@ -132,8 +127,6 @@ impl Peer {
                 };
             }
         }
-
-        Ok(())
     }
 
     /// Announcement subroutine.

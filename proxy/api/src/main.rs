@@ -92,21 +92,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     log::info!("starting coco peer");
-    tokio::spawn(async move {
-        peer.run(
-            state,
-            store,
-            RunConfig {
-                sync: SyncConfig {
-                    on_startup: true,
-                    ..SyncConfig::default()
-                },
-                ..RunConfig::default()
+    tokio::spawn(peer.run(
+        state,
+        store,
+        RunConfig {
+            sync: SyncConfig {
+                on_startup: true,
+                ..SyncConfig::default()
             },
-        )
-        .await
-        .expect("peer run loop crashed");
-    });
+            ..RunConfig::default()
+        },
+    ));
 
     log::info!("Starting API");
     let api = http::api(ctx, subscriptions, args.test);
