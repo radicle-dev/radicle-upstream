@@ -85,6 +85,8 @@
       - is at least 2 characters long
       - can contain the letters `a`-`z`, `A`-`Z`, digits `0`-`9` and special
         characters `-`, `_`, `.`
+      - all of the following examples should show a validation error:
+        `1`, `-fancy-`, `_doh_`, `rx~pixels`, `💁👌🎍😍`
 - [ ] Can create a new project from an existing repository
   - [ ] Adding larger projects don't crash the app
   - [ ] UI interaction is blocked while project creation is in progress
