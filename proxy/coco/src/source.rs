@@ -376,7 +376,7 @@ where
             Revision::Sha { sha } => {
                 let oid: git2::Oid = sha.into();
                 Ok(oid.into())
-            },
+            }
         }
     }
 }
@@ -469,10 +469,10 @@ fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobCon
                         );
                     }
                     BlobContent::Html(html)
-                },
+                }
                 _ => BlobContent::Ascii(content.to_owned()),
             }
-        },
+        }
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -588,7 +588,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
             }
@@ -829,9 +829,7 @@ mod tests {
     async fn browse_commit() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::new(signer::SomeSigner {
-            signer: key.clone(),
-        });
+        let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
         let config = config::default(key, tmp_dir).expect("unable to get default config");
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
