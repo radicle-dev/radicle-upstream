@@ -54,9 +54,13 @@
     - is at least 2 characters long
     - can contain the letters `a`-`z`, `A`-`Z`, digits `0`-`9` and special
       characters `-`, `_`
+    - all of the following examples should show a validation error:
+      `_john`, `x`, `linu$$$`, `-moira`
   - passphrase
     - is at least 4 characters long
     - the repeated passphrase is equal to the first one
+    - all of the following example pairs should show a validation error:
+      `1`/`1`, `12`/`12`, `123`/`123`, `supersecret`/`supersceret`
 - [ ] After passphrase input the identity is created and a copyable URN is
       provided
 - [ ] After completion we land on our profile page which contains a placeholder
