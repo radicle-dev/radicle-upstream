@@ -1,35 +1,53 @@
+use std::time::Duration;
+
+use futures::{future, StreamExt as _};
+use tokio::time::timeout;
+
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::config;
+use coco::{config, seed::Seed, RunConfig, SyncConfig, SyncEvent};
 
+#[macro_use]
 mod common;
-use common::{build_peer, init_logging, shia_le_pathbuf};
+use common::{build_peer, build_peer_with_seeds, connected, init_logging, shia_le_pathbuf};
 
 #[tokio::test]
 async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
+    let alice = {
+        let alice_signer = alice_signer.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || ally.init_owner(&alice_signer.clone(), "alice"))
+            .await??
+    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
     let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
-    let _bob = bob_state.lock().await.init_owner(&bob_signer, "bob")?;
+    let _bob = {
+        let bob_state = bob_state.clone();
+        let bobby = bob_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
+    };
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
 
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
-    let project = alice_state.lock().await.init_project(
-        &alice_signer,
-        &alice,
-        &shia_le_pathbuf(alice_repo_path),
-    )?;
+    let project = {
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            ally.init_project(&alice_signer, &alice, &shia_le_pathbuf(alice_repo_path))
+        })
+        .await??
+    };
 
     let project_urn = {
         let alice_peer_id = alice_state.lock().await.peer_id();
@@ -65,30 +83,31 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
+    let alice = {
+        let alice_signer = alice_signer.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || ally.init_owner(&alice_signer.clone(), "alice"))
+            .await??
+    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
     let (bob_peer, bob_state, _bob_signer) = build_peer(&bob_tmp_dir).await?;
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(alice_state.clone(), bob_store, RunConfig::default()));
 
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
     let cloned_urn = {
         let alice_peer_id = alice_state.lock().await.peer_id();
         let alice_addr = alice_state.lock().await.listen_addr();
         let url = alice.urn().into_rad_url(alice_peer_id);
 
         let bobby = bob_state.clone().lock_owned().await;
-        tokio::task::spawn_blocking(move || {
-            bobby
-                .clone_user(url, vec![alice_addr].into_iter())
-                .expect("unable to clone project")
-        })
-        .await?
+        tokio::task::spawn_blocking(move || bobby.clone_user(url, vec![alice_addr].into_iter()))
+            .await??
     };
 
     let want = bob_state
@@ -110,25 +129,43 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
+    let alice = {
+        let alice_signer = alice_signer.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || ally.init_owner(&alice_signer.clone(), "alice"))
+            .await??
+    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
     let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
-    let _bob = bob_state.lock().await.init_owner(&bob_signer, "bob")?;
+    let _bob = {
+        let bob_state = bob_state.clone();
+        let bobby = bob_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
+    };
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
 
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
-    let project = alice_state.lock().await.init_project(
-        &alice_signer,
-        &alice,
-        &shia_le_pathbuf(alice_repo_path.clone()),
-    )?;
+    let project = {
+        let alice = alice.clone();
+        let alice_repo_path = alice_repo_path.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            ally.init_project(
+                &alice_signer,
+                &alice,
+                &shia_le_pathbuf(alice_repo_path.clone()),
+            )
+        })
+        .await??
+    };
 
     let project_urn = {
         let alice_addr = alice_state.lock().await.listen_addr();
@@ -191,12 +228,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         let fetch_url = project.urn().into_rad_url(alice_peer_id.clone());
 
         let bobby = bob_state.clone().lock_owned().await;
-        tokio::task::spawn_blocking(move || {
-            bobby
-                .fetch(fetch_url, vec![alice_addr])
-                .expect("unable to fetch")
-        })
-        .await?;
+        tokio::task::spawn_blocking(move || bobby.fetch(fetch_url, vec![alice_addr])).await??;
     };
 
     let alice_peer_id = alice_state.lock().await.peer_id();
@@ -212,6 +244,82 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         },
         commit_id
     )?);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
+
+    let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
+    let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
+    let alice_addr = alice_state.lock().await.listen_addr();
+    let alice_peer_id = alice_state.lock().await.peer_id();
+    let alice_events = alice_peer.subscribe();
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
+    let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
+        &bob_tmp_dir,
+        vec![Seed {
+            addr: alice_addr,
+            peer_id: alice_peer_id.clone(),
+        }],
+    )
+    .await?;
+    let bob_peer_id = bob_state.lock().await.peer_id();
+
+    let alice = {
+        let alice_signer = alice_signer.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || ally.init_owner(&alice_signer.clone(), "alice"))
+            .await??
+    };
+    let _bob = {
+        let bob_state = bob_state.clone();
+        let bobby = bob_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
+    };
+    {
+        let alice = alice.clone();
+        let alice_repo_path = alice_repo_path.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            ally.init_project(
+                &alice_signer,
+                &alice,
+                &shia_le_pathbuf(alice_repo_path.clone()),
+            )
+        })
+        .await??;
+    };
+
+    {
+        let bob_events = bob_peer.subscribe();
+        tokio::task::spawn(alice_peer.run(
+            alice_state.clone(),
+            alice_store,
+            RunConfig {
+                sync: SyncConfig {
+                    on_startup: true,
+                    ..SyncConfig::default()
+                },
+                ..RunConfig::default()
+            },
+        ));
+        tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
+        connected(bob_events, &alice_peer_id).await?;
+    };
+
+    assert_event!(
+        alice_events,
+        coco::PeerEvent::PeerSync(SyncEvent::Succeeded(peer_id)) if peer_id == bob_peer_id
+    )?;
 
     Ok(())
 }

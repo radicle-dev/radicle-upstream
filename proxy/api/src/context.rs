@@ -46,7 +46,7 @@ impl Context {
 
         let (_peer, state) = {
             let config = coco::config::default(key, tmp_dir.path())?;
-            coco::into_peer_state(config, signer.clone(), store.clone()).await?
+            coco::into_peer_state(config, signer.clone()).await?
         };
 
         Ok(Arc::new(RwLock::new(Self {
@@ -83,7 +83,6 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
 
     let paths = coco::Paths::from_root(tmp_path.clone())?;
 
-    let store = kv::Store::new(kv::Config::new(tmp_path.join("store")))?;
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut new_keystore = keystore::Keystorage::new(&paths, pw);
     let key = new_keystore.init()?;
@@ -91,13 +90,13 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
 
     let (_new_peer, new_state) = {
         let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
-        coco::into_peer_state(config, signer.clone(), store.clone()).await?
+        coco::into_peer_state(config, signer.clone()).await?
     };
 
     let mut ctx = ctx.write().await;
     ctx.state = new_state;
     ctx.signer = signer;
-    ctx.store = store;
+    ctx.store = kv::Store::new(kv::Config::new(tmp_path.join("store")))?;
 
     Ok(())
 }

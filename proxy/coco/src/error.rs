@@ -99,4 +99,8 @@ pub enum Error {
     /// Verifcation error.
     #[error(transparent)]
     Verification(#[from] entity::HistoryVerificationError),
+
+    /// When trying to query a repositories branches, but there are none.
+    #[error("The repository has no branches")]
+    NoBranches,
 }
