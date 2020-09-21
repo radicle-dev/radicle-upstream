@@ -127,7 +127,8 @@ context("identity creation", () => {
 
     context("handle", () => {
       it("prevents the user from submitting an invalid handle", () => {
-        const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
+        const validationError =
+          "Display name should match ^[a-z0-9][a-z0-9_-]+$";
 
         cy.pick("handle-input").type("_rafalca");
         cy.pick("next-button").click();
