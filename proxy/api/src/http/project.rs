@@ -146,7 +146,13 @@ mod handler {
             .get_project(&urn, peer_id)
             .map_err(Error::from)?;
 
-        let path = coco::project::Checkout::new(project, path)
+        let include = ctx
+            .state
+            .lock()
+            .await
+            .prepare_include(&project)
+            .map_err(Error::from)?;
+        let path = coco::project::Checkout::new(project, path, include)
             .run(ctx.state.lock().await.peer_id())
             .map_err(Error::from)?;
 

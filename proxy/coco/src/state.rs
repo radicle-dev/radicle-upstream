@@ -13,6 +13,7 @@ use tokio::sync::Mutex;
 
 use librad::{
     git::{
+        include::Include,
         local::{transport, url::LocalUrl},
         refs::Refs,
         storage,
@@ -442,6 +443,23 @@ impl State {
                     .map_err(Error::from)
             })
             .collect()
+    }
+
+    pub fn prepare_include<P>(
+        &self,
+        project: &librad_project::Project<entity::Draft>,
+    ) -> Result<Include<P>, Error>
+    where
+        P: AsRef<std::path::Path>,
+    {
+        let local_url = LocalUrl::from_urn(project.urn(), self.peer_id());
+        let tracked = self.tracked(&project.urn())?;
+
+        Ok(Include::from_tracked_users(
+            self.paths().git_include_dir(),
+            local_url,
+            tracked.into_iter(),
+        ))
     }
 }
 

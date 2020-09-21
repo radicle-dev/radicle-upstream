@@ -5,7 +5,7 @@ use std::{
 
 pub use librad::meta::project::Project;
 use librad::{
-    git::{local::url::LocalUrl, types::remote::Remote},
+    git::{include::Include, local::url::LocalUrl, types::remote::Remote},
     peer::PeerId,
 };
 use radicle_surf::vcs::git::git2;
@@ -27,6 +27,7 @@ where
     project: Project<ST>,
     /// The path on the filesystem where we're going to checkout to.
     path: P,
+    include: Include<P>,
 }
 
 impl<P, ST> Checkout<P, ST>
@@ -35,8 +36,12 @@ where
     ST: Clone,
 {
     /// Create a new `Checkout` with the mock `Credential::Password` helper.
-    pub fn new(project: Project<ST>, path: P) -> Self {
-        Self { project, path }
+    pub fn new(project: Project<ST>, path: P, include: Include<P>) -> Self {
+        Self {
+            project,
+            path,
+            include,
+        }
     }
 
     /// Checkout a working copy of a [`Project`].
@@ -78,6 +83,7 @@ where
             &project_path,
         )?;
 
+        super::set_include_path(&repo, &self.include)?;
         super::set_rad_upstream(&repo, self.project.default_branch())?;
 
         Ok(project_path)
