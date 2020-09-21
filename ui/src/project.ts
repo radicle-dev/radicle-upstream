@@ -255,7 +255,7 @@ const validateExistingRepository = (path: string): Promise<boolean> => {
   return fetchBranches(path).then(() => {
     return (
       !get(localStateError).match("could not find repository") &&
-      !get(localStateError).match("Failed to fetch")
+      !get(localStateError).match("repository has no branches")
     );
   });
 };

@@ -376,7 +376,7 @@ where
             Revision::Sha { sha } => {
                 let oid: git2::Oid = sha.into();
                 Ok(oid.into())
-            },
+            }
         }
     }
 }
@@ -469,10 +469,10 @@ fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobCon
                         );
                     }
                     BlobContent::Html(html)
-                },
+                }
                 _ => BlobContent::Ascii(content.to_owned()),
             }
-        },
+        }
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -519,7 +519,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
             name.map(String::from)
         })
         .min()
-        .expect("Could not find any branches.");
+        .ok_or(Error::NoBranches)?;
 
     log::debug!(
         "The fallback branch for this repository is: {:?}",
@@ -588,7 +588,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
             }
