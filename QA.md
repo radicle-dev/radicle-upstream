@@ -32,7 +32,7 @@
 - [ ] Check that unreleased features are not visible in the UI
   - [ ] Experimental features and developer helpers are not accessible
     - Issues and Revisions tabs on the Project screen
-    - Wallets on the User Profile screen
+    - Wallets tab on the User Profile screen
     - Design Sytem Guide is not listed in the shortcuts modal <kbd>?</kbd> and
       the respective global hotkey is disabled <kbd>⌘</kbd>+<kbd>d</kbd>
     - Tags are not visible in the revision selector on the Project Source screen

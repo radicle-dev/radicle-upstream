@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
+  import { isExperimental } from "../../../../native/ipc.js";
   import { RevisionType } from "../../../src/source.ts";
 
   import { Icon } from "../../Primitive";
@@ -170,25 +171,27 @@
           <span class="revision-name typo-text">{branch}</span>
         </li>
       {/each}
-      {#each currentSelectedPeer.tags as tag}
-        <li
-          class="tag typo-overflow-ellipsis"
-          class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-          data-tag={tag}
-          on:click|stopPropagation={() => selectRevision(
-              currentSelectedPeer.identity.peerId,
-              {
-                type: RevisionType.Tag,
-                name: tag,
-              }
-            )}>
-          <Icon.Label
-            dataCy="tag-icon"
-            style="vertical-align: bottom; fill:
-            var(--color-foreground-level-4)" />
-          <span class="revision-name typo-text">{tag}</span>
-        </li>
-      {/each}
+      {#if isExperimental()}
+        {#each currentSelectedPeer.tags as tag}
+          <li
+            class="tag typo-overflow-ellipsis"
+            class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
+            data-tag={tag}
+            on:click|stopPropagation={() => selectRevision(
+                currentSelectedPeer.identity.peerId,
+                {
+                  type: RevisionType.Tag,
+                  name: tag,
+                }
+              )}>
+            <Icon.Label
+              dataCy="tag-icon"
+              style="vertical-align: bottom; fill:
+              var(--color-foreground-level-4)" />
+            <span class="revision-name typo-text">{tag}</span>
+          </li>
+        {/each}
+      {/if}
     </ul>
   </div>
 </div>
