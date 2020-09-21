@@ -27,7 +27,7 @@
 
 <div class="hint-container" {style}>
   {#if addModifier}
-    <p class="typo-text hint">{OSModifierKey}</p>
+    <p class="typo-text hint">{osModifierKey}</p>
   {/if}
   <p class="typo-text hint">{hint}</p>
 </div>
