@@ -5,7 +5,7 @@ context("identity creation", () => {
   };
 
   beforeEach(() => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.visit("./public/index.html");
     cy.pick("welcome-screen").should("exist");
   });
@@ -75,7 +75,7 @@ context("identity creation", () => {
       cy.pick("clear-session-button").click();
       cy.contains("A free and open-source way to host").should("exist");
 
-      // When creating the same identity again without nuking all data, it
+      // When creating the same identity again without resetting all data, it
       // should show an error and return to the name entry screen.
       cy.pick("get-started-button").click();
 
