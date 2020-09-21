@@ -8,7 +8,7 @@ use crate::context;
 /// Combination of all control filters.
 pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
     create_project_filter(ctx.clone())
-        .or(nuke_coco_filter(ctx))
+        .or(reset_coco_filter(ctx))
         .boxed()
 }
 
@@ -23,13 +23,13 @@ fn create_project_filter(
         .and_then(handler::create_project)
 }
 
-/// GET /nuke/coco
-fn nuke_coco_filter(
+/// GET /reset/coco
+fn reset_coco_filter(
     ctx: context::Ctx,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("nuke" / "coco")
+    path!("reset" / "coco")
         .and(super::with_context(ctx))
-        .and_then(handler::nuke_coco)
+        .and_then(handler::reset_coco)
 }
 
 /// Control handlers for conversion between core domain and http request fulfilment.
@@ -83,8 +83,8 @@ mod handler {
         ))
     }
 
-    /// Reset the coco state.
-    pub async fn nuke_coco(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
+    /// Reset the local `CoCo` state.
+    pub async fn reset_coco(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -130,7 +130,7 @@ mod handler {
         use crate::{context, error};
 
         #[tokio::test]
-        async fn nuke_coco() -> Result<(), error::Error> {
+        async fn reset_coco() -> Result<(), error::Error> {
             let tmp_dir = tempfile::tempdir()?;
             let ctx = context::Context::tmp(&tmp_dir).await?;
 
@@ -140,7 +140,7 @@ mod handler {
                 (state.paths(), state.peer_id())
             };
 
-            super::nuke_coco(ctx.clone()).await.unwrap();
+            super::reset_coco(ctx.clone()).await.unwrap();
 
             let (new_paths, new_peer_id) = {
                 let ctx = ctx.read().await;
@@ -175,58 +175,4 @@ pub struct CreateInput {
     default_branch: String,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
-}
-
-#[allow(clippy::unwrap_used)]
-#[cfg(test)]
-mod test {
-    use pretty_assertions::assert_eq;
-    use warp::{http::StatusCode, test::request};
-
-    use crate::{context, error, http};
-
-    // TODO(xla): This can't hold true anymore, given that we nuke the owner. Which is required in
-    // order to register a project. Should we rework the test? How do we make sure an owner is
-    // present?
-    #[ignore]
-    #[tokio::test]
-    async fn create_project_after_nuke() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx);
-
-        // Create project before nuke.
-        let res = request()
-            .method("POST")
-            .path("/create-project")
-            .json(&super::CreateInput {
-                name: "Monadic".into(),
-                description: "blabla".into(),
-                default_branch: "master".into(),
-                fake_peers: None,
-            })
-            .reply(&api)
-            .await;
-        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
-
-        // Reset state.
-        let res = request().method("GET").path("/nuke/coco").reply(&api).await;
-        assert_eq!(res.status(), StatusCode::OK);
-
-        let res = request()
-            .method("POST")
-            .path("/create-project")
-            .json(&super::CreateInput {
-                name: "Monadic".into(),
-                description: "blabla".into(),
-                default_branch: "master".into(),
-                fake_peers: None,
-            })
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
-
-        Ok(())
-    }
 }
