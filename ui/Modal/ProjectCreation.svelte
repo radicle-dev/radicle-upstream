@@ -233,7 +233,7 @@
     </div>
 
     <Tooltip
-      value={isExisting && 'The project name is taken from the the repository you selected'}
+      value={isExisting && 'The project name is taken from the repository you selected'}
       position="top">
       <Input.Text
         placeholder="Project name*"
