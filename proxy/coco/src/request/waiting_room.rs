@@ -24,8 +24,23 @@ pub enum Error {
 #[serde(rename_all = "camelCase")]
 pub struct WaitingRoom<T> {
     requests: HashMap<RadUrn, SomeRequest<T>>,
-    max_queries: Queries,
-    max_clones: Clones,
+    config: Config,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Config {
+    pub max_queries: Queries,
+    pub max_clones: Clones,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            max_queries: MAX_QUERIES,
+            max_clones: MAX_CLONES,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -56,11 +71,10 @@ impl<R> Strategy<R> {
 // TODO(finto): Test scenario of "running" a request and updating the waiting room. Testing state
 // transitions.
 impl<T> WaitingRoom<T> {
-    pub fn new() -> Self {
+    pub fn new(config: Config) -> Self {
         Self {
             requests: HashMap::new(),
-            max_queries: MAX_QUERIES,
-            max_clones: MAX_CLONES,
+            config,
         }
     }
 
@@ -127,8 +141,8 @@ impl<T> WaitingRoom<T> {
     where
         T: Clone,
     {
-        let max_queries = self.max_queries;
-        let max_clones = self.max_clones;
+        let max_queries = self.config.max_queries;
+        let max_clones = self.config.max_clones;
         self.transition(
             |request| match request {
                 SomeRequest::Requested(request) => Some(request),
@@ -147,8 +161,8 @@ impl<T> WaitingRoom<T> {
     where
         T: Clone,
     {
-        let max_queries = self.max_queries;
-        let max_clones = self.max_clones;
+        let max_queries = self.config.max_queries;
+        let max_clones = self.config.max_clones;
         self.transition(
             |request| match request {
                 SomeRequest::Found(request) => Some(request),
@@ -186,8 +200,8 @@ impl<T> WaitingRoom<T> {
     where
         T: Clone,
     {
-        let max_queries = self.max_queries;
-        let max_clones = self.max_clones;
+        let max_queries = self.config.max_queries;
+        let max_clones = self.config.max_clones;
         self.transition(
             |request| match request {
                 SomeRequest::Found(request) => Some(request),
@@ -295,13 +309,17 @@ impl<T> WaitingRoom<T> {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use std::error;
 
     use librad::{keys::SecretKey, peer::PeerId, uri::RadUrn};
+    use pretty_assertions::assert_eq;
+
+    use super::*;
+    use crate::request::Attempts;
 
     #[test]
     fn happy_path_of_full_request() {
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new();
+        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
