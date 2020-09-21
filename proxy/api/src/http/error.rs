@@ -43,7 +43,7 @@ impl fmt::Display for Routing {
             Self::MissingOwner => write!(f, "Owner is missing"),
             Self::InvalidQuery { query, error } => {
                 write!(f, "Invalid query string \"{}\": {}", query, error)
-            }
+            },
             Self::QueryMissing => write!(f, "Required query string is missing"),
         }
     }
@@ -81,20 +81,20 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             match err {
                 Routing::MissingOwner => {
                     (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
-                }
+                },
                 Routing::InvalidQuery { .. } => {
                     (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
-                }
+                },
                 Routing::QueryMissing { .. } => {
                     (StatusCode::BAD_REQUEST, "QUERY_MISSING", err.to_string())
-                }
+                },
             }
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
                 error::Error::Coco(coco_err) => match coco_err {
                     coco::Error::EntityExists(_) => {
                         (StatusCode::CONFLICT, "ENTITY_EXISTS", err.to_string())
-                    }
+                    },
                     coco::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
@@ -118,7 +118,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "BAD_REQUEST",
                             "Incorrect input".to_string(),
                         )
-                    }
+                    },
                 },
                 error::Error::Checkout(checkout_error) => match checkout_error {
                     coco::project::checkout::Error::Git(git_error) => (
@@ -135,7 +135,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "BAD_REQUEST",
                         "Incorrect input".to_string(),
                     )
-                }
+                },
             }
         } else {
             (
