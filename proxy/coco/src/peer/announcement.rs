@@ -116,6 +116,26 @@ pub fn load(store: &kv::Store) -> Result<Updates, Error> {
     Ok(value)
 }
 
+/// Runs the entire announcement procedure.
+///
+/// # Errors
+///
+/// * if it can't build the new list of updates
+/// * access to the storage fails
+pub async fn run(state: Lock, store: &kv::Store) -> Result<Updates, Error> {
+    let old = load(store)?;
+    let new = build(state.clone()).await?;
+    let updates = diff(&old, &new);
+
+    announce(state, updates.iter()).await;
+
+    if !updates.is_empty() {
+        save(store, updates.clone()).map_err(Error::from)?;
+    }
+
+    Ok(updates)
+}
+
 /// Update the cache with the latest announcements.
 ///
 /// # Errors
