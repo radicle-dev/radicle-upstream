@@ -496,7 +496,7 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 ## Quality assurance
 
 We already have an extensive end-to-end test suite which covers most features
-and a good amount of edgecases, however it is impossible to eliminate every bug
+and a good amount of edge cases, however it is impossible to eliminate every bug
 and regression this way, that's why we perform a QA procedure before publishing
 a release.
 
