@@ -53,9 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut keystore = keystore::Keystorage::new(&paths, pw);
     let key = keystore.init()?;
-    let signer = signer::BoxedSigner::new(signer::SomeSigner {
-        signer: key.clone(),
-    });
+    let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
     let (peer, state) = {
         let seeds = session::settings(&store).await?.coco.seeds;
@@ -63,8 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
             vec![]
         });
-        let config =
-            coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
+        let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, seeds);
 
         coco::into_peer_state(config, signer.clone(), store.clone()).await?
     };

@@ -131,7 +131,6 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 }
 
 /// Create and track a fake peer.
-#[must_use]
 pub async fn track_fake_peer(
     state: &State,
     signer: &signer::BoxedSigner,
@@ -163,14 +162,16 @@ pub async fn track_fake_peer(
 
     // TODO: try pass branches in
     // Creates a new reference to the 'target' Oid above.
-    let _heads = monorepo
-        .reference(
-            &format!("{}/heads/master", prefix),
-            target,
-            false,
-            "remote heads",
-        )
-        .expect("failed to create heads");
+    {
+        let _heads = monorepo
+            .reference(
+                &format!("{}/heads/master", prefix),
+                target,
+                false,
+                "remote heads",
+            )
+            .expect("failed to create heads");
+    }
 
     // Copy the rad/id under the remote
     let target = monorepo
@@ -178,19 +179,23 @@ pub async fn track_fake_peer(
         .expect("failed to get rad/id")
         .target()
         .expect("missing target");
-    let _rad_id = monorepo
-        .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
-        .expect("failed to create rad/id");
+    {
+        let _rad_id = monorepo
+            .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
+            .expect("failed to create rad/id");
+    }
 
     // Create symlink to the User Identity for this project
-    let _rad_self = monorepo
-        .reference_symbolic(
-            &format!("{}/rad/self", prefix),
-            &format!("refs/namespaces/{}/refs/rad/id", fake_user.urn().id),
-            false,
-            "rad/self",
-        )
-        .expect("failed to create rad/self");
+    {
+        let _rad_self = monorepo
+            .reference_symbolic(
+                &format!("{}/rad/self", prefix),
+                &format!("refs/namespaces/{}/refs/rad/id", fake_user.urn().id),
+                false,
+                "rad/self",
+            )
+            .expect("failed to create rad/self");
+    }
 
     // Create the copy of the rad/refs under the remote
     let target = monorepo
@@ -198,14 +203,16 @@ pub async fn track_fake_peer(
         .expect("failed to get rad/signed_refs")
         .target()
         .expect("missing target");
-    let _rad_id = monorepo
-        .reference(
-            &format!("{}/rad/signed_refs", prefix),
-            target,
-            false,
-            "rad/signed_refs",
-        )
-        .expect("failed to create rad/refs");
+    {
+        let _rad_id = monorepo
+            .reference(
+                &format!("{}/rad/signed_refs", prefix),
+                target,
+                false,
+                "rad/signed_refs",
+            )
+            .expect("failed to create rad/refs");
+    }
 
     state
         .track(urn, remote.clone())

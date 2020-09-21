@@ -47,7 +47,7 @@ impl Keystorage {
             Ok(keypair) => Ok(keypair.secret_key),
             Err(file::Error::NoSuchKey) => {
                 let key = keys::SecretKey::new();
-                self.store.put_key(key.clone())?;
+                self.store.put_key(key)?;
                 Ok(key)
             },
             Err(err) => Err(err.into()),

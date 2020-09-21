@@ -7,7 +7,7 @@ use crate::context;
 
 /// Combination of all control filters.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    create_project_filter(ctx.clone())
+    create_project_filter(ctx)
 }
 
 /// POST /create-project

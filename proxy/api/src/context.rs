@@ -30,9 +30,7 @@ impl Context {
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
         let key = keystore.init()?;
-        let signer = signer::BoxedSigner::from(signer::SomeSigner {
-            signer: key.clone(),
-        });
+        let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
         let (_peer, state) = {
             let config = coco::config::default(key, tmp_dir.path())?;

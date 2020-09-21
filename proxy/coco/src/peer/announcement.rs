@@ -141,9 +141,7 @@ mod test {
     async fn announce() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::new(signer::SomeSigner {
-            signer: key.clone(),
-        });
+        let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());

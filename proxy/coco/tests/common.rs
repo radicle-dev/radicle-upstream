@@ -15,7 +15,7 @@ pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
-    let signer = signer::BoxedSigner::from(key.clone());
+    let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let conf = config::default(key, tmp_dir.path())?;
@@ -30,7 +30,7 @@ pub async fn build_peer_with_seeds(
     seeds: Vec<Seed>,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
-    let signer = signer::BoxedSigner::from(key.clone());
+    let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let paths = Paths::from_root(tmp_dir.path())?;
