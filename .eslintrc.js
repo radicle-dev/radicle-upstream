@@ -26,7 +26,7 @@ module.exports = {
       rules: {
         // TODO(sos): typescript rule changes are ignored unless explicitly associated with the override.
         //
-        // we need to turn this one off because svelte-check needs explicit type annotations for boolean
+        // We need to turn this one off because svelte-check needs explicit type annotations for boolean
         // props with default values.
         // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-inferrable-types.md
         "@typescript-eslint/no-inferrable-types": "off",
