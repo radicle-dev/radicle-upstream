@@ -15,7 +15,7 @@ use crate::{config, error::Error, project, signer, state::State, user::User};
 /// # Errors
 ///
 /// * if the call to [`std::fs::remove_dir_all`] fails.
-pub fn wipe_monorepo() -> Result<(), std::io::Error> {
+pub fn reset_monorepo() -> Result<(), std::io::Error> {
     let paths =
         librad::paths::Paths::try_from(config::Paths::default()).expect("unable to create paths");
     std::fs::remove_dir_all(paths.git_dir())

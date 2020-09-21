@@ -6,7 +6,7 @@ use api::{config, context, env, http, notification, session};
 
 /// Flags accepted by the proxy binary.
 struct Args {
-    /// Wipe all local state, use with caution.
+    /// Reset all local state, use with caution.
     reset_state: bool,
     /// Put proxy in test mode to use certain fixtures.
     test: bool,
@@ -117,7 +117,7 @@ fn reset_state() -> Result<(), io::Error> {
     log::info!("done");
 
     log::info!("Resetting CoCo state...");
-    if let Err(err) = control::wipe_monorepo() {
+    if let Err(err) = control::reset_monorepo() {
         if err.kind() == io::ErrorKind::NotFound {
             log::info!("already gone");
         } else {

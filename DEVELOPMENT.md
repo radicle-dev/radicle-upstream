@@ -139,6 +139,8 @@ yarn release                # Start a two-step process to cut a new release,
 yarn prettier:check         # Check UI code formatting
 yarn prettier:write         # Auto-format UI code
 yarn lint                   # Check UI code for linting errors
+yarn reset:state            # Delete all local state: identity keys, monorepo
+                            # and saved preferences
 ```
 
 
