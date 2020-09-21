@@ -134,7 +134,9 @@ context("identity creation", () => {
 
         // Handle is required.
         cy.pick("handle-input").clear();
-        cy.pick("enter-name-screen").contains("You must provide a handle");
+        cy.pick("enter-name-screen").contains(
+          "You must provide a display name"
+        );
 
         // No spaces.
         cy.pick("handle-input").type("no spaces");
