@@ -52,18 +52,19 @@ pub enum Strategy<R> {
 }
 
 impl<R> Strategy<R> {
-    pub fn next<'a, S: 'a, T: 'a + Clone + Ord>(
+    pub fn next<'a, T: 'a, U: Ord>(
         self,
-        mut requests: impl Iterator<Item = &'a Request<S, T>>,
-    ) -> Option<&'a Request<S, T>>
+        mut items: impl Iterator<Item = &'a T>,
+        mut key: impl FnMut(&T) -> U,
+    ) -> Option<&'a T>
     where
         R: Rng,
     {
         match self {
-            Self::First => requests.next(),
-            Self::Newest => requests.max_by_key(|request| request.timestamp.clone()),
-            Self::Oldest => requests.min_by_key(|request| request.timestamp.clone()),
-            Self::Random(mut rng) => requests.choose(&mut rng),
+            Self::First => items.next(),
+            Self::Newest => items.max_by_key(|i| key(i)),
+            Self::Oldest => items.min_by_key(|i| key(i)),
+            Self::Random(mut rng) => items.choose(&mut rng),
         }
     }
 }
@@ -277,6 +278,7 @@ impl<T> WaitingRoom<T> {
             self.requests
                 .iter()
                 .filter_map(|(_, request)| matcher(request)),
+            |request| request.timestamp.clone(),
         )
     }
 
