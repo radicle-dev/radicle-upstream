@@ -108,7 +108,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                     coco::Error::NoBranches => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
-                        "The repository has no branches".to_string(),
+                        coco::Error::NoBranches.to_string(),
                     ),
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
