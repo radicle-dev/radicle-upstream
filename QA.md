@@ -30,8 +30,14 @@
 ### Packaging and distribution
 
 - [ ] Check that unreleased features are not visible in the UI
-  - [ ] Issues, Revisions, Wallets, Design Sytem Guide, and anything else
-        that's in the UI but clearly not wired up
+  - [ ] Experimental features and developer helpers are not accessible
+    - Issues and Revisions tabs on the Project screen
+    - Wallets on the User Profile screen
+    - Design Sytem Guide is not listed in the shortcuts modal <kbd>?</kbd> and
+      the respective global hotkey is disabled <kbd>⌘</kbd>+<kbd>d</kbd>
+    - Tags are not visible in the revision selector on the Project Source screen
+    - There is no "Session management" section and no "Clear session" button on
+      the Settings screen
 - [ ] App icon is shown correctly
   - [ ] macOS: dock, <kbd>⌘</kbd> + <kbd>tab</kbd> task switcher, mounted dmg,
         app icon, "About radicle-upstream" window
