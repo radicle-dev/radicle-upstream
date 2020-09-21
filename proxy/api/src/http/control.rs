@@ -109,7 +109,7 @@ mod handler {
         let (_new_peer, new_state) = {
             let config =
                 coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
-            coco::into_peer_state(config, signer.clone(), store.clone())
+            coco::into_peer_state(config, signer.clone())
                 .await
                 .map_err(error::Error::from)?
         };

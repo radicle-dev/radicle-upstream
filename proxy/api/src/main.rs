@@ -1,6 +1,6 @@
 use std::{convert::TryFrom, fs::remove_dir_all, io};
 
-use coco::{control, keystore, seed, signer};
+use coco::{control, keystore, seed, signer, RunConfig, SyncConfig};
 
 use api::{config, context, env, http, notification, session};
 
@@ -73,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let config =
             coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, seeds);
 
-        coco::into_peer_state(config, signer.clone(), store.clone()).await?
+        coco::into_peer_state(config, signer.clone()).await?
     };
 
     if args.test {
@@ -81,20 +81,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
         let owner = state.init_owner(&signer, "cloudhead")?;
-        coco::control::setup_fixtures(&state, &signer, &owner)?;
+        control::setup_fixtures(&state, &signer, &owner)?;
     }
 
     let subscriptions = notification::Subscriptions::default();
     let ctx = context::Ctx::from(context::Context {
-        state,
+        state: state.clone(),
         signer,
-        store,
+        store: store.clone(),
     });
 
     log::info!("starting coco peer");
-    tokio::spawn(async move {
-        peer.run().await.expect("peer run loop crashed");
-    });
+    tokio::spawn(peer.run(
+        state,
+        store,
+        RunConfig {
+            sync: SyncConfig {
+                on_startup: true,
+                ..SyncConfig::default()
+            },
+            ..RunConfig::default()
+        },
+    ));
 
     log::info!("Starting API");
     let api = http::api(ctx, subscriptions, args.test);
