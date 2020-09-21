@@ -9,7 +9,7 @@ use librad::{
     uri::{path::ParseError, Path, RadUrn},
 };
 
-use crate::{oid::Oid, state::Lock};
+use crate::{oid::Oid, state::State};
 
 /// Name for the bucket used in [`kv::Store`].
 const BUCKET_NAME: &str = "announcements";
@@ -44,9 +44,8 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(state: Lock, updates: impl Iterator<Item = &Announcement> + Send) {
+pub async fn announce(state: State, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
-        let state = state.lock().await;
         let protocol = state.api.protocol();
 
         let have = Gossip {
@@ -64,18 +63,17 @@ pub async fn announce(state: Lock, updates: impl Iterator<Item = &Announcement> 
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build(state: Lock) -> Result<Updates, Error> {
-    let state = state.lock().await;
+pub async fn build(state: State) -> Result<Updates, Error> {
     let mut list: Updates = HashSet::new();
 
-    match state.list_projects() {
+    match state.list_projects().await {
         // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
         // should be machinery to kick off these routines only if our app state is ready for it.
         Err(crate::error::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
         Err(err) => Err(err.into()),
         Ok(projects) => {
             for project in &projects {
-                let refs = state.list_owner_project_refs(&project.urn())?;
+                let refs = state.list_owner_project_refs(project.urn()).await?;
 
                 for (head, hash) in &refs.heads {
                     list.insert((
@@ -137,10 +135,7 @@ mod test {
 
     use librad::{hash::Hash, keys::SecretKey, uri};
 
-    use crate::{
-        config, oid, signer,
-        state::{Lock, State},
-    };
+    use crate::{config, oid, signer, state::State};
 
     #[tokio::test]
     async fn announce() -> Result<(), Box<dyn std::error::Error>> {
@@ -153,9 +148,8 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let _owner = state.init_owner(&signer, "cloudhead")?;
+        let _owner = state.init_owner(&signer, "cloudhead").await?;
 
-        let state = Lock::from(state);
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(state.clone()).await?;
         super::announce(state, updates.iter()).await;

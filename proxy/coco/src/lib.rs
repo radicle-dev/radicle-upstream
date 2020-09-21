@@ -48,7 +48,7 @@ pub mod oid;
 mod peer;
 pub use peer::{Event as PeerEvent, Peer};
 mod state;
-pub use state::{Lock, State};
+pub use state::State;
 pub mod project;
 
 pub mod seed;
@@ -79,7 +79,7 @@ pub async fn into_peer_state<I>(
     config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
     store: kv::Store,
-) -> Result<(Peer, Lock), Error>
+) -> Result<(Peer, State), Error>
 where
     I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
 {
@@ -87,7 +87,6 @@ where
     let (api, run_loop) = peer.accept()?;
 
     let state = State::new(api, signer);
-    let state = state::Lock::from(state);
     let peer = Peer::new(run_loop, state.clone(), store);
 
     Ok((peer, state))

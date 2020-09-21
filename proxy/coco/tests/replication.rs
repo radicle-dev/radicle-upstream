@@ -16,40 +16,31 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
-    let _bob = bob_state.lock().await.init_owner(&bob_signer, "bob")?;
+    let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
 
     tokio::task::spawn(alice_peer.run());
     tokio::task::spawn(bob_peer.run());
 
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
-    let project = alice_state.lock().await.init_project(
-        &alice_signer,
-        &alice,
-        &shia_le_pathbuf(alice_repo_path),
-    )?;
+    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+    let project = alice_state
+        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .await?;
 
     let project_urn = {
-        let alice_peer_id = alice_state.lock().await.peer_id();
-        let alice_addr = alice_state.lock().await.listen_addr();
-        let bobby = bob_state.clone().lock_owned().await;
-        tokio::task::spawn_blocking(move || {
-            bobby
-                .clone_project(
-                    project.urn().into_rad_url(alice_peer_id),
-                    vec![alice_addr].into_iter(),
-                )
-                .expect("unable to clone project")
-        })
-        .await?
+        let alice_peer_id = alice_state.peer_id();
+        let alice_addr = alice_state.listen_addr();
+        bob_state
+            .clone_project(
+                project.urn().into_rad_url(alice_peer_id),
+                vec![alice_addr].into_iter(),
+            )
+            .await
+            .expect("unable to clone project")
     };
 
     let have = bob_state
-        .lock()
-        .await
-        .list_projects()?
+        .list_projects()
+        .await?
         .into_iter()
         .map(|project| project.urn())
         .collect::<Vec<_>>();
@@ -73,28 +64,21 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     tokio::task::spawn(alice_peer.run());
     tokio::task::spawn(bob_peer.run());
 
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
+    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
     let cloned_urn = {
-        let alice_peer_id = alice_state.lock().await.peer_id();
-        let alice_addr = alice_state.lock().await.listen_addr();
+        let alice_peer_id = alice_state.peer_id();
+        let alice_addr = alice_state.listen_addr();
         let url = alice.urn().into_rad_url(alice_peer_id);
 
-        let bobby = bob_state.clone().lock_owned().await;
-        tokio::task::spawn_blocking(move || {
-            bobby
-                .clone_user(url, vec![alice_addr].into_iter())
-                .expect("unable to clone project")
-        })
-        .await?
+        bob_state
+            .clone_user(url, vec![alice_addr].into_iter())
+            .await
+            .expect("unable to clone project")
     };
 
     let want = bob_state
-        .lock()
-        .await
-        .list_users()?
+        .list_users()
+        .await?
         .into_iter()
         .map(|user| user.urn())
         .collect::<Vec<_>>();
@@ -115,40 +99,35 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
-    let _bob = bob_state.lock().await.init_owner(&bob_signer, "bob")?;
+    let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
 
     tokio::task::spawn(alice_peer.run());
     tokio::task::spawn(bob_peer.run());
 
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
-    let project = alice_state.lock().await.init_project(
-        &alice_signer,
-        &alice,
-        &shia_le_pathbuf(alice_repo_path.clone()),
-    )?;
+    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+    let project = alice_state
+        .init_project(
+            &alice_signer,
+            &alice,
+            shia_le_pathbuf(alice_repo_path.clone()),
+        )
+        .await?;
 
     let project_urn = {
-        let alice_addr = alice_state.lock().await.listen_addr();
-        let alice_peer_id = alice_state.lock().await.peer_id().clone();
+        let alice_addr = alice_state.listen_addr();
+        let alice_peer_id = alice_state.peer_id().clone();
         let clone_url = project.urn().into_rad_url(alice_peer_id.clone());
 
-        let bobby = bob_state.clone().lock_owned().await;
-        tokio::task::spawn_blocking(move || {
-            bobby
-                .clone_project(clone_url, vec![alice_addr].into_iter())
-                .expect("unable to clone project")
-        })
-        .await?
+        bob_state
+            .clone_project(clone_url, vec![alice_addr].into_iter())
+            .await
+            .expect("unable to clone project")
     };
 
     assert_eq!(
         bob_state
-            .lock()
-            .await
-            .list_projects()?
+            .list_projects()
+            .await?
             .into_iter()
             .map(|project| project.urn())
             .collect::<Vec<_>>(),
@@ -186,32 +165,33 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     {
-        let alice_addr = alice_state.lock().await.listen_addr();
-        let alice_peer_id = alice_state.lock().await.peer_id().clone();
+        let alice_addr = alice_state.listen_addr();
+        let alice_peer_id = alice_state.peer_id().clone();
         let fetch_url = project.urn().into_rad_url(alice_peer_id.clone());
 
-        let bobby = bob_state.clone().lock_owned().await;
-        tokio::task::spawn_blocking(move || {
-            bobby
-                .fetch(fetch_url, vec![alice_addr])
-                .expect("unable to fetch")
-        })
-        .await?;
+        bob_state
+            .fetch(fetch_url, vec![alice_addr])
+            .await
+            .expect("unable to fetch");
     };
 
-    let alice_peer_id = alice_state.lock().await.peer_id();
-    assert!(bob_state.lock().await.has_commit(
-        &uri::RadUrn {
-            path: uri::Path::parse(format!(
-                "refs/remotes/{}/heads/{}",
-                alice_peer_id,
-                project.default_branch()
-            ))
-            .expect("failed to parse uri::Path"),
-            ..project.urn()
-        },
-        commit_id
-    )?);
+    let alice_peer_id = alice_state.peer_id();
+    assert!(
+        bob_state
+            .has_commit(
+                uri::RadUrn {
+                    path: uri::Path::parse(format!(
+                        "refs/remotes/{}/heads/{}",
+                        alice_peer_id,
+                        project.default_branch()
+                    ))
+                    .expect("failed to parse uri::Path"),
+                    ..project.urn()
+                },
+                commit_id
+            )
+            .await?
+    );
 
     Ok(())
 }

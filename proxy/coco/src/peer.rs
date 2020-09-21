@@ -3,7 +3,7 @@
 
 use std::{convert::From, fmt};
 
-use futures::StreamExt as _;
+use futures::stream::StreamExt as _;
 use tokio::sync::broadcast;
 
 use librad::net::{
@@ -11,7 +11,7 @@ use librad::net::{
     protocol,
 };
 
-use crate::state::Lock;
+use crate::state::State;
 
 mod announcement;
 pub use announcement::Announcement;
@@ -51,7 +51,7 @@ pub struct Peer {
     /// Peer [`librad::net::peer::RunLoop`] to advance the network protocol.
     run_loop: RunLoop,
     /// Underlying state that is passed to subroutines.
-    state: Lock,
+    state: State,
     /// On-disk storage  for caching.
     store: kv::Store,
     /// Handle used to broadcast [`Event`].
@@ -61,7 +61,7 @@ pub struct Peer {
 impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: Lock, store: kv::Store) -> Self {
+    pub fn new(run_loop: RunLoop, state: State, store: kv::Store) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         Self {
             run_loop,
@@ -90,8 +90,7 @@ impl Peer {
     pub async fn run(self) -> Result<(), Error> {
         // Subscribe to protocol events.
         let protocol_subscriber = {
-            let state = self.state.lock().await;
-            let protocol = state.api.protocol();
+            let protocol = self.state.api.protocol();
             protocol.subscribe().await
         };
         tokio::pin!(protocol_subscriber);
@@ -130,7 +129,7 @@ impl Peer {
     }
 
     /// Announcement subroutine.
-    async fn announce(state: Lock, store: &kv::Store) -> Result<announcement::Updates, Error> {
+    async fn announce(state: State, store: &kv::Store) -> Result<announcement::Updates, Error> {
         let old = announcement::load(store)?;
         let new = announcement::build(state.clone()).await?;
         let updates = announcement::diff(&old, &new);

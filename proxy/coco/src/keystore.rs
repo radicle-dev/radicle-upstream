@@ -90,7 +90,7 @@ mod tests {
         let key = store.init().expect("could not create key:");
 
         assert!(
-            key == store.get()?,
+            key.as_ref() == store.get()?.as_ref(),
             "the stored key was not equal to the one retrieved"
         );
 

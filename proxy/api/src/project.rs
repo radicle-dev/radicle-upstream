@@ -117,17 +117,19 @@ impl Projects {
     ///   * We couldn't get the list of projects
     ///   * We couldn't inspect the `signed_refs` of the project
     ///   * We couldn't get stats for a project
-    pub fn list(state: &coco::State) -> Result<Self, error::Error> {
+    pub async fn list(state: &coco::State) -> Result<Self, error::Error> {
         let mut projects = Self {
             tracked: vec![],
             contributed: vec![],
         };
-        for project in state.list_projects()? {
-            let refs = state.list_owner_project_refs(&project.urn())?;
-            let project = state.with_browser(&project.urn(), |browser| {
-                let project_stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, project_stats).into())
-            })?;
+        for project in state.list_projects().await? {
+            let refs = state.list_owner_project_refs(project.urn()).await?;
+            let project = state
+                .with_browser(project.urn(), |browser| {
+                    let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                    Ok((project, project_stats).into())
+                })
+                .await?;
             if refs.heads.is_empty() {
                 projects.tracked.push(Tracked(project))
             } else {
@@ -213,9 +215,11 @@ impl Iterator for IntoIter {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, error::Error> {
-    let project = state.get_project(project_urn, None)?;
-    let project_stats = state.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
+pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Project, error::Error> {
+    let project = state.get_project(project_urn.clone(), None).await?;
+    let project_stats = state
+        .with_browser(project_urn, |browser| Ok(browser.get_stats()?))
+        .await?;
 
     Ok((project, project_stats).into())
 }
@@ -235,19 +239,25 @@ pub fn get(state: &coco::State, project_urn: &coco::Urn) -> Result<Project, erro
 /// * We couldn't get a project list.
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
-pub fn list_for_user(state: &coco::State, user: &coco::Urn) -> Result<Vec<Project>, error::Error> {
+pub async fn list_for_user(
+    state: &coco::State,
+    user: &coco::Urn,
+) -> Result<Vec<Project>, error::Error> {
     let mut projects = vec![];
 
-    for project in state.list_projects()? {
+    for project in state.list_projects().await? {
         if state
-            .tracked(&project.urn())?
+            .tracked(project.urn())
+            .await?
             .into_iter()
             .any(|(_, project_user)| project_user.urn() == *user)
         {
-            let proj = state.with_browser(&project.urn(), |browser| {
-                let project_stats = browser.get_stats().map_err(coco::Error::from)?;
-                Ok((project, project_stats).into())
-            })?;
+            let proj = state
+                .with_browser(project.urn(), |browser| {
+                    let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                    Ok((project, project_stats).into())
+                })
+                .await?;
 
             projects.push(proj);
         }

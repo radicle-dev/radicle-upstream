@@ -27,7 +27,7 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub fn setup_fixtures(
+pub async fn setup_fixtures(
     api: &State,
     signer: &signer::BoxedSigner,
     owner: &User,
@@ -52,7 +52,7 @@ pub fn setup_fixtures(
     ];
 
     for info in infos {
-        replicate_platinum(api, signer, owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, signer, owner, info.0, info.1, info.2).await?;
     }
 
     Ok(())
@@ -65,7 +65,7 @@ pub fn setup_fixtures(
 ///
 /// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
-pub fn replicate_platinum(
+pub async fn replicate_platinum(
     api: &State,
     signer: &signer::BoxedSigner,
     owner: &User,
@@ -88,7 +88,7 @@ pub fn replicate_platinum(
         },
     };
 
-    let meta = api.init_project(signer, owner, &project_creation)?;
+    let meta = api.init_project(signer, owner, project_creation).await?;
 
     // Push branches and tags.
     {
@@ -132,7 +132,7 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 
 /// Create and track a fake peer.
 #[must_use]
-pub fn track_fake_peer(
+pub async fn track_fake_peer(
     state: &State,
     signer: &signer::BoxedSigner,
     project: &librad_project::Project<entity::Draft>,
@@ -149,7 +149,7 @@ pub fn track_fake_peer(
     //   to fake_user
     let urn = project.urn();
     let fake_user =
-        state.init_user(signer, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+        state.init_user(signer, fake_user_handle).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
     let remote = librad::peer::PeerId::from(keys::SecretKey::new());
     let monorepo = git2::Repository::open(state.monorepo()).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
@@ -207,7 +207,10 @@ pub fn track_fake_peer(
         )
         .expect("failed to create rad/refs");
 
-    state.track(&urn, &remote).expect("failed to track peer");
+    state
+        .track(urn, remote.clone())
+        .await
+        .expect("failed to track peer");
 
     (remote, fake_user)
 }

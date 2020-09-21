@@ -33,7 +33,7 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api(
-    ctx: context::Ctx,
+    ctx: context::Context,
     subscriptions: Subscriptions,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -94,12 +94,10 @@ pub fn api(
 /// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard(ctx: context::Ctx) -> BoxedFilter<(coco::user::User,)> {
+fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
     warp::any()
         .and(with_context(ctx))
-        .and_then(|ctx: context::Ctx| async move {
-            let ctx = ctx.read().await;
-
+        .and_then(|ctx: context::Context| async move {
             let session = crate::session::current(ctx.state.clone(), &ctx.store)
                 .await
                 .expect("unable to get current sesison");
@@ -107,9 +105,8 @@ fn with_owner_guard(ctx: context::Ctx) -> BoxedFilter<(coco::user::User,)> {
             if let Some(identity) = session.identity {
                 let user = ctx
                     .state
-                    .lock()
+                    .get_user(identity.urn)
                     .await
-                    .get_user(&identity.urn)
                     .expect("unable to get coco user");
                 let user = coco::user::verify(user).expect("unable to verify user");
 
@@ -123,7 +120,7 @@ fn with_owner_guard(ctx: context::Ctx) -> BoxedFilter<(coco::user::User,)> {
 
 /// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
-fn with_context(ctx: context::Ctx) -> BoxedFilter<(context::Ctx,)> {
+fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
     warp::any().map(move || ctx.clone()).boxed()
 }
 

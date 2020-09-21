@@ -70,19 +70,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     if args.test {
-        let state = state.lock().await;
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = state.init_owner(&signer, "cloudhead")?;
-        coco::control::setup_fixtures(&state, &signer, &owner)?;
+        let owner = state.init_owner(&signer, "cloudhead").await?;
+        coco::control::setup_fixtures(&state, &signer, &owner).await?;
     }
 
     let subscriptions = notification::Subscriptions::default();
-    let ctx = context::Ctx::from(context::Context {
+    let ctx = context::Context {
         state,
         signer,
         store,
-    });
+    };
 
     log::info!("starting coco peer");
     tokio::spawn(async move {

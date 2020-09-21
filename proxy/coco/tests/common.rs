@@ -9,11 +9,11 @@ use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer};
 
-use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent};
+use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, State};
 
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
-) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
+) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key.clone());
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
@@ -28,7 +28,7 @@ pub async fn build_peer(
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
-) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
+) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key.clone());
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;

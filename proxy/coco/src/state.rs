@@ -5,18 +5,14 @@ use std::{
     future::Future,
     net::{IpAddr, SocketAddr},
     path::{self, PathBuf},
-    sync::Arc,
     time::Duration,
 };
-
-use tokio::sync::Mutex;
 
 use librad::{
     git::{
         local::{transport, url::LocalUrl},
         refs::Refs,
-        storage,
-        repo,
+        repo, storage,
     },
     keys,
     meta::{entity, project as librad_project, user},
@@ -36,16 +32,8 @@ use crate::{
     user::{verify as verify_user, User},
 };
 
-/// Thread-safe wrapper for [`State`].
-pub type Lock = Arc<Mutex<State>>;
-
-impl From<State> for Lock {
-    fn from(state: State) -> Self {
-        Arc::new(Mutex::new(state))
-    }
-}
-
 /// High-level interface to the coco monorepo and gossip layer.
+#[derive(Clone)]
 pub struct State {
     /// Internal handle on [`PeerApi`].
     pub(crate) api: PeerApi<keys::SecretKey>,
@@ -90,7 +78,10 @@ impl State {
     ///   * Unable to acquire the lock.
     pub async fn has_commit(&self, urn: RadUrn, oid: impl Into<git2::Oid>) -> Result<bool, Error> {
         let oid = oid.into();
-        Ok(self.api.with_storage(move |storage| storage.has_commit(&urn, oid)).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.has_commit(&urn, oid))
+            .await??)
     }
 
     /// The local machine's [`PeerId`].
@@ -108,12 +99,18 @@ impl State {
     /// Get the default owner for this `PeerApi`.
     #[must_use]
     pub async fn default_owner(&self) -> Option<user::User<entity::Draft>> {
-        self.api.with_storage(move |storage|
-            storage
-            .default_rad_self()
-            .map_err(|err| log::warn!("an error occurred while trying to get 'rad/self': {}", err))
+        self.api
+            .with_storage(move |storage| {
+                storage
+                    .default_rad_self()
+                    .map_err(|err| {
+                        log::warn!("an error occurred while trying to get 'rad/self': {}", err)
+                    })
+                    .ok()
+            })
+            .await
             .ok()
-        ).await.ok().flatten()
+            .flatten()
     }
 
     /// Set the default owner for this `PeerApi`.
@@ -122,10 +119,9 @@ impl State {
     ///
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
     pub async fn set_default_owner(&self, user: User) -> Result<(), Error> {
-        self.api.with_storage(move |storage|
-            storage.set_default_rad_self(user)
-            .map_err(Error::from)
-        ).await?
+        self.api
+            .with_storage(move |storage| storage.set_default_rad_self(user).map_err(Error::from))
+            .await?
     }
 
     /// Initialise a [`User`] and make them the default owner of this [`PeerApi`].
@@ -135,7 +131,11 @@ impl State {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub async fn init_owner(&self, signer: &signer::BoxedSigner, handle: &str) -> Result<User, Error> {
+    pub async fn init_owner(
+        &self,
+        signer: &signer::BoxedSigner,
+        handle: &str,
+    ) -> Result<User, Error> {
         let user = self.init_user(signer, handle).await?;
         let user = verify_user(user)?;
 
@@ -151,15 +151,22 @@ impl State {
     ///   * Could not open librad storage.
     ///   * Failed to clone the project.
     ///   * Failed to set the rad/self of this project.
-    pub async fn clone_project<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
+    pub async fn clone_project<Addrs>(
+        &self,
+        url: RadUrl,
+        addr_hints: Addrs,
+    ) -> Result<RadUrn, Error>
     where
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        let urn = self.api.with_storage(move |storage| {
-            let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
-            repo.set_rad_self(storage::RadSelfSpec::Default)?;
-            Ok::<_, repo::Error>(repo.urn)
-        }).await??;
+        let urn = self
+            .api
+            .with_storage(move |storage| {
+                let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
+                repo.set_rad_self(storage::RadSelfSpec::Default)?;
+                Ok::<_, repo::Error>(repo.urn)
+            })
+            .await??;
 
         Ok(urn)
     }
@@ -177,7 +184,10 @@ impl State {
     where
         P: Into<Option<PeerId>> + Send + 'static,
     {
-        Ok(self.api.with_storage(move |storage| storage.metadata_of(&urn, peer)).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.metadata_of(&urn, peer))
+            .await??)
     }
 
     /// Returns the list of [`librad_project::Project`]s for the local peer.
@@ -189,29 +199,35 @@ impl State {
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub async fn list_projects(&self) -> Result<Vec<librad_project::Project<entity::Draft>>, Error> {
-        let project_meta = self.api.with_storage(move |storage| {
-            let owner = storage.default_rad_self()?;
+    pub async fn list_projects(
+        &self,
+    ) -> Result<Vec<librad_project::Project<entity::Draft>>, Error> {
+        let project_meta = self
+            .api
+            .with_storage(move |storage| {
+                let owner = storage.default_rad_self()?;
 
-            let meta = storage.all_metadata()?
-            .flat_map(|entity| {
-                let entity = entity.ok()?;
-                let rad_self = storage.get_rad_self(&entity.urn()).ok()?;
+                let meta = storage
+                    .all_metadata()?
+                    .flat_map(|entity| {
+                        let entity = entity.ok()?;
+                        let rad_self = storage.get_rad_self(&entity.urn()).ok()?;
 
-                // We only list projects that are owned by the peer
-                if rad_self.urn() != owner.urn() {
-                    return None;
-                }
+                        // We only list projects that are owned by the peer
+                        if rad_self.urn() != owner.urn() {
+                            return None;
+                        }
 
-                entity.try_map(|info| match info {
-                    entity::data::EntityInfo::Project(info) => Some(info),
-                    _ => None,
-                })
+                        entity.try_map(|info| match info {
+                            entity::data::EntityInfo::Project(info) => Some(info),
+                            _ => None,
+                        })
+                    })
+                    .collect::<Vec<_>>();
+
+                Ok::<_, storage::Error>(meta)
             })
-            .collect::<Vec<_>>();
-
-            Ok::<_, storage::Error>(meta)
-        }).await??;
+            .await??;
 
         Ok(project_meta)
     }
@@ -222,7 +238,10 @@ impl State {
     ///
     /// * if opening the storage fails
     pub async fn list_owner_project_refs(&self, urn: RadUrn) -> Result<Refs, Error> {
-        Ok(self.api.with_storage(move |storage| storage.rad_signed_refs(&urn)).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.rad_signed_refs(&urn))
+            .await??)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -230,8 +249,15 @@ impl State {
     /// # Errors
     ///
     /// * if opening the storage fails
-    pub async fn list_peer_project_refs(&self, urn: RadUrn, peer_id: PeerId) -> Result<Refs, Error> {
-        Ok(self.api.with_storage(move |storage| storage .rad_signed_refs_of(&urn, peer_id)).await??)
+    pub async fn list_peer_project_refs(
+        &self,
+        urn: RadUrn,
+        peer_id: PeerId,
+    ) -> Result<Refs, Error> {
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.rad_signed_refs_of(&urn, peer_id))
+            .await??)
     }
 
     /// Returns the list of [`user::User`]s known for your peer.
@@ -244,21 +270,24 @@ impl State {
         clippy::wildcard_enum_match_arm
     )]
     pub async fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, Error> {
-        let entities = self.api.with_storage(move |storage| {
-            let mut entities = vec![];
-            for entity in storage.all_metadata()? {
-                let entity = entity?;
+        let entities = self
+            .api
+            .with_storage(move |storage| {
+                let mut entities = vec![];
+                for entity in storage.all_metadata()? {
+                    let entity = entity?;
 
-                if let Some(e) = entity.try_map(|info| match info {
-                    entity::data::EntityInfo::User(info) => Some(info),
-                    _ => None,
-                }) {
-                    entities.push(e);
+                    if let Some(e) = entity.try_map(|info| match info {
+                        entity::data::EntityInfo::User(info) => Some(info),
+                        _ => None,
+                    }) {
+                        entities.push(e);
+                    }
                 }
-            }
 
-            Ok::<_, storage::Error>(entities)
-        }).await??;
+                Ok::<_, storage::Error>(entities)
+            })
+            .await??;
 
         Ok(entities)
     }
@@ -274,7 +303,14 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        Ok(self.api.with_storage(move |storage| storage.clone_repo::<user::UserInfo, _>(url, addr_hints).map(|repo| repo.urn)).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| {
+                storage
+                    .clone_repo::<user::UserInfo, _>(url, addr_hints)
+                    .map(|repo| repo.urn)
+            })
+            .await??)
     }
 
     /// Get the user found at `urn`.
@@ -284,7 +320,10 @@ impl State {
     ///   * Resolving the user fails.
     ///   * Could not successfully acquire a lock to the API.
     pub async fn get_user(&self, urn: RadUrn) -> Result<user::User<entity::Draft>, Error> {
-        Ok(self.api.with_storage(move |storage| storage.metadata(&urn)).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.metadata(&urn))
+            .await??)
     }
 
     /// Fetch any updates at the given `RadUrl`, providing address hints if we have them.
@@ -299,7 +338,10 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        Ok(self.api.with_storage(move |storage| storage.fetch_repo(url, addr_hints)).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.fetch_repo(url, addr_hints))
+            .await??)
     }
 
     /// Provide a a repo [`git::Browser`] for the project of `urn`.
@@ -344,20 +386,23 @@ impl State {
         let project_urn = meta.urn();
         let local_peer_id = self.api.peer_id().clone();
 
-        let meta = self.api.with_storage(move |storage| {
-            if storage.has_urn(&project_urn)? {
-                return Err(Error::EntityExists(project_urn));
-            }
+        let meta = self
+            .api
+            .with_storage(move |storage| {
+                if storage.has_urn(&project_urn)? {
+                    return Err(Error::EntityExists(project_urn));
+                }
 
-            let repo = storage.create_repo(&meta)?;
-            repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner_urn))?;
-            log::debug!("Created project with Urn '{}'", project_urn);
+                let repo = storage.create_repo(&meta)?;
+                repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner_urn))?;
+                log::debug!("Created project with Urn '{}'", project_urn);
 
-            let repo = project.setup_repo(LocalUrl::from_urn(project_urn, local_peer_id))?;
-            log::debug!("Setup repository at path '{}'", repo.path().display());
+                let repo = project.setup_repo(LocalUrl::from_urn(project_urn, local_peer_id))?;
+                log::debug!("Setup repository at path '{}'", repo.path().display());
 
-            Ok(meta)
-        }).await??;
+                Ok(meta)
+            })
+            .await??;
 
         Ok(meta)
     }
@@ -380,14 +425,17 @@ impl State {
         user.sign_owned(signer)?;
         let urn = user.urn();
 
-        Ok(self.api.with_storage(move |storage| {
-            if storage.has_urn(&urn)? {
-                return Err(Error::EntityExists(urn));
-            } else {
-                let _ = storage.create_repo(&user)?;
-                Ok(user)
-            }
-        }).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| {
+                if storage.has_urn(&urn)? {
+                    return Err(Error::EntityExists(urn));
+                } else {
+                    let _ = storage.create_repo(&user)?;
+                    Ok(user)
+                }
+            })
+            .await??)
     }
 
     /// Query the network for providers of the given [`RadUrn`] within a given `timeout`.
@@ -405,7 +453,10 @@ impl State {
     ///
     /// * When the storage operation fails.
     pub async fn track(&self, urn: RadUrn, remote: PeerId) -> Result<(), Error> {
-        Ok(self.api.with_storage(move |storage| storage.track(&urn, &remote)).await??)
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.track(&urn, &remote))
+            .await??)
     }
 
     /// Get the [`user::User`]s that are tracking this project, including their [`PeerId`].
@@ -417,16 +468,22 @@ impl State {
     /// * If did not have the `urn` in storage
     /// * If we could not fetch the tracked peers
     /// * If we could not get the `rad/self` of the peer
-    pub async fn tracked(&self, urn: RadUrn) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, Error> {
-        Ok(self.api.with_storage(move |storage| {
-            let repo = storage.open_repo(urn)?;
-            repo.tracked()?
-                .map(move |peer_id| {
-                    repo.get_rad_self_of(peer_id.clone())
-                        .map(|user| (peer_id.clone(), user))
-                })
-                .collect::<Result<Vec<_>, _>>()
-        }).await??)
+    pub async fn tracked(
+        &self,
+        urn: RadUrn,
+    ) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, Error> {
+        Ok(self
+            .api
+            .with_storage(move |storage| {
+                let repo = storage.open_repo(urn)?;
+                repo.tracked()?
+                    .map(move |peer_id| {
+                        repo.get_rad_self_of(peer_id.clone())
+                            .map(|user| (peer_id.clone(), user))
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+            })
+            .await??)
     }
 }
 
@@ -481,7 +538,7 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let annie = state.init_user(&signer, "annie_are_you_ok?");
+        let annie = state.init_user(&signer, "annie_are_you_ok?").await;
         assert!(annie.is_ok());
 
         Ok(())
@@ -498,8 +555,10 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let user = state.init_owner(&signer, "cloudhead")?;
-        let project = state.init_project(&signer, &user, &radicle_project(repo_path.clone()));
+        let user = state.init_owner(&signer, "cloudhead").await?;
+        let project = state
+            .init_project(&signer, &user, radicle_project(repo_path.clone()))
+            .await;
 
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
@@ -518,8 +577,10 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let user = state.init_owner(&signer, "cloudhead")?;
-        let project = state.init_project(&signer, &user, &radicle_project(repo_path.clone()));
+        let user = state.init_owner(&signer, "cloudhead").await?;
+        let project = state
+            .init_project(&signer, &user, radicle_project(repo_path.clone()))
+            .await;
 
         assert!(project.is_ok());
         assert!(repo_path.exists());
@@ -536,8 +597,8 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let user = state.init_owner(&signer, "cloudhead")?;
-        let err = state.init_user(&signer, "cloudhead");
+        let user = state.init_owner(&signer, "cloudhead").await?;
+        let err = state.init_user(&signer, "cloudhead").await;
 
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, user.urn())
@@ -561,11 +622,15 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let user = state.init_owner(&signer, "cloudhead")?;
+        let user = state.init_owner(&signer, "cloudhead").await?;
         let project_creation = radicle_project(repo_path.clone());
-        let project = state.init_project(&signer, &user, &project_creation)?;
+        let project = state
+            .init_project(&signer, &user, project_creation.clone())
+            .await?;
 
-        let err = state.init_project(&signer, &user, &project_creation.into_existing());
+        let err = state
+            .init_project(&signer, &user, project_creation.into_existing())
+            .await;
 
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, project.urn())
@@ -590,15 +655,19 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let user = state.init_owner(&signer, "cloudhead")?;
+        let user = state.init_owner(&signer, "cloudhead").await?;
 
-        control::setup_fixtures(&state, &signer, &user).expect("unable to setup fixtures");
+        control::setup_fixtures(&state, &signer, &user)
+            .await
+            .expect("unable to setup fixtures");
 
-        let kalt = state.init_user(&signer, "kalt")?;
+        let kalt = state.init_user(&signer, "kalt").await?;
         let kalt = super::verify_user(kalt)?;
-        let fakie = state.init_project(&signer, &kalt, &fakie_project(repo_path))?;
+        let fakie = state
+            .init_project(&signer, &kalt, fakie_project(repo_path))
+            .await?;
 
-        let projects = state.list_projects()?;
+        let projects = state.list_projects().await?;
         let mut project_names = projects
             .into_iter()
             .map(|project| project.name().to_string())
@@ -624,12 +693,12 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let cloudhead = state.init_user(&signer, "cloudhead")?;
+        let cloudhead = state.init_user(&signer, "cloudhead").await?;
         let _cloudhead = super::verify_user(cloudhead)?;
-        let kalt = state.init_user(&signer, "kalt")?;
+        let kalt = state.init_user(&signer, "kalt").await?;
         let _kalt = super::verify_user(kalt)?;
 
-        let users = state.list_users()?;
+        let users = state.list_users().await?;
         let mut user_handles = users
             .into_iter()
             .map(|user| user.name().to_string())
@@ -651,9 +720,11 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let kalt = state.init_owner(&signer, "kalt")?;
+        let kalt = state.init_owner(&signer, "kalt").await?;
 
-        let fakie = state.init_project(&signer, &kalt, &fakie_project(repo_path.clone()))?;
+        let fakie = state
+            .init_project(&signer, &kalt, fakie_project(repo_path.clone()))
+            .await?;
 
         assert!(repo_path.join(fakie.name()).exists());
 
@@ -666,12 +737,15 @@ mod test {
         let state = State::new(api, signer.clone());
 
         // Create fakie project from the existing directory above.
-        let kalt = state.init_owner(&signer, "kalt")?;
-        let fakie =
-            state.init_project(&signer, &kalt, &fakie_project(repo_path).into_existing())?;
+        let kalt = state.init_owner(&signer, "kalt").await?;
+        let fakie = state
+            .init_project(&signer, &kalt, fakie_project(repo_path).into_existing())
+            .await?;
 
         // Attempt to initialise a browser to ensure we can look at branches in the project
-        let _stats = state.with_browser(&fakie.urn(), |browser| Ok(browser.get_stats()?))?;
+        let _stats = state
+            .with_browser(fakie.urn(), |browser| Ok(browser.get_stats()?))
+            .await?;
 
         Ok(())
     }
@@ -686,8 +760,10 @@ mod test {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
 
-        let kalt = state.init_owner(&signer, "kalt")?;
-        let fakie = state.init_project(&signer, &kalt, &fakie_project(repo_path.clone()))?;
+        let kalt = state.init_owner(&signer, "kalt").await?;
+        let fakie = state
+            .init_project(&signer, &kalt, fakie_project(repo_path.clone()))
+            .await?;
         let fake_fakie = repo_path.join("fake-fakie");
         let copy = Command::new("cp")
             .arg("-rf")
@@ -703,7 +779,7 @@ mod test {
             description: "".to_string(),
             default_branch: fakie.default_branch().to_owned(),
         };
-        let _fake_fakie = state.init_project(&signer, &kalt, &fake_fakie)?;
+        let _fake_fakie = state.init_project(&signer, &kalt, fake_fakie).await?;
 
         Ok(())
     }

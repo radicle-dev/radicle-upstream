@@ -24,18 +24,13 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::task::spawn(alice_peer.run());
 
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
+    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
 
     {
-        let ally = alice_state.lock_owned().await;
-        tokio::task::spawn_blocking(move || {
-            ally.init_project(&alice_signer, &alice, &shia_le_pathbuf(alice_repo_path))
-                .expect("unable to init project")
-        })
-        .await?;
+        alice_state
+            .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+            .await
+            .expect("unable to init project");
     }
 
     let announced = alice_events
@@ -58,12 +53,9 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
-    let alice_addr = alice_state.lock().await.listen_addr();
-    let alice_peer_id = alice_state.lock().await.peer_id();
-    let alice = alice_state
-        .lock()
-        .await
-        .init_owner(&alice_signer, "alice")?;
+    let alice_addr = alice_state.listen_addr();
+    let alice_peer_id = alice_state.peer_id();
+    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
@@ -74,7 +66,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         }],
     )
     .await?;
-    let _bob = bob_state.lock().await.init_owner(&bob_signer, "bob")?;
+    let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
@@ -83,11 +75,9 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
     wait_connected(bob_connected, &alice_peer_id).await?;
 
-    let project = alice_state.lock().await.init_project(
-        &alice_signer,
-        &alice,
-        &shia_le_pathbuf(alice_repo_path),
-    )?;
+    let project = alice_state
+        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .await?;
 
     let announced = bob_events
         .into_stream()
@@ -127,8 +117,6 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let res = state
-        .lock()
-        .await
         .providers(unkown_urn, Duration::from_secs(5))
         .await
         .next()
@@ -147,8 +135,8 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
-    let alice_addr = alice_state.lock().await.listen_addr();
-    let alice_peer_id = alice_state.lock().await.peer_id();
+    let alice_addr = alice_state.listen_addr();
+    let alice_peer_id = alice_state.peer_id();
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state, _bob_signer) = build_peer_with_seeds(
@@ -166,18 +154,20 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
 
     wait_connected(bob_events, &alice_peer_id).await?;
 
-    let ally = alice_state.lock_owned().await;
-    let target_urn = tokio::task::spawn_blocking(move || {
+    let target_urn = {
         let project = radicle_project(alice_repo_path.clone());
-        let user = ally.init_owner(&alice_signer, "cloudhead").unwrap();
-        let created_project = ally.init_project(&alice_signer, &user, &project).unwrap();
+        let user = alice_state
+            .init_owner(&alice_signer, "cloudhead")
+            .await
+            .unwrap();
+        let created_project = alice_state
+            .init_project(&alice_signer, &user, project)
+            .await
+            .unwrap();
         created_project.urn()
-    })
-    .await?;
+    };
 
     let res = bob_state
-        .lock()
-        .await
         .providers(target_urn, Duration::from_secs(5))
         .await
         .next()
