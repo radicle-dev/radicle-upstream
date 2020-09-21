@@ -9,20 +9,21 @@
   - on macOS: mount the `.dmg` and install Upstream in the default location
     `/Applications`, then run:
     ```
-    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
+    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream
+    --reset-state
     ```
   - on Linux: run the `.AppImage` like so:
     ```
-    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --factory-reset
+    /<PATH_TO_DOWNLOAD>/radicle-upstream-0.0.14.AppImage --reset-state
     ```
-- [ ] confirm that the factory reset was actually performed, the output should
+- [ ] confirm that the state reset was actually performed, the output should
       look like this:
 
   ```
-  INFO  nuke > Nuking application state...
-  INFO  nuke > done
-  INFO  nuke > Nuking coco state...
-  INFO  nuke > done
+  INFO  api > Resetting application state...
+  INFO  api > done
+  INFO  api > Resetting CoCo state...
+  INFO  api > done
   ```
 
 

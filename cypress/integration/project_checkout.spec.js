@@ -34,7 +34,7 @@ const withWorkspaceStub = callback => {
 };
 
 beforeEach(() => {
-  cy.nukeAllState();
+  cy.resetAllState();
   cy.onboardUser();
   cy.createProjectWithFixture();
   cy.visit("./public/index.html");

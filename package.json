@@ -29,10 +29,6 @@
       {
         "from": "dist/git-remote-rad",
         "to": "git-remote-rad"
-      },
-      {
-        "from": "dist/nuke",
-        "to": "nuke"
       }
     ],
     "linux": {
@@ -121,7 +117,7 @@
     "test:unit:watch": "jest --watchAll",
     "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",
     "wait:debug": "wait-on tcp:8080 && yarn cypress:open",
-    "dist": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && cp proxy/target/release/nuke dist/nuke && electron-builder --publish never",
+    "dist": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && electron-builder --publish never",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:8080 && NODE_ENV=development electron .",
     "svelte:check": "svelte-check",
     "svelte:clean": "rm -rf public/bundle.*",
@@ -141,7 +137,7 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
-    "nuke": "cd proxy && cargo run --bin nuke"
+    "wipe": "cd proxy && cargo run -- --reset-state"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",

@@ -10,12 +10,12 @@ use radicle_surf::vcs::git::git2;
 
 use crate::{config, error::Error, project, signer, state::State, user::User};
 
-/// Deletes the local git repsoitory coco uses to keep its state.
+/// Deletes the local git repsoitory coco uses for its state.
 ///
 /// # Errors
 ///
-/// Will error in case the call to the [`std::fs::remove_dir_all`] fails.
-pub fn nuke_monorepo() -> Result<(), std::io::Error> {
+/// * if the call to [`std::fs::remove_dir_all`] fails.
+pub fn wipe_monorepo() -> Result<(), std::io::Error> {
     let paths =
         librad::paths::Paths::try_from(config::Paths::default()).expect("unable to create paths");
     std::fs::remove_dir_all(paths.git_dir())

@@ -1,7 +1,7 @@
 context("settings", () => {
   beforeEach(() => {
-    cy.nukeCocoState();
-    cy.nukeSessionState();
+    cy.resetCocoState();
+    cy.resetSessionState();
     cy.onboardUser();
 
     cy.visit("public/index.html");
