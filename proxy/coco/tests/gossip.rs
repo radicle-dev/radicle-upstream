@@ -46,7 +46,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[tokio::test]
+#[tokio::test(core_threads = 2)]
 async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
@@ -101,7 +101,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 }
 
 /// Verify that asking the network for an unkown urn returns no providers.
-#[tokio::test]
+#[tokio::test(core_threads = 2)]
 async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
@@ -128,7 +128,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// Verify that asking the network for a URN owned by a seed peer returns said peer.
-#[tokio::test]
+#[tokio::test(core_threads = 2)]
 async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
