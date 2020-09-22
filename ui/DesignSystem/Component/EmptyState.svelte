@@ -1,16 +1,17 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { Button } from "../Primitive";
   import Illustration from "./Illustration.svelte";
-  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
+
+  import { Variant as IllustrationVariant } from "../../src/illustration";
 
   const dispatch = createEventDispatcher();
 
-  export let style = null;
+  export let style = "";
   export let illustration = IllustrationVariant.Plant;
   export let text = "Nothing to see here";
-  export let primaryActionText = null;
-  export let secondaryActionText = null;
+  export let primaryActionText = "";
+  export let secondaryActionText = "";
 
   const onPrimaryAction = () => {
     dispatch("primaryAction");
@@ -56,7 +57,7 @@
 <div class="empty-state" data-cy="empty-state" {style}>
   <Illustration variant={illustration} />
   <p class="text">{text}</p>
-  {#if primaryActionText !== null}
+  {#if primaryActionText.length}
     <Button
       dataCy="primary-action"
       on:click={() => onPrimaryAction()}
@@ -64,7 +65,7 @@
       {primaryActionText}
     </Button>
   {/if}
-  {#if secondaryActionText !== null}
+  {#if secondaryActionText.length}
     <button data-cy="secondary-action" on:click={() => onSecondaryAction()}>
       <p>{secondaryActionText}</p>
     </button>

@@ -5,7 +5,7 @@ context("identity creation", () => {
   };
 
   beforeEach(() => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.visit("./public/index.html");
     cy.pick("welcome-screen").should("exist");
   });
@@ -75,7 +75,7 @@ context("identity creation", () => {
       cy.pick("clear-session-button").click();
       cy.contains("A free and open-source way to host").should("exist");
 
-      // When creating the same identity again without nuking all data, it
+      // When creating the same identity again without resetting all data, it
       // should show an error and return to the name entry screen.
       cy.pick("get-started-button").click();
 
@@ -87,7 +87,7 @@ context("identity creation", () => {
       cy.pick("set-passphrase-button").click();
       cy.pick("notification")
         .contains(
-          /Could not create identity: the identity 'rad:git:[\w]{3}…[\w]{3}' already exits/
+          /Could not create identity: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
         )
         .should("exist");
       cy.pick("notification").contains("Close").click();
@@ -127,14 +127,17 @@ context("identity creation", () => {
 
     context("handle", () => {
       it("prevents the user from submitting an invalid handle", () => {
-        const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
+        const validationError =
+          "Display name should match ^[a-z0-9][a-z0-9_-]+$";
 
         cy.pick("handle-input").type("_rafalca");
         cy.pick("next-button").click();
 
         // Handle is required.
         cy.pick("handle-input").clear();
-        cy.pick("enter-name-screen").contains("You must provide a handle");
+        cy.pick("enter-name-screen").contains(
+          "You must provide a display name"
+        );
 
         // No spaces.
         cy.pick("handle-input").type("no spaces");

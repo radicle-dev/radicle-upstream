@@ -11,7 +11,7 @@
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
-  import { getVersion } from "../../native/ipc.js";
+  import { getVersion, isDev } from "../../native/ipc.js";
 
   import { Button, Input } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
@@ -92,6 +92,34 @@
 
     <section>
       <header>
+        <h3>Feedback</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Get in touch directly</p>
+        </div>
+        <div class="action">
+          <a
+            class="typo-link"
+            href="https://radicle.community/c/site-feedback/2">
+            radicle.community
+          </a>
+        </div>
+      </div>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Join the developer chat</p>
+        </div>
+        <div class="action">
+          <a class="typo-link" href="irc://freenode:1/radicle">
+            #radicle on freenode
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
         <h3>Appearance</h3>
       </header>
       <div class="section-item">
@@ -133,28 +161,30 @@
       </div>
     </section>
 
-    <section>
-      <header>
-        <h3>Session management</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p class="typo-text-bold">Clears all authentication data</p>
-          <p style="color: var(--color-foreground-level-6);">
-            This is similar to how logout works. You will have to create a new
-            identity or restore your existing identity.
-          </p>
+    {#if isDev()}
+      <section>
+        <header>
+          <h3>Session management</h3>
+        </header>
+        <div class="section-item">
+          <div class="info">
+            <p class="typo-text-bold">Clears all authentication data</p>
+            <p style="color: var(--color-foreground-level-6);">
+              This is similar to how logout works. You will have to create a new
+              identity or restore your existing identity.
+            </p>
+          </div>
+          <div class="action">
+            <Button
+              dataCy="clear-session-button"
+              variant="outline"
+              on:click={clear}>
+              Clear session
+            </Button>
+          </div>
         </div>
-        <div class="action">
-          <Button
-            dataCy="clear-session-button"
-            variant="outline"
-            on:click={clear}>
-            Clear session
-          </Button>
-        </div>
-      </div>
-    </section>
+      </section>
+    {/if}
 
     <section>
       <header>

@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
   import { Icon } from "../../DesignSystem/Primitive";
 
-  export let message = null;
+  export let message = "Something went wrong";
 </script>
 
 <style>

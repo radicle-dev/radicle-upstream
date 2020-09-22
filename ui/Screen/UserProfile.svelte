@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
   import Router from "svelte-spa-router";
 
-  import * as path from "../src/path.ts";
+  import * as path from "../src/path";
 
   import {
     Header,
@@ -10,11 +10,11 @@
     SidebarLayout,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
-  import { fetch, identity as store } from "../src/identity.ts";
+  import { fetch, identity as store } from "../src/identity";
 
   import Projects from "./UserProfile/Projects.svelte";
   import NotFound from "./NotFound.svelte";
-  export let params = null;
+  export let params: { urn: string };
 
   const screenRoutes = {
     "/user/:urn/projects": Projects,
@@ -35,7 +35,10 @@
 
 <SidebarLayout>
   <Remote {store} let:data={identity}>
-    <Header.Large variant="profile" entity={identity}>
+    <Header.Large
+      name={identity.metadata.handle}
+      urn={identity.shareableEntityIdentifier}
+      avatarFallback={identity.avatarFallback}>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems} />
       </div>

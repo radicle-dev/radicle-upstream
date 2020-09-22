@@ -2,12 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.14](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.13...v0.0.14) (2020-09-16)
+
+
+### Features
+
+* **proxy:** coco announce ([#838](https://github.com/radicle-dev/radicle-upstream/issues/838)) ([761f11f](https://github.com/radicle-dev/radicle-upstream/commit/761f11f5ea66aad97fda252e6eb08e683285ac0b)), closes [#602](https://github.com/radicle-dev/radicle-upstream/issues/602) [#848](https://github.com/radicle-dev/radicle-upstream/issues/848)
+* **proxy:** fetch project updates ([#856](https://github.com/radicle-dev/radicle-upstream/issues/856)) ([70991c1](https://github.com/radicle-dev/radicle-upstream/commit/70991c1ee6772bbfe57a23a37b13d1b0d9e753c0))
+* **proxy:** reintroduce notifications ([#865](https://github.com/radicle-dev/radicle-upstream/issues/865)) ([81c4d0b](https://github.com/radicle-dev/radicle-upstream/commit/81c4d0bb13c21ec5ec6167b0405a360cc43371f8)), closes [#864](https://github.com/radicle-dev/radicle-upstream/issues/864)
+* **ui:** add feedback section in settings ([#895](https://github.com/radicle-dev/radicle-upstream/issues/895)) ([d0a13b0](https://github.com/radicle-dev/radicle-upstream/commit/d0a13b085200b3783e16a8cc46409b3831ff2362))
+* **ui:** navigate-to-project modal ([#738](https://github.com/radicle-dev/radicle-upstream/issues/738)) ([a3403e2](https://github.com/radicle-dev/radicle-upstream/commit/a3403e2d0f0cd0e3166c306f3089c3de473fcfc7))
+* **ui:** refresh onboarding ([#837](https://github.com/radicle-dev/radicle-upstream/issues/837)) ([bd9aed4](https://github.com/radicle-dev/radicle-upstream/commit/bd9aed435db2efa9d5680501c3c4dbd496266250))
+* **ui:** show app version ([#901](https://github.com/radicle-dev/radicle-upstream/issues/901)) ([c7e1612](https://github.com/radicle-dev/radicle-upstream/commit/c7e1612440efe4a8a703c2feb133b0367c88e749))
+* **ui:** tracking tab ([#776](https://github.com/radicle-dev/radicle-upstream/issues/776)) ([72a7822](https://github.com/radicle-dev/radicle-upstream/commit/72a78226d8211ad2bf3cf6228d7d54006ff07fa4))
+* **ui:** visitor profile view ([#816](https://github.com/radicle-dev/radicle-upstream/issues/816)) ([2206e5d](https://github.com/radicle-dev/radicle-upstream/commit/2206e5dc2bae9140be6f24d5147aeaf5ce0819e8))
+
+
+### Bug Fixes
+
+* **ci:** proxy binary naming ([#829](https://github.com/radicle-dev/radicle-upstream/issues/829)) ([b4d3276](https://github.com/radicle-dev/radicle-upstream/commit/b4d3276dec655ced8de61dbae067184e67c24349))
+* **proxy:** session not loaded on restart ([#907](https://github.com/radicle-dev/radicle-upstream/issues/907)) ([6c3832d](https://github.com/radicle-dev/radicle-upstream/commit/6c3832dd520cbcb14f4e9b1db8a9574517249446)), closes [#900](https://github.com/radicle-dev/radicle-upstream/issues/900)
+* **proxy:** signed refs retrieval for projects ([#891](https://github.com/radicle-dev/radicle-upstream/issues/891)) ([08444fb](https://github.com/radicle-dev/radicle-upstream/commit/08444fb0b6cbd56d20c3db6522c1f5687796ee9f))
+* **ui:** fix crash in rollup watcher on typescript error ([#872](https://github.com/radicle-dev/radicle-upstream/issues/872)) ([66fc54f](https://github.com/radicle-dev/radicle-upstream/commit/66fc54f23383caa7280ddb023e133e8d89624eaa)), closes [#871](https://github.com/radicle-dev/radicle-upstream/issues/871)
+* **ui:** make rollup watch mode work again ([#870](https://github.com/radicle-dev/radicle-upstream/issues/870)) ([682f609](https://github.com/radicle-dev/radicle-upstream/commit/682f60908a1c51c284aaa7f6e827c0faa20af498))
+* **ui:** update and fix rollup ([#863](https://github.com/radicle-dev/radicle-upstream/issues/863)) ([9f8981d](https://github.com/radicle-dev/radicle-upstream/commit/9f8981de6fc9b00f2d564b322a48f0050ab5543b))
+* **ui:** update copy ([#892](https://github.com/radicle-dev/radicle-upstream/issues/892)) ([6e43604](https://github.com/radicle-dev/radicle-upstream/commit/6e43604f0b43a20986bae114f6dee0a80e684877))
+
 ### [0.0.13](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.12...v0.0.13) (2020-08-27)
 
 
 ### Features
 
-* maintainer badge ([#818](https://github.com/radicle-dev/radicle-upstream/issues/818)) ([a431f5b](https://github.com/radicle-dev/radicle-upstream/commit/a431f5b3b02b542d15788cf839e5602231d676bf))
+* **ui:** maintainer badge ([#818](https://github.com/radicle-dev/radicle-upstream/issues/818)) ([a431f5b](https://github.com/radicle-dev/radicle-upstream/commit/a431f5b3b02b542d15788cf839e5602231d676bf))
 * **ui:** lock screen during long backend activity ([#815](https://github.com/radicle-dev/radicle-upstream/issues/815)) ([22d52c1](https://github.com/radicle-dev/radicle-upstream/commit/22d52c17d74e3f73b8d679236b1825d3eb39bf13))
 
 

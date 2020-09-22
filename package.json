@@ -1,6 +1,6 @@
 {
   "name": "radicle-upstream",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "author": {
     "name": "radicle team",
     "email": "dev@radicle.xyz",
@@ -106,11 +106,13 @@
     "wait-on": "^5.1.0"
   },
   "scripts": {
-    "start": "run-p --race svelte:watch proxy:start electron:start",
+    "start": "RADICLE_UPSTREAM_EXPERIMENTAL=false yarn start:app",
+    "start:experimental": "RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start:app",
+    "start:app": "run-p --race svelte:watch proxy:start electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:integration": "TZ='UTC' run-p --race proxy:start:test wait:test",
-    "test:integration:debug": "RUST_LOG=proxy=debug TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
+    "test:integration:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",
@@ -122,12 +124,10 @@
     "svelte:build": "yarn svelte:clean && rollup -c",
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
     "proxy:build": "cd proxy && cargo build --all-features --all-targets",
-    "proxy:build:release": "cd proxy && cargo build --release --all-features --all-targets",
+    "proxy:build:release": "cd proxy && cargo build --release",
     "proxy:clean": "cd proxy && cargo clean",
-    "proxy:start": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --registry=emulator",
-    "proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --registry=emulator --test",
-    "proxy:start:ffnet": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --registry=rpc.ff.radicle.network",
-    "proxy:start:devnet": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --registry=35.241.138.91",
+    "proxy:start": "cd proxy && cargo build --bin git-remote-rad && cargo run",
+    "proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
     "release": "babel-node --presets \"@babel/env\" scripts/release.js",
@@ -137,7 +137,7 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
-    "nuke": "cd proxy && cargo run --bin nuke"
+    "reset:state": "cd proxy && cargo run -- --reset-state"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",

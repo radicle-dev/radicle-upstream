@@ -73,11 +73,12 @@
     </p>
     <Input.Text
       autofocus={true}
-      placeholder="Enter a name"
+      placeholder="Enter a display name (e.g. coolprogrammer3000)"
       bind:value={handle}
       on:enter={next}
       dataCy="handle-input"
       validation={$validationStore}
+      hint="↵"
       style="margin: 1rem 0 2rem 0;" />
     <div class="buttons">
       <Button dataCy="next-button" disabled={!allowNext} on:click={next}>

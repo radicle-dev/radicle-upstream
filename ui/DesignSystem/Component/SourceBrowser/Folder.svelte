@@ -1,6 +1,11 @@
 <script>
   import * as path from "../../../src/path.ts";
-  import { tree, ObjectType } from "../../../src/source.ts";
+  import {
+    tree,
+    objectPath,
+    objectType,
+    ObjectType,
+  } from "../../../src/source.ts";
 
   import { Icon } from "../../Primitive";
   import { Remote } from "../../Component";
@@ -11,7 +16,6 @@
   export let projectId = null;
 
   export let currentRevision = null;
-  export let currentObjectPath = null;
   export let currentPeerId = null;
 
   export let expanded = false;
@@ -27,7 +31,7 @@
   };
 
   $: store = tree(projectId, currentPeerId, currentRevision, prefix);
-  $: active = prefix === currentObjectPath;
+  $: active = prefix === $objectPath;
 </script>
 
 <style>
@@ -78,16 +82,19 @@
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
             {projectId}
-            {currentObjectPath}
             {currentRevision}
             {currentPeerId}
             name={entry.info.name}
             prefix={`${entry.path}/`} />
         {:else}
           <File
-            active={entry.path === currentObjectPath}
-            href={path.projectSource(projectId, currentPeerId, currentRevision, ObjectType.Blob, entry.path)}
-            name={entry.info.name} />
+            active={entry.path === $objectPath}
+            href={path.projectSource(projectId)}
+            name={entry.info.name}
+            on:click={() => {
+              objectPath.set(entry.path);
+              objectType.set(ObjectType.Blob);
+            }} />
         {/if}
       {/each}
     </Remote>

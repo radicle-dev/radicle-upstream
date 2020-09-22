@@ -68,6 +68,23 @@ On Linux:
 3. Start Upstream in development mode: `yarn start`.
 
 
+### Feature flagging
+
+UI features that are experimental or under construction that find their way
+into the main branch must be placed behind the feature flag, to make them
+inaccessible for the general public.
+
+We do that by using `native > ipc.js > isExperimental` as a feature flag to
+enable or disable said features accordingly to the mode in which we are running
+the app.
+
+See the [scripts](#scripts) section below to learn which commands to use to
+toggle this flag accordingly to your current workflow.
+
+The feature flag is only available in development mode. It is always disabled
+in production.
+
+
 ### Running tests
 
 Before running UI end-to-end tests locally you'll need to check out the latest
@@ -80,11 +97,15 @@ test fixtures which are included in this repository as a git submodule:
 💡 *You'll have to run the previous commands every time there are any updates
 to the test fixture repository.*
 
-We use [Cypress](https://www.cypress.io/) for integration tests and [Jest](jestjs.io) for unit tests. You can find integration tests in the `cypress/` directory and unit tests next to the modules they correspond to.
+We use [Cypress](https://www.cypress.io/) for integration tests and
+[Jest](jestjs.io) for unit tests. You can find integration tests in the
+`cypress/` directory and unit tests next to the modules they correspond to.
 
 - To run all ui tests call: `yarn test`.
-- To troubleshoot integration tests via the Cypress GUI, run: `yarn test:integration:debug`.
-- To isolate a single integration test for debugging purposes, use the [`.only` method][on].
+- To troubleshoot integration tests via the Cypress GUI, run:
+  `yarn test:integration:debug`.
+- To isolate a single integration test for debugging purposes, use
+  the [`.only` method][on].
 - To develop unit tests in watch mode, run: `yarn test:unit:watch`
 
 
@@ -101,6 +122,8 @@ Here is a list of the most commonly used ones:
 
 ```sh
 yarn start                  # Start Upstream in development mode
+yarn start:experimental     # Start Upstream in experimental mode, showing
+                            # unfinished features
 
 yarn test                   # Run all ui tests
 yarn test:integration       # Run only integration tests
@@ -110,12 +133,14 @@ yarn test:unit:watch        # Run Jest tests in watch mode
 
 yarn dist                   # Bundles Upstream into an installable package
 
-yarn release                # Start a two-step process to cut a new release, for more
-                            # details have a look at ../DEVELOPMENT.md
+yarn release                # Start a two-step process to cut a new release,
+                            # for more details have a look at ../DEVELOPMENT.md
 
 yarn prettier:check         # Check UI code formatting
 yarn prettier:write         # Auto-format UI code
 yarn lint                   # Check UI code for linting errors
+yarn reset:state            # Delete all local state: identity keys, monorepo
+                            # and saved preferences
 ```
 
 
@@ -289,10 +314,10 @@ We also added a set of modifiers that allow you to add the font-family as a
 class where you need it, here again we would recommend not doing that as most
 styles should fit into one of the two categories above.
 
-The only place in the app where we're not using this is in `<Markdown />`, since the
-library we use doesn't allow us to overwrite the styles without using global
-declarations. If you have any questions or improvements, open an issue and we're
-happy to help you along.
+The only place in the app where we're not using this is in `<Markdown />`,
+since the library we use doesn't allow us to overwrite the styles without using
+global declarations. If you have any questions or improvements, open an issue
+and we're happy to help you along.
 
 #### Colors
 
@@ -309,8 +334,8 @@ Read more about the colors used in Upstream in the [Color System post][cg].
 ## Proxy
 
 All of Upstream's business logic tying together the radicle code collaboration
-and registry protocols is provided to the UI via an HTTP API by a rust binary
-called the proxy. It uses [warp][wa] to serve a RESTish JSON API.
+is provided to the UI via an HTTP API by a rust binary called the proxy. It
+uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To
 get up to speed with common functionality and manifest file intricacies consult
@@ -326,25 +351,8 @@ application package by [electron-builder][eb].
 To be able to build the proxy first install all required dependencies from the
 [Running Upstream](#running-upstream) section.
 
-To start the proxy binary, run: `cd proxy && cargo run -- --registry=emulator`.
+To start the proxy binary, run: `cd proxy && cargo run`.
 After that the API docs are served under `http://127.0.0.1:8080/docs`.
-
-### Registry chains
-
-The proxy connects to a registry node to get data from a registry chain. The
-node host is configured via the `--registry` option.
-
-The `--registry` option accepts a special value `emulator`. If set the proxy
-simulates the registry chain in memory on the node.
-
-We provide the following shortcuts.
-
-* `yarn run proxy:start`. Runs the proxy with the emulator.
-* `yarn run proxy:start:ffnet` Connects to a node in the cloud that runs the
-  ffnet chain.
-* `yarn run proxy:start:devnet` Connects to a node in the cloud that runs the
-  devnet chain. This chain is frequently reset and contains the latest master
-  version.
 
 
 ### Testing
@@ -374,11 +382,9 @@ Rust book [test chapter][rt].
 The API exposes the application's domain logic. Therefore we try to treat it as
 a thin layer exposing well-typed entities. The heavy lifting is done in the
 modules named after the protocols we consume - [radicle-link][rl] through it
-[radicle-surf][rs], for code collaboration and [radicle-registry][rr] for
-global unique entries for users, projects and organisations. By isolating
-concerns this way, we hope to enable ease-of-contribution to downstream teams.
-Empowering them to reflect changes in their public APIs easily with code
-contributions to Upstream.
+[radicle-surf][rs], for code collaboration. By isolating concerns this way, we
+hope to enable ease-of-contribution to downstream teams. Empowering them to
+reflect changes in their public APIs easily with code contributions to Upstream.
 
 
 ## CI setup
@@ -464,12 +470,15 @@ Cutting release v0.0.11:
   ✔ git push origin release-v0.0.11
   ✔ hub pull-request -p --no-edit
 
-Now ask a peer to review the following pull request,
-but don't merge it just yet:
+Now fix up CHANGELOG.md if necessary and update QA.md
+to cover the latest changes in functionality.
+
+When everything is in shape, ask a peer to review the
+pull request, but don't merge it via the GitHub UI:
 
   👉 https://github.com/radicle-upstream/pull/417
 
-To merge the pull request and finalize this release run:
+Finally, complete the release by running:
 
   👉 yarn release:finalize v0.0.11 417
 
@@ -486,6 +495,23 @@ Finalizing release v0.0.11:
 Release v0.0.11 successfully completed! 👏 🎉 🚀
 ```
 
+## Quality assurance
+
+We already have an extensive end-to-end test suite which covers most features
+and a good amount of edge cases, however it is impossible to eliminate every bug
+and regression this way, that's why we perform a QA procedure before publishing
+a release.
+
+After a release is cut, we create a GitHub issue for every supported platform
+which contains a QA checklist. Before publishing packages for a wider audience
+someone from the team goes through the checklist and manually tests the app,
+afterwards the team can evaluate whether the release is up to our standards.
+
+**Title:** `QA: v0.0.14 macOS`\
+**Body** [QA.md][qa]
+
+**Title:** `QA: v0.0.14 Linux`\
+**Body:** [QA.md][qa]
 
 
 [ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
@@ -505,8 +531,8 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [ls]: https://github.com/okonet/lint-staged
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
+[qa]: QA.md
 [rl]: https://github.com/radicle-dev/radicle-link
-[rr]: https://github.com/radicle-dev/radicle-registry
 [rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev

@@ -1,9 +1,9 @@
 import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
 
-const withEmptyRepositoryStub = callback => {
+const withEmptyDirectoryStub = callback => {
   cy.exec("pwd").then(result => {
     const pwd = result.stdout;
-    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-repo`;
+    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-directory`;
 
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
     cy.exec(`mkdir -p ${emptyDirectoryPath}`);
@@ -19,6 +19,7 @@ const withEmptyRepositoryStub = callback => {
           },
         },
         isDev: true,
+        isExperimental: true,
       };
     });
 
@@ -26,6 +27,37 @@ const withEmptyRepositoryStub = callback => {
 
     // clean up the fixture
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
+  });
+};
+
+const withNoCommitsRepositoryStub = callback => {
+  cy.exec("pwd").then(result => {
+    const pwd = result.stdout;
+    const noCommitsRepoPath = `${pwd}/cypress/workspace/no-commits-repo`;
+
+    cy.exec(`rm -rf ${noCommitsRepoPath}`);
+    cy.exec(`mkdir -p ${noCommitsRepoPath}`);
+    cy.exec(`git init ${noCommitsRepoPath}`);
+
+    // stub native call and return the directory path to the UI
+    cy.window().then(appWindow => {
+      appWindow.electron = {
+        ipcRenderer: {
+          invoke: msg => {
+            if (msg === DIALOG_SHOWOPENDIALOG) {
+              return noCommitsRepoPath;
+            }
+          },
+        },
+        isDev: true,
+        isExperimental: true,
+      };
+    });
+
+    callback();
+
+    // clean up the fixture
+    cy.exec(`rm -rf ${noCommitsRepoPath}`);
   });
 };
 
@@ -50,6 +82,7 @@ const withPlatinumStub = callback => {
           },
         },
         isDev: true,
+        isExperimental: true,
       };
     });
 
@@ -60,7 +93,7 @@ const withPlatinumStub = callback => {
 };
 
 beforeEach(() => {
-  cy.nukeAllState();
+  cy.resetAllState();
   cy.onboardUser();
   cy.visit("./public/index.html");
 });
@@ -178,9 +211,28 @@ context("project creation", () => {
     });
   });
 
+  it("disallows creating a project from a repository without commits", () => {
+    withNoCommitsRepositoryStub(() => {
+      cy.pick("new-project-button").click();
+
+      cy.pick("existing-project").click();
+
+      cy.pick("existing-project", "choose-path-button").click();
+      // Make sure UI has time to update path value from stub,
+      // this prevents this spec from failing on CI.
+      cy.wait(500);
+
+      cy.pick("existing-project")
+        .contains(
+          "The directory should contain a git repository with at least one branch"
+        )
+        .should("exist");
+    });
+  });
+
   context("happy paths", () => {
     it("creates a new project from an empty directory", () => {
-      withEmptyRepositoryStub(() => {
+      withEmptyDirectoryStub(() => {
         cy.pick("new-project-button").click();
 
         cy.pick("name").type("new-fancy-project.xyz");
@@ -194,9 +246,7 @@ context("project creation", () => {
 
         cy.pick("create-project-button").click();
 
-        cy.pick("project-screen", "topbar", "project-avatar").contains(
-          "new-fancy-project"
-        );
+        cy.pick("project-screen", "header").contains("new-fancy-project");
 
         cy.pick("notification").contains(
           "Project new-fancy-project.xyz successfully created"
@@ -230,11 +280,9 @@ context("project creation", () => {
         cy.pick("description").type("Best project");
 
         cy.pick("create-project-button").click();
-        cy.pick("project-screen", "topbar", "project-avatar").contains(
-          "git-platinum-copy"
-        );
+        cy.pick("project-screen", "header").contains("git-platinum-copy");
 
-        cy.pick("project-screen").contains("Best project");
+        cy.pick("project-screen", "header").contains("Best project");
 
         cy.pick("notification").contains(
           "Project git-platinum-copy successfully created"
@@ -266,7 +314,7 @@ context("project creation", () => {
 
         cy.pick("notification")
           .contains(
-            /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exits/
+            /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
           )
           .should("exist");
         cy.pick("notification").contains("Close").click();

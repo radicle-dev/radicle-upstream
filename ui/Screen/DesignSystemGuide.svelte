@@ -578,6 +578,13 @@
 
       <Swatch>
         <Input.Text
+          placeholder="Hey, I'm a full-width input with a hint"
+          hint="I'm a hint"
+          style="flex: 1" />
+      </Swatch>
+
+      <Swatch>
+        <Input.Text
           style="flex: 1;"
           disabled
           placeholder="Hey, I'm a disabled input with a placeholder." />

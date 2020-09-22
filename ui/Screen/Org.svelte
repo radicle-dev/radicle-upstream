@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import Router, { push } from "svelte-spa-router";
 
-  import { isDev } from "../../native/ipc.js";
+  import { isExperimental } from "../../native/ipc.js";
   import { fetch, org as store } from "../src/org.ts";
   import * as path from "../src/path.ts";
 
@@ -47,7 +47,7 @@
         looseActiveStateMatching: true,
       },
     ];
-    isDev() &&
+    isExperimental() &&
       items.push({
         icon: Icon.Wallet,
         title: "Wallet",
@@ -93,7 +93,7 @@
     };
   }
 
-  if (isDev()) {
+  if (isExperimental()) {
     sendFundsMenuItem = {
       title: "Send funds",
       icon: Icon.ArrowUp,
@@ -106,7 +106,12 @@
 
 <SidebarLayout dataCy="org-screen" style="margin-top: 0;">
   <Remote {store} let:data={org}>
-    <Header.Large variant="org" entity={org}>
+    <Header.Large
+      name={org.id}
+      avatarShape="square"
+      avatarFallback={org.avatarFallback}
+      urn={org.shareableEntityIdentifier}
+      registered>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>

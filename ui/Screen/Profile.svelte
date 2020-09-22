@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
-  import * as path from "../src/path.ts";
+  import * as path from "../src/path";
 
   import {
     Header,
@@ -46,11 +46,14 @@
     },
   ];
 
-  const session = getContext("session");
+  const identity = getContext("session").identity;
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-  <Header.Large variant="profile" entity={session.identity}>
+  <Header.Large
+    name={identity.metadata.handle}
+    urn={identity.shareableEntityIdentifier}
+    avatarFallback={identity.avatarFallback}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

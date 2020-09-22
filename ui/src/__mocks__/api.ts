@@ -41,7 +41,7 @@ export const upstreamProjectMock: project.Project = {
     name: "radicle-upstream",
     defaultBranch: "eichhoernchen",
     description:
-      "Upstream is a cross-platform desktop client for the radicle code collaboration and registry protocols.",
+      "Upstream is a cross-platform desktop client for the radicle code collaboration protocol.",
     maintainers: [],
   },
   stats: {
@@ -97,9 +97,10 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
       response = userMock;
       break;
     case "projects":
-      response = param
-        ? upstreamProjectMock
-        : [upstreamProjectMock, surfProjectMock];
+      response =
+        param === "contributed"
+          ? [upstreamProjectMock, surfProjectMock]
+          : upstreamProjectMock;
       break;
     case "session":
       response = sessionMock;

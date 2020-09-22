@@ -1,23 +1,26 @@
-<script>
+<script lang="ts">
+  import type { EmojiAvatar, RGBValue } from "../../src/avatar";
+
   import Emoji from "./Emoji.svelte";
   import Icon from "./Icon";
 
-  export let style = null;
-  export let dataCy = null;
+  export let style = "";
+  export let dataCy = "";
 
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
-  export let imageUrl = null;
-  export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
-  export let title = null;
+  export let imageUrl = "";
+  export let avatarFallback: EmojiAvatar | undefined = undefined;
+  export let title = "";
   export let registered = false;
 
-  export let variant = "circle"; // circle | square
-  export let size = "regular"; // small | regular | medium | big | huge
+  export let variant: "circle" | "square" = "circle";
 
-  const fmt = background => {
-    return `rgb(${background.r}, ${background.g}, ${background.b})`;
-  };
+  type AvatarSize = "small" | "regular" | "medium" | "big" | "huge";
+  export let size: AvatarSize = "regular";
+
+  const fmt = (background: RGBValue) =>
+    `rgb(${background.r}, ${background.g}, ${background.b})`;
 
   $: avatarClass = [variant, size].join(" ");
 </script>
@@ -119,11 +122,7 @@
 
 <div data-cy={dataCy} class={`container ${size}`} {style}>
   {#if imageUrl}
-    <img
-      class={`image ${avatarClass}`}
-      src={imageUrl}
-      alt="user-avatar"
-      onerror="this.style.display='none'" />
+    <img class={`image ${avatarClass}`} src={imageUrl} alt="user-avatar" />
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}

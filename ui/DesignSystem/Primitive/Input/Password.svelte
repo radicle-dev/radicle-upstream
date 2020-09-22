@@ -4,6 +4,7 @@
   import { ValidationStatus } from "../../../src/validation.ts";
 
   import Icon from "../Icon";
+  import KeyHint from "../../Component/KeyHint.svelte";
 
   export let style = null;
   export let inputStyle = null;
@@ -11,6 +12,7 @@
   export let value = null;
   export let dataCy = null;
   export let inputElement = null;
+  export let hint = null;
 
   export let disabled = null;
   export let validation = null;
@@ -29,6 +31,8 @@
       dispatch("enter");
     }
   };
+
+  $: showHint = hint !== null && (value === "" || value === null);
 </script>
 
 <style>
@@ -81,6 +85,9 @@
     border: 0.0625rem solid var(--color-negative);
     background: var(--color-background);
     background-position: right 0.875rem top 55%;
+  }
+
+  input.padding {
     padding-right: 2.375rem;
   }
 
@@ -99,6 +106,14 @@
     color: var(--color-negative);
     text-align: left;
   }
+
+  .hint {
+    justify-content: flex-start;
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 </style>
 
 <div {style} class="wrapper">
@@ -106,6 +121,7 @@
     type="password"
     data-cy={dataCy}
     class:invalid={validation && validation.status === ValidationStatus.Error}
+    class:padding={validation && validation.status !== ValidationStatus.NotStarted}
     {placeholder}
     bind:value
     {disabled}
@@ -116,12 +132,22 @@
     {spellcheck}
     style={inputStyle} />
 
+  {#if showHint && !validation}
+    <div class="hint">
+      <KeyHint {hint} />
+    </div>
+  {/if}
+
   {#if validation && validation.status === ValidationStatus.Error}
     <Icon.ExclamationCircle
       style="fill: var(--color-negative); justify-content: flex-start; position:
       absolute; top: 0.5rem; right: 0.625rem;" />
     <div class="validation-row">
       <p>{validation.message}</p>
+    </div>
+  {:else if showHint}
+    <div class="hint">
+      <KeyHint {hint} />
     </div>
   {/if}
 </div>
