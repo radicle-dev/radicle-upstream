@@ -79,7 +79,8 @@
   - [ ] Color theme selection
   - [ ] Peer entries
   - [ ] Remote helper hint (in the Checkout and "New project" modals) is not
-        shown after app restart once it is closed
+        shown after app restart once it is dismissed by clicking the `x` icon
+        in the top right corner
 - [ ] Links to external help resources open in an external browser
 
 
