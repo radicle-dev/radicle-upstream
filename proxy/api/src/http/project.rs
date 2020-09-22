@@ -139,21 +139,11 @@ mod handler {
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
-        let project = ctx
+        let path = ctx
             .state
             .lock()
             .await
-            .get_project(&urn, peer_id)
-            .map_err(Error::from)?;
-
-        let include = ctx
-            .state
-            .lock()
-            .await
-            .prepare_include(&project)
-            .map_err(Error::from)?;
-        let path = coco::project::Checkout::new(project, path, include)
-            .run(ctx.state.lock().await.peer_id())
+            .checkout(&urn, peer_id, path)
             .map_err(Error::from)?;
 
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
@@ -285,7 +275,7 @@ mod test {
         };
         let res = request()
             .method("POST")
-            .path(&format!("/{}/checkout", urn))
+            .path(&format!("/{}/checkout", urn.clone()))
             .json(&input)
             .reply(&api)
             .await;
@@ -314,12 +304,29 @@ mod test {
         assert_eq!(
             remote.url(),
             Some(
-                coco::LocalUrl::from_urn(urn, ctx.state.lock().await.peer_id())
+                coco::LocalUrl::from_urn(urn.clone(), ctx.state.lock().await.peer_id())
                     .to_string()
                     .as_str()
             )
         );
         assert_eq!(refs, vec!["master", "rad/dev", "rad/master"]);
+
+        // Verify presence of include file.
+        let config = repo.config().map_err(coco::Error::from)?;
+        let include_path = config
+            .get_entry("include.path")
+            .map_err(coco::Error::from)?
+            .value()
+            .unwrap()
+            .to_string();
+        assert_eq!(
+            include_path,
+            format!(
+                "{}/git-includes/{}.inc",
+                tmp_dir.path().display().to_string(),
+                urn.id
+            ),
+        );
 
         Ok(())
     }

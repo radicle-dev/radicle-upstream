@@ -445,20 +445,33 @@ impl State {
             .collect()
     }
 
-    pub fn prepare_include<P>(
+    pub fn checkout<P>(
+        &self,
+        urn: &RadUrn,
+        peer_id: P,
+        destination: PathBuf,
+    ) -> Result<PathBuf, Error>
+    where
+        P: Into<Option<PeerId>>,
+    {
+        let proj = self.get_project(&urn, peer_id).map_err(Error::from)?;
+        let include = self.prepare_include(&proj).map_err(Error::from)?;
+        let checkout = project::Checkout::new(proj, destination, include);
+
+        checkout.run(self.peer_id()).map_err(Error::from)
+    }
+
+    pub fn prepare_include(
         &self,
         project: &librad_project::Project<entity::Draft>,
-    ) -> Result<Include<P>, Error>
-    where
-        P: AsRef<std::path::Path>,
-    {
+    ) -> Result<Include<PathBuf>, Error> {
         let local_url = LocalUrl::from_urn(project.urn(), self.peer_id());
         let tracked = self.tracked(&project.urn())?;
 
         Ok(Include::from_tracked_users(
-            self.paths().git_include_dir(),
+            self.paths().git_include_dir().to_path_buf(),
             local_url,
-            tracked.into_iter(),
+            tracked.into_iter().map(|(peer_id, user)| (user, peer_id)),
         ))
     }
 }
@@ -541,7 +554,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn can_create_project_directory_exists() -> Result<(), Error> {
+    async fn can_create_project_for_existing_repo() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let repo_path = repo_path.join("radicalise");

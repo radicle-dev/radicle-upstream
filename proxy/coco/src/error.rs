@@ -23,6 +23,10 @@ pub enum Error {
     #[error(transparent)]
     Bootstrap(#[from] net::peer::BootstrapError),
 
+    /// An error occurred while performing the checkout of a project.
+    #[error(transparent)]
+    Checkout(#[from] crate::project::checkout::Error),
+
     /// Seed DNS failed to resolve to an address.
     #[error("the seed '{0}' failed to resolve to an address")]
     DnsLookupFailed(String),
