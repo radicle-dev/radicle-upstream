@@ -1,9 +1,9 @@
 import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
 
-const withEmptyRepositoryStub = callback => {
+const withEmptyDirectoryStub = callback => {
   cy.exec("pwd").then(result => {
     const pwd = result.stdout;
-    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-repo`;
+    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-directory`;
 
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
     cy.exec(`mkdir -p ${emptyDirectoryPath}`);
@@ -27,6 +27,37 @@ const withEmptyRepositoryStub = callback => {
 
     // clean up the fixture
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
+  });
+};
+
+const withNoCommitsRepositoryStub = callback => {
+  cy.exec("pwd").then(result => {
+    const pwd = result.stdout;
+    const noCommitsRepoPath = `${pwd}/cypress/workspace/no-commits-repo`;
+
+    cy.exec(`rm -rf ${noCommitsRepoPath}`);
+    cy.exec(`mkdir -p ${noCommitsRepoPath}`);
+    cy.exec(`git init ${noCommitsRepoPath}`);
+
+    // stub native call and return the directory path to the UI
+    cy.window().then(appWindow => {
+      appWindow.electron = {
+        ipcRenderer: {
+          invoke: msg => {
+            if (msg === DIALOG_SHOWOPENDIALOG) {
+              return noCommitsRepoPath;
+            }
+          },
+        },
+        isDev: true,
+        isExperimental: true,
+      };
+    });
+
+    callback();
+
+    // clean up the fixture
+    cy.exec(`rm -rf ${noCommitsRepoPath}`);
   });
 };
 
@@ -180,9 +211,28 @@ context("project creation", () => {
     });
   });
 
+  it("disallows creating a project from a repository without commits", () => {
+    withNoCommitsRepositoryStub(() => {
+      cy.pick("new-project-button").click();
+
+      cy.pick("existing-project").click();
+
+      cy.pick("existing-project", "choose-path-button").click();
+      // Make sure UI has time to update path value from stub,
+      // this prevents this spec from failing on CI.
+      cy.wait(500);
+
+      cy.pick("existing-project")
+        .contains(
+          "The directory should contain a git repository with at least one branch"
+        )
+        .should("exist");
+    });
+  });
+
   context("happy paths", () => {
     it("creates a new project from an empty directory", () => {
-      withEmptyRepositoryStub(() => {
+      withEmptyDirectoryStub(() => {
         cy.pick("new-project-button").click();
 
         cy.pick("name").type("new-fancy-project.xyz");
