@@ -1,13 +1,8 @@
 <script lang="ts">
   import type { SvelteComponent } from "svelte";
 
-  type Variant =
-    | "vanilla"
-    | "primary"
-    | "secondary"
-    | "transparent"
-    | "outline"
-    | "destructive";
+  import { ButtonVariant as Variant } from "../../src/style";
+
   export let variant: Variant = "primary";
 
   export let disabled: boolean = false;
