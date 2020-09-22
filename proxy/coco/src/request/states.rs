@@ -16,13 +16,16 @@
 //!                          +--------->+timed out+------+
 //!                                     +---------+
 
-use std::ops::{Add, AddAssign};
-use std::{collections::HashMap, marker::PhantomData};
+use std::{
+    collections::HashMap,
+    fmt,
+    marker::PhantomData,
+    ops::{Add, AddAssign},
+};
 
 use serde::{Deserialize, Serialize};
 
-use librad::peer::PeerId;
-use librad::uri::RadUrn;
+use librad::{peer::PeerId, uri::RadUrn};
 
 use super::sealed;
 
@@ -93,7 +96,6 @@ pub struct Found {
     pub(crate) peers: HashMap<PeerId, Status>,
 }
 
-// TODO(finto): Should Cloning know which PeerId it's cloning?
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Cloning {
@@ -123,6 +125,15 @@ pub enum TimedOut {
     Clone,
 }
 
+impl fmt::Display for TimedOut {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Query => write!(f, "query"),
+            Self::Clone => write!(f, "clone"),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Requested;
@@ -134,6 +145,12 @@ pub struct Queries(usize);
 impl Queries {
     pub const fn new(n: usize) -> Self {
         Self(n)
+    }
+}
+
+impl From<Queries> for usize {
+    fn from(other: Queries) -> Self {
+        other.0
     }
 }
 
@@ -157,6 +174,12 @@ pub struct Clones(usize);
 impl Clones {
     pub const fn new(n: usize) -> Self {
         Self(n)
+    }
+}
+
+impl From<Clones> for usize {
+    fn from(other: Clones) -> Self {
+        other.0
     }
 }
 
@@ -194,4 +217,3 @@ impl sealed::Sealed for Attempts {}
 
 pub trait QueryAttempt: sealed::Sealed {}
 impl QueryAttempt for IsRequested {}
-impl QueryAttempt for Found {}

@@ -4,20 +4,37 @@ use either::Either;
 use rand::{seq::IteratorRandom as _, Rng};
 use serde::{Deserialize, Serialize};
 
-use librad::peer::PeerId;
-use librad::uri::RadUrn;
+use librad::{peer::PeerId, uri::RadUrn};
 
 use crate::request::{
-    Cloned, Clones, Cloning, Found, IsCanceled, IsCreated, IsRequested, Queries, Request,
-    SomeRequest, TimedOut, MAX_CLONES, MAX_QUERIES,
+    sequence_result, Cloned, Clones, IsCreated, Queries, Request, SomeRequest, TimedOut,
+    MAX_CLONES, MAX_QUERIES,
 };
 
+// TODO(finto): Consider TimedOut as an error with the kind and number of attempts
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
 pub enum Error {
     #[error("the URN '{0}' was not found in the waiting room")]
     MissingUrn(RadUrn),
     #[error("the state fetched from the waiting room was not the expected state")]
     StateMismatch,
+    #[error("encountered {timeout} time out after {attempts} attempts")]
+    TimeOut { timeout: TimedOut, attempts: usize },
+}
+
+impl<T> From<Request<TimedOut, T>> for Error {
+    fn from(other: Request<TimedOut, T>) -> Self {
+        match &other.state {
+            TimedOut::Query => Error::TimeOut {
+                timeout: other.state,
+                attempts: other.attempts.queries.into(),
+            },
+            TimedOut::Clone => Error::TimeOut {
+                timeout: other.state,
+                attempts: other.attempts.clones.into(),
+            },
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -94,9 +111,9 @@ impl<T> WaitingRoom<T> {
     fn transition<Prev, Next>(
         &mut self,
         matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
-        transition: impl FnOnce(Prev) -> Next,
+        transition: impl FnOnce(Prev) -> Result<Next, Error>,
         urn: &RadUrn,
-    ) -> Result<Next, Error>
+    ) -> Result<(), Error>
     where
         T: Clone,
         Prev: Clone,
@@ -104,39 +121,19 @@ impl<T> WaitingRoom<T> {
     {
         match self.requests.get(urn) {
             None => Err(Error::MissingUrn(urn.clone())),
-            Some(request) => match request.clone().transition(matcher, transition) {
-                Either::Right(next) => {
-                    self.requests.insert(urn.clone(), next.clone().into());
-                    Ok(next)
+            Some(request) => {
+                match sequence_result(request.clone().transition(matcher, transition))? {
+                    Either::Right(next) => {
+                        self.requests.insert(urn.clone(), next.into());
+                        Ok(())
+                    }
+                    Either::Left(_mismatch) => Err(Error::StateMismatch),
                 }
-                Either::Left(_mismatch) => Err(Error::StateMismatch),
-            },
+            }
         }
     }
 
-    pub fn requested(
-        &mut self,
-        urn: &RadUrn,
-        timestamp: T,
-    ) -> Result<Request<IsRequested, T>, Error>
-    where
-        T: Clone,
-    {
-        self.transition(
-            |request| match request {
-                SomeRequest::Created(request) => Some(request),
-                _ => None,
-            },
-            |previous| previous.request(timestamp),
-            urn,
-        )
-    }
-
-    pub fn queried_requested(
-        &mut self,
-        urn: &RadUrn,
-        timestamp: T,
-    ) -> Result<Either<Request<TimedOut, T>, Request<IsRequested, T>>, Error>
+    pub fn queried(&mut self, urn: &RadUrn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -144,19 +141,34 @@ impl<T> WaitingRoom<T> {
         let max_clones = self.config.max_clones;
         self.transition(
             |request| match request {
-                SomeRequest::Requested(request) => Some(request),
+                SomeRequest::Created(request) => Some(request.request(timestamp).into()),
+                SomeRequest::Requested(request) => {
+                    Some(request.queried(max_queries, max_clones, timestamp).into())
+                }
                 _ => None,
             },
-            |previous| previous.queried(max_queries, max_clones, timestamp),
+            |previous: SomeRequest<T>| Ok(previous),
             urn,
         )
     }
 
-    pub fn queried_found(
-        &mut self,
-        urn: &RadUrn,
-        timestamp: T,
-    ) -> Result<Either<Request<TimedOut, T>, Request<Found, T>>, Error>
+    pub fn found(&mut self, urn: &RadUrn, peer: PeerId, timestamp: T) -> Result<(), Error>
+    where
+        T: Clone,
+    {
+        self.transition(
+            |request| match request {
+                SomeRequest::Requested(request) => Some(request.first_peer(peer, timestamp).into()),
+                SomeRequest::Found(request) => Some(request.found(peer, timestamp).into()),
+                SomeRequest::Cloning(request) => Some(request.found(peer, timestamp).into()),
+                _ => None,
+            },
+            |previous: SomeRequest<T>| Ok(previous),
+            urn,
+        )
+    }
+
+    pub fn cloning(&mut self, urn: &RadUrn, peer: PeerId, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -167,56 +179,15 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Found(request) => Some(request),
                 _ => None,
             },
-            |previous| previous.queried(max_queries, max_clones, timestamp),
-            urn,
-        )
-    }
-
-    pub fn first_peer(
-        &mut self,
-        urn: &RadUrn,
-        peer: PeerId,
-        timestamp: T,
-    ) -> Result<Request<Found, T>, Error>
-    where
-        T: Clone,
-    {
-        self.transition(
-            |request| match request {
-                SomeRequest::Requested(request) => Some(request),
-                _ => None,
+            |previous| match previous.cloning(max_queries, max_clones, peer, timestamp) {
+                Either::Left(timeout) => Err(timeout.into()),
+                Either::Right(request) => Ok(request),
             },
-            |previous| previous.first_peer(peer, timestamp),
             urn,
         )
     }
 
-    pub fn cloning(
-        &mut self,
-        urn: &RadUrn,
-        timestamp: T,
-    ) -> Result<Either<Request<TimedOut, T>, Request<Cloning, T>>, Error>
-    where
-        T: Clone,
-    {
-        let max_queries = self.config.max_queries;
-        let max_clones = self.config.max_clones;
-        self.transition(
-            |request| match request {
-                SomeRequest::Found(request) => Some(request),
-                _ => None,
-            },
-            |previous| previous.cloning(max_queries, max_clones, timestamp),
-            urn,
-        )
-    }
-
-    pub fn failed(
-        &mut self,
-        peer_id: PeerId,
-        urn: &RadUrn,
-        timestamp: T,
-    ) -> Result<Request<Found, T>, Error>
+    pub fn failed(&mut self, peer_id: PeerId, urn: &RadUrn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -225,17 +196,12 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| previous.failed(peer_id, timestamp),
+            |previous| Ok(previous.failed(peer_id, timestamp)),
             urn,
         )
     }
 
-    pub fn cloned(
-        &mut self,
-        urn: &RadUrn,
-        found_repo: RadUrn,
-        timestamp: T,
-    ) -> Result<Request<Cloned, T>, Error>
+    pub fn cloned(&mut self, urn: &RadUrn, found_repo: RadUrn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -244,18 +210,18 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| previous.cloned(found_repo, timestamp),
+            |previous| Ok(previous.cloned(found_repo, timestamp)),
             urn,
         )
     }
 
-    pub fn canceled(&mut self, urn: &RadUrn, timestamp: T) -> Result<Request<IsCanceled, T>, Error>
+    pub fn canceled(&mut self, urn: &RadUrn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
         self.transition(
             |request| request.clone().cancel(timestamp).right(),
-            |prev| prev,
+            |previous| Ok(previous),
             urn,
         )
     }
