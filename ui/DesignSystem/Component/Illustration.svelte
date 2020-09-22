@@ -1,9 +1,9 @@
-<script>
-  import { Variant } from "../../src/illustration.ts";
+<script lang="ts">
+  import { Variant } from "../../src/illustration";
 
-  export let dataCy = null;
-  export let style = null;
-  export let variant = Variant.Plant;
+  export let dataCy = "";
+  export let style = "";
+  export let variant: Variant = Variant.Plant;
 </script>
 
 <style>
