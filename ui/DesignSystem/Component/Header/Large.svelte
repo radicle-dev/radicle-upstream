@@ -146,13 +146,17 @@
           <div class="project-stats" data-cy="project-stats">
             <div class="project-stat-item">
               <Icon.Branch />
-              <p style="margin-left: 0.5rem;">{stats.branches} Branches</p>
+              <p style="margin-left: 0.5rem;">
+                {stats.branches}
+                {stats.branches > 1 ? 'Branches' : 'Branch'}
+              </p>
             </div>
             <span class="typo-mono-bold project-stat-separator">•</span>
             <div class="project-stat-item">
               <Icon.User />
               <p style="margin-left: 0.5rem;">
-                {stats.contributors} Contributors
+                {stats.contributors}
+                {stats.contributors > 1 ? 'Contributors' : 'Contributor'}
               </p>
             </div>
           </div>
