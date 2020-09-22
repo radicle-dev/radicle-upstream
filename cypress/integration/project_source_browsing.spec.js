@@ -1,5 +1,5 @@
 before(() => {
-  cy.nukeAllState();
+  cy.resetAllState();
   cy.onboardUser("cloudhead");
 
   // TODO(sos): add fake peers again when we have a peer testnet

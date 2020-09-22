@@ -256,9 +256,12 @@ const fetchBranches = async (path: string) => {
 };
 
 const validateExistingRepository = (path: string): Promise<boolean> => {
-  return fetchBranches(path).then(
-    () => !get(localStateError).match("could not find repository")
-  );
+  return fetchBranches(path).then(() => {
+    return (
+      !get(localStateError).match("could not find repository") &&
+      !get(localStateError).match("repository has no branches")
+    );
+  });
 };
 
 const validateNewRepository = (path: string): Promise<boolean> => {
@@ -306,7 +309,8 @@ export const repositoryPathValidationStore = (
       [
         {
           promise: validateExistingRepository,
-          validationMessage: "The directory should contain a git repository",
+          validationMessage:
+            "The directory should contain a git repository with at least one branch",
         },
       ]
     );

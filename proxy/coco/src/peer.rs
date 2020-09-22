@@ -1,20 +1,28 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::{convert::From, fmt};
+use std::time::Duration;
 
 use futures::StreamExt as _;
-use tokio::sync::broadcast;
-
-use librad::net::{
-    peer::{Gossip, RunLoop},
-    protocol,
+use tokio::{
+    sync::{broadcast, mpsc},
+    time::interval,
 };
+
+use librad::{net::peer::RunLoop, peer::PeerId};
 
 use crate::state::Lock;
 
 mod announcement;
 pub use announcement::Announcement;
+
+mod run_state;
+pub use run_state::{
+    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, SyncConfig, SyncEvent, TimeoutEvent,
+};
+use run_state::{Command, RunState};
+
+mod sync;
 
 /// Upper bound of messages stored in receiver channels.
 const RECEIVER_CAPACITY: usize = 128;
@@ -25,35 +33,16 @@ pub enum Error {
     /// Failed to build and announce state updates.
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
-}
-
-/// Significant events that occur during [`Peer`] lifetime.
-#[allow(clippy::large_enum_variant)]
-#[derive(Clone)]
-pub enum Event {
-    /// Gossiped a list of updates of new heads in our [`crate::state::State`]`.
-    Announced(announcement::Updates),
-    /// Received a low-level protocol event.
-    Protocol(protocol::ProtocolEvent<Gossip>),
-}
-
-impl fmt::Debug for Event {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Announced(updates) => write!(f, "announcements = {}", updates.len()),
-            Self::Protocol(event) => write!(f, "protocol = {:?}", event),
-        }
-    }
+    /// Stop-gap until we get rid of crate level errors.
+    // TODO(xla): Remove once we transitioned to per module errors.
+    #[error(transparent)]
+    Crate(#[from] crate::error::Error),
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
 pub struct Peer {
     /// Peer [`librad::net::peer::RunLoop`] to advance the network protocol.
     run_loop: RunLoop,
-    /// Underlying state that is passed to subroutines.
-    state: Lock,
-    /// On-disk storage  for caching.
-    store: kv::Store,
     /// Handle used to broadcast [`Event`].
     subscriber: broadcast::Sender<Event>,
 }
@@ -61,12 +50,10 @@ pub struct Peer {
 impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: Lock, store: kv::Store) -> Self {
+    pub fn new(run_loop: RunLoop) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         Self {
             run_loop,
-            state,
-            store,
             subscriber,
         }
     }
@@ -87,60 +74,97 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(self) -> Result<(), Error> {
+    pub async fn run(self, state: Lock, store: kv::Store, run_config: RunConfig) {
         // Subscribe to protocol events.
         let protocol_subscriber = {
-            let state = self.state.lock().await;
+            let state = state.lock().await;
             let protocol = state.api.protocol();
             protocol.subscribe().await
         };
         tokio::pin!(protocol_subscriber);
 
         // Start announcement timer.
-        let mut announce_timer = tokio::time::interval(std::time::Duration::from_secs(1));
+        // TODO(xla): Find a more structured approach to manage timings.
+        let mut announce_timer = interval(run_config.announce.interval);
+
+        let (announce_sender, mut announcements) =
+            mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
+        let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
+        let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
 
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
 
+        let mut run_state = RunState::from(run_config);
         loop {
-            let res = tokio::select! {
-                _ = announce_timer.tick() => {
-                    Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
+            let event = tokio::select! {
+                _ = announce_timer.tick() => Event::Announce(AnnounceEvent::Tick),
+                Some(announce_event) = announcements.recv() => Event::Announce(announce_event),
+                Some(protocol_event) = protocol_subscriber.next() => Event::Protocol(protocol_event),
+                Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
+                Some(timeout_event) = timeouts.recv() => Event::Timeout(timeout_event),
+                else => {
+                    break
                 },
-                Some(event) = protocol_subscriber.next() => {
-                    Ok(Event::Protocol(event))
-                },
-                else => break,
             };
 
-            match res {
-                // Propagate if one of the select failed.
-                Err(err) => return Err(err),
-                Ok(event) => {
-                    log::info!("{:?}", event);
+            // Send will error if there are no active receivers. This case is expected and
+            // should not terminate the run loop.
+            self.subscriber.send(event.clone()).ok();
+            log::debug!("{:?}", event);
 
-                    // Send will error if there are no active receivers. This case is expected and
-                    // should not crash the run loop.
-                    self.subscriber.send(event).ok();
-                },
+            for cmd in run_state.transition(event) {
+                match cmd {
+                    Command::Announce => {
+                        Self::announce(state.clone(), store.clone(), announce_sender.clone());
+                    },
+                    Command::SyncPeer(peer_id) => {
+                        Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
+                    },
+                    Command::StartSyncTimeout(sync_period) => {
+                        Self::start_sync_timeout(sync_period, timeout_sender.clone())
+                    },
+                };
             }
         }
-
-        Ok(())
     }
 
     /// Announcement subroutine.
-    async fn announce(state: Lock, store: &kv::Store) -> Result<announcement::Updates, Error> {
-        let old = announcement::load(store)?;
-        let new = announcement::build(state.clone()).await?;
-        let updates = announcement::diff(&old, &new);
+    fn announce(state: Lock, store: kv::Store, mut sender: mpsc::Sender<AnnounceEvent>) {
+        tokio::spawn(async move {
+            match announcement::run(state, &store).await {
+                Ok(updates) => sender.send(AnnounceEvent::Succeeded(updates)).await.ok(),
+                Err(err) => {
+                    log::error!("announce error: {:?}", err);
+                    sender.send(AnnounceEvent::Failed).await.ok()
+                },
+            };
+        });
+    }
 
-        announcement::announce(state, updates.iter()).await;
+    /// Peer syncing subroutine.
+    async fn sync(state: Lock, mut sender: mpsc::Sender<SyncEvent>, peer_id: PeerId) {
+        sender.send(SyncEvent::Started(peer_id.clone())).await.ok();
 
-        if !updates.is_empty() {
-            announcement::save(store, updates.clone()).map_err(Error::from)?;
-        }
+        tokio::spawn(async move {
+            match sync::sync(state.clone(), peer_id.clone()).await {
+                Ok(_) => sender
+                    .send(SyncEvent::Succeeded(peer_id.clone()))
+                    .await
+                    .ok(),
+                Err(err) => {
+                    log::error!("sync error for {}: {:?}", peer_id, err);
+                    sender.send(SyncEvent::Failed(peer_id.clone())).await.ok()
+                },
+            };
+        });
+    }
 
-        Ok(updates)
+    /// Sync timeout subroutine.
+    fn start_sync_timeout(sync_period: Duration, sender: mpsc::Sender<TimeoutEvent>) {
+        tokio::spawn(async move {
+            tokio::time::delay_for(sync_period).await;
+            sender.clone().send(TimeoutEvent::SyncPeriod).await.ok();
+        });
     }
 }
