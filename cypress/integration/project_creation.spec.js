@@ -130,7 +130,7 @@ context("project creation", () => {
       cy.get("body").type("{esc}", { force: true });
     });
 
-    context.only("name", () => {
+    context("name", () => {
       it("prevents the user from creating a project with an invalid name", () => {
         // the submit button is disabled when name is not present
         cy.pick("page", "name").clear();
