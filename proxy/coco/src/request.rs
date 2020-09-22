@@ -17,10 +17,6 @@ const MAX_QUERIES: Queries = Queries::new(1);
 const MAX_CLONES: Clones = Clones::new(1);
 const PERIOD: Duration = Duration::from_secs(1); // Not for the whole request but for re-request
 
-pub fn exponential_backoff(attempt: usize, interval: Duration) -> Duration {
-    let exp = u32::try_from(attempt).unwrap_or(u32::MAX);
-    Duration::from_millis(u64::pow(2, exp)) + interval
-}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
