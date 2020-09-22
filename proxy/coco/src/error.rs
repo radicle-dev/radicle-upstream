@@ -53,6 +53,9 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
+    #[error(transparent)]
+    Include(#[from] librad::git::include::Error),
+
     /// Seed input is invalid.
     #[error("the seed '{0}' is invalid: {:1}")]
     InvalidSeed(String, Option<librad::peer::conversion::Error>),

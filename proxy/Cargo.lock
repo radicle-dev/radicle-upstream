@@ -1117,7 +1117,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=06fa264cc0b9b1a5ed37db69aa900748654a0534#06fa264cc0b9b1a5ed37db69aa900748654a0534"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=806e2b713f935b57660839a2b385f39f4b0a3dec#806e2b713f935b57660839a2b385f39f4b0a3dec"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1152,6 +1152,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_json",
+ "tempfile",
  "thiserror",
  "tokio",
  "tokio-util",
@@ -1759,7 +1760,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=06fa264cc0b9b1a5ed37db69aa900748654a0534#06fa264cc0b9b1a5ed37db69aa900748654a0534"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=806e2b713f935b57660839a2b385f39f4b0a3dec#806e2b713f935b57660839a2b385f39f4b0a3dec"
 dependencies = [
  "anyhow",
  "git2",

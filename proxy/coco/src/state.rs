@@ -421,6 +421,7 @@ impl State {
     ///
     /// * When the storage operation fails.
     pub fn track(&self, urn: &RadUrn, remote: &PeerId) -> Result<(), Error> {
+        self.update_include(urn).map_err(Error::from)?;
         Ok(self.api.storage().track(urn, remote)?)
     }
 
@@ -459,10 +460,10 @@ impl State {
         destination: PathBuf,
     ) -> Result<PathBuf, Error>
     where
-        P: Into<Option<PeerId>>,
+        P: Into<Option<PeerId>> + Clone,
     {
         let proj = self.get_project(urn, peer_id).map_err(Error::from)?;
-        let include_path = self.update_include(&proj).map_err(Error::from)?;
+        let include_path = self.update_include(urn).map_err(Error::from)?;
         let checkout = project::Checkout::new(proj, destination, include_path);
 
         checkout.run(self.peer_id()).map_err(Error::from)
@@ -473,19 +474,16 @@ impl State {
     /// # Errors
     ///
     /// * if getting the list of tracked peers fails
-    pub fn update_include(
-        &self,
-        project: &librad_project::Project<entity::Draft>,
-    ) -> Result<PathBuf, Error> {
-        let local_url = LocalUrl::from_urn(project.urn(), self.peer_id());
-        let tracked = self.tracked(&project.urn())?;
+    pub fn update_include(&self, urn: &RadUrn) -> Result<PathBuf, Error> {
+        let local_url = LocalUrl::from_urn(urn.clone(), self.peer_id());
+        let tracked = self.tracked(urn)?;
         let include = Include::from_tracked_users(
-            self.paths().git_include_dir().to_path_buf(),
+            self.paths().git_includes_dir().to_path_buf(),
             local_url,
             tracked.into_iter().map(|(peer_id, user)| (user, peer_id)),
         );
         let include_path = include.file_path();
-        let _config = git2::Config::try_from(include)?;
+        include.save()?;
 
         Ok(include_path)
     }
