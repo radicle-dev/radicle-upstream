@@ -2,15 +2,38 @@ use serde::{Deserialize, Serialize};
 
 use super::*;
 
+/// Since a `Request` is parameterised over its state, it makes it difficult to talk a `Request` in
+/// general without the compiler complaining at us. For example, we cannot have something like
+/// `vec![created, requested, cloning, timedout]` since they all have distinct types where they
+/// differ in states.
+///
+/// To allow us to do this we unify all the states into `SomeRequest` where each state is a variant
+/// in the enumeration.
+///
+/// When we pattern match we get back the request parameterised over the specific state and can
+/// work in a type safe manner with this request.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum SomeRequest<T> {
+    /// The `Request` has been created.
     Created(Request<IsCreated, T>),
+
+    /// The `Request` has been requested.
     Requested(Request<IsRequested, T>),
+
+    /// The `Request` has found a peer and is possibly searching for more.
     Found(Request<Found, T>),
+
+    /// The `Request` is attempting to clone from a peer.
     Cloning(Request<Cloning, T>),
+
+    /// The `Request` has successfully cloned from a peer.
     Cloned(Request<Cloned, T>),
+
+    /// The `Request` has been cancelled.
     Canceled(Request<IsCanceled, T>),
+
+    /// The `Request` has timed out on querying or cloning.
     TimedOut(Request<TimedOut, T>),
 }
 
@@ -63,6 +86,7 @@ impl<T, L: Into<SomeRequest<T>>, R: Into<SomeRequest<T>>> From<Either<L, R>> for
 }
 
 impl<T> SomeRequest<T> {
+    /// Get the `RadUrn` of whatever kind of [`Request`] is below.
     pub fn urn(&self) -> &RadUrn {
         match self {
             SomeRequest::Created(request) => request.urn(),
@@ -75,6 +99,9 @@ impl<T> SomeRequest<T> {
         }
     }
 
+    /// We can cancel an underlying `Request` if it is allowed to be cancelled. In the case that it
+    /// is allowed, then we get back the cancelled request in the `Right` variant. Otherwise we get
+    /// back our original `SomeRequest` in the `Left` variant.
     pub fn cancel(self, timestamp: T) -> Either<SomeRequest<T>, Request<IsCanceled, T>> {
         match self {
             SomeRequest::Created(request) => Either::Right(request.cancel(timestamp)),
@@ -86,6 +113,9 @@ impl<T> SomeRequest<T> {
         }
     }
 
+    /// We can see if our underlying `Request` timed out if it is in a state where a time out can occur. In the case that it
+    /// can time out, then we get back the timed out request in the `Right` variant. Otherwise we get
+    /// back our original `SomeRequest` in the `Left` variant.
     pub fn timed_out(
         self,
         max_queries: Queries,
@@ -106,6 +136,10 @@ impl<T> SomeRequest<T> {
         }
     }
 
+    /// If we have some way of picking a specific `Request` from `SomeRequest` and a function that
+    /// transitions that `Request` into a next state then we follow that transition.
+    ///
+    /// If not we leave the `SomeRequest` as is.
     pub fn transition<Prev, Next>(
         self,
         matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
