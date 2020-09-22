@@ -239,6 +239,20 @@ where
 {
     /// Give back the underlying `HashMap` of peers that is contained in `Self`.
     fn peers(&mut self) -> &mut HashMap<PeerId, Status>;
+
+    /// Returns `false` if the `peers` are empty or if any of them are `Status::Available`
+    /// or `Status::InProgress`.
+    ///
+    /// Otherwise, if all are in the `Status::Failed` state, then we return `true`.
+    fn all_failed(&mut self) -> bool {
+        let peers = self.peers();
+
+        if peers.is_empty() {
+            return false;
+        }
+
+        peers.iter().all(|(_, status)| *status == Status::Failed)
+    }
 }
 
 impl HasPeers for Found {

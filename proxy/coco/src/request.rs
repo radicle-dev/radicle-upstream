@@ -50,8 +50,8 @@ const MAX_CLONES: Clones = Clones::new(1);
 /// +----+----+       +------+--+       +---+-+      +---+---+       +------+
 /// | created +------>+requested+------>+found+----->+cloning+------>+cloned|
 /// +---------+       +------+--+       +--+--+      +---+---+       +------+
-///                          |             |  ^------+   |
-///                          |             |   failed    |
+///                          |  ^-------+  |  ^------+   |
+///                          |    failed   |   failed    |
 ///                          |             v             |
 ///                          |          +--+------+      |
 ///                          +--------->+timed out+------+
@@ -218,8 +218,6 @@ impl<T> Request<IsRequested, T> {
     }
 }
 
-// TODO(finto): I think we need a state to transition back to `IsRequested` if there's no peers
-// left to attempt cloning from.
 impl<T> Request<Found, T> {
     /// Transition the `Request` from the `Found` state to the `Cloning` state.
     ///
@@ -249,6 +247,23 @@ impl<T> Request<Found, T> {
             state: Cloning { peers },
         };
         this.timed_out(max_queries, max_clones, timestamp).flip()
+    }
+
+    /// Transition the `Request` from the `Found` back to the `IsRequested` state.
+    ///
+    /// This signifies that the `Request` has exhausted its list of peers to attempt cloning from
+    /// and needs to re-attempt the request for the search.
+    ///
+    /// Should be used in tandem with [`HasPeers::all_failed`] to ensure that we transition back
+    /// when all peers have failed to clone.
+    #[allow(clippy::missing_const_for_fn)]
+    pub fn failed(self, timestamp: T) -> Request<IsRequested, T> {
+        Request {
+            urn: self.urn,
+            attempts: self.attempts,
+            timestamp,
+            state: PhantomData,
+        }
     }
 }
 
