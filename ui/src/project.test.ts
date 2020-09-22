@@ -24,12 +24,11 @@ describe("creating a project", () => {
 
       // doesn't mess with names that are already ok
       expect(project.formatNameInput(acceptable)).toEqual(acceptable);
+    });
 
-      // parses existing repo names
+    it("extract project names correctly from a repository path", () => {
       expect(
-        project.formatFromExistingRepo(
-          "screaming/somewhere/in/the/machine/my-project"
-        )
+        project.extractName("screaming/somewhere/in/the/machine/my-project")
       ).toEqual("my-project");
     });
 

@@ -13,7 +13,7 @@
     localState,
     nameValidationStore,
     formatNameInput,
-    formatFromExistingRepo,
+    extractName,
     repositoryPathValidationStore,
     RepoType,
   } from "../src/project.ts";
@@ -114,7 +114,7 @@
   }
 
   // Use the directory name for existing projects as the project name.
-  $: name = formatFromExistingRepo(existingRepositoryPath);
+  $: name = extractName(existingRepositoryPath);
 
   // Reset the project name when switching between new and existing repo.
   $: isExisting && (name = "");

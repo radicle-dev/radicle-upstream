@@ -22,3 +22,5 @@ const handleConstraints = {
 
 export const createHandleValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(handleConstraints);
+
+export const formatHandleInput = (input: string) => input.replace(" ", "-");
