@@ -1,6 +1,13 @@
+// I reserve the right to not match all the arms when picking out particular cases, thank you very
+// much.
+#![allow(clippy::wildcard_enum_match_arm)]
+
 use serde::{Deserialize, Serialize};
 
-use super::*;
+use super::{
+    Cloned, Clones, Cloning, Either, Found, IsCanceled, IsCreated, IsRequested, Queries, RadUrn,
+    Request, RequestKind, TimedOut,
+};
 
 /// Since a `Request` is parameterised over its state, it makes it difficult to talk a `Request` in
 /// general without the compiler complaining at us. For example, we cannot have something like
@@ -95,7 +102,7 @@ impl<T> From<Request<TimedOut, T>> for SomeRequest<T> {
 
 impl<T, L: Into<SomeRequest<T>>, R: Into<SomeRequest<T>>> From<Either<L, R>> for SomeRequest<T> {
     fn from(other: Either<L, R>) -> Self {
-        other.either(|l| l.into(), |r| r.into())
+        other.either(L::into, R::into)
     }
 }
 
@@ -127,9 +134,9 @@ impl<T> SomeRequest<T> {
         }
     }
 
-    /// We can see if our underlying `Request` timed out if it is in a state where a time out can occur. In the case that it
-    /// can time out, then we get back the timed out request in the `Right` variant. Otherwise we get
-    /// back our original `SomeRequest` in the `Left` variant.
+    /// We can see if our underlying `Request` timed out if it is in a state where a time out can
+    /// occur. In the case that it can time out, then we get back the timed out request in the
+    /// `Right` variant. Otherwise we get back our original `SomeRequest` in the `Left` variant.
     pub fn timed_out(
         self,
         max_queries: Queries,

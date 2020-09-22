@@ -2,6 +2,10 @@
 //!
 //! See [`Request`] and [`waiting_room::WaitingRoom`] for a high-level view of the API.
 
+// We need to allow this because there's a bug and clippy doesn't realise that the type parameter
+// is changing during state transitions.
+#![allow(clippy::use_self)]
+
 use std::{collections::HashMap, marker::PhantomData};
 
 use either::Either;
@@ -19,6 +23,7 @@ pub use existential::SomeRequest;
 /// The black box tracker of [`Request`]s and their lifecycles.
 pub mod waiting_room;
 
+/// Private trait for sealing the traits we use here.
 mod sealed;
 
 /// The maximum number of query attempts that can be made for a single request.
@@ -80,7 +85,7 @@ impl<S, T> From<Request<S, T>> for Gossip {
 
 impl<S, T> Request<S, T> {
     /// Get the [`RadUrn`] that this `Request` is searching for.
-    pub fn urn(&self) -> &RadUrn {
+    pub const fn urn(&self) -> &RadUrn {
         &self.urn
     }
 
@@ -168,7 +173,7 @@ impl<T> Request<IsCreated, T> {
     ///
     /// Once this request has been made, we can transition this `Request` to the `IsRequested`
     /// state by calling [`Request::request`].
-    pub fn new(urn: RadUrn, timestamp: T) -> Self {
+    pub const fn new(urn: RadUrn, timestamp: T) -> Self {
         Self {
             urn,
             attempts: Attempts::new(),
@@ -270,6 +275,7 @@ impl<T> Request<Cloning, T> {
     ///
     /// This signifies that the clone was successful and that the whole request was successful,
     /// congratulations.
+    #[allow(clippy::use_self, clippy::missing_const_for_fn)]
     pub fn cloned(self, repo: RadUrn, timestamp: T) -> Request<Cloned, T> {
         Request {
             urn: self.urn,

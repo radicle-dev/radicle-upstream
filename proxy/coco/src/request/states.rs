@@ -133,6 +133,7 @@ pub struct Queries(usize);
 
 impl Queries {
     /// Create a new `Queries` wrapping around `n`.
+    #[must_use]
     pub const fn new(n: usize) -> Self {
         Self(n)
     }
@@ -164,6 +165,7 @@ pub struct Clones(usize);
 
 impl Clones {
     /// Create a new `Clones` wrapping around `n`.
+    #[must_use]
     pub const fn new(n: usize) -> Self {
         Self(n)
     }
@@ -201,11 +203,18 @@ pub struct Attempts {
 
 impl Attempts {
     /// Get a new `Attempts` where the number of queires and clones is initially `0`.
-    pub fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Attempts {
             queries: Queries(0),
             clones: Clones(0),
         }
+    }
+}
+
+impl Default for Attempts {
+    fn default() -> Self {
+        Attempts::new()
     }
 }
 

@@ -1,3 +1,7 @@
+// I reserve the right to not match all the arms when picking out a single case, thank you very
+// much.
+#![allow(clippy::wildcard_enum_match_arm)]
+
 use std::collections::HashMap;
 
 use either::Either;
@@ -129,11 +133,20 @@ impl<R> Strategy<R> {
 
 impl<T> WaitingRoom<T> {
     /// Initialise a new `WaitingRoom` with the supplied `config`.
+    #[must_use]
     pub fn new(config: Config) -> Self {
         Self {
             requests: HashMap::new(),
             config,
         }
+    }
+
+    /// Get the underlying [`SomeRequest`] for the given `urn.
+    ///
+    /// Returns `None` if there is no such request.
+    #[must_use]
+    pub fn get(&self, urn: &RadUrn) -> Option<&SomeRequest<T>> {
+        self.requests.get(urn)
     }
 
     /// Create a fresh [`Request`] with the given `urn`.
@@ -144,16 +157,24 @@ impl<T> WaitingRoom<T> {
     where
         T: Clone,
     {
-        match self.requests.get(&urn) {
+        match self.get(&urn) {
             None => {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
                 self.requests.insert(urn, request);
                 None
-            }
+            },
             Some(request) => Some(request.clone()),
         }
     }
 
+    /// Transition the `Request` found at the provided `urn` and call the transition function to
+    /// move it into its `Next` state.
+    ///
+    /// # Errors
+    ///
+    ///   * If the `urn` was not in the `WaitingRoom`.
+    ///   * If the underlying `Request` was not in the expected state.
+    ///   * If the transition function supplied returns an error.
     fn transition<Prev, Next>(
         &mut self,
         matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
@@ -172,10 +193,10 @@ impl<T> WaitingRoom<T> {
                     Either::Right(next) => {
                         self.requests.insert(urn.clone(), next.into());
                         Ok(())
-                    }
+                    },
                     Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
                 }
-            }
+            },
         }
     }
 
@@ -203,7 +224,7 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Created(request) => Some(Either::Right(request.request(timestamp))),
                 SomeRequest::Requested(request) => {
                     Some(request.queried(max_queries, max_clones, timestamp))
-                }
+                },
                 _ => None,
             },
             |previous| match previous {
@@ -233,11 +254,17 @@ impl<T> WaitingRoom<T> {
         self.transition(
             |request| match request {
                 SomeRequest::Requested(request) => Some(request.first_peer(peer, timestamp).into()),
-                SomeRequest::Found(request) => Some(request.found(peer, timestamp).into()),
-                SomeRequest::Cloning(request) => Some(request.found(peer, timestamp).into()),
+                SomeRequest::Found(request) => {
+                    let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
+                    Some(some_request)
+                },
+                SomeRequest::Cloning(request) => {
+                    let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
+                    Some(some_request)
+                },
                 _ => None,
             },
-            |previous: SomeRequest<T>| Ok(previous),
+            Ok,
             urn,
         )
     }
@@ -271,7 +298,8 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    /// Tell the `WaitingRoom` that we failed the attempt to clone from the `peer` for the given `urn`.
+    /// Tell the `WaitingRoom` that we failed the attempt to clone from the `peer` for the given
+    /// `urn`.
     ///
     /// If the underlying `Request` was in the `Found` state then it will transition to the
     /// `Cloning` state.
@@ -319,8 +347,8 @@ impl<T> WaitingRoom<T> {
 
     /// Tell the `WaitingRoom` that we are cancelling the request for the given `urn`.
     ///
-    /// If the underlying `Request` was in the `{IsCreated, IsRequested, Found, Cloning, IsCanceled}` state then it will transition to the
-    /// `IsCanceled` state.
+    /// If the underlying `Request` was in the `{IsCreated, IsRequested, Found, Cloning,
+    /// IsCanceled}` state then it will transition to the `IsCanceled` state.
     ///
     /// # Errors
     ///
@@ -330,11 +358,7 @@ impl<T> WaitingRoom<T> {
     where
         T: Clone,
     {
-        self.transition(
-            |request| request.clone().cancel(timestamp).right(),
-            |previous| Ok(previous),
-            urn,
-        )
+        self.transition(|request| request.cancel(timestamp).right(), Ok, urn)
     }
 
     /// Return the list of all `RadUrn`s in the `WaitingRoom`.
@@ -342,6 +366,7 @@ impl<T> WaitingRoom<T> {
         self.requests.keys()
     }
 
+    /// Filter the requests in the waiting room based on the passed in `matcher`.
     fn filter<R: Rng, S>(
         &self,
         mut matcher: impl FnMut(&SomeRequest<T>) -> Option<&Request<S, T>>,
@@ -358,7 +383,8 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    /// Return a `Request` that is in the `IsCreated` state, if any, based off of the supplied `strategy`.
+    /// Return a `Request` that is in the `IsCreated` state, if any, based off of the supplied
+    /// `strategy`.
     pub fn next<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<IsCreated, T>>
     where
         T: Clone + Ord,
@@ -372,7 +398,8 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    /// Return a `Request` that is in the `Cloned` state, if any, based off of the supplied `strategy`.
+    /// Return a `Request` that is in the `Cloned` state, if any, based off of the supplied
+    /// `strategy`.
     pub fn ready<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<Cloned, T>>
     where
         T: Clone + Ord,
@@ -404,10 +431,9 @@ mod test {
     use proptest::{collection, prelude::prop_assert_eq};
 
     use super::*;
-    use crate::request::Attempts;
 
     #[test]
-    fn happy_path_of_full_request() {
+    fn happy_path_of_full_request() -> Result<(), Box<dyn error::Error + 'static>> {
         let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -421,32 +447,42 @@ mod test {
         let created = waiting_room.next(strategy);
         assert_eq!(created, Some(&Request::new(urn.clone(), ())),);
 
-        let requested = waiting_room.requested(&urn, ());
-        assert_eq!(requested, Ok(Request::new(urn.clone(), ()).request(())));
+        waiting_room.queried(&urn, ())?;
+        let expected = SomeRequest::Requested(Request::new(urn.clone(), ()).request(()));
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
 
-        let found = waiting_room.first_peer(&urn, peer.clone(), ());
-        let expected = Request::new(urn.clone(), ())
-            .request(())
-            .first_peer(peer.clone(), ());
-        assert_eq!(found, Ok(expected),);
+        waiting_room.found(&urn, peer.clone(), ())?;
+        let expected = SomeRequest::Found(
+            Request::new(urn.clone(), ())
+                .request(())
+                .first_peer(peer.clone(), ()),
+        );
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
 
-        let requested = waiting_room.cloning(&urn, ());
-        let expected = Request::new(urn.clone(), ())
-            .request(())
-            .first_peer(peer.clone(), ())
-            .cloning(MAX_QUERIES, MAX_CLONES, ());
-        assert_eq!(requested, Ok(expected));
+        waiting_room.cloning(&urn, peer.clone(), ())?;
+        let expected = SomeRequest::Cloning(
+            Request::new(urn.clone(), ())
+                .request(())
+                .first_peer(peer.clone(), ())
+                .cloning(MAX_QUERIES, MAX_CLONES, peer.clone(), ())
+                .unwrap_right(),
+        );
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
 
         let found_repo = urn.clone();
 
-        let fulfilled = waiting_room.cloned(&urn, found_repo.clone(), ());
-        let expected = Request::new(urn, ())
-            .request(())
-            .first_peer(peer.clone(), ())
-            .cloning(MAX_QUERIES, MAX_CLONES, ())
-            .unwrap_right()
-            .cloned(found_repo, ());
-        assert_eq!(fulfilled, Ok(expected));
+        waiting_room.cloned(&urn, found_repo.clone(), ())?;
+        let expected = SomeRequest::Cloned(
+            Request::new(urn.clone(), ())
+                .request(())
+                .first_peer(peer.clone(), ())
+                .cloning(MAX_QUERIES, MAX_CLONES, peer, ())
+                .unwrap_right()
+                .cloned(found_repo, ()),
+        );
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
+
+        Ok(())
     }
 
     #[test]
@@ -457,6 +493,7 @@ mod test {
             .expect("failed to parse the urn");
         waiting_room.create(urn.clone(), ());
         let request = waiting_room.create(urn.clone(), ());
+
         assert_eq!(request, Some(SomeRequest::Created(Request::new(urn, ()))));
     }
 
@@ -472,22 +509,15 @@ mod test {
             .expect("failed to parse the urn");
 
         let _ = waiting_room.create(urn.clone(), ());
-        let mut request = Either::Right(waiting_room.requested(&urn, ())?);
-
         for _ in 0..NUM_QUERIES {
-            request = waiting_room.queried_requested(&urn, ())?;
+            waiting_room.queried(&urn, ())?;
         }
 
         assert_eq!(
-            request,
-            Either::Left(Request {
-                urn,
-                attempts: Attempts {
-                    queries: Queries::new(NUM_QUERIES + 1),
-                    clones: Clones::new(0),
-                },
-                timestamp: (),
-                state: TimedOut::Query,
+            waiting_room.queried(&urn, ()),
+            Err(Error::TimeOut {
+                timeout: TimedOut::Query,
+                attempts: 17,
             })
         );
 
@@ -507,25 +537,21 @@ mod test {
         let peer = PeerId::from(SecretKey::new());
 
         let _ = waiting_room.create(urn.clone(), ());
-        let _ = waiting_room.requested(&urn, ())?;
-        let _ = waiting_room.first_peer(&urn, peer.clone(), ())?;
-        let mut request = waiting_room.cloning(&urn, ())?;
+        waiting_room.queried(&urn, ())?;
+        waiting_room.found(&urn, peer.clone(), ())?;
+        waiting_room.cloning(&urn, peer.clone(), ())?;
 
-        for _ in 0..NUM_CLONES {
-            let _ = waiting_room.failed(peer.clone(), &urn, ())?;
-            request = waiting_room.cloning(&urn, ())?;
+        for _ in 1..NUM_CLONES {
+            waiting_room.failed(peer.clone(), &urn, ())?;
+            waiting_room.cloning(&urn, peer.clone(), ())?;
         }
 
+        waiting_room.failed(peer.clone(), &urn, ())?;
         assert_eq!(
-            request,
-            Either::Left(Request {
-                urn,
-                attempts: Attempts {
-                    queries: Queries::new(1),
-                    clones: Clones::new(NUM_CLONES + 1),
-                },
-                timestamp: (),
-                state: TimedOut::Clone,
+            waiting_room.cloning(&urn, peer, ()),
+            Err(Error::TimeOut {
+                timeout: TimedOut::Clone,
+                attempts: 17,
             })
         );
 
@@ -543,40 +569,59 @@ mod test {
 
         // created
         let _ = waiting_room.create(urn.clone(), ());
-        let request = waiting_room.canceled(&urn, ())?;
-        assert_eq!(request, Request::new(urn.clone(), ()).cancel(()));
+        waiting_room.canceled(&urn, ())?;
+        assert_eq!(
+            waiting_room.get(&urn),
+            Some(&SomeRequest::Canceled(
+                Request::new(urn.clone(), ()).cancel(())
+            ))
+        );
 
         // requested
         let is_requested = Request::new(urn.clone(), ()).request(());
         waiting_room.insert(urn.clone(), is_requested.clone());
-        let request = waiting_room.canceled(&urn, ())?;
-        assert_eq!(request, is_requested.clone().cancel(()));
+        waiting_room.canceled(&urn, ())?;
+        assert_eq!(
+            waiting_room.get(&urn),
+            Some(&SomeRequest::Canceled(is_requested.clone().cancel(())))
+        );
 
         // found
         let found = is_requested.first_peer(peer.clone(), ());
         waiting_room.insert(urn.clone(), found.clone());
-        let request = waiting_room.canceled(&urn, ())?;
-        assert_eq!(request, found.clone().cancel(()));
+        waiting_room.canceled(&urn, ())?;
+        assert_eq!(
+            waiting_room.get(&urn),
+            Some(&SomeRequest::Canceled(found.clone().cancel(())))
+        );
 
         // cloning
         let cloning = found
-            .cloning(config.max_queries, config.max_clones, ())
+            .cloning(config.max_queries, config.max_clones, peer, ())
             .unwrap_right();
         waiting_room.insert(urn.clone(), cloning.clone());
-        let request = waiting_room.canceled(&urn, ())?;
-        assert_eq!(request, cloning.clone().cancel(()));
+        waiting_room.canceled(&urn, ())?;
+        assert_eq!(
+            waiting_room.get(&urn),
+            Some(&SomeRequest::Canceled(cloning.clone().cancel(())))
+        );
 
         // cloned
         let cloned = cloning.cloned(urn.clone(), ());
-        waiting_room.insert(urn.clone(), cloned.clone());
-        let request = waiting_room.canceled(&urn, ());
-        assert_eq!(request, Err(Error::StateMismatch));
+        waiting_room.insert(urn.clone(), cloned);
+        assert_eq!(
+            waiting_room.canceled(&urn, ()),
+            Err(Error::StateMismatch(RequestKind::Cloned))
+        );
 
         // cancel
         let cancelled = Request::new(urn.clone(), ()).cancel(());
         waiting_room.insert(urn.clone(), cancelled.clone());
-        let request = waiting_room.canceled(&urn, ())?;
-        assert_eq!(request, cancelled);
+        waiting_room.canceled(&urn, ())?;
+        assert_eq!(
+            waiting_room.get(&urn),
+            Some(&SomeRequest::Canceled(cancelled))
+        );
 
         Ok(())
     }
@@ -595,13 +640,19 @@ mod test {
         assert_eq!(ready, None);
 
         let _ = waiting_room.create(urn.clone(), ());
-        waiting_room.requested(&urn, ())?;
-        waiting_room.first_peer(&urn, peer, ())?;
-        waiting_room.cloning(&urn, ())?;
-        let cloned = waiting_room.cloned(&urn, urn.clone(), ())?;
+        waiting_room.queried(&urn, ())?;
+        waiting_room.found(&urn, peer.clone(), ())?;
+        waiting_room.cloning(&urn, peer.clone(), ())?;
+        waiting_room.cloned(&urn, urn.clone(), ())?;
 
         let ready = waiting_room.ready(strategy);
-        assert_eq!(ready, Some(&cloned));
+        let expected = Request::new(urn.clone(), ())
+            .request(())
+            .first_peer(peer.clone(), ())
+            .cloning(config.max_queries, config.max_clones, peer, ())
+            .unwrap_right()
+            .cloned(urn, ());
+        assert_eq!(ready, Some(&expected));
 
         Ok(())
     }
@@ -629,19 +680,19 @@ mod test {
 
     proptest! {
         #[test]
-        fn prop_strategy_first(xs in collection::vec(0u32..1000, 1..100)) {
+        fn prop_strategy_first(xs in collection::vec(0_u32..1000, 1..100)) {
             let (got, expected) = strategy_first(&xs);
             prop_assert_eq!(got, expected);
         }
 
         #[test]
-        fn prop_strategy_newest(xs in collection::vec(0u32..1000, 1..100)) {
+        fn prop_strategy_newest(xs in collection::vec(0_u32..1000, 1..100)) {
             let (got, expected) = strategy_newest(&xs);
             prop_assert_eq!(got, expected);
         }
 
         #[test]
-        fn prop_strategy_oldest(xs in collection::vec(0u32..1000, 1..100)) {
+        fn prop_strategy_oldest(xs in collection::vec(0_u32..1000, 1..100)) {
             let (got, expected) = strategy_oldest(&xs);
             prop_assert_eq!(got, expected);
         }
