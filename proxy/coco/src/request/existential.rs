@@ -37,6 +37,20 @@ pub enum SomeRequest<T> {
     TimedOut(Request<TimedOut, T>),
 }
 
+impl<T> From<&SomeRequest<T>> for RequestKind {
+    fn from(other: &SomeRequest<T>) -> RequestKind {
+        match other {
+            SomeRequest::Created(_) => Self::Created,
+            SomeRequest::Requested(_) => Self::Requested,
+            SomeRequest::Found(_) => Self::Found,
+            SomeRequest::Cloning(_) => Self::Cloning,
+            SomeRequest::Cloned(_) => Self::Cloned,
+            SomeRequest::Canceled(_) => Self::Canceled,
+            SomeRequest::TimedOut(_) => Self::TimedOut,
+        }
+    }
+}
+
 impl<T> From<Request<IsCreated, T>> for SomeRequest<T> {
     fn from(request: Request<IsCreated, T>) -> Self {
         Self::Created(request)

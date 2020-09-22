@@ -1,15 +1,23 @@
-use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, time::Duration};
+//! An API for keeping track of requests and their state transitions.
+//!
+//! See [`Request`] and [`waiting_room::WaitingRoom`] for a high-level view of the API.
+
+use std::{collections::HashMap, marker::PhantomData};
 
 use either::Either;
 use serde::{Deserialize, Serialize};
 
 use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
 
+/// The state types and traits that we can use for [`Request`]'s `S` parameter.
 pub mod states;
 pub use states::*;
+/// The enumeration of different [`Request`] states unified under a single enum called
+/// [`SomeRequest`].
 pub mod existential;
-pub mod waiting_room;
 pub use existential::SomeRequest;
+/// The black box tracker of [`Request`]s and their lifecycles.
+pub mod waiting_room;
 
 mod sealed;
 
@@ -159,7 +167,7 @@ impl<T> Request<IsCreated, T> {
     /// Create a fresh `Request` for the give `urn`.
     ///
     /// Once this request has been made, we can transition this `Request` to the `IsRequested`
-    /// state by calling [`request`].
+    /// state by calling [`Request::request`].
     pub fn new(urn: RadUrn, timestamp: T) -> Self {
         Self {
             urn,

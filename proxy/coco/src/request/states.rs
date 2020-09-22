@@ -1,21 +1,3 @@
-//! A `Request` can be in multiple states and these states have specified transitions.
-//!
-//!      +----------------------------------v
-//!      |                             +---------+
-//!      |                   +-------->+cancelled+<------+
-//!      |                   |         +----+----+       |
-//!      |                   |              ^            |
-//!      |                   |              |            |
-//! +----+----+       +------+--+       +---+-+      +---+---+       +------+
-//! | created +------>+requested+------>+found+----->+cloning+------>+cloned|
-//! +---------+       +------+--+       +--+--+      +---+---+       +------+
-//!                          |             |  ^------+   |
-//!                          |             |   failed    |
-//!                          |             v             |
-//!                          |          +--+------+      |
-//!                          +--------->+timed out+------+
-//!                                     +---------+
-
 use std::{
     collections::HashMap,
     fmt,
@@ -36,6 +18,38 @@ impl sealed::Sealed for Cloning {}
 impl sealed::Sealed for IsCanceled {}
 
 // State Types
+
+/// An enumeration of the different states a `Request` can be in. This is useful if we want to
+/// convey the state information without any of the other state data.
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum RequestKind {
+    /// The initial state where the `Request` has been created.
+    Created,
+
+    /// The state where the `Request` has been requested.
+    Requested,
+
+    /// The state where the `Request` has found at least one peer.
+    Found,
+
+    /// The state where the `Request` has is cloning from a peer.
+    Cloning,
+
+    /// The state where the `Request` has successfully cloned from a peer.
+    Cloned,
+
+    /// The state where the `Request` has been cancelled.
+    Canceled,
+
+    /// The state where the `Request` has timed out.
+    TimedOut,
+}
+
+impl fmt::Display for RequestKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 
 /// The initial state for a `Request`. It has simply been created.
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
@@ -214,6 +228,7 @@ pub trait HasPeers: sealed::Sealed
 where
     Self: Sized,
 {
+    /// Give back the underlying `HashMap` of peers that is contained in `Self`.
     fn peers(&mut self) -> &mut HashMap<PeerId, Status>;
 }
 
@@ -237,6 +252,8 @@ pub trait Cancel: sealed::Sealed
 where
     Self: Sized,
 {
+    /// Transition the state into `IsCanceled`. This ignores whatever state we were in and defaults
+    /// by returning the `IsCanceled` state.
     fn cancel(self) -> IsCanceled {
         PhantomData
     }
@@ -256,6 +273,8 @@ pub trait TimeOut: sealed::Sealed
 where
     Self: Sized,
 {
+    /// Transition the state into `TimedOut`. This ignores whatever state we were in and defaults
+    /// by returning the `TimedOut` state by returning the `kind` of timeout.
     fn time_out(self, kind: TimedOut) -> TimedOut {
         kind
     }
