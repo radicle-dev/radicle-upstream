@@ -15,6 +15,7 @@ futures = { version = "0.3", features = [ "compat" ] }
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.5"
+radicle-keystore = "0.1"
 serde = { version = "1.0", features = [ "derive" ] }
 syntect = "4.2"
 thiserror = "1.0"
@@ -32,10 +33,6 @@ rev = "685e854681d83867513bb7446f82989815a287d1"
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "685e854681d83867513bb7446f82989815a287d1"
-
-[dependencies.radicle-keystore]
-git = "https://github.com/radicle-dev/radicle-keystore.git"
-rev= "865b63483c8781e6f305f8cb29ca7ab1cbdfce09"
 
 [dependencies.radicle-surf]
 version = "0.4.1"

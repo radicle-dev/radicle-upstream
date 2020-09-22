@@ -24,12 +24,12 @@ impl Context {
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
         use coco::keystore;
 
-        let paths = coco::Paths::from_root(tmp_dir.path())?;
-
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+
         let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init()?;
+        let keystore = keystore::Keystorage::memory(pw)?;
+        let key = keystore.get()?;
+
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
         let (_peer, state) = {

@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
-    let mut keystore = keystore::Keystorage::new(&paths, pw);
+    let mut keystore = keystore::Keystorage::file(&paths, pw);
     let key = keystore.init()?;
     let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
