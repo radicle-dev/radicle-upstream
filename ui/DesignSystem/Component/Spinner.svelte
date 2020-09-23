@@ -1,6 +1,6 @@
-<script>
-  export let dataCy = null;
-  export let style = null;
+<script lang="ts">
+  export let dataCy = "";
+  export let style = "";
 </script>
 
 <style>
@@ -21,7 +21,7 @@
 <svg
   data-cy={dataCy}
   on:click
-  style={`flex-shrink: 0; ${style ? style : ''}`}
+  style={`flex-shrink: 0; ${style}`}
   width="24"
   height="24"
   fill="var(--color-foreground-level-5)"

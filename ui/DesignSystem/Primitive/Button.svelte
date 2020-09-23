@@ -10,7 +10,7 @@
     | "destructive";
   export let variant: Variant = "primary";
 
-  export let disabled = false;
+  export let disabled: boolean = false;
   export let icon: typeof SvelteComponent | undefined = undefined;
   export let style = "";
   export let dataCy = "";

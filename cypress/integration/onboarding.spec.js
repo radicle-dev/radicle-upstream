@@ -127,18 +127,21 @@ context("identity creation", () => {
 
     context("handle", () => {
       it("prevents the user from submitting an invalid handle", () => {
-        const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
+        const validationError =
+          "Display name should match ^[a-z0-9][a-z0-9_-]+$";
 
         cy.pick("handle-input").type("_rafalca");
         cy.pick("next-button").click();
 
         // Handle is required.
         cy.pick("handle-input").clear();
-        cy.pick("enter-name-screen").contains("You must provide a handle");
+        cy.pick("enter-name-screen").contains(
+          "You must provide a display name"
+        );
 
         // No spaces.
         cy.pick("handle-input").type("no spaces");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("handle-input").should("have.value", "no-spaces");
 
         // No special characters.
         cy.pick("handle-input").clear();
