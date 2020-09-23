@@ -13,8 +13,7 @@ use serde::{Deserialize, Serialize};
 use librad::{peer::PeerId, uri::RadUrn};
 
 use crate::request::{
-    sequence_result, Cloned, Clones, IsCreated, Queries, Request, RequestKind, SomeRequest,
-    TimedOut,
+    sequence_result, Cloned, Clones, Created, Queries, Request, RequestKind, SomeRequest, TimedOut,
 };
 
 /// The maximum number of query attempts that can be made for a single request.
@@ -105,7 +104,7 @@ impl Default for Config {
 
 /// The `Strategy` enumeration is for picking a strategy when selecting a `Request` from the
 /// [`WaitingRoom`]. Specifically, it's used in [`WaitingRoom::next`] and [`WaitingRoom::ready`]
-/// for selecting a `Request` that is in the state `IsCreated` and `Cloned`, respectively.
+/// for selecting a `Request` that is in the state `Created` and `Cloned`, respectively.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Strategy<R> {
     /// Select the first from the iterator.
@@ -210,7 +209,7 @@ impl<T> WaitingRoom<T> {
 
     /// Tell the `WaitingRoom` that a query was made for the given `urn`.
     ///
-    /// If the underlying `Request` was in the `IsCreated` state then it will transition to the
+    /// If the underlying `Request` was in the `Created` state then it will transition to the
     /// `IsRequested` state.
     ///
     /// If the underlying `Request` was in the `IsRequested` state then it increments the query
@@ -355,8 +354,8 @@ impl<T> WaitingRoom<T> {
 
     /// Tell the `WaitingRoom` that we are cancelling the request for the given `urn`.
     ///
-    /// If the underlying `Request` was in the `{IsCreated, IsRequested, Found, Cloning,
-    /// IsCanceled}` state then it will transition to the `IsCanceled` state.
+    /// If the underlying `Request` was in the `{Created, IsRequested, Found, Cloning,
+    /// Cancelled}` state then it will transition to the `Cancelled` state.
     ///
     /// # Errors
     ///
@@ -391,9 +390,9 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    /// Return a `Request` that is in the `IsCreated` state, if any, based off of the supplied
+    /// Return a `Request` that is in the `Created` state, if any, based off of the supplied
     /// `strategy`.
-    pub fn next<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<IsCreated, T>>
+    pub fn next<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<Created, T>>
     where
         T: Clone + Ord,
     {
@@ -637,7 +636,7 @@ mod test {
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
-            Some(&SomeRequest::Canceled(
+            Some(&SomeRequest::Cancelled(
                 Request::new(urn.clone(), ()).cancel(())
             ))
         );
@@ -648,7 +647,7 @@ mod test {
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
-            Some(&SomeRequest::Canceled(is_requested.clone().cancel(())))
+            Some(&SomeRequest::Cancelled(is_requested.clone().cancel(())))
         );
 
         // found
@@ -657,7 +656,7 @@ mod test {
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
-            Some(&SomeRequest::Canceled(found.clone().cancel(())))
+            Some(&SomeRequest::Cancelled(found.clone().cancel(())))
         );
 
         // cloning
@@ -668,7 +667,7 @@ mod test {
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
-            Some(&SomeRequest::Canceled(cloning.clone().cancel(())))
+            Some(&SomeRequest::Cancelled(cloning.clone().cancel(())))
         );
 
         // cloned
@@ -685,7 +684,7 @@ mod test {
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
-            Some(&SomeRequest::Canceled(cancelled))
+            Some(&SomeRequest::Cancelled(cancelled))
         );
 
         Ok(())

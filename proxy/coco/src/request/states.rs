@@ -3,7 +3,6 @@
 use std::{
     collections::HashMap,
     fmt,
-    marker::PhantomData,
     ops::{Add, AddAssign, Deref},
 };
 
@@ -13,11 +12,11 @@ use librad::{peer::PeerId, uri::RadUrn};
 
 use super::sealed;
 
-impl sealed::Sealed for IsCreated {}
+impl sealed::Sealed for Created {}
 impl sealed::Sealed for Requested {}
 impl sealed::Sealed for Found {}
 impl sealed::Sealed for Cloning {}
-impl sealed::Sealed for IsCanceled {}
+impl sealed::Sealed for Cancelled {}
 
 // State Types
 
@@ -41,7 +40,7 @@ pub enum RequestKind {
     Cloned,
 
     /// The state where the `Request` has been cancelled.
-    Canceled,
+    Cancelled,
 
     /// The state where the `Request` has timed out.
     TimedOut,
@@ -56,9 +55,8 @@ impl fmt::Display for RequestKind {
 /// The initial state for a `Request`. It has simply been created.
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Created;
 /// The initial state for a `Request`. It has simply been created.
-pub type IsCreated = PhantomData<Created>;
+pub struct Created {}
 
 /// The state signifying that the `Request` has been kicked-off.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -142,9 +140,7 @@ pub struct Cloned {
 /// One of the terminal states for a `Request` where the task has been cancelled.
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Canceled;
-/// One of the terminal states for a `Request` where the task has been cancelled.
-pub type IsCanceled = PhantomData<Canceled>;
+pub struct Cancelled {}
 
 /// One of the terminal states for a `Request` where the task made too many attempts.
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
@@ -304,25 +300,25 @@ impl HasPeers for Cloning {
 }
 
 /// If a state type implements this trait it means that there is a valid transition from that state
-/// to the `IsCanceled` state.
+/// to the `Cancelled` state.
 ///
 /// The trait is sealed internally, so we do not expect end-users to implement it.
 pub trait Cancel: sealed::Sealed
 where
     Self: Sized,
 {
-    /// Transition the state into `IsCanceled`. This ignores whatever state we were in and defaults
-    /// by returning the `IsCanceled` state.
-    fn cancel(self) -> IsCanceled {
-        PhantomData
+    /// Transition the state into `Cancelled`. This ignores whatever state we were in and defaults
+    /// by returning the `Cancelled` state.
+    fn cancel(self) -> Cancelled {
+        Cancelled {}
     }
 }
 
-impl Cancel for IsCreated {}
+impl Cancel for Created {}
 impl Cancel for Requested {}
 impl Cancel for Found {}
 impl Cancel for Cloning {}
-impl Cancel for IsCanceled {}
+impl Cancel for Cancelled {}
 
 /// If a state type implements this trait it means that there is a valid transition from that state
 /// to the `TimedOut` state.

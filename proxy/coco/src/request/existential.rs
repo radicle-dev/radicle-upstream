@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Cloned, Clones, Cloning, Either, Found, IsCanceled, IsCreated, Queries, RadUrn, Request,
+    Cancelled, Cloned, Clones, Cloning, Created, Either, Found, Queries, RadUrn, Request,
     RequestKind, Requested, TimedOut,
 };
 
@@ -26,7 +26,7 @@ use super::{
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum SomeRequest<T> {
     /// The `Request` has been created.
-    Created(Request<IsCreated, T>),
+    Created(Request<Created, T>),
 
     /// The `Request` has been requested.
     Requested(Request<Requested, T>),
@@ -41,7 +41,7 @@ pub enum SomeRequest<T> {
     Cloned(Request<Cloned, T>),
 
     /// The `Request` has been cancelled.
-    Canceled(Request<IsCanceled, T>),
+    Cancelled(Request<Cancelled, T>),
 
     /// The `Request` has timed out on querying or cloning.
     TimedOut(Request<TimedOut, T>),
@@ -55,14 +55,14 @@ impl<T> From<&SomeRequest<T>> for RequestKind {
             SomeRequest::Found(_) => Self::Found,
             SomeRequest::Cloning(_) => Self::Cloning,
             SomeRequest::Cloned(_) => Self::Cloned,
-            SomeRequest::Canceled(_) => Self::Canceled,
+            SomeRequest::Cancelled(_) => Self::Cancelled,
             SomeRequest::TimedOut(_) => Self::TimedOut,
         }
     }
 }
 
-impl<T> From<Request<IsCreated, T>> for SomeRequest<T> {
-    fn from(request: Request<IsCreated, T>) -> Self {
+impl<T> From<Request<Created, T>> for SomeRequest<T> {
+    fn from(request: Request<Created, T>) -> Self {
         Self::Created(request)
     }
 }
@@ -91,9 +91,9 @@ impl<T> From<Request<Cloned, T>> for SomeRequest<T> {
     }
 }
 
-impl<T> From<Request<IsCanceled, T>> for SomeRequest<T> {
-    fn from(request: Request<IsCanceled, T>) -> Self {
-        Self::Canceled(request)
+impl<T> From<Request<Cancelled, T>> for SomeRequest<T> {
+    fn from(request: Request<Cancelled, T>) -> Self {
+        Self::Cancelled(request)
     }
 }
 
@@ -118,7 +118,7 @@ impl<T> SomeRequest<T> {
             SomeRequest::Found(request) => request.urn(),
             SomeRequest::Cloning(request) => request.urn(),
             SomeRequest::Cloned(request) => request.urn(),
-            SomeRequest::Canceled(request) => request.urn(),
+            SomeRequest::Cancelled(request) => request.urn(),
             SomeRequest::TimedOut(request) => request.urn(),
         }
     }
@@ -126,13 +126,13 @@ impl<T> SomeRequest<T> {
     /// We can cancel an underlying `Request` if it is allowed to be cancelled. In the case that it
     /// is allowed, then we get back the cancelled request in the `Right` variant. Otherwise we get
     /// back our original `SomeRequest` in the `Left` variant.
-    pub fn cancel(self, timestamp: T) -> Either<SomeRequest<T>, Request<IsCanceled, T>> {
+    pub fn cancel(self, timestamp: T) -> Either<SomeRequest<T>, Request<Cancelled, T>> {
         match self {
             SomeRequest::Created(request) => Either::Right(request.cancel(timestamp)),
             SomeRequest::Requested(request) => Either::Right(request.cancel(timestamp)),
             SomeRequest::Found(request) => Either::Right(request.cancel(timestamp)),
             SomeRequest::Cloning(request) => Either::Right(request.cancel(timestamp)),
-            SomeRequest::Canceled(request) => Either::Right(request.cancel(timestamp)),
+            SomeRequest::Cancelled(request) => Either::Right(request.cancel(timestamp)),
             request => Either::Left(request),
         }
     }

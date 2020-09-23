@@ -7,7 +7,7 @@
 // See https://github.com/rust-lang/rust-clippy/issues/4859 for more information.
 #![allow(clippy::use_self)]
 
-use std::{collections::HashMap, marker::PhantomData, ops::Deref};
+use std::{collections::HashMap, ops::Deref};
 
 use either::Either;
 use serde::{Deserialize, Serialize};
@@ -88,12 +88,12 @@ impl<S, T> Request<S, T> {
         &self.urn
     }
 
-    /// Transition this `Request` into an `IsCanceled` state. We can only transition a particular
-    /// subset of the states which are: `{IsCreated, Requested, Found, Cloning, IsCanceled}`.
+    /// Transition this `Request` into an `Cancelled` state. We can only transition a particular
+    /// subset of the states which are: `{Created, Requested, Found, Cloning, Cancelled}`.
     ///
     /// That is, attempting to cancel a `Cloned` `Request` is not permitted and will complain at
     /// compile time.
-    pub fn cancel(self, timestamp: T) -> Request<IsCanceled, T>
+    pub fn cancel(self, timestamp: T) -> Request<Cancelled, T>
     where
         S: Cancel,
     {
@@ -167,7 +167,7 @@ impl<S, T> Request<S, T> {
     }
 }
 
-impl<T> Request<IsCreated, T> {
+impl<T> Request<Created, T> {
     /// Create a fresh `Request` for the given `urn`.
     ///
     /// Once this request has been made, we can transition this `Request` to the `Requested`
@@ -177,11 +177,11 @@ impl<T> Request<IsCreated, T> {
             urn,
             attempts: Attempts::new(),
             timestamp,
-            state: PhantomData,
+            state: Created {},
         }
     }
 
-    /// Transition the `Request` from the `IsCreated` state to the `Requested` state.
+    /// Transition the `Request` from the `Created` state to the `Requested` state.
     ///
     /// This signifies that the `Request` has been queried and will be looking for peers to fulfill
     /// the request.
