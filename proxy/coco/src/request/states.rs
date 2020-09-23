@@ -1,3 +1,5 @@
+//! The state types and traits that we can use for [`super::Request`]'s `S` parameter.
+
 use std::{
     collections::HashMap,
     fmt,

@@ -14,14 +14,10 @@ use serde::{Deserialize, Serialize};
 
 use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
 
-/// The state types and traits that we can use for [`Request`]'s `S` parameter.
 pub mod states;
 pub use states::*;
-/// The enumeration of different [`Request`] states unified under a single enum called
-/// [`SomeRequest`].
 pub mod existential;
 pub use existential::SomeRequest;
-/// The black box tracker of [`Request`]s and their lifecycles.
 pub mod waiting_room;
 
 /// Private trait for sealing the traits we use here.

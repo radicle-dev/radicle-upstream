@@ -1,3 +1,5 @@
+//! The black box tracker of [`Request`]s and their lifecycles.
+
 // I reserve the right to not match all the arms when picking out a single case, thank you very
 // much.
 #![allow(clippy::wildcard_enum_match_arm)]
