@@ -277,6 +277,33 @@ impl<T> WaitingRoom<T> {
         )
     }
 
+    /// Tell the `WaitingRoom` that we failed at finding a peer to clone from for the given `urn`.
+    ///
+    /// This should mean that the set of peers in the `Found` state have been exhausted and are all
+    /// `Status::Failed`. It left up to the caller to determine this by using the
+    /// `HasPeers::all_failed` method.
+    ///
+    /// If the underlying `Request` was in the `Found` state then it will transition to the
+    /// `IsRequested` state.
+    ///
+    /// # Errors
+    ///
+    ///   * If the `urn` was not in the `WaitingRoom`.
+    ///   * If the underlying `Request` was not in the expected state.
+    pub fn found_failed(&mut self, urn: &RadUrn, timestamp: T) -> Result<(), Error>
+    where
+        T: Clone,
+    {
+        self.transition(
+            |request| match request {
+                SomeRequest::Found(request) => Some(request),
+                _ => None,
+            },
+            |previous| Ok(previous.failed(timestamp)),
+            urn,
+        )
+    }
+
     /// Tell the `WaitingRoom` that we are attempting a clone from the `peer` for the given `urn`.
     ///
     /// If the underlying `Request` was in the `Found` state then it will transition to the
