@@ -106,7 +106,7 @@ impl<S, T> Request<S, T> {
         }
     }
 
-    /// If a state keeps track of found peers then it can transition to back to itself by adding a
+    /// If a state keeps track of found peers then it can transition back to itself by adding a
     /// `PeerId` to the existing set of peers.
     pub fn found(mut self, peer: PeerId, timestamp: T) -> Request<S, T>
     where
@@ -151,9 +151,9 @@ impl<S, T> Request<S, T> {
         }
     }
 
-    /// When a `Request` is queried it we increment the `queries` count -- tracked via the
+    /// When a `Request` is queried, we increment the `queries` count -- tracked via the
     /// `attempts` of the `Request`. If incrementing this count makes it exceed the maximum then
-    /// the `Request` transitions into the `TimedOut` out state.
+    /// the `Request` transitions into the `TimedOut` state.
     pub fn queried(
         mut self,
         max_queries: Queries,
@@ -169,7 +169,7 @@ impl<S, T> Request<S, T> {
 }
 
 impl<T> Request<IsCreated, T> {
-    /// Create a fresh `Request` for the give `urn`.
+    /// Create a fresh `Request` for the given `urn`.
     ///
     /// Once this request has been made, we can transition this `Request` to the `IsRequested`
     /// state by calling [`Request::request`].

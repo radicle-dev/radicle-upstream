@@ -27,7 +27,7 @@ pub enum Error {
     ///
     /// For example, if we tried to call `cloning` on a request that has only been created then
     /// this would be an invalid transition.
-    #[error("the state fetched '{0}' from the waiting room was not one of the expected state")]
+    #[error("the state fetched '{0}' from the waiting room was not one of the expected states")]
     StateMismatch(RequestKind),
 
     /// The [`Request`] timed out when performing an operation on it by exceeding the number of
@@ -72,7 +72,7 @@ pub struct WaitingRoom<T> {
     config: Config,
 }
 
-/// The `Conig` for the waiting room tells it what are the maximum number of query and clone
+/// The `Config` for the waiting room tells it what are the maximum number of query and clone
 /// attempts that can be made for a single request.
 ///
 /// The recommended approach to initialising the `Config` is to use its `Default` implementation,
@@ -141,7 +141,7 @@ impl<T> WaitingRoom<T> {
         }
     }
 
-    /// Get the underlying [`SomeRequest`] for the given `urn.
+    /// Get the underlying [`SomeRequest`] for the given `urn`.
     ///
     /// Returns `None` if there is no such request.
     #[must_use]

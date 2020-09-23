@@ -9,7 +9,7 @@ use super::{
     Request, RequestKind, TimedOut,
 };
 
-/// Since a `Request` is parameterised over its state, it makes it difficult to talk a `Request` in
+/// Since a `Request` is parameterised over its state, it makes it difficult to talk about a `Request` in
 /// general without the compiler complaining at us. For example, we cannot have something like
 /// `vec![created, requested, cloning, timedout]` since they all have distinct types where they
 /// differ in states.

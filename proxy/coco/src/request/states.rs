@@ -267,7 +267,7 @@ impl HasPeers for Cloning {
     }
 }
 
-/// If a state type implements this trait it means that their is a valid transition from that state
+/// If a state type implements this trait it means that there is a valid transition from that state
 /// to the `IsCanceled` state.
 ///
 /// The trait is sealed internally, so we do not expect end-users to implement it.
@@ -288,7 +288,7 @@ impl Cancel for Found {}
 impl Cancel for Cloning {}
 impl Cancel for IsCanceled {}
 
-/// If a state type implements this trait it means that their is a valid transition from that state
+/// If a state type implements this trait it means that there is a valid transition from that state
 /// to the `TimedOut` state.
 ///
 /// The trait is sealed internally, so we do not expect end-users to implement it.
