@@ -7,7 +7,6 @@
 use std::{collections::HashMap, ops::Sub};
 
 use either::Either;
-use rand::{seq::IteratorRandom as _, Rng};
 use serde::{Deserialize, Serialize};
 
 use librad::{peer::PeerId, uri::RadUrn};
@@ -102,42 +101,6 @@ impl Default for Config {
     }
 }
 
-/// The `Strategy` enumeration is for picking a strategy when selecting a `Request` from the
-/// [`WaitingRoom`]. Specifically, it's used in [`WaitingRoom::next`] and [`WaitingRoom::ready`]
-/// for selecting a `Request` that is in the state `Created` and `Cloned`, respectively.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Strategy<R> {
-    /// Select the first from the iterator.
-    First,
-    /// Select the newest from the iterator.
-    Newest,
-    /// Select the oldest from the iterator.
-    Oldest,
-    /// Select an item from the iterator at random.
-    Random(R),
-}
-
-impl<R> Strategy<R> {
-    /// Get back a `T` based off of the `Strategy`.
-    ///
-    /// If the iterator is empty then `None` is returned.
-    pub fn next<'a, T: 'a, U: Ord>(
-        self,
-        mut items: impl Iterator<Item = &'a T>,
-        mut key: impl FnMut(&T) -> U,
-    ) -> Option<&'a T>
-    where
-        R: Rng,
-    {
-        match self {
-            Self::First => items.next(),
-            Self::Newest => items.max_by_key(|i| key(i)),
-            Self::Oldest => items.min_by_key(|i| key(i)),
-            Self::Random(mut rng) => items.choose(&mut rng),
-        }
-    }
-}
-
 impl<T> WaitingRoom<T> {
     /// Initialise a new `WaitingRoom` with the supplied `config`.
     #[must_use]
@@ -180,7 +143,7 @@ impl<T> WaitingRoom<T> {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
                 self.requests.insert(urn, request);
                 None
-            },
+            }
             Some(request) => Some(request.clone()),
         }
     }
@@ -211,10 +174,10 @@ impl<T> WaitingRoom<T> {
                     Either::Right(next) => {
                         self.requests.insert(urn.clone(), next.into());
                         Ok(())
-                    },
+                    }
                     Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
                 }
-            },
+            }
         }
     }
 
@@ -242,7 +205,7 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Created(request) => Some(Either::Right(request.request(timestamp))),
                 SomeRequest::Requested(request) => {
                     Some(request.queried(max_queries, max_clones, timestamp))
-                },
+                }
                 _ => None,
             },
             |previous| match previous {
@@ -275,11 +238,11 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Found(request) => {
                     let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
                     Some(some_request)
-                },
+                }
                 SomeRequest::Cloning(request) => {
                     let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
                     Some(some_request)
-                },
+                }
                 _ => None,
             },
             Ok,
@@ -435,7 +398,6 @@ mod test {
     use assert_matches::assert_matches;
     use librad::{keys::SecretKey, peer::PeerId, uri::RadUrn};
     use pretty_assertions::assert_eq;
-    use proptest::{collection, prelude::prop_assert_eq, proptest};
 
     use super::*;
 
@@ -450,7 +412,6 @@ mod test {
 
         assert_eq!(request, None);
 
-        let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
         let created = waiting_room.find(RequestKind::Created, 0, 0);
         assert_eq!(
             created,
@@ -700,7 +661,6 @@ mod test {
             .parse()
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
-        let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
 
         let ready = waiting_room.find(RequestKind::Cloned, 0, 0);
         assert_eq!(ready, None);
@@ -723,46 +683,5 @@ mod test {
         assert_eq!(ready, Some((&urn, &expected)));
 
         Ok(())
-    }
-
-    fn strategy_first(xs: &[u32]) -> (Option<&u32>, Option<&u32>) {
-        let first = xs.first();
-        let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
-
-        (strategy.next(xs.iter(), |i| *i), first)
-    }
-
-    fn strategy_newest(xs: &[u32]) -> (Option<&u32>, Option<&u32>) {
-        let newest = xs.iter().max();
-        let strategy: Strategy<rand::rngs::StdRng> = Strategy::Newest;
-
-        (strategy.next(xs.iter(), |i| *i), newest)
-    }
-
-    fn strategy_oldest(xs: &[u32]) -> (Option<&u32>, Option<&u32>) {
-        let oldest = xs.iter().min();
-        let strategy: Strategy<rand::rngs::StdRng> = Strategy::Oldest;
-
-        (strategy.next(xs.iter(), |i| *i), oldest)
-    }
-
-    proptest! {
-        #[test]
-        fn prop_strategy_first(xs in collection::vec(0_u32..1000, 1..100)) {
-            let (got, expected) = strategy_first(&xs);
-            prop_assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn prop_strategy_newest(xs in collection::vec(0_u32..1000, 1..100)) {
-            let (got, expected) = strategy_newest(&xs);
-            prop_assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn prop_strategy_oldest(xs in collection::vec(0_u32..1000, 1..100)) {
-            let (got, expected) = strategy_oldest(&xs);
-            prop_assert_eq!(got, expected);
-        }
     }
 }
