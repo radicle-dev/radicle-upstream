@@ -5,9 +5,14 @@ import WalletConnectWeb3Provider from "@walletconnect/web3-provider";
 import Web3 from "web3";
 import { writable, Readable } from "svelte/store";
 
+export enum Status {
+  Connected = "CONNECTED",
+  NotConnected = "NOT_CONNECTED",
+}
+
 type State =
-  | { status: "NOT_CONNECTED" }
-  | { status: "CONNECTED"; connected: Connected };
+  | { status: Status.NotConnected }
+  | { status: Status.Connected; connected: Connected };
 
 interface Connected {
   chainId: number;
@@ -24,7 +29,7 @@ interface Wallet extends Readable<State> {
 }
 
 export function makeWallet(): Wallet {
-  const stateStore = writable<State>({ status: "NOT_CONNECTED" });
+  const stateStore = writable<State>({ status: Status.NotConnected });
   const connector = new WalletConnect({
     bridge: "https://bridge.walletconnect.org",
     qrcodeModal: QRCodeModal,
@@ -54,7 +59,7 @@ export function makeWallet(): Wallet {
         balance: balance,
       },
     };
-    stateStore.set({ status: "CONNECTED", connected });
+    stateStore.set({ status: Status.Connected, connected });
   }
 
   // Connect automatically if the underlying connection is still open.
@@ -67,12 +72,12 @@ export function makeWallet(): Wallet {
     await provider.disconnect();
     await connector.killSession();
 
-    stateStore.set({ status: "NOT_CONNECTED" });
+    stateStore.set({ status: Status.NotConnected });
   }
 
   async function testSign() {
     stateStore.subscribe(async state => {
-      if (state.status === "CONNECTED") {
+      if (state.status === Status.Connected) {
         if (!connector) {
           console.log("Connector is undefined, stopping here.");
           return;
@@ -92,13 +97,11 @@ export function makeWallet(): Wallet {
 
   connector.on("disconnect", () => {
     console.log("connector.disconnect");
-    // TODO clean up
-    stateStore.set({ status: "NOT_CONNECTED" });
   });
 
   provider.on("chainChanged", (chainId: number) => {
     stateStore.update(state => {
-      if (state.status === "CONNECTED") {
+      if (state.status === Status.Connected) {
         state.connected.chainId = chainId;
       }
       return state;
@@ -109,7 +112,7 @@ export function makeWallet(): Wallet {
     const accountAddress = accountAddresses[0];
     const balance = await web3.eth.getBalance(accountAddress);
     stateStore.update(state => {
-      if (state.status === "CONNECTED") {
+      if (state.status === Status.Connected) {
         state.connected.account = {
           address: accountAddress,
           balance: balance,

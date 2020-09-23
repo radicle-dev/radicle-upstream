@@ -1,5 +1,5 @@
 <script>
-  import { makeWallet } from "../../src/wallet";
+  import { makeWallet, Status } from "../../src/wallet";
 
   import { Button } from "../../DesignSystem/Primitive";
 
@@ -7,7 +7,7 @@
 </script>
 
 <div>
-  {#if $wallet.status === 'NOT_CONNECTED'}
+  {#if $wallet.status === Status.NotConnected}
     <Button on:click={wallet.connect}>connect</Button>
   {:else}
     <Button on:click={wallet.disconnect}>disconnect</Button>
