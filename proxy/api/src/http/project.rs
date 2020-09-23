@@ -314,7 +314,7 @@ mod test {
         // Verify presence of include file.
         let config = repo.config().map_err(coco::Error::from)?;
         let include_path = config
-            .get_entry("include.path")
+            .get_entry(coco::include::GIT_CONFIG_PATH_KEY)
             .map_err(coco::Error::from)?
             .value()
             .unwrap()

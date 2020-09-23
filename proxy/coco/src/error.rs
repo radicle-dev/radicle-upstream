@@ -53,7 +53,7 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
-    /// An error occured building include files
+    /// An error occured building include files.
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 

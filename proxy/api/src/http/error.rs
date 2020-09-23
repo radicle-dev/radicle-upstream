@@ -98,6 +98,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "WORKING_DIRECTORY_EXISTS",
                             git_error.message().to_string(),
                         ),
+                        coco::project::checkout::Error::Include(include_error) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "INTERNAL_ERROR",
+                            include_error.to_string(),
+                        ),
                     },
                     coco::Error::EntityExists(_) => {
                         (StatusCode::CONFLICT, "ENTITY_EXISTS", err.to_string())
