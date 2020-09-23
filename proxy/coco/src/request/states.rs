@@ -64,6 +64,7 @@ pub type IsCreated = PhantomData<Created>;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Requested {
+    /// A set of found peers and the lifecycle of clone attempts made on those peers.
     pub(super) peers: HashMap<PeerId, Status>,
 }
 
@@ -88,12 +89,11 @@ impl Status {
     /// If it's `InProgress`, it doesn't matter that the other `Status` is saying its `Available`,
     /// because you know what? It's actually in progress.
     /// And finally, the last case is that both `Status`es agree the `Status` is `Available`.
+    #[must_use]
     pub fn join(self, other: Self) -> Self {
         match (self, other) {
-            (Self::Failed, _) => Self::Failed,
-            (_, Self::Failed) => Self::Failed,
-            (Self::InProgress, _) => Self::InProgress,
-            (_, Self::InProgress) => Self::InProgress,
+            (Self::Failed, _) | (_, Self::Failed) => Self::Failed,
+            (Self::InProgress, _) | (_, Self::InProgress) => Self::InProgress,
             (Self::Available, Self::Available) => Self::Available,
         }
     }

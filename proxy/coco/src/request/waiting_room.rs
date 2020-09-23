@@ -546,6 +546,7 @@ mod test {
         Ok(())
     }
 
+    #[allow(clippy::indexing_slicing)]
     #[test]
     fn timeout_on_clones() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 16;
@@ -558,7 +559,7 @@ mod test {
             .expect("failed to parse the urn");
 
         let mut peers = vec![];
-        for _ in 0..NUM_CLONES + 1 {
+        for _ in 0..=NUM_CLONES {
             peers.push(PeerId::from(SecretKey::new()));
         }
 
@@ -575,7 +576,14 @@ mod test {
         }
 
         assert_eq!(
-            waiting_room.cloning(&urn, peers.last().unwrap().clone(), ()),
+            waiting_room.cloning(
+                &urn,
+                peers
+                    .last()
+                    .expect("unless you changed NUM_CLONES to < -1 we should be fine here. qed.")
+                    .clone(),
+                ()
+            ),
             Err(Error::TimeOut {
                 timeout: TimedOut::Clone,
                 attempts: 17,
