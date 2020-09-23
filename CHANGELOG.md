@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.15](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.14...v0.0.15) (2020-09-23)
+
+
+### Features
+
+* **proxy:** differentiate tracked projects from my projects ([#866](https://github.com/radicle-dev/radicle-upstream/issues/866)) ([b793264](https://github.com/radicle-dev/radicle-upstream/commit/b7932640adb9badf4a065ae25323db3285b63d5e))
+* **proxy:** sync with peers when coming online ([#896](https://github.com/radicle-dev/radicle-upstream/issues/896)) ([4ea6860](https://github.com/radicle-dev/radicle-upstream/commit/4ea68609572b43afa994d656393df98adac32313)), closes [#852](https://github.com/radicle-dev/radicle-upstream/issues/852)
+* **ui:** add input field hint ([#914](https://github.com/radicle-dev/radicle-upstream/issues/914)) ([4e47aff](https://github.com/radicle-dev/radicle-upstream/commit/4e47aff6a8f30536a05f88296ca0c679908204bb))
+* **ui:** introduce experimental flag ([#913](https://github.com/radicle-dev/radicle-upstream/issues/913)) ([6730388](https://github.com/radicle-dev/radicle-upstream/commit/67303881a8b87152464008c66e7a6d2e525894bf))
+* **ui:** project name formatting ([#938](https://github.com/radicle-dev/radicle-upstream/issues/938)) ([cefa07f](https://github.com/radicle-dev/radicle-upstream/commit/cefa07f9751f363c8aee3dba3ad22e7a9c6d785f))
+
+
+### Bug Fixes
+
+* **ui:** allow irc:// as external protocol ([#921](https://github.com/radicle-dev/radicle-upstream/issues/921)) ([0e33c06](https://github.com/radicle-dev/radicle-upstream/commit/0e33c0666d84eab88bebf57f0cfd662c6bf595ca))
+* **ui:** handle repositories with no branches gracefully ([#945](https://github.com/radicle-dev/radicle-upstream/issues/945)) ([f3c5ff1](https://github.com/radicle-dev/radicle-upstream/commit/f3c5ff19c9e8221abb45f7ee3726c3d2af5ee3ea))
+* **ui:** show deleted files in commit view ([#925](https://github.com/radicle-dev/radicle-upstream/issues/925)) ([410d657](https://github.com/radicle-dev/radicle-upstream/commit/410d6577fbc42d06f1f2d2b4b48246a15c0a6633))
+
 ### [0.0.14](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.13...v0.0.14) (2020-09-16)
 
 
