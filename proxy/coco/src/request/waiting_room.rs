@@ -14,8 +14,14 @@ use librad::{peer::PeerId, uri::RadUrn};
 
 use crate::request::{
     sequence_result, Cloned, Clones, IsCreated, Queries, Request, RequestKind, SomeRequest,
-    TimedOut, MAX_CLONES, MAX_QUERIES,
+    TimedOut,
 };
+
+/// The maximum number of query attempts that can be made for a single request.
+const MAX_QUERIES: Queries = Queries::new(5);
+
+/// The maximum number of clone attempts that can be made for a single request.
+const MAX_CLONES: Clones = Clones::new(5);
 
 /// An error that can occur when interacting with the [`WaitingRoom`] API.
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]

@@ -23,12 +23,6 @@ pub mod waiting_room;
 /// Private trait for sealing the traits we use here.
 mod sealed;
 
-/// The maximum number of query attempts that can be made for a single request.
-const MAX_QUERIES: Queries = Queries::new(1);
-
-/// The maximum number of clone attempts that can be made for a single request.
-const MAX_CLONES: Clones = Clones::new(1);
-
 /// A `Request` represents the lifetime of requesting an identity in the network via its
 /// [`RadUrn`].
 ///
