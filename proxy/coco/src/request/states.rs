@@ -79,6 +79,26 @@ pub enum Status {
     Failed,
 }
 
+impl Status {
+    /// Joining two `Status` favours `Failed` over any other `Status`, then `InProgress`, and
+    /// finally `Available`.
+    ///
+    /// This translates to the fact that if something has `Failed` then that's it, there's no going
+    /// back.
+    /// If it's `InProgress`, it doesn't matter that the other `Status` is saying its `Available`,
+    /// because you know what? It's actually in progress.
+    /// And finally, the last case is that both `Status`es agree the `Status` is `Available`.
+    pub fn join(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::Failed, _) => Self::Failed,
+            (_, Self::Failed) => Self::Failed,
+            (Self::InProgress, _) => Self::InProgress,
+            (_, Self::InProgress) => Self::InProgress,
+            (Self::Available, Self::Available) => Self::Available,
+        }
+    }
+}
+
 /// The `Found` state means that we have found at least one peer and can possibly find more.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

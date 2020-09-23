@@ -236,7 +236,7 @@ impl<T> Request<Found, T> {
         let mut peers = self.state.peers;
         peers
             .entry(peer)
-            .and_modify(|status| *status = Status::InProgress)
+            .and_modify(|status| *status = status.join(Status::InProgress))
             .or_insert(Status::InProgress);
         let this = Request {
             urn: self.urn,
@@ -279,7 +279,7 @@ impl<T> Request<Cloning, T> {
         // TODO(finto): It's weird if it didn't exist but buh
         peers
             .entry(peer)
-            .and_modify(|status| *status = Status::Failed)
+            .and_modify(|status| *status = status.join(Status::Failed))
             .or_insert(Status::Failed);
         Request {
             urn: self.urn,
