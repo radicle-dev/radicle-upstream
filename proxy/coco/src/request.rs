@@ -4,6 +4,7 @@
 
 // We need to allow this because there's a bug and clippy doesn't realise that the type parameter
 // is changing during state transitions.
+// See https://github.com/rust-lang/rust-clippy/issues/4859 for more information.
 #![allow(clippy::use_self)]
 
 use std::{collections::HashMap, marker::PhantomData};
