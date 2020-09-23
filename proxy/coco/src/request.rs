@@ -258,14 +258,18 @@ impl<T> Request<Found, T> {
     /// Should be used in tandem with [`HasPeers::all_failed`] to ensure that we transition back
     /// when all peers have failed to clone.
     #[allow(clippy::missing_const_for_fn)]
-    pub fn failed(self, timestamp: T) -> Request<Requested, T> {
-        Request {
-            urn: self.urn,
-            attempts: self.attempts,
-            timestamp,
-            state: Requested {
-                peers: self.state.peers,
-            },
+    pub fn failed(self) -> Either<Request<Requested, T>, Request<Found, T>> {
+        if self.state.all_failed() {
+            Either::Left(Request {
+                urn: self.urn,
+                attempts: self.attempts,
+                timestamp: self.timestamp,
+                state: Requested {
+                    peers: self.state.peers,
+                },
+            })
+        } else {
+            Either::Right(self)
         }
     }
 }
@@ -274,7 +278,11 @@ impl<T> Request<Cloning, T> {
     /// Transition from the `Cloning` state back to the `Found` state.
     ///
     /// This signifies that the `peer` failed to clone the identity and we mark it as failed.
-    pub fn failed(self, peer: PeerId, timestamp: T) -> Request<Found, T> {
+    pub fn failed(
+        self,
+        peer: PeerId,
+        timestamp: T,
+    ) -> Either<Request<Requested, T>, Request<Found, T>> {
         let mut peers = self.state.peers;
         // TODO(finto): It's weird if it didn't exist but buh
         peers
@@ -287,6 +295,7 @@ impl<T> Request<Cloning, T> {
             timestamp,
             state: Found { peers },
         }
+        .failed()
     }
 
     /// Transition from the `Cloning` to the `Cloned` state.

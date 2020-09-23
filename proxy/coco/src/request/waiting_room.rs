@@ -277,33 +277,6 @@ impl<T> WaitingRoom<T> {
         )
     }
 
-    /// Tell the `WaitingRoom` that we failed at finding a peer to clone from for the given `urn`.
-    ///
-    /// This should mean that the set of peers in the `Found` state have been exhausted and are all
-    /// `Status::Failed`. It left up to the caller to determine this by using the
-    /// `HasPeers::all_failed` method.
-    ///
-    /// If the underlying `Request` was in the `Found` state then it will transition to the
-    /// `IsRequested` state.
-    ///
-    /// # Errors
-    ///
-    ///   * If the `urn` was not in the `WaitingRoom`.
-    ///   * If the underlying `Request` was not in the expected state.
-    pub fn found_failed(&mut self, urn: &RadUrn, timestamp: T) -> Result<(), Error>
-    where
-        T: Clone,
-    {
-        self.transition(
-            |request| match request {
-                SomeRequest::Found(request) => Some(request),
-                _ => None,
-            },
-            |previous| Ok(previous.failed(timestamp)),
-            urn,
-        )
-    }
-
     /// Tell the `WaitingRoom` that we are attempting a clone from the `peer` for the given `urn`.
     ///
     /// If the underlying `Request` was in the `Found` state then it will transition to the
@@ -461,6 +434,7 @@ impl<T> WaitingRoom<T> {
 mod test {
     use std::error;
 
+    use assert_matches::assert_matches;
     use librad::{keys::SecretKey, peer::PeerId, uri::RadUrn};
     use pretty_assertions::assert_eq;
     use proptest::{collection, prelude::prop_assert_eq, proptest};
@@ -582,26 +556,61 @@ mod test {
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
-        let peer = PeerId::from(SecretKey::new());
+
+        let mut peers = vec![];
+        for _ in 0..NUM_CLONES + 1 {
+            peers.push(PeerId::from(SecretKey::new()));
+        }
 
         let _ = waiting_room.create(urn.clone(), ());
         waiting_room.queried(&urn, ())?;
-        waiting_room.found(&urn, peer.clone(), ())?;
-        waiting_room.cloning(&urn, peer.clone(), ())?;
 
-        for _ in 1..NUM_CLONES {
-            waiting_room.cloning_failed(peer.clone(), &urn, ())?;
-            waiting_room.cloning(&urn, peer.clone(), ())?;
+        for peer in &peers {
+            waiting_room.found(&urn, peer.clone(), ())?;
         }
 
-        waiting_room.cloning_failed(peer.clone(), &urn, ())?;
+        for peer in &peers[0..NUM_CLONES] {
+            waiting_room.cloning(&urn, peer.clone(), ())?;
+            waiting_room.cloning_failed(peer.clone(), &urn, ())?;
+        }
+
         assert_eq!(
-            waiting_room.cloning(&urn, peer, ()),
+            waiting_room.cloning(&urn, peers.last().unwrap().clone(), ()),
             Err(Error::TimeOut {
                 timeout: TimedOut::Clone,
                 attempts: 17,
             })
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn cloning_fails_back_to_requested() -> Result<(), Box<dyn error::Error + 'static>> {
+        const NUM_CLONES: usize = 5;
+        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+            max_queries: Queries::new(1),
+            max_clones: Clones::new(NUM_CLONES),
+        });
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+
+        let mut peers = vec![];
+        for _ in 0..NUM_CLONES {
+            peers.push(PeerId::from(SecretKey::new()));
+        }
+
+        let _ = waiting_room.create(urn.clone(), ());
+        waiting_room.queried(&urn, ())?;
+
+        for peer in &peers {
+            waiting_room.found(&urn, peer.clone(), ())?;
+            waiting_room.cloning(&urn, peer.clone(), ())?;
+            waiting_room.cloning_failed(peer.clone(), &urn, ())?;
+        }
+
+        assert_matches!(waiting_room.get(&urn), Some(SomeRequest::Requested(_)));
 
         Ok(())
     }
