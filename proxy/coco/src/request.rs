@@ -284,7 +284,6 @@ impl<T> Request<Cloning, T> {
         timestamp: T,
     ) -> Either<Request<Requested, T>, Request<Found, T>> {
         let mut peers = self.state.peers;
-        // TODO(finto): It's weird if it didn't exist but buh
         peers
             .entry(peer)
             .and_modify(|status| *status = status.join(Status::Failed))
