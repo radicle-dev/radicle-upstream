@@ -521,7 +521,7 @@ mod test {
     }
 
     #[test]
-    fn cannot_create_twice() {
+    fn cannot_create_twice() -> Result<(), Box<dyn error::Error>> {
         let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -529,7 +529,20 @@ mod test {
         waiting_room.create(urn.clone(), ());
         let request = waiting_room.create(urn.clone(), ());
 
-        assert_eq!(request, Some(SomeRequest::Created(Request::new(urn, ()))));
+        assert_eq!(
+            request,
+            Some(SomeRequest::Created(Request::new(urn.clone(), ())))
+        );
+
+        waiting_room.queried(&urn, ())?;
+        let request = waiting_room.create(urn.clone(), ());
+
+        assert_eq!(
+            request,
+            Some(SomeRequest::Requested(Request::new(urn, ()).request(())))
+        );
+
+        Ok(())
     }
 
     #[test]
