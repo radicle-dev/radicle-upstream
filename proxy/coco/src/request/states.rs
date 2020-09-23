@@ -263,13 +263,11 @@ where
     ///
     /// Otherwise, if all are in the `Status::Failed` state, then we return `true`.
     fn all_failed(&self) -> bool {
-        let peers = self.deref();
-
-        if peers.is_empty() {
+        if self.is_empty() {
             return false;
         }
 
-        peers.iter().all(|(_, status)| *status == Status::Failed)
+        self.iter().all(|(_, status)| *status == Status::Failed)
     }
 }
 
