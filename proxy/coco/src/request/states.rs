@@ -4,7 +4,7 @@ use std::{
     collections::HashMap,
     fmt,
     marker::PhantomData,
-    ops::{Add, AddAssign},
+    ops::{Add, AddAssign, Deref},
 };
 
 use serde::{Deserialize, Serialize};
@@ -87,6 +87,14 @@ pub struct Found {
     pub(crate) peers: HashMap<PeerId, Status>,
 }
 
+impl Deref for Found {
+    type Target = HashMap<PeerId, Status>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.peers
+    }
+}
+
 /// The `Cloning` state means that we have found at least one peer and we are attempting a clone on
 /// one of them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -94,6 +102,14 @@ pub struct Found {
 pub struct Cloning {
     /// A set of found peers and the lifecycle of clone attempts made on those peers.
     pub(crate) peers: HashMap<PeerId, Status>,
+}
+
+impl Deref for Cloning {
+    type Target = HashMap<PeerId, Status>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.peers
+    }
 }
 
 /// The `Cloned` state means that we have successfully cloned the desired identity.
@@ -237,7 +253,7 @@ impl QueryAttempt for IsRequested {}
 /// The trait is sealed internally, so we do not expect end-users to implement it.
 pub trait HasPeers: sealed::Sealed
 where
-    Self: Sized,
+    Self: Sized + Deref<Target = HashMap<PeerId, Status>>,
 {
     /// Give back the underlying `HashMap` of peers that is contained in `Self`.
     fn peers(&mut self) -> &mut HashMap<PeerId, Status>;
@@ -246,8 +262,8 @@ where
     /// or `Status::InProgress`.
     ///
     /// Otherwise, if all are in the `Status::Failed` state, then we return `true`.
-    fn all_failed(&mut self) -> bool {
-        let peers = self.peers();
+    fn all_failed(&self) -> bool {
+        let peers = self.deref();
 
         if peers.is_empty() {
             return false;
