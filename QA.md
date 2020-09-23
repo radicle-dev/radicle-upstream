@@ -13,11 +13,11 @@
     3. open `/Applications` in finder, locate the `radicle-upstream` app and
        right-click it, then select `Open` from the context menu, you should see
        a dialog with two buttons `Move to Bin` and `Cancel`
-    4. dismiss the dialog by clicking `Cancel`
-    5. to bypass macOS security measures to disallow running unsigned binaries,
-       repeat step nr. 3, now you should see three buttons:
-       `Move to Bin`, `Open` and `Cancel`, click `Open`
-    6. quit the app with <kbd>⌘</kbd> + <kbd>q</kbd>, open your terminal
+    4. dismiss the dialog by clicking `Cancel`, to bypass macOS security
+       measures which disallow running unsigned binaries, repeat the previous
+       step, now you should see three buttons: `Move to Bin`, `Open` and
+       `Cancel`, click `Open`
+    5. quit the app with <kbd>⌘</kbd> + <kbd>q</kbd>, open your terminal
        and run:
     ```
     /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --reset-state
