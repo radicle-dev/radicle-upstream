@@ -221,7 +221,7 @@ projectsStore.start(fetchList);
 
 // NEW PROJECT
 
-export const localState = writable<LocalState | string>("");
+export const localState = writable<LocalState | undefined>(undefined);
 export const localStateError = writable<string>("");
 export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
@@ -234,13 +234,13 @@ export const extractName = (repoPath: string) =>
 const fetchBranches = async (path: string) => {
   // Revert to defaults whenever the path changes in case this query fails
   // or the user clicks cancel in the directory selection dialog.
-  localState.set("");
+  localState.set(undefined);
   localStateError.set("");
   defaultBranch.set(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
   // This is just a safe guard. Since the validations on the constraints are
   // executed first, an empty path should not make it this far.
-  if (path === "") {
+  if (!path.length) {
     return;
   }
 

@@ -33,12 +33,16 @@ describe("creating a project", () => {
     });
 
     it("sets the local state", () => {
-      project.localState.set("test");
+      project.localState.set({
+        branches: ["main", "cool-feature"],
+        managed: false,
+      });
+
       const validation = project.repositoryPathValidationStore(false);
       validation.validate("/repository/path");
 
-      // resetting the local state on validation start
-      expect(get(project.localState)).toEqual("");
+      // clears previous state upon validation
+      expect(get(project.localState)).toEqual(undefined);
 
       process.nextTick(() => {
         expect(get(project.localState)).toEqual(localStateMock);

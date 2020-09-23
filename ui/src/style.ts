@@ -7,3 +7,10 @@ export type ButtonVariant =
   | "transparent"
   | "outline"
   | "destructive";
+
+export enum CSSPosition {
+  Right = "right",
+  Bottom = "bottom",
+  Top = "top",
+  Left = "left",
+}
