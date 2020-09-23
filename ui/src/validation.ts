@@ -58,13 +58,11 @@ interface FormatConstraints {
 validatejs.validators.firstHandleChar = (
   value: string,
   options: firstHandleCharOptions,
-  key: any,
-  attributes: any
+  _key: any,
+  _attributes: any
 ) => {
   if (!value.match(new RegExp("^[a-z0-9]", "i"))) {
-    return (
-      `Your ${  options.valueName  } should start with a letter or a number.`
-    );
+    return `Your ${options.valueName} should start with a letter or a number.`;
   }
 };
 
