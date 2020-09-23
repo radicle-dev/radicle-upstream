@@ -2,6 +2,7 @@
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
+  import { isExperimental } from "../../native/ipc.js";
   import * as path from "../src/path";
 
   import {
@@ -45,6 +46,15 @@
       looseActiveStateMatching: false,
     },
   ];
+
+  if (isExperimental()) {
+    topbarMenuItems.push({
+      icon: Icon.Wallet,
+      title: "Wallet",
+      href: path.profileWallet(),
+      looseActiveStateMatching: false,
+    });
+  }
 
   const identity = getContext("session").identity;
 </script>

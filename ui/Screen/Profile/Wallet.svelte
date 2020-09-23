@@ -1,11 +1,21 @@
 <script>
-  import { getContext } from "svelte";
-  import { Wallet } from "../../DesignSystem/Component";
+  import { makeWallet } from "../../src/wallet";
 
-  const transactions = [];
-  const session = getContext("session");
-  $: accountId = session.identity ? session.identity.accountId : null;
-  $: id = session.identity ? session.identity.metadata.handle : null;
+  import { Button } from "../../DesignSystem/Primitive";
+
+  const wallet = makeWallet();
 </script>
 
-<Wallet dataCy="user-wallet" balance={0} {transactions} {accountId} {id} />
+<div>
+  {#if $wallet.status === 'NOT_CONNECTED'}
+    <Button on:click={wallet.connect}>connect</Button>
+  {:else}
+    <Button on:click={wallet.disconnect}>disconnect</Button>
+    <br />
+    <Button on:click={wallet.testSign}>test sign</Button>
+    <br />
+    <div>Address: {$wallet.connected.account.address}</div>
+    <div>Balance: {$wallet.connected.account.balance} eth</div>
+    <br />
+  {/if}
+</div>
