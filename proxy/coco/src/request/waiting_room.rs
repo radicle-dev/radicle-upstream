@@ -396,9 +396,9 @@ impl<T> WaitingRoom<T> {
         self.transition(|request| request.cancel(timestamp).right(), Ok, urn)
     }
 
-    /// Return the list of all `RadUrn`s in the `WaitingRoom`.
-    pub fn list(&self) -> impl Iterator<Item = &RadUrn> {
-        self.requests.keys()
+    /// Return the list of all `RadUrn`/`SomeRequest` pairs in the `WaitingRoom`.
+    pub fn iter(&self) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)> {
+        self.requests.iter()
     }
 
     /// Filter the requests in the waiting room based on the passed in `matcher`.
