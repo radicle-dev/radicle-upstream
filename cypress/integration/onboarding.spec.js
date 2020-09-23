@@ -141,7 +141,7 @@ context("identity creation", () => {
 
         // No spaces.
         cy.pick("handle-input").type("no spaces");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("handle-input").should("have.value", "no-spaces");
 
         // No special characters.
         cy.pick("handle-input").clear();
