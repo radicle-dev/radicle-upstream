@@ -22,10 +22,6 @@
 #![feature(hash_set_entry)]
 #![feature(or_patterns)]
 
-#[cfg(test)]
-#[macro_use]
-extern crate proptest;
-
 use std::net::SocketAddr;
 
 pub use librad::{

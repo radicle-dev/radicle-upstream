@@ -428,7 +428,7 @@ mod test {
 
     use librad::{keys::SecretKey, peer::PeerId, uri::RadUrn};
     use pretty_assertions::assert_eq;
-    use proptest::{collection, prelude::prop_assert_eq};
+    use proptest::{collection, prelude::prop_assert_eq, proptest};
 
     use super::*;
 
