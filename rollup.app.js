@@ -50,7 +50,7 @@ export default {
     {
       name: "node-builtins",
       resolveId(importee) {
-        if (importee == "util") {
+        if (importee === "util") {
           return { id: require.resolve("util/util.js") };
         }
         const builtinPath = browserifyNodeBuiltins[importee];
