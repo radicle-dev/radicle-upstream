@@ -446,7 +446,7 @@ impl State {
             .collect()
     }
 
-    /// Creates a workign copy for the project of the given `urn`.
+    /// Creates a working copy for the project of the given `urn`.
     ///
     /// # Errors
     ///
