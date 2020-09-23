@@ -74,7 +74,7 @@ export function makeWallet(): Wallet {
     stateStore.subscribe(async state => {
       if (state.status === "CONNECTED") {
         if (!connector) {
-          console.log("Connector is undefined, stoping here.");
+          console.log("Connector is undefined, stopping here.");
           return;
         }
 
