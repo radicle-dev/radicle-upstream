@@ -7,7 +7,7 @@
 // See https://github.com/rust-lang/rust-clippy/issues/4859 for more information.
 #![allow(clippy::use_self)]
 
-use std::{collections::HashMap, marker::PhantomData};
+use std::{collections::HashMap, marker::PhantomData, ops::Deref};
 
 use either::Either;
 use serde::{Deserialize, Serialize};
@@ -62,6 +62,14 @@ pub struct Request<S, T> {
     timestamp: T,
     /// The state of the request, as mentioned above.
     state: S,
+}
+
+impl<S, T> Deref for Request<S, T> {
+    type Target = S;
+
+    fn deref(&self) -> &Self::Target {
+        &self.state
+    }
 }
 
 impl<S, T> From<Request<S, T>> for Gossip {
