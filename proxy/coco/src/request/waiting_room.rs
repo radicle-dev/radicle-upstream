@@ -143,7 +143,7 @@ impl<T> WaitingRoom<T> {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
                 self.requests.insert(urn, request);
                 None
-            }
+            },
             Some(request) => Some(request.clone()),
         }
     }
@@ -174,10 +174,10 @@ impl<T> WaitingRoom<T> {
                     Either::Right(next) => {
                         self.requests.insert(urn.clone(), next.into());
                         Ok(())
-                    }
+                    },
                     Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
                 }
-            }
+            },
         }
     }
 
@@ -205,7 +205,7 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Created(request) => Some(Either::Right(request.request(timestamp))),
                 SomeRequest::Requested(request) => {
                     Some(request.queried(max_queries, max_clones, timestamp))
-                }
+                },
                 _ => None,
             },
             |previous| match previous {
@@ -238,11 +238,11 @@ impl<T> WaitingRoom<T> {
                 SomeRequest::Found(request) => {
                     let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
                     Some(some_request)
-                }
+                },
                 SomeRequest::Cloning(request) => {
                     let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
                     Some(some_request)
-                }
+                },
                 _ => None,
             },
             Ok,
