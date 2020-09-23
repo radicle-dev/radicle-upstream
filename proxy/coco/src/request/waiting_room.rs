@@ -4,7 +4,7 @@
 // much.
 #![allow(clippy::wildcard_enum_match_arm)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Sub};
 
 use either::Either;
 use rand::{seq::IteratorRandom as _, Rng};
@@ -154,6 +154,17 @@ impl<T> WaitingRoom<T> {
     #[must_use]
     pub fn get(&self, urn: &RadUrn) -> Option<&SomeRequest<T>> {
         self.requests.get(urn)
+    }
+
+    /// Get the [`Request::elapsed`] time between the `timestamp` provided and the current timestamp
+    /// of the underlying `Request`.
+    ///
+    /// If the `urn` could not be found then `None` is returned.
+    pub fn elapsed(&self, urn: &RadUrn, timestamp: T) -> Option<T::Output>
+    where
+        T: Sub<T> + Clone,
+    {
+        Some(self.get(urn)?.elapsed(timestamp))
     }
 
     /// This will return the request for the given `urn` if one exists in the `WaitingRoom`.
