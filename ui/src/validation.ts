@@ -8,7 +8,7 @@ export enum ValidationStatus {
   Success = "SUCCESS",
 }
 
-type ValidationState =
+export type ValidationState =
   | { status: ValidationStatus.NotStarted }
   | { status: ValidationStatus.Loading }
   | { status: ValidationStatus.Error; message: string }
