@@ -89,7 +89,7 @@ impl<S, T> Request<S, T> {
     }
 
     /// Transition this `Request` into an `IsCanceled` state. We can only transition a particular
-    /// subset of the states which are: `{IsCreated, IsRequested, Found, Cloning, IsCanceled}`.
+    /// subset of the states which are: `{IsCreated, Requested, Found, Cloning, IsCanceled}`.
     ///
     /// That is, attempting to cancel a `Cloned` `Request` is not permitted and will complain at
     /// compile time.
@@ -120,7 +120,7 @@ impl<S, T> Request<S, T> {
     /// or maximum number of clones. Otherwise, the `Request` proceeds as normal.
     ///
     /// The subset of states that can transition to the `TimedOut` out state consist of
-    /// `{IsRequested, Found, Cloning}`.
+    /// `{Requested, Found, Cloning}`.
     pub fn timed_out(
         mut self,
         max_queries: Queries,
@@ -170,7 +170,7 @@ impl<S, T> Request<S, T> {
 impl<T> Request<IsCreated, T> {
     /// Create a fresh `Request` for the given `urn`.
     ///
-    /// Once this request has been made, we can transition this `Request` to the `IsRequested`
+    /// Once this request has been made, we can transition this `Request` to the `Requested`
     /// state by calling [`Request::request`].
     pub const fn new(urn: RadUrn, timestamp: T) -> Self {
         Self {
@@ -181,13 +181,13 @@ impl<T> Request<IsCreated, T> {
         }
     }
 
-    /// Transition the `Request` from the `IsCreated` state to the `IsRequested` state.
+    /// Transition the `Request` from the `IsCreated` state to the `Requested` state.
     ///
     /// This signifies that the `Request` has been queried and will be looking for peers to fulfill
     /// the request.
     ///
     /// The number of queries is incremented by 1.
-    pub fn request(self, timestamp: T) -> Request<IsRequested, T> {
+    pub fn request(self, timestamp: T) -> Request<Requested, T> {
         Request {
             urn: self.urn,
             attempts: Attempts {
@@ -195,19 +195,21 @@ impl<T> Request<IsCreated, T> {
                 ..self.attempts
             },
             timestamp,
-            state: PhantomData,
+            state: Requested {
+                peers: HashMap::new(),
+            },
         }
     }
 }
 
-impl<T> Request<IsRequested, T> {
-    /// Transition the `Request` from the `IsRequested` state to the `Found` state.
+impl<T> Request<Requested, T> {
+    /// Transition the `Request` from the `Requested` state to the `Found` state.
     ///
     /// This signifies that the `Request` found its first peer and will be ready to attempt to
     /// clone from the peer.
-    pub fn first_peer(self, peer: PeerId, timestamp: T) -> Request<Found, T> {
-        let mut peers = HashMap::new();
-        peers.insert(peer, Status::Available);
+    pub fn into_found(self, peer: PeerId, timestamp: T) -> Request<Found, T> {
+        let mut peers = self.state.peers;
+        peers.entry(peer).or_insert(Status::Available);
         Request {
             urn: self.urn,
             attempts: self.attempts,
@@ -248,7 +250,7 @@ impl<T> Request<Found, T> {
         this.timed_out(max_queries, max_clones, timestamp).flip()
     }
 
-    /// Transition the `Request` from the `Found` back to the `IsRequested` state.
+    /// Transition the `Request` from the `Found` back to the `Requested` state.
     ///
     /// This signifies that the `Request` has exhausted its list of peers to attempt cloning from
     /// and needs to re-attempt the request for the search.
@@ -256,12 +258,14 @@ impl<T> Request<Found, T> {
     /// Should be used in tandem with [`HasPeers::all_failed`] to ensure that we transition back
     /// when all peers have failed to clone.
     #[allow(clippy::missing_const_for_fn)]
-    pub fn failed(self, timestamp: T) -> Request<IsRequested, T> {
+    pub fn failed(self, timestamp: T) -> Request<Requested, T> {
         Request {
             urn: self.urn,
             attempts: self.attempts,
             timestamp,
-            state: PhantomData,
+            state: Requested {
+                peers: self.state.peers,
+            },
         }
     }
 }

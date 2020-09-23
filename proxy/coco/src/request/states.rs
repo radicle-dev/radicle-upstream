@@ -14,7 +14,7 @@ use librad::{peer::PeerId, uri::RadUrn};
 use super::sealed;
 
 impl sealed::Sealed for IsCreated {}
-impl sealed::Sealed for IsRequested {}
+impl sealed::Sealed for Requested {}
 impl sealed::Sealed for Found {}
 impl sealed::Sealed for Cloning {}
 impl sealed::Sealed for IsCanceled {}
@@ -61,14 +61,14 @@ pub struct Created;
 pub type IsCreated = PhantomData<Created>;
 
 /// The state signifying that the `Request` has been kicked-off.
-#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Requested;
-/// The state signifying that the `Request` has been kicked-off.
-pub type IsRequested = PhantomData<Requested>;
+pub struct Requested {
+    pub(super) peers: HashMap<PeerId, Status>,
+}
 
 /// `Status` represents the lifecycle of a clone attempt, when paired with a `PeerId`.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Status {
     /// The `PeerId` is available for cloning, and an attempt has not been made yet.
@@ -245,7 +245,7 @@ impl sealed::Sealed for Attempts {}
 ///
 /// The trait is sealed internally, so we do not expect end-users to implement it.
 pub trait QueryAttempt: sealed::Sealed {}
-impl QueryAttempt for IsRequested {}
+impl QueryAttempt for Requested {}
 
 /// If a state type implements this trait then it means that the type holds a `HashMap` of peers and
 /// their status of cloning.
@@ -299,7 +299,7 @@ where
 }
 
 impl Cancel for IsCreated {}
-impl Cancel for IsRequested {}
+impl Cancel for Requested {}
 impl Cancel for Found {}
 impl Cancel for Cloning {}
 impl Cancel for IsCanceled {}
@@ -319,6 +319,6 @@ where
     }
 }
 
-impl TimeOut for IsRequested {}
+impl TimeOut for Requested {}
 impl TimeOut for Found {}
 impl TimeOut for Cloning {}

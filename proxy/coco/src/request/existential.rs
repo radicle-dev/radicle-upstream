@@ -8,8 +8,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Cloned, Clones, Cloning, Either, Found, IsCanceled, IsCreated, IsRequested, Queries, RadUrn,
-    Request, RequestKind, TimedOut,
+    Cloned, Clones, Cloning, Either, Found, IsCanceled, IsCreated, Queries, RadUrn, Request,
+    RequestKind, Requested, TimedOut,
 };
 
 /// Since a `Request` is parameterised over its state, it makes it difficult to talk about a
@@ -29,7 +29,7 @@ pub enum SomeRequest<T> {
     Created(Request<IsCreated, T>),
 
     /// The `Request` has been requested.
-    Requested(Request<IsRequested, T>),
+    Requested(Request<Requested, T>),
 
     /// The `Request` has found a peer and is possibly searching for more.
     Found(Request<Found, T>),
@@ -67,8 +67,8 @@ impl<T> From<Request<IsCreated, T>> for SomeRequest<T> {
     }
 }
 
-impl<T> From<Request<IsRequested, T>> for SomeRequest<T> {
-    fn from(request: Request<IsRequested, T>) -> Self {
+impl<T> From<Request<Requested, T>> for SomeRequest<T> {
+    fn from(request: Request<Requested, T>) -> Self {
         Self::Requested(request)
     }
 }

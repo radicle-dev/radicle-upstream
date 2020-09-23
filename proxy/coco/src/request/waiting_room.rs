@@ -261,7 +261,7 @@ impl<T> WaitingRoom<T> {
     {
         self.transition(
             |request| match request {
-                SomeRequest::Requested(request) => Some(request.first_peer(peer, timestamp).into()),
+                SomeRequest::Requested(request) => Some(request.into_found(peer, timestamp).into()),
                 SomeRequest::Found(request) => {
                     let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
                     Some(some_request)
@@ -490,7 +490,7 @@ mod test {
         let expected = SomeRequest::Found(
             Request::new(urn.clone(), ())
                 .request(())
-                .first_peer(peer.clone(), ()),
+                .into_found(peer.clone(), ()),
         );
         assert_eq!(waiting_room.get(&urn), Some(&expected));
 
@@ -498,7 +498,7 @@ mod test {
         let expected = SomeRequest::Cloning(
             Request::new(urn.clone(), ())
                 .request(())
-                .first_peer(peer.clone(), ())
+                .into_found(peer.clone(), ())
                 .cloning(MAX_QUERIES, MAX_CLONES, peer.clone(), ())
                 .unwrap_right(),
         );
@@ -510,7 +510,7 @@ mod test {
         let expected = SomeRequest::Cloned(
             Request::new(urn.clone(), ())
                 .request(())
-                .first_peer(peer.clone(), ())
+                .into_found(peer.clone(), ())
                 .cloning(MAX_QUERIES, MAX_CLONES, peer, ())
                 .unwrap_right()
                 .cloned(found_repo, ()),
@@ -635,7 +635,7 @@ mod test {
         );
 
         // found
-        let found = is_requested.first_peer(peer.clone(), ());
+        let found = is_requested.into_found(peer.clone(), ());
         waiting_room.insert(urn.clone(), found.clone());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
@@ -696,7 +696,7 @@ mod test {
         let ready = waiting_room.ready(strategy);
         let expected = Request::new(urn.clone(), ())
             .request(())
-            .first_peer(peer.clone(), ())
+            .into_found(peer.clone(), ())
             .cloning(config.max_queries, config.max_clones, peer, ())
             .unwrap_right()
             .cloned(urn, ());
