@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use librad::{peer::PeerId, uri::RadUrn};
 
 use crate::request::{
-    sequence_result, Cloned, Clones, Created, Queries, Request, RequestKind, SomeRequest, TimedOut,
+    sequence_result, Clones, Queries, Request, RequestKind, SomeRequest, TimedOut,
 };
 
 /// The maximum number of query attempts that can be made for a single request.
@@ -384,51 +384,39 @@ impl<T> WaitingRoom<T> {
         self.requests.iter()
     }
 
-    /// Filter the requests in the waiting room based on the passed in `matcher`.
-    fn filter<R: Rng, S>(
+    /// Filter the `WaitingRoom` by:
+    ///   * Choosing which [`RequestKind`] you are looking for
+    ///   * Checking the elapsed time between the `timestamp` and the `Request`'s timestamp are
+    ///   greater than the `delta` provided.
+    pub fn filter(
         &self,
-        mut matcher: impl FnMut(&SomeRequest<T>) -> Option<&Request<S, T>>,
-        strategy: Strategy<R>,
-    ) -> Option<&Request<S, T>>
+        request_kind: RequestKind,
+        timestamp: T,
+        delta: T::Output,
+    ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)>
     where
-        T: Clone + Ord,
+        T: Sub<T> + Clone,
+        T::Output: Ord + Clone,
     {
-        strategy.next(
-            self.requests
-                .iter()
-                .filter_map(|(_, request)| matcher(request)),
-            |request| request.timestamp.clone(),
-        )
+        self.iter()
+            .filter(move |(_, request)| request.elapsed(timestamp.clone()) >= delta.clone())
+            .filter(move |(_, request)| RequestKind::from(*request) == request_kind.clone())
     }
 
-    /// Return a `Request` that is in the `Created` state, if any, based off of the supplied
-    /// `strategy`.
-    pub fn next<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<Created, T>>
+    /// Find the first occurring request based on the call to [`WaitingRoom::filter`].
+    // Clippy is confusing OUR filter with Iterator's filter. So this is telling it to go away.
+    #[allow(clippy::filter_next)]
+    pub fn find(
+        &self,
+        request_kind: RequestKind,
+        timestamp: T,
+        delta: T::Output,
+    ) -> Option<(&RadUrn, &SomeRequest<T>)>
     where
-        T: Clone + Ord,
+        T: Sub<T> + Clone,
+        T::Output: Ord + Clone,
     {
-        self.filter(
-            |request| match request {
-                SomeRequest::Created(request) => Some(request),
-                _ => None,
-            },
-            strategy,
-        )
-    }
-
-    /// Return a `Request` that is in the `Cloned` state, if any, based off of the supplied
-    /// `strategy`.
-    pub fn ready<R: Rng>(&self, strategy: Strategy<R>) -> Option<&Request<Cloned, T>>
-    where
-        T: Clone + Ord,
-    {
-        self.filter(
-            |request| match request {
-                SomeRequest::Cloned(request) => Some(request),
-                _ => None,
-            },
-            strategy,
-        )
+        self.filter(request_kind, timestamp, delta).next()
     }
 
     #[cfg(test)]
@@ -453,51 +441,54 @@ mod test {
 
     #[test]
     fn happy_path_of_full_request() -> Result<(), Box<dyn error::Error + 'static>> {
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config::default());
+        let mut waiting_room: WaitingRoom<usize> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
-        let request = waiting_room.request(urn.clone(), ());
+        let request = waiting_room.request(urn.clone(), 0);
 
         assert_eq!(request, None);
 
         let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
-        let created = waiting_room.next(strategy);
-        assert_eq!(created, Some(&Request::new(urn.clone(), ())),);
+        let created = waiting_room.find(RequestKind::Created, 0, 0);
+        assert_eq!(
+            created,
+            Some((&urn, &SomeRequest::Created(Request::new(urn.clone(), 0)))),
+        );
 
-        waiting_room.queried(&urn, ())?;
-        let expected = SomeRequest::Requested(Request::new(urn.clone(), ()).request(()));
+        waiting_room.queried(&urn, 0)?;
+        let expected = SomeRequest::Requested(Request::new(urn.clone(), 0).request(0));
         assert_eq!(waiting_room.get(&urn), Some(&expected));
 
-        waiting_room.found(&urn, peer.clone(), ())?;
+        waiting_room.found(&urn, peer.clone(), 0)?;
         let expected = SomeRequest::Found(
-            Request::new(urn.clone(), ())
-                .request(())
-                .into_found(peer.clone(), ()),
+            Request::new(urn.clone(), 0)
+                .request(0)
+                .into_found(peer.clone(), 0),
         );
         assert_eq!(waiting_room.get(&urn), Some(&expected));
 
-        waiting_room.cloning(&urn, peer.clone(), ())?;
+        waiting_room.cloning(&urn, peer.clone(), 0)?;
         let expected = SomeRequest::Cloning(
-            Request::new(urn.clone(), ())
-                .request(())
-                .into_found(peer.clone(), ())
-                .cloning(MAX_QUERIES, MAX_CLONES, peer.clone(), ())
+            Request::new(urn.clone(), 0)
+                .request(0)
+                .into_found(peer.clone(), 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, peer.clone(), 0)
                 .unwrap_right(),
         );
         assert_eq!(waiting_room.get(&urn), Some(&expected));
 
         let found_repo = urn.clone();
 
-        waiting_room.cloned(&urn, found_repo.clone(), ())?;
+        waiting_room.cloned(&urn, found_repo.clone(), 0)?;
         let expected = SomeRequest::Cloned(
-            Request::new(urn.clone(), ())
-                .request(())
-                .into_found(peer.clone(), ())
-                .cloning(MAX_QUERIES, MAX_CLONES, peer, ())
+            Request::new(urn.clone(), 0)
+                .request(0)
+                .into_found(peer.clone(), 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, peer, 0)
                 .unwrap_right()
-                .cloned(found_repo, ()),
+                .cloned(found_repo, 0),
         );
         assert_eq!(waiting_room.get(&urn), Some(&expected));
 
@@ -704,30 +695,32 @@ mod test {
     #[test]
     fn can_get_request_that_is_ready() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(config);
+        let mut waiting_room: WaitingRoom<usize> = WaitingRoom::new(config);
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
         let strategy: Strategy<rand::rngs::StdRng> = Strategy::First;
 
-        let ready = waiting_room.ready(strategy.clone());
+        let ready = waiting_room.find(RequestKind::Cloned, 0, 0);
         assert_eq!(ready, None);
 
-        let _ = waiting_room.request(urn.clone(), ());
-        waiting_room.queried(&urn, ())?;
-        waiting_room.found(&urn, peer.clone(), ())?;
-        waiting_room.cloning(&urn, peer.clone(), ())?;
-        waiting_room.cloned(&urn, urn.clone(), ())?;
+        let _ = waiting_room.request(urn.clone(), 0);
+        waiting_room.queried(&urn, 0)?;
+        waiting_room.found(&urn, peer.clone(), 0)?;
+        waiting_room.cloning(&urn, peer.clone(), 0)?;
+        waiting_room.cloned(&urn, urn.clone(), 0)?;
 
-        let ready = waiting_room.ready(strategy);
-        let expected = Request::new(urn.clone(), ())
-            .request(())
-            .into_found(peer.clone(), ())
-            .cloning(config.max_queries, config.max_clones, peer, ())
-            .unwrap_right()
-            .cloned(urn, ());
-        assert_eq!(ready, Some(&expected));
+        let ready = waiting_room.find(RequestKind::Cloned, 0, 0);
+        let expected = SomeRequest::Cloned(
+            Request::new(urn.clone(), 0)
+                .request(0)
+                .into_found(peer.clone(), 0)
+                .cloning(config.max_queries, config.max_clones, peer, 0)
+                .unwrap_right()
+                .cloned(urn.clone(), 0),
+        );
+        assert_eq!(ready, Some((&urn, &expected)));
 
         Ok(())
     }
