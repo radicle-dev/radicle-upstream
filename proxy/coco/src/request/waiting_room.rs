@@ -157,11 +157,11 @@ impl<T> WaitingRoom<T> {
         self.requests.get(urn)
     }
 
-    /// Create a fresh [`Request`] with the given `urn`.
+    /// This will return the request for the given `urn` if one exists in the `WaitingRoom`.
     ///
-    /// If the `Request` already existed in the `WaitingRoom` then we get back the original request
-    /// as `Some`. This means we did nothing with the `urn` or `timestamp`.
-    pub fn create(&mut self, urn: RadUrn, timestamp: T) -> Option<SomeRequest<T>>
+    /// If there is no such `urn` then it create a fresh `Request` using the `urn` and `timestamp`
+    /// and it will return `None`.
+    pub fn request(&mut self, urn: RadUrn, timestamp: T) -> Option<SomeRequest<T>>
     where
         T: Clone,
     {
@@ -448,7 +448,7 @@ mod test {
             .parse()
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
-        let request = waiting_room.create(urn.clone(), ());
+        let request = waiting_room.request(urn.clone(), ());
 
         assert_eq!(request, None);
 
@@ -500,8 +500,8 @@ mod test {
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
-        waiting_room.create(urn.clone(), ());
-        let request = waiting_room.create(urn.clone(), ());
+        waiting_room.request(urn.clone(), ());
+        let request = waiting_room.request(urn.clone(), ());
 
         assert_eq!(
             request,
@@ -509,7 +509,7 @@ mod test {
         );
 
         waiting_room.queried(&urn, ())?;
-        let request = waiting_room.create(urn.clone(), ());
+        let request = waiting_room.request(urn.clone(), ());
 
         assert_eq!(
             request,
@@ -530,7 +530,7 @@ mod test {
             .parse()
             .expect("failed to parse the urn");
 
-        let _ = waiting_room.create(urn.clone(), ());
+        let _ = waiting_room.request(urn.clone(), ());
         for _ in 0..NUM_QUERIES {
             waiting_room.queried(&urn, ())?;
         }
@@ -562,7 +562,7 @@ mod test {
             peers.push(PeerId::from(SecretKey::new()));
         }
 
-        let _ = waiting_room.create(urn.clone(), ());
+        let _ = waiting_room.request(urn.clone(), ());
         waiting_room.queried(&urn, ())?;
 
         for peer in &peers {
@@ -601,7 +601,7 @@ mod test {
             peers.push(PeerId::from(SecretKey::new()));
         }
 
-        let _ = waiting_room.create(urn.clone(), ());
+        let _ = waiting_room.request(urn.clone(), ());
         waiting_room.queried(&urn, ())?;
 
         for peer in &peers {
@@ -625,7 +625,7 @@ mod test {
         let peer = PeerId::from(SecretKey::new());
 
         // created
-        let _ = waiting_room.create(urn.clone(), ());
+        let _ = waiting_room.request(urn.clone(), ());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
@@ -696,7 +696,7 @@ mod test {
         let ready = waiting_room.ready(strategy.clone());
         assert_eq!(ready, None);
 
-        let _ = waiting_room.create(urn.clone(), ());
+        let _ = waiting_room.request(urn.clone(), ());
         waiting_room.queried(&urn, ())?;
         waiting_room.found(&urn, peer.clone(), ())?;
         waiting_room.cloning(&urn, peer.clone(), ())?;
