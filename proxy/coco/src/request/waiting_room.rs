@@ -309,14 +309,14 @@ impl<T> WaitingRoom<T> {
     /// Tell the `WaitingRoom` that we failed the attempt to clone from the `peer` for the given
     /// `urn`.
     ///
-    /// If the underlying `Request` was in the `Found` state then it will transition to the
-    /// `Cloning` state.
+    /// If the underlying `Request` was in the `Cloning` state then it will transition to the
+    /// `Found` state.
     ///
     /// # Errors
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn failed(&mut self, peer: PeerId, urn: &RadUrn, timestamp: T) -> Result<(), Error>
+    pub fn cloning_failed(&mut self, peer: PeerId, urn: &RadUrn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -550,11 +550,11 @@ mod test {
         waiting_room.cloning(&urn, peer.clone(), ())?;
 
         for _ in 1..NUM_CLONES {
-            waiting_room.failed(peer.clone(), &urn, ())?;
+            waiting_room.cloning_failed(peer.clone(), &urn, ())?;
             waiting_room.cloning(&urn, peer.clone(), ())?;
         }
 
-        waiting_room.failed(peer.clone(), &urn, ())?;
+        waiting_room.cloning_failed(peer.clone(), &urn, ())?;
         assert_eq!(
             waiting_room.cloning(&urn, peer, ()),
             Err(Error::TimeOut {
