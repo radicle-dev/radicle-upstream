@@ -2,6 +2,7 @@
   import { build, Status } from "../../src/wallet";
 
   import { Button } from "../../DesignSystem/Primitive";
+  import Funding from "../Funding.svelte";
 
   const wallet = build();
 </script>
@@ -19,3 +20,6 @@
     <br />
   {/if}
 </div>
+
+<br />
+<Funding />
