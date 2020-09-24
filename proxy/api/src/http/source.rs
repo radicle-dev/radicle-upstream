@@ -691,6 +691,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[allow(clippy::indexing_slicing)]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
