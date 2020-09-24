@@ -84,6 +84,7 @@ export function makeWallet(): Wallet {
       if (state.status === Status.Connected) {
         if (!connector) {
           console.log("Connector is undefined, stopping here.");
+          stateStore.set({ status: Status.NotConnected });
           return;
         }
 
@@ -101,6 +102,7 @@ export function makeWallet(): Wallet {
 
   connector.on("disconnect", () => {
     console.log("connector.disconnect");
+    stateStore.set({ status: Status.NotConnected });
   });
 
   provider.on("chainChanged", (chainId: number) => {
