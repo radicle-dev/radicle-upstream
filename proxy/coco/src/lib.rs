@@ -19,6 +19,7 @@
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions
 )]
+#![feature(hash_set_entry)]
 #![feature(or_patterns)]
 
 use std::net::SocketAddr;
@@ -57,6 +58,7 @@ pub use peer::{
 mod state;
 pub use state::{Lock, State};
 pub mod project;
+pub mod request;
 
 pub mod seed;
 pub mod signer;
