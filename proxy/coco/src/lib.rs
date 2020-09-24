@@ -19,12 +19,13 @@
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions
 )]
+#![feature(hash_set_entry)]
 #![feature(or_patterns)]
 
 use std::net::SocketAddr;
 
 pub use librad::{
-    git::local::url::LocalUrl,
+    git::{include, local::url::LocalUrl},
     hash::Hash,
     keys,
     meta::{project::Project, user::User as MetaUser},
@@ -57,6 +58,7 @@ pub use peer::{
 mod state;
 pub use state::{Lock, State};
 pub mod project;
+pub mod request;
 
 pub mod seed;
 pub mod signer;

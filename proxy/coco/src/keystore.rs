@@ -47,7 +47,7 @@ impl Keystorage {
             Ok(keypair) => Ok(keypair.secret_key),
             Err(file::Error::NoSuchKey) => {
                 let key = keys::SecretKey::new();
-                self.store.put_key(key.clone())?;
+                self.store.put_key(key)?;
                 Ok(key)
             },
             Err(err) => Err(err.into()),
@@ -90,7 +90,7 @@ mod tests {
         let key = store.init().expect("could not create key:");
 
         assert!(
-            key == store.get()?,
+            key.public() == store.get()?.public(),
             "the stored key was not equal to the one retrieved"
         );
 
