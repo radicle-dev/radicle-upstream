@@ -1,10 +1,23 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::{convert::From, fmt};
+use std::{
+    convert::From,
+    fmt,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+    time::Duration,
+};
 
-use futures::stream::StreamExt as _;
-use tokio::sync::broadcast;
+use futures::{
+    future::{self, FutureExt as _},
+    stream::StreamExt as _,
+};
+use tokio::{
+    sync::broadcast,
+    task::{JoinError, JoinHandle},
+};
 
 use librad::net::{
     peer::{Gossip, RunLoop},
@@ -25,6 +38,14 @@ pub enum Error {
     /// Failed to build and announce state updates.
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
+
+    /// The future was aborted.
+    #[error("the running peer was aborted")]
+    Aborted(#[source] future::Aborted),
+
+    /// There was an error in a spawned task.
+    #[error("the running peer was either cancelled, or one of its tasks panicked")]
+    JoinError(#[source] JoinError),
 }
 
 /// Significant events that occur during [`Peer`] lifetime.
@@ -84,48 +105,66 @@ impl Peer {
     /// Start up the internal machinery to advance the underlying protocol, react to significant
     /// events and keep auxiliary tasks running.
     ///
-    /// # Errors
-    ///
-    /// * if one of the handlers of the select loop fails
-    pub async fn run(self) -> Result<(), Error> {
-        // Subscribe to protocol events.
-        let protocol_subscriber = {
-            let protocol = self.state.api.protocol();
-            protocol.subscribe().await
+    /// Calling this method spawns tasks onto the async executor, so the returned future has
+    /// similar semantics to [`JoinHandle`]. Unlike [`JoinHandle`], however, dropping the
+    /// [`Running`] future will cancel all its tasks. It is advisable to poll the [`Running`] future
+    /// in order to be able to get notified of errors -- in which case, however, not much can be
+    /// done except for creating a new [`Peer`] and put it into running state.
+    pub fn into_running(self) -> Running {
+        let Self {
+            run_loop,
+            state,
+            store,
+            subscriber,
+        } = self;
+
+        let protocol = {
+            let (handle, reg) = future::AbortHandle::new_pair();
+            let fut = future::Abortable::new(run_loop, reg);
+            let join = tokio::spawn(fut);
+
+            (join, handle)
         };
-        tokio::pin!(protocol_subscriber);
 
-        // Start announcement timer.
-        let mut announce_timer = tokio::time::interval(std::time::Duration::from_secs(1));
+        let announce = {
+            let (handle, reg) = future::AbortHandle::new_pair();
+            let fut = async move {
+                let mut protocol_events = state.api.protocol().subscribe().await;
+                let mut timer = tokio::time::interval(Duration::from_secs(1));
 
-        // Advance the librad protocol.
-        tokio::spawn(self.run_loop);
+                loop {
+                    let res = tokio::select! {
+                        _ = timer.tick() => {
+                            Self::announce(state.clone(), &store).await.map(Event::Announced)
+                        },
+                        Some(event) = protocol_events.next() => {
+                            Ok(Event::Protocol(event))
+                        },
+                        else => break,
+                    };
 
-        loop {
-            let res = tokio::select! {
-                _ = announce_timer.tick() => {
-                    Self::announce(self.state.clone(), &self.store).await.map(Event::Announced)
-                },
-                Some(event) = protocol_subscriber.next() => {
-                    Ok(Event::Protocol(event))
-                },
-                else => break,
+                    match res {
+                        // Propagate if one of the select failed.
+                        Err(err) => return Err(err),
+                        Ok(event) => {
+                            log::info!("{:?}", event);
+
+                            // Send will error if there are no active receivers.
+                            // This case is expected and should not crash the
+                            // run loop.
+                            subscriber.send(event).ok();
+                        },
+                    }
+                }
+
+                Ok(())
             };
+            let join = tokio::spawn(future::Abortable::new(fut, reg));
 
-            match res {
-                // Propagate if one of the select failed.
-                Err(err) => return Err(err),
-                Ok(event) => {
-                    log::info!("{:?}", event);
+            (join, handle)
+        };
 
-                    // Send will error if there are no active receivers. This case is expected and
-                    // should not crash the run loop.
-                    self.subscriber.send(event).ok();
-                },
-            }
-        }
-
-        Ok(())
+        Running { protocol, announce }
     }
 
     /// Announcement subroutine.
@@ -141,5 +180,66 @@ impl Peer {
         }
 
         Ok(updates)
+    }
+}
+
+/// Future returned by [`Peer::into_running`].
+#[must_use = "to the sig hup, don't stup, don't drop"]
+pub struct Running {
+    protocol: (JoinHandle<Result<(), future::Aborted>>, future::AbortHandle),
+    announce: (
+        JoinHandle<Result<Result<(), Error>, future::Aborted>>,
+        future::AbortHandle,
+    ),
+}
+
+impl Running {
+    /// Abort the tasks of this future.
+    ///
+    /// The next call to [`Future::poll`] will return an [`Error::Aborted`].
+    pub fn abort(&mut self) {
+        self.protocol.1.abort();
+        self.announce.1.abort();
+    }
+}
+
+impl From<Peer> for Running {
+    fn from(peer: Peer) -> Self {
+        peer.into_running()
+    }
+}
+
+impl Drop for Running {
+    fn drop(&mut self) {
+        self.abort()
+    }
+}
+
+impl Future for Running {
+    type Output = Result<(), Error>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+        let err = match self.protocol.0.poll_unpin(cx) {
+            Poll::Ready(val) => match val {
+                Err(e) => Some(Error::JoinError(e)),
+                Ok(Err(e)) => Some(Error::Aborted(e)),
+                Ok(Ok(())) => None,
+            },
+            Poll::Pending => None,
+        };
+
+        if let Some(err) = err {
+            return Poll::Ready(Err(err));
+        }
+
+        match self.announce.0.poll_unpin(cx) {
+            Poll::Ready(val) => match val {
+                Err(e) => Poll::Ready(Err(Error::JoinError(e))),
+                Ok(Err(e)) => Poll::Ready(Err(Error::Aborted(e))),
+                Ok(Ok(Err(e))) => Poll::Ready(Err(e)),
+                Ok(Ok(Ok(()))) => Poll::Ready(Ok(())),
+            },
+            Poll::Pending => Poll::Pending,
+        }
     }
 }

@@ -1,13 +1,26 @@
-use std::convert::TryFrom;
+#![feature(bool_to_option)]
 
-use coco::{keystore, seed, signer};
+use std::{convert::TryFrom, time::Duration};
+
+use futures::future;
+use tempfile::TempDir;
+use tokio::signal::unix::{signal, SignalKind};
 
 use api::{config, context, env, http, notification, session};
+use coco::{keystore, seed, signer, Peer};
 
 /// Flags accepted by the proxy binary.
+#[derive(Clone, Copy)]
 struct Args {
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
+}
+
+struct Rigging {
+    _tmp: Option<TempDir>,
+    ctx: context::Context,
+    peer: Peer,
+    subscriptions: notification::Subscriptions,
 }
 
 #[tokio::main]
@@ -25,34 +38,95 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
-    let temp_dir = tempfile::tempdir()?;
-    log::debug!(
-        "Temporary path being used for this run is: {:?}",
-        temp_dir.path()
-    );
+    let mut sighup = signal(SignalKind::hangup())?;
+    loop {
+        let (handle, reg) = future::AbortHandle::new_pair();
+        let rigging = rig(args).await?;
+        let runner = future::Abortable::new(run(rigging, handle.clone(), args.test), reg);
 
-    let paths_config = if args.test {
-        std::env::set_var("RAD_HOME", temp_dir.path());
-        coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())
-    } else {
-        coco::config::Paths::default()
-    };
-    let paths = coco::Paths::try_from(paths_config)?;
+        tokio::select! {
+            r = runner => match r {
+                Ok(Err(coco::peer::Error::Aborted(_))) | Err(future::Aborted) | Ok(Ok(())) => {
+                    unreachable!()
+                },
 
-    let store = {
-        let store_path = if args.test {
-            temp_dir.path().join("store")
-        } else {
-            let dirs = config::dirs();
-            dirs.data_dir().join("store")
-        };
+                Ok(Err(e)) => return Err(e.into()),
+            },
 
-        kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?
-    };
+            Some(()) = sighup.recv() => {
+                log::info!("SIGHUP received, reloading...");
+                handle.abort();
+            }
+        }
+
+        // Give sled some time to clean up if we're in persistent mode
+        if !args.test {
+            tokio::time::delay_for(Duration::from_millis(200)).await
+        }
+    }
+}
+
+async fn run(
+    rigging: Rigging,
+    selfdestruct: future::AbortHandle,
+    enable_fixture_creation: bool,
+) -> Result<(), coco::peer::Error> {
+    let Rigging {
+        _tmp,
+        ctx,
+        peer,
+        subscriptions,
+    } = rigging;
+
+    log::info!("Starting...");
+    let api = http::api(ctx, subscriptions, selfdestruct, enable_fixture_creation);
+    tokio::try_join!(
+        async move {
+            log::info!("... API");
+            warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
+            Ok(())
+        },
+        async move {
+            log::info!("... peer");
+            peer.into_running().await
+        }
+    )
+    .map(|((), ())| ())
+}
+
+async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
+    log::debug!("rigging up");
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
-    let mut keystore = keystore::Keystorage::file(&paths, pw);
-    let key = keystore.init()?;
+
+    let (temp, paths, store, key) = if args.test {
+        let temp_dir = tempfile::tempdir()?;
+        log::debug!(
+            "Temporary path being used for this run is: {:?}",
+            temp_dir.path()
+        );
+
+        std::env::set_var("RAD_HOME", temp_dir.path());
+        let paths =
+            coco::Paths::try_from(coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()))?;
+        let store = {
+            let path = temp_dir.path().join("store");
+            kv::Store::new(kv::Config::new(path).flush_every_ms(100))
+        }?;
+        let key = keystore::Keystorage::memory(pw)?.get()?;
+
+        Ok::<_, Box<dyn std::error::Error>>((Some(temp_dir), paths, store, key))
+    } else {
+        let paths = coco::Paths::try_from(coco::config::Paths::default())?;
+        let store = {
+            let path = config::dirs().data_dir().join("store");
+            kv::Store::new(kv::Config::new(path).flush_every_ms(100))
+        }?;
+        let key = keystore::Keystorage::file(&paths, pw).init()?;
+
+        Ok((None, paths, store, key))
+    }?;
+
     let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
     let (peer, state) = {
@@ -80,15 +154,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         store,
     };
 
-    log::info!("starting coco peer");
-    tokio::spawn(async move {
-        peer.run().await.expect("peer run loop crashed");
-    });
-
-    log::info!("Starting API");
-    let api = http::api(ctx, subscriptions, args.test);
-
-    warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
-
-    Ok(())
+    Ok(Rigging {
+        _tmp: temp,
+        ctx,
+        peer,
+        subscriptions,
+    })
 }

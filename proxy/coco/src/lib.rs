@@ -45,7 +45,7 @@ mod identifier;
 pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
-mod peer;
+pub mod peer;
 pub use peer::{Event as PeerEvent, Peer};
 mod state;
 pub use state::State;

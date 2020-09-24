@@ -1,27 +1,54 @@
 //! Endpoints to manipulate app state in test mode.
 
+use futures::future;
 use serde::{Deserialize, Serialize};
-use warp::{filters::BoxedFilter, path, Filter, Reply};
+use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use crate::context;
 
 /// Combination of all control filters.
-pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    create_project_filter(ctx)
+pub fn filters(
+    ctx: context::Context,
+    selfdestruct_button: future::AbortHandle,
+    enable_fixture_creation: bool,
+) -> BoxedFilter<(impl Reply,)> {
+    create_project_filter(ctx, enable_fixture_creation)
+        .or(reload_filter(selfdestruct_button))
+        .boxed()
 }
 
 /// POST /create-project
-fn create_project_filter(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
+fn create_project_filter(
+    ctx: context::Context,
+    enabled: bool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
+        .map(move || enabled)
+        .and_then(|enable| async move {
+            if enable {
+                Ok(())
+            } else {
+                Err(reject::not_found())
+            }
+        })
+        .untuple_one()
         .and(super::with_context(ctx.clone()))
         .and(super::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create_project)
-        .boxed()
+}
+
+fn reload_filter(
+    selfdestruct: future::AbortHandle,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path!("reload")
+        .map(move || selfdestruct.clone())
+        .and_then(handler::reload)
 }
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
+    use futures::future;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use coco::user;
@@ -64,6 +91,11 @@ mod handler {
             StatusCode::CREATED,
         ))
     }
+
+    pub async fn reload(handle: future::AbortHandle) -> Result<impl Reply, Rejection> {
+        handle.abort();
+        Ok(reply::json(&true))
+    }
 }
 
 /// Inputs for project creation.
@@ -78,58 +110,4 @@ pub struct CreateInput {
     default_branch: String,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
-}
-
-#[allow(clippy::unwrap_used)]
-#[cfg(test)]
-mod test {
-    use pretty_assertions::assert_eq;
-    use warp::{http::StatusCode, test::request};
-
-    use crate::{context, error, http};
-
-    // TODO(xla): This can't hold true anymore, given that we nuke the owner. Which is required in
-    // order to register a project. Should we rework the test? How do we make sure an owner is
-    // present?
-    #[ignore]
-    #[tokio::test]
-    async fn create_project_after_nuke() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx);
-
-        // Create project before nuke.
-        let res = request()
-            .method("POST")
-            .path("/create-project")
-            .json(&super::CreateInput {
-                name: "Monadic".into(),
-                description: "blabla".into(),
-                default_branch: "master".into(),
-                fake_peers: None,
-            })
-            .reply(&api)
-            .await;
-        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
-
-        // Reset state.
-        let res = request().method("GET").path("/nuke/coco").reply(&api).await;
-        assert_eq!(res.status(), StatusCode::OK);
-
-        let res = request()
-            .method("POST")
-            .path("/create-project")
-            .json(&super::CreateInput {
-                name: "Monadic".into(),
-                description: "blabla".into(),
-                default_branch: "master".into(),
-                fake_peers: None,
-            })
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
-
-        Ok(())
-    }
 }

@@ -22,7 +22,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
     let alice_events = alice_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.run());
+    tokio::task::spawn(alice_peer.into_running());
 
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
 
@@ -70,8 +70,8 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
 
     wait_connected(bob_connected, &alice_peer_id).await?;
 
@@ -108,7 +108,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     let tmp_dir = tempfile::tempdir()?;
     let (peer, state, _signer) = build_peer(&tmp_dir).await?;
 
-    tokio::task::spawn(peer.run());
+    tokio::task::spawn(peer.into_running());
 
     let unkown_urn = Urn {
         id: Hash::hash(b"project0"),
@@ -149,8 +149,8 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_events = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
 
     wait_connected(bob_events, &alice_peer_id).await?;
 

@@ -18,8 +18,8 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
     let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
 
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
     let project = alice_state
@@ -61,8 +61,8 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state, _bob_signer) = build_peer(&bob_tmp_dir).await?;
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
 
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
     let cloned_urn = {
@@ -101,8 +101,8 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
     let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
 
-    tokio::task::spawn(alice_peer.run());
-    tokio::task::spawn(bob_peer.run());
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
 
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
     let project = alice_state

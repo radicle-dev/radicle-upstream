@@ -1,7 +1,8 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
+use futures::future;
 use serde::Deserialize;
-use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, notification::Subscriptions};
 
@@ -35,20 +36,15 @@ macro_rules! combine {
 pub fn api(
     ctx: context::Context,
     subscriptions: Subscriptions,
-    enable_control: bool,
+    reload: future::AbortHandle,
+    enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let avatar_filter = path("avatars").and(avatar::get_filter());
-    let control_filter = path("control")
-        .map(move || enable_control)
-        .and_then(|enable| async move {
-            if enable {
-                Ok(())
-            } else {
-                Err(reject::not_found())
-            }
-        })
-        .untuple_one()
-        .and(control::filters(ctx.clone()));
+    let control_filter = path("control").and(control::filters(
+        ctx.clone(),
+        reload,
+        enable_fixture_creation,
+    ));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter = path("notifications").and(notification::filters(subscriptions));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
