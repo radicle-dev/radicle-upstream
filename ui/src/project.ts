@@ -1,4 +1,4 @@
-import { get, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
 
 import * as api from "./api";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
@@ -76,12 +76,21 @@ export const project = projectStore.readable;
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
 
+const localStateStore = remote.createStore<LocalState>();
+export const localStateRemote = localStateStore.readable;
+
 // EVENTS
 enum Kind {
+  ClearLocalState = "CLEAR_LOCAL_STATE",
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
   FetchUser = "FETCH_USER",
+  FetchLocalState = "FETCH_LOCAL_STATE",
+}
+
+interface ClearLocalState extends event.Event<Kind> {
+  kind: Kind.ClearLocalState;
 }
 
 interface Create extends event.Event<Kind> {
@@ -104,8 +113,20 @@ interface FetchUser extends event.Event<Kind> {
   urn: string;
 }
 
-type Msg = Create | Fetch | FetchList | FetchUser;
+interface FetchLocalState extends event.Event<Kind> {
+  kind: Kind.FetchLocalState;
+  path: string;
+}
 
+type Msg =
+  | ClearLocalState
+  | Create
+  | Fetch
+  | FetchList
+  | FetchLocalState
+  | FetchUser;
+
+// / REQUEST INPUTS
 interface CreateInput {
   repo: Repo;
   description?: string;
@@ -119,6 +140,10 @@ interface RegisterInput {
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
+    case Kind.ClearLocalState:
+      localStateStore.reset();
+      localStateError.set("");
+      break;
     case Kind.Create:
       creationStore.loading();
       api
@@ -144,6 +169,13 @@ const update = (msg: Msg): void => {
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
+      break;
+
+    case Kind.FetchLocalState:
+      localStateStore.loading();
+      getLocalState(msg.path)
+        .then(localStateStore.success)
+        .catch(localStateStore.error);
       break;
 
     case Kind.FetchUser:
@@ -215,13 +247,22 @@ export const register = (
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
+export const fetchLocalState = event.create<Kind, Msg>(
+  Kind.FetchLocalState,
+  update
+);
+export const clearLocalState = event.create<Kind, Msg>(
+  Kind.ClearLocalState,
+  update
+);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);
 
 // NEW PROJECT
 
-export const localState = writable<LocalState | undefined>(undefined);
+const localState = writable<LocalState | undefined>(undefined);
+
 export const localStateError = writable<string>("");
 export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
@@ -232,9 +273,8 @@ export const extractName = (repoPath: string) =>
   repoPath.split("/").slice(-1)[0];
 
 const fetchBranches = async (path: string) => {
-  // Revert to defaults whenever the path changes in case this query fails
-  // or the user clicks cancel in the directory selection dialog.
-  localState.set(undefined);
+  fetchLocalState({ path });
+
   localStateError.set("");
   defaultBranch.set(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 

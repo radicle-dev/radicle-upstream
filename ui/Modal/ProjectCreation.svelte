@@ -6,16 +6,19 @@
   import { Variant as IllustrationVariant } from "../src/illustration";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
+  import * as remote from "../src/remote";
   import * as urn from "../src/urn";
   import {
+    clearLocalState,
     create,
     defaultBranch,
-    localState,
+    localStateRemote as localState,
     nameValidationStore,
     formatNameInput,
     extractName,
     repositoryPathValidationStore,
     RepoType,
+    localStateRemote,
   } from "../src/project";
   import { ValidationStatus } from "../src/validation";
   import * as screen from "../src/screen";
@@ -25,7 +28,6 @@
     fetch as fetchSession,
     settings,
   } from "../src/session";
-  import type { LocalState } from "../src/source";
 
   import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
@@ -100,6 +102,7 @@
   // to make sure the screen gets unlocked in any case when the component gets
   // destroyed.
   onDestroy(() => {
+    clearLocalState();
     screen.unlock();
   });
 
@@ -131,7 +134,10 @@
     $pathValidation.status !== ValidationStatus.Success ||
     loading;
 
-  $: localBranches = $localState && ($localState as LocalState).branches;
+  $: ls = $localState;
+  $: localBranches =
+    ls.status === remote.Status.Success ? ls.data.branches : [];
+
   $: showRemoteHelper =
     $settings && ($settings as Settings).appearance.hints.showRemoteHelper;
 </script>
@@ -217,7 +223,7 @@
               style="margin-right: 1rem; color: var(--color-foreground-level-6)">
               Default branch
             </p>
-            {#if localBranches && localBranches.length > 0}
+            {#if localBranches.length > 0}
               <Dropdown
                 style="max-width: 22.9rem;"
                 options={localBranches.map(branch => ({
