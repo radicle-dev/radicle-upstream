@@ -66,15 +66,19 @@ pub struct Requested {
     pub(super) peers: HashMap<PeerId, Status>,
 }
 
-/// `Status` represents the lifecycle of a clone attempt, when paired with a `PeerId`.
+/// `Status` represents the lifecycle of some action on data. The data could be available to take
+/// the action on, the action could be in progress, or it could have failed.
+///
+/// Note that the related data isn't in the `Status` variants. The status is free to be associated
+/// with any external data, e.g. using it as a value in a `HashMap`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Status {
-    /// The `PeerId` is available for cloning, and an attempt has not been made yet.
+    /// The status of the related data is: ready to go!
     Available,
-    /// An attempt to clone from the `PeerId` is currently being made.
+    /// The status of the related data is: in progress!
     InProgress,
-    /// The attempt to clone from the `PeerId` has failed.
+    /// The status of the related data is: failed :(
     Failed,
 }
 
