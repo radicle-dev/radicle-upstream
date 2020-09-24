@@ -55,7 +55,6 @@ impl fmt::Display for RequestState {
 /// The initial state for a `Request`. It has simply been created.
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-/// The initial state for a `Request`. It has simply been created.
 pub struct Created {}
 
 /// The state signifying that the `Request` has been kicked-off.

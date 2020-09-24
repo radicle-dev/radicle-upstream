@@ -133,7 +133,7 @@ impl<S, T> Request<S, T> {
     /// A `Request` transitions into a timed out state if it exceeds the maximum number of queries
     /// or maximum number of clones. Otherwise, the `Request` proceeds as normal.
     ///
-    /// The subset of states that can transition to the `TimedOut` out state consist of
+    /// The subset of states that can transition to the `TimedOut` state consist of
     /// `{Requested, Found, Cloning}`.
     pub fn timed_out(
         mut self,
