@@ -46,20 +46,24 @@ export function makeWallet(): Wallet {
 
   // Connect to a wallet using walletconnect
   async function connect() {
-    // TODO handle error
-    const accountAddresses: string[] = (await provider.enable()) as any;
-    // TODO handle missing account addresses
-    console.log("Connect accountAddresses", accountAddresses);
-    const accountAddress = accountAddresses[0];
-    const balance = await web3.eth.getBalance(accountAddress || "");
-    const connected = {
-      chainId: provider.chainId,
-      account: {
-        address: accountAddress,
-        balance: balance,
-      },
-    };
-    stateStore.set({ status: Status.Connected, connected });
+    try {
+      const accountAddresses: string[] = (await provider.enable()) as string[];
+      if (accountAddresses.length === 0) return;
+      const accountAddress = accountAddresses[0];
+      const balance = accountAddress
+        ? await web3.eth.getBalance(accountAddress)
+        : "";
+      const connected = {
+        chainId: provider.chainId,
+        account: {
+          address: accountAddress,
+          balance: balance,
+        },
+      };
+      stateStore.set({ status: Status.Connected, connected });
+    } catch (e) {
+      console.log("Failed to connect: ", e);
+    }
   }
 
   // Connect automatically if the underlying connection is still open.
