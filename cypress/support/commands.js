@@ -1,6 +1,7 @@
 Cypress.Commands.add("nukeCocoState", async () => {
   console.log("Nuking CoCo state");
   await fetch("http://localhost:8080/v1/control/reload");
+  await new Promise(resolve => setTimeout(resolve, 200));
 });
 
 Cypress.Commands.add("nukeSessionState", async () => {
@@ -13,6 +14,7 @@ Cypress.Commands.add("nukeAllState", async () => {
   try {
     await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
     await fetch("http://localhost:8080/v1/control/reload");
+    await new Promise(resolve => setTimeout(resolve, 200));
   } catch (error) {
     console.error(error);
   }
