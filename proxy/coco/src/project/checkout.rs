@@ -5,7 +5,7 @@ use std::{
 
 pub use librad::meta::project::Project;
 use librad::{
-    git::{local::url::LocalUrl, types::remote::Remote},
+    git::{include, local::url::LocalUrl, types::remote::Remote},
     peer::PeerId,
 };
 use radicle_surf::vcs::git::git2;
@@ -16,6 +16,10 @@ pub enum Error {
     /// Git error when checking out the project.
     #[error(transparent)]
     Git(#[from] git2::Error),
+
+    /// An error occured building include files.
+    #[error(transparent)]
+    Include(#[from] include::Error),
 }
 
 /// The data necessary for checking out a project.
@@ -27,6 +31,8 @@ where
     project: Project<ST>,
     /// The path on the filesystem where we're going to checkout to.
     path: P,
+    /// Absolute path of the include file that will be set in the working copy config.
+    include_path: PathBuf,
 }
 
 impl<P, ST> Checkout<P, ST>
@@ -35,8 +41,12 @@ where
     ST: Clone,
 {
     /// Create a new `Checkout` with the mock `Credential::Password` helper.
-    pub fn new(project: Project<ST>, path: P) -> Self {
-        Self { project, path }
+    pub fn new(project: Project<ST>, path: P, include_path: PathBuf) -> Self {
+        Self {
+            project,
+            path,
+            include_path,
+        }
     }
 
     /// Checkout a working copy of a [`Project`].
@@ -79,6 +89,8 @@ where
         )?;
 
         super::set_rad_upstream(&repo, self.project.default_branch())?;
+
+        include::set_include_path(&repo, self.include_path)?;
 
         Ok(project_path)
     }
