@@ -130,7 +130,7 @@ impl Peer {
             let (handle, reg) = future::AbortHandle::new_pair();
             let fut = async move {
                 let mut protocol_events = state.api.protocol().subscribe().await;
-                let mut timer = tokio::time::interval(Duration::from_secs(10));
+                let mut timer = tokio::time::interval(Duration::from_secs(1));
 
                 loop {
                     let result = tokio::select! {

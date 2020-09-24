@@ -13,7 +13,7 @@ use common::{
     wait_connected,
 };
 
-#[tokio::test]
+#[tokio::test(core_threads = 2)]
 async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
