@@ -113,7 +113,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
             let path = temp_dir.path().join("store");
             kv::Store::new(kv::Config::new(path).flush_every_ms(100))
         }?;
-        let key = keystore::Keystorage::memory(pw)?.get()?;
+        let key = keystore::Keystorage::memory(pw)?.get();
 
         Ok::<_, Box<dyn std::error::Error>>((Some(temp_dir), paths, store, key))
     } else {

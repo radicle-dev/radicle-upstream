@@ -27,9 +27,7 @@ impl Context {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
-        let keystore = keystore::Keystorage::memory(pw)?;
-        let key = keystore.get()?;
-
+        let key = keystore::Keystorage::memory(pw)?.get();
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
         let (_peer, state) = {

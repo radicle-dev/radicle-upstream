@@ -45,7 +45,7 @@ pub enum Error {
 
     /// There was an error in a spawned task.
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
-    JoinError(#[source] JoinError),
+    Join(#[source] JoinError),
 }
 
 /// Significant events that occur during [`Peer`] lifetime.
@@ -119,8 +119,8 @@ impl Peer {
         } = self;
 
         let protocol = {
-            let (handle, reg) = future::AbortHandle::new_pair();
-            let fut = future::Abortable::new(run_loop, reg);
+            let (handle, registration) = future::AbortHandle::new_pair();
+            let fut = future::Abortable::new(run_loop, registration);
             let join = tokio::spawn(fut);
 
             (join, handle)
@@ -133,7 +133,7 @@ impl Peer {
                 let mut timer = tokio::time::interval(Duration::from_secs(1));
 
                 loop {
-                    let res = tokio::select! {
+                    let result = tokio::select! {
                         _ = timer.tick() => {
                             Self::announce(state.clone(), &store).await.map(Event::Announced)
                         },
@@ -143,7 +143,7 @@ impl Peer {
                         else => break,
                     };
 
-                    match res {
+                    match result {
                         // Propagate if one of the select failed.
                         Err(err) => return Err(err),
                         Ok(event) => {
@@ -183,14 +183,19 @@ impl Peer {
     }
 }
 
+/// [`JoinHandle`] for the protocol run loop task.
+type JoinProtocol = JoinHandle<Result<(), future::Aborted>>;
+
+/// [`JoinHandle`] for the announcements task.
+type JoinAnnounce = JoinHandle<Result<Result<(), Error>, future::Aborted>>;
+
 /// Future returned by [`Peer::into_running`].
 #[must_use = "to the sig hup, don't stup, don't drop"]
 pub struct Running {
-    protocol: (JoinHandle<Result<(), future::Aborted>>, future::AbortHandle),
-    announce: (
-        JoinHandle<Result<Result<(), Error>, future::Aborted>>,
-        future::AbortHandle,
-    ),
+    /// Join and abort handles for the protocol run loop.
+    protocol: (JoinProtocol, future::AbortHandle),
+    /// Join and abort handles for the announcements task.
+    announce: (JoinAnnounce, future::AbortHandle),
 }
 
 impl Running {
@@ -221,7 +226,7 @@ impl Future for Running {
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         let err = match self.protocol.0.poll_unpin(cx) {
             Poll::Ready(val) => match val {
-                Err(e) => Some(Error::JoinError(e)),
+                Err(e) => Some(Error::Join(e)),
                 Ok(Err(e)) => Some(Error::Aborted(e)),
                 Ok(Ok(())) => None,
             },
@@ -234,7 +239,7 @@ impl Future for Running {
 
         match self.announce.0.poll_unpin(cx) {
             Poll::Ready(val) => match val {
-                Err(e) => Poll::Ready(Err(Error::JoinError(e))),
+                Err(e) => Poll::Ready(Err(Error::Join(e))),
                 Ok(Err(e)) => Poll::Ready(Err(Error::Aborted(e))),
                 Ok(Ok(Err(e))) => Poll::Ready(Err(e)),
                 Ok(Ok(Ok(()))) => Poll::Ready(Ok(())),

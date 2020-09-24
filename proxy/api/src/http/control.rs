@@ -38,6 +38,7 @@ fn create_project_filter(
         .and_then(handler::create_project)
 }
 
+/// GET /reload
 fn reload_filter(
     selfdestruct: future::AbortHandle,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -92,6 +93,7 @@ mod handler {
         ))
     }
 
+    /// Abort the server task, which causes `main` to restart it.
     pub async fn reload(handle: future::AbortHandle) -> Result<impl Reply, Rejection> {
         handle.abort();
         Ok(reply::json(&true))
