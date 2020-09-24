@@ -1,7 +1,7 @@
 //! Endpoints to manipulate app state in test mode.
 
-use futures::future;
 use serde::{Deserialize, Serialize};
+use tokio::sync::mpsc;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use crate::context;
@@ -9,11 +9,11 @@ use crate::context;
 /// Combination of all control filters.
 pub fn filters(
     ctx: context::Context,
-    selfdestruct_button: future::AbortHandle,
+    selfdestruct: mpsc::Sender<()>,
     enable_fixture_creation: bool,
 ) -> BoxedFilter<(impl Reply,)> {
     create_project_filter(ctx, enable_fixture_creation)
-        .or(reload_filter(selfdestruct_button))
+        .or(reload_filter(selfdestruct))
         .boxed()
 }
 
@@ -40,7 +40,7 @@ fn create_project_filter(
 
 /// GET /reload
 fn reload_filter(
-    selfdestruct: future::AbortHandle,
+    selfdestruct: mpsc::Sender<()>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("reload")
         .map(move || selfdestruct.clone())
@@ -49,7 +49,7 @@ fn reload_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use futures::future;
+    use tokio::sync::mpsc;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use coco::user;
@@ -94,9 +94,9 @@ mod handler {
     }
 
     /// Abort the server task, which causes `main` to restart it.
-    pub async fn reload(handle: future::AbortHandle) -> Result<impl Reply, Rejection> {
-        handle.abort();
-        Ok(reply::json(&true))
+    pub async fn reload(mut notify: mpsc::Sender<()>) -> Result<impl Reply, Rejection> {
+        log::warn!("reload requested");
+        Ok(reply::json(&notify.send(()).await.is_ok()))
     }
 }
 

@@ -1,10 +1,11 @@
-#![feature(bool_to_option)]
-
 use std::{convert::TryFrom, time::Duration};
 
-use futures::future;
 use tempfile::TempDir;
-use tokio::signal::unix::{signal, SignalKind};
+use thiserror::Error;
+use tokio::{
+    signal::unix::{signal, SignalKind},
+    sync::mpsc,
+};
 
 use api::{config, context, env, http, notification, session};
 use coco::{keystore, seed, signer, Peer};
@@ -17,7 +18,7 @@ struct Args {
 }
 
 struct Rigging {
-    _tmp: Option<TempDir>,
+    temp: Option<TempDir>,
     ctx: context::Context,
     peer: Peer,
     subscriptions: notification::Subscriptions,
@@ -40,21 +41,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut sighup = signal(SignalKind::hangup())?;
     loop {
-        let (handle, reg) = future::AbortHandle::new_pair();
         let rigging = rig(args).await?;
-        let runner = future::Abortable::new(run(rigging, handle.clone(), args.test), reg);
+        let (mut tx, rx) = mpsc::channel(1);
+        let runner = run(rigging, (tx.clone(), rx), args.test);
 
         tokio::select! {
             r = runner => match r {
                 // We've been shut down, ignore
-                Ok(Err(coco::peer::Error::Aborted(_))) | Err(future::Aborted) | Ok(Ok(())) => {},
+                Err(RunError::Peer(coco::peer::Error::Aborted(_))) | Ok(()) => {
+                    log::debug!("aborted")
+                },
                 // Actual error, abort the process
-                Ok(Err(e)) => return Err(e.into()),
+                Err(e) => return Err(e.into()),
             },
 
             Some(()) = sighup.recv() => {
                 log::info!("SIGHUP received, reloading...");
-                handle.abort();
+                tx.send(()).await.ok();
             }
         }
 
@@ -65,32 +68,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
+#[derive(Debug, Error)]
+enum RunError {
+    #[error(transparent)]
+    Peer(#[from] coco::peer::Error),
+
+    #[error(transparent)]
+    Warp(#[from] warp::Error),
+}
+
 async fn run(
     rigging: Rigging,
-    selfdestruct: future::AbortHandle,
+    (killswitch, mut poisonpill): (mpsc::Sender<()>, mpsc::Receiver<()>),
     enable_fixture_creation: bool,
-) -> Result<(), coco::peer::Error> {
+) -> Result<(), RunError> {
     let Rigging {
-        _tmp,
+        temp: _dont_drop_me,
         ctx,
         peer,
         subscriptions,
     } = rigging;
 
+    let server = async move {
+        log::info!("... API");
+        let api = http::api(ctx, subscriptions, killswitch, enable_fixture_creation);
+        let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
+            ([127, 0, 0, 1], 8080),
+            async move {
+                poisonpill.recv().await;
+            },
+        )?;
+
+        server.await;
+        Ok(())
+    };
+    let peer = async move {
+        log::info!("... peer");
+        peer.into_running().await
+    };
+
     log::info!("Starting...");
-    let api = http::api(ctx, subscriptions, selfdestruct, enable_fixture_creation);
-    tokio::try_join!(
-        async move {
-            log::info!("... API");
-            warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
-            Ok(())
-        },
-        async move {
-            log::info!("... peer");
-            peer.into_running().await
-        }
-    )
-    .map(|((), ())| ())
+    tokio::select! {
+        server_status = server => server_status,
+        peer_status = peer => Ok(peer_status?),
+    }
 }
 
 async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
@@ -139,13 +160,6 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         coco::into_peer_state(config, signer.clone(), store.clone()).await?
     };
 
-    if args.test {
-        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
-        // evaluate how meaningful these fixtures are.
-        let owner = state.init_owner(&signer, "cloudhead").await?;
-        coco::control::setup_fixtures(&state, &signer, &owner).await?;
-    }
-
     let subscriptions = notification::Subscriptions::default();
     let ctx = context::Context {
         state,
@@ -154,7 +168,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
     };
 
     Ok(Rigging {
-        _tmp: temp,
+        temp,
         ctx,
         peer,
         subscriptions,

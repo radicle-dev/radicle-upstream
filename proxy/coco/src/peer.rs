@@ -130,12 +130,12 @@ impl Peer {
             let (handle, reg) = future::AbortHandle::new_pair();
             let fut = async move {
                 let mut protocol_events = state.api.protocol().subscribe().await;
-                let mut timer = tokio::time::interval(Duration::from_secs(1));
+                let mut timer = tokio::time::interval(Duration::from_secs(10));
 
                 loop {
                     let result = tokio::select! {
                         _ = timer.tick() => {
-                            Self::announce(state.clone(), &store).await.map(Event::Announced)
+                            Self::announce(&state, &store).await.map(Event::Announced)
                         },
                         Some(event) = protocol_events.next() => {
                             Ok(Event::Protocol(event))
@@ -168,9 +168,9 @@ impl Peer {
     }
 
     /// Announcement subroutine.
-    async fn announce(state: State, store: &kv::Store) -> Result<announcement::Updates, Error> {
+    async fn announce(state: &State, store: &kv::Store) -> Result<announcement::Updates, Error> {
         let old = announcement::load(store)?;
-        let new = announcement::build(state.clone()).await?;
+        let new = announcement::build(state).await?;
         let updates = announcement::diff(&old, &new);
 
         announcement::announce(state, updates.iter()).await;
@@ -216,6 +216,7 @@ impl From<Peer> for Running {
 
 impl Drop for Running {
     fn drop(&mut self) {
+        log::debug!("dropping `Peer`");
         self.abort()
     }
 }

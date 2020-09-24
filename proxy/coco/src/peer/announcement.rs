@@ -44,7 +44,7 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(state: State, updates: impl Iterator<Item = &Announcement> + Send) {
+pub async fn announce(state: &State, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
         let protocol = state.api.protocol();
 
@@ -63,7 +63,7 @@ pub async fn announce(state: State, updates: impl Iterator<Item = &Announcement>
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build(state: State) -> Result<Updates, Error> {
+pub async fn build(state: &State) -> Result<Updates, Error> {
     let mut list: Updates = HashSet::new();
 
     match state.list_projects().await {
@@ -149,8 +149,8 @@ mod test {
         let _owner = state.init_owner(&signer, "cloudhead").await?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
-        let updates = super::build(state.clone()).await?;
-        super::announce(state, updates.iter()).await;
+        let updates = super::build(&state).await?;
+        super::announce(&state, updates.iter()).await;
 
         Ok(())
     }

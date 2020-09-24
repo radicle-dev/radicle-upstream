@@ -1,7 +1,7 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use futures::future;
 use serde::Deserialize;
+use tokio::sync::mpsc;
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, notification::Subscriptions};
@@ -36,13 +36,13 @@ macro_rules! combine {
 pub fn api(
     ctx: context::Context,
     subscriptions: Subscriptions,
-    reload: future::AbortHandle,
+    selfdestruct: mpsc::Sender<()>,
     enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let avatar_filter = path("avatars").and(avatar::get_filter());
     let control_filter = path("control").and(control::filters(
         ctx.clone(),
-        reload,
+        selfdestruct,
         enable_fixture_creation,
     ));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
