@@ -1,4 +1,4 @@
-import { derived, get, writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 
 import * as api from "./api";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
@@ -77,7 +77,7 @@ const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
 
 const localStateStore = remote.createStore<LocalState>();
-export const localStateRemote = localStateStore.readable;
+export const localState = localStateStore.readable;
 
 // EVENTS
 enum Kind {
@@ -261,8 +261,6 @@ projectsStore.start(fetchList);
 
 // NEW PROJECT
 
-const localState = writable<LocalState | undefined>(undefined);
-
 export const localStateError = writable<string>("");
 export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
@@ -286,7 +284,6 @@ const fetchBranches = async (path: string) => {
 
   try {
     const state = await getLocalState(path);
-    localState.set(state);
     if (!state.branches.includes(get(defaultBranch))) {
       defaultBranch.set(state.branches[0]);
     }

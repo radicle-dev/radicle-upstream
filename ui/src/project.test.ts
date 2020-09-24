@@ -32,20 +32,19 @@ describe("creating a project", () => {
       ).toEqual("my-project");
     });
 
-    it("sets the local state", () => {
-      project.localState.set({
-        branches: ["main", "cool-feature"],
-        managed: false,
-      });
-
+    it("fetches local state and sets store accordingly", () => {
       const validation = project.repositoryPathValidationStore(false);
       validation.validate("/repository/path");
 
-      // clears previous state upon validation
-      expect(get(project.localState)).toEqual(undefined);
+      expect(get(project.localState)).toEqual({
+        status: remote.Status.Loading,
+      });
 
       process.nextTick(() => {
-        expect(get(project.localState)).toEqual(localStateMock);
+        expect(get(project.localState)).toEqual({
+          status: remote.Status.Success,
+          data: localStateMock,
+        });
       });
     });
 

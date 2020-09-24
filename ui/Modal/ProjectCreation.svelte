@@ -12,14 +12,14 @@
     clearLocalState,
     create,
     defaultBranch,
-    localStateRemote as localState,
+    localState,
     nameValidationStore,
     formatNameInput,
     extractName,
     repositoryPathValidationStore,
     RepoType,
-    localStateRemote,
   } from "../src/project";
+  import * as testing from "../src/project";
   import { ValidationStatus } from "../src/validation";
   import * as screen from "../src/screen";
   import type { Settings } from "../src/settings";
@@ -28,6 +28,7 @@
     fetch as fetchSession,
     settings,
   } from "../src/session";
+  import type { LocalState } from "../src/source";
 
   import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
@@ -134,9 +135,11 @@
     $pathValidation.status !== ValidationStatus.Success ||
     loading;
 
-  $: ls = $localState;
+  $: localStateStore = $localState;
   $: localBranches =
-    ls.status === remote.Status.Success ? ls.data.branches : [];
+    localStateStore.status === remote.Status.Success
+      ? localStateStore.data.branches
+      : [];
 
   $: showRemoteHelper =
     $settings && ($settings as Settings).appearance.hints.showRemoteHelper;
