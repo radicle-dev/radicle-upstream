@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { makeWallet, Status } from "../../src/wallet";
+  import { build, Status } from "../../src/wallet";
 
   import { Button } from "../../DesignSystem/Primitive";
 
-  const wallet = makeWallet();
+  const wallet = build();
 </script>
 
 <div>
