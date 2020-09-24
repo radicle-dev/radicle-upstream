@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     Cancelled, Cloned, Clones, Cloning, Created, Either, Found, Queries, RadUrn, Request,
-    RequestKind, Requested, TimedOut,
+    RequestState, Requested, TimedOut,
 };
 
 /// Since a `Request` is parameterised over its state, it makes it difficult to talk about a
@@ -49,8 +49,8 @@ pub enum SomeRequest<T> {
     TimedOut(Request<TimedOut, T>),
 }
 
-impl<T> From<&SomeRequest<T>> for RequestKind {
-    fn from(other: &SomeRequest<T>) -> RequestKind {
+impl<T> From<&SomeRequest<T>> for RequestState {
+    fn from(other: &SomeRequest<T>) -> RequestState {
         match other {
             SomeRequest::Created(_) => Self::Created,
             SomeRequest::Requested(_) => Self::Requested,

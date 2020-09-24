@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use librad::{peer::PeerId, uri::RadUrn};
 
 use crate::request::{
-    sequence_result, Clones, Queries, Request, RequestKind, SomeRequest, TimedOut,
+    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, TimedOut,
 };
 
 /// The maximum number of query attempts that can be made for a single request.
@@ -34,7 +34,7 @@ pub enum Error {
     /// For example, if we tried to call `cloning` on a request that has only been created then
     /// this would be an invalid transition.
     #[error("the state fetched '{0}' from the waiting room was not one of the expected states")]
-    StateMismatch(RequestKind),
+    StateMismatch(RequestState),
 
     /// The [`Request`] timed out when performing an operation on it by exceeding the number of
     /// attempts it was allowed to make.
@@ -348,12 +348,12 @@ impl<T> WaitingRoom<T> {
     }
 
     /// Filter the `WaitingRoom` by:
-    ///   * Choosing which [`RequestKind`] you are looking for
+    ///   * Choosing which [`RequestState`] you are looking for
     ///   * Checking the elapsed time between the `timestamp` and the `Request`'s timestamp are
     ///   greater than the `delta` provided.
     pub fn filter(
         &self,
-        request_kind: RequestKind,
+        request_state: RequestState,
         timestamp: T,
         delta: T::Output,
     ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)>
@@ -363,7 +363,7 @@ impl<T> WaitingRoom<T> {
     {
         self.iter()
             .filter(move |(_, request)| request.elapsed(timestamp.clone()) >= delta.clone())
-            .filter(move |(_, request)| RequestKind::from(*request) == request_kind.clone())
+            .filter(move |(_, request)| RequestState::from(*request) == request_state.clone())
     }
 
     /// Find the first occurring request based on the call to [`WaitingRoom::filter`].
@@ -371,7 +371,7 @@ impl<T> WaitingRoom<T> {
     #[allow(clippy::filter_next)]
     pub fn find(
         &self,
-        request_kind: RequestKind,
+        request_state: RequestState,
         timestamp: T,
         delta: T::Output,
     ) -> Option<(&RadUrn, &SomeRequest<T>)>
@@ -379,7 +379,7 @@ impl<T> WaitingRoom<T> {
         T: Sub<T> + Clone,
         T::Output: Ord + Clone,
     {
-        self.filter(request_kind, timestamp, delta).next()
+        self.filter(request_state, timestamp, delta).next()
     }
 
     #[cfg(test)]
@@ -412,7 +412,7 @@ mod test {
 
         assert_eq!(request, None);
 
-        let created = waiting_room.find(RequestKind::Created, 0, 0);
+        let created = waiting_room.find(RequestState::Created, 0, 0);
         assert_eq!(
             created,
             Some((&urn, &SomeRequest::Created(Request::new(urn.clone(), 0)))),
@@ -638,7 +638,7 @@ mod test {
         waiting_room.insert(urn.clone(), cloned);
         assert_eq!(
             waiting_room.canceled(&urn, ()),
-            Err(Error::StateMismatch(RequestKind::Cloned))
+            Err(Error::StateMismatch(RequestState::Cloned))
         );
 
         // cancel
@@ -662,7 +662,7 @@ mod test {
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
 
-        let ready = waiting_room.find(RequestKind::Cloned, 0, 0);
+        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
         assert_eq!(ready, None);
 
         let _ = waiting_room.request(urn.clone(), 0);
@@ -671,7 +671,7 @@ mod test {
         waiting_room.cloning(&urn, peer.clone(), 0)?;
         waiting_room.cloned(&urn, urn.clone(), 0)?;
 
-        let ready = waiting_room.find(RequestKind::Cloned, 0, 0);
+        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
         let expected = SomeRequest::Cloned(
             Request::new(urn.clone(), 0)
                 .request(0)

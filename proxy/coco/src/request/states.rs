@@ -23,7 +23,7 @@ impl sealed::Sealed for Cancelled {}
 /// An enumeration of the different states a `Request` can be in. This is useful if we want to
 /// convey the state information without any of the other state data.
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum RequestKind {
+pub enum RequestState {
     /// The initial state where the `Request` has been created.
     Created,
 
@@ -46,7 +46,7 @@ pub enum RequestKind {
     TimedOut,
 }
 
-impl fmt::Display for RequestKind {
+impl fmt::Display for RequestState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
