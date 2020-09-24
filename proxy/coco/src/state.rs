@@ -448,25 +448,29 @@ impl State {
 
     /// Creates a working copy for the project of the given `urn`.
     ///
+    /// The `destination` is the directory where the caller wishes to place the working copy.
+    ///
+    /// The `peer_id` is from which peer we wish to base our checkout from.
+    ///
     /// # Errors
     ///
     /// * if the project can't be found
     /// * if the include file creation fails
     /// * if the clone of the working copy fails
-    pub fn checkout<P>(
+    pub fn checkout(
         &self,
         urn: &RadUrn,
-        peer_id: P,
+        peer_id: PeerId,
         destination: PathBuf,
     ) -> Result<PathBuf, Error>
-    where
-        P: Into<Option<PeerId>> + Clone,
     {
-        let proj = self.get_project(urn, peer_id).map_err(Error::from)?;
+        // TODO(finto): We may want to create a working copy of OUR OWN project
+        let proj = self.get_project(urn, None).map_err(Error::from)?;
         let include_path = self.update_include(urn).map_err(Error::from)?;
         let checkout = project::Checkout::new(proj, destination, include_path);
 
-        checkout.run(self.peer_id()).map_err(Error::from)
+        let ours = self.peer_id();
+        checkout.run(ours).map_err(Error::from)
     }
 
     /// Prepare the include file for the given `project` with the latest tracked peers.
@@ -483,6 +487,7 @@ impl State {
             tracked.into_iter().map(|(peer_id, user)| (user, peer_id)),
         );
         let include_path = include.file_path();
+        log::info!("creating include file @ '{:?}'", include_path);
         include.save()?;
 
         Ok(include_path)

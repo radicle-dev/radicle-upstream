@@ -139,11 +139,12 @@ mod handler {
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.read().await;
+        let me = ctx.state.lock().await.peer_id();
         let path = ctx
             .state
             .lock()
             .await
-            .checkout(&urn, peer_id, path)
+            .checkout(&urn, peer_id.unwrap_or(me), path)
             .map_err(Error::from)?;
 
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))

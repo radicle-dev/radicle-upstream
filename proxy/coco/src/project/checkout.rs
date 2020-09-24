@@ -51,13 +51,8 @@ where
 
     /// Checkout a working copy of a [`Project`].
     ///
-    /// NOTE: `RAD_HOME` should be expected to be set if using a custom root for
-    /// [`librad::paths::Paths`]. If it is not set the underlying binary will delegate to the
-    /// `ProjectDirs` setup of the `Paths`.
-    ///
     /// # Errors
     ///
-    ///   * We couldn't resolve the executable path.
     ///   * The checkout process failed.
     pub fn run(self, peer_id: PeerId) -> Result<PathBuf, Error> {
         // Check if the path provided ends in the 'directory_name' provided. If not we create the

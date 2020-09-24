@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
@@ -320,6 +321,135 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
         alice_events,
         coco::PeerEvent::PeerSync(SyncEvent::Succeeded(peer_id)) if peer_id == bob_peer_id
     )?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Error + 'static>> {
+    init_logging();
+
+    let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
+    let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
+    let alice = {
+        let alice_signer = alice_signer.clone();
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || ally.init_owner(&alice_signer.clone(), "alice"))
+            .await??
+    };
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_repo_path = bob_tmp_dir.path().join("radicle");
+    let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
+    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir).await?;
+    let bob = {
+        let bob_state = bob_state.clone();
+        let bobby = bob_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
+    };
+
+    let eve_tmp_dir = tempfile::tempdir()?;
+    let eve_repo_path = eve_tmp_dir.path().join("radicle");
+    let eve_store = kv::Store::new(kv::Config::new(eve_tmp_dir.path().join("store")))?;
+    let (eve_peer, eve_state, eve_signer) = build_peer(&eve_tmp_dir).await?;
+    let _eve = {
+        let eve_state = eve_state.clone();
+        let ev = eve_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || ev.init_owner(&eve_signer, "eve")).await??
+    };
+
+    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
+    tokio::task::spawn(eve_peer.run(eve_state.clone(), eve_store, RunConfig::default()));
+
+    let project = {
+        let alice_state = alice_state.clone();
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            ally.init_project(&alice_signer, &alice, &shia_le_pathbuf(alice_repo_path))
+        })
+        .await??
+    };
+
+    let project = {
+        let alice_peer_id = alice_state.lock().await.peer_id();
+        let alice_addr = alice_state.lock().await.listen_addr();
+        let bob_peer_id = bob_state.lock().await.peer_id();
+        let bob_addr = bob_state.lock().await.listen_addr();
+        let bobby = bob_state.clone().lock_owned().await;
+        let ev = eve_state.clone().lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            let urn = bobby
+                .clone_project(
+                    project.urn().into_rad_url(alice_peer_id),
+                    vec![alice_addr].into_iter(),
+                )
+                .expect("unable to clone project");
+            let urn = ev.clone_project(urn.into_rad_url(bob_peer_id), vec![bob_addr].into_iter()).expect("unable to clone project");
+            ev.get_project(&urn, None).expect("failed to get project just cloned")
+        })
+        .await?
+    };
+
+    println!("GIT HERE");
+    let commit_id = {
+        let alice_peer_id = alice_state.lock().await.peer_id();
+        let path = bob_state.lock().await.checkout(&project.urn(), alice_peer_id, bob_repo_path)?;
+        println!("PATH: {:?}", path);
+        let repo = git2::Repository::open(path)?;
+        let oid = repo
+            .find_reference(&format!("refs/heads/{}", project.default_branch()))?
+            .target()
+            .expect("Missing first commit");
+        let commit = repo.find_commit(oid)?;
+        let commit_id = {
+            let empty_tree = {
+                let mut index = repo.index()?;
+                let oid = index.write_tree()?;
+                repo.find_tree(oid)?
+            };
+
+            let author = git2::Signature::now(bob.name(), &format!("{}@example.com", bob.name()))?;
+            repo.commit(
+                Some(&format!("refs/heads/{}", project.default_branch())),
+                &author,
+                &author,
+                "Successor commit",
+                &empty_tree,
+                &[&commit],
+            )?
+        };
+
+        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        commit_id
+    };
+    {
+        let bob_addr = bob_state.lock().await.listen_addr();
+        let bob_peer_id = bob_state.lock().await.peer_id().clone();
+        let fetch_url = project.urn().into_rad_url(bob_peer_id.clone());
+
+        let ev = eve_state.clone().lock_owned().await;
+        tokio::task::spawn_blocking(move || ev.fetch(fetch_url, vec![bob_addr])).await??;
+    }
+
+    println!("ALICE: {:?}", alice_tmp_dir.path());
+    println!("BOB: {:?}", bob_tmp_dir.path());
+    println!("EVE: {:?}", eve_tmp_dir.path());
+
+    println!("GIT HERE");
+    let path = {
+        let alice_peer_id = alice_state.lock().await.peer_id();
+        eve_state.lock().await.checkout(&project.urn(), alice_peer_id, eve_repo_path)?
+    };
+
+    std::thread::sleep(std::time::Duration::from_secs(60));
+    println!("GIT HERE");
+    let repo = git2::Repository::open(path)?;
+    assert_matches!(repo.find_commit(commit_id), Err(_));
 
     Ok(())
 }
