@@ -104,11 +104,10 @@ mod handler {
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init().map_err(error::Error::from)?;
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
 
         let (_new_peer, new_state) = {
-            let config =
-                coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
+            let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
             coco::into_peer_state(config, signer.clone())
                 .await
                 .map_err(error::Error::from)?

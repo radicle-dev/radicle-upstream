@@ -13,6 +13,7 @@ use tokio::sync::Mutex;
 
 use librad::{
     git::{
+        include::Include,
         local::{transport, url::LocalUrl},
         refs::Refs,
         storage,
@@ -420,6 +421,7 @@ impl State {
     ///
     /// * When the storage operation fails.
     pub fn track(&self, urn: &RadUrn, remote: &PeerId) -> Result<(), Error> {
+        self.update_include(urn).map_err(Error::from)?;
         Ok(self.api.storage().track(urn, remote)?)
     }
 
@@ -442,6 +444,48 @@ impl State {
                     .map_err(Error::from)
             })
             .collect()
+    }
+
+    /// Creates a working copy for the project of the given `urn`.
+    ///
+    /// # Errors
+    ///
+    /// * if the project can't be found
+    /// * if the include file creation fails
+    /// * if the clone of the working copy fails
+    pub fn checkout<P>(
+        &self,
+        urn: &RadUrn,
+        peer_id: P,
+        destination: PathBuf,
+    ) -> Result<PathBuf, Error>
+    where
+        P: Into<Option<PeerId>> + Clone,
+    {
+        let proj = self.get_project(urn, peer_id).map_err(Error::from)?;
+        let include_path = self.update_include(urn).map_err(Error::from)?;
+        let checkout = project::Checkout::new(proj, destination, include_path);
+
+        checkout.run(self.peer_id()).map_err(Error::from)
+    }
+
+    /// Prepare the include file for the given `project` with the latest tracked peers.
+    ///
+    /// # Errors
+    ///
+    /// * if getting the list of tracked peers fails
+    pub fn update_include(&self, urn: &RadUrn) -> Result<PathBuf, Error> {
+        let local_url = LocalUrl::from_urn(urn.clone(), self.peer_id());
+        let tracked = self.tracked(urn)?;
+        let include = Include::from_tracked_users(
+            self.paths().git_includes_dir().to_path_buf(),
+            local_url,
+            tracked.into_iter().map(|(peer_id, user)| (user, peer_id)),
+        );
+        let include_path = include.file_path();
+        include.save()?;
+
+        Ok(include_path)
     }
 }
 
@@ -491,7 +535,7 @@ mod test {
     async fn can_create_user() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -508,7 +552,7 @@ mod test {
         env::set_var("RAD_HOME", tmp_dir.path());
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -523,12 +567,12 @@ mod test {
     }
 
     #[tokio::test]
-    async fn can_create_project_directory_exists() -> Result<(), Error> {
+    async fn can_create_project_for_existing_repo() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let repo_path = repo_path.join("radicalise");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -546,7 +590,7 @@ mod test {
     async fn cannot_create_user_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -571,7 +615,7 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -600,7 +644,7 @@ mod test {
         let repo_path = tmp_dir.path().join("radicle");
 
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -634,7 +678,7 @@ mod test {
     async fn list_users() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -661,7 +705,7 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -675,7 +719,7 @@ mod test {
         // Simulate resetting the monorepo
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
@@ -696,7 +740,7 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key.clone());
+        let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());

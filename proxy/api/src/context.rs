@@ -40,9 +40,7 @@ impl Context {
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
         let key = keystore.init()?;
-        let signer = signer::BoxedSigner::from(signer::SomeSigner {
-            signer: key.clone(),
-        });
+        let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
         let (_peer, state) = {
             let config = coco::config::default(key, tmp_dir.path())?;
@@ -86,7 +84,7 @@ pub async fn reset_ctx_peer(ctx: Ctx) -> Result<(), crate::error::Error> {
     let pw = keystore::SecUtf8::from("radicle-upstream");
     let mut new_keystore = keystore::Keystorage::new(&paths, pw);
     let key = new_keystore.init()?;
-    let signer = signer::BoxedSigner::from(key.clone());
+    let signer = signer::BoxedSigner::from(key);
 
     let (_new_peer, new_state) = {
         let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, vec![]);
