@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { makeWallet, Status } from "../../src/wallet";
 
   import { Button } from "../../DesignSystem/Primitive";
