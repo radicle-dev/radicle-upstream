@@ -18,7 +18,7 @@
     clippy::integer_arithmetic,
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions,
-    clippy::multiple_inherent_impl,
+    clippy::multiple_inherent_impl
 )]
 
 pub use librad::{
