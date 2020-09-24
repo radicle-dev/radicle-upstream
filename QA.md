@@ -6,11 +6,21 @@
 
 - [ ] download the binary package from the location provided above
 - [ ] remove any old configuration and user data
-  - on macOS: mount the `.dmg` and install Upstream in the default location
-    `/Applications`, then run:
+  - on macOS:
+    1. open the `radicle-upstream-x.x.x.dmg` package
+    2. install Upstream by dragging the `radicle-upstream` binary to
+       `/Applications`
+    3. open `/Applications` in finder, locate the `radicle-upstream` app and
+       right-click it, then select `Open` from the context menu, you should see
+       a dialog with two buttons `Move to Bin` and `Cancel`
+    4. dismiss the dialog by clicking `Cancel`, to bypass macOS security
+       measures which disallow running unsigned binaries, repeat the previous
+       step, now you should see three buttons: `Move to Bin`, `Open` and
+       `Cancel`, click `Open`
+    5. quit the app with <kbd>⌘</kbd> + <kbd>q</kbd>, open your terminal
+       and run:
     ```
-    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream
-    --reset-state
+    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --reset-state
     ```
   - on Linux: run the `.AppImage` like so:
     ```
