@@ -82,6 +82,7 @@
     "eslint-plugin-no-only-tests": "^2.4.0",
     "eslint-plugin-svelte3": "^2.7.3",
     "eslint-svelte3-preprocess": "^0.0.4",
+    "ethers": "^5.0.12",
     "husky": ">=4.2.3",
     "jest": "^26.1.0",
     "lint-staged": "^10.2.11",
