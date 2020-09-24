@@ -10,12 +10,12 @@
 
   export let currentPeerId = null;
   export let expanded = false;
-  export let revisions = null;
-  export let maintainers = [];
 
   let currentSelectedPeer;
 
   const session = getContext("session");
+  const { metadata } = getContext("project");
+  const revisions = getContext("revisions");
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
@@ -140,7 +140,7 @@
       {currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}
     </p>
     <p>
-      {#if maintainers.includes(currentSelectedPeer.identity.urn)}
+      {#if metadata.maintainers.includes(currentSelectedPeer.identity.urn)}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </p>
@@ -170,7 +170,7 @@
             {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
           </p>
           <p>
-            {#if maintainers.includes(repo.identity.urn)}
+            {#if metadata.maintainers.includes(repo.identity.urn)}
               <Badge
                 style="margin-left: 0.5rem"
                 variant={BadgeType.Maintainer} />

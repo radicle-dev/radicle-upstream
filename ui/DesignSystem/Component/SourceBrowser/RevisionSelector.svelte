@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { getContext } from "svelte";
 
   import { isExperimental } from "../../../../native/ipc.js";
   import { RevisionType } from "../../../src/source.ts";
@@ -9,9 +9,11 @@
   export let currentRevision = null;
   export let currentPeerId = null;
   export let expanded = false;
-  export let revisions = null;
 
   let currentSelectedPeer;
+
+  const { metadata } = getContext("project");
+  const revisions = getContext("revisions");
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
@@ -21,6 +23,15 @@
     // The API returns a revision list where the first entry is the default
     // peer.
     currentSelectedPeer = revisions[0];
+  }
+
+  // initialize currentRevision
+  $: if (!currentRevision) {
+    currentRevision = {
+      type: RevisionType.Branch,
+      name: metadata.defaultBranch,
+      peerId: currentSelectedPeer ? currentSelectedPeer.identity.peerId : "",
+    };
   }
 
   // Dropdown element. Set by the view.
@@ -41,9 +52,8 @@
     }
   };
 
-  const dispatch = createEventDispatcher();
   const selectRevision = (peerId, revision) => {
-    dispatch("select", { revision, peerId });
+    currentRevision = revision;
     hideDropdown();
   };
 </script>

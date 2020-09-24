@@ -51,8 +51,8 @@
 </style>
 
 <div class="commits-page" data-cy="commits-page">
-  <Remote {store} let:data={histories}>
-    {#each histories as history}
+  <Remote {store} let:data={commits}>
+    {#each commits.history as history}
       <div class="commit-group">
         <header>
           <p>{formatTime(history.time * 1000)}</p>

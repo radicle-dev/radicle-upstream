@@ -7,6 +7,7 @@
   import { checkout, fetch, project as store } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
   import {
+    commits as commitsStore,
     currentRevision,
     currentPeerId,
     fetchCommits,
@@ -14,7 +15,6 @@
     resetCurrentRevision,
     resetCurrentPeerId,
     revisions as revisionsStore,
-    RevisionType,
   } from "../src/source.ts";
 
   import {
@@ -53,17 +53,7 @@
   resetCurrentRevision();
   resetCurrentPeerId();
 
-  const defaultRevision = (project, peerId) => {
-    return {
-      type: RevisionType.Branch,
-      name: project.metadata.defaultBranch,
-      peerId: peerId || "",
-    };
-  };
-
-  $: topbarMenuItems = (project, peerId, revision) => {
-    revision = revision || defaultRevision(project, peerId);
-    fetchCommits({ projectId: project.id, revision });
+  $: topbarMenuItems = (project, commitCounter) => {
     const items = [
       {
         icon: Icon.House,
@@ -74,7 +64,7 @@
       {
         icon: Icon.Commit,
         title: "Commits",
-        counter: project.stats.commits,
+        counter: commitCounter,
         href: path.projectCommits(project.id),
         looseActiveStateMatching: true,
       },
@@ -124,6 +114,8 @@
 
   fetch({ id: projectId });
   fetchRevisions({ projectId });
+  $: if ($currentRevision)
+    fetchCommits({ projectId, revision: $currentRevision });
 </script>
 
 <style>
@@ -136,7 +128,7 @@
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
-    <Remote store={revisionsStore} let:data={revisions}>
+    <Remote store={revisionsStore} let:data={revisions} context="revisions">
       <Header.Large
         name={project.metadata.name}
         urn={project.shareableEntityIdentifier}
@@ -146,16 +138,16 @@
           <div style="display: flex">
             <div class="revision-selector-wrapper">
               <RevisionSelector
-                currentPeerId={$currentPeerId}
-                currentRevision={$currentRevision || defaultRevision(project, $currentPeerId)}
-                maintainers={project.metadata.maintainers}
-                {revisions}
-                on:select={event => {
-                  currentRevision.set(event.detail.revision);
-                }} />
+                bind:currentPeerId={$currentPeerId}
+                bind:currentRevision={$currentRevision} />
             </div>
-            <HorizontalMenu
-              items={topbarMenuItems(project, $currentPeerId, $currentRevision)} />
+            <Remote store={commitsStore} let:data={commits}>
+              <HorizontalMenu
+                items={topbarMenuItems(project, commits.stats.commits)} />
+              <div slot="loading">
+                <HorizontalMenu items={topbarMenuItems(project, null)} />
+              </div>
+            </Remote>
           </div>
         </div>
         <div slot="right">
@@ -166,12 +158,9 @@
         <div slot="top">
           <div style="display: flex">
             <PeerSelector
-              currentPeerId={$currentPeerId}
-              maintainers={project.maintainers}
-              {revisions}
-              on:select={event => {
-                currentPeerId.set(event.detail.peerId);
-                currentRevision.set(defaultRevision(project, event.detail.peerId));
+              bind:currentPeerId={$currentPeerId}
+              on:select={() => {
+                resetCurrentRevision();
               }} />
             <TrackToggle />
           </div>
