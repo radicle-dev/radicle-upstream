@@ -412,6 +412,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "curve25519-dalek"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8492de420e9e60bc9a1d66e2dbb91825390b738a388606600663fc529b4b307"
+dependencies = [
+ "byteorder",
+ "digest 0.9.0",
+ "rand_core",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
 name = "dashmap"
 version = "3.11.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -515,6 +528,19 @@ name = "dyn-clone"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c53dc3a653e0f64081026e4bf048d48fec9fce90c66e8326ca7292df0ff2d82"
+
+[[package]]
+name = "ed25519-zebra"
+version = "2.1.2"
+source = "git+https://github.com/radicle-dev/ed25519-zebra?branch=main#cec6956c8f6c73431140fb78c7e06364c14d3057"
+dependencies = [
+ "curve25519-dalek",
+ "hex",
+ "rand_core",
+ "serde",
+ "sha2",
+ "thiserror",
+]
 
 [[package]]
 name = "either"
@@ -883,6 +909,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hex"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
+
+[[package]]
 name = "http"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1096,7 +1128,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c16ce900776975e3de017af71763dc4e2e129d3f#c16ce900776975e3de017af71763dc4e2e129d3f"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=99db345f9c091e6d6eb1b8529b3815f1ce02c6e1#99db345f9c091e6d6eb1b8529b3815f1ce02c6e1"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1104,6 +1136,7 @@ dependencies = [
  "bytes",
  "directories 3.0.1",
  "dyn-clone",
+ "ed25519-zebra",
  "either",
  "futures 0.3.5",
  "futures-timer",
@@ -1130,7 +1163,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_json",
- "sodiumoxide",
+ "tempfile",
  "thiserror",
  "tokio",
  "tokio-util",
@@ -1253,18 +1286,18 @@ dependencies = [
 
 [[package]]
 name = "minicbor"
-version = "0.4.1"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "062055f5f2fa4659e0337f8f7cee17c3d068a99ea4eaed9bedf37ee6dde191e4"
+checksum = "2fc03ad6f8f548db7194a5ff5a6f96342ecae4e3ef67d2bf18bacc0e245cd041"
 dependencies = [
  "minicbor-derive",
 ]
 
 [[package]]
 name = "minicbor-derive"
-version = "0.3.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3436a67b46fbf4b5cc25a37341b3daf0371496dac1161422b96225dde8f603ee"
+checksum = "c214bf3d90099b52f3e4b328ae0fe34837fd0fab683ad1e10fceb4629106df48"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1739,7 +1772,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c16ce900776975e3de017af71763dc4e2e129d3f#c16ce900776975e3de017af71763dc4e2e129d3f"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=99db345f9c091e6d6eb1b8529b3815f1ce02c6e1#99db345f9c091e6d6eb1b8529b3815f1ce02c6e1"
 dependencies = [
  "anyhow",
  "git2",
@@ -2220,6 +2253,12 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "subtle"
+version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "343f3f510c2915908f155e94f17220b19ccfacf2a64a2a5d8004f2c3e311e7fd"
 
 [[package]]
 name = "syn"
@@ -2801,3 +2840,9 @@ dependencies = [
  "bit-vec",
  "chrono",
 ]
+
+[[package]]
+name = "zeroize"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05f33972566adbd2d3588b0491eb94b98b43695c4ef897903470ede4f3f5a28a"

@@ -65,7 +65,7 @@ pub async fn build_peer_with_seeds(
     seeds: Vec<Seed>,
 ) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
-    let signer = signer::BoxedSigner::from(key.clone());
+    let signer = signer::BoxedSigner::from(key);
 
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
