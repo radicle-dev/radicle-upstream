@@ -141,6 +141,10 @@ yarn prettier:write         # Auto-format UI code
 yarn lint                   # Check UI code for linting errors
 yarn reset:state            # Delete all local state: identity keys, monorepo
                             # and saved preferences
+
+yarn deploy:dev:contracts   # Deploy the Ethereum Radicle Contracts to a local
+                            # instance of an Eth blockchain. We use ganachi for
+                            # local development.
 ```
 
 
