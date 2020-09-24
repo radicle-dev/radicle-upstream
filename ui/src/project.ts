@@ -307,13 +307,27 @@ const validateNewRepository = (path: string): Promise<boolean> => {
   );
 };
 
+const projectNameConstraints = {
+  presence: {
+    message: "You must provide a display name",
+    allowEmpty: false,
+  },
+  firstHandleChar: {
+    valueName: "project name",
+  },
+  length: {
+    minimum: 2,
+    message: "Your project name should be at least 2 characters long.",
+  },
+  format: {
+    pattern: new RegExp(projectNameMatch, "i"),
+    message:
+      "Your project name has unsupported characters in it. You can only use basic letters, numbers, and the _ , - and . characters.",
+  },
+};
+
 export const nameValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore({
-    format: {
-      pattern: new RegExp(projectNameMatch, "i"),
-      message: `Project name should match ${projectNameMatch}`,
-    },
-  });
+  return validation.createValidationStore(projectNameConstraints);
 };
 
 export const repositoryPathValidationStore = (

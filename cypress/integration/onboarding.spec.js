@@ -127,8 +127,12 @@ context("identity creation", () => {
 
     context("handle", () => {
       it("prevents the user from submitting an invalid handle", () => {
-        const validationError =
-          "Display name should match ^[a-z0-9][a-z0-9_-]+$";
+        const characterError =
+          "Your display name has unsupported characters in it. You can only use basic letters, numbers, and the _ and - characters.";
+        const firstCharacterError =
+          "Your display name should start with a letter or a number.";
+        const lengthError =
+          "Your display name should be at least 2 characters long.";
 
         cy.pick("handle-input").type("_rafalca");
         cy.pick("next-button").click();
@@ -145,23 +149,23 @@ context("identity creation", () => {
 
         // No special characters.
         cy.pick("handle-input").clear();
-        cy.pick("handle-input").type("$bad");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("handle-input").type("bad$");
+        cy.pick("enter-name-screen").contains(characterError);
 
         // Can't start with an underscore.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("_nein");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("enter-name-screen").contains(firstCharacterError);
 
         // Can't start with a dash.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("-não");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("enter-name-screen").contains(firstCharacterError);
 
         // Has to be at least two characters long.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("x");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("enter-name-screen").contains(lengthError);
       });
     });
 

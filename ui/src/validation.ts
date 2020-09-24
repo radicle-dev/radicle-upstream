@@ -39,6 +39,10 @@ interface RemoteValidation {
   validationMessage: string;
 }
 
+interface FirstHandleCharOptions {
+  valueName: string;
+}
+
 interface FormatConstraints {
   presence?: {
     message: string;
@@ -48,7 +52,19 @@ interface FormatConstraints {
     pattern: RegExp;
     message: string;
   };
+  firstHandleChar?: FirstHandleCharOptions;
 }
+
+validatejs.validators.firstHandleChar = (
+  value: string,
+  options: FirstHandleCharOptions,
+  _key: any,
+  _attributes: any
+) => {
+  if (!value.match(new RegExp("^[a-z0-9]", "i"))) {
+    return `Your ${options.valueName} should start with a letter or a number.`;
+  }
+};
 
 export const createValidationStore = (
   constraints: FormatConstraints,
