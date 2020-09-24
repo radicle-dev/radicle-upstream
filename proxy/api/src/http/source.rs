@@ -729,10 +729,11 @@ mod test {
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(have.as_array().unwrap().len(), 14);
+            assert_eq!(have["headers"], json!(want.headers));
+            assert_eq!(have["headers"].as_array().unwrap().len(), 14);
+            assert_eq!(have["stats"]["commits"], json!(14));
             assert_eq!(
-                have.as_array().unwrap().first().unwrap(),
+                have["headers"].as_array().unwrap().first().unwrap(),
                 &serde_json::to_value(&head_commit).unwrap(),
                 "the first commit is the head of the branch"
             );
