@@ -39,7 +39,7 @@ interface RemoteValidation {
   validationMessage: string;
 }
 
-interface firstHandleCharOptions {
+interface FirstHandleCharOptions {
   valueName: string;
 }
 
@@ -52,12 +52,12 @@ interface FormatConstraints {
     pattern: RegExp;
     message: string;
   };
-  firstHandleChar?: firstHandleCharOptions;
+  firstHandleChar?: FirstHandleCharOptions;
 }
 
 validatejs.validators.firstHandleChar = (
   value: string,
-  options: firstHandleCharOptions,
+  options: FirstHandleCharOptions,
   _key: any,
   _attributes: any
 ) => {
