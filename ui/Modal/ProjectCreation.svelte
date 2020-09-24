@@ -28,7 +28,6 @@
     fetch as fetchSession,
     settings,
   } from "../src/session";
-  import type { LocalState } from "../src/source";
 
   import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
@@ -42,7 +41,6 @@
 
   let currentSelection: RepoType;
   let nameInput: HTMLInputElement;
-  // export let content;
 
   const dispatch = createEventDispatcher();
 

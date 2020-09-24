@@ -130,7 +130,7 @@ context("project creation", () => {
       cy.get("body").type("{esc}", { force: true });
     });
 
-    context.only("name", () => {
+    context("name", () => {
       it("prevents the user from creating a project with an invalid name", () => {
         const characterError =
           "Your project name has unsupported characters in it. You can only use basic letters, numbers, and the _ , - and . characters.";
