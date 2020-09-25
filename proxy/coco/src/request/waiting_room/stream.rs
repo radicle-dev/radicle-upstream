@@ -49,7 +49,7 @@ impl Stream for Queries {
                 waiting_room
                     .next_query(Instant::now(), self.delta)
                     .map_or(Poll::Pending, |req| Poll::Ready(Some(req)))
-            }
+            },
             Poll::Pending => Poll::Pending,
         }
     }
@@ -69,14 +69,14 @@ impl Stream for Clones {
 
 #[cfg(test)]
 mod test {
-    use std::sync::Arc;
-    use std::time::{Duration, Instant};
+    use std::{
+        sync::Arc,
+        time::{Duration, Instant},
+    };
 
-    use futures::future;
-    use futures::StreamExt as _;
+    use futures::{future, stream, StreamExt as _};
     use pretty_assertions::assert_eq;
-    use tokio::sync::RwLock;
-    use tokio::time::timeout;
+    use tokio::{sync::RwLock, time::timeout};
 
     use librad::uri::RadUrn;
 
@@ -108,25 +108,18 @@ mod test {
             }
         });
 
-        let mut have = timeout(Duration::from_millis(50), async move {
-            let mut seen = vec![];
-
-            let urn = queries.next().await.unwrap();
-            {
-                let mut waiting_room = waiting_room.write().await;
-                waiting_room.queried(&urn, Instant::now());
-            }
-            seen.push(urn);
-
-            let urn = queries.next().await.unwrap();
-            {
-                let mut waiting_room = waiting_room.write().await;
-                waiting_room.queried(&urn, Instant::now());
-            }
-            seen.push(urn);
-
-            seen
-        })
+        let mut have = timeout(
+            Duration::from_millis(50),
+            queries
+                .take(2)
+                .zip(stream::repeat(waiting_room.clone()))
+                .then(async move |(urn, waiting_room)| {
+                    let mut waiting_room = waiting_room.write().await;
+                    waiting_room.queried(&urn, Instant::now()).unwrap();
+                    urn
+                })
+                .collect::<Vec<RadUrn>>(),
+        )
         .await?;
 
         urns.sort();
