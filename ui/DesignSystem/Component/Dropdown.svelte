@@ -1,13 +1,9 @@
 <script lang="ts">
   import { Icon } from "../Primitive";
   import type { EmojiAvatar } from "../../src/avatar";
-  import {
-    openDropdown,
-    currentlyOpen,
-    closeCurrentDropdown,
-  } from "../../src/dropdown";
 
   import Option from "./Dropdown/Option.svelte";
+  import Overlay from "./Overlay.svelte";
 
   type Option =
     | { value: string; title: string }
@@ -47,8 +43,6 @@
     }
 
     expanded = !expanded;
-
-    if (expanded) openDropdown(dropdown);
   };
 
   const hideMenu = () => {
@@ -67,7 +61,6 @@
   };
 
   $: optionByValue = options.find(option => option.value === value);
-  $: if ($currentlyOpen !== dropdown) hideMenu();
 </script>
 
 <style>
@@ -127,38 +120,40 @@
   }
 </style>
 
-<div data-cy={dataCy} class="dropdown" {style} bind:this={dropdown}>
-  <div
-    class="button"
-    class:invalid={!valid}
-    class:disabled
-    on:click={toggleMenu}>
-    {#if value && optionByValue}
-      <Option {...optionByValue} {disabled} />
-    {:else}
-      <p style={`margin: 0 42px 0 12px; color: ${disabledColor()}`}>
-        {placeholder}
-      </p>
-    {/if}
-    <Icon.ChevronUpDown
-      style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
-  </div>
-
-  <div class="menu" hidden={!expanded}>
-    {#each options as option}
-      <Option
-        style={optionStyle}
-        {...option}
-        on:selected={optionSelectedHandler}
-        selected={value === option.value} />
-    {/each}
-  </div>
-
-  {#if !validationPending && !valid && validationMessage}
-    <div class="validation-row">
-      <p style="color: var(--color-negative); text-align: left;">
-        {validationMessage}
-      </p>
+<Overlay on:dismiss={hideMenu} expand={expanded}>
+  <div data-cy={dataCy} class="dropdown" {style} bind:this={dropdown}>
+    <div
+      class="button"
+      class:invalid={!valid}
+      class:disabled
+      on:click={toggleMenu}>
+      {#if value && optionByValue}
+        <Option {...optionByValue} {disabled} />
+      {:else}
+        <p style={`margin: 0 42px 0 12px; color: ${disabledColor()}`}>
+          {placeholder}
+        </p>
+      {/if}
+      <Icon.ChevronUpDown
+        style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
     </div>
-  {/if}
-</div>
+
+    <div class="menu" hidden={!expanded}>
+      {#each options as option}
+        <Option
+          style={optionStyle}
+          {...option}
+          on:selected={optionSelectedHandler}
+          selected={value === option.value} />
+      {/each}
+    </div>
+
+    {#if !validationPending && !valid && validationMessage}
+      <div class="validation-row">
+        <p style="color: var(--color-negative); text-align: left;">
+          {validationMessage}
+        </p>
+      </div>
+    {/if}
+  </div>
+</Overlay>

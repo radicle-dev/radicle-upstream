@@ -1,15 +1,19 @@
 <script lang="ts">
-  import { openDropdown, currentlyOpen } from "../../../src/dropdown";
+  import { createEventDispatcher } from "svelte";
+
+  import { openDropdown, currentlyOpen } from "../../src/dropdown";
 
   let container;
-  export let shouldOpen = false;
+  export let expand: boolean;
 
-  const open = () => {
-    shouldOpen = true;
-    openDropdown(container);
-  };
+  const dispatch = createEventDispatcher();
 
-  $: if ($currentlyOpen !== container) shouldOpen = false;
+  const dismiss = () => dispatch("dismiss");
+
+  const open = () => openDropdown(container);
+
+  $: if ($currentlyOpen !== container) dismiss();
+  $: if (expand) open();
 </script>
 
 <div bind:this={container}>
