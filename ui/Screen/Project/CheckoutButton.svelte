@@ -4,6 +4,7 @@
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
   import { RemoteHelperHint, Tooltip } from "../../DesignSystem/Component";
   import { dismissRemoteHelperHint, settings } from "../../src/session.ts";
+  import { openDropdown, currentlyOpen } from "../../src/dropdown.ts";
 
   const dispatch = createEventDispatcher();
 
@@ -14,17 +15,15 @@
 
   const toggleDropdown = ev => {
     expanded = !expanded;
+    if (expanded) {
+      openDropdown(dropdown);
+    }
     ev && ev.stopPropagation();
   };
 
-  const clickOutside = ev => {
-    // Any click *outside* the dropdown should hide the dropdown.
-    if (expanded && dropdown !== ev.target && !dropdown.contains(ev.target)) {
-      expanded = false;
-    }
-  };
-
   let checkoutDirectoryPath;
+
+  $: expanded = $currentlyOpen === dropdown;
 </script>
 
 <style>
@@ -45,8 +44,6 @@
     user-select: none;
   }
 </style>
-
-<svelte:window on:click={clickOutside} />
 
 <div class="clone-dropdown" hidden={!expanded} bind:this={dropdown}>
   <p style="margin-bottom: 0.5rem;">
