@@ -55,6 +55,7 @@ mod peer;
 pub use peer::{
     AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RunConfig, SyncConfig, SyncEvent,
 };
+mod shared;
 mod state;
 pub use state::{Lock, State};
 pub mod project;

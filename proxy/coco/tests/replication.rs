@@ -6,7 +6,7 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, RunConfig, SyncConfig, SyncEvent};
+use coco::{config, seed::Seed, RunConfig, SyncConfig, SyncEvent, request::waiting_room::{self, WaitingRoom}};
 
 #[macro_use]
 mod common;
@@ -37,8 +37,8 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
     };
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
-    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
+    tokio::task::spawn(alice_peer.run(RunConfig::default(), alice_state.clone(), alice_store, WaitingRoom::new(waiting_room::Config::default())));
+    tokio::task::spawn(bob_peer.run(RunConfig::default(), bob_state.clone(), bob_store, WaitingRoom::new(waiting_room::Config::default())));
 
     let project = {
         let alice_state = alice_state.clone();
@@ -97,8 +97,8 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
     let (bob_peer, bob_state, _bob_signer) = build_peer(&bob_tmp_dir).await?;
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
-    tokio::task::spawn(bob_peer.run(alice_state.clone(), bob_store, RunConfig::default()));
+    tokio::task::spawn(alice_peer.run(RunConfig::default(), alice_state.clone(), alice_store, WaitingRoom::new(waiting_room::Config::default())));
+    tokio::task::spawn(bob_peer.run(RunConfig::default(), alice_state.clone(), bob_store, WaitingRoom::new(waiting_room::Config::default())));
 
     let cloned_urn = {
         let alice_peer_id = alice_state.lock().await.peer_id();
@@ -149,8 +149,8 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         tokio::task::spawn_blocking(move || bobby.init_owner(&bob_signer, "bob")).await??
     };
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
-    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
+    tokio::task::spawn(alice_peer.run(RunConfig::default(), alice_state.clone(), alice_store, WaitingRoom::new(waiting_room::Config::default())));
+    tokio::task::spawn(bob_peer.run(RunConfig::default(), bob_state.clone(), bob_store, WaitingRoom::new(waiting_room::Config::default())));
 
     let project = {
         let alice = alice.clone();
@@ -302,8 +302,6 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     {
         let bob_events = bob_peer.subscribe();
         tokio::task::spawn(alice_peer.run(
-            alice_state.clone(),
-            alice_store,
             RunConfig {
                 sync: SyncConfig {
                     on_startup: true,
@@ -311,8 +309,10 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
                 },
                 ..RunConfig::default()
             },
+            alice_state.clone(),
+            alice_store, WaitingRoom::new(waiting_room::Config::default()),
         ));
-        tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
+        tokio::task::spawn(bob_peer.run(RunConfig::default(), bob_state.clone(), bob_store, WaitingRoom::new(waiting_room::Config::default())));
         connected(bob_events, &alice_peer_id).await?;
     };
 

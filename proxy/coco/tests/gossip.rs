@@ -5,7 +5,7 @@ use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn};
+use coco::{seed::Seed, AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn, request::waiting_room::{self, WaitingRoom}};
 
 mod common;
 use common::{
@@ -22,7 +22,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
     let alice_events = alice_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
+    tokio::task::spawn(alice_peer.run(RunConfig::default(), alice_state.clone(), alice_store, WaitingRoom::new(waiting_room::Config::default())));
 
     let alice = alice_state
         .lock()
@@ -78,16 +78,16 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_events = bob_peer.subscribe();
 
     tokio::task::spawn(alice_peer.run(
-        alice_state.clone(),
-        alice_store,
         RunConfig {
             announce: AnnounceConfig {
                 interval: Duration::from_millis(100),
             },
             ..RunConfig::default()
         },
+        alice_state.clone(),
+        alice_store, WaitingRoom::new(waiting_room::Config::default()),
     ));
-    tokio::task::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
+    tokio::task::spawn(bob_peer.run(RunConfig::default(), bob_state.clone(), bob_store, WaitingRoom::new(waiting_room::Config::default())));
     connected(bob_connected, &alice_peer_id).await?;
 
     let alice = alice_state
@@ -134,7 +134,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let (peer, state, _signer) = build_peer(&tmp_dir).await?;
 
-    tokio::task::spawn(peer.run(state.clone(), store, RunConfig::default()));
+    tokio::task::spawn(peer.run(RunConfig::default(), state.clone(), store, WaitingRoom::new(waiting_room::Config::default())));
 
     let unkown_urn = Urn {
         id: Hash::hash(b"project0"),
@@ -179,8 +179,8 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_events = bob_peer.subscribe();
 
-    tokio::spawn(alice_peer.run(alice_state.clone(), alice_store, RunConfig::default()));
-    tokio::spawn(bob_peer.run(bob_state.clone(), bob_store, RunConfig::default()));
+    tokio::spawn(alice_peer.run(RunConfig::default(), alice_state.clone(), alice_store, WaitingRoom::new(waiting_room::Config::default())));
+    tokio::spawn(bob_peer.run(RunConfig::default(), bob_state.clone(), bob_store, WaitingRoom::new(waiting_room::Config::default())));
     connected(bob_events, &alice_peer_id).await?;
 
     let target_urn = {

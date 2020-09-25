@@ -2,13 +2,12 @@
 //! prorper state updates.
 
 use std::{
-    sync::Arc,
     time::{Duration, Instant},
 };
 
 use futures::StreamExt as _;
 use tokio::{
-    sync::{broadcast, mpsc, RwLock},
+    sync::{broadcast, mpsc},
     time::interval,
 };
 
@@ -19,6 +18,7 @@ use librad::{
 };
 
 use crate::{
+    shared::Shared,
     request::waiting_room::{self, WaitingRoom},
     state::Lock,
 };
@@ -85,13 +85,14 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(
+    pub async fn run<W>(
         self,
         run_config: RunConfig,
         state: Lock,
         store: kv::Store,
-        waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
-    ) {
+        waiting_room: W,
+    ) where W: Into<Shared<WaitingRoom<Instant, Duration>>> {
+        let waiting_room = waiting_room.into();
         // Subscribe to protocol events.
         let protocol_subscriber = {
             let state = state.lock().await;
