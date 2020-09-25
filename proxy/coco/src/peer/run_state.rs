@@ -8,6 +8,7 @@ use std::{
 use librad::{
     net::{peer::Gossip, protocol::ProtocolEvent},
     peer::PeerId,
+    uri::{RadUrl, RadUrn},
 };
 
 use crate::peer::announcement;
@@ -29,6 +30,8 @@ const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
 pub enum Command {
     /// Start the announcement subroutine.
     Announce,
+    CloneUrl(RadUrl),
+    QueryUrn(RadUrn),
     /// Initiate a full sync with `PeerId`.
     SyncPeer(PeerId),
     /// Start sync timeout.
@@ -45,6 +48,7 @@ pub enum Event {
     Protocol(ProtocolEvent<Gossip>),
     /// Lifecycle events during peer sync operations.
     PeerSync(SyncEvent),
+    Request(RequestEvent),
     /// Scheduled timeouts which can occur.
     Timeout(TimeoutEvent),
 }
@@ -58,6 +62,12 @@ pub enum AnnounceEvent {
     Succeeded(announcement::Updates),
     /// The ticker duration has elapsed.
     Tick,
+}
+
+#[derive(Clone, Debug)]
+pub enum RequestEvent {
+    Query(RadUrn),
+    Clone(RadUrl),
 }
 
 /// Lifecycle events during peer sync operations.
@@ -237,6 +247,16 @@ impl RunState {
                 Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
                 Event::Announce(AnnounceEvent::Tick),
             ) => vec![Command::Announce],
+            // Query requested URNs while online.
+            (
+                Status::Online(_) | Status::Syncing(_, _),
+                Event::Request(RequestEvent::Query(urn)),
+            ) => vec![Command::QueryUrn(urn)],
+            // Clone requested URLs while online.
+            (
+                Status::Online(_) | Status::Syncing(_, _),
+                Event::Request(RequestEvent::Clone(url)),
+            ) => vec![Command::CloneUrl(url)],
             _ => vec![],
         }
     }

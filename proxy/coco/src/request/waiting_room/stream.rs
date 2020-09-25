@@ -16,16 +16,19 @@ use librad::uri::{RadUrl, RadUrn};
 
 use crate::request::waiting_room::WaitingRoom;
 
+const STREAM_POLL_RATE: Duration = Duration::from_millis(0);
+
 pub struct Queries {
     delay: Delay,
     delta: Duration,
-    waiting_room: Arc<RwLock<WaitingRoom<Instant>>>,
+    waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
 
 impl Queries {
-    fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant>>>) -> Self {
+    pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
-            delay: delay_for(Duration::from_millis(0)),
+            delay: delay_for(Duration::default()),
+            // TODO(xla): Configure deltas.
             delta: Duration::from_secs(1),
             waiting_room,
         }
@@ -41,10 +44,10 @@ impl Stream for Queries {
 
         match Pin::new(&mut self.delay).poll(cx) {
             Poll::Ready(_) => {
-                self.delay = delay_for(Duration::from_millis(10));
+                self.delay = delay_for(STREAM_POLL_RATE);
 
                 waiting_room
-                    .next_query(Instant::now(), self.delta)
+                    .next_query(Instant::now())
                     .map_or(Poll::Pending, |urn| Poll::Ready(Some(urn)))
             },
             Poll::Pending => Poll::Pending,
@@ -54,15 +57,16 @@ impl Stream for Queries {
 
 pub struct Clones {
     delay: Delay,
+    // TODO(xla): Configure deltas.
     delta: Duration,
-    waiting_room: Arc<RwLock<WaitingRoom<Instant>>>,
+    waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
 
 impl Clones {
-    fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant>>>) -> Self {
+    pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
-            delay: delay_for(Duration::from_millis(0)),
-            delta: Duration::from_millis(100),
+            delay: delay_for(STREAM_POLL_RATE),
+            delta: Duration::from_millis(1),
             waiting_room,
         }
     }
@@ -77,10 +81,10 @@ impl Stream for Clones {
 
         match Pin::new(&mut self.delay).poll(cx) {
             Poll::Ready(_) => {
-                self.delay = delay_for(Duration::from_millis(10));
+                self.delay = delay_for(STREAM_POLL_RATE);
 
                 waiting_room
-                    .next_clone(Instant::now(), self.delta)
+                    .next_clone()
                     .map_or(Poll::Pending, |url| Poll::Ready(Some(url)))
             },
             Poll::Pending => Poll::Pending,

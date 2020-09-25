@@ -419,38 +419,6 @@ impl<T, D> WaitingRoom<T, D> {
             })
     }
 
-    pub fn next_query(&self, timestamp: T, delta: T::Output) -> Option<RadUrn>
-    where
-        T: Sub<T> + Clone,
-        T::Output: Ord + Clone + Default,
-    {
-        let created = self.find(RequestState::Created, timestamp.clone(), Default::default());
-        let requested = self.find(RequestState::Requested, timestamp, delta);
-
-        created.or(requested).map(|(urn, _request)| urn.clone())
-    }
-
-    pub fn next_clone(&self, timestamp: T, delta: T::Output) -> Option<RadUrl>
-    where
-        T: Sub<T> + Clone,
-        T::Output: Ord + Clone + Default,
-    {
-        self.find(RequestState::Found, timestamp, Default::default())
-            .and_then(|(urn, request)| match request {
-                SomeRequest::Found(req) => req
-                    .state
-                    .peers
-                    .iter()
-                    .filter_map(|(peer_id, status)| match status {
-                        Status::Available => Some(urn.clone().into_rad_url(peer_id.clone())),
-                        _ => None,
-                    })
-                    .next()
-                    .map(|url| url.clone()),
-                _ => None,
-            })
-    }
-
     #[cfg(test)]
     pub fn insert<R>(&mut self, urn: RadUrn, request: R)
     where
@@ -481,7 +449,7 @@ mod test {
 
         assert_eq!(request, None);
 
-        let created = waiting_room.find(RequestState::Created, 0, 0);
+        let created = waiting_room.find(RequestState::Created);
         assert_eq!(
             created,
             Some((&urn, &SomeRequest::Created(Request::new(urn.clone(), 0)))),
@@ -734,7 +702,7 @@ mod test {
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
 
-        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
+        let ready = waiting_room.find(RequestState::Cloned);
         assert_eq!(ready, None);
 
         let _ = waiting_room.request(urn.clone(), 0);
@@ -743,7 +711,7 @@ mod test {
         waiting_room.cloning(&urn, peer.clone(), 0)?;
         waiting_room.cloned(&urn, urn.clone(), 0)?;
 
-        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
+        let ready = waiting_room.find(RequestState::Cloned);
         let expected = SomeRequest::Cloned(
             Request::new(urn.clone(), 0)
                 .request(0)
