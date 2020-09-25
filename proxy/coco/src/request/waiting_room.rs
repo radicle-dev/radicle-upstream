@@ -403,27 +403,20 @@ impl<T> WaitingRoom<T> {
         T: Sub<T> + Clone,
         T::Output: Ord + Clone + Default,
     {
-        if let Some((urn, request)) = self.find(RequestState::Found, timestamp, delta) {
-            match request {
+        self.find(RequestState::Found, timestamp, delta)
+            .and_then(|(urn, request)| match request {
                 SomeRequest::Found(req) => req
                     .state
                     .peers
                     .iter()
                     .filter_map(|(peer_id, status)| match status {
-                        Status::Available => Some(RadUrl {
-                            authority: peer_id.clone(),
-                            urn: urn.clone(),
-                        }),
+                        Status::Available => Some(urn.clone().into_rad_url(peer_id.clone())),
                         _ => None,
                     })
-                    .collect::<Vec<_>>()
-                    .first()
+                    .next()
                     .map(|url| url.clone()),
                 _ => None,
-            }
-        } else {
-            None
-        }
+            })
     }
 
     #[cfg(test)]

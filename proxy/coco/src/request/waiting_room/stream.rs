@@ -46,7 +46,7 @@ impl Stream for Queries {
                 waiting_room
                     .next_query(Instant::now(), self.delta)
                     .map_or(Poll::Pending, |urn| Poll::Ready(Some(urn)))
-            }
+            },
             Poll::Pending => Poll::Pending,
         }
     }
@@ -62,7 +62,7 @@ impl Clones {
     fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant>>>) -> Self {
         Self {
             delay: delay_for(Duration::from_millis(0)),
-            delta: Duration::from_secs(1),
+            delta: Duration::from_millis(100),
             waiting_room,
         }
     }
@@ -82,7 +82,7 @@ impl Stream for Clones {
                 waiting_room
                     .next_clone(Instant::now(), self.delta)
                     .map_or(Poll::Pending, |url| Poll::Ready(Some(url)))
-            }
+            },
             Poll::Pending => Poll::Pending,
         }
     }
@@ -100,9 +100,11 @@ mod test {
     use pretty_assertions::assert_eq;
     use tokio::{sync::RwLock, time::timeout};
 
-    use librad::keys::SecretKey;
-    use librad::peer::PeerId;
-    use librad::uri::{RadUrl, RadUrn};
+    use librad::{
+        keys::SecretKey,
+        peer::PeerId,
+        uri::{RadUrl, RadUrn},
+    };
 
     use crate::request::waiting_room::{Config, WaitingRoom};
 
@@ -190,15 +192,16 @@ mod test {
             tokio::spawn(async move {
                 let mut waiting_room = waiting_room.write().await;
 
-                for RadUrl { urn, .. } in urls {
+                for RadUrl { urn, authority } in urls {
                     waiting_room.request(urn.clone(), Instant::now());
                     waiting_room.queried(&urn.clone(), Instant::now()).unwrap();
+                    waiting_room.found(&urn, authority, Instant::now()).unwrap();
                 }
             });
         }
 
         let mut have = timeout(
-            Duration::from_millis(50),
+            Duration::from_secs(1),
             clones
                 .take(2)
                 .zip(stream::repeat(waiting_room.clone()))
@@ -213,8 +216,8 @@ mod test {
         )
         .await?;
 
-        // urls.sort();
-        // have.sort();
+        urls.sort_by_key(|url| url.urn.clone());
+        have.sort_by_key(|url| url.urn.clone());
 
         assert_eq!(urls, have);
 
