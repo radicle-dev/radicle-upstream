@@ -186,23 +186,12 @@ impl Serialize for CommitHeader {
 }
 
 /// A selection of commit headers and their statistics.
+#[derive(Serialize)]
 pub struct Commits {
     /// The commit headers
     pub headers: Vec<CommitHeader>,
     /// The statistics for the commit headers
     pub stats: Stats,
-}
-
-impl Serialize for Commits {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Commits", 2)?;
-        state.serialize_field("headers", &self.headers)?;
-        state.serialize_field("stats", &self.stats)?;
-        state.end()
-    }
 }
 
 /// Git object types.

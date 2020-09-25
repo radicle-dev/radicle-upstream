@@ -715,29 +715,18 @@ mod test {
         };
 
         let branch = git::Branch::local("master");
-        let head = coco::oid::Oid::try_from("223aaf87d6ea62eef0014857640fd7c8dd0f80b5")
-            .map_err(coco::Error::from)?;
         let res = request()
             .method("GET")
             .path(&format!("/commits/{}?branch={}", urn, branch.name))
             .reply(&api)
             .await;
 
-        let (want, head_commit) = ctx.state.lock().await.with_browser(&urn, |mut browser| {
-            let want = coco::commits(&mut browser, branch.clone())?;
-            let head_commit = coco::commit_header(&mut browser, head)?;
-            Ok((want, head_commit))
+        let want = ctx.state.lock().await.with_browser(&urn, |mut browser| {
+            Ok(coco::commits(&mut browser, branch.clone())?)
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have["headers"], json!(want.headers));
-            assert_eq!(have["headers"].as_array().unwrap().len(), 14);
-            assert_eq!(have["stats"]["commits"], json!(14));
-            assert_eq!(
-                have["headers"].as_array().unwrap().first().unwrap(),
-                &serde_json::to_value(&head_commit).unwrap(),
-                "the first commit is the head of the branch"
-            );
+            assert_eq!(have, json!(want));
         });
 
         Ok(())
