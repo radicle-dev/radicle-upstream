@@ -9,15 +9,15 @@ before(() => {
 beforeEach(() => {
   cy.visit("./public/index.html#/profile/projects");
   cy.contains("platinum").click();
-  // cy.contains("Source").click();
+  // Make sure there is enough time to load the commits which refreshes the horizontal menu
+  cy.wait(500);
+  cy.contains("Source").click();
 });
 
 context("repository stats", () => {
   it("shows the correct numbers", () => {
     cy.pick("header", "project-stats").contains("2 Branches");
     cy.pick("header", "project-stats").contains("4 Contributors");
-    // Make sure there is enough time to load the commits
-    cy.wait(500);
     cy.pick("horizontal-menu", "Commits").contains("Commits 14");
   });
 });
