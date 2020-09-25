@@ -244,6 +244,8 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
+    ///
+    /// TODO(xla): Take a RadUrl.
     pub fn found(&mut self, urn: &RadUrn, peer: PeerId, timestamp: T) -> Result<(), Error>
     where
         T: Clone,

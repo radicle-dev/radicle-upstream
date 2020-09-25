@@ -15,7 +15,7 @@ use tokio::{
 use librad::{
     net::peer::{Gossip, RunLoop},
     peer::PeerId,
-    uri::RadUrn,
+    uri::{RadUrl, RadUrn},
 };
 
 use crate::{
@@ -117,17 +117,6 @@ impl Peer {
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
 
-        // Cocosphere
-        //
-        // 0. - Something asks for a URN
-        // 1. - Request URN on waiting room
-        // 2. - We sent the `Want`
-        // 3. - Queried URN on waiting room
-        // 4. - Listen for `Have`s
-        // 5. - Found URN on waiting room
-        // 6. - Cloning URN from peer
-        // 7. - Cloned URN from peer
-        // 8. - Profit
         let mut run_state = RunState::from(run_config);
         loop {
             let event = tokio::select! {
@@ -186,6 +175,14 @@ impl Peer {
                             }
                         }
                     },
+                    Command::FoundUrl(RadUrl {
+                        authority: peer_id,
+                        urn,
+                    }) => waiting_room
+                        .write()
+                        .await
+                        .found(&urn, peer_id, Instant::now())
+                        .unwrap(),
                     Command::QueryUrn(urn) => {
                         let protocol = state.lock().await.api.protocol().clone();
 

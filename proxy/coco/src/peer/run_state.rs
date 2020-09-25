@@ -6,7 +6,11 @@ use std::{
 };
 
 use librad::{
-    net::{peer::Gossip, protocol::ProtocolEvent},
+    net::{
+        gossip::{Has, Info},
+        peer::Gossip,
+        protocol::ProtocolEvent,
+    },
     peer::PeerId,
     uri::{RadUrl, RadUrn},
 };
@@ -31,6 +35,7 @@ pub enum Command {
     /// Start the announcement subroutine.
     Announce,
     CloneUrl(RadUrl),
+    FoundUrl(RadUrl),
     QueryUrn(RadUrn),
     /// Initiate a full sync with `PeerId`.
     SyncPeer(PeerId),
@@ -257,6 +262,17 @@ impl RunState {
                 Status::Online(_) | Status::Syncing(_, _),
                 Event::Request(RequestEvent::Clone(url)),
             ) => vec![Command::CloneUrl(url)],
+            // Found URN.
+            (
+                _,
+                Event::Protocol(ProtocolEvent::Gossip(Info::Has(Has {
+                    provider,
+                    val: Gossip { urn, .. },
+                }))),
+            ) => vec![Command::FoundUrl(RadUrl {
+                authority: provider.peer_id,
+                urn,
+            })],
             _ => vec![],
         }
     }
