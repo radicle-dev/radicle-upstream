@@ -8,7 +8,6 @@
 
   const dispatch = createEventDispatcher();
 
-  // Dropdown state.
   let expanded = false;
 
   const toggleDropdown = () => {
@@ -39,7 +38,7 @@
   }
 </style>
 
-<Overlay expand={expanded} on:dismiss={hide}>
+<Overlay {expanded} on:hide={hide}>
   <div class="clone-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">
       Checkout a working copy to your local disk

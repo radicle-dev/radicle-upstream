@@ -118,10 +118,7 @@
   }
 </style>
 
-<Overlay
-  on:dismiss={hideDropdown}
-  expand={expanded}
-  style="position: relative;">
+<Overlay {expanded} on:hide={hideDropdown} style="position: relative;">
   <div
     class="peer-selector"
     data-cy="peer-selector"

@@ -35,8 +35,6 @@
   export let value = "";
   export let disabled: boolean = false;
 
-  let dropdown;
-
   const toggleMenu = () => {
     if (disabled) {
       return;
@@ -120,8 +118,8 @@
   }
 </style>
 
-<Overlay on:dismiss={hideMenu} expand={expanded}>
-  <div data-cy={dataCy} class="dropdown" {style} bind:this={dropdown}>
+<Overlay {expanded} on:hide={hideMenu}>
+  <div data-cy={dataCy} class="dropdown" {style}>
     <div
       class="button"
       class:invalid={!valid}

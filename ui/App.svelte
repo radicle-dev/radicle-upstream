@@ -14,6 +14,7 @@
     ModalOverlay,
   } from "./DesignSystem/Component";
   import { Button } from "./DesignSystem/Primitive";
+
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
 

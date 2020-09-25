@@ -24,11 +24,8 @@
     currentSelectedPeer = revisions[0];
   }
 
-  // Dropdown element. Set by the view.
-  let dropdown = null;
-
-  const showDropdown = () => {
-    expanded = true;
+  const toggle = () => {
+    expanded = !expanded;
   };
 
   const hideDropdown = () => {
@@ -114,13 +111,12 @@
   }
 </style>
 
-<Overlay expand={expanded} on:dismiss={hideDropdown}>
+<Overlay {expanded} on:hide={hideDropdown}>
   <div
-    bind:this={dropdown}
     class="revision-selector"
     data-cy="revision-selector"
     data-revision={currentRevision.name}
-    on:click={showDropdown}
+    on:click={toggle}
     hidden={expanded}>
     <div class="selector-avatar typo-overflow-ellipsis">
       <div style="display: flex; overflow: hidden;">

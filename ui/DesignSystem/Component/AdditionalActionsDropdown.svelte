@@ -25,8 +25,6 @@
     item.event();
   };
 
-  export let dataCy = "";
-  export let style = "";
   export let menuItems: {
     title: string;
     icon: typeof SvelteComponent;
@@ -36,6 +34,9 @@
     disabled?: boolean;
   }[];
   export let headerTitle: string;
+
+  export let dataCy = "";
+  export let style = "";
 </script>
 
 <style>
@@ -120,7 +121,7 @@
   }
 </style>
 
-<Overlay expand={expanded} on:dismiss={hideModal}>
+<Overlay {expanded} on:hide={hideModal}>
   <div data-cy={dataCy} class="container" {style}>
     <button
       class="additional-actions-dropdown-button"

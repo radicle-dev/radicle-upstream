@@ -1,33 +1,30 @@
 <script lang="ts">
+  // Wrapper for expanding/dismissing overlays
+
   import { createEventDispatcher } from "svelte";
 
-  import {
-    openDropdown,
-    closeCurrentDropdown,
-    currentlyOpen,
-  } from "../../src/overlay";
+  import { openOverlay, closeOverlay, currentlyOpen } from "../../src/overlay";
 
-  export let expand: boolean;
+  export let expanded: boolean;
   export let style = "";
 
   let container;
 
+  const dispatch = createEventDispatcher();
+
+  const hide = () => dispatch("hide");
+  const open = () => openOverlay(container);
+
   const handleClick = (ev: MouseEvent) => {
     const component = $currentlyOpen;
     const inside = component && component.contains(ev.target);
-    if (!inside) closeCurrentDropdown();
+    if (!inside) closeOverlay();
   };
 
-  const dispatch = createEventDispatcher();
-
-  const dismiss = () => dispatch("dismiss");
-  const open = () => openDropdown(container);
-
-  $: if (expand) open();
-  $: if ($currentlyOpen !== container) dismiss();
+  $: if (expanded) open();
+  $: if ($currentlyOpen !== container) hide();
 </script>
 
-<!-- Simple wrapper for expanded/dismissing overlays -->
 <svelte:window on:click={handleClick} />
 
 <div bind:this={container} {style}>

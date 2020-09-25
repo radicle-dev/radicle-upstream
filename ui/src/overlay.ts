@@ -4,10 +4,10 @@ import { SvelteComponent } from "svelte";
 const currentlyOpenStore = writable<SvelteComponent | undefined>(undefined);
 export const currentlyOpen = derived(currentlyOpenStore, store => store);
 
-export const openDropdown = (component: SvelteComponent) => {
+export const openOverlay = (component: SvelteComponent) => {
   currentlyOpenStore.set(component);
 };
 
-export const closeCurrentDropdown = () => {
+export const closeOverlay = () => {
   currentlyOpenStore.set(undefined);
 };
