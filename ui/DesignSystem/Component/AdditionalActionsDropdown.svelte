@@ -1,23 +1,29 @@
 <script>
   import { fade } from "svelte/transition";
 
+  import {
+    openDropdown,
+    closeCurrentDropdown,
+    currentlyOpen,
+  } from "../../src/dropdown.ts";
+
   import { Icon } from "../Primitive";
   import Urn from "./Urn.svelte";
   import Tooltip from "./Tooltip.svelte";
 
+  let dropdown;
   let triggerEl;
   let expanded = false;
 
   const toggleModal = () => {
     expanded = !expanded;
-  };
-
-  const hideModal = () => {
-    expanded = false;
+    if (expanded) {
+      openDropdown(dropdown);
+    }
   };
 
   const handleItemSelection = item => {
-    hideModal();
+    closeCurrentDropdown();
     item.event();
   };
 
@@ -25,6 +31,8 @@
   export let style = null;
   export let menuItems = null;
   export let headerTitle = null;
+
+  $: expanded = $currentlyOpen === dropdown;
 </script>
 
 <style>
@@ -109,7 +117,6 @@
   }
 </style>
 
-<svelte:window on:click={hideModal} />
 <div data-cy={dataCy} class="container" {style}>
   <button
     class="additional-actions-dropdown-button"
@@ -117,34 +124,34 @@
     on:click|stopPropagation={toggleModal}>
     <svelte:component this={Icon.Ellipsis} />
   </button>
-  {#if expanded}
-    <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
-      {#if headerTitle}
-        <div class="header">
-          <Urn urn={headerTitle} truncate />
-        </div>
-      {/if}
+  <div
+    out:fade={{ duration: 100 }}
+    class="modal"
+    hidden={!expanded}
+    bind:this={dropdown}>
+    {#if headerTitle}
+      <div class="header">
+        <Urn urn={headerTitle} truncate />
+      </div>
+    {/if}
 
-      {#if menuItems}
-        <div class="menu" data-cy="dropdown-menu">
-          {#each menuItems as item}
-            {#if item !== undefined}
-              <Tooltip value={item.tooltip} position="bottom">
-                <div
-                  data-cy={item.dataCy}
-                  class="menu-item"
-                  class:disabled={item.disabled}
-                  on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
-                  <svelte:component
-                    this={item.icon}
-                    style="margin-right: 12px" />
-                  <p>{item.title}</p>
-                </div>
-              </Tooltip>
-            {/if}
-          {/each}
-        </div>
-      {/if}
-    </div>
-  {/if}
+    {#if menuItems}
+      <div class="menu" data-cy="dropdown-menu">
+        {#each menuItems as item}
+          {#if item !== undefined}
+            <Tooltip value={item.tooltip} position="bottom">
+              <div
+                data-cy={item.dataCy}
+                class="menu-item"
+                class:disabled={item.disabled}
+                on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
+                <svelte:component this={item.icon} style="margin-right: 12px" />
+                <p>{item.title}</p>
+              </div>
+            </Tooltip>
+          {/if}
+        {/each}
+      </div>
+    {/if}
+  </div>
 </div>
