@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { Button, Input } from "../../DesignSystem/Primitive";
-  import { SegmentedControl } from "../../DesignSystem/Component";
-  import Members from "../Org/Members.svelte";
+  import { Button, Input } from "../../Primitive";
+  import { SegmentedControl } from "../../Component";
 
-  // TODO(nuno): receive these instead
-  let amount = "100";
-  const balance = 390;
-  let enabled = false;
-  const members = [`juliendonck`, `monadic`, `rudolfs`, `nakamoto`];
+  export let amount: number;
+  export let balance: number;
+  export let enabled: boolean;
+  export let members: string[];
 
   const options = [
     {
@@ -77,9 +75,9 @@
           <p class="typo-text-bold">Monthly contribution</p>
           <p>
             Set a fixed monthly amount to contribute to your pool. With ${amount}
-            per month, pool members get ${parseInt(amount) / members.length} a month
-            each. This is accessible in real time, so if a user is in the pool for
-            2 days, they can already claim $0.95).
+            per month, pool members get ${amount / members.length} a month each.
+            This is accessible in real time, so if a user is in the pool for 2 days,
+            they can already claim $0.95).
           </p>
         </header>
         <div class="item">
@@ -97,7 +95,7 @@
           <p class="typo-text-bold">Balance</p>
           <p>
             The current balance of your pool. Currently ${amount} per month is required
-            to keep your support going, so you don’t need to top up for {Math.floor(balance / parseInt(amount))}
+            to keep your support going, so you don’t need to top up for {Math.floor(balance / amount)}
             months.
           </p>
         </header>

@@ -1,5 +1,11 @@
 <script lang="ts">
-  import Pool from "../Screen/Funding/Pool.svelte";
+  import Pool from "../DesignSystem/Component/Funding/Pool.svelte";
+
+  // TODO(nuno): fetch these
+  const amount = 99;
+  const balance = 430;
+  const enabled = false;
+  const members = [`juliendonck`, `monadic`, `rudolfs`, `nakamoto`, `peterpan`];
 </script>
 
 <style>
@@ -11,5 +17,5 @@
 </style>
 
 <div class="container">
-  <Pool />
+  <Pool {amount} {balance} {enabled} {members} />
 </div>
