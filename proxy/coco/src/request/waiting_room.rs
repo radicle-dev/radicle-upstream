@@ -9,10 +9,13 @@ use std::{collections::HashMap, ops::Sub};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{peer::PeerId, uri::RadUrn};
+use librad::{
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 
 use crate::request::{
-    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, TimedOut,
+    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
 };
 
 /// The maximum number of query attempts that can be made for a single request.
@@ -360,37 +363,58 @@ impl<T, D> WaitingRoom<T, D> {
 
     /// Filter the `WaitingRoom` by:
     ///   * Choosing which [`RequestState`] you are looking for
-    ///   * Checking the elapsed time between the `timestamp` and the `Request`'s timestamp are
-    ///   greater than the `delta` provided.
     pub fn filter(
         &self,
         request_state: RequestState,
-        timestamp: T,
-        delta: D,
-    ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)>
-    where
-        T: Sub<T, Output = D> + Clone,
-        D: Ord + Clone,
-    {
+    ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)> {
         self.iter()
-            .filter(move |(_, request)| request.elapsed(timestamp.clone()) >= delta.clone())
             .filter(move |(_, request)| RequestState::from(*request) == request_state.clone())
     }
 
     /// Find the first occurring request based on the call to [`WaitingRoom::filter`].
     // Clippy is confusing OUR filter with Iterator's filter. So this is telling it to go away.
     #[allow(clippy::filter_next)]
-    pub fn find(
-        &self,
-        request_state: RequestState,
-        timestamp: T,
-        delta: D,
-    ) -> Option<(&RadUrn, &SomeRequest<T>)>
+    pub fn find(&self, request_state: RequestState) -> Option<(&RadUrn, &SomeRequest<T>)> {
+        self.filter(request_state).next()
+    }
+
+    /// Get the next `Request` that is in a query state, i.e. `Created` or `Requested`.
+    ///
+    /// In the case of the `Requested` state we check elapsed time between the `timestamp` and the
+    /// `Request`'s timestamp is greater than the `delta` provided in the [`Config`].
+    pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
     where
         T: Sub<T, Output = D> + Clone,
         D: Ord + Clone,
     {
-        self.filter(request_state, timestamp, delta).next()
+        let created = self.find(RequestState::Created);
+        let requested = self
+            .filter(RequestState::Requested)
+            .filter(move |(_, request)| {
+                request.elapsed(timestamp.clone()) >= self.config.delta.clone()
+            })
+            .next();
+
+        created.or(requested).map(|(urn, _request)| urn.clone())
+    }
+
+    /// Get the next `Request` that is in the the `Found` state and the status of the peer is
+    /// `Available`.
+    pub fn next_clone(&self) -> Option<RadUrl> {
+        self.find(RequestState::Found)
+            .and_then(|(urn, request)| match request {
+                SomeRequest::Found(req) => req
+                    .state
+                    .peers
+                    .iter()
+                    .filter_map(|(peer_id, status)| match status {
+                        Status::Available => Some(urn.clone().into_rad_url(peer_id.clone())),
+                        _ => None,
+                    })
+                    .next()
+                    .map(|url| url.clone()),
+                _ => None,
+            })
     }
 
     #[cfg(test)]
