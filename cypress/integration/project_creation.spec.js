@@ -132,6 +132,13 @@ context("project creation", () => {
 
     context("name", () => {
       it("prevents the user from creating a project with an invalid name", () => {
+        const characterError =
+          "Your project name has unsupported characters in it. You can only use basic letters, numbers, and the _ , - and . characters.";
+        const firstCharacterError =
+          "Your project name should start with a letter or a number.";
+        const lengthError =
+          "Your project name should be at least 2 characters long.";
+
         // the submit button is disabled when name is not present
         cy.pick("page", "name").clear();
         cy.pick("create-project-button").should("be.disabled");
@@ -144,31 +151,23 @@ context("project creation", () => {
 
         // special characters are disallowed
         cy.pick("page", "name").clear();
-        cy.pick("page", "name").type("$bad");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page", "name").type("bad$");
+        cy.pick("page").contains(characterError);
 
         // can't start with an underscore
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("_nein");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page").contains(firstCharacterError);
 
         // can't start with a dash
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("-nope");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page").contains(firstCharacterError);
 
         // has to be at least two characters long
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("x");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page").contains(lengthError);
       });
     });
 
