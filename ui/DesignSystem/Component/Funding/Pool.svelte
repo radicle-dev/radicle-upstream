@@ -6,6 +6,8 @@
   export let balance: number;
   export let enabled: boolean;
   export let members: string[];
+  export let onFillUp: () => Promise<void>;
+  export let onDrain: () => Promise<void>;
 
   const options = [
     {
@@ -101,10 +103,16 @@
         </header>
         <div class="item">
           <h3>${balance}</h3>
-          <Button dataCy="fill-pool-button" variant="secondary">
+          <Button
+            dataCy="fill-pool-button"
+            variant="secondary"
+            on:click={onFillUp}>
             Fill up your pool 😉
           </Button>
-          <Button dataCy="fill-pool-button" variant="outline">
+          <Button
+            dataCy="fill-pool-button"
+            variant="outline"
+            on:click={onDrain}>
             Drain up your pool
           </Button>
         </div>

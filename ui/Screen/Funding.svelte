@@ -6,6 +6,14 @@
   const balance = 430;
   const enabled = false;
   const members = [`juliendonck`, `monadic`, `rudolfs`, `nakamoto`, `peterpan`];
+  const onFillUp = (): Promise<void> => {
+    window.alert("FillUp");
+    return Promise.resolve();
+  };
+  const onDrain = (): Promise<void> => {
+    window.alert("Drain");
+    return Promise.resolve();
+  };
 </script>
 
 <style>
@@ -17,5 +25,5 @@
 </style>
 
 <div class="container">
-  <Pool {amount} {balance} {enabled} {members} />
+  <Pool {amount} {balance} {enabled} {members} {onFillUp} {onDrain} />
 </div>
