@@ -111,76 +111,23 @@ impl Peer {
     /// in order to be able to get notified of errors -- in which case, however, not much can be
     /// done except for creating a new [`Peer`] and put it into running state.
     pub fn into_running(self) -> Running {
-        let Self {
-            run_loop,
-            state,
-            store,
-            subscriber,
-        } = self;
+        self.into()
+    }
+}
 
-        let protocol = {
-            let (handle, registration) = future::AbortHandle::new_pair();
-            let fut = future::Abortable::new(run_loop, registration);
-            let join = tokio::spawn(fut);
+/// Announcement subroutine.
+async fn announce(state: &State, store: &kv::Store) -> Result<announcement::Updates, Error> {
+    let old = announcement::load(store)?;
+    let new = announcement::build(state).await?;
+    let updates = announcement::diff(&old, &new);
 
-            (join, handle)
-        };
+    announcement::announce(state, updates.iter()).await;
 
-        let announce = {
-            let (handle, reg) = future::AbortHandle::new_pair();
-            let fut = async move {
-                let mut protocol_events = state.api.protocol().subscribe().await;
-                let mut timer = tokio::time::interval(Duration::from_secs(1));
-
-                loop {
-                    let result = tokio::select! {
-                        _ = timer.tick() => {
-                            Self::announce(&state, &store).await.map(Event::Announced)
-                        },
-                        Some(event) = protocol_events.next() => {
-                            Ok(Event::Protocol(event))
-                        },
-                        else => break,
-                    };
-
-                    match result {
-                        // Propagate if one of the select failed.
-                        Err(err) => return Err(err),
-                        Ok(event) => {
-                            log::info!("{:?}", event);
-
-                            // Send will error if there are no active receivers.
-                            // This case is expected and should not crash the
-                            // run loop.
-                            subscriber.send(event).ok();
-                        },
-                    }
-                }
-
-                Ok(())
-            };
-            let join = tokio::spawn(future::Abortable::new(fut, reg));
-
-            (join, handle)
-        };
-
-        Running { protocol, announce }
+    if !updates.is_empty() {
+        announcement::save(store, updates.clone()).map_err(Error::from)?;
     }
 
-    /// Announcement subroutine.
-    async fn announce(state: &State, store: &kv::Store) -> Result<announcement::Updates, Error> {
-        let old = announcement::load(store)?;
-        let new = announcement::build(state).await?;
-        let updates = announcement::diff(&old, &new);
-
-        announcement::announce(state, updates.iter()).await;
-
-        if !updates.is_empty() {
-            announcement::save(store, updates.clone()).map_err(Error::from)?;
-        }
-
-        Ok(updates)
-    }
+    Ok(updates)
 }
 
 /// [`JoinHandle`] for the protocol run loop task.
@@ -210,7 +157,60 @@ impl Running {
 
 impl From<Peer> for Running {
     fn from(peer: Peer) -> Self {
-        peer.into_running()
+        let Peer {
+            run_loop,
+            state,
+            store,
+            subscriber,
+        } = peer;
+
+        let protocol = {
+            let (handle, registration) = future::AbortHandle::new_pair();
+            let fut = future::Abortable::new(run_loop, registration);
+            let join = tokio::spawn(fut);
+
+            (join, handle)
+        };
+
+        let announce = {
+            let fut = async move {
+                let mut protocol_events = state.api.protocol().subscribe().await;
+                let mut timer = tokio::time::interval(Duration::from_secs(1));
+
+                loop {
+                    let result = tokio::select! {
+                        _ = timer.tick() => {
+                            announce(&state, &store).await.map(Event::Announced)
+                        },
+                        Some(event) = protocol_events.next() => {
+                            Ok(Event::Protocol(event))
+                        },
+                        else => break,
+                    };
+
+                    match result {
+                        // Propagate if one of the select failed.
+                        Err(err) => return Err(err),
+                        Ok(event) => {
+                            log::info!("{:?}", event);
+
+                            // Send will error if there are no active receivers.
+                            // This case is expected and should not crash the
+                            // run loop.
+                            subscriber.send(event).ok();
+                        },
+                    }
+                }
+
+                Ok(())
+            };
+            let (handle, registration) = future::AbortHandle::new_pair();
+            let join = tokio::spawn(future::Abortable::new(fut, registration));
+
+            (join, handle)
+        };
+
+        Self { protocol, announce }
     }
 }
 
