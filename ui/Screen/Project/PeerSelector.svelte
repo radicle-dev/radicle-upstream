@@ -10,12 +10,12 @@
 
   export let currentPeerId = null;
   export let expanded = false;
+  export let revisions = null;
 
   let currentSelectedPeer;
 
   const session = getContext("session");
   const { metadata } = getContext("project");
-  const revisions = getContext("revisions");
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {

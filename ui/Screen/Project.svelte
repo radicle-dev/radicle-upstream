@@ -128,7 +128,7 @@
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
-    <Remote store={revisionsStore} context="revisions">
+    <Remote store={revisionsStore} let:data={revisions} context="revisions">
       <Header.Large
         name={project.metadata.name}
         urn={project.shareableEntityIdentifier}
@@ -139,7 +139,8 @@
             <div class="revision-selector-wrapper">
               <RevisionSelector
                 bind:currentPeerId={$currentPeerId}
-                bind:currentRevision={$currentRevision} />
+                bind:currentRevision={$currentRevision}
+                {revisions} />
             </div>
             <Remote store={commitsStore} let:data={commits}>
               <HorizontalMenu
@@ -161,6 +162,7 @@
           <div style="display: flex">
             <PeerSelector
               bind:currentPeerId={$currentPeerId}
+              {revisions}
               on:select={() => {
                 resetCurrentRevision();
               }} />
