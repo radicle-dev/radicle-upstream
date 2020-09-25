@@ -1,4 +1,4 @@
-import { derived, get, writable } from "svelte/store";
+import { derived, writable } from "svelte/store";
 import { SvelteComponent } from "svelte";
 
 const currentlyOpenStore = writable<SvelteComponent | undefined>(undefined);

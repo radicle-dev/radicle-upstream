@@ -1,6 +1,5 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Badge from "./Badge.svelte";
-import ClickMonitor from "./ClickMonitor.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
@@ -18,6 +17,7 @@ import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
+import Overlay from "./Overlay.svelte";
 import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
@@ -49,7 +49,6 @@ import QR from "./QR.svelte";
 export {
   AdditionalActionsDropdown,
   Badge,
-  ClickMonitor,
   Comment,
   Copyable,
   Dropdown,
@@ -67,6 +66,7 @@ export {
   Notification,
   NotificationFaucet,
   ModalLayout,
+  Overlay,
   Placeholder,
   ProjectCard,
   ProjectList,

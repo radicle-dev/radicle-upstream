@@ -9,7 +9,6 @@
   import { clear, fetch, session as store } from "./src/session.ts";
 
   import {
-    ClickMonitor,
     NotificationFaucet,
     Remote,
     ModalOverlay,
@@ -107,7 +106,6 @@
 
 <Hotkeys />
 <ModalOverlay {modalRoutes} />
-<ClickMonitor />
 <NotificationFaucet />
 <Theme />
 

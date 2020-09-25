@@ -4,25 +4,18 @@
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
   import { RemoteHelperHint, Tooltip } from "../../DesignSystem/Component";
   import { dismissRemoteHelperHint, settings } from "../../src/session.ts";
+  import Overlay from "../../DesignSystem/Component/Overlay.svelte";
 
   const dispatch = createEventDispatcher();
 
-  // Dropdown element. Set by the view.
-  let dropdown = null;
   // Dropdown state.
   let expanded = false;
 
-  const toggleDropdown = ev => {
+  const toggleDropdown = () => {
     expanded = !expanded;
-    ev && ev.stopPropagation();
   };
 
-  const clickOutside = ev => {
-    // Any click *outside* the dropdown should hide the dropdown.
-    if (expanded && dropdown !== ev.target && !dropdown.contains(ev.target)) {
-      expanded = false;
-    }
-  };
+  const hide = () => (expanded = false);
 
   let checkoutDirectoryPath;
 </script>
@@ -46,44 +39,46 @@
   }
 </style>
 
-<svelte:window on:click={clickOutside} />
+<Overlay expand={expanded} on:dismiss={hide}>
+  <div class="clone-dropdown" hidden={!expanded}>
+    <p style="margin-bottom: 0.5rem;">
+      Checkout a working copy to your local disk
+    </p>
 
-<div class="clone-dropdown" hidden={!expanded} bind:this={dropdown}>
-  <p style="margin-bottom: 0.5rem;">
-    Checkout a working copy to your local disk
-  </p>
+    <Input.Directory
+      style="margin-bottom: 0.5rem;"
+      placeholder="~/path/to/folder"
+      buttonVariant="outline"
+      bind:path={checkoutDirectoryPath} />
 
-  <Input.Directory
-    style="margin-bottom: 0.5rem;"
-    placeholder="~/path/to/folder"
-    buttonVariant="outline"
-    bind:path={checkoutDirectoryPath} />
+    {#if $settings.appearance.hints.showRemoteHelper}
+      <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
+    {/if}
 
-  {#if $settings.appearance.hints.showRemoteHelper}
-    <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
-  {/if}
+    <Tooltip
+      value={!checkoutDirectoryPath ? 'Please select a folder' : ''}
+      position="bottom">
+      <Button
+        dataCy="checkout-button"
+        on:click={() => {
+          dispatch('checkout', {
+            checkoutDirectoryPath: checkoutDirectoryPath,
+          });
+          toggleDropdown();
+        }}
+        disabled={!checkoutDirectoryPath}
+        variant="secondary"
+        style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
+        Checkout
+      </Button>
+    </Tooltip>
+  </div>
 
-  <Tooltip
-    value={!checkoutDirectoryPath ? 'Please select a folder' : ''}
-    position="bottom">
-    <Button
-      dataCy="checkout-button"
-      on:click={() => {
-        dispatch('checkout', { checkoutDirectoryPath: checkoutDirectoryPath });
-        toggleDropdown();
-      }}
-      disabled={!checkoutDirectoryPath}
-      variant="secondary"
-      style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
-      Checkout
-    </Button>
-  </Tooltip>
-</div>
-
-<Button
-  variant="transparent"
-  icon={Icon.ArrowBoxUpRight}
-  on:click={toggleDropdown}
-  dataCy="checkout-modal-toggle">
-  Checkout
-</Button>
+  <Button
+    variant="transparent"
+    icon={Icon.ArrowBoxUpRight}
+    on:click={toggleDropdown}
+    dataCy="checkout-modal-toggle">
+    Checkout
+  </Button>
+</Overlay>

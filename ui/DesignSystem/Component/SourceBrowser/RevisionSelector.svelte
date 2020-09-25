@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { openDropdown, currentlyOpen } from "../../../src/dropdown";
   import { isExperimental } from "../../../../native/ipc.js";
   import { RevisionType } from "../../../src/source.ts";
 
+  import Overlay from "../Overlay.svelte";
   import { Icon } from "../../Primitive";
 
   export let currentRevision = null;
@@ -29,7 +29,6 @@
 
   const showDropdown = () => {
     expanded = true;
-    openDropdown(dropdown);
   };
 
   const hideDropdown = () => {
@@ -41,8 +40,6 @@
     dispatch("select", { revision, peerId });
     hideDropdown();
   };
-
-  $: if ($currentlyOpen !== dropdown) hideDropdown();
 </script>
 
 <style>
@@ -117,78 +114,82 @@
   }
 </style>
 
-<div
-  bind:this={dropdown}
-  class="revision-selector"
-  data-cy="revision-selector"
-  data-revision={currentRevision.name}
-  on:click={showDropdown}
-  hidden={expanded}>
-  <div class="selector-avatar typo-overflow-ellipsis">
-    <div style="display: flex; overflow: hidden;">
-      {#if currentRevision.type === RevisionType.Branch}
-        <Icon.Branch
-          dataCy="branch-icon"
-          style="vertical-align: bottom; fill: var(--color-foreground-level-4);
-          flex-shrink: 0;" />
-      {:else}
-        <Icon.Label
-          dataCy="tag-icon"
-          style="vertical-align: bottom; fill: var(--color-foreground-level-4);
-          flex-shrink: 0;" />
-      {/if}
-      <p class="revision-name typo-overflow-ellipsis">{currentRevision.name}</p>
-    </div>
-  </div>
-  <div class="selector-expand">
-    <Icon.ChevronUpDown
-      style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
-  </div>
-</div>
-<div class="revision-dropdown-container">
-  <div class="revision-dropdown" hidden={!expanded}>
-    <ul>
-      {#each currentSelectedPeer.branches as branch}
-        <li
-          class="branch typo-overflow-ellipsis"
-          class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-          data-branch={branch}
-          on:click|stopPropagation={() => selectRevision(
-              currentSelectedPeer.identity.peerId,
-              {
-                type: RevisionType.Branch,
-                peerId: currentSelectedPeer.identity.peerId,
-                name: branch,
-              }
-            )}>
+<Overlay expand={expanded} on:dismiss={hideDropdown}>
+  <div
+    bind:this={dropdown}
+    class="revision-selector"
+    data-cy="revision-selector"
+    data-revision={currentRevision.name}
+    on:click={showDropdown}
+    hidden={expanded}>
+    <div class="selector-avatar typo-overflow-ellipsis">
+      <div style="display: flex; overflow: hidden;">
+        {#if currentRevision.type === RevisionType.Branch}
           <Icon.Branch
             dataCy="branch-icon"
-            style="vertical-align: bottom; fill:
-            var(--color-foreground-level-4)" />
-          <span class="revision-name typo-text">{branch}</span>
-        </li>
-      {/each}
-      {#if isExperimental()}
-        {#each currentSelectedPeer.tags as tag}
+            style="vertical-align: bottom; fill: var(--color-foreground-level-4);
+          flex-shrink: 0;" />
+        {:else}
+          <Icon.Label
+            dataCy="tag-icon"
+            style="vertical-align: bottom; fill: var(--color-foreground-level-4);
+          flex-shrink: 0;" />
+        {/if}
+        <p class="revision-name typo-overflow-ellipsis">
+          {currentRevision.name}
+        </p>
+      </div>
+    </div>
+    <div class="selector-expand">
+      <Icon.ChevronUpDown
+        style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+    </div>
+  </div>
+  <div class="revision-dropdown-container">
+    <div class="revision-dropdown" hidden={!expanded}>
+      <ul>
+        {#each currentSelectedPeer.branches as branch}
           <li
-            class="tag typo-overflow-ellipsis"
-            class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-            data-tag={tag}
+            class="branch typo-overflow-ellipsis"
+            class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
+            data-branch={branch}
             on:click|stopPropagation={() => selectRevision(
                 currentSelectedPeer.identity.peerId,
                 {
-                  type: RevisionType.Tag,
-                  name: tag,
+                  type: RevisionType.Branch,
+                  peerId: currentSelectedPeer.identity.peerId,
+                  name: branch,
                 }
               )}>
-            <Icon.Label
-              dataCy="tag-icon"
+            <Icon.Branch
+              dataCy="branch-icon"
               style="vertical-align: bottom; fill:
-              var(--color-foreground-level-4)" />
-            <span class="revision-name typo-text">{tag}</span>
+            var(--color-foreground-level-4)" />
+            <span class="revision-name typo-text">{branch}</span>
           </li>
         {/each}
-      {/if}
-    </ul>
+        {#if isExperimental()}
+          {#each currentSelectedPeer.tags as tag}
+            <li
+              class="tag typo-overflow-ellipsis"
+              class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
+              data-tag={tag}
+              on:click|stopPropagation={() => selectRevision(
+                  currentSelectedPeer.identity.peerId,
+                  {
+                    type: RevisionType.Tag,
+                    name: tag,
+                  }
+                )}>
+              <Icon.Label
+                dataCy="tag-icon"
+                style="vertical-align: bottom; fill:
+              var(--color-foreground-level-4)" />
+              <span class="revision-name typo-text">{tag}</span>
+            </li>
+          {/each}
+        {/if}
+      </ul>
+    </div>
   </div>
-</div>
+</Overlay>
