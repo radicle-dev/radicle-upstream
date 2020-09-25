@@ -1,16 +1,18 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::time::Duration;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use futures::StreamExt as _;
 use tokio::{
-    sync::{broadcast, mpsc},
+    sync::{broadcast, mpsc, RwLock},
     time::interval,
 };
 
 use librad::{net::peer::RunLoop, peer::PeerId};
 
+use crate::request::waiting_room::WaitingRoom;
 use crate::state::Lock;
 
 mod announcement;
@@ -74,7 +76,13 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run(self, state: Lock, store: kv::Store, run_config: RunConfig) {
+    pub async fn run(
+        self,
+        run_config: RunConfig,
+        state: Lock,
+        store: kv::Store,
+        waiting_room: Arc<RwLock<WaitingRoom<Instant>>>,
+    ) {
         // Subscribe to protocol events.
         let protocol_subscriber = {
             let state = state.lock().await;
@@ -95,6 +103,17 @@ impl Peer {
         // Advance the librad protocol.
         tokio::spawn(self.run_loop);
 
+        // Cocosphere
+        //
+        // 0. - Something asks for a URN
+        // 1. - Request URN on waiting room
+        // 2. - We sent the `Want`
+        // 3. - Queried URN on waiting room
+        // 4. - Listen for `Have`s
+        // 5. - Found URN on waiting room
+        // 6. - Cloning URN from peer
+        // 7. - Cloned URN from peer
+        // 8. - Profit
         let mut run_state = RunState::from(run_config);
         loop {
             let event = tokio::select! {
@@ -103,6 +122,8 @@ impl Peer {
                 Some(protocol_event) = protocol_subscriber.next() => Event::Protocol(protocol_event),
                 Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
                 Some(timeout_event) = timeouts.recv() => Event::Timeout(timeout_event),
+                // stream of requests to query
+                // stream of requests to clone
                 else => {
                     break
                 },
@@ -117,13 +138,13 @@ impl Peer {
                 match cmd {
                     Command::Announce => {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
-                    },
+                    }
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
-                    },
+                    }
                     Command::StartSyncTimeout(sync_period) => {
                         Self::start_sync_timeout(sync_period, timeout_sender.clone())
-                    },
+                    }
                 };
             }
         }
@@ -137,7 +158,7 @@ impl Peer {
                 Err(err) => {
                     log::error!("announce error: {:?}", err);
                     sender.send(AnnounceEvent::Failed).await.ok()
-                },
+                }
             };
         });
     }
@@ -155,7 +176,7 @@ impl Peer {
                 Err(err) => {
                     log::error!("sync error for {}: {:?}", peer_id, err);
                     sender.send(SyncEvent::Failed(peer_id.clone())).await.ok()
-                },
+                }
             };
         });
     }

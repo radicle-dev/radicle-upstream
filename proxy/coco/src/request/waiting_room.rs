@@ -15,6 +15,8 @@ use crate::request::{
     sequence_result, Clones, Queries, Request, RequestState, SomeRequest, TimedOut,
 };
 
+pub mod stream;
+
 /// The maximum number of query attempts that can be made for a single request.
 const MAX_QUERIES: Queries = Queries::new(5);
 
@@ -381,6 +383,19 @@ impl<T> WaitingRoom<T> {
     {
         self.filter(request_state, timestamp, delta).next()
     }
+
+    pub fn next_query(&self, timestamp: T, delta: T::Output) -> Option<RadUrn>
+    where
+        T: Sub<T> + Clone,
+        T::Output: Ord + Clone + Default,
+    {
+        let created = self.find(RequestState::Created, timestamp.clone(), Default::default());
+        let requested = self.find(RequestState::Requested, timestamp, delta);
+
+        created.or(requested).map(|(urn, _request)| urn.clone())
+    }
+
+    // fn find_to_clone();
 
     #[cfg(test)]
     pub fn insert<R>(&mut self, urn: RadUrn, request: R)
