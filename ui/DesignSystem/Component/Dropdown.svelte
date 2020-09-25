@@ -1,6 +1,11 @@
 <script lang="ts">
   import { Icon } from "../Primitive";
   import type { EmojiAvatar } from "../../src/avatar";
+  import {
+    openDropdown,
+    currentlyOpen,
+    closeCurrentDropdown,
+  } from "../../src/dropdown";
 
   import Option from "./Dropdown/Option.svelte";
 
@@ -34,12 +39,16 @@
   export let value = "";
   export let disabled: boolean = false;
 
+  let dropdown;
+
   const toggleMenu = () => {
     if (disabled) {
       return;
     }
 
     expanded = !expanded;
+
+    if (expanded) openDropdown(dropdown);
   };
 
   const hideMenu = () => {
@@ -58,6 +67,7 @@
   };
 
   $: optionByValue = options.find(option => option.value === value);
+  $: if ($currentlyOpen !== dropdown) hideMenu();
 </script>
 
 <style>
@@ -117,14 +127,12 @@
   }
 </style>
 
-<svelte:window on:click={hideMenu} />
-
-<div data-cy={dataCy} class="dropdown" {style}>
+<div data-cy={dataCy} class="dropdown" {style} bind:this={dropdown}>
   <div
     class="button"
     class:invalid={!valid}
     class:disabled
-    on:click|stopPropagation={toggleMenu}>
+    on:click={toggleMenu}>
     {#if value && optionByValue}
       <Option {...optionByValue} {disabled} />
     {:else}

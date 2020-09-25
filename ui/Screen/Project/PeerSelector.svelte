@@ -2,6 +2,7 @@
   import { createEventDispatcher, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
+  import { openDropdown, currentlyOpen } from "../../src/dropdown.ts";
   import * as path from "../../src/path.ts";
   import { BadgeType } from "../../src/badge.ts";
 
@@ -32,17 +33,11 @@
 
   const showDropdown = () => {
     expanded = true;
+    openDropdown(dropdown);
   };
 
   const hideDropdown = () => {
     expanded = false;
-  };
-
-  const handleClick = ev => {
-    // Any click *outside* the dropdown should hide the dropdown.
-    if (dropdown !== ev.target && !dropdown.contains(ev.target)) {
-      hideDropdown();
-    }
   };
 
   const handleOpenProfile = urn => {
@@ -58,6 +53,8 @@
     hideDropdown();
     dispatch("select", { peerId });
   };
+
+  $: expanded = $currentlyOpen === dropdown;
 </script>
 
 <style>
@@ -124,7 +121,6 @@
   }
 </style>
 
-<svelte:window on:click={handleClick} />
 <div
   class="peer-selector"
   data-cy="peer-selector"

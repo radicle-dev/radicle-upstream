@@ -9,12 +9,12 @@
   import { clear, fetch, session as store } from "./src/session.ts";
 
   import {
+    ClickMonitor,
     NotificationFaucet,
     Remote,
     ModalOverlay,
   } from "./DesignSystem/Component";
   import { Button } from "./DesignSystem/Primitive";
-
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
 
@@ -107,6 +107,7 @@
 
 <Hotkeys />
 <ModalOverlay {modalRoutes} />
+<ClickMonitor />
 <NotificationFaucet />
 <Theme />
 

@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
+  import { openDropdown, currentlyOpen } from "../../../src/dropdown";
   import { isExperimental } from "../../../../native/ipc.js";
   import { RevisionType } from "../../../src/source.ts";
 
@@ -28,17 +29,11 @@
 
   const showDropdown = () => {
     expanded = true;
+    openDropdown(dropdown);
   };
 
   const hideDropdown = () => {
     expanded = false;
-  };
-
-  const handleClick = ev => {
-    // Any click *outside* the dropdown should hide the dropdown.
-    if (dropdown !== ev.target && !dropdown.contains(ev.target)) {
-      hideDropdown();
-    }
   };
 
   const dispatch = createEventDispatcher();
@@ -46,6 +41,8 @@
     dispatch("select", { revision, peerId });
     hideDropdown();
   };
+
+  $: if ($currentlyOpen !== dropdown) hideDropdown();
 </script>
 
 <style>
@@ -120,12 +117,12 @@
   }
 </style>
 
-<svelte:window on:click={handleClick} />
 <div
+  bind:this={dropdown}
   class="revision-selector"
   data-cy="revision-selector"
   data-revision={currentRevision.name}
-  on:click|stopPropagation={showDropdown}
+  on:click={showDropdown}
   hidden={expanded}>
   <div class="selector-avatar typo-overflow-ellipsis">
     <div style="display: flex; overflow: hidden;">
@@ -148,7 +145,7 @@
       style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
   </div>
 </div>
-<div class="revision-dropdown-container" bind:this={dropdown}>
+<div class="revision-dropdown-container">
   <div class="revision-dropdown" hidden={!expanded}>
     <ul>
       {#each currentSelectedPeer.branches as branch}
