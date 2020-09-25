@@ -128,7 +128,7 @@
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
-    <Remote store={revisionsStore} let:data={revisions} context="revisions">
+    <Remote store={revisionsStore} context="revisions">
       <Header.Large
         name={project.metadata.name}
         urn={project.shareableEntityIdentifier}
@@ -145,7 +145,9 @@
               <HorizontalMenu
                 items={topbarMenuItems(project, commits.stats.commits)} />
               <div slot="loading">
-                <HorizontalMenu items={topbarMenuItems(project, null)} />
+                <HorizontalMenu
+                  items={topbarMenuItems(project, null)}
+                  style="display: inline" />
               </div>
             </Remote>
           </div>

@@ -52,7 +52,7 @@
     }
   };
 
-  const selectRevision = (peerId, revision) => {
+  const selectRevision = revision => {
     currentRevision = revision;
     hideDropdown();
   };
@@ -166,14 +166,11 @@
           class="branch typo-overflow-ellipsis"
           class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
           data-branch={branch}
-          on:click|stopPropagation={() => selectRevision(
-              currentSelectedPeer.identity.peerId,
-              {
-                type: RevisionType.Branch,
-                peerId: currentSelectedPeer.identity.peerId,
-                name: branch,
-              }
-            )}>
+          on:click|stopPropagation={() => selectRevision({
+              type: RevisionType.Branch,
+              peerId: currentSelectedPeer.identity.peerId,
+              name: branch,
+            })}>
           <Icon.Branch
             dataCy="branch-icon"
             style="vertical-align: bottom; fill:
@@ -187,13 +184,10 @@
             class="tag typo-overflow-ellipsis"
             class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
             data-tag={tag}
-            on:click|stopPropagation={() => selectRevision(
-                currentSelectedPeer.identity.peerId,
-                {
-                  type: RevisionType.Tag,
-                  name: tag,
-                }
-              )}>
+            on:click|stopPropagation={() => selectRevision({
+                type: RevisionType.Tag,
+                name: tag,
+              })}>
             <Icon.Label
               dataCy="tag-icon"
               style="vertical-align: bottom; fill:
