@@ -363,7 +363,7 @@ impl<T, D> WaitingRoom<T, D> {
 
     /// Filter the `WaitingRoom` by:
     ///   * Choosing which [`RequestState`] you are looking for
-    pub fn filter(
+    pub fn filter_by_state(
         &self,
         request_state: RequestState,
     ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)> {
@@ -371,11 +371,9 @@ impl<T, D> WaitingRoom<T, D> {
             .filter(move |(_, request)| RequestState::from(*request) == request_state.clone())
     }
 
-    /// Find the first occurring request based on the call to [`WaitingRoom::filter`].
-    // Clippy is confusing OUR filter with Iterator's filter. So this is telling it to go away.
-    #[allow(clippy::filter_next)]
-    pub fn find(&self, request_state: RequestState) -> Option<(&RadUrn, &SomeRequest<T>)> {
-        self.filter(request_state).next()
+    /// Find the first occurring request based on the call to [`WaitingRoom::filter_by_state`].
+    pub fn find_by_state(&self, request_state: RequestState) -> Option<(&RadUrn, &SomeRequest<T>)> {
+        self.filter_by_state(request_state).next()
     }
 
     /// Get the next `Request` that is in a query state, i.e. `Created` or `Requested`.
@@ -387,13 +385,12 @@ impl<T, D> WaitingRoom<T, D> {
         T: Sub<T, Output = D> + Clone,
         D: Ord + Clone,
     {
-        let created = self.find(RequestState::Created);
+        let created = self.find_by_state(RequestState::Created);
         let requested = self
-            .filter(RequestState::Requested)
-            .filter(move |(_, request)| {
+            .filter_by_state(RequestState::Requested)
+            .find(move |(_, request)| {
                 request.elapsed(timestamp.clone()) >= self.config.delta.clone()
-            })
-            .next();
+            });
 
         created.or(requested).map(|(urn, _request)| urn.clone())
     }
@@ -401,18 +398,14 @@ impl<T, D> WaitingRoom<T, D> {
     /// Get the next `Request` that is in the the `Found` state and the status of the peer is
     /// `Available`.
     pub fn next_clone(&self) -> Option<RadUrl> {
-        self.find(RequestState::Found)
+        self.find_by_state(RequestState::Found)
             .and_then(|(urn, request)| match request {
-                SomeRequest::Found(req) => req
-                    .state
-                    .peers
-                    .iter()
-                    .filter_map(|(peer_id, status)| match status {
+                SomeRequest::Found(request) => {
+                    request.iter().find_map(|(peer_id, status)| match status {
                         Status::Available => Some(urn.clone().into_rad_url(peer_id.clone())),
                         _ => None,
                     })
-                    .next()
-                    .map(|url| url.clone()),
+                },
                 _ => None,
             })
     }
@@ -447,7 +440,7 @@ mod test {
 
         assert_eq!(request, None);
 
-        let created = waiting_room.find(RequestState::Created, 0, 0);
+        let created = waiting_room.find_by_state(RequestState::Created);
         assert_eq!(
             created,
             Some((&urn, &SomeRequest::Created(Request::new(urn.clone(), 0)))),
@@ -700,7 +693,7 @@ mod test {
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
 
-        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
+        let ready = waiting_room.find_by_state(RequestState::Cloned);
         assert_eq!(ready, None);
 
         let _ = waiting_room.request(urn.clone(), 0);
@@ -709,7 +702,7 @@ mod test {
         waiting_room.cloning(&urn, peer.clone(), 0)?;
         waiting_room.cloned(&urn, urn.clone(), 0)?;
 
-        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
+        let ready = waiting_room.find_by_state(RequestState::Cloned);
         let expected = SomeRequest::Cloned(
             Request::new(urn.clone(), 0)
                 .request(0)
