@@ -1,8 +1,10 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use futures::StreamExt as _;
 use tokio::{
@@ -12,8 +14,7 @@ use tokio::{
 
 use librad::{net::peer::RunLoop, peer::PeerId};
 
-use crate::request::waiting_room::WaitingRoom;
-use crate::state::Lock;
+use crate::{request::waiting_room::WaitingRoom, state::Lock};
 
 mod announcement;
 pub use announcement::Announcement;
@@ -138,13 +139,13 @@ impl Peer {
                 match cmd {
                     Command::Announce => {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
-                    }
+                    },
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
-                    }
+                    },
                     Command::StartSyncTimeout(sync_period) => {
                         Self::start_sync_timeout(sync_period, timeout_sender.clone())
-                    }
+                    },
                 };
             }
         }
@@ -158,7 +159,7 @@ impl Peer {
                 Err(err) => {
                     log::error!("announce error: {:?}", err);
                     sender.send(AnnounceEvent::Failed).await.ok()
-                }
+                },
             };
         });
     }
@@ -176,7 +177,7 @@ impl Peer {
                 Err(err) => {
                     log::error!("sync error for {}: {:?}", peer_id, err);
                     sender.send(SyncEvent::Failed(peer_id.clone())).await.ok()
-                }
+                },
             };
         });
     }

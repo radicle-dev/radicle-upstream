@@ -201,7 +201,7 @@ mod test {
         }
 
         let mut have = timeout(
-            Duration::from_secs(1),
+            Duration::from_millis(50),
             clones
                 .take(2)
                 .zip(stream::repeat(waiting_room.clone()))

@@ -403,7 +403,7 @@ impl<T> WaitingRoom<T> {
         T: Sub<T> + Clone,
         T::Output: Ord + Clone + Default,
     {
-        self.find(RequestState::Found, timestamp, delta)
+        self.find(RequestState::Found, timestamp, Default::default())
             .and_then(|(urn, request)| match request {
                 SomeRequest::Found(req) => req
                     .state
