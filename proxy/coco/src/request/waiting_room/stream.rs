@@ -20,7 +20,6 @@ const STREAM_POLL_RATE: Duration = Duration::from_millis(0);
 
 pub struct Queries {
     delay: Delay,
-    delta: Duration,
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
 
@@ -28,8 +27,6 @@ impl Queries {
     pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
             delay: delay_for(Duration::default()),
-            // TODO(xla): Configure deltas.
-            delta: Duration::from_secs(1),
             waiting_room,
         }
     }
@@ -57,8 +54,6 @@ impl Stream for Queries {
 
 pub struct Clones {
     delay: Delay,
-    // TODO(xla): Configure deltas.
-    delta: Duration,
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
 
@@ -66,7 +61,6 @@ impl Clones {
     pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
             delay: delay_for(STREAM_POLL_RATE),
-            delta: Duration::from_millis(1),
             waiting_room,
         }
     }
