@@ -5,9 +5,14 @@
   export let amount: number;
   export let balance: number;
   export let enabled: boolean;
-  export let members: string[];
+  export let members: string;
   export let onFillUp: () => Promise<void>;
   export let onDrain: () => Promise<void>;
+
+  $: membersList = members
+    .split(",")
+    .map(e => e.trim())
+    .filter(e => e.length > 0);
 
   const options = [
     {
@@ -77,7 +82,7 @@
           <p class="typo-text-bold">Monthly contribution</p>
           <p>
             Set a fixed monthly amount to contribute to your pool. With ${amount}
-            per month, pool members get ${amount / members.length} a month each.
+            per month, pool members get ${amount / membersList.length} a month each.
             This is accessible in real time, so if a user is in the pool for 2 days,
             they can already claim $0.95).
           </p>
@@ -127,8 +132,10 @@
           </p>
         </header>
         <div class="item">
-          <!-- TODO(nuno): build based on provided list of members -->
-          {members}
+          <Input.Textarea
+            style="width: 25vw"
+            bind:value={members}
+            placeholder="Enter members here" />
         </div>
       </li>
     {/if}

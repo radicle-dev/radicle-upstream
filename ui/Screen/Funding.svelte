@@ -5,7 +5,7 @@
   const amount = 99;
   const balance = 430;
   const enabled = false;
-  const members = [`juliendonck`, `monadic`, `rudolfs`, `nakamoto`, `peterpan`];
+  const members = "juliendonck, monadic, rudolfs, nakamoto, peterpan";
   const onFillUp = (): Promise<void> => {
     window.alert("FillUp");
     return Promise.resolve();
