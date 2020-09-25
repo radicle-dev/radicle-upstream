@@ -69,13 +69,13 @@ impl<T> From<Request<TimedOut, T>> for Error {
 /// request on the outside.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WaitingRoom<T> {
+pub struct WaitingRoom<T, D> {
     /// The set of requests keyed by their `RadUrn`. This helps us keep only unique requests in the
     /// waiting room.
     requests: HashMap<RadUrn, SomeRequest<T>>,
 
     /// The configuration of the waiting room.
-    config: Config,
+    config: Config<D>,
 }
 
 /// The `Config` for the waiting room tells it what are the maximum number of query and clone
@@ -85,26 +85,37 @@ pub struct WaitingRoom<T> {
 /// i.e. `Config::default()`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Config {
+pub struct Config<D> {
     /// The maximum number of query attempts that can be made.
     pub max_queries: Queries,
     /// The maximum number of clone attempts that can be made.
     pub max_clones: Clones,
+    /// The minimum elapsed time between some provided time and a request's timestamp.
+    /// For example, if we had the following setup:
+    ///   * `delta = 1`
+    ///   * `now = 3`
+    ///   * `request.timestamp = 2`
+    /// then the `delta` would be compared against `now - request.timestamp`.
+    pub delta: D,
 }
 
-impl Default for Config {
+impl<D> Default for Config<D>
+where
+    D: Default,
+{
     fn default() -> Self {
         Self {
             max_queries: MAX_QUERIES,
             max_clones: MAX_CLONES,
+            delta: D::default(),
         }
     }
 }
 
-impl<T> WaitingRoom<T> {
+impl<T, D> WaitingRoom<T, D> {
     /// Initialise a new `WaitingRoom` with the supplied `config`.
     #[must_use]
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: Config<D>) -> Self {
         Self {
             requests: HashMap::new(),
             config,
@@ -123,9 +134,9 @@ impl<T> WaitingRoom<T> {
     /// of the underlying `Request`.
     ///
     /// If the `urn` could not be found then `None` is returned.
-    pub fn elapsed(&self, urn: &RadUrn, timestamp: T) -> Option<T::Output>
+    pub fn elapsed(&self, urn: &RadUrn, timestamp: T) -> Option<D>
     where
-        T: Sub<T> + Clone,
+        T: Sub<T, Output = D> + Clone,
     {
         Some(self.get(urn)?.elapsed(timestamp))
     }
@@ -355,11 +366,11 @@ impl<T> WaitingRoom<T> {
         &self,
         request_state: RequestState,
         timestamp: T,
-        delta: T::Output,
+        delta: D,
     ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)>
     where
-        T: Sub<T> + Clone,
-        T::Output: Ord + Clone,
+        T: Sub<T, Output = D> + Clone,
+        D: Ord + Clone,
     {
         self.iter()
             .filter(move |(_, request)| request.elapsed(timestamp.clone()) >= delta.clone())
@@ -373,11 +384,11 @@ impl<T> WaitingRoom<T> {
         &self,
         request_state: RequestState,
         timestamp: T,
-        delta: T::Output,
+        delta: D,
     ) -> Option<(&RadUrn, &SomeRequest<T>)>
     where
-        T: Sub<T> + Clone,
-        T::Output: Ord + Clone,
+        T: Sub<T, Output = D> + Clone,
+        D: Ord + Clone,
     {
         self.filter(request_state, timestamp, delta).next()
     }
@@ -403,7 +414,7 @@ mod test {
 
     #[test]
     fn happy_path_of_full_request() -> Result<(), Box<dyn error::Error + 'static>> {
-        let mut waiting_room: WaitingRoom<usize> = WaitingRoom::new(Config::default());
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
@@ -458,7 +469,7 @@ mod test {
 
     #[test]
     fn cannot_create_twice() -> Result<(), Box<dyn error::Error>> {
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config::default());
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
@@ -484,9 +495,10 @@ mod test {
     #[test]
     fn timeout_on_requests() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_QUERIES: usize = 16;
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
             max_queries: Queries::new(NUM_QUERIES),
             max_clones: Clones::new(0),
+            delta: (),
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -512,9 +524,10 @@ mod test {
     #[test]
     fn timeout_on_clones() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 16;
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
             max_queries: Queries::new(1),
             max_clones: Clones::new(NUM_CLONES),
+            delta: (),
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -558,9 +571,10 @@ mod test {
     #[test]
     fn cloning_fails_back_to_requested() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 5;
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
             max_queries: Queries::new(1),
             max_clones: Clones::new(NUM_CLONES),
+            delta: (),
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -588,7 +602,7 @@ mod test {
     #[test]
     fn cancel_transitions() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(config);
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(config);
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
@@ -656,7 +670,7 @@ mod test {
     #[test]
     fn can_get_request_that_is_ready() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
-        let mut waiting_room: WaitingRoom<usize> = WaitingRoom::new(config);
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(config);
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
