@@ -9,10 +9,13 @@ use std::{collections::HashMap, ops::Sub};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{peer::PeerId, uri::RadUrn};
+use librad::{
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 
 use crate::request::{
-    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, TimedOut,
+    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
 };
 
 pub mod stream;
@@ -395,7 +398,33 @@ impl<T> WaitingRoom<T> {
         created.or(requested).map(|(urn, _request)| urn.clone())
     }
 
-    // fn find_to_clone();
+    pub fn next_clone(&self, timestamp: T, delta: T::Output) -> Option<RadUrl>
+    where
+        T: Sub<T> + Clone,
+        T::Output: Ord + Clone + Default,
+    {
+        if let Some((urn, request)) = self.find(RequestState::Found, timestamp, delta) {
+            match request {
+                SomeRequest::Found(req) => req
+                    .state
+                    .peers
+                    .iter()
+                    .filter_map(|(peer_id, status)| match status {
+                        Status::Available => Some(RadUrl {
+                            authority: peer_id.clone(),
+                            urn: urn.clone(),
+                        }),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>()
+                    .first()
+                    .map(|url| url.clone()),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
 
     #[cfg(test)]
     pub fn insert<R>(&mut self, urn: RadUrn, request: R)
