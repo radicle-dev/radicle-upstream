@@ -22,7 +22,7 @@ export interface Connected {
 export interface Wallet extends Readable<State> {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  testSign(): Promise<void>;
+  testSign(msg: string): Promise<void>;
 }
 
 export enum Connector {

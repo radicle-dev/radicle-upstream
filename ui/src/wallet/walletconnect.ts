@@ -58,7 +58,7 @@ export function build(): Wallet {
     stateStore.set({ status: Status.NotConnected });
   }
 
-  async function testSign() {
+  async function testSign(msg: string) {
     stateStore.subscribe(async state => {
       if (state.status === Status.Connected) {
         if (!connector) {
@@ -68,8 +68,7 @@ export function build(): Wallet {
         }
 
         const address = state.connected.account.address;
-        const message = "My email is john@doe.com - 1537836206101";
-        const hexMsg = convertUtf8ToHex(message);
+        const hexMsg = convertUtf8ToHex(msg);
         const msgParams = [hexMsg, address];
         console.log("msgParams", msgParams);
 

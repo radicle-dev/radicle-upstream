@@ -1,18 +1,20 @@
 <script lang="ts">
   import Pool from "../DesignSystem/Component/Funding/Pool.svelte";
 
+  export let wallet: any;
+
   // TODO(nuno): fetch these
   const amount = 99;
   const balance = 430;
   const enabled = false;
   const members = "juliendonck, monadic, rudolfs, nakamoto, peterpan";
-  const onFillUp = (): Promise<void> => {
-    window.alert("FillUp");
-    return Promise.resolve();
+  const onFillUp = async (): Promise<void> => {
+    console.log("onFillUp");
+    return wallet.testSign("Fill up pool");
   };
   const onDrain = (): Promise<void> => {
-    window.alert("Drain");
-    return Promise.resolve();
+    console.log("onDrain");
+    return wallet.testSign("Drain pool");
   };
 </script>
 
