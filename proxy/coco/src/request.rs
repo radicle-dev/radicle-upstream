@@ -15,7 +15,11 @@ use std::{
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
+use librad::{
+    net::peer::types::Gossip,
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 
 pub mod states;
 pub use states::*;
@@ -316,12 +320,12 @@ impl<T> Request<Cloning, T> {
     /// This signifies that the clone was successful and that the whole request was successful,
     /// congratulations.
     #[allow(clippy::use_self, clippy::missing_const_for_fn)]
-    pub fn cloned(self, timestamp: T) -> Request<Cloned, T> {
+    pub fn cloned(self, url: RadUrl, timestamp: T) -> Request<Cloned, T> {
         Request {
             urn: self.urn.clone(),
             attempts: self.attempts,
             timestamp,
-            state: Cloned { repo: self.urn },
+            state: Cloned { url },
         }
     }
 }
