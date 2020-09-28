@@ -137,7 +137,7 @@ impl Peer {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
                     },
                     Command::Request(command) => {
-                        Self::request(command, state.clone(), waiting_room.clone()).await
+                        request::request(command, state.clone(), waiting_room.clone()).await
                     },
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
@@ -187,14 +187,5 @@ impl Peer {
             tokio::time::delay_for(sync_period).await;
             sender.clone().send(TimeoutEvent::SyncPeriod).await.ok();
         });
-    }
-
-    /// Request subroutine.
-    async fn request(
-        request_command: RequestCommand,
-        state: Lock,
-        waiting_room: Shared<WaitingRoom<Instant, Duration>>,
-    ) {
-        request::request(request_command, state, waiting_room).await
     }
 }
