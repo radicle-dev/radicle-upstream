@@ -1,13 +1,13 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-
-  import { Icon } from "../Primitive";
-
-  import Overlay from "./Overlay.svelte";
-  import Urn from "./Urn.svelte";
-  import Tooltip from "./Tooltip.svelte";
   import type { SvelteComponent } from "svelte";
+
   import { CSSPosition } from "../../src/style";
+  
+  import { Icon } from "../Primitive";
+  import Overlay from "./Overlay.svelte";
+  import Tooltip from "./Tooltip.svelte";
+  import Urn from "./Urn.svelte";
 
   let triggerEl;
   let expanded = false;

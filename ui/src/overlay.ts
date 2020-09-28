@@ -1,13 +1,13 @@
-import { derived, writable } from "svelte/store";
 import { SvelteComponent } from "svelte";
+import { derived, writable } from "svelte/store";
 
-const currentlyOpenStore = writable<SvelteComponent | undefined>(undefined);
-export const currentlyOpen = derived(currentlyOpenStore, store => store);
+const currentStore = writable<SvelteComponent | undefined>(undefined);
+export const current= derived(currentStore, store => store);
 
-export const openOverlay = (component: SvelteComponent) => {
-  currentlyOpenStore.set(component);
+export const open = (component: SvelteComponent) => {
+  currentStore.set(component);
 };
 
-export const closeOverlay = () => {
-  currentlyOpenStore.set(undefined);
+export const close = () => {
+  currentStore.set(undefined);
 };
