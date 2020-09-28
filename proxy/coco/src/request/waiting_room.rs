@@ -9,10 +9,7 @@ use std::{collections::HashMap, ops::Sub};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{
-    peer::PeerId,
-    uri::{RadUrl, RadUrn},
-};
+use librad::uri::{RadUrl, RadUrn};
 
 use crate::request::{
     sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
@@ -246,25 +243,27 @@ impl<T, D> WaitingRoom<T, D> {
     ///   * If the underlying `Request` was not in the expected state.
     ///
     /// TODO(xla): Take a RadUrl.
-    pub fn found(&mut self, urn: &RadUrn, peer: PeerId, timestamp: T) -> Result<(), Error>
+    pub fn found(&mut self, RadUrl { urn, authority }: RadUrl, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
         self.transition(
             |request| match request {
-                SomeRequest::Requested(request) => Some(request.into_found(peer, timestamp).into()),
+                SomeRequest::Requested(request) => {
+                    Some(request.into_found(authority, timestamp).into())
+                }
                 SomeRequest::Found(request) => {
-                    let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
+                    let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
                     Some(some_request)
                 }
                 SomeRequest::Cloning(request) => {
-                    let some_request: SomeRequest<T> = request.found(peer, timestamp).into();
+                    let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
                     Some(some_request)
                 }
                 _ => None,
             },
             Ok,
-            urn,
+            &urn,
         )
     }
 
@@ -278,7 +277,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
     ///   * If the underlying `Request` timed out.
-    pub fn cloning(&mut self, urn: &RadUrn, peer: PeerId, timestamp: T) -> Result<(), Error>
+    pub fn cloning(&mut self, RadUrl { urn, authority }: RadUrl, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -289,11 +288,11 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Found(request) => Some(request),
                 _ => None,
             },
-            |previous| match previous.cloning(max_queries, max_clones, peer, timestamp) {
+            |previous| match previous.cloning(max_queries, max_clones, authority, timestamp) {
                 Either::Left(timeout) => Err(timeout.into()),
                 Either::Right(request) => Ok(request),
             },
-            urn,
+            &urn,
         )
     }
 
@@ -307,7 +306,11 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn cloning_failed(&mut self, peer: PeerId, urn: &RadUrn, timestamp: T) -> Result<(), Error>
+    pub fn cloning_failed(
+        &mut self,
+        RadUrl { urn, authority }: RadUrl,
+        timestamp: T,
+    ) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -316,8 +319,8 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.failed(peer, timestamp)),
-            urn,
+            |previous| Ok(previous.failed(authority, timestamp)),
+            &urn,
         )
     }
 
@@ -330,7 +333,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn cloned(&mut self, urn: &RadUrn, found_repo: RadUrn, timestamp: T) -> Result<(), Error>
+    pub fn cloned(&mut self, urn: &RadUrn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -339,8 +342,8 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.cloned(found_repo, timestamp)),
-            urn,
+            |previous| Ok(previous.cloned(urn.clone(), timestamp)),
+            &urn,
         )
     }
 
