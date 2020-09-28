@@ -17,7 +17,8 @@
     clippy::implicit_return,
     clippy::integer_arithmetic,
     clippy::missing_inline_in_public_items,
-    clippy::multiple_crate_versions
+    clippy::multiple_crate_versions,
+    clippy::similar_names,
 )]
 #![feature(hash_set_entry)]
 #![feature(or_patterns)]
