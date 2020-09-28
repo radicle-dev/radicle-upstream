@@ -3,7 +3,7 @@
 
   import { createEventDispatcher } from "svelte";
 
-  import { openOverlay, closeOverlay, currentlyOpen } from "../../src/overlay";
+  import { open, current } from "../../src/overlay";
 
   export let expanded: boolean;
   export let style = "";
@@ -12,17 +12,14 @@
 
   const dispatch = createEventDispatcher();
 
-  const hide = () => dispatch("hide");
-  const open = () => openOverlay(container);
-
   const handleClick = (ev: MouseEvent) => {
-    const component = $currentlyOpen;
+    const component = $current;
     const inside = component && component.contains(ev.target);
-    if (!inside) closeOverlay();
+    if (!inside) close();
   };
 
-  $: if (expanded) open();
-  $: if ($currentlyOpen !== container) hide();
+  $: if (expanded) open(container);
+  $: if ($current !== container) dispatch("hide");
 </script>
 
 <svelte:window on:click={handleClick} />
