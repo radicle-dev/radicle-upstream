@@ -1,3 +1,5 @@
+//! Perform request commands to query and clone identities.
+
 use std::time::{Duration, Instant};
 
 use librad::{net::peer::Gossip, uri::RadUrn};
