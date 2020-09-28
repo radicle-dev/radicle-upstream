@@ -1,3 +1,5 @@
+//! Streaming interfaces for requests in the [`WaitingRoom`].
+
 use std::{
     future::Future as _,
     pin::Pin,
@@ -16,14 +18,27 @@ use librad::uri::{RadUrl, RadUrn};
 
 use crate::request::waiting_room::WaitingRoom;
 
-const STREAM_POLL_RATE: Duration = Duration::from_millis(0);
+/// How much a stream should delay before polling the waiting room again.
+const STREAM_POLL_RATE: Duration = Duration::from_millis(500);
 
+/// A stream of queryable requests. See [`Queries::new`] for more information.
 pub struct Queries {
+    /// How long the stream should delay, initially, before polling the waiting room again.
     delay: Delay,
+    /// The waiting room that will be polled for retrieving the requests.
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
 
 impl Queries {
+    /// Create a new `Queries` stream.
+    ///
+    /// This type implements [`Stream`] and is expected to be consumed through that interface.
+    ///
+    /// The stream will return the next request that is available for querying. This is driven by
+    /// the supplied `waiting_room` -- as more requests transtion through it. If no such request
+    /// exists then the stream does nothing and waits until the next poll. We note that the stream
+    /// is infinite with this respect and will never return `None`.
+    #[must_use]
     pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
             delay: delay_for(Duration::default()),
@@ -52,12 +67,24 @@ impl Stream for Queries {
     }
 }
 
+/// A stream of clonable requests. See [`Clones::new`] for more information.
 pub struct Clones {
+    /// How long the stream should delay, initially, before polling the waiting room again.
     delay: Delay,
+    /// The waiting room that will be polled for retrieving the requests.
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
 
 impl Clones {
+    /// Create a new `Clones` stream.
+    ///
+    /// This type implements [`Stream`] and is expected to be consumed through that interface.
+    ///
+    /// The stream will return the next request that is available for cloning. This is driven by
+    /// the supplied `waiting_room` -- as more requests transtion through it. If no such request
+    /// exists then the stream does nothing and waits until the next poll. We note that the stream
+    /// is infinite with this respect and will never return `None`.
+    #[must_use]
     pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
             delay: delay_for(STREAM_POLL_RATE),
@@ -192,8 +219,12 @@ mod test {
 
                 for url in urls {
                     waiting_room.request(url.urn.clone(), Instant::now());
-                    waiting_room.queried(&url.urn, Instant::now()).unwrap();
-                    waiting_room.found(url, Instant::now()).unwrap();
+                    waiting_room
+                        .queried(&url.urn, Instant::now())
+                        .expect("failed to query waiting room");
+                    waiting_room
+                        .found(url, Instant::now())
+                        .expect("failed to mark peer as found");
                 }
             });
         }

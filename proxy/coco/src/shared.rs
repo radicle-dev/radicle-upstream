@@ -1,9 +1,24 @@
+//! See [`Shared`].
+
 use std::{ops::Deref, sync::Arc};
 
 use tokio::sync::RwLock;
 
+/// A value that's wrapped in an `Arc` and `RwLock`. It makes it easy to have an automatic
+/// conversion of `T` into a `Shared<T>` via `From` and `Into`.
+///
+/// It also implements `Deref` so the wrapping should be transparent when making use of it.
 pub struct Shared<T> {
+    /// Shared value in the `Arc` and `RwLock`.
     pub value: Arc<RwLock<T>>,
+}
+
+impl<T> Clone for Shared<T> {
+    fn clone(&self) -> Self {
+        Self {
+            value: self.value.clone(),
+        }
+    }
 }
 
 impl<T> From<T> for Shared<T> {

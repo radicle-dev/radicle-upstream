@@ -15,7 +15,7 @@ use librad::{
     uri::{RadUrl, RadUrn},
 };
 
-use crate::{peer::announcement, request::waiting_room::WaitingRoom, shared::Shared, state::Lock};
+use crate::peer::announcement;
 
 /// Default time to wait between announcement subroutine runs.
 const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(60);
@@ -34,6 +34,7 @@ const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
 pub enum Command {
     /// Start the announcement subroutine.
     Announce,
+    /// Fulfill request commands.
     Request(RequestCommand),
     /// Initiate a full sync with `PeerId`.
     SyncPeer(PeerId),
@@ -47,78 +48,20 @@ impl From<RequestCommand> for Command {
     }
 }
 
+/// Commands issued when requesting an identity from the network.
 #[derive(Debug, PartialEq)]
 pub enum RequestCommand {
+    /// Tell the subroutine to attempt a clone from the given `RadUrl`.
     Clone(RadUrl),
+    /// Tell the subroutine that the given `RadUrl` was found on the network.
     Found(RadUrl),
+    /// Tell the subroutine that we should query for the given `RadUrn` on the network.
     Query(RadUrn),
 }
 
 impl RequestCommand {
-    pub async fn run<W>(self, state: Lock, waiting_room: W)
-    where
-        W: Into<Shared<WaitingRoom<Instant, Duration>>>,
-    {
-        let waiting_room = waiting_room.into();
-        let err_msg = self.err_msg();
-        match self {
-            Self::Clone(url) => {
-                waiting_room
-                    .write()
-                    .await
-                    .cloning(url.clone(), Instant::now())
-                    .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err));
-                {
-                    let state = state.clone();
-                    let state = state.lock_owned().await;
-
-                    let res: Result<RadUrn, _> = {
-                        let url = url.clone();
-                        tokio::task::spawn_blocking(move || state.clone_project(url.clone(), None))
-                            .await
-                            .unwrap()
-                    };
-
-                    let mut waiting_room = waiting_room.write().await;
-                    match res {
-                        Ok(_) => waiting_room
-                            .cloned(&url.urn, Instant::now())
-                            .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err)),
-                        Err(err) => {
-                            log::warn!("failed cloning from URL '{}':\n{}", url, err);
-                            waiting_room
-                                .cloning_failed(url, Instant::now())
-                                .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err))
-                        },
-                    }
-                }
-            },
-            Self::Found(url) => waiting_room
-                .write()
-                .await
-                .found(url, Instant::now())
-                .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err)),
-            Self::Query(urn) => {
-                let protocol = state.lock().await.api.protocol().clone();
-
-                protocol
-                    .query(Gossip {
-                        urn: urn.clone(),
-                        rev: None,
-                        origin: None,
-                    })
-                    .await;
-
-                waiting_room
-                    .write()
-                    .await
-                    .queried(&urn, Instant::now())
-                    .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err))
-            },
-        }
-    }
-
-    fn err_msg(&self) -> String {
+    /// Provide a helpful error message for the given command and its field(s).
+    pub(super) fn err_msg(&self) -> String {
         match self {
             Self::Clone(url) => format!(
                 "an error occurred for the command 'Clone' for the URL '{}'",
@@ -146,6 +89,7 @@ pub enum Event {
     Protocol(ProtocolEvent<Gossip>),
     /// Lifecycle events during peer sync operations.
     PeerSync(SyncEvent),
+    /// Request subroutine events that wish to attempt to fetch an identity from the network.
     Request(RequestEvent),
     /// Scheduled timeouts which can occur.
     Timeout(TimeoutEvent),
@@ -162,9 +106,12 @@ pub enum AnnounceEvent {
     Tick,
 }
 
+/// Request even that wishes to fetch an identity from the network.
 #[derive(Clone, Debug)]
 pub enum RequestEvent {
+    /// Query the network for the `RadUrn`.
     Query(RadUrn),
+    /// Clone the identity from the given `RadUrl`.
     Clone(RadUrl),
 }
 
@@ -287,7 +234,7 @@ impl RunState {
                 self.status = Status::Started(Instant::now());
 
                 vec![]
-            },
+            }
             // Sync with first incoming peer.
             //
             // In case the peer is configured to sync on startup we start syncing, otherwise we go
@@ -309,7 +256,7 @@ impl RunState {
 
                     vec![]
                 }
-            },
+            }
             // Sync until configured maximum of peers is reached.
             (Status::Syncing(since, syncs), Event::Protocol(ProtocolEvent::Connected(peer_id)))
                 if *syncs < self.config.sync.max_peers =>
@@ -328,7 +275,7 @@ impl RunState {
                 self.status = Status::Online(Instant::now());
 
                 vec![]
-            },
+            }
             // Remove peer that just disconnected.
             (_, Event::Protocol(ProtocolEvent::Disconnecting(peer_id))) => {
                 self.connected_peers.remove(&peer_id);
@@ -339,7 +286,7 @@ impl RunState {
                 }
 
                 vec![]
-            },
+            }
             // Announce new updates while the peer is online.
             (
                 Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
@@ -632,7 +579,7 @@ mod test {
         }));
         let url = RadUrl {
             urn,
-            authority: peer_id.clone(),
+            authority: peer_id,
         };
 
         let status = Status::Stopped(Instant::now());

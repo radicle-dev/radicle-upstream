@@ -241,8 +241,6 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    ///
-    /// TODO(xla): Take a RadUrl.
     pub fn found(&mut self, RadUrl { urn, authority }: RadUrl, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
@@ -343,7 +341,7 @@ impl<T, D> WaitingRoom<T, D> {
                 _ => None,
             },
             |previous| Ok(previous.cloned(timestamp)),
-            &urn,
+            urn,
         )
     }
 
@@ -709,13 +707,11 @@ mod test {
     fn can_get_request_that_is_ready() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(config);
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
-        let peer = PeerId::from(SecretKey::new());
         let url = RadUrl {
-            urn,
-            authority: peer,
+            urn: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+                .parse()
+                .expect("failed to parse the urn"),
+            authority: PeerId::from(SecretKey::new()),
         };
 
         let ready = waiting_room.find_by_state(RequestState::Cloned);

@@ -9,7 +9,11 @@ use tokio::{
     time::interval,
 };
 
-use librad::{net::peer::RunLoop, peer::PeerId};
+use librad::{
+    net::peer::{Gossip, RunLoop},
+    peer::PeerId,
+    uri::RadUrn,
+};
 
 use crate::{
     request::waiting_room::{self, WaitingRoom},
@@ -22,8 +26,8 @@ pub use announcement::Announcement;
 
 mod run_state;
 pub use run_state::{
-    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, RequestEvent, SyncConfig, SyncEvent,
-    TimeoutEvent,
+    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, RequestCommand, RequestEvent,
+    SyncConfig, SyncEvent, TimeoutEvent,
 };
 use run_state::{Command, RunState};
 
@@ -81,7 +85,7 @@ impl Peer {
     /// * if one of the handlers of the select loop fails
     pub async fn run<W>(self, run_config: RunConfig, state: Lock, store: kv::Store, waiting_room: W)
     where
-        W: Into<Shared<WaitingRoom<Instant, Duration>>>,
+        W: Into<Shared<WaitingRoom<Instant, Duration>>> + Send + Sync,
     {
         let waiting_room = waiting_room.into();
         // Subscribe to protocol events.
@@ -101,9 +105,9 @@ impl Peer {
         let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
         let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
 
-        let request_queries = waiting_room::stream::Queries::new(waiting_room.clone());
+        let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
         tokio::pin!(request_queries);
-        let request_clones = waiting_room::stream::Clones::new(waiting_room.clone());
+        let request_clones = waiting_room::stream::Clones::new(waiting_room.clone().value);
         tokio::pin!(request_clones);
 
         // Advance the librad protocol.
@@ -135,7 +139,7 @@ impl Peer {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
                     },
                     Command::Request(command) => {
-                        command.run(state.clone(), waiting_room.clone()).await
+                        Self::request(command, state.clone(), waiting_room.clone()).await
                     },
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
@@ -185,5 +189,69 @@ impl Peer {
             tokio::time::delay_for(sync_period).await;
             sender.clone().send(TimeoutEvent::SyncPeriod).await.ok();
         });
+    }
+
+    /// Request subroutine.
+    async fn request(
+        request_command: RequestCommand,
+        state: Lock,
+        waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+    ) {
+        let err_msg = request_command.err_msg();
+        match request_command {
+            RequestCommand::Clone(url) => {
+                waiting_room
+                    .write()
+                    .await
+                    .cloning(url.clone(), Instant::now())
+                    .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err));
+                {
+                    let state = state.clone();
+                    let state = state.lock_owned().await;
+
+                    let res: Result<RadUrn, _> = {
+                        let url = url.clone();
+                        tokio::task::spawn_blocking(move || state.clone_project(url.clone(), None))
+                            .await
+                            .expect("failed to join thread")
+                    };
+
+                    let mut waiting_room = waiting_room.write().await;
+                    match res {
+                        Ok(_) => waiting_room
+                            .cloned(&url.urn, Instant::now())
+                            .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err)),
+                        Err(err) => {
+                            log::warn!("failed cloning from URL '{}':\n{}", url, err);
+                            waiting_room
+                                .cloning_failed(url, Instant::now())
+                                .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err))
+                        },
+                    }
+                }
+            },
+            RequestCommand::Found(url) => waiting_room
+                .write()
+                .await
+                .found(url, Instant::now())
+                .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err)),
+            RequestCommand::Query(urn) => {
+                let protocol = state.lock().await.api.protocol().clone();
+
+                protocol
+                    .query(Gossip {
+                        urn: urn.clone(),
+                        rev: None,
+                        origin: None,
+                    })
+                    .await;
+
+                waiting_room
+                    .write()
+                    .await
+                    .queried(&urn, Instant::now())
+                    .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err))
+            },
+        }
     }
 }
