@@ -1,6 +1,6 @@
 use std::{convert::TryFrom, fs::remove_dir_all, io};
 
-use coco::{control, keystore, seed, signer, RunConfig, SyncConfig};
+use coco::{control, keystore, seed, signer, RunConfig, SyncConfig, request::waiting_room::{self, WaitingRoom}};
 
 use api::{config, context, env, http, notification, session};
 
@@ -89,9 +89,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     log::info!("starting coco peer");
+
+    // TODO(finto): We should store and load the waiting room
+    let waiting_room = {
+        let config = waiting_room::Config::default();
+        config.delta = Duration::from_secs(10);
+        WaitingRoom::new(config)
+    };
+
     tokio::spawn(peer.run(
-        state,
-        store,
         RunConfig {
             sync: SyncConfig {
                 on_startup: true,
@@ -99,6 +105,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             },
             ..RunConfig::default()
         },
+        state,
+        store,
+        waiting_room,
     ));
 
     log::info!("Starting API");
