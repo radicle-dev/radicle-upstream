@@ -9,10 +9,7 @@ use tokio::{
     time::interval,
 };
 
-use librad::{
-    net::peer::RunLoop,
-    peer::PeerId,
-};
+use librad::{net::peer::RunLoop, peer::PeerId};
 
 use crate::{
     request::waiting_room::{self, WaitingRoom},
@@ -204,8 +201,6 @@ impl Peer {
         state: Lock,
         waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     ) {
-        tokio::spawn(async move {
-            request::request(request_command, state, waiting_room).await
-        });
+        request::request(request_command, state, waiting_room).await
     }
 }

@@ -534,8 +534,6 @@ mod test {
 
         assert!(cmds.is_empty(), "expected no command");
     }
-    // TODO(finto): Test that we only issue Query command if Online or Syncing
-    // TODO(finto): Test that we only issue Clone command if Online or Syncing
     #[test]
     fn can_issue_query() -> Result<(), Box<dyn std::error::Error + 'static>> {
         let urn: RadUrn =

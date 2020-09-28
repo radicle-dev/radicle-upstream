@@ -308,18 +308,14 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         let mut bob_waiting_room = bob_waiting_room.write().await;
         let _ = bob_waiting_room.request(urn.clone(), Instant::now());
     }
-    let mut attempts: i8 = 10;
+    let attempts: i8 = 10;
 
-    loop {
+    for _ in 1..attempts {
         match bob_waiting_room.read().await.get(&urn) {
             None => panic!("Missing the URN"),
             Some(SomeRequest::Cloned(_)) => break,
             Some(_) => {
                 log::debug!("attempts left: {}", attempts);
-                attempts -= 1;
-                if attempts < 0 {
-                    break;
-                }
                 tokio::time::delay_for(Duration::from_millis(1000)).await;
             },
         }

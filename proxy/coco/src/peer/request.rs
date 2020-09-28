@@ -1,8 +1,11 @@
-use std::time::{Instant, Duration};
+use std::time::{Duration, Instant};
 
-use librad::{uri::RadUrn, net::peer::Gossip};
+use librad::{net::peer::Gossip, uri::RadUrn};
 
-use crate::{shared::Shared, request::waiting_room::WaitingRoom, peer::run_state::RequestCommand, state::Lock};
+use crate::{
+    peer::run_state::RequestCommand, request::waiting_room::WaitingRoom, shared::Shared,
+    state::Lock,
+};
 
 /// Execute a [`RequestCommand`] modifying the `waiting_room` as necessary.
 pub async fn request(
@@ -32,7 +35,7 @@ pub async fn request(
                 let mut waiting_room = waiting_room.write().await;
                 match res {
                     Ok(_) => waiting_room
-                        .cloned(&url.urn, Instant::now())
+                        .cloned(&url.urn.clone(), url, Instant::now())
                         .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err)),
                     Err(err) => {
                         log::warn!("failed cloning from URL '{}':\n{}", url, err);
@@ -67,4 +70,3 @@ pub async fn request(
         },
     }
 }
-
