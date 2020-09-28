@@ -1,6 +1,10 @@
-use std::{convert::TryFrom, fs::remove_dir_all, io};
+use std::{convert::TryFrom, fs::remove_dir_all, io, time::Duration};
 
-use coco::{control, keystore, seed, signer, RunConfig, SyncConfig, request::waiting_room::{self, WaitingRoom}};
+use coco::{
+    control, keystore,
+    request::waiting_room::{self, WaitingRoom},
+    seed, signer, RunConfig, SyncConfig,
+};
 
 use api::{config, context, env, http, notification, session};
 
@@ -92,7 +96,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // TODO(finto): We should store and load the waiting room
     let waiting_room = {
-        let config = waiting_room::Config::default();
+        let mut config = waiting_room::Config::default();
         config.delta = Duration::from_secs(10);
         WaitingRoom::new(config)
     };
