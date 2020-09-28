@@ -15,7 +15,12 @@ use librad::{
     uri::{RadUrl, RadUrn},
 };
 
-use crate::peer::announcement;
+use crate::{
+    peer::announcement,
+    request::waiting_room::WaitingRoom,
+    shared::Shared,
+    state::Lock,
+};
 
 /// Default time to wait between announcement subroutine runs.
 const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(60);
@@ -34,13 +39,106 @@ const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
 pub enum Command {
     /// Start the announcement subroutine.
     Announce,
-    CloneUrl(RadUrl),
-    FoundUrl(RadUrl),
-    QueryUrn(RadUrn),
+    Request(RequestCommand),
     /// Initiate a full sync with `PeerId`.
     SyncPeer(PeerId),
     /// Start sync timeout.
     StartSyncTimeout(Duration),
+}
+
+impl From<RequestCommand> for Command {
+    fn from(other: RequestCommand) -> Self {
+        Self::Request(other)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum RequestCommand {
+    CloneUrl(RadUrl),
+    FoundUrl(RadUrl),
+    QueryUrn(RadUrn),
+}
+
+impl RequestCommand {
+    pub async fn run<W>(self, state: Lock, waiting_room: W)
+    where
+        W: Into<Shared<WaitingRoom<Instant, Duration>>>,
+    {
+        let waiting_room = waiting_room.into();
+        let err_msg = self.err_msg();
+        match self {
+            Self::CloneUrl(url) => {
+                waiting_room
+                    .write()
+                    .await
+                    .cloning(url.clone(), Instant::now())
+                    .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err));
+                {
+                    let state = state.clone();
+                    let state = state.lock_owned().await;
+
+                    let res: Result<RadUrn, _> = {
+                        let url = url.clone();
+                        tokio::task::spawn_blocking(move || state.clone_project(url.clone(), None))
+                            .await
+                            .unwrap()
+                    };
+
+                    let mut waiting_room = waiting_room.write().await;
+                    match res {
+                        Ok(_) => waiting_room
+                            .cloned(&url.urn, Instant::now())
+                            .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err)),
+                        Err(err) => {
+                            log::warn!("failed cloning from URL '{}':\n{}", url, err);
+                            waiting_room
+                                .cloning_failed(url, Instant::now())
+                                .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err))
+                        },
+                    }
+                }
+            },
+            Self::FoundUrl(url) => waiting_room
+                .write()
+                .await
+                .found(url, Instant::now())
+                .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err)),
+            Self::QueryUrn(urn) => {
+                let protocol = state.lock().await.api.protocol().clone();
+
+                protocol
+                    .query(Gossip {
+                        urn: urn.clone(),
+                        rev: None,
+                        origin: None,
+                    })
+                    .await;
+
+                waiting_room
+                    .write()
+                    .await
+                    .queried(&urn, Instant::now())
+                    .unwrap_or_else(|err| log::warn!("{}:\n{}", err_msg, err))
+            },
+        }
+    }
+
+    fn err_msg(&self) -> String {
+        match self {
+            Self::CloneUrl(url) => format!(
+                "an error occurred for the command 'Clone' for the URL '{}'",
+                url
+            ),
+            Self::FoundUrl(url) => format!(
+                "an error occurred for the command 'Found' for the URL '{}'",
+                url
+            ),
+            Self::QueryUrn(urn) => format!(
+                "an error occurred for the command 'Query' for the URN '{}'",
+                urn
+            ),
+        }
+    }
 }
 
 /// Significant events that occur during [`Peer`] lifetime.
@@ -256,12 +354,12 @@ impl RunState {
             (
                 Status::Online(_) | Status::Syncing(_, _),
                 Event::Request(RequestEvent::Query(urn)),
-            ) => vec![Command::QueryUrn(urn)],
+            ) => vec![RequestCommand::QueryUrn(urn).into()],
             // Clone requested URLs while online.
             (
                 Status::Online(_) | Status::Syncing(_, _),
                 Event::Request(RequestEvent::Clone(url)),
-            ) => vec![Command::CloneUrl(url)],
+            ) => vec![RequestCommand::CloneUrl(url).into()],
             // Found URN.
             (
                 _,
@@ -269,10 +367,10 @@ impl RunState {
                     provider,
                     val: Gossip { urn, .. },
                 }))),
-            ) => vec![Command::FoundUrl(RadUrl {
+            ) => vec![RequestCommand::FoundUrl(RadUrl {
                 authority: provider.peer_id,
                 urn,
-            })],
+            }).into()],
             _ => vec![],
         }
     }

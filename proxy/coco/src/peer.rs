@@ -1,9 +1,7 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::{
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 use futures::StreamExt as _;
 use tokio::{
@@ -12,14 +10,13 @@ use tokio::{
 };
 
 use librad::{
-    net::peer::{Gossip, RunLoop},
+    net::peer::RunLoop,
     peer::PeerId,
-    uri::{RadUrl, RadUrn},
 };
 
 use crate::{
-    shared::Shared,
     request::waiting_room::{self, WaitingRoom},
+    shared::Shared,
     state::Lock,
 };
 
@@ -85,13 +82,10 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run<W>(
-        self,
-        run_config: RunConfig,
-        state: Lock,
-        store: kv::Store,
-        waiting_room: W,
-    ) where W: Into<Shared<WaitingRoom<Instant, Duration>>> {
+    pub async fn run<W>(self, run_config: RunConfig, state: Lock, store: kv::Store, waiting_room: W)
+    where
+        W: Into<Shared<WaitingRoom<Instant, Duration>>>,
+    {
         let waiting_room = waiting_room.into();
         // Subscribe to protocol events.
         let protocol_subscriber = {
@@ -143,64 +137,7 @@ impl Peer {
                     Command::Announce => {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
                     },
-                    Command::CloneUrl(url) => {
-                        waiting_room
-                            .write()
-                            .await
-                            .cloning(&url.urn, url.authority.clone(), Instant::now())
-                            .unwrap();
-                        {
-                            let state = state.clone();
-                            let state = state.lock_owned().await;
-
-                            let res: Result<RadUrn, _> = {
-                                let url = url.clone();
-                                tokio::task::spawn_blocking(move || {
-                                    state.clone_project(url.clone(), None)
-                                })
-                                .await
-                                .unwrap()
-                            };
-
-                            match res {
-                                Ok(found_repo) => waiting_room
-                                    .write()
-                                    .await
-                                    .cloned(&url.urn, found_repo, Instant::now())
-                                    .unwrap(),
-                                Err(_err) => waiting_room
-                                    .write()
-                                    .await
-                                    .cloning_failed(url.authority, &url.urn, Instant::now())
-                                    .unwrap(),
-                            }
-                        }
-                    },
-                    Command::FoundUrl(RadUrl {
-                        authority: peer_id,
-                        urn,
-                    }) => waiting_room
-                        .write()
-                        .await
-                        .found(&urn, peer_id, Instant::now())
-                        .unwrap(),
-                    Command::QueryUrn(urn) => {
-                        let protocol = state.lock().await.api.protocol().clone();
-
-                        protocol
-                            .query(Gossip {
-                                urn: urn.clone(),
-                                rev: None,
-                                origin: None,
-                            })
-                            .await;
-
-                        waiting_room
-                            .write()
-                            .await
-                            .queried(&urn, Instant::now())
-                            .unwrap();
-                    },
+                    Command::Request(command) => command.run(state.clone(), waiting_room.clone()).await,
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
                     },
