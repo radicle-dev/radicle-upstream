@@ -1,4 +1,4 @@
-// / Shared types and functionality related to styling
+// Shared types and functionality related to styling
 
 export type ButtonVariant =
   | "vanilla"

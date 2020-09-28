@@ -19,15 +19,10 @@
     repositoryPathValidationStore,
     RepoType,
   } from "../src/project";
-  import * as testing from "../src/project";
   import { ValidationStatus } from "../src/validation";
   import * as screen from "../src/screen";
   import type { Settings } from "../src/settings";
-  import {
-    dismissRemoteHelperHint,
-    fetch as fetchSession,
-    settings,
-  } from "../src/session";
+  import { dismissRemoteHelperHint, settings } from "../src/session";
 
   import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
@@ -76,10 +71,6 @@
           ? { type: RepoType.New, name, path: newRepositoryPath }
           : { type: RepoType.Existing, path: existingRepositoryPath },
       });
-
-      // Re-fetch session so we have the right permissions to enable the
-      // project registration button rithout a page-reload.
-      fetchSession();
 
       push(path.projectSource(response.id));
       notification.info(
@@ -254,7 +245,7 @@
     </div>
 
     <Tooltip
-      value={isExisting ? 'The project name is taken from the the repository you selected' : ''}
+      value={isExisting ? 'The project name is taken from the repository you selected' : ''}
       position={CSSPosition.Top}>
       <Input.Text
         placeholder="Project name*"
