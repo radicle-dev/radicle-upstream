@@ -18,12 +18,13 @@ use librad::uri::{RadUrl, RadUrn};
 
 use crate::request::waiting_room::WaitingRoom;
 
+/// How much a stream should delay before polling the waiting room again.
+const REQUEST_DELAY: Duration = Duration::from_millis(50);
+
 /// A stream of queryable requests. See [`Queries::new`] for more information.
 pub struct Queries {
-    /// How long the stream should delay, initially, before polling the waiting room again.
+    /// How long the stream should delay before each poll of the waiting room.
     delay: Delay,
-    /// The duration for the delay.
-    duration: Duration,
     /// The waiting room that will be polled for retrieving the requests.
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
@@ -38,15 +39,16 @@ impl Queries {
     /// exists then the stream does nothing and waits until the next poll. We note that the stream
     /// is infinite with this respect and will never return `None`.
     #[must_use]
-    pub fn new(
-        waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
-        duration: Duration,
-    ) -> Self {
+    pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
-            delay: delay_for(duration),
-            duration,
+            delay: delay_for(REQUEST_DELAY),
             waiting_room,
         }
+    }
+
+    /// Reset the delay for the stream.
+    fn reset_delay(&mut self) {
+        self.delay = delay_for(REQUEST_DELAY)
     }
 }
 
@@ -59,7 +61,7 @@ impl Stream for Queries {
 
         match Pin::new(&mut self.delay).poll(cx) {
             Poll::Ready(_) => {
-                self.delay = delay_for(self.duration);
+                self.reset_delay();
 
                 waiting_room
                     .next_query(Instant::now())
@@ -72,10 +74,8 @@ impl Stream for Queries {
 
 /// A stream of clonable requests. See [`Clones::new`] for more information.
 pub struct Clones {
-    /// How long the stream should delay, initially, before polling the waiting room again.
+    /// How long the stream should delay before each poll of the waiting room.
     delay: Delay,
-    /// The duration for the delay.
-    duration: Duration,
     /// The waiting room that will be polled for retrieving the requests.
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
@@ -90,15 +90,16 @@ impl Clones {
     /// exists then the stream does nothing and waits until the next poll. We note that the stream
     /// is infinite with this respect and will never return `None`.
     #[must_use]
-    pub fn new(
-        waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
-        duration: Duration,
-    ) -> Self {
+    pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
-            delay: delay_for(duration),
-            duration,
+            delay: delay_for(REQUEST_DELAY),
             waiting_room,
         }
+    }
+
+    /// Reset the delay for the stream.
+    fn reset_delay(&mut self) {
+        self.delay = delay_for(REQUEST_DELAY)
     }
 }
 
@@ -111,8 +112,7 @@ impl Stream for Clones {
 
         match Pin::new(&mut self.delay).poll(cx) {
             Poll::Ready(_) => {
-                self.delay = delay_for(self.duration);
-
+                self.reset_delay();
                 waiting_room
                     .next_clone()
                     .map_or(Poll::Pending, |url| Poll::Ready(Some(url)))
@@ -155,7 +155,7 @@ mod test {
         let waiting_room = WaitingRoom::new(Config::default());
         let waiting_room = Arc::new(RwLock::new(waiting_room));
 
-        let queries = Queries::new(waiting_room.clone(), Duration::default());
+        let queries = Queries::new(waiting_room.clone());
 
         let mut urns = vec![
             "rad:git:hwd1yren5bpr71yoy9qzmtk1qzrtren9gynxh49dwubprmqix8dn46x3r8w"
@@ -205,7 +205,7 @@ mod test {
         let waiting_room = WaitingRoom::new(Config::default());
         let waiting_room = Arc::new(RwLock::new(waiting_room));
 
-        let clones = Clones::new(waiting_room.clone(), Duration::default());
+        let clones = Clones::new(waiting_room.clone());
 
         let mut urls = vec![
             RadUrl {

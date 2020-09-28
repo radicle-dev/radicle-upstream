@@ -24,8 +24,8 @@ mod request;
 
 mod run_state;
 pub use run_state::{
-    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, RequestCommand, RequestConfig,
-    RequestEvent, SyncConfig, SyncEvent, TimeoutEvent,
+    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, RequestCommand, RequestEvent,
+    SyncConfig, SyncEvent, TimeoutEvent,
 };
 use run_state::{Command, RunState};
 
@@ -103,15 +103,9 @@ impl Peer {
         let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
         let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
 
-        let request_queries = waiting_room::stream::Queries::new(
-            waiting_room.clone().value,
-            run_config.request.query_delay,
-        );
+        let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
         tokio::pin!(request_queries);
-        let request_clones = waiting_room::stream::Clones::new(
-            waiting_room.clone().value,
-            run_config.request.clone_delay,
-        );
+        let request_clones = waiting_room::stream::Clones::new(waiting_room.clone().value);
         tokio::pin!(request_clones);
 
         // Advance the librad protocol.

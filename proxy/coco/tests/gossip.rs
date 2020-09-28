@@ -12,7 +12,7 @@ use coco::{
     },
     seed::Seed,
     shared::Shared,
-    AnnounceConfig, AnnounceEvent, Hash, RequestConfig, RunConfig, Urn,
+    AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn,
 };
 
 mod common;
@@ -272,13 +272,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         WaitingRoom::new(waiting_room::Config::default()),
     ));
     tokio::spawn(bob_peer.run(
-        RunConfig {
-            request: RequestConfig {
-                query_delay: Duration::from_millis(100),
-                clone_delay: Duration::from_millis(100),
-            },
-            ..RunConfig::default()
-        },
+        RunConfig::default(),
         bob_state.clone(),
         bob_store,
         bob_waiting_room.clone(),
@@ -310,12 +304,12 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     }
     let attempts: i8 = 10;
 
-    for _ in 1..attempts {
+    for i in 1..attempts {
         match bob_waiting_room.read().await.get(&urn) {
             None => panic!("Missing the URN"),
             Some(SomeRequest::Cloned(_)) => break,
             Some(_) => {
-                log::debug!("attempts left: {}", attempts);
+                log::debug!("attempts left: {}", attempts - i);
                 tokio::time::delay_for(Duration::from_millis(1000)).await;
             },
         }
