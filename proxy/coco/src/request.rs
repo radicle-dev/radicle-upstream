@@ -316,12 +316,12 @@ impl<T> Request<Cloning, T> {
     /// This signifies that the clone was successful and that the whole request was successful,
     /// congratulations.
     #[allow(clippy::use_self, clippy::missing_const_for_fn)]
-    pub fn cloned(self, repo: RadUrn, timestamp: T) -> Request<Cloned, T> {
+    pub fn cloned(self, timestamp: T) -> Request<Cloned, T> {
         Request {
-            urn: self.urn,
+            urn: self.urn.clone(),
             attempts: self.attempts,
             timestamp,
-            state: Cloned { repo },
+            state: Cloned { repo: self.urn },
         }
     }
 }
