@@ -190,10 +190,10 @@ mod test {
             tokio::spawn(async move {
                 let mut waiting_room = waiting_room.write().await;
 
-                for RadUrl { urn, authority } in urls {
-                    waiting_room.request(urn.clone(), Instant::now());
-                    waiting_room.queried(&urn.clone(), Instant::now()).unwrap();
-                    waiting_room.found(&urn, authority, Instant::now()).unwrap();
+                for url in urls {
+                    waiting_room.request(url.urn.clone(), Instant::now());
+                    waiting_room.queried(&url.urn, Instant::now()).unwrap();
+                    waiting_room.found(url, Instant::now()).unwrap();
                 }
             });
         }
@@ -206,7 +206,7 @@ mod test {
                 .then(|(url, waiting_room)| async move {
                     let mut waiting_room = waiting_room.write().await;
                     waiting_room
-                        .cloning(&url.urn, url.authority.clone(), Instant::now())
+                        .cloning(url.clone(), Instant::now())
                         .expect("signal cloning for request failed");
                     url
                 })
