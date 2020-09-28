@@ -14,6 +14,12 @@ impl<T> From<T> for Shared<T> {
     }
 }
 
+impl<T> From<Arc<RwLock<T>>> for Shared<T> {
+    fn from(other: Arc<RwLock<T>>) -> Self {
+        Self { value: other }
+    }
+}
+
 impl<T> Deref for Shared<T> {
     type Target = Arc<RwLock<T>>;
 
