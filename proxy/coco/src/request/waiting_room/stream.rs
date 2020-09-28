@@ -177,7 +177,7 @@ mod test {
         }
 
         let mut have = timeout(
-            Duration::from_millis(50),
+            Duration::from_millis(150),
             queries
                 .take(2)
                 .zip(stream::repeat(waiting_room.clone()))
@@ -239,7 +239,7 @@ mod test {
         }
 
         let mut have = timeout(
-            Duration::from_millis(50),
+            Duration::from_millis(150),
             clones
                 .take(2)
                 .zip(stream::repeat(waiting_room.clone()))
