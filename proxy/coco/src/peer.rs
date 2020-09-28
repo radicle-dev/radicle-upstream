@@ -9,10 +9,7 @@ use tokio::{
     time::interval,
 };
 
-use librad::{
-    net::peer::RunLoop,
-    peer::PeerId,
-};
+use librad::{net::peer::RunLoop, peer::PeerId};
 
 use crate::{
     request::waiting_room::{self, WaitingRoom},
@@ -137,7 +134,9 @@ impl Peer {
                     Command::Announce => {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
                     },
-                    Command::Request(command) => command.run(state.clone(), waiting_room.clone()).await,
+                    Command::Request(command) => {
+                        command.run(state.clone(), waiting_room.clone()).await
+                    },
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
                     },
