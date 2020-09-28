@@ -58,7 +58,7 @@ export function build(): Wallet {
     stateStore.set({ status: Status.NotConnected });
   }
 
-  async function testSign(msg: string) {
+  async function testTransfer(value: number) {
     stateStore.subscribe(async state => {
       if (state.status === Status.Connected) {
         if (!connector) {
@@ -67,13 +67,21 @@ export function build(): Wallet {
           return;
         }
 
-        const address = state.connected.account.address;
-        const hexMsg = convertUtf8ToHex(msg);
-        const msgParams = [hexMsg, address];
-        console.log("msgParams", msgParams);
+        const tx = {
+          from: state.connected.account.address!,
+          to: "0xC257274276a4E539741Ca11b590B9447B26A8051",
+          nonce: 1,
+          gasLimit: 1,
+          gasPrice: 2,
+          value,
+        };
 
-        const result = await connector.signPersonalMessage(msgParams);
-        console.log("Result is ", result);
+        try {
+          const result = await connector.sendTransaction(tx);
+          console.log("Result is ", result);
+        } catch (e) {
+          console.error("Failed to sendTransaction: ", e);
+        }
       }
     });
   }
@@ -114,6 +122,6 @@ export function build(): Wallet {
     subscribe: stateStore.subscribe,
     connect,
     disconnect,
-    testSign,
+    testTransfer,
   };
 }

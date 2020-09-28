@@ -9,12 +9,11 @@
   const enabled = false;
   const members = "juliendonck, monadic, rudolfs, nakamoto, peterpan";
   const onFillUp = async (): Promise<void> => {
-    console.log("onFillUp");
-    return wallet.testSign("Fill up pool");
+    await wallet.testTransfer(123);
   };
   const onDrain = (): Promise<void> => {
     console.log("onDrain");
-    return wallet.testSign("Drain pool");
+    return wallet.testTransfer("Drain pool");
   };
 </script>
 
