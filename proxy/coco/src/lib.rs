@@ -18,7 +18,7 @@
     clippy::integer_arithmetic,
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions,
-    clippy::similar_names,
+    clippy::similar_names
 )]
 #![feature(hash_set_entry)]
 #![feature(or_patterns)]
@@ -54,9 +54,10 @@ pub mod keystore;
 pub mod oid;
 mod peer;
 pub use peer::{
-    AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RunConfig, SyncConfig, SyncEvent,
+    AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RequestConfig, RunConfig, SyncConfig,
+    SyncEvent,
 };
-mod shared;
+pub mod shared;
 mod state;
 pub use state::{Lock, State};
 pub mod project;

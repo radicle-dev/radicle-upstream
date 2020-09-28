@@ -24,6 +24,9 @@ const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(60);
 /// TODO(xla): Revise number.
 const DEFAULT_SYNC_MAX_PEERS: usize = 5;
 
+/// How much a stream should delay before polling the waiting room again.
+const DEFAULT_REQUEST_DELAY: Duration = Duration::from_millis(500);
+
 /// Default Duration until the local peer goes online regardless if and how many syncs have
 /// succeeded.
 // TODO(xla): Review duration.
@@ -156,6 +159,8 @@ pub struct Config {
     pub announce: AnnounceConfig,
     /// Set of knobs to alter sync behaviour.
     pub sync: SyncConfig,
+    /// Set of knobs to alter the request behaviour.
+    pub request: RequestConfig,
 }
 
 /// Set of knobs to alter announce behaviour.
@@ -188,6 +193,23 @@ impl Default for SyncConfig {
             max_peers: DEFAULT_SYNC_MAX_PEERS,
             on_startup: false,
             period: DEFAULT_SYNC_PERIOD,
+        }
+    }
+}
+
+/// Set of knobs to alter request behaviour.
+pub struct RequestConfig {
+    /// The delay between polling for another query request.
+    pub query_delay: Duration,
+    /// The delay between polling for another clone request.
+    pub clone_delay: Duration,
+}
+
+impl Default for RequestConfig {
+    fn default() -> Self {
+        Self {
+            query_delay: DEFAULT_REQUEST_DELAY,
+            clone_delay: DEFAULT_REQUEST_DELAY,
         }
     }
 }
@@ -234,7 +256,7 @@ impl RunState {
                 self.status = Status::Started(Instant::now());
 
                 vec![]
-            }
+            },
             // Sync with first incoming peer.
             //
             // In case the peer is configured to sync on startup we start syncing, otherwise we go
@@ -256,7 +278,7 @@ impl RunState {
 
                     vec![]
                 }
-            }
+            },
             // Sync until configured maximum of peers is reached.
             (Status::Syncing(since, syncs), Event::Protocol(ProtocolEvent::Connected(peer_id)))
                 if *syncs < self.config.sync.max_peers =>
@@ -275,7 +297,7 @@ impl RunState {
                 self.status = Status::Online(Instant::now());
 
                 vec![]
-            }
+            },
             // Remove peer that just disconnected.
             (_, Event::Protocol(ProtocolEvent::Disconnecting(peer_id))) => {
                 self.connected_peers.remove(&peer_id);
@@ -286,7 +308,7 @@ impl RunState {
                 }
 
                 vec![]
-            }
+            },
             // Announce new updates while the peer is online.
             (
                 Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),

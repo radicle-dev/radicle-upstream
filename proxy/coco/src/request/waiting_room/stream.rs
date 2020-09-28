@@ -18,13 +18,12 @@ use librad::uri::{RadUrl, RadUrn};
 
 use crate::request::waiting_room::WaitingRoom;
 
-/// How much a stream should delay before polling the waiting room again.
-const STREAM_POLL_RATE: Duration = Duration::from_millis(500);
-
 /// A stream of queryable requests. See [`Queries::new`] for more information.
 pub struct Queries {
     /// How long the stream should delay, initially, before polling the waiting room again.
     delay: Delay,
+    /// The duration for the delay.
+    duration: Duration,
     /// The waiting room that will be polled for retrieving the requests.
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
@@ -39,9 +38,13 @@ impl Queries {
     /// exists then the stream does nothing and waits until the next poll. We note that the stream
     /// is infinite with this respect and will never return `None`.
     #[must_use]
-    pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
+    pub fn new(
+        waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
+        duration: Duration,
+    ) -> Self {
         Self {
-            delay: delay_for(Duration::default()),
+            delay: delay_for(duration),
+            duration,
             waiting_room,
         }
     }
@@ -56,7 +59,7 @@ impl Stream for Queries {
 
         match Pin::new(&mut self.delay).poll(cx) {
             Poll::Ready(_) => {
-                self.delay = delay_for(STREAM_POLL_RATE);
+                self.delay = delay_for(self.duration);
 
                 waiting_room
                     .next_query(Instant::now())
@@ -71,6 +74,8 @@ impl Stream for Queries {
 pub struct Clones {
     /// How long the stream should delay, initially, before polling the waiting room again.
     delay: Delay,
+    /// The duration for the delay.
+    duration: Duration,
     /// The waiting room that will be polled for retrieving the requests.
     waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
 }
@@ -85,9 +90,13 @@ impl Clones {
     /// exists then the stream does nothing and waits until the next poll. We note that the stream
     /// is infinite with this respect and will never return `None`.
     #[must_use]
-    pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
+    pub fn new(
+        waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>,
+        duration: Duration,
+    ) -> Self {
         Self {
-            delay: delay_for(STREAM_POLL_RATE),
+            delay: delay_for(duration),
+            duration,
             waiting_room,
         }
     }
@@ -102,7 +111,7 @@ impl Stream for Clones {
 
         match Pin::new(&mut self.delay).poll(cx) {
             Poll::Ready(_) => {
-                self.delay = delay_for(STREAM_POLL_RATE);
+                self.delay = delay_for(self.duration);
 
                 waiting_room
                     .next_clone()
@@ -146,7 +155,7 @@ mod test {
         let waiting_room = WaitingRoom::new(Config::default());
         let waiting_room = Arc::new(RwLock::new(waiting_room));
 
-        let queries = Queries::new(waiting_room.clone());
+        let queries = Queries::new(waiting_room.clone(), Duration::default());
 
         let mut urns = vec![
             "rad:git:hwd1yren5bpr71yoy9qzmtk1qzrtren9gynxh49dwubprmqix8dn46x3r8w"
@@ -196,7 +205,7 @@ mod test {
         let waiting_room = WaitingRoom::new(Config::default());
         let waiting_room = Arc::new(RwLock::new(waiting_room));
 
-        let clones = Clones::new(waiting_room.clone());
+        let clones = Clones::new(waiting_room.clone(), Duration::default());
 
         let mut urls = vec![
             RadUrl {

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
@@ -6,9 +6,13 @@ use tokio::time::timeout;
 use librad::net::protocol::ProtocolEvent;
 
 use coco::{
-    request::waiting_room::{self, WaitingRoom},
+    request::{
+        waiting_room::{self, WaitingRoom},
+        SomeRequest,
+    },
     seed::Seed,
-    AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn,
+    shared::Shared,
+    AnnounceConfig, AnnounceEvent, Hash, RequestConfig, RunConfig, Urn,
 };
 
 mod common;
@@ -233,6 +237,96 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
         .await;
 
     assert_eq!(res.map(|info| info.peer_id), Some(alice_peer_id));
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
+
+    let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
+    let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir).await?;
+    let alice_addr = alice_state.lock().await.listen_addr();
+    let alice_peer_id = alice_state.lock().await.peer_id();
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_store = kv::Store::new(kv::Config::new(bob_tmp_dir.path().join("store")))?;
+    let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
+        &bob_tmp_dir,
+        vec![Seed {
+            addr: alice_addr,
+            peer_id: alice_peer_id.clone(),
+        }],
+    )
+    .await?;
+    let bob_events = bob_peer.subscribe();
+    let bob_waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
+
+    tokio::spawn(alice_peer.run(
+        RunConfig::default(),
+        alice_state.clone(),
+        alice_store,
+        WaitingRoom::new(waiting_room::Config::default()),
+    ));
+    tokio::spawn(bob_peer.run(
+        RunConfig {
+            request: RequestConfig {
+                query_delay: Duration::from_millis(100),
+                clone_delay: Duration::from_millis(100),
+            },
+            ..RunConfig::default()
+        },
+        bob_state.clone(),
+        bob_store,
+        bob_waiting_room.clone(),
+    ));
+    connected(bob_events, &alice_peer_id).await?;
+
+    {
+        let bobby = bob_state.clone().lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            let _ = bobby.init_owner(&bob_signer, "bob").unwrap();
+        })
+        .await?;
+    }
+
+    let urn = {
+        let ally = alice_state.lock_owned().await;
+        tokio::task::spawn_blocking(move || {
+            let alice = ally.init_owner(&alice_signer, "alice").unwrap();
+            let project = radicle_project(alice_repo_path.clone());
+            ally.init_project(&alice_signer, &alice, &project)
+        })
+        .await??
+        .urn()
+    };
+
+    {
+        let mut bob_waiting_room = bob_waiting_room.write().await;
+        let _ = bob_waiting_room.request(urn.clone(), Instant::now());
+    }
+    let mut attempts: i8 = 10;
+
+    loop {
+        match bob_waiting_room.read().await.get(&urn) {
+            None => panic!("Missing the URN"),
+            Some(SomeRequest::Cloned(_)) => break,
+            Some(_) => {
+                log::debug!("attempts left: {}", attempts);
+                attempts -= 1;
+                if attempts < 0 {
+                    break;
+                }
+                tokio::time::delay_for(Duration::from_millis(1000)).await;
+            },
+        }
+    }
+
+    let project = bob_state.lock().await.get_project(&urn, None);
+    assert!(project.is_ok());
 
     Ok(())
 }
