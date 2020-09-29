@@ -148,100 +148,7 @@ impl From<Peer> for Running {
         // Note: this must be spawned first to not loose the race for the first
         // `protocol_events`.
         let subroutines = {
-            let fut = async move {
-                let mut protocol_events = state.api.protocol().subscribe().await;
-                let mut announce_timer = interval(run_config.announce.interval);
-
-                let (mut announce_sender, mut announcements) =
-                    mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
-                let (mut peer_sync_sender, mut peer_syncs) =
-                    mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
-                let (timeout_sender, mut timeouts) =
-                    mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
-
-                let mut run_state = RunState::from(run_config);
-
-                let announcer_notifier = Arc::new(tokio::sync::Notify::new());
-                let announcer_handle = {
-                    let (abort_handle, abort_registration) = future::AbortHandle::new_pair();
-                    let state = state.clone();
-                    let store = store.clone();
-                    let notifier = announcer_notifier.clone();
-                    tokio::spawn(future::Abortable::new(
-                        async move {
-                            loop {
-                                log::trace!("announcer: waiting to get notified");
-                                notifier.notified().await;
-                                log::trace!("announcer: notified");
-                                announce(&state, &store, &mut announce_sender).await
-                            }
-                        },
-                        abort_registration,
-                    ));
-
-                    abort_handle
-                };
-
-                let (mut peer_sync_queue, mut peer_sync_receiver) =
-                    mpsc::channel::<PeerId>(RECEIVER_CAPACITY);
-                let peer_sync_handle = {
-                    let (abort_handle, abort_registration) = future::AbortHandle::new_pair();
-                    let state = state.clone();
-                    tokio::spawn(future::Abortable::new(
-                        async move {
-                            while let Some(peer_id) = peer_sync_receiver.recv().await {
-                                log::trace!("syncer: received peer id {}", peer_id);
-                                sync(&state, peer_id, &mut peer_sync_sender).await;
-                            }
-                        },
-                        abort_registration,
-                    ));
-
-                    abort_handle
-                };
-
-                loop {
-                    let event = tokio::select! {
-                        _ = announce_timer.tick() => Event::Announce(AnnounceEvent::Tick),
-                        Some(announce_event) = announcements.recv() => Event::Announce(announce_event),
-                        Some(protocol_event) = protocol_events.next() => Event::Protocol(protocol_event),
-                        Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
-                        Some(timeout_event) = timeouts.recv() => {
-                            peer_sync_handle.abort();
-                            Event::Timeout(timeout_event)
-                        },
-                        else => {
-                            break
-                        },
-                    };
-
-                    // Send will error if there are no active receivers. This
-                    // case is expected and should not terminate the run loop.
-                    subscriber.send(event.clone()).ok();
-                    log::debug!("{:?}", event);
-
-                    for cmd in run_state.transition(event) {
-                        match cmd {
-                            Command::Announce => announcer_notifier.notify(),
-                            Command::SyncPeer(peer_id) => {
-                                let _ = peer_sync_queue.send(peer_id).await;
-                            },
-                            Command::StartSyncTimeout(sync_period) => {
-                                tokio::spawn(start_sync_timeout(
-                                    sync_period,
-                                    timeout_sender.clone(),
-                                ));
-                            },
-                        };
-                    }
-                }
-
-                announcer_handle.abort();
-                peer_sync_handle.abort();
-
-                Ok(())
-            };
-
+            let fut = subroutines(state, store, subscriber, run_config);
             let (handle, registration) = future::AbortHandle::new_pair();
             let join = tokio::spawn(future::Abortable::new(fut, registration));
 
@@ -298,6 +205,100 @@ impl Future for Running {
             Poll::Pending => Poll::Pending,
         }
     }
+}
+
+/// Schedule subroutines.
+async fn subroutines(
+    state: State,
+    store: kv::Store,
+    subscriber: broadcast::Sender<Event>,
+    run_config: RunConfig,
+) -> Result<(), Error> {
+    let mut protocol_events = state.api.protocol().subscribe().await;
+    let mut announce_timer = interval(run_config.announce.interval);
+
+    let (mut announce_sender, mut announcements) =
+        mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
+    let (mut peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
+    let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
+
+    let mut run_state = RunState::from(run_config);
+
+    let announcer_notifier = Arc::new(tokio::sync::Notify::new());
+    let announcer_handle = {
+        let (abort_handle, abort_registration) = future::AbortHandle::new_pair();
+        let state = state.clone();
+        let store = store.clone();
+        let notifier = announcer_notifier.clone();
+        tokio::spawn(future::Abortable::new(
+            async move {
+                loop {
+                    log::trace!("announcer: waiting to get notified");
+                    notifier.notified().await;
+                    log::trace!("announcer: notified");
+                    announce(&state, &store, &mut announce_sender).await
+                }
+            },
+            abort_registration,
+        ));
+
+        abort_handle
+    };
+
+    let (mut peer_sync_queue, mut peer_sync_receiver) = mpsc::channel::<PeerId>(RECEIVER_CAPACITY);
+    let peer_sync_handle = {
+        let (abort_handle, abort_registration) = future::AbortHandle::new_pair();
+        let state = state.clone();
+        tokio::spawn(future::Abortable::new(
+            async move {
+                while let Some(peer_id) = peer_sync_receiver.recv().await {
+                    log::trace!("syncer: received peer id {}", peer_id);
+                    sync(&state, peer_id, &mut peer_sync_sender).await;
+                }
+            },
+            abort_registration,
+        ));
+
+        abort_handle
+    };
+
+    loop {
+        let event = tokio::select! {
+            _ = announce_timer.tick() => Event::Announce(AnnounceEvent::Tick),
+            Some(announce_event) = announcements.recv() => Event::Announce(announce_event),
+            Some(protocol_event) = protocol_events.next() => Event::Protocol(protocol_event),
+            Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
+            Some(timeout_event) = timeouts.recv() => {
+                peer_sync_handle.abort();
+                Event::Timeout(timeout_event)
+            },
+            else => {
+                break
+            },
+        };
+
+        // Send will error if there are no active receivers. This
+        // case is expected and should not terminate the run loop.
+        subscriber.send(event.clone()).ok();
+        log::debug!("{:?}", event);
+
+        for cmd in run_state.transition(event) {
+            match cmd {
+                Command::Announce => announcer_notifier.notify(),
+                Command::SyncPeer(peer_id) => {
+                    peer_sync_queue.send(peer_id).await.ok();
+                },
+                Command::StartSyncTimeout(sync_period) => {
+                    tokio::spawn(start_sync_timeout(sync_period, timeout_sender.clone()));
+                },
+            };
+        }
+    }
+
+    announcer_handle.abort();
+    peer_sync_handle.abort();
+
+    Ok(())
 }
 
 /// Announcement subroutine.
