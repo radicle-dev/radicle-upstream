@@ -6,10 +6,12 @@ import {
   clipboard,
   shell,
 } from "electron";
+const { execFile } = require("child_process");
 import path from "path";
 import * as ipc from "./ipc.js";
 
 const isDev = process.env.NODE_ENV === "development";
+const proxyPath = path.join(__dirname, "../../proxy");
 
 // The default value of app.allowRendererProcessReuse is deprecated, it is
 // currently "false".  It will change to be "true" in Electron 9.  For more
@@ -22,8 +24,12 @@ let mainWindow;
 let proxyChildProcess;
 
 const startApp = () => {
-  startProxy();
-  createWindow();
+  if (app.commandLine.hasSwitch("reset-state")) {
+    resetState();
+  } else {
+    startProxy();
+    createWindow();
+  }
 };
 
 ipcMain.handle(ipc.DIALOG_SHOWOPENDIALOG, async () => {
@@ -107,9 +113,19 @@ const startProxy = () => {
     return;
   }
 
-  const proxyPath = path.join(__dirname, "../../proxy");
-  const { execFile } = require("child_process");
   proxyChildProcess = execFile(proxyPath, [], (error, _stdout, _stderr) => {
+    if (error) {
+      console.log(error);
+    }
+  });
+};
+
+const resetState = () => {
+  execFile(proxyPath, ["--reset-state"], (error, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
+    app.exit();
+
     if (error) {
       console.log(error);
     }

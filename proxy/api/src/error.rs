@@ -47,10 +47,6 @@ pub enum Error {
     #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
 
-    /// An error occurred while performing the checkout of a project.
-    #[error(transparent)]
-    Checkout(#[from] coco::project::checkout::Error),
-
     /// Keystore error.
     #[error(transparent)]
     Keystore(#[from] coco::keystore::Error),

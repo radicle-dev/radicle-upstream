@@ -29,9 +29,8 @@
 
 <style>
   .clone-dropdown {
-    margin-top: 0.5rem;
-    top: 3.25rem;
-    right: 0;
+    margin-top: 3rem;
+    right: 2rem;
     position: absolute;
     border-radius: 8px;
     background: var(--color-background);
@@ -83,7 +82,7 @@
 
 <Button
   variant="transparent"
-  icon={Icon.Copy}
+  icon={Icon.ArrowBoxUpRight}
   on:click={toggleDropdown}
   dataCy="checkout-modal-toggle">
   Checkout

@@ -227,6 +227,10 @@ export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
+export const formatNameInput = (input: string) => input.replace(" ", "-");
+export const extractName = (repoPath: string) =>
+  repoPath.split("/").slice(-1)[0];
+
 const fetchBranches = async (path: string) => {
   // Revert to defaults whenever the path changes in case this query fails
   // or the user clicks cancel in the directory selection dialog.
@@ -252,9 +256,12 @@ const fetchBranches = async (path: string) => {
 };
 
 const validateExistingRepository = (path: string): Promise<boolean> => {
-  return fetchBranches(path).then(
-    () => !get(localStateError).match("could not find repository")
-  );
+  return fetchBranches(path).then(() => {
+    return (
+      !get(localStateError).match("could not find repository") &&
+      !get(localStateError).match("repository has no branches")
+    );
+  });
 };
 
 const validateNewRepository = (path: string): Promise<boolean> => {
@@ -263,13 +270,27 @@ const validateNewRepository = (path: string): Promise<boolean> => {
   );
 };
 
+const projectNameConstraints = {
+  presence: {
+    message: "You must provide a display name",
+    allowEmpty: false,
+  },
+  firstHandleChar: {
+    valueName: "project name",
+  },
+  length: {
+    minimum: 2,
+    message: "Your project name should be at least 2 characters long.",
+  },
+  format: {
+    pattern: new RegExp(projectNameMatch, "i"),
+    message:
+      "Your project name has unsupported characters in it. You can only use basic letters, numbers, and the _ , - and . characters.",
+  },
+};
+
 export const nameValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore({
-    format: {
-      pattern: new RegExp(projectNameMatch, "i"),
-      message: `Project name should match ${projectNameMatch}`,
-    },
-  });
+  return validation.createValidationStore(projectNameConstraints);
 };
 
 export const repositoryPathValidationStore = (
@@ -302,7 +323,8 @@ export const repositoryPathValidationStore = (
       [
         {
           promise: validateExistingRepository,
-          validationMessage: "The directory should contain a git repository",
+          validationMessage:
+            "The directory should contain a git repository with at least one branch",
         },
       ]
     );

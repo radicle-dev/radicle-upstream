@@ -22,7 +22,7 @@ impl Context {
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
-        use coco::keystore;
+        use coco::{keystore, RunConfig};
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
@@ -32,7 +32,8 @@ impl Context {
 
         let (_peer, state) = {
             let config = coco::config::default(key, tmp_dir.path())?;
-            coco::into_peer_state(config, signer.clone(), store.clone()).await?
+            coco::into_peer_state(config, signer.clone(), store.clone(), RunConfig::default())
+                .await?
         };
 
         Ok(Self {

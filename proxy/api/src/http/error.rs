@@ -92,6 +92,18 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
                 error::Error::Coco(coco_err) => match coco_err {
+                    coco::Error::Checkout(checkout_error) => match checkout_error {
+                        coco::project::checkout::Error::Git(git_error) => (
+                            StatusCode::CONFLICT,
+                            "WORKING_DIRECTORY_EXISTS",
+                            git_error.message().to_string(),
+                        ),
+                        coco::project::checkout::Error::Include(include_error) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "INTERNAL_ERROR",
+                            include_error.to_string(),
+                        ),
+                    },
                     coco::Error::EntityExists(_) => {
                         (StatusCode::CONFLICT, "ENTITY_EXISTS", err.to_string())
                     },
@@ -105,6 +117,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "GIT_ERROR",
                         format!("Internal Git error: {:?}", git_error),
                     ),
+                    coco::Error::NoBranches => (
+                        StatusCode::BAD_REQUEST,
+                        "GIT_ERROR",
+                        coco::Error::NoBranches.to_string(),
+                    ),
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
                         // gaphql::error.
@@ -114,13 +131,6 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "Incorrect input".to_string(),
                         )
                     },
-                },
-                error::Error::Checkout(checkout_error) => match checkout_error {
-                    coco::project::checkout::Error::Git(git_error) => (
-                        StatusCode::CONFLICT,
-                        "WORKING_DIRECTORY_EXISTS",
-                        git_error.message().to_string(),
-                    ),
                 },
                 _ => {
                     // TODO(xla): Match all variants and properly transform similar to

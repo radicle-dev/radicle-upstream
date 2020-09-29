@@ -12,6 +12,8 @@
     defaultBranch,
     localState,
     nameValidationStore,
+    formatNameInput,
+    extractName,
     repositoryPathValidationStore,
     RepoType,
   } from "../src/project.ts";
@@ -41,7 +43,7 @@
   $: isNew = currentSelection === RepoType.New;
   $: isExisting = currentSelection === RepoType.Existing;
 
-  let name;
+  let name = "";
   let description = "";
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
@@ -100,16 +102,19 @@
 
   $: pathValidation = repositoryPathValidationStore(isNew);
 
-  $: {
-    if (name.length > 0) nameValidation.validate(name);
-  }
-
   $: repositoryPath = isNew ? newRepositoryPath : existingRepositoryPath;
   $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0))
     pathValidation.validate(repositoryPath);
 
+  $: {
+    if (name.length > 0) {
+      name = formatNameInput(name);
+      nameValidation.validate(name);
+    }
+  }
+
   // Use the directory name for existing projects as the project name.
-  $: name = existingRepositoryPath.split("/").slice(-1)[0];
+  $: name = extractName(existingRepositoryPath);
 
   // Reset the project name when switching between new and existing repo.
   $: isExisting && (name = "");
@@ -233,7 +238,7 @@
     </div>
 
     <Tooltip
-      value={isExisting && 'The project name is taken from the the repository you selected'}
+      value={isExisting && 'The project name is taken from the repository you selected'}
       position="top">
       <Input.Text
         placeholder="Project name*"

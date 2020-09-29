@@ -136,6 +136,7 @@
       autofocus={true}
       dataCy="passphrase-input"
       placeholder="Enter a secure passphrase"
+      hint="↵"
       style="margin-top: 1.5rem;"
       validation={passphraseValidation}
       bind:value={passphrase} />
@@ -147,6 +148,7 @@
         on:enter={next}
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
+        hint="↵"
         validation={repeatedPassphraseValidation}
         bind:value={repeatedPassphrase} />
     </div>

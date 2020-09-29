@@ -23,6 +23,10 @@ pub enum Error {
     #[error(transparent)]
     Bootstrap(#[from] net::peer::BootstrapError),
 
+    /// An error occurred while performing the checkout of a project.
+    #[error(transparent)]
+    Checkout(#[from] crate::project::checkout::Error),
+
     /// Seed DNS failed to resolve to an address.
     #[error("the seed '{0}' failed to resolve to an address")]
     DnsLookupFailed(String),
@@ -48,6 +52,10 @@ pub enum Error {
     /// An error occurred when performing git operations.
     #[error(transparent)]
     Git(#[from] git2::Error),
+
+    /// An error occured building include files.
+    #[error(transparent)]
+    Include(#[from] librad::git::include::Error),
 
     /// Seed input is invalid.
     #[error("the seed '{0}' is invalid: {:1}")]
@@ -103,4 +111,8 @@ pub enum Error {
     /// Verifcation error.
     #[error(transparent)]
     Verification(#[from] entity::HistoryVerificationError),
+
+    /// When trying to query a repositories branches, but there are none.
+    #[error("The repository has no branches")]
+    NoBranches,
 }

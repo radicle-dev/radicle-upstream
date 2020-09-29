@@ -10,7 +10,7 @@
     | "destructive";
   export let variant: Variant = "primary";
 
-  export let disabled = false;
+  export let disabled: boolean = false;
   export let icon: typeof SvelteComponent | undefined = undefined;
   export let style = "";
   export let dataCy = "";
@@ -188,6 +188,10 @@
     background-color: rgba(var(--color-background), 0);
     border-color: var(--color-background);
     color: var(--color-foreground-level-6);
+  }
+
+  .transparent :global(svg) {
+    fill: var(--color-foreground-level-5);
   }
 
   .transparent:hover {

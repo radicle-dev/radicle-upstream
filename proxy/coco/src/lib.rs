@@ -20,11 +20,17 @@
     clippy::multiple_crate_versions,
     clippy::multiple_inherent_impl
 )]
+#![feature(hash_set_entry)]
+#![feature(or_patterns)]
+
+use std::net::SocketAddr;
 
 pub use librad::{
-    git::local::url::LocalUrl,
+    git::{include, local::url::LocalUrl},
     hash::Hash,
+    keys,
     meta::{project::Project, user::User as MetaUser},
+    net::{self, discovery},
     paths::Paths,
     peer::PeerId,
     uri::{self, RadUrn as Urn},
@@ -47,10 +53,13 @@ pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
 pub mod peer;
-pub use peer::{Event as PeerEvent, Peer};
+pub use peer::{
+    AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RunConfig, SyncConfig, SyncEvent,
+};
 mod state;
 pub use state::State;
 pub mod project;
+pub mod request;
 
 pub mod seed;
 pub mod signer;
@@ -64,12 +73,6 @@ pub use source::{
 
 pub mod user;
 
-use librad::{
-    keys,
-    net::{discovery, peer::PeerConfig},
-};
-use std::net::SocketAddr;
-
 /// Constructs a [`Peer`] and [`State`] pair from a [`PeerConfig`].
 ///
 /// # Errors
@@ -77,9 +80,10 @@ use std::net::SocketAddr;
 /// * peer construction from config fails.
 /// * accept on the peer fails.
 pub async fn into_peer_state<I>(
-    config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
+    config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
     store: kv::Store,
+    run_config: RunConfig,
 ) -> Result<(Peer, State), Error>
 where
     I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
@@ -88,7 +92,7 @@ where
     let (api, run_loop) = peer.accept()?;
 
     let state = State::new(api, signer);
-    let peer = Peer::new(run_loop, state.clone(), store);
+    let peer = Peer::new(run_loop, state.clone(), store, run_config);
 
     Ok((peer, state))
 }

@@ -10,6 +10,7 @@ use std::{
 
 use librad::{
     git::{
+        include::Include,
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
@@ -480,6 +481,48 @@ impl State {
             })
             .await??)
     }
+
+    /// Creates a working copy for the project of the given `urn`.
+    ///
+    /// # Errors
+    ///
+    /// * if the project can't be found
+    /// * if the include file creation fails
+    /// * if the clone of the working copy fails
+    pub async fn checkout<P>(
+        &self,
+        urn: RadUrn,
+        peer_id: P,
+        destination: PathBuf,
+    ) -> Result<PathBuf, Error>
+    where
+        P: Into<Option<PeerId>> + Clone + Send + 'static,
+    {
+        let proj = self.get_project(urn.clone(), peer_id).await?;
+        let include_path = self.update_include(urn).await?;
+        let checkout = project::Checkout::new(proj, destination, include_path);
+
+        checkout.run(self.peer_id()).map_err(Error::from)
+    }
+
+    /// Prepare the include file for the given `project` with the latest tracked peers.
+    ///
+    /// # Errors
+    ///
+    /// * if getting the list of tracked peers fails
+    pub async fn update_include(&self, urn: RadUrn) -> Result<PathBuf, Error> {
+        let local_url = LocalUrl::from_urn(urn.clone(), self.peer_id());
+        let tracked = self.tracked(urn).await?;
+        let include = Include::from_tracked_users(
+            self.paths().git_includes_dir().to_path_buf(),
+            local_url,
+            tracked.into_iter().map(|(peer_id, user)| (user, peer_id)),
+        );
+        let include_path = include.file_path();
+        include.save()?;
+
+        Ok(include_path)
+    }
 }
 
 impl From<&State> for Seed {
@@ -562,7 +605,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn can_create_project_directory_exists() -> Result<(), Error> {
+    async fn can_create_project_for_existing_repo() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let repo_path = repo_path.join("radicalise");

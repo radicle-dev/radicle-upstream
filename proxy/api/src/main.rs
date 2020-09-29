@@ -8,12 +8,12 @@ use tokio::{
 };
 
 use api::{config, context, env, http, notification, session};
-use coco::{keystore, seed, signer, Peer};
+use coco::{keystore, seed, signer, Peer, RunConfig};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
 struct Args {
-    /// Put proxy in test mode to use certain fixtures to serve.
+    /// Put proxy in test mode to use certain fixtures.
     test: bool,
 }
 
@@ -157,7 +157,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         });
         let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, seeds);
 
-        coco::into_peer_state(config, signer.clone(), store.clone()).await?
+        coco::into_peer_state(config, signer.clone(), store.clone(), RunConfig::default()).await?
     };
 
     let subscriptions = notification::Subscriptions::default();

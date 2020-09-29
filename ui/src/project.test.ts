@@ -15,6 +15,23 @@ jest.mock("./api");
 
 describe("creating a project", () => {
   describe("path validation", () => {
+    it("formats project names correctly", () => {
+      const acceptable = "new_project";
+      const withSpaces = "new project";
+
+      // formats spaces
+      expect(project.formatNameInput(withSpaces)).toEqual("new-project");
+
+      // doesn't mess with names that are already ok
+      expect(project.formatNameInput(acceptable)).toEqual(acceptable);
+    });
+
+    it("extract project names correctly from a repository path", () => {
+      expect(
+        project.extractName("screaming/somewhere/in/the/machine/my-project")
+      ).toEqual("my-project");
+    });
+
     it("sets the local state", () => {
       project.localState.set("test");
       const validation = project.repositoryPathValidationStore(false);

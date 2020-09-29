@@ -54,6 +54,7 @@
 
   .search-bar {
     margin-bottom: 1rem;
+    position: relative;
   }
 
   .tracking-info {
@@ -89,7 +90,8 @@
       showLeftItem
       style="height: 3rem;"
       inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
-      validation={$validation}>
+      validation={$validation}
+      hint="v">
       <div slot="left" style="display: flex;">
         <Icon.MagnifyingGlass />
       </div>

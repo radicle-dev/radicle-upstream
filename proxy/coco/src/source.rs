@@ -519,7 +519,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
             name.map(String::from)
         })
         .min()
-        .expect("Could not find any branches.");
+        .ok_or(Error::NoBranches)?;
 
     log::debug!(
         "The fallback branch for this repository is: {:?}",

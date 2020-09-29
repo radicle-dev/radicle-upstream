@@ -11,6 +11,7 @@
     title: string;
     href: string;
     looseActiveStateMatching: boolean;
+    counter?: string;
   }[];
 </script>
 
@@ -48,6 +49,7 @@
         <MenuItem
           icon={item.icon}
           title={item.title}
+          counter={item.counter}
           href={item.href}
           active={path.active(item.href, $location, item.looseActiveStateMatching)} />
       </li>

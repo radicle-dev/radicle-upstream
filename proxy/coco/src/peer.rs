@@ -3,7 +3,6 @@
 
 use std::{
     convert::From,
-    fmt,
     future::Future,
     pin::Pin,
     task::{Context, Poll},
@@ -15,19 +14,25 @@ use futures::{
     stream::StreamExt as _,
 };
 use tokio::{
-    sync::broadcast,
+    sync::{broadcast, mpsc},
     task::{JoinError, JoinHandle},
+    time::interval,
 };
 
-use librad::net::{
-    peer::{Gossip, RunLoop},
-    protocol,
-};
+use librad::{net::peer::RunLoop, peer::PeerId};
 
 use crate::state::State;
 
 mod announcement;
 pub use announcement::Announcement;
+
+mod run_state;
+pub use run_state::{
+    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, SyncConfig, SyncEvent, TimeoutEvent,
+};
+use run_state::{Command, RunState};
+
+mod sync;
 
 /// Upper bound of messages stored in receiver channels.
 const RECEIVER_CAPACITY: usize = 128;
@@ -46,25 +51,11 @@ pub enum Error {
     /// There was an error in a spawned task.
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
     Join(#[source] JoinError),
-}
 
-/// Significant events that occur during [`Peer`] lifetime.
-#[allow(clippy::large_enum_variant)]
-#[derive(Clone)]
-pub enum Event {
-    /// Gossiped a list of updates of new heads in our [`crate::state::State`]`.
-    Announced(announcement::Updates),
-    /// Received a low-level protocol event.
-    Protocol(protocol::ProtocolEvent<Gossip>),
-}
-
-impl fmt::Debug for Event {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Announced(updates) => write!(f, "announcements = {}", updates.len()),
-            Self::Protocol(event) => write!(f, "protocol = {:?}", event),
-        }
-    }
+    /// Stop-gap until we get rid of crate level errors.
+    // TODO(xla): Remove once we transitioned to per module errors.
+    #[error(transparent)]
+    Crate(#[from] crate::error::Error),
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
@@ -73,22 +64,25 @@ pub struct Peer {
     run_loop: RunLoop,
     /// Underlying state that is passed to subroutines.
     state: State,
-    /// On-disk storage  for caching.
+    /// On-disk storage for caching.
     store: kv::Store,
     /// Handle used to broadcast [`Event`].
     subscriber: broadcast::Sender<Event>,
+    /// Subroutine config.
+    run_config: RunConfig,
 }
 
 impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: State, store: kv::Store) -> Self {
+    pub fn new(run_loop: RunLoop, state: State, store: kv::Store, run_config: RunConfig) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         Self {
             run_loop,
             state,
             store,
             subscriber,
+            run_config,
         }
     }
 
@@ -115,34 +109,19 @@ impl Peer {
     }
 }
 
-/// Announcement subroutine.
-async fn announce(state: &State, store: &kv::Store) -> Result<announcement::Updates, Error> {
-    let old = announcement::load(store)?;
-    let new = announcement::build(state).await?;
-    let updates = announcement::diff(&old, &new);
-
-    announcement::announce(state, updates.iter()).await;
-
-    if !updates.is_empty() {
-        announcement::save(store, updates.clone()).map_err(Error::from)?;
-    }
-
-    Ok(updates)
-}
-
 /// [`JoinHandle`] for the protocol run loop task.
 type JoinProtocol = JoinHandle<Result<(), future::Aborted>>;
 
-/// [`JoinHandle`] for the announcements task.
-type JoinAnnounce = JoinHandle<Result<Result<(), Error>, future::Aborted>>;
+/// [`JoinHandle`] for the subroutines task.
+type JoinSubroutines = JoinHandle<Result<Result<(), Error>, future::Aborted>>;
 
 /// Future returned by [`Peer::into_running`].
 #[must_use = "to the sig hup, don't stup, don't drop"]
 pub struct Running {
     /// Join and abort handles for the protocol run loop.
     protocol: (JoinProtocol, future::AbortHandle),
-    /// Join and abort handles for the announcements task.
-    announce: (JoinAnnounce, future::AbortHandle),
+    /// Join and abort handles for the subroutines task.
+    subroutines: (JoinSubroutines, future::AbortHandle),
 }
 
 impl Running {
@@ -151,7 +130,7 @@ impl Running {
     /// The next call to [`Future::poll`] will return an [`Error::Aborted`].
     pub fn abort(&mut self) {
         self.protocol.1.abort();
-        self.announce.1.abort();
+        self.subroutines.1.abort();
     }
 }
 
@@ -162,7 +141,63 @@ impl From<Peer> for Running {
             state,
             store,
             subscriber,
+            run_config,
         } = peer;
+
+        // Note: this must be spawned first to not loose the race for the first
+        // `protocol_events`.
+        let subroutines = {
+            let fut = async move {
+                let mut protocol_events = state.api.protocol().subscribe().await;
+                let mut timer = interval(run_config.announce.interval);
+                let (announce_sender, mut announcements) =
+                    mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
+                let (peer_sync_sender, mut peer_syncs) =
+                    mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
+                let (timeout_sender, mut timeouts) =
+                    mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
+
+                let mut run_state = RunState::from(run_config);
+                loop {
+                    let event = tokio::select! {
+                        _ = timer.tick() => Event::Announce(AnnounceEvent::Tick),
+                        Some(announce_event) = announcements.recv() => Event::Announce(announce_event),
+                        Some(protocol_event) = protocol_events.next() => Event::Protocol(protocol_event),
+                        Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
+                        Some(timeout_event) = timeouts.recv() => Event::Timeout(timeout_event),
+                        else => {
+                            break
+                        },
+                    };
+
+                    // Send will error if there are no active receivers. This
+                    // case is expected and should not terminate the run loop.
+                    subscriber.send(event.clone()).ok();
+                    log::debug!("{:?}", event);
+
+                    for cmd in run_state.transition(event) {
+                        match cmd {
+                            Command::Announce => {
+                                announce(&state, &store, announce_sender.clone()).await;
+                            },
+                            Command::SyncPeer(peer_id) => {
+                                sync(&state, peer_id.clone(), peer_sync_sender.clone()).await;
+                            },
+                            Command::StartSyncTimeout(sync_period) => {
+                                start_sync_timeout(sync_period, timeout_sender.clone()).await;
+                            },
+                        };
+                    }
+                }
+
+                Ok(())
+            };
+
+            let (handle, registration) = future::AbortHandle::new_pair();
+            let join = tokio::spawn(future::Abortable::new(fut, registration));
+
+            (join, handle)
+        };
 
         let protocol = {
             let (handle, registration) = future::AbortHandle::new_pair();
@@ -172,45 +207,7 @@ impl From<Peer> for Running {
             (join, handle)
         };
 
-        let announce = {
-            let fut = async move {
-                let mut protocol_events = state.api.protocol().subscribe().await;
-                let mut timer = tokio::time::interval(Duration::from_secs(1));
-
-                loop {
-                    let result = tokio::select! {
-                        _ = timer.tick() => {
-                            announce(&state, &store).await.map(Event::Announced)
-                        },
-                        Some(event) = protocol_events.next() => {
-                            Ok(Event::Protocol(event))
-                        },
-                        else => break,
-                    };
-
-                    match result {
-                        // Propagate if one of the select failed.
-                        Err(err) => return Err(err),
-                        Ok(event) => {
-                            log::info!("{:?}", event);
-
-                            // Send will error if there are no active receivers.
-                            // This case is expected and should not crash the
-                            // run loop.
-                            subscriber.send(event).ok();
-                        },
-                    }
-                }
-
-                Ok(())
-            };
-            let (handle, registration) = future::AbortHandle::new_pair();
-            let join = tokio::spawn(future::Abortable::new(fut, registration));
-
-            (join, handle)
-        };
-
-        Self { protocol, announce }
+        Self { protocol, subroutines }
     }
 }
 
@@ -238,8 +235,9 @@ impl Future for Running {
             return Poll::Ready(Err(err));
         }
 
-        match self.announce.0.poll_unpin(cx) {
+        match self.subroutines.0.poll_unpin(cx) {
             Poll::Ready(val) => match val {
+                // Jeez...
                 Err(e) => Poll::Ready(Err(Error::Join(e))),
                 Ok(Err(e)) => Poll::Ready(Err(Error::Aborted(e))),
                 Ok(Ok(Err(e))) => Poll::Ready(Err(e)),
@@ -248,4 +246,36 @@ impl Future for Running {
             Poll::Pending => Poll::Pending,
         }
     }
+}
+
+/// Announcement subroutine.
+async fn announce(state: &State, store: &kv::Store, mut sender: mpsc::Sender<AnnounceEvent>) {
+    match announcement::run(state, &store).await {
+        Ok(updates) => sender.send(AnnounceEvent::Succeeded(updates)).await.ok(),
+        Err(err) => {
+            log::error!("announce error: {:?}", err);
+            sender.send(AnnounceEvent::Failed).await.ok()
+        },
+    };
+}
+
+/// Peer syncing subroutine.
+async fn sync(state: &State, peer_id: PeerId, mut sender: mpsc::Sender<SyncEvent>) {
+    sender.send(SyncEvent::Started(peer_id.clone())).await.ok();
+    match sync::sync(state, peer_id.clone()).await {
+        Ok(_) => sender
+            .send(SyncEvent::Succeeded(peer_id.clone()))
+            .await
+            .ok(),
+        Err(err) => {
+            log::error!("sync error for {}: {:?}", peer_id, err);
+            sender.send(SyncEvent::Failed(peer_id.clone())).await.ok()
+        },
+    };
+}
+
+/// Sync timeout subroutine.
+async fn start_sync_timeout(sync_period: Duration, sender: mpsc::Sender<TimeoutEvent>) {
+    tokio::time::delay_for(sync_period).await;
+    sender.clone().send(TimeoutEvent::SyncPeriod).await.ok();
 }

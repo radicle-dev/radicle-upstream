@@ -1,14 +1,16 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { ValidationStatus } from "../../src/validation.ts";
-  import * as onboarding from "../../src/onboarding.ts";
+  import { ValidationStatus } from "../../src/validation";
+  import * as onboarding from "../../src/onboarding";
 
   import { Button, Emoji, Input } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();
 
-  export let handle = null;
+  export let handle = "";
+
+  $: if (handle.length > 0) handle = onboarding.formatHandleInput(handle);
 
   let beginValidation = false;
   const validationStore = onboarding.createHandleValidationStore();
@@ -16,13 +18,11 @@
   $: beginValidation && validationStore.validate(handle);
   $: allowNext = (handle && validationPasses()) || !validationStarted();
 
-  const validationPasses = () => {
-    return $validationStore.status === ValidationStatus.Success;
-  };
+  const validationPasses = () =>
+    $validationStore.status === ValidationStatus.Success;
 
-  const validationStarted = () => {
-    return $validationStore.status !== ValidationStatus.NotStarted;
-  };
+  const validationStarted = () =>
+    $validationStore.status !== ValidationStatus.NotStarted;
 
   const next = () => {
     if (!allowNext) return;
@@ -72,12 +72,13 @@
       across the network, but it helps others recognize you a little easier.
     </p>
     <Input.Text
-      autofocus={true}
-      placeholder="Enter a name"
+      autofocus
+      placeholder="Enter a display name (e.g. coolprogrammer3000)"
       bind:value={handle}
       on:enter={next}
       dataCy="handle-input"
       validation={$validationStore}
+      hint="↵"
       style="margin: 1rem 0 2rem 0;" />
     <div class="buttons">
       <Button dataCy="next-button" disabled={!allowNext} on:click={next}>
