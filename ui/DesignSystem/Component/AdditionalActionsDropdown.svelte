@@ -9,7 +9,21 @@
   import Tooltip from "./Tooltip.svelte";
   import Urn from "./Urn.svelte";
 
-  let triggerEl;
+  interface MenuItem {
+    title: string;
+    icon: typeof SvelteComponent;
+    event: () => void;
+    tooltip?: string;
+    dataCy?: string;
+    disabled?: boolean;
+  }
+  export let menuItems: MenuItem[];
+  export let headerTitle: string;
+
+  export let dataCy = "";
+  export let style = "";
+
+  let triggerEl: HTMLButtonElement;
   let expanded = false;
 
   const toggleModal = () => {
@@ -20,23 +34,10 @@
     expanded = false;
   };
 
-  const handleItemSelection = item => {
+  const handleItemSelection = (item: MenuItem) => {
     hideModal();
     item.event();
   };
-
-  export let menuItems: {
-    title: string;
-    icon: typeof SvelteComponent;
-    event: (any) => void;
-    tooltip?: string;
-    dataCy?: string;
-    disabled?: boolean;
-  }[];
-  export let headerTitle: string;
-
-  export let dataCy = "";
-  export let style = "";
 </script>
 
 <style>

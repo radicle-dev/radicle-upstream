@@ -1,10 +1,9 @@
-import { SvelteComponent } from "svelte";
 import { derived, writable } from "svelte/store";
 
-const currentStore = writable<SvelteComponent | undefined>(undefined);
+const currentStore = writable<HTMLDivElement | undefined>(undefined);
 export const current = derived(currentStore, store => store);
 
-export const open = (component: SvelteComponent) => {
+export const open = (component: HTMLDivElement) => {
   currentStore.set(component);
 };
 
