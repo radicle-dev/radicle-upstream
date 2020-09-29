@@ -126,7 +126,7 @@ type Msg =
   | FetchLocalState
   | FetchUser;
 
-// / REQUEST INPUTS
+// REQUEST INPUTS
 interface CreateInput {
   repo: Repo;
   description?: string;

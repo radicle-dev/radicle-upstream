@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { getContext } from "svelte";
 
   import { isExperimental } from "../../../../native/ipc.js";
   import { RevisionType } from "../../../src/source.ts";
@@ -14,6 +14,8 @@
 
   let currentSelectedPeer;
 
+  const { metadata } = getContext("project");
+
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
       return rev.identity.peerId === currentPeerId;
@@ -24,17 +26,23 @@
     currentSelectedPeer = revisions[0];
   }
 
-  const toggle = () => {
-    expanded = !expanded;
-  };
+  // initialize currentRevision
+  $: if (!currentRevision) {
+    currentRevision = {
+      type: RevisionType.Branch,
+      name: metadata.defaultBranch,
+      peerId: currentSelectedPeer ? currentSelectedPeer.identity.peerId : "",
+    };
+  }
+
+  const toggle = () => (expanded = !expanded);
 
   const hideDropdown = () => {
     expanded = false;
   };
 
-  const dispatch = createEventDispatcher();
-  const selectRevision = (peerId, revision) => {
-    dispatch("select", { revision, peerId });
+  const selectRevision = revision => {
+    currentRevision = revision;
     hideDropdown();
   };
 </script>
@@ -149,14 +157,11 @@
             class="branch typo-overflow-ellipsis"
             class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
             data-branch={branch}
-            on:click|stopPropagation={() => selectRevision(
-                currentSelectedPeer.identity.peerId,
-                {
-                  type: RevisionType.Branch,
-                  peerId: currentSelectedPeer.identity.peerId,
-                  name: branch,
-                }
-              )}>
+            on:click|stopPropagation={() => selectRevision({
+                type: RevisionType.Branch,
+                peerId: currentSelectedPeer.identity.peerId,
+                name: branch,
+              })}>
             <Icon.Branch
               dataCy="branch-icon"
               style="vertical-align: bottom; fill:
@@ -170,13 +175,10 @@
               class="tag typo-overflow-ellipsis"
               class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
               data-tag={tag}
-              on:click|stopPropagation={() => selectRevision(
-                  currentSelectedPeer.identity.peerId,
-                  {
-                    type: RevisionType.Tag,
-                    name: tag,
-                  }
-                )}>
+              on:click|stopPropagation={() => selectRevision({
+                  type: RevisionType.Tag,
+                  name: tag,
+                })}>
               <Icon.Label
                 dataCy="tag-icon"
                 style="vertical-align: bottom; fill:

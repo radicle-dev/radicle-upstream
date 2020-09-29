@@ -6,16 +6,16 @@
   import { BadgeType } from "../../src/badge.ts";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
-  import { Overlay, Badge, Tooltip } from "../../DesignSystem/Component";
+  import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
   export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
-  export let maintainers = [];
 
   let currentSelectedPeer;
 
   const session = getContext("session");
+  const { metadata } = getContext("project");
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
@@ -25,10 +25,8 @@
     // The API returns a revision list where the first entry is the default
     // peer.
     currentSelectedPeer = revisions[0];
+    currentPeerId = currentSelectedPeer.identity.peerId;
   }
-
-  // Dropdown element. Set by the view.
-  let dropdown = null;
 
   const showDropdown = () => {
     expanded = true;
@@ -49,6 +47,7 @@
   const dispatch = createEventDispatcher();
   const selectPeer = peerId => {
     hideDropdown();
+    currentPeerId = peerId;
     dispatch("select", { peerId });
   };
 </script>
@@ -91,8 +90,6 @@
   }
 
   .peer-dropdown {
-    position: relative;
-    background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     box-shadow: var(--elevation-medium);
@@ -134,7 +131,7 @@
         {currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}
       </p>
       <p>
-        {#if maintainers.includes(currentSelectedPeer.identity.urn)}
+        {#if metadata.maintainers.includes(currentSelectedPeer.identity.urn)}
           <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
         {/if}
       </p>
@@ -144,7 +141,7 @@
         style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
     </div>
   </div>
-  <div class="peer-dropdown-container" bind:this={dropdown}>
+  <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
       {#each revisions as repo}
         <div
@@ -164,7 +161,7 @@
               {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
             </p>
             <p>
-              {#if maintainers.includes(repo.identity.urn)}
+              {#if metadata.maintainers.includes(repo.identity.urn)}
                 <Badge
                   style="margin-left: 0.5rem"
                   variant={BadgeType.Maintainer} />

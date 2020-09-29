@@ -9,20 +9,21 @@ before(() => {
 beforeEach(() => {
   cy.visit("./public/index.html#/profile/projects");
   cy.contains("platinum").click();
-  cy.contains("Source").click();
 });
 
 context("repository stats", () => {
   it("shows the correct numbers", () => {
-    cy.pick("horizontal-menu", "Commits").contains("Commits 14");
     cy.pick("header", "project-stats").contains("2 Branches");
     cy.pick("header", "project-stats").contains("4 Contributors");
+    cy.pick("horizontal-menu", "Commits", "counter").contains("14");
   });
 });
 
 context("commit browsing", () => {
   context("commit history", () => {
     it("shows the commit history for the default branch", () => {
+      // Wait for the commit tab to be updated
+      cy.pick("horizontal-menu", "Commits", "counter").contains("14");
       cy.pick("horizontal-menu", "Commits").click();
       cy.pick("commits-page").should("exist");
       cy.pick("commit-teaser")
@@ -40,6 +41,8 @@ context("commit browsing", () => {
     it("shows the commit history for another branch", () => {
       cy.pick("revision-selector").click();
       cy.get('[data-branch="dev"]').click();
+      // Wait for the commit tab to be updated
+      cy.pick("horizontal-menu", "Commits", "counter").contains("8");
       cy.pick("horizontal-menu", "Commits").click();
 
       cy.pick("commits-page").should("exist");
