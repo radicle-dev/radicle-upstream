@@ -9,10 +9,13 @@ use std::{collections::HashMap, ops::Sub};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{peer::PeerId, uri::RadUrn};
+use librad::{
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 
 use crate::request::{
-    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, TimedOut,
+    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
 };
 
 /// The maximum number of query attempts that can be made for a single request.
@@ -69,13 +72,13 @@ impl<T> From<Request<TimedOut, T>> for Error {
 /// request on the outside.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WaitingRoom<T> {
+pub struct WaitingRoom<T, D> {
     /// The set of requests keyed by their `RadUrn`. This helps us keep only unique requests in the
     /// waiting room.
     requests: HashMap<RadUrn, SomeRequest<T>>,
 
     /// The configuration of the waiting room.
-    config: Config,
+    config: Config<D>,
 }
 
 /// The `Config` for the waiting room tells it what are the maximum number of query and clone
@@ -85,26 +88,37 @@ pub struct WaitingRoom<T> {
 /// i.e. `Config::default()`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Config {
+pub struct Config<D> {
     /// The maximum number of query attempts that can be made.
     pub max_queries: Queries,
     /// The maximum number of clone attempts that can be made.
     pub max_clones: Clones,
+    /// The minimum elapsed time between some provided time and a request's timestamp.
+    /// For example, if we had the following setup:
+    ///   * `delta = 1`
+    ///   * `now = 3`
+    ///   * `request.timestamp = 2`
+    /// then the `delta` would be compared against `now - request.timestamp`.
+    pub delta: D,
 }
 
-impl Default for Config {
+impl<D> Default for Config<D>
+where
+    D: Default,
+{
     fn default() -> Self {
         Self {
             max_queries: MAX_QUERIES,
             max_clones: MAX_CLONES,
+            delta: D::default(),
         }
     }
 }
 
-impl<T> WaitingRoom<T> {
+impl<T, D> WaitingRoom<T, D> {
     /// Initialise a new `WaitingRoom` with the supplied `config`.
     #[must_use]
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: Config<D>) -> Self {
         Self {
             requests: HashMap::new(),
             config,
@@ -123,9 +137,9 @@ impl<T> WaitingRoom<T> {
     /// of the underlying `Request`.
     ///
     /// If the `urn` could not be found then `None` is returned.
-    pub fn elapsed(&self, urn: &RadUrn, timestamp: T) -> Option<T::Output>
+    pub fn elapsed(&self, urn: &RadUrn, timestamp: T) -> Option<D>
     where
-        T: Sub<T> + Clone,
+        T: Sub<T, Output = D> + Clone,
     {
         Some(self.get(urn)?.elapsed(timestamp))
     }
@@ -349,37 +363,51 @@ impl<T> WaitingRoom<T> {
 
     /// Filter the `WaitingRoom` by:
     ///   * Choosing which [`RequestState`] you are looking for
-    ///   * Checking the elapsed time between the `timestamp` and the `Request`'s timestamp are
-    ///   greater than the `delta` provided.
-    pub fn filter(
+    pub fn filter_by_state(
         &self,
         request_state: RequestState,
-        timestamp: T,
-        delta: T::Output,
-    ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)>
-    where
-        T: Sub<T> + Clone,
-        T::Output: Ord + Clone,
-    {
+    ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)> {
         self.iter()
-            .filter(move |(_, request)| request.elapsed(timestamp.clone()) >= delta.clone())
             .filter(move |(_, request)| RequestState::from(*request) == request_state.clone())
     }
 
-    /// Find the first occurring request based on the call to [`WaitingRoom::filter`].
-    // Clippy is confusing OUR filter with Iterator's filter. So this is telling it to go away.
-    #[allow(clippy::filter_next)]
-    pub fn find(
-        &self,
-        request_state: RequestState,
-        timestamp: T,
-        delta: T::Output,
-    ) -> Option<(&RadUrn, &SomeRequest<T>)>
+    /// Find the first occurring request based on the call to [`WaitingRoom::filter_by_state`].
+    pub fn find_by_state(&self, request_state: RequestState) -> Option<(&RadUrn, &SomeRequest<T>)> {
+        self.filter_by_state(request_state).next()
+    }
+
+    /// Get the next `Request` that is in a query state, i.e. `Created` or `Requested`.
+    ///
+    /// In the case of the `Requested` state we check elapsed time between the `timestamp` and the
+    /// `Request`'s timestamp is greater than the `delta` provided in the [`Config`].
+    pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
     where
-        T: Sub<T> + Clone,
-        T::Output: Ord + Clone,
+        T: Sub<T, Output = D> + Clone,
+        D: Ord + Clone,
     {
-        self.filter(request_state, timestamp, delta).next()
+        let created = self.find_by_state(RequestState::Created);
+        let requested = self
+            .filter_by_state(RequestState::Requested)
+            .find(move |(_, request)| {
+                request.elapsed(timestamp.clone()) >= self.config.delta.clone()
+            });
+
+        created.or(requested).map(|(urn, _request)| urn.clone())
+    }
+
+    /// Get the next `Request` that is in the the `Found` state and the status of the peer is
+    /// `Available`.
+    pub fn next_clone(&self) -> Option<RadUrl> {
+        self.find_by_state(RequestState::Found)
+            .and_then(|(urn, request)| match request {
+                SomeRequest::Found(request) => {
+                    request.iter().find_map(|(peer_id, status)| match status {
+                        Status::Available => Some(urn.clone().into_rad_url(peer_id.clone())),
+                        _ => None,
+                    })
+                },
+                _ => None,
+            })
     }
 
     #[cfg(test)]
@@ -403,7 +431,7 @@ mod test {
 
     #[test]
     fn happy_path_of_full_request() -> Result<(), Box<dyn error::Error + 'static>> {
-        let mut waiting_room: WaitingRoom<usize> = WaitingRoom::new(Config::default());
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
@@ -412,7 +440,7 @@ mod test {
 
         assert_eq!(request, None);
 
-        let created = waiting_room.find(RequestState::Created, 0, 0);
+        let created = waiting_room.find_by_state(RequestState::Created);
         assert_eq!(
             created,
             Some((&urn, &SomeRequest::Created(Request::new(urn.clone(), 0)))),
@@ -458,7 +486,7 @@ mod test {
 
     #[test]
     fn cannot_create_twice() -> Result<(), Box<dyn error::Error>> {
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config::default());
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config::default());
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
@@ -484,9 +512,10 @@ mod test {
     #[test]
     fn timeout_on_requests() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_QUERIES: usize = 16;
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
             max_queries: Queries::new(NUM_QUERIES),
             max_clones: Clones::new(0),
+            delta: (),
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -512,9 +541,10 @@ mod test {
     #[test]
     fn timeout_on_clones() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 16;
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
             max_queries: Queries::new(1),
             max_clones: Clones::new(NUM_CLONES),
+            delta: (),
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -558,9 +588,10 @@ mod test {
     #[test]
     fn cloning_fails_back_to_requested() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 5;
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
             max_queries: Queries::new(1),
             max_clones: Clones::new(NUM_CLONES),
+            delta: (),
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -588,7 +619,7 @@ mod test {
     #[test]
     fn cancel_transitions() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
-        let mut waiting_room: WaitingRoom<()> = WaitingRoom::new(config);
+        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(config);
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
@@ -656,13 +687,13 @@ mod test {
     #[test]
     fn can_get_request_that_is_ready() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
-        let mut waiting_room: WaitingRoom<usize> = WaitingRoom::new(config);
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(config);
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
 
-        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
+        let ready = waiting_room.find_by_state(RequestState::Cloned);
         assert_eq!(ready, None);
 
         let _ = waiting_room.request(urn.clone(), 0);
@@ -671,7 +702,7 @@ mod test {
         waiting_room.cloning(&urn, peer.clone(), 0)?;
         waiting_room.cloned(&urn, urn.clone(), 0)?;
 
-        let ready = waiting_room.find(RequestState::Cloned, 0, 0);
+        let ready = waiting_room.find_by_state(RequestState::Cloned);
         let expected = SomeRequest::Cloned(
             Request::new(urn.clone(), 0)
                 .request(0)
