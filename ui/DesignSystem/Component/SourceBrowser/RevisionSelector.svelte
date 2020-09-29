@@ -88,13 +88,6 @@
   .selector-expand {
     align-self: flex-end;
   }
-  .revision-dropdown-container {
-    display: flex;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    min-width: 100%;
-  }
   .revision-dropdown {
     position: relative;
     background: var(--color-background);
@@ -163,7 +156,7 @@
     <ul>
       {#each currentSelectedPeer.branches as branch}
         <li
-          class="branch typo-overflow-ellipsis"
+          class="branch"
           class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
           data-branch={branch}
           on:click|stopPropagation={() => selectRevision({
@@ -175,13 +168,14 @@
             dataCy="branch-icon"
             style="vertical-align: bottom; fill:
             var(--color-foreground-level-4)" />
-          <span class="revision-name typo-text">{branch}</span>
+          <span
+            class="revision-name typo-text typo-overflow-ellipsis">{branch}</span>
         </li>
       {/each}
       {#if isExperimental()}
         {#each currentSelectedPeer.tags as tag}
           <li
-            class="tag typo-overflow-ellipsis"
+            class="tag"
             class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
             data-tag={tag}
             on:click|stopPropagation={() => selectRevision({
@@ -192,7 +186,8 @@
               dataCy="tag-icon"
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
-            <span class="revision-name typo-text">{tag}</span>
+            <span
+              class="revision-name typo-text typo-overflow-ellipsis">{tag}</span>
           </li>
         {/each}
       {/if}
