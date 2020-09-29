@@ -66,7 +66,7 @@
     return {
       variant: "text",
       value: project.id,
-      textProps: { title: project.metadata.name },
+      title: project.metadata.name,
     };
   });
 
@@ -78,7 +78,7 @@
 
   // Pre-select existing project name as the to-be-registered name
   $: if (projectId && !skipNamePreselection) {
-    projectName = selectedProject().textProps.title;
+    projectName = selectedProject().title;
   } else {
     skipNamePreselection = false;
   }

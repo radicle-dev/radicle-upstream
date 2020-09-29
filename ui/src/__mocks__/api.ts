@@ -71,6 +71,9 @@ export const sessionMock: session.Session = {
   settings: {
     appearance: {
       theme: settings.Theme.Light,
+      hints: {
+        showRemoteHelper: true,
+      },
     },
     coco: {
       seeds: ["seed.radicle.xyz"],

@@ -32,16 +32,19 @@ describe("creating a project", () => {
       ).toEqual("my-project");
     });
 
-    it("sets the local state", () => {
-      project.localState.set("test");
+    it("fetches local state and sets store accordingly", () => {
       const validation = project.repositoryPathValidationStore(false);
       validation.validate("/repository/path");
 
-      // resetting the local state on validation start
-      expect(get(project.localState)).toEqual("");
+      expect(get(project.localState)).toEqual({
+        status: remote.Status.Loading,
+      });
 
       process.nextTick(() => {
-        expect(get(project.localState)).toEqual(localStateMock);
+        expect(get(project.localState)).toEqual({
+          status: remote.Status.Success,
+          data: localStateMock,
+        });
       });
     });
 
