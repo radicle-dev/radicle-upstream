@@ -14,6 +14,7 @@ pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
+        .or(remote_filter(ctx.clone()))
         .or(get_filter(ctx))
         .boxed()
 }
@@ -48,6 +49,30 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
         .and(path::param::<coco::Urn>())
         .and(path::end())
         .and_then(handler::get)
+}
+
+/// `GET /remote/<id>`
+fn remote_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+// TODO(sos): This should be part of the logic in the `get` endpoint -- 
+//          e.g. 
+
+//              client requests GET projects/<id>
+//              if (project exists in monorepo) {
+//                  return project
+//              } else {
+//                  kick off search request
+//                  return a request that can be subscribed to / monitored
+//                  for updates
+//              }
+            
+// For now, this is a sandbox for the cloning process until it's running 
+// smoothly
+    path("remote")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::get_remote)
 }
 
 /// `GET /tracked`
@@ -102,6 +127,13 @@ mod handler {
 
     use crate::{context, error::Error, project};
 
+    use coco::{
+        request::{
+            SomeRequest,
+            Request
+        }
+    };
+
     /// Create a new [`project::Project`].
     pub async fn create(
         ctx: context::Ctx,
@@ -154,7 +186,21 @@ mod handler {
         let ctx = ctx.read().await;
         let state = ctx.state.lock().await;
 
-        Ok(reply::json(&project::get(&state, &urn)?))
+        let project = project::get(&state, &urn)?;
+
+        Ok(reply::json(&project))
+    }
+
+    /// Kick off a network request for the [`project::Project`] of the given `id`.
+    pub async fn get_remote(ctx: context::Ctx, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        // TODO
+        // (1) Get a reference to the waiting room
+        // (2) let request = waiting_room.request(urn.clone(), Instant::now());
+        // (3) Return a confirmation to the client 
+
+        let request = SomeRequest::Created(Request::new(urn.clone(), 0));
+
+        Ok(reply::json(&request))
     }
 
     /// List all projects tracked by the current user.
@@ -223,7 +269,7 @@ pub struct CheckoutInput {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MetadataInput {
-    /// Name of the proejct.
+    /// Name of the project.
     name: String,
     /// Long form outline.
     description: String,
@@ -241,6 +287,13 @@ mod test {
     use radicle_surf::vcs::git::git2;
 
     use crate::{context, error, http, identity, project, session};
+
+    use coco::{
+        request::{
+            SomeRequest,
+            Request
+        }
+    };
 
     #[tokio::test]
     async fn checkout() -> Result<(), error::Error> {
@@ -582,6 +635,31 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(project));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_remote() -> Result<(), error::Error> {
+        let api = super::filters(ctx.clone());
+
+        let urn = coco::Urn::new(
+            coco::Hash::hash(b"kisses-of-the-sun"),
+            coco::uri::Protocol::Git,
+            coco::uri::Path::parse("").map_err(coco::Error::from)?,
+        );
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/remote/{}", urn))
+            .reply(&api)
+            .await;
+
+        let want = SomeRequest::Created(Request::new(urn.clone(), 0));
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
         });
 
         Ok(())
