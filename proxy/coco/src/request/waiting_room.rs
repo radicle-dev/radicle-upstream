@@ -383,8 +383,10 @@ impl<T, D> WaitingRoom<T, D> {
 
     /// Get the next `Request` that is in a query state, i.e. `Created` or `Requested`.
     ///
-    /// In the case of the `Requested` state we check elapsed time between the `timestamp` and the
-    /// `Request`'s timestamp is greater than the `delta` provided in the [`Config`].
+    /// In the case of the `Requested` state we check if:
+    ///   * The request is a fresh request that hasn't had an attempt to clone yet
+    ///   * Or the elapsed time between the `timestamp` and the `Request`'s timestamp is greater
+    ///     than the `delta` provided in the [`Config`].
     pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
     where
         T: Sub<T, Output = D> + Clone,
@@ -395,6 +397,7 @@ impl<T, D> WaitingRoom<T, D> {
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
                 request.elapsed(timestamp.clone()) >= self.config.delta.clone()
+                    || request.attempts().clones == Clones::new(0)
             });
 
         created.or(requested).map(|(urn, _request)| urn.clone())
