@@ -408,7 +408,7 @@ impl<T, D> WaitingRoom<T, D> {
                     || request.attempts().clones == Clones::new(0)
             });
 
-        created.or(requested).map(|(urn, _request)| urn.clone())
+        created.or(requested).map(|(urn, _request)| urn)
     }
 
     /// Get the next `Request` that is in the the `Found` state and the status of the peer is
