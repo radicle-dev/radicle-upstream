@@ -10,7 +10,7 @@ use syntect::{
 
 use radicle_surf::{
     diff, file_system,
-    vcs::git::{self, git2, BranchType, Browser, Rev},
+    vcs::git::{self, git2, BranchType, Browser, Rev, Stats},
 };
 
 use crate::{error::Error, oid::Oid};
@@ -183,6 +183,15 @@ impl Serialize for CommitHeader {
         state.serialize_field("committerTime", &self.committer_time.seconds())?;
         state.end()
     }
+}
+
+/// A selection of commit headers and their statistics.
+#[derive(Serialize)]
+pub struct Commits {
+    /// The commit headers
+    pub headers: Vec<CommitHeader>,
+    /// The statistics for the commit headers
+    pub stats: Stats,
 }
 
 /// Git object types.
@@ -627,15 +636,13 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'repo>(
-    browser: &mut Browser<'repo>,
-    branch: git::Branch,
-) -> Result<Vec<CommitHeader>, Error> {
+pub fn commits<'repo>(browser: &mut Browser<'repo>, branch: git::Branch) -> Result<Commits, Error> {
     browser.branch(branch)?;
 
     let headers = browser.get().iter().map(CommitHeader::from).collect();
+    let stats = browser.get_stats()?;
 
-    Ok(headers)
+    Ok(Commits { headers, stats })
 }
 
 /// Retrieves the list of [`Tag`] for the given project `id`.
