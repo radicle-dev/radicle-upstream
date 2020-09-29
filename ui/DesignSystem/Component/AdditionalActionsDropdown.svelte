@@ -3,7 +3,7 @@
   import type { SvelteComponent } from "svelte";
 
   import { CSSPosition } from "../../src/style";
-  
+
   import { Icon } from "../Primitive";
   import Overlay from "./Overlay.svelte";
   import Tooltip from "./Tooltip.svelte";
