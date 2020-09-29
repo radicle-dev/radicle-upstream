@@ -240,7 +240,7 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[tokio::test]
+#[tokio::test(core_threads = 2)]
 async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
