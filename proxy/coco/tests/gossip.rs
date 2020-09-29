@@ -21,7 +21,7 @@ use common::{
 
 #[tokio::test]
 async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
@@ -67,7 +67,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
@@ -146,7 +146,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 /// Verify that asking the network for an unkown urn returns no providers.
 #[tokio::test]
 async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let tmp_dir = tempfile::tempdir()?;
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
@@ -181,7 +181,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
 /// Verify that asking the network for a URN owned by a seed peer returns said peer.
 #[tokio::test]
 async fn providers() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
@@ -240,7 +240,7 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test]
 async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
