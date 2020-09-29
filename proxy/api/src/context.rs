@@ -1,10 +1,10 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
-use std::sync::Arc;
+use std::{sync::Arc, time::{Instant, Duration}};
 
 use tokio::sync::RwLock;
 
-use coco::{keystore, signer};
+use coco::{keystore, signer, request::waiting_room::WaitingRoom};
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;
@@ -23,6 +23,8 @@ pub struct Context {
     pub signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
+    /// The [`WaitingRoom`] for making requests for identities.
+    pub waiting_room: coco::shared::Shared<WaitingRoom<Instant, Duration>>,
 }
 
 impl Context {

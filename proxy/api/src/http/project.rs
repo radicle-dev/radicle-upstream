@@ -14,7 +14,7 @@ pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(remote_filter(ctx.clone()))
+        .or(request_filter(ctx.clone()))
         .or(get_filter(ctx))
         .boxed()
 }
@@ -51,8 +51,8 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
         .and_then(handler::get)
 }
 
-/// `GET /remote/<id>`
-fn remote_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+/// `GET /request/<id>`
+fn request_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
 // TODO(sos): This should be part of the logic in the `get` endpoint -- 
 //          e.g. 
 
@@ -67,12 +67,12 @@ fn remote_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error =
             
 // For now, this is a sandbox for the cloning process until it's running 
 // smoothly
-    path("remote")
+    path("request")
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
-        .and_then(handler::get_remote)
+        .and_then(handler::get_request)
 }
 
 /// `GET /tracked`
@@ -121,18 +121,11 @@ fn discover_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::path::PathBuf;
+    use std::{path::PathBuf, time::Instant};
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error::Error, project};
-
-    use coco::{
-        request::{
-            SomeRequest,
-            Request
-        }
-    };
 
     /// Create a new [`project::Project`].
     pub async fn create(
@@ -192,13 +185,11 @@ mod handler {
     }
 
     /// Kick off a network request for the [`project::Project`] of the given `id`.
-    pub async fn get_remote(ctx: context::Ctx, urn: coco::Urn) -> Result<impl Reply, Rejection> {
-        // TODO
-        // (1) Get a reference to the waiting room
-        // (2) let request = waiting_room.request(urn.clone(), Instant::now());
-        // (3) Return a confirmation to the client 
-
-        let request = SomeRequest::Created(Request::new(urn.clone(), 0));
+    pub async fn get_request(ctx: context::Ctx, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        // TODO(finto): Check the request exists in the monorepo
+        let ctx = ctx.write().await;
+        let mut waiting_room = ctx.waiting_room.write().await;
+        let request = waiting_room.request(urn, Instant::now());
 
         Ok(reply::json(&request))
     }

@@ -76,6 +76,7 @@ dependencies = [
  "radicle-surf",
  "serde",
  "serde_json",
+ "serde_millis",
  "serde_qs",
  "tempfile",
  "thiserror",
@@ -2095,6 +2096,15 @@ checksum = "164eacbdb13512ec2745fb09d51fd5b22b0d65ed294a1dcf7285a360c80a675c"
 dependencies = [
  "itoa",
  "ryu",
+ "serde",
+]
+
+[[package]]
+name = "serde_millis"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6e2dc780ca5ee2c369d1d01d100270203c4ff923d2a4264812d723766434d00"
+dependencies = [
  "serde",
 ]
 
