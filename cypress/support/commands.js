@@ -1,5 +1,5 @@
-Cypress.Commands.add("nukeCocoState", async () => {
-  console.log("Nuking CoCo state");
+Cypress.Commands.add("resetCocoState", async () => {
+  console.log("Reset CoCo state");
   await fetch("http://localhost:8080/v1/control/reload");
 });
 
