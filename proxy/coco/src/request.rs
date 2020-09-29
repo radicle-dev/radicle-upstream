@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use librad::{
     net::peer::types::Gossip,
     peer::PeerId,
-    uri::{RadUrl, RadUrn},
+    uri::{self, RadUrl, RadUrn},
 };
 
 pub mod states;
@@ -190,7 +190,11 @@ impl<T> Request<Created, T> {
     ///
     /// Once this request has been made, we can transition this `Request` to the `Requested`
     /// state by calling [`Request::request`].
-    pub const fn new(urn: RadUrn, timestamp: T) -> Self {
+    pub fn new(urn: RadUrn, timestamp: T) -> Self {
+        let urn = RadUrn {
+            path: uri::Path::empty(),
+            ..urn
+        };
         Self {
             urn,
             attempts: Attempts::new(),
