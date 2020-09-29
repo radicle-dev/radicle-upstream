@@ -137,10 +137,12 @@
         <div slot="left">
           <div style="display: flex">
             <div class="revision-selector-wrapper">
-              <RevisionSelector
-                bind:currentPeerId={$currentPeerId}
-                bind:currentRevision={$currentRevision}
-                {revisions} />
+              {#if $currentPeerId}
+                <RevisionSelector
+                  currentPeerId={$currentPeerId}
+                  bind:currentRevision={$currentRevision}
+                  {revisions} />
+              {/if}
             </div>
             <Remote store={commitsStore} let:data={commits}>
               <HorizontalMenu

@@ -25,6 +25,7 @@
     // The API returns a revision list where the first entry is the default
     // peer.
     currentSelectedPeer = revisions[0];
+    currentPeerId = currentSelectedPeer.identity.peerId;
   }
 
   // Dropdown element. Set by the view.
@@ -56,6 +57,7 @@
   const dispatch = createEventDispatcher();
   const selectPeer = peerId => {
     hideDropdown();
+    currentPeerId = peerId;
     dispatch("select", { peerId });
   };
 </script>
