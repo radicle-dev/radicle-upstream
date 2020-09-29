@@ -11,11 +11,11 @@
   export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
-  export let maintainers = [];
 
   let currentSelectedPeer;
 
   const session = getContext("session");
+  const { metadata } = getContext("project");
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
@@ -25,6 +25,7 @@
     // The API returns a revision list where the first entry is the default
     // peer.
     currentSelectedPeer = revisions[0];
+    currentPeerId = currentSelectedPeer.identity.peerId;
   }
 
   // Dropdown element. Set by the view.
@@ -56,6 +57,7 @@
   const dispatch = createEventDispatcher();
   const selectPeer = peerId => {
     hideDropdown();
+    currentPeerId = peerId;
     dispatch("select", { peerId });
   };
 </script>
@@ -140,7 +142,7 @@
       {currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}
     </p>
     <p>
-      {#if maintainers.includes(currentSelectedPeer.identity.urn)}
+      {#if metadata.maintainers.includes(currentSelectedPeer.identity.urn)}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </p>
@@ -170,7 +172,7 @@
             {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
           </p>
           <p>
-            {#if maintainers.includes(repo.identity.urn)}
+            {#if metadata.maintainers.includes(repo.identity.urn)}
               <Badge
                 style="margin-left: 0.5rem"
                 variant={BadgeType.Maintainer} />
