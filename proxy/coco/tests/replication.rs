@@ -19,7 +19,7 @@ use common::{build_peer, build_peer_with_seeds, connected, init_logging, shia_le
 
 #[tokio::test]
 async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
@@ -95,7 +95,7 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
@@ -151,7 +151,7 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_store = kv::Store::new(kv::Config::new(alice_tmp_dir.path().join("store")))?;
@@ -285,7 +285,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
+    // init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
