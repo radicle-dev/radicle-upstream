@@ -6,18 +6,17 @@ use tokio::time::timeout;
 use librad::net::protocol::ProtocolEvent;
 
 use coco::{
-    request::{
-        waiting_room::{self, WaitingRoom},
-        SomeRequest,
-    },
+    request::waiting_room::{self, WaitingRoom},
     seed::Seed,
     shared::Shared,
     AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn,
 };
 
+#[macro_use]
 mod common;
 use common::{
-    build_peer, build_peer_with_seeds, connected, init_logging, radicle_project, shia_le_pathbuf,
+    assert_cloned, build_peer, build_peer_with_seeds, connected, init_logging, radicle_project,
+    shia_le_pathbuf,
 };
 
 #[tokio::test]
@@ -263,6 +262,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     )
     .await?;
     let bob_events = bob_peer.subscribe();
+    let clone_listener = bob_peer.subscribe();
     let bob_waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
 
     tokio::spawn(alice_peer.run(
@@ -302,19 +302,10 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         let mut bob_waiting_room = bob_waiting_room.write().await;
         let _ = bob_waiting_room.request(urn.clone(), Instant::now());
     }
-    let attempts: i8 = 10;
 
-    for i in 1..attempts {
-        match bob_waiting_room.read().await.get(&urn) {
-            None => panic!("Missing the URN"),
-            Some(SomeRequest::Cloned(_)) => break,
-            Some(_) => {
-                log::debug!("attempts left: {}", attempts - i);
-                tokio::time::delay_for(Duration::from_millis(1000)).await;
-            },
-        }
-    }
+    assert_cloned(clone_listener, &urn.clone().into_rad_url(alice_peer_id)).await?;
 
+    // TODO(finto): List projects
     let project = bob_state.lock().await.get_project(&urn, None);
     assert!(project.is_ok());
 

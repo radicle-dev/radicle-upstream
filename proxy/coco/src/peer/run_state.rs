@@ -59,26 +59,6 @@ pub enum RequestCommand {
     Query(RadUrn),
 }
 
-impl RequestCommand {
-    /// Provide a helpful error message for the given command and its field(s).
-    pub(super) fn err_msg(&self) -> String {
-        match self {
-            Self::Clone(url) => format!(
-                "an error occurred for the command 'Clone' for the URL '{}'",
-                url
-            ),
-            Self::Found(url) => format!(
-                "an error occurred for the command 'Found' for the URL '{}'",
-                url
-            ),
-            Self::Query(urn) => format!(
-                "an error occurred for the command 'Query' for the URN '{}'",
-                urn
-            ),
-        }
-    }
-}
-
 /// Significant events that occur during [`Peer`] lifetime.
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
@@ -113,6 +93,15 @@ pub enum RequestEvent {
     Query(RadUrn),
     /// Clone the identity from the given `RadUrl`.
     Clone(RadUrl),
+    /// Succeeded cloning from the `RadUrl`.
+    Cloned(RadUrl),
+    /// Failed to clone from the `RadUrl`.
+    Failed {
+        /// The URL that we were attempting the clone from.
+        url: RadUrl,
+        /// The reason the clone failed.
+        reason: String,
+    },
 }
 
 /// Lifecycle events during peer sync operations.

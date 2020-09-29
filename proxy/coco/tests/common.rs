@@ -7,9 +7,9 @@ use tokio::{
 };
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
-use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer};
+use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer, uri::RadUrl};
 
-use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent};
+use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent, RequestEvent};
 
 #[doc(hidden)]
 #[macro_export]
@@ -51,6 +51,18 @@ pub async fn connected(
     assert_event!(
         receiver,
         PeerEvent::Protocol(ProtocolEvent::Connected(remote_id)) if remote_id == *expected_id
+    )
+}
+
+/// Assert that we received a cloned event for the expected `RadUrl`.
+#[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
+pub async fn assert_cloned(
+    receiver: broadcast::Receiver<PeerEvent>,
+    expected: &RadUrl,
+) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::Request(RequestEvent::Cloned(url)) if url == *expected
     )
 }
 

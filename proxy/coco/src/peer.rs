@@ -9,7 +9,11 @@ use tokio::{
     time::interval,
 };
 
-use librad::{net::peer::RunLoop, peer::PeerId};
+use librad::{
+    net::peer::RunLoop,
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 
 use crate::{
     request::waiting_room::{self, WaitingRoom},
@@ -102,6 +106,7 @@ impl Peer {
             mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
         let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
         let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
+        let (cloned_sender, mut requests) = mpsc::channel::<RequestEvent>(RECEIVER_CAPACITY);
 
         let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
         tokio::pin!(request_queries);
@@ -121,6 +126,7 @@ impl Peer {
                 Some(timeout_event) = timeouts.recv() => Event::Timeout(timeout_event),
                 Some(urn) = request_queries.next() => Event::Request(RequestEvent::Query(urn)),
                 Some(url) = request_clones.next() => Event::Request(RequestEvent::Clone(url)),
+                Some(request_event) = requests.next() => Event::Request(request_event),
                 else => {
                     break
                 },
@@ -136,8 +142,19 @@ impl Peer {
                     Command::Announce => {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
                     },
-                    Command::Request(command) => {
-                        request::request(command, state.clone(), waiting_room.clone()).await
+                    Command::Request(RequestCommand::Query(urn)) => {
+                        Self::query(urn, state.clone(), waiting_room.clone());
+                    },
+                    Command::Request(RequestCommand::Found(url)) => {
+                        Self::found(url, waiting_room.clone());
+                    },
+                    Command::Request(RequestCommand::Clone(url)) => {
+                        Self::clone(
+                            url,
+                            state.clone(),
+                            waiting_room.clone(),
+                            cloned_sender.clone(),
+                        );
                     },
                     Command::SyncPeer(peer_id) => {
                         Self::sync(state.clone(), peer_sync_sender.clone(), peer_id.clone()).await;
@@ -148,6 +165,64 @@ impl Peer {
                 };
             }
         }
+    }
+
+    /// Query subroutine.
+    fn query(urn: RadUrn, state: Lock, waiting_room: Shared<WaitingRoom<Instant, Duration>>) {
+        tokio::spawn(async move {
+            request::query(urn.clone(), state.clone(), waiting_room.clone())
+                .await
+                .unwrap_or_else(|err| {
+                    log::warn!(
+                        "an error occurred for the command 'Query' for the URN '{}':\n{}",
+                        urn,
+                        err
+                    );
+                })
+        });
+    }
+
+    /// Found subroutine.
+    fn found(url: RadUrl, waiting_room: Shared<WaitingRoom<Instant, Duration>>) {
+        tokio::spawn(async move {
+            request::found(url.clone(), waiting_room.clone())
+                .await
+                .unwrap_or_else(|err| {
+                    log::warn!(
+                        "an error occurred for the command 'Found' for the URL '{}':\n{}",
+                        url,
+                        err
+                    );
+                })
+        });
+    }
+
+    /// Clone subroutine.
+    fn clone(
+        url: RadUrl,
+        state: Lock,
+        waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+        mut sender: mpsc::Sender<RequestEvent>,
+    ) {
+        tokio::spawn(async move {
+            match request::clone(url.clone(), state.clone(), waiting_room.clone()).await {
+                Ok(()) => sender.send(RequestEvent::Cloned(url)).await.ok(),
+                Err(err) => {
+                    log::warn!(
+                        "an error occurred for the command 'Clone' for the URL '{}':\n{}",
+                        url,
+                        err
+                    );
+                    sender
+                        .send(RequestEvent::Failed {
+                            url,
+                            reason: err.to_string(),
+                        })
+                        .await
+                        .ok()
+                },
+            }
+        });
     }
 
     /// Announcement subroutine.
