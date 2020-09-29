@@ -3,7 +3,7 @@
 
   import { createEventDispatcher } from "svelte";
 
-  import { open, current } from "../../src/overlay";
+  import { close, current, open } from "../../src/overlay";
 
   export let expanded: boolean;
   export let style = "";
