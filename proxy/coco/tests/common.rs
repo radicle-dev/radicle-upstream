@@ -104,6 +104,7 @@ pub async fn build_peer_with_seeds(
     Ok((peer, state, signer))
 }
 
+#[allow(dead_code)]
 pub fn init_logging() {
     if pretty_env_logger::try_init().is_ok() {
         let subscriber = FmtSubscriber::builder()
