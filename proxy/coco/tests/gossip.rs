@@ -16,7 +16,7 @@ use coco::{
 mod common;
 use common::{
     assert_cloned, build_peer, build_peer_with_seeds, connected, init_logging, radicle_project,
-    shia_le_pathbuf,
+    requested, shia_le_pathbuf,
 };
 
 #[tokio::test]
@@ -263,6 +263,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_events = bob_peer.subscribe();
     let clone_listener = bob_peer.subscribe();
+    let query_listener = bob_peer.subscribe();
     let bob_waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
 
     tokio::spawn(alice_peer.run(
@@ -303,6 +304,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         let _ = bob_waiting_room.request(urn.clone(), Instant::now());
     }
 
+    requested(query_listener, &urn).await?;
     assert_cloned(clone_listener, &urn.clone().into_rad_url(alice_peer_id)).await?;
 
     // TODO(finto): List projects

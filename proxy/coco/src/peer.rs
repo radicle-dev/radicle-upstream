@@ -106,7 +106,7 @@ impl Peer {
             mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
         let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
         let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
-        let (cloned_sender, mut requests) = mpsc::channel::<RequestEvent>(RECEIVER_CAPACITY);
+        let (request_sender, mut requests) = mpsc::channel::<RequestEvent>(RECEIVER_CAPACITY);
 
         let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
         tokio::pin!(request_queries);
@@ -153,7 +153,7 @@ impl Peer {
                             url,
                             state.clone(),
                             waiting_room.clone(),
-                            cloned_sender.clone(),
+                            request_sender.clone(),
                         );
                     },
                     Command::SyncPeer(peer_id) => {
@@ -178,7 +178,7 @@ impl Peer {
                         urn,
                         err
                     );
-                })
+                });
         });
     }
 
@@ -193,7 +193,7 @@ impl Peer {
                         url,
                         err
                     );
-                })
+                });
         });
     }
 

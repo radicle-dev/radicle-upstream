@@ -7,7 +7,13 @@ use tokio::{
 };
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
-use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer, uri::RadUrl};
+use librad::{
+    keys::SecretKey,
+    net::protocol::ProtocolEvent,
+    peer::PeerId,
+    signer,
+    uri::{RadUrl, RadUrn},
+};
 
 use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent, RequestEvent};
 
@@ -63,6 +69,18 @@ pub async fn assert_cloned(
     assert_event!(
         receiver,
         PeerEvent::Request(RequestEvent::Cloned(url)) if url == *expected
+    )
+}
+
+/// Assert that we received a query event for the expected `RadUrn`.
+#[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
+pub async fn requested(
+    receiver: broadcast::Receiver<PeerEvent>,
+    expected: &RadUrn,
+) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::Request(RequestEvent::Query(urn)) if urn == *expected
     )
 }
 
