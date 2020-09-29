@@ -15,7 +15,7 @@ use coco::{
 
 #[macro_use]
 mod common;
-use common::{build_peer, build_peer_with_seeds, connected, init_logging, shia_le_pathbuf};
+use common::{build_peer, build_peer_with_seeds, connected, shia_le_pathbuf};
 
 #[tokio::test]
 async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
