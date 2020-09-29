@@ -22,6 +22,8 @@ context("repository stats", () => {
 context("commit browsing", () => {
   context("commit history", () => {
     it("shows the commit history for the default branch", () => {
+      // Wait for the commit tab to be updated
+      cy.pick("horizontal-menu", "Commits", "counter").contains("14");
       cy.pick("horizontal-menu", "Commits").click();
       cy.pick("commits-page").should("exist");
       cy.pick("commit-teaser")
