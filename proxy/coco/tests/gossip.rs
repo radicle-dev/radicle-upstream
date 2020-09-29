@@ -18,13 +18,16 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig {
+    let (alice_peer, alice_state, alice_signer) = build_peer(
+        &alice_tmp_dir,
+        RunConfig {
             announce: AnnounceConfig {
                 interval: Duration::from_millis(100),
             },
             ..RunConfig::default()
-        }).await?;
+        },
+    )
+    .await?;
     let alice_events = alice_peer.subscribe();
 
     let _alice_runs = alice_peer.into_running();
