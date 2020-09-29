@@ -1,19 +1,37 @@
 <script lang="ts">
-  import Pool from "../DesignSystem/Component/Funding/Pool.svelte";
+  import { push } from "svelte-spa-router";
+  import * as path from "../src/path";
 
-  export let wallet: any;
+  import Pool from "../DesignSystem/Component/Funding/Pool.svelte";
+  import * as pool from "../src/funding/pool";
 
   // TODO(nuno): fetch these
   const amount = 99;
   const balance = 430;
   const enabled = false;
   const members = "juliendonck, monadic, rudolfs, nakamoto, peterpan";
+
+  export let wallet: any;
+
+  const openSendModal = () => {
+    push(path.sendFunds());
+  };
+
   const onFillUp = async (): Promise<void> => {
-    await wallet.testTransfer(123);
+    const tx: pool.Transaction = {
+      context: "Fill up your pool 😉",
+      from: "0x789", // TOOD(nuno): use right address
+      to: "0x123000", // TOOD(nuno): use contract address?
+      onConfirmed: value => {
+        return wallet!.testTransfer(value);
+      },
+    };
+    pool.txStore.set(tx);
+    openSendModal();
   };
   const onDrain = (): Promise<void> => {
     console.log("onDrain");
-    return wallet.testTransfer("Drain pool");
+    return wallet!.testTransfer(10);
   };
 </script>
 
