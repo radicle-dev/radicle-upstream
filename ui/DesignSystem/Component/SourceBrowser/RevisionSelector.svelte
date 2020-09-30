@@ -88,6 +88,11 @@
   .selector-expand {
     align-self: flex-end;
   }
+  .revision-dropdown-container {
+    position: absolute;
+    top: 0px;
+    min-width: 100%;
+  }
   .revision-dropdown {
     position: relative;
     background: var(--color-background);
@@ -104,7 +109,7 @@
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     cursor: pointer;
-    overflow-x: hidden;
+    overflow-wrap: anywhere;
     user-select: none;
     display: flex;
   }
@@ -168,8 +173,7 @@
             dataCy="branch-icon"
             style="vertical-align: bottom; fill:
             var(--color-foreground-level-4)" />
-          <span
-            class="revision-name typo-text typo-overflow-ellipsis">{branch}</span>
+          <span class="revision-name typo-text">{branch}</span>
         </li>
       {/each}
       {#if isExperimental()}
@@ -186,8 +190,7 @@
               dataCy="tag-icon"
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
-            <span
-              class="revision-name typo-text typo-overflow-ellipsis">{tag}</span>
+            <span class="revision-name typo-text">{tag}</span>
           </li>
         {/each}
       {/if}
