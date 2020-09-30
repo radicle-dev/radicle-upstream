@@ -1,4 +1,7 @@
-use std::{path::PathBuf, time::Duration};
+use std::{
+    path::PathBuf,
+    time::{Duration, Instant},
+};
 
 use futures::{future, StreamExt as _};
 use tokio::{
@@ -16,11 +19,8 @@ use librad::{
 };
 
 use coco::{
-    config, project,
-    request::waiting_room::{self, WaitingRoom},
-    seed::Seed,
-    shared::Shared,
-    Paths, Peer, PeerEvent, RequestEvent, RunConfig, State,
+    config, project, request::waiting_room::WaitingRoom, seed::Seed, shared::Shared, Paths, Peer,
+    PeerEvent, RequestEvent, RunConfig, State,
 };
 
 #[doc(hidden)]
@@ -92,12 +92,12 @@ pub async fn requested(
 
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-    let waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let conf = config::default(key, tmp_dir.path())?;
     let (peer, state) =
         coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
@@ -108,12 +108,12 @@ pub async fn build_peer(
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-    let waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
 
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);

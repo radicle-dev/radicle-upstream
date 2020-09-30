@@ -19,7 +19,8 @@
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions,
     clippy::multiple_inherent_impl,
-    clippy::similar_names
+    clippy::similar_names,
+    clippy::too_many_lines
 )]
 #![feature(hash_set_entry)]
 #![feature(or_patterns)]

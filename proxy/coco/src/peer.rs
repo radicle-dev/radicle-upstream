@@ -81,6 +81,7 @@ pub struct Peer {
     state: State,
     /// On-disk storage for caching.
     store: kv::Store,
+    /// The waiting room for making requests for identities.
     waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     /// Handle used to broadcast [`Event`].
     subscriber: broadcast::Sender<Event>,
