@@ -43,12 +43,14 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     tokio::task::spawn(alice_peer.run(
+        "alice",
         RunConfig::default(),
         alice_state.clone(),
         alice_store,
         WaitingRoom::new(waiting_room::Config::default()),
     ));
     tokio::task::spawn(bob_peer.run(
+        "bob",
         RunConfig::default(),
         bob_state.clone(),
         bob_store,
@@ -113,12 +115,14 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     let (bob_peer, bob_state, _bob_signer) = build_peer(&bob_tmp_dir).await?;
 
     tokio::task::spawn(alice_peer.run(
+        "alice",
         RunConfig::default(),
         alice_state.clone(),
         alice_store,
         WaitingRoom::new(waiting_room::Config::default()),
     ));
     tokio::task::spawn(bob_peer.run(
+        "bob",
         RunConfig::default(),
         alice_state.clone(),
         bob_store,
@@ -175,12 +179,14 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     tokio::task::spawn(alice_peer.run(
+        "alice",
         RunConfig::default(),
         alice_state.clone(),
         alice_store,
         WaitingRoom::new(waiting_room::Config::default()),
     ));
     tokio::task::spawn(bob_peer.run(
+        "bob",
         RunConfig::default(),
         bob_state.clone(),
         bob_store,
@@ -337,6 +343,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     {
         let bob_events = bob_peer.subscribe();
         tokio::task::spawn(alice_peer.run(
+            "alice",
             RunConfig {
                 sync: SyncConfig {
                     on_startup: true,
@@ -349,6 +356,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
             WaitingRoom::new(waiting_room::Config::default()),
         ));
         tokio::task::spawn(bob_peer.run(
+            "bob",
             RunConfig::default(),
             bob_state.clone(),
             bob_store,

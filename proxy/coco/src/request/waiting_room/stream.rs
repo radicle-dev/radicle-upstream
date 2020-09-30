@@ -19,10 +19,11 @@ use librad::uri::{RadUrl, RadUrn};
 use crate::request::waiting_room::WaitingRoom;
 
 /// How much a stream should delay before polling the waiting room again.
-const REQUEST_DELAY: Duration = Duration::from_millis(50);
+const REQUEST_DELAY: Duration = Duration::from_millis(20);
 
 /// A stream of queryable requests. See [`Queries::new`] for more information.
 pub struct Queries {
+    who: String,
     /// How long the stream should delay before each poll of the waiting room.
     delay: Delay,
     /// The waiting room that will be polled for retrieving the requests.
@@ -39,8 +40,9 @@ impl Queries {
     /// exists then the stream does nothing and waits until the next poll. We note that the stream
     /// is infinite with this respect and will never return `None`.
     #[must_use]
-    pub fn new(waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
+    pub fn new(who: &str, waiting_room: Arc<RwLock<WaitingRoom<Instant, Duration>>>) -> Self {
         Self {
+            who: who.to_string(),
             delay: delay_for(REQUEST_DELAY),
             waiting_room,
         }
@@ -63,9 +65,21 @@ impl Stream for Queries {
             Poll::Ready(_) => {
                 self.reset_delay();
 
+                /*
                 waiting_room
                     .next_query(Instant::now())
                     .map_or(Poll::Pending, |urn| Poll::Ready(Some(urn)))
+                    */
+                match waiting_room.next_query(Instant::now()) {
+                    Some(urn) => {
+                        tracing::debug!("{} - FOUND IT: '{}'", self.who, urn);
+                        Poll::Ready(Some(urn))
+                    },
+                    None => {
+                        tracing::debug!("{} - NOTHING YET", self.who);
+                        Poll::Pending
+                    },
+                }
             },
             Poll::Pending => Poll::Pending,
         }
@@ -155,7 +169,7 @@ mod test {
         let waiting_room = WaitingRoom::new(Config::default());
         let waiting_room = Arc::new(RwLock::new(waiting_room));
 
-        let queries = Queries::new(waiting_room.clone());
+        let queries = Queries::new("test", waiting_room.clone());
 
         let mut urns = vec![
             "rad:git:hwd1yren5bpr71yoy9qzmtk1qzrtren9gynxh49dwubprmqix8dn46x3r8w"

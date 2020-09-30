@@ -30,6 +30,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     let alice_events = alice_peer.subscribe();
 
     tokio::task::spawn(alice_peer.run(
+        "alice",
         RunConfig::default(),
         alice_state.clone(),
         alice_store,
@@ -90,6 +91,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_events = bob_peer.subscribe();
 
     tokio::task::spawn(alice_peer.run(
+        "alice",
         RunConfig {
             announce: AnnounceConfig {
                 interval: Duration::from_millis(100),
@@ -101,6 +103,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         WaitingRoom::new(waiting_room::Config::default()),
     ));
     tokio::task::spawn(bob_peer.run(
+        "bob",
         RunConfig::default(),
         bob_state.clone(),
         bob_store,
@@ -153,6 +156,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     let (peer, state, _signer) = build_peer(&tmp_dir).await?;
 
     tokio::task::spawn(peer.run(
+        "peer",
         RunConfig::default(),
         state.clone(),
         store,
@@ -203,12 +207,14 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     let bob_events = bob_peer.subscribe();
 
     tokio::spawn(alice_peer.run(
+        "alice",
         RunConfig::default(),
         alice_state.clone(),
         alice_store,
         WaitingRoom::new(waiting_room::Config::default()),
     ));
     tokio::spawn(bob_peer.run(
+        "bob",
         RunConfig::default(),
         bob_state.clone(),
         bob_store,
@@ -267,17 +273,24 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let bob_waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
 
     tokio::spawn(alice_peer.run(
+        "alice",
         RunConfig::default(),
         alice_state.clone(),
         alice_store,
         WaitingRoom::new(waiting_room::Config::default()),
     ));
-    tokio::spawn(bob_peer.run(
-        RunConfig::default(),
-        bob_state.clone(),
-        bob_store,
-        bob_waiting_room.clone(),
-    ));
+    {
+        let span = tracing::trace_span!("Peer::run", who = "bob");
+        let _guard = span.enter();
+
+        tokio::spawn(bob_peer.run(
+            "bob",
+            RunConfig::default(),
+            bob_state.clone(),
+            bob_store,
+            bob_waiting_room.clone(),
+        ));
+    }
     connected(bob_events, &alice_peer_id).await?;
 
     {
@@ -300,8 +313,13 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     {
+        println!("Placing request in the waiting room '{}'", urn);
         let mut bob_waiting_room = bob_waiting_room.write().await;
         let _ = bob_waiting_room.request(urn.clone(), Instant::now());
+        println!(
+            "Placed request in the waiting room '{}' - {:?}",
+            urn, *bob_waiting_room
+        );
     }
 
     requested(query_listener, &urn).await?;

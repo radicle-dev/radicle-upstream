@@ -397,9 +397,10 @@ impl<T, D> WaitingRoom<T, D> {
     ///     than the `delta` provided in the [`Config`].
     pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
     where
-        T: Sub<T, Output = D> + Clone,
+        T: Sub<T, Output = D> + Clone + std::fmt::Debug,
         D: Ord + Clone,
     {
+        tracing::debug!("{:?}", self.requests);
         let created = self.find_by_state(RequestState::Created);
         let requested = self
             .filter_by_state(RequestState::Requested)
