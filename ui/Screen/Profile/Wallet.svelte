@@ -10,6 +10,9 @@
 <div>
   {#if $wallet.status === Status.NotConnected}
     <Button on:click={wallet.connect}>connect</Button>
+  {:else if $wallet.status === Status.Connecting}
+    <p>Connecting</p>
+    <Button on:click={wallet.disconnect}>Disconnect</Button>
   {:else}
     <Button on:click={wallet.disconnect}>disconnect</Button>
     <br />

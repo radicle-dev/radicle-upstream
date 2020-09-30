@@ -4,11 +4,12 @@ import * as walletconnect from "./wallet/walletconnect";
 
 export enum Status {
   Connected = "CONNECTED",
+  Connecting = "CONNECTING",
   NotConnected = "NOT_CONNECTED",
 }
 
 export type State =
-  | { status: Status.NotConnected }
+  | { status: Status.NotConnected | Status.Connecting }
   | { status: Status.Connected; connected: Connected };
 
 export interface Connected {

@@ -26,6 +26,8 @@ export function build(): Wallet {
   // Connect to a wallet using walletconnect
   async function connect() {
     try {
+      stateStore.set({ status: Status.Connecting });
+
       const accountAddresses: string[] = (await provider.enable()) as string[];
       if (accountAddresses.length === 0) return;
       const accountAddress = accountAddresses[0];
@@ -41,6 +43,7 @@ export function build(): Wallet {
       };
       stateStore.set({ status: Status.Connected, connected });
     } catch (e) {
+      stateStore.set({ status: Status.NotConnected });
       console.log("Failed to connect: ", e);
     }
   }

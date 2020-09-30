@@ -27,7 +27,6 @@
 
   const onOptInChange = (option: string) => {
     enabled = option == "On";
-    console.log("User changed opt in to ", option);
   };
 </script>
 
