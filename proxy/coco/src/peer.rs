@@ -238,7 +238,7 @@ async fn subroutines(
         subscriber.send(event.clone()).ok();
         log::debug!("{:?}", event);
 
-        for cmd in run_state.transition(event) {
+        for cmd in run_state.transition(&event) {
             match cmd {
                 Command::Announce => {
                     let stop = stop.clone();

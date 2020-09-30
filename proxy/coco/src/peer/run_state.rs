@@ -170,10 +170,10 @@ impl RunState {
 
     /// Applies the `event` and based on the current state transforms to the new state and in some
     /// cases produes commands which should be executed in the appropriate sub-routines.
-    pub fn transition(&mut self, event: Event) -> Vec<Command> {
+    pub fn transition(&mut self, event: &Event) -> Vec<Command> {
         let old_status = self.status.clone();
 
-        let cmds = match (&self.status, event.clone()) {
+        let cmds = match (&self.status, event) {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
             (Status::Stopped(_since), Event::Protocol(ProtocolEvent::Listening(_addr))) => {
                 self.status = Status::Started(Instant::now());
@@ -213,7 +213,7 @@ impl RunState {
                     self.status = Status::Syncing(*since, syncs + 1);
                 }
 
-                vec![Command::SyncPeer(peer_id)]
+                vec![Command::SyncPeer(peer_id.clone())]
             }
             // Go online if we exceed the sync period.
             (Status::Syncing(_since, _syncs), Event::Timeout(TimeoutEvent::SyncPeriod)) => {
@@ -223,7 +223,7 @@ impl RunState {
             },
             // Remove peer that just disconnected.
             (_, Event::Protocol(ProtocolEvent::Disconnecting(peer_id))) => {
-                self.connected_peers.remove(&peer_id);
+                self.connected_peers.remove(peer_id);
 
                 // Go offline if we have no more connected peers left.
                 if self.connected_peers.is_empty() {
@@ -279,7 +279,7 @@ mod test {
         let status = Status::Stopped(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
 
-        let cmds = state.transition(Event::Protocol(ProtocolEvent::Listening(addr)));
+        let cmds = state.transition(&Event::Protocol(ProtocolEvent::Listening(addr)));
         assert!(cmds.is_empty());
         assert_matches!(state.status, Status::Started(_));
 
@@ -304,7 +304,7 @@ mod test {
         let cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
         assert!(cmds.is_empty());
         assert_matches!(state.status, Status::Online(_));
@@ -318,7 +318,7 @@ mod test {
         let _cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
         assert_matches!(state.status, Status::Online(_));
     }
@@ -328,7 +328,7 @@ mod test {
         let status = Status::Syncing(Instant::now(), 3);
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
 
-        let _cmds = state.transition(Event::Timeout(TimeoutEvent::SyncPeriod));
+        let _cmds = state.transition(&Event::Timeout(TimeoutEvent::SyncPeriod));
         assert_matches!(state.status, Status::Online(_));
     }
 
@@ -342,7 +342,7 @@ mod test {
             status,
         );
 
-        let _cmds = state.transition(Event::Protocol(ProtocolEvent::Disconnecting(peer_id)));
+        let _cmds = state.transition(&Event::Protocol(ProtocolEvent::Disconnecting(peer_id)));
         assert_matches!(state.status, Status::Offline(_));
     }
 
@@ -368,7 +368,8 @@ mod test {
             let peer_id = PeerId::from(key);
 
             // Expect to sync with the first connected peer.
-            let cmds = state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id.clone())));
+            let cmds =
+                state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id.clone())));
             assert!(!cmds.is_empty(), "expected command");
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
                 assert_eq!(*sync_id, peer_id);
@@ -382,7 +383,7 @@ mod test {
         let cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
         assert!(!cmds.is_empty(), "expected command");
         assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
@@ -393,7 +394,7 @@ mod test {
         let cmd = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
         assert!(cmd.is_empty(), "should not emit any more commands");
     }
@@ -418,7 +419,7 @@ mod test {
         let cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Event::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
         assert_matches!(cmds.get(1), Some(Command::StartSyncTimeout(period)) => {
             assert_eq!(*period, sync_period);
@@ -429,14 +430,14 @@ mod test {
     fn issue_announce_while_online() {
         let status = Status::Online(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Announce(AnnounceEvent::Tick));
+        let cmds = state.transition(&Event::Announce(AnnounceEvent::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
         assert_matches!(cmds.first().unwrap(), Command::Announce);
 
         let status = Status::Offline(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Announce(AnnounceEvent::Tick));
+        let cmds = state.transition(&Event::Announce(AnnounceEvent::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
     }
