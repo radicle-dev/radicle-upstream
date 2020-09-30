@@ -85,6 +85,7 @@ pub fn configure(
             .into_iter()
             .map(seed::Seed::into as fn(seed::Seed) -> (peer::PeerId, SocketAddr)),
     );
+    let storage_config = net::peer::StorageConfig::default();
 
     net::peer::PeerConfig {
         signer: key,
@@ -92,5 +93,6 @@ pub fn configure(
         listen_addr,
         gossip_params,
         disco,
+        storage_config,
     }
 }

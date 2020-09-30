@@ -2,19 +2,17 @@
 
 use librad::{peer::PeerId, uri::RadUrl};
 
-use crate::state::Lock;
+use crate::state::State;
 
 use super::Error;
 
 /// Initiaites a fetch for all locally tracked projects from the given [`PeerId`].
-pub async fn sync(state: Lock, peer_id: PeerId) -> Result<(), Error> {
+pub async fn sync(state: &State, peer_id: PeerId) -> Result<(), Error> {
     log::debug!("Starting sync from {}", peer_id);
 
     let urls = state
-        .lock()
-        .await
         .list_projects()
-        .map_err(Error::from)?
+        .await?
         .iter()
         .map(|project| RadUrl {
             authority: peer_id.clone(),
@@ -24,12 +22,7 @@ pub async fn sync(state: Lock, peer_id: PeerId) -> Result<(), Error> {
 
     for url in urls {
         log::debug!("Starting fetch of {} from {}", url.clone(), peer_id);
-        let state = state.clone();
-        let state = state.lock_owned().await;
-        let task_url = url.clone();
-        tokio::task::spawn_blocking(move || state.fetch(task_url, vec![]))
-            .await
-            .expect("join thread failed")?;
+        state.fetch(url.clone(), vec![]).await?;
         log::debug!("Finished fetch of {} from {}", url, peer_id);
     }
 

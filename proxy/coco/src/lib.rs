@@ -17,7 +17,8 @@
     clippy::implicit_return,
     clippy::integer_arithmetic,
     clippy::missing_inline_in_public_items,
-    clippy::multiple_crate_versions
+    clippy::multiple_crate_versions,
+    clippy::multiple_inherent_impl
 )]
 #![feature(hash_set_entry)]
 #![feature(or_patterns)]
@@ -51,12 +52,12 @@ mod identifier;
 pub use identifier::Identifier;
 pub mod keystore;
 pub mod oid;
-mod peer;
+pub mod peer;
 pub use peer::{
     AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RunConfig, SyncConfig, SyncEvent,
 };
 mod state;
-pub use state::{Lock, State};
+pub use state::State;
 pub mod project;
 pub mod request;
 
@@ -81,7 +82,9 @@ pub mod user;
 pub async fn into_peer_state<I>(
     config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
-) -> Result<(Peer, Lock), Error>
+    store: kv::Store,
+    run_config: RunConfig,
+) -> Result<(Peer, State), Error>
 where
     I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
 {
@@ -89,8 +92,7 @@ where
     let (api, run_loop) = peer.accept()?;
 
     let state = State::new(api, signer);
-    let state = state::Lock::from(state);
-    let peer = Peer::new(run_loop);
+    let peer = Peer::new(run_loop, state.clone(), store, run_config);
 
     Ok((peer, state))
 }

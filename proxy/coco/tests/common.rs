@@ -9,7 +9,7 @@ use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer};
 
-use coco::{config, project, seed::Seed, Lock, Paths, Peer, PeerEvent};
+use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, RunConfig, State};
 
 #[doc(hidden)]
 #[macro_export]
@@ -56,20 +56,30 @@ pub async fn connected(
 
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
-) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
-    build_peer_with_seeds(tmp_dir, vec![]).await
+    run_config: RunConfig,
+) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
+    let key = SecretKey::new();
+    let signer = signer::BoxedSigner::from(key);
+    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+
+    let conf = config::default(key, tmp_dir.path())?;
+    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
+
+    Ok((peer, state, signer))
 }
 
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
-) -> Result<(Peer, Lock, signer::BoxedSigner), Box<dyn std::error::Error>> {
+    run_config: RunConfig,
+) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
+    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
-    let (peer, state) = coco::into_peer_state(conf, signer.clone()).await?;
+    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
     Ok((peer, state, signer))
 }
