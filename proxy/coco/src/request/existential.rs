@@ -10,7 +10,7 @@ use std::ops::Sub;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Cancelled, Cloned, Clones, Cloning, Created, Either, Found, Queries, RadUrn, Request,
+    Attempts, Cancelled, Cloned, Clones, Cloning, Created, Either, Found, Queries, RadUrn, Request,
     RequestState, Requested, TimedOut,
 };
 
@@ -122,6 +122,19 @@ impl<T> SomeRequest<T> {
             SomeRequest::Cloned(request) => request.urn(),
             SomeRequest::Cancelled(request) => request.urn(),
             SomeRequest::TimedOut(request) => request.urn(),
+        }
+    }
+
+    /// Get the [`Attempts`] of whatever kind of [`Request`] is below.
+    pub fn attempts(&self) -> &Attempts {
+        match self {
+            SomeRequest::Created(request) => &request.attempts,
+            SomeRequest::Requested(request) => &request.attempts,
+            SomeRequest::Found(request) => &request.attempts,
+            SomeRequest::Cloning(request) => &request.attempts,
+            SomeRequest::Cloned(request) => &request.attempts,
+            SomeRequest::Cancelled(request) => &request.attempts,
+            SomeRequest::TimedOut(request) => &request.attempts,
         }
     }
 

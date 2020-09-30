@@ -1,4 +1,7 @@
-use std::{path::PathBuf, time::Duration};
+use std::{
+    path::PathBuf,
+    time::{Duration, Instant},
+};
 
 use futures::{future, StreamExt as _};
 use tokio::{
@@ -7,9 +10,18 @@ use tokio::{
 };
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
-use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId, signer};
+use librad::{
+    keys::SecretKey,
+    net::protocol::ProtocolEvent,
+    peer::PeerId,
+    signer,
+    uri::{RadUrl, RadUrn},
+};
 
-use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, RunConfig, State};
+use coco::{
+    config, project, request::waiting_room::WaitingRoom, seed::Seed, shared::Shared, Paths, Peer,
+    PeerEvent, RequestEvent, RunConfig, State,
+};
 
 #[doc(hidden)]
 #[macro_export]
@@ -54,16 +66,41 @@ pub async fn connected(
     )
 }
 
+/// Assert that we received a cloned event for the expected `RadUrl`.
+#[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
+pub async fn assert_cloned(
+    receiver: broadcast::Receiver<PeerEvent>,
+    expected: &RadUrl,
+) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::Request(RequestEvent::Cloned(url)) if url == *expected
+    )
+}
+
+/// Assert that we received a query event for the expected `RadUrn`.
+#[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
+pub async fn requested(
+    receiver: broadcast::Receiver<PeerEvent>,
+    expected: &RadUrn,
+) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::Request(RequestEvent::Query(urn)) if urn == *expected
+    )
+}
+
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-
     let conf = config::default(key, tmp_dir.path())?;
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
+    let (peer, state) =
+        coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
 
     Ok((peer, state, signer))
 }
@@ -71,6 +108,7 @@ pub async fn build_peer(
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
@@ -79,7 +117,9 @@ pub async fn build_peer_with_seeds(
 
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
+
+    let (peer, state) =
+        coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
 
     Ok((peer, state, signer))
 }
