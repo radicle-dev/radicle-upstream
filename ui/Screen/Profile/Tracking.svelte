@@ -4,55 +4,39 @@
     Hoverable,
     List,
     ProjectList,
+    Remote,
     TrackToggle,
     Urn,
   } from "../../DesignSystem/Component";
 
+  import { tracked, fetchTracked } from "../../src/project.ts";
   import { FADE_DURATION } from "../../src/config.ts";
 
-  const projects = [
-    {
-      metadata: {
-        name: "obediah",
-        description:
-          "Obediah Hinton is one of the village elders in a small village named Butcher Creek.",
-        maintainers: [],
-      },
-      registration: true,
-      shareableEntityIdentifier: "obediah@38590438594",
-    },
-    {
-      metadata: {
-        name: "lemuel",
-        description: "Lemuel is a villager from Butcher Creek.",
-        maintainers: [],
-      },
-      registration: false,
-      shareableEntityIdentifier: "lemuel@38590438594",
-      maintainers: [],
-    },
-  ];
+  fetchTracked();
+  $: console.log($tracked);
 
-  const untracked = [
-    {
-      urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
-      metadata: {
-        name: "snickers",
-      },
-    },
-    {
-      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-      metadata: {
-        name: "marsbar",
-      },
-    },
-    {
-      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-      metadata: {
-        name: "nougati",
-      },
-    },
-  ];
+  // const untracked = [
+  //   {
+  //     urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
+  //     metadata: {
+  //       name: "snickers",
+  //     },
+  //   },
+  //   {
+  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
+  //     metadata: {
+  //       name: "marsbar",
+  //     },
+  //   },
+  //   {
+  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
+  //     metadata: {
+  //       name: "nougati",
+  //     },
+  //   },
+  // ];
+
+  const untracked = [];
 </script>
 
 <style>
@@ -88,7 +72,19 @@
 </style>
 
 <div class="container">
-  <ProjectList {projects} />
+  <Remote store={tracked} let:data={projects}>
+    {#if projects.length > 0}
+      <ProjectList {projects} />
+    {:else}
+      <div
+        style="width: 100%; color: var(--color-primary); display:flex; justify-content: center; flex-direction: column; align-items: center; margin-bottom: 4rem;">
+        <h1>Nothing yet....</h1>
+        <img
+          src="https://media0.giphy.com/media/YaZgr3Nj9DDI4/giphy.gif?cid=ecf05e47fzjml7zt68cprbas3q92z07x5lyhi18ho5ba9vbd&rid=giphy.gif" />
+      </div>
+    {/if}
+  </Remote>
+
   {#if untracked.length}
     <div out:fade|local={{ duration: FADE_DURATION }}>
       <div class="header">
@@ -97,7 +93,6 @@
           These projects haven't been found in your network yet or don't exist.
         </p>
       </div>
-
       <List items={untracked} let:item={project}>
         <Hoverable let:hovering={hover} style="flex: 1;">
           <div

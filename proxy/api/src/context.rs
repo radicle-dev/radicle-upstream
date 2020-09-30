@@ -1,6 +1,8 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
-use coco::signer;
+use std::time::{Duration, Instant};
+
+use coco::{request::waiting_room::WaitingRoom, shared::Shared, signer};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -11,6 +13,8 @@ pub struct Context {
     pub signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
+    /// The [`WaitingRoom`] for making requests for identities.
+    pub waiting_room: Shared<WaitingRoom<Instant, Duration>>,
 }
 
 impl Context {
@@ -22,12 +26,7 @@ impl Context {
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
-        use coco::{
-            keystore,
-            request::waiting_room::{self, WaitingRoom},
-            shared::Shared,
-            RunConfig,
-        };
+        use coco::{keystore, request::waiting_room, RunConfig};
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
@@ -42,7 +41,7 @@ impl Context {
                 config,
                 signer.clone(),
                 store.clone(),
-                waiting_room,
+                waiting_room.clone(),
                 RunConfig::default(),
             )
             .await?
@@ -52,6 +51,7 @@ impl Context {
             state,
             signer,
             store,
+            waiting_room,
         })
     }
 }

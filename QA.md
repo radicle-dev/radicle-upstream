@@ -4,8 +4,32 @@
 
 ### Prerequisites
 
+- [ ] make sure you are installing into an environment with no old configuration
+      and user data
+
+     **Safe method**: Use a temporary user account on your computer
+
+     - on macOS:
+       - If you are **not** using FileVault, switch to the "Guest User". You
+         may have to enable this in "System Preferences -> Users & Groups".
+         When you're done, all data will be removed automatically.
+       - If you **are** using FileVault, create a new user in "System
+         Preferences -> Users & Groups". When you're done, you'll need to
+         remove this user manually.
+     - on Linux:
+       - Create a new user with `sudo useradd -m qa`, and log into that
+         account. When you're done, remove the user with `sudo userdel -r qa`.
+         _Note: "qa" is just an example user name, you can choose anything you
+         like_
+
+     **Dangerous method**: Remove all directories manually
+
+     You can use [this script](./scripts/reset-state.sh). Make sure you have a
+     backup of your data, or are using this in combination with the safe method
+     (i.e. while logged in with a temporary user account).
+
 - [ ] download the binary package from the location provided above
-- [ ] remove any old configuration and user data
+- [ ] install the binary package
   - on macOS:
     1. open the `radicle-upstream-x.x.x.dmg` package
     2. install Upstream by dragging the `radicle-upstream` binary to
@@ -17,25 +41,7 @@
        measures which disallow running unsigned binaries, repeat the previous
        step, now you should see three buttons: `Move to Bin`, `Open` and
        `Cancel`, click `Open`
-    5. quit the app with <kbd>⌘</kbd> + <kbd>q</kbd>, open your terminal
-       and run:
-    ```
-    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --reset-state
-    ```
-  - on Linux: run the `.AppImage` like so:
-    ```
-    /<PATH_TO_DOWNLOAD>/radicle-upstream-0.0.14.AppImage --reset-state
-    ```
-- [ ] confirm that the state reset was actually performed, the output should
-      look like this:
-
-  ```
-  INFO  api > Resetting application state...
-  INFO  api > done
-  INFO  api > Resetting CoCo state...
-  INFO  api > done
-  ```
-
+  - on Linux: just run `/<PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
 
 ### Packaging and distribution
 
