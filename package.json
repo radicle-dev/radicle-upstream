@@ -156,7 +156,7 @@
     "buffer": "^5.6.0",
     "marked": "^1.1.1",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "https://buildkite.com/organizations/monadic/pipelines/radicle-contracts/builds/72/jobs/e036d8ff-a6e5-4bf4-9d63-fd02bd297b2a/artifacts/b2ac2a23-6183-4219-ac35-1e36c444f7b2",
+    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts",
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
     "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6",

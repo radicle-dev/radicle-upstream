@@ -9204,9 +9204,9 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
-"radicle-contracts@https://buildkite.com/organizations/monadic/pipelines/radicle-contracts/builds/72/jobs/e036d8ff-a6e5-4bf4-9d63-fd02bd297b2a/artifacts/b2ac2a23-6183-4219-ac35-1e36c444f7b2":
+"radicle-contracts@https://github.com/radicle-dev/radicle-contracts":
   version "0.0.0"
-  resolved "https://buildkite.com/organizations/monadic/pipelines/radicle-contracts/builds/72/jobs/e036d8ff-a6e5-4bf4-9d63-fd02bd297b2a/artifacts/b2ac2a23-6183-4219-ac35-1e36c444f7b2#ee6a13ebcf4aa9c32987542633553649158202f8"
+  resolved "https://github.com/radicle-dev/radicle-contracts#b3a2bc1eba348508303bfcc16dcb71ea83690272"
 
 ramda@0.26.1:
   version "0.26.1"
