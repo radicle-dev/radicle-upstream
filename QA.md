@@ -4,6 +4,30 @@
 
 ### Prerequisites
 
+- [ ] make sure you are installing into an environment with no old configuration
+      and user data
+
+      **Safe method**: Use a temporary user account on your computer
+
+      - on macOS:
+        - If you are **not** using FileVault, switch to the "Guest User". You
+          may have to enable this in "System Preferences -> Users & Groups".
+          When you're done, all data will be removed automatically.
+        - If you **are** using FileVault, create a new user in "System
+          Preferences -> Users & Groups". When you're done, you'll need to
+          remove this user manually.
+      - on Linux:
+        - Create a new user with `sudo useradd -m qa`, and log into that
+          account. When you're done, remove the user with `sudo userdel -r qa`.
+          _Note: "qa" is just an example user name, you can choose anything you
+          like_
+
+      **Dangerous method**: Remove all directories manually
+
+      You can use [this script](./scripts/reset-state.sh). Make sure you have a
+      backup of your data, or are using this in combination with the safe method
+      (i.e. while logged in with a temporary user account).
+
 - [ ] download the binary package from the location provided above
 - [ ] remove any old configuration and user data
   - on macOS:
