@@ -40,5 +40,6 @@ case "$confirm" in
         echo "Done"
         ;;
     * )
-        echo "Ok, I won't touch your data";;
+        echo "Ok, I won't touch your data"
+        ;;
 esac
