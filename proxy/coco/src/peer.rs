@@ -38,6 +38,9 @@ mod sync;
 /// Upper bound of messages stored in receiver channels.
 const RECEIVER_CAPACITY: usize = 128;
 
+/// The period at which we ping the `select!` loop.
+const PING_PERIOD: Duration = Duration::from_millis(500);
+
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -108,6 +111,10 @@ impl Peer {
         // TODO(xla): Find a more structured approach to manage timings.
         let mut announce_timer = interval(run_config.announce.interval);
 
+        // TODO(finto): We're not sure why pinging the select loop helps drive the state forward.
+        // This should be investigated.
+        let mut ping = interval(PING_PERIOD);
+
         let (announce_sender, mut announcements) =
             mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
         let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
@@ -133,6 +140,7 @@ impl Peer {
                 Some(urn) = request_queries.next() => Event::Request(RequestEvent::Query(urn)),
                 Some(url) = request_clones.next() => Event::Request(RequestEvent::Clone(url)),
                 Some(request_event) = requests.next() => Event::Request(request_event),
+                _ = ping.tick() => Event::Ping,
                 else => {
                     break
                 },

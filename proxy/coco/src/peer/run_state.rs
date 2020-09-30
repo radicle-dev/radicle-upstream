@@ -63,6 +63,8 @@ pub enum RequestCommand {
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
 pub enum Event {
+    /// Ping the `select!` event loop periodically.
+    Ping,
     /// Announcement subroutine lifecycle events.
     Announce(AnnounceEvent),
     /// Events from the underlying coco protocol.
