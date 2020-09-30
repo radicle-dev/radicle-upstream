@@ -24,9 +24,9 @@
 
      **Dangerous method**: Remove all directories manually
 
-      You can use [this script](./scripts/reset-state.sh). Make sure you have a
-      backup of your data, or are using this in combination with the safe method
-      (i.e. while logged in with a temporary user account).
+     You can use [this script](./scripts/reset-state.sh). Make sure you have a
+     backup of your data, or are using this in combination with the safe method
+     (i.e. while logged in with a temporary user account).
 
 - [ ] download the binary package from the location provided above
 - [ ] remove any old configuration and user data
