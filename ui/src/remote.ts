@@ -26,6 +26,7 @@ export interface Store<T> extends Readable<Data<T>> {
   error: (error: Error) => void;
   readable: Readable<Data<T>>;
   start: (start: Starter) => void;
+  reset: () => void;
 }
 
 // We should only be updating in this direction: NotAsked => Loading, Loading -> Success | Error
@@ -73,6 +74,8 @@ export const createStore = <T>(): Store<T> => {
     });
   };
 
+  const resetInternalStore = () => update(() => ({ status: Status.NotAsked }));
+
   return {
     subscribe,
     success: (response: T): void =>
@@ -83,6 +86,7 @@ export const createStore = <T>(): Store<T> => {
     start: (start: Starter): void => {
       starter = start;
     },
+    reset: resetInternalStore,
   };
 };
 

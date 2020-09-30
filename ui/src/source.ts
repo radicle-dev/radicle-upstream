@@ -189,7 +189,7 @@ interface FetchObject extends event.Event<Kind> {
 
 const groupCommits = (history: CommitSummary[]): CommitHistory => {
   const days: CommitHistory = [];
-  let groupDate = null;
+  let groupDate: Date | undefined = undefined;
 
   for (const commit of history) {
     const time = commit.committerTime;

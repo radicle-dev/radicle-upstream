@@ -1,22 +1,38 @@
-<script>
+<script lang="ts">
   import { Icon } from "../Primitive";
+  import type { EmojiAvatar } from "../../src/avatar";
+
   import Option from "./Dropdown/Option.svelte";
 
-  export let placeholder = null;
+  type Option =
+    | { value: string; title: string }
+    | {
+        value: string;
+        title: string;
+        avatarProps: {
+          avatarFallback: EmojiAvatar;
+          title: string;
+          variant?: "circle" | "square";
+        };
+      };
 
-  export let dataCy = null;
-  export let options = null;
-  export let style = null;
-  export let optionStyle = null;
-  export let valid = true;
-  export let validationMessage = null;
-  export let validationPending = false;
+  export let options: Option[];
+
+  export let placeholder = "";
+
+  export let dataCy = "";
+  export let style = "";
+  export let optionStyle = "";
+
+  export let valid: boolean = true;
+  export let validationMessage = "";
+  export let validationPending: boolean = false;
 
   let expanded = false;
 
   // bind to this prop from the outside
-  export let value = null;
-  export let disabled = false;
+  export let value = "";
+  export let disabled: boolean = false;
 
   const toggleMenu = () => {
     if (disabled) {
@@ -25,11 +41,12 @@
 
     expanded = !expanded;
   };
+
   const hideMenu = () => {
     expanded = false;
   };
 
-  const optionSelectedHandler = event => {
+  const optionSelectedHandler = (event: CustomEvent<{ value: string }>) => {
     value = event.detail.value;
     toggleMenu();
   };

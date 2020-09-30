@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
   import { slide } from "svelte/transition";
 
-  export let title = null;
-  export let active = false;
-  export let dataCy = null;
+  export let title = "";
+  export let active: boolean = false;
+  export let dataCy = "";
 </script>
 
 <style>
