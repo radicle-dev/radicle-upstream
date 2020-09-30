@@ -11,7 +11,7 @@ use crate::{
     error,
     request::waiting_room::{self, WaitingRoom},
     shared::Shared,
-    state::Lock,
+    State,
 };
 
 /// An error that can occur when attempting to work with the waiting room or cloning a project.
@@ -32,10 +32,10 @@ pub enum Error {
 ///   * Failed to mark the `urn` as queried in the `WaitingRoom`.
 pub async fn query(
     urn: RadUrn,
-    state: Lock,
+    state: State,
     waiting_room: Shared<WaitingRoom<Instant, Duration>>,
 ) -> Result<(), waiting_room::Error> {
-    let protocol = state.lock().await.api.protocol().clone();
+    let protocol = state.api.protocol().clone();
 
     protocol
         .query(Gossip {
@@ -71,7 +71,7 @@ pub async fn found(
 ///   * Failed to clone the project from the `url`.
 pub async fn clone(
     url: RadUrl,
-    state: Lock,
+    state: State,
     waiting_room: Shared<WaitingRoom<Instant, Duration>>,
 ) -> Result<(), Error> {
     waiting_room
@@ -79,18 +79,8 @@ pub async fn clone(
         .await
         .cloning(url.clone(), Instant::now())?;
     {
-        let state = state.clone();
-        let state = state.lock_owned().await;
-
-        let res: Result<RadUrn, _> = {
-            let url = url.clone();
-            tokio::task::spawn_blocking(move || state.clone_project(url.clone(), None))
-                .await
-                .expect("failed to join thread")
-        };
-
         let mut waiting_room = waiting_room.write().await;
-        match res {
+        match state.clone_project(url.clone(), None).await {
             Ok(_) => Ok(waiting_room.cloned(&url.urn.clone(), url, Instant::now())?),
             Err(err) => {
                 waiting_room.cloning_failed(url.clone(), Instant::now())?;

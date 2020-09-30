@@ -10,7 +10,7 @@ use syntect::{
 
 use radicle_surf::{
     diff, file_system,
-    vcs::git::{self, git2, BranchType, Browser, Rev},
+    vcs::git::{self, git2, BranchType, Browser, Rev, Stats},
 };
 
 use crate::{error::Error, oid::Oid};
@@ -183,6 +183,15 @@ impl Serialize for CommitHeader {
         state.serialize_field("committerTime", &self.committer_time.seconds())?;
         state.end()
     }
+}
+
+/// A selection of commit headers and their statistics.
+#[derive(Serialize)]
+pub struct Commits {
+    /// The commit headers
+    pub headers: Vec<CommitHeader>,
+    /// The statistics for the commit headers
+    pub stats: Stats,
 }
 
 /// Git object types.
@@ -627,15 +636,13 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'repo>(
-    browser: &mut Browser<'repo>,
-    branch: git::Branch,
-) -> Result<Vec<CommitHeader>, Error> {
+pub fn commits<'repo>(browser: &mut Browser<'repo>, branch: git::Branch) -> Result<Commits, Error> {
     browser.branch(branch)?;
 
     let headers = browser.get().iter().map(CommitHeader::from).collect();
+    let stats = browser.get_stats()?;
 
-    Ok(headers)
+    Ok(Commits { headers, stats })
 }
 
 /// Retrieves the list of [`Tag`] for the given project `id`.
@@ -833,7 +840,7 @@ mod tests {
         let config = config::default(key, tmp_dir).expect("unable to get default config");
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
-        let owner = state.init_owner(&signer, "cloudhead")?;
+        let owner = state.init_owner(&signer, "cloudhead").await?;
         let platinum_project = control::replicate_platinum(
             &state,
             &signer,
@@ -841,14 +848,16 @@ mod tests {
             "git-platinum",
             "fixture data",
             "master",
-        )?;
+        )
+        .await?;
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
         let commit = state
-            .with_browser(&urn, |browser| {
+            .with_browser(urn, |browser| {
                 Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
             })
+            .await
             .expect("failed to get commit");
 
         assert_eq!(commit.sha1, sha);
