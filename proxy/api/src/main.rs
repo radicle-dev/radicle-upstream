@@ -13,7 +13,7 @@ use coco::{
     request::waiting_room::{self, WaitingRoom},
     seed,
     shared::Shared,
-    signer, Peer, RunConfig,
+    signer, Peer, RunConfig, SyncConfig,
 };
 
 /// Flags accepted by the proxy binary.
@@ -175,7 +175,14 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
             signer.clone(),
             store.clone(),
             waiting_room,
-            RunConfig::default(),
+            RunConfig {
+                sync: SyncConfig {
+                    max_peers: 1,
+                    on_startup: true,
+                    period: Duration::from_secs(5),
+                },
+                ..RunConfig::default()
+            },
         )
         .await?
     };

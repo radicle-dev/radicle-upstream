@@ -281,7 +281,7 @@ async fn subroutines(
         subscriber.send(event.clone()).ok();
         log::debug!("{:?}", event);
 
-        for cmd in run_state.transition(event) {
+        for cmd in run_state.transition(&event) {
             match cmd {
                 Command::Request(RequestCommand::Query(urn)) => {
                     let stop = stop.clone();
