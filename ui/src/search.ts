@@ -3,7 +3,7 @@ import { writable } from "svelte/store";
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
-import * as waitingRoom from "./waitingRoom";
+// import * as waitingRoom from "./waitingRoom";
 import { ValidationStatus } from "./validation";
 
 interface UntrackedProject {
@@ -26,9 +26,7 @@ const update = (msg: Msg): void => {
     case Kind.Update:
       requestStore.loading();
       api
-        .get<waitingRoom.ProjectRequest>(
-          `projects/remote/${formatUrn(msg.urn)}`
-        )
+        .get<boolean>(`projects/remote/${formatUrn(msg.urn)}`)
         .then(res => {
           console.log(res);
           requestStore.success(res);
@@ -42,7 +40,7 @@ const update = (msg: Msg): void => {
 // copy/paste URNs app-wide (see https://github.com/radicle-dev/radicle-upstream/issues/840)
 const formatUrn = (urn: string) => (urn[0] === "%" ? urn.split("%")[1] : urn);
 
-const requestStore = remote.createStore<waitingRoom.ProjectRequest>();
+const requestStore = remote.createStore<boolean>();
 export const request = requestStore.readable;
 
 // TODO(sos): actual validation

@@ -26,11 +26,7 @@ impl Context {
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
-        use coco::{
-            keystore,
-            request::waiting_room,
-            RunConfig,
-        };
+        use coco::{keystore, request::waiting_room, RunConfig};
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
