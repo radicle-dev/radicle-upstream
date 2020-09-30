@@ -254,8 +254,6 @@ mod test {
 
     use crate::{context, error, http, identity, project, session};
 
-    use coco::request::{Request, SomeRequest};
-
     #[tokio::test]
     async fn checkout() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
@@ -501,7 +499,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn request() -> Result<(), error::Error> {
+    async fn request_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -518,7 +516,7 @@ mod test {
             .reply(&api)
             .await;
 
-        /// TODO(finto): Response should eventually be a Request.
+        // TODO(finto): Response should eventually be a Request.
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(true));
         });

@@ -28,8 +28,7 @@ impl Context {
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
         use coco::{
             keystore,
-            request::waiting_room::{self, WaitingRoom},
-            shared::Shared,
+            request::waiting_room,
             RunConfig,
         };
 
@@ -46,7 +45,7 @@ impl Context {
                 config,
                 signer.clone(),
                 store.clone(),
-                waiting_room,
+                waiting_room.clone(),
                 RunConfig::default(),
             )
             .await?
