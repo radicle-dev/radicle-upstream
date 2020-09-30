@@ -51,7 +51,7 @@ echo "--- Run app prettier checks"
 time yarn prettier:check
 
 echo "--- Run proxy tests"
-(cd proxy && time RUST_LOG=coco=trace cargo test --all --all-features --all-targets)
+(cd proxy && time cargo test --all --all-features --all-targets)
 
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test

@@ -88,14 +88,8 @@ impl Peer {
     /// # Errors
     ///
     /// * if one of the handlers of the select loop fails
-    pub async fn run<W>(
-        self,
-        who: &str,
-        run_config: RunConfig,
-        state: Lock,
-        store: kv::Store,
-        waiting_room: W,
-    ) where
+    pub async fn run<W>(self, run_config: RunConfig, state: Lock, store: kv::Store, waiting_room: W)
+    where
         W: Into<Shared<WaitingRoom<Instant, Duration>>> + Send + Sync,
     {
         let waiting_room = waiting_room.into();
@@ -121,7 +115,7 @@ impl Peer {
         let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
         let (request_sender, mut requests) = mpsc::channel::<RequestEvent>(RECEIVER_CAPACITY);
 
-        let request_queries = waiting_room::stream::Queries::new(who, waiting_room.clone().value);
+        let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
         tokio::pin!(request_queries);
         let request_clones = waiting_room::stream::Clones::new(waiting_room.clone().value);
         tokio::pin!(request_clones);
@@ -157,15 +151,12 @@ impl Peer {
                         Self::announce(state.clone(), store.clone(), announce_sender.clone());
                     },
                     Command::Request(RequestCommand::Query(urn)) => {
-                        log::debug!("Querying for '{}'", urn);
                         Self::query(urn, state.clone(), waiting_room.clone());
                     },
                     Command::Request(RequestCommand::Found(url)) => {
-                        log::debug!("Found '{}'", url);
                         Self::found(url, waiting_room.clone());
                     },
                     Command::Request(RequestCommand::Clone(url)) => {
-                        log::debug!("Cloning '{}'", url);
                         Self::clone(
                             url,
                             state.clone(),

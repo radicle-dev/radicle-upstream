@@ -102,7 +102,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     tokio::spawn(peer.run(
-        "main",
         RunConfig {
             sync: SyncConfig {
                 on_startup: true,

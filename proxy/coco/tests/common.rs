@@ -23,7 +23,7 @@ macro_rules! await_event {
     ( $receiver:expr , $filter:expr ) => {{
         let filtered = $receiver.into_stream().filter_map($filter).map(|_| ());
         tokio::pin!(filtered);
-        timeout(Duration::from_secs(2), filtered.next())
+        timeout(Duration::from_secs(1), filtered.next())
             .await
             .map(|_| ())
     }};
@@ -104,7 +104,6 @@ pub async fn build_peer_with_seeds(
     Ok((peer, state, signer))
 }
 
-#[allow(dead_code)]
 pub fn init_logging() {
     if pretty_env_logger::try_init().is_ok() {
         let subscriber = FmtSubscriber::builder()
