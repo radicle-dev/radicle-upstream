@@ -1,21 +1,21 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
 
   import { Icon } from "../Primitive";
   import Hoverable from "./Hoverable.svelte";
 
-  export let style = null;
-  export let tracking = false;
-  export let expanded = false;
+  export let style = "";
+  export let tracking: boolean = false;
+  export let expanded: boolean = false;
 
-  export let warning = false;
+  export let warning: boolean = false;
 
-  let active = false;
+  let active: boolean = false;
 
-  const TrackingEvent = {
-    Track: "track",
-    Untrack: "untrack",
-  };
+  enum TrackingEvent {
+    Track = "track",
+    Untrack = "untrack",
+  }
 
   const down = () => {
     active = true;
