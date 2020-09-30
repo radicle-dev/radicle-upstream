@@ -4,55 +4,36 @@
     Hoverable,
     List,
     ProjectList,
+    Remote,
     TrackToggle,
     Urn,
   } from "../../DesignSystem/Component";
 
+  import { tracked } from "../../src/project.ts";
   import { FADE_DURATION } from "../../src/config.ts";
 
-  const projects = [
-    {
-      metadata: {
-        name: "obediah",
-        description:
-          "Obediah Hinton is one of the village elders in a small village named Butcher Creek.",
-        maintainers: [],
-      },
-      registration: true,
-      shareableEntityIdentifier: "obediah@38590438594",
-    },
-    {
-      metadata: {
-        name: "lemuel",
-        description: "Lemuel is a villager from Butcher Creek.",
-        maintainers: [],
-      },
-      registration: false,
-      shareableEntityIdentifier: "lemuel@38590438594",
-      maintainers: [],
-    },
-  ];
+  // const untracked = [
+  //   {
+  //     urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
+  //     metadata: {
+  //       name: "snickers",
+  //     },
+  //   },
+  //   {
+  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
+  //     metadata: {
+  //       name: "marsbar",
+  //     },
+  //   },
+  //   {
+  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
+  //     metadata: {
+  //       name: "nougati",
+  //     },
+  //   },
+  // ];
 
-  const untracked = [
-    {
-      urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
-      metadata: {
-        name: "snickers",
-      },
-    },
-    {
-      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-      metadata: {
-        name: "marsbar",
-      },
-    },
-    {
-      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-      metadata: {
-        name: "nougati",
-      },
-    },
-  ];
+  const untracked = [];
 </script>
 
 <style>
@@ -88,7 +69,10 @@
 </style>
 
 <div class="container">
-  <ProjectList {projects} />
+  <Remote store={tracked} let:data={projects}>
+    <ProjectList {projects} />
+  </Remote>
+
   {#if untracked.length}
     <div out:fade|local={{ duration: FADE_DURATION }}>
       <div class="header">
@@ -97,7 +81,6 @@
           These projects haven't been found in your network yet or don't exist.
         </p>
       </div>
-
       <List items={untracked} let:item={project}>
         <Hoverable let:hovering={hover} style="flex: 1;">
           <div

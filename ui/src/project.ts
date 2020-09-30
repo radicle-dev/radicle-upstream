@@ -76,6 +76,9 @@ export const project = projectStore.readable;
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
 
+const trackedStore = remote.createStore<Projects>();
+export const tracked = trackedStore.readable;
+
 const localStateStore = remote.createStore<LocalState>();
 export const localState = localStateStore.readable;
 
@@ -85,6 +88,7 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchTracked = "FETCH_TRACKED",
   FetchUser = "FETCH_USER",
   FetchLocalState = "FETCH_LOCAL_STATE",
 }
@@ -108,6 +112,10 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
+interface FetchTracked extends event.Event<Kind> {
+  kind: Kind.FetchTracked;
+}
+
 interface FetchUser extends event.Event<Kind> {
   kind: Kind.FetchUser;
   urn: string;
@@ -124,6 +132,7 @@ type Msg =
   | Fetch
   | FetchList
   | FetchLocalState
+  | FetchTracked
   | FetchUser;
 
 // REQUEST INPUTS
@@ -169,6 +178,14 @@ const update = (msg: Msg): void => {
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
+      break;
+
+    case Kind.FetchTracked:
+      trackedStore.loading();
+      api
+        .get<Projects>("projects/tracked")
+        .then(trackedStore.success)
+        .catch(trackedStore.error);
       break;
 
     case Kind.FetchLocalState:
