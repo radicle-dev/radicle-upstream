@@ -86,7 +86,7 @@
     <Input.Text
       autofocus
       bind:value
-      placeholder="Have a Radicle project ID? Paste it here..."
+      placeholder="Have a Radicle project ID?"
       showLeftItem
       style="height: 3rem;"
       inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
