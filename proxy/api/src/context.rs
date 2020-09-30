@@ -1,6 +1,8 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
-use coco::signer;
+use std::time::{Duration, Instant};
+
+use coco::{request::waiting_room::WaitingRoom, shared::Shared, signer};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -11,6 +13,8 @@ pub struct Context {
     pub signer: signer::BoxedSigner,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
+    /// The [`WaitingRoom`] for making requests for identities.
+    pub waiting_room: Shared<WaitingRoom<Instant, Duration>>,
 }
 
 impl Context {
@@ -22,7 +26,7 @@ impl Context {
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
-        use coco::{keystore, RunConfig};
+        use coco::{keystore, request::waiting_room, RunConfig};
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
@@ -30,16 +34,24 @@ impl Context {
         let key = keystore::Keystorage::memory(pw)?.get();
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
+        let waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
         let (_peer, state) = {
             let config = coco::config::default(key, tmp_dir.path())?;
-            coco::into_peer_state(config, signer.clone(), store.clone(), RunConfig::default())
-                .await?
+            coco::into_peer_state(
+                config,
+                signer.clone(),
+                store.clone(),
+                waiting_room.clone(),
+                RunConfig::default(),
+            )
+            .await?
         };
 
         Ok(Self {
             state,
             signer,
             store,
+            waiting_room,
         })
     }
 }

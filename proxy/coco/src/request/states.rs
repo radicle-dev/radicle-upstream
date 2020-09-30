@@ -8,7 +8,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use librad::{peer::PeerId, uri::RadUrn};
+use librad::{peer::PeerId, uri::RadUrl};
 
 use super::sealed;
 
@@ -134,11 +134,11 @@ impl Deref for Cloning {
 }
 
 /// The `Cloned` state means that we have successfully cloned the desired identity.
-#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Cloned {
-    /// The identity that we were attempting to find.
-    pub(crate) repo: RadUrn,
+    /// The identity that we were attempting to find and the peer that we found it from.
+    pub(crate) url: RadUrl,
 }
 /// One of the terminal states for a `Request` where the task has been cancelled.
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]

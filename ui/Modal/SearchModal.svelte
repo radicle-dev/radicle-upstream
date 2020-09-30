@@ -1,19 +1,19 @@
-<script>
+<script lang="ts">
   import { push } from "svelte-spa-router";
   import { createEventDispatcher } from "svelte";
 
   import { Icon, Input } from "../DesignSystem/Primitive";
 
-  import { TrackToggle, Urn } from "../DesignSystem/Component";
+  import { Remote, TrackToggle, Urn } from "../DesignSystem/Component";
 
   import * as path from "../src/path";
-  import { Status } from "../src/remote";
-  import { updateUrn, validation } from "../src/search";
+  import * as remote from "../src/remote";
+
+  import { request, updateUrn, validation } from "../src/search";
   import { ValidationStatus } from "../src/validation";
 
-  export let content;
-
-  let searchBar, value, hasExpanded, showTrackingInfo;
+  let searchBar: HTMLDivElement,
+    value = "";
 
   const dispatch = createEventDispatcher();
 
@@ -24,13 +24,14 @@
     push(path.projectUntracked(value));
   };
 
-  const onKeydown = ev => {
+  const onKeydown = (ev: KeyboardEvent) => {
     switch (ev.code) {
       case "Enter":
         navigateToProject();
         break;
       case "Escape":
         dispatch("hide");
+        break;
     }
   };
 
@@ -38,13 +39,7 @@
     updateUrn({ urn: value });
   }
 
-  // TODO(sos): animate & show/hide based on actual remote response
-  $: {
-    showTrackingInfo = hasExpanded
-      ? true
-      : value && value.length > 0 && $validation.status === Status.Success;
-    if (showTrackingInfo && !hasExpanded) hasExpanded = true;
-  }
+  $: showTrackingInfo = value.length > 0;
 </script>
 
 <style>
@@ -80,9 +75,8 @@
 
 <svelte:window on:keydown={onKeydown} />
 
-<div class="container" bind:this={content}>
+<div class="container">
   <div class="search-bar" bind:this={searchBar}>
-    <!-- TODO(sos): fix autofocus / hotkey conflict -->
     <Input.Text
       autofocus
       bind:value
@@ -90,7 +84,6 @@
       showLeftItem
       style="height: 3rem;"
       inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
-      validation={$validation}
       hint="v">
       <div slot="left" style="display: flex;">
         <Icon.MagnifyingGlass />
@@ -106,22 +99,33 @@
     class:showTrackingInfo
     on:click={navigateToProject}>
     <div style="padding: 2rem;">
-      <div class="header">
-        <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
-        <TrackToggle variant="expanded" />
-      </div>
+      <Remote store={request} let:data={response}>
+        <div class="header">
+          <!-- TODO(sos): Are project names going to be part of the strings users share w/each other?
+        e.g. my-new-project@hwd1yref4dqt66zart1a9gcpb3i4kfgfjbdc7pp1xdzgsnkhmdyxpkm3cxe -->
+          <h3 style="color: var(--color-foreground-level-6);">
+            my-new-project
+          </h3>
+          <TrackToggle />
+        </div>
 
-      <div style="display: flex; margin-bottom: 1rem;">
-        <Urn
-          urn={value || ''}
-          notificationText="The project ID was copied to your clipboard"
-          showOnHover />
-      </div>
+        <div style="display: flex; margin-bottom: 1rem;">
+          <Urn
+            urn={response.urn}
+            notificationText="The project ID was copied to your clipboard"
+            truncate />
+        </div>
 
-      <p style="color: var(--color-foreground-level-6);">
-        You’re not following this project yet, so there’s nothing to show here.
-        Follow it and you’ll be notified as soon as it’s available.
-      </p>
+        <p style="color: var(--color-foreground-level-6);">
+          You’re not following this project yet, so there’s nothing to show
+          here. Follow it and you’ll be notified as soon as it’s available.
+        </p>
+
+        <div slot="error" let:error>
+          <!-- TODO(sos): validation & other errors go here -->
+          <p>{error && error.message}</p>
+        </div>
+      </Remote>
     </div>
   </div>
 </div>
