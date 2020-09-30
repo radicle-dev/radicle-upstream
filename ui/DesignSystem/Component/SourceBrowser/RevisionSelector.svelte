@@ -78,10 +78,8 @@
     align-self: flex-end;
   }
   .revision-dropdown-container {
-    display: flex;
     position: absolute;
     top: 0px;
-    left: 0px;
     min-width: 100%;
   }
   .revision-dropdown {
@@ -100,7 +98,7 @@
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     cursor: pointer;
-    overflow-x: hidden;
+    overflow-wrap: anywhere;
     user-select: none;
     display: flex;
   }
@@ -154,7 +152,7 @@
       <ul>
         {#each currentSelectedPeer.branches as branch}
           <li
-            class="branch typo-overflow-ellipsis"
+            class="branch"
             class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
             data-branch={branch}
             on:click|stopPropagation={() => selectRevision({
@@ -172,7 +170,7 @@
         {#if isExperimental()}
           {#each currentSelectedPeer.tags as tag}
             <li
-              class="tag typo-overflow-ellipsis"
+              class="tag"
               class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
               data-tag={tag}
               on:click|stopPropagation={() => selectRevision({

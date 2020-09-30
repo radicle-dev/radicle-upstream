@@ -13,6 +13,10 @@ lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
     pub static ref LOCALHOST_ANY: SocketAddr =
         SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 0));
+
+    /// Binds to all local interfaces and any available port.
+    pub static ref INADDR_ANY: SocketAddr =
+        SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 0));
 }
 
 /// The environment variable that points to where librad data lives.
@@ -85,6 +89,7 @@ pub fn configure(
             .into_iter()
             .map(seed::Seed::into as fn(seed::Seed) -> (peer::PeerId, SocketAddr)),
     );
+    let storage_config = net::peer::StorageConfig::default();
 
     net::peer::PeerConfig {
         signer: key,
@@ -92,5 +97,6 @@ pub fn configure(
         listen_addr,
         gossip_params,
         disco,
+        storage_config,
     }
 }
