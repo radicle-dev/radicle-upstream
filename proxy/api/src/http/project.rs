@@ -54,12 +54,12 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `POST /request/<id>`
+/// `GET /request/<id>`
 fn request_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("request")
-        .and(warp::post())
+        .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
@@ -511,7 +511,7 @@ mod test {
         );
 
         let res = request()
-            .method("POST")
+            .method("GET")
             .path(&format!("/request/{}", urn))
             .reply(&api)
             .await;
