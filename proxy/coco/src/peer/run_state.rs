@@ -6,8 +6,13 @@ use std::{
 };
 
 use librad::{
-    net::{peer::Gossip, protocol::ProtocolEvent},
+    net::{
+        gossip::{Has, Info},
+        peer::Gossip,
+        protocol::ProtocolEvent,
+    },
     peer::PeerId,
+    uri::{RadUrl, RadUrn},
 };
 
 use crate::peer::announcement;
@@ -29,22 +34,45 @@ const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
 pub enum Command {
     /// Start the announcement subroutine.
     Announce,
+    /// Fulfill request commands.
+    Request(RequestCommand),
     /// Initiate a full sync with `PeerId`.
     SyncPeer(PeerId),
     /// Start sync timeout.
     StartSyncTimeout(Duration),
 }
 
+impl From<RequestCommand> for Command {
+    fn from(other: RequestCommand) -> Self {
+        Self::Request(other)
+    }
+}
+
+/// Commands issued when requesting an identity from the network.
+#[derive(Debug, PartialEq)]
+pub enum RequestCommand {
+    /// Tell the subroutine to attempt a clone from the given `RadUrl`.
+    Clone(RadUrl),
+    /// Tell the subroutine that the given `RadUrl` was found on the network.
+    Found(RadUrl),
+    /// Tell the subroutine that we should query for the given `RadUrn` on the network.
+    Query(RadUrn),
+}
+
 /// Significant events that occur during [`Peer`] lifetime.
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
 pub enum Event {
+    /// Ping the `select!` event loop periodically.
+    Ping,
     /// Announcement subroutine lifecycle events.
     Announce(AnnounceEvent),
     /// Events from the underlying coco protocol.
     Protocol(ProtocolEvent<Gossip>),
     /// Lifecycle events during peer sync operations.
     PeerSync(SyncEvent),
+    /// Request subroutine events that wish to attempt to fetch an identity from the network.
+    Request(RequestEvent),
     /// Scheduled timeouts which can occur.
     Timeout(TimeoutEvent),
 }
@@ -58,6 +86,24 @@ pub enum AnnounceEvent {
     Succeeded(announcement::Updates),
     /// The ticker duration has elapsed.
     Tick,
+}
+
+/// Request even that wishes to fetch an identity from the network.
+#[derive(Clone, Debug)]
+pub enum RequestEvent {
+    /// Query the network for the `RadUrn`.
+    Query(RadUrn),
+    /// Clone the identity from the given `RadUrl`.
+    Clone(RadUrl),
+    /// Succeeded cloning from the `RadUrl`.
+    Cloned(RadUrl),
+    /// Failed to clone from the `RadUrl`.
+    Failed {
+        /// The URL that we were attempting the clone from.
+        url: RadUrl,
+        /// The reason the clone failed.
+        reason: String,
+    },
 }
 
 /// Lifecycle events during peer sync operations.
@@ -237,6 +283,28 @@ impl RunState {
                 Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
                 Event::Announce(AnnounceEvent::Tick),
             ) => vec![Command::Announce],
+            // Query requested URNs while online.
+            (
+                Status::Online(_) | Status::Syncing(_, _),
+                Event::Request(RequestEvent::Query(urn)),
+            ) => vec![RequestCommand::Query(urn).into()],
+            // Clone requested URLs while online.
+            (
+                Status::Online(_) | Status::Syncing(_, _),
+                Event::Request(RequestEvent::Clone(url)),
+            ) => vec![RequestCommand::Clone(url).into()],
+            // Found URN.
+            (
+                _,
+                Event::Protocol(ProtocolEvent::Gossip(Info::Has(Has {
+                    provider,
+                    val: Gossip { urn, .. },
+                }))),
+            ) => vec![RequestCommand::Found(RadUrl {
+                authority: provider.peer_id,
+                urn,
+            })
+            .into()],
             _ => vec![],
         };
 
@@ -258,18 +326,23 @@ mod test {
     use std::{
         collections::HashSet,
         iter::FromIterator,
-        net::SocketAddr,
+        net::{IpAddr, SocketAddr},
         time::{Duration, Instant},
     };
 
     use assert_matches::assert_matches;
     use pretty_assertions::assert_eq;
 
-    use librad::{keys::SecretKey, net::protocol::ProtocolEvent, peer::PeerId};
+    use librad::{
+        keys::SecretKey,
+        net::{gossip, peer::Gossip, protocol::ProtocolEvent},
+        peer::PeerId,
+        uri::{RadUrl, RadUrn},
+    };
 
     use super::{
-        AnnounceEvent, Command, Config, Event, RunState, Status, SyncConfig, TimeoutEvent,
-        DEFAULT_SYNC_MAX_PEERS,
+        AnnounceEvent, Command, Config, Event, RequestCommand, RequestEvent, RunState, Status,
+        SyncConfig, TimeoutEvent, DEFAULT_SYNC_MAX_PEERS,
     };
 
     #[test]
@@ -440,5 +513,159 @@ mod test {
         let cmds = state.transition(&Event::Announce(AnnounceEvent::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
+    }
+    #[test]
+    fn can_issue_query() -> Result<(), Box<dyn std::error::Error + 'static>> {
+        let urn: RadUrn =
+            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+
+        let status = Status::Stopped(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        assert_eq!(cmds.first(), None,);
+
+        let status = Status::Started(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        assert_eq!(cmds.first(), None);
+
+        let status = Status::Offline(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        assert_eq!(cmds.first(), None,);
+
+        let status = Status::Syncing(Instant::now(), 1);
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Query(urn.clone()))
+        );
+
+        let status = Status::Online(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Query(urn))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn can_issue_found() -> Result<(), Box<dyn std::error::Error + 'static>> {
+        let urn: RadUrn =
+            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+        let peer_id = PeerId::from(SecretKey::new());
+        let listen_addr = "127.0.0.1".parse::<IpAddr>()?;
+        let advertised_info = gossip::PeerAdvertisement {
+            listen_addr,
+            listen_port: 12345,
+            capabilities: HashSet::new(),
+        };
+        let provider = gossip::PeerInfo {
+            peer_id: peer_id.clone(),
+            advertised_info,
+            seen_addrs: HashSet::new(),
+        };
+        let gossip = ProtocolEvent::Gossip(gossip::Info::Has(gossip::Has {
+            provider,
+            val: Gossip {
+                urn: urn.clone(),
+                rev: None,
+                origin: None,
+            },
+        }));
+        let url = RadUrl {
+            urn,
+            authority: peer_id,
+        };
+
+        let status = Status::Stopped(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Found(url.clone()))
+        );
+
+        let status = Status::Started(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Found(url.clone()))
+        );
+
+        let status = Status::Offline(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Found(url.clone()))
+        );
+
+        let status = Status::Syncing(Instant::now(), 1);
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Found(url.clone()))
+        );
+
+        let status = Status::Online(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Protocol(gossip));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Found(url))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn can_issue_clone() -> Result<(), Box<dyn std::error::Error + 'static>> {
+        let urn: RadUrn =
+            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+        let peer_id = PeerId::from(SecretKey::new());
+        let url = RadUrl {
+            urn,
+            authority: peer_id,
+        };
+
+        let status = Status::Stopped(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        assert_eq!(cmds.first(), None,);
+
+        let status = Status::Started(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        assert_eq!(cmds.first(), None);
+
+        let status = Status::Offline(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        assert_eq!(cmds.first(), None,);
+
+        let status = Status::Syncing(Instant::now(), 1);
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Clone(url.clone()))
+        );
+
+        let status = Status::Online(Instant::now());
+        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        assert_eq!(
+            *cmds.first().unwrap(),
+            Command::Request(RequestCommand::Clone(url))
+        );
+
+        Ok(())
     }
 }
