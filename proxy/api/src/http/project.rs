@@ -54,31 +54,16 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `GET /request/<id>`
+/// `POST /request/<id>`
 fn request_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    // TODO(sos): This should be part of the logic in the `get` endpoint --
-    //          e.g.
-
-    //              client requests GET projects/<id>
-    //              if (project exists in monorepo) {
-    //                  return project
-    //              } else {
-    //                  kick off search request
-    //                  return a request that can be subscribed to / monitored
-    //                  for updates
-    //              }
-
-    // For now, this is a sandbox for the cloning process until it's running
-    // smoothly.
-    // Alternatively, we could think of this as a POST request for creating a new `Request`
     path("request")
-        .and(warp::get())
+        .and(warp::post())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
-        .and_then(handler::get_request)
+        .and_then(handler::request)
 }
 
 /// `GET /tracked`
@@ -181,14 +166,12 @@ mod handler {
     }
 
     /// Kick off a network request for the [`project::Project`] of the given `id`.
-    pub async fn get_request(
-        ctx: context::Context,
-        urn: coco::Urn,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         // TODO(finto): Check the request exists in the monorepo
         let mut waiting_room = ctx.waiting_room.write().await;
         let _request = waiting_room.request(urn, Instant::now());
 
+        // TODO(finto): Serialise request and respond with that.
         Ok(reply::json(&true))
     }
 
@@ -518,7 +501,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn get_remote() -> Result<(), error::Error> {
+    async fn request() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -529,19 +512,15 @@ mod test {
             coco::uri::Path::parse("").map_err(coco::Error::from)?,
         );
 
-        /// TODO(sos): test hangs indefinitely; needs timeout or n attempts
-        let ctx = ctx.read().await;
-        let waiting_room = ctx.waiting_room.read().await;
-        let req = waiting_room.get(&urn);
-
         let res = request()
-            .method("GET")
+            .method("POST")
             .path(&format!("/request/{}", urn))
             .reply(&api)
             .await;
 
+        /// TODO(finto): Response should eventually be a Request.
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(Some(req)));
+            assert_eq!(have, json!(true));
         });
 
         Ok(())
