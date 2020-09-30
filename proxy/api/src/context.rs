@@ -4,7 +4,7 @@ use std::{sync::Arc, time::{Instant, Duration}};
 
 use tokio::sync::RwLock;
 
-use coco::{keystore, signer, request::waiting_room::WaitingRoom};
+use coco::{keystore, signer, request::waiting_room, shared::Shared};
 
 /// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx = Arc<RwLock<Context>>;
@@ -24,7 +24,7 @@ pub struct Context {
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// The [`WaitingRoom`] for making requests for identities.
-    pub waiting_room: coco::shared::Shared<WaitingRoom<Instant, Duration>>,
+    pub waiting_room: coco::shared::Shared<waiting_room::WaitingRoom<Instant, Duration>>,
 }
 
 impl Context {
@@ -49,10 +49,17 @@ impl Context {
             coco::into_peer_state(config, signer.clone()).await?
         };
 
+        let waiting_room = {
+            let mut config = waiting_room::Config::default();
+            config.delta = Duration::from_secs(10);
+            waiting_room::WaitingRoom::new(config)
+        };
+
         Ok(Arc::new(RwLock::new(Self {
             state,
             signer,
             store,
+            waiting_room: Shared::from(waiting_room)
         })))
     }
 }

@@ -65,8 +65,9 @@ fn request_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error 
 //                  for updates
 //              }
             
-// For now, this is a sandbox for the cloning process until it's running 
-// smoothly
+// For now, this is a sandbox for the cloning process until it's running
+// smoothly.
+// Alternatively, we could think of this as a POST request for creating a new `Request`
     path("request")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -633,6 +634,8 @@ mod test {
 
     #[tokio::test]
     async fn get_remote() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let urn = coco::Urn::new(
@@ -641,16 +644,20 @@ mod test {
             coco::uri::Path::parse("").map_err(coco::Error::from)?,
         );
 
+        /// TODO(sos): test hangs indefinitely; needs timeout or n attempts
+        let ctx = ctx.read().await;
+        let waiting_room = ctx.waiting_room.read().await;
+        let req = waiting_room.get(&urn);
+
         let res = request()
             .method("GET")
-            .path(&format!("/remote/{}", urn))
+            .path(&format!("/request/{}", urn))
             .reply(&api)
             .await;
 
-        let want = SomeRequest::Created(Request::new(urn.clone(), 0));
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
+            assert_eq!(have, json!(Some(req)));
         });
 
         Ok(())

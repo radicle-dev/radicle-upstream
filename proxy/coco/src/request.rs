@@ -9,11 +9,12 @@
 
 use std::{
     collections::HashMap,
+    time::Instant,
     ops::{Deref, Sub},
 };
 
 use either::Either;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::SerializeStruct};
 
 use librad::{
     net::peer::types::Gossip,
@@ -58,8 +59,7 @@ mod sealed;
 ///
 /// The `T` type parameter represents some timestamp that is chosen by the user of the `Request`
 /// API. Note that it makes it easy to test by just choosing `()` for the timestamp.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Deserialize)]
 pub struct Request<S, T> {
     /// The identifier of the identity on the network.
     urn: RadUrn,
@@ -69,6 +69,45 @@ pub struct Request<S, T> {
     timestamp: T,
     /// The state of the request, as mentioned above.
     state: S,
+}
+
+
+/// Wrapper for `std::Instant` to serialize using `serde_millis`.
+struct WithMillis(Instant);
+
+impl Serialize for WithMillis {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where S: serde::Serializer,
+    {
+        let WithMillis(ts) = self;
+        serde_millis::serialize(ts, serializer)
+    }
+}
+
+impl<T> Serialize for Request<T, Instant> where T: Serialize {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: serde::Serializer
+        {
+            let mut state = serializer.serialize_struct("Request", 4)?;
+            state.serialize_field("urn", &self.urn)?;
+            state.serialize_field("attempts", &self.attempts)?;
+            state.serialize_field("timestamp", &WithMillis(self.timestamp))?;
+            state.serialize_field("state", &self.state)?;
+            state.end()
+        }
+}
+
+impl<T> Serialize for Request<T, usize> where T: Serialize {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where S: serde::Serializer
+    {
+        let mut state = serializer.serialize_struct("Request", 4)?;
+        state.serialize_field("urn", &self.urn)?;
+        state.serialize_field("attempts", &self.attempts)?;
+        state.serialize_field("timestamp", &self.timestamp)?;
+        state.serialize_field("state", &self.state)?;
+        state.end()
+    }  
 }
 
 impl<S, T> Deref for Request<S, T> {

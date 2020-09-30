@@ -86,13 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let subscriptions = notification::Subscriptions::default();
-    let ctx = context::Ctx::from(context::Context {
-        state: state.clone(),
-        signer,
-        store: store.clone(),
-    });
 
-    log::info!("starting coco peer");
 
     // TODO(finto): We should store and load the waiting room
     let waiting_room = {
@@ -100,6 +94,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         config.delta = Duration::from_secs(10);
         WaitingRoom::new(config)
     };
+
+    let ctx = context::Ctx::from(context::Context {
+        state: state.clone(),
+        signer,
+        store: store.clone(),
+        waiting_room: coco::shared::Shared::from(waiting_room.clone())
+    });
+
+    log::info!("starting coco peer");
 
     tokio::spawn(peer.run(
         RunConfig {
