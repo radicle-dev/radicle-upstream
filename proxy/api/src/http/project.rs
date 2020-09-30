@@ -55,21 +55,24 @@ fn get_filter(
 }
 
 /// `GET /request/<id>`
-fn request_filter(ctx: context::Context) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-// TODO(sos): This should be part of the logic in the `get` endpoint -- 
-//          e.g. 
+fn request_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    // TODO(sos): This should be part of the logic in the `get` endpoint --
+    //          e.g.
 
-//              client requests GET projects/<id>
-//              if (project exists in monorepo) {
-//                  return project
-//              } else {
-//                  kick off search request
-//                  return a request that can be subscribed to / monitored
-//                  for updates
-//              }
-            
-// For now, this is a sandbox for the cloning process until it's running 
-// smoothly
+    //              client requests GET projects/<id>
+    //              if (project exists in monorepo) {
+    //                  return project
+    //              } else {
+    //                  kick off search request
+    //                  return a request that can be subscribed to / monitored
+    //                  for updates
+    //              }
+
+    // For now, this is a sandbox for the cloning process until it's running
+    // smoothly.
+    // Alternatively, we could think of this as a POST request for creating a new `Request`
     path("request")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -178,7 +181,10 @@ mod handler {
     }
 
     /// Kick off a network request for the [`project::Project`] of the given `id`.
-    pub async fn get_request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn get_request(
+        ctx: context::Context,
+        urn: coco::Urn,
+    ) -> Result<impl Reply, Rejection> {
         // TODO(finto): Check the request exists in the monorepo
         let mut waiting_room = ctx.waiting_room.write().await;
         let _request = waiting_room.request(urn, Instant::now());
@@ -265,12 +271,7 @@ mod test {
 
     use crate::{context, error, http, identity, project, session};
 
-    use coco::{
-        request::{
-            SomeRequest,
-            Request
-        }
-    };
+    use coco::request::{Request, SomeRequest};
 
     #[tokio::test]
     async fn checkout() -> Result<(), error::Error> {
@@ -518,6 +519,8 @@ mod test {
 
     #[tokio::test]
     async fn get_remote() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let urn = coco::Urn::new(
@@ -526,16 +529,19 @@ mod test {
             coco::uri::Path::parse("").map_err(coco::Error::from)?,
         );
 
+        /// TODO(sos): test hangs indefinitely; needs timeout or n attempts
+        let ctx = ctx.read().await;
+        let waiting_room = ctx.waiting_room.read().await;
+        let req = waiting_room.get(&urn);
+
         let res = request()
             .method("GET")
-            .path(&format!("/remote/{}", urn))
+            .path(&format!("/request/{}", urn))
             .reply(&api)
             .await;
 
-        let want = SomeRequest::Created(Request::new(urn.clone(), 0));
-
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
+            assert_eq!(have, json!(Some(req)));
         });
 
         Ok(())

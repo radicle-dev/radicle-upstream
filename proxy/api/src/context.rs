@@ -2,7 +2,7 @@
 
 use std::time::{Duration, Instant};
 
-use coco::{request::waiting_room::WaitingRoom, signer};
+use coco::{request::waiting_room::WaitingRoom, shared::Shared, signer};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -14,7 +14,7 @@ pub struct Context {
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// The [`WaitingRoom`] for making requests for identities.
-    pub waiting_room: coco::shared::Shared<WaitingRoom<Instant, Duration>>,
+    pub waiting_room: Shared<WaitingRoom<Instant, Duration>>,
 }
 
 impl Context {
