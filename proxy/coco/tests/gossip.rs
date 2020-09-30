@@ -40,16 +40,13 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let alice_events = alice_peer.subscribe();
 
-    let _alice_runs = alice_peer.into_running();
+    tokio::spawn(alice_peer.into_running().await);
 
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
-
-    {
-        alice_state
-            .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
-            .await
-            .expect("unable to init project");
-    }
+    alice_state
+        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .await
+        .expect("unable to init project");
 
     let announced = alice_events
         .into_stream()
@@ -106,8 +103,8 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    tokio::spawn(alice_peer.into_running().await);
+    tokio::spawn(bob_peer.into_running().await);
 
     connected(bob_connected, &alice_peer_id).await?;
 
@@ -146,7 +143,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
         Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (peer, state, _signer) = build_peer(&tmp_dir, waiting_room, RunConfig::default()).await?;
 
-    tokio::task::spawn(peer.into_running());
+    tokio::spawn(peer.into_running().await);
 
     let unkown_urn = Urn {
         id: Hash::hash(b"project0"),
@@ -194,8 +191,8 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_events = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    tokio::spawn(alice_peer.into_running().await);
+    tokio::spawn(bob_peer.into_running().await);
 
     connected(bob_events, &alice_peer_id).await?;
 
