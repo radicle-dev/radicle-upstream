@@ -213,7 +213,8 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let (alice_peer, alice_state, alice_signer) =
+        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice_addr = alice_state.listen_addr();
     let alice_peer_id = alice_state.peer_id();
 
@@ -230,7 +231,8 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let bob_events = bob_peer.subscribe();
     let clone_listener = bob_peer.subscribe();
     let query_listener = bob_peer.subscribe();
-    let waiting_room: WaitingRoom<Instant, Duration> = WaitingRoom::new(waiting_room::Config::default());
+    let waiting_room: WaitingRoom<Instant, Duration> =
+        WaitingRoom::new(waiting_room::Config::default());
     let bob_waiting_room = Shared::from(waiting_room);
 
     tokio::task::spawn(alice_peer.into_running());
@@ -243,7 +245,10 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let urn = {
         let alice = alice_state.init_owner(&alice_signer, "alice").await?;
         let project = radicle_project(alice_repo_path.clone());
-        alice_state.init_project(&alice_signer, &alice, project).await?.urn()
+        alice_state
+            .init_project(&alice_signer, &alice, project)
+            .await?
+            .urn()
     };
 
     {

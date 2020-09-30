@@ -22,7 +22,12 @@ impl Context {
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
     pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
-        use coco::{keystore, RunConfig, shared::Shared, request::waiting_room::{self, WaitingRoom}};
+        use coco::{
+            keystore,
+            request::waiting_room::{self, WaitingRoom},
+            shared::Shared,
+            RunConfig,
+        };
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
@@ -33,8 +38,14 @@ impl Context {
         let waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
         let (_peer, state) = {
             let config = coco::config::default(key, tmp_dir.path())?;
-            coco::into_peer_state(config, signer.clone(), store.clone(), waiting_room, RunConfig::default())
-                .await?
+            coco::into_peer_state(
+                config,
+                signer.clone(),
+                store.clone(),
+                waiting_room,
+                RunConfig::default(),
+            )
+            .await?
         };
 
         Ok(Self {

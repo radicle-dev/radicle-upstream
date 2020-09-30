@@ -15,7 +15,13 @@ use librad::{
     uri::{RadUrl, RadUrn},
 };
 
-use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, RequestEvent, RunConfig, State, shared::Shared, request::waiting_room::{self, WaitingRoom}};
+use coco::{
+    config, project,
+    request::waiting_room::{self, WaitingRoom},
+    seed::Seed,
+    shared::Shared,
+    Paths, Peer, PeerEvent, RequestEvent, RunConfig, State,
+};
 
 #[doc(hidden)]
 #[macro_export]
@@ -93,7 +99,8 @@ pub async fn build_peer(
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let waiting_room = Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let conf = config::default(key, tmp_dir.path())?;
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
+    let (peer, state) =
+        coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
 
     Ok((peer, state, signer))
 }
@@ -111,7 +118,8 @@ pub async fn build_peer_with_seeds(
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
 
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
+    let (peer, state) =
+        coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
 
     Ok((peer, state, signer))
 }

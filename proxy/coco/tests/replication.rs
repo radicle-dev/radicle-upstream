@@ -6,11 +6,7 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{
-    config,
-    seed::Seed,
-    RunConfig, SyncConfig, SyncEvent,
-};
+use coco::{config, seed::Seed, RunConfig, SyncConfig, SyncEvent};
 
 #[macro_use]
 mod common;
