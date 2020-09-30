@@ -7,7 +7,7 @@ use std::{
     pin::Pin,
     sync::Arc,
     task::{Context, Poll},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use futures::{
@@ -20,16 +20,27 @@ use tokio::{
     time::interval,
 };
 
-use librad::{net::peer::RunLoop, peer::PeerId};
+use librad::{
+    net::peer::RunLoop,
+    peer::PeerId,
+    uri::{RadUrl, RadUrn},
+};
 
-use crate::state::State;
+use crate::{
+    request::waiting_room::{self, WaitingRoom},
+    shared::Shared,
+    state::State,
+};
 
 mod announcement;
 pub use announcement::Announcement;
 
+mod request;
+
 mod run_state;
 pub use run_state::{
-    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, SyncConfig, SyncEvent, TimeoutEvent,
+    AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, RequestCommand, RequestEvent,
+    SyncConfig, SyncEvent, TimeoutEvent,
 };
 use run_state::{Command, RunState};
 
@@ -37,6 +48,9 @@ mod sync;
 
 /// Upper bound of messages stored in receiver channels.
 const RECEIVER_CAPACITY: usize = 128;
+
+/// The period at which we ping the `select!` loop.
+const PING_PERIOD: Duration = Duration::from_millis(500);
 
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
@@ -67,6 +81,8 @@ pub struct Peer {
     state: State,
     /// On-disk storage for caching.
     store: kv::Store,
+    /// The waiting room for making requests for identities.
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     /// Handle used to broadcast [`Event`].
     subscriber: broadcast::Sender<Event>,
     /// Subroutine config.
@@ -76,12 +92,19 @@ pub struct Peer {
 impl Peer {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: State, store: kv::Store, run_config: RunConfig) -> Self {
+    pub fn new(
+        run_loop: RunLoop,
+        state: State,
+        store: kv::Store,
+        waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+        run_config: RunConfig,
+    ) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         Self {
             run_loop,
             state,
             store,
+            waiting_room,
             subscriber,
             run_config,
         }
@@ -141,6 +164,7 @@ impl From<Peer> for Running {
             run_loop,
             state,
             store,
+            waiting_room,
             subscriber,
             run_config,
         } = peer;
@@ -149,7 +173,14 @@ impl From<Peer> for Running {
         // protocol event
         let subroutines = {
             let stop = Arc::new(tokio::sync::Notify::new());
-            let fut = subroutines(state, store, run_config, subscriber, stop.clone());
+            let fut = subroutines(
+                state,
+                store,
+                waiting_room,
+                run_config,
+                subscriber,
+                stop.clone(),
+            );
             let join = tokio::spawn(fut);
 
             (join, stop)
@@ -209,25 +240,37 @@ impl Future for Running {
 async fn subroutines(
     state: State,
     store: kv::Store,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
     subscriber: broadcast::Sender<Event>,
     stop: Arc<tokio::sync::Notify>,
 ) -> Result<(), Error> {
     let mut protocol_events = state.api.protocol().subscribe().await;
     let mut announce_timer = interval(run_config.announce.interval);
+    let mut ping = interval(PING_PERIOD);
 
     let (announce_sender, mut announcements) = mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
     let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
     let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
+    let (request_sender, mut requests) = mpsc::channel::<RequestEvent>(RECEIVER_CAPACITY);
+
+    let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
+    tokio::pin!(request_queries);
+    let request_clones = waiting_room::stream::Clones::new(waiting_room.clone().value);
+    tokio::pin!(request_clones);
 
     let mut run_state = RunState::from(run_config);
     loop {
         let event = tokio::select! {
+            _ = ping.tick() => Event::Ping,
             _ = announce_timer.tick() => Event::Announce(AnnounceEvent::Tick),
             Some(announce_event) = announcements.recv() => Event::Announce(announce_event),
             Some(protocol_event) = protocol_events.next() => Event::Protocol(protocol_event),
             Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
             Some(timeout_event) = timeouts.recv() => Event::Timeout(timeout_event),
+            Some(urn) = request_queries.next() => Event::Request(RequestEvent::Query(urn)),
+            Some(url) = request_clones.next() => Event::Request(RequestEvent::Clone(url)),
+            Some(request_event) = requests.next() => Event::Request(request_event),
             else => {
                 break
             },
@@ -240,6 +283,33 @@ async fn subroutines(
 
         for cmd in run_state.transition(event) {
             match cmd {
+                Command::Request(RequestCommand::Query(urn)) => {
+                    let stop = stop.clone();
+                    query(
+                        urn,
+                        state.clone(),
+                        waiting_room.clone(),
+                        async move { stop.notified().await }.boxed(),
+                    );
+                },
+                Command::Request(RequestCommand::Found(url)) => {
+                    let stop = stop.clone();
+                    found(
+                        url,
+                        waiting_room.clone(),
+                        async move { stop.notified().await }.boxed(),
+                    );
+                },
+                Command::Request(RequestCommand::Clone(url)) => {
+                    let stop = stop.clone();
+                    clone(
+                        url,
+                        state.clone(),
+                        waiting_room.clone(),
+                        request_sender.clone(),
+                        async move { stop.notified().await }.boxed(),
+                    );
+                },
                 Command::Announce => {
                     let stop = stop.clone();
                     announce(
@@ -350,5 +420,88 @@ fn start_sync_timeout(sync_period: Duration, mut sender: mpsc::Sender<TimeoutEve
     tokio::spawn(async move {
         tokio::time::delay_for(sync_period).await;
         sender.send(TimeoutEvent::SyncPeriod).await.ok();
+    });
+}
+
+/// Query subroutine.
+fn query(
+    urn: RadUrn,
+    state: State,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+    stop: impl Future<Output = ()> + Send + Unpin + 'static,
+) {
+    tokio::spawn(async move {
+        let go = async {
+            request::query(urn.clone(), state.clone(), waiting_room.clone())
+                .await
+                .unwrap_or_else(|err| {
+                    log::warn!(
+                        "an error occurred for the command 'Query' for the URN '{}':\n{}",
+                        urn,
+                        err
+                    );
+                });
+        };
+        tokio::pin!(go);
+
+        future::select(stop, go).map(|_| ()).await;
+    });
+}
+
+/// Found subroutine.
+fn found(
+    url: RadUrl,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+    stop: impl Future<Output = ()> + Send + Unpin + 'static,
+) {
+    tokio::spawn(async move {
+        let go = async {
+            request::found(url.clone(), waiting_room.clone())
+                .await
+                .unwrap_or_else(|err| {
+                    log::warn!(
+                        "an error occurred for the command 'Found' for the URL '{}':\n{}",
+                        url,
+                        err
+                    );
+                });
+        };
+        tokio::pin!(go);
+
+        future::select(stop, go).map(|_| ()).await;
+    });
+}
+
+/// Clone subroutine.
+fn clone(
+    url: RadUrl,
+    state: State,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+    mut sender: mpsc::Sender<RequestEvent>,
+    stop: impl Future<Output = ()> + Send + Unpin + 'static,
+) {
+    tokio::spawn(async move {
+        let go = async {
+            match request::clone(url.clone(), state.clone(), waiting_room.clone()).await {
+                Ok(()) => sender.send(RequestEvent::Cloned(url)).await.ok(),
+                Err(err) => {
+                    log::warn!(
+                        "an error occurred for the command 'Clone' for the URL '{}':\n{}",
+                        url,
+                        err
+                    );
+                    sender
+                        .send(RequestEvent::Failed {
+                            url,
+                            reason: err.to_string(),
+                        })
+                        .await
+                        .ok()
+                },
+            }
+        };
+        tokio::pin!(go);
+
+        future::select(stop, go).map(|_| ()).await;
     });
 }

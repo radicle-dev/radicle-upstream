@@ -1,15 +1,22 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn};
+use coco::{
+    request::waiting_room::{self, WaitingRoom},
+    seed::Seed,
+    shared::Shared,
+    AnnounceConfig, AnnounceEvent, Hash, RunConfig, Urn,
+};
 
+#[macro_use]
 mod common;
 use common::{
-    build_peer, build_peer_with_seeds, connected, init_logging, radicle_project, shia_le_pathbuf,
+    assert_cloned, build_peer, build_peer_with_seeds, connected, init_logging, radicle_project,
+    requested, shia_le_pathbuf,
 };
 
 #[tokio::test(core_threads = 2)]
@@ -18,8 +25,11 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (alice_peer, alice_state, alice_signer) = build_peer(
         &alice_tmp_dir,
+        waiting_room,
         RunConfig {
             announce: AnnounceConfig {
                 interval: Duration::from_millis(100),
@@ -62,8 +72,11 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (alice_peer, alice_state, alice_signer) = build_peer(
         &alice_tmp_dir,
+        waiting_room,
         RunConfig {
             announce: AnnounceConfig {
                 interval: Duration::from_millis(100),
@@ -77,12 +90,15 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
             peer_id: alice_peer_id.clone(),
         }],
+        waiting_room,
         RunConfig::default(),
     )
     .await?;
@@ -126,7 +142,9 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let tmp_dir = tempfile::tempdir()?;
-    let (peer, state, _signer) = build_peer(&tmp_dir, RunConfig::default()).await?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
+    let (peer, state, _signer) = build_peer(&tmp_dir, waiting_room, RunConfig::default()).await?;
 
     tokio::task::spawn(peer.into_running());
 
@@ -154,18 +172,23 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+        build_peer(&alice_tmp_dir, waiting_room, RunConfig::default()).await?;
     let alice_addr = alice_state.listen_addr();
     let alice_peer_id = alice_state.peer_id();
 
     let bob_tmp_dir = tempfile::tempdir()?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (bob_peer, bob_state, _bob_signer) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
             peer_id: alice_peer_id.clone(),
         }],
+        waiting_room,
         RunConfig::default(),
     )
     .await?;
@@ -196,6 +219,67 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
         .await;
 
     assert_eq!(res.map(|info| info.peer_id), Some(alice_peer_id));
+
+    Ok(())
+}
+
+#[tokio::test(core_threads = 2)]
+async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
+
+    let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
+    let (alice_peer, alice_state, alice_signer) =
+        build_peer(&alice_tmp_dir, waiting_room, RunConfig::default()).await?;
+    let alice_addr = alice_state.listen_addr();
+    let alice_peer_id = alice_state.peer_id();
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
+    let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
+        &bob_tmp_dir,
+        vec![Seed {
+            addr: alice_addr,
+            peer_id: alice_peer_id.clone(),
+        }],
+        bob_waiting_room.clone(),
+        RunConfig::default(),
+    )
+    .await?;
+    let bob_events = bob_peer.subscribe();
+    let clone_listener = bob_peer.subscribe();
+    let query_listener = bob_peer.subscribe();
+
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
+
+    connected(bob_events, &alice_peer_id).await?;
+
+    bob_state.init_owner(&bob_signer, "bob").await?;
+
+    let urn = {
+        let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+        let project = radicle_project(alice_repo_path.clone());
+        alice_state
+            .init_project(&alice_signer, &alice, project)
+            .await?
+            .urn()
+    };
+
+    {
+        let mut bob_waiting_room = bob_waiting_room.write().await;
+        let _ = bob_waiting_room.request(urn.clone(), Instant::now());
+    }
+
+    requested(query_listener, &urn).await?;
+    assert_cloned(clone_listener, &urn.clone().into_rad_url(alice_peer_id)).await?;
+
+    // TODO(finto): List projects
+    let project = bob_state.get_project(urn, None).await;
+    assert!(project.is_ok());
 
     Ok(())
 }
