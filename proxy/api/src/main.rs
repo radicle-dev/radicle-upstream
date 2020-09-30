@@ -174,7 +174,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
             config,
             signer.clone(),
             store.clone(),
-            waiting_room,
+            waiting_room.clone(),
             RunConfig {
                 sync: SyncConfig {
                     max_peers: 1,
@@ -192,6 +192,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         state,
         signer,
         store,
+        waiting_room,
     };
 
     Ok(Rigging {

@@ -15,6 +15,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
+        .or(request_filter(ctx.clone()))
         .or(get_filter(ctx))
         .boxed()
 }
@@ -51,6 +52,18 @@ fn get_filter(
         .and(path::param::<coco::Urn>())
         .and(path::end())
         .and_then(handler::get)
+}
+
+/// `GET /request/<id>`
+fn request_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("request")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::request)
 }
 
 /// `GET /tracked`
@@ -101,7 +114,7 @@ fn discover_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::path::PathBuf;
+    use std::{path::PathBuf, time::Instant};
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
@@ -150,6 +163,16 @@ mod handler {
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
+    }
+
+    /// Kick off a network request for the [`project::Project`] of the given `id`.
+    pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        // TODO(finto): Check the request exists in the monorepo
+        let mut waiting_room = ctx.waiting_room.write().await;
+        let _request = waiting_room.request(urn, Instant::now());
+
+        // TODO(finto): Serialise request and respond with that.
+        Ok(reply::json(&true))
     }
 
     /// List all projects tracked by the current user.
@@ -212,7 +235,7 @@ pub struct CheckoutInput {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MetadataInput {
-    /// Name of the proejct.
+    /// Name of the project.
     name: String,
     /// Long form outline.
     description: String,
@@ -470,6 +493,32 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(project));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn request_project() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let urn = coco::Urn::new(
+            coco::Hash::hash(b"kisses-of-the-sun"),
+            coco::uri::Protocol::Git,
+            coco::uri::Path::parse("").map_err(coco::Error::from)?,
+        );
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/request/{}", urn))
+            .reply(&api)
+            .await;
+
+        // TODO(finto): Response should eventually be a Request.
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(true));
         });
 
         Ok(())
