@@ -14,7 +14,7 @@ lazy_static::lazy_static! {
     pub static ref LOCALHOST_ANY: SocketAddr =
         SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 0));
 
-    /// Binds to all local addresses and any available port.
+    /// Binds to all local interfaces and any available port.
     pub static ref INADDR_ANY: SocketAddr =
         SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 0));
 }
