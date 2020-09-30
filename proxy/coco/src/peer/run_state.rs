@@ -287,12 +287,12 @@ impl RunState {
             (
                 Status::Online(_) | Status::Syncing(_, _),
                 Event::Request(RequestEvent::Query(urn)),
-            ) => vec![RequestCommand::Query(urn).into()],
+            ) => vec![RequestCommand::Query(urn.clone()).into()],
             // Clone requested URLs while online.
             (
                 Status::Online(_) | Status::Syncing(_, _),
                 Event::Request(RequestEvent::Clone(url)),
-            ) => vec![RequestCommand::Clone(url).into()],
+            ) => vec![RequestCommand::Clone(url.clone()).into()],
             // Found URN.
             (
                 _,
@@ -301,8 +301,8 @@ impl RunState {
                     val: Gossip { urn, .. },
                 }))),
             ) => vec![RequestCommand::Found(RadUrl {
-                authority: provider.peer_id,
-                urn,
+                authority: provider.peer_id.clone(),
+                urn: urn.clone(),
             })
             .into()],
             _ => vec![],
@@ -521,22 +521,22 @@ mod test {
 
         let status = Status::Stopped(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(cmds.first(), None,);
 
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(cmds.first(), None);
 
         let status = Status::Offline(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(cmds.first(), None,);
 
         let status = Status::Syncing(Instant::now(), 1);
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Query(urn.clone()))
@@ -544,7 +544,7 @@ mod test {
 
         let status = Status::Online(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Query(urn.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Query(urn))
@@ -584,7 +584,7 @@ mod test {
 
         let status = Status::Stopped(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
@@ -592,7 +592,7 @@ mod test {
 
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
@@ -600,7 +600,7 @@ mod test {
 
         let status = Status::Offline(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
@@ -608,7 +608,7 @@ mod test {
 
         let status = Status::Syncing(Instant::now(), 1);
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Protocol(gossip.clone()));
+        let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
@@ -616,7 +616,7 @@ mod test {
 
         let status = Status::Online(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Protocol(gossip));
+        let cmds = state.transition(&Event::Protocol(gossip));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url))
@@ -637,22 +637,22 @@ mod test {
 
         let status = Status::Stopped(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(cmds.first(), None,);
 
         let status = Status::Started(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(cmds.first(), None);
 
         let status = Status::Offline(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(cmds.first(), None,);
 
         let status = Status::Syncing(Instant::now(), 1);
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Clone(url.clone()))
@@ -660,7 +660,7 @@ mod test {
 
         let status = Status::Online(Instant::now());
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
-        let cmds = state.transition(Event::Request(RequestEvent::Clone(url.clone())));
+        let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Clone(url))

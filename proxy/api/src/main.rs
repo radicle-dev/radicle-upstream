@@ -8,17 +8,13 @@ use tokio::{
 };
 
 use api::{config, context, env, http, notification, session};
-<<<<<<< HEAD
-use coco::{keystore, seed, signer, Peer, RunConfig, SyncConfig};
-=======
 use coco::{
     keystore,
     request::waiting_room::{self, WaitingRoom},
     seed,
     shared::Shared,
-    signer, Peer, RunConfig,
+    signer, Peer, RunConfig, SyncConfig,
 };
->>>>>>> master
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
