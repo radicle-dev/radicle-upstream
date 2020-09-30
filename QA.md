@@ -29,7 +29,7 @@
      (i.e. while logged in with a temporary user account).
 
 - [ ] download the binary package from the location provided above
-- [ ] remove any old configuration and user data
+- [ ] install the binary package
   - on macOS:
     1. open the `radicle-upstream-x.x.x.dmg` package
     2. install Upstream by dragging the `radicle-upstream` binary to
@@ -41,25 +41,7 @@
        measures which disallow running unsigned binaries, repeat the previous
        step, now you should see three buttons: `Move to Bin`, `Open` and
        `Cancel`, click `Open`
-    5. quit the app with <kbd>⌘</kbd> + <kbd>q</kbd>, open your terminal
-       and run:
-    ```
-    /Applications/radicle-upstream.app/Contents/MacOS/radicle-upstream --reset-state
-    ```
-  - on Linux: run the `.AppImage` like so:
-    ```
-    /<PATH_TO_DOWNLOAD>/radicle-upstream-0.0.14.AppImage --reset-state
-    ```
-- [ ] confirm that the state reset was actually performed, the output should
-      look like this:
-
-  ```
-  INFO  api > Resetting application state...
-  INFO  api > done
-  INFO  api > Resetting CoCo state...
-  INFO  api > done
-  ```
-
+  - on Linux: just run `/<PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
 
 ### Packaging and distribution
 
