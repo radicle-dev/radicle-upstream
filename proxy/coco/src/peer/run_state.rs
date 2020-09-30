@@ -80,7 +80,7 @@ pub enum TimeoutEvent {
 }
 
 /// The current status of the local peer and its relation to the network.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum Status {
     /// Nothing is setup, not even a socket to listen on.
     Stopped(Instant),
@@ -171,9 +171,9 @@ impl RunState {
     /// Applies the `event` and based on the current state transforms to the new state and in some
     /// cases produes commands which should be executed in the appropriate sub-routines.
     pub fn transition(&mut self, event: Event) -> Vec<Command> {
-        log::trace!("run_state: ({:?}, {:?})", self.status, event);
+        let old_status = self.status.clone();
 
-        match (&self.status, event) {
+        let cmds = match (&self.status, event.clone()) {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
             (Status::Stopped(_since), Event::Protocol(ProtocolEvent::Listening(_addr))) => {
                 self.status = Status::Started(Instant::now());
@@ -238,7 +238,17 @@ impl RunState {
                 Event::Announce(AnnounceEvent::Tick),
             ) => vec![Command::Announce],
             _ => vec![],
-        }
+        };
+
+        log::trace!(
+            "TRANSITION: {:?} -> [{:?} -> {:?}] -> {:?}",
+            event,
+            old_status,
+            self.status,
+            cmds
+        );
+
+        cmds
     }
 }
 

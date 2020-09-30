@@ -8,7 +8,7 @@ use tokio::{
 };
 
 use api::{config, context, env, http, notification, session};
-use coco::{keystore, seed, signer, Peer, RunConfig};
+use coco::{keystore, seed, signer, Peer, RunConfig, SyncConfig};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
@@ -157,7 +157,20 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         });
         let config = coco::config::configure(paths, key, *coco::config::INADDR_ANY, seeds);
 
-        coco::into_peer_state(config, signer.clone(), store.clone(), RunConfig::default()).await?
+        coco::into_peer_state(
+            config,
+            signer.clone(),
+            store.clone(),
+            RunConfig {
+                sync: SyncConfig {
+                    max_peers: 1,
+                    on_startup: true,
+                    period: Duration::from_secs(5),
+                },
+                ..RunConfig::default()
+            },
+        )
+        .await?
     };
 
     let subscriptions = notification::Subscriptions::default();
