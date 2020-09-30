@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
@@ -6,7 +6,13 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, RunConfig, SyncConfig, SyncEvent};
+use coco::{
+    config,
+    request::waiting_room::{self, WaitingRoom},
+    seed::Seed,
+    shared::Shared,
+    RunConfig, SyncConfig, SyncEvent,
+};
 
 #[macro_use]
 mod common;
@@ -18,12 +24,17 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+        build_peer(&alice_tmp_dir, waiting_room, RunConfig::default()).await?;
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
+    let (bob_peer, bob_state, bob_signer) =
+        build_peer(&bob_tmp_dir, waiting_room, RunConfig::default()).await?;
     let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
 
     tokio::task::spawn(alice_peer.into_running());
@@ -63,12 +74,17 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+        build_peer(&alice_tmp_dir, waiting_room, RunConfig::default()).await?;
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, _bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
+    let (bob_peer, bob_state, _bob_signer) =
+        build_peer(&bob_tmp_dir, waiting_room, RunConfig::default()).await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
@@ -103,12 +119,17 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+        build_peer(&alice_tmp_dir, waiting_room, RunConfig::default()).await?;
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
+    let (bob_peer, bob_state, bob_signer) =
+        build_peer(&bob_tmp_dir, waiting_room, RunConfig::default()).await?;
     let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
 
     tokio::task::spawn(alice_peer.into_running());
@@ -211,8 +232,11 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (alice_peer, alice_state, alice_signer) = build_peer(
         &alice_tmp_dir,
+        waiting_room,
         RunConfig {
             sync: SyncConfig {
                 on_startup: true,
@@ -227,12 +251,15 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     let alice_events = alice_peer.subscribe();
 
     let bob_tmp_dir = tempfile::tempdir()?;
+    let waiting_room: Shared<WaitingRoom<Instant, Duration>> =
+        Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
             peer_id: alice_peer_id.clone(),
         }],
+        waiting_room,
         RunConfig::default(),
     )
     .await?;

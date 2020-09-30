@@ -15,7 +15,11 @@ use std::{
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
+use librad::{
+    net::peer::types::Gossip,
+    peer::PeerId,
+    uri::{self, RadUrl, RadUrn},
+};
 
 pub mod states;
 pub use states::*;
@@ -186,7 +190,11 @@ impl<T> Request<Created, T> {
     ///
     /// Once this request has been made, we can transition this `Request` to the `Requested`
     /// state by calling [`Request::request`].
-    pub const fn new(urn: RadUrn, timestamp: T) -> Self {
+    pub fn new(urn: RadUrn, timestamp: T) -> Self {
+        let urn = RadUrn {
+            path: uri::Path::empty(),
+            ..urn
+        };
         Self {
             urn,
             attempts: Attempts::new(),
@@ -316,12 +324,12 @@ impl<T> Request<Cloning, T> {
     /// This signifies that the clone was successful and that the whole request was successful,
     /// congratulations.
     #[allow(clippy::use_self, clippy::missing_const_for_fn)]
-    pub fn cloned(self, repo: RadUrn, timestamp: T) -> Request<Cloned, T> {
+    pub fn cloned(self, url: RadUrl, timestamp: T) -> Request<Cloned, T> {
         Request {
-            urn: self.urn,
+            urn: self.urn.clone(),
             attempts: self.attempts,
             timestamp,
-            state: Cloned { repo },
+            state: Cloned { url },
         }
     }
 }
