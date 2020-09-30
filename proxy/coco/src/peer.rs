@@ -210,6 +210,7 @@ pub enum SpawnAbortableError {
 ///
 /// Stop-gap until we can abort [`JoinHandle`]s directly:
 /// tokio-rs@cbb14a7bb9a13363e1abee8caff2bad1f996c263
+#[allow(clippy::missing_docs_in_private_items)]
 pub struct SpawnAbortable<T> {
     join_handle: JoinHandle<Result<T, future::Aborted>>,
     abort_handle: future::AbortHandle,
@@ -266,6 +267,7 @@ impl<T> Future for SpawnAbortable<T> {
 }
 
 /// Management of "subroutine" tasks.
+#[allow(clippy::missing_docs_in_private_items)]
 struct Subroutines {
     tasks: FuturesUnordered<SpawnAbortable<()>>,
 
@@ -296,6 +298,7 @@ struct Subroutines {
 }
 
 impl Subroutines {
+    /// Constructor.
     pub fn new(
         state: State,
         store: kv::Store,
