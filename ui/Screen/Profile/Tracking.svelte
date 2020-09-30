@@ -9,8 +9,11 @@
     Urn,
   } from "../../DesignSystem/Component";
 
-  import { tracked } from "../../src/project.ts";
+  import { tracked, fetchTracked } from "../../src/project.ts";
   import { FADE_DURATION } from "../../src/config.ts";
+
+  fetchTracked();
+  $: console.log($tracked);
 
   // const untracked = [
   //   {

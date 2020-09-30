@@ -268,6 +268,8 @@ export const fetchLocalState = event.create<Kind, Msg>(
   Kind.FetchLocalState,
   update
 );
+
+export const fetchTracked = event.create<Kind, Msg>(Kind.FetchTracked, update);
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,
   update
