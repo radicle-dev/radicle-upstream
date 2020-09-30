@@ -7,7 +7,6 @@
   import { isMac } from "./src/settings";
   import * as hotkeys from "./src/hotkeys";
   import { isDev } from "../native/ipc.js";
-  import Shortcuts from "./Modal/Shortcuts.svelte";
 
   const toggle = (destination: string) => {
     if (path.active(destination, $location)) {
