@@ -1,15 +1,18 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { getDirectoryPath } from "../../../../native/ipc.js";
+
+  import type { ButtonVariant } from "../../../src/style";
+  import type { ValidationState } from "../../../src/validation";
 
   import Button from "../Button.svelte";
   import TextInput from "./Text.svelte";
 
-  export let placeholder = null;
-  export let style = null;
-  export let path = null;
-  export let validation = null;
-  export let buttonVariant = "primary";
+  export let placeholder = "";
+  export let style = "";
+  export let path = "";
+  export let validation: ValidationState | undefined = undefined;
+  export let buttonVariant: ButtonVariant = "primary";
 
   const dispatch = createEventDispatcher();
 

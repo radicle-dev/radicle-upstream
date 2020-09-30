@@ -283,13 +283,13 @@
   };
 
   const dropdownOptions1 = [
-    { variant: "text", value: "1", textProps: { title: "Option 1" } },
+    { variant: "text", value: "1", title: "Option 1" },
     {
       variant: "text",
       value: "2",
-      textProps: { title: "Longer option keeps going" },
+      title: "Longer option keeps going",
     },
-    { variant: "text", value: "3", textProps: { title: "Option 3" } },
+    { variant: "text", value: "3", title: "Option 3" },
   ];
 
   const dropdownOptions2 = [

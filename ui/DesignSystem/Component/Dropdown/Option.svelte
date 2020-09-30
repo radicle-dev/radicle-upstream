@@ -1,17 +1,28 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
+
+  import type { EmojiAvatar } from "../../../src/avatar";
   import { Avatar } from "../../Primitive";
 
   const dispatch = createEventDispatcher();
 
-  export let textProps = null;
-  export let avatarProps = null;
-  export let selected = false;
+  export let title: string;
 
-  export let value = null;
-  export let style = null;
-  export let disabled = false;
-  export let variant = "text"; // text | avatar
+  // Only allow parents to modify avatar props that make sense in this context --
+  // e.g. the `size` should only ever be `small` until this component can accommodate
+  // dynamic sizing
+  export let avatarProps:
+    | {
+        avatarFallback: EmojiAvatar;
+        title?: string;
+        variant?: "circle" | "square";
+      }
+    | undefined = undefined;
+  export let selected: boolean = false;
+
+  export let value: string;
+  export let style = "";
+  export let disabled: boolean = false;
 
   const disabledColor = disabled
     ? "var(--color-foreground-level-4)"
@@ -42,18 +53,17 @@
 </style>
 
 <div class="option" on:click={clickHandler} class:selected {style}>
-  {#if variant === 'avatar'}
+  {#if avatarProps}
     <Avatar
       size="small"
       style="overflow:hidden; text-overflow: ellipsis; margin: 0 42px 0 8px;
       --title-color: var(--color-foreground-level-6);"
-      {...avatarProps}
-      {disabled} />
+      {...avatarProps} />
   {:else}
     <p
       class="typo-overflow-ellipsis"
       style={`margin: 0 42px  0 12px; color: ${disabledColor}`}>
-      {textProps.title}
+      {title}
     </p>
   {/if}
 </div>

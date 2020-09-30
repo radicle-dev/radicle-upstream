@@ -9,7 +9,10 @@ use std::{collections::HashMap, ops::Sub};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::uri::{RadUrl, RadUrn};
+use librad::{
+    hash::Hash,
+    uri::{self, RadUrl, RadUrn},
+};
 
 use crate::request::{
     sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
@@ -74,7 +77,7 @@ impl<T> From<Request<TimedOut, T>> for Error {
 pub struct WaitingRoom<T, D> {
     /// The set of requests keyed by their `RadUrn`. This helps us keep only unique requests in the
     /// waiting room.
-    requests: HashMap<RadUrn, SomeRequest<T>>,
+    requests: HashMap<Hash, SomeRequest<T>>,
 
     /// The configuration of the waiting room.
     config: Config<D>,
@@ -129,7 +132,7 @@ impl<T, D> WaitingRoom<T, D> {
     /// Returns `None` if there is no such request.
     #[must_use]
     pub fn get(&self, urn: &RadUrn) -> Option<&SomeRequest<T>> {
-        self.requests.get(urn)
+        self.requests.get(&urn.id)
     }
 
     /// Get the [`Request::elapsed`] time between the `timestamp` provided and the current timestamp
@@ -154,7 +157,7 @@ impl<T, D> WaitingRoom<T, D> {
         match self.get(&urn) {
             None => {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
-                self.requests.insert(urn, request);
+                self.requests.insert(urn.id, request);
                 None
             },
             Some(request) => Some(request.clone()),
@@ -180,12 +183,12 @@ impl<T, D> WaitingRoom<T, D> {
         Prev: Clone,
         Next: Into<SomeRequest<T>> + Clone,
     {
-        match self.requests.get(urn) {
+        match self.get(urn) {
             None => Err(Error::MissingUrn(urn.clone())),
             Some(request) => {
                 match sequence_result(request.clone().transition(matcher, transition))? {
                     Either::Right(next) => {
-                        self.requests.insert(urn.clone(), next.into());
+                        self.requests.insert(urn.id.clone(), next.into());
                         Ok(())
                     },
                     Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
@@ -362,8 +365,13 @@ impl<T, D> WaitingRoom<T, D> {
     }
 
     /// Return the list of all `RadUrn`/`SomeRequest` pairs in the `WaitingRoom`.
-    pub fn iter(&self) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)> {
-        self.requests.iter()
+    pub fn iter(&self) -> impl Iterator<Item = (RadUrn, &SomeRequest<T>)> {
+        self.requests.iter().map(|(hash, request)| {
+            (
+                RadUrn::new(hash.clone(), uri::Protocol::Git, uri::Path::empty()),
+                request,
+            )
+        })
     }
 
     /// Filter the `WaitingRoom` by:
@@ -371,20 +379,22 @@ impl<T, D> WaitingRoom<T, D> {
     pub fn filter_by_state(
         &self,
         request_state: RequestState,
-    ) -> impl Iterator<Item = (&RadUrn, &SomeRequest<T>)> {
+    ) -> impl Iterator<Item = (RadUrn, &SomeRequest<T>)> {
         self.iter()
             .filter(move |(_, request)| RequestState::from(*request) == request_state.clone())
     }
 
     /// Find the first occurring request based on the call to [`WaitingRoom::filter_by_state`].
-    pub fn find_by_state(&self, request_state: RequestState) -> Option<(&RadUrn, &SomeRequest<T>)> {
+    pub fn find_by_state(&self, request_state: RequestState) -> Option<(RadUrn, &SomeRequest<T>)> {
         self.filter_by_state(request_state).next()
     }
 
     /// Get the next `Request` that is in a query state, i.e. `Created` or `Requested`.
     ///
-    /// In the case of the `Requested` state we check elapsed time between the `timestamp` and the
-    /// `Request`'s timestamp is greater than the `delta` provided in the [`Config`].
+    /// In the case of the `Requested` state we check if:
+    ///   * The request is a fresh request that hasn't had an attempt to clone yet
+    ///   * Or the elapsed time between the `timestamp` and the `Request`'s timestamp is greater
+    ///     than the `delta` provided in the [`Config`].
     pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
     where
         T: Sub<T, Output = D> + Clone,
@@ -395,9 +405,10 @@ impl<T, D> WaitingRoom<T, D> {
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
                 request.elapsed(timestamp.clone()) >= self.config.delta.clone()
+                    || request.attempts().clones == Clones::new(0)
             });
 
-        created.or(requested).map(|(urn, _request)| urn.clone())
+        created.or(requested).map(|(urn, _request)| urn)
     }
 
     /// Get the next `Request` that is in the the `Found` state and the status of the peer is
@@ -420,7 +431,7 @@ impl<T, D> WaitingRoom<T, D> {
     where
         R: Into<SomeRequest<T>>,
     {
-        self.requests.insert(urn, request.into());
+        self.requests.insert(urn.id, request.into());
     }
 }
 
@@ -457,7 +468,7 @@ mod test {
         assert_eq!(
             created,
             Some((
-                &url.urn,
+                url.urn.clone(),
                 &SomeRequest::Created(Request::new(url.urn.clone(), 0))
             )),
         );
@@ -743,7 +754,7 @@ mod test {
                 .unwrap_right()
                 .cloned(url.clone(), 0),
         );
-        assert_eq!(ready, Some((&url.urn, &expected)));
+        assert_eq!(ready, Some((url.urn, &expected)));
 
         Ok(())
     }

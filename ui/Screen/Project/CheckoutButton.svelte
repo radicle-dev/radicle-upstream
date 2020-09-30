@@ -64,7 +64,7 @@
   {/if}
 
   <Tooltip
-    value={!checkoutDirectoryPath ? 'Please select a folder' : null}
+    value={!checkoutDirectoryPath ? 'Please select a folder' : ''}
     position="bottom">
     <Button
       dataCy="checkout-button"

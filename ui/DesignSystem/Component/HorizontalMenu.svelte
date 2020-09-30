@@ -6,6 +6,7 @@
 
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
+  export let style = "";
   export let items: {
     icon: typeof SvelteComponent;
     title: string;
@@ -42,7 +43,7 @@
   }
 </style>
 
-<nav data-cy="horizontal-menu">
+<nav data-cy="horizontal-menu" {style}>
   <ul class="menu-list">
     {#each items as item}
       <li class="menu-list-item">

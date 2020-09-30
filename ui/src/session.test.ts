@@ -5,7 +5,7 @@ import * as settings from "./settings";
 jest.mock("./api");
 
 const defaultSettings = {
-  appearance: { theme: "light" },
+  appearance: { theme: "light", hints: { showRemoteHelper: true } },
   coco: { seeds: ["seed.radicle.xyz"] },
 };
 
@@ -18,11 +18,14 @@ describe("clearing", () => {
 
 describe("appearance settings", () => {
   it("sends a request to update appearance settings when updateAppearance() is called", () => {
-    session.updateAppearance({ theme: settings.Theme.Dark });
+    session.updateAppearance({
+      ...defaultSettings.appearance,
+      theme: settings.Theme.Dark,
+    });
 
     expect(api.set).toHaveBeenCalledWith("session/settings", {
       ...defaultSettings,
-      appearance: { theme: settings.Theme.Dark },
+      appearance: { ...defaultSettings.appearance, theme: settings.Theme.Dark },
     });
   });
 });

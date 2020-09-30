@@ -19,7 +19,7 @@ use librad::uri::{RadUrl, RadUrn};
 use crate::request::waiting_room::WaitingRoom;
 
 /// How much a stream should delay before polling the waiting room again.
-const REQUEST_DELAY: Duration = Duration::from_millis(50);
+const REQUEST_DELAY: Duration = Duration::from_millis(20);
 
 /// A stream of queryable requests. See [`Queries::new`] for more information.
 pub struct Queries {
