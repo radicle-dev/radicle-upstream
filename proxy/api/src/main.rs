@@ -110,7 +110,7 @@ async fn run(
     };
     let peer = async move {
         log::info!("... peer");
-        peer.into_running().await.await
+        peer.into_running().await
     };
 
     log::info!("Starting...");

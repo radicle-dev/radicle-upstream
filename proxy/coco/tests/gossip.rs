@@ -40,7 +40,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let alice_events = alice_peer.subscribe();
 
-    tokio::spawn(alice_peer.into_running().await);
+    tokio::spawn(alice_peer.into_running());
 
     let alice = alice_state.init_owner(&alice_signer, "alice").await?;
     alice_state
@@ -103,8 +103,8 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
-    tokio::spawn(alice_peer.into_running().await);
-    tokio::spawn(bob_peer.into_running().await);
+    tokio::spawn(alice_peer.into_running());
+    tokio::spawn(bob_peer.into_running());
 
     connected(bob_connected, &alice_peer_id).await?;
 
@@ -143,7 +143,7 @@ async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
         Shared::from(WaitingRoom::new(waiting_room::Config::default()));
     let (peer, state, _signer) = build_peer(&tmp_dir, waiting_room, RunConfig::default()).await?;
 
-    tokio::spawn(peer.into_running().await);
+    tokio::spawn(peer.into_running());
 
     let unkown_urn = Urn {
         id: Hash::hash(b"project0"),
@@ -191,8 +191,8 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_events = bob_peer.subscribe();
 
-    tokio::spawn(alice_peer.into_running().await);
-    tokio::spawn(bob_peer.into_running().await);
+    tokio::spawn(alice_peer.into_running());
+    tokio::spawn(bob_peer.into_running());
 
     connected(bob_events, &alice_peer_id).await?;
 
@@ -250,8 +250,8 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let clone_listener = bob_peer.subscribe();
     let query_listener = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.into_running().await);
-    tokio::task::spawn(bob_peer.into_running().await);
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
 
     connected(bob_events, &alice_peer_id).await?;
 

@@ -5,6 +5,7 @@ use std::{
     convert::From,
     future::Future,
     pin::Pin,
+    sync::Arc,
     task::{Context, Poll},
     time::{Duration, Instant},
 };
@@ -14,7 +15,7 @@ use futures::{
     stream::{BoxStream, FuturesUnordered, StreamExt as _},
 };
 use tokio::{
-    sync::{broadcast, mpsc},
+    sync::{broadcast, mpsc, Barrier},
     task::{JoinError, JoinHandle},
     time::{interval, Interval},
 };
@@ -121,10 +122,11 @@ impl Peer {
     /// Start up the internal machinery to advance the underlying protocol, react to significant
     /// events and keep auxiliary tasks running.
     ///
-    /// Note that the returned [`Running`] future spawns tasks internally. In order to cancel all
-    /// outstanding tasks, and release all resources, the [`Running`] must be dropped.
-    #[must_use = "this method is async, but it also returns a Future. you may need to .await.await"]
-    pub async fn into_running(self) -> Running {
+    /// The returned [`Running`] future has similar semantics to [`JoinHandle`]: internally, all
+    /// tasks are spawned immediately, and polling the future is only necessary to get notified of
+    /// errors. Unlike [`JoinHandle`], however, [`Running`] does not detach the tasks. That is,
+    /// if and when [`Running`] is dropped, all tasks are cancelled.
+    pub fn into_running(self) -> Running {
         let Self {
             run_loop,
             state,
@@ -134,18 +136,31 @@ impl Peer {
             run_config,
         } = self;
 
-        // Note: this must be acquired before spawning the protocol, so we don't
-        // miss any event
-        let protocol_events = state.api.protocol().subscribe().await.boxed();
-        let subroutines = Subroutines::new(
-            state,
-            store,
-            waiting_room,
-            run_config,
-            protocol_events,
-            subscriber,
-        );
-        let protocol = SpawnAbortable::new(run_loop);
+        // Rendezvous on a barrier to let the subroutines subscribe for protocol
+        // events before it actually starts. As `Protocol::subscribe` is async,
+        // we would otherwise need to make `into_running` async as well, which
+        // yields the weird requirement to double `.await` it.
+        let barrier = Arc::new(Barrier::new(2));
+        let subroutines = {
+            let barrier = barrier.clone();
+            SpawnAbortable::new(async move {
+                let protocol_events = state.api.protocol().subscribe().await.boxed();
+                barrier.wait().await;
+                Subroutines::new(
+                    state,
+                    store,
+                    waiting_room,
+                    run_config,
+                    protocol_events,
+                    subscriber,
+                )
+                .await
+            })
+        };
+        let protocol = SpawnAbortable::new(async move {
+            barrier.wait().await;
+            run_loop.await
+        });
 
         Running {
             protocol,
@@ -160,7 +175,7 @@ pub struct Running {
     /// Join and abort handles for the protocol run loop.
     protocol: SpawnAbortable<()>,
     /// The [`Subroutines`] associated with this [`Peer`] instance.
-    subroutines: Subroutines,
+    subroutines: SpawnAbortable<()>,
 }
 
 impl Drop for Running {
@@ -188,7 +203,10 @@ impl Future for Running {
         }
 
         match self.subroutines.poll_unpin(cx) {
-            Poll::Ready(()) => Poll::Ready(Ok(())),
+            Poll::Ready(val) => match val {
+                Err(e) => Poll::Ready(Err(Error::Spawn(e))),
+                Ok(()) => Poll::Ready(Ok(())),
+            },
             Poll::Pending => Poll::Pending,
         }
     }
