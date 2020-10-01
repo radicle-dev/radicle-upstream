@@ -38,3 +38,7 @@ a {
 .lock-screen {
   cursor: wait;
 }
+
+.loading {
+  cursor: wait;
+}

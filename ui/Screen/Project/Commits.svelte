@@ -3,6 +3,8 @@
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
+  import { Status } from "../../src/remote.ts";
+  import * as screen from "../../src/screen.ts";
   import { commits as store, formatTime } from "../../src/source.ts";
 
   import { Remote } from "../../DesignSystem/Component";
@@ -11,6 +13,8 @@
   export let params = null;
 
   const projectId = params.id;
+
+  $: $store.status === Status.Loading ? screen.loading() : screen.loaded();
 </script>
 
 <style>

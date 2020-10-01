@@ -13,6 +13,7 @@
     href: string;
     looseActiveStateMatching: boolean;
     counter?: string;
+    loading?: boolean;
   }[];
 </script>
 
@@ -51,6 +52,7 @@
           icon={item.icon}
           title={item.title}
           counter={item.counter}
+          loading={item.loading}
           href={item.href}
           active={path.active(item.href, $location, item.looseActiveStateMatching)} />
       </li>

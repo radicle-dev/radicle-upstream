@@ -65,6 +65,7 @@
         icon: Icon.Commit,
         title: "Commits",
         counter: commitCounter,
+        loading: !commitCounter,
         href: path.projectCommits(project.id),
         looseActiveStateMatching: true,
       },

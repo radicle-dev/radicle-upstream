@@ -7,6 +7,7 @@
   export let icon: typeof SvelteComponent;
   export let title: string;
   export let active: boolean;
+  export let loading: boolean = false;
   export let counter: string | undefined;
 </script>
 
@@ -20,6 +21,10 @@
   a {
     display: flex;
     align-items: center;
+  }
+
+  a.active.loading {
+    cursor: wait;
   }
 
   .item {
@@ -41,7 +46,7 @@
 </style>
 
 <!-- svelte-ignore a11y-missing-attribute -->
-<a data-cy={title} use:link={href}>
+<a data-cy={title} use:link={href} class:active class:loading>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-secondary)" />
