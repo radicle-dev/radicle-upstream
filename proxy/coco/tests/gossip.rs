@@ -250,8 +250,8 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let clone_listener = bob_peer.subscribe();
     let query_listener = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    tokio::task::spawn(alice_peer.into_running().await);
+    tokio::task::spawn(bob_peer.into_running().await);
 
     connected(bob_events, &alice_peer_id).await?;
 
