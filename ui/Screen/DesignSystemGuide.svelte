@@ -8,6 +8,7 @@
     Copyable,
     EmptyState,
     Dropdown,
+    Illustration,
     ModalLayout,
     Notification,
     Placeholder,
@@ -444,6 +445,26 @@
           </Tooltip>
         {/each}
       </IconSwatch>
+    </Section>
+
+    <Section title="Illustrations" subTitle="Scaleable illustrations">
+      <Swatch>
+        {#each Object.keys(IllustrationVariant) as key}
+          <Tooltip
+            value={`<Illustration variant={IllustrationVariant.${key}} />`}
+            position="top">
+            <Copyable
+              notificationText="Illustration markup copied to your clipboard"
+              iconBeforeCopy={null}
+              styleContent={false}
+              copyContent={`<Illustration variant={IllustrationVariant.${key}} />`}>
+              <Illustration
+                style="margin-right: 2em;"
+                variant={IllustrationVariant[key]} />
+            </Copyable>
+          </Tooltip>
+        {/each}
+      </Swatch>
     </Section>
 
     <Section
