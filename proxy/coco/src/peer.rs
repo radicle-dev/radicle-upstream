@@ -460,16 +460,12 @@ impl Future for Subroutines {
             }
         }
 
-        match self.tasks.poll_next_unpin(cx) {
-            Poll::Pending => log::trace!("subroutine tasks pending"),
-            Poll::Ready(None) => {
-                log::trace!("no more subroutine tasks");
-            },
-            Poll::Ready(Some(r)) => {
-                log::trace!("got a subroutine task result: {:?}", r);
-            },
-        }
-
+        // We must poll the tasks, but ignore the result and always return
+        // `Pending`, because:
+        //
+        // 1. We're not interested in task results
+        // 2. The task queue could be empty
+        self.tasks.poll_next_unpin(cx).is_ready();
         Poll::Pending
     }
 }
