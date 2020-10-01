@@ -93,10 +93,10 @@ interface Tree extends SourceObject {
   path: string;
 }
 
-interface Revision {
-  user: identity.Identity;
-  branches: Branch[];
-  tags: Tag[];
+export interface Revision {
+  branches?: Branch[];
+  tags?: Tag[];
+  user?: identity.Identity;
 }
 
 type Revisions = Revision[];
@@ -112,7 +112,7 @@ export enum RevisionType {
   Sha = "sha",
 }
 
-export interface Branch {
+export interface Branch extends Revision {
   type: RevisionType.Branch;
   name: string;
   peerId?: string;
@@ -140,17 +140,19 @@ export const commits = commitsStore.readable;
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
-const revisionsStore = remote.createStore<Revisions>();
+const revisionsStore = remote.createStore<SupportedRevision[]>();
 export const revisions = revisionsStore.readable;
 
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = () => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = () => objectPath.set(null);
-export const currentRevision = writable(null);
-export const resetCurrentRevision = () => currentRevision.set(null);
-export const currentPeerId = writable(null);
-export const resetCurrentPeerId = () => currentPeerId.set(null);
+export const currentRevision = writable<SupportedRevision | undefined>(
+  undefined
+);
+export const resetCurrentRevision = () => currentRevision.set(undefined);
+export const currentPeerId = writable<string | undefined>(undefined);
+export const resetCurrentPeerId = () => currentPeerId.set(undefined);
 
 // EVENTS
 enum Kind {
@@ -247,7 +249,7 @@ const update = (msg: Msg): void => {
 
     case Kind.FetchRevisions:
       api
-        .get<Revisions>(`source/revisions/${msg.projectId}`)
+        .get<SupportedRevision[]>(`source/revisions/${msg.projectId}`)
         .then(revisions => revisionsStore.success(revisions))
         .catch(revisionsStore.error);
       break;
@@ -403,3 +405,5 @@ export const readme = (
 
   return readme.readable;
 };
+
+export type SupportedRevision = Branch | Tag;

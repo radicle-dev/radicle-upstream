@@ -1,9 +1,14 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
+
+  import {
+    dismissRemoteHelperHint,
+    settings as settingsStore,
+  } from "../../src/session";
+  import { CSSPosition } from "../../src/style";
 
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
   import { RemoteHelperHint, Tooltip } from "../../DesignSystem/Component";
-  import { dismissRemoteHelperHint, settings } from "../../src/session.ts";
   import Overlay from "../../DesignSystem/Component/Overlay.svelte";
 
   const dispatch = createEventDispatcher();
@@ -16,7 +21,9 @@
 
   const hide = () => (expanded = false);
 
-  let checkoutDirectoryPath;
+  let checkoutDirectoryPath: string;
+
+  $: settings = $settingsStore;
 </script>
 
 <style>
@@ -50,13 +57,13 @@
       buttonVariant="outline"
       bind:path={checkoutDirectoryPath} />
 
-    {#if $settings.appearance.hints.showRemoteHelper}
+    {#if settings && settings.appearance.hints.showRemoteHelper}
       <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
     {/if}
 
     <Tooltip
       value={!checkoutDirectoryPath ? 'Please select a folder' : ''}
-      position="bottom">
+      position={CSSPosition.Bottom}>
       <Button
         dataCy="checkout-button"
         on:click={() => {

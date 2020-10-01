@@ -12,7 +12,7 @@
     title: string;
     href: string;
     looseActiveStateMatching: boolean;
-    counter?: string;
+    counter?: string | number;
   }[];
 </script>
 

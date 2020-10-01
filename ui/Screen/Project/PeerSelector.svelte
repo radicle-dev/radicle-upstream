@@ -87,6 +87,7 @@
     display: flex;
     position: absolute;
     top: 0;
+    cursor: pointer;
   }
 
   .peer-dropdown {
