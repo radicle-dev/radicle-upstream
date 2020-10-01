@@ -22,8 +22,10 @@ pub async fn sync(state: &State, peer_id: PeerId) -> Result<(), Error> {
 
     for url in urls {
         log::debug!("Starting fetch of {} from {}", url.clone(), peer_id);
-        state.fetch(url.clone(), vec![]).await?;
-        log::debug!("Finished fetch of {} from {}", url, peer_id);
+        match state.fetch(url.clone(), vec![]).await {
+            Ok(()) => log::debug!("Finished fetch of {} from {}", url, peer_id),
+            Err(e) => log::debug!("Fetch of {} from {} errored: {}", url, peer_id, e),
+        }
     }
 
     Ok(())
