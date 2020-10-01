@@ -1,6 +1,7 @@
 <script>
   import { fade } from "svelte/transition";
   import {
+    EmptyState,
     Hoverable,
     List,
     ProjectList,
@@ -11,6 +12,9 @@
 
   import { tracked, fetchTracked } from "../../src/project.ts";
   import { FADE_DURATION } from "../../src/config.ts";
+  import * as path from "../../src/path.ts";
+  import * as modal from "../../src/modal.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
 
   fetchTracked();
   $: console.log($tracked);
@@ -76,12 +80,13 @@
     {#if projects.length > 0}
       <ProjectList {projects} />
     {:else}
-      <div
-        style="width: 100%; color: var(--color-primary); display:flex; justify-content: center; flex-direction: column; align-items: center; margin-bottom: 4rem;">
-        <h1>Nothing yet....</h1>
-        <img
-          src="https://media0.giphy.com/media/YaZgr3Nj9DDI4/giphy.gif?cid=ecf05e47fzjml7zt68cprbas3q92z07x5lyhi18ho5ba9vbd&rid=giphy.gif" />
-      </div>
+      <EmptyState
+        text="You're not following any projects yet."
+        illustration={IllustrationVariant.Horse}
+        primaryActionText="Look for a project"
+        on:primaryAction={() => {
+          modal.toggle(path.search());
+        }} />
     {/if}
   </Remote>
 
