@@ -36,7 +36,7 @@
     }
   };
 
-  $: showHint = hint.length > 0 && value.length > 0;
+  $: showHint = hint.length > 0 && value.length === 0;
 </script>
 
 <style>
