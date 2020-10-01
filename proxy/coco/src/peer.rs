@@ -181,7 +181,8 @@ pub struct Running {
 impl Drop for Running {
     fn drop(&mut self) {
         log::trace!("`peer::Running` is being dropped");
-        self.protocol.abort()
+        self.protocol.abort();
+        self.subroutines.abort();
     }
 }
 
