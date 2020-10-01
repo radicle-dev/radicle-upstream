@@ -50,7 +50,7 @@ pub use radicle_surf::{
 
 pub mod config;
 pub mod control;
-mod error;
+pub mod error;
 pub use error::Error;
 pub mod git_helper;
 mod identifier;

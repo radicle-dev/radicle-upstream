@@ -2,15 +2,23 @@
 
 use std::{io, path};
 
-use librad::{
-    git::{repo, storage},
-    meta::entity,
-    net, uri,
-};
+use librad::{git::repo, meta::entity, net, uri};
 use radicle_surf::{
     file_system,
     vcs::{git, git::git2},
 };
+
+/// Re-export [`librad::git::storage::Error`] under the `coco::error` namespace.
+pub mod storage {
+    pub use librad::git::storage::Error;
+    use librad::uri::RadUrn;
+
+    /// Easily create an [`storage::Error::AlreadyExists`] exists error.
+    #[must_use = "you made it, you use it"]
+    pub const fn already_exists(urn: RadUrn) -> super::Error {
+        super::Error::Storage(Error::AlreadyExists(urn))
+    }
+}
 
 /// Error emitted by one of the modules.
 #[derive(Debug, thiserror::Error)]
@@ -44,10 +52,6 @@ pub enum Error {
         "while trying to get user revisions we could not find any, there should be at least one"
     )]
     EmptyRevisions,
-
-    /// Returned when an attempt to create an identity was made and there is one present.
-    #[error("the identity '{0}' already exists")]
-    EntityExists(uri::RadUrn),
 
     /// An error occurred when performing git operations.
     #[error(transparent)]
