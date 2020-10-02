@@ -742,6 +742,8 @@ mod test {
 
     #[tokio::test]
     async fn create_with_existing_remote_with_reset() -> Result<(), Error> {
+        use radicle_surf::vcs::git::Branch;
+
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
@@ -773,9 +775,11 @@ mod test {
             .await?;
 
         // Attempt to initialise a browser to ensure we can look at branches in the project
-        let _stats = state
-            .with_browser(fakie.urn(), |browser| Ok(browser.get_stats()?))
+        let branches = state
+            .with_browser(fakie.urn(), |browser| Ok(browser.list_branches(None).map_err(crate::source::Error::from)?))
             .await?;
+
+        assert_eq!(branches, vec![Branch::local("dope")]);
 
         Ok(())
     }

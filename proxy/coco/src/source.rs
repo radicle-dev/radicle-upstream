@@ -857,11 +857,9 @@ mod tests {
 
     use crate::{config, control, oid, signer, state::State};
 
-    use super::Error;
-
     // TODO(xla): A wise man once said: This probably should be an integration test.
     #[tokio::test]
-    async fn browse_commit() -> Result<(), Error> {
+    async fn browse_commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
