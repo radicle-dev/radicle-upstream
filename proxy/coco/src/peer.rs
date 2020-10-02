@@ -388,7 +388,7 @@ impl Future for Subroutines {
             match self.pending_tasks.poll_next_unpin(cx) {
                 Poll::Ready(Some(Err(e))) => {
                     log::warn!("error in spawned subroutine task: {:?}", e);
-                    return Poll::Ready(Err(e))
+                    return Poll::Ready(Err(e));
                 },
                 Poll::Ready(Some(Ok(()))) => continue,
                 // FuturesUnordered thinks it's done, but we'll enqueue new
