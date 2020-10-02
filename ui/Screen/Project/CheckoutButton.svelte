@@ -1,10 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import {
-    dismissRemoteHelperHint,
-    settings as settingsStore,
-  } from "../../src/session";
+  import { dismissRemoteHelperHint, settings } from "../../src/session";
   import { CSSPosition } from "../../src/style";
 
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
@@ -23,7 +20,8 @@
 
   let checkoutDirectoryPath: string;
 
-  $: settings = $settingsStore;
+  $: store = $settings;
+  $: showRemoteHelper = store && store.appearance.hints.showRemoteHelper;
 </script>
 
 <style>
@@ -57,7 +55,7 @@
       buttonVariant="outline"
       bind:path={checkoutDirectoryPath} />
 
-    {#if settings && settings.appearance.hints.showRemoteHelper}
+    {#if showRemoteHelper}
       <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
     {/if}
 

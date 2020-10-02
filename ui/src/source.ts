@@ -93,14 +93,14 @@ interface Tree extends SourceObject {
   path: string;
 }
 
-export interface Revision {
+// All revisions of project from a particular peer
+export interface PeerRevisions {
   identity: identity.Identity;
-  branches: string[];
-  tags: string[];
-  peerId?: string;
+  branches: Branch[];
+  tags: Tag[];
 }
 
-type Revisions = Revision[];
+// type Revisions = Revision[];
 
 interface Readme {
   content: string;
@@ -142,7 +142,7 @@ export const commits = commitsStore.readable;
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
-const revisionsStore = remote.createStore<Revisions>();
+const revisionsStore = remote.createStore<PeerRevisions[]>();
 export const revisions = revisionsStore.readable;
 
 export const objectType = writable(ObjectType.Tree);
@@ -150,7 +150,7 @@ export const resetObjectType = () => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = () => objectPath.set(null);
 
-export const currentRevision = writable<Revision | undefined>(undefined);
+export const currentRevision = writable<Branch | Tag | undefined>(undefined);
 export const resetCurrentRevision = () => currentRevision.set(undefined);
 export const currentPeerId = writable<string | undefined>(undefined);
 export const resetCurrentPeerId = () => currentPeerId.set(undefined);
@@ -218,6 +218,16 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
 
 type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchObject;
 
+// Proxy representation of all revisions for a project from a particular peer
+type PeerRevisionsResponse = {
+  // The identity of the peer who owns these revisions
+  identity: identity.Identity;
+
+  // Names for associated branches and tags
+  branches: string[];
+  tags: string[];
+}[];
+
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.FetchCommit:
@@ -250,8 +260,23 @@ const update = (msg: Msg): void => {
 
     case Kind.FetchRevisions:
       api
-        .get<Revisions>(`source/revisions/${msg.projectId}`)
-        .then(revisions => revisionsStore.success(revisions))
+        .get<PeerRevisionsResponse>(`source/revisions/${msg.projectId}`)
+        .then(response => {
+          const revisions: PeerRevisions[] = response.map(rev => ({
+            identity: rev.identity,
+            branches: rev.branches.map(name => ({
+              name,
+              type: RevisionType.Branch,
+              peerId: rev.identity.peerId,
+            })),
+            tags: rev.tags.map(name => ({
+              name,
+              type: RevisionType.Tag,
+              peerId: rev.identity.peerId,
+            })),
+          }));
+          revisionsStore.success(revisions);
+        })
         .catch(revisionsStore.error);
       break;
 

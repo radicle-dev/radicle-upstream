@@ -417,6 +417,8 @@ export const unknownOrg: Org = {
 // Identity counter part of `unknownOrg`.
 export const unknownIdentity: Identity = {
   id: "user@unknown.git",
+  peerId: "",
+  urn: "",
   metadata: {
     handle: "unknown user",
   },

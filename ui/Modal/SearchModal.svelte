@@ -7,7 +7,6 @@
   import { Remote, TrackToggle, Urn } from "../DesignSystem/Component";
 
   import * as path from "../src/path";
-  import * as remote from "../src/remote";
 
   import { request, updateUrn, validation } from "../src/search";
   import { ValidationStatus } from "../src/validation";

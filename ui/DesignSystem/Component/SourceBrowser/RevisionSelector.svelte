@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
   import { isExperimental } from "../../../../native/ipc.js";
   import * as source from "../../../src/source";
@@ -7,33 +7,11 @@
   import Overlay from "../Overlay.svelte";
   import { Icon } from "../../Primitive";
 
-  const { metadata } = getContext("project");
+  export let expanded: boolean = false;
 
-  type SupportedRevision = source.Branch | source.Tag;
-  export let currentRevision: SupportedRevision;
-  export let currentPeerId: string;
-  export let revisions: source.Revision[];
+  export let revisions: source.PeerRevisions;
 
-  let expanded = false;
-  let currentSelectedPeer: source.Revision;
-
-  // The API returns a revision list where the first entry is the default
-  // peer.
-  $: if (currentPeerId) {
-    currentSelectedPeer =
-      revisions.find(rev => {
-        return rev.identity.peerId === currentPeerId;
-      }) || revisions[0];
-  }
-
-  // initialize currentRevision
-  $: if (!currentRevision) {
-    currentRevision = {
-      type: source.RevisionType.Branch,
-      name: metadata.defaultBranch,
-      peerId: currentSelectedPeer ? currentSelectedPeer.identity.peerId : "",
-    };
-  }
+  export let currentRevision: source.Branch | source.Tag;
 
   const toggle = () => (expanded = !expanded);
 
@@ -41,8 +19,11 @@
     expanded = false;
   };
 
-  const selectRevision = (revision: SupportedRevision) => {
-    currentRevision = revision;
+  const dispatch = createEventDispatcher();
+
+  const selectRevision = (revision: source.Branch | source.Tag) => {
+    console.log("SELECTING", revision);
+    dispatch("select", { revision });
     hideDropdown();
   };
 </script>
@@ -150,38 +131,31 @@
   <div class="revision-dropdown-container">
     <div class="revision-dropdown" hidden={!expanded}>
       <ul>
-        {#each currentSelectedPeer.branches as branch}
+        {#each revisions.branches as branch}
           <li
             class="branch"
-            class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-            data-branch={branch}
-            on:click|stopPropagation={() => selectRevision({
-                type: source.RevisionType.Branch,
-                peerId: currentSelectedPeer.identity.peerId,
-                name: branch,
-              })}>
+            class:selected={currentRevision.name === branch.name && currentRevision.peerId === branch.peerId}
+            data-branch={branch.name}
+            on:click={() => selectRevision(branch)}>
             <Icon.Branch
               dataCy="branch-icon"
               style="vertical-align: bottom; fill:
             var(--color-foreground-level-4)" />
-            <span class="revision-name typo-text">{branch}</span>
+            <span class="revision-name typo-text">{branch.name}</span>
           </li>
         {/each}
         {#if isExperimental()}
-          {#each currentSelectedPeer.tags as tag}
+          {#each revisions.tags as tag}
             <li
               class="tag"
-              class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-              data-tag={tag}
-              on:click|stopPropagation={() => selectRevision({
-                  type: source.RevisionType.Tag,
-                  name: tag,
-                })}>
+              class:selected={currentRevision.name === tag.name && currentRevision.peerId === tag.peerId}
+              data-tag={tag.name}
+              on:click={() => selectRevision(tag)}>
               <Icon.Label
                 dataCy="tag-icon"
                 style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
-              <span class="revision-name typo-text">{tag}</span>
+              <span class="revision-name typo-text">{tag.name}</span>
             </li>
           {/each}
         {/if}

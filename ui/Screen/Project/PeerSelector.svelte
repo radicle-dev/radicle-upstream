@@ -2,35 +2,21 @@
   import { createEventDispatcher, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import { BadgeType } from "../../src/badge";
+  import * as badge from "../../src/badge";
+  import * as identity from "../../src/identity";
   import * as path from "../../src/path";
-  import * as source from "../../src/source";
   import * as style from "../../src/style";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
-  export let currentPeerId: string;
-  export let revisions: source.Revision[];
-
   let expanded = false;
 
-  let currentSelectedPeer: source.Revision;
+  export let currentPeerId: string;
+  export let availablePeers: identity.Identity[];
 
   const session = getContext("session");
   const { metadata } = getContext("project");
-
-  $: if (currentPeerId) {
-    currentSelectedPeer =
-      revisions.find(rev => {
-        return rev.identity.peerId === currentPeerId;
-      }) || revisions[0];
-  } else {
-    // The API returns a revision list where the first entry is the default
-    // peer.
-    currentSelectedPeer = revisions[0];
-    currentPeerId = currentSelectedPeer.identity.peerId;
-  }
 
   const showDropdown = () => {
     expanded = true;
@@ -51,9 +37,11 @@
   const dispatch = createEventDispatcher();
   const selectPeer = (peerId: string) => {
     hideDropdown();
-    currentPeerId = peerId;
     dispatch("select", { peerId });
   };
+
+  $: currentSelectedPeer =
+    availablePeers.find(peer => peer.id === currentPeerId) || availablePeers[0];
 </script>
 
 <style>
@@ -128,16 +116,18 @@
     hidden={expanded}>
     <div class="selector-avatar typo-overflow-ellipsis">
       <Avatar
-        avatarFallback={currentSelectedPeer.identity.avatarFallback}
+        avatarFallback={currentSelectedPeer.avatarFallback}
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
       <p class="typo-text-bold typo-overflow-ellipsis">
-        {currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}
+        {currentSelectedPeer.metadata.handle || currentSelectedPeer.shareableEntityIdentifier}
       </p>
       <p>
-        {#if metadata.maintainers.includes(currentSelectedPeer.identity.urn)}
-          <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
+        {#if metadata.maintainers.includes(currentSelectedPeer.urn)}
+          <Badge
+            style="margin-left: 0.5rem"
+            variant={badge.BadgeType.Maintainer} />
         {/if}
       </p>
     </div>
@@ -148,37 +138,35 @@
   </div>
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
-      {#each revisions as repo}
+      {#each availablePeers as peer}
         <div
           class="peer"
-          class:selected={repo.identity.peerId == currentSelectedPeer.identity.peerId}
-          data-peer-handle={repo.identity.metadata.handle}>
-          <div
-            style="display: flex;"
-            on:click={() => selectPeer(repo.identity.peerId)}>
+          class:selected={peer.peerId == currentSelectedPeer.peerId}
+          data-peer-handle={peer.metadata.handle}>
+          <div style="display: flex;" on:click={() => selectPeer(peer.peerId)}>
             <Avatar
-              avatarFallback={repo.identity.avatarFallback}
+              avatarFallback={peer.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
             8px;"
               size="small"
               variant="circle" />
             <p class="typo-text-bold typo-overflow-ellipsis">
-              {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
+              {peer.metadata.handle || peer.shareableEntityIdentifier}
             </p>
             <p>
-              {#if metadata.maintainers.includes(repo.identity.urn)}
+              {#if metadata.maintainers.includes(peer.urn)}
                 <Badge
                   style="margin-left: 0.5rem"
-                  variant={BadgeType.Maintainer} />
+                  variant={badge.BadgeType.Maintainer} />
               {/if}
             </p>
           </div>
           <Tooltip value="Go to profile" position={style.CSSPosition.Top}>
             <div
-              data-cy={repo.identity.metadata.handle}
+              data-cy={peer.metadata.handle}
               class="open-profile"
               on:click={() => {
-                handleOpenProfile(repo.identity.urn);
+                handleOpenProfile(peer.urn);
               }}>
               <Icon.ArrowBoxUpRight />
             </div>
