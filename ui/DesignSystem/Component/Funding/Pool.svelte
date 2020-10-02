@@ -139,4 +139,10 @@
       </li>
     {/if}
   </ul>
+  <Button
+    on:click={() => {
+      console.log('TODO(nuno): Save changes to pool');
+    }}>
+    Save
+  </Button>
 </div>
