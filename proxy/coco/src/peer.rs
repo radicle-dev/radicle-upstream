@@ -175,7 +175,7 @@ pub struct Running {
     /// Join and abort handles for the protocol run loop.
     protocol: SpawnAbortable<()>,
     /// The [`Subroutines`] associated with this [`Peer`] instance.
-    subroutines: SpawnAbortable<()>,
+    subroutines: SpawnAbortable<Result<(), SpawnAbortableError>>,
 }
 
 impl Drop for Running {
@@ -206,7 +206,8 @@ impl Future for Running {
         match self.subroutines.poll_unpin(cx) {
             Poll::Ready(val) => match val {
                 Err(e) => Poll::Ready(Err(Error::Spawn(e))),
-                Ok(()) => Poll::Ready(Ok(())),
+                Ok(Err(e)) => Poll::Ready(Err(Error::Spawn(e))),
+                Ok(Ok(())) => Poll::Ready(Ok(())),
             },
             Poll::Pending => Poll::Pending,
         }
@@ -288,7 +289,7 @@ impl<T> Future for SpawnAbortable<T> {
 /// Management of "subroutine" tasks.
 #[allow(clippy::missing_docs_in_private_items)]
 struct Subroutines {
-    tasks: FuturesUnordered<SpawnAbortable<()>>,
+    pending_tasks: FuturesUnordered<SpawnAbortable<()>>,
 
     state: State,
     store: kv::Store,
@@ -340,7 +341,7 @@ impl Subroutines {
         let request_clones = waiting_room::stream::Clones::new(waiting_room.clone().value);
 
         Self {
-            tasks: FuturesUnordered::new(),
+            pending_tasks: FuturesUnordered::new(),
 
             state,
             store,
@@ -372,19 +373,34 @@ impl Subroutines {
 
 impl Drop for Subroutines {
     fn drop(&mut self) {
-        for task in self.tasks.iter_mut() {
+        for task in self.pending_tasks.iter_mut() {
             task.abort()
         }
     }
 }
 
 impl Future for Subroutines {
-    type Output = ();
+    type Output = Result<(), SpawnAbortableError>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        let mut events = Vec::with_capacity(9);
+        // Drain the task queue
+        loop {
+            match self.pending_tasks.poll_next_unpin(cx) {
+                Poll::Ready(Some(Err(e))) => {
+                    log::warn!("error in spawned subroutine task: {:?}", e);
+                    return Poll::Ready(Err(e))
+                },
+                Poll::Ready(Some(Ok(()))) => continue,
+                // FuturesUnordered thinks it's done, but we'll enqueue new
+                // tasks below
+                Poll::Ready(None) => break,
+                // Kk, check back later
+                Poll::Pending => break,
+            }
+        }
 
-        // FIXME(kim): can we not somehow coalesce all of these into a stream?
+        // Collect any task results, and enqueue new tasks if applicable
+        let mut events = Vec::with_capacity(9);
         {
             if let Poll::Ready(Some(protocol_event)) = self.protocol_events.poll_next_unpin(cx) {
                 events.push(Event::Protocol(protocol_event));
@@ -425,7 +441,10 @@ impl Future for Subroutines {
 
         for event in events {
             log::debug!("handling subroutine event: {:?}", event);
+
+            // Ignore if there are no subscribers
             self.subscriber.send(event.clone()).ok();
+
             for cmd in self.run_state.transition(&event) {
                 let task = match cmd {
                     Command::Announce => SpawnAbortable::new(announce(
@@ -457,16 +476,11 @@ impl Future for Subroutines {
                     )),
                 };
 
-                self.tasks.push(task);
+                self.pending_tasks.push(task);
             }
         }
 
-        // We must poll the tasks, but ignore the result and always return
-        // `Pending`, because:
-        //
-        // 1. We're not interested in task results
-        // 2. The task queue could be empty
-        self.tasks.poll_next_unpin(cx).is_ready();
+        // We're never done
         Poll::Pending
     }
 }
