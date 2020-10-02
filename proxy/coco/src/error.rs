@@ -1,6 +1,6 @@
 //! Collection of all crate errors.
 
-use std::{io, path};
+use std::io;
 
 use librad::{git::repo, meta::entity, net, uri};
 use radicle_surf::{
@@ -31,6 +31,10 @@ pub enum Error {
     #[error(transparent)]
     Bootstrap(#[from] net::peer::BootstrapError),
 
+    /// An error occurred while trying to create a working copy of a project.
+    #[error(transparent)]
+    Create(#[from] crate::project::create::Error),
+
     /// An error occurred while performing the checkout of a project.
     #[error(transparent)]
     Checkout(#[from] crate::project::checkout::Error),
@@ -38,13 +42,6 @@ pub enum Error {
     /// Seed DNS failed to resolve to an address.
     #[error("the seed '{0}' failed to resolve to an address")]
     DnsLookupFailed(String),
-
-    /// An existing project is being created, but we couldn't get the `name` of the project, i.e.
-    /// the final suffix of the file path.
-    #[error(
-        "the existing path provided '{0}' was empty, and we could not get the project name from it"
-    )]
-    EmptyExistingPath(path::PathBuf),
 
     /// We expect at least one [`crate::source::Revisions`] when looking at a project, however the
     /// computation found none.
@@ -72,17 +69,6 @@ pub enum Error {
     /// Entity meta error.
     #[error(transparent)]
     Meta(#[from] entity::Error),
-
-    /// Configured default branch for the project is missing.
-    #[error(
-        "the default branch '{branch}' supplied was not found for the repository at '{repo_path}'"
-    )]
-    MissingDefaultBranch {
-        /// The repository path we're setting up.
-        repo_path: path::PathBuf,
-        /// The default branch that was expected to be found.
-        branch: String,
-    },
 
     /// Peer API error
     #[error(transparent)]

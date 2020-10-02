@@ -15,7 +15,37 @@ use librad::{
 };
 use radicle_surf::vcs::git::git2;
 
-use crate::{config, error::Error, user::User};
+use crate::{config, user::User};
+
+/// Errors that occur when attempting to create a working copy of a project.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// An existing project is being created, but we couldn't get the `name` of the project, i.e.
+    /// the final suffix of the file path.
+    #[error(
+        "the existing path provided '{0}' was empty, and we could not get the project name from it"
+    )]
+    EmptyExistingPath(PathBuf),
+
+    /// Internal git error while trying to create the project.
+    #[error(transparent)]
+    Git(#[from] git2::Error),
+
+    /// Entity meta error.
+    #[error(transparent)]
+    Meta(#[from] entity::Error),
+
+    /// Configured default branch for the project is missing.
+    #[error(
+        "the default branch '{branch}' supplied was not found for the repository at '{repo_path}'"
+    )]
+    MissingDefaultBranch {
+        /// The repository path we're setting up.
+        repo_path: PathBuf,
+        /// The default branch that was expected to be found.
+        branch: String,
+    },
+}
 
 /// The data required to either open an existing repository or create a new one.
 #[derive(Debug, Clone, Serialize, Deserialize)]
