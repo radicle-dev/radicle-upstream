@@ -107,6 +107,7 @@ export function build(): Wallet {
           const result = await connector.signPersonalMessage(msgParams);
           console.log("Result is ", result);
         } catch (e) {
+          // e.g. of `e`: MetaMask Personal Message Signature: User denied message signature
           console.error("Failed to signPersonalMessage: ", e);
         }
       }
