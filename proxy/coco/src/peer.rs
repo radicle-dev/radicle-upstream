@@ -204,10 +204,12 @@ impl Future for Running {
         }
 
         match self.subroutines.poll_unpin(cx) {
-            Poll::Ready(val) => match val {
-                Err(e) => Poll::Ready(Err(Error::Spawn(e))),
-                Ok(Err(e)) => Poll::Ready(Err(Error::Spawn(e))),
-                Ok(Ok(())) => Poll::Ready(Ok(())),
+            Poll::Ready(val) => {
+                let val = match val {
+                    Err(e) | Ok(Err(e)) => Err(Error::Spawn(e)),
+                    Ok(Ok(())) => Ok(()),
+                };
+                Poll::Ready(val)
             },
             Poll::Pending => Poll::Pending,
         }
@@ -391,11 +393,9 @@ impl Future for Subroutines {
                     return Poll::Ready(Err(e));
                 },
                 Poll::Ready(Some(Ok(()))) => continue,
-                // FuturesUnordered thinks it's done, but we'll enqueue new
-                // tasks below
-                Poll::Ready(None) => break,
-                // Kk, check back later
-                Poll::Pending => break,
+                // Either pending, or FuturesUnordered thinks it's done, but
+                // we'll enqueue new tasks below
+                Poll::Ready(None) | Poll::Pending => break,
             }
         }
 
