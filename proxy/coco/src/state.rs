@@ -376,27 +376,20 @@ impl State {
         project: project::Create<P>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
         let mut meta = project.build(owner, signer.public_key().into())?;
-        meta.sign_owned(signer)?;
+        meta.sign_by_user(signer, owner)?;
 
-        let owner_urn = owner.urn();
-        let project_urn = meta.urn();
         let local_peer_id = self.api.peer_id().clone();
 
         let meta = self
             .api
             .with_storage(move |storage| {
-                if storage.has_urn(&project_urn)? {
-                    return Err(Error::EntityExists(project_urn));
-                }
-
                 let repo = storage.create_repo(&meta)?;
-                repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner_urn))?;
-                log::debug!("Created project with Urn '{}'", project_urn);
+                log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                let repo = project.setup_repo(LocalUrl::from_urn(project_urn, local_peer_id))?;
+                let repo = project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
                 log::debug!("Setup repository at path '{}'", repo.path().display());
 
-                Ok(meta)
+                Ok::<_, Error>(meta)
             })
             .await??;
 
@@ -419,19 +412,16 @@ impl State {
         let mut user =
             user::User::<entity::Draft>::create(handle.to_string(), signer.public_key().into())?;
         user.sign_owned(signer)?;
-        let urn = user.urn();
 
-        Ok(self
+        let user = self
             .api
             .with_storage(move |storage| {
-                if storage.has_urn(&urn)? {
-                    Err(Error::EntityExists(urn))
-                } else {
-                    let _ = storage.create_repo(&user)?;
-                    Ok(user)
-                }
+                let _ = storage.create_repo(&user)?;
+                Ok::<_, Error>(user)
             })
-            .await??)
+            .await??;
+
+        Ok(user)
     }
 
     /// Query the network for providers of the given [`RadUrn`] within a given `timeout`.
@@ -539,7 +529,7 @@ impl From<&State> for Seed {
 mod test {
     use std::{env, path::PathBuf, process::Command};
 
-    use librad::keys::SecretKey;
+    use librad::{git::storage, keys::SecretKey};
 
     use crate::{config, control, project, signer};
 
@@ -638,7 +628,7 @@ mod test {
         let user = state.init_owner(&signer, "cloudhead").await?;
         let err = state.init_user(&signer, "cloudhead").await;
 
-        if let Err(Error::EntityExists(urn)) = err {
+        if let Err(Error::Storage(storage::Error::AlreadyExists(urn))) = err {
             assert_eq!(urn, user.urn())
         } else {
             panic!(
@@ -670,7 +660,7 @@ mod test {
             .init_project(&signer, &user, project_creation.into_existing())
             .await;
 
-        if let Err(Error::EntityExists(urn)) = err {
+        if let Err(Error::Storage(storage::Error::AlreadyExists(urn))) = err {
             assert_eq!(urn, project.urn())
         } else {
             panic!(
