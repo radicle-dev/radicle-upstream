@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 
 import { Wallet } from "../wallet";
+import * as remote from "../remote";
 
 export const txStore = writable<Transaction | null>(null);
 
@@ -28,16 +29,17 @@ export interface Transaction {
           -
       - Save
         - Takes monthly amount and member list
-
 */
 
 // TODO(nuno): define a better promise return value
 export interface Pool {
-  save(data: PoolData): Promise<Result>;
-  fillUp(value: number): Promise<Result>;
+  data: remote.Store<PoolData>;
+  save(data: PoolSettings): Promise<void>;
+  fillUp(value: number): Promise<void>;
 }
 
-export interface PoolData {
+// The pool settings the user can change and save.
+export interface PoolSettings {
   // The amount to be disbursed monthly.
   monthlyContribution: number;
   // The list of eth addresses across whom the
@@ -45,46 +47,39 @@ export interface PoolData {
   members: string[];
 }
 
-enum Error {
-  UserRejected,
-  OtherError,
+// All the data representing a pool.
+export interface PoolData {
+  // The remaining balance of this pool.
+  balance: number;
+  // The amount to be disbursed monthly.
+  monthlyContribution: number;
+  // The list of eth addresses across whom the
+  // `monthlyContribution` is evenly spread.
+  members: string[];
 }
 
 // TODO(nuno|thomas): Better define this once we get to use the underlying functions.
-export type Result =
-  | { type: "Error"; error: Error }
-  | { type: "Ok"; value: any };
-
-function ok(value: any): Result {
-  return { type: "Ok", value };
-}
-
-function err(error: Error): Result {
-  return { type: "Error", error };
-}
-
 export function make(wallet: Wallet): Pool {
-  async function save(data: PoolData): Promise<Result> {
+  const store = remote.createStore<PoolData>();
+  // TODO(nuno|thomas): actually load the pool data from the pool contract.
+  store.success({
+    balance: 10,
+    monthlyContribution: 10,
+    members: ["0x1", "0x2"],
+  });
+
+  async function save(data: PoolSettings): Promise<void> {
     // TODO(thomas): implement this for real using the wallet and the Radicle Contracts
-    try {
-      const response = await wallet.testSign(JSON.stringify(data));
-      return ok(response);
-    } catch (e) {
-      return err(e);
-    }
+    return wallet.testSign(JSON.stringify(data));
   }
 
-  async function fillUp(value: number): Promise<Result> {
+  async function fillUp(value: number): Promise<void> {
     // TODO(thomas): implement this for real using the wallet and the Radicle Contracts
-    try {
-      const v = await wallet.testTransfer(10);
-      return ok(v);
-    } catch (e) {
-      return err(e);
-    }
+    return wallet.testTransfer(value);
   }
 
   return {
+    data: store,
     save,
     fillUp,
   };
