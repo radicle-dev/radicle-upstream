@@ -33,6 +33,11 @@
     console.log("onDrain");
     return wallet!.testTransfer(10);
   };
+
+  const onSave = (): Promise<void> => {
+    console.log("onSave");
+    return Promise.resolve();
+  };
 </script>
 
 <style>
@@ -44,5 +49,5 @@
 </style>
 
 <div class="container">
-  <Pool {amount} {balance} {enabled} {members} {onFillUp} {onDrain} />
+  <Pool {amount} {balance} {enabled} {members} {onFillUp} {onDrain} {onSave} />
 </div>

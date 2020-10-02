@@ -8,6 +8,7 @@
   export let members: string;
   export let onFillUp: () => Promise<void>;
   export let onDrain: () => Promise<void>;
+  export let onSave: () => Promise<void>;
 
   $: membersList = members
     .split(",")
@@ -139,10 +140,5 @@
       </li>
     {/if}
   </ul>
-  <Button
-    on:click={() => {
-      console.log('TODO(nuno): Save changes to pool');
-    }}>
-    Save
-  </Button>
+  <Button on:click={onSave}>Save</Button>
 </div>
