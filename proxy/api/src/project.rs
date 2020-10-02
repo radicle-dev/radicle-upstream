@@ -126,7 +126,7 @@ impl Projects {
             let refs = state.list_owner_project_refs(project.urn()).await?;
             let project = state
                 .with_browser(project.urn(), |browser| {
-                    let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                    let project_stats = browser.get_stats().map_err(coco::source::Error::from)?;
                     Ok((project, project_stats).into())
                 })
                 .await?;
@@ -218,7 +218,7 @@ impl Iterator for IntoIter {
 pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Project, error::Error> {
     let project = state.get_project(project_urn.clone(), None).await?;
     let project_stats = state
-        .with_browser(project_urn, |browser| Ok(browser.get_stats()?))
+        .with_browser(project_urn, |browser| Ok(browser.get_stats().map_err(coco::source::Error::from)?))
         .await?;
 
     Ok((project, project_stats).into())
@@ -254,7 +254,7 @@ pub async fn list_for_user(
         {
             let proj = state
                 .with_browser(project.urn(), |browser| {
-                    let project_stats = browser.get_stats().map_err(coco::Error::from)?;
+                    let project_stats = browser.get_stats().map_err(coco::source::Error::from)?;
                     Ok((project, project_stats).into())
                 })
                 .await?;

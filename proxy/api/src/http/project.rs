@@ -135,7 +135,7 @@ mod handler {
 
         let stats = ctx
             .state
-            .with_browser(urn, |browser| Ok(browser.get_stats()?))
+            .with_browser(urn, |browser| Ok(browser.get_stats().map_err(coco::source::Error::from)?))
             .await
             .map_err(Error::from)?;
         let project: project::Project = (meta, stats).into();

@@ -31,6 +31,7 @@ use crate::{
     seed::Seed,
     signer,
     user::{verify as verify_user, User},
+    source,
 };
 
 /// High-level interface to the coco monorepo and gossip layer.
@@ -354,9 +355,10 @@ impl State {
         let monorepo = self.monorepo();
         let project = self.get_project(urn, None).await?;
         let default_branch = git::Branch::local(project.default_branch());
-        let repo = git::Repository::new(monorepo)?;
-        let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
-        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
+
+        let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
+        let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str()).map_err(source::Error::from)?;
+        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch).map_err(source::Error::from)?;
 
         callback(&mut browser)
     }

@@ -116,15 +116,15 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "GIT_ERROR",
                         format!("Internal Git error: {:?}", git_error),
                     ),
-                    coco::Error::SurfGit(git_error) => (
+                    coco::Error::Source(coco::source::Error::Git(git_error)) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
-                        format!("Internal Git error: {:?}", git_error),
+                        format!("Internal Git error: {}", git_error),
                     ),
-                    coco::Error::NoBranches => (
+                    coco::Error::Source(coco::source::Error::NoBranches) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
-                        coco::Error::NoBranches.to_string(),
+                        coco::source::Error::NoBranches.to_string(),
                     ),
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
