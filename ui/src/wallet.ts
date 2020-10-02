@@ -31,7 +31,7 @@ export enum Connector {
   WalletConnect,
 }
 
-// Build a new Wallet using the indicated Connector alternative
+// Build a new Wallet using the provided Connector solution
 export function build(connector: Connector = Connector.WalletConnect): Wallet {
   switch (connector) {
     case Connector.WalletConnect:
