@@ -126,7 +126,7 @@
       computer’s password. <span class="typo-text-bold">
         You can’t recover your account with it,
       </span> but it prevents someone from accessing your account if this computer
-      is stolen or hacked.
+      is stolen or hacked. Be sure to put this in a safe place!
     </p>
 
     <Input.Password
