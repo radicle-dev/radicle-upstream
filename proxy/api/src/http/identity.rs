@@ -59,7 +59,7 @@ mod handler {
             .identity
         {
             return Err(Rejection::from(error::Error::from(
-                coco::Error::EntityExists(identity.urn),
+                coco::error::storage::already_exists(identity.urn),
             )));
         }
 
