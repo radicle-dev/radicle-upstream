@@ -106,9 +106,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             include_error.to_string(),
                         ),
                     },
-                    coco::Error::Storage(storage::Error::AlreadyExists(_)) => {
-                        (StatusCode::CONFLICT, "ENTITY_EXISTS", err.to_string())
-                    },
+                    coco::Error::Storage(storage::Error::AlreadyExists(urn)) => (
+                        StatusCode::CONFLICT,
+                        "ENTITY_EXISTS",
+                        format!("the identity '{}' already exists", urn),
+                    ),
                     coco::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
