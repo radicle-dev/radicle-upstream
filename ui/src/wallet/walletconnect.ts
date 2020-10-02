@@ -89,6 +89,30 @@ export function build(): Wallet {
     });
   }
 
+  async function testSign(msg: string) {
+    stateStore.subscribe(async state => {
+      if (state.status === Status.Connected) {
+        if (!connector) {
+          console.log("Connector is undefined, stopping here.");
+          stateStore.set({ status: Status.NotConnected });
+          return;
+        }
+
+        const address = state.connected.account.address;
+        const hexMsg = convertUtf8ToHex(msg);
+        const msgParams = [hexMsg, address];
+        console.log("msgParams", msgParams);
+
+        try {
+          const result = await connector.signPersonalMessage(msgParams);
+          console.log("Result is ", result);
+        } catch (e) {
+          console.error("Failed to signPersonalMessage: ", e);
+        }
+      }
+    });
+  }
+
   connector.on("disconnect", () => {
     console.log("connector.disconnect");
     stateStore.set({ status: Status.NotConnected });
@@ -126,5 +150,6 @@ export function build(): Wallet {
     connect,
     disconnect,
     testTransfer,
+    testSign,
   };
 }

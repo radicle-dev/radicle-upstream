@@ -24,6 +24,7 @@ export interface Wallet extends Readable<State> {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   testTransfer(value: number): Promise<void>;
+  testSign(msg: string): Promise<void>;
 }
 
 export enum Connector {
