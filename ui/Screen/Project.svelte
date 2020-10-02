@@ -1,25 +1,21 @@
-<script lang="ts">
+<script>
   import { isExperimental, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
-  import * as notification from "../src/notification";
-  import * as path from "../src/path";
-  import { checkout, fetch, project as projectStore } from "../src/project";
-  import type { Project } from "../src/project";
-  import * as remote from "../src/remote";
-  import * as screen from "../src/screen";
+  import * as notification from "../src/notification.ts";
+  import * as path from "../src/path.ts";
+  import { checkout, fetch, project as store } from "../src/project.ts";
+  import * as screen from "../src/screen.ts";
   import {
     commits as commitsStore,
-    currentRevision as currentRevisionStore,
+    currentRevision,
     currentPeerId,
     fetchCommits,
     fetchRevisions,
     resetCurrentRevision,
     resetCurrentPeerId,
     revisions as revisionsStore,
-  } from "../src/source";
-
-  import type { SupportedRevision } from "../src/source";
+  } from "../src/source.ts";
 
   import {
     Header,
@@ -50,16 +46,14 @@
     "/projects/:id/revisions": Revisions,
   };
 
-  export let params: { id: string };
+  export let params = null;
   const projectId = params.id;
 
   // Reset some stores on first load
   resetCurrentRevision();
   resetCurrentPeerId();
 
-  let currentRevision: SupportedRevision | undefined;
-
-  $: topbarMenuItems = (project: Project, commitCounter?: number) => {
+  $: topbarMenuItems = (project, commitCounter) => {
     const items = [
       {
         icon: Icon.House,
@@ -93,10 +87,7 @@
     return items;
   };
 
-  const handleCheckout = async (
-    event: CustomEvent<{ checkoutDirectoryPath: string }>,
-    project: Project
-  ) => {
+  const handleCheckout = async (event, project) => {
     try {
       screen.lock();
       const path = await checkout(
@@ -123,19 +114,12 @@
 
   fetch({ id: projectId });
   fetchRevisions({ projectId });
-  $: if (currentRevision)
-    fetchCommits({ projectId, revision: currentRevision });
+  $: if ($currentRevision)
+    fetchCommits({ projectId, revision: $currentRevision });
 
-  $: ps = $projectStore;
-  $: project = ps.status === remote.Status.Success && ps.data;
-
-  $: rs = $revisionsStore;
-  $: revisions = rs.status === remote.Status.Success && rs.data;
-
-  $: cs = $commitsStore;
-  $: commits = cs.status === remote.Status.Success && cs.data;
-
-  $: currentRevisionStore.set(currentRevision);
+  // $: console.log($currentRevision);
+  $: console.log(`REVISIONS`, $revisionsStore);
+  $: console.log(`COMMITS`, $commitsStore);
 </script>
 
 <style>
@@ -147,55 +131,51 @@
 </style>
 
 <SidebarLayout dataCy="project-screen">
-  <Remote store={projectStore} context="project">
-    <Remote store={revisionsStore} context="revisions">
-      {#if project}
-        <Header.Large
-          name={project.metadata.name}
-          urn={project.shareableEntityIdentifier}
-          description={project.metadata.description}
-          stats={project.stats}>
-          <div slot="left">
-            <div style="display: flex">
-              <div class="revision-selector-wrapper">
-                {#if $currentPeerId && revisions}
-                  <RevisionSelector
-                    currentPeerId={$currentPeerId}
-                    bind:currentRevision
-                    {revisions} />
-                {/if}
+  <Remote {store} let:data={project} context="project">
+    <Remote store={revisionsStore} let:data={revisions} context="revisions">
+      <Header.Large
+        name={project.metadata.name}
+        urn={project.shareableEntityIdentifier}
+        description={project.metadata.description}
+        stats={project.stats}>
+        <div slot="left">
+          <div style="display: flex">
+            <div class="revision-selector-wrapper">
+              {#if $currentPeerId}
+                <RevisionSelector
+                  currentPeerId={$currentPeerId}
+                  bind:currentRevision={$currentRevision}
+                  {revisions} />
+              {/if}
+            </div>
+            <Remote store={commitsStore} let:data={commits}>
+              <HorizontalMenu
+                items={topbarMenuItems(project, commits.stats.commits)} />
+              <div slot="loading">
+                <HorizontalMenu
+                  items={topbarMenuItems(project, null)}
+                  style="display: inline" />
               </div>
-              <Remote store={commitsStore}>
-                {#if commits && project}
-                  <HorizontalMenu
-                    items={topbarMenuItems(project, commits.stats.commits)} />
-                {/if}
-
-                <div slot="loading">
-                  <HorizontalMenu
-                    items={topbarMenuItems(project, undefined)}
-                    style="display: inline" />
-                </div>
-              </Remote>
-            </div>
+            </Remote>
           </div>
-          <div slot="right">
-            <CheckoutButton
-              on:checkout={ev => project && handleCheckout(ev, project)} />
+        </div>
+        <div slot="right">
+          <CheckoutButton
+            on:checkout={ev => handleCheckout(ev, project)}
+            projectName={project.metadata.name} />
+        </div>
+        <div slot="top">
+          <div style="display: flex">
+            <PeerSelector
+              bind:currentPeerId={$currentPeerId}
+              {revisions}
+              on:select={() => {
+                resetCurrentRevision();
+              }} />
+            <TrackToggle />
           </div>
-          <div slot="top">
-            <div style="display: flex">
-              <PeerSelector
-                bind:currentPeerId={$currentPeerId}
-                {revisions}
-                on:select={() => {
-                  resetCurrentRevision();
-                }} />
-              <TrackToggle />
-            </div>
-          </div>
-        </Header.Large>
-      {/if}
+        </div>
+      </Header.Large>
     </Remote>
     <Router {routes} />
   </Remote>

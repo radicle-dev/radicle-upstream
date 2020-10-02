@@ -7,19 +7,23 @@
   import Overlay from "../Overlay.svelte";
   import { Icon } from "../../Primitive";
 
-  export let currentRevision: source.SupportedRevision | undefined;
-  export let currentPeerId: string | undefined;
-  export let expanded: boolean = false;
-  export let revisions: source.SupportedRevision[];
-
-  let currentSelectedPeer: source.Branch;
-
   const { metadata } = getContext("project");
 
+  type SupportedRevision = source.Branch | source.Tag;
+  export let currentRevision: SupportedRevision;
+  export let currentPeerId: string;
+  export let revisions: source.Revision[];
+
+  let expanded = false;
+  let currentSelectedPeer: source.Revision;
+
+  // The API returns a revision list where the first entry is the default
+  // peer.
   $: if (currentPeerId) {
-    // The API returns a revision list where the first entry is the default peer.
     currentSelectedPeer =
-      revisions.find(rev => rev.peerId === currentPeerId) || revisions[0];
+      revisions.find(rev => {
+        return rev.identity.peerId === currentPeerId;
+      }) || revisions[0];
   }
 
   // initialize currentRevision
@@ -27,7 +31,7 @@
     currentRevision = {
       type: source.RevisionType.Branch,
       name: metadata.defaultBranch,
-      peerId: currentSelectedPeer ? currentSelectedPeer.peerId : "",
+      peerId: currentSelectedPeer ? currentSelectedPeer.identity.peerId : "",
     };
   }
 
@@ -37,7 +41,7 @@
     expanded = false;
   };
 
-  const selectRevision = (revision: source.SupportedRevision) => {
+  const selectRevision = (revision: SupportedRevision) => {
     currentRevision = revision;
     hideDropdown();
   };
@@ -146,34 +150,32 @@
   <div class="revision-dropdown-container">
     <div class="revision-dropdown" hidden={!expanded}>
       <ul>
-        {#if currentSelectedPeer && currentSelectedPeer.branches}
-          {#each currentSelectedPeer.branches as branch}
-            <li
-              class="branch"
-              class:selected={currentRevision.name === branch.name && currentSelectedPeer.peerId === currentSelectedPeer.peerId}
-              data-branch={branch}
-              on:click|stopPropagation={() => selectRevision({
-                  type: source.RevisionType.Branch,
-                  peerId: currentSelectedPeer.peerId,
-                  name: branch.name,
-                })}>
-              <Icon.Branch
-                dataCy="branch-icon"
-                style="vertical-align: bottom; fill:
+        {#each currentSelectedPeer.branches as branch}
+          <li
+            class="branch"
+            class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
+            data-branch={branch}
+            on:click|stopPropagation={() => selectRevision({
+                type: source.RevisionType.Branch,
+                peerId: currentSelectedPeer.identity.peerId,
+                name: branch,
+              })}>
+            <Icon.Branch
+              dataCy="branch-icon"
+              style="vertical-align: bottom; fill:
             var(--color-foreground-level-4)" />
-              <span class="revision-name typo-text">{branch}</span>
-            </li>
-          {/each}
-        {/if}
-        {#if isExperimental() && currentSelectedPeer.tags}
+            <span class="revision-name typo-text">{branch}</span>
+          </li>
+        {/each}
+        {#if isExperimental()}
           {#each currentSelectedPeer.tags as tag}
             <li
               class="tag"
-              class:selected={currentRevision.name === tag.name && currentSelectedPeer.peerId === currentSelectedPeer.peerId}
+              class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
               data-tag={tag}
               on:click|stopPropagation={() => selectRevision({
                   type: source.RevisionType.Tag,
-                  name: tag.name,
+                  name: tag,
                 })}>
               <Icon.Label
                 dataCy="tag-icon"

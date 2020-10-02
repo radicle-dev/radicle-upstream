@@ -94,9 +94,10 @@ interface Tree extends SourceObject {
 }
 
 export interface Revision {
-  branches?: Branch[];
-  tags?: Tag[];
-  user?: identity.Identity;
+  identity: identity.Identity;
+  branches: string[];
+  tags: string[];
+  peerId?: string;
 }
 
 type Revisions = Revision[];
@@ -112,7 +113,7 @@ export enum RevisionType {
   Sha = "sha",
 }
 
-export interface Branch extends Revision {
+export interface Branch {
   type: RevisionType.Branch;
   name: string;
   peerId?: string;
@@ -121,6 +122,7 @@ export interface Branch extends Revision {
 export interface Tag {
   type: RevisionType.Tag;
   name: string;
+  peerId?: string;
 }
 
 export interface Sha {
@@ -140,16 +142,15 @@ export const commits = commitsStore.readable;
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
-const revisionsStore = remote.createStore<SupportedRevision[]>();
+const revisionsStore = remote.createStore<Revisions>();
 export const revisions = revisionsStore.readable;
 
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = () => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = () => objectPath.set(null);
-export const currentRevision = writable<SupportedRevision | undefined>(
-  undefined
-);
+
+export const currentRevision = writable<Revision | undefined>(undefined);
 export const resetCurrentRevision = () => currentRevision.set(undefined);
 export const currentPeerId = writable<string | undefined>(undefined);
 export const resetCurrentPeerId = () => currentPeerId.set(undefined);
@@ -172,7 +173,7 @@ interface FetchCommit extends event.Event<Kind> {
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
   projectId: string;
-  revision: Branch;
+  revision: Branch | Tag;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -249,7 +250,7 @@ const update = (msg: Msg): void => {
 
     case Kind.FetchRevisions:
       api
-        .get<SupportedRevision[]>(`source/revisions/${msg.projectId}`)
+        .get<Revisions>(`source/revisions/${msg.projectId}`)
         .then(revisions => revisionsStore.success(revisions))
         .catch(revisionsStore.error);
       break;
@@ -405,5 +406,3 @@ export const readme = (
 
   return readme.readable;
 };
-
-export type SupportedRevision = Branch | Tag;

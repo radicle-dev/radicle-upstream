@@ -1,26 +1,30 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../src/path.ts";
-  import { BadgeType } from "../../src/badge.ts";
+  import { BadgeType } from "../../src/badge";
+  import * as path from "../../src/path";
+  import * as source from "../../src/source";
+  import * as style from "../../src/style";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
-  export let currentPeerId = null;
-  export let expanded = false;
-  export let revisions = null;
+  export let currentPeerId: string;
+  export let revisions: source.Revision[];
 
-  let currentSelectedPeer;
+  let expanded = false;
+
+  let currentSelectedPeer: source.Revision;
 
   const session = getContext("session");
   const { metadata } = getContext("project");
 
   $: if (currentPeerId) {
-    currentSelectedPeer = revisions.find(rev => {
-      return rev.identity.peerId === currentPeerId;
-    });
+    currentSelectedPeer =
+      revisions.find(rev => {
+        return rev.identity.peerId === currentPeerId;
+      }) || revisions[0];
   } else {
     // The API returns a revision list where the first entry is the default
     // peer.
@@ -36,7 +40,7 @@
     expanded = false;
   };
 
-  const handleOpenProfile = urn => {
+  const handleOpenProfile = (urn: string) => {
     if (urn === session.identity.urn) {
       push(path.profileProjects());
     } else {
@@ -45,7 +49,7 @@
   };
 
   const dispatch = createEventDispatcher();
-  const selectPeer = peerId => {
+  const selectPeer = (peerId: string) => {
     hideDropdown();
     currentPeerId = peerId;
     dispatch("select", { peerId });
@@ -169,7 +173,7 @@
               {/if}
             </p>
           </div>
-          <Tooltip value="Go to profile" position="top">
+          <Tooltip value="Go to profile" position={style.CSSPosition.Top}>
             <div
               data-cy={repo.identity.metadata.handle}
               class="open-profile"

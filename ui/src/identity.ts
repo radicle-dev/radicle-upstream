@@ -14,6 +14,8 @@ export interface Avatar {
 
 export interface Identity {
   id: string;
+  peerId: string;
+  urn: string;
   metadata: {
     handle: string;
   };
