@@ -3,7 +3,7 @@ import { convertUtf8ToHex } from "@walletconnect/utils";
 import QRCodeModal from "@walletconnect/qrcode-modal";
 import WalletConnectWeb3Provider from "@walletconnect/web3-provider";
 import Web3 from "web3";
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 
 import { Wallet, Status, State } from "../wallet";
 
@@ -62,56 +62,54 @@ export function build(): Wallet {
   }
 
   async function testTransfer(value: number) {
-    stateStore.subscribe(async state => {
-      if (state.status === Status.Connected) {
-        if (!connector) {
-          console.log("Connector is undefined, stopping here.");
-          stateStore.set({ status: Status.NotConnected });
-          return;
-        }
-
-        const tx = {
-          from: state.connected.account.address!,
-          to: "0xC257274276a4E539741Ca11b590B9447B26A8051",
-          nonce: 1,
-          gasLimit: 1,
-          gasPrice: 2,
-          value,
-        };
-
-        try {
-          const result = await connector.sendTransaction(tx);
-          console.log("Result is ", result);
-        } catch (e) {
-          console.error("Failed to sendTransaction: ", e);
-        }
+    let state = get(stateStore);
+    if (state.status === Status.Connected) {
+      if (!connector) {
+        console.log("Connector is undefined, stopping here.");
+        stateStore.set({ status: Status.NotConnected });
+        return;
       }
-    });
+
+      const tx = {
+        from: state.connected.account.address!,
+        to: "0xC257274276a4E539741Ca11b590B9447B26A8051", //TODO(nuno): use right address
+        nonce: 1,
+        gasLimit: 1,
+        gasPrice: 2,
+        value,
+      };
+
+      try {
+        const result = await web3.eth.sendTransaction(tx);
+        console.log("Result is ", result);
+      } catch (e) {
+        console.error("Failed to sendTransaction: ", e);
+      }
+    }
   }
 
   async function testSign(msg: string) {
-    stateStore.subscribe(async state => {
-      if (state.status === Status.Connected) {
-        if (!connector) {
-          console.log("Connector is undefined, stopping here.");
-          stateStore.set({ status: Status.NotConnected });
-          return;
-        }
-
-        const address = state.connected.account.address;
-        const hexMsg = convertUtf8ToHex(msg);
-        const msgParams = [hexMsg, address];
-        console.log("msgParams", msgParams);
-
-        try {
-          const result = await connector.signPersonalMessage(msgParams);
-          console.log("Result is ", result);
-        } catch (e) {
-          // e.g. of `e`: MetaMask Personal Message Signature: User denied message signature
-          console.error("Failed to signPersonalMessage: ", e);
-        }
+    let state = get(stateStore);
+    if (state.status === Status.Connected) {
+      if (!connector) {
+        console.log("Connector is undefined, stopping here.");
+        stateStore.set({ status: Status.NotConnected });
+        return;
       }
-    });
+
+      const address = state.connected.account.address;
+      const hexMsg = convertUtf8ToHex(msg);
+      const msgParams = [hexMsg, address];
+      console.log("msgParams", msgParams);
+
+      try {
+        const result = await connector.signPersonalMessage(msgParams);
+        console.log("Result is ", result);
+      } catch (e) {
+        // e.g. of `e`: MetaMask Personal Message Signature: User denied message signature
+        console.error("Failed to signPersonalMessage: ", e);
+      }
+    }
   }
 
   connector.on("disconnect", () => {

@@ -5,6 +5,7 @@
   import Funding from "../Funding.svelte";
 
   const wallet = build();
+  // instantiate pool using the wallet store?
 </script>
 
 <div>

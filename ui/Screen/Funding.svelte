@@ -18,10 +18,11 @@
   };
 
   const onFillUp = async (): Promise<void> => {
+    //
     const tx: pool.Transaction = {
       context: "Fill up your pool 😉",
-      from: "0x789", // TOOD(nuno): use right address
-      to: "0x123000", // TOOD(nuno): use contract address?
+      from: "0x789", // TODO(nuno): use right address
+      to: "0x123000", // TODO(nuno): use contract address?
       onConfirmed: value => {
         return wallet!.testTransfer(value);
       },
@@ -49,5 +50,6 @@
 </style>
 
 <div class="container">
+  <!-- TODO(nuno): Collect pool funds screen goes here -->
   <Pool {amount} {balance} {enabled} {members} {onFillUp} {onDrain} {onSave} />
 </div>
