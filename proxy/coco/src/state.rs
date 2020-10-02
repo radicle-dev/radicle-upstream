@@ -350,7 +350,7 @@ impl State {
     /// * If the passed `callback` errors.
     pub async fn with_browser<F, T>(&self, urn: RadUrn, callback: F) -> Result<T, Error>
     where
-        F: Send + FnOnce(&mut git::Browser) -> Result<T, Error>,
+        F: Send + FnOnce(&mut git::Browser) -> Result<T, source::Error>,
     {
         let monorepo = self.monorepo();
         let project = self.get_project(urn, None).await?;
@@ -360,7 +360,7 @@ impl State {
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str()).map_err(source::Error::from)?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch).map_err(source::Error::from)?;
 
-        callback(&mut browser)
+        callback(&mut browser).map_err(Error::from)
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.

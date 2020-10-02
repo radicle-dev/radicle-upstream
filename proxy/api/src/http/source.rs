@@ -159,7 +159,7 @@ mod handler {
         let blob = ctx
             .state
             .with_browser(project_urn, |mut browser| {
-                Ok(coco::blob(&mut browser, default_branch, revision, &path, theme)?)
+                coco::blob(&mut browser, default_branch, revision, &path, theme)
             })
             .await
             .map_err(error::Error::from)?;
@@ -176,7 +176,7 @@ mod handler {
         let branches = ctx
             .state
             .with_browser(project_urn, |browser| {
-                Ok(coco::branches(browser, Some(coco::into_branch_type(peer_id)))?)
+                coco::branches(browser, Some(coco::into_branch_type(peer_id)))
             })
             .await
             .map_err(error::Error::from)?;
@@ -192,7 +192,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let commit = ctx
             .state
-            .with_browser(project_urn, |mut browser| Ok(coco::commit(&mut browser, sha1)?))
+            .with_browser(project_urn, |mut browser| coco::commit(&mut browser, sha1))
             .await
             .map_err(error::Error::from)?;
 
@@ -208,7 +208,7 @@ mod handler {
         let commits = ctx
             .state
             .with_browser(project_urn, |mut browser| {
-                Ok(coco::commits(&mut browser, query.into())?)
+                coco::commits(&mut browser, query.into())
             })
             .await
             .map_err(error::Error::from)?;
@@ -237,11 +237,11 @@ mod handler {
             .await
             .map_err(error::Error::from)?;
         let peer_id = ctx.state.peer_id();
+        let owner = owner.to_data().build().map_err(coco::error::Error::from).map_err(error::Error::from)?;
         let revisions: Vec<super::Revisions> = ctx
             .state
             .with_browser(project_urn, |browser| {
                 // TODO(finto): downgraded verified user, which should not be needed.
-                let owner = owner.to_data().build()?;
                 Ok(coco::revisions(browser, peer_id, owner, peers)?
                     .into_iter()
                     .map(|revision| revision.into())
@@ -260,7 +260,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let tags = ctx
             .state
-            .with_browser(project_urn, |browser| Ok(coco::tags(browser)?))
+            .with_browser(project_urn, |browser| coco::tags(browser))
             .await
             .map_err(error::Error::from)?;
 
@@ -292,7 +292,7 @@ mod handler {
         let tree = ctx
             .state
             .with_browser(project_urn, |mut browser| {
-                Ok(coco::tree(&mut browser, default_branch, revision, prefix)?)
+                coco::tree(&mut browser, default_branch, revision, prefix)
             })
             .await
             .map_err(error::Error::from)?;
@@ -727,7 +727,7 @@ mod test {
         let want = ctx
             .state
             .with_browser(urn, |mut browser| {
-                Ok(coco::commits(&mut browser, branch.clone())?)
+                coco::commits(&mut browser, branch.clone())
             })
             .await?;
 
@@ -1023,7 +1023,6 @@ mod test {
             .state
             .with_browser(urn, |mut browser| {
                 coco::tree(&mut browser, default_branch, Some(revision), None)
-                    .map_err(coco::Error::from)
             })
             .await?;
 
