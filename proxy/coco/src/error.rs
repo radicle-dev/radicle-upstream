@@ -36,10 +36,6 @@ pub enum Error {
     #[error(transparent)]
     Checkout(#[from] crate::project::checkout::Error),
 
-    /// Seed DNS failed to resolve to an address.
-    #[error("the seed '{0}' failed to resolve to an address")]
-    DnsLookupFailed(String),
-
     /// An error occurred when performing git operations.
     #[error(transparent)]
     Git(#[from] git2::Error),
@@ -47,10 +43,6 @@ pub enum Error {
     /// An error occured building include files.
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
-
-    /// Seed input is invalid.
-    #[error("the seed '{0}' is invalid: {:1}")]
-    InvalidSeed(String, Option<librad::peer::conversion::Error>),
 
     /// I/O error.
     #[error(transparent)]
