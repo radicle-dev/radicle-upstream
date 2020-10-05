@@ -156,7 +156,7 @@
     "buffer": "^5.6.0",
     "marked": "^1.1.1",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts",
+    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts#f1a70ba17e82a51fe7cd5edd6fb859a063df37c6",
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
     "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6",

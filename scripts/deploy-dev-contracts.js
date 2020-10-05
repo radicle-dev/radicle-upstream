@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { deployDev } = require("radicle-contracts");
+const { deployAll } = require("radicle-contracts");
 const ethers = require("ethers");
 
 main().catch(e => {
@@ -13,7 +13,7 @@ async function main() {
     "http://localhost:8545"
   );
   const signer = provider.getSigner(0);
-  const contracts = await deployDev(signer);
+  const contracts = await deployAll(provider, signer);
   console.log(`Rad token deployed at ${contracts.rad.address.toLowerCase()}`);
   console.log(`ENS deployed at ${contracts.ens.address.toLowerCase()}`);
 }
