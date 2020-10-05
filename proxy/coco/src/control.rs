@@ -8,7 +8,11 @@ use librad::{
 };
 use radicle_surf::vcs::git::git2;
 
-use crate::{config, error::Error, project, signer, state::State, user::User};
+use crate::{
+    config, project, signer,
+    state::{Error, State},
+    user::User,
+};
 
 /// Deletes the local git repsoitory coco uses for its state.
 ///
@@ -235,7 +239,7 @@ pub async fn track_fake_peer(
 ///   * The platinum directory path was malformed
 ///   * Getting the branches fails
 pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error> {
-    let platinum_from = platinum_directory()?;
+    let platinum_from = platinum_directory().expect("failed to get platinum directory");
     let platinum_from = platinum_from
         .to_str()
         .expect("failed to get platinum directory");

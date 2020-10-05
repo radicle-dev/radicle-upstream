@@ -29,7 +29,7 @@ use librad::{
 use crate::{
     request::waiting_room::{self, WaitingRoom},
     shared::Shared,
-    state::State,
+    state::{self, State},
 };
 
 mod announcement;
@@ -67,10 +67,9 @@ pub enum Error {
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
     Join(#[source] JoinError),
 
-    /// Stop-gap until we get rid of crate level errors.
-    // TODO(xla): Remove once we transitioned to per module errors.
+    /// There was an error when interacting with [`State`].
     #[error(transparent)]
-    Crate(#[from] crate::error::Error),
+    State(#[from] state::Error),
 }
 
 /// Local peer to participate in the radicle code-collaboration network.

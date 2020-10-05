@@ -2,12 +2,13 @@
 
 use std::{
     convert::TryFrom,
+    io,
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
 };
 
 use librad::{keys, net, net::discovery, paths, peer};
 
-use crate::{error::Error, seed};
+use crate::seed;
 
 lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
@@ -40,7 +41,7 @@ impl Default for Paths {
 }
 
 impl TryFrom<Paths> for paths::Paths {
-    type Error = Error;
+    type Error = io::Error;
 
     fn try_from(config: Paths) -> Result<Self, Self::Error> {
         match config {
@@ -69,7 +70,7 @@ pub type Disco = discovery::Static<
 pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, Error> {
+) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, key, *LOCALHOST_ANY, vec![]))
 }
