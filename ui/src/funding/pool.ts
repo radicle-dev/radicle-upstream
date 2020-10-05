@@ -5,6 +5,9 @@ import * as remote from "../remote";
 
 export const txStore = writable<Transaction | null>(null);
 
+export const store = writable<Pool | null>(null);
+
+// TODO(nuno): Delete this
 export interface Transaction {
   context: string;
   from: string;

@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { txStore } from "../src/funding/pool";
+  import { store } from "../src/funding/pool";
   import * as notification from "../src/notification";
   import {
     TransferState,
@@ -12,14 +13,14 @@
   import { ModalLayout } from "../DesignSystem/Component";
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
 
-  if ($txStore === null) pop();
+  if ($store === null) pop();
 
   let validatingAmount = false;
   let state = TransferState.Preparation;
-  let amount = 0;
+  let amount: number = 0;
 
   $: disableForm = state !== TransferState.Preparation;
-  $: amountValidation = amountValidationStore($txStore!.from, amount);
+  $: amountValidation = amountValidationStore("TODO(nuno)", amount);
   $: amountStore.set(amount.toString());
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
@@ -29,7 +30,8 @@
   const onConfirmed = async () => {
     try {
       state = TransferState.Confirmation;
-      const result = await $txStore!.onConfirmed(amount);
+      const pool = get(store);
+      const result = await pool.fillUp(amount);
       console.log("OnConfirmed result", result);
     } catch (error) {
       notification.error(`Could not transfer funds: ${error.message}`);
@@ -93,30 +95,8 @@
         <div class="icon">
           <Icon.ArrowUp style="fill: var(--color-primary)" />
         </div>
-        <h2>{$txStore.context}</h2>
+        <h2>Fill up your pool 😉</h2>
       </header>
-      <p
-        class="typo-text-bold"
-        style="color: var(--color-foreground-level-6); padding: 0 0.5rem
-          0.5rem 0.5rem;">
-        From
-      </p>
-      <p
-        style="color: var(--color-foreground-level-6); padding: 0 0.5rem
-          1rem 0.5rem;">
-        {$txStore.from}
-      </p>
-      <p
-        class="typo-text-bold"
-        style="color: var(--color-foreground-level-6); padding: 0 0.5rem
-          0.5rem 0.5rem;">
-        To
-      </p>
-      <p
-        style="color: var(--color-foreground-level-6); padding: 0 0.5rem
-          1rem 0.5rem;">
-        {$txStore.to}
-      </p>
       <p
         class="typo-text-bold"
         style="color: var(--color-foreground-level-6); padding: 0.5rem;">

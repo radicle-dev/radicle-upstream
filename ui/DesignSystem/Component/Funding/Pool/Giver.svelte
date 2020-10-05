@@ -1,7 +1,10 @@
 <script lang="ts">
+  import { push } from "svelte-spa-router";
+
   import { Button, Input } from "../../../Primitive";
   import { Remote } from "../../../Component";
 
+  import * as path from "../../../../src/path";
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
   import * as p from "../../../../src/funding/pool";
 
@@ -12,6 +15,11 @@
 
   // Necessary to comply with Textarea.bind:value type.
   let members: string | any = "a,b,c"; // TODO(nuno): read from pool: .split(", ")
+
+  const openSendModal = () => {
+    p.store.set(pool);
+    push(path.sendFunds());
+  };
 </script>
 
 <style>
@@ -79,9 +87,7 @@
           <Button
             dataCy="fill-pool-button"
             variant="secondary"
-            on:click={() => {
-              console.log('Open modal to input amount');
-            }}>
+            on:click={openSendModal}>
             Fill up your pool 😉
           </Button>
           <Button
