@@ -4,10 +4,10 @@
 // much.
 #![allow(clippy::wildcard_enum_match_arm)]
 
-use std::{collections::HashMap, ops::Sub, time::Instant};
+use std::{collections::HashMap, ops::Sub};
 
 use either::Either;
-use serde::{ser::SerializeStruct, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use librad::{
     hash::Hash,
@@ -72,30 +72,15 @@ impl<T> From<Request<TimedOut, T>> for Error {
 ///
 /// It keeps track of these states as the user tells the waiting room what is happening to the
 /// request on the outside.
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WaitingRoom<T, D> {
     /// The set of requests keyed by their `RadUrn`. This helps us keep only unique requests in the
     /// waiting room.
+    #[serde(bound = "T: serde_millis::Milliseconds")]
     requests: HashMap<Hash, SomeRequest<T>>,
 
     /// The configuration of the waiting room.
     config: Config<D>,
-}
-
-impl<D> Serialize for WaitingRoom<Instant, D>
-where
-    D: Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut state = serializer.serialize_struct("WaitingRoom", 2)?;
-        state.serialize_field("requests", &self.requests)?;
-        state.serialize_field("config", &self.config)?;
-        state.end()
-    }
 }
 
 /// The `Config` for the waiting room tells it what are the maximum number of query and clone
