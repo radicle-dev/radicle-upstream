@@ -39,7 +39,7 @@
 </style>
 
 <div class="pool-container">
-  <h3>Pool</h3>
+  <h3>Give</h3>
 
   <Remote store={pool.data} let:data={poolData}>
     <ul>
