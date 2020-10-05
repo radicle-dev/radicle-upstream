@@ -5,7 +5,7 @@ use librad::{
     uri::RadUrn,
 };
 
-use crate::error::Error;
+use crate::state;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -17,7 +17,7 @@ pub type User = user::User<entity::Verified>;
 /// # Errors
 ///
 /// If any of the verification steps fail
-pub fn verify(user: user::User<entity::Draft>) -> Result<User, Error> {
+pub fn verify(user: user::User<entity::Draft>) -> Result<User, state::Error> {
     let fake_resolver = FakeUserResolver(user.clone());
     let verified_user = user.check_history_status(&fake_resolver, &fake_resolver)?;
     Ok(verified_user)

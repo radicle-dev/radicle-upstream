@@ -26,12 +26,14 @@ use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
 
 use crate::{
-    error::Error,
     project,
     seed::Seed,
-    signer,
+    signer, source,
     user::{verify as verify_user, User},
 };
+
+pub mod error;
+pub use error::Error;
 
 /// High-level interface to the coco monorepo and gossip layer.
 #[derive(Clone)]
@@ -349,16 +351,19 @@ impl State {
     /// * If the passed `callback` errors.
     pub async fn with_browser<F, T>(&self, urn: RadUrn, callback: F) -> Result<T, Error>
     where
-        F: Send + FnOnce(&mut git::Browser) -> Result<T, Error>,
+        F: Send + FnOnce(&mut git::Browser) -> Result<T, source::Error>,
     {
         let monorepo = self.monorepo();
         let project = self.get_project(urn, None).await?;
         let default_branch = git::Branch::local(project.default_branch());
-        let repo = git::Repository::new(monorepo)?;
-        let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
-        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
-        callback(&mut browser)
+        let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
+        let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())
+            .map_err(source::Error::from)?;
+        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)
+            .map_err(source::Error::from)?;
+
+        callback(&mut browser).map_err(Error::from)
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.
@@ -558,7 +563,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn can_create_user() -> Result<(), Error> {
+    async fn can_create_user() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
@@ -573,7 +578,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn can_create_project() -> Result<(), Error> {
+    async fn can_create_project() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         env::set_var("RAD_HOME", tmp_dir.path());
         let repo_path = tmp_dir.path().join("radicle");
@@ -595,7 +600,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn can_create_project_for_existing_repo() -> Result<(), Error> {
+    async fn can_create_project_for_existing_repo() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let repo_path = repo_path.join("radicalise");
@@ -617,7 +622,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn cannot_create_user_twice() -> Result<(), Error> {
+    async fn cannot_create_user_twice() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
@@ -641,7 +646,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn cannot_create_project_twice() -> Result<(), Error> {
+    async fn cannot_create_project_twice() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
@@ -673,7 +678,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_projects() -> Result<(), Error> {
+    async fn list_projects() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
 
@@ -713,7 +718,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_users() -> Result<(), Error> {
+    async fn list_users() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
@@ -739,7 +744,9 @@ mod test {
     }
 
     #[tokio::test]
-    async fn create_with_existing_remote_with_reset() -> Result<(), Error> {
+    async fn create_with_existing_remote_with_reset() -> Result<(), Box<dyn std::error::Error>> {
+        use radicle_surf::vcs::git::Branch;
+
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
@@ -771,15 +778,21 @@ mod test {
             .await?;
 
         // Attempt to initialise a browser to ensure we can look at branches in the project
-        let _stats = state
-            .with_browser(fakie.urn(), |browser| Ok(browser.get_stats()?))
+        let branches = state
+            .with_browser(fakie.urn(), |browser| {
+                Ok(browser
+                    .list_branches(None)
+                    .map_err(crate::source::Error::from)?)
+            })
             .await?;
+
+        assert_eq!(branches, vec![Branch::local("dope")]);
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn create_with_existing_remote() -> Result<(), Error> {
+    async fn create_with_existing_remote() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
