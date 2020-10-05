@@ -1,23 +1,16 @@
-//! Collection of all crate errors.
+//! Capture `State` related error variants.
 
-use std::io;
-
-use librad::{git::repo, meta::entity, net, uri};
+use librad::{
+    git::repo,
+    meta::entity,
+    net,
+    uri::{self, RadUrn},
+};
 use radicle_surf::vcs::git::git2;
 
-/// Re-export [`librad::git::storage::Error`] under the `coco::error` namespace.
-pub mod storage {
-    pub use librad::git::storage::Error;
-    use librad::uri::RadUrn;
+use crate::source;
 
-    /// Easily create an [`storage::Error::AlreadyExists`] exists error.
-    #[must_use = "you made it, you use it"]
-    pub const fn already_exists(urn: RadUrn) -> super::Error {
-        super::Error::Storage(Error::AlreadyExists(urn))
-    }
-}
-
-/// Error emitted by one of the modules.
+/// Errors that may occur when interacting with [`State`].
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Peer accept error.
@@ -44,10 +37,6 @@ pub enum Error {
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 
-    /// I/O error.
-    #[error(transparent)]
-    Io(#[from] io::Error),
-
     /// Entity meta error.
     #[error(transparent)]
     Meta(#[from] entity::Error),
@@ -62,7 +51,7 @@ pub enum Error {
 
     /// An error occurred when interacting with the source code of a project.
     #[error(transparent)]
-    Source(#[from] crate::source::Error),
+    Source(#[from] source::Error),
 
     /// Storage error.
     #[error(transparent)]
@@ -75,4 +64,18 @@ pub enum Error {
     /// Verifcation error.
     #[error(transparent)]
     Verification(#[from] entity::HistoryVerificationError),
+}
+
+impl Error {
+    /// Easily create an [`storage::Error::AlreadyExists`] exists error.
+    #[must_use = "you made it, you use it"]
+    pub const fn already_exists(urn: RadUrn) -> Self {
+        Self::Storage(storage::Error::AlreadyExists(urn))
+    }
+}
+
+/// Re-export the underlying [`storage::Error`] so that consumers don't need to add `librad` as a
+/// dependency to match on the variant. Instead, they can import `coco::state::error::storage`.
+pub mod storage {
+    pub use librad::git::storage::Error;
 }

@@ -135,7 +135,9 @@ mod handler {
 
         let stats = ctx
             .state
-            .with_browser(urn, |browser| Ok(browser.get_stats().map_err(coco::source::Error::from)?))
+            .with_browser(urn, |browser| {
+                Ok(browser.get_stats().map_err(coco::source::Error::from)?)
+            })
             .await
             .map_err(Error::from)?;
         let project: project::Project = (meta, stats).into();
@@ -252,10 +254,10 @@ mod test {
 
     use radicle_surf::vcs::git::git2;
 
-    use crate::{context, error, http, identity, project, session};
+    use crate::{context, http, identity, project, session};
 
     #[tokio::test]
-    async fn checkout() -> Result<(), error::Error> {
+    async fn checkout() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
@@ -293,11 +295,9 @@ mod test {
         http::test::assert_response(&res, StatusCode::CREATED, |_| {});
         assert!(dir.path().exists());
 
-        let repo =
-            git2::Repository::open(dir.path().join("git-platinum")).map_err(coco::Error::from)?;
+        let repo = git2::Repository::open(dir.path().join("git-platinum"))?;
         let refs = repo
-            .branches(None)
-            .map_err(coco::Error::from)?
+            .branches(None)?
             .map(|branch| {
                 branch
                     .expect("failed to get branch")
@@ -308,9 +308,7 @@ mod test {
                     .to_string()
             })
             .collect::<Vec<_>>();
-        let remote = repo
-            .find_remote(coco::config::RAD_REMOTE)
-            .map_err(coco::Error::from)?;
+        let remote = repo.find_remote(coco::config::RAD_REMOTE)?;
         assert_eq!(
             remote.url(),
             Some(
@@ -322,10 +320,9 @@ mod test {
         assert_eq!(refs, vec!["master", "rad/dev", "rad/master"]);
 
         // Verify presence of include file.
-        let config = repo.config().map_err(coco::Error::from)?;
+        let config = repo.config()?;
         let include_path = config
-            .get_entry(coco::include::GIT_CONFIG_PATH_KEY)
-            .map_err(coco::Error::from)?
+            .get_entry(coco::include::GIT_CONFIG_PATH_KEY)?
             .value()
             .unwrap()
             .to_string();
@@ -342,7 +339,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn create_new() -> Result<(), error::Error> {
+    async fn create_new() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
@@ -402,7 +399,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn create_existing() -> Result<(), error::Error> {
+    async fn create_existing() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
@@ -464,7 +461,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn get() -> Result<(), error::Error> {
+    async fn get() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -499,7 +496,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn request_project() -> Result<(), error::Error> {
+    async fn request_project() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -507,7 +504,7 @@ mod test {
         let urn = coco::Urn::new(
             coco::Hash::hash(b"kisses-of-the-sun"),
             coco::uri::Protocol::Git,
-            coco::uri::Path::parse("").map_err(coco::Error::from)?,
+            coco::uri::Path::empty(),
         );
 
         let res = request()
@@ -525,7 +522,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_for_user() -> Result<(), error::Error> {
+    async fn list_for_user() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -555,7 +552,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_contributed() -> Result<(), error::Error> {
+    async fn list_contributed() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -580,7 +577,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn discover() -> Result<(), error::Error> {
+    async fn discover() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());

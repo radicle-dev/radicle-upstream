@@ -274,13 +274,13 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
     let urn = coco::Urn::new(
         coco::Hash::hash(b"hash"),
         coco::uri::Protocol::Git,
-        coco::uri::Path::parse("").map_err(coco::Error::from)?,
+        coco::uri::Path::empty(),
     );
 
     let other_urn = coco::Urn::new(
         coco::Hash::hash(b"something_else"),
         coco::uri::Protocol::Git,
-        coco::uri::Path::parse("").map_err(coco::Error::from)?,
+        coco::uri::Path::empty(),
     );
 
     let projects = vec![

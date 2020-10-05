@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::{convert::Infallible, fmt};
 use warp::{http::StatusCode, reject, reply, Rejection, Reply};
 
-use coco::error::storage;
+use coco::state;
 
 use crate::error;
 
@@ -93,8 +93,10 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             }
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
-                error::Error::Coco(coco_err) => match coco_err {
-                    coco::Error::Checkout(checkout_error) => match checkout_error {
+                error::Error::State(err) => match err {
+                    coco::state::Error::Checkout(checkout_error) => match checkout_error {
+                        // TODO(finto): This seems like a large catch all. We should check the type
+                        // of git errors.
                         coco::project::checkout::Error::Git(git_error) => (
                             StatusCode::CONFLICT,
                             "WORKING_DIRECTORY_EXISTS",
@@ -106,22 +108,24 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             include_error.to_string(),
                         ),
                     },
-                    coco::Error::Storage(storage::Error::AlreadyExists(urn)) => (
+                    coco::state::Error::Storage(state::error::storage::Error::AlreadyExists(
+                        urn,
+                    )) => (
                         StatusCode::CONFLICT,
                         "ENTITY_EXISTS",
                         format!("the identity '{}' already exists", urn),
                     ),
-                    coco::Error::Git(git_error) => (
+                    coco::state::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
                         format!("Internal Git error: {:?}", git_error),
                     ),
-                    coco::Error::Source(coco::source::Error::Git(git_error)) => (
+                    coco::state::Error::Source(coco::source::Error::Git(git_error)) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
                         format!("Internal Git error: {}", git_error),
                     ),
-                    coco::Error::Source(coco::source::Error::NoBranches) => (
+                    coco::state::Error::Source(coco::source::Error::NoBranches) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
                         coco::source::Error::NoBranches.to_string(),
@@ -176,13 +180,17 @@ mod tests {
 
     #[tokio::test]
     async fn recover_custom() {
-        let have: Value = response(warp::reject::custom(
-            crate::error::Error::InordinateString32(),
-        ))
+        let urn = "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c"
+            .parse()
+            .expect("failed to parse URN");
+        let message = format!("the identity '{}' already exists", urn);
+        let have: Value = response(warp::reject::custom(crate::error::Error::from(
+            coco::state::Error::already_exists(urn),
+        )))
         .await;
         let want = json!({
-            "message": "Incorrect input",
-            "variant": "BAD_REQUEST",
+            "message": message,
+            "variant": "ENTITY_EXISTS"
         });
 
         assert_eq!(have, want);

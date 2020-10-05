@@ -50,8 +50,6 @@ pub use radicle_surf::{
 
 pub mod config;
 pub mod control;
-pub mod error;
-pub use error::Error;
 pub mod git_helper;
 mod identifier;
 pub use identifier::Identifier;
@@ -63,7 +61,7 @@ pub use peer::{
     SyncEvent,
 };
 pub mod shared;
-mod state;
+pub mod state;
 pub use state::State;
 pub mod project;
 pub mod request;
@@ -92,7 +90,7 @@ pub async fn into_peer_state<I>(
     store: kv::Store,
     waiting_room: shared::Shared<request::waiting_room::WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
-) -> Result<(Peer, State), Error>
+) -> Result<(Peer, State), state::Error>
 where
     I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
 {

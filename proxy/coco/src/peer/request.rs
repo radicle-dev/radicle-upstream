@@ -8,10 +8,9 @@ use librad::{
 };
 
 use crate::{
-    error,
     request::waiting_room::{self, WaitingRoom},
     shared::Shared,
-    State,
+    state, State,
 };
 
 /// An error that can occur when attempting to work with the waiting room or cloning a project.
@@ -22,7 +21,7 @@ pub enum Error {
     WaitingRoom(#[from] waiting_room::Error),
     /// An error occurred when attempting to clone a project.
     #[error(transparent)]
-    Crate(#[from] error::Error),
+    State(#[from] state::Error),
 }
 
 /// Emit a [`Gossip`] request for the given `urn` and mark the `urn` as [`WaitingRoom`::queried`].
