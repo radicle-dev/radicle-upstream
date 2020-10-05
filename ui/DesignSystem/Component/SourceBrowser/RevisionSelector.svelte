@@ -7,14 +7,13 @@
   import Overlay from "../Overlay.svelte";
   import { Icon } from "../../Primitive";
 
-  export let expanded: boolean = false;
-
   export let revisions: source.PeerRevisions;
+  export let currentRevision: source.Branch | source.Tag | undefined;
 
-  export let currentRevision: source.Branch | source.Tag;
+  if (!currentRevision) currentRevision = revisions.branches[0];
 
+  let expanded: boolean = false;
   const toggle = () => (expanded = !expanded);
-
   const hideDropdown = () => {
     expanded = false;
   };
@@ -22,7 +21,6 @@
   const dispatch = createEventDispatcher();
 
   const selectRevision = (revision: source.Branch | source.Tag) => {
-    console.log("SELECTING", revision);
     dispatch("select", { revision });
     hideDropdown();
   };

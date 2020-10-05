@@ -1,6 +1,7 @@
 import { Readable, writable } from "svelte/store";
 
 import * as api from "./api";
+import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
@@ -34,7 +35,7 @@ interface Commits {
   stats: Stats;
 }
 
-interface CommitsStore {
+export interface CommitsStore {
   history: CommitHistory;
   stats: Stats;
 }
@@ -98,9 +99,8 @@ export interface PeerRevisions {
   identity: identity.Identity;
   branches: Branch[];
   tags: Tag[];
+  defaultBranch?: string;
 }
-
-// type Revisions = Revision[];
 
 interface Readme {
   content: string;
@@ -115,20 +115,32 @@ export enum RevisionType {
 
 export interface Branch {
   type: RevisionType.Branch;
+  projectId: string;
   name: string;
-  peerId?: string;
+  peerId: string;
 }
 
 export interface Tag {
   type: RevisionType.Tag;
+  projectId: string;
   name: string;
-  peerId?: string;
+  peerId: string;
 }
 
 export interface Sha {
   type: RevisionType.Sha;
   sha: string;
 }
+
+// Proxy representation of all revisions for a project from a particular peer
+type PeerRevisionsResponse = {
+  // The identity of the peer who owns these revisions
+  identity: identity.Identity;
+
+  // Names of associated branches and tags
+  branches: string[];
+  tags: string[];
+}[];
 
 export type RevisionQuery = Branch | Tag | Sha;
 
@@ -144,16 +156,50 @@ export const object = objectStore.readable;
 
 const revisionsStore = remote.createStore<PeerRevisions[]>();
 export const revisions = revisionsStore.readable;
+revisions.subscribe(store => {
+  // If revisions change, we need to update everything that depends on them.
+  if (store.status === remote.Status.Success) {
+    // The first `PeerRevisions` in the response belongs to the default peer.
+    const defaultRevisions = store.data[0];
+
+    const peerId = defaultRevisions.identity.peerId;
+    updateCurrentPeerId({ peerId });
+
+    // Now that we have a peer, set the current revision to the default branch.
+    // If not found, use the first branch returned from proxy.
+    const defaultRevision =
+      defaultRevisions.branches.find(
+        branch => branch.name === defaultRevisions.defaultBranch
+      ) || defaultRevisions.branches[0];
+    updateCurrentRevision({ revision: defaultRevision });
+  }
+});
 
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = () => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = () => objectPath.set(null);
 
+export const defaultRevision = (
+  peerRevisions: PeerRevisions,
+  projectDefaultBranch: string
+) =>
+  peerRevisions.branches.find(branch => branch.name === projectDefaultBranch) ||
+  peerRevisions.branches[0];
+
 export const currentRevision = writable<Branch | Tag | undefined>(undefined);
+currentRevision.subscribe(revision => {
+  if (revision) {
+    // Fetch commits when the current revision is changed
+    fetchCommits({ projectId: revision?.projectId, revision });
+  }
+});
+
 export const resetCurrentRevision = () => currentRevision.set(undefined);
+
 export const currentPeerId = writable<string | undefined>(undefined);
-export const resetCurrentPeerId = () => currentPeerId.set(undefined);
+export const resetCurrentPeerId = () =>
+  updateCurrentPeerId({ peerId: undefined });
 
 // EVENTS
 enum Kind {
@@ -161,6 +207,9 @@ enum Kind {
   FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
   FetchObject = "FETCH_OBJECT",
+
+  UpdateCurrentPeerId = "UPDATE_CURRENT_PEER_ID",
+  UpdateCurrentRevision = "UPDATE_CURRENT_REVISION",
 }
 
 interface FetchCommit extends event.Event<Kind> {
@@ -179,6 +228,7 @@ interface FetchCommits extends event.Event<Kind> {
 interface FetchRevisions extends event.Event<Kind> {
   kind: Kind.FetchRevisions;
   projectId: string;
+  defaultBranch?: string;
 }
 
 interface FetchObject extends event.Event<Kind> {
@@ -188,6 +238,16 @@ interface FetchObject extends event.Event<Kind> {
   projectId: string;
   revision: RevisionQuery;
   type: ObjectType;
+}
+
+interface UpdateCurrentPeerId extends event.Event<Kind> {
+  kind: Kind.UpdateCurrentPeerId;
+  peerId: string;
+}
+
+interface UpdateCurrentRevision extends event.Event<Kind> {
+  kind: Kind.UpdateCurrentRevision;
+  revision: Branch | Tag;
 }
 
 const groupCommits = (history: CommitSummary[]): CommitHistory => {
@@ -216,17 +276,13 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
   return days;
 };
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchObject;
-
-// Proxy representation of all revisions for a project from a particular peer
-type PeerRevisionsResponse = {
-  // The identity of the peer who owns these revisions
-  identity: identity.Identity;
-
-  // Names for associated branches and tags
-  branches: string[];
-  tags: string[];
-}[];
+type Msg =
+  | FetchCommit
+  | FetchCommits
+  | FetchRevisions
+  | FetchObject
+  | UpdateCurrentPeerId
+  | UpdateCurrentRevision;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -267,13 +323,16 @@ const update = (msg: Msg): void => {
             branches: rev.branches.map(name => ({
               name,
               type: RevisionType.Branch,
+              projectId: msg.projectId,
               peerId: rev.identity.peerId,
             })),
             tags: rev.tags.map(name => ({
               name,
               type: RevisionType.Tag,
+              projectId: msg.projectId,
               peerId: rev.identity.peerId,
             })),
+            defaultBranch: msg.defaultBranch || DEFAULT_BRANCH_FOR_NEW_PROJECTS,
           }));
           revisionsStore.success(revisions);
         })
@@ -312,6 +371,13 @@ const update = (msg: Msg): void => {
           break;
       }
       break;
+
+    case Kind.UpdateCurrentPeerId:
+      currentPeerId.set(msg.peerId);
+      break;
+
+    case Kind.UpdateCurrentRevision:
+      currentRevision.set(msg.revision);
   }
 };
 
@@ -322,6 +388,14 @@ export const fetchRevisions = event.create<Kind, Msg>(
   update
 );
 export const fetchObject = event.create<Kind, Msg>(Kind.FetchObject, update);
+export const updateCurrentPeerId = event.create<Kind, Msg>(
+  Kind.UpdateCurrentPeerId,
+  update
+);
+export const updateCurrentRevision = event.create<Kind, Msg>(
+  Kind.UpdateCurrentRevision,
+  update
+);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);

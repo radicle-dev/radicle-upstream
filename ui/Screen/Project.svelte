@@ -2,7 +2,6 @@
   import Router from "svelte-spa-router";
   import { isExperimental, openPath } from "../../native/ipc.js";
 
-  import * as identity from "../src/identity";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
   import { checkout, fetch, project as store } from "../src/project";
@@ -11,10 +10,8 @@
   import * as screen from "../src/screen";
   import {
     commits as commitsStore,
-    currentPeerId as currentPeerIdStore,
-    currentRevision as currentRevisionStore,
-    fetchCommits,
-    fetchRevisions,
+    currentPeerId,
+    currentRevision,
     resetCurrentRevision,
     resetCurrentPeerId,
     revisions as revisionsStore,
@@ -53,23 +50,23 @@
   export let params: { id: string };
   const projectId = params.id;
 
-  // Reset some stores on first load
+  // Reset user-manipulated stores on first load
   resetCurrentRevision();
   resetCurrentPeerId();
 
-  $: topbarMenuItems = (project: Project, commitCounter?: number) => {
+  $: topbarMenuItems = (commitCounter?: number) => {
     const items = [
       {
         icon: Icon.House,
         title: "Source",
-        href: path.projectSource(project.id),
+        href: path.projectSource(projectId),
         looseActiveStateMatching: true,
       },
       {
         icon: Icon.Commit,
         title: "Commits",
         counter: commitCounter,
-        href: path.projectCommits(project.id),
+        href: path.projectCommits(projectId),
         looseActiveStateMatching: true,
       },
     ];
@@ -120,77 +117,44 @@
   };
 
   fetch({ id: projectId });
-  fetchRevisions({ projectId });
 
-  let project: Project | undefined;
-  let revisions: source.PeerRevisions[] | undefined;
+  // Workaround for stores: https://github.com/sveltejs/language-tools/issues/493
+  // TODO(sos): should be removed if/when this is fixed.
+  let revisions: source.PeerRevisions[] | undefined,
+    project: Project | undefined,
+    commits: source.CommitsStore | undefined;
 
   $: {
-    const revStore = $revisionsStore;
-    revisions =
-      revStore.status === remote.Status.Success ? revStore.data : undefined;
-
-    const pStore = $store;
-    project = pStore.status === remote.Status.Success ? pStore.data : undefined;
+    const rs = $revisionsStore;
+    revisions = rs.status === remote.Status.Success ? rs.data : undefined;
   }
 
-  let currentPeerId: string,
-    currentPeerRevisions: source.PeerRevisions,
-    currentRevision: source.Branch | source.Tag,
-    availablePeers: identity.Identity[];
-
-  // Initialize available peers & revisions once revisions have loaded
   $: {
-    if (revisions && project) {
-      // If no peer has been selected, choose the first one
-      if (!currentPeerId) currentPeerId = revisions[0].identity.peerId;
-      currentPeerIdStore.set(currentPeerId);
+    const ps = $store;
+    project = ps.status === remote.Status.Success ? ps.data : undefined;
+  }
 
-      // Now we can get the revisions for the current peer
-      currentPeerRevisions = revisions.filter(
-        rev => rev.identity.peerId === currentPeerId
-      )[0];
-
-      const defaultBranch = project.metadata.defaultBranch;
-
-      // Now that we have a peer, set the current revision to the default branch.
-      // If not found, use the first branch returned from proxy.
-      if (!currentRevision)
-        currentRevision =
-          currentPeerRevisions.branches.find(
-            branch => branch.name === defaultBranch
-          ) || currentPeerRevisions.branches[0];
-
-      currentRevisionStore.set(currentRevision);
-
-      // Peers to be displayed in peer selector UI
-      availablePeers = revisions.map(rev => rev.identity);
-    }
+  $: {
+    const cs = $commitsStore;
+    commits = cs.status === remote.Status.Success ? cs.data : undefined;
   }
 
   const updatePeer = (ev: CustomEvent<{ peerId: string }>) => {
-    const newPeer =
-      availablePeers &&
-      (availablePeers.find(peer => peer.peerId === ev.detail.peerId) ||
-        availablePeers[0]);
-
-    if (newPeer) {
-      currentPeerId = newPeer.peerId;
-      currentPeerIdStore.set(currentPeerId);
-    }
+    source.updateCurrentPeerId({ peerId: ev.detail.peerId });
   };
 
   const updateRevision = (
     ev: CustomEvent<{ revision: source.Branch | source.Tag }>
   ) => {
-    console.log("updating revision", ev);
-    currentRevision = ev.detail.revision;
-    currentRevisionStore.set(currentRevision);
+    source.updateCurrentRevision({ revision: ev.detail.revision });
   };
 
-  $: if (currentRevision) {
-    fetchCommits({ projectId, revision: currentRevision });
-  }
+  // Peers to be displayed in peer selector
+  $: availablePeers = revisions && revisions.map(rev => rev.identity);
+
+  // Revisions that belong to the current selected peer, formatted for display in revision selector
+  $: currentPeerRevisions =
+    revisions && revisions.find(rev => rev.identity.peerId === $currentPeerId);
 </script>
 
 <style>
@@ -202,50 +166,55 @@
 </style>
 
 <SidebarLayout dataCy="project-screen">
-  <Remote {store} let:data={project} context="project">
-    <Remote store={revisionsStore} context="revisions">
-      <Header.Large
-        name={project.metadata.name}
-        urn={project.shareableEntityIdentifier}
-        description={project.metadata.description}
-        stats={project.stats}>
-        <div slot="left">
-          <div style="display: flex">
-            <div class="revision-selector-wrapper">
-              {#if currentPeerId}
-                <RevisionSelector
-                  {currentRevision}
-                  revisions={currentPeerRevisions}
-                  on:select={updateRevision} />
+  <Remote {store} context="project">
+    {#if project}
+      <Remote store={revisionsStore} context="revisions">
+        <Header.Large
+          name={project.metadata.name}
+          urn={project.shareableEntityIdentifier}
+          description={project.metadata.description}
+          stats={project.stats}>
+          <div slot="left">
+            <div style="display: flex">
+              <div class="revision-selector-wrapper">
+                {#if currentPeerRevisions}
+                  <RevisionSelector
+                    currentRevision={$currentRevision}
+                    revisions={currentPeerRevisions}
+                    on:select={updateRevision} />
+                {/if}
+              </div>
+              {#if commits}
+                <Remote store={commitsStore}>
+                  <HorizontalMenu
+                    items={topbarMenuItems(commits.stats.commits)} />
+                  <div slot="loading">
+                    <HorizontalMenu
+                      items={topbarMenuItems()}
+                      style="display: inline" />
+                  </div>
+                </Remote>
               {/if}
             </div>
-            <Remote store={commitsStore} let:data={commits}>
-              <HorizontalMenu
-                items={topbarMenuItems(project, commits.stats.commits)} />
-              <div slot="loading">
-                <HorizontalMenu
-                  items={topbarMenuItems(project, undefined)}
-                  style="display: inline" />
-              </div>
-            </Remote>
           </div>
-        </div>
-        <div slot="right">
-          <CheckoutButton on:checkout={ev => handleCheckout(ev, project)} />
-        </div>
-        <div slot="top">
-          <div style="display: flex">
-            {#if availablePeers}
-              <PeerSelector
-                {availablePeers}
-                {currentPeerId}
-                on:select={updatePeer} />
-            {/if}
-            <TrackToggle />
+          <div slot="right">
+            <CheckoutButton
+              on:checkout={ev => project && handleCheckout(ev, project)} />
           </div>
-        </div>
-      </Header.Large>
-    </Remote>
-    <Router {routes} />
+          <div slot="top">
+            <div style="display: flex">
+              {#if availablePeers}
+                <PeerSelector
+                  {availablePeers}
+                  currentPeerId={$currentPeerId || ''}
+                  on:select={updatePeer} />
+              {/if}
+              <TrackToggle />
+            </div>
+          </div>
+        </Header.Large>
+      </Remote>
+      <Router {routes} />
+    {/if}
   </Remote>
 </SidebarLayout>

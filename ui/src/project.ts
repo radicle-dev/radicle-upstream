@@ -6,6 +6,7 @@ import * as currency from "./currency";
 import * as event from "./event";
 import * as org from "./org";
 import * as remote from "./remote";
+import * as source from "./source";
 import { getLocalState, LocalState } from "./source";
 import * as transaction from "./transaction";
 import * as user from "./user";
@@ -72,6 +73,13 @@ export const creation = creationStore.readable;
 
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;
+
+// Once we have the project, we can download its revisions.
+project.subscribe(store => {
+  if (store.status === remote.Status.Success) {
+    source.fetchRevisions({ projectId: store.data.id });
+  }
+});
 
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
