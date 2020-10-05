@@ -51,5 +51,5 @@
 
 <div class="container">
   <!-- TODO(nuno): Collect pool funds screen goes here -->
-  <Pool {amount} {balance} {enabled} {members} {onFillUp} {onDrain} {onSave} />
+  <Pool {amount} {balance} {members} {onFillUp} {onDrain} {onSave} />
 </div>
