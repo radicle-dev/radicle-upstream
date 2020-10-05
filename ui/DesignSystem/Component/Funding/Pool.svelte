@@ -1,17 +1,17 @@
 <script lang="ts">
   import { Button, Input } from "../../Primitive";
+  import { Remote } from "../../Component";
 
-  export let amount: number;
-  export let balance: number;
-  export let members: string;
-  export let onFillUp: () => Promise<void>;
-  export let onDrain: () => Promise<void>;
-  export let onSave: () => Promise<void>;
+  // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
+  import * as p from "../../../src/funding/pool";
 
-  $: membersList = members
-    .split(",")
-    .map(e => e.trim())
-    .filter(e => e.length > 0);
+  export let pool: p.Pool;
+
+  // TODO(nuno): read from pool
+  let monthlyContribution = 0;
+
+  // Necessary to comply with Textarea.bind:value type.
+  let members: string | any = "a,b,c"; // TODO(nuno): read from pool: .split(", ")
 </script>
 
 <style>
@@ -40,66 +40,83 @@
 
 <div class="pool-container">
   <h3>Pool</h3>
-  <ul>
-    <!-- Make all options below disabled if the pool is disabled -->
-    <li class="row">
-      <header>
-        <p class="typo-text-bold">Monthly contribution</p>
-        <p>
-          Set a fixed monthly amount to contribute to your pool. With ${amount} per
-          month, pool members get ${amount / membersList.length} a month each. This
-          is accessible in real time, so if a user is in the pool for 2 days, they
-          can already claim $0.95).
-        </p>
-      </header>
-      <div class="item">
-        $
-        <Input.Text
-          dataCy="monthly-contribution"
-          bind:value={amount}
-          placeholder="100.00"
-          style="max-width: 100px; padding-bottom: 10px;" />
-        <div />
-      </div>
-    </li>
-    <li class="row">
-      <header>
-        <p class="typo-text-bold">Balance</p>
-        <p>
-          The current balance of your pool. Currently ${amount} per month is required
-          to keep your support going, so you don’t need to top up for {Math.floor(balance / amount)}
-          months.
-        </p>
-      </header>
-      <div class="item">
-        <h3>${balance}</h3>
-        <Button
-          dataCy="fill-pool-button"
-          variant="secondary"
-          on:click={onFillUp}>
-          Fill up your pool 😉
-        </Button>
-        <Button dataCy="fill-pool-button" variant="outline" on:click={onDrain}>
-          Drain up your pool
-        </Button>
-      </div>
-    </li>
-    <li class="row">
-      <header>
-        <p class="typo-text-bold">Edit your pool</p>
-        <p>
-          These are the projects, users, and teams in your pool. Remove anyone
-          you don’t want to support anymore or add new ones you want to start
-          supporting.
-        </p>
-      </header>
-      <div class="item">
-        <Input.Textarea
-          style="width: 25vw"
-          bind:value={members}
-          placeholder="Enter members here" />
-      </div>
-    </li>
-  </ul>
-  <Button on:click={onSave}>Save</Button>
+
+  <Remote store={pool.data} let:data={poolData}>
+    <ul>
+      <!-- Make all options below disabled if the pool is disabled -->
+      <li class="row">
+        <header>
+          <p class="typo-text-bold">Monthly contribution</p>
+          <p>
+            Set a fixed monthly amount to contribute to your pool. With ${poolData.monthlyContribution}
+            per month, pool members get ${poolData.monthlyContribution / poolData.members.length}
+            a month each. This is accessible in real time, so if a user is in the
+            pool for 2 days, they can already claim $0.95).
+          </p>
+        </header>
+        <div class="item">
+          $
+          <Input.Text
+            dataCy="monthly-contribution"
+            bind:value={monthlyContribution}
+            placeholder="100.00"
+            style="max-width: 100px; padding-bottom: 10px;" />
+          <div />
+        </div>
+      </li>
+      <li class="row">
+        <header>
+          <p class="typo-text-bold">Balance</p>
+          <p>
+            The current balance of your pool. Currently ${poolData.monthlyContribution}
+            per month is required to keep your support going, so you don’t need to
+            top up for {Math.floor(poolData.monthlyContribution / poolData.balance)}
+            months.
+          </p>
+        </header>
+        <div class="item">
+          <h3>${poolData.balance}</h3>
+          <Button
+            dataCy="fill-pool-button"
+            variant="secondary"
+            on:click={() => {
+              console.log('Open modal to input amount');
+            }}>
+            Fill up your pool 😉
+          </Button>
+          <Button
+            dataCy="fill-pool-button"
+            variant="outline"
+            on:click={() => {
+              console.log('Open modal to input amount');
+            }}>
+            Drain up your pool
+          </Button>
+        </div>
+      </li>
+      <li class="row">
+        <header>
+          <p class="typo-text-bold">Edit your pool</p>
+          <p>
+            These are the projects, users, and teams in your pool. Remove anyone
+            you don’t want to support anymore or add new ones you want to start
+            supporting.
+          </p>
+        </header>
+        <div class="item">
+          <Input.Textarea
+            style="width: 25vw"
+            bind:value={members}
+            placeholder="Enter members here" />
+        </div>
+      </li>
+    </ul>
+    <Button
+      on:click={() => pool.save({
+          monthlyContribution,
+          members: members.split(', '),
+        })}>
+      Save
+    </Button>
+  </Remote>
 </div>
