@@ -22,6 +22,8 @@
 </style>
 
 <div class="container">
+  <h2>Pool</h2>
+  <p>We should explain what the pool is and why users shoudl opt-in.</p>
   <Receiver {pool} />
   <Giver {pool} />
 </div>
