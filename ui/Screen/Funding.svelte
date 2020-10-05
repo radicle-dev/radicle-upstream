@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Pool from "../DesignSystem/Component/Funding/Pool.svelte";
+  import Giver from "../DesignSystem/Component/Funding/Pool/Giver.svelte";
   import * as pool from "../src/funding/pool";
 
   export let wallet: any;
@@ -19,5 +19,5 @@
 
 <div class="container">
   <!-- TODO(nuno): Collect pool funds screen goes here -->
-  <Pool pool={makePool()} />
+  <Giver pool={makePool()} />
 </div>

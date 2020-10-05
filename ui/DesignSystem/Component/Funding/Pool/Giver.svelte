@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Button, Input } from "../../Primitive";
-  import { Remote } from "../../Component";
+  import { Button, Input } from "../../../Primitive";
+  import { Remote } from "../../../Component";
 
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
-  import * as p from "../../../src/funding/pool";
+  import * as p from "../../../../src/funding/pool";
 
   export let pool: p.Pool;
 
