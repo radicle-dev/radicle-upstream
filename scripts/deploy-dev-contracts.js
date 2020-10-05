@@ -13,7 +13,7 @@ async function main() {
     "http://localhost:8545"
   );
   const signer = provider.getSigner(0);
-  const contracts = await deployAll(provider, signer);
+  const contracts = await deployAll(signer);
   console.log(`Rad token deployed at ${contracts.rad.address.toLowerCase()}`);
   console.log(`ENS deployed at ${contracts.ens.address.toLowerCase()}`);
 }
