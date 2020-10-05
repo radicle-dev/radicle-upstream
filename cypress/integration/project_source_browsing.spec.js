@@ -156,6 +156,8 @@ context("source code browsing", () => {
           // Going to a different path and then switching back to the root path
           // shows the README again.
           cy.pick("source-tree").within(() => {
+            // The source components need a moment to load & attach to the DOM
+            cy.wait(300);
             cy.contains(".i-am-well-hidden").click();
           });
           cy.pick("project-screen", "file-source").contains(
@@ -318,26 +320,26 @@ context("source code browsing", () => {
 
     it("allows navigating the tree structure", () => {
       cy.pick("source-tree").within(() => {
+        // The source components need a moment to load & attach to the DOM
+        cy.wait(300);
         // Traverse deeply nested folders.
-        // Adding { force: true } helps with flakiness locally
-        // see https://github.com/cypress-io/cypress/issues/5743
-        cy.pick("expand-this").click({ force: true });
-        cy.pick("expand-is").click({ force: true });
-        cy.pick("expand-a").click({ force: true });
-        cy.pick("expand-really").click({ force: true });
-        cy.pick("expand-deeply").click({ force: true });
-        cy.pick("expand-nested").click({ force: true });
-        cy.pick("expand-directory").click({ force: true });
-        cy.pick("expand-tree").click({ force: true });
+        cy.pick("expand-this").click();
+        cy.pick("expand-is").click();
+        cy.pick("expand-a").click();
+        cy.pick("expand-really").click();
+        cy.pick("expand-deeply").click();
+        cy.pick("expand-nested").click();
+        cy.pick("expand-directory").click();
+        cy.pick("expand-tree").click();
 
         // Open a file within nested folders.
-        cy.contains(".gitkeep").click({ force: true });
+        cy.contains(".gitkeep").click();
         cy.contains(".gitkeep").should("have.class", "active");
 
         // Preserve expanded folder state when selecting a different file.
         cy.scrollTo("top");
-        cy.pick("expand-text").click({ force: true });
-        cy.contains("arrows.txt").click({ force: true });
+        cy.pick("expand-text").click();
+        cy.contains("arrows.txt").click();
         cy.contains("arrows.txt").should("have.class", "active");
         cy.contains(".gitkeep").should("not.have.class", "active");
       });
@@ -345,8 +347,10 @@ context("source code browsing", () => {
 
     it("highlights the selected file", () => {
       cy.pick("source-tree").within(() => {
+        // The source components need a moment to load & attach to the DOM
+        cy.wait(300);
         cy.contains(".i-am-well-hidden").should("not.have.class", "active");
-        cy.contains(".i-am-well-hidden").click({ force: true });
+        cy.contains(".i-am-well-hidden").click();
         cy.contains(".i-am-well-hidden").should("have.class", "active");
       });
     });
@@ -355,8 +359,10 @@ context("source code browsing", () => {
       context("for non-binary files", () => {
         it("shows the contents of the file", () => {
           cy.pick("source-tree").within(() => {
-            cy.pick("expand-src").click({ force: true });
-            cy.contains("Eval.hs").click({ force: true });
+            // The source components need a moment to load & attach to the DOM
+            cy.wait(300);
+            cy.pick("expand-src").click();
+            cy.contains("Eval.hs").click();
           });
 
           // the file path is shown in the header
@@ -377,6 +383,8 @@ context("source code browsing", () => {
       context("for binary files", () => {
         it("does not render the binary content", () => {
           cy.pick("source-tree").within(() => {
+            // The source components need a moment to load & attach to the DOM
+            cy.wait(300);
             cy.pick("expand-bin").click();
             cy.contains("ls").click();
           });
