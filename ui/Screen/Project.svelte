@@ -206,11 +206,12 @@
           </div>
           <div slot="top">
             <div style="display: flex">
-              {#if availablePeers}
+              {#if availablePeers && project}
                 <PeerSelector
                   {availablePeers}
                   currentPeerId={$currentPeerId}
-                  on:select={updatePeer} />
+                  on:select={updatePeer}
+                  maintainers={project.metadata.maintainers} />
               {/if}
               <TrackToggle />
             </div>

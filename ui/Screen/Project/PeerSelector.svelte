@@ -4,7 +4,6 @@
 
   import * as badge from "../../src/badge";
   import * as identity from "../../src/identity";
-  import * as notification from "../../src/notification";
   import * as path from "../../src/path";
   import * as style from "../../src/style";
 
@@ -13,20 +12,12 @@
 
   export let currentPeerId: string | undefined;
   export let availablePeers: identity.Identity[];
+  export let maintainers: string[] | undefined = undefined;
 
   let expanded = false,
     currentPeer: identity.Identity;
 
-  if (currentPeerId) {
-    currentPeer =
-      availablePeers.find(peer => peer.id === currentPeerId) ||
-      availablePeers[0];
-  } else {
-    notification.error("Unable to load available peers");
-  }
-
   const session = getContext("session");
-  const { metadata } = getContext("project");
 
   const showDropdown = () => {
     expanded = true;
@@ -49,6 +40,9 @@
     hideDropdown();
     dispatch("select", { peerId });
   };
+
+  $: currentPeer =
+    availablePeers.find(peer => peer.id === currentPeerId) || availablePeers[0];
 </script>
 
 <style>
@@ -116,70 +110,74 @@
 </style>
 
 <Overlay {expanded} on:hide={hideDropdown} style="position: relative;">
-  <div
-    class="peer-selector"
-    data-cy="peer-selector"
-    on:click|stopPropagation={showDropdown}
-    hidden={expanded}>
-    <div class="selector-avatar typo-overflow-ellipsis">
-      <Avatar
-        avatarFallback={currentPeer.avatarFallback}
-        size="small"
-        style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
-        variant="circle" />
-      <p class="typo-text-bold typo-overflow-ellipsis">
-        {currentPeer.metadata.handle || currentPeer.shareableEntityIdentifier}
-      </p>
-      <p>
-        {#if metadata.maintainers.includes(currentPeer.urn)}
-          <Badge
-            style="margin-left: 0.5rem"
-            variant={badge.BadgeType.Maintainer} />
-        {/if}
-      </p>
+  {#if currentPeer}
+    <div
+      class="peer-selector"
+      data-cy="peer-selector"
+      on:click|stopPropagation={showDropdown}
+      hidden={expanded}>
+      <div class="selector-avatar typo-overflow-ellipsis">
+        <Avatar
+          avatarFallback={currentPeer.avatarFallback}
+          size="small"
+          style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
+          variant="circle" />
+        <p class="typo-text-bold typo-overflow-ellipsis">
+          {currentPeer.metadata.handle || currentPeer.shareableEntityIdentifier}
+        </p>
+        <p>
+          {#if maintainers && maintainers.includes(currentPeer.urn)}
+            <Badge
+              style="margin-left: 0.5rem"
+              variant={badge.BadgeType.Maintainer} />
+          {/if}
+        </p>
+      </div>
+      <div class="selector-expand">
+        <Icon.ChevronUpDown
+          style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+      </div>
     </div>
-    <div class="selector-expand">
-      <Icon.ChevronUpDown
-        style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
-    </div>
-  </div>
-  <div class="peer-dropdown-container">
-    <div class="peer-dropdown" hidden={!expanded}>
-      {#each availablePeers as peer}
-        <div
-          class="peer"
-          class:selected={peer.peerId == currentPeer.peerId}
-          data-peer-handle={peer.metadata.handle}>
-          <div style="display: flex;" on:click={() => selectPeer(peer.peerId)}>
-            <Avatar
-              avatarFallback={peer.avatarFallback}
-              style="display: flex; justify-content: flex-start; margin-right:
-            8px;"
-              size="small"
-              variant="circle" />
-            <p class="typo-text-bold typo-overflow-ellipsis">
-              {peer.metadata.handle || peer.shareableEntityIdentifier}
-            </p>
-            <p>
-              {#if metadata.maintainers.includes(peer.urn)}
-                <Badge
-                  style="margin-left: 0.5rem"
-                  variant={badge.BadgeType.Maintainer} />
-              {/if}
-            </p>
-          </div>
-          <Tooltip value="Go to profile" position={style.CSSPosition.Top}>
+    <div class="peer-dropdown-container">
+      <div class="peer-dropdown" hidden={!expanded}>
+        {#each availablePeers as peer}
+          <div
+            class="peer"
+            class:selected={peer.peerId == currentPeer.peerId}
+            data-peer-handle={peer.metadata.handle}>
             <div
-              data-cy={peer.metadata.handle}
-              class="open-profile"
-              on:click={() => {
-                handleOpenProfile(peer.urn);
-              }}>
-              <Icon.ArrowBoxUpRight />
+              style="display: flex;"
+              on:click={() => selectPeer(peer.peerId)}>
+              <Avatar
+                avatarFallback={peer.avatarFallback}
+                style="display: flex; justify-content: flex-start; margin-right:
+            8px;"
+                size="small"
+                variant="circle" />
+              <p class="typo-text-bold typo-overflow-ellipsis">
+                {peer.metadata.handle || peer.shareableEntityIdentifier}
+              </p>
+              <p>
+                {#if maintainers && maintainers.includes(peer.urn)}
+                  <Badge
+                    style="margin-left: 0.5rem"
+                    variant={badge.BadgeType.Maintainer} />
+                {/if}
+              </p>
             </div>
-          </Tooltip>
-        </div>
-      {/each}
+            <Tooltip value="Go to profile" position={style.CSSPosition.Top}>
+              <div
+                data-cy={peer.metadata.handle}
+                class="open-profile"
+                on:click={() => {
+                  handleOpenProfile(peer.urn);
+                }}>
+                <Icon.ArrowBoxUpRight />
+              </div>
+            </Tooltip>
+          </div>
+        {/each}
+      </div>
     </div>
-  </div>
+  {/if}
 </Overlay>
