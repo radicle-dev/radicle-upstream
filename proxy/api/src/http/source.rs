@@ -218,7 +218,9 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`] for a local repository.
     pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
-        let state = coco::local_state(path.as_str()).map_err(error::Error::from)?;
+        let state = coco::local_state(path.as_str())
+            .map_err(coco::state::Error::from)
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&state))
     }
@@ -235,11 +237,15 @@ mod handler {
             .await
             .map_err(error::Error::from)?;
         let peer_id = ctx.state.peer_id();
+        let owner = owner
+            .to_data()
+            .build()
+            .map_err(coco::state::Error::from)
+            .map_err(error::Error::from)?;
         let revisions: Vec<super::Revisions> = ctx
             .state
             .with_browser(project_urn, |browser| {
                 // TODO(finto): downgraded verified user, which should not be needed.
-                let owner = owner.to_data().build()?;
                 Ok(coco::revisions(browser, peer_id, owner, peers)?
                     .into_iter()
                     .map(|revision| revision.into())
@@ -381,10 +387,10 @@ mod test {
 
     use radicle_surf::vcs::git;
 
-    use crate::{context, error, http, identity, session};
+    use crate::{context, http, identity, session};
 
     #[tokio::test]
-    async fn blob() -> Result<(), error::Error> {
+    async fn blob() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -530,7 +536,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn blob_dev_branch() -> Result<(), error::Error> {
+    async fn blob_dev_branch() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -598,7 +604,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn branches() -> Result<(), error::Error> {
+    async fn branches() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -638,7 +644,7 @@ mod test {
 
     #[tokio::test]
     #[allow(clippy::indexing_slicing)]
-    async fn commit() -> Result<(), error::Error> {
+    async fn commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -657,8 +663,7 @@ mod test {
             platinum_project.urn()
         };
 
-        let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")
-            .map_err(coco::Error::from)?;
+        let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
 
         let res = request()
             .method("GET")
@@ -696,7 +701,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn commits() -> Result<(), error::Error> {
+    async fn commits() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -725,7 +730,7 @@ mod test {
         let want = ctx
             .state
             .with_browser(urn, |mut browser| {
-                Ok(coco::commits(&mut browser, branch.clone())?)
+                coco::commits(&mut browser, branch.clone())
             })
             .await?;
 
@@ -737,7 +742,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn local_state() -> Result<(), error::Error> {
+    async fn local_state() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -770,7 +775,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn revisions() -> Result<(), error::Error> {
+    async fn revisions() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -804,7 +809,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let owner = owner.to_data().build().map_err(coco::Error::from)?; // TODO(finto): Unverify owner, unfortunately
+        let owner = owner.to_data().build()?; // TODO(finto): Unverify owner, unfortunately
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
@@ -846,7 +851,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn tags() -> Result<(), error::Error> {
+    async fn tags() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -887,7 +892,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn tree() -> Result<(), error::Error> {
+    async fn tree() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
@@ -970,7 +975,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn tree_dev_branch() -> Result<(), error::Error> {
+    async fn tree_dev_branch() -> Result<(), Box<dyn std::error::Error>> {
         // Testing that the endpoint works with URL encoding
         const FRAGMENT: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS
             .add(b' ')
@@ -1021,7 +1026,6 @@ mod test {
             .state
             .with_browser(urn, |mut browser| {
                 coco::tree(&mut browser, default_branch, Some(revision), None)
-                    .map_err(coco::Error::from)
             })
             .await?;
 
