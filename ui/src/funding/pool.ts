@@ -1,4 +1,7 @@
 import { writable } from "svelte/store";
+import poolCompilerOutput from "radicle-contracts/artifacts/Pool.json";
+import { Pool as PoolContract } from "radicle-contracts/contract-bindings/web3/Pool";
+import * as web3Utils from "web3-utils";
 
 import { Wallet } from "../wallet";
 import * as remote from "../remote";
@@ -65,20 +68,36 @@ export interface PoolData {
 export function make(wallet: Wallet): Pool {
   const store = remote.createStore<PoolData>();
   // TODO(nuno|thomas): actually load the pool data from the pool contract.
-  store.success({
-    balance: 10,
-    monthlyContribution: 10,
-    members: ["0x1", "0x2"],
-  });
 
-  async function save(data: PoolSettings): Promise<void> {
+  const poolContract = (new wallet.web3.eth.Contract(
+    (poolCompilerOutput.abi as unknown) as web3Utils.AbiItem[],
+    "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e"
+  ) as unknown) as PoolContract;
+
+  loadPoolData();
+
+  async function loadPoolData() {
+    try {
+      const balance = await poolContract.methods.withdrawable().call();
+
+      store.success({
+        balance: Number(balance),
+        monthlyContribution: 10,
+        members: ["0x1", "0x2"],
+      });
+    } catch (error) {
+      store.error(error);
+    }
+  }
+
+  async function save(_data: PoolSettings): Promise<void> {
     // TODO(thomas): implement this for real using the wallet and the Radicle Contracts
-    return wallet.testSign(JSON.stringify(data));
   }
 
   async function fillUp(value: number): Promise<void> {
-    // TODO(thomas): implement this for real using the wallet and the Radicle Contracts
-    return wallet.testTransfer(value);
+    await poolContract.methods.topUp().send({
+      value,
+    });
   }
 
   return {

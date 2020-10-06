@@ -16,15 +16,8 @@
     <Button on:click={wallet.disconnect}>Disconnect</Button>
   {:else}
     <Button on:click={wallet.disconnect}>disconnect</Button>
-    <br />
-    <Button on:click={_ => wallet.testTransfer(42)}>test transfer</Button>
-    <Button on:click={_ => wallet.testSign('Hello, World')}>test sign</Button>
-
-    <br />
     <div>Address: {$wallet.connected.account.address}</div>
     <div>Balance: {$wallet.connected.account.balance} eth</div>
-    <br />
-
     <Funding {wallet} />
   {/if}
 </div>
