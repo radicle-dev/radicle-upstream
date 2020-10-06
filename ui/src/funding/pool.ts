@@ -6,42 +6,13 @@ import * as web3Utils from "web3-utils";
 import { Wallet } from "../wallet";
 import * as remote from "../remote";
 
-export const txStore = writable<Transaction | null>(null);
-
 export const store = writable<Pool | null>(null);
 
-// TODO(nuno): Delete this
-export interface Transaction {
-  context: string;
-  from: string;
-  to: string;
-  onConfirmed: (value: number) => Promise<void>;
-}
-
-/*
-  Funding
-    - Needs to know if there's a connected wallet
-
-    - Collect Funds
-      - Need `amount` to be collected
-      - Button to collect funds (if any)
-
-    - Pool (if there's connected wallet)
-      - Takes all pool info: remaining balance, members list, monthly amount
-
-      - Fill up
-        - Prompt Amount (Cancel/Confirm)
-        - if confirm, Awaiting user action on the wallet app
-          -
-      - Save
-        - Takes monthly amount and member list
-*/
-
-// TODO(nuno): define a better promise return value
 export interface Pool {
   data: remote.Store<PoolData>;
   save(data: PoolSettings): Promise<void>;
-  fillUp(value: number): Promise<void>;
+  topUp(value: number): Promise<void>;
+  collect(): Promise<void>;
 }
 
 // The pool settings the user can change and save.
@@ -62,6 +33,9 @@ export interface PoolData {
   // The list of eth addresses across whom the
   // `monthlyContribution` is evenly spread.
   members: string[];
+
+  // Funds that the user can collect from their givers.
+  collectableFunds: number;
 }
 
 // TODO(nuno|thomas): Better define this once we get to use the underlying functions.
@@ -79,11 +53,15 @@ export function make(wallet: Wallet): Pool {
   async function loadPoolData() {
     try {
       const balance = await poolContract.methods.withdrawable().call();
+      const collectableFunds = await poolContract.methods.collectable().call();
 
       store.success({
+        // Handle potential overflow using BN.js
         balance: Number(balance),
         monthlyContribution: 10,
         members: ["0x1", "0x2"],
+        // Handle potential overflow using BN.js
+        collectableFunds: Number(collectableFunds),
       });
     } catch (error) {
       store.error(error);
@@ -91,18 +69,23 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function save(_data: PoolSettings): Promise<void> {
-    // TODO(thomas): implement this for real using the wallet and the Radicle Contracts
+    throw new Error("not implemented");
   }
 
-  async function fillUp(value: number): Promise<void> {
+  async function topUp(value: number): Promise<void> {
     await poolContract.methods.topUp().send({
       value,
     });
   }
 
+  async function collect(): Promise<void> {
+    throw new Error("not implemented");
+  }
+
   return {
     data: store,
     save,
-    fillUp,
+    topUp,
+    collect,
   };
 }

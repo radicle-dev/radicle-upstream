@@ -85,13 +85,13 @@
         <div class="item">
           <h3>${poolData.balance}</h3>
           <Button
-            dataCy="fill-pool-button"
+            dataCy="top-up-pool-button"
             variant="secondary"
             on:click={openSendModal}>
-            Fill up your pool 😉
+            Top up your pool 😉
           </Button>
           <Button
-            dataCy="fill-pool-button"
+            dataCy="drain-pool-button"
             variant="outline"
             on:click={() => {
               console.log('Open modal to input amount');

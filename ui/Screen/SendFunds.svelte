@@ -31,7 +31,7 @@
     try {
       state = TransferState.Confirmation;
       const pool = get(store);
-      const result = await pool.fillUp(amount);
+      const result = await pool.topUp(amount);
       console.log("OnConfirmed result", result);
     } catch (error) {
       notification.error(`Could not transfer funds: ${error.message}`);
