@@ -95,7 +95,7 @@
         <div class="icon">
           <Icon.ArrowUp style="fill: var(--color-primary)" />
         </div>
-        <h2>Fill up your pool 😉</h2>
+        <h2>Top up your pool 😉</h2>
       </header>
       <p
         class="typo-text-bold"
