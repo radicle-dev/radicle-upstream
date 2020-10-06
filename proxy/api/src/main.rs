@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tokio::select! {
             r = runner => match r {
                 // We've been shut down, ignore
-                Err(RunError::Peer(coco::peer::Error::Aborted(_))) | Ok(()) => {
+                Err(RunError::Peer(coco::peer::Error::Spawn(_))) | Ok(()) => {
                     log::debug!("aborted")
                 },
                 // Actual error, abort the process
