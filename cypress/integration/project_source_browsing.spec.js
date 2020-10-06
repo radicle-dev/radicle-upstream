@@ -156,8 +156,6 @@ context("source code browsing", () => {
           // Going to a different path and then switching back to the root path
           // shows the README again.
           cy.pick("source-tree").within(() => {
-            // The source components need a moment to load & attach to the DOM
-            cy.wait(300);
             cy.contains(".i-am-well-hidden").click();
           });
           cy.pick("project-screen", "file-source").contains(
@@ -273,7 +271,6 @@ context("source code browsing", () => {
     context("when switching between projects", () => {
       it("opens the selected project on the default repository and branch", () => {
         cy.createProjectWithFixture("gold");
-        cy.wait(300);
         cy.pick("revision-selector").click();
         cy.get('[data-branch="dev"]').click();
         cy.pick("sidebar", "profile").click();
@@ -320,9 +317,10 @@ context("source code browsing", () => {
     });
 
     it("allows navigating the tree structure", () => {
+      // Ensure the file has loaded before navigating away.
+      cy.pick("file-source").contains("README.md");
+
       cy.pick("source-tree").within(() => {
-        // The source components need a moment to load & attach to the DOM
-        cy.wait(300);
         // Traverse deeply nested folders.
         cy.pick("expand-this").click();
         cy.pick("expand-is").click();
@@ -347,9 +345,10 @@ context("source code browsing", () => {
     });
 
     it("highlights the selected file", () => {
+      // Ensure the file has loaded before navigating away.
+      cy.pick("file-source").contains("README.md");
+
       cy.pick("source-tree").within(() => {
-        // The source components need a moment to load & attach to the DOM
-        cy.wait(300);
         cy.contains(".i-am-well-hidden").should("not.have.class", "active");
         cy.contains(".i-am-well-hidden").click();
         cy.contains(".i-am-well-hidden").should("have.class", "active");
@@ -359,9 +358,10 @@ context("source code browsing", () => {
     context("when clicking on a file name", () => {
       context("for non-binary files", () => {
         it("shows the contents of the file", () => {
+          // Ensure the file has loaded before navigating away.
+          cy.pick("file-source").contains("README.md");
+
           cy.pick("source-tree").within(() => {
-            // The source components need a moment to load & attach to the DOM
-            cy.wait(300);
             cy.pick("expand-src").click();
             cy.contains("Eval.hs").click();
           });
@@ -383,9 +383,10 @@ context("source code browsing", () => {
 
       context("for binary files", () => {
         it("does not render the binary content", () => {
+          // Ensure the file has loaded before navigating away.
+          cy.pick("file-source").contains("README.md");
+
           cy.pick("source-tree").within(() => {
-            // The source components need a moment to load & attach to the DOM
-            cy.wait(300);
             cy.pick("expand-bin").click();
             cy.contains("ls").click();
           });
