@@ -13,6 +13,7 @@ async function main() {
     "http://localhost:8545"
   );
   const signer = provider.getSigner(0);
+  const signerAddress = await signer.getAddress();
   const txCount = await signer.getTransactionCount();
   if (txCount !== 0) {
     throw new Error(
@@ -26,4 +27,6 @@ async function main() {
   console.log(`Pool deployed at ${contracts.pool.address.toLowerCase()}`);
 
   await (await contracts.pool.topUp({ value: 1000 })).wait();
+  await (await contracts.pool.setAmountPerBlock(1)).wait();
+  await (await contracts.pool.setReceiver(signerAddress, 1)).wait();
 }

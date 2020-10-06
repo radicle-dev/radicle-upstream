@@ -6,6 +6,15 @@
   import * as p from "../../../../src/funding/pool";
 
   export let pool: p.Pool;
+
+  const collectFunds = async (): Promise<void> => {
+    try {
+      await pool.collect();
+      console.log("funds collected");
+    } catch (error) {
+      console.error("Failed to collect funds", error);
+    }
+  };
 </script>
 
 <style>
@@ -43,17 +52,15 @@
     <div class="row">
       <header>
         <p>
-          Hi there! You've got $123 waiting to be collected. This is the sum of
-          all the donations you are eligible to receive.
+          Hi there! You've got ETH {poolData.collectableFunds} waiting to be collected.
+          This is the sum of all the donations you are eligible to receive.
         </p>
       </header>
       <div class="item">
         <Button
           dataCy="collect-pool-button"
           variant="outline"
-          on:click={() => {
-            console.log('Collect funds');
-          }}>
+          on:click={collectFunds}>
           Collect your funds 🥳
         </Button>
       </div>

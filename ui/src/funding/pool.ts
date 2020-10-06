@@ -2,16 +2,23 @@ import { writable } from "svelte/store";
 import poolCompilerOutput from "radicle-contracts/artifacts/Pool.json";
 import { Pool as PoolContract } from "radicle-contracts/contract-bindings/web3/Pool";
 import * as web3Utils from "web3-utils";
+import * as svelteStore from "svelte/store";
 
-import { Wallet } from "../wallet";
+import { Wallet, Status as WalletStatus } from "../wallet";
 import * as remote from "../remote";
 
 export const store = writable<Pool | null>(null);
 
 export interface Pool {
   data: remote.Store<PoolData>;
+  // Save the pool settings. Returns once the transaction has been
+  // included in the chain.
   save(data: PoolSettings): Promise<void>;
+  // Adds funds to the pool. Returns once the transaction has been
+  // included in the chain.
   topUp(value: number): Promise<void>;
+  // Collect funds the user has received up to now from givers and
+  // transfer them to the users account.
   collect(): Promise<void>;
 }
 
@@ -33,15 +40,12 @@ export interface PoolData {
   // The list of eth addresses across whom the
   // `monthlyContribution` is evenly spread.
   members: string[];
-
   // Funds that the user can collect from their givers.
   collectableFunds: number;
 }
 
-// TODO(nuno|thomas): Better define this once we get to use the underlying functions.
 export function make(wallet: Wallet): Pool {
-  const store = remote.createStore<PoolData>();
-  // TODO(nuno|thomas): actually load the pool data from the pool contract.
+  const data = remote.createStore<PoolData>();
 
   const poolContract = (new wallet.web3.eth.Contract(
     (poolCompilerOutput.abi as unknown) as web3Utils.AbiItem[],
@@ -54,8 +58,9 @@ export function make(wallet: Wallet): Pool {
     try {
       const balance = await poolContract.methods.withdrawable().call();
       const collectableFunds = await poolContract.methods.collectable().call();
+      console.log(collectableFunds);
 
-      store.success({
+      data.success({
         // Handle potential overflow using BN.js
         balance: Number(balance),
         monthlyContribution: 10,
@@ -64,7 +69,7 @@ export function make(wallet: Wallet): Pool {
         collectableFunds: Number(collectableFunds),
       });
     } catch (error) {
-      store.error(error);
+      data.error(error);
     }
   }
 
@@ -74,16 +79,32 @@ export function make(wallet: Wallet): Pool {
 
   async function topUp(value: number): Promise<void> {
     await poolContract.methods.topUp().send({
+      from: getAccountAddress(),
       value,
     });
+    loadPoolData();
   }
 
   async function collect(): Promise<void> {
-    throw new Error("not implemented");
+    await poolContract.methods.collect().send({
+      from: getAccountAddress(),
+    });
+    loadPoolData();
+  }
+
+  // Get the account address from the wallet. Throws an error if we’re
+  // not connected.
+  function getAccountAddress() {
+    const state = svelteStore.get(wallet);
+    if (state.status === WalletStatus.Connected) {
+      return state.connected.account.address;
+    } else {
+      throw new Error("Wallet is not connected");
+    }
   }
 
   return {
-    data: store,
+    data,
     save,
     topUp,
     collect,
