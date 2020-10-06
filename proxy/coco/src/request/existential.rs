@@ -5,7 +5,7 @@
 // much.
 #![allow(clippy::wildcard_enum_match_arm)]
 
-use std::{ops::Sub, time::Instant};
+use std::ops::Sub;
 
 use serde::{Deserialize, Serialize};
 
@@ -24,8 +24,8 @@ use super::{
 ///
 /// When we pattern match we get back the request parameterised over the specific state and can
 /// work in a type safe manner with this request.
-/// TODO(sos): reintroduce camelCase?
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(bound = "T: serde_millis::Milliseconds")]
 pub enum SomeRequest<T> {
     /// The `Request` has been created.
     Created(Request<Created, T>),
@@ -47,68 +47,6 @@ pub enum SomeRequest<T> {
 
     /// The `Request` has timed out on querying or cloning.
     TimedOut(Request<TimedOut, T>),
-}
-
-impl Serialize for SomeRequest<Instant> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match *self {
-            SomeRequest::Created(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 0, "Created", r)
-            },
-            SomeRequest::Requested(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 1, "Requested", r)
-            },
-            SomeRequest::Found(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 2, "Found", r)
-            },
-            SomeRequest::Cloning(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 3, "Cloning", r)
-            },
-            SomeRequest::Cloned(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 4, "Cloned", r)
-            },
-            SomeRequest::Cancelled(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 5, "Cancelled", r)
-            },
-            SomeRequest::TimedOut(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 6, "TimedOut", r)
-            },
-        }
-    }
-}
-
-impl Serialize for SomeRequest<usize> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match *self {
-            SomeRequest::Created(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 0, "Created", r)
-            },
-            SomeRequest::Requested(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 1, "Requested", r)
-            },
-            SomeRequest::Found(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 2, "Found", r)
-            },
-            SomeRequest::Cloning(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 3, "Cloning", r)
-            },
-            SomeRequest::Cloned(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 4, "Cloned", r)
-            },
-            SomeRequest::Cancelled(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 5, "Cancelled", r)
-            },
-            SomeRequest::TimedOut(ref r) => {
-                serializer.serialize_newtype_variant("SomeRequest", 6, "TimedOut", r)
-            },
-        }
-    }
 }
 
 impl<T> From<&SomeRequest<T>> for RequestState {
