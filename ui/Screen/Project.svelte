@@ -5,13 +5,13 @@
   import * as notification from "../src/notification";
   import * as path from "../src/path";
   import { checkout, fetch, project as store } from "../src/project";
-  import type { Project } from "../src/project";
+  import type { Project } from "../src/project"; // Annoying but necessary type import
   import * as remote from "../src/remote";
   import * as screen from "../src/screen";
   import {
     commits as commitsStore,
     currentPeerId,
-    currentRevision,
+    currentRevision as currentRevisionStore,
     resetCurrentRevision,
     resetCurrentPeerId,
     revisions as revisionsStore,
@@ -122,7 +122,8 @@
   // TODO(sos): should be removed if/when this is fixed.
   let revisions: source.PeerRevisions[] | undefined,
     project: Project | undefined,
-    commits: source.CommitsStore | undefined;
+    commits: source.CommitsStore | undefined,
+    currentRevision: source.Branch | source.Tag | undefined;
 
   $: {
     const rs = $revisionsStore;
@@ -155,6 +156,8 @@
   // Revisions that belong to the current selected peer, formatted for display in revision selector
   $: currentPeerRevisions =
     revisions && revisions.find(rev => rev.identity.peerId === $currentPeerId);
+
+  $: currentRevision = $currentRevisionStore;
 </script>
 
 <style>
@@ -177,9 +180,9 @@
           <div slot="left">
             <div style="display: flex">
               <div class="revision-selector-wrapper">
-                {#if currentPeerRevisions}
+                {#if currentPeerRevisions && currentRevision}
                   <RevisionSelector
-                    currentRevision={$currentRevision}
+                    {currentRevision}
                     revisions={currentPeerRevisions}
                     on:select={updateRevision} />
                 {/if}
@@ -206,7 +209,7 @@
               {#if availablePeers}
                 <PeerSelector
                   {availablePeers}
-                  currentPeerId={$currentPeerId || ''}
+                  currentPeerId={$currentPeerId}
                   on:select={updatePeer} />
               {/if}
               <TrackToggle />

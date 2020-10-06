@@ -4,16 +4,26 @@
 
   import * as badge from "../../src/badge";
   import * as identity from "../../src/identity";
+  import * as notification from "../../src/notification";
   import * as path from "../../src/path";
   import * as style from "../../src/style";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
-  let expanded = false;
-
-  export let currentPeerId: string;
+  export let currentPeerId: string | undefined;
   export let availablePeers: identity.Identity[];
+
+  let expanded = false,
+    currentPeer: identity.Identity;
+
+  if (currentPeerId) {
+    currentPeer =
+      availablePeers.find(peer => peer.id === currentPeerId) ||
+      availablePeers[0];
+  } else {
+    notification.error("Unable to load available peers");
+  }
 
   const session = getContext("session");
   const { metadata } = getContext("project");
@@ -39,9 +49,6 @@
     hideDropdown();
     dispatch("select", { peerId });
   };
-
-  $: currentSelectedPeer =
-    availablePeers.find(peer => peer.id === currentPeerId) || availablePeers[0];
 </script>
 
 <style>
@@ -116,15 +123,15 @@
     hidden={expanded}>
     <div class="selector-avatar typo-overflow-ellipsis">
       <Avatar
-        avatarFallback={currentSelectedPeer.avatarFallback}
+        avatarFallback={currentPeer.avatarFallback}
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
       <p class="typo-text-bold typo-overflow-ellipsis">
-        {currentSelectedPeer.metadata.handle || currentSelectedPeer.shareableEntityIdentifier}
+        {currentPeer.metadata.handle || currentPeer.shareableEntityIdentifier}
       </p>
       <p>
-        {#if metadata.maintainers.includes(currentSelectedPeer.urn)}
+        {#if metadata.maintainers.includes(currentPeer.urn)}
           <Badge
             style="margin-left: 0.5rem"
             variant={badge.BadgeType.Maintainer} />
@@ -141,7 +148,7 @@
       {#each availablePeers as peer}
         <div
           class="peer"
-          class:selected={peer.peerId == currentSelectedPeer.peerId}
+          class:selected={peer.peerId == currentPeer.peerId}
           data-peer-handle={peer.metadata.handle}>
           <div style="display: flex;" on:click={() => selectPeer(peer.peerId)}>
             <Avatar

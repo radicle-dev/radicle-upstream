@@ -2,15 +2,14 @@
   import { createEventDispatcher } from "svelte";
 
   import { isExperimental } from "../../../../native/ipc.js";
+
   import * as source from "../../../src/source";
 
   import Overlay from "../Overlay.svelte";
   import { Icon } from "../../Primitive";
 
   export let revisions: source.PeerRevisions;
-  export let currentRevision: source.Branch | source.Tag | undefined;
-
-  if (!currentRevision) currentRevision = revisions.branches[0];
+  export let currentRevision: source.Branch | source.Tag;
 
   let expanded: boolean = false;
   const toggle = () => (expanded = !expanded);

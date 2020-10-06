@@ -273,6 +273,7 @@ context("source code browsing", () => {
     context("when switching between projects", () => {
       it("opens the selected project on the default repository and branch", () => {
         cy.createProjectWithFixture("gold");
+        cy.wait(300);
         cy.pick("revision-selector").click();
         cy.get('[data-branch="dev"]').click();
         cy.pick("sidebar", "profile").click();

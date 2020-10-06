@@ -96,9 +96,13 @@ interface Tree extends SourceObject {
 
 // All revisions of project from a particular peer
 export interface PeerRevisions {
+  // The identity of the peer
   identity: identity.Identity;
+  // All known branches
   branches: Branch[];
+  // All known tags
   tags: Tag[];
+  // Default branch, if we have it
   defaultBranch?: string;
 }
 
@@ -113,18 +117,24 @@ export enum RevisionType {
   Sha = "sha",
 }
 
+// Client representation of a git branch
 export interface Branch {
   type: RevisionType.Branch;
-  projectId: string;
   name: string;
+  // The id of the project this branch belongs to
+  projectId: string;
+  // The id of the peer this branch belongs to
   peerId: string;
 }
 
+// Client representation of a git tag
 export interface Tag {
   type: RevisionType.Tag;
-  projectId: string;
   name: string;
+  // The id of the project this tag belongs to
   peerId: string;
+  // The id of the project this tag belongs to
+  projectId: string;
 }
 
 export interface Sha {
@@ -132,19 +142,18 @@ export interface Sha {
   sha: string;
 }
 
-// Proxy representation of all revisions for a project from a particular peer
+export type RevisionQuery = Branch | Tag | Sha;
+
+// Proxy representation of all known revisions of a project from a particular peer
 type PeerRevisionsResponse = {
   // The identity of the peer who owns these revisions
   identity: identity.Identity;
-
   // Names of associated branches and tags
   branches: string[];
   tags: string[];
 }[];
 
-export type RevisionQuery = Branch | Tag | Sha;
-
-// STATE
+// Remote stores
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
 
@@ -154,10 +163,10 @@ export const commits = commitsStore.readable;
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
+// Updated when the project store changes (i.e. when the user navigates to a new project)
 const revisionsStore = remote.createStore<PeerRevisions[]>();
 export const revisions = revisionsStore.readable;
 revisions.subscribe(store => {
-  // If revisions change, we need to update everything that depends on them.
   if (store.status === remote.Status.Success) {
     // The first `PeerRevisions` in the response belongs to the default peer.
     const defaultRevisions = store.data[0];
@@ -175,23 +184,17 @@ revisions.subscribe(store => {
   }
 });
 
+// Local stores
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = () => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = () => objectPath.set(null);
 
-export const defaultRevision = (
-  peerRevisions: PeerRevisions,
-  projectDefaultBranch: string
-) =>
-  peerRevisions.branches.find(branch => branch.name === projectDefaultBranch) ||
-  peerRevisions.branches[0];
-
 export const currentRevision = writable<Branch | Tag | undefined>(undefined);
 currentRevision.subscribe(revision => {
   if (revision) {
     // Fetch commits when the current revision is changed
-    fetchCommits({ projectId: revision?.projectId, revision });
+    fetchCommits({ projectId: revision.projectId, revision });
   }
 });
 

@@ -74,7 +74,7 @@ export const creation = creationStore.readable;
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;
 
-// Once we have the project, we can download its revisions.
+// Once we have the project, we can fetch its revisions.
 project.subscribe(store => {
   if (store.status === remote.Status.Success) {
     source.fetchRevisions({ projectId: store.data.id });
