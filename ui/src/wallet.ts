@@ -35,6 +35,8 @@ export function build(): Wallet {
   const provider = new WebsocketProvider("ws://localhost:8545");
   const web3 = new Web3(provider);
 
+  initEthereumDebug(provider);
+
   // Connect to a wallet using walletconnect
   async function connect() {
     if (svelteStore.get(stateStore).status !== Status.NotConnected) {
@@ -77,4 +79,47 @@ export function build(): Wallet {
     },
     web3,
   };
+}
+
+declare global {
+  interface Window {
+    ethereumDebug: any;
+  }
+}
+
+function initEthereumDebug(provider: WebsocketProvider) {
+  window.ethereumDebug = {
+    // Tell the Ethereum development node to mine the given number of
+    // blocks.
+    async mineBlocks(blocks = 1) {
+      while (blocks) {
+        blocks -= 1;
+        await mineBlock(provider);
+      }
+    },
+  };
+}
+
+// Tell the Ethereum development node to mine a block.
+async function mineBlock(provider: WebsocketProvider) {
+  return new Promise((resolve, reject) => {
+    provider.send(
+      {
+        jsonrpc: "2.0",
+        method: "evm_mine",
+        params: [],
+      },
+      (error, response) => {
+        if (error) {
+          reject(error);
+        } else if (response && response.error) {
+          // Types are incorrect
+          const error = (response.error as unknown) as { message: string };
+          throw new Error(error.message);
+        } else {
+          resolve();
+        }
+      }
+    );
+  });
 }

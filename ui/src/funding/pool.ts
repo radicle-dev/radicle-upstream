@@ -58,7 +58,6 @@ export function make(wallet: Wallet): Pool {
     try {
       const balance = await poolContract.methods.withdrawable().call();
       const collectableFunds = await poolContract.methods.collectable().call();
-      console.log(collectableFunds);
 
       data.success({
         // Handle potential overflow using BN.js
@@ -80,6 +79,7 @@ export function make(wallet: Wallet): Pool {
   async function topUp(value: number): Promise<void> {
     await poolContract.methods.topUp().send({
       from: getAccountAddress(),
+      gas: 200 * 1000,
       value,
     });
     loadPoolData();

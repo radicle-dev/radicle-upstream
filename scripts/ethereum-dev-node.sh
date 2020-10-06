@@ -10,5 +10,6 @@ fi
 
 exec node_modules/.bin/ganache-cli \
   --mnemonic "image napkin cruise dentist name plunge crisp muscle nest floor vessel blush" \
-  --defaultBalanceEther 1000
+  --defaultBalanceEther 1000 \
+  "$@"
 
