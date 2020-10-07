@@ -132,7 +132,7 @@ fn with_unsealed_guard(ctx: context::Context) -> BoxedFilter<((),)> {
     warp::any()
         .and(with_context(ctx))
         .and_then(|ctx: context::Context| async move {
-            if let Some(_) = ctx.signer {
+            if ctx.signer.is_some() {
                 Ok(())
             } else {
                 Err(Rejection::from(error::Routing::SealedKeystore))
