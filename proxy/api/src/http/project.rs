@@ -666,7 +666,11 @@ mod test {
 
         let res = request()
             .method("PUT")
-            .path(&format!("/{}/track/{}", project.id, coco::control::generate_peer_id()))
+            .path(&format!(
+                "/{}/track/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
             .reply(&api)
             .await;
 
