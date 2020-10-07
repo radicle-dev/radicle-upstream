@@ -209,7 +209,7 @@ impl Future for Running {
                     Ok(Ok(())) => Ok(()),
                 };
                 Poll::Ready(val)
-            },
+            }
             Poll::Pending => Poll::Pending,
         }
     }
@@ -282,7 +282,7 @@ impl<T> Future for SpawnAbortable<T> {
                     Ok(Ok(t)) => Ok(t),
                 };
                 Poll::Ready(val)
-            },
+            }
         }
     }
 }
@@ -390,7 +390,7 @@ impl Future for Subroutines {
                 Poll::Ready(Some(Err(e))) => {
                     log::warn!("error in spawned subroutine task: {:?}", e);
                     return Poll::Ready(Err(e));
-                },
+                }
                 Poll::Ready(Some(Ok(()))) => continue,
                 // Either pending, or FuturesUnordered thinks it's done, but
                 // we'll enqueue new tasks below
@@ -401,39 +401,39 @@ impl Future for Subroutines {
         // Collect any task results, and enqueue new tasks if applicable
         let mut events = Vec::with_capacity(9);
         {
-            if let Poll::Ready(Some(protocol_event)) = self.protocol_events.poll_next_unpin(cx) {
+            while let Poll::Ready(Some(protocol_event)) = self.protocol_events.poll_next_unpin(cx) {
                 events.push(Event::Protocol(protocol_event));
             }
 
-            if let Poll::Ready(Some(_)) = self.announce_timer.poll_next_unpin(cx) {
+            while let Poll::Ready(Some(_)) = self.announce_timer.poll_next_unpin(cx) {
                 events.push(Event::Announce(AnnounceEvent::Tick));
             }
 
-            if let Poll::Ready(Some(_)) = self.ping_timer.poll_next_unpin(cx) {
+            while let Poll::Ready(Some(_)) = self.ping_timer.poll_next_unpin(cx) {
                 events.push(Event::Ping);
             }
 
-            if let Poll::Ready(Some(announce_event)) = self.announcements.poll_recv(cx) {
+            while let Poll::Ready(Some(announce_event)) = self.announcements.poll_recv(cx) {
                 events.push(Event::Announce(announce_event));
             }
 
-            if let Poll::Ready(Some(sync_event)) = self.peer_syncs.poll_recv(cx) {
+            while let Poll::Ready(Some(sync_event)) = self.peer_syncs.poll_recv(cx) {
                 events.push(Event::PeerSync(sync_event));
             }
 
-            if let Poll::Ready(Some(timeout_event)) = self.timeouts.poll_recv(cx) {
+            while let Poll::Ready(Some(timeout_event)) = self.timeouts.poll_recv(cx) {
                 events.push(Event::Timeout(timeout_event));
             }
 
-            if let Poll::Ready(Some(urn)) = self.request_queries.poll_next_unpin(cx) {
+            while let Poll::Ready(Some(urn)) = self.request_queries.poll_next_unpin(cx) {
                 events.push(Event::Request(RequestEvent::Query(urn)));
             }
 
-            if let Poll::Ready(Some(url)) = self.request_clones.poll_next_unpin(cx) {
+            while let Poll::Ready(Some(url)) = self.request_clones.poll_next_unpin(cx) {
                 events.push(Event::Request(RequestEvent::Clone(url)));
             }
 
-            if let Poll::Ready(Some(request_event)) = self.requests.poll_next_unpin(cx) {
+            while let Poll::Ready(Some(request_event)) = self.requests.poll_next_unpin(cx) {
                 events.push(Event::Request(request_event));
             }
         }
@@ -466,7 +466,7 @@ impl Future for Subroutines {
                     )),
                     Command::Request(RequestCommand::Found(url)) => {
                         SpawnAbortable::new(found(url, self.waiting_room.clone()))
-                    },
+                    }
                     Command::Request(RequestCommand::Clone(url)) => SpawnAbortable::new(clone(
                         url,
                         self.state.clone(),
@@ -489,11 +489,11 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Annou
     match announcement::run(&state, &store).await {
         Ok(updates) => {
             sender.send(AnnounceEvent::Succeeded(updates)).await.ok();
-        },
+        }
         Err(err) => {
             log::error!("announce error: {:?}", err);
             sender.send(AnnounceEvent::Failed).await.ok();
-        },
+        }
     }
 }
 
@@ -507,11 +507,11 @@ async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<SyncEvent>
                 .send(SyncEvent::Succeeded(peer_id.clone()))
                 .await
                 .ok();
-        },
+        }
         Err(err) => {
             log::error!("sync error for {}: {:?}", peer_id, err);
             sender.send(SyncEvent::Failed(peer_id.clone())).await.ok();
-        },
+        }
     }
 }
 
@@ -557,7 +557,7 @@ async fn clone(
     match request::clone(url.clone(), state, waiting_room).await {
         Ok(()) => {
             sender.send(RequestEvent::Cloned(url)).await.ok();
-        },
+        }
         Err(err) => {
             log::warn!(
                 "an error occurred for the command 'Clone' for the URL '{}':\n{}",
@@ -571,6 +571,6 @@ async fn clone(
                 })
                 .await
                 .ok();
-        },
+        }
     }
 }
