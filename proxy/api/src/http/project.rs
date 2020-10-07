@@ -112,7 +112,7 @@ fn discover_filter(
         .and_then(handler::discover)
 }
 
-/// `Post /tracke/<peer id>`
+/// `POST /track/<peer_id>`
 fn track_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
