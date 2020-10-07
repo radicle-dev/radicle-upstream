@@ -84,12 +84,10 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             )
         } else if let Some(err) = err.find::<Routing>() {
             match err {
-                Routing::MissingOwner  => {
+                Routing::MissingOwner => {
                     (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
                 },
-                Routing::SealedKeystore => {
-                    (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string())
-                },
+                Routing::SealedKeystore => (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string()),
                 Routing::InvalidQuery { .. } => {
                     (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
                 },

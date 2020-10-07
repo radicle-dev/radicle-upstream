@@ -40,27 +40,24 @@ pub fn api(
     enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let avatar_filter = path("avatars").and(avatar::get_filter());
-    let control_filter = path("control")
-        .and(with_unsealed_guard(ctx.clone()))
-        .untuple_one()
-        .and(control::filters(
-            ctx.clone(),
-            selfdestruct,
-            enable_fixture_creation,
-        ));
+    let control_filter =
+        path("control")
+            .and(with_unsealed_guard(ctx.clone()))
+            .and(control::filters(
+                ctx.clone(),
+                selfdestruct,
+                enable_fixture_creation,
+            ));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter = path("notifications")
         .and(with_unsealed_guard(ctx.clone()))
-        .untuple_one()
         .and(notification::filters(subscriptions));
     let project_filter = path("projects")
         .and(with_unsealed_guard(ctx.clone()))
-        .untuple_one()
         .and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
     let source_filter = path("source")
         .and(with_unsealed_guard(ctx.clone()))
-        .untuple_one()
         .and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
@@ -128,7 +125,7 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
 
 /// Asserts presence of the signer and rejects the request early if missing.
 #[must_use]
-fn with_unsealed_guard(ctx: context::Context) -> BoxedFilter<((),)> {
+fn with_unsealed_guard(ctx: context::Context) -> BoxedFilter<()> {
     warp::any()
         .and(with_context(ctx))
         .and_then(|ctx: context::Context| async move {
@@ -138,6 +135,7 @@ fn with_unsealed_guard(ctx: context::Context) -> BoxedFilter<((),)> {
                 Err(Rejection::from(error::Routing::SealedKeystore))
             }
         })
+        .untuple_one()
         .boxed()
 }
 
