@@ -8,6 +8,7 @@
     Copyable,
     EmptyState,
     Dropdown,
+    Illustration,
     ModalLayout,
     Notification,
     Placeholder,
@@ -283,13 +284,13 @@
   };
 
   const dropdownOptions1 = [
-    { variant: "text", value: "1", textProps: { title: "Option 1" } },
+    { variant: "text", value: "1", title: "Option 1" },
     {
       variant: "text",
       value: "2",
-      textProps: { title: "Longer option keeps going" },
+      title: "Longer option keeps going",
     },
-    { variant: "text", value: "3", textProps: { title: "Option 3" } },
+    { variant: "text", value: "3", title: "Option 3" },
   ];
 
   const dropdownOptions2 = [
@@ -444,6 +445,26 @@
           </Tooltip>
         {/each}
       </IconSwatch>
+    </Section>
+
+    <Section title="Illustrations" subTitle="Scaleable illustrations">
+      <Swatch>
+        {#each Object.keys(IllustrationVariant) as key}
+          <Tooltip
+            value={`<Illustration variant={IllustrationVariant.${key}} />`}
+            position="top">
+            <Copyable
+              notificationText="Illustration markup copied to your clipboard"
+              iconBeforeCopy={null}
+              styleContent={false}
+              copyContent={`<Illustration variant={IllustrationVariant.${key}} />`}>
+              <Illustration
+                style="margin-right: 2em;"
+                variant={IllustrationVariant[key]} />
+            </Copyable>
+          </Tooltip>
+        {/each}
+      </Swatch>
     </Section>
 
     <Section

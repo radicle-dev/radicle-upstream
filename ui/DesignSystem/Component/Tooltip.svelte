@@ -1,38 +1,50 @@
-<script>
-  export let value = null;
-  export let position = "right"; // right | bottom | top | left
+<script lang="ts">
+  import { CSSPosition } from "../../src/style";
 
-  let tooltip = { className: "hidden" };
+  export let value = "";
+
+  export let position: CSSPosition = CSSPosition.Right;
+
+  enum Visibility {
+    Hidden = "hidden",
+    Visible = "visible",
+  }
+
+  let tooltip = { className: Visibility.Hidden, positionX: 0, positionY: 0 };
 
   const hideTooltip = () => {
-    tooltip.className = "hidden";
+    tooltip.className = Visibility.Hidden;
   };
-  const showTooltip = e => {
+
+  // TODO(sos): there may exist a better way to type this event
+  const showTooltip = (e: {
+    target: { closest: (div: string) => HTMLDivElement };
+  }) => {
     const rect = e.target.closest("[data-tooltip]").getBoundingClientRect();
     const offsetY = rect.height < 32 ? (32 - rect.height) / 2 : 0;
-    if (position === "right") {
+    if (position === CSSPosition.Right) {
       tooltip = {
         positionY: rect.top - offsetY,
         positionX: rect.right + 8,
-        className: "visible",
+        className: Visibility.Visible,
       };
-    } else if (position === "left") {
+    } else if (position === CSSPosition.Left) {
       tooltip = {
         positionY: rect.top - offsetY,
         positionX: rect.left - rect.width - 24,
-        className: "visible",
+        className: Visibility.Visible,
       };
-    } else if (position === "bottom") {
+    } else if (position === CSSPosition.Bottom) {
       tooltip = {
         positionY: rect.bottom + 8,
         positionX: rect.left + rect.width / 2,
-        className: "visible",
+        className: Visibility.Visible,
       };
-    } else if (position === "top") {
+    } else if (position === CSSPosition.Top) {
       tooltip = {
         positionY: rect.top - 40,
         positionX: rect.left + rect.width / 2,
-        className: "visible",
+        className: Visibility.Visible,
       };
     }
   };
@@ -96,7 +108,7 @@
   }
 </style>
 
-{#if value}
+{#if value.length > 0}
   <div
     style="height: 100%;"
     data-tooltip

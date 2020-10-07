@@ -10,10 +10,37 @@ use syntect::{
 
 use radicle_surf::{
     diff, file_system,
-    vcs::git::{self, git2, BranchType, Browser, Rev},
+    vcs::git::{self, git2, BranchType, Browser, Rev, Stats},
 };
 
-use crate::{error::Error, oid::Oid};
+use crate::oid::Oid;
+
+/// An error occurred when interacting with [`radicle_surf`] for browsing source code.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// We expect at least one [`crate::source::Revisions`] when looking at a project, however the
+    /// computation found none.
+    #[error(
+        "while trying to get user revisions we could not find any, there should be at least one"
+    )]
+    EmptyRevisions,
+
+    /// An error occurred during a [`radicle_surf::file_system`] operation.
+    #[error(transparent)]
+    FileSystem(#[from] file_system::Error),
+
+    /// An error occurred during a [`radicle_surf::git`] operation.
+    #[error(transparent)]
+    Git(#[from] git::error::Error),
+
+    /// When trying to query a repositories branches, but there are none.
+    #[error("The repository has no branches")]
+    NoBranches,
+
+    /// Trying to find a file path which could not be found.
+    #[error("the path '{0}' was not found")]
+    PathNotFound(file_system::Path),
+}
 
 lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
@@ -183,6 +210,15 @@ impl Serialize for CommitHeader {
         state.serialize_field("committerTime", &self.committer_time.seconds())?;
         state.end()
     }
+}
+
+/// A selection of commit headers and their statistics.
+#[derive(Serialize)]
+pub struct Commits {
+    /// The commit headers
+    pub headers: Vec<CommitHeader>,
+    /// The statistics for the commit headers
+    pub stats: Stats,
 }
 
 /// Git object types.
@@ -510,9 +546,10 @@ pub struct LocalState {
 ///
 /// Will return [`Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
-    let repo = git2::Repository::open(repo_path)?;
+    let repo = git2::Repository::open(repo_path).map_err(git::error::Error::from)?;
     let first_branch = repo
-        .branches(Some(git2::BranchType::Local))?
+        .branches(Some(git2::BranchType::Local))
+        .map_err(git::error::Error::from)?
         .filter_map(|branch_result| {
             let (branch, _) = branch_result.ok()?;
             let name = branch.name().ok()?;
@@ -627,15 +664,13 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'repo>(
-    browser: &mut Browser<'repo>,
-    branch: git::Branch,
-) -> Result<Vec<CommitHeader>, Error> {
+pub fn commits<'repo>(browser: &mut Browser<'repo>, branch: git::Branch) -> Result<Commits, Error> {
     browser.branch(branch)?;
 
     let headers = browser.get().iter().map(CommitHeader::from).collect();
+    let stats = browser.get_stats()?;
 
-    Ok(headers)
+    Ok(Commits { headers, stats })
 }
 
 /// Retrieves the list of [`Tag`] for the given project `id`.
@@ -822,18 +857,16 @@ mod tests {
 
     use crate::{config, control, oid, signer, state::State};
 
-    use super::Error;
-
     // TODO(xla): A wise man once said: This probably should be an integration test.
     #[tokio::test]
-    async fn browse_commit() -> Result<(), Error> {
+    async fn browse_commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
         let config = config::default(key, tmp_dir).expect("unable to get default config");
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer.clone());
-        let owner = state.init_owner(&signer, "cloudhead")?;
+        let owner = state.init_owner(&signer, "cloudhead").await?;
         let platinum_project = control::replicate_platinum(
             &state,
             &signer,
@@ -841,14 +874,16 @@ mod tests {
             "git-platinum",
             "fixture data",
             "master",
-        )?;
+        )
+        .await?;
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
         let commit = state
-            .with_browser(&urn, |browser| {
+            .with_browser(urn, |browser| {
                 Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
             })
+            .await
             .expect("failed to get commit");
 
         assert_eq!(commit.sha1, sha);

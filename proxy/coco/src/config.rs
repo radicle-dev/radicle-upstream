@@ -2,17 +2,22 @@
 
 use std::{
     convert::TryFrom,
+    io,
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
 };
 
 use librad::{keys, net, net::discovery, paths, peer};
 
-use crate::{error::Error, seed};
+use crate::seed;
 
 lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
     pub static ref LOCALHOST_ANY: SocketAddr =
         SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 0));
+
+    /// Binds to all local interfaces and any available port.
+    pub static ref INADDR_ANY: SocketAddr =
+        SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 0));
 }
 
 /// The environment variable that points to where librad data lives.
@@ -36,7 +41,7 @@ impl Default for Paths {
 }
 
 impl TryFrom<Paths> for paths::Paths {
-    type Error = Error;
+    type Error = io::Error;
 
     fn try_from(config: Paths) -> Result<Self, Self::Error> {
         match config {
@@ -65,7 +70,7 @@ pub type Disco = discovery::Static<
 pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, Error> {
+) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, key, *LOCALHOST_ANY, vec![]))
 }
@@ -85,6 +90,7 @@ pub fn configure(
             .into_iter()
             .map(seed::Seed::into as fn(seed::Seed) -> (peer::PeerId, SocketAddr)),
     );
+    let storage_config = net::peer::StorageConfig::default();
 
     net::peer::PeerConfig {
         signer: key,
@@ -92,5 +98,6 @@ pub fn configure(
         listen_addr,
         gossip_params,
         disco,
+        storage_config,
     }
 }

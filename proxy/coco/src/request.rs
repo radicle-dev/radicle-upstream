@@ -15,12 +15,16 @@ use std::{
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{net::peer::types::Gossip, peer::PeerId, uri::RadUrn};
+use librad::{
+    net::peer::types::Gossip,
+    peer::PeerId,
+    uri::{self, RadUrl, RadUrn},
+};
 
-pub mod states;
-pub use states::*;
 pub mod existential;
 pub use existential::SomeRequest;
+pub mod states;
+pub use states::*;
 pub mod waiting_room;
 
 /// Private trait for sealing the traits we use here.
@@ -55,13 +59,13 @@ mod sealed;
 /// The `T` type parameter represents some timestamp that is chosen by the user of the `Request`
 /// API. Note that it makes it easy to test by just choosing `()` for the timestamp.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Request<S, T> {
     /// The identifier of the identity on the network.
     urn: RadUrn,
     /// The number of attempts this request has made to complete its job.
     attempts: Attempts,
     /// The timestamp of the latest action to be taken on this request.
+    #[serde(with = "serde_millis", bound = "T: serde_millis::Milliseconds")]
     timestamp: T,
     /// The state of the request, as mentioned above.
     state: S,
@@ -186,7 +190,11 @@ impl<T> Request<Created, T> {
     ///
     /// Once this request has been made, we can transition this `Request` to the `Requested`
     /// state by calling [`Request::request`].
-    pub const fn new(urn: RadUrn, timestamp: T) -> Self {
+    pub fn new(urn: RadUrn, timestamp: T) -> Self {
+        let urn = RadUrn {
+            path: uri::Path::empty(),
+            ..urn
+        };
         Self {
             urn,
             attempts: Attempts::new(),
@@ -316,12 +324,12 @@ impl<T> Request<Cloning, T> {
     /// This signifies that the clone was successful and that the whole request was successful,
     /// congratulations.
     #[allow(clippy::use_self, clippy::missing_const_for_fn)]
-    pub fn cloned(self, repo: RadUrn, timestamp: T) -> Request<Cloned, T> {
+    pub fn cloned(self, url: RadUrl, timestamp: T) -> Request<Cloned, T> {
         Request {
-            urn: self.urn,
+            urn: self.urn.clone(),
             attempts: self.attempts,
             timestamp,
-            state: Cloned { repo },
+            state: Cloned { url },
         }
     }
 }

@@ -53,7 +53,9 @@
   {/if}
 
   <p class="item typo-text-bold" class:active>{title}</p>
-  {#if counter}<span class="counter typo-mono-bold">{counter}</span>{/if}
+  {#if counter}
+    <span class="counter typo-mono-bold" data-cy="counter">{counter}</span>
+  {/if}
 </a>
 
 {#if active}

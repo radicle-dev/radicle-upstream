@@ -1,15 +1,33 @@
-use std::{convert::TryFrom, fs::remove_dir_all, io};
+use std::{convert::TryFrom, time::Duration};
 
-use coco::{control, keystore, seed, signer, RunConfig, SyncConfig};
+use tempfile::TempDir;
+use thiserror::Error;
+use tokio::{
+    signal::unix::{signal, SignalKind},
+    sync::mpsc,
+};
 
 use api::{config, context, env, http, notification, session};
+use coco::{
+    keystore,
+    request::waiting_room::{self, WaitingRoom},
+    seed,
+    shared::Shared,
+    signer, Peer, RunConfig, SyncConfig,
+};
 
 /// Flags accepted by the proxy binary.
+#[derive(Clone, Copy)]
 struct Args {
-    /// Reset all local state, use with caution.
-    reset_state: bool,
     /// Put proxy in test mode to use certain fixtures.
     test: bool,
+}
+
+struct Rigging {
+    temp: Option<TempDir>,
+    ctx: context::Context,
+    peer: Peer,
+    subscriptions: notification::Subscriptions,
 }
 
 #[tokio::main]
@@ -20,47 +38,129 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        reset_state: args.contains("--reset-state"),
         test: args.contains("--test"),
     };
-
-    if args.reset_state {
-        return Ok(reset_state()?);
-    }
 
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
-    let temp_dir = tempfile::tempdir()?;
-    log::debug!(
-        "Temporary path being used for this run is: {:?}",
-        temp_dir.path()
-    );
+    let mut sighup = signal(SignalKind::hangup())?;
+    loop {
+        let rigging = rig(args).await?;
+        let (mut tx, rx) = mpsc::channel(1);
+        let runner = run(rigging, (tx.clone(), rx), args.test);
 
-    let paths_config = if args.test {
-        std::env::set_var("RAD_HOME", temp_dir.path());
-        coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())
-    } else {
-        coco::config::Paths::default()
+        tokio::select! {
+            r = runner => match r {
+                // We've been shut down, ignore
+                Err(RunError::Peer(coco::peer::Error::Spawn(_))) | Ok(()) => {
+                    log::debug!("aborted")
+                },
+                // Actual error, abort the process
+                Err(e) => return Err(e.into()),
+            },
+
+            Some(()) = sighup.recv() => {
+                log::info!("SIGHUP received, reloading...");
+                tx.send(()).await.ok();
+            }
+        }
+
+        // Give sled some time to clean up if we're in persistent mode
+        if !args.test {
+            tokio::time::delay_for(Duration::from_millis(200)).await
+        }
+    }
+}
+
+#[derive(Debug, Error)]
+enum RunError {
+    #[error(transparent)]
+    Peer(#[from] coco::peer::Error),
+
+    #[error(transparent)]
+    Warp(#[from] warp::Error),
+}
+
+async fn run(
+    rigging: Rigging,
+    (killswitch, mut poisonpill): (mpsc::Sender<()>, mpsc::Receiver<()>),
+    enable_fixture_creation: bool,
+) -> Result<(), RunError> {
+    let Rigging {
+        temp: _dont_drop_me,
+        ctx,
+        peer,
+        subscriptions,
+    } = rigging;
+
+    let server = async move {
+        log::info!("... API");
+        let api = http::api(ctx, subscriptions, killswitch, enable_fixture_creation);
+        let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
+            ([127, 0, 0, 1], 8080),
+            async move {
+                poisonpill.recv().await;
+            },
+        )?;
+
+        server.await;
+        Ok(())
     };
-    let paths = coco::Paths::try_from(paths_config)?;
-
-    let store = {
-        let store_path = if args.test {
-            temp_dir.path().join("store")
-        } else {
-            let dirs = config::dirs();
-            dirs.data_dir().join("store")
-        };
-
-        kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?
+    let peer = async move {
+        log::info!("... peer");
+        peer.into_running().await
     };
+
+    log::info!("Starting...");
+    tokio::select! {
+        server_status = server => server_status,
+        peer_status = peer => Ok(peer_status?),
+    }
+}
+
+async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
+    log::debug!("rigging up");
 
     let pw = keystore::SecUtf8::from("radicle-upstream");
-    let mut keystore = keystore::Keystorage::new(&paths, pw);
-    let key = keystore.init()?;
+
+    let (temp, paths, store, key) = if args.test {
+        let temp_dir = tempfile::tempdir()?;
+        log::debug!(
+            "Temporary path being used for this run is: {:?}",
+            temp_dir.path()
+        );
+
+        std::env::set_var("RAD_HOME", temp_dir.path());
+        let paths =
+            coco::Paths::try_from(coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()))?;
+        let store = {
+            let path = temp_dir.path().join("store");
+            kv::Store::new(kv::Config::new(path).flush_every_ms(100))
+        }?;
+        let key = keystore::Keystorage::memory(pw)?.get();
+
+        Ok::<_, Box<dyn std::error::Error>>((Some(temp_dir), paths, store, key))
+    } else {
+        let paths = coco::Paths::try_from(coco::config::Paths::default())?;
+        let store = {
+            let path = config::dirs().data_dir().join("store");
+            kv::Store::new(kv::Config::new(path).flush_every_ms(100))
+        }?;
+        let key = keystore::Keystorage::file(&paths, pw).init()?;
+
+        Ok((None, paths, store, key))
+    }?;
+
     let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
+
+    // TODO(finto): We should store and load the waiting room
+    let waiting_room = {
+        let mut config = waiting_room::Config::default();
+        config.delta = Duration::from_secs(10);
+        Shared::from(WaitingRoom::new(config))
+    };
 
     let (peer, state) = {
         let seeds = session::settings(&store).await?.coco.seeds;
@@ -68,69 +168,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
             vec![]
         });
-        let config = coco::config::configure(paths, key, *coco::config::LOCALHOST_ANY, seeds);
+        let config = coco::config::configure(paths, key, *coco::config::INADDR_ANY, seeds);
 
-        coco::into_peer_state(config, signer.clone()).await?
+        coco::into_peer_state(
+            config,
+            signer.clone(),
+            store.clone(),
+            waiting_room.clone(),
+            RunConfig {
+                sync: SyncConfig {
+                    max_peers: 1,
+                    on_startup: true,
+                    period: Duration::from_secs(5),
+                },
+                ..RunConfig::default()
+            },
+        )
+        .await?
     };
-
-    if args.test {
-        let state = state.lock().await;
-        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
-        // evaluate how meaningful these fixtures are.
-        let owner = state.init_owner(&signer, "cloudhead")?;
-        control::setup_fixtures(&state, &signer, &owner)?;
-    }
 
     let subscriptions = notification::Subscriptions::default();
-    let ctx = context::Ctx::from(context::Context {
-        state: state.clone(),
-        signer,
-        store: store.clone(),
-    });
-
-    log::info!("starting coco peer");
-    tokio::spawn(peer.run(
+    let ctx = context::Context {
         state,
+        signer,
         store,
-        RunConfig {
-            sync: SyncConfig {
-                on_startup: true,
-                ..SyncConfig::default()
-            },
-            ..RunConfig::default()
-        },
-    ));
-
-    log::info!("Starting API");
-    let api = http::api(ctx, subscriptions, args.test);
-
-    warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
-
-    Ok(())
-}
-
-fn reset_state() -> Result<(), io::Error> {
-    log::info!("Resetting application state...");
-    if let Err(err) = remove_dir_all(config::dirs().data_dir()) {
-        if err.kind() == io::ErrorKind::NotFound {
-            log::info!("already gone");
-        } else {
-            log::error!("{:?}", err);
-            return Err(err);
-        }
+        waiting_room,
     };
-    log::info!("done");
 
-    log::info!("Resetting CoCo state...");
-    if let Err(err) = control::reset_monorepo() {
-        if err.kind() == io::ErrorKind::NotFound {
-            log::info!("already gone");
-        } else {
-            log::error!("{:?}", err);
-            return Err(err);
-        }
-    };
-    log::info!("done");
-
-    Ok(())
+    Ok(Rigging {
+        temp,
+        ctx,
+        peer,
+        subscriptions,
+    })
 }

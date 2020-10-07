@@ -6,6 +6,9 @@ export enum Theme {
 
 export interface Appearance {
   theme: Theme;
+  hints: {
+    showRemoteHelper: boolean;
+  };
 }
 
 export interface CoCo {

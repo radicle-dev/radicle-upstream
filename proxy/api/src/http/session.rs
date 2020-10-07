@@ -5,7 +5,7 @@ use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 use crate::{context, http};
 
 /// Combination of all session filters.
-pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
+pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     delete_filter(ctx.clone())
         .or(get_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
@@ -14,7 +14,7 @@ pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
 
 /// `DELETE /`
 fn delete_filter(
-    ctx: context::Ctx,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::delete()
         .and(path::end())
@@ -23,7 +23,9 @@ fn delete_filter(
 }
 
 /// `GET /`
-fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path::end())
         .and(http::with_context(ctx))
@@ -32,7 +34,7 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
 
 /// `Post /settings`
 fn update_settings_filter(
-    ctx: context::Ctx,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("settings")
         .and(warp::post())
@@ -49,17 +51,14 @@ mod handler {
     use crate::{context, session};
 
     /// Clear the current [`session::Session`].
-    pub async fn delete(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
+    pub async fn delete(ctx: context::Context) -> Result<impl Reply, Rejection> {
         session::clear_current(&ctx.store)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-
+    pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
         let sess = session::current(ctx.state.clone(), &ctx.store).await?;
 
         Ok(reply::json(&sess))
@@ -67,10 +66,9 @@ mod handler {
 
     /// Set the [`session::settings::Settings`] to the passed value.
     pub async fn update_settings(
-        ctx: context::Ctx,
+        ctx: context::Context,
         settings: session::settings::Settings,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
         session::set_settings(&ctx.store, settings)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
@@ -90,8 +88,6 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
