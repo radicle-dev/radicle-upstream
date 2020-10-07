@@ -54,12 +54,12 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `GET /request/<id>`
+/// `POST /request/<id>`
 fn request_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("request")
-        .and(warp::get())
+        .and(warp::post())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
@@ -167,14 +167,19 @@ mod handler {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
     }
 
-    /// Kick off a network request for the [`project::Project`] of the given `id`.
+    // TODO(sos): Should there be a `request` module that can take `POST`/`GET` requests for any
+    // `RadUrn` (i.e. `User` | `Project`)?
+    ///
+    ///  Kick off a network request for the [`project::Project`] of the given `id`.
     pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         // TODO(finto): Check the request exists in the monorepo
         let mut waiting_room = ctx.waiting_room.write().await;
-        let _request = waiting_room.request(urn, Instant::now());
+        let request = waiting_room.request(urn, Instant::now());
 
-        // TODO(finto): Serialise request and respond with that.
-        Ok(reply::json(&true))
+        // TODO(finto/sos): Serialise request and respond with that
+        // `waiting_room.request()` returns `None` for new requests by design;
+        // should it return something more substantial?
+        Ok(reply::json(&request))
     }
 
     /// List all projects tracked by the current user.
@@ -248,6 +253,8 @@ pub struct MetadataInput {
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
+    use std::time::Instant;
+
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
@@ -255,6 +262,7 @@ mod test {
     use radicle_surf::vcs::git::git2;
 
     use crate::{context, http, identity, project, session};
+    use coco::request;
 
     #[tokio::test]
     async fn checkout() -> Result<(), Box<dyn std::error::Error>> {
@@ -508,14 +516,34 @@ mod test {
         );
 
         let res = request()
-            .method("GET")
+            .method("POST")
             .path(&format!("/request/{}", urn))
             .reply(&api)
             .await;
 
-        // TODO(finto): Response should eventually be a Request.
+        let request = json!(request::SomeRequest::Created(request::Request::new(
+            urn,
+            Instant::now()
+        )));
+
+        // TODO(sos): It might be nice to test the exact fields like this, but
+        // not sure how we want to handle `Instant`s in the test context, esp. because
+        // they're not easily serializable on their own.
+
+        // let want = json!({
+        //     "Created": {
+        //         "attempts": {
+        //             "clones": 0,
+        //             "queries": 0
+        //         },
+        //         "state": {},
+        //         "timestamp": 1602031207235,
+        //         "urn": "rad:git:hwd1yreyfmtg5ntmm97g8eazmb1uh75xpbta8mdthkcj3ee3yxcci3d8b5y"
+        //     }
+        // });
+
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(true));
+            assert_eq!(have, request);
         });
 
         Ok(())

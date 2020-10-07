@@ -83,6 +83,15 @@ pub struct WaitingRoom<T, D> {
     config: Config<D>,
 }
 
+impl<T, D> Default for WaitingRoom<T, D>
+where
+    D: Default,
+{
+    fn default() -> Self {
+        Self::new(Config::default())
+    }
+}
+
 /// The `Config` for the waiting room tells it what are the maximum number of query and clone
 /// attempts that can be made for a single request.
 ///
@@ -149,7 +158,7 @@ impl<T, D> WaitingRoom<T, D> {
     /// This will return the request for the given `urn` if one exists in the `WaitingRoom`.
     ///
     /// If there is no such `urn` then it create a fresh `Request` using the `urn` and `timestamp`
-    /// and it will return `None`.
+    /// and it will return the new `Request`.
     pub fn request(&mut self, urn: RadUrn, timestamp: T) -> Option<SomeRequest<T>>
     where
         T: Clone,
@@ -157,8 +166,8 @@ impl<T, D> WaitingRoom<T, D> {
         match self.get(&urn) {
             None => {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
-                self.requests.insert(urn.id, request);
-                None
+                self.requests.insert(urn.id, request.clone());
+                Some(request)
             },
             Some(request) => Some(request.clone()),
         }

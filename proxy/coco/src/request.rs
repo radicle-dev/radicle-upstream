@@ -66,7 +66,7 @@ pub struct Request<S, T> {
     attempts: Attempts,
     /// The timestamp of the latest action to be taken on this request.
     #[serde(with = "serde_millis", bound = "T: serde_millis::Milliseconds")]
-    timestamp: T,
+    pub timestamp: T,
     /// The state of the request, as mentioned above.
     state: S,
 }

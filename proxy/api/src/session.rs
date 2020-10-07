@@ -2,8 +2,10 @@
 //! configuration of all sorts.
 
 use serde::{Deserialize, Serialize};
+use std::time::{Duration, Instant};
 
 use crate::{error, identity};
+use coco::request::waiting_room;
 
 pub mod settings;
 
@@ -20,6 +22,8 @@ pub struct Session {
     pub identity: Option<identity::Identity>,
     /// User controlled parameters to control the behaviour and state of the application.
     pub settings: settings::Settings,
+    /// The persisted [`WaitingRoom`] of the current peer.
+    pub waiting_room: waiting_room::WaitingRoom<Instant, Duration>,
 }
 
 /// Resets the session state.
@@ -37,10 +41,22 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 ///
 /// # Errors
 ///
-/// Errors if access to the setttings fails.
+/// Errors if access to the settings fails.
 pub async fn settings(store: &kv::Store) -> Result<settings::Settings, error::Error> {
     let session = get(store, KEY_CURRENT)?;
     Ok(session.settings)
+}
+
+/// Read the current waiting room.Duration
+///
+/// # Errors
+///
+/// Errors if access to the store fails.
+pub async fn waiting_room(
+    store: &kv::Store,
+) -> Result<waiting_room::WaitingRoom<Instant, Duration>, error::Error> {
+    let session = get(store, KEY_CURRENT)?;
+    Ok(session.waiting_room)
 }
 
 /// Reads the current session.
@@ -81,6 +97,21 @@ pub fn set_identity(store: &kv::Store, id: identity::Identity) -> Result<(), err
 pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(), error::Error> {
     let mut sess = get(store, KEY_CURRENT)?;
     sess.settings = settings;
+
+    set(store, KEY_CURRENT, sess)
+}
+
+/// Stores the [`waiting_room::WaitingRoom`] in the current session.
+///
+/// # Errors
+///
+/// Errors if access to the session state fails.
+pub fn set_waiting_room(
+    store: &kv::Store,
+    waiting_room: waiting_room::WaitingRoom<Instant, Duration>,
+) -> Result<(), error::Error> {
+    let mut sess = get(store, KEY_CURRENT)?;
+    sess.waiting_room = waiting_room;
 
     set(store, KEY_CURRENT, sess)
 }
