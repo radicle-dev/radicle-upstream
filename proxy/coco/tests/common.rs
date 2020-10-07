@@ -56,6 +56,7 @@ macro_rules! assert_event {
 /// # Errors
 ///
 /// * if the timeout waiting for the [`ProtocolEvent::Connected`] has been reached.
+#[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn connected(
     receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,
@@ -105,6 +106,7 @@ pub async fn build_peer(
     Ok((peer, state, signer))
 }
 
+#[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
@@ -146,6 +148,7 @@ pub fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
     }
 }
 
+#[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
     project::Create {
         repo: project::Repo::New {
