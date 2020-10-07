@@ -112,15 +112,16 @@ fn discover_filter(
         .and_then(handler::discover)
 }
 
-/// `POST /track/<peer_id>`
+/// `PUT /<urn>/track/<peer_id>`
 fn track_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("track")
-        .and(warp::post())
-        .and(http::with_context(ctx))
+    http::with_context(ctx)
+        .and(warp::put())
+        .and(path::param::<coco::Urn>())
+        .and(path("track"))
+        .and(path::param::<coco::PeerId>())
         .and(path::end())
-        .and(warp::body::json())
         .and_then(handler::track)
 }
 
@@ -227,7 +228,8 @@ mod handler {
     /// Track the peer for the provided project.
     pub async fn track(
         ctx: context::Context,
-        super::TrackInput { urn, peer_id }: super::TrackInput,
+        urn: coco::Urn,
+        peer_id: coco::PeerId,
     ) -> Result<impl Reply, Rejection> {
         ctx.state.track(urn, peer_id).await.map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -265,16 +267,6 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
-}
-
-/// User provided input for which peer to track for which project.
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TrackInput {
-    /// The project identifier to track.
-    urn: coco::Urn,
-    /// The peer to track for the given project.
-    peer_id: coco::PeerId,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
@@ -672,15 +664,9 @@ mod test {
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.contributed.first().expect("no projects setup");
 
-        let input = super::TrackInput {
-            urn: project.id.clone(),
-            peer_id: coco::control::generate_peer_id(),
-        };
-
         let res = request()
-            .method("POST")
-            .path("/track")
-            .json(&input)
+            .method("PUT")
+            .path(&format!("/{}/track/{}", project.id, coco::control::generate_peer_id()))
             .reply(&api)
             .await;
 
