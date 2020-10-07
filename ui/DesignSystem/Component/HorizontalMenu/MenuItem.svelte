@@ -7,7 +7,7 @@
   export let icon: typeof SvelteComponent;
   export let title: string;
   export let active: boolean;
-  export let counter: string | number | undefined = undefined;
+  export let counter: number | undefined = undefined;
 </script>
 
 <style>

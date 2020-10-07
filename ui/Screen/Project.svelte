@@ -120,10 +120,10 @@
 
   // Workaround for stores: https://github.com/sveltejs/language-tools/issues/493
   // TODO(sos): should be removed if/when this is fixed.
-  let revisions: source.PeerRevisions[] | undefined,
-    project: Project | undefined,
-    commits: source.CommitsStore | undefined,
-    currentRevision: source.Branch | source.Tag | undefined;
+  let revisions: source.PeerRevisions[] | undefined;
+  let project: Project | undefined;
+  let commits: source.CommitsStore | undefined;
+  let currentRevision: source.SupportedRevision | undefined;
 
   $: {
     const rs = $revisionsStore;
@@ -145,7 +145,7 @@
   };
 
   const updateRevision = (
-    ev: CustomEvent<{ revision: source.Branch | source.Tag }>
+    ev: CustomEvent<{ revision: source.SupportedRevision }>
   ) => {
     source.updateCurrentRevision({ revision: ev.detail.revision });
   };

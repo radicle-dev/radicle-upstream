@@ -142,6 +142,9 @@ export interface Sha {
   sha: string;
 }
 
+// Currently supported revision types in UI:
+export type SupportedRevision = Branch | Tag;
+
 export type RevisionQuery = Branch | Tag | Sha;
 
 // Proxy representation of all known revisions of a project from a particular peer

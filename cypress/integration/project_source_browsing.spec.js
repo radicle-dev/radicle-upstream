@@ -321,6 +321,9 @@ context("source code browsing", () => {
       cy.pick("file-source").contains("README.md");
 
       cy.pick("source-tree").within(() => {
+        // Ensure folder is attached to the DOM.
+        cy.pick("this-folder").contains("this");
+
         // Traverse deeply nested folders.
         cy.pick("expand-this").click();
         cy.pick("expand-is").click();
@@ -345,10 +348,9 @@ context("source code browsing", () => {
     });
 
     it("highlights the selected file", () => {
-      // Ensure the file has loaded before navigating away.
-      cy.pick("file-source").contains("README.md");
-
       cy.pick("source-tree").within(() => {
+        // Ensure folder is attached to the DOM.
+        cy.pick("this-folder").contains("this");
         cy.contains(".i-am-well-hidden").should("not.have.class", "active");
         cy.contains(".i-am-well-hidden").click();
         cy.contains(".i-am-well-hidden").should("have.class", "active");
@@ -362,6 +364,8 @@ context("source code browsing", () => {
           cy.pick("file-source").contains("README.md");
 
           cy.pick("source-tree").within(() => {
+            // Ensure the source browser is attached to the DOM.
+            cy.pick("src-folder").contains("src");
             cy.pick("expand-src").click();
             cy.contains("Eval.hs").click();
           });
