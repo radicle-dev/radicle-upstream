@@ -34,7 +34,7 @@
       const result = await pool.topUp(amount);
       console.log("OnConfirmed result", result);
     } catch (error) {
-      notification.error(`Could not transfer funds: ${error.message}`);
+      notification.error(`Could not top up pool funds: ${error.message}`);
     }
   };
 </script>
