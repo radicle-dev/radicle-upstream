@@ -16,7 +16,8 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
         .or(request_filter(ctx.clone()))
-        .or(get_filter(ctx))
+        .or(get_filter(ctx.clone()))
+        .or(track_filter(ctx))
         .boxed()
 }
 
@@ -88,7 +89,7 @@ fn contributed_filter(
         .and_then(handler::list_contributed)
 }
 
-/// `GET /user/<id>
+/// `GET /user/<id>`
 fn user_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -109,6 +110,18 @@ fn discover_filter(
         .and(http::with_context(ctx))
         .and(path::end())
         .and_then(handler::discover)
+}
+
+/// `Post /tracke/<peer id>`
+fn track_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("track")
+        .and(warp::post())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and(warp::body::json())
+        .and_then(handler::track)
 }
 
 /// Project handlers to implement conversion and translation between core domain and http request
@@ -210,6 +223,15 @@ mod handler {
 
         Ok(reply::json(&feed))
     }
+
+    /// Track the peer for the provided project.
+    pub async fn track(
+        ctx: context::Context,
+        super::TrackInput { urn, peer_id }: super::TrackInput,
+    ) -> Result<impl Reply, Rejection> {
+        ctx.state.track(urn, peer_id).await.map_err(Error::from)?;
+        Ok(reply::json(&true))
+    }
 }
 
 /// Bundled input data for project creation.
@@ -243,6 +265,16 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
+}
+
+/// User provided input for which peer to track for which project.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackInput {
+    /// The project identifier to track.
+    urn: coco::Urn,
+    /// The peer to track for the given project.
+    peer_id: coco::PeerId,
 }
 
 #[allow(clippy::panic, clippy::unwrap_used)]
@@ -624,6 +656,36 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, want);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn track() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+        coco::control::setup_fixtures(&ctx.state, &ctx.signer, &owner).await?;
+        let projects = project::Projects::list(&ctx.state).await?;
+        let project = projects.contributed.first().expect("no projects setup");
+
+        let input = super::TrackInput {
+            urn: project.id.clone(),
+            peer_id: coco::control::generate_peer_id(),
+        };
+
+        let res = request()
+            .method("POST")
+            .path("/track")
+            .json(&input)
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
         });
 
         Ok(())
