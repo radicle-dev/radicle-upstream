@@ -50,6 +50,10 @@ export default {
     {
       name: "node-builtins",
       resolveId(importee) {
+        if (importee === "util") {
+          // We need a more recent version than browserify provides
+          return { id: require.resolve("util/util.js") };
+        }
         const builtinPath = browserifyNodeBuiltins[importee];
         if (builtinPath) {
           return { id: builtinPath };
