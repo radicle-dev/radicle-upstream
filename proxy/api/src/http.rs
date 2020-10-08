@@ -40,16 +40,25 @@ pub fn api(
     enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let avatar_filter = path("avatars").and(avatar::get_filter());
-    let control_filter = path("control").and(control::filters(
-        ctx.clone(),
-        selfdestruct,
-        enable_fixture_creation,
-    ));
+    let control_filter =
+        path("control")
+            .and(with_unsealed_guard(ctx.clone()))
+            .and(control::filters(
+                ctx.clone(),
+                selfdestruct,
+                enable_fixture_creation,
+            ));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
-    let notification_filter = path("notifications").and(notification::filters(subscriptions));
-    let project_filter = path("projects").and(project::filters(ctx.clone()));
+    let notification_filter = path("notifications")
+        .and(with_unsealed_guard(ctx.clone()))
+        .and(notification::filters(subscriptions));
+    let project_filter = path("projects")
+        .and(with_unsealed_guard(ctx.clone()))
+        .and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
-    let source_filter = path("source").and(source::filters(ctx));
+    let source_filter = path("source")
+        .and(with_unsealed_guard(ctx.clone()))
+        .and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
         avatar_filter,
@@ -87,7 +96,7 @@ pub fn api(
     recovered.with(cors).with(log)
 }
 
-/// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
+/// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
 fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
@@ -111,6 +120,22 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
                 Err(Rejection::from(error::Routing::MissingOwner))
             }
         })
+        .boxed()
+}
+
+/// Asserts presence of the signer and rejects the request early if missing.
+#[must_use]
+fn with_unsealed_guard(ctx: context::Context) -> BoxedFilter<()> {
+    warp::any()
+        .and(with_context(ctx))
+        .and_then(|ctx: context::Context| async move {
+            if ctx.signer.is_some() {
+                Ok(())
+            } else {
+                Err(Rejection::from(error::Routing::SealedKeystore))
+            }
+        })
+        .untuple_one()
         .boxed()
 }
 
@@ -288,5 +313,35 @@ mod test {
                 })
             );
         });
+    }
+
+    #[tokio::test]
+    async fn with_unsealed_guard() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let mut ctx = context::Context::tmp(&tmp_dir).await?;
+        ctx.signer = None;
+        let api = with_qs_opt::<Query>()
+            .map(|opt_query| warp::reply::json(&opt_query))
+            .and(super::with_unsealed_guard(ctx))
+            .recover(super::error::recover)
+            .boxed();
+
+        let res = warp::test::request()
+            .method("GET")
+            .path("/?value=72")
+            .reply(&api)
+            .await;
+
+        assert_response(&res, StatusCode::FORBIDDEN, |have| {
+            assert_eq!(
+                have,
+                serde_json::json!({
+                    "message": "Keystore is sealed",
+                    "variant": "FORBIDDEN"
+                })
+            );
+        });
+
+        Ok(())
     }
 }
