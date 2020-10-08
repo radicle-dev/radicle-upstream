@@ -10,11 +10,10 @@
 use std::{
     collections::HashMap,
     ops::{Deref, Sub},
-    time::Instant,
 };
 
 use either::Either;
-use serde::{ser::SerializeStruct, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use librad::{
     net::peer::types::Gossip,
@@ -22,10 +21,10 @@ use librad::{
     uri::{self, RadUrl, RadUrn},
 };
 
-pub mod states;
-pub use states::*;
 pub mod existential;
 pub use existential::SomeRequest;
+pub mod states;
+pub use states::*;
 pub mod waiting_room;
 
 /// Private trait for sealing the traits we use here.
@@ -59,63 +58,17 @@ mod sealed;
 ///
 /// The `T` type parameter represents some timestamp that is chosen by the user of the `Request`
 /// API. Note that it makes it easy to test by just choosing `()` for the timestamp.
-#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Request<S, T> {
     /// The identifier of the identity on the network.
     urn: RadUrn,
     /// The number of attempts this request has made to complete its job.
     attempts: Attempts,
     /// The timestamp of the latest action to be taken on this request.
+    #[serde(with = "serde_millis", bound = "T: serde_millis::Milliseconds")]
     timestamp: T,
     /// The state of the request, as mentioned above.
     state: S,
-}
-
-/// Wrapper for `std::Instant` to serialize using `serde_millis`.
-struct WithMillis(Instant);
-
-impl Serialize for WithMillis {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let WithMillis(ts) = self;
-        serde_millis::serialize(ts, serializer)
-    }
-}
-
-impl<T> Serialize for Request<T, Instant>
-where
-    T: Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut state = serializer.serialize_struct("Request", 4)?;
-        state.serialize_field("urn", &self.urn)?;
-        state.serialize_field("attempts", &self.attempts)?;
-        state.serialize_field("timestamp", &WithMillis(self.timestamp))?;
-        state.serialize_field("state", &self.state)?;
-        state.end()
-    }
-}
-
-impl<T> Serialize for Request<T, usize>
-where
-    T: Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut state = serializer.serialize_struct("Request", 4)?;
-        state.serialize_field("urn", &self.urn)?;
-        state.serialize_field("attempts", &self.attempts)?;
-        state.serialize_field("timestamp", &self.timestamp)?;
-        state.serialize_field("state", &self.state)?;
-        state.end()
-    }
 }
 
 impl<S, T> Deref for Request<S, T> {

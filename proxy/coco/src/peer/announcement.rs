@@ -9,7 +9,10 @@ use librad::{
     uri::{path::ParseError, Path, RadUrn},
 };
 
-use crate::{oid::Oid, state::State};
+use crate::{
+    oid::Oid,
+    state::{self, State},
+};
 
 /// Name for the bucket used in [`kv::Store`].
 const BUCKET_NAME: &str = "announcements";
@@ -19,11 +22,6 @@ const KEY_NAME: &str = "latest";
 /// Announcement errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// Stop-gap until we get rid of crate level errors.
-    // TODO(xla): Remove once we transitioned to per module errors.
-    #[error(transparent)]
-    Crate(#[from] crate::error::Error),
-
     /// Failures from [`kv`].
     #[error(transparent)]
     Kv(#[from] kv::Error),
@@ -31,6 +29,9 @@ pub enum Error {
     /// Failures parsing.
     #[error(transparent)]
     Parse(#[from] ParseError),
+    /// Error occurred when interacting with [`State`].
+    #[error(transparent)]
+    State(#[from] state::Error),
 }
 
 /// An update and all the required information that can be announced on the network.
@@ -69,7 +70,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
     match state.list_projects().await {
         // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
         // should be machinery to kick off these routines only if our app state is ready for it.
-        Err(crate::error::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
+        Err(crate::state::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
         Err(err) => Err(err.into()),
         Ok(projects) => {
             for project in &projects {

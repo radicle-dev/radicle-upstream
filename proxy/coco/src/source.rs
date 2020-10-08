@@ -13,7 +13,34 @@ use radicle_surf::{
     vcs::git::{self, git2, BranchType, Browser, Rev, Stats},
 };
 
-use crate::{error::Error, oid::Oid};
+use crate::oid::Oid;
+
+/// An error occurred when interacting with [`radicle_surf`] for browsing source code.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// We expect at least one [`crate::source::Revisions`] when looking at a project, however the
+    /// computation found none.
+    #[error(
+        "while trying to get user revisions we could not find any, there should be at least one"
+    )]
+    EmptyRevisions,
+
+    /// An error occurred during a [`radicle_surf::file_system`] operation.
+    #[error(transparent)]
+    FileSystem(#[from] file_system::Error),
+
+    /// An error occurred during a [`radicle_surf::git`] operation.
+    #[error(transparent)]
+    Git(#[from] git::error::Error),
+
+    /// When trying to query a repositories branches, but there are none.
+    #[error("The repository has no branches")]
+    NoBranches,
+
+    /// Trying to find a file path which could not be found.
+    #[error("the path '{0}' was not found")]
+    PathNotFound(file_system::Path),
+}
 
 lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
@@ -519,9 +546,10 @@ pub struct LocalState {
 ///
 /// Will return [`Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
-    let repo = git2::Repository::open(repo_path)?;
+    let repo = git2::Repository::open(repo_path).map_err(git::error::Error::from)?;
     let first_branch = repo
-        .branches(Some(git2::BranchType::Local))?
+        .branches(Some(git2::BranchType::Local))
+        .map_err(git::error::Error::from)?
         .filter_map(|branch_result| {
             let (branch, _) = branch_result.ok()?;
             let name = branch.name().ok()?;
@@ -829,11 +857,9 @@ mod tests {
 
     use crate::{config, control, oid, signer, state::State};
 
-    use super::Error;
-
     // TODO(xla): A wise man once said: This probably should be an integration test.
     #[tokio::test]
-    async fn browse_commit() -> Result<(), Error> {
+    async fn browse_commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });

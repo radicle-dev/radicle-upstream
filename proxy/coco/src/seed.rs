@@ -1,9 +1,23 @@
 //! Seed nodes.
-use std::net::SocketAddr;
+use std::{io, net::SocketAddr};
 
 use librad::peer;
 
-use crate::error::Error;
+/// Errors that occur when resolving seed addresses.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Seed DNS failed to resolve to an address.
+    #[error("the seed '{0}' failed to resolve to an address")]
+    DnsLookupFailed(String),
+
+    /// Seed input is invalid.
+    #[error("the seed '{0}' is invalid: {:1}")]
+    InvalidSeed(String, Option<librad::peer::conversion::Error>),
+
+    /// I/O error.
+    #[error(transparent)]
+    Io(#[from] io::Error),
+}
 
 /// A peer used to seed our client.
 #[derive(Debug, Clone)]
