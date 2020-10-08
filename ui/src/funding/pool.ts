@@ -1,10 +1,8 @@
 import { writable } from "svelte/store";
-import poolCompilerOutput from "radicle-contracts/artifacts/Pool.json";
-import { Pool as PoolContract } from "radicle-contracts/contract-bindings/web3/Pool";
-import * as web3Utils from "web3-utils";
-import * as svelteStore from "svelte/store";
+import { PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/PoolFactory";
+import { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
 
-import { Wallet, Status as WalletStatus } from "../wallet";
+import { Wallet } from "../wallet";
 import * as remote from "../remote";
 
 export const store = writable<Pool | null>(null);
@@ -44,28 +42,27 @@ export interface PoolData {
 
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
+  const address = "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
 
-  const poolContract = (new wallet.web3.eth.Contract(
-    (poolCompilerOutput.abi as unknown) as web3Utils.AbiItem[],
-    "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e"
-  ) as unknown) as PoolContract;
+  const poolContract: PoolContract = PoolFactory.connect(
+    address,
+    wallet.signer
+  );
 
   loadPoolData();
 
   async function loadPoolData() {
     try {
-      const balance = await poolContract.methods.withdrawable().call();
-      const collectableFunds = await poolContract.methods.collectable().call();
-      const amountPerBlock = await poolContract.methods
-        .getAmountPerBlock()
-        .call();
-      const receivers = await poolContract.methods.getAllReceivers().call();
-      const receiverAddresses = receivers.map(([address]) => address);
+      const balance = await poolContract.withdrawable();
+      const collectableFunds = await poolContract.collectable();
+      const amountPerBlock = await poolContract.getAmountPerBlock();
+      const receivers = await poolContract.getAllReceivers();
+      const receiverAddresses = receivers.map(r => r.receiver);
 
       data.success({
         // Handle potential overflow using BN.js
         balance: Number(balance),
-        amountPerBlock,
+        amountPerBlock: amountPerBlock.toString(),
         receiverAddresses,
         // Handle potential overflow using BN.js
         collectableFunds: Number(collectableFunds),
@@ -80,47 +77,37 @@ export function make(wallet: Wallet): Pool {
     // only update members that have been added or removed
     const txs = [];
     for (const address in settings.receiverAddresses) {
-      txs.push(poolContract.methods.setReceiver(address, 1).send());
+      txs.push(poolContract.setReceiver(address, 1).then(tx => tx.wait()));
     }
 
     txs.push(
-      poolContract.methods.setAmountPerBlock(settings.amountPerBlock).send()
+      poolContract
+        .setAmountPerBlock(settings.amountPerBlock)
+        .then(tx => tx.wait())
     );
     // TODO check transaction status
     await Promise.all(txs);
   }
 
   async function topUp(value: number): Promise<void> {
-    const receipt = await poolContract.methods.topUp().send({
-      from: getAccountAddress(),
-      gas: 200 * 1000,
+    const tx = await poolContract.topUp({
+      gasLimit: 200 * 1000,
       value,
     });
-    if (receipt.status === false) {
+    const receipt = await tx.wait();
+    if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
     }
     loadPoolData();
   }
 
   async function collect(): Promise<void> {
-    const receipt = await poolContract.methods.collect().send({
-      from: getAccountAddress(),
-    });
-    if (receipt.status === false) {
+    const tx = await poolContract.collect();
+    const receipt = await tx.wait();
+    if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
     }
     loadPoolData();
-  }
-
-  // Get the account address from the wallet. Throws an error if we’re
-  // not connected.
-  function getAccountAddress() {
-    const state = svelteStore.get(wallet);
-    if (state.status === WalletStatus.Connected) {
-      return state.connected.account.address;
-    } else {
-      throw new Error("Wallet is not connected");
-    }
   }
 
   return {

@@ -1,7 +1,6 @@
 import { Readable } from "svelte/store";
-import Web3 from "web3";
-import WebsocketProvider from "web3-providers-ws";
 import * as svelteStore from "svelte/store";
+import * as ethers from "ethers";
 
 export enum Status {
   Connected = "CONNECTED",
@@ -24,7 +23,7 @@ export interface Connected {
 export interface Wallet extends Readable<State> {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  web3: Web3;
+  signer: ethers.Signer;
 }
 
 export function build(): Wallet {
@@ -32,10 +31,12 @@ export function build(): Wallet {
     status: Status.NotConnected,
   });
 
-  const provider = new WebsocketProvider("ws://localhost:8545");
-  const web3 = new Web3(provider);
+  const provider = new ethers.providers.JsonRpcProvider(
+    "http://localhost:8545"
+  );
+  const signer = provider.getSigner(0);
 
-  initEthereumDebug(provider);
+  window.ethereumDebug = new EthereumDebug(provider);
 
   // Connect to a wallet using walletconnect
   async function connect() {
@@ -48,17 +49,12 @@ export function build(): Wallet {
     try {
       stateStore.set({ status: Status.Connecting });
 
-      const accountAddresses = await web3.eth.getAccounts();
-      const accountAddress = accountAddresses[0];
-      if (!accountAddress) {
-        throw Error("Wallet does not provide an account");
-      }
-      web3.eth.defaultAccount = accountAddress;
-      const balance = await web3.eth.getBalance(accountAddress);
+      const accountAddress = await signer.getAddress();
+      const balance = await signer.getBalance();
       const connected = {
         account: {
           address: accountAddress,
-          balance: balance,
+          balance: balance.toString(),
         },
       };
       stateStore.set({ status: Status.Connected, connected });
@@ -77,49 +73,26 @@ export function build(): Wallet {
       console.warn("Not implemented");
       return undefined;
     },
-    web3,
+    signer,
   };
 }
 
 declare global {
   interface Window {
-    ethereumDebug: any;
+    ethereumDebug: EthereumDebug;
   }
 }
 
-function initEthereumDebug(provider: WebsocketProvider) {
-  window.ethereumDebug = {
-    // Tell the Ethereum development node to mine the given number of
-    // blocks.
-    async mineBlocks(blocks = 1) {
-      while (blocks) {
-        blocks -= 1;
-        await mineBlock(provider);
-      }
-    },
-  };
-}
+class EthereumDebug {
+  private provider: ethers.providers.JsonRpcProvider;
 
-// Tell the Ethereum development node to mine a block.
-async function mineBlock(provider: WebsocketProvider) {
-  return new Promise((resolve, reject) => {
-    provider.send(
-      {
-        jsonrpc: "2.0",
-        method: "evm_mine",
-        params: [],
-      },
-      (error, response) => {
-        if (error) {
-          reject(error);
-        } else if (response && response.error) {
-          // Types are incorrect
-          const error = (response.error as unknown) as { message: string };
-          throw new Error(error.message);
-        } else {
-          resolve();
-        }
-      }
-    );
-  });
+  constructor(provider: ethers.providers.JsonRpcProvider) {
+    this.provider = provider;
+  }
+  async mineBlocks(blocks = 1) {
+    while (blocks) {
+      blocks -= 1;
+      await this.provider.send("evm_mine", []);
+    }
+  }
 }
