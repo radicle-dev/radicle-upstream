@@ -384,7 +384,8 @@ impl Future for Subroutines {
     type Output = Result<(), SpawnAbortableError>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        // Drain the task queue
+        // Ensure the `JoinHandle`s of the tasks are consumed, droped to release associated
+        // resources.
         loop {
             match self.pending_tasks.poll_next_unpin(cx) {
                 Poll::Ready(Some(Err(e))) => {
