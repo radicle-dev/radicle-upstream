@@ -681,8 +681,11 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
-        coco::control::setup_fixtures(&ctx.state, &ctx.signer, &owner).await?;
+        let owner = ctx
+            .state
+            .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+            .await?;
+        coco::control::setup_fixtures(&ctx.state, &ctx.signer.unwrap(), &owner).await?;
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.contributed.first().expect("no projects setup");
 
