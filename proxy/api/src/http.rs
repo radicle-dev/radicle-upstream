@@ -314,4 +314,34 @@ mod test {
             );
         });
     }
+
+    #[tokio::test]
+    async fn with_unsealed_guard() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let mut ctx = context::Context::tmp(&tmp_dir).await?;
+        ctx.signer = None;
+        let api = with_qs_opt::<Query>()
+            .map(|opt_query| warp::reply::json(&opt_query))
+            .and(super::with_unsealed_guard(ctx))
+            .recover(super::error::recover)
+            .boxed();
+
+        let res = warp::test::request()
+            .method("GET")
+            .path("/?value=72")
+            .reply(&api)
+            .await;
+
+        assert_response(&res, StatusCode::FORBIDDEN, |have| {
+            assert_eq!(
+                have,
+                serde_json::json!({
+                    "message": "Keystore is sealed",
+                    "variant": "FORBIDDEN"
+                })
+            );
+        });
+
+        Ok(())
+    }
 }
