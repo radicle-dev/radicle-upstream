@@ -276,8 +276,8 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     let bob_events = bob_peer.subscribe();
-    let _alice_runs = alice_peer.into_running();
-    let _bob_runs = bob_peer.into_running();
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
     connected(bob_events, &alice_peer_id).await?;
 
     assert_event!(

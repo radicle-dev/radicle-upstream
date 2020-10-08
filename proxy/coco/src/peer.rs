@@ -12,16 +12,19 @@ use std::{
 
 use futures::{
     future::{self, FutureExt as _},
-    stream::StreamExt as _,
+    stream::{BoxStream, FuturesUnordered, StreamExt as _},
 };
 use tokio::{
-    sync::{broadcast, mpsc},
+    sync::{broadcast, mpsc, Barrier},
     task::{JoinError, JoinHandle},
-    time::interval,
+    time::{interval, Interval},
 };
 
 use librad::{
-    net::peer::RunLoop,
+    net::{
+        peer::{Gossip, RunLoop},
+        protocol::ProtocolEvent,
+    },
     peer::PeerId,
     uri::{RadUrl, RadUrn},
 };
@@ -59,13 +62,9 @@ pub enum Error {
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
 
-    /// The future was aborted.
-    #[error("the running peer was aborted")]
-    Aborted(#[source] future::Aborted),
-
     /// There was an error in a spawned task.
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
-    Join(#[source] JoinError),
+    Spawn(#[source] SpawnAbortableError),
 
     /// There was an error when interacting with [`State`].
     #[error(transparent)]
@@ -122,88 +121,67 @@ impl Peer {
     /// Start up the internal machinery to advance the underlying protocol, react to significant
     /// events and keep auxiliary tasks running.
     ///
-    /// Calling this method spawns tasks onto the async executor, so the returned future has
-    /// similar semantics to [`JoinHandle`]. Unlike [`JoinHandle`], however, dropping the
-    /// [`Running`] future will cancel all its tasks. It is advisable to poll the [`Running`] future
-    /// in order to be able to get notified of errors -- in which case, however, not much can be
-    /// done except for creating a new [`Peer`] and put it into running state.
+    /// The returned [`Running`] future has similar semantics to [`JoinHandle`]: internally, all
+    /// tasks are spawned immediately, and polling the future is only necessary to get notified of
+    /// errors. Unlike [`JoinHandle`], however, [`Running`] does not detach the tasks. That is,
+    /// if and when [`Running`] is dropped, all tasks are cancelled.
     pub fn into_running(self) -> Running {
-        self.into()
-    }
-}
-
-/// [`JoinHandle`] for the protocol run loop task.
-type JoinProtocol = JoinHandle<Result<(), future::Aborted>>;
-
-/// [`JoinHandle`] for the subroutines task.
-type JoinSubroutines = JoinHandle<Result<(), Error>>;
-
-/// Future returned by [`Peer::into_running`].
-#[must_use = "to the sig hup, don't stup, don't drop"]
-pub struct Running {
-    /// Join and abort handles for the protocol run loop.
-    protocol: (JoinProtocol, future::AbortHandle),
-    /// Join and abort handles for the subroutines task.
-    subroutines: (JoinSubroutines, Arc<tokio::sync::Notify>),
-}
-
-impl Running {
-    /// Abort the tasks of this future.
-    ///
-    /// The next call to [`Future::poll`] will return an [`Error::Aborted`].
-    pub fn abort(&mut self) {
-        self.protocol.1.abort();
-        self.subroutines.1.notify();
-    }
-}
-
-impl From<Peer> for Running {
-    fn from(peer: Peer) -> Self {
-        let Peer {
+        let Self {
             run_loop,
             state,
             store,
             waiting_room,
             subscriber,
             run_config,
-        } = peer;
+        } = self;
 
-        // Note: this must be spawned first to not lose the race for the first
-        // protocol event
+        // Rendezvous on a barrier to let the subroutines subscribe for protocol
+        // events before it actually starts. As `Protocol::subscribe` is async,
+        // we would otherwise need to make `into_running` async as well, which
+        // yields the weird requirement to double `.await` it.
+        let barrier = Arc::new(Barrier::new(2));
         let subroutines = {
-            let stop = Arc::new(tokio::sync::Notify::new());
-            let fut = subroutines(
-                state,
-                store,
-                waiting_room,
-                run_config,
-                subscriber,
-                stop.clone(),
-            );
-            let join = tokio::spawn(fut);
-
-            (join, stop)
+            let barrier = barrier.clone();
+            SpawnAbortable::new(async move {
+                let protocol_events = state.api.protocol().subscribe().await.boxed();
+                barrier.wait().await;
+                Subroutines::new(
+                    state,
+                    store,
+                    waiting_room,
+                    run_config,
+                    protocol_events,
+                    subscriber,
+                )
+                .await
+            })
         };
+        let protocol = SpawnAbortable::new(async move {
+            barrier.wait().await;
+            run_loop.await
+        });
 
-        let protocol = {
-            let (handle, registration) = future::AbortHandle::new_pair();
-            let fut = future::Abortable::new(run_loop, registration);
-            let join = tokio::spawn(fut);
-
-            (join, handle)
-        };
-
-        Self {
+        Running {
             protocol,
             subroutines,
         }
     }
 }
 
+/// Future returned by [`Peer::into_running`].
+#[must_use = "to the sig hup, don't stop, just drop"]
+pub struct Running {
+    /// Join and abort handles for the protocol run loop.
+    protocol: SpawnAbortable<()>,
+    /// The [`Subroutines`] associated with this [`Peer`] instance.
+    subroutines: SpawnAbortable<Result<(), SpawnAbortableError>>,
+}
+
 impl Drop for Running {
     fn drop(&mut self) {
-        log::debug!("dropping `Peer`");
-        self.abort()
+        log::trace!("`peer::Running` is being dropped");
+        self.protocol.abort();
+        self.subroutines.abort();
     }
 }
 
@@ -211,296 +189,388 @@ impl Future for Running {
     type Output = Result<(), Error>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        let err = match self.protocol.0.poll_unpin(cx) {
+        let err = match self.protocol.poll_unpin(cx) {
             Poll::Ready(val) => match val {
-                Err(e) => Some(Error::Join(e)),
-                Ok(Err(e)) => Some(Error::Aborted(e)),
-                Ok(Ok(())) => None,
+                Err(e) => Some(Error::Spawn(e)),
+                Ok(()) => None,
             },
             Poll::Pending => None,
         };
 
         if let Some(err) = err {
+            log::trace!("run loop error: {:?}", err);
             return Poll::Ready(Err(err));
         }
 
-        match self.subroutines.0.poll_unpin(cx) {
-            Poll::Ready(val) => match val {
-                Err(e) => Poll::Ready(Err(Error::Join(e))),
-                Ok(Err(e)) => Poll::Ready(Err(e)),
-                Ok(Ok(())) => Poll::Ready(Ok(())),
+        match self.subroutines.poll_unpin(cx) {
+            Poll::Ready(val) => {
+                let val = match val {
+                    Err(e) | Ok(Err(e)) => Err(Error::Spawn(e)),
+                    Ok(Ok(())) => Ok(()),
+                };
+                Poll::Ready(val)
             },
             Poll::Pending => Poll::Pending,
         }
     }
 }
 
-/// Schedule subroutines.
-async fn subroutines(
-    state: State,
-    store: kv::Store,
-    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
-    run_config: RunConfig,
-    subscriber: broadcast::Sender<Event>,
-    stop: Arc<tokio::sync::Notify>,
-) -> Result<(), Error> {
-    let mut protocol_events = state.api.protocol().subscribe().await;
-    let mut announce_timer = interval(run_config.announce.interval);
-    let mut ping = interval(PING_PERIOD);
+/// [`SpawnAbortable`] errors.
+#[derive(Debug, thiserror::Error)]
+pub enum SpawnAbortableError {
+    /// The spawned task either panicked, or was cancelled by the runtime.
+    #[error(transparent)]
+    Join(#[from] JoinError),
 
-    let (announce_sender, mut announcements) = mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
-    let (peer_sync_sender, mut peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
-    let (timeout_sender, mut timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
-    let (request_sender, mut requests) = mpsc::channel::<RequestEvent>(RECEIVER_CAPACITY);
+    /// The spawned task was aborted by calling [`SpawnAbortable::abort`].
+    #[error(transparent)]
+    Abort(#[from] future::Aborted),
+}
 
-    let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
-    tokio::pin!(request_queries);
-    let request_clones = waiting_room::stream::Clones::new(waiting_room.clone().value);
-    tokio::pin!(request_clones);
+/// A spawned task which can also be aborted by the user.
+///
+/// Stop-gap until we can abort [`JoinHandle`]s directly:
+/// tokio-rs@cbb14a7bb9a13363e1abee8caff2bad1f996c263
+#[allow(clippy::missing_docs_in_private_items)]
+pub struct SpawnAbortable<T> {
+    join_handle: JoinHandle<Result<T, future::Aborted>>,
+    abort_handle: future::AbortHandle,
+}
 
-    let mut run_state = RunState::from(run_config);
-    loop {
-        let event = tokio::select! {
-            _ = ping.tick() => Event::Ping,
-            _ = announce_timer.tick() => Event::Announce(AnnounceEvent::Tick),
-            Some(announce_event) = announcements.recv() => Event::Announce(announce_event),
-            Some(protocol_event) = protocol_events.next() => Event::Protocol(protocol_event),
-            Some(sync_event) = peer_syncs.recv() => Event::PeerSync(sync_event),
-            Some(timeout_event) = timeouts.recv() => Event::Timeout(timeout_event),
-            Some(urn) = request_queries.next() => Event::Request(RequestEvent::Query(urn)),
-            Some(url) = request_clones.next() => Event::Request(RequestEvent::Clone(url)),
-            Some(request_event) = requests.next() => Event::Request(request_event),
-            else => {
-                break
-            },
-        };
+impl<T> SpawnAbortable<T> {
+    /// Create a new [`SpawnAbortable`] from a [`Future`].
+    ///
+    /// The supplied [`Future`] will be spawned onto the async executor **immediately**!
+    pub fn new<Fut>(fut: Fut) -> Self
+    where
+        Fut: Future<Output = T> + Send + 'static,
+        Fut::Output: Send + 'static,
+    {
+        let (abort_handle, abort_reg) = future::AbortHandle::new_pair();
+        let join_handle = tokio::spawn(future::Abortable::new(fut, abort_reg));
 
-        // Send will error if there are no active receivers. This
-        // case is expected and should not terminate the run loop.
-        subscriber.send(event.clone()).ok();
-        log::debug!("{:?}", event);
-
-        for cmd in run_state.transition(&event) {
-            match cmd {
-                Command::Request(RequestCommand::Query(urn)) => {
-                    let stop = stop.clone();
-                    query(
-                        urn,
-                        state.clone(),
-                        waiting_room.clone(),
-                        async move { stop.notified().await }.boxed(),
-                    );
-                },
-                Command::Request(RequestCommand::Found(url)) => {
-                    let stop = stop.clone();
-                    found(
-                        url,
-                        waiting_room.clone(),
-                        async move { stop.notified().await }.boxed(),
-                    );
-                },
-                Command::Request(RequestCommand::Clone(url)) => {
-                    let stop = stop.clone();
-                    clone(
-                        url,
-                        state.clone(),
-                        waiting_room.clone(),
-                        request_sender.clone(),
-                        async move { stop.notified().await }.boxed(),
-                    );
-                },
-                Command::Announce => {
-                    let stop = stop.clone();
-                    announce(
-                        state.clone(),
-                        store.clone(),
-                        announce_sender.clone(),
-                        async move { stop.notified().await }.boxed(),
-                    )
-                },
-                Command::SyncPeer(peer_id) => {
-                    // Cancel when either the parent shuts down, or the timeout
-                    // task fired
-                    let stopper = {
-                        let on_stop = {
-                            let stop = stop.clone();
-                            async move { stop.notified().await }
-                        };
-                        let on_timeout = {
-                            let events = subscriber.subscribe();
-                            async move {
-                                tokio::stream::StreamExt::skip_while(events, |e| match e {
-                                    Ok(Event::Timeout(TimeoutEvent::SyncPeriod)) | Err(_) => false,
-                                    _ => true,
-                                })
-                                .map(|_| ())
-                                .next()
-                                .await
-                            }
-                        };
-
-                        future::select(on_stop.boxed(), on_timeout.boxed()).map(|_| ())
-                    };
-
-                    sync(
-                        state.clone(),
-                        peer_id.clone(),
-                        peer_sync_sender.clone(),
-                        stopper,
-                    );
-                },
-                Command::StartSyncTimeout(sync_period) => {
-                    start_sync_timeout(sync_period, timeout_sender.clone());
-                },
-            };
+        Self {
+            join_handle,
+            abort_handle,
         }
     }
 
-    Ok(())
+    /// Abort this future.
+    ///
+    /// Subsequent polls will return `SpawnAbortableError::Abort`.
+    pub fn abort(&mut self) {
+        self.abort_handle.abort()
+    }
+}
+
+impl<T> Drop for SpawnAbortable<T> {
+    fn drop(&mut self) {
+        self.abort()
+    }
+}
+
+impl<T> Future for SpawnAbortable<T> {
+    type Output = Result<T, SpawnAbortableError>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+        match self.join_handle.poll_unpin(cx) {
+            Poll::Pending => Poll::Pending,
+            Poll::Ready(val) => {
+                let val = match val {
+                    Err(join) => Err(join.into()),
+                    Ok(Err(abort)) => Err(abort.into()),
+                    Ok(Ok(t)) => Ok(t),
+                };
+                Poll::Ready(val)
+            },
+        }
+    }
+}
+
+/// Management of "subroutine" tasks.
+#[allow(clippy::missing_docs_in_private_items)]
+struct Subroutines {
+    pending_tasks: FuturesUnordered<SpawnAbortable<()>>,
+
+    state: State,
+    store: kv::Store,
+    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+    run_state: RunState,
+
+    protocol_events: BoxStream<'static, ProtocolEvent<Gossip>>,
+
+    announce_timer: Interval,
+    ping_timer: Interval,
+
+    subscriber: broadcast::Sender<Event>,
+
+    request_queries: waiting_room::stream::Queries,
+    request_clones: waiting_room::stream::Clones,
+
+    announce_sender: mpsc::Sender<AnnounceEvent>,
+    peer_sync_sender: mpsc::Sender<SyncEvent>,
+    timeout_sender: mpsc::Sender<TimeoutEvent>,
+    request_sender: mpsc::Sender<RequestEvent>,
+
+    announcements: mpsc::Receiver<AnnounceEvent>,
+    peer_syncs: mpsc::Receiver<SyncEvent>,
+    timeouts: mpsc::Receiver<TimeoutEvent>,
+    requests: mpsc::Receiver<RequestEvent>,
+}
+
+impl Subroutines {
+    /// Constructor.
+    pub fn new(
+        state: State,
+        store: kv::Store,
+        waiting_room: Shared<WaitingRoom<Instant, Duration>>,
+        run_config: RunConfig,
+        protocol_events: BoxStream<'static, ProtocolEvent<Gossip>>,
+        subscriber: broadcast::Sender<Event>,
+    ) -> Self {
+        let announce_timer = interval(run_config.announce.interval);
+        let ping_timer = interval(PING_PERIOD);
+
+        let (announce_sender, announcements) = mpsc::channel::<AnnounceEvent>(RECEIVER_CAPACITY);
+        let (peer_sync_sender, peer_syncs) = mpsc::channel::<SyncEvent>(RECEIVER_CAPACITY);
+        let (timeout_sender, timeouts) = mpsc::channel::<TimeoutEvent>(RECEIVER_CAPACITY);
+        let (request_sender, requests) = mpsc::channel::<RequestEvent>(RECEIVER_CAPACITY);
+
+        let run_state = RunState::from(run_config);
+
+        let request_queries = waiting_room::stream::Queries::new(waiting_room.clone().value);
+        let request_clones = waiting_room::stream::Clones::new(waiting_room.clone().value);
+
+        Self {
+            pending_tasks: FuturesUnordered::new(),
+
+            state,
+            store,
+            waiting_room,
+            run_state,
+
+            protocol_events: protocol_events.boxed(),
+
+            announce_timer,
+            ping_timer,
+
+            subscriber,
+
+            request_queries,
+            request_clones,
+
+            announce_sender,
+            peer_sync_sender,
+            timeout_sender,
+            request_sender,
+
+            announcements,
+            peer_syncs,
+            timeouts,
+            requests,
+        }
+    }
+}
+
+impl Drop for Subroutines {
+    fn drop(&mut self) {
+        for task in self.pending_tasks.iter_mut() {
+            task.abort()
+        }
+    }
+}
+
+impl Future for Subroutines {
+    type Output = Result<(), SpawnAbortableError>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+        // Drain the task queue
+        loop {
+            match self.pending_tasks.poll_next_unpin(cx) {
+                Poll::Ready(Some(Err(e))) => {
+                    log::warn!("error in spawned subroutine task: {:?}", e);
+                    return Poll::Ready(Err(e));
+                },
+                Poll::Ready(Some(Ok(()))) => continue,
+                // Either pending, or FuturesUnordered thinks it's done, but
+                // we'll enqueue new tasks below
+                Poll::Ready(None) | Poll::Pending => break,
+            }
+        }
+
+        // Collect any task results, and enqueue new tasks if applicable
+        let mut events = Vec::with_capacity(9);
+        {
+            if let Poll::Ready(Some(protocol_event)) = self.protocol_events.poll_next_unpin(cx) {
+                events.push(Event::Protocol(protocol_event));
+            }
+
+            if let Poll::Ready(Some(_)) = self.announce_timer.poll_next_unpin(cx) {
+                events.push(Event::Announce(AnnounceEvent::Tick));
+            }
+
+            if let Poll::Ready(Some(_)) = self.ping_timer.poll_next_unpin(cx) {
+                events.push(Event::Ping);
+            }
+
+            if let Poll::Ready(Some(announce_event)) = self.announcements.poll_recv(cx) {
+                events.push(Event::Announce(announce_event));
+            }
+
+            if let Poll::Ready(Some(sync_event)) = self.peer_syncs.poll_recv(cx) {
+                events.push(Event::PeerSync(sync_event));
+            }
+
+            if let Poll::Ready(Some(timeout_event)) = self.timeouts.poll_recv(cx) {
+                events.push(Event::Timeout(timeout_event));
+            }
+
+            if let Poll::Ready(Some(urn)) = self.request_queries.poll_next_unpin(cx) {
+                events.push(Event::Request(RequestEvent::Query(urn)));
+            }
+
+            if let Poll::Ready(Some(url)) = self.request_clones.poll_next_unpin(cx) {
+                events.push(Event::Request(RequestEvent::Clone(url)));
+            }
+
+            if let Poll::Ready(Some(request_event)) = self.requests.poll_next_unpin(cx) {
+                events.push(Event::Request(request_event));
+            }
+        }
+
+        for event in events {
+            log::debug!("handling subroutine event: {:?}", event);
+
+            // Ignore if there are no subscribers
+            self.subscriber.send(event.clone()).ok();
+
+            for cmd in self.run_state.transition(&event) {
+                let task = match cmd {
+                    Command::Announce => SpawnAbortable::new(announce(
+                        self.state.clone(),
+                        self.store.clone(),
+                        self.announce_sender.clone(),
+                    )),
+                    Command::SyncPeer(peer_id) => SpawnAbortable::new(sync(
+                        self.state.clone(),
+                        peer_id.clone(),
+                        self.peer_sync_sender.clone(),
+                    )),
+                    Command::StartSyncTimeout(sync_period) => SpawnAbortable::new(
+                        start_sync_timeout(sync_period, self.timeout_sender.clone()),
+                    ),
+                    Command::Request(RequestCommand::Query(urn)) => SpawnAbortable::new(query(
+                        urn,
+                        self.state.clone(),
+                        self.waiting_room.clone(),
+                    )),
+                    Command::Request(RequestCommand::Found(url)) => {
+                        SpawnAbortable::new(found(url, self.waiting_room.clone()))
+                    },
+                    Command::Request(RequestCommand::Clone(url)) => SpawnAbortable::new(clone(
+                        url,
+                        self.state.clone(),
+                        self.waiting_room.clone(),
+                        self.request_sender.clone(),
+                    )),
+                };
+
+                self.pending_tasks.push(task);
+            }
+        }
+
+        // We're never done
+        Poll::Pending
+    }
 }
 
 /// Announcement subroutine.
-fn announce(
-    state: State,
-    store: kv::Store,
-    mut sender: mpsc::Sender<AnnounceEvent>,
-    stop: impl Future<Output = ()> + Send + Unpin + 'static,
-) {
-    tokio::spawn(async move {
-        let go = async {
-            match announcement::run(&state, &store).await {
-                Ok(updates) => {
-                    sender.send(AnnounceEvent::Succeeded(updates)).await.ok();
-                },
-                Err(err) => {
-                    log::error!("announce error: {:?}", err);
-                    sender.send(AnnounceEvent::Failed).await.ok();
-                },
-            }
-        };
-        tokio::pin!(go);
-
-        future::select(stop, go).map(|_| ()).await;
-    });
+async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<AnnounceEvent>) {
+    match announcement::run(&state, &store).await {
+        Ok(updates) => {
+            sender.send(AnnounceEvent::Succeeded(updates)).await.ok();
+        },
+        Err(err) => {
+            log::error!("announce error: {:?}", err);
+            sender.send(AnnounceEvent::Failed).await.ok();
+        },
+    }
 }
 
 /// Peer syncing subroutine.
-fn sync(
-    state: State,
-    peer_id: PeerId,
-    mut sender: mpsc::Sender<SyncEvent>,
-    stop: impl Future<Output = ()> + Send + Unpin + 'static,
-) {
-    tokio::spawn(async move {
-        sender.send(SyncEvent::Started(peer_id.clone())).await.ok();
+async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<SyncEvent>) {
+    sender.send(SyncEvent::Started(peer_id.clone())).await.ok();
 
-        let go = async {
-            match sync::sync(&state, peer_id.clone()).await {
-                Ok(_) => {
-                    sender
-                        .send(SyncEvent::Succeeded(peer_id.clone()))
-                        .await
-                        .ok();
-                },
-                Err(err) => {
-                    log::error!("sync error for {}: {:?}", peer_id, err);
-                    sender.send(SyncEvent::Failed(peer_id.clone())).await.ok();
-                },
-            }
-        };
-        tokio::pin!(go);
-
-        future::select(stop, go).map(|_| ()).await;
-    });
+    match sync::sync(&state, peer_id.clone()).await {
+        Ok(_) => {
+            sender
+                .send(SyncEvent::Succeeded(peer_id.clone()))
+                .await
+                .ok();
+        },
+        Err(err) => {
+            log::error!("sync error for {}: {:?}", peer_id, err);
+            sender.send(SyncEvent::Failed(peer_id.clone())).await.ok();
+        },
+    }
 }
 
 /// Sync timeout subroutine.
-fn start_sync_timeout(sync_period: Duration, mut sender: mpsc::Sender<TimeoutEvent>) {
-    tokio::spawn(async move {
-        tokio::time::delay_for(sync_period).await;
-        sender.send(TimeoutEvent::SyncPeriod).await.ok();
-    });
+async fn start_sync_timeout(sync_period: Duration, mut sender: mpsc::Sender<TimeoutEvent>) {
+    tokio::time::delay_for(sync_period).await;
+    sender.send(TimeoutEvent::SyncPeriod).await.ok();
 }
 
 /// Query subroutine.
-fn query(
-    urn: RadUrn,
-    state: State,
-    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
-    stop: impl Future<Output = ()> + Send + Unpin + 'static,
-) {
-    tokio::spawn(async move {
-        let go = async {
-            request::query(urn.clone(), state.clone(), waiting_room.clone())
-                .await
-                .unwrap_or_else(|err| {
-                    log::warn!(
-                        "an error occurred for the command 'Query' for the URN '{}':\n{}",
-                        urn,
-                        err
-                    );
-                });
-        };
-        tokio::pin!(go);
-
-        future::select(stop, go).map(|_| ()).await;
-    });
+async fn query(urn: RadUrn, state: State, waiting_room: Shared<WaitingRoom<Instant, Duration>>) {
+    request::query(urn.clone(), state, waiting_room)
+        .await
+        .unwrap_or_else(|err| {
+            log::warn!(
+                "an error occurred for the command 'Query' for the URN '{}':\n{}",
+                urn,
+                err
+            );
+        });
 }
 
 /// Found subroutine.
-fn found(
-    url: RadUrl,
-    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
-    stop: impl Future<Output = ()> + Send + Unpin + 'static,
-) {
-    tokio::spawn(async move {
-        let go = async {
-            request::found(url.clone(), waiting_room.clone())
-                .await
-                .unwrap_or_else(|err| {
-                    log::warn!(
-                        "an error occurred for the command 'Found' for the URL '{}':\n{}",
-                        url,
-                        err
-                    );
-                });
-        };
-        tokio::pin!(go);
-
-        future::select(stop, go).map(|_| ()).await;
-    });
+async fn found(url: RadUrl, waiting_room: Shared<WaitingRoom<Instant, Duration>>) {
+    request::found(url.clone(), waiting_room)
+        .await
+        .unwrap_or_else(|err| {
+            log::warn!(
+                "an error occurred for the command 'Found' for the URL '{}':\n{}",
+                url,
+                err
+            );
+        });
 }
 
 /// Clone subroutine.
-fn clone(
+async fn clone(
     url: RadUrl,
     state: State,
     waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     mut sender: mpsc::Sender<RequestEvent>,
-    stop: impl Future<Output = ()> + Send + Unpin + 'static,
 ) {
-    tokio::spawn(async move {
-        let go = async {
-            match request::clone(url.clone(), state.clone(), waiting_room.clone()).await {
-                Ok(()) => sender.send(RequestEvent::Cloned(url)).await.ok(),
-                Err(err) => {
-                    log::warn!(
-                        "an error occurred for the command 'Clone' for the URL '{}':\n{}",
-                        url,
-                        err
-                    );
-                    sender
-                        .send(RequestEvent::Failed {
-                            url,
-                            reason: err.to_string(),
-                        })
-                        .await
-                        .ok()
-                },
-            }
-        };
-        tokio::pin!(go);
-
-        future::select(stop, go).map(|_| ()).await;
-    });
+    match request::clone(url.clone(), state, waiting_room).await {
+        Ok(()) => {
+            sender.send(RequestEvent::Cloned(url)).await.ok();
+        },
+        Err(err) => {
+            log::warn!(
+                "an error occurred for the command 'Clone' for the URL '{}':\n{}",
+                url,
+                err
+            );
+            sender
+                .send(RequestEvent::Failed {
+                    url,
+                    reason: err.to_string(),
+                })
+                .await
+                .ok();
+        },
+    }
 }
