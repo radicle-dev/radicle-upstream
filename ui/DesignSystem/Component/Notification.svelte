@@ -44,6 +44,11 @@
     fill: var(--color-background);
   }
 
+  .success {
+    color: var(--color-background);
+    background-color: var(--color-positive);
+  }
+
   .message {
     padding: 0 8px 0 8px;
   }

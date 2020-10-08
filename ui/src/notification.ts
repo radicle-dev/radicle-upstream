@@ -9,6 +9,7 @@ type ID = number;
 export enum Level {
   Error = "ERROR",
   Info = "INFO",
+  Success = "SUCCESS",
 }
 
 interface Notification {
@@ -31,6 +32,7 @@ enum Kind {
   Remove = "REMOVE",
   ShowError = "SHOW_ERROR",
   ShowInfo = "SHOW_INFO",
+  ShowSuccess = "SHOW_SUCCESS",
 }
 
 interface Remove extends event.Event<Kind> {
@@ -54,7 +56,15 @@ interface ShowInfo extends event.Event<Kind> {
   actionHandler?: () => void;
 }
 
-type Msg = Remove | ShowError | ShowInfo;
+interface ShowSuccess extends event.Event<Kind> {
+  kind: Kind.ShowSuccess;
+  message: string;
+  showIcon: boolean;
+  actionText?: string;
+  actionHandler?: () => void;
+}
+
+type Msg = Remove | ShowError | ShowInfo | ShowSuccess;
 
 const filter = (id: ID): void => {
   notifications = notifications.filter(n => n.id !== id);
@@ -103,7 +113,6 @@ const update = (msg: Msg): void => {
         msg.actionText,
         msg.actionHandler
       );
-
       break;
 
     case Kind.ShowInfo:
@@ -114,12 +123,20 @@ const update = (msg: Msg): void => {
         msg.actionText,
         msg.actionHandler
       );
+      break;
 
+    case Kind.ShowSuccess:
+      show(
+        Level.Success,
+        msg.showIcon,
+        msg.message,
+        msg.actionText,
+        msg.actionHandler
+      );
       break;
 
     case Kind.Remove:
       filter(msg.id);
-
       break;
   }
 };
@@ -135,6 +152,17 @@ export const error = (
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowError,
+    update
+  )({ message, showIcon, actionText, actionHandler });
+
+export const success = (
+  message: string,
+  showIcon = false,
+  actionText?: string,
+  actionHandler?: () => void
+): void =>
+  event.create<Kind, Msg>(
+    Kind.ShowSuccess,
     update
   )({ message, showIcon, actionText, actionHandler });
 
