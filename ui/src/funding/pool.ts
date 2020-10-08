@@ -24,22 +24,20 @@ export interface Pool {
 
 // The pool settings the user can change and save.
 export interface PoolSettings {
-  // The amount to be disbursed monthly.
-  monthlyContribution: number;
-  // The list of eth addresses across whom the
-  // `monthlyContribution` is evenly spread.
-  members: string[];
+  // The total amount to be disbursed to all receivers with each block.
+  amountPerBlock: string;
+  // The list of addresses that receive funds from the pool.
+  receiverAddresses: string[];
 }
 
 // All the data representing a pool.
 export interface PoolData {
   // The remaining balance of this pool.
   balance: number;
-  // The amount to be disbursed monthly.
-  monthlyContribution: number;
-  // The list of eth addresses across whom the
-  // `monthlyContribution` is evenly spread.
-  members: string[];
+  // The total amount to be disbursed to all receivers with each block.
+  amountPerBlock: string;
+  // The list of addresses that receive funds from the pool.
+  receiverAddresses: string[];
   // Funds that the user can collect from their givers.
   collectableFunds: number;
 }
@@ -58,12 +56,17 @@ export function make(wallet: Wallet): Pool {
     try {
       const balance = await poolContract.methods.withdrawable().call();
       const collectableFunds = await poolContract.methods.collectable().call();
+      const amountPerBlock = await poolContract.methods
+        .getAmountPerBlock()
+        .call();
+      const receivers = await poolContract.methods.getAllReceivers().call();
+      const receiverAddresses = receivers.map(([address]) => address);
 
       data.success({
         // Handle potential overflow using BN.js
         balance: Number(balance),
-        monthlyContribution: 10,
-        members: ["0x1", "0x2"],
+        amountPerBlock,
+        receiverAddresses,
         // Handle potential overflow using BN.js
         collectableFunds: Number(collectableFunds),
       });
@@ -76,15 +79,12 @@ export function make(wallet: Wallet): Pool {
     // TODO only update the settings that need changes. In particular
     // only update members that have been added or removed
     const txs = [];
-    for (const member in settings.members) {
-      txs.push(poolContract.methods.setReceiver(member, 1).send());
+    for (const address in settings.receiverAddresses) {
+      txs.push(poolContract.methods.setReceiver(address, 1).send());
     }
 
-    // TODO convert monthly contribution to ETH
     txs.push(
-      poolContract.methods
-        .setAmountPerBlock(settings.monthlyContribution)
-        .send()
+      poolContract.methods.setAmountPerBlock(settings.amountPerBlock).send()
     );
     // TODO check transaction status
     await Promise.all(txs);

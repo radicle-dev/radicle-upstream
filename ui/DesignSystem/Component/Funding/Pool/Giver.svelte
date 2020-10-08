@@ -57,7 +57,7 @@
           <p class="typo-text-bold">Monthly contribution</p>
           <p>
             Set a fixed monthly amount to contribute to your pool. With ${poolData.monthlyContribution}
-            per month, pool members get ${poolData.monthlyContribution / poolData.members.length}
+            per month, pool members get ${poolData.monthlyContribution / poolData.receiverAddresses.length}
             a month each. This is accessible in real time, so if a user is in the
             pool for 2 days, they can already claim $0.95).
           </p>
