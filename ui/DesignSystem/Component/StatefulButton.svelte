@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Button, Icon } from "../Primitive";
-  import { Spinner } from "../Component";
+  import { Button } from "../Primitive";
 
   import type { ButtonVariant } from "../../src/style";
   import * as notification from "../../src/notification";
@@ -9,36 +8,23 @@
   export let variant: ButtonVariant = "primary";
   export let dataCy = "";
   export let onClick: () => Promise<void>;
-  export let formatError: (error: any) => string;
+  export let successMessage: string = "✓ Success";
+  export let errorMessage: (error: any) => string;
 
-  enum Status {
-    Idle,
-    Waiting,
-    Succeeded,
-    Failed,
-  }
-
-  let status = Status.Idle;
+  let disabled = false;
 
   async function userDidClick(): Promise<void> {
     try {
-      await setStatus(Status.Waiting);
+      disabled = true;
       await onClick();
-      await setStatus(Status.Succeeded);
+      // Waiting a moment here smoothes the UI.
+      await continueAfter(0.4);
+      notification.success(successMessage);
     } catch (error) {
-      notification.error(formatError(error));
-      await setStatus(Status.Failed, 2);
+      notification.error(errorMessage(error));
     } finally {
-      await setStatus(Status.Idle);
+      disabled = false;
     }
-  }
-
-  function setStatus(
-    newStatus: Status,
-    delayInSeconds: number = 1
-  ): Promise<void> {
-    status = newStatus;
-    return continueAfter(delayInSeconds);
   }
 
   function continueAfter(seconds: number): Promise<void> {
@@ -50,23 +36,6 @@
   }
 </script>
 
-<style>
-  .button-wrapper {
-    display: inline-flex;
-    align-items: center;
-    /* Having a min-height helps the UI staying fixed when switching statuses.*/
-    min-height: 40px;
-  }
-</style>
-
 <span class="button-wrapper" data-cy={dataCy}>
-  {#if status === Status.Idle}
-    <Button {variant} on:click={userDidClick}>{title}</Button>
-  {:else if status === Status.Waiting}
-    <Spinner />
-  {:else if status === Status.Succeeded}
-    <Icon.CheckCircle style={`fill: var(--color-positive)`} />
-  {:else if status === Status.Failed}
-    <Icon.CrossCircle style={`fill: var(--color-negative)}`} />
-  {/if}
+  <Button {disabled} {variant} on:click={userDidClick}>{title}</Button>
 </span>
