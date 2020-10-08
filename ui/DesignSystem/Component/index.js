@@ -31,6 +31,7 @@ import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
+import StatefulButton from "./StatefulButton.svelte";
 import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import Timeline from "./Timeline.svelte";
@@ -73,6 +74,7 @@ export {
   Rad,
   RadicleLogo,
   RadioOption,
+  StatefulButton,
   Stats,
   Remote,
   RemoteHelperHint,
