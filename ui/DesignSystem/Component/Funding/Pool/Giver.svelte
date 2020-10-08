@@ -2,7 +2,7 @@
   import { push } from "svelte-spa-router";
 
   import { Button, Input } from "../../../Primitive";
-  import { Remote } from "../../../Component";
+  import { Remote, StatefulButton } from "../../../Component";
 
   import * as path from "../../../../src/path";
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
@@ -117,12 +117,15 @@
         </div>
       </li>
     </ul>
-    <Button
-      on:click={() => pool.save({
+
+    <StatefulButton
+      title={'Save'}
+      onClick={() => pool.save({
           monthlyContribution,
           members: members.split(', '),
-        })}>
-      Save
-    </Button>
+        })}
+      variant={'primary'}
+      successMessage={'✓ Pool successfully saved'}
+      errorMessage={e => `Failed to save pool: ${e}`} />
   </Remote>
 </div>

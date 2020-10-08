@@ -1,49 +1,14 @@
 <script lang="ts">
-  import { Button, Icon } from "../../../Primitive";
-  import { Remote, Spinner } from "../../../Component";
+  import { Remote, StatefulButton } from "../../../Component";
 
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
   import * as _pool from "../../../../src/funding/pool";
-  import * as notification from "../../../../src/notification";
 
   export let pool: _pool.Pool;
 
-  enum Status {
-    Idle,
-    Collecting,
-    Succeeded,
-    Failed,
-  }
-
-  let status = Status.Idle;
-
-  // Set the status to a new value. Wait 1 second before considered
-  // done to smooth the status transitions in the UI.
-  function setStatus(newStatus: Status): Promise<void> {
-    status = newStatus;
-    return continueAfter(1);
-  }
-
   const collectFunds = async (): Promise<void> => {
-    try {
-      await setStatus(Status.Collecting);
-      await pool.collect();
-      await setStatus(Status.Succeeded);
-    } catch (error) {
-      notification.error(`Failed to collect funds: ${error}`);
-      await setStatus(Status.Failed);
-    } finally {
-      await setStatus(Status.Idle);
-    }
+    await pool.collect();
   };
-
-  function continueAfter(seconds: number): Promise<void> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve();
-      }, seconds * 1000);
-    });
-  }
 </script>
 
 <style>
@@ -59,15 +24,6 @@
 
   header {
     width: 80%;
-  }
-
-  .item {
-    display: inline-flex;
-    align-items: center;
-    /* Having a min-height helps the UI staying fixed when switching statuses.*/
-    min-height: 40px;
-    /* Having a min-width helps the UI having all the different statuses horizontally aligned */
-    min-width: 100px;
   }
 
   .item > * {
@@ -90,20 +46,12 @@
         </p>
       </header>
       <div class="item">
-        {#if status === Status.Idle}
-          <Button
-            dataCy="collect-pool-button"
-            variant="outline"
-            on:click={collectFunds}>
-            Collect your funds 🥳
-          </Button>
-        {:else if status === Status.Collecting}
-          <Spinner />
-        {:else if status === Status.Succeeded}
-          <Icon.CheckCircle style={`fill: var(--color-positive)`} />
-        {:else if status === Status.Failed}
-          <Icon.CrossCircle style={`fill: var(--color-negative)}`} />
-        {/if}
+        <StatefulButton
+          title={'Collect your funds 🥳'}
+          onClick={collectFunds}
+          variant={'outline'}
+          successMessage={'✓ Funds successfully collected'}
+          errorMessage={e => `Failed to collect funds: ${e}`} />
       </div>
     </div>
   </div>
