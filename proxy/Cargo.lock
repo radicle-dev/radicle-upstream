@@ -596,22 +596,9 @@ checksum = "4c53dc3a653e0f64081026e4bf048d48fec9fce90c66e8326ca7292df0ff2d82"
 
 [[package]]
 name = "ed25519-zebra"
-version = "2.1.2"
-source = "git+https://github.com/radicle-dev/ed25519-zebra?branch=main#cec6956c8f6c73431140fb78c7e06364c14d3057"
-dependencies = [
- "curve25519-dalek",
- "hex",
- "rand_core",
- "serde",
- "sha2",
- "thiserror",
-]
-
-[[package]]
-name = "ed25519-zebra"
-version = "2.1.2"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc69a9bf9de8ad6cfa9c32db73dbe06ace3eb9a50a2f8c8520d8f453e13ae32a"
+checksum = "0a128b76af6dd4b427e34a6fd43dc78dbfe73672ec41ff615a2414c1a0ad0409"
 dependencies = [
  "curve25519-dalek",
  "hex",
@@ -1218,7 +1205,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=01f95786b1c05bf167b27dcf54e4cbe0e9b38a43#01f95786b1c05bf167b27dcf54e4cbe0e9b38a43"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=a20f96c1f07b245a0ef5c0538b75c8096fb68d8f#a20f96c1f07b245a0ef5c0538b75c8096fb68d8f"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1227,7 +1214,7 @@ dependencies = [
  "deadpool",
  "directories 3.0.1",
  "dyn-clone",
- "ed25519-zebra 2.1.2 (git+https://github.com/radicle-dev/ed25519-zebra?branch=main)",
+ "ed25519-zebra",
  "either",
  "futures 0.3.5",
  "futures-timer",
@@ -1871,7 +1858,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=01f95786b1c05bf167b27dcf54e4cbe0e9b38a43#01f95786b1c05bf167b27dcf54e4cbe0e9b38a43"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=a20f96c1f07b245a0ef5c0538b75c8096fb68d8f#a20f96c1f07b245a0ef5c0538b75c8096fb68d8f"
 dependencies = [
  "anyhow",
  "git2",
@@ -1888,7 +1875,7 @@ checksum = "9fa36917fe27443896929d7f56486924db2f2c5ad82f64bb207ff69e33f3b456"
 dependencies = [
  "async-trait",
  "chacha20poly1305",
- "ed25519-zebra 2.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ed25519-zebra",
  "futures 0.3.5",
  "generic-array 0.14.4",
  "lazy_static",

@@ -10,6 +10,8 @@ use librad::{
 };
 use radicle_surf::vcs::git::git2;
 
+use crate::config;
+
 /// When checking out a working copy, we can run into several I/O failures.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -35,6 +37,22 @@ where
     include_path: PathBuf,
 }
 
+/// We want to know whether we're checking out from one of our own copies, or if we're checking out
+/// based off of a remote's branch.
+pub enum Ownership {
+    /// We're checking out our own copy of the project.
+    Local(PeerId),
+    /// We're checking out a remote's version of the project.
+    Remote {
+        /// The handle of the remote.
+        handle: String,
+        /// The `PeerId` of the remote.
+        remote: PeerId,
+        /// Our own `PeerId`.
+        local: PeerId,
+    },
+}
+
 impl<P, ST> Checkout<P, ST>
 where
     P: AsRef<path::Path>,
@@ -54,7 +72,7 @@ where
     /// # Errors
     ///
     ///   * The checkout process failed.
-    pub fn run(self, peer_id: PeerId) -> Result<PathBuf, Error> {
+    pub fn run(self, ownership: Ownership) -> Result<PathBuf, Error> {
         // Check if the path provided ends in the 'directory_name' provided. If not we create the
         // full path to that name.
         let path = &self.path.as_ref();
@@ -73,20 +91,44 @@ where
 
         let mut builder = git2::build::RepoBuilder::new();
         builder.branch(self.project.default_branch());
-        builder.remote_create(|repo, _, url| {
-            let remote = Remote::rad_remote(url, None).create(repo)?;
-            Ok(remote)
-        });
-        let repo = git2::build::RepoBuilder::clone(
-            &mut builder,
-            &LocalUrl::from_urn(self.project.urn(), peer_id).to_string(),
-            &project_path,
-        )?;
+
+        let repo = match ownership {
+            Ownership::Local(local) => {
+                builder
+                    .remote_create(|repo, _remote_name, url| repo.remote(config::RAD_REMOTE, url));
+                let url = LocalUrl::from_urn(self.project.urn(), local).to_string();
+                git2::build::RepoBuilder::clone(&mut builder, &url, &project_path)
+            },
+            Ownership::Remote {
+                handle,
+                remote,
+                local,
+            } => {
+                let name = format!("{}@{}", handle, remote);
+                builder.remote_create(move |repo, _remote_name, url| {
+                    Remote::new(url, name.clone()).create(repo)
+                });
+                let remote_url = LocalUrl::from_urn(self.project.urn(), remote).to_string();
+                let repo =
+                    git2::build::RepoBuilder::clone(&mut builder, &remote_url, &project_path)?;
+
+                // Create a rad remote and push the default branch so we can set it as the
+                // upstream.
+                {
+                    let local_url = LocalUrl::from_urn(self.project.urn(), local);
+                    let mut remote = Remote::rad_remote(local_url, None).create(&repo)?;
+                    remote.push(
+                        &[&format!("refs/heads/{}", self.project.default_branch())],
+                        None,
+                    )?;
+                }
+
+                Ok(repo)
+            },
+        }?;
 
         super::set_rad_upstream(&repo, self.project.default_branch())?;
-
         include::set_include_path(&repo, self.include_path)?;
-
         Ok(project_path)
     }
 }

@@ -497,13 +497,30 @@ impl State {
     where
         P: Into<Option<PeerId>> + Clone + Send + 'static,
     {
-        // TODO(finto): We may want to create a working copy of OUR OWN project
         let proj = self.get_project(urn.clone(), None).await?;
-        let include_path = self.update_include(urn).await?;
+        let include_path = self.update_include(urn.clone()).await?;
         let checkout = project::Checkout::new(proj, destination, include_path);
 
-        let ours = self.peer_id();
-        checkout.run(ours).map_err(Error::from)
+        let ownership = match peer_id.into() {
+            None => project::checkout::Ownership::Local(self.peer_id()),
+            Some(remote) => {
+                let handle = {
+                    let remote = remote.clone();
+                    self.api
+                        .with_storage(move |storage| {
+                            let rad_self = storage.get_rad_self_of(&urn, remote)?;
+                            Ok::<_, Error>(rad_self.name().to_string())
+                        })
+                        .await??
+                };
+                project::checkout::Ownership::Remote {
+                    handle,
+                    remote,
+                    local: self.peer_id(),
+                }
+            },
+        };
+        checkout.run(ownership).map_err(Error::from)
     }
 
     /// Prepare the include file for the given `project` with the latest tracked peers.
