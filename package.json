@@ -157,7 +157,7 @@
     "ganache-cli": "^6.11.0",
     "marked": "^1.1.1",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts#0bbcd627d6a179e14fe23ddb8f241cd348f4f3b9",
+    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts#55ca1a03ea7a54767674b53f576d149b4a7c4d49",
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
     "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6",

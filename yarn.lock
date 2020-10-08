@@ -9644,9 +9644,9 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
-"radicle-contracts@https://github.com/radicle-dev/radicle-contracts#0bbcd627d6a179e14fe23ddb8f241cd348f4f3b9":
+"radicle-contracts@https://github.com/radicle-dev/radicle-contracts#55ca1a03ea7a54767674b53f576d149b4a7c4d49":
   version "0.0.0"
-  resolved "https://github.com/radicle-dev/radicle-contracts#0bbcd627d6a179e14fe23ddb8f241cd348f4f3b9"
+  resolved "https://github.com/radicle-dev/radicle-contracts#55ca1a03ea7a54767674b53f576d149b4a7c4d49"
   dependencies:
     "@ensdomains/ens" "^0.4.4"
     "@ethersproject/abi" "^5.0.5"
