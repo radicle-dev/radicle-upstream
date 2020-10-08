@@ -56,8 +56,8 @@
         <header>
           <p class="typo-text-bold">Monthly contribution</p>
           <p>
-            Set a fixed monthly amount to contribute to your pool. With ${poolData.monthlyContribution}
-            per month, pool members get ${poolData.monthlyContribution / poolData.receiverAddresses.length}
+            Set a fixed monthly amount to contribute to your pool. With ${poolData.amountPerBlock}
+            per month, pool members get ${poolData.amountPerBlock / poolData.receiverAddresses.length}
             a month each. This is accessible in real time, so if a user is in the
             pool for 2 days, they can already claim $0.95).
           </p>
@@ -76,10 +76,9 @@
         <header>
           <p class="typo-text-bold">Balance</p>
           <p>
-            The current balance of your pool. Currently ${poolData.monthlyContribution}
+            The current balance of your pool. Currently ${poolData.amountPerBlock}
             per month is required to keep your support going, so you don’t need to
-            top up for {Math.floor(poolData.monthlyContribution / poolData.balance)}
-            months.
+            top up for {Math.floor(poolData.amountPerBlock / poolData.balance)} months.
           </p>
         </header>
         <div class="item">
