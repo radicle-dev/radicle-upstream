@@ -72,23 +72,43 @@ export function make(wallet: Wallet): Pool {
     }
   }
 
-  async function save(_data: PoolSettings): Promise<void> {
-    throw new Error("not implemented");
+  async function save(settings: PoolSettings): Promise<void> {
+    // TODO only update the settings that need changes. In particular
+    // only update members that have been added or removed
+    const txs = [];
+    for (const member in settings.members) {
+      txs.push(poolContract.methods.setReceiver(member, 1).send());
+    }
+
+    // TODO convert monthly contribution to ETH
+    txs.push(
+      poolContract.methods
+        .setAmountPerBlock(settings.monthlyContribution)
+        .send()
+    );
+    // TODO check transaction status
+    await Promise.all(txs);
   }
 
   async function topUp(value: number): Promise<void> {
-    await poolContract.methods.topUp().send({
+    const receipt = await poolContract.methods.topUp().send({
       from: getAccountAddress(),
       gas: 200 * 1000,
       value,
     });
+    if (receipt.status === false) {
+      throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
+    }
     loadPoolData();
   }
 
   async function collect(): Promise<void> {
-    await poolContract.methods.collect().send({
+    const receipt = await poolContract.methods.collect().send({
       from: getAccountAddress(),
     });
+    if (receipt.status === false) {
+      throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
+    }
     loadPoolData();
   }
 

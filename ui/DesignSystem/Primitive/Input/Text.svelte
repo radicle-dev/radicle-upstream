@@ -11,7 +11,7 @@
   export let style = "";
   export let inputStyle = "";
   export let placeholder = "";
-  export let value: any;
+  export let value = "";
   export let dataCy = "";
   export let disabled: boolean = false;
   export let inputElement: HTMLInputElement | undefined = undefined;
