@@ -16,7 +16,8 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
         .or(request_filter(ctx.clone()))
-        .or(get_filter(ctx))
+        .or(get_filter(ctx.clone()))
+        .or(track_filter(ctx))
         .boxed()
 }
 
@@ -88,7 +89,7 @@ fn contributed_filter(
         .and_then(handler::list_contributed)
 }
 
-/// `GET /user/<id>
+/// `GET /user/<id>`
 fn user_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -109,6 +110,19 @@ fn discover_filter(
         .and(http::with_context(ctx))
         .and(path::end())
         .and_then(handler::discover)
+}
+
+/// `PUT /<urn>/track/<peer_id>`
+fn track_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_context(ctx)
+        .and(warp::put())
+        .and(path::param::<coco::Urn>())
+        .and(path("track"))
+        .and(path::param::<coco::PeerId>())
+        .and(path::end())
+        .and_then(handler::track)
 }
 
 /// Project handlers to implement conversion and translation between core domain and http request
@@ -209,6 +223,16 @@ mod handler {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
+    }
+
+    /// Track the peer for the provided project.
+    pub async fn track(
+        ctx: context::Context,
+        urn: coco::Urn,
+        peer_id: coco::PeerId,
+    ) -> Result<impl Reply, Rejection> {
+        ctx.state.track(urn, peer_id).await.map_err(Error::from)?;
+        Ok(reply::json(&true))
     }
 }
 
@@ -624,6 +648,34 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, want);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn track() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+        coco::control::setup_fixtures(&ctx.state, &ctx.signer, &owner).await?;
+        let projects = project::Projects::list(&ctx.state).await?;
+        let project = projects.contributed.first().expect("no projects setup");
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/track/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
         });
 
         Ok(())
