@@ -47,7 +47,7 @@ fn list_filter(
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error, identity, session};
+    use crate::{context, error, http, identity, session};
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
@@ -63,7 +63,10 @@ mod handler {
             )));
         }
 
-        let id = identity::create(&ctx.state, &ctx.signer, &input.handle).await?;
+        let signer = ctx
+            .signer
+            .ok_or_else(|| http::error::Routing::SealedKeystore)?;
+        let id = identity::create(&ctx.state, &signer, &input.handle).await?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -158,7 +161,10 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let user = ctx.state.init_user(&ctx.signer, "cloudhead").await?;
+        let user = ctx
+            .state
+            .init_user(&ctx.signer.unwrap(), "cloudhead")
+            .await?;
 
         let res = request()
             .method("GET")
@@ -194,7 +200,8 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let fintohaps: identity::Identity = {
-            let id = identity::create(&ctx.state, &ctx.signer, "cloudhead").await?;
+            let id =
+                identity::create(&ctx.state, &ctx.signer.clone().unwrap(), "cloudhead").await?;
 
             let owner = {
                 let user = ctx.state.get_user(id.urn.clone()).await?;
@@ -205,7 +212,7 @@ mod test {
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.clone().unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -213,9 +220,14 @@ mod test {
             )
             .await?;
 
-            coco::control::track_fake_peer(&ctx.state, &ctx.signer, &platinum_project, "fintohaps")
-                .await
-                .into()
+            coco::control::track_fake_peer(
+                &ctx.state,
+                &ctx.signer.unwrap(),
+                &platinum_project,
+                "fintohaps",
+            )
+            .await
+            .into()
         };
 
         let res = request().method("GET").path("/").reply(&api).await;

@@ -190,7 +190,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
     let subscriptions = notification::Subscriptions::default();
     let ctx = context::Context {
         state,
-        signer,
+        signer: Some(signer),
         store,
         waiting_room,
     };

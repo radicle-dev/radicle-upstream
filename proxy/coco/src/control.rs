@@ -5,6 +5,7 @@ use std::{convert::TryFrom, env, io, path};
 use librad::{
     keys,
     meta::{entity, project as librad_project},
+    peer::PeerId,
 };
 use radicle_surf::vcs::git::git2;
 
@@ -13,6 +14,12 @@ use crate::{
     state::{Error, State},
     user::User,
 };
+
+/// Generate a fresh `PeerId` for use in tests.
+#[must_use]
+pub fn generate_peer_id() -> PeerId {
+    PeerId::from(keys::SecretKey::new())
+}
 
 /// Deletes the local git repsoitory coco uses for its state.
 ///
@@ -141,7 +148,7 @@ pub async fn track_fake_peer(
     project: &librad_project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (
-    librad::peer::PeerId,
+    PeerId,
     librad::meta::entity::Entity<librad::meta::user::UserInfo, librad::meta::entity::Draft>,
 ) {
     // TODO(finto): We're faking a lot of the networking interaction here.
@@ -153,7 +160,7 @@ pub async fn track_fake_peer(
     let urn = project.urn();
     let fake_user =
         state.init_user(signer, fake_user_handle).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
-    let remote = librad::peer::PeerId::from(keys::SecretKey::new());
+    let remote = generate_peer_id();
     let monorepo = git2::Repository::open(state.monorepo()).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 

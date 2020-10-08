@@ -396,10 +396,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let (default_branch, urn) = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -542,10 +545,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let (default_branch, urn) = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -610,10 +616,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -650,10 +659,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -707,10 +719,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -781,7 +796,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let peer_id = ctx.state.peer_id();
-        let id = identity::create(&ctx.state, &ctx.signer, "cloudhead").await?;
+        let id = identity::create(&ctx.state, &ctx.signer.clone().unwrap(), "cloudhead").await?;
 
         let owner = ctx.state.get_user(id.urn.clone()).await?;
         let owner = coco::user::verify(owner)?;
@@ -790,7 +805,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.state,
-            &ctx.signer,
+            &ctx.signer.clone().unwrap(),
             &owner,
             "git-platinum",
             "fixture data",
@@ -799,9 +814,13 @@ mod test {
         .await?;
         let urn = platinum_project.urn();
 
-        let (remote, fintohaps) =
-            coco::control::track_fake_peer(&ctx.state, &ctx.signer, &platinum_project, "fintohaps")
-                .await;
+        let (remote, fintohaps) = coco::control::track_fake_peer(
+            &ctx.state,
+            &ctx.signer.unwrap(),
+            &platinum_project,
+            "fintohaps",
+        )
+        .await;
 
         let res = request()
             .method("GET")
@@ -857,10 +876,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -898,10 +920,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let (default_branch, urn) = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -989,10 +1014,13 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let (default_branch, urn) = {
-            let owner = ctx.state.init_owner(&ctx.signer, "cloudhead").await?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &ctx.signer,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
