@@ -20,7 +20,7 @@
     payerStore.set(id);
     recipientStore.set(recipient);
     amountStore.set(amount);
-    push(path.sendFunds());
+    push(path.poolTopUp());
   };
 </script>
 

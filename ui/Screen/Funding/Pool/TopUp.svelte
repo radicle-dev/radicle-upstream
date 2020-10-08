@@ -2,41 +2,34 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { store } from "../src/funding/pool";
-  import * as notification from "../src/notification";
-  import {
-    TransferState,
-    amountStore,
-    amountValidationStore,
-  } from "../src/transfer";
+  import { store } from "../../../src/funding/pool";
+  import { amountStore, amountValidationStore } from "../../../src/transfer";
+  import { ValidationStatus } from "../../../src/validation";
 
-  import { ModalLayout } from "../DesignSystem/Component";
-  import { Button, Icon, Input } from "../DesignSystem/Primitive";
+  import { ModalLayout, StatefulButton } from "../../../DesignSystem/Component";
+  import { Icon, Input } from "../../../DesignSystem/Primitive";
+  import { resolve } from "path";
 
   if ($store === null) pop();
 
   let validatingAmount = false;
-  let state = TransferState.Preparation;
-  let amount: number = 0;
+  let amount: number;
 
-  $: disableForm = state !== TransferState.Preparation;
   $: amountValidation = amountValidationStore("TODO(nuno)", amount);
-  $: amountStore.set(amount.toString());
+  $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
     if (validatingAmount) amountValidation.validate($amountStore);
   }
+  $: disableConfirmation =
+    $amountValidation && $amountValidation.status !== ValidationStatus.Success;
 
-  const onConfirmed = async () => {
-    try {
-      state = TransferState.Confirmation;
-      const pool = get(store);
-      const result = await pool.topUp(amount);
-      console.log("OnConfirmed result", result);
-    } catch (error) {
-      notification.error(`Could not top up pool funds: ${error.message}`);
-    }
-  };
+  async function onConfirmed(): Promise<void> {
+    const pool = get(store);
+    await pool.topUp(amount);
+    pop();
+    resolve();
+  }
 </script>
 
 <style>
@@ -106,7 +99,6 @@
         dataCy="modal-amount-input"
         placeholder="Enter the amount"
         bind:value={amount}
-        disabled={disableForm}
         showLeftItem
         autofocus
         style="flex: 1; padding-bottom: 0.5rem;"
@@ -117,17 +109,13 @@
       </Input.Text>
 
       <div class="submit">
-        <Button
+        <StatefulButton
+          title="Confirm"
+          disabled={disableConfirmation}
           dataCy="review-transfer-button"
-          disabled={disableForm}
-          on:click={onConfirmed}>
-          Confirm
-        </Button>
-      </div>
-      <div style="text-align: center">
-        {#if disableForm}
-          <em>📱 👀 Approve the transaction on your wallet app...</em>
-        {/if}
+          onClick={onConfirmed}
+          successMessage={`Successfully added eth ${amount} to your pool`}
+          errorMessage={e => `Could not top up pool funds: ${e.message}`} />
       </div>
     </div>
   </div>

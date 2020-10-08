@@ -10,8 +10,7 @@
   export let onClick: () => Promise<void>;
   export let successMessage: string = "✓ Success";
   export let errorMessage: (error: any) => string;
-
-  let disabled = false;
+  export let disabled = false;
 
   async function userDidClick(): Promise<void> {
     try {

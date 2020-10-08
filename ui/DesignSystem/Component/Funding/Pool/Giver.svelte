@@ -18,7 +18,7 @@
 
   const openSendModal = () => {
     p.store.set(pool);
-    push(path.sendFunds());
+    push(path.poolTopUp());
   };
 </script>
 

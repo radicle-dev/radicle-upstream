@@ -30,7 +30,7 @@
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
-  import SendFunds from "./Screen/SendFunds.svelte";
+  import TopUp from "./Screen/Funding/Pool/TopUp.svelte";
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import Untracked from "./Screen/Project/Untracked.svelte";
@@ -56,7 +56,7 @@
     "/design-system-guide": DesignSystemGuide,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
-    "/send-funds": SendFunds,
+    "/pool/top-up": TopUp,
     "*": NotFound,
   };
 
