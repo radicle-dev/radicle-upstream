@@ -54,7 +54,7 @@ mod handler {
 
     use coco::user;
 
-    use crate::{context, error, project};
+    use crate::{context, error, http, project};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
@@ -63,9 +63,12 @@ mod handler {
         owner: user::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
+        let signer = ctx
+            .signer
+            .ok_or_else(|| http::error::Routing::SealedKeystore)?;
         let meta = coco::control::replicate_platinum(
             &ctx.state,
-            &ctx.signer,
+            &signer,
             &owner,
             &input.name,
             &input.description,
@@ -76,8 +79,7 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ =
-                    coco::control::track_fake_peer(&ctx.state, &ctx.signer, &meta, &user_handle);
+                let _ = coco::control::track_fake_peer(&ctx.state, &signer, &meta, &user_handle);
             }
         }
         let stats = ctx

@@ -10,7 +10,7 @@ pub struct Context {
     /// [`coco::State`] to operate on the local monorepo.
     pub state: coco::State,
     /// [`coco::signer::BoxedSigner`] for write operations on the monorepo.
-    pub signer: signer::BoxedSigner,
+    pub signer: Option<signer::BoxedSigner>,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// The [`WaitingRoom`] for making requests for identities.
@@ -49,7 +49,7 @@ impl Context {
 
         Ok(Self {
             state,
-            signer,
+            signer: Some(signer),
             store,
             waiting_room,
         })

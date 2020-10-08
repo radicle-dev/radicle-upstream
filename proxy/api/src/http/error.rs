@@ -14,6 +14,8 @@ use crate::error;
 pub enum Routing {
     /// The currently active [`coco::User`] is missing.
     MissingOwner,
+    /// The keystore is sealed, context does not have a signer.
+    SealedKeystore,
     /// Query part of the URL cannot be deserialized.
     ///
     /// Used by [`http::with_qs`] and [`http::with_qs_opt`].
@@ -43,6 +45,7 @@ impl fmt::Display for Routing {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingOwner => write!(f, "Owner is missing"),
+            Self::SealedKeystore => write!(f, "Keystore is sealed"),
             Self::InvalidQuery { query, error } => {
                 write!(f, "Invalid query string \"{}\": {}", query, error)
             },
@@ -84,6 +87,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                 Routing::MissingOwner => {
                     (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
                 },
+                Routing::SealedKeystore => (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string()),
                 Routing::InvalidQuery { .. } => {
                     (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
                 },
