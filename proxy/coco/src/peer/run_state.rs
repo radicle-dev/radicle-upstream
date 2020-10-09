@@ -218,11 +218,17 @@ impl From<Config> for RunState {
 impl RunState {
     /// Constructs a new state.
     #[cfg(test)]
-    const fn new(config: Config, connected_peers: HashSet<PeerId>, status: Status) -> Self {
+    const fn new(
+        config: Config,
+        connected_peers: HashSet<PeerId>,
+        status: Status,
+        status_since: Instant,
+    ) -> Self {
         Self {
             config,
             connected_peers,
             status,
+            status_since,
         }
     }
 
@@ -385,19 +391,21 @@ mod test {
     fn transition_to_started_on_listen() -> Result<(), Box<dyn std::error::Error>> {
         let addr = "127.0.0.1:12345".parse::<SocketAddr>()?;
 
-        let status = Status::Stopped(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Stopped;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
 
         let cmds = state.transition(&Event::Protocol(ProtocolEvent::Listening(addr)));
         assert!(cmds.is_empty());
-        assert_matches!(state.status, Status::Started(_));
+        assert_matches!(state.status, Status::Started {..});
 
         Ok(())
     }
 
     #[test]
     fn transition_to_online_if_sync_is_disabled() {
-        let status = Status::Started(Instant::now());
+        let status = Status::Started;
+        let status_since = Instant::now();
         let mut state = RunState::new(
             Config {
                 sync: SyncConfig {
@@ -408,6 +416,7 @@ mod test {
             },
             HashSet::new(),
             status,
+            status_since,
         );
 
         let cmds = {
@@ -416,49 +425,56 @@ mod test {
             state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
         assert!(cmds.is_empty());
-        assert_matches!(state.status, Status::Online(_));
+        assert_matches!(state.status, Status::Online {..});
     }
 
     #[test]
     fn transition_to_online_after_sync_max_peers() {
-        let status = Status::Syncing(Instant::now(), DEFAULT_SYNC_MAX_PEERS - 1);
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Syncing {
+            syncs: DEFAULT_SYNC_MAX_PEERS - 1,
+        };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
 
         let _cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
             state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)))
         };
-        assert_matches!(state.status, Status::Online(_));
+        assert_matches!(state.status, Status::Online {..});
     }
 
     #[test]
     fn transition_to_online_after_sync_period() {
-        let status = Status::Syncing(Instant::now(), 3);
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Syncing { syncs: 3 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
 
         let _cmds = state.transition(&Event::Timeout(TimeoutEvent::SyncPeriod));
-        assert_matches!(state.status, Status::Online(_));
+        assert_matches!(state.status, Status::Online {..});
     }
 
     #[test]
     fn transition_to_offline_when_last_peer_disconnects() {
         let peer_id = PeerId::from(SecretKey::new());
-        let status = Status::Online(Instant::now());
+        let status = Status::Online { connected: 1 };
+        let status_since = Instant::now();
         let mut state = RunState::new(
             Config::default(),
             HashSet::from_iter(vec![peer_id.clone()]),
             status,
+            status_since,
         );
 
         let _cmds = state.transition(&Event::Protocol(ProtocolEvent::Disconnecting(peer_id)));
-        assert_matches!(state.status, Status::Offline(_));
+        assert_matches!(state.status, Status::Offline);
     }
 
     #[test]
     fn issue_sync_command_until_max_peers() {
         let max_peers = 13;
-        let status = Status::Started(Instant::now());
+        let status = Status::Started;
+        let status_since = Instant::now();
         let mut state = RunState::new(
             Config {
                 sync: SyncConfig {
@@ -470,6 +486,7 @@ mod test {
             },
             HashSet::new(),
             status,
+            status_since,
         );
 
         for i in 0..(max_peers - 1) {
@@ -483,7 +500,7 @@ mod test {
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
                 assert_eq!(*sync_id, peer_id);
             });
-            assert_matches!(state.status, Status::Syncing(_, syncing_peers) => {
+            assert_matches!(state.status, Status::Syncing{ syncs: syncing_peers} => {
                 assert_eq!(i + 1, syncing_peers);
             });
         }
@@ -497,7 +514,7 @@ mod test {
         assert!(!cmds.is_empty(), "expected command");
         assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
         // Expect to be online at this point.
-        assert_matches!(state.status, Status::Online(_));
+        assert_matches!(state.status, Status::Online {..});
 
         // No more syncs should be expected after the maximum of peers have connected.
         let cmd = {
@@ -511,7 +528,8 @@ mod test {
     #[test]
     fn issue_sync_timeout_when_transitioning_to_syncing() {
         let sync_period = Duration::from_secs(60 * 10);
-        let status = Status::Started(Instant::now());
+        let status = Status::Started;
+        let status_since = Instant::now();
         let mut state = RunState::new(
             Config {
                 sync: SyncConfig {
@@ -523,6 +541,7 @@ mod test {
             },
             HashSet::new(),
             status,
+            status_since,
         );
 
         let cmds = {
@@ -537,15 +556,17 @@ mod test {
 
     #[test]
     fn issue_announce_while_online() {
-        let status = Status::Online(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Online { connected: 1 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Announce(AnnounceEvent::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
         assert_matches!(cmds.first().unwrap(), Command::Announce);
 
-        let status = Status::Offline(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Offline;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Announce(AnnounceEvent::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
@@ -555,31 +576,36 @@ mod test {
         let urn: RadUrn =
             "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
 
-        let status = Status::Stopped(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Stopped;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(cmds.first(), None,);
 
-        let status = Status::Started(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Started;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(cmds.first(), None);
 
-        let status = Status::Offline(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Offline;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(cmds.first(), None,);
 
-        let status = Status::Syncing(Instant::now(), 1);
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Syncing { syncs: 1 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Query(urn.clone()))
         );
 
-        let status = Status::Online(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Online { connected: 1 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Query(urn.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
@@ -618,40 +644,45 @@ mod test {
             authority: peer_id,
         };
 
-        let status = Status::Stopped(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Stopped;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
         );
 
-        let status = Status::Started(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Started;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
         );
 
-        let status = Status::Offline(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Offline;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
         );
 
-        let status = Status::Syncing(Instant::now(), 1);
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Syncing { syncs: 1 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Protocol(gossip.clone()));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Found(url.clone()))
         );
 
-        let status = Status::Online(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Online { connected: 1 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Protocol(gossip));
         assert_eq!(
             *cmds.first().unwrap(),
@@ -671,31 +702,36 @@ mod test {
             authority: peer_id,
         };
 
-        let status = Status::Stopped(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Stopped;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(cmds.first(), None,);
 
-        let status = Status::Started(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Started;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(cmds.first(), None);
 
-        let status = Status::Offline(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Offline;
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(cmds.first(), None,);
 
-        let status = Status::Syncing(Instant::now(), 1);
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Syncing { syncs: 1 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
             Command::Request(RequestCommand::Clone(url.clone()))
         );
 
-        let status = Status::Online(Instant::now());
-        let mut state = RunState::new(Config::default(), HashSet::new(), status);
+        let status = Status::Online { connected: 1 };
+        let status_since = Instant::now();
+        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
         let cmds = state.transition(&Event::Request(RequestEvent::Clone(url.clone())));
         assert_eq!(
             *cmds.first().unwrap(),
