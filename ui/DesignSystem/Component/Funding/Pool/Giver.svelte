@@ -11,10 +11,20 @@
   export let pool: p.Pool;
 
   // TODO(nuno): read from pool
-  let monthlyContribution = 0;
-
+  let monthlyContribution = "";
   // Necessary to comply with Textarea.bind:value type.
   let members: string | any = "a,b,c"; // TODO(nuno): read from pool: .split(", ")
+
+  const initialState = {
+    monthlyContribution,
+    members,
+  };
+
+  // TODO(nuno): Also take the amount and the members list validation in consideration here.
+  $: saveEnabled =
+    members.valueOf() !== initialState.members.valueOf() ||
+    monthlyContribution.valueOf() !==
+      initialState.monthlyContribution.valueOf();
 
   const openSendModal = () => {
     p.store.set(pool);
@@ -123,12 +133,12 @@
         </div>
       </li>
     </ul>
-
     <StatefulButton
+      disabled={!saveEnabled}
       title={'Save'}
       onClick={() => pool.save({
-          monthlyContribution,
-          members: members.split(', '),
+          amountPerBlock: monthlyContribution,
+          receiverAddresses: members.split(', '),
         })}
       variant={'primary'}
       successMessage={'✓ Pool successfully saved'}
