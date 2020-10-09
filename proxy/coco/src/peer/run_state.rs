@@ -200,6 +200,7 @@ pub struct RunState {
     connected_peers: HashSet<PeerId>,
     /// Current internal status.
     pub status: Status,
+    /// Timestamp of last status change.
     status_since: Instant,
 }
 

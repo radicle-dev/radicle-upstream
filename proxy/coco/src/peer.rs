@@ -83,6 +83,7 @@ pub struct Peer {
     waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     /// Handle used to broadcast [`Event`].
     subscriber: broadcast::Sender<Event>,
+    /// Handle used to broadcast peer status changes.
     status_subscriber: broadcast::Sender<Status>,
     /// Subroutine config.
     run_config: RunConfig,

@@ -25,6 +25,8 @@ pub struct Subscriptions {
     next_id: Arc<AtomicUsize>,
     /// Active subscribers.
     subs: Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<Notification>>>>,
+    /// Cache for last event sent through this stream. This allows us to replay the last event
+    /// whenever a new consumer starts listening on this stream.
     last_state: Arc<RwLock<Option<Notification>>>,
 }
 
