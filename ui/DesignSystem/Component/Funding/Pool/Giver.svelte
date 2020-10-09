@@ -5,6 +5,7 @@
   import { Remote, StatefulButton } from "../../../Component";
 
   import * as path from "../../../../src/path";
+  import * as remote from "../../../../src/remote";
   import * as _pool from "../../../../src/funding/pool";
   import { amountStore, amountValidationStore } from "../../../../src/transfer";
   import { ValidationStatus } from "../../../../src/validation";
@@ -44,12 +45,14 @@
     push(path.poolTopUp());
   };
 
-  // Received a refreshed PoolData version of the current pool.
-  function refreshed(newData: _pool.PoolData) {
-    data = newData;
-    monthlyContribution = newData.amountPerBlock;
-    members = newData.receiverAddresses.join(",");
-  }
+  pool.data.subscribe(store => {
+    if (store.status === remote.Status.Success) {
+      const newData = store.data;
+      data = newData;
+      monthlyContribution = newData.amountPerBlock;
+      members = newData.receiverAddresses.join(",");
+    }
+  });
 </script>
 
 <style>
@@ -83,7 +86,6 @@
   <h3>Give</h3>
 
   <Remote store={pool.data} let:data={poolData}>
-    {refreshed(poolData)}
     <ul>
       <!-- Make all options below disabled if the pool is disabled -->
       <li class="row">
@@ -151,7 +153,7 @@
         </header>
         <div class="item">
           <Input.Textarea
-            style="width: 15vw"
+            style="width: 25vw"
             bind:value={members}
             placeholder="Enter members here" />
         </div>

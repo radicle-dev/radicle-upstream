@@ -15,6 +15,10 @@ export type Data<T> =
   | { status: Status.Success; data: T }
   | { status: Status.Error; error: Error };
 
+// Shorthand for casting these states
+export type ErrorState = { status: Status.Error; error: Error };
+export type SuccessState = { status: Status.Success; data: any };
+
 // A Store is a typesafe svelte readable store that exposes `updateStatus`
 // and `update`. It's like a Writable but it can't be externally `set`, and
 // it only accepts data that conforms to the `RemoteData` interface

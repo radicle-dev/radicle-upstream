@@ -10,26 +10,22 @@
   export let store: Readable<remote.Data<any>>;
   export let context: string | undefined = undefined;
 
-  // Shorthand for casting these states
-  type ErrorState = { status: remote.Status.Error; error: error.Error };
-  type SuccessState = { status: remote.Status.Success; data: any };
-
   // If no error slot was provided, svelte will instantiate the fallback div
   let noErrorSlotProvided: HTMLDivElement;
 
   $: if ($store.status === remote.Status.Error && !!noErrorSlotProvided) {
-    console.error("Remote error", ($store as ErrorState).error);
-    notification.error(($store as ErrorState).error.message);
+    console.error("Remote error", ($store as remote.ErrorState).error);
+    notification.error(($store as remote.ErrorState).error.message);
   }
 
   $: data =
     $store.status === remote.Status.Success
-      ? ($store as SuccessState).data
+      ? ($store as remote.SuccessState).data
       : undefined;
 
   $: remoteError =
     $store.status === remote.Status.Error
-      ? ($store as ErrorState).error
+      ? ($store as remote.ErrorState).error
       : undefined;
 </script>
 
