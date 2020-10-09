@@ -23,7 +23,7 @@ function stop_ganache() {
 
 trap stop_ganache SIGINT EXIT
 
-sleep 2
+sleep 4
 
 ./scripts/deploy-dev-contracts.js;
 

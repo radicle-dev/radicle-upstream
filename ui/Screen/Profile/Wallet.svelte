@@ -11,9 +11,9 @@
 <div>
   {#if $wallet.status === Status.NotConnected}
     <Button on:click={wallet.connect}>connect</Button>
+    {#if $wallet.error}Failed to connect: {$wallet.error.message}{/if}
   {:else if $wallet.status === Status.Connecting}
     <p>Connecting</p>
-    <Button on:click={wallet.disconnect}>Disconnect</Button>
   {:else}
     <Button on:click={wallet.disconnect}>disconnect</Button>
     <div>Address: {$wallet.connected.account.address}</div>

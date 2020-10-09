@@ -1,6 +1,85 @@
-import { Readable } from "svelte/store";
+import QRCodeModal from "@walletconnect/qrcode-modal";
+import WalletConnect from "@walletconnect/client";
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
+import * as ethersBytes from "@ethersproject/bytes";
+import {
+  Deferrable,
+  defineReadOnly,
+  resolveProperties,
+} from "@ethersproject/properties";
+import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
+
+class WalletConnectSigner extends ethers.Signer {
+  public walletConnect: WalletConnect;
+  private _provider: ethers.providers.Provider;
+
+  private sessionUpdateListener = () => {
+    return undefined;
+  };
+
+  constructor(walletConnect: WalletConnect, provider: Provider) {
+    super();
+    defineReadOnly(this, "provider", provider);
+    this._provider = provider;
+    this.walletConnect = walletConnect;
+    this.walletConnect.on("session_update", this.sessionUpdateListener);
+  }
+
+  async getAddress(): Promise<string> {
+    const accountAddress = this.walletConnect.accounts[0];
+    if (!accountAddress) {
+      throw new Error("no account address");
+    }
+    return accountAddress;
+  }
+
+  async signMessage(_message: ethers.Bytes | string): Promise<string> {
+    throw new Error("not implemented");
+  }
+
+  async signTransaction(
+    transaction: Deferrable<TransactionRequest>
+  ): Promise<string> {
+    const tx = await resolveProperties(transaction);
+    const from = tx.from || (await this.getAddress());
+    const nonce = await this._provider.getTransactionCount(from);
+    const signedTx = await this.walletConnect.signTransaction({
+      from,
+      to: tx.to,
+      value: bigNumberishToPrimitive(tx.value || 0),
+      gasLimit: bigNumberishToPrimitive(tx.gasLimit || 200 * 1000),
+      gasPrice: bigNumberishToPrimitive(tx.gasPrice || 0),
+      nonce,
+      data: bytesLikeToString(tx.data),
+    });
+    return signedTx;
+  }
+
+  connect(provider: Provider): ethers.Signer {
+    return new WalletConnectSigner(this.walletConnect, provider);
+  }
+}
+
+function bigNumberishToPrimitive(
+  bn: ethers.BigNumberish | undefined
+): string | undefined {
+  if (bn === undefined) {
+    return undefined;
+  } else {
+    return ethers.BigNumber.from(bn).toString();
+  }
+}
+
+function bytesLikeToString(
+  bytes: ethersBytes.BytesLike | undefined
+): string | undefined {
+  if (bytes === undefined) {
+    return undefined;
+  } else {
+    return ethersBytes.hexlify(bytes);
+  }
+}
 
 export enum Status {
   Connected = "CONNECTED",
@@ -20,7 +99,7 @@ export interface Connected {
   };
 }
 
-export interface Wallet extends Readable<State> {
+export interface Wallet extends svelteStore.Readable<State> {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   signer: ethers.Signer;
@@ -31,10 +110,15 @@ export function build(): Wallet {
     status: Status.NotConnected,
   });
 
+  let walletConnect = new WalletConnect({
+    bridge: "https://bridge.walletconnect.org",
+    qrcodeModal: QRCodeModal,
+  });
+
   const provider = new ethers.providers.JsonRpcProvider(
     "http://localhost:8545"
   );
-  const signer = provider.getSigner(0);
+  const signer = new WalletConnectSigner(walletConnect, provider);
 
   window.ethereumDebug = new EthereumDebug(provider);
 
@@ -43,12 +127,24 @@ export function build(): Wallet {
     if (svelteStore.get(stateStore).status !== Status.NotConnected) {
       throw new Error("Already connected");
     }
+
+    stateStore.set({ status: Status.Connecting });
+    try {
+      await walletConnect.connect();
+    } catch (error) {
+      console.error(error);
+      stateStore.set({ status: Status.NotConnected, error });
+    }
+    await initialize();
   }
 
   async function initialize() {
+    if (!walletConnect.connected) {
+      return;
+    }
+
     try {
       stateStore.set({ status: Status.Connecting });
-
       const accountAddress = await signer.getAddress();
       const balance = await signer.getBalance();
       const connected = {
@@ -59,8 +155,8 @@ export function build(): Wallet {
       };
       stateStore.set({ status: Status.Connected, connected });
     } catch (error) {
+      console.error(error);
       stateStore.set({ status: Status.NotConnected, error });
-      throw error;
     }
   }
 
@@ -70,8 +166,15 @@ export function build(): Wallet {
     subscribe: stateStore.subscribe,
     connect,
     async disconnect() {
-      console.warn("Not implemented");
-      return undefined;
+      await walletConnect.killSession();
+      // We need to reinitialize `WalletConnect` until this issue is fixed:
+      // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
+      walletConnect = new WalletConnect({
+        bridge: "https://bridge.walletconnect.org",
+        qrcodeModal: QRCodeModal,
+      });
+      signer.walletConnect = walletConnect;
+      stateStore.set({ status: Status.NotConnected });
     },
     signer,
   };
