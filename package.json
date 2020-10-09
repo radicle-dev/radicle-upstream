@@ -141,6 +141,7 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
+    "setup:evm": "./scripts/setup-evm.sh",
     "deploy:dev:contracts": "./scripts/deploy-dev-contracts.js",
     "reset:state": "scripts/reset-state.sh"
   },

@@ -142,9 +142,8 @@ yarn lint                   # Check UI code for linting errors
 yarn reset:state            # Delete all local state: identity keys, monorepo
                             # and saved preferences
 
-yarn deploy:dev:contracts   # Deploy the Ethereum Radicle Contracts to a local
-                            # instance of an Eth blockchain. We use ganachi for
-                            # local development.
+yarn setup:evm              # Setup a local ethereum node to which we deploy
+                            # the Radicle Contracts.
 ```
 
 
