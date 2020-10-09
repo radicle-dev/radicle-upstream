@@ -6,18 +6,35 @@
 
   import * as path from "../../../../src/path";
   import * as _pool from "../../../../src/funding/pool";
+  import { amountStore, amountValidationStore } from "../../../../src/transfer";
+  import { ValidationStatus } from "../../../../src/validation";
 
   export let pool: _pool.Pool;
 
   // The loaded PoolData, updated at `function refreshed`.
   let data: _pool.PoolData | undefined;
 
+  let validatingAmount = false;
+
   let monthlyContribution = "";
+  $: amountValidation = amountValidationStore(
+    "TODO(nuno)",
+    parseInt(monthlyContribution)
+  );
+  $: amountStore.set(monthlyContribution ? monthlyContribution.toString() : "");
+  $: {
+    if ($amountStore && $amountStore.length > 0) validatingAmount = true;
+    if (validatingAmount) amountValidation.validate($amountStore);
+  }
+  $: validInputs =
+    $amountValidation && $amountValidation.status === ValidationStatus.Success;
+
   // Necessary type to comply with Textarea.bind:value type.
   let members: string = "";
 
   // TODO(nuno): Also take the amount and the members list validation in consideration here.
   $: saveEnabled =
+    validInputs &&
     data &&
     (members.valueOf() !== data.receiverAddresses.join(",").valueOf() ||
       monthlyContribution.valueOf() !== data.amountPerBlock.valueOf());
@@ -115,9 +132,9 @@
             placeholder="Enter the amount"
             bind:value={monthlyContribution}
             showLeftItem
-            autofocus
+            validation={$amountValidation}
             style="max-width: 200px;">
-            <div slot="left" style="display: flex;">
+            <div slot="left" style="position: absolute; top: 9px; left: 10px;">
               <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
             </div>
           </Input.Text>
@@ -134,7 +151,7 @@
         </header>
         <div class="item">
           <Input.Textarea
-            style="width: 25vw"
+            style="width: 15vw"
             bind:value={members}
             placeholder="Enter members here" />
         </div>
