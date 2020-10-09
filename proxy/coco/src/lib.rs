@@ -57,8 +57,8 @@ pub mod keystore;
 pub mod oid;
 pub mod peer;
 pub use peer::{
-    AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RequestEvent, RunConfig, SyncConfig,
-    SyncEvent,
+    AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RequestEvent, RunConfig, Status,
+    SyncConfig, SyncEvent,
 };
 pub mod shared;
 pub mod state;

@@ -42,8 +42,8 @@ mod handler {
         subscriber: mpsc::UnboundedReceiver<Notification>,
     ) -> impl Stream<Item = Result<impl sse::ServerSentEvent, Infallible>> {
         subscriber.map(|notification| match notification {
-            Notification::LocalPeerListening(addr) => {
-                Ok((sse::event("LOCAL_PEER_LISTENING"), sse::json(addr)))
+            Notification::LocalPeerStatus(status) => {
+                Ok((sse::event("LOCAL_PEER_STATUS"), sse::json(status)))
             },
         })
     }

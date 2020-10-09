@@ -43,7 +43,7 @@ mod request;
 mod run_state;
 pub use run_state::{
     AnnounceConfig, AnnounceEvent, Config as RunConfig, Event, RequestCommand, RequestEvent,
-    SyncConfig, SyncEvent, TimeoutEvent,
+    Status, SyncConfig, SyncEvent, TimeoutEvent,
 };
 use run_state::{Command, RunState};
 
@@ -83,6 +83,7 @@ pub struct Peer {
     waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     /// Handle used to broadcast [`Event`].
     subscriber: broadcast::Sender<Event>,
+    status_subscriber: broadcast::Sender<Status>,
     /// Subroutine config.
     run_config: RunConfig,
 }
@@ -98,12 +99,14 @@ impl Peer {
         run_config: RunConfig,
     ) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
+        let (status_subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         Self {
             run_loop,
             state,
             store,
             waiting_room,
             subscriber,
+            status_subscriber,
             run_config,
         }
     }
@@ -111,11 +114,17 @@ impl Peer {
     /// Subscribe to peer events.
     ///
     /// NB(xla): A caller must call this before the run loop is started, as that consumes the peer.
-    /// There is also a configured [`RECEIVER_CAPACITY`], which prevents unbounded queues fron
+    /// There is also a configured [`RECEIVER_CAPACITY`], which prevents unbounded queues from
     /// filling up.
     #[must_use = "eat your events"]
     pub fn subscribe(&self) -> broadcast::Receiver<Event> {
         self.subscriber.subscribe()
+    }
+
+    /// Subscribe to peer status update events.
+    #[must_use = "eat your events"]
+    pub fn subscribe_status_updates(&self) -> broadcast::Receiver<Status> {
+        self.status_subscriber.subscribe()
     }
 
     /// Start up the internal machinery to advance the underlying protocol, react to significant
@@ -132,6 +141,7 @@ impl Peer {
             store,
             waiting_room,
             subscriber,
+            status_subscriber,
             run_config,
         } = self;
 
@@ -152,6 +162,7 @@ impl Peer {
                     run_config,
                     protocol_events,
                     subscriber,
+                    status_subscriber,
                 )
                 .await
             })
@@ -303,6 +314,7 @@ struct Subroutines {
     ping_timer: Interval,
 
     subscriber: broadcast::Sender<Event>,
+    status_subscriber: broadcast::Sender<Status>,
 
     request_queries: waiting_room::stream::Queries,
     request_clones: waiting_room::stream::Clones,
@@ -327,6 +339,7 @@ impl Subroutines {
         run_config: RunConfig,
         protocol_events: BoxStream<'static, ProtocolEvent<Gossip>>,
         subscriber: broadcast::Sender<Event>,
+        status_subscriber: broadcast::Sender<Status>,
     ) -> Self {
         let announce_timer = interval(run_config.announce.interval);
         let ping_timer = interval(PING_PERIOD);
@@ -355,6 +368,7 @@ impl Subroutines {
             ping_timer,
 
             subscriber,
+            status_subscriber,
 
             request_queries,
             request_clones,
@@ -438,6 +452,7 @@ impl Future for Subroutines {
             }
         }
 
+        let old_status = self.run_state.status.clone();
         for event in events {
             log::debug!("handling subroutine event: {:?}", event);
 
@@ -477,6 +492,12 @@ impl Future for Subroutines {
 
                 self.pending_tasks.push(task);
             }
+        }
+
+        if self.run_state.status != old_status {
+            self.status_subscriber
+                .send(self.run_state.status.clone())
+                .ok();
         }
 
         // We're never done

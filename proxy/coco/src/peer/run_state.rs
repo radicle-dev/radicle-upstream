@@ -5,6 +5,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use serde::Serialize;
+
 use librad::{
     net::{
         gossip::{Has, Info},
@@ -126,18 +128,25 @@ pub enum TimeoutEvent {
 }
 
 /// The current status of the local peer and its relation to the network.
-#[derive(Clone, Debug)]
-enum Status {
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum Status {
     /// Nothing is setup, not even a socket to listen on.
-    Stopped(Instant),
+    Stopped,
     /// Local peer is listening on a socket but has not connected to any peers yet.
-    Started(Instant),
+    Started,
     /// The local peer lost its connections to all its peers.
-    Offline(Instant),
+    Offline,
     /// Phase where the local peer tries get up-to-date.
-    Syncing(Instant, usize),
+    Syncing {
+        /// Number of synchronisation attempts.
+        syncs: usize,
+    },
     /// The local peer is operational and is able to interact with the peers it has connected to.
-    Online(Instant),
+    Online {
+        /// Number of connected peers.
+        connected: usize,
+    },
 }
 
 /// Set of knobs to change the behaviour of the [`RunState`].
@@ -190,7 +199,8 @@ pub struct RunState {
     /// Tracking remote peers that have an active connection.
     connected_peers: HashSet<PeerId>,
     /// Current internal status.
-    status: Status,
+    pub status: Status,
+    status_since: Instant,
 }
 
 impl From<Config> for RunState {
@@ -198,7 +208,8 @@ impl From<Config> for RunState {
         Self {
             config,
             connected_peers: HashSet::new(),
-            status: Status::Stopped(Instant::now()),
+            status: Status::Stopped,
+            status_since: Instant::now(),
         }
     }
 }
@@ -221,8 +232,9 @@ impl RunState {
 
         let cmds = match (&self.status, event) {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
-            (Status::Stopped(_since), Event::Protocol(ProtocolEvent::Listening(_addr))) => {
-                self.status = Status::Started(Instant::now());
+            (Status::Stopped, Event::Protocol(ProtocolEvent::Listening(_addr))) => {
+                self.status = Status::Started;
+                self.status_since = Instant::now();
 
                 vec![]
             },
@@ -232,38 +244,54 @@ impl RunState {
             // online straight away.
             // TODO(xla): Also issue sync if we come online after a certain period of being
             // disconnected from any peer.
-            (Status::Started(_since), Event::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
+            (Status::Started, Event::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
                 self.connected_peers.insert(peer_id.clone());
 
                 if self.config.sync.on_startup {
-                    self.status = Status::Syncing(Instant::now(), 1);
+                    self.status = Status::Syncing { syncs: 1 };
+                    self.status_since = Instant::now();
 
                     vec![
                         Command::SyncPeer(peer_id.clone()),
                         Command::StartSyncTimeout(self.config.sync.period),
                     ]
                 } else {
-                    self.status = Status::Online(Instant::now());
+                    self.status = Status::Online { connected: 1 };
+                    self.status_since = Instant::now();
 
                     vec![]
                 }
             },
             // Sync until configured maximum of peers is reached.
-            (Status::Syncing(since, syncs), Event::Protocol(ProtocolEvent::Connected(peer_id)))
+            (Status::Syncing { syncs }, Event::Protocol(ProtocolEvent::Connected(peer_id)))
                 if *syncs < self.config.sync.max_peers =>
             {
                 self.connected_peers.insert(peer_id.clone());
                 if syncs + 1 == self.config.sync.max_peers {
-                    self.status = Status::Online(Instant::now());
+                    self.status = Status::Online {
+                        connected: self.connected_peers.len(),
+                    };
+                    self.status_since = Instant::now();
                 } else {
-                    self.status = Status::Syncing(*since, syncs + 1);
+                    self.status = Status::Syncing { syncs: syncs + 1 };
                 }
 
                 vec![Command::SyncPeer(peer_id.clone())]
             }
             // Go online if we exceed the sync period.
-            (Status::Syncing(_since, _syncs), Event::Timeout(TimeoutEvent::SyncPeriod)) => {
-                self.status = Status::Online(Instant::now());
+            (Status::Syncing { .. }, Event::Timeout(TimeoutEvent::SyncPeriod)) => {
+                self.status = Status::Online {
+                    connected: self.connected_peers.len(),
+                };
+                self.status_since = Instant::now();
+
+                vec![]
+            },
+            (Status::Online { .. }, Event::Protocol(ProtocolEvent::Connected(peer_id))) => {
+                self.connected_peers.insert(peer_id.clone());
+                self.status = Status::Online {
+                    connected: self.connected_peers.len(),
+                };
 
                 vec![]
             },
@@ -273,24 +301,31 @@ impl RunState {
 
                 // Go offline if we have no more connected peers left.
                 if self.connected_peers.is_empty() {
-                    self.status = Status::Offline(Instant::now());
+                    self.status = Status::Offline;
+                    self.status_since = Instant::now();
+                } else {
+                    // TODO(rudolfs/xla): preserve current status
+                    self.status = Status::Online {
+                        connected: self.connected_peers.len(),
+                    };
+                    self.status_since = Instant::now();
                 }
 
                 vec![]
             },
             // Announce new updates while the peer is online.
             (
-                Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
+                Status::Online { .. } | Status::Started | Status::Syncing { .. },
                 Event::Announce(AnnounceEvent::Tick),
             ) => vec![Command::Announce],
             // Query requested URNs while online.
             (
-                Status::Online(_) | Status::Syncing(_, _),
+                Status::Online { .. } | Status::Syncing { .. },
                 Event::Request(RequestEvent::Query(urn)),
             ) => vec![RequestCommand::Query(urn.clone()).into()],
             // Clone requested URLs while online.
             (
-                Status::Online(_) | Status::Syncing(_, _),
+                Status::Online { .. } | Status::Syncing { .. },
                 Event::Request(RequestEvent::Clone(url)),
             ) => vec![RequestCommand::Clone(url.clone()).into()],
             // Found URN.

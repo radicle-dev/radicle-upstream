@@ -95,9 +95,16 @@ async fn run(
         subscriptions,
     } = rigging;
 
+    let server_subscriptions = subscriptions.clone();
+
     let server = async move {
         log::info!("... API");
-        let api = http::api(ctx, subscriptions, killswitch, enable_fixture_creation);
+        let api = http::api(
+            ctx,
+            server_subscriptions,
+            killswitch,
+            enable_fixture_creation,
+        );
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
             async move {
@@ -108,6 +115,20 @@ async fn run(
         server.await;
         Ok(())
     };
+
+    {
+        let mut peer_status_events = peer.subscribe_status_updates();
+
+        tokio::spawn(async move {
+            loop {
+                let status = peer_status_events.recv().await.unwrap();
+                subscriptions
+                    .broadcast(notification::Notification::LocalPeerStatus(status))
+                    .await;
+            }
+        });
+    }
+
     let peer = async move {
         log::info!("... peer");
         peer.into_running().await

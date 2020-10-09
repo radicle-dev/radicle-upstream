@@ -2,7 +2,6 @@
 
 use std::{
     collections::HashMap,
-    net::SocketAddr,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -15,8 +14,8 @@ use tokio::sync::{mpsc, RwLock};
 /// Significant events happening during proxy runtime.
 #[derive(Clone, Debug, Serialize)]
 pub enum Notification {
-    /// Our local peer started listening on a local socket.
-    LocalPeerListening(SocketAddr),
+    /// Event for peer status updates.
+    LocalPeerStatus(coco::Status),
 }
 
 /// Manage active subscriptions and broadcast [`Notification`]s.
@@ -26,11 +25,13 @@ pub struct Subscriptions {
     next_id: Arc<AtomicUsize>,
     /// Active subscribers.
     subs: Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<Notification>>>>,
+    last_state: Arc<RwLock<Option<Notification>>>,
 }
 
 impl Subscriptions {
     /// Broadcast [`Notification`] to all active subscriptions.
     pub async fn broadcast(&self, notification: Notification) {
+        *self.last_state.write().await = Some(notification.clone());
         // We use retain to discard all closed subscriptions.
         self.subs
             .write()
@@ -43,6 +44,9 @@ impl Subscriptions {
         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
         let (sender, receiver) = mpsc::unbounded_channel();
 
+        if let Some(last_state) = &*self.last_state.read().await {
+            sender.send(last_state.clone()).ok();
+        };
         self.subs.write().await.insert(id, sender);
 
         receiver
