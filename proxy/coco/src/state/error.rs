@@ -64,6 +64,24 @@ pub enum Error {
     /// Verifcation error.
     #[error(transparent)]
     Verification(#[from] entity::HistoryVerificationError),
+
+    /// There were no references for a Browser to be initialised.
+    #[error("when creating a browser for '{name}@{urn}', there were no references to browse")]
+    NoRefs {
+        /// Name of the project.
+        name: String,
+        /// RadUrn of the project.
+        urn: RadUrn,
+    },
+
+    /// There were no maintainers for a project to initialise Browser.
+    #[error("when creating a browser for '{name}@{urn}', there were no references to browse")]
+    NoMaintainers {
+        /// Name of the project.
+        name: String,
+        /// RadUrn of the project.
+        urn: RadUrn,
+    },
 }
 
 impl Error {

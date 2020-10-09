@@ -56,6 +56,7 @@ macro_rules! assert_event {
 /// # Errors
 ///
 /// * if the timeout waiting for the [`ProtocolEvent::Connected`] has been reached.
+#[allow(dead_code)]
 pub async fn connected(
     receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,
@@ -105,6 +106,7 @@ pub async fn build_peer(
     Ok((peer, state, signer))
 }
 
+#[allow(dead_code)]
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,

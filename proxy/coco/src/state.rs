@@ -14,6 +14,7 @@ use librad::{
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
+        types::NamespacedRef,
     },
     keys,
     meta::{entity, project as librad_project, user},
@@ -351,12 +352,56 @@ impl State {
     /// * If the passed `callback` errors.
     pub async fn with_browser<F, T>(&self, urn: RadUrn, callback: F) -> Result<T, Error>
     where
-        F: Send + FnOnce(&mut git::Browser) -> Result<T, source::Error>,
+        F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
-        let monorepo = self.monorepo();
-        let project = self.get_project(urn, None).await?;
-        let default_branch = git::Branch::local(project.default_branch());
+        let project = self.get_project(urn.clone(), None).await?;
+        let (local, local_exists) = {
+            let local_ref = NamespacedRef::head(urn.id.clone(), None, project.default_branch());
+            let exists = self
+                .api
+                .with_storage(move |storage| storage.has_ref(&local_ref))
+                .await??;
 
+            (git::Branch::local(project.default_branch()), exists)
+        };
+
+        let default_branch = if local_exists {
+            local
+        } else {
+            let peer = match project
+                .keys()
+                .iter()
+                .next()
+                .map(|pk| PeerId::from(pk.clone()))
+            {
+                None => {
+                    return Err(Error::NoMaintainers {
+                        name: project.name().to_string(),
+                        urn: project.urn(),
+                    })
+                },
+                Some(peer) => peer,
+            };
+            let remote_ref =
+                NamespacedRef::head(urn.id.clone(), peer.clone(), project.default_branch());
+            let exists = self
+                .api
+                .with_storage(move |storage| storage.has_ref(&remote_ref))
+                .await??;
+
+            if !exists {
+                return Err(Error::NoRefs {
+                    name: project.name().to_string(),
+                    urn: project.urn(),
+                });
+            }
+            git::Branch::remote(
+                &format!("heads/{}", project.default_branch()),
+                peer.to_string().as_str(),
+            )
+        };
+
+        let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())
             .map_err(source::Error::from)?;

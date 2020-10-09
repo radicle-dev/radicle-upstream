@@ -418,7 +418,7 @@ where
 }
 
 /// Bundled response to retrieve both [`Branch`]es and [`Tag`]s for a user's repo.
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Revisions<P, U> {
     /// The peer identifier for the user.
