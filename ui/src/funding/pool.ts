@@ -76,7 +76,7 @@ export function make(wallet: Wallet): Pool {
     // TODO only update the settings that need changes. In particular
     // only update members that have been added or removed
     const txs = [];
-    for (const address in settings.receiverAddresses) {
+    for (const address of settings.receiverAddresses) {
       txs.push(poolContract.setReceiver(address, 1).then(tx => tx.wait()));
     }
 
