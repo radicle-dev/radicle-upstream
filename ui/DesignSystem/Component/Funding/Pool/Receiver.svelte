@@ -41,8 +41,10 @@
     <div class="row">
       <header>
         <p>
-          Hi there! You've got ETH {poolData.collectableFunds} waiting to be collected.
-          This is the sum of all the donations you are eligible to receive.
+          Hi there! You've got
+          <currency>DAI</currency>
+          {poolData.collectableFunds} waiting to be collected. This is the sum of
+          all the donations you are eligible to receive.
         </p>
       </header>
       <div class="item">

@@ -38,3 +38,8 @@ a {
 .lock-screen {
   cursor: wait;
 }
+
+currency {
+  font-size: 85%;
+  color: var(--color-foreground-level-6);
+}

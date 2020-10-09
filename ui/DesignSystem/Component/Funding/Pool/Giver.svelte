@@ -62,7 +62,10 @@
           </p>
         </header>
         <div class="item">
-          <h3>${poolData.balance}</h3>
+          <h3>
+            <currency>DAI</currency>
+            {poolData.balance}
+          </h3>
           <Button
             dataCy="top-up-pool-button"
             variant="secondary"
@@ -98,7 +101,7 @@
             autofocus
             style="max-width: 200px;">
             <div slot="left" style="display: flex;">
-              <Icon.CurrencyRAD style="fill: var(--color-foreground-level-6)" />
+              <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
             </div>
           </Input.Text>
         </div>

@@ -103,7 +103,7 @@
         autofocus
         validation={$amountValidation}>
         <div slot="left" style="display: flex;">
-          <Icon.CurrencyRAD style="fill: var(--color-foreground-level-6)" />
+          <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
         </div>
       </Input.Text>
 
