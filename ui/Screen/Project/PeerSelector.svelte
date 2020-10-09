@@ -2,7 +2,8 @@
   import { createEventDispatcher, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../src/path.ts";
+  import * as modal from "../../src/modal";
+  import * as path from "../../src/path";
   import { BadgeType } from "../../src/badge.ts";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
@@ -113,6 +114,11 @@
     justify-content: center;
     cursor: pointer;
   }
+
+  .remotes:hover {
+    cursor: pointer;
+    background-color: var(--color-foreground-level-2);
+  }
 </style>
 
 <Overlay {expanded} on:hide={hideDropdown} style="position: relative;">
@@ -180,6 +186,14 @@
           </Tooltip>
         </div>
       {/each}
+      <div class="peer remotes">
+        <div
+          style="display: flex;"
+          on:click={() => modal.toggle(path.manageRemotes())}>
+          <Icon.Pen style="margin-right: .5rem;" />
+          <p>Manage remotes</p>
+        </div>
+      </div>
     </div>
   </div>
 </Overlay>

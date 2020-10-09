@@ -59,6 +59,7 @@ export const transactions = (id: string, viewerAccountId: string): string =>
 export const designSystemGuide = (): string => "/design-system-guide";
 
 // modal routes
+export const manageRemotes = (): string => "/manage-remotes";
 export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";

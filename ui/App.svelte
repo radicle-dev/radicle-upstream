@@ -61,6 +61,7 @@
   };
 
   const modalRoutes = {
+    "/manage-remotes": Modal.ManageRemotes,
     "/new-project": Modal.NewProject,
     "/search": Modal.Search,
     "/shortcuts": Modal.Shortcuts,
