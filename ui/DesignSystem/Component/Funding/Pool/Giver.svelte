@@ -153,7 +153,7 @@
         </header>
         <div class="item">
           <Input.Textarea
-            style="width: 25vw"
+            style="min-width: 400px;"
             bind:value={members}
             placeholder="Enter members here" />
         </div>
