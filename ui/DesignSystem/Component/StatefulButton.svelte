@@ -8,7 +8,7 @@
   export let variant: ButtonVariant = "primary";
   export let dataCy = "";
   export let onClick: () => Promise<void>;
-  export let successMessage: string = "✓ Success";
+  export let successMessage: string = "Success";
   export let errorMessage: (error: any) => string;
   export let disabled = false;
 
@@ -20,7 +20,7 @@
       await continueAfter(0.4);
       notification.success(successMessage);
     } catch (error) {
-      notification.error(errorMessage(error));
+      notification.error(errorMessage(error), true);
     } finally {
       disabled = false;
     }

@@ -13,7 +13,7 @@
   // TODO(nuno): read from pool
   let monthlyContribution = "";
   // Necessary to comply with Textarea.bind:value type.
-  let members: string | any = "a,b,c"; // TODO(nuno): read from pool: .split(", ")
+  let members: string = "a,b,c"; // TODO(nuno): read from pool: .split(", ")
 
   const initialState = {
     monthlyContribution,
@@ -141,7 +141,7 @@
           receiverAddresses: members.split(', '),
         })}
       variant={'primary'}
-      successMessage={'✓ Pool successfully saved'}
+      successMessage={'Pool successfully saved'}
       errorMessage={e => `Failed to save pool: ${e}`} />
   </Remote>
 </div>

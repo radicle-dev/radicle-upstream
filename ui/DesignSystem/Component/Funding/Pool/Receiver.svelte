@@ -52,7 +52,7 @@
           title={'Collect your funds 🥳'}
           onClick={collectFunds}
           variant={'outline'}
-          successMessage={'✓ Funds successfully collected'}
+          successMessage={'Funds successfully collected'}
           errorMessage={e => `Failed to collect funds: ${e}`} />
       </div>
     </div>

@@ -157,7 +157,7 @@ export const error = (
 
 export const success = (
   message: string,
-  showIcon = false,
+  showIcon = true,
   actionText?: string,
   actionHandler?: () => void
 ): void =>
