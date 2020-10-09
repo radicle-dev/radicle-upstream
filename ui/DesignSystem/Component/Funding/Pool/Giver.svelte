@@ -1,7 +1,7 @@
 <script lang="ts">
   import { push } from "svelte-spa-router";
 
-  import { Button, Input } from "../../../Primitive";
+  import { Button, Icon, Input } from "../../../Primitive";
   import { Remote, StatefulButton } from "../../../Component";
 
   import * as path from "../../../../src/path";
@@ -54,26 +54,6 @@
       <!-- Make all options below disabled if the pool is disabled -->
       <li class="row">
         <header>
-          <p class="typo-text-bold">Monthly contribution</p>
-          <p>
-            Set a fixed monthly amount to contribute to your pool. With ${poolData.amountPerBlock}
-            per month, pool members get ${poolData.amountPerBlock / poolData.receiverAddresses.length}
-            a month each. This is accessible in real time, so if a user is in the
-            pool for 2 days, they can already claim $0.95).
-          </p>
-        </header>
-        <div class="item">
-          $
-          <Input.Text
-            dataCy="monthly-contribution"
-            bind:value={monthlyContribution}
-            placeholder="100.00"
-            style="max-width: 100px; padding-bottom: 10px;" />
-          <div />
-        </div>
-      </li>
-      <li class="row">
-        <header>
           <p class="typo-text-bold">Balance</p>
           <p>
             The current balance of your pool. Currently ${poolData.amountPerBlock}
@@ -97,6 +77,30 @@
             }}>
             Drain up your pool
           </Button>
+        </div>
+      </li>
+      <li class="row">
+        <header>
+          <p class="typo-text-bold">Monthly contribution</p>
+          <p>
+            Set a fixed monthly amount to contribute to your pool. With ${poolData.amountPerBlock}
+            per month, pool members get ${poolData.amountPerBlock / poolData.receiverAddresses.length}
+            a month each. This is accessible in real time, so if a user is in the
+            pool for 2 days, they can already claim $0.95).
+          </p>
+        </header>
+        <div class="item">
+          <Input.Text
+            dataCy="modal-amount-input"
+            placeholder="Enter the amount"
+            bind:value={monthlyContribution}
+            showLeftItem
+            autofocus
+            style="max-width: 200px;">
+            <div slot="left" style="display: flex;">
+              <Icon.CurrencyRAD style="fill: var(--color-foreground-level-6)" />
+            </div>
+          </Input.Text>
         </div>
       </li>
       <li class="row">

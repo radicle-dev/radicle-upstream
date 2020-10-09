@@ -101,7 +101,6 @@
         bind:value={amount}
         showLeftItem
         autofocus
-        style="flex: 1; padding-bottom: 0.5rem;"
         validation={$amountValidation}>
         <div slot="left" style="display: flex;">
           <Icon.CurrencyRAD style="fill: var(--color-foreground-level-6)" />
