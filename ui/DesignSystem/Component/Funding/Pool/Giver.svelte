@@ -5,34 +5,40 @@
   import { Remote, StatefulButton } from "../../../Component";
 
   import * as path from "../../../../src/path";
-  // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
-  import * as p from "../../../../src/funding/pool";
+  import * as _pool from "../../../../src/funding/pool";
 
-  export let pool: p.Pool;
+  export let pool: _pool.Pool;
 
-  // TODO(nuno): read from pool
+  // The loaded PoolData, updated at `function refreshed`.
+  let data: _pool.PoolData | undefined;
+
   let monthlyContribution = "";
-  // Necessary to comply with Textarea.bind:value type.
-  let members: string = "a,b,c"; // TODO(nuno): read from pool: .split(", ")
-
-  const initialState = {
-    monthlyContribution,
-    members,
-  };
+  // Necessary type to comply with Textarea.bind:value type.
+  let members: string = "";
 
   // TODO(nuno): Also take the amount and the members list validation in consideration here.
   $: saveEnabled =
-    members.valueOf() !== initialState.members.valueOf() ||
-    monthlyContribution.valueOf() !==
-      initialState.monthlyContribution.valueOf();
+    data &&
+    (members.valueOf() !== data.receiverAddresses.join(",").valueOf() ||
+      monthlyContribution.valueOf() !== data.amountPerBlock.valueOf());
 
   const openSendModal = () => {
-    p.store.set(pool);
+    _pool.store.set(pool);
     push(path.poolTopUp());
   };
+
+  // Received a refreshed PoolData version of the current pool.
+  function refreshed(newData: _pool.PoolData) {
+    data = newData;
+    monthlyContribution = newData.amountPerBlock;
+    members = newData.receiverAddresses.join(",");
+  }
 </script>
 
 <style>
+  .pool-give-container {
+    margin: 20px 0 60px 0px;
+  }
   .row {
     padding: 1.75rem 0px;
     display: flex;
@@ -56,10 +62,11 @@
   }
 </style>
 
-<div class="pool-container">
+<div class="pool-give-container">
   <h3>Give</h3>
 
   <Remote store={pool.data} let:data={poolData}>
+    {refreshed(poolData)}
     <ul>
       <!-- Make all options below disabled if the pool is disabled -->
       <li class="row">
