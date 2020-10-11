@@ -18,8 +18,6 @@ use crate::request::{
     sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
 };
 
-pub mod stream;
-
 /// The maximum number of query attempts that can be made for a single request.
 const MAX_QUERIES: Queries = Queries::new(5);
 
@@ -150,14 +148,14 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     /// If there is no such `urn` then it create a fresh `Request` using the `urn` and `timestamp`
     /// and it will return `None`.
-    pub fn request(&mut self, urn: RadUrn, timestamp: T) -> Option<SomeRequest<T>>
+    pub fn request(&mut self, urn: &RadUrn, timestamp: T) -> Option<SomeRequest<T>>
     where
         T: Clone,
     {
-        match self.get(&urn) {
+        match self.get(urn) {
             None => {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
-                self.requests.insert(urn.id, request);
+                self.requests.insert(urn.id.clone(), request);
                 None
             },
             Some(request) => Some(request.clone()),
@@ -460,7 +458,7 @@ mod test {
             urn,
             authority: peer,
         };
-        let request = waiting_room.request(url.urn.clone(), 0);
+        let request = waiting_room.request(&url.urn, 0);
 
         assert_eq!(request, None);
 
@@ -515,8 +513,8 @@ mod test {
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
-        waiting_room.request(urn.clone(), ());
-        let request = waiting_room.request(urn.clone(), ());
+        waiting_room.request(&urn, ());
+        let request = waiting_room.request(&urn, ());
 
         assert_eq!(
             request,
@@ -524,7 +522,7 @@ mod test {
         );
 
         waiting_room.queried(&urn, ())?;
-        let request = waiting_room.request(urn.clone(), ());
+        let request = waiting_room.request(&urn, ());
 
         assert_eq!(
             request,
@@ -546,7 +544,7 @@ mod test {
             .parse()
             .expect("failed to parse the urn");
 
-        let _ = waiting_room.request(urn.clone(), ());
+        let _ = waiting_room.request(&urn, ());
         for _ in 0..NUM_QUERIES {
             waiting_room.queried(&urn, ())?;
         }
@@ -583,7 +581,7 @@ mod test {
             });
         }
 
-        let _ = waiting_room.request(urn.clone(), ());
+        let _ = waiting_room.request(&urn, ());
         waiting_room.queried(&urn, ())?;
 
         for url in &peers {
@@ -632,7 +630,7 @@ mod test {
             });
         }
 
-        let _ = waiting_room.request(urn.clone(), ());
+        let _ = waiting_room.request(&urn, ());
         waiting_room.queried(&urn, ())?;
 
         for url in peers {
@@ -656,7 +654,7 @@ mod test {
         let peer = PeerId::from(SecretKey::new());
 
         // created
-        let _ = waiting_room.request(urn.clone(), ());
+        let _ = waiting_room.request(&urn, ());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
@@ -734,7 +732,7 @@ mod test {
         let ready = waiting_room.find_by_state(RequestState::Cloned);
         assert_eq!(ready, None);
 
-        let _ = waiting_room.request(url.urn.clone(), 0);
+        let _ = waiting_room.request(&url.urn, 0);
         waiting_room.queried(&url.urn, 0)?;
         waiting_room.found(url.clone(), 0)?;
         waiting_room.cloning(url.clone(), 0)?;

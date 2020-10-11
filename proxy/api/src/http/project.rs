@@ -186,9 +186,9 @@ mod handler {
 
     /// Kick off a network request for the [`project::Project`] of the given `id`.
     pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        let mut peer_control = ctx.peer_control;
         // TODO(finto): Check the request exists in the monorepo
-        let mut waiting_room = ctx.waiting_room.write().await;
-        let _request = waiting_room.request(urn, Instant::now());
+        let _request = peer_control.request_urn(&urn, Instant::now());
 
         // TODO(finto): Serialise request and respond with that.
         Ok(reply::json(&true))
