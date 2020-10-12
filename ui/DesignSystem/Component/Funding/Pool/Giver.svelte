@@ -60,13 +60,21 @@
   $: saveEnabled =
     validInputs &&
     data &&
-    (members.valueOf() !== data.receiverAddresses.join(",").valueOf() ||
+    (extractMembers(members).join(",") !== data.receiverAddresses.join(",") ||
       monthlyContribution.valueOf() !== data.amountPerBlock.valueOf());
 
   const openSendModal = () => {
     _pool.store.set(pool);
     push(path.poolTopUp());
   };
+
+  // Extract the list of members from the provided raw input string
+  function extractMembers(raw: string): string[] {
+    return raw
+      .split(",")
+      .map(e => e.trim())
+      .filter(e => e.length > 0);
+  }
 </script>
 
 <style>
