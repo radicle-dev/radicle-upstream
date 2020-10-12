@@ -3,7 +3,7 @@
   import type { Stats } from "../../../src/project";
 
   import { Avatar, Icon } from "../../Primitive";
-  import Urn from "../Urn.svelte";
+  import ShareableIdentifier from "../ShareableIdentifier.svelte";
 
   export let name: string;
   export let urn: string;
@@ -47,6 +47,7 @@
 
   .description {
     margin-top: 1rem;
+    margin-bottom: 0.5rem;
     color: var(--color-foreground-level-6);
     height: 1.5rem; /* 1 line */
     max-width: 60vw;
@@ -59,15 +60,9 @@
     align-items: center;
   }
 
-  .shareable-entity-identifier {
-    display: flex;
-    align-items: center;
-    padding-top: 0.25rem;
-  }
-
   .project-stats {
     display: flex;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
   }
 
   .project-stat-item {
@@ -133,12 +128,7 @@
               style="fill: var(--color-primary); margin-left: 6px;" />
           {/if}
         </div>
-        <div class="shareable-entity-identifier">
-          <Urn
-            {urn}
-            showCopyOnlyOnHover
-            notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
-        </div>
+        <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {#if description.length > 0}
           <p class="description">{description}</p>
         {/if}

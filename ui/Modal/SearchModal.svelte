@@ -4,7 +4,11 @@
 
   import { Icon, Input } from "../DesignSystem/Primitive";
 
-  import { Remote, TrackToggle, Urn } from "../DesignSystem/Component";
+  import {
+    Remote,
+    TrackToggle,
+    ShareableIdentifier,
+  } from "../DesignSystem/Component";
 
   import * as path from "../src/path";
   import * as remote from "../src/remote";
@@ -35,8 +39,11 @@
     }
   };
 
+  let handle = "";
+
   $: if (value && value.length > 0) {
     updateUrn({ urn: value });
+    handle = value.replace("rad:git:", "");
   }
 
   $: showTrackingInfo = value.length > 0;
@@ -62,14 +69,21 @@
   }
 
   .showTrackingInfo {
-    height: 13.5rem;
+    height: 11rem;
   }
 
   .header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.25rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .handle {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--color-foreground-level-6);
   }
 </style>
 
@@ -80,10 +94,10 @@
     <Input.Text
       autofocus
       bind:value
-      placeholder="Have a Radicle project ID?"
+      placeholder="Have a project handle? Paste it here…"
       showLeftItem
       style="height: 3rem;"
-      inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
+      inputStyle="border: none; border-radius: 0.5rem; height: 3rem; color: var(--color-foreground-level-6);"
       hint="v">
       <div slot="left" style="display: flex;">
         <Icon.MagnifyingGlass />
@@ -98,22 +112,11 @@
     class="tracking-info"
     class:showTrackingInfo
     on:click={navigateToProject}>
-    <div style="padding: 2rem;">
+    <div style="padding: 1.5rem;">
       <Remote store={request} let:data={response}>
-        <div class="header">
-          <!-- TODO(sos): Are project names going to be part of the strings users share w/each other?
-        e.g. my-new-project@hwd1yref4dqt66zart1a9gcpb3i4kfgfjbdc7pp1xdzgsnkhmdyxpkm3cxe -->
-          <h3 style="color: var(--color-foreground-level-6);">
-            my-new-project
-          </h3>
-          <TrackToggle />
-        </div>
-
-        <div style="display: flex; margin-bottom: 1rem;">
-          <Urn
-            urn={response.urn}
-            notificationText="The project ID was copied to your clipboard"
-            truncate />
+        <div class="header typo-header-3">
+          <span class="handle">{handle}</span>
+          <TrackToggle style="margin-left: 1rem;" />
         </div>
 
         <p style="color: var(--color-foreground-level-6);">
