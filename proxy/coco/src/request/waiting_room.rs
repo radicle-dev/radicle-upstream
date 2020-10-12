@@ -332,7 +332,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn cloned(&mut self, urn: &RadUrn, url: RadUrl, timestamp: T) -> Result<(), Error>
+    pub fn cloned(&mut self, url: &RadUrl, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -341,8 +341,8 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.cloned(url, timestamp)),
-            urn,
+            |previous| Ok(previous.cloned(url.clone(), timestamp)),
+            &url.urn,
         )
     }
 
@@ -493,7 +493,7 @@ mod test {
         );
         assert_eq!(waiting_room.get(&url.urn), Some(&expected));
 
-        waiting_room.cloned(&url.urn, url.clone(), 0)?;
+        waiting_room.cloned(&url, 0)?;
         let expected = SomeRequest::Cloned(
             Request::new(url.urn.clone(), 0)
                 .request(0)
@@ -736,7 +736,7 @@ mod test {
         waiting_room.queried(&url.urn, 0)?;
         waiting_room.found(url.clone(), 0)?;
         waiting_room.cloning(url.clone(), 0)?;
-        waiting_room.cloned(&url.urn, url.clone(), 0)?;
+        waiting_room.cloned(&url, 0)?;
 
         let ready = waiting_room.find_by_state(RequestState::Cloned);
         let expected = SomeRequest::Cloned(

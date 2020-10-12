@@ -71,6 +71,8 @@ pub enum RequestCommand {
     Clone(RadUrl),
     /// Tell the subroutine that we should query for the given `RadUrn` on the network.
     Query(RadUrn),
+    /// The request for [`RadUrn`] timed out.
+    TimedOut(RadUrn),
 }
 
 impl From<RequestCommand> for Command {
@@ -95,6 +97,8 @@ pub enum Event {
     RequestQueried(RadUrn),
     /// Waiting room interval ticked.
     RequestTick,
+    /// The request for [`RadUrn`] timed out.
+    RequestTimedOut(RadUrn),
 }
 
 impl MaybeFrom<&Input> for Event {
@@ -110,6 +114,7 @@ impl MaybeFrom<&Input> for Event {
             Input::Request(RequestInput::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
             Input::Request(RequestInput::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
             Input::Request(RequestInput::Tick) => Some(Self::RequestTick),
+            Input::Request(RequestInput::TimedOut(urn)) => Some(Self::RequestTimedOut(urn.clone())),
             _ => None,
         }
     }
@@ -166,6 +171,8 @@ pub enum RequestInput {
     ),
     /// [`WaitingRoom`] query interval.
     Tick,
+    /// The request for [`RadUrn`] timed out.
+    TimedOut(RadUrn),
 }
 
 /// Lifecycle events during peer sync operations.
@@ -327,6 +334,7 @@ impl RunState {
     }
 
     /// Handle [`ProtolEvent`]s.
+    #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
         match (&self.status, event) {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
@@ -389,24 +397,32 @@ impl RunState {
                     val: Gossip { urn, .. },
                 })),
             ) => {
-                // FIXME(xla): That the result is disregarded is dangerous, as either the surface of
-                // the WaitingRoom should be adjusted or the Result handled explicitely.
-                self.waiting_room
-                    .found(
-                        RadUrl {
-                            urn,
-                            authority: provider.peer_id,
-                        },
-                        Instant::now(),
-                    )
-                    .ok();
-                vec![]
+                match self.waiting_room.found(
+                    RadUrl {
+                        urn: urn.clone(),
+                        authority: provider.peer_id,
+                    },
+                    Instant::now(),
+                ) {
+                    Err(err) => {
+                        log::warn!("waiting room error: {:?}", err);
+
+                        match err {
+                            waiting_room::Error::TimeOut { .. } => {
+                                vec![Command::Request(RequestCommand::TimedOut(urn))]
+                            },
+                            _ => vec![],
+                        }
+                    },
+                    Ok(_) => vec![],
+                }
             },
             _ => vec![],
         }
     }
 
     /// Handle [`RequestInput`]s.
+    #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_request(&mut self, input: RequestInput) -> Vec<Command> {
         match (&self.status, input) {
             // Check for new querie and clone requests.
@@ -423,18 +439,49 @@ impl RunState {
             },
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
             (_, RequestInput::Cloning(url)) => {
-                self.waiting_room.cloning(url, Instant::now()).ok();
-                vec![]
+                match self.waiting_room.cloning(url.clone(), Instant::now()) {
+                    Err(err) => {
+                        log::warn!("waiting room error: {:?}", err);
+
+                        match err {
+                            waiting_room::Error::TimeOut { .. } => {
+                                vec![Command::Request(RequestCommand::TimedOut(url.urn))]
+                            },
+                            _ => vec![],
+                        }
+                    },
+                    Ok(_) => vec![],
+                }
             },
             (_, RequestInput::Cloned(url)) => {
-                self.waiting_room
-                    .cloned(&url.urn, url.clone(), Instant::now())
-                    .ok();
-                vec![]
+                match self.waiting_room.cloned(&url, Instant::now()) {
+                    Err(err) => {
+                        log::warn!("waiting room error: {:?}", err);
+
+                        match err {
+                            waiting_room::Error::TimeOut { .. } => {
+                                vec![Command::Request(RequestCommand::TimedOut(url.urn))]
+                            },
+                            _ => vec![],
+                        }
+                    },
+                    Ok(_) => vec![],
+                }
             },
             (_, RequestInput::Queried(urn)) => {
-                self.waiting_room.queried(&urn, Instant::now()).ok();
-                vec![]
+                match self.waiting_room.queried(&urn, Instant::now()) {
+                    Err(err) => {
+                        log::warn!("waiting room error: {:?}", err);
+
+                        match err {
+                            waiting_room::Error::TimeOut { .. } => {
+                                vec![Command::Request(RequestCommand::TimedOut(urn))]
+                            },
+                            _ => vec![],
+                        }
+                    },
+                    Ok(_) => vec![],
+                }
             },
             (_, RequestInput::Requested(urn, time, maybe_sender)) => {
                 let maybe_request = self.waiting_room.request(&urn, time);

@@ -137,6 +137,15 @@ impl Subroutines {
             Command::Request(RequestCommand::Clone(url)) => {
                 SpawnAbortable::new(clone(url, self.state.clone(), self.input_sender.clone()))
             },
+            Command::Request(RequestCommand::TimedOut(urn)) => {
+                let mut sender = self.input_sender.clone();
+                SpawnAbortable::new(async move {
+                    sender
+                        .send(Input::Request(RequestInput::TimedOut(urn)))
+                        .await
+                        .ok();
+                })
+            },
         }
     }
 }
