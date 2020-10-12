@@ -1,6 +1,13 @@
 <script lang="ts">
-  import { List, RemoteListItem } from "../DesignSystem/Component";
-  import { Emoji, Button, Input } from "../DesignSystem/Primitive";
+  import { Variant as IllustrationVariant } from "../src/illustration";
+
+  import {
+    Illustration,
+    List,
+    RemoteListItem,
+  } from "../DesignSystem/Component";
+  import { Button, Input } from "../DesignSystem/Primitive";
+  import { Variant } from "../src/illustration";
 
   const remotes = [
     {
@@ -50,7 +57,9 @@
 </style>
 
 <div data-cy="remotes-modal" class="container">
-  <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
+  <Illustration
+    style="margin-bottom: 1.5rem;"
+    variant={IllustrationVariant.Computer} />
   <h1>Manage remotes</h1>
   <div class="input">
     <Input.Text
