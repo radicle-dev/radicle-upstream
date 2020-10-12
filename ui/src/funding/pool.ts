@@ -87,7 +87,7 @@ export function make(wallet: Wallet): Pool {
         .then(tx => tx.wait())
     );
     // TODO check transaction status
-    await Promise.all(txs);
+    await Promise.all(txs).finally(loadPoolData);
   }
 
   async function topUp(value: number): Promise<void> {
