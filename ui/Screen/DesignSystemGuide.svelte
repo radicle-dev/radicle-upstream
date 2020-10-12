@@ -276,7 +276,6 @@
 
   const identity = {
     id: "123abcd.git",
-    shareableEntityIdentifier: "cloudhead@123abcd.git",
     metadata: {
       handle: "cloudhead",
     },
