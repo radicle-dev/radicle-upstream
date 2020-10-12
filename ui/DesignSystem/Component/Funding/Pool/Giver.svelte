@@ -7,6 +7,11 @@
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as _pool from "../../../../src/funding/pool";
+  import {
+    membersStore,
+    membersValidationStore,
+  } from "../../../../src/funding/pool";
+
   import { amountStore, amountValidationStore } from "../../../../src/transfer";
   import { ValidationStatus } from "../../../../src/validation";
 
@@ -24,9 +29,8 @@
     }
   });
 
-  let validatingAmount = false;
-
   let monthlyContribution = "";
+  let validatingAmount = false;
   $: amountValidation = amountValidationStore(
     "TODO(nuno)",
     parseInt(monthlyContribution)
@@ -36,13 +40,23 @@
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
     if (validatingAmount) amountValidation.validate($amountStore);
   }
-  $: validInputs =
-    $amountValidation && $amountValidation.status === ValidationStatus.Success;
 
   // Necessary type to comply with Textarea.bind:value type.
   let members: string = "";
+  let validatingMembers = false;
+  $: membersValidation = membersValidationStore(members);
+  $: membersStore.set(members ? members.toString() : "");
+  $: {
+    if ($membersStore && $membersStore.length > 0) validatingMembers = true;
+    if (validatingMembers) membersValidation.validate($membersStore);
+  }
 
-  // TODO(nuno): Also take the amount and the members list validation in consideration here.
+  $: validInputs =
+    $amountValidation &&
+    $amountValidation.status === ValidationStatus.Success &&
+    $membersValidation &&
+    $membersValidation.status === ValidationStatus.Success;
+
   $: saveEnabled =
     validInputs &&
     data &&
@@ -153,6 +167,7 @@
         </header>
         <div class="item">
           <Input.Textarea
+            validation={$membersValidation}
             style="min-width: 400px;"
             bind:value={members}
             placeholder="Enter members here" />

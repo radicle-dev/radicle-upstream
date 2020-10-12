@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 import { PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/PoolFactory";
 import { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
+import * as validation from "../validation";
 
 import { Wallet } from "../wallet";
 import * as remote from "../remote";
@@ -117,3 +118,33 @@ export function make(wallet: Wallet): Pool {
     collect,
   };
 }
+
+/**
+ * Stores
+ */
+export const membersStore = writable("");
+
+/**
+ *
+ * Validations
+ *
+ */
+
+// Patterns
+const COMMA_SEPARATED_LIST = /(^[-\w\s]+(?:,[-\w\s]*)*$)?/;
+
+// The contraints for a valid input list of members.
+const contraints = {
+  members: {
+    format: {
+      pattern: COMMA_SEPARATED_LIST,
+      message: `Should be a comma-separated list of addresses`,
+    },
+  },
+};
+
+export const membersValidationStore = (
+  members: string
+): validation.ValidationStore => {
+  return validation.createValidationStore(contraints.members);
+};
