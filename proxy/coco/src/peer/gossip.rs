@@ -20,10 +20,6 @@ pub async fn announce(state: &State, urn: &RadUrn, rev: &Oid) {
 }
 
 /// Emit a [`Gossip`] request for the given `urn`.
-///
-/// # Errors
-///
-///   * Failed to mark the `urn` as queried in the `WaitingRoom`.
 pub async fn query(state: &State, urn: RadUrn) {
     let protocol = state.api.protocol().clone();
     protocol
