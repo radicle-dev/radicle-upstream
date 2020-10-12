@@ -12,8 +12,17 @@
 
   export let pool: _pool.Pool;
 
-  // The loaded PoolData, updated at `function refreshed`.
+  // The loaded PoolData, updated at on `pool.data.subscribe`.
   let data: _pool.PoolData | undefined;
+
+  pool.data.subscribe(store => {
+    if (store.status === remote.Status.Success) {
+      const newData = store.data;
+      data = newData;
+      monthlyContribution = newData.amountPerBlock;
+      members = newData.receiverAddresses.join(",");
+    }
+  });
 
   let validatingAmount = false;
 
@@ -44,15 +53,6 @@
     _pool.store.set(pool);
     push(path.poolTopUp());
   };
-
-  pool.data.subscribe(store => {
-    if (store.status === remote.Status.Success) {
-      const newData = store.data;
-      data = newData;
-      monthlyContribution = newData.amountPerBlock;
-      members = newData.receiverAddresses.join(",");
-    }
-  });
 </script>
 
 <style>
