@@ -15,7 +15,7 @@ pub async fn sync(state: &State, peer_id: PeerId) -> Result<(), Error> {
         .await?
         .iter()
         .map(|project| RadUrl {
-            authority: peer_id.clone(),
+            authority: peer_id,
             urn: project.urn(),
         })
         .collect::<Vec<RadUrl>>();

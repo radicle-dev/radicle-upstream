@@ -30,11 +30,11 @@ features = [ "json-value" ]
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "01f95786b1c05bf167b27dcf54e4cbe0e9b38a43"
+rev = "dc23136019e5885e7599441c90c7e8ed5747253b"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "01f95786b1c05bf167b27dcf54e4cbe0e9b38a43"
+rev = "dc23136019e5885e7599441c90c7e8ed5747253b"
 
 [dependencies.radicle-surf]
 version = "0.4.1"

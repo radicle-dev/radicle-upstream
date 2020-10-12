@@ -226,7 +226,7 @@ pub async fn track_fake_peer(
     }
 
     state
-        .track(urn, remote.clone())
+        .track(urn, remote)
         .await
         .expect("failed to track peer");
 
