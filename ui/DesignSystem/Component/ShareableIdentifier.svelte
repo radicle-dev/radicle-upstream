@@ -17,7 +17,11 @@
 </style>
 
 <div class="shareable-identifier typo-text" {style}>
-  <Copyable showIcon={false} styleContent={false} copyContent={urn}>
+  <Copyable
+    showIcon={false}
+    styleContent={false}
+    copyContent={urn}
+    notificationText="Handle copied to clipboard">
     <Icon.At style="margin-right: 0.5rem;" />
     {hash}
   </Copyable>
