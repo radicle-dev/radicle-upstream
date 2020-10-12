@@ -114,6 +114,7 @@
     "start:experimental": "RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start:app",
     "start:app": "run-p --race svelte:watch proxy:start electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
+    "start:ethereum": "./scripts/ethereum-dev-node.sh",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:integration": "TZ='UTC' run-p --race proxy:start:test wait:test",
     "test:integration:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
@@ -141,7 +142,6 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
-    "setup:evm": "./scripts/setup-evm.sh",
     "deploy:dev:contracts": "./scripts/deploy-dev-contracts.js",
     "reset:state": "scripts/reset-state.sh"
   },
