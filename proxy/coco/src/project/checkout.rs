@@ -44,7 +44,8 @@ pub enum Ownership {
     Local(PeerId),
     /// We're checking out a remote's version of the project.
     Remote {
-        /// The handle of the remote.
+        /// The handle of the remote peer gives themselves via their user profile. For example,
+        /// `90s-kid` -- the name of the remote will then be `90s-kid@<urn.id>`.
         handle: String,
         /// The `PeerId` of the remote.
         remote: PeerId,
