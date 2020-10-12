@@ -14,7 +14,7 @@ use librad::{
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
-        types::NamespacedRef,
+        types::{NamespacedRef, Single},
     },
     keys,
     meta::{entity, project as librad_project, user},
@@ -355,60 +355,64 @@ impl State {
         F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
         let project = self.get_project(urn.clone(), None).await?;
-        let (local, local_exists) = {
-            let local_ref = NamespacedRef::head(urn.id.clone(), None, project.default_branch());
-            let exists = self
+
+        // Determine should we use a local branch or a remote branch
+        let remote = {
+            let local = NamespacedRef::head(urn.id.clone(), None, project.default_branch());
+            if self
                 .api
-                .with_storage(move |storage| storage.has_ref(&local_ref))
-                .await??;
-
-            (git::Branch::local(project.default_branch()), exists)
-        };
-
-        let default_branch = if local_exists {
-            local
-        } else {
-            let peer = match project
-                .keys()
-                .iter()
-                .next()
-                .map(|pk| PeerId::from(pk.clone()))
+                .with_storage(move |storage| storage.has_ref(&local))
+                .await??
             {
-                None => {
-                    return Err(Error::NoMaintainers {
-                        name: project.name().to_string(),
-                        urn: project.urn(),
-                    })
-                },
-                Some(peer) => peer,
-            };
-            let remote_ref =
-                NamespacedRef::head(urn.id.clone(), peer.clone(), project.default_branch());
-            let exists = self
-                .api
-                .with_storage(move |storage| storage.has_ref(&remote_ref))
-                .await??;
-
-            if !exists {
-                return Err(Error::NoRefs {
-                    name: project.name().to_string(),
-                    urn: project.urn(),
-                });
+                None
+            } else {
+                project.keys().iter().next().cloned().map(PeerId::from)
             }
-            git::Branch::remote(
-                &format!("heads/{}", project.default_branch()),
-                peer.to_string().as_str(),
-            )
         };
-
+        let branch = self
+            .get_default_branch(urn.clone(), remote, project.default_branch())
+            .await?
+            .ok_or(Error::NoRefs {
+                name: project.name().to_string(),
+                urn: urn.clone(),
+            })?;
+        let namespace =
+            git::Namespace::try_from(urn.id.to_string().as_str()).map_err(source::Error::from)?;
         let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
-        let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())
-            .map_err(source::Error::from)?;
-        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)
+        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, branch)
             .map_err(source::Error::from)?;
 
         callback(&mut browser).map_err(Error::from)
+    }
+
+    pub async fn get_default_branch<P>(
+        &self,
+        urn: RadUrn,
+        remote: P,
+        default_branch: &str,
+    ) -> Result<Option<git::Branch>, Error>
+    where
+        P: Into<Option<PeerId>> + Clone,
+    {
+        let exists = {
+            let reference = NamespacedRef::head(urn.id, remote.clone(), default_branch);
+            self.api
+                .with_storage(move |storage| storage.has_ref(&reference))
+                .await??
+        };
+
+        if !exists {
+            return Ok(None);
+        }
+
+        match remote.into() {
+            None => Ok(Some(git::Branch::local(default_branch))),
+            Some(peer) => Ok(Some(git::Branch::remote(
+                &format!("heads/{}", default_branch),
+                &peer.to_string(),
+            ))),
+        }
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.

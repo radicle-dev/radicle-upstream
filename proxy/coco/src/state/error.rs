@@ -1,7 +1,10 @@
 //! Capture `State` related error variants.
 
 use librad::{
-    git::repo,
+    git::{
+        repo,
+        types::{NamespacedRef, Single},
+    },
     meta::entity,
     net,
     uri::{self, RadUrn},
@@ -66,17 +69,8 @@ pub enum Error {
     Verification(#[from] entity::HistoryVerificationError),
 
     /// There were no references for a Browser to be initialised.
-    #[error("when creating a browser for '{name}@{urn}', there were no references to browse")]
+    #[error("when creating a browser for '{name}@{urn}', we could not find a default branch to initialise it with")]
     NoRefs {
-        /// Name of the project.
-        name: String,
-        /// RadUrn of the project.
-        urn: RadUrn,
-    },
-
-    /// There were no maintainers for a project to initialise Browser.
-    #[error("when creating a browser for '{name}@{urn}', there were no references to browse")]
-    NoMaintainers {
         /// Name of the project.
         name: String,
         /// RadUrn of the project.
