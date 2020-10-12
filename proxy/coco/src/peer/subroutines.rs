@@ -90,7 +90,7 @@ impl Subroutines {
                     .map(|request| match request {
                         control::Request::Urn(urn, time, sender) => {
                             Input::Request(RequestInput::Requested(urn, time, Some(sender)))
-                        }
+                        },
                     })
                     .boxed(),
             );
@@ -131,7 +131,7 @@ impl Future for Subroutines {
                 Poll::Ready(Some(Err(e))) => {
                     log::warn!("error in spawned subroutine task: {:?}", e);
                     return Poll::Ready(Err(e));
-                }
+                },
                 Poll::Ready(Some(Ok(()))) => continue,
                 // Either pending, or FuturesUnordered thinks it's done, but
                 // we'll enqueue new tasks below
@@ -161,7 +161,7 @@ impl Future for Subroutines {
                             Command::Control(control_command) => match control_command {
                                 ControlCommand::Respond(respond_command) => {
                                     SpawnAbortable::new(control_respond(respond_command))
-                                }
+                                },
                             },
                             Command::SyncPeer(peer_id) => SpawnAbortable::new(sync(
                                 self.state.clone(),
@@ -181,7 +181,7 @@ impl Future for Subroutines {
 
                         self.pending_tasks.push(task);
                     }
-                }
+                },
                 Poll::Ready(None) => return Poll::Ready(Ok(())),
                 Poll::Pending => return Poll::Pending,
             }
@@ -198,14 +198,14 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
                 .send(Input::Announce(AnnounceInput::Succeeded(updates)))
                 .await
                 .ok();
-        }
+        },
         Err(err) => {
             log::error!("announce error: {:?}", err);
             sender
                 .send(Input::Announce(AnnounceInput::Failed))
                 .await
                 .ok();
-        }
+        },
     }
 }
 
@@ -230,14 +230,14 @@ async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<Input>) {
                 .send(Input::PeerSync(SyncInput::Succeeded(peer_id.clone())))
                 .await
                 .ok();
-        }
+        },
         Err(err) => {
             log::error!("sync error for {}: {:?}", peer_id, err);
             sender
                 .send(Input::PeerSync(SyncInput::Failed(peer_id.clone())))
                 .await
                 .ok();
-        }
+        },
     }
 }
 
@@ -272,7 +272,7 @@ async fn clone(url: RadUrl, state: State, mut sender: mpsc::Sender<Input>) {
                 .send(Input::Request(RequestInput::Cloned(url)))
                 .await
                 .ok();
-        }
+        },
         Err(err) => {
             log::warn!(
                 "an error occurred for the command 'Clone' for the URL '{}':\n{}",
@@ -286,6 +286,6 @@ async fn clone(url: RadUrl, state: State, mut sender: mpsc::Sender<Input>) {
                 }))
                 .await
                 .ok();
-        }
+        },
     }
 }
