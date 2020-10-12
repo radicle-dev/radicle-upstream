@@ -1,10 +1,10 @@
 <script>
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import {
+    ShareableIdentifier,
     Stats,
     TrackToggle,
     Tooltip,
-    Urn,
   } from "../../DesignSystem/Component";
 
   export let project = null;
@@ -42,12 +42,6 @@
     flex: 1;
     min-width: 0;
     margin-right: 20px;
-  }
-
-  .shareable-entity-identifier {
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: flex-start;
   }
 
   .description {
@@ -93,12 +87,8 @@
       <TrackToggle style="z-index: 10;" tracking={project.tracked} />
     {/if}
   </div>
-  <div class="shareable-entity-identifier">
-    <Urn
-      urn={project.shareableEntityIdentifier}
-      notificationText="The project ID was copied to your clipboard"
-      truncate />
-  </div>
+
+  <ShareableIdentifier urn={project.id} style="margin-bottom: 1rem;" />
 
   <div class="description">
     <p>{project.metadata.description}</p>
