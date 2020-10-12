@@ -26,6 +26,7 @@ import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
+import RemoteListItem from "./RemoteListItem.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
@@ -76,6 +77,7 @@ export {
   Stats,
   Remote,
   RemoteHelperHint,
+  RemoteListItem,
   RevisionSelector,
   Row,
   SegmentedControl,
