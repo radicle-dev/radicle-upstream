@@ -131,7 +131,7 @@
     <Remote store={revisionsStore} let:data={revisions} context="revisions">
       <Header.Large
         name={project.metadata.name}
-        urn={project.shareableEntityIdentifier}
+        urn={project.id}
         description={project.metadata.description}
         stats={project.stats}>
         <div slot="left">
