@@ -159,7 +159,7 @@ impl<T, D> WaitingRoom<T, D> {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
                 self.requests.insert(urn.id, request);
                 None
-            }
+            },
             Some(request) => Some(request.clone()),
         }
     }
@@ -190,10 +190,10 @@ impl<T, D> WaitingRoom<T, D> {
                     Either::Right(next) => {
                         self.requests.insert(urn.id.clone(), next.into());
                         Ok(())
-                    }
+                    },
                     Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
                 }
-            }
+            },
         }
     }
 
@@ -221,7 +221,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Created(request) => Some(Either::Right(request.request(timestamp))),
                 SomeRequest::Requested(request) => {
                     Some(request.queried(max_queries, max_clones, timestamp))
-                }
+                },
                 _ => None,
             },
             |previous| match previous {
@@ -252,15 +252,15 @@ impl<T, D> WaitingRoom<T, D> {
             |request| match request {
                 SomeRequest::Requested(request) => {
                     Some(request.into_found(authority, timestamp).into())
-                }
+                },
                 SomeRequest::Found(request) => {
                     let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
                     Some(some_request)
-                }
+                },
                 SomeRequest::Cloning(request) => {
                     let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
                     Some(some_request)
-                }
+                },
                 _ => None,
             },
             Ok,
@@ -421,7 +421,7 @@ impl<T, D> WaitingRoom<T, D> {
                         Status::Available => Some(urn.clone().into_rad_url(*peer_id)),
                         _ => None,
                     })
-                }
+                },
                 _ => None,
             })
     }

@@ -468,10 +468,7 @@ impl State {
             .with_storage(move |storage| {
                 let repo = storage.open_repo(urn)?;
                 repo.tracked()?
-                    .map(move |peer_id| {
-                        repo.get_rad_self_of(peer_id)
-                            .map(|user| (peer_id, user))
-                    })
+                    .map(move |peer_id| repo.get_rad_self_of(peer_id).map(|user| (peer_id, user)))
                     .collect::<Result<Vec<_>, _>>()
             })
             .await??)

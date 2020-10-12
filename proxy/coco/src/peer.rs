@@ -503,10 +503,7 @@ async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<SyncEvent>
 
     match sync::sync(&state, peer_id).await {
         Ok(_) => {
-            sender
-                .send(SyncEvent::Succeeded(peer_id))
-                .await
-                .ok();
+            sender.send(SyncEvent::Succeeded(peer_id)).await.ok();
         },
         Err(err) => {
             log::error!("sync error for {}: {:?}", peer_id, err);
