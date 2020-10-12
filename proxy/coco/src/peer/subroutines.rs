@@ -186,7 +186,12 @@ impl Future for Subroutines {
                     }
                 },
                 Poll::Ready(None) => return Poll::Ready(Ok(())),
-                Poll::Pending => return Poll::Pending,
+                Poll::Pending => {
+                    if !self.pending_tasks.is_empty() {
+                        cx.waker().wake_by_ref()
+                    }
+                    return Poll::Pending;
+                },
             }
         }
     }
