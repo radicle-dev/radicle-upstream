@@ -107,9 +107,7 @@ impl MaybeFrom<&Input> for Event {
             Input::Announce(AnnounceInput::Succeeded(updates)) => {
                 Some(Self::Announced(updates.clone()))
             },
-            Input::PeerSync(SyncInput::Succeeded(peer_id)) => {
-                Some(Self::PeerSynced(peer_id.clone()))
-            },
+            Input::PeerSync(SyncInput::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(event) => Some(Self::Protocol(event.clone())),
             Input::Request(RequestInput::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
             Input::Request(RequestInput::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
@@ -775,7 +773,7 @@ mod test {
         let peer_id = PeerId::from(SecretKey::new());
         let url = RadUrl {
             urn: urn.clone(),
-            authority: peer_id.clone(),
+            authority: peer_id,
         };
 
         let status = Status::Online(Instant::now());

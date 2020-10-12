@@ -237,21 +237,21 @@ async fn control_respond(cmd: control::Response) {
 /// completion report back with the success or failure.
 async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<Input>) {
     sender
-        .send(Input::PeerSync(SyncInput::Started(peer_id.clone())))
+        .send(Input::PeerSync(SyncInput::Started(peer_id)))
         .await
         .ok();
 
-    match sync::sync(&state, peer_id.clone()).await {
+    match sync::sync(&state, peer_id).await {
         Ok(_) => {
             sender
-                .send(Input::PeerSync(SyncInput::Succeeded(peer_id.clone())))
+                .send(Input::PeerSync(SyncInput::Succeeded(peer_id)))
                 .await
                 .ok();
         },
         Err(err) => {
             log::error!("sync error for {}: {:?}", peer_id, err);
             sender
-                .send(Input::PeerSync(SyncInput::Failed(peer_id.clone())))
+                .send(Input::PeerSync(SyncInput::Failed(peer_id)))
                 .await
                 .ok();
         },
