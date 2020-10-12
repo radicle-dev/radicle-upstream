@@ -26,7 +26,7 @@ impl<S> From<(coco::PeerId, coco::MetaUser<S>)> for Identity {
     fn from((peer_id, user): (coco::PeerId, coco::MetaUser<S>)) -> Self {
         let urn = user.urn();
         Self {
-            peer_id: peer_id.clone(),
+            peer_id,
             urn: urn.clone(),
             shareable_entity_identifier: coco::Identifier {
                 handle: user.name().to_string(),
