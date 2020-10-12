@@ -6,8 +6,8 @@
     List,
     ProjectList,
     Remote,
+    ShareableIdentifier,
     TrackToggle,
-    Urn,
   } from "../../DesignSystem/Component";
 
   import { tracked, fetchTracked } from "../../src/project.ts";
@@ -21,22 +21,13 @@
 
   // const untracked = [
   //   {
-  //     urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
-  //     metadata: {
-  //       name: "snickers",
-  //     },
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
   //   },
   //   {
-  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-  //     metadata: {
-  //       name: "marsbar",
-  //     },
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
   //   },
   //   {
-  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-  //     metadata: {
-  //       name: "nougati",
-  //     },
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
   //   },
   // ];
 
@@ -58,7 +49,7 @@
   .undiscovered-project {
     padding: 1.5rem;
     flex: 1;
-    min-height: 4.5rem;
+    min-height: 6rem;
 
     display: flex;
     align-items: center;
@@ -104,8 +95,7 @@
             class="undiscovered-project"
             out:fade|local={{ duration: FADE_DURATION }}>
             <div>
-              <p class="project-name typo-text-bold">{project.metadata.name}</p>
-              <Urn urn={project.urn} showCopyOnlyOnHover />
+              <ShareableIdentifier urn={project.urn} />
             </div>
             {#if hover}
               <div transition:fade={{ duration: FADE_DURATION }}>
