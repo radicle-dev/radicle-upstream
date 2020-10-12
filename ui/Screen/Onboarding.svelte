@@ -109,7 +109,7 @@
   {:else if state === State.SuccessView}
     <div class="content" in:fly={{ y: inY }}>
       <div class="inner">
-        <Success id={identity.shareableEntityIdentifier} on:close={complete} />
+        <Success id={identity.urn} on:close={complete} />
       </div>
     </div>
   {/if}

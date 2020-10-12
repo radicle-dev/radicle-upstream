@@ -1,8 +1,7 @@
 <script>
   import {
+    ShareableIdentifier,
     SidebarLayout,
-    TrackToggle,
-    Urn,
   } from "../../DesignSystem/Component";
   import { Emoji } from "../../DesignSystem/Primitive";
 
@@ -25,19 +24,16 @@
     <Emoji emoji={'🎷'} size="huge" style="margin-bottom: 1.5rem;" />
 
     <h3 style="color: var(--color-foreground-level-6); margin-bottom: 1.5rem;">
-      my-new-project
+      Still looking…
     </h3>
 
-    <Urn {urn} showOnHover style="margin-bottom: 1.5rem;" />
+    <ShareableIdentifier {urn} style="margin-bottom: 1.5rem;" />
 
     <p
       style="max-width: 24rem; color: var(--color-foreground-level-6);
       margin-bottom: 1.5rem;"
       align="center">
-      You’re not following this project yet, so there’s nothing to show here.
-      Follow it and you’ll be notified as soon as it’s available.
+      This hasn't been found in your network yet<br /> or doesn't exist.
     </p>
-
-    <TrackToggle variant="expanded" />
   </div>
 </SidebarLayout>

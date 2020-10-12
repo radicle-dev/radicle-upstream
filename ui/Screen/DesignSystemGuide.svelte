@@ -16,6 +16,7 @@
     Rad,
     Row,
     SegmentedControl,
+    ShareableIdentifier,
     Spinner,
     Stats,
     SupportButton,
@@ -275,7 +276,6 @@
 
   const identity = {
     id: "123abcd.git",
-    shareableEntityIdentifier: "cloudhead@123abcd.git",
     metadata: {
       handle: "cloudhead",
     },
@@ -1088,6 +1088,11 @@
           showOnHover
           truncate
           notificationText="The urn was copied to your clipboard" />
+      </Swatch>
+
+      <Swatch>
+        <ShareableIdentifier
+          urn="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
       </Swatch>
 
       <Swatch>
