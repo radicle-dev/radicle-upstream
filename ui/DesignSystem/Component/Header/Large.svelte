@@ -47,6 +47,7 @@
 
   .description {
     margin-top: 1rem;
+    margin-bottom: 0.5rem;
     color: var(--color-foreground-level-6);
     height: 1.5rem; /* 1 line */
     max-width: 60vw;
