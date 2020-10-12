@@ -112,6 +112,7 @@ impl Subroutines {
         }
     }
 
+    /// Map commands produced by the state machine to spawned subroutine tasks.
     fn spawn_command(&self, cmd: Command) -> SpawnAbortable<()> {
         match cmd {
             Command::Announce => SpawnAbortable::new(announce(
@@ -124,11 +125,9 @@ impl Subroutines {
                     SpawnAbortable::new(control_respond(respond_command))
                 },
             },
-            Command::SyncPeer(peer_id) => SpawnAbortable::new(sync(
-                self.state.clone(),
-                peer_id.clone(),
-                self.input_sender.clone(),
-            )),
+            Command::SyncPeer(peer_id) => {
+                SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
+            },
             Command::StartSyncTimeout(sync_period) => {
                 SpawnAbortable::new(start_sync_timeout(sync_period, self.input_sender.clone()))
             },
