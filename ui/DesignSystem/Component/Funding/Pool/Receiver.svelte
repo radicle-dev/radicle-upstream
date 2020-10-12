@@ -49,6 +49,7 @@
       </header>
       <div class="item">
         <StatefulButton
+          disabled={poolData.collectableFunds <= 0}
           title={'Collect your funds 🥳'}
           onClick={collectFunds}
           variant={'outline'}
