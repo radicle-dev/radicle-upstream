@@ -1,4 +1,5 @@
-//! Management of subroutines.
+//! Management of peer subroutine tasks driven by advancing the core state machine with a stream of
+//! inputs, producing commands.
 
 use std::{
     future::Future,
@@ -35,21 +36,29 @@ use super::{
 };
 
 /// Management of "subroutine" tasks.
-#[allow(clippy::missing_docs_in_private_items)]
 pub struct Subroutines {
+    /// Set of handles of spawned subroutine tasks. Draining them will ensure resources are
+    /// release.
     pending_tasks: FuturesUnordered<SpawnAbortable<()>>,
+    /// Stream of inputs to [`RunState`] state machine.
     inputs: SelectAll<BoxStream<'static, Input>>,
 
+    /// [`State`] for suborutine task fulfillment.
     state: State,
+    /// [`kv::Store`] for suborutine task fulfillment.
     store: kv::Store,
+
+    /// Main peer state machine.
     run_state: RunState,
 
+    /// Feedback channel for subroutine tasks send new inputs to the state machine.
     input_sender: mpsc::Sender<Input>,
+    /// Channel for public subscribers to get to know of significant events of the peer machinery.
     subscriber: broadcast::Sender<Event>,
 }
 
 impl Subroutines {
-    /// Constructor.
+    /// Constructs a new subroutines manager.
     pub fn new(
         state: State,
         store: kv::Store,
@@ -116,7 +125,7 @@ impl Future for Subroutines {
     type Output = Result<(), spawn_abortable::Error>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        // Drain the task queue
+        // Drain the task queue.
         loop {
             match self.pending_tasks.poll_next_unpin(cx) {
                 Poll::Ready(Some(Err(e))) => {
@@ -130,6 +139,8 @@ impl Future for Subroutines {
             }
         }
 
+        // Drain all pending inputs, feed them to the [`RunState`] and execute the returned
+        // commands as async tasks.
         loop {
             match self.inputs.poll_next_unpin(cx) {
                 Poll::Ready(Some(input)) => {
