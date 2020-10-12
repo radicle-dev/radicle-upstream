@@ -8,7 +8,7 @@ use librad::uri::RadUrn;
 
 use crate::request;
 
-/// Reqests sent to the peer.
+/// Requests sent to the peer.
 #[derive(Debug)]
 pub enum Request {
     /// Request a urn to be fetched from the network.

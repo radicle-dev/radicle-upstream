@@ -60,9 +60,7 @@ impl Subroutines {
     ) -> Self {
         let announce_timer = interval(run_config.announce.interval);
         let waiting_room_timer = interval(run_config.waiting_room.interval);
-
         let (input_sender, inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
-
         let run_state = RunState::from(run_config);
 
         let inputs = {
