@@ -111,6 +111,35 @@ impl Subroutines {
             input_sender,
         }
     }
+
+    fn spawn_command(&self, cmd: Command) -> SpawnAbortable<()> {
+        match cmd {
+            Command::Announce => SpawnAbortable::new(announce(
+                self.state.clone(),
+                self.store.clone(),
+                self.input_sender.clone(),
+            )),
+            Command::Control(control_command) => match control_command {
+                ControlCommand::Respond(respond_command) => {
+                    SpawnAbortable::new(control_respond(respond_command))
+                },
+            },
+            Command::SyncPeer(peer_id) => SpawnAbortable::new(sync(
+                self.state.clone(),
+                peer_id.clone(),
+                self.input_sender.clone(),
+            )),
+            Command::StartSyncTimeout(sync_period) => {
+                SpawnAbortable::new(start_sync_timeout(sync_period, self.input_sender.clone()))
+            },
+            Command::Request(RequestCommand::Query(urn)) => {
+                SpawnAbortable::new(query(urn, self.state.clone(), self.input_sender.clone()))
+            },
+            Command::Request(RequestCommand::Clone(url)) => {
+                SpawnAbortable::new(clone(url, self.state.clone(), self.input_sender.clone()))
+            },
+        }
+    }
 }
 
 impl Drop for Subroutines {
@@ -152,32 +181,7 @@ impl Future for Subroutines {
                     }
 
                     for cmd in self.run_state.transition(input) {
-                        let task = match cmd {
-                            Command::Announce => SpawnAbortable::new(announce(
-                                self.state.clone(),
-                                self.store.clone(),
-                                self.input_sender.clone(),
-                            )),
-                            Command::Control(control_command) => match control_command {
-                                ControlCommand::Respond(respond_command) => {
-                                    SpawnAbortable::new(control_respond(respond_command))
-                                },
-                            },
-                            Command::SyncPeer(peer_id) => SpawnAbortable::new(sync(
-                                self.state.clone(),
-                                peer_id.clone(),
-                                self.input_sender.clone(),
-                            )),
-                            Command::StartSyncTimeout(sync_period) => SpawnAbortable::new(
-                                start_sync_timeout(sync_period, self.input_sender.clone()),
-                            ),
-                            Command::Request(RequestCommand::Query(urn)) => SpawnAbortable::new(
-                                query(urn, self.state.clone(), self.input_sender.clone()),
-                            ),
-                            Command::Request(RequestCommand::Clone(url)) => SpawnAbortable::new(
-                                clone(url, self.state.clone(), self.input_sender.clone()),
-                            ),
-                        };
+                        let task = self.spawn_command(cmd);
 
                         self.pending_tasks.push(task);
                     }
