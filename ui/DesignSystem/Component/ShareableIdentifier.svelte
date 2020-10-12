@@ -16,7 +16,7 @@
   }
 </style>
 
-<div class="shareable-identifier typo-text" {style}>
+<div data-cy="urn" class="shareable-identifier typo-text" {style}>
   <Copyable
     showIcon={false}
     styleContent={false}
