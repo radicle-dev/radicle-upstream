@@ -453,7 +453,7 @@ impl Future for Subroutines {
                     )),
                     Command::SyncPeer(peer_id) => SpawnAbortable::new(sync(
                         self.state.clone(),
-                        peer_id.clone(),
+                        peer_id,
                         self.peer_sync_sender.clone(),
                     )),
                     Command::StartSyncTimeout(sync_period) => SpawnAbortable::new(
@@ -499,18 +499,18 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Annou
 
 /// Peer syncing subroutine.
 async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<SyncEvent>) {
-    sender.send(SyncEvent::Started(peer_id.clone())).await.ok();
+    sender.send(SyncEvent::Started(peer_id)).await.ok();
 
-    match sync::sync(&state, peer_id.clone()).await {
+    match sync::sync(&state, peer_id).await {
         Ok(_) => {
             sender
-                .send(SyncEvent::Succeeded(peer_id.clone()))
+                .send(SyncEvent::Succeeded(peer_id))
                 .await
                 .ok();
         },
         Err(err) => {
             log::error!("sync error for {}: {:?}", peer_id, err);
-            sender.send(SyncEvent::Failed(peer_id.clone())).await.ok();
+            sender.send(SyncEvent::Failed(peer_id)).await.ok();
         },
     }
 }

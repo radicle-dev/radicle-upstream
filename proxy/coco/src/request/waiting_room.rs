@@ -159,7 +159,7 @@ impl<T, D> WaitingRoom<T, D> {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
                 self.requests.insert(urn.id, request);
                 None
-            },
+            }
             Some(request) => Some(request.clone()),
         }
     }
@@ -190,10 +190,10 @@ impl<T, D> WaitingRoom<T, D> {
                     Either::Right(next) => {
                         self.requests.insert(urn.id.clone(), next.into());
                         Ok(())
-                    },
+                    }
                     Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
                 }
-            },
+            }
         }
     }
 
@@ -221,7 +221,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Created(request) => Some(Either::Right(request.request(timestamp))),
                 SomeRequest::Requested(request) => {
                     Some(request.queried(max_queries, max_clones, timestamp))
-                },
+                }
                 _ => None,
             },
             |previous| match previous {
@@ -252,15 +252,15 @@ impl<T, D> WaitingRoom<T, D> {
             |request| match request {
                 SomeRequest::Requested(request) => {
                     Some(request.into_found(authority, timestamp).into())
-                },
+                }
                 SomeRequest::Found(request) => {
                     let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
                     Some(some_request)
-                },
+                }
                 SomeRequest::Cloning(request) => {
                     let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
                     Some(some_request)
-                },
+                }
                 _ => None,
             },
             Ok,
@@ -418,10 +418,10 @@ impl<T, D> WaitingRoom<T, D> {
             .and_then(|(urn, request)| match request {
                 SomeRequest::Found(request) => {
                     request.iter().find_map(|(peer_id, status)| match status {
-                        Status::Available => Some(urn.clone().into_rad_url(peer_id.clone())),
+                        Status::Available => Some(urn.clone().into_rad_url(*peer_id)),
                         _ => None,
                     })
-                },
+                }
                 _ => None,
             })
     }
@@ -481,7 +481,7 @@ mod test {
         let expected = SomeRequest::Found(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0),
+                .into_found(url.authority, 0),
         );
         assert_eq!(waiting_room.get(&url.urn), Some(&expected));
 
@@ -489,8 +489,8 @@ mod test {
         let expected = SomeRequest::Cloning(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0)
-                .cloning(MAX_QUERIES, MAX_CLONES, url.authority.clone(), 0)
+                .into_found(url.authority, 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, url.authority, 0)
                 .unwrap_right(),
         );
         assert_eq!(waiting_room.get(&url.urn), Some(&expected));
@@ -499,8 +499,8 @@ mod test {
         let expected = SomeRequest::Cloned(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0)
-                .cloning(MAX_QUERIES, MAX_CLONES, url.authority.clone(), 0)
+                .into_found(url.authority, 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, url.authority, 0)
                 .unwrap_right()
                 .cloned(url.clone(), 0),
         );
@@ -675,7 +675,7 @@ mod test {
         );
 
         // found
-        let found = is_requested.into_found(peer.clone(), ());
+        let found = is_requested.into_found(peer, ());
         waiting_room.insert(urn.clone(), found.clone());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
@@ -685,7 +685,7 @@ mod test {
 
         // cloning
         let cloning = found
-            .cloning(config.max_queries, config.max_clones, peer.clone(), ())
+            .cloning(config.max_queries, config.max_clones, peer, ())
             .unwrap_right();
         waiting_room.insert(urn.clone(), cloning.clone());
         waiting_room.canceled(&urn, ())?;
@@ -744,13 +744,8 @@ mod test {
         let expected = SomeRequest::Cloned(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0)
-                .cloning(
-                    config.max_queries,
-                    config.max_clones,
-                    url.authority.clone(),
-                    0,
-                )
+                .into_found(url.authority, 0)
+                .cloning(config.max_queries, config.max_clones, url.authority, 0)
                 .unwrap_right()
                 .cloned(url.clone(), 0),
         );

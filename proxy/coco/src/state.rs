@@ -88,7 +88,7 @@ impl State {
     /// The local machine's [`PeerId`].
     #[must_use]
     pub fn peer_id(&self) -> PeerId {
-        self.api.peer_id().clone()
+        self.api.peer_id()
     }
 
     /// The [`SocketAddr`] this [`PeerApi`] is listening on.
@@ -383,7 +383,7 @@ impl State {
         let mut meta = project.build(owner, signer.public_key().into())?;
         meta.sign_by_user(signer, owner)?;
 
-        let local_peer_id = self.api.peer_id().clone();
+        let local_peer_id = self.api.peer_id();
 
         let meta = self
             .api
@@ -469,8 +469,8 @@ impl State {
                 let repo = storage.open_repo(urn)?;
                 repo.tracked()?
                     .map(move |peer_id| {
-                        repo.get_rad_self_of(peer_id.clone())
-                            .map(|user| (peer_id.clone(), user))
+                        repo.get_rad_self_of(peer_id)
+                            .map(|user| (peer_id, user))
                     })
                     .collect::<Result<Vec<_>, _>>()
             })

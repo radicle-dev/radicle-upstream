@@ -225,7 +225,7 @@ impl RunState {
                 self.status = Status::Started(Instant::now());
 
                 vec![]
-            },
+            }
             // Sync with first incoming peer.
             //
             // In case the peer is configured to sync on startup we start syncing, otherwise we go
@@ -233,13 +233,13 @@ impl RunState {
             // TODO(xla): Also issue sync if we come online after a certain period of being
             // disconnected from any peer.
             (Status::Started(_since), Event::Protocol(ProtocolEvent::Connected(ref peer_id))) => {
-                self.connected_peers.insert(peer_id.clone());
+                self.connected_peers.insert(*peer_id);
 
                 if self.config.sync.on_startup {
                     self.status = Status::Syncing(Instant::now(), 1);
 
                     vec![
-                        Command::SyncPeer(peer_id.clone()),
+                        Command::SyncPeer(*peer_id),
                         Command::StartSyncTimeout(self.config.sync.period),
                     ]
                 } else {
@@ -247,26 +247,26 @@ impl RunState {
 
                     vec![]
                 }
-            },
+            }
             // Sync until configured maximum of peers is reached.
             (Status::Syncing(since, syncs), Event::Protocol(ProtocolEvent::Connected(peer_id)))
                 if *syncs < self.config.sync.max_peers =>
             {
-                self.connected_peers.insert(peer_id.clone());
+                self.connected_peers.insert(*peer_id);
                 if syncs + 1 == self.config.sync.max_peers {
                     self.status = Status::Online(Instant::now());
                 } else {
                     self.status = Status::Syncing(*since, syncs + 1);
                 }
 
-                vec![Command::SyncPeer(peer_id.clone())]
+                vec![Command::SyncPeer(*peer_id)]
             }
             // Go online if we exceed the sync period.
             (Status::Syncing(_since, _syncs), Event::Timeout(TimeoutEvent::SyncPeriod)) => {
                 self.status = Status::Online(Instant::now());
 
                 vec![]
-            },
+            }
             // Remove peer that just disconnected.
             (_, Event::Protocol(ProtocolEvent::Disconnecting(peer_id))) => {
                 self.connected_peers.remove(peer_id);
@@ -277,7 +277,7 @@ impl RunState {
                 }
 
                 vec![]
-            },
+            }
             // Announce new updates while the peer is online.
             (
                 Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
@@ -301,7 +301,7 @@ impl RunState {
                     val: Gossip { urn, .. },
                 }))),
             ) => vec![RequestCommand::Found(RadUrl {
-                authority: provider.peer_id.clone(),
+                authority: provider.peer_id,
                 urn: urn.clone(),
             })
             .into()],
@@ -409,11 +409,7 @@ mod test {
     fn transition_to_offline_when_last_peer_disconnects() {
         let peer_id = PeerId::from(SecretKey::new());
         let status = Status::Online(Instant::now());
-        let mut state = RunState::new(
-            Config::default(),
-            HashSet::from_iter(vec![peer_id.clone()]),
-            status,
-        );
+        let mut state = RunState::new(Config::default(), HashSet::from_iter(vec![peer_id]), status);
 
         let _cmds = state.transition(&Event::Protocol(ProtocolEvent::Disconnecting(peer_id)));
         assert_matches!(state.status, Status::Offline(_));
@@ -441,8 +437,7 @@ mod test {
             let peer_id = PeerId::from(key);
 
             // Expect to sync with the first connected peer.
-            let cmds =
-                state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id.clone())));
+            let cmds = state.transition(&Event::Protocol(ProtocolEvent::Connected(peer_id)));
             assert!(!cmds.is_empty(), "expected command");
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
                 assert_eq!(*sync_id, peer_id);
@@ -565,7 +560,7 @@ mod test {
             capabilities: HashSet::new(),
         };
         let provider = gossip::PeerInfo {
-            peer_id: peer_id.clone(),
+            peer_id,
             advertised_info,
             seen_addrs: HashSet::new(),
         };

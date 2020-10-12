@@ -145,8 +145,8 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
     let project_urn = {
         let alice_addr = alice_state.listen_addr();
-        let alice_peer_id = alice_state.peer_id().clone();
-        let clone_url = project.urn().into_rad_url(alice_peer_id.clone());
+        let alice_peer_id = alice_state.peer_id();
+        let clone_url = project.urn().into_rad_url(alice_peer_id);
 
         bob_state
             .clone_project(clone_url, vec![alice_addr].into_iter())
@@ -196,8 +196,8 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
     {
         let alice_addr = alice_state.listen_addr();
-        let alice_peer_id = alice_state.peer_id().clone();
-        let fetch_url = project.urn().into_rad_url(alice_peer_id.clone());
+        let alice_peer_id = alice_state.peer_id();
+        let fetch_url = project.urn().into_rad_url(alice_peer_id);
 
         bob_state
             .fetch(fetch_url, vec![alice_addr])
@@ -257,7 +257,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
-            peer_id: alice_peer_id.clone(),
+            peer_id: alice_peer_id,
         }],
         waiting_room,
         RunConfig::default(),

@@ -93,7 +93,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
-            peer_id: alice_peer_id.clone(),
+            peer_id: alice_peer_id,
         }],
         waiting_room,
         RunConfig::default(),
@@ -183,7 +183,7 @@ async fn providers() -> Result<(), Box<dyn std::error::Error>> {
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
-            peer_id: alice_peer_id.clone(),
+            peer_id: alice_peer_id,
         }],
         waiting_room,
         RunConfig::default(),
@@ -240,7 +240,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
-            peer_id: alice_peer_id.clone(),
+            peer_id: alice_peer_id,
         }],
         bob_waiting_room.clone(),
         RunConfig::default(),

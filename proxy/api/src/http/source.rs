@@ -848,7 +848,7 @@ mod test {
                         ]
                     },
                     super::Revisions {
-                        identity: (remote.clone(), fintohaps).into(),
+                        identity: (remote, fintohaps).into(),
                         branches: vec![coco::Branch::from("master".to_string())],
                         tags: vec![]
                     },

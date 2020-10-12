@@ -209,12 +209,12 @@ mod test {
 
         let mut urls = vec![
             RadUrl {
-                authority: LYLA_PEER_ID.clone(),
+                authority: *LYLA_PEER_ID,
                 urn: "rad:git:hwd1yren5bpr71yoy9qzmtk1qzrtren9gynxh49dwubprmqix8dn46x3r8w"
                     .parse::<RadUrn>()?,
             },
             RadUrl {
-                authority: ROVER_PEER_ID.clone(),
+                authority: *ROVER_PEER_ID,
                 urn: "rad:git:hwd1yrerotfs5hskz8cag8at6g16gxa4x6e8snc9pq7ir1s35u95bro9ybr"
                     .parse::<RadUrn>()?,
             },
