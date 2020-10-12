@@ -61,7 +61,7 @@
 
   .project-stats {
     display: flex;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
   }
 
   .project-stat-item {
