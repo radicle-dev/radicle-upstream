@@ -1,10 +1,7 @@
 //! Capture `State` related error variants.
 
 use librad::{
-    git::{
-        repo,
-        types::{NamespacedRef, Single},
-    },
+    git::repo,
     meta::entity,
     net,
     uri::{self, RadUrn},

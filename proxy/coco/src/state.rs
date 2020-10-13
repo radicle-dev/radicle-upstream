@@ -14,7 +14,7 @@ use librad::{
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
-        types::{NamespacedRef, Single},
+        types::NamespacedRef,
     },
     keys,
     meta::{entity, project as librad_project, user},
@@ -386,6 +386,20 @@ impl State {
         callback(&mut browser).map_err(Error::from)
     }
 
+    /// This method helps us get the default branch for a given [`RadUrn`] and optional [`PeerId`].
+    ///
+    /// It first attempts to check if the referenece
+    /// `refs/namespaces/<urn.id>/refs[/remotes]/heads/<default_branch>` exists. If it does exist
+    /// then it will return the [`git::Branch`].
+    ///
+    /// The `Option` result will be determined as:
+    ///   * `None` if the reference does not exist.
+    ///   * `Some` if the reference does exist, and further:
+    ///     * a `git::Branch::local` if no `remote` peer was provided.
+    ///     * a `git::Branch::remote` if the `remote` peer was provided.
+    ///
+    /// # Errors
+    ///   * If the storage operation to check if the reference exists fails.
     pub async fn get_default_branch<P>(
         &self,
         urn: RadUrn,
@@ -393,7 +407,7 @@ impl State {
         default_branch: &str,
     ) -> Result<Option<git::Branch>, Error>
     where
-        P: Into<Option<PeerId>> + Clone,
+        P: Into<Option<PeerId>> + Clone + Send,
     {
         let exists = {
             let reference = NamespacedRef::head(urn.id, remote.clone(), default_branch);
