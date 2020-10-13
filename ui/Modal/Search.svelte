@@ -38,7 +38,10 @@
       case "Enter":
         // Navigate to project directly if present.
         if ($store.status === remote.Status.Success) {
-          navigateToProject($store.data);
+          // FIXME(xla): Once remote/Remote offer stronger type guarantees this needs to go.
+          navigateToProject(
+            ($store as { status: remote.Status.Success; data: Project }).data
+          );
         }
         break;
       case "Escape":
