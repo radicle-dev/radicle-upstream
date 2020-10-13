@@ -34,8 +34,9 @@
     margin: 0 auto;
   }
   .text {
-    margin: 1.5rem 0;
     color: var(--color-foreground-level-6);
+    margin: 1.5rem 0;
+    max-width: 20rem;
   }
   button {
     color: var(--color-foreground-level-5);
