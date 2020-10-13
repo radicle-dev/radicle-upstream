@@ -162,6 +162,8 @@ impl Future for Subroutines {
     type Output = Result<(), spawn_abortable::Error>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+        let mut tasks_initial_empty = true;
+
         // Drain the task queue.
         loop {
             match self.pending_tasks.poll_next_unpin(cx) {
@@ -172,7 +174,11 @@ impl Future for Subroutines {
                 Poll::Ready(Some(Ok(()))) => continue,
                 // Either pending, or FuturesUnordered thinks it's done, but
                 // we'll enqueue new tasks below
-                Poll::Ready(None) | Poll::Pending => break,
+                Poll::Ready(None) => break,
+                Poll::Pending => {
+                    tasks_initial_empty = false;
+                    break;
+                },
             }
         }
 
@@ -196,7 +202,7 @@ impl Future for Subroutines {
                 },
                 Poll::Ready(None) => return Poll::Ready(Ok(())),
                 Poll::Pending => {
-                    if !self.pending_tasks.is_empty() {
+                    if tasks_initial_empty && !self.pending_tasks.is_empty() {
                         cx.waker().wake_by_ref()
                     }
                     return Poll::Pending;
