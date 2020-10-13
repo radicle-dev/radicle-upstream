@@ -26,7 +26,7 @@ const update = (msg: Msg): void => {
     case Kind.Update:
       requestStore.loading();
       api
-        .get<boolean>(`projects/request/${formatUrn(msg.urn)}`)
+        .put<null, boolean>(`projects/request/${formatUrn(msg.urn)}`, null)
         .then(res => {
           console.log(res);
           requestStore.success(res);
