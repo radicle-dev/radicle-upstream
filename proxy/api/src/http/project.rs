@@ -32,52 +32,6 @@ fn checkout_filter(
         .and_then(handler::checkout)
 }
 
-/// `POST /`
-fn create_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::post()
-        .and(path::end())
-        .and(http::with_context(ctx.clone()))
-        .and(http::with_owner_guard(ctx))
-        .and(warp::body::json())
-        .and_then(handler::create)
-}
-
-/// `GET /<id>`
-fn get_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
-        .and(warp::get())
-        .and(path::param::<coco::Urn>())
-        .and(path::end())
-        .and_then(handler::get)
-}
-
-/// `GET /request/<id>`
-fn request_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("request")
-        .and(warp::get())
-        .and(http::with_context(ctx))
-        .and(path::param::<coco::Urn>())
-        .and(path::end())
-        .and_then(handler::request)
-}
-
-/// `GET /tracked`
-fn tracked_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("tracked")
-        .and(warp::get())
-        .and(http::with_context(ctx))
-        .and(path::end())
-        .and_then(handler::list_tracked)
-}
-
 /// `GET /contributed`
 fn contributed_filter(
     ctx: context::Context,
@@ -89,16 +43,16 @@ fn contributed_filter(
         .and_then(handler::list_contributed)
 }
 
-/// `GET /user/<id>`
-fn user_filter(
+/// `POST /`
+fn create_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("user")
-        .and(warp::get())
-        .and(http::with_context(ctx))
-        .and(path::param::<coco::Urn>())
+    warp::post()
         .and(path::end())
-        .and_then(handler::list_for_user)
+        .and(http::with_context(ctx.clone()))
+        .and(http::with_owner_guard(ctx))
+        .and(warp::body::json())
+        .and_then(handler::create)
 }
 
 /// `GET /discover`
@@ -112,6 +66,29 @@ fn discover_filter(
         .and_then(handler::discover)
 }
 
+/// `GET /<id>`
+fn get_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_context(ctx)
+        .and(warp::get())
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::get)
+}
+
+/// `PUT /request/<id>`
+fn request_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("request")
+        .and(warp::put())
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::request)
+}
+
 /// `PUT /<urn>/track/<peer_id>`
 fn track_filter(
     ctx: context::Context,
@@ -123,6 +100,29 @@ fn track_filter(
         .and(path::param::<coco::PeerId>())
         .and(path::end())
         .and_then(handler::track)
+}
+
+/// `GET /tracked`
+fn tracked_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("tracked")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and_then(handler::list_tracked)
+}
+
+/// `GET /user/<id>`
+fn user_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("user")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::list_for_user)
 }
 
 /// Project handlers to implement conversion and translation between core domain and http request
@@ -179,26 +179,16 @@ mod handler {
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
     }
 
+    /// Get a feed of untracked projects.
+    pub async fn discover(_ctx: context::Context) -> Result<impl Reply, Rejection> {
+        let feed = project::discover()?;
+
+        Ok(reply::json(&feed))
+    }
+
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
-    }
-
-    /// Kick off a network request for the [`project::Project`] of the given `id`.
-    pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
-        let mut peer_control = ctx.peer_control;
-        // TODO(finto): Check the request exists in the monorepo
-        let _request = peer_control.request_urn(&urn, Instant::now()).await;
-
-        // TODO(finto): Serialise request and respond with that.
-        Ok(reply::json(&true))
-    }
-
-    /// List all projects tracked by the current user.
-    pub async fn list_tracked(ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let projects = project::Projects::list(&ctx.state).await?.tracked;
-
-        Ok(reply::json(&projects))
     }
 
     /// List all projects the current user has contributed to.
@@ -221,11 +211,21 @@ mod handler {
         Ok(reply::json(&projects))
     }
 
-    /// Get a feed of untracked projects.
-    pub async fn discover(_ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let feed = project::discover()?;
+    /// List all projects tracked by the current user.
+    pub async fn list_tracked(ctx: context::Context) -> Result<impl Reply, Rejection> {
+        let projects = project::Projects::list(&ctx.state).await?.tracked;
 
-        Ok(reply::json(&feed))
+        Ok(reply::json(&projects))
+    }
+
+    /// Kick off a network request for the [`project::Project`] of the given `id`.
+    pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        let mut peer_control = ctx.peer_control;
+        // TODO(finto): Check the request exists in the monorepo
+        let _request = peer_control.request_urn(&urn, Instant::now()).await;
+
+        // TODO(finto): Serialise request and respond with that.
+        Ok(reply::json(&true))
     }
 
     /// Track the peer for the provided project.
@@ -541,7 +541,7 @@ mod test {
         );
 
         let res = request()
-            .method("GET")
+            .method("PUT")
             .path(&format!("/request/{}", urn))
             .reply(&api)
             .await;
