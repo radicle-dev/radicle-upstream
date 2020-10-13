@@ -25,9 +25,13 @@
 
   const project = getContext("project");
 
+  const reset = () => {
+    resetObjectPath();
+    resetObjectType();
+  };
+
   // Reset some stores on first load
-  resetObjectPath();
-  resetObjectType();
+  reset();
 
   $: fetchObject({
     path: $objectPath,
@@ -128,8 +132,11 @@
         {/if}
         <div slot="error" let:error>
           <EmptyState
-            text={JSON.stringify(error)}
+            primaryText={error.message}
+            text="This file doesn't exist on this branch."
+            primaryActionText="Back to source"
             illustration={IllustrationVariant.Eyes}
+            on:primaryAction={reset}
             style="height: 320px;" />
         </div>
       </Remote>

@@ -134,11 +134,9 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "GIT_ERROR",
                         coco::source::Error::NoBranches.to_string(),
                     ),
-                    coco::state::Error::Source(coco::source::Error::PathNotFound(path)) => (
-                        StatusCode::NOT_FOUND,
-                        "NOT_FOUND",
-                        format!("object not found under '{}'", path),
-                    ),
+                    coco::state::Error::Source(coco::source::Error::PathNotFound(path)) => {
+                        (StatusCode::NOT_FOUND, "NOT_FOUND", path.to_string())
+                    },
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
                         // gaphql::error.
