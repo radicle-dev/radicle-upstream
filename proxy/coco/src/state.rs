@@ -43,25 +43,6 @@ pub struct State {
     pub(crate) api: PeerApi<keys::SecretKey>,
 }
 
-#[derive(Clone, Debug)]
-pub struct NamespacedBranch {
-    namespace: git::Namespace,
-    branch: git::Branch,
-}
-
-impl TryFrom<NamespacedRef<Single>> for NamespacedBranch {
-    type Error = source::Error;
-
-    fn try_from(other: NamespacedRef<Single>) -> Result<Self, Self::Error> {
-        let namespace = git::Namespace::try_from(other.namespace().to_string().as_str())?;
-        let branch = match other.remote {
-            None => git::Branch::local(&other.name),
-            Some(peer) => git::Branch::remote(&other.name, &peer.to_string()),
-        };
-        Ok(Self { namespace, branch })
-    }
-}
-
 impl State {
     /// Create a new [`State`] given a [`PeerApi`].
     #[must_use]
@@ -362,44 +343,33 @@ impl State {
             .await??)
     }
 
-    /// Provide a a repo [`git::Browser`] for the project of `urn`.
+    /// Provide a a repo [`git::Browser`] where the `Browser` is initialised with the provided
+    /// `reference`.
+    ///
+    /// See [`State::find_default_branch`] and [`State::get_branch`] for obtaining a
+    /// [`NamespacedRef`].
     ///
     /// # Errors
-    ///
-    /// * If no project for the `urn` was found.
-    /// * If the [`git::Browser`] fails.
-    /// * If the passed `callback` errors.
-    pub async fn with_browser<F, T>(&self, reference: NamespacedRef<Single>, callback: F) -> Result<T, Error>
+    ///   * If the namespace of the reference could not be converted to a [`git::Namespace`].
+    ///   * If we could not open the backing storage.
+    ///   * If we could not initialise the `Browser`.
+    ///   * If the callback provided returned an error.
+    pub async fn with_browser<F, T>(
+        &self,
+        reference: NamespacedRef<Single>,
+        callback: F,
+    ) -> Result<T, Error>
     where
         F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
-        let NamespacedBranch { namespace, branch } = NamespacedBranch::try_from(reference)?;
-        /*
-        let project = self.get_project(urn.clone(), None).await?;
-
-        // Determine should we use a local branch or a remote branch
-        let remote = {
-            let local = NamespacedRef::head(urn.id.clone(), None, project.default_branch());
-            if self
-                .api
-                .with_storage(move |storage| storage.has_ref(&local))
-                .await??
-            {
-                None
-            } else {
-                project.keys().iter().next().cloned().map(PeerId::from)
-            }
+        let namespace = git::Namespace::try_from(reference.namespace().to_string().as_str())
+            .map_err(source::Error::from)?;
+        let branch = match reference.remote {
+            None => git::Branch::local(&reference.name),
+            Some(peer) => {
+                git::Branch::remote(&format!("heads/{}", reference.name), &peer.to_string())
+            },
         };
-        let branch = self
-            .get_default_branch(urn.clone(), remote, project.default_branch())
-            .await?
-            .ok_or(Error::NoRefs {
-                name: project.name().to_string(),
-                urn: urn.clone(),
-            })?;
-        let namespace =
-            git::Namespace::try_from(urn.id.to_string().as_str()).map_err(source::Error::from)?;
-        */
         let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, branch)
@@ -408,31 +378,32 @@ impl State {
         callback(&mut browser).map_err(Error::from)
     }
 
-    /// This method helps us get the default branch for a given [`RadUrn`] and optional [`PeerId`].
+    /// This method helps us get a branch for a given [`RadUrn`] and optional [`PeerId`].
     ///
-    /// It first attempts to check if the referenece
-    /// `refs/namespaces/<urn.id>/refs[/remotes]/heads/<default_branch>` exists. If it does exist
-    /// then it will return the [`git::Branch`].
-    ///
-    /// The `Option` result will be determined as:
-    ///   * `None` if the reference does not exist.
-    ///   * `Some` if the reference does exist, and further:
-    ///     * a `git::Branch::local` if no `remote` peer was provided.
-    ///     * a `git::Branch::remote` if the `remote` peer was provided.
+    /// If the `branch_name` is `None` then we get the project for the given [`RadUrn`] and use its
+    /// `default_branch`.
     ///
     /// # Errors
-    ///   * If the storage operation to check if the reference exists fails.
-    pub async fn get_branch<P>(
+    ///   * If the storage operations fail.
+    ///   * If the requested reference was not found.
+    pub async fn get_branch<P, B>(
         &self,
         urn: RadUrn,
         remote: P,
+        branch_name: B,
     ) -> Result<NamespacedRef<Single>, Error>
     where
         P: Into<Option<PeerId>> + Clone + Send,
+        B: Into<Option<String>> + Clone + Send,
     {
-        let project = self.get_project(urn.clone(), None).await?;
-        let default_branch = project.default_branch();
-        let reference = NamespacedRef::head(urn.id, remote.clone(), default_branch);
+        let name = match branch_name.into() {
+            None => {
+                let project = self.get_project(urn.clone(), None).await?;
+                project.default_branch().to_owned()
+            },
+            Some(name) => name,
+        };
+        let reference = NamespacedRef::head(urn.id, remote.clone(), &name);
 
         let exists = {
             let reference = reference.clone();
@@ -441,20 +412,38 @@ impl State {
                 .await??
         };
 
-        if !exists {
-            Err(Error::MissingRef { reference })
-        } else {
+        if exists {
             Ok(reference)
+        } else {
+            Err(Error::MissingRef { reference })
         }
     }
 
+    /// This method helps us get the default branch for a given [`RadUrn`].
+    ///
+    /// It does this by:
+    ///     * First checking if the owner of this storage has a reference to the default
+    /// branch.
+    ///     * If the owner does not have this reference then it falls back to the first maintainer.
+    ///
+    /// # Errors
+    ///   * If the storage operations fail.
+    ///   * If no default branch was found for the provided [`RadUrn`].
     pub async fn find_default_branch(&self, urn: RadUrn) -> Result<NamespacedRef<Single>, Error> {
         let project = self.get_project(urn.clone(), None).await?;
         let peer = project.keys().iter().next().cloned().map(PeerId::from);
+        let default_branch = project.default_branch();
 
-        match self.get_branch(urn.clone(), None).await.or(self.get_branch(urn.clone(), peer).await) {
+        let (owner, peer) = tokio::join!(
+            self.get_branch(urn.clone(), None, default_branch.to_owned()),
+            self.get_branch(urn.clone(), peer, default_branch.to_owned())
+        );
+        match owner.or(peer) {
             Ok(reference) => Ok(reference),
-            Err(Error::MissingRef {..}) => Err(Error::NoRefs { name: project.name().to_string(), urn }),
+            Err(Error::MissingRef { .. }) => Err(Error::NoDefaultBranch {
+                name: project.name().to_string(),
+                urn,
+            }),
             Err(err) => Err(err),
         }
     }
@@ -868,7 +857,7 @@ mod test {
             .await?;
 
         // Attempt to initialise a browser to ensure we can look at branches in the project
-        let branch = state.get_branch(fakie.urn(), None).await?;
+        let branch = state.find_default_branch(fakie.urn()).await?;
         let branches = state
             .with_browser(branch, |browser| {
                 Ok(browser

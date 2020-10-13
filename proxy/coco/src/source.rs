@@ -438,7 +438,6 @@ pub struct Revisions<P, U> {
 /// Will return [`Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob<P>(
     browser: &mut Browser,
-    default_branch: git::Branch,
     maybe_revision: Option<Revision<P>>,
     path: &str,
     theme: Option<&str>,
@@ -447,7 +446,9 @@ where
     P: ToString,
 {
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
-    browser.rev(maybe_revision.unwrap_or_else(|| default_branch.into()))?;
+    if let Some(revision) = maybe_revision {
+        browser.rev(revision)?;
+    }
 
     let root = browser.get_directory()?;
     let p = file_system::Path::from_str(path)?;
@@ -697,7 +698,6 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, Error> {
 /// Will return [`Error`] if any of the surf interactions fail.
 pub fn tree<'repo, P>(
     browser: &mut Browser<'repo>,
-    default_branch: git::Branch,
     maybe_revision: Option<Revision<P>>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, Error>
@@ -705,10 +705,11 @@ where
     P: ToString,
 {
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
-    let revision = maybe_revision.unwrap_or_else(|| default_branch.into());
     let prefix = maybe_prefix.unwrap_or_default();
 
-    browser.rev(revision)?;
+    if let Some(revision) = maybe_revision {
+        browser.rev(revision)?;
+    }
 
     let path = if prefix == "/" || prefix == "" {
         file_system::Path::root()

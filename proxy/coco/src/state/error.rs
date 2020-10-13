@@ -1,8 +1,10 @@
 //! Capture `State` related error variants.
 
 use librad::{
-    git::repo,
-    git::types::{NamespacedRef, Single},
+    git::{
+        repo,
+        types::{NamespacedRef, Single},
+    },
     meta::entity,
     net,
     uri::{self, RadUrn},
@@ -67,16 +69,20 @@ pub enum Error {
     Verification(#[from] entity::HistoryVerificationError),
 
     /// There were no references for a Browser to be initialised.
-    #[error("when creating a browser for '{name}@{urn}', we could not find a default branch to initialise it with")]
-    NoRefs {
+    #[error("we could not find a default branch for '{name}@{urn}'")]
+    NoDefaultBranch {
         /// Name of the project.
         name: String,
         /// RadUrn of the project.
         urn: RadUrn,
     },
 
+    /// Could not find a `NamespacedRef` when searching for it in the `Storage`.
     #[error("we could not find the '{reference}'")]
-    MissingRef { reference: NamespacedRef<Single> },
+    MissingRef {
+        /// The reference that we looked for in the `Storage`.
+        reference: NamespacedRef<Single>,
+    },
 }
 
 impl Error {
