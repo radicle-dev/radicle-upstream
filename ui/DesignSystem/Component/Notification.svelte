@@ -20,12 +20,15 @@
   .notification {
     display: flex;
     border-radius: 4px;
-    height: 32px;
+    min-height: 32px;
     align-items: center;
     justify-content: center;
     margin-bottom: 8px;
     user-select: none;
-    white-space: nowrap;
+    overflow-wrap: break-word;
+    max-width: 80vw;
+    text-align: center;
+    padding: 10px;
   }
 
   .info {

@@ -5,14 +5,21 @@ import * as validation from "../validation";
 
 import { Wallet } from "../wallet";
 import * as remote from "../remote";
+import { BigNumberish } from "ethers";
 
 export const store = writable<Pool | null>(null);
 
 export interface Pool {
   data: remote.Store<PoolData>;
-  // Save the pool settings. Returns once the transaction has been
-  // included in the chain.
-  save(data: PoolSettings): Promise<void>;
+
+  // Update the contribution amount per block. Returns once the
+  // transaction has been included in the chain.
+  updateAmountPerBlock(amountPerBlock: string): Promise<void>;
+
+  // Update the list of receiver addresses. Returns once the
+  // transaction has been included in the chain.
+  updateReceiverAddresses(addresses: string[]): Promise<void>;
+
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
   topUp(value: number): Promise<void>;
@@ -73,19 +80,24 @@ export function make(wallet: Wallet): Pool {
     }
   }
 
-  async function save(settings: PoolSettings): Promise<void> {
+  async function updateAmountPerBlock(
+    amountPerBlock: BigNumberish
+  ): Promise<void> {
     // TODO only update the settings that need changes. In particular
     // only update members that have been added or removed
-    const txs = [];
-    for (const address of settings.receiverAddresses) {
-      txs.push(poolContract.setReceiver(address, 1).then(tx => tx.wait()));
-    }
+    await poolContract
+      .setAmountPerBlock(amountPerBlock)
+      .then(tx => tx.wait())
+      .finally(loadPoolData);
+  }
 
-    txs.push(
-      poolContract
-        .setAmountPerBlock(settings.amountPerBlock)
-        .then(tx => tx.wait())
+  async function updateReceiverAddresses(addresses: string[]): Promise<void> {
+    // TODO only update the settings that need changes. In particular
+    // only update members that have been added or removed
+    const txs = addresses.map(address =>
+      poolContract.setReceiver(address, 1).then(tx => tx.wait())
     );
+
     // TODO check transaction status
     await Promise.all(txs).finally(loadPoolData);
   }
@@ -113,7 +125,8 @@ export function make(wallet: Wallet): Pool {
 
   return {
     data,
-    save,
+    updateAmountPerBlock,
+    updateReceiverAddresses,
     topUp,
     collect,
   };

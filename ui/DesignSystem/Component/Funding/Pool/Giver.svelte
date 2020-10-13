@@ -47,17 +47,17 @@
     if (validatingMembers) membersValidationStore.validate($membersStore);
   }
 
-  $: validInputs =
+  $: saveMonthlyContributionEnabled =
     $amountValidationStore &&
     $amountValidationStore.status === ValidationStatus.Success &&
-    $membersValidationStore &&
-    $membersValidationStore.status === ValidationStatus.Success;
-
-  $: saveEnabled =
-    validInputs &&
     data &&
-    (extractMembers(members).join(",") !== data.receiverAddresses.join(",") ||
-      monthlyContribution.valueOf() !== data.amountPerBlock.valueOf());
+    monthlyContribution.valueOf() !== data.amountPerBlock.valueOf();
+
+  $: saveMembersEnabled =
+    $membersValidationStore &&
+    $membersValidationStore.status === ValidationStatus.Success &&
+    data &&
+    extractMembers(members).join(",") !== data.receiverAddresses.join(",");
 
   const openSendModal = () => {
     _pool.store.set(pool);
@@ -158,6 +158,13 @@
               <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
             </div>
           </Input.Text>
+          <StatefulButton
+            disabled={!saveMonthlyContributionEnabled}
+            title={'Save'}
+            onClick={() => pool.updateAmountPerBlock(monthlyContribution)}
+            variant={'outline'}
+            successMessage={'Pool successfully saved'}
+            errorMessage={e => `Failed to save pool: ${e}`} />
         </div>
       </li>
       <li class="row">
@@ -175,18 +182,18 @@
             style="min-width: 400px;"
             bind:value={members}
             placeholder="Enter members here" />
+
+          <StatefulButton
+            disabled={!saveMembersEnabled}
+            title={'Save'}
+            onClick="{() => pool.updateReceiverAddresses(members
+                  .split(',')
+                  .map(x => x.trim()))}}"
+            variant={'outline'}
+            successMessage={'Pool successfully saved'}
+            errorMessage={e => `Failed to save pool: ${e}`} />
         </div>
       </li>
     </ul>
-    <StatefulButton
-      disabled={!saveEnabled}
-      title={'Save'}
-      onClick={() => pool.save({
-          amountPerBlock: monthlyContribution,
-          receiverAddresses: members.split(', '),
-        })}
-      variant={'primary'}
-      successMessage={'Pool successfully saved'}
-      errorMessage={e => `Failed to save pool: ${e}`} />
   </Remote>
 </div>
