@@ -1,7 +1,4 @@
-use std::{
-    path::PathBuf,
-    time::{Duration, Instant},
-};
+use std::{path::PathBuf, time::Duration};
 
 use futures::{future, StreamExt as _};
 use tokio::{
@@ -18,10 +15,7 @@ use librad::{
     uri::{RadUrl, RadUrn},
 };
 
-use coco::{
-    config, project, request::waiting_room::WaitingRoom, seed::Seed, shared::Shared, Paths, Peer,
-    PeerEvent, RequestEvent, RunConfig, State,
-};
+use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, RunConfig, State};
 
 #[doc(hidden)]
 #[macro_export]
@@ -56,6 +50,7 @@ macro_rules! assert_event {
 /// # Errors
 ///
 /// * if the timeout waiting for the [`ProtocolEvent::Connected`] has been reached.
+#[allow(dead_code)]
 pub async fn connected(
     receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,
@@ -74,7 +69,7 @@ pub async fn assert_cloned(
 ) -> Result<(), Elapsed> {
     assert_event!(
         receiver,
-        PeerEvent::Request(RequestEvent::Cloned(url)) if url == *expected
+        PeerEvent::RequestCloned(url) if url == *expected
     )
 }
 
@@ -86,29 +81,27 @@ pub async fn requested(
 ) -> Result<(), Elapsed> {
     assert_event!(
         receiver,
-        PeerEvent::Request(RequestEvent::Query(urn)) if urn == *expected
+        PeerEvent::RequestQueried(urn) if urn == *expected
     )
 }
 
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
-    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let conf = config::default(key, tmp_dir.path())?;
-    let (peer, state) =
-        coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
+    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
     Ok((peer, state, signer))
 }
 
+#[allow(dead_code)]
 pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
-    waiting_room: Shared<WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
 ) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
@@ -118,8 +111,7 @@ pub async fn build_peer_with_seeds(
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
 
-    let (peer, state) =
-        coco::into_peer_state(conf, signer.clone(), store, waiting_room, run_config).await?;
+    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
     Ok((peer, state, signer))
 }
@@ -146,6 +138,7 @@ pub fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
     }
 }
 
+#[allow(dead_code)]
 pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
     project::Create {
         repo: project::Repo::New {
