@@ -33,6 +33,9 @@
     max-width: 30rem;
     margin: 0 auto;
   }
+  h3 {
+    margin-top: 1.8rem;
+  }
   .text {
     color: var(--color-foreground-level-6);
     margin: 1.5rem 0;
