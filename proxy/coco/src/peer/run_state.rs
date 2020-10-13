@@ -38,8 +38,11 @@ const DEFAULT_SYNC_MAX_PEERS: usize = 5;
 // TODO(xla): Review duration.
 const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
 
-/// The period at which we query the waiting room.
+/// Default period at which we query the waiting room.
 const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis(500);
+
+/// Default period to consider until a query has timed out.
+const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Instructions to issue side-effectful operations which are the results from state transitions.
 #[allow(clippy::large_enum_variant)]
@@ -256,11 +259,14 @@ impl Default for SyncConfig {
 pub struct WaitingRoomConfig {
     /// Interval at which to query the [`WaitingRoom`] for ready requests.
     pub interval: Duration,
+    /// Period to consider until a query has timed out.
+    pub timeout_period: Duration,
 }
 
 impl Default for WaitingRoomConfig {
     fn default() -> Self {
         Self {
+            timeout_period: DEFAULT_WAITING_ROOM_TIMEOUT,
             interval: DEFAULT_WAITING_ROOM_INTERVAL,
         }
     }
@@ -280,11 +286,16 @@ pub struct RunState {
 
 impl From<Config> for RunState {
     fn from(config: Config) -> Self {
+        let waiting_room_config = waiting_room::Config {
+            delta: config.waiting_room.timeout_period,
+            ..waiting_room::Config::default()
+        };
+
         Self {
             config,
             connected_peers: HashSet::new(),
             status: Status::Stopped(Instant::now()),
-            waiting_room: WaitingRoom::new(waiting_room::Config::default()),
+            waiting_room: WaitingRoom::new(waiting_room_config),
         }
     }
 }
