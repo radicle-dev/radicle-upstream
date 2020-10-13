@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { push } from "svelte-spa-router";
   import { createEventDispatcher } from "svelte";
 
