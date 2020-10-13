@@ -1,7 +1,6 @@
 import { writable } from "svelte/store";
 
 import * as api from "./api";
-import * as account from "./account";
 import * as currency from "./currency";
 import * as transaction from "./transaction";
 import * as validation from "./validation";

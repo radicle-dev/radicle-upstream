@@ -2,8 +2,11 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { store } from "../../../src/funding/pool";
-  import { amountStore, amountValidationStore } from "../../../src/transfer";
+  import {
+    amountStore,
+    amountValidationStore,
+    store,
+  } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
   import { ModalLayout, StatefulButton } from "../../../DesignSystem/Component";
@@ -15,14 +18,14 @@
   let validatingAmount = false;
   let amount: number;
 
-  $: amountValidation = amountValidationStore("TODO(nuno)", amount);
   $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) amountValidation.validate($amountStore);
+    if (validatingAmount) amountValidationStore.validate($amountStore);
   }
   $: disableConfirmation =
-    $amountValidation && $amountValidation.status !== ValidationStatus.Success;
+    $amountValidationStore &&
+    $amountValidationStore.status !== ValidationStatus.Success;
 
   async function onConfirmed(): Promise<void> {
     const pool = get(store);
@@ -101,7 +104,7 @@
         bind:value={amount}
         showLeftItem
         autofocus
-        validation={$amountValidation}>
+        validation={$amountValidationStore}>
         <div slot="left" style="position: absolute; top: 9px; left: 10px;">
           <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
         </div>

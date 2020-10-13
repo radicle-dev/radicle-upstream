@@ -8,11 +8,12 @@
   import * as remote from "../../../../src/remote";
   import * as _pool from "../../../../src/funding/pool";
   import {
+    amountStore,
+    amountValidationStore,
     membersStore,
     membersValidationStore,
   } from "../../../../src/funding/pool";
 
-  import { amountStore, amountValidationStore } from "../../../../src/transfer";
   import { ValidationStatus } from "../../../../src/validation";
 
   export let pool: _pool.Pool;
@@ -31,31 +32,26 @@
 
   let monthlyContribution = "";
   let validatingAmount = false;
-  $: amountValidation = amountValidationStore(
-    "TODO(nuno)",
-    parseInt(monthlyContribution)
-  );
   $: amountStore.set(monthlyContribution ? monthlyContribution.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) amountValidation.validate($amountStore);
+    if (validatingAmount) amountValidationStore.validate($amountStore);
   }
 
   // Necessary type to comply with Textarea.bind:value type.
   let members: string = "";
   let validatingMembers = false;
-  $: membersValidation = membersValidationStore(members);
   $: membersStore.set(members ? members.toString() : "");
   $: {
     if ($membersStore && $membersStore.length > 0) validatingMembers = true;
-    if (validatingMembers) membersValidation.validate($membersStore);
+    if (validatingMembers) membersValidationStore.validate($membersStore);
   }
 
   $: validInputs =
-    $amountValidation &&
-    $amountValidation.status === ValidationStatus.Success &&
-    $membersValidation &&
-    $membersValidation.status === ValidationStatus.Success;
+    $amountValidationStore &&
+    $amountValidationStore.status === ValidationStatus.Success &&
+    $membersValidationStore &&
+    $membersValidationStore.status === ValidationStatus.Success;
 
   $: saveEnabled =
     validInputs &&
@@ -156,7 +152,7 @@
             placeholder="Enter the amount"
             bind:value={monthlyContribution}
             showLeftItem
-            validation={$amountValidation}
+            validation={$amountValidationStore}
             style="max-width: 200px;">
             <div slot="left" style="position: absolute; top: 9px; left: 10px;">
               <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
@@ -175,7 +171,7 @@
         </header>
         <div class="item">
           <Input.Textarea
-            validation={$membersValidation}
+            validation={$membersValidationStore}
             style="min-width: 400px;"
             bind:value={members}
             placeholder="Enter members here" />

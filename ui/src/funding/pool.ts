@@ -123,6 +123,7 @@ export function make(wallet: Wallet): Pool {
  * Stores
  */
 export const membersStore = writable("");
+export const amountStore = writable("");
 
 /**
  *
@@ -133,18 +134,32 @@ export const membersStore = writable("");
 // Patterns
 const COMMA_SEPARATED_LIST = /(^[-\w\s]+(?:,[-\w\s]*)*$)?/;
 
-// The contraints for a valid input list of members.
 const contraints = {
+  // The contraints for a valid input list of members.
   members: {
     format: {
       pattern: COMMA_SEPARATED_LIST,
       message: `Should be a comma-separated list of addresses`,
     },
   },
+
+  // The contraints for a valid amount input.
+  amount: {
+    presence: {
+      message: "The amount is required",
+      allowEmpty: false,
+    },
+    numericality: {
+      strict: true,
+      greaterThan: 0,
+    },
+  },
 };
 
-export const membersValidationStore = (
-  members: string
-): validation.ValidationStore => {
-  return validation.createValidationStore(contraints.members);
-};
+export const membersValidationStore: validation.ValidationStore = validation.createValidationStore(
+  contraints.members
+);
+
+export const amountValidationStore: validation.ValidationStore = validation.createValidationStore(
+  contraints.amount
+);
