@@ -44,7 +44,6 @@ import TransactionSpinner from "./Transaction/Spinner.svelte";
 import TransactionStatusbar from "./Transaction/Statusbar.svelte";
 import Row from "./Transaction/Row.svelte";
 import Urn from "./Urn.svelte";
-import Wallet from "./Wallet.svelte";
 import QR from "./QR.svelte";
 
 export {
@@ -94,6 +93,5 @@ export {
   TransactionSpinner,
   TransactionStatusbar,
   Urn,
-  Wallet,
   QR,
 };

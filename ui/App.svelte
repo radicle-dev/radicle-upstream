@@ -24,7 +24,6 @@
   import Discovery from "./Screen/Discovery.svelte";
   import Modal from "./Modal";
   import NotFound from "./Screen/NotFound.svelte";
-  import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
   import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
   import Profile from "./Screen/Profile.svelte";
@@ -45,8 +44,6 @@
     "/profile/*": Profile,
     "/orgs/register": OrgRegistration,
     "/orgs/:id/members/register": MemberRegistration,
-    "/orgs/:id": Org,
-    "/orgs/:id/*": Org,
     "/projects/untracked/:urn": Untracked,
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,
