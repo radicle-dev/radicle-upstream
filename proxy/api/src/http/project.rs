@@ -6,21 +6,24 @@ use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, http};
+
 /// Combination of all routes.
-pub fn filters(ctx: context::Ctx) -> BoxedFilter<(impl Reply,)> {
+pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     tracked_filter(ctx.clone())
         .or(contributed_filter(ctx.clone()))
         .or(user_filter(ctx.clone()))
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(get_filter(ctx))
+        .or(request_filter(ctx.clone()))
+        .or(get_filter(ctx.clone()))
+        .or(track_filter(ctx))
         .boxed()
 }
 
 /// `POST /<id>/checkout`
 fn checkout_filter(
-    ctx: context::Ctx,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::post())
@@ -31,7 +34,7 @@ fn checkout_filter(
 
 /// `POST /`
 fn create_filter(
-    ctx: context::Ctx,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
         .and(path::end())
@@ -42,7 +45,9 @@ fn create_filter(
 }
 
 /// `GET /<id>`
-fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
         .and(path::param::<coco::Urn>())
@@ -50,9 +55,21 @@ fn get_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Re
         .and_then(handler::get)
 }
 
+/// `GET /request/<id>`
+fn request_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("request")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::request)
+}
+
 /// `GET /tracked`
 fn tracked_filter(
-    ctx: context::Ctx,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tracked")
         .and(warp::get())
@@ -63,7 +80,7 @@ fn tracked_filter(
 
 /// `GET /contributed`
 fn contributed_filter(
-    ctx: context::Ctx,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("contributed")
         .and(warp::get())
@@ -72,8 +89,10 @@ fn contributed_filter(
         .and_then(handler::list_contributed)
 }
 
-/// `GET /user/<id>
-fn user_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+/// `GET /user/<id>`
+fn user_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("user")
         .and(warp::get())
         .and(http::with_context(ctx))
@@ -84,7 +103,7 @@ fn user_filter(ctx: context::Ctx) -> impl Filter<Extract = impl Reply, Error = R
 
 /// `GET /discover`
 fn discover_filter(
-    ctx: context::Ctx,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("discover")
         .and(warp::get())
@@ -93,36 +112,50 @@ fn discover_filter(
         .and_then(handler::discover)
 }
 
+/// `PUT /<urn>/track/<peer_id>`
+fn track_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_context(ctx)
+        .and(warp::put())
+        .and(path::param::<coco::Urn>())
+        .and(path("track"))
+        .and(path::param::<coco::PeerId>())
+        .and(path::end())
+        .and_then(handler::track)
+}
+
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::path::PathBuf;
+    use std::{path::PathBuf, time::Instant};
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error::Error, project};
+    use crate::{context, error::Error, http, project};
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        ctx: context::Ctx,
+        ctx: context::Context,
         owner: coco::user::User,
         input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-
+        let signer = ctx
+            .signer
+            .ok_or_else(|| http::error::Routing::SealedKeystore)?;
         let meta = ctx
             .state
-            .lock()
+            .init_project(&signer, &owner, input)
             .await
-            .init_project(&ctx.signer, &owner, &input)
             .map_err(Error::from)?;
         let urn = meta.urn();
 
         let stats = ctx
             .state
-            .lock()
+            .with_browser(urn, |browser| {
+                Ok(browser.get_stats().map_err(coco::source::Error::from)?)
+            })
             .await
-            .with_browser(&urn, |browser| Ok(browser.get_stats()?))
             .map_err(Error::from)?;
         let project: project::Project = (meta, stats).into();
 
@@ -134,47 +167,43 @@ mod handler {
 
     /// Checkout a [`project::Project`]'s source code.
     pub async fn checkout(
-        ctx: context::Ctx,
+        ctx: context::Context,
         urn: coco::Urn,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-        let project = ctx
+        let path = ctx
             .state
-            .lock()
+            .checkout(urn, peer_id, path)
             .await
-            .get_project(&urn, peer_id)
             .map_err(Error::from)?;
-
-        let path = coco::project::Checkout::new(project, path)
-            .run(ctx.state.lock().await.peer_id())
-            .map_err(Error::from)?;
-
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(ctx: context::Ctx, urn: coco::Urn) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-        let state = ctx.state.lock().await;
+    pub async fn get(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        Ok(reply::json(&project::get(&ctx.state, urn).await?))
+    }
 
-        Ok(reply::json(&project::get(&state, &urn)?))
+    /// Kick off a network request for the [`project::Project`] of the given `id`.
+    pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        let mut peer_control = ctx.peer_control;
+        // TODO(finto): Check the request exists in the monorepo
+        let _request = peer_control.request_urn(&urn, Instant::now());
+
+        // TODO(finto): Serialise request and respond with that.
+        Ok(reply::json(&true))
     }
 
     /// List all projects tracked by the current user.
-    pub async fn list_tracked(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-        let state = ctx.state.lock().await;
-        let projects = project::Projects::list(&state)?.tracked;
+    pub async fn list_tracked(ctx: context::Context) -> Result<impl Reply, Rejection> {
+        let projects = project::Projects::list(&ctx.state).await?.tracked;
 
         Ok(reply::json(&projects))
     }
 
     /// List all projects the current user has contributed to.
-    pub async fn list_contributed(ctx: context::Ctx) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-        let state = ctx.state.lock().await;
-        let projects = project::Projects::list(&state)?;
+    pub async fn list_contributed(ctx: context::Context) -> Result<impl Reply, Rejection> {
+        let projects = project::Projects::list(&ctx.state).await?;
 
         Ok(reply::json(&projects.contributed))
     }
@@ -184,21 +213,29 @@ mod handler {
     ///
     /// See [`project::list_for_user`] for more information.
     pub async fn list_for_user(
-        ctx: context::Ctx,
+        ctx: context::Context,
         user_id: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.read().await;
-        let state = ctx.state.lock().await;
-        let projects = project::list_for_user(&state, &user_id)?;
+        let projects = project::list_for_user(&ctx.state, &user_id).await?;
 
         Ok(reply::json(&projects))
     }
 
     /// Get a feed of untracked projects.
-    pub async fn discover(_ctx: context::Ctx) -> Result<impl Reply, Rejection> {
+    pub async fn discover(_ctx: context::Context) -> Result<impl Reply, Rejection> {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
+    }
+
+    /// Track the peer for the provided project.
+    pub async fn track(
+        ctx: context::Context,
+        urn: coco::Urn,
+        peer_id: coco::PeerId,
+    ) -> Result<impl Reply, Rejection> {
+        ctx.state.track(urn, peer_id).await.map_err(Error::from)?;
+        Ok(reply::json(&true))
     }
 }
 
@@ -227,7 +264,7 @@ pub struct CheckoutInput {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MetadataInput {
-    /// Name of the proejct.
+    /// Name of the project.
     name: String,
     /// Long form outline.
     description: String,
@@ -244,32 +281,33 @@ mod test {
 
     use radicle_surf::vcs::git::git2;
 
-    use crate::{context, error, http, identity, project, session};
+    use crate::{context, http, identity, project, session};
 
     #[tokio::test]
-    async fn checkout() -> Result<(), error::Error> {
+    async fn checkout() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.read().await;
-
         let urn = {
-            let state = ctx.state.lock().await;
             let handle = "cloudhead";
-            let owner = state.init_owner(&ctx.signer, handle)?;
-            session::set_identity(&ctx.store, (state.peer_id(), owner.clone()).into())?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), handle)
+                .await?;
+            session::set_identity(&ctx.store, (ctx.state.peer_id(), owner.clone()).into())?;
 
             let platinum_project = coco::control::replicate_platinum(
-                &state,
-                &ctx.signer,
+                &ctx.state,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
                 "master",
-            )?;
+            )
+            .await?;
             platinum_project.urn()
         };
 
@@ -279,7 +317,7 @@ mod test {
         };
         let res = request()
             .method("POST")
-            .path(&format!("/{}/checkout", urn))
+            .path(&format!("/{}/checkout", urn.clone()))
             .json(&input)
             .reply(&api)
             .await;
@@ -287,11 +325,9 @@ mod test {
         http::test::assert_response(&res, StatusCode::CREATED, |_| {});
         assert!(dir.path().exists());
 
-        let repo =
-            git2::Repository::open(dir.path().join("git-platinum")).map_err(coco::Error::from)?;
+        let repo = git2::Repository::open(dir.path().join("git-platinum"))?;
         let refs = repo
-            .branches(None)
-            .map_err(coco::Error::from)?
+            .branches(None)?
             .map(|branch| {
                 branch
                     .expect("failed to get branch")
@@ -302,37 +338,47 @@ mod test {
                     .to_string()
             })
             .collect::<Vec<_>>();
-        let remote = repo
-            .find_remote(coco::config::RAD_REMOTE)
-            .map_err(coco::Error::from)?;
+        let remote = repo.find_remote(coco::config::RAD_REMOTE)?;
         assert_eq!(
             remote.url(),
             Some(
-                coco::LocalUrl::from_urn(urn, ctx.state.lock().await.peer_id())
+                coco::LocalUrl::from_urn(urn.clone(), ctx.state.peer_id())
                     .to_string()
                     .as_str()
             )
         );
         assert_eq!(refs, vec!["master", "rad/dev", "rad/master"]);
 
+        // Verify presence of include file.
+        let config = repo.config()?;
+        let include_path = config
+            .get_entry(coco::include::GIT_CONFIG_PATH_KEY)?
+            .value()
+            .unwrap()
+            .to_string();
+        assert_eq!(
+            include_path,
+            format!(
+                "{}/git-includes/{}.inc",
+                tmp_dir.path().display().to_string(),
+                urn.id
+            ),
+        );
+
         Ok(())
     }
 
     #[tokio::test]
-    async fn create_new() -> Result<(), error::Error> {
+    async fn create_new() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.read().await;
-
         {
-            let state = ctx.state.lock().await;
-
             let handle = "cloudhead";
-            let id = identity::create(&state, &ctx.signer, handle)?;
+            let id = identity::create(&ctx.state, &ctx.signer.unwrap(), handle).await?;
 
             session::set_identity(&ctx.store, id)?;
         };
@@ -353,7 +399,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+        let projects = project::Projects::list(&ctx.state).await?;
         let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
@@ -383,7 +429,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn create_existing() -> Result<(), error::Error> {
+    async fn create_existing() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
@@ -391,14 +437,9 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.read().await;
-
         {
-            let state = ctx.state.lock().await;
-
             let handle = "cloudhead";
-            let id = identity::create(&state, &ctx.signer, handle)?;
-
+            let id = identity::create(&ctx.state, &ctx.signer.unwrap(), handle).await?;
             session::set_identity(&ctx.store, id)?;
         };
 
@@ -420,7 +461,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+        let projects = project::Projects::list(&ctx.state).await?;
         let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
@@ -450,116 +491,29 @@ mod test {
     }
 
     #[tokio::test]
-    async fn create_existing_after_reset() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
-        let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        {
-            let ctx = ctx.read().await;
-            let state = ctx.state.lock().await;
-
-            let handle = "cloudhead";
-            let id = identity::create(&state, &ctx.signer, handle)?;
-
-            session::set_identity(&ctx.store, id)?;
-        }
-
-        let project = coco::project::Create {
-            repo: coco::project::Repo::New {
-                path: dir.path(),
-                name: "Upstream".to_string(),
-            },
-            description: "Desktop client for radicle.".into(),
-            default_branch: "master".into(),
-        };
-
-        let _res = request()
-            .method("POST")
-            .path("/")
-            .json(&project)
-            .reply(&api)
-            .await;
-
-        context::reset_ctx_peer(ctx.clone()).await?;
-
-        {
-            let ctx = ctx.read().await;
-            let state = ctx.state.lock().await;
-
-            let handle = "cloudhead";
-            let id = identity::create(&state, &ctx.signer, handle)?;
-
-            session::set_identity(&ctx.store, id)?;
-        }
-
-        let res = request()
-            .method("POST")
-            .path("/")
-            .json(&project.into_existing())
-            .reply(&api)
-            .await;
-
-        let projects = {
-            let ctx = ctx.read().await;
-            let state = ctx.state.lock().await;
-            project::Projects::list(&state)
-        }?;
-
-        let meta = projects.into_iter().next().unwrap();
-        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
-
-        let want = json!({
-            "id": meta.id,
-            "metadata": {
-                "defaultBranch": "master",
-                "description": "Desktop client for radicle.",
-                "name": "Upstream",
-                "maintainers": [
-                    maintainer
-                ],
-            },
-            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
-            "stats": {
-                "branches": 1,
-                "commits": 1,
-                "contributors": 1,
-            },
-        });
-
-        http::test::assert_response(&res, StatusCode::CREATED, |have| {
-            assert_eq!(have, want);
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn get() -> Result<(), error::Error> {
+    async fn get() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
 
         let urn = {
-            let state = ctx.state.lock().await;
-
-            let owner = state.init_owner(&ctx.signer, "cloudhead")?;
+            let owner = ctx
+                .state
+                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+                .await?;
             let platinum_project = coco::control::replicate_platinum(
-                &state,
-                &ctx.signer,
+                &ctx.state,
+                &ctx.signer.unwrap(),
                 &owner,
                 "git-platinum",
                 "fixture data",
                 "master",
-            )?;
+            )
+            .await?;
             platinum_project.urn()
         };
 
-        let project = project::get(&(*ctx.state.lock().await), &urn)?;
+        let project = project::get(&ctx.state, urn.clone()).await?;
 
         let res = request()
             .method("GET")
@@ -575,28 +529,55 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_for_user() -> Result<(), error::Error> {
+    async fn request_project() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.read().await;
+        let urn = coco::Urn::new(
+            coco::Hash::hash(b"kisses-of-the-sun"),
+            coco::uri::Protocol::Git,
+            coco::uri::Path::empty(),
+        );
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/request/{}", urn))
+            .reply(&api)
+            .await;
+
+        // TODO(finto): Response should eventually be a Request.
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(true));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list_for_user() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let owner = ctx
             .state
-            .lock()
-            .await
-            .init_owner(&ctx.signer, "cloudhead")?;
-        coco::control::setup_fixtures(&(*ctx.state.lock().await), &ctx.signer, &owner)?;
+            .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+            .await?;
+        coco::control::setup_fixtures(&ctx.state, &ctx.signer.clone().unwrap(), &owner).await?;
 
-        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+        let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.into_iter().next().unwrap();
-        let coco_project = ctx.state.lock().await.get_project(&project.id, None)?;
+        let coco_project = ctx.state.get_project(project.id.clone(), None).await?;
 
-        let user: identity::Identity = {
-            let state = ctx.state.lock().await;
-            coco::control::track_fake_peer(&state, &ctx.signer, &coco_project, "rafalca").into()
-        };
+        let user: identity::Identity = coco::control::track_fake_peer(
+            &ctx.state,
+            &ctx.signer.unwrap(),
+            &coco_project,
+            "rafalca",
+        )
+        .await
+        .into();
 
         let res = request()
             .method("GET")
@@ -611,19 +592,17 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_contributed() -> Result<(), error::Error> {
+    async fn list_contributed() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.read().await;
         let owner = ctx
             .state
-            .lock()
-            .await
-            .init_owner(&ctx.signer, "cloudhead")?;
+            .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+            .await?;
 
-        coco::control::setup_fixtures(&(*ctx.state.lock().await), &ctx.signer, &owner)?;
+        coco::control::setup_fixtures(&ctx.state, &ctx.signer.unwrap(), &owner).await?;
 
         let res = request()
             .method("GET")
@@ -631,7 +610,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::Projects::list(&(*ctx.state.lock().await))?;
+        let projects = project::Projects::list(&ctx.state).await?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects.contributed));
@@ -641,19 +620,16 @@ mod test {
     }
 
     #[tokio::test]
-    async fn discover() -> Result<(), error::Error> {
+    async fn discover() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.read().await;
-
         let owner = ctx
             .state
-            .lock()
-            .await
-            .init_owner(&ctx.signer, "cloudhead")?;
-        coco::control::setup_fixtures(&(*ctx.state.lock().await), &ctx.signer, &owner)?;
+            .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+            .await?;
+        coco::control::setup_fixtures(&ctx.state, &ctx.signer.unwrap(), &owner).await?;
 
         let res = request().method("GET").path("/discover").reply(&api).await;
         let want = json!([
@@ -694,6 +670,37 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, want);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn track() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let owner = ctx
+            .state
+            .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
+            .await?;
+        coco::control::setup_fixtures(&ctx.state, &ctx.signer.unwrap(), &owner).await?;
+        let projects = project::Projects::list(&ctx.state).await?;
+        let project = projects.contributed.first().expect("no projects setup");
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/track/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
         });
 
         Ok(())

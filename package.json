@@ -1,6 +1,6 @@
 {
   "name": "radicle-upstream",
-  "version": "0.0.14",
+  "version": "0.0.16",
   "author": {
     "name": "radicle team",
     "email": "dev@radicle.xyz",
@@ -73,7 +73,7 @@
     "babel-eslint": "^10.1.0",
     "chokidar": "^3.4.1",
     "cypress": "^4.10.0",
-    "electron": "^9.1.0",
+    "electron": "^9.3.1",
     "electron-builder": "^22.6.0",
     "eslint": "^7.7.0",
     "eslint-plugin-cypress": "^2.10.3",
@@ -137,7 +137,7 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
-    "nuke": "cd proxy && cargo run --bin nuke"
+    "reset:state": "scripts/reset-state.sh"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",

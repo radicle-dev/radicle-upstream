@@ -1,9 +1,9 @@
 import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
 
-const withEmptyRepositoryStub = callback => {
+const withEmptyDirectoryStub = callback => {
   cy.exec("pwd").then(result => {
     const pwd = result.stdout;
-    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-repo`;
+    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-directory`;
 
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
     cy.exec(`mkdir -p ${emptyDirectoryPath}`);
@@ -27,6 +27,37 @@ const withEmptyRepositoryStub = callback => {
 
     // clean up the fixture
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
+  });
+};
+
+const withNoCommitsRepositoryStub = callback => {
+  cy.exec("pwd").then(result => {
+    const pwd = result.stdout;
+    const noCommitsRepoPath = `${pwd}/cypress/workspace/no-commits-repo`;
+
+    cy.exec(`rm -rf ${noCommitsRepoPath}`);
+    cy.exec(`mkdir -p ${noCommitsRepoPath}`);
+    cy.exec(`git init ${noCommitsRepoPath}`);
+
+    // stub native call and return the directory path to the UI
+    cy.window().then(appWindow => {
+      appWindow.electron = {
+        ipcRenderer: {
+          invoke: msg => {
+            if (msg === DIALOG_SHOWOPENDIALOG) {
+              return noCommitsRepoPath;
+            }
+          },
+        },
+        isDev: true,
+        isExperimental: true,
+      };
+    });
+
+    callback();
+
+    // clean up the fixture
+    cy.exec(`rm -rf ${noCommitsRepoPath}`);
   });
 };
 
@@ -62,7 +93,7 @@ const withPlatinumStub = callback => {
 };
 
 beforeEach(() => {
-  cy.nukeAllState();
+  cy.resetAllState();
   cy.onboardUser();
   cy.visit("./public/index.html");
 });
@@ -101,44 +132,42 @@ context("project creation", () => {
 
     context("name", () => {
       it("prevents the user from creating a project with an invalid name", () => {
+        const characterError =
+          "Your project name has unsupported characters in it. You can only use basic letters, numbers, and the _ , - and . characters.";
+        const firstCharacterError =
+          "Your project name should start with a letter or a number.";
+        const lengthError =
+          "Your project name should be at least 2 characters long.";
+
         // the submit button is disabled when name is not present
         cy.pick("page", "name").clear();
         cy.pick("create-project-button").should("be.disabled");
 
-        // shows a validation message when name contains invalid characters
-        // spaces are not allowed
+        // spaces should be changed into dashes
         cy.pick("page", "name").type("no spaces");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page", "name").should("have.value", "no-spaces");
+
+        // shows a validation message when name contains invalid characters
 
         // special characters are disallowed
         cy.pick("page", "name").clear();
-        cy.pick("page", "name").type("$bad");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page", "name").type("bad$");
+        cy.pick("page").contains(characterError);
 
         // can't start with an underscore
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("_nein");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page").contains(firstCharacterError);
 
         // can't start with a dash
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("-nope");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page").contains(firstCharacterError);
 
         // has to be at least two characters long
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("x");
-        cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9._-]+$"
-        );
+        cy.pick("page").contains(lengthError);
       });
     });
 
@@ -180,9 +209,28 @@ context("project creation", () => {
     });
   });
 
+  it("disallows creating a project from a repository without commits", () => {
+    withNoCommitsRepositoryStub(() => {
+      cy.pick("new-project-button").click();
+
+      cy.pick("existing-project").click();
+
+      cy.pick("existing-project", "choose-path-button").click();
+      // Make sure UI has time to update path value from stub,
+      // this prevents this spec from failing on CI.
+      cy.wait(500);
+
+      cy.pick("existing-project")
+        .contains(
+          "The directory should contain a git repository with at least one branch"
+        )
+        .should("exist");
+    });
+  });
+
   context("happy paths", () => {
     it("creates a new project from an empty directory", () => {
-      withEmptyRepositoryStub(() => {
+      withEmptyDirectoryStub(() => {
         cy.pick("new-project-button").click();
 
         cy.pick("name").type("new-fancy-project.xyz");

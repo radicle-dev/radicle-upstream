@@ -76,12 +76,25 @@ export const project = projectStore.readable;
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
 
+const trackedStore = remote.createStore<Projects>();
+export const tracked = trackedStore.readable;
+
+const localStateStore = remote.createStore<LocalState>();
+export const localState = localStateStore.readable;
+
 // EVENTS
 enum Kind {
+  ClearLocalState = "CLEAR_LOCAL_STATE",
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchTracked = "FETCH_TRACKED",
   FetchUser = "FETCH_USER",
+  FetchLocalState = "FETCH_LOCAL_STATE",
+}
+
+interface ClearLocalState extends event.Event<Kind> {
+  kind: Kind.ClearLocalState;
 }
 
 interface Create extends event.Event<Kind> {
@@ -99,13 +112,30 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
+interface FetchTracked extends event.Event<Kind> {
+  kind: Kind.FetchTracked;
+}
+
 interface FetchUser extends event.Event<Kind> {
   kind: Kind.FetchUser;
   urn: string;
 }
 
-type Msg = Create | Fetch | FetchList | FetchUser;
+interface FetchLocalState extends event.Event<Kind> {
+  kind: Kind.FetchLocalState;
+  path: string;
+}
 
+type Msg =
+  | ClearLocalState
+  | Create
+  | Fetch
+  | FetchList
+  | FetchLocalState
+  | FetchTracked
+  | FetchUser;
+
+// REQUEST INPUTS
 interface CreateInput {
   repo: Repo;
   description?: string;
@@ -119,6 +149,10 @@ interface RegisterInput {
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
+    case Kind.ClearLocalState:
+      localStateStore.reset();
+      localStateError.set("");
+      break;
     case Kind.Create:
       creationStore.loading();
       api
@@ -144,6 +178,21 @@ const update = (msg: Msg): void => {
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
+      break;
+
+    case Kind.FetchTracked:
+      trackedStore.loading();
+      api
+        .get<Projects>("projects/tracked")
+        .then(trackedStore.success)
+        .catch(trackedStore.error);
+      break;
+
+    case Kind.FetchLocalState:
+      localStateStore.loading();
+      getLocalState(msg.path)
+        .then(localStateStore.success)
+        .catch(localStateStore.error);
       break;
 
     case Kind.FetchUser:
@@ -215,34 +264,45 @@ export const register = (
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
+export const fetchLocalState = event.create<Kind, Msg>(
+  Kind.FetchLocalState,
+  update
+);
+
+export const fetchTracked = event.create<Kind, Msg>(Kind.FetchTracked, update);
+export const clearLocalState = event.create<Kind, Msg>(
+  Kind.ClearLocalState,
+  update
+);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);
 
 // NEW PROJECT
 
-export const localState = writable<LocalState | string>("");
 export const localStateError = writable<string>("");
 export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
+export const formatNameInput = (input: string) => input.replace(" ", "-");
+export const extractName = (repoPath: string) =>
+  repoPath.split("/").slice(-1)[0];
+
 const fetchBranches = async (path: string) => {
-  // Revert to defaults whenever the path changes in case this query fails
-  // or the user clicks cancel in the directory selection dialog.
-  localState.set("");
+  fetchLocalState({ path });
+
   localStateError.set("");
   defaultBranch.set(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
   // This is just a safe guard. Since the validations on the constraints are
   // executed first, an empty path should not make it this far.
-  if (path === "") {
+  if (!path.length) {
     return;
   }
 
   try {
     const state = await getLocalState(path);
-    localState.set(state);
     if (!state.branches.includes(get(defaultBranch))) {
       defaultBranch.set(state.branches[0]);
     }
@@ -252,9 +312,12 @@ const fetchBranches = async (path: string) => {
 };
 
 const validateExistingRepository = (path: string): Promise<boolean> => {
-  return fetchBranches(path).then(
-    () => !get(localStateError).match("could not find repository")
-  );
+  return fetchBranches(path).then(() => {
+    return (
+      !get(localStateError).match("could not find repository") &&
+      !get(localStateError).match("repository has no branches")
+    );
+  });
 };
 
 const validateNewRepository = (path: string): Promise<boolean> => {
@@ -263,13 +326,27 @@ const validateNewRepository = (path: string): Promise<boolean> => {
   );
 };
 
+const projectNameConstraints = {
+  presence: {
+    message: "You must provide a display name",
+    allowEmpty: false,
+  },
+  firstHandleChar: {
+    valueName: "project name",
+  },
+  length: {
+    minimum: 2,
+    message: "Your project name should be at least 2 characters long.",
+  },
+  format: {
+    pattern: new RegExp(projectNameMatch, "i"),
+    message:
+      "Your project name has unsupported characters in it. You can only use basic letters, numbers, and the _ , - and . characters.",
+  },
+};
+
 export const nameValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore({
-    format: {
-      pattern: new RegExp(projectNameMatch, "i"),
-      message: `Project name should match ${projectNameMatch}`,
-    },
-  });
+  return validation.createValidationStore(projectNameConstraints);
 };
 
 export const repositoryPathValidationStore = (
@@ -302,7 +379,8 @@ export const repositoryPathValidationStore = (
       [
         {
           promise: validateExistingRepository,
-          validationMessage: "The directory should contain a git repository",
+          validationMessage:
+            "The directory should contain a git repository with at least one branch",
         },
       ]
     );

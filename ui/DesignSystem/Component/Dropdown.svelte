@@ -1,22 +1,39 @@
-<script>
+<script lang="ts">
   import { Icon } from "../Primitive";
+  import type { EmojiAvatar } from "../../src/avatar";
+
   import Option from "./Dropdown/Option.svelte";
+  import Overlay from "./Overlay.svelte";
 
-  export let placeholder = null;
+  type Option =
+    | { value: string; title: string }
+    | {
+        value: string;
+        title: string;
+        avatarProps: {
+          avatarFallback: EmojiAvatar;
+          title: string;
+          variant?: "circle" | "square";
+        };
+      };
 
-  export let dataCy = null;
-  export let options = null;
-  export let style = null;
-  export let optionStyle = null;
-  export let valid = true;
-  export let validationMessage = null;
-  export let validationPending = false;
+  export let options: Option[];
+
+  export let placeholder = "";
+
+  export let dataCy = "";
+  export let style = "";
+  export let optionStyle = "";
+
+  export let valid: boolean = true;
+  export let validationMessage = "";
+  export let validationPending: boolean = false;
 
   let expanded = false;
 
   // bind to this prop from the outside
-  export let value = null;
-  export let disabled = false;
+  export let value = "";
+  export let disabled: boolean = false;
 
   const toggleMenu = () => {
     if (disabled) {
@@ -25,11 +42,12 @@
 
     expanded = !expanded;
   };
+
   const hideMenu = () => {
     expanded = false;
   };
 
-  const optionSelectedHandler = event => {
+  const optionSelectedHandler = (event: CustomEvent<{ value: string }>) => {
     value = event.detail.value;
     toggleMenu();
   };
@@ -100,40 +118,40 @@
   }
 </style>
 
-<svelte:window on:click={hideMenu} />
-
-<div data-cy={dataCy} class="dropdown" {style}>
-  <div
-    class="button"
-    class:invalid={!valid}
-    class:disabled
-    on:click|stopPropagation={toggleMenu}>
-    {#if value && optionByValue}
-      <Option {...optionByValue} {disabled} />
-    {:else}
-      <p style={`margin: 0 42px 0 12px; color: ${disabledColor()}`}>
-        {placeholder}
-      </p>
-    {/if}
-    <Icon.ChevronUpDown
-      style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
-  </div>
-
-  <div class="menu" hidden={!expanded}>
-    {#each options as option}
-      <Option
-        style={optionStyle}
-        {...option}
-        on:selected={optionSelectedHandler}
-        selected={value === option.value} />
-    {/each}
-  </div>
-
-  {#if !validationPending && !valid && validationMessage}
-    <div class="validation-row">
-      <p style="color: var(--color-negative); text-align: left;">
-        {validationMessage}
-      </p>
+<Overlay {expanded} on:hide={hideMenu}>
+  <div data-cy={dataCy} class="dropdown" {style}>
+    <div
+      class="button"
+      class:invalid={!valid}
+      class:disabled
+      on:click={toggleMenu}>
+      {#if value && optionByValue}
+        <Option {...optionByValue} {disabled} />
+      {:else}
+        <p style={`margin: 0 42px 0 12px; color: ${disabledColor()}`}>
+          {placeholder}
+        </p>
+      {/if}
+      <Icon.ChevronUpDown
+        style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
     </div>
-  {/if}
-</div>
+
+    <div class="menu" hidden={!expanded}>
+      {#each options as option}
+        <Option
+          style={optionStyle}
+          {...option}
+          on:selected={optionSelectedHandler}
+          selected={value === option.value} />
+      {/each}
+    </div>
+
+    {#if !validationPending && !valid && validationMessage}
+      <div class="validation-row">
+        <p style="color: var(--color-negative); text-align: left;">
+          {validationMessage}
+        </p>
+      </div>
+    {/if}
+  </div>
+</Overlay>

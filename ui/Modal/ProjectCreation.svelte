@@ -1,27 +1,28 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher, onDestroy } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
-  import { Variant as IllustrationVariant } from "../src/illustration.ts";
-  import * as notification from "../src/notification.ts";
-  import * as path from "../src/path.ts";
-  import * as urn from "../src/urn.ts";
+  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config";
+  import { Variant as IllustrationVariant } from "../src/illustration";
+  import * as notification from "../src/notification";
+  import * as path from "../src/path";
+  import * as remote from "../src/remote";
+  import * as urn from "../src/urn";
   import {
+    clearLocalState,
     create,
     defaultBranch,
     localState,
     nameValidationStore,
+    formatNameInput,
+    extractName,
     repositoryPathValidationStore,
     RepoType,
-  } from "../src/project.ts";
-  import { ValidationStatus } from "../src/validation.ts";
-  import * as screen from "../src/screen.ts";
-  import {
-    dismissRemoteHelperHint,
-    fetch as fetchSession,
-    settings,
-  } from "../src/session.ts";
+  } from "../src/project";
+  import { ValidationStatus } from "../src/validation";
+  import * as screen from "../src/screen";
+  import type { Settings } from "../src/settings";
+  import { dismissRemoteHelperHint, settings } from "../src/session";
 
   import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
@@ -31,17 +32,17 @@
     RemoteHelperHint,
     Tooltip,
   } from "../DesignSystem/Component";
+  import { CSSPosition } from "../src/style";
 
-  let currentSelection;
-  let nameInput;
-  export let content;
+  let currentSelection: RepoType;
+  let nameInput: HTMLInputElement;
 
   const dispatch = createEventDispatcher();
 
   $: isNew = currentSelection === RepoType.New;
   $: isExisting = currentSelection === RepoType.Existing;
 
-  let name;
+  let name = "";
   let description = "";
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
@@ -50,7 +51,7 @@
 
   let loading = false;
 
-  const setCurrentSelection = type => {
+  const setCurrentSelection = (type: RepoType) => {
     currentSelection = type;
     // Reset the name validation on selection switch
     nameValidation = nameValidationStore();
@@ -70,10 +71,6 @@
           ? { type: RepoType.New, name, path: newRepositoryPath }
           : { type: RepoType.Existing, path: existingRepositoryPath },
       });
-
-      // Re-fetch session so we have the right permissions to enable the
-      // project registration button rithout a page-reload.
-      await fetchSession();
 
       push(path.projectSource(response.id));
       notification.info(
@@ -95,21 +92,25 @@
   // to make sure the screen gets unlocked in any case when the component gets
   // destroyed.
   onDestroy(() => {
+    clearLocalState();
     screen.unlock();
   });
 
   $: pathValidation = repositoryPathValidationStore(isNew);
 
-  $: {
-    if (name.length > 0) nameValidation.validate(name);
-  }
-
   $: repositoryPath = isNew ? newRepositoryPath : existingRepositoryPath;
   $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0))
     pathValidation.validate(repositoryPath);
 
+  $: {
+    if (name.length > 0) {
+      name = formatNameInput(name);
+      nameValidation.validate(name);
+    }
+  }
+
   // Use the directory name for existing projects as the project name.
-  $: name = existingRepositoryPath.split("/").slice(-1)[0];
+  $: name = extractName(existingRepositoryPath);
 
   // Reset the project name when switching between new and existing repo.
   $: isExisting && (name = "");
@@ -122,6 +123,15 @@
     !validName ||
     $pathValidation.status !== ValidationStatus.Success ||
     loading;
+
+  $: localStateStore = $localState;
+  $: localBranches =
+    localStateStore.status === remote.Status.Success
+      ? localStateStore.data.branches
+      : [];
+
+  $: showRemoteHelper =
+    $settings && ($settings as Settings).appearance.hints.showRemoteHelper;
 </script>
 
 <style>
@@ -156,7 +166,7 @@
   }
 </style>
 
-<div class="container" bind:this={content} data-cy="page">
+<div class="container" data-cy="page">
   <div class="create-project" data-cy="create-project">
     <Illustration
       style="align-self: center; margin-bottom: 1rem;"
@@ -205,17 +215,19 @@
               style="margin-right: 1rem; color: var(--color-foreground-level-6)">
               Default branch
             </p>
-            {#if $localState.branches && $localState.branches.length > 0}
+            {#if localBranches.length > 0}
               <Dropdown
                 style="max-width: 22.9rem;"
-                options={$localState.branches.map(branch => {
-                  return { variant: 'text', value: branch, textProps: { title: branch } };
-                })}
+                options={localBranches.map(branch => ({
+                  variant: 'text',
+                  value: branch,
+                  title: branch,
+                }))}
                 bind:value={$defaultBranch} />
             {:else}
               <Dropdown
                 style="max-width: 22.9rem;"
-                placeholder={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
+                placeholder={DEFAULT_BRANCH_FOR_NEW_PROJECTS}
                 options={[]}
                 disabled />
             {/if}
@@ -227,14 +239,14 @@
           </p>
         </div>
       </RadioOption>
-      {#if $settings && $settings.appearance.hints.showRemoteHelper}
+      {#if showRemoteHelper}
         <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
       {/if}
     </div>
 
     <Tooltip
-      value={isExisting && 'The project name is taken from the the repository you selected'}
-      position="top">
+      value={isExisting ? 'The project name is taken from the repository you selected' : ''}
+      position={CSSPosition.Top}>
       <Input.Text
         placeholder="Project name*"
         dataCy="name"

@@ -1,9 +1,16 @@
-<script>
-  import { Illustration, KeyHint } from "../DesignSystem/Component";
-  import { Variant as IllustrationVariant } from "../src/illustration";
+<script lang="ts">
   import { isDev } from "../../native/ipc.js";
 
-  export let content;
+  import * as hotkeys from "../src/hotkeys";
+  import { Variant as IllustrationVariant } from "../src/illustration";
+
+  import { Illustration, KeyHint } from "../DesignSystem/Component";
+
+  const shortcuts = [
+    ...hotkeys.shortcuts,
+    ...(isDev() ? hotkeys.devShortcuts : []),
+    hotkeys.escape,
+  ];
 </script>
 
 <style>
@@ -37,37 +44,19 @@
   }
 </style>
 
-<div data-cy="hotkey-modal" class="container" bind:this={content}>
+<div data-cy="hotkey-modal" class="container">
   <Illustration
     style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
-    <div class="shortcut">
-      <KeyHint noModifier hint="?" />
-      <p class="description">Keyboard shortcuts</p>
-    </div>
-    <div class="shortcut">
-      <KeyHint hint="," />
-      <p class="description">Settings</p>
-    </div>
-    {#if isDev()}
+    {#each shortcuts as shortcut}
       <div class="shortcut">
-        <KeyHint hint="d" />
-        <p class="description">Design system</p>
+        <KeyHint
+          noModifier={!shortcut.modifierKey}
+          hint={shortcut.displayKey || shortcut.key} />
+        <p class="description">{shortcut.description}</p>
       </div>
-    {/if}
-    <div class="shortcut">
-      <KeyHint hint="p" />
-      <p class="description">Search</p>
-    </div>
-    <div class="shortcut">
-      <KeyHint hint="n" />
-      <p class="description">New project</p>
-    </div>
-    <div class="shortcut">
-      <KeyHint hint="esc" />
-      <p class="description">Close modal</p>
-    </div>
+    {/each}
   </div>
 </div>

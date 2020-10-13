@@ -5,7 +5,7 @@ context("identity creation", () => {
   };
 
   beforeEach(() => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.visit("./public/index.html");
     cy.pick("welcome-screen").should("exist");
   });
@@ -40,7 +40,7 @@ context("identity creation", () => {
 
       // Success screen.
       cy.pick("urn")
-        .contains(/rafalca@/)
+        .contains(/hwd[\w]{56}/)
         .should("exist");
 
       // Land on profile screen.
@@ -63,7 +63,7 @@ context("identity creation", () => {
 
       // Success screen.
       cy.pick("urn")
-        .contains(/rafalca@/)
+        .contains(/hwd[\w]{56}/)
         .should("exist");
 
       // Land on profile screen.
@@ -75,7 +75,7 @@ context("identity creation", () => {
       cy.pick("clear-session-button").click();
       cy.contains("A free and open-source way to host").should("exist");
 
-      // When creating the same identity again without nuking all data, it
+      // When creating the same identity again without resetting all data, it
       // should show an error and return to the name entry screen.
       cy.pick("get-started-button").click();
 
@@ -101,7 +101,7 @@ context("identity creation", () => {
       cy.pick("repeat-passphrase-input").type("1234");
       cy.pick("set-passphrase-button").click();
       cy.pick("urn")
-        .contains(/cloudhead@/)
+        .contains(/hwd[\w]{56}/)
         .should("exist");
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains("cloudhead");
@@ -127,38 +127,45 @@ context("identity creation", () => {
 
     context("handle", () => {
       it("prevents the user from submitting an invalid handle", () => {
-        const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
+        const characterError =
+          "Your display name has unsupported characters in it. You can only use basic letters, numbers, and the _ and - characters.";
+        const firstCharacterError =
+          "Your display name should start with a letter or a number.";
+        const lengthError =
+          "Your display name should be at least 2 characters long.";
 
         cy.pick("handle-input").type("_rafalca");
         cy.pick("next-button").click();
 
         // Handle is required.
         cy.pick("handle-input").clear();
-        cy.pick("enter-name-screen").contains("You must provide a handle");
+        cy.pick("enter-name-screen").contains(
+          "You must provide a display name"
+        );
 
         // No spaces.
         cy.pick("handle-input").type("no spaces");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("handle-input").should("have.value", "no-spaces");
 
         // No special characters.
         cy.pick("handle-input").clear();
-        cy.pick("handle-input").type("$bad");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("handle-input").type("bad$");
+        cy.pick("enter-name-screen").contains(characterError);
 
         // Can't start with an underscore.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("_nein");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("enter-name-screen").contains(firstCharacterError);
 
         // Can't start with a dash.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("-não");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("enter-name-screen").contains(firstCharacterError);
 
         // Has to be at least two characters long.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("x");
-        cy.pick("enter-name-screen").contains(validationError);
+        cy.pick("enter-name-screen").contains(lengthError);
       });
     });
 

@@ -15,16 +15,36 @@ jest.mock("./api");
 
 describe("creating a project", () => {
   describe("path validation", () => {
-    it("sets the local state", () => {
-      project.localState.set("test");
+    it("formats project names correctly", () => {
+      const acceptable = "new_project";
+      const withSpaces = "new project";
+
+      // formats spaces
+      expect(project.formatNameInput(withSpaces)).toEqual("new-project");
+
+      // doesn't mess with names that are already ok
+      expect(project.formatNameInput(acceptable)).toEqual(acceptable);
+    });
+
+    it("extract project names correctly from a repository path", () => {
+      expect(
+        project.extractName("screaming/somewhere/in/the/machine/my-project")
+      ).toEqual("my-project");
+    });
+
+    it("fetches local state and sets store accordingly", () => {
       const validation = project.repositoryPathValidationStore(false);
       validation.validate("/repository/path");
 
-      // resetting the local state on validation start
-      expect(get(project.localState)).toEqual("");
+      expect(get(project.localState)).toEqual({
+        status: remote.Status.Loading,
+      });
 
       process.nextTick(() => {
-        expect(get(project.localState)).toEqual(localStateMock);
+        expect(get(project.localState)).toEqual({
+          status: remote.Status.Success,
+          data: localStateMock,
+        });
       });
     });
 

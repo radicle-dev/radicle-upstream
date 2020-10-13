@@ -1,19 +1,23 @@
-<script>
+<script lang="ts">
   import { push } from "svelte-spa-router";
   import { createEventDispatcher } from "svelte";
 
   import { Icon, Input } from "../DesignSystem/Primitive";
 
-  import { TrackToggle, Urn } from "../DesignSystem/Component";
+  import {
+    Remote,
+    TrackToggle,
+    ShareableIdentifier,
+  } from "../DesignSystem/Component";
 
   import * as path from "../src/path";
-  import { Status } from "../src/remote";
-  import { updateUrn, validation } from "../src/search";
+  import * as remote from "../src/remote";
+
+  import { request, updateUrn, validation } from "../src/search";
   import { ValidationStatus } from "../src/validation";
 
-  export let content;
-
-  let searchBar, value, hasExpanded, showTrackingInfo;
+  let searchBar: HTMLDivElement,
+    value = "";
 
   const dispatch = createEventDispatcher();
 
@@ -24,27 +28,25 @@
     push(path.projectUntracked(value));
   };
 
-  const onKeydown = ev => {
+  const onKeydown = (ev: KeyboardEvent) => {
     switch (ev.code) {
       case "Enter":
         navigateToProject();
         break;
       case "Escape":
         dispatch("hide");
+        break;
     }
   };
 
+  let handle = "";
+
   $: if (value && value.length > 0) {
     updateUrn({ urn: value });
+    handle = value.replace("rad:git:", "");
   }
 
-  // TODO(sos): animate & show/hide based on actual remote response
-  $: {
-    showTrackingInfo = hasExpanded
-      ? true
-      : value && value.length > 0 && $validation.status === Status.Success;
-    if (showTrackingInfo && !hasExpanded) hasExpanded = true;
-  }
+  $: showTrackingInfo = value.length > 0;
 </script>
 
 <style>
@@ -67,30 +69,35 @@
   }
 
   .showTrackingInfo {
-    height: 13.5rem;
+    height: 11rem;
   }
 
   .header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.25rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .handle {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--color-foreground-level-6);
   }
 </style>
 
 <svelte:window on:keydown={onKeydown} />
 
-<div class="container" bind:this={content}>
+<div class="container">
   <div class="search-bar" bind:this={searchBar}>
-    <!-- TODO(sos): fix autofocus / hotkey conflict -->
     <Input.Text
       autofocus
       bind:value
-      placeholder="Have a Radicle project ID? Paste it here..."
+      placeholder="Have a project handle? Paste it here…"
       showLeftItem
       style="height: 3rem;"
-      inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
-      validation={$validation}
+      inputStyle="border: none; border-radius: 0.5rem; height: 3rem; color: var(--color-foreground-level-6);"
       hint="v">
       <div slot="left" style="display: flex;">
         <Icon.MagnifyingGlass />
@@ -105,23 +112,23 @@
     class="tracking-info"
     class:showTrackingInfo
     on:click={navigateToProject}>
-    <div style="padding: 2rem;">
-      <div class="header">
-        <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
-        <TrackToggle variant="expanded" />
-      </div>
+    <div style="padding: 1.5rem;">
+      <Remote store={request} let:data={response}>
+        <div class="header typo-header-3">
+          <span class="handle">{handle}</span>
+          <TrackToggle style="margin-left: 1rem;" />
+        </div>
 
-      <div style="display: flex; margin-bottom: 1rem;">
-        <Urn
-          urn={value || ''}
-          notificationText="The project ID was copied to your clipboard"
-          showOnHover />
-      </div>
+        <p style="color: var(--color-foreground-level-6);">
+          You’re not following this project yet, so there’s nothing to show
+          here. Follow it and you’ll be notified as soon as it’s available.
+        </p>
 
-      <p style="color: var(--color-foreground-level-6);">
-        You’re not following this project yet, so there’s nothing to show here.
-        Follow it and you’ll be notified as soon as it’s available.
-      </p>
+        <div slot="error" let:error>
+          <!-- TODO(sos): validation & other errors go here -->
+          <p>{error && error.message}</p>
+        </div>
+      </Remote>
     </div>
   </div>
 </div>

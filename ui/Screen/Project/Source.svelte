@@ -2,7 +2,6 @@
   import { getContext } from "svelte";
   import { format } from "timeago.js";
 
-  import { project as projectStore } from "../../src/project.ts";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import {
     currentPeerId,
@@ -24,7 +23,7 @@
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
 
-  const { id } = getContext("project");
+  const project = getContext("project");
 
   // Reset some stores on first load
   resetObjectPath();
@@ -33,7 +32,7 @@
   $: fetchObject({
     path: $objectPath,
     peerId: $currentPeerId,
-    projectId: id,
+    projectId: project.id,
     revision: $currentRevision,
     type: $objectType,
   });
@@ -78,64 +77,62 @@
   }
 </style>
 
-<Remote store={projectStore} let:data={project}>
-  <div class="wrapper">
-    <div class="container center-content">
-      <div class="column-left">
-        <!-- Tree -->
-        <div class="source-tree" data-cy="source-tree">
-          <Folder
-            currentRevision={$currentRevision}
-            currentPeerId={$currentPeerId}
-            projectId={project.id}
-            toplevel
-            name={project.metadata.name} />
-        </div>
-      </div>
-
-      <div class="column-right">
-        <!-- Object -->
-        <Remote store={objectStore} let:data={object}>
-          {#if object.info.objectType === ObjectType.Blob}
-            <FileSource
-              blob={object}
-              path={$objectPath}
-              projectName={project.metadata.name}
-              projectId={project.id} />
-          {:else if object.path === ''}
-            <!-- Repository root -->
-            <div class="commit-header">
-              <CommitTeaser
-                projectId={project.id}
-                user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
-                commitMessage={object.info.lastCommit.summary}
-                commitSha={object.info.lastCommit.sha1}
-                timestamp={format(object.info.lastCommit.committerTime * 1000)}
-                style="height: 100%" />
-            </div>
-
-            <!-- Readme -->
-            <Remote
-              store={readme(id, $currentPeerId, $currentRevision)}
-              let:data={readme}>
-              {#if readme}
-                <Readme content={readme.content} path={readme.path} />
-              {:else}
-                <EmptyState
-                  text="This project doesn't have a README yet."
-                  illustration={IllustrationVariant.Eyes}
-                  style="height: 320px;" />
-              {/if}
-            </Remote>
-          {/if}
-          <div slot="error" let:error>
-            <EmptyState
-              text={JSON.stringify(error)}
-              illustration={IllustrationVariant.Eyes}
-              style="height: 320px;" />
-          </div>
-        </Remote>
+<div class="wrapper">
+  <div class="container center-content">
+    <div class="column-left">
+      <!-- Tree -->
+      <div class="source-tree" data-cy="source-tree">
+        <Folder
+          currentRevision={$currentRevision}
+          currentPeerId={$currentPeerId}
+          projectId={project.id}
+          toplevel
+          name={project.metadata.name} />
       </div>
     </div>
+
+    <div class="column-right">
+      <!-- Object -->
+      <Remote store={objectStore} let:data={object}>
+        {#if object.info.objectType === ObjectType.Blob}
+          <FileSource
+            blob={object}
+            path={$objectPath}
+            projectName={project.metadata.name}
+            projectId={project.id} />
+        {:else if object.path === ''}
+          <!-- Repository root -->
+          <div class="commit-header">
+            <CommitTeaser
+              projectId={project.id}
+              user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
+              commitMessage={object.info.lastCommit.summary}
+              commitSha={object.info.lastCommit.sha1}
+              timestamp={format(object.info.lastCommit.committerTime * 1000)}
+              style="height: 100%" />
+          </div>
+
+          <!-- Readme -->
+          <Remote
+            store={readme(project.id, $currentPeerId, $currentRevision)}
+            let:data={readme}>
+            {#if readme}
+              <Readme content={readme.content} path={readme.path} />
+            {:else}
+              <EmptyState
+                text="This project doesn't have a README yet."
+                illustration={IllustrationVariant.Eyes}
+                style="height: 320px;" />
+            {/if}
+          </Remote>
+        {/if}
+        <div slot="error" let:error>
+          <EmptyState
+            text={JSON.stringify(error)}
+            illustration={IllustrationVariant.Eyes}
+            style="height: 320px;" />
+        </div>
+      </Remote>
+    </div>
   </div>
-</Remote>
+</div>

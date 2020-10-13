@@ -1,7 +1,8 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use serde::Deserialize;
-use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
+use tokio::sync::mpsc;
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, notification::Subscriptions};
 
@@ -33,27 +34,31 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api(
-    ctx: context::Ctx,
+    ctx: context::Context,
     subscriptions: Subscriptions,
-    enable_control: bool,
+    selfdestruct: mpsc::Sender<()>,
+    enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let avatar_filter = path("avatars").and(avatar::get_filter());
-    let control_filter = path("control")
-        .map(move || enable_control)
-        .and_then(|enable| async move {
-            if enable {
-                Ok(())
-            } else {
-                Err(reject::not_found())
-            }
-        })
-        .untuple_one()
-        .and(control::filters(ctx.clone()));
+    let control_filter =
+        path("control")
+            .and(with_unsealed_guard(ctx.clone()))
+            .and(control::filters(
+                ctx.clone(),
+                selfdestruct,
+                enable_fixture_creation,
+            ));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
-    let notification_filter = path("notifications").and(notification::filters(subscriptions));
-    let project_filter = path("projects").and(project::filters(ctx.clone()));
+    let notification_filter = path("notifications")
+        .and(with_unsealed_guard(ctx.clone()))
+        .and(notification::filters(subscriptions));
+    let project_filter = path("projects")
+        .and(with_unsealed_guard(ctx.clone()))
+        .and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
-    let source_filter = path("source").and(source::filters(ctx));
+    let source_filter = path("source")
+        .and(with_unsealed_guard(ctx.clone()))
+        .and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
         avatar_filter,
@@ -91,15 +96,13 @@ pub fn api(
     recovered.with(cors).with(log)
 }
 
-/// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
+/// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard(ctx: context::Ctx) -> BoxedFilter<(coco::user::User,)> {
+fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
     warp::any()
         .and(with_context(ctx))
-        .and_then(|ctx: context::Ctx| async move {
-            let ctx = ctx.read().await;
-
+        .and_then(|ctx: context::Context| async move {
             let session = crate::session::current(ctx.state.clone(), &ctx.store)
                 .await
                 .expect("unable to get current sesison");
@@ -107,9 +110,8 @@ fn with_owner_guard(ctx: context::Ctx) -> BoxedFilter<(coco::user::User,)> {
             if let Some(identity) = session.identity {
                 let user = ctx
                     .state
-                    .lock()
+                    .get_user(identity.urn)
                     .await
-                    .get_user(&identity.urn)
                     .expect("unable to get coco user");
                 let user = coco::user::verify(user).expect("unable to verify user");
 
@@ -121,9 +123,25 @@ fn with_owner_guard(ctx: context::Ctx) -> BoxedFilter<(coco::user::User,)> {
         .boxed()
 }
 
+/// Asserts presence of the signer and rejects the request early if missing.
+#[must_use]
+fn with_unsealed_guard(ctx: context::Context) -> BoxedFilter<()> {
+    warp::any()
+        .and(with_context(ctx))
+        .and_then(|ctx: context::Context| async move {
+            if ctx.signer.is_some() {
+                Ok(())
+            } else {
+                Err(Rejection::from(error::Routing::SealedKeystore))
+            }
+        })
+        .untuple_one()
+        .boxed()
+}
+
 /// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
-fn with_context(ctx: context::Ctx) -> BoxedFilter<(context::Ctx,)> {
+fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
     warp::any().map(move || ctx.clone()).boxed()
 }
 
@@ -295,5 +313,35 @@ mod test {
                 })
             );
         });
+    }
+
+    #[tokio::test]
+    async fn with_unsealed_guard() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let mut ctx = context::Context::tmp(&tmp_dir).await?;
+        ctx.signer = None;
+        let api = with_qs_opt::<Query>()
+            .map(|opt_query| warp::reply::json(&opt_query))
+            .and(super::with_unsealed_guard(ctx))
+            .recover(super::error::recover)
+            .boxed();
+
+        let res = warp::test::request()
+            .method("GET")
+            .path("/?value=72")
+            .reply(&api)
+            .await;
+
+        assert_response(&res, StatusCode::FORBIDDEN, |have| {
+            assert_eq!(
+                have,
+                serde_json::json!({
+                    "message": "Keystore is sealed",
+                    "variant": "FORBIDDEN"
+                })
+            );
+        });
+
+        Ok(())
     }
 }

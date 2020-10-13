@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.16](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.15...v0.0.16) (2020-09-30)
+
+
+### Features
+
+* **proxy:** configure include file during checkout ([#946](https://github.com/radicle-dev/radicle-upstream/issues/946)) ([cca0273](https://github.com/radicle-dev/radicle-upstream/commit/cca0273066165c79dfae9e86cc4688389d2cea0d)), closes [#894](https://github.com/radicle-dev/radicle-upstream/issues/894) [#930](https://github.com/radicle-dev/radicle-upstream/issues/930)
+* **proxy:** keep CoCo alive ([#977](https://github.com/radicle-dev/radicle-upstream/issues/977)) ([91c1f19](https://github.com/radicle-dev/radicle-upstream/commit/91c1f190beeadd511153c1b1c1ef4bd2adbfc7cb))
+* **proxy:** waiting room requests ([#903](https://github.com/radicle-dev/radicle-upstream/issues/903)) ([cc1834b](https://github.com/radicle-dev/radicle-upstream/commit/cc1834b10d18fd388157a4bb7775916db24a7c90))
+* **proxy:** waiting room subroutine ([#967](https://github.com/radicle-dev/radicle-upstream/issues/967)) ([020bf33](https://github.com/radicle-dev/radicle-upstream/commit/020bf33e8a8406020f6eac9ed1141dbfd0b6258c)), closes [#955](https://github.com/radicle-dev/radicle-upstream/issues/955)
+* **ui:** use search bar to kick off project search ([#969](https://github.com/radicle-dev/radicle-upstream/issues/969)) ([e4d1996](https://github.com/radicle-dev/radicle-upstream/commit/e4d19966ede8ec83a225d955be7b46fee5c8be8c))
+
+
+### Bug Fixes
+
+* **proxy:** reintroduce sync on startup ([#979](https://github.com/radicle-dev/radicle-upstream/issues/979)) ([60926d1](https://github.com/radicle-dev/radicle-upstream/commit/60926d17b629187a7b3a667e420703bf76e99864))
+* **ui:** wrap revision selector content ([#972](https://github.com/radicle-dev/radicle-upstream/issues/972)) ([26ecccd](https://github.com/radicle-dev/radicle-upstream/commit/26ecccdffd6038e1f0c26028a10b8620314b516a))
+* show commit count on project page ([#962](https://github.com/radicle-dev/radicle-upstream/issues/962)) ([11f0e47](https://github.com/radicle-dev/radicle-upstream/commit/11f0e47c7a00eb04a9424f2208322365d4a4f788))
+* **proxy:** move delta to config ([#968](https://github.com/radicle-dev/radicle-upstream/issues/968)) ([53a0971](https://github.com/radicle-dev/radicle-upstream/commit/53a0971fd44ccead44682d3e91953b52207c185b))
+* **ui:** improve identity and project name validation ([#953](https://github.com/radicle-dev/radicle-upstream/issues/953)) ([e57863c](https://github.com/radicle-dev/radicle-upstream/commit/e57863c5d37a9a8b611242196c1f0bde2bfcb592))
+
+### [0.0.15](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.14...v0.0.15) (2020-09-23)
+
+
+### Features
+
+* **proxy:** differentiate tracked projects from my projects ([#866](https://github.com/radicle-dev/radicle-upstream/issues/866)) ([b793264](https://github.com/radicle-dev/radicle-upstream/commit/b7932640adb9badf4a065ae25323db3285b63d5e))
+* **proxy:** sync with peers when coming online ([#896](https://github.com/radicle-dev/radicle-upstream/issues/896)) ([4ea6860](https://github.com/radicle-dev/radicle-upstream/commit/4ea68609572b43afa994d656393df98adac32313)), closes [#852](https://github.com/radicle-dev/radicle-upstream/issues/852)
+* **ui:** add input field hint ([#914](https://github.com/radicle-dev/radicle-upstream/issues/914)) ([4e47aff](https://github.com/radicle-dev/radicle-upstream/commit/4e47aff6a8f30536a05f88296ca0c679908204bb))
+* **ui:** introduce experimental flag ([#913](https://github.com/radicle-dev/radicle-upstream/issues/913)) ([6730388](https://github.com/radicle-dev/radicle-upstream/commit/67303881a8b87152464008c66e7a6d2e525894bf))
+* **ui:** project name formatting ([#938](https://github.com/radicle-dev/radicle-upstream/issues/938)) ([cefa07f](https://github.com/radicle-dev/radicle-upstream/commit/cefa07f9751f363c8aee3dba3ad22e7a9c6d785f))
+
+
+### Bug Fixes
+
+* **ui:** allow irc:// as external protocol ([#921](https://github.com/radicle-dev/radicle-upstream/issues/921)) ([0e33c06](https://github.com/radicle-dev/radicle-upstream/commit/0e33c0666d84eab88bebf57f0cfd662c6bf595ca))
+* **ui:** handle repositories with no branches gracefully ([#945](https://github.com/radicle-dev/radicle-upstream/issues/945)) ([f3c5ff1](https://github.com/radicle-dev/radicle-upstream/commit/f3c5ff19c9e8221abb45f7ee3726c3d2af5ee3ea))
+* **ui:** show deleted files in commit view ([#925](https://github.com/radicle-dev/radicle-upstream/issues/925)) ([410d657](https://github.com/radicle-dev/radicle-upstream/commit/410d6577fbc42d06f1f2d2b4b48246a15c0a6633))
+
 ### [0.0.14](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.13...v0.0.14) (2020-09-16)
 
 

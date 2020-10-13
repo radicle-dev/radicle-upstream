@@ -23,6 +23,22 @@ interface Commit {
   changeset: Record<string, unknown>;
 }
 
+interface Stats {
+  branches: number;
+  commits: number;
+  contributors: number;
+}
+
+interface Commits {
+  headers: CommitSummary[];
+  stats: Stats;
+}
+
+interface CommitsStore {
+  history: CommitHistory;
+  stats: Stats;
+}
+
 interface CommitSummary {
   sha1: string;
   author: Person;
@@ -118,7 +134,7 @@ export type RevisionQuery = Branch | Tag | Sha;
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
 
-const commitsStore = remote.createStore<CommitHistory>();
+const commitsStore = remote.createStore<CommitsStore>();
 export const commits = commitsStore.readable;
 
 const objectStore = remote.createStore<SourceObject>();
@@ -173,7 +189,7 @@ interface FetchObject extends event.Event<Kind> {
 
 const groupCommits = (history: CommitSummary[]): CommitHistory => {
   const days: CommitHistory = [];
-  let groupDate = null;
+  let groupDate: Date | undefined = undefined;
 
   for (const commit of history) {
     const time = commit.committerTime;
@@ -214,14 +230,17 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
-        .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
+        .get<Commits>(`source/commits/${msg.projectId}/`, {
           query: {
             peerId: msg.revision.peerId,
             branch: msg.revision.name,
           },
         })
-        .then(history => {
-          commitsStore.success(groupCommits(history));
+        .then(response => {
+          commitsStore.success({
+            stats: response.stats,
+            history: groupCommits(response.headers),
+          });
         })
         .catch(commitsStore.error);
       break;

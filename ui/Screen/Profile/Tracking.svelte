@@ -1,58 +1,37 @@
 <script>
   import { fade } from "svelte/transition";
   import {
+    EmptyState,
     Hoverable,
     List,
     ProjectList,
+    Remote,
+    ShareableIdentifier,
     TrackToggle,
-    Urn,
   } from "../../DesignSystem/Component";
 
+  import { tracked, fetchTracked } from "../../src/project.ts";
   import { FADE_DURATION } from "../../src/config.ts";
+  import * as path from "../../src/path.ts";
+  import * as modal from "../../src/modal.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
 
-  const projects = [
-    {
-      metadata: {
-        name: "obediah",
-        description:
-          "Obediah Hinton is one of the village elders in a small village named Butcher Creek.",
-        maintainers: [],
-      },
-      registration: true,
-      shareableEntityIdentifier: "obediah@38590438594",
-    },
-    {
-      metadata: {
-        name: "lemuel",
-        description: "Lemuel is a villager from Butcher Creek.",
-        maintainers: [],
-      },
-      registration: false,
-      shareableEntityIdentifier: "lemuel@38590438594",
-      maintainers: [],
-    },
-  ];
+  fetchTracked();
+  $: console.log($tracked);
 
-  const untracked = [
-    {
-      urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
-      metadata: {
-        name: "snickers",
-      },
-    },
-    {
-      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-      metadata: {
-        name: "marsbar",
-      },
-    },
-    {
-      urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-      metadata: {
-        name: "nougati",
-      },
-    },
-  ];
+  // const untracked = [
+  //   {
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
+  //   },
+  //   {
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
+  //   },
+  //   {
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
+  //   },
+  // ];
+
+  const untracked = [];
 </script>
 
 <style>
@@ -70,7 +49,7 @@
   .undiscovered-project {
     padding: 1.5rem;
     flex: 1;
-    min-height: 4.5rem;
+    min-height: 6rem;
 
     display: flex;
     align-items: center;
@@ -88,7 +67,20 @@
 </style>
 
 <div class="container">
-  <ProjectList {projects} />
+  <Remote store={tracked} let:data={projects}>
+    {#if projects.length > 0}
+      <ProjectList {projects} />
+    {:else}
+      <EmptyState
+        text="You're not following any projects yet."
+        illustration={IllustrationVariant.Horse}
+        primaryActionText="Look for a project"
+        on:primaryAction={() => {
+          modal.toggle(path.search());
+        }} />
+    {/if}
+  </Remote>
+
   {#if untracked.length}
     <div out:fade|local={{ duration: FADE_DURATION }}>
       <div class="header">
@@ -97,15 +89,13 @@
           These projects haven't been found in your network yet or don't exist.
         </p>
       </div>
-
       <List items={untracked} let:item={project}>
         <Hoverable let:hovering={hover} style="flex: 1;">
           <div
             class="undiscovered-project"
             out:fade|local={{ duration: FADE_DURATION }}>
             <div>
-              <p class="project-name typo-text-bold">{project.metadata.name}</p>
-              <Urn urn={project.urn} showCopyOnlyOnHover />
+              <ShareableIdentifier urn={project.urn} />
             </div>
             {#if hover}
               <div transition:fade={{ duration: FADE_DURATION }}>

@@ -1,26 +1,27 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
 
   import Icon from "../Icon";
   import Spinner from "../../Component/Spinner.svelte";
   import KeyHint from "../../Component/KeyHint.svelte";
 
-  import { ValidationStatus } from "../../../src/validation.ts";
+  import type { ValidationState } from "../../../src/validation";
+  import { ValidationStatus as Status } from "../../../src/validation";
 
-  export let style = null;
-  export let inputStyle = null;
-  export let placeholder = null;
-  export let value = null;
-  export let dataCy = null;
-  export let inputElement = null;
-  export let hint = null;
+  export let style = "";
+  export let inputStyle = "";
+  export let placeholder = "";
+  export let value = "";
+  export let dataCy = "";
+  export let disabled: boolean = false;
+  export let inputElement: HTMLInputElement | undefined = undefined;
 
-  export let disabled = null;
-  export let validation = null;
-  export let showLeftItem = false;
-  export let showSuccessCheck = false;
-  export let spellcheck = false;
-  export let autofocus = false;
+  export let validation: ValidationState | undefined = undefined;
+  export let hint = "";
+  export let showLeftItem: boolean = false;
+  export let showSuccessCheck: boolean = false;
+  export let spellcheck: boolean = false;
+  export let autofocus: boolean = false;
 
   const dispatch = createEventDispatcher();
 
@@ -29,13 +30,13 @@
   // preventScroll is necessary for onboarding animations to work.
   $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
 
-  const onKeydown = event => {
+  const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
       dispatch("enter");
     }
   };
 
-  $: showHint = hint !== null && (value === "" || value === null);
+  $: showHint = hint.length > 0 && value.length === 0;
 </script>
 
 <style>
@@ -137,8 +138,8 @@
 <div {style} class="wrapper">
   <input
     data-cy={dataCy}
-    class:invalid={validation && validation.status === ValidationStatus.Error}
-    class:padding={validation && validation.status !== ValidationStatus.NotStarted}
+    class:invalid={validation && validation.status === Status.Error}
+    class:padding={validation && validation.status !== Status.NotStarted}
     class:left-item={showLeftItem}
     {placeholder}
     bind:value
@@ -163,15 +164,15 @@
   {/if}
 
   {#if validation}
-    {#if validation.status === ValidationStatus.Loading}
+    {#if validation && validation.status === Status.Loading}
       <Spinner
         style="justify-content: flex-start; position: absolute; height: 100%;
         right: 10px;" />
-    {:else if validation.status === ValidationStatus.Success && showSuccessCheck}
+    {:else if validation && validation.status === Status.Success && showSuccessCheck}
       <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
-    {:else if validation.status === ValidationStatus.Error}
+    {:else if validation && validation.status === Status.Error}
       <Icon.ExclamationCircle
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />

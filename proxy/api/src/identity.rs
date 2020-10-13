@@ -26,7 +26,7 @@ impl<S> From<(coco::PeerId, coco::MetaUser<S>)> for Identity {
     fn from((peer_id, user): (coco::PeerId, coco::MetaUser<S>)) -> Self {
         let urn = user.urn();
         Self {
-            peer_id: peer_id.clone(),
+            peer_id,
             urn: urn.clone(),
             shareable_entity_identifier: coco::Identifier {
                 handle: user.name().to_string(),
@@ -51,12 +51,12 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub fn create(
+pub async fn create(
     state: &coco::State,
     key: &signer::BoxedSigner,
     handle: &str,
 ) -> Result<Identity, error::Error> {
-    let user = state.init_owner(key, handle)?;
+    let user = state.init_owner(key, handle).await?;
     Ok((state.peer_id(), user).into())
 }
 
@@ -65,19 +65,19 @@ pub fn create(
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(state: &coco::State, id: &coco::Urn) -> Result<Identity, error::Error> {
-    let user = state.get_user(id)?;
+pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Identity, error::Error> {
+    let user = state.get_user(id).await?;
     Ok((state.peer_id(), user).into())
 }
 
 /// Retrieve the list of identities known to the session user.
 ///
 /// # Errors
-pub fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
+pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
-    for project in state.list_projects()? {
+    for project in state.list_projects().await? {
         let project_urn = project.urn();
-        for peer in state.tracked(&project_urn)? {
+        for peer in state.tracked(project_urn).await? {
             let user = peer.into();
             if !users.contains(&user) {
                 users.push(user)
