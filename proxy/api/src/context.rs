@@ -39,7 +39,10 @@ impl Context {
                 coco::into_peer_state(config, signer.clone(), store.clone(), RunConfig::default())
                     .await?;
 
-            (peer.control(), state)
+            let peer_control = peer.control();
+            tokio::spawn(peer.into_running());
+
+            (peer_control, state)
         };
 
         Ok(Self {

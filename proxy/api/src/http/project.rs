@@ -188,7 +188,7 @@ mod handler {
     pub async fn request(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         let mut peer_control = ctx.peer_control;
         // TODO(finto): Check the request exists in the monorepo
-        let _request = peer_control.request_urn(&urn, Instant::now());
+        let _request = peer_control.request_urn(&urn, Instant::now()).await;
 
         // TODO(finto): Serialise request and respond with that.
         Ok(reply::json(&true))
