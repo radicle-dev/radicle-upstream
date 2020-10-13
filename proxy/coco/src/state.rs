@@ -14,7 +14,7 @@ use librad::{
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
-        types::NamespacedRef,
+        types::{NamespacedRef, Single},
     },
     keys,
     meta::{entity, project as librad_project, user},
@@ -41,6 +41,25 @@ pub use error::Error;
 pub struct State {
     /// Internal handle on [`PeerApi`].
     pub(crate) api: PeerApi<keys::SecretKey>,
+}
+
+#[derive(Clone, Debug)]
+pub struct NamespacedBranch {
+    namespace: git::Namespace,
+    branch: git::Branch,
+}
+
+impl TryFrom<NamespacedRef<Single>> for NamespacedBranch {
+    type Error = source::Error;
+
+    fn try_from(other: NamespacedRef<Single>) -> Result<Self, Self::Error> {
+        let namespace = git::Namespace::try_from(other.namespace().to_string().as_str())?;
+        let branch = match other.remote {
+            None => git::Branch::local(&other.name),
+            Some(peer) => git::Branch::remote(&other.name, &peer.to_string()),
+        };
+        Ok(Self { namespace, branch })
+    }
 }
 
 impl State {
@@ -350,10 +369,12 @@ impl State {
     /// * If no project for the `urn` was found.
     /// * If the [`git::Browser`] fails.
     /// * If the passed `callback` errors.
-    pub async fn with_browser<F, T>(&self, urn: RadUrn, callback: F) -> Result<T, Error>
+    pub async fn with_browser<F, T>(&self, reference: NamespacedRef<Single>, callback: F) -> Result<T, Error>
     where
         F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
+        let NamespacedBranch { namespace, branch } = NamespacedBranch::try_from(reference)?;
+        /*
         let project = self.get_project(urn.clone(), None).await?;
 
         // Determine should we use a local branch or a remote branch
@@ -378,6 +399,7 @@ impl State {
             })?;
         let namespace =
             git::Namespace::try_from(urn.id.to_string().as_str()).map_err(source::Error::from)?;
+        */
         let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, branch)
@@ -400,32 +422,40 @@ impl State {
     ///
     /// # Errors
     ///   * If the storage operation to check if the reference exists fails.
-    pub async fn get_default_branch<P>(
+    pub async fn get_branch<P>(
         &self,
         urn: RadUrn,
         remote: P,
-        default_branch: &str,
-    ) -> Result<Option<git::Branch>, Error>
+    ) -> Result<NamespacedRef<Single>, Error>
     where
         P: Into<Option<PeerId>> + Clone + Send,
     {
+        let project = self.get_project(urn.clone(), None).await?;
+        let default_branch = project.default_branch();
+        let reference = NamespacedRef::head(urn.id, remote.clone(), default_branch);
+
         let exists = {
-            let reference = NamespacedRef::head(urn.id, remote.clone(), default_branch);
+            let reference = reference.clone();
             self.api
                 .with_storage(move |storage| storage.has_ref(&reference))
                 .await??
         };
 
         if !exists {
-            return Ok(None);
+            Err(Error::MissingRef { reference })
+        } else {
+            Ok(reference)
         }
+    }
 
-        match remote.into() {
-            None => Ok(Some(git::Branch::local(default_branch))),
-            Some(peer) => Ok(Some(git::Branch::remote(
-                &format!("heads/{}", default_branch),
-                &peer.to_string(),
-            ))),
+    pub async fn find_default_branch(&self, urn: RadUrn) -> Result<NamespacedRef<Single>, Error> {
+        let project = self.get_project(urn.clone(), None).await?;
+        let peer = project.keys().iter().next().cloned().map(PeerId::from);
+
+        match self.get_branch(urn.clone(), None).await.or(self.get_branch(urn.clone(), peer).await) {
+            Ok(reference) => Ok(reference),
+            Err(Error::MissingRef {..}) => Err(Error::NoRefs { name: project.name().to_string(), urn }),
+            Err(err) => Err(err),
         }
     }
 
@@ -838,8 +868,9 @@ mod test {
             .await?;
 
         // Attempt to initialise a browser to ensure we can look at branches in the project
+        let branch = state.get_branch(fakie.urn(), None).await?;
         let branches = state
-            .with_browser(fakie.urn(), |browser| {
+            .with_browser(branch, |browser| {
                 Ok(browser
                     .list_branches(None)
                     .map_err(crate::source::Error::from)?)

@@ -879,8 +879,9 @@ mod tests {
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
+        let branch = state.find_default_branch(urn).await?;
         let commit = state
-            .with_browser(urn, |browser| {
+            .with_browser(branch, |browser| {
                 Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
             })
             .await

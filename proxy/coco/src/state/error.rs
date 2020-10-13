@@ -2,6 +2,7 @@
 
 use librad::{
     git::repo,
+    git::types::{NamespacedRef, Single},
     meta::entity,
     net,
     uri::{self, RadUrn},
@@ -73,6 +74,9 @@ pub enum Error {
         /// RadUrn of the project.
         urn: RadUrn,
     },
+
+    #[error("we could not find the '{reference}'")]
+    MissingRef { reference: NamespacedRef<Single> },
 }
 
 impl Error {

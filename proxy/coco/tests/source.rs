@@ -61,8 +61,9 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
 
     let bob = bob.to_data().build()?;
 
+    let branch = bob_state.find_default_branch(urn).await?;
     let revisions = bob_state
-        .with_browser(urn, |browser| {
+        .with_browser(branch, |browser| {
             coco::source::revisions(browser, bob_state.peer_id(), bob, peers)
         })
         .await?;
