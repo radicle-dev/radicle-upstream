@@ -2,56 +2,89 @@
   import { push } from "svelte-spa-router";
   import { createEventDispatcher } from "svelte";
 
-  import { Icon, Input } from "../DesignSystem/Primitive";
-
-  import {
-    Remote,
-    TrackToggle,
-    ShareableIdentifier,
-  } from "../DesignSystem/Component";
-
+  import * as notification from "../src/notification";
   import * as path from "../src/path";
+  import type { Project } from "../src/project";
   import * as remote from "../src/remote";
-
-  import { request, updateUrn, validation } from "../src/search";
+  import {
+    projectRequest as request,
+    projectSearch as store,
+    reset,
+    requestProject,
+    searchProject,
+    urnValidationStore,
+  } from "../src/search";
   import { ValidationStatus } from "../src/validation";
 
-  let searchBar: HTMLDivElement,
-    value = "";
+  import { Icon, Input } from "../DesignSystem/Primitive";
+  import { Remote, TrackToggle } from "../DesignSystem/Component";
+
+  let id: string;
+  let value: string;
 
   const dispatch = createEventDispatcher();
+  const urnValidation = urnValidationStore();
 
-  const navigateToProject = () => {
-    if ($validation.status !== ValidationStatus.Success) return;
-
+  const navigateToProject = (project: Project) => {
+    dispatch("hide");
+    push(path.projectSource(project.id));
+  };
+  const navigateToUntracked = () => {
     dispatch("hide");
     push(path.projectUntracked(value));
   };
-
-  const onKeydown = (ev: KeyboardEvent) => {
-    switch (ev.code) {
+  const onKeydown = (event: KeyboardEvent) => {
+    switch (event.code) {
       case "Enter":
-        navigateToProject();
+        // Navigate to project directly if present.
+        if ($store.status === remote.Status.Success) {
+          navigateToProject($store.data);
+        }
         break;
       case "Escape":
         dispatch("hide");
         break;
     }
   };
+  const onTrack = () => {
+    requestProject({ urn: value });
+  };
 
-  let handle = "";
-
+  // Validate input entered, at the moment valid RadUrns are the only acceptable input.
   $: if (value && value.length > 0) {
-    updateUrn({ urn: value });
-    handle = value.replace("rad:git:", "");
+    urnValidation.validate(value);
+    id = value.replace("rad:git:", "");
+  } else {
+    urnValidation.reset();
+  }
+  // To support quick pasting, request the urn once valid to get tracking information.
+  $: if ($urnValidation.status === ValidationStatus.Success) {
+    searchProject({ urn: value });
+  }
+  // Reset searches if the input became invalid.
+  $: if ($urnValidation.status !== ValidationStatus.Success) {
+    reset();
+  }
+  // Fire notification when a request has been created.
+  $: if ($request.status === remote.Status.Success) {
+    notification.info(
+      "You’ll be notified on your profile when this project has been found.",
+      false,
+      "View profile",
+      () => {
+        dispatch("hide");
+        push(path.profileProjects());
+      }
+    );
   }
 
-  $: showTrackingInfo = value.length > 0;
+  $: tracked = $store.status === remote.Status.Success;
+  $: untracked = $store.status === remote.Status.Error;
 </script>
 
 <style>
   .container {
-    width: 26.25rem;
+    width: 26.5rem;
   }
 
   .search-bar {
@@ -59,76 +92,77 @@
     position: relative;
   }
 
-  .tracking-info {
+  .result {
     background: var(--color-background);
-    cursor: pointer;
     border-radius: 0.5rem;
     height: 0;
     overflow: hidden;
-    transition: height 0.5s linear;
+    transition: height 0.3s linear;
   }
 
-  .showTrackingInfo {
+  .tracked {
+    height: 5rem;
+  }
+
+  .untracked {
     height: 11rem;
   }
 
   .header {
+    align-items: center;
+    cursor: pointer;
     display: flex;
     justify-content: space-between;
-    align-items: center;
     margin-bottom: 1rem;
   }
 
-  .handle {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+  .id {
     color: var(--color-foreground-level-6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
 
-<svelte:window on:keydown={onKeydown} />
-
 <div class="container">
-  <div class="search-bar" bind:this={searchBar}>
+  <div class="search-bar">
     <Input.Text
       autofocus
       bind:value
-      placeholder="Have a project handle? Paste it here…"
+      hint="v"
+      inputStyle="color: var(--color-foreground-level-6);"
+      on:keydown={onKeydown}
+      placeholder="Have a project id? Paste it here…"
       showLeftItem
-      style="height: 3rem;"
-      inputStyle="border: none; border-radius: 0.5rem; height: 3rem; color: var(--color-foreground-level-6);"
-      hint="v">
+      style="border: none; border-radius: 0.5rem;"
+      validation={$urnValidation}>
       <div slot="left" style="display: flex;">
         <Icon.MagnifyingGlass />
       </div>
     </Input.Text>
   </div>
 
-  <!-- TODO(sos): Once we determine how searching works, make sure this looks right
-    if user changes urn
-  -->
-  <div
-    class="tracking-info"
-    class:showTrackingInfo
-    on:click={navigateToProject}>
-    <div style="padding: 1.5rem;">
-      <Remote store={request} let:data={response}>
+  <div class="result" class:tracked class:untracked>
+    <Remote {store} let:data={project}>
+      <div style="padding: 1.5rem;">
+        <div
+          class="header typo-header-3"
+          on:click={_ev => navigateToProject(project)}>
+          <span class="id">{project.metadata.name}</span>
+        </div>
+      </div>
+
+      <div slot="error" style="padding: 1.5rem;">
         <div class="header typo-header-3">
-          <span class="handle">{handle}</span>
-          <TrackToggle style="margin-left: 1rem;" />
+          <span class="id" on:click={navigateToUntracked}>{id}</span>
+          <TrackToggle on:track={onTrack} style="margin-left: 1rem;" />
         </div>
 
         <p style="color: var(--color-foreground-level-6);">
           You’re not following this project yet, so there’s nothing to show
           here. Follow it and you’ll be notified as soon as it’s available.
         </p>
-
-        <div slot="error" let:error>
-          <!-- TODO(sos): validation & other errors go here -->
-          <p>{error && error.message}</p>
-        </div>
-      </Remote>
-    </div>
+      </div>
+    </Remote>
   </div>
 </div>

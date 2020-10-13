@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { location, pop, push } from "svelte-spa-router";
 
   import * as modal from "./src/modal";

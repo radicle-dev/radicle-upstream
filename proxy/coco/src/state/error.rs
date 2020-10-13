@@ -79,3 +79,9 @@ impl Error {
 pub mod storage {
     pub use librad::git::storage::Error;
 }
+
+/// Re-export the underlying [`blob::Error`] so that consumers don't need to add `librad` as a
+/// dependency to match on the variant. Instead, they can import `coco::state::error::blob`.
+pub mod blob {
+    pub use librad::git::ext::blob::Error;
+}
