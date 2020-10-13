@@ -6,6 +6,7 @@
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
+  import { ConnectionStatusIndicator } from "../Component";
 
   export let identity = null;
 </script>
@@ -131,6 +132,10 @@
           <Icon.MagnifyingGlass />
         </a>
       </Tooltip>
+    </li>
+    <li class="item indicator" data-cy="search">
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <ConnectionStatusIndicator />
     </li>
     <li
       class="item indicator"
