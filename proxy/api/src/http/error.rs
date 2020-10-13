@@ -72,6 +72,7 @@ pub struct Error {
 }
 
 /// Handler to convert [`error::Error`] to [`Error`] response.
+#[allow(clippy::too_many_lines)]
 pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
     log::error!("{:?}", err);
 
