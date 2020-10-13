@@ -13,7 +13,7 @@ use radicle_surf::vcs::git::git2;
 
 use crate::source;
 
-/// Errors that may occur when interacting with [`State`].
+/// Errors that may occur when interacting with [`super::State`].
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Peer accept error.

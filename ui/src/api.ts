@@ -69,6 +69,19 @@ export const post = async <I, D>(
     })
   );
 
+export const put = async <I, D>(
+  endpoint: string,
+  body: I,
+  options?: Options
+): Promise<D> =>
+  http<D>(
+    request(endpoint, {
+      method: "PUT",
+      body: body !== null ? JSON.stringify(body) : undefined,
+      ...options,
+    })
+  );
+
 export const set = async <T>(
   endpoint: string,
   body: T,
