@@ -10,7 +10,7 @@
   export let style = "";
   export let illustration = IllustrationVariant.Plant;
   export let text = "Nothing to see here";
-  export let primaryText = "";
+  export let headerText = "";
   export let primaryActionText = "";
   export let secondaryActionText = "";
 
@@ -61,8 +61,8 @@
 
 <div class="empty-state" data-cy="empty-state" {style}>
   <Illustration variant={illustration} />
-  {#if primaryText.length}
-    <h3>{primaryText}</h3>
+  {#if headerText.length}
+    <h3>{headerText}</h3>
   {/if}
   <p class="text">{text}</p>
   {#if primaryActionText.length}

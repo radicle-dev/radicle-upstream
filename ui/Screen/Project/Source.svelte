@@ -132,7 +132,7 @@
         {/if}
         <div slot="error" let:error>
           <EmptyState
-            primaryText={error.message}
+            headerText={error.message}
             text="This file doesn't exist on this branch."
             primaryActionText="Back to source"
             illustration={IllustrationVariant.Eyes}
