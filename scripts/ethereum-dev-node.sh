@@ -25,6 +25,12 @@ trap stop_ganache SIGINT EXIT
 
 sleep 4
 
+echo "Deploying the Radicle Dev Contracts..."
 ./scripts/deploy-dev-contracts.js;
+echo "Done"
+
+echo "Adding funds to your account..."
+./node_modules/.bin/ethers --rpc http://localhost:8545 --account-rpc 0 send $(< ./sandbox/.local-eth-account) 10
+echo "Done"
 
 fg %1
