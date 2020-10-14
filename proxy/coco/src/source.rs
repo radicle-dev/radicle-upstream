@@ -564,11 +564,6 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
         .min()
         .ok_or(Error::NoBranches)?;
 
-    log::debug!(
-        "The fallback branch for this repository is: {:?}",
-        first_branch
-    );
-
     let repo = git::Repository::new(repo_path)?;
 
     let browser = match Browser::new(&repo, git::Branch::local("master")) {

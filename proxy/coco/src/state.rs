@@ -409,9 +409,7 @@ impl State {
             Some(peer_id) => Some(peer_id),
             None => None,
         };
-        let reference = NamespacedRef::head(urn.id, remote.clone(), &name);
-
-        log::debug!("WHO'S THAT REF?! {}", reference);
+        let reference = NamespacedRef::head(urn.id, remote, &name);
         let exists = {
             let reference = reference.clone();
             self.api
