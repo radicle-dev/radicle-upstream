@@ -1,5 +1,7 @@
-<script lang="ts">
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
+
+  import * as track from "../../src/track";
 
   import { Icon } from "../Primitive";
   import Hoverable from "./Hoverable.svelte";
@@ -12,11 +14,6 @@
 
   let active: boolean = false;
 
-  enum TrackingEvent {
-    Track = "track",
-    Untrack = "untrack",
-  }
-
   const down = () => {
     active = true;
   };
@@ -24,7 +21,7 @@
   const up = () => {
     active = false;
     tracking = !tracking;
-    dispatch(tracking ? TrackingEvent.Track : TrackingEvent.Untrack);
+    dispatch(tracking ? track.Event.Track : track.Event.Untrack);
   };
 
   const dispatch = createEventDispatcher();
