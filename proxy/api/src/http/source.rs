@@ -115,7 +115,7 @@ fn tree_filter(
 mod handler {
     use warp::{path::Tail, reply, Rejection, Reply};
 
-    use coco::oid;
+    use coco::{oid, PeerId};
 
     use crate::{context, error, session, session::settings};
 
@@ -131,6 +131,8 @@ mod handler {
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
+        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
+        let revision = guard_self_revision(&ctx.state, revision);
 
         let theme = if let Some(true) = highlight {
             Some(match &current_session.settings.appearance.theme {
@@ -163,6 +165,7 @@ mod handler {
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
+        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
         let default_branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -205,8 +208,11 @@ mod handler {
     pub async fn commits(
         ctx: context::Context,
         project_urn: coco::Urn,
-        query: super::CommitsQuery,
+        mut query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
+        let peer_id = guard_self_peer_id(&ctx.state, query.peer_id);
+        query.peer_id = peer_id;
+
         let default_branch = ctx
             .state
             .find_default_branch(project_urn)
@@ -276,7 +282,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let branch = ctx
             .state
-            .get_branch(project_urn, None, None)
+            .find_default_branch(project_urn)
             .await
             .map_err(error::Error::from)?;
         let tags = ctx
@@ -298,6 +304,8 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
+        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
+        let revision = guard_self_revision(&ctx.state, revision);
         let branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -313,10 +321,37 @@ mod handler {
 
         Ok(reply::json(&tree))
     }
+
+    /// Guard against access of wrong paths by the owners peer id.
+    fn guard_self_peer_id(state: &coco::State, peer_id: Option<PeerId>) -> Option<PeerId> {
+        match peer_id {
+            Some(peer_id) if peer_id == state.peer_id() => None,
+            Some(peer_id) => Some(peer_id),
+            None => None,
+        }
+    }
+
+    /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
+    fn guard_self_revision(
+        state: &coco::State,
+        revision: Option<coco::Revision<PeerId>>,
+    ) -> Option<coco::Revision<PeerId>> {
+        revision.map(|r| {
+            if let coco::Revision::Branch { name, peer_id } = r {
+                coco::Revision::Branch {
+                    name,
+                    peer_id: guard_self_peer_id(state, peer_id),
+                }
+            } else {
+                r
+            }
+        })
+    }
 }
 
 /// Bundled query params to pass to the commits handler.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CommitsQuery {
     /// PeerId to scope the query by.
     peer_id: Option<coco::PeerId>,
@@ -328,13 +363,14 @@ impl From<CommitsQuery> for git::Branch {
     fn from(CommitsQuery { peer_id, branch }: CommitsQuery) -> Self {
         match peer_id {
             None => Self::local(&branch),
-            Some(peer_id) => Self::remote(&branch, &peer_id.to_string()),
+            Some(peer_id) => Self::remote(&format!("heads/{}", branch), &peer_id.to_string()),
         }
     }
 }
 
 /// Bundled query params to pass to the blob handler.
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
@@ -356,6 +392,7 @@ pub struct BranchQuery {
 
 /// Bundled query params to pass to the tree handler.
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
@@ -367,6 +404,7 @@ pub struct TreeQuery {
 
 /// The output structure when calling the `/revisions` endpoint.
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Revisions {
     /// The [`identity::Identity`] that owns these revisions.
     identity: identity::Identity,
