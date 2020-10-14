@@ -584,7 +584,6 @@ impl State {
             None => project::checkout::Ownership::Local(self.peer_id()),
             Some(remote) => {
                 let handle = {
-                    let remote = remote.clone();
                     self.api
                         .with_storage(move |storage| {
                             let rad_self = storage.get_rad_self_of(&urn, remote)?;
