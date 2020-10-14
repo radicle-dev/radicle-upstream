@@ -34,6 +34,14 @@
 
     dispatch("next", handle);
   };
+
+  const onKeydown = (event: KeyboardEvent) => {
+    switch (event.code) {
+      case "Enter":
+        next();
+        break;
+    }
+  };
 </script>
 
 <style>
@@ -75,7 +83,7 @@
       autofocus
       placeholder="Enter a display name (e.g. coolprogrammer3000)"
       bind:value={handle}
-      on:enter={next}
+      on:keydown={onKeydown}
       dataCy="handle-input"
       validation={$validationStore}
       hint="↵"

@@ -15,6 +15,7 @@ export type ValidationState =
   | { status: ValidationStatus.Success };
 
 export interface ValidationStore extends Readable<ValidationState> {
+  reset: () => void;
   validate: (input: string) => void;
 }
 
@@ -77,6 +78,11 @@ export const createValidationStore = (
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { subscribe, update } = internalStore;
   let inputStore: Writable<string> | undefined = undefined;
+
+  const reset = () => {
+    inputStore = undefined;
+    internalStore.set(initialState);
+  };
 
   const runValidations = async (input: string): Promise<void> => {
     // Always start with Loading
@@ -166,6 +172,7 @@ export const createValidationStore = (
   };
 
   return {
+    reset,
     subscribe,
     validate,
   };
