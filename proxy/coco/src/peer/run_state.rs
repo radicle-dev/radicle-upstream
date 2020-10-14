@@ -5,6 +5,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use serde::Serialize;
 use tokio::sync::oneshot;
 
 use librad::{
@@ -204,17 +205,26 @@ pub enum TimeoutInput {
 }
 
 /// The current status of the local peer and its relation to the network.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
 pub enum Status {
     /// Nothing is setup, not even a socket to listen on.
+    #[serde(with = "serde_millis")]
     Stopped(Instant),
     /// Local peer is listening on a socket but has not connected to any peers yet.
+    #[serde(with = "serde_millis")]
     Started(Instant),
     /// The local peer lost its connections to all its peers.
+    #[serde(with = "serde_millis")]
     Offline(Instant),
     /// Phase where the local peer tries get up-to-date.
-    Syncing(Instant, usize),
+    Syncing {
+        #[serde(with = "serde_millis")]
+        since: Instant,
+        syncs: usize,
+    },
     /// The local peer is operational and is able to interact with the peers it has connected to.
+    #[serde(with = "serde_millis")]
     Online(Instant),
 }
 
@@ -344,7 +354,7 @@ impl RunState {
         match (&self.status, input) {
             // Announce new updates while the peer is online.
             (
-                Status::Online(_) | Status::Started(_) | Status::Syncing(_, _),
+                Status::Online(_) | Status::Started(_) | Status::Syncing { .. },
                 AnnounceInput::Tick,
             ) => vec![Command::Announce],
             _ => vec![],
@@ -379,7 +389,10 @@ impl RunState {
                 self.connected_peers.insert(*peer_id);
 
                 if self.config.sync.on_startup {
-                    self.status = Status::Syncing(Instant::now(), 1);
+                    self.status = Status::Syncing {
+                        since: Instant::now(),
+                        syncs: 1,
+                    };
 
                     vec![
                         Command::SyncPeer(*peer_id),
@@ -392,14 +405,17 @@ impl RunState {
                 }
             },
             // Sync until configured maximum of peers is reached.
-            (Status::Syncing(since, syncs), ProtocolEvent::Connected(peer_id))
+            (Status::Syncing { since, syncs }, ProtocolEvent::Connected(peer_id))
                 if *syncs < self.config.sync.max_peers =>
             {
                 self.connected_peers.insert(peer_id);
                 if syncs + 1 == self.config.sync.max_peers {
                     self.status = Status::Online(Instant::now());
                 } else {
-                    self.status = Status::Syncing(*since, syncs + 1);
+                    self.status = Status::Syncing {
+                        since: *since,
+                        syncs: syncs + 1,
+                    };
                 }
 
                 vec![Command::SyncPeer(peer_id)]
@@ -452,7 +468,7 @@ impl RunState {
     fn handle_request(&mut self, input: RequestInput) -> Vec<Command> {
         match (&self.status, input) {
             // Check for new querie and clone requests.
-            (Status::Online(_) | Status::Syncing(_, _), RequestInput::Tick) => {
+            (Status::Online(_) | Status::Syncing { .. }, RequestInput::Tick) => {
                 let mut cmds = Vec::with_capacity(2);
 
                 if let Some(urn) = self.waiting_room.next_query(Instant::now()) {
@@ -528,7 +544,7 @@ impl RunState {
     fn handle_timeout(&mut self, input: TimeoutInput) -> Vec<Command> {
         match (&self.status, input) {
             // Go online if we exceed the sync period.
-            (Status::Syncing(_since, _syncs), TimeoutInput::SyncPeriod) => {
+            (Status::Syncing { .. }, TimeoutInput::SyncPeriod) => {
                 self.status = Status::Online(Instant::now());
 
                 vec![]
@@ -603,7 +619,10 @@ mod test {
 
     #[test]
     fn transition_to_online_after_sync_max_peers() {
-        let status = Status::Syncing(Instant::now(), DEFAULT_SYNC_MAX_PEERS - 1);
+        let status = Status::Syncing {
+            since: Instant::now(),
+            syncs: DEFAULT_SYNC_MAX_PEERS - 1,
+        };
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
 
         let _cmds = {
@@ -616,7 +635,10 @@ mod test {
 
     #[test]
     fn transition_to_online_after_sync_period() {
-        let status = Status::Syncing(Instant::now(), 3);
+        let status = Status::Syncing {
+            since: Instant::now(),
+            syncs: 3,
+        };
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
 
         let _cmds = state.transition(Input::Timeout(TimeoutInput::SyncPeriod));
@@ -660,7 +682,7 @@ mod test {
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
                 assert_eq!(*sync_id, peer_id);
             });
-            assert_matches!(state.status, Status::Syncing(_, syncing_peers) => {
+            assert_matches!(state.status, Status::Syncing{ syncs: syncing_peers, .. } => {
                 assert_eq!(i + 1, syncing_peers);
             });
         }
@@ -759,7 +781,10 @@ mod test {
         )));
         assert_matches!(cmds.first(), None);
 
-        let status = Status::Syncing(Instant::now(), 1);
+        let status = Status::Syncing {
+            since: Instant::now(),
+            syncs: 1,
+        };
         let mut state = RunState::new(Config::default(), HashSet::new(), status);
         let cmds = state.transition(Input::Request(RequestInput::Requested(
             urn.clone(),
