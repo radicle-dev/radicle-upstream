@@ -331,7 +331,10 @@ mod handler {
         }
     }
 
-    fn guard_self_revision(state: &coco::State, revision: Option<coco::Revision<PeerId>>) -> Option<coco::Revision<PeerId>> {
+    fn guard_self_revision(
+        state: &coco::State,
+        revision: Option<coco::Revision<PeerId>>,
+    ) -> Option<coco::Revision<PeerId>> {
         revision.map(|r| {
             if let coco::Revision::Branch { name, peer_id } = r {
                 coco::Revision::Branch {
