@@ -409,7 +409,7 @@ where
         match other {
             Revision::Tag { name } => Ok(git::TagName::new(&name).into()),
             Revision::Branch { name, peer_id } => Ok(match peer_id {
-                Some(peer) => git::Branch::remote(&name, &peer.to_string()).into(),
+                Some(peer) => git::Branch::remote(&format!("heads/{}", name), &peer.to_string()).into(),
                 None => git::Branch::local(&name).into(),
             }),
             Revision::Sha { sha } => {
