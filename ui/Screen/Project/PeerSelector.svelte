@@ -2,13 +2,13 @@
   import { createEventDispatcher, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../src/path.ts";
   import { BadgeType } from "../../src/badge.ts";
+  import * as path from "../../src/path.ts";
+  import { currentPeerId } from "../../src/source.ts";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
-  export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
 
@@ -17,15 +17,15 @@
   const session = getContext("session");
   const { metadata } = getContext("project");
 
-  $: if (currentPeerId) {
+  $: if ($currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
-      return rev.identity.peerId === currentPeerId;
+      return rev.identity.peerId === $currentPeerId;
     });
   } else {
     // The API returns a revision list where the first entry is the default
     // peer.
     currentSelectedPeer = revisions[0];
-    currentPeerId = currentSelectedPeer.identity.peerId;
+    currentPeerId.set(currentSelectedPeer.identity.peerId);
   }
 
   const showDropdown = () => {
@@ -47,7 +47,7 @@
   const dispatch = createEventDispatcher();
   const selectPeer = peerId => {
     hideDropdown();
-    currentPeerId = peerId;
+    currentPeerId.set(peerId);
     dispatch("select", { peerId });
   };
 </script>
