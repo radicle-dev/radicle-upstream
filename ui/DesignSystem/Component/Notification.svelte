@@ -26,9 +26,10 @@
     margin-bottom: 8px;
     user-select: none;
     overflow-wrap: break-word;
-    max-width: 80vw;
+    max-width: 800px;
     text-align: center;
     padding: 10px;
+    max-height: 8rem;
   }
 
   .info {
@@ -59,7 +60,9 @@
   }
 
   .message {
-    padding: 0 8px 0 8px;
+    padding: 0px 10px;
+    max-height: 6rem;
+    overflow: auto;
   }
 
   .close {
