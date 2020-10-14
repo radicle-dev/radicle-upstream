@@ -51,7 +51,7 @@ pub fn api(
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter = path("notifications")
         .and(with_unsealed_guard(ctx.clone()))
-        .and(notification::filters(subscriptions));
+        .and(notification::filters(ctx.clone(), subscriptions));
     let project_filter = path("projects")
         .and(with_unsealed_guard(ctx.clone()))
         .and(project::filters(ctx.clone()));
