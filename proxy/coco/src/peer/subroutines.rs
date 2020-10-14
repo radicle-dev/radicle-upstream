@@ -29,8 +29,8 @@ use crate::{
 use super::{
     announcement, control, gossip,
     run_state::{
-        AnnounceInput, Command, Config as RunConfig, ControlCommand, Event, Input, RequestCommand,
-        RequestInput, RunState, SyncInput, TimeoutInput,
+        AnnounceInput, Command, Config as RunConfig, ControlCommand, ControlInput, Event, Input,
+        RequestCommand, RequestInput, RunState, SyncInput, TimeoutInput,
     },
     sync, RECEIVER_CAPACITY,
 };
@@ -88,6 +88,9 @@ impl Subroutines {
             coalesced.push(
                 control_receiver
                     .map(|request| match request {
+                        control::Request::CurrentStatus(sender) => {
+                            Input::Control(ControlInput::Status(sender))
+                        },
                         control::Request::Urn(urn, time, sender) => {
                             Input::Request(RequestInput::Requested(urn, time, Some(sender)))
                         },
@@ -235,6 +238,7 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
 /// Fulfill control requests by sending the scheduled responses.
 async fn control_respond(cmd: control::Response) {
     match cmd {
+        control::Response::CurrentStatus(sender, status) => sender.send(status).ok(),
         control::Response::Urn(sender, request) => sender.send(request).ok(),
     };
 }

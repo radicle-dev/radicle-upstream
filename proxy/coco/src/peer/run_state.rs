@@ -127,6 +127,7 @@ impl MaybeFrom<&Input> for Event {
 pub enum Input {
     /// Announcement subroutine lifecycle events.
     Announce(AnnounceInput),
+    Control(ControlInput),
     /// Inputs from the underlying coco protocol.
     Protocol(ProtocolEvent<Gossip>),
     /// Lifecycle events during peer sync operations.
@@ -146,6 +147,11 @@ pub enum AnnounceInput {
     Succeeded(announcement::Updates),
     /// The ticker duration has elapsed.
     Tick,
+}
+
+#[derive(Debug)]
+pub enum ControlInput {
+    Status(oneshot::Sender<Status>),
 }
 
 /// Request even that wishes to fetch an identity from the network.
@@ -197,7 +203,7 @@ pub enum TimeoutInput {
 
 /// The current status of the local peer and its relation to the network.
 #[derive(Clone, Debug)]
-enum Status {
+pub enum Status {
     /// Nothing is setup, not even a socket to listen on.
     Stopped(Instant),
     /// Local peer is listening on a socket but has not connected to any peers yet.
@@ -319,6 +325,7 @@ impl RunState {
 
         let cmds = match input {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
+            Input::Control(control_input) => self.handle_control(control_input),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
             Input::PeerSync(_peer_sync_input) => vec![],
             Input::Request(request_input) => self.handle_request(request_input),
@@ -339,6 +346,14 @@ impl RunState {
                 AnnounceInput::Tick,
             ) => vec![Command::Announce],
             _ => vec![],
+        }
+    }
+
+    fn handle_control(&self, input: ControlInput) -> Vec<Command> {
+        match input {
+            ControlInput::Status(sender) => vec![Command::Control(ControlCommand::Respond(
+                control::Response::CurrentStatus(sender, self.status.clone()),
+            ))],
         }
     }
 
