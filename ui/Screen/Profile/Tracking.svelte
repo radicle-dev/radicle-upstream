@@ -1,5 +1,13 @@
 <script>
   import { fade } from "svelte/transition";
+  import { push } from "svelte-spa-router";
+
+  import { FADE_DURATION } from "../../src/config.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
+  import * as modal from "../../src/modal.ts";
+  import * as path from "../../src/path.ts";
+  import { tracked, fetchTracked } from "../../src/project.ts";
+
   import {
     EmptyState,
     Hoverable,
@@ -10,11 +18,9 @@
     TrackToggle,
   } from "../../DesignSystem/Component";
 
-  import { tracked, fetchTracked } from "../../src/project.ts";
-  import { FADE_DURATION } from "../../src/config.ts";
-  import * as path from "../../src/path.ts";
-  import * as modal from "../../src/modal.ts";
-  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
+  const onSelect = project => {
+    push(path.projectSource(project.id));
+  };
 
   fetchTracked();
   $: console.log($tracked);
@@ -69,7 +75,7 @@
 <div class="container">
   <Remote store={tracked} let:data={projects}>
     {#if projects.length > 0}
-      <ProjectList {projects} />
+      <ProjectList {projects} on:select={ev => onSelect(ev.detail)} />
     {:else}
       <EmptyState
         text="You're not following any projects yet."

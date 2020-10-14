@@ -378,11 +378,13 @@ impl Serialize for TreeEntry {
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Revision<P> {
     /// Select a tag under the name provided.
+    #[serde(rename_all = "camelCase")]
     Tag {
         /// Name of the tag.
         name: String,
     },
     /// Select a branch under the name provided.
+    #[serde(rename_all = "camelCase")]
     Branch {
         /// Name of the branch.
         name: String,
@@ -390,6 +392,7 @@ pub enum Revision<P> {
         peer_id: Option<P>,
     },
     /// Select a SHA1 under the name provided.
+    #[serde(rename_all = "camelCase")]
     Sha {
         /// The SHA1 value.
         sha: Oid,
@@ -406,7 +409,9 @@ where
         match other {
             Revision::Tag { name } => Ok(git::TagName::new(&name).into()),
             Revision::Branch { name, peer_id } => Ok(match peer_id {
-                Some(peer) => git::Branch::remote(&name, &peer.to_string()).into(),
+                Some(peer) => {
+                    git::Branch::remote(&format!("heads/{}", name), &peer.to_string()).into()
+                },
                 None => git::Branch::local(&name).into(),
             }),
             Revision::Sha { sha } => {
@@ -558,11 +563,6 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
         })
         .min()
         .ok_or(Error::NoBranches)?;
-
-    log::debug!(
-        "The fallback branch for this repository is: {:?}",
-        first_branch
-    );
 
     let repo = git::Repository::new(repo_path)?;
 
