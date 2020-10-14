@@ -3,6 +3,7 @@
 
   import type { ButtonVariant } from "../../src/style";
   import * as notification from "../../src/notification";
+  import Spinner from "./Spinner.svelte";
 
   export let title: string = "";
   export let variant: ButtonVariant = "primary";
@@ -12,9 +13,11 @@
   export let errorMessage: (error: any) => string;
   export let disabled = false;
 
+  let running = false;
+
   async function userDidClick(): Promise<void> {
     try {
-      disabled = true;
+      running = true;
       await onClick();
       // Waiting a moment here smoothes the UI.
       await continueAfter(0.4);
@@ -22,7 +25,7 @@
     } catch (error) {
       notification.error(errorMessage(error), true);
     } finally {
-      disabled = false;
+      running = false;
     }
   }
 
@@ -35,6 +38,16 @@
   }
 </script>
 
+<style>
+  .button-wrapper {
+    margin-left: 7px;
+  }
+</style>
+
 <span class="button-wrapper" data-cy={dataCy}>
-  <Button {disabled} {variant} on:click={userDidClick}>{title}</Button>
+  {#if running}
+    <Spinner />
+  {:else}
+    <Button {disabled} {variant} on:click={userDidClick}>{title}</Button>
+  {/if}
 </span>

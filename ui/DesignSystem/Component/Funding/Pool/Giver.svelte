@@ -4,6 +4,7 @@
   import { Button, Icon, Input } from "../../../Primitive";
   import { Remote, StatefulButton } from "../../../Component";
 
+  import * as notification from "../../../../src/notification";
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as _pool from "../../../../src/funding/pool";
@@ -70,6 +71,22 @@
       .split(",")
       .map(e => e.trim())
       .filter(e => e.length > 0);
+  }
+
+  /* On clicks */
+  function checkWalletNotification() {
+    notification.info("Confirm the transaction on your wallet app 📲");
+  }
+
+  function onSaveMonthlyContribution(): Promise<void> {
+    checkWalletNotification();
+    return pool.updateAmountPerBlock(monthlyContribution);
+  }
+
+  function onSaveMembers(): Promise<void> {
+    checkWalletNotification();
+    const membersList = members.split(",").map(x => x.trim());
+    return pool.updateReceiverAddresses(membersList);
   }
 </script>
 
@@ -161,7 +178,7 @@
           <StatefulButton
             disabled={!saveMonthlyContributionEnabled}
             title={'Save'}
-            onClick={() => pool.updateAmountPerBlock(monthlyContribution)}
+            onClick={onSaveMonthlyContribution}
             variant={'outline'}
             successMessage={'Pool successfully saved'}
             errorMessage={e => `Failed to save pool: ${e}`} />
@@ -186,9 +203,7 @@
           <StatefulButton
             disabled={!saveMembersEnabled}
             title={'Save'}
-            onClick="{() => pool.updateReceiverAddresses(members
-                  .split(',')
-                  .map(x => x.trim()))}}"
+            onClick={onSaveMembers}
             variant={'outline'}
             successMessage={'Pool successfully saved'}
             errorMessage={e => `Failed to save pool: ${e}`} />
