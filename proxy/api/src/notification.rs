@@ -2,7 +2,6 @@
 
 use std::{
     collections::HashMap,
-    net::SocketAddr,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -16,7 +15,7 @@ use tokio::sync::{mpsc, RwLock};
 #[derive(Clone, Debug, Serialize)]
 pub enum Notification {
     /// Our local peer started listening on a local socket.
-    LocalPeerListening(SocketAddr),
+    LocalPeerStatusChanged(coco::PeerStatus, coco::PeerStatus),
 }
 
 /// Manage active subscriptions and broadcast [`Notification`]s.
