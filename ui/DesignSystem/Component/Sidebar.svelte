@@ -8,6 +8,16 @@
   import { Avatar, Icon } from "../Primitive";
 
   export let identity = null;
+
+  const sse = new EventSource(
+    "http://localhost:8080/v1/notifications/local_peer_status"
+  );
+
+  let peerState;
+
+  sse.addEventListener("LOCAL_PEER_STATUS", event => {
+    peerState = JSON.parse(event.data);
+  });
 </script>
 
 <style>
@@ -121,6 +131,14 @@
     </li>
   </ul>
   <ul class="bottom">
+    <li class="item indicator" data-cy="network">
+      <Tooltip value={JSON.stringify(peerState)}>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <Icon.Network />
+        </a>
+      </Tooltip>
+    </li>
     <li
       class="item indicator"
       data-cy="search"
