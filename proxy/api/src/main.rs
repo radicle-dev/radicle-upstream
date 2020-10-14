@@ -8,13 +8,7 @@ use tokio::{
 };
 
 use api::{config, context, env, http, notification, session};
-use coco::{
-    keystore,
-    request::waiting_room::{self, WaitingRoom},
-    seed,
-    shared::Shared,
-    signer, Peer, RunConfig, SyncConfig,
-};
+use coco::{keystore, seed, signer, Peer, RunConfig, SyncConfig};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
@@ -155,13 +149,6 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
 
     let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
-    // TODO(finto): We should store and load the waiting room
-    let waiting_room = {
-        let mut config = waiting_room::Config::default();
-        config.delta = Duration::from_secs(10);
-        Shared::from(WaitingRoom::new(config))
-    };
-
     let (peer, state) = {
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
@@ -174,7 +161,6 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
             config,
             signer.clone(),
             store.clone(),
-            waiting_room.clone(),
             RunConfig {
                 sync: SyncConfig {
                     max_peers: 1,
@@ -187,12 +173,13 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         .await?
     };
 
+    let peer_control = peer.control();
     let subscriptions = notification::Subscriptions::default();
     let ctx = context::Context {
+        peer_control,
         state,
         signer: Some(signer),
         store,
-        waiting_room,
     };
 
     Ok(Rigging {

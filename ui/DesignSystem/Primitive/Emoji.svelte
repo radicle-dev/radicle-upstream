@@ -37,8 +37,8 @@
   }
 
   :global(.emoji.huge) {
-    height: 3.75rem;
-    width: 3.75rem;
+    height: 3rem;
+    width: 3rem;
   }
 </style>
 

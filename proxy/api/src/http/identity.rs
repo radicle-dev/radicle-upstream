@@ -175,7 +175,7 @@ mod test {
         let handle = user.name().to_string();
         let peer_id = ctx.state.peer_id();
         let urn = user.urn();
-        let shareable_entity_identifier = (peer_id.clone(), user).into();
+        let shareable_entity_identifier = (peer_id, user).into();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         assert_eq!(res.status(), StatusCode::OK);
