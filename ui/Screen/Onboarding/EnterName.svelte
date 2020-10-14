@@ -35,7 +35,7 @@
     dispatch("next", handle);
   };
 
-  const onKeydown = () => {
+  const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
       case "Enter":
         next();
