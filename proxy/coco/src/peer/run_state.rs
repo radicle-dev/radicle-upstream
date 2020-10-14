@@ -91,6 +91,7 @@ pub enum Event {
     /// Announcement subroutine completed and emitted the enclosed updates.
     Announced(announcement::Updates),
     /// An event from the underlying coco network stack.
+    /// FIXME(xla): Align variant naming to indicate observed occurrences.
     Protocol(ProtocolEvent<Gossip>),
     /// Sync with a peer completed.
     PeerSynced(PeerId),
@@ -102,6 +103,7 @@ pub enum Event {
     RequestTick,
     /// The request for [`RadUrn`] timed out.
     RequestTimedOut(RadUrn),
+    StatusChanged(Status, Status),
 }
 
 impl MaybeFrom<&Input> for Event {
@@ -202,7 +204,7 @@ pub enum TimeoutInput {
 }
 
 /// The current status of the local peer and its relation to the network.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Status {
     /// Nothing is setup, not even a socket to listen on.
     Stopped(Instant),
@@ -285,7 +287,7 @@ pub struct RunState {
     /// Tracking remote peers that have an active connection.
     connected_peers: HashSet<PeerId>,
     /// Current internal status.
-    status: Status,
+    pub status: Status,
     /// Current set of requests.
     waiting_room: WaitingRoom<Instant, Duration>,
 }
