@@ -76,7 +76,7 @@ export const searchProject = event.create<Kind, Msg>(
 );
 
 // URN validation.
-const VALID_URN_MATCH = new RegExp("^rad:git:[1-9A-HJ-NP-Za-km-z]{59}");
+const VALID_URN_MATCH = /^rad:git:[1-9A-HJ-NP-Za-km-z]{59}/;
 const urnConstraints = {
   format: {
     pattern: VALID_URN_MATCH,
