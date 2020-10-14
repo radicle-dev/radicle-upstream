@@ -132,6 +132,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
         let peer_id = guard_self_peer_id(&ctx.state, peer_id);
+        let revision = guard_self_revision(&ctx.state, revision);
 
         let theme = if let Some(true) = highlight {
             Some(match &current_session.settings.appearance.theme {
@@ -209,7 +210,6 @@ mod handler {
         project_urn: coco::Urn,
         mut query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        log::debug!("http::source::commits query={:?}", query);
         let peer_id = guard_self_peer_id(&ctx.state, query.peer_id);
         query.peer_id = peer_id;
 
@@ -304,21 +304,8 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        println!(
-            "http::source::tree urn={}, prefix={:?}, peer.id={:?} revision={:?}",
-            project_urn, prefix, peer_id, revision
-        );
         let peer_id = guard_self_peer_id(&ctx.state, peer_id);
-        let revision = revision.map(|r| {
-            if let coco::Revision::Branch { name, peer_id } = r {
-                coco::Revision::Branch {
-                    name,
-                    peer_id: guard_self_peer_id(&ctx.state, peer_id),
-                }
-            } else {
-                r
-            }
-        });
+        let revision = guard_self_revision(&ctx.state, revision);
         let branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -341,6 +328,19 @@ mod handler {
             Some(peer_id) => Some(peer_id),
             None => None,
         }
+    }
+
+    fn guard_self_revision(state: &coco::State, revision: Option<coco::Revision<PeerId>>) -> Option<coco::Revision<PeerId>> {
+        revision.map(|r| {
+            if let coco::Revision::Branch { name, peer_id } = r {
+                coco::Revision::Branch {
+                    name,
+                    peer_id: guard_self_peer_id(state, peer_id),
+                }
+            } else {
+                r
+            }
+        })
     }
 }
 
