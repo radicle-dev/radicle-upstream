@@ -335,6 +335,7 @@ mod handler {
         Ok(reply::json(&tree))
     }
 
+    /// Guard against access of wrong paths by the owners peer id.
     fn guard_self_peer_id(state: &coco::State, peer_id: Option<PeerId>) -> Option<PeerId> {
         match peer_id {
             Some(peer_id) if peer_id == state.peer_id() => None,
