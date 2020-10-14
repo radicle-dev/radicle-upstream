@@ -59,7 +59,8 @@ mod handler {
 
     /// Fetch the [`session::Session`].
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let sess = session::current(ctx.state.clone(), &ctx.store).await?;
+        let coco_state = ctx.coco_state().await?;
+        let sess = session::current(coco_state.clone(), &ctx.store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -87,6 +88,7 @@ mod test {
     async fn delete() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let mut settings = session::settings::Settings::default();
@@ -97,7 +99,7 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let have = session::current(ctx.state.clone(), &ctx.store)
+        let have = session::current(coco_state.clone(), &ctx.store)
             .await?
             .settings;
         let want = session::settings::Settings::default();

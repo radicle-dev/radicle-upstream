@@ -192,12 +192,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
 
     let peer_control = peer.control();
     let subscriptions = notification::Subscriptions::default();
-    let ctx = context::Context {
-        peer_control,
-        state,
-        signer: Some(signer),
-        store,
-    };
+    let ctx = context::Context::new(peer_control, state, store);
 
     Ok(Rigging {
         temp,

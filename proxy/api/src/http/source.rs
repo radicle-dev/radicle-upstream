@@ -130,9 +130,10 @@ mod handler {
             highlight,
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
-        let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
-        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
-        let revision = guard_self_revision(&ctx.state, revision);
+        let coco_state = ctx.coco_state().await?;
+        let current_session = session::current(coco_state.clone(), &ctx.store).await?;
+        let peer_id = guard_self_peer_id(&coco_state, peer_id);
+        let revision = guard_self_revision(&coco_state, revision);
 
         let theme = if let Some(true) = highlight {
             Some(match &current_session.settings.appearance.theme {
@@ -143,13 +144,11 @@ mod handler {
             None
         };
 
-        let branch = ctx
-            .state
+        let branch = coco_state
             .get_branch(project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
-        let blob = ctx
-            .state
+        let blob = coco_state
             .with_browser(branch, |mut browser| {
                 coco::blob(&mut browser, revision, &path, theme)
             })
@@ -165,14 +164,13 @@ mod handler {
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
-        let default_branch = ctx
-            .state
+        let coco_state = ctx.coco_state().await?;
+        let peer_id = guard_self_peer_id(&coco_state, peer_id);
+        let default_branch = coco_state
             .get_branch(project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
-        let branches = ctx
-            .state
+        let branches = coco_state
             .with_browser(default_branch, |browser| {
                 coco::branches(browser, Some(coco::into_branch_type(peer_id)))
             })
@@ -188,13 +186,12 @@ mod handler {
         project_urn: coco::Urn,
         sha1: oid::Oid,
     ) -> Result<impl Reply, Rejection> {
-        let default_branch = ctx
-            .state
+        let coco_state = ctx.coco_state().await?;
+        let default_branch = coco_state
             .find_default_branch(project_urn)
             .await
             .map_err(error::Error::from)?;
-        let commit = ctx
-            .state
+        let commit = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::commit(&mut browser, sha1)
             })
@@ -210,16 +207,15 @@ mod handler {
         project_urn: coco::Urn,
         mut query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer_id = guard_self_peer_id(&ctx.state, query.peer_id);
+        let coco_state = ctx.coco_state().await?;
+        let peer_id = guard_self_peer_id(&coco_state, query.peer_id);
         query.peer_id = peer_id;
 
-        let default_branch = ctx
-            .state
+        let default_branch = coco_state
             .find_default_branch(project_urn)
             .await
             .map_err(error::Error::from)?;
-        let commits = ctx
-            .state
+        let commits = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::commits(&mut browser, query.into())
             })
@@ -244,24 +240,22 @@ mod handler {
         owner: coco::user::User,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
-        let peers = ctx
-            .state
+        let coco_state = ctx.coco_state().await?;
+        let peers = coco_state
             .tracked(project_urn.clone())
             .await
             .map_err(error::Error::from)?;
-        let peer_id = ctx.state.peer_id();
+        let peer_id = coco_state.peer_id();
         let owner = owner
             .to_data()
             .build()
             .map_err(coco::state::Error::from)
             .map_err(error::Error::from)?;
-        let branch = ctx
-            .state
+        let branch = coco_state
             .find_default_branch(project_urn)
             .await
             .map_err(error::Error::from)?;
-        let revisions: Vec<super::Revisions> = ctx
-            .state
+        let revisions: Vec<super::Revisions> = coco_state
             .with_browser(branch, |browser| {
                 // TODO(finto): downgraded verified user, which should not be needed.
                 Ok(coco::revisions(browser, peer_id, owner, peers)?
@@ -280,13 +274,12 @@ mod handler {
         ctx: context::Context,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
-        let branch = ctx
-            .state
+        let coco_state = ctx.coco_state().await?;
+        let branch = coco_state
             .find_default_branch(project_urn)
             .await
             .map_err(error::Error::from)?;
-        let tags = ctx
-            .state
+        let tags = coco_state
             .with_browser(branch, |browser| coco::tags(browser))
             .await
             .map_err(error::Error::from)?;
@@ -304,15 +297,14 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
-        let revision = guard_self_revision(&ctx.state, revision);
-        let branch = ctx
-            .state
+        let coco_state = ctx.coco_state().await?;
+        let peer_id = guard_self_peer_id(&coco_state, peer_id);
+        let revision = guard_self_revision(&coco_state, revision);
+        let branch = coco_state
             .get_branch(project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
-        let tree = ctx
-            .state
+        let tree = coco_state
             .with_browser(branch, |mut browser| {
                 coco::tree(&mut browser, revision, prefix)
             })
@@ -441,16 +433,13 @@ mod test {
     async fn blob() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -465,9 +454,8 @@ mod test {
             peer_id: None,
         };
         let path = "text/arrows.txt";
-        let default_branch = ctx.state.find_default_branch(urn.clone()).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn.clone()).await?;
+        let want = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::blob(&mut browser, Some(revision.clone()), path, None)
             })
@@ -525,9 +513,8 @@ mod test {
 
         // Get binary blob.
         let path = "bin/ls";
-        let default_branch = ctx.state.find_default_branch(urn.clone()).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn.clone()).await?;
+        let want = coco_state
             .with_browser(default_branch, |browser| {
                 coco::blob(browser, Some(revision.clone()), path, None)
             })
@@ -581,16 +568,13 @@ mod test {
     async fn blob_dev_branch() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -624,9 +608,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = ctx.state.find_default_branch(urn).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn).await?;
+        let want = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::blob(&mut browser, Some(revision), path, None)
             })
@@ -643,16 +626,13 @@ mod test {
     async fn branches() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -668,9 +648,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = ctx.state.find_default_branch(urn).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn).await?;
+        let want = coco_state
             .with_browser(default_branch, |browser| coco::branches(browser, None))
             .await?;
 
@@ -687,16 +666,13 @@ mod test {
     async fn commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -714,9 +690,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = ctx.state.find_default_branch(urn).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn).await?;
+        let want = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::commit_header(&mut browser, sha1)
             })
@@ -750,16 +725,13 @@ mod test {
     async fn commits() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -776,9 +748,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = ctx.state.find_default_branch(urn).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn).await?;
+        let want = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::commits(&mut browser, branch.clone())
             })
@@ -828,19 +799,19 @@ mod test {
     async fn revisions() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
-        let peer_id = ctx.state.peer_id();
-        let id = identity::create(&ctx.state, &ctx.signer.clone().unwrap(), "cloudhead").await?;
+        let peer_id = coco_state.peer_id();
+        let id = identity::create(&coco_state, "cloudhead").await?;
 
-        let owner = ctx.state.get_user(id.urn.clone()).await?;
+        let owner = coco_state.get_user(id.urn.clone()).await?;
         let owner = coco::user::verify(owner)?;
 
         session::set_identity(&ctx.store, id)?;
 
         let platinum_project = coco::control::replicate_platinum(
-            &ctx.state,
-            &ctx.signer.clone().unwrap(),
+            &coco_state,
             &owner,
             "git-platinum",
             "fixture data",
@@ -849,13 +820,8 @@ mod test {
         .await?;
         let urn = platinum_project.urn();
 
-        let (remote, fintohaps) = coco::control::track_fake_peer(
-            &ctx.state,
-            &ctx.signer.unwrap(),
-            &platinum_project,
-            "fintohaps",
-        )
-        .await;
+        let (remote, fintohaps) =
+            coco::control::track_fake_peer(&coco_state, &platinum_project, "fintohaps").await;
 
         let res = request()
             .method("GET")
@@ -908,16 +874,13 @@ mod test {
     async fn tags() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -933,9 +896,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = ctx.state.find_default_branch(urn).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn).await?;
+        let want = coco_state
             .with_browser(default_branch, |browser| coco::tags(browser))
             .await?;
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -953,16 +915,13 @@ mod test {
     async fn tree() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -985,9 +944,8 @@ mod test {
         let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = ctx.state.find_default_branch(urn).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn).await?;
+        let want = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::tree(&mut browser, Some(revision), Some(prefix.to_string()))
             })
@@ -1040,16 +998,13 @@ mod test {
 
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let coco_state = ctx.coco_state().await?;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
+            let owner = coco_state.init_owner("cloudhead").await?;
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
+                &coco_state,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -1075,9 +1030,8 @@ mod test {
         );
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = ctx.state.find_default_branch(urn).await?;
-        let want = ctx
-            .state
+        let default_branch = coco_state.find_default_branch(urn).await?;
+        let want = coco_state
             .with_browser(default_branch, |mut browser| {
                 coco::tree(&mut browser, Some(revision), None)
             })
