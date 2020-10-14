@@ -95,13 +95,11 @@ async fn run(
 
         async move {
             loop {
-                match peer_events.recv().await.unwrap() {
-                    coco::PeerEvent::StatusChanged(old, new) => {
-                        peer_subscriptions
-                            .broadcast(notification::Notification::LocalPeerStatusChanged(old, new))
-                            .await
-                    }
-                    _ => {}
+                if let coco::PeerEvent::StatusChanged(old, new) = peer_events.recv().await.unwrap()
+                {
+                    peer_subscriptions
+                        .broadcast(notification::Notification::LocalPeerStatusChanged(old, new))
+                        .await
                 }
             }
         }

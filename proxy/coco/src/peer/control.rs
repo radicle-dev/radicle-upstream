@@ -13,6 +13,7 @@ use super::run_state::Status;
 /// Requests sent to the peer.
 #[derive(Debug)]
 pub enum Request {
+    /// Request the current status.
     CurrentStatus(oneshot::Sender<Status>),
     /// Request a urn to be fetched from the network.
     Urn(
@@ -25,6 +26,7 @@ pub enum Request {
 /// Returned responses from the peer.
 #[derive(Debug)]
 pub enum Response {
+    /// Response to a status request.
     CurrentStatus(oneshot::Sender<Status>, Status),
     /// Response to a urn request.
     Urn(
@@ -47,6 +49,7 @@ impl Control {
         Self { sender }
     }
 
+    /// Initiate a new request for the status.
     pub async fn current_status(&mut self) -> Status {
         let (sender, receiver) = oneshot::channel::<Status>();
 

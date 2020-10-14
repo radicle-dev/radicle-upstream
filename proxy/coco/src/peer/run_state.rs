@@ -104,6 +104,7 @@ pub enum Event {
     RequestTick,
     /// The request for [`RadUrn`] timed out.
     RequestTimedOut(RadUrn),
+    /// The [`Status`] of the peer changed.
     StatusChanged(Status, Status),
 }
 
@@ -130,6 +131,7 @@ impl MaybeFrom<&Input> for Event {
 pub enum Input {
     /// Announcement subroutine lifecycle events.
     Announce(AnnounceInput),
+    /// Peer state change events.
     Control(ControlInput),
     /// Inputs from the underlying coco protocol.
     Protocol(ProtocolEvent<Gossip>),
@@ -152,8 +154,10 @@ pub enum AnnounceInput {
     Tick,
 }
 
+/// Announcement subroutine for status events.
 #[derive(Debug)]
 pub enum ControlInput {
+    /// New status.
     Status(oneshot::Sender<Status>),
 }
 
@@ -368,6 +372,7 @@ impl RunState {
         }
     }
 
+    /// Handle [`ControlInput`]s.
     fn handle_control(&self, input: ControlInput) -> Vec<Command> {
         match input {
             ControlInput::Status(sender) => vec![Command::Control(ControlCommand::Respond(

@@ -7,7 +7,7 @@ use crate::{context, http, notification::Subscriptions};
 
 /// SSE based notifications endpoint.
 pub fn filters(ctx: context::Context, subscriptions: Subscriptions) -> BoxedFilter<(impl Reply,)> {
-    local_peer_status_stream(ctx, subscriptions.clone())
+    local_peer_status_stream(ctx, subscriptions)
 }
 
 /// `GET /local_peer_status`
@@ -26,8 +26,7 @@ pub fn local_peer_status_stream(
 mod handler {
     use std::convert::Infallible;
 
-    use futures::{Stream, StreamExt as _};
-    use tokio::sync::mpsc;
+    use futures::StreamExt as _;
     use warp::{sse, Rejection, Reply};
 
     use crate::{
@@ -35,6 +34,7 @@ mod handler {
         notification::{Notification, Subscriptions},
     };
 
+    /// Sets up peer status notification stream.
     pub async fn local_peer_status(
         ctx: context::Context,
         subscriptions: Subscriptions,
@@ -51,8 +51,7 @@ mod handler {
             match notification.clone() {
                 Notification::LocalPeerStatusChanged(_old, _new) => {
                     Some(map_to_event(notification))
-                }
-                _ => None,
+                },
             }
         };
 
@@ -61,14 +60,17 @@ mod handler {
         ))
     }
 
+    /// Helper for mapping [`Notification::LocalPeerStatusChanged`] events onto
+    /// [`sse::ServerSentEvent`]s.
     fn map_to_event(notification: Notification) -> Result<impl sse::ServerSentEvent, Infallible> {
         match notification {
             Notification::LocalPeerStatusChanged(_old, new) => {
                 Ok((sse::event("LOCAL_PEER_STATUS_CHANGED"), sse::json(new)))
-            }
+            },
         }
     }
 
+    #[allow(clippy::unwrap_used)]
     #[cfg(test)]
     mod test {
         use warp::filters::sse;
