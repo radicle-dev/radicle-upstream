@@ -9,6 +9,19 @@
   import { ConnectionStatusIndicator } from "../Component";
 
   export let identity = null;
+
+  let peerState;
+
+  // FIXME(rudolfs): cypress tests break when EventSource is initialised.
+  if (!window["Cypress"]) {
+    const sse = new EventSource(
+      "http://localhost:8080/v1/notifications/local_peer_status"
+    );
+
+    sse.addEventListener("LOCAL_PEER_STATUS_CHANGED", event => {
+      peerState = JSON.parse(event.data);
+    });
+  }
 </script>
 
 <style>
@@ -122,6 +135,14 @@
     </li>
   </ul>
   <ul class="bottom">
+    <li class="item indicator" data-cy="network">
+      <Tooltip value={JSON.stringify(peerState)}>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <Icon.Network />
+        </a>
+      </Tooltip>
+    </li>
     <li
       class="item indicator"
       data-cy="search"
