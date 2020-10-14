@@ -299,12 +299,9 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        log::debug!(
+        println!(
             "http::source::tree urn={}, prefix={:?}, peer.id={:?} revision={:?}",
-            project_urn,
-            prefix,
-            peer_id,
-            revision
+            project_urn, prefix, peer_id, revision
         );
         let branch = ctx
             .state

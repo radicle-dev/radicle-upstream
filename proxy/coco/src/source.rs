@@ -378,11 +378,13 @@ impl Serialize for TreeEntry {
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Revision<P> {
     /// Select a tag under the name provided.
+    #[serde(rename_all = "camelCase")]
     Tag {
         /// Name of the tag.
         name: String,
     },
     /// Select a branch under the name provided.
+    #[serde(rename_all = "camelCase")]
     Branch {
         /// Name of the branch.
         name: String,
@@ -390,6 +392,7 @@ pub enum Revision<P> {
         peer_id: Option<P>,
     },
     /// Select a SHA1 under the name provided.
+    #[serde(rename_all = "camelCase")]
     Sha {
         /// The SHA1 value.
         sha: Oid,
