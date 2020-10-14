@@ -172,7 +172,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
     let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
     let (peer, state) = {
-        let seeds = session::settings(&store).await?.coco.seeds;
+        let seeds = session::seeds(&store).await?.unwrap_or_default();
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
             vec![]

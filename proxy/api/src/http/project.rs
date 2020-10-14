@@ -49,8 +49,7 @@ fn create_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
         .and(path::end())
-        .and(http::with_context(ctx.clone()))
-        .and(http::with_owner_guard(ctx))
+        .and(http::with_session_context(ctx))
         .and(warp::body::json())
         .and_then(handler::create)
 }
@@ -132,17 +131,16 @@ mod handler {
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error::Error, http, project};
+    use crate::{context, error::Error, http, project, session};
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        ctx: context::Context,
-        owner: coco::user::User,
+        ctx: session::Context,
         input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection> {
         let meta = ctx
             .state
-            .init_project(&owner, input)
+            .init_project(&ctx.owner, input)
             .await
             .map_err(Error::from)?;
         let urn = meta.urn();
@@ -292,16 +290,13 @@ mod test {
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
 
         let urn = {
-            let handle = "cloudhead";
-            let owner = ctx.state.init_owner(handle).await?;
-            session::set_identity(&ctx.store, (ctx.state.peer_id(), owner.clone()).into())?;
-
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
-                &owner,
+                &session_ctx.owner,
                 "git-platinum",
                 "fixture data",
                 "master",
@@ -373,14 +368,8 @@ mod test {
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
-
-        {
-            let handle = "cloudhead";
-            let id = identity::create(&ctx.state, handle).await?;
-
-            session::set_identity(&ctx.store, id)?;
-        };
 
         let project = coco::project::Create {
             repo: coco::project::Repo::New {
@@ -434,13 +423,8 @@ mod test {
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let repo_path = dir.path().join("Upstream");
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
-
-        {
-            let handle = "cloudhead";
-            let id = identity::create(&ctx.state, handle).await?;
-            session::set_identity(&ctx.store, id)?;
-        };
 
         let project = coco::project::Create {
             repo: coco::project::Repo::Existing {

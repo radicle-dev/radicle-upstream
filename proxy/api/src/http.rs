@@ -88,37 +88,41 @@ pub fn api(
     recovered.with(cors).with(log)
 }
 
-/// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and
-/// passes down.
-#[must_use]
-fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
-    warp::any()
-        .and(with_context(ctx))
-        .and_then(|ctx: context::Context| async move {
-            let session = crate::session::current(ctx.state.clone(), &ctx.store)
-                .await
-                .expect("unable to get current sesison");
-
-            if let Some(identity) = session.identity {
-                let user = ctx
-                    .state
-                    .get_user(identity.urn)
-                    .await
-                    .expect("unable to get coco user");
-                let user = coco::user::verify(user).expect("unable to verify user");
-
-                Ok(user)
-            } else {
-                Err(Rejection::from(error::Routing::MissingOwner))
-            }
-        })
-        .boxed()
-}
-
 /// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
 fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
     warp::any().map(move || ctx.clone()).boxed()
+}
+
+/// Assert presence of a session and provides the associated [`crate::session::Context`].
+///
+/// Rejects with [`error::Routing::NoSession`] if there is no session stored yet. Rejects if the
+/// identity stored in the session is not available.
+#[must_use]
+fn with_session_context(ctx: context::Context) -> BoxedFilter<(crate::session::Context,)> {
+    with_context(ctx)
+        .and_then(|ctx| async move {
+            let context::Context {
+                peer_control,
+                state,
+                store,
+            } = ctx;
+            let session =
+                crate::session::get_current(&store)?.ok_or_else(|| error::Routing::NoSession)?;
+            let owner = state
+                .get_user(session.identity.urn.clone())
+                .await
+                .map_err(crate::error::Error::from)?;
+            let owner = coco::user::verify(owner).map_err(crate::error::Error::from)?;
+            Ok::<_, Rejection>(crate::session::Context {
+                peer_control,
+                state,
+                store,
+                owner,
+                session,
+            })
+        })
+        .boxed()
 }
 
 /// Parses an optional query string with [`serde_qs`] and returns the result.

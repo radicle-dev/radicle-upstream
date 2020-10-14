@@ -32,8 +32,7 @@ fn create_project_filter(
             }
         })
         .untuple_one()
-        .and(super::with_context(ctx.clone()))
-        .and(super::with_owner_guard(ctx))
+        .and(super::with_session_context(ctx))
         .and(warp::body::json())
         .and_then(handler::create_project)
 }
@@ -52,20 +51,17 @@ mod handler {
     use tokio::sync::mpsc;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use coco::user;
-
-    use crate::{context, error, project};
+    use crate::{error, project, session};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
-        ctx: context::Context,
-        owner: user::User,
+        ctx: session::Context,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let meta = coco::control::replicate_platinum(
             &ctx.state,
-            &owner,
+            &ctx.owner,
             &input.name,
             &input.description,
             &input.default_branch,

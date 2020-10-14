@@ -26,7 +26,7 @@ fn blob_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_session_context(ctx))
         .and(path::param::<coco::Urn>())
         .and(http::with_qs::<BlobQuery>())
         .and_then(handler::blob)
@@ -82,8 +82,7 @@ fn revisions_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
-        .and(http::with_context(ctx.clone()))
-        .and(http::with_owner_guard(ctx))
+        .and(http::with_session_context(ctx))
         .and(path::param::<coco::Urn>())
         .and_then(handler::revisions)
 }
@@ -121,7 +120,7 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        ctx: context::Context,
+        ctx: session::Context,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -130,12 +129,11 @@ mod handler {
             highlight,
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
-        let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
         let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
         let revision = super::http::guard_self_revision(&ctx.state, revision);
 
         let theme = if let Some(true) = highlight {
-            Some(match &current_session.settings.appearance.theme {
+            Some(match &ctx.session.settings.appearance.theme {
                 settings::Theme::Dark => "base16-ocean.dark",
                 settings::Theme::Light => "base16-ocean.light",
             })
@@ -240,8 +238,7 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
-        ctx: context::Context,
-        owner: coco::user::User,
+        ctx: crate::session::Context,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let peers = ctx
@@ -250,7 +247,8 @@ mod handler {
             .await
             .map_err(error::Error::from)?;
         let peer_id = ctx.state.peer_id();
-        let owner = owner
+        let owner = ctx
+            .owner
             .to_data()
             .build()
             .map_err(coco::state::Error::from)
@@ -409,15 +407,16 @@ mod test {
 
     use radicle_surf::vcs::git;
 
-    use crate::{context, error, http, identity, session};
+    use crate::{context, error, http, session};
 
     #[tokio::test]
     async fn blob() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
 
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
         let revision = coco::Revision::Branch {
             name: "master".to_string(),
             peer_id: None,
@@ -539,9 +538,10 @@ mod test {
     async fn blob_dev_branch() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
 
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
             peer_id: None,
@@ -585,8 +585,9 @@ mod test {
     async fn branches() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
 
         let res = request()
             .method("GET")
@@ -613,9 +614,10 @@ mod test {
     async fn commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
 
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
         let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
 
         let res = request()
@@ -660,9 +662,10 @@ mod test {
     async fn commits() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
 
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
 
         let branch = git::Branch::local("master");
         let res = request()
@@ -723,15 +726,11 @@ mod test {
     async fn revisions() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
+        let owner = session_ctx.owner.clone();
         let api = super::filters(ctx.clone());
 
         let peer_id = ctx.state.peer_id();
-        let id = identity::create(&ctx.state, "cloudhead").await?;
-
-        let owner = ctx.state.get_user(id.urn.clone()).await?;
-        let owner = coco::user::verify(owner)?;
-
-        session::set_identity(&ctx.store, id)?;
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.state,
@@ -797,9 +796,10 @@ mod test {
     async fn tags() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
 
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
 
         let res = request()
             .method("GET")
@@ -827,8 +827,9 @@ mod test {
     async fn tree() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
 
         let prefix = "src";
         let revision = coco::Revision::Branch {
@@ -898,8 +899,9 @@ mod test {
 
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
         let api = super::filters(ctx.clone());
-        let urn = replicate_platinum(&ctx).await?;
+        let urn = replicate_platinum(&session_ctx).await?;
 
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
@@ -932,11 +934,10 @@ mod test {
         Ok(())
     }
 
-    async fn replicate_platinum(ctx: &context::Context) -> Result<coco::Urn, error::Error> {
-        let owner = ctx.state.init_owner("cloudhead").await?;
+    async fn replicate_platinum(ctx: &session::Context) -> Result<coco::Urn, error::Error> {
         let platinum_project = coco::control::replicate_platinum(
             &ctx.state,
-            &owner,
+            &ctx.owner,
             "git-platinum",
             "fixture data",
             "master",

@@ -54,18 +54,15 @@ mod handler {
         ctx: context::Context,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        if let Some(identity) = session::current(ctx.state.clone(), &ctx.store)
-            .await?
-            .identity
-        {
+        if let Some(session) = session::get_current(&ctx.store)? {
             return Err(Rejection::from(error::Error::from(
-                coco::state::Error::already_exists(identity.urn),
+                coco::state::Error::already_exists(session.identity.urn),
             )));
         }
 
         let id = identity::create(&ctx.state, &input.handle).await?;
 
-        session::set_identity(&ctx.store, id.clone())?;
+        session::initialize(&ctx.store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
@@ -118,8 +115,8 @@ mod test {
             .await;
 
         let urn = {
-            let session = session::current(ctx.state.clone(), &ctx.store).await?;
-            session.identity.expect("failed to set identity").urn
+            let session = session::get_current(&ctx.store)?.expect("session not set");
+            session.identity.urn
         };
 
         let peer_id = ctx.state.peer_id();
@@ -191,18 +188,11 @@ mod test {
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
+        let session_ctx = session::initialize_test(&ctx, "cloudhead").await;
+        let owner = session_ctx.owner.clone();
         let api = super::filters(ctx.clone());
 
         let fintohaps: identity::Identity = {
-            let id = identity::create(&ctx.state, "cloudhead").await?;
-
-            let owner = {
-                let user = ctx.state.get_user(id.urn.clone()).await?;
-                coco::user::verify(user)?
-            };
-
-            session::set_identity(&ctx.store, id)?;
-
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
                 &owner,
