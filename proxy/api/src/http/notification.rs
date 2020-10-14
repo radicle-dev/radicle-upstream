@@ -71,19 +71,17 @@ mod handler {
 
     #[cfg(test)]
     mod test {
-        use std::time::Instant;
-
         use warp::filters::sse;
 
         use crate::notification;
 
         #[test]
         fn json_serialize() -> Result<(), Box<dyn std::error::Error>> {
-            sse::json(coco::PeerStatus::Started(Instant::now()));
+            sse::json(coco::PeerStatus::Started);
 
             super::map_to_event(notification::Notification::LocalPeerStatusChanged(
-                coco::PeerStatus::Stopped(Instant::now()),
-                coco::PeerStatus::Started(Instant::now()),
+                coco::PeerStatus::Stopped,
+                coco::PeerStatus::Started,
             ))
             .unwrap();
 

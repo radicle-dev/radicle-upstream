@@ -15,7 +15,7 @@
 
   let peerState;
 
-  sse.addEventListener("LOCAL_PEER_STATUS", event => {
+  sse.addEventListener("LOCAL_PEER_STATUS_CHANGED", event => {
     peerState = JSON.parse(event.data);
   });
 </script>
