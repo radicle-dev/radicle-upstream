@@ -10,6 +10,7 @@
   export let style = "";
   export let illustration = IllustrationVariant.Plant;
   export let text = "Nothing to see here";
+  export let headerText = "";
   export let primaryActionText = "";
   export let secondaryActionText = "";
 
@@ -29,12 +30,16 @@
     align-items: center;
     height: calc(100vh - var(--bigheader-height));
     text-align: center;
-    max-width: 20rem;
+    max-width: 30rem;
     margin: 0 auto;
   }
+  h3 {
+    margin-top: 1.8rem;
+  }
   .text {
-    margin: 1.5rem 0;
     color: var(--color-foreground-level-6);
+    margin: 1.5rem 0;
+    max-width: 20rem;
   }
   button {
     color: var(--color-foreground-level-5);
@@ -56,6 +61,9 @@
 
 <div class="empty-state" data-cy="empty-state" {style}>
   <Illustration variant={illustration} />
+  {#if headerText.length}
+    <h3>{headerText}</h3>
+  {/if}
   <p class="text">{text}</p>
   {#if primaryActionText.length}
     <Button
