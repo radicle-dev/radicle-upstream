@@ -331,7 +331,11 @@ mod handler {
         }
     }
 
-    fn guard_self_revision(state: &coco::State, revision: Option<coco::Revision<PeerId>>) -> Option<coco::Revision<PeerId>> {
+    /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
+    fn guard_self_revision(
+        state: &coco::State,
+        revision: Option<coco::Revision<PeerId>>,
+    ) -> Option<coco::Revision<PeerId>> {
         revision.map(|r| {
             if let coco::Revision::Branch { name, peer_id } = r {
                 coco::Revision::Branch {
