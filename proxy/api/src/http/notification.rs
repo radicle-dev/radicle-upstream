@@ -1,7 +1,7 @@
 //! Unidirectional stream of events happening in the proxy. This enables exposing tailing logs to
 //! users, or widgets which show topology information like how many and what peers are connected.
 
-use warp::{filters::BoxedFilter, Filter, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Reply};
 
 use crate::{context, http, notification::Subscriptions};
 
@@ -17,7 +17,7 @@ pub fn local_peer_status_stream(
     ctx: context::Context,
     subscriptions: Subscriptions,
 ) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
+    path!("local_peer_status")
         .and(http::with_context(ctx))
         .and(warp::any().map(move || subscriptions.clone()))
         .and_then(handler::local_peer_status)
