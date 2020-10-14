@@ -18,6 +18,7 @@
   async function userDidClick(): Promise<void> {
     try {
       running = true;
+      notification.info("Confirm the transaction on your wallet app 📲");
       await onClick();
       // Waiting a moment here smoothes the UI.
       await continueAfter(0.4);

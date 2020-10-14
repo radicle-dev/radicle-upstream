@@ -9,7 +9,7 @@
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
-  import { ModalLayout, StatefulButton } from "../../../DesignSystem/Component";
+  import { ModalLayout, TxButton } from "../../../DesignSystem/Component";
   import { Icon, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
@@ -111,7 +111,7 @@
       </Input.Text>
 
       <div class="submit">
-        <StatefulButton
+        <TxButton
           title="Confirm"
           disabled={disableConfirmation}
           dataCy="review-transfer-button"

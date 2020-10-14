@@ -2,7 +2,7 @@
   import { push } from "svelte-spa-router";
 
   import { Button, Icon, Input } from "../../../Primitive";
-  import { Remote, StatefulButton } from "../../../Component";
+  import { Remote, TxButton } from "../../../Component";
 
   import * as notification from "../../../../src/notification";
   import * as path from "../../../../src/path";
@@ -74,17 +74,12 @@
   }
 
   /* On clicks */
-  function checkWalletNotification() {
-    notification.info("Confirm the transaction on your wallet app 📲");
-  }
 
   function onSaveMonthlyContribution(): Promise<void> {
-    checkWalletNotification();
     return pool.updateAmountPerBlock(monthlyContribution);
   }
 
   function onSaveMembers(): Promise<void> {
-    checkWalletNotification();
     const membersList = members.split(",").map(x => x.trim());
     return pool.updateReceiverAddresses(membersList);
   }
@@ -175,12 +170,12 @@
               <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
             </div>
           </Input.Text>
-          <StatefulButton
+          <TxButton
             disabled={!saveMonthlyContributionEnabled}
             title={'Save'}
             onClick={onSaveMonthlyContribution}
             variant={'outline'}
-            successMessage={'Pool successfully saved'}
+            successMessage={'Pool monthly contribution successfully updated'}
             errorMessage={e => `Failed to save pool: ${e}`} />
         </div>
       </li>
@@ -198,14 +193,14 @@
             validation={$membersValidationStore}
             style="min-width: 400px;"
             bind:value={members}
-            placeholder="Enter members here" />
+            placeholder="Enter a list of comma-separated addresses here" />
 
-          <StatefulButton
+          <TxButton
             disabled={!saveMembersEnabled}
             title={'Save'}
             onClick={onSaveMembers}
             variant={'outline'}
-            successMessage={'Pool successfully saved'}
+            successMessage={'Pool members list successfully updated'}
             errorMessage={e => `Failed to save pool: ${e}`} />
         </div>
       </li>

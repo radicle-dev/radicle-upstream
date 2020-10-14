@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Remote, StatefulButton } from "../../../Component";
+  import { Remote, TxButton } from "../../../Component";
 
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
   import * as _pool from "../../../../src/funding/pool";
@@ -48,7 +48,7 @@
         </p>
       </header>
       <div class="item">
-        <StatefulButton
+        <TxButton
           disabled={poolData.collectableFunds <= 0}
           title={'Collect your funds 🥳'}
           onClick={collectFunds}
