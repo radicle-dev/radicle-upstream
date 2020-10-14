@@ -403,6 +403,12 @@ impl State {
             },
             Some(name) => name,
         };
+
+        let remote = match remote.into() {
+            Some(peer_id) if peer_id == self.peer_id() => None,
+            Some(peer_id) => Some(peer_id),
+            None => None,
+        };
         let reference = NamespacedRef::head(urn.id, remote.clone(), &name);
 
         log::debug!("WHO'S THAT REF?! {}", reference);

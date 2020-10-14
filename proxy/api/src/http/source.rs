@@ -115,7 +115,7 @@ fn tree_filter(
 mod handler {
     use warp::{path::Tail, reply, Rejection, Reply};
 
-    use coco::oid;
+    use coco::{oid, PeerId};
 
     use crate::{context, error, session, session::settings};
 
@@ -131,6 +131,7 @@ mod handler {
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
+        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
 
         let theme = if let Some(true) = highlight {
             Some(match &current_session.settings.appearance.theme {
@@ -163,6 +164,7 @@ mod handler {
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
+        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
         let default_branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -205,9 +207,12 @@ mod handler {
     pub async fn commits(
         ctx: context::Context,
         project_urn: coco::Urn,
-        query: super::CommitsQuery,
+        mut query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         log::debug!("http::source::commits query={:?}", query);
+        let peer_id = guard_self_peer_id(&ctx.state, query.peer_id);
+        query.peer_id = peer_id;
+
         let default_branch = ctx
             .state
             .find_default_branch(project_urn)
@@ -303,6 +308,14 @@ mod handler {
             "http::source::tree urn={}, prefix={:?}, peer.id={:?} revision={:?}",
             project_urn, prefix, peer_id, revision
         );
+        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
+        let revision = revision.map(|r| {
+            if let coco::Revision::Branch { name, peer_id } = r {
+                coco::Revision::Branch { name, peer_id: guard_self_peer_id(&ctx.state, peer_id) }
+            } else {
+                r
+            }
+        });
         let branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -317,6 +330,14 @@ mod handler {
             .map_err(error::Error::from)?;
 
         Ok(reply::json(&tree))
+    }
+
+    fn guard_self_peer_id(state: &coco::State, peer_id: Option<PeerId>) -> Option<PeerId> {
+        match peer_id {
+            Some(peer_id) if peer_id == state.peer_id() => None,
+            Some(peer_id) => Some(peer_id),
+            None => None,
+        }
     }
 }
 
