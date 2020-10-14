@@ -564,11 +564,6 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
         .min()
         .ok_or(Error::NoBranches)?;
 
-    log::debug!(
-        "The fallback branch for this repository is: {:?}",
-        first_branch
-    );
-
     let repo = git::Repository::new(repo_path)?;
 
     let browser = match Browser::new(&repo, git::Branch::local("master")) {
@@ -671,7 +666,6 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commits<'repo>(browser: &mut Browser<'repo>, branch: git::Branch) -> Result<Commits, Error> {
-    log::debug!("source::commit branch={:?}", branch);
     browser.branch(branch)?;
 
     let headers = browser.get().iter().map(CommitHeader::from).collect();
@@ -708,14 +702,12 @@ pub fn tree<'repo, P>(
     maybe_prefix: Option<String>,
 ) -> Result<Tree, Error>
 where
-    P: ToString + std::fmt::Debug,
+    P: ToString,
 {
-    log::debug!("source::tree maybe_revision={:?}", maybe_revision);
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
     let prefix = maybe_prefix.unwrap_or_default();
 
     if let Some(revision) = maybe_revision {
-        log::debug!("source::tree revision={:?}", revision);
         browser.rev(revision)?;
     }
 

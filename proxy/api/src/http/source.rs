@@ -209,7 +209,6 @@ mod handler {
         project_urn: coco::Urn,
         mut query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        log::debug!("http::source::commits query={:?}", query);
         let peer_id = guard_self_peer_id(&ctx.state, query.peer_id);
         query.peer_id = peer_id;
 
@@ -304,10 +303,6 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        println!(
-            "http::source::tree urn={}, prefix={:?}, peer.id={:?} revision={:?}",
-            project_urn, prefix, peer_id, revision
-        );
         let peer_id = guard_self_peer_id(&ctx.state, peer_id);
         let revision = revision.map(|r| {
             if let coco::Revision::Branch { name, peer_id } = r {
