@@ -219,11 +219,13 @@ pub enum Status {
     /// The local peer lost its connections to all its peers.
     Offline,
     /// Phase where the local peer tries get up-to-date.
+    #[serde(rename_all = "camelCase")]
     Syncing {
         /// Number of synchronisation attempts.
         syncs: usize,
     },
     /// The local peer is operational and is able to interact with the peers it has connected to.
+    #[serde(rename_all = "camelCase")]
     Online {
         /// Number of connected peers.
         connected: usize,
@@ -410,7 +412,9 @@ impl RunState {
                         Command::StartSyncTimeout(self.config.sync.period),
                     ]
                 } else {
-                    self.status = Status::Online { connected: 1 };
+                    self.status = Status::Online {
+                        connected: self.connected_peers.len(),
+                    };
                     self.status_since = Instant::now();
 
                     vec![]
@@ -421,6 +425,7 @@ impl RunState {
                 if *syncs < self.config.sync.max_peers =>
             {
                 self.connected_peers.insert(peer_id);
+
                 if syncs + 1 == self.config.sync.max_peers {
                     self.status = Status::Online {
                         connected: self.connected_peers.len(),
@@ -432,6 +437,15 @@ impl RunState {
 
                 vec![Command::SyncPeer(peer_id)]
             }
+            // Sync until configured maximum of peers is reached.
+            (Status::Online { .. }, ProtocolEvent::Connected(peer_id)) => {
+                self.connected_peers.insert(peer_id);
+                self.status = Status::Online {
+                    connected: self.connected_peers.len(),
+                };
+
+                vec![]
+            },
             // Remove peer that just disconnected.
             (_, ProtocolEvent::Disconnecting(peer_id)) => {
                 self.connected_peers.remove(&peer_id);
@@ -558,7 +572,9 @@ impl RunState {
         match (&self.status, input) {
             // Go online if we exceed the sync period.
             (Status::Syncing { .. }, TimeoutInput::SyncPeriod) => {
-                self.status = Status::Online { connected: 0 };
+                self.status = Status::Online {
+                    connected: self.connected_peers.len(),
+                };
                 self.status_since = Instant::now();
 
                 vec![]
@@ -673,7 +689,7 @@ mod test {
         );
 
         let _cmds = state.transition(Input::Protocol(ProtocolEvent::Disconnecting(peer_id)));
-        assert_matches!(state.status, Status::Offline {..});
+        assert_matches!(state.status, Status::Offline);
     }
 
     #[test]
