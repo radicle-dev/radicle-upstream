@@ -150,9 +150,14 @@ mod handler {
             .map_err(Error::from)?;
         let urn = meta.urn();
 
+        let branch = ctx
+            .state
+            .get_branch(urn, None, meta.default_branch().to_owned())
+            .await
+            .map_err(Error::from)?;
         let stats = ctx
             .state
-            .with_browser(urn, |browser| {
+            .with_browser(branch, |browser| {
                 Ok(browser.get_stats().map_err(coco::source::Error::from)?)
             })
             .await

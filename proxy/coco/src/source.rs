@@ -418,7 +418,7 @@ where
 }
 
 /// Bundled response to retrieve both [`Branch`]es and [`Tag`]s for a user's repo.
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Revisions<P, U> {
     /// The peer identifier for the user.
@@ -438,7 +438,6 @@ pub struct Revisions<P, U> {
 /// Will return [`Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob<P>(
     browser: &mut Browser,
-    default_branch: git::Branch,
     maybe_revision: Option<Revision<P>>,
     path: &str,
     theme: Option<&str>,
@@ -447,7 +446,9 @@ where
     P: ToString,
 {
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
-    browser.rev(maybe_revision.unwrap_or_else(|| default_branch.into()))?;
+    if let Some(revision) = maybe_revision {
+        browser.rev(revision)?;
+    }
 
     let root = browser.get_directory()?;
     let p = file_system::Path::from_str(path)?;
@@ -697,7 +698,6 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, Error> {
 /// Will return [`Error`] if any of the surf interactions fail.
 pub fn tree<'repo, P>(
     browser: &mut Browser<'repo>,
-    default_branch: git::Branch,
     maybe_revision: Option<Revision<P>>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, Error>
@@ -705,10 +705,11 @@ where
     P: ToString,
 {
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
-    let revision = maybe_revision.unwrap_or_else(|| default_branch.into());
     let prefix = maybe_prefix.unwrap_or_default();
 
-    browser.rev(revision)?;
+    if let Some(revision) = maybe_revision {
+        browser.rev(revision)?;
+    }
 
     let path = if prefix == "/" || prefix == "" {
         file_system::Path::root()
@@ -879,8 +880,9 @@ mod tests {
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
+        let branch = state.find_default_branch(urn).await?;
         let commit = state
-            .with_browser(urn, |browser| {
+            .with_browser(branch, |browser| {
                 Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
             })
             .await

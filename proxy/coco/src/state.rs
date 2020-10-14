@@ -14,6 +14,7 @@ use librad::{
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
+        types::{NamespacedRef, Single},
     },
     keys,
     meta::{entity, project as librad_project, user},
@@ -342,28 +343,109 @@ impl State {
             .await??)
     }
 
-    /// Provide a a repo [`git::Browser`] for the project of `urn`.
+    /// Provide a a repo [`git::Browser`] where the `Browser` is initialised with the provided
+    /// `reference`.
+    ///
+    /// See [`State::find_default_branch`] and [`State::get_branch`] for obtaining a
+    /// [`NamespacedRef`].
     ///
     /// # Errors
-    ///
-    /// * If no project for the `urn` was found.
-    /// * If the [`git::Browser`] fails.
-    /// * If the passed `callback` errors.
-    pub async fn with_browser<F, T>(&self, urn: RadUrn, callback: F) -> Result<T, Error>
+    ///   * If the namespace of the reference could not be converted to a [`git::Namespace`].
+    ///   * If we could not open the backing storage.
+    ///   * If we could not initialise the `Browser`.
+    ///   * If the callback provided returned an error.
+    pub async fn with_browser<F, T>(
+        &self,
+        reference: NamespacedRef<Single>,
+        callback: F,
+    ) -> Result<T, Error>
     where
-        F: Send + FnOnce(&mut git::Browser) -> Result<T, source::Error>,
+        F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
-        let monorepo = self.monorepo();
-        let project = self.get_project(urn, None).await?;
-        let default_branch = git::Branch::local(project.default_branch());
-
-        let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
-        let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())
+        let namespace = git::Namespace::try_from(reference.namespace().to_string().as_str())
             .map_err(source::Error::from)?;
-        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)
+        let branch = match reference.remote {
+            None => git::Branch::local(&reference.name),
+            Some(peer) => {
+                git::Branch::remote(&format!("heads/{}", reference.name), &peer.to_string())
+            },
+        };
+        let monorepo = self.monorepo();
+        let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
+        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, branch)
             .map_err(source::Error::from)?;
 
         callback(&mut browser).map_err(Error::from)
+    }
+
+    /// This method helps us get a branch for a given [`RadUrn`] and optional [`PeerId`].
+    ///
+    /// If the `branch_name` is `None` then we get the project for the given [`RadUrn`] and use its
+    /// `default_branch`.
+    ///
+    /// # Errors
+    ///   * If the storage operations fail.
+    ///   * If the requested reference was not found.
+    pub async fn get_branch<P, B>(
+        &self,
+        urn: RadUrn,
+        remote: P,
+        branch_name: B,
+    ) -> Result<NamespacedRef<Single>, Error>
+    where
+        P: Into<Option<PeerId>> + Clone + Send,
+        B: Into<Option<String>> + Clone + Send,
+    {
+        let name = match branch_name.into() {
+            None => {
+                let project = self.get_project(urn.clone(), None).await?;
+                project.default_branch().to_owned()
+            },
+            Some(name) => name,
+        };
+        let reference = NamespacedRef::head(urn.id, remote.clone(), &name);
+
+        let exists = {
+            let reference = reference.clone();
+            self.api
+                .with_storage(move |storage| storage.has_ref(&reference))
+                .await??
+        };
+
+        if exists {
+            Ok(reference)
+        } else {
+            Err(Error::MissingRef { reference })
+        }
+    }
+
+    /// This method helps us get the default branch for a given [`RadUrn`].
+    ///
+    /// It does this by:
+    ///     * First checking if the owner of this storage has a reference to the default
+    /// branch.
+    ///     * If the owner does not have this reference then it falls back to the first maintainer.
+    ///
+    /// # Errors
+    ///   * If the storage operations fail.
+    ///   * If no default branch was found for the provided [`RadUrn`].
+    pub async fn find_default_branch(&self, urn: RadUrn) -> Result<NamespacedRef<Single>, Error> {
+        let project = self.get_project(urn.clone(), None).await?;
+        let peer = project.keys().iter().next().cloned().map(PeerId::from);
+        let default_branch = project.default_branch();
+
+        let (owner, peer) = tokio::join!(
+            self.get_branch(urn.clone(), None, default_branch.to_owned()),
+            self.get_branch(urn.clone(), peer, default_branch.to_owned())
+        );
+        match owner.or(peer) {
+            Ok(reference) => Ok(reference),
+            Err(Error::MissingRef { .. }) => Err(Error::NoDefaultBranch {
+                name: project.name().to_string(),
+                urn,
+            }),
+            Err(err) => Err(err),
+        }
     }
 
     /// Initialize a [`librad_project::Project`] that is owned by the `owner`.
@@ -775,8 +857,9 @@ mod test {
             .await?;
 
         // Attempt to initialise a browser to ensure we can look at branches in the project
+        let branch = state.find_default_branch(fakie.urn()).await?;
         let branches = state
-            .with_browser(fakie.urn(), |browser| {
+            .with_browser(branch, |browser| {
                 Ok(browser
                     .list_branches(None)
                     .map_err(crate::source::Error::from)?)
