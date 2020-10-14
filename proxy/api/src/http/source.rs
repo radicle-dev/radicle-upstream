@@ -311,7 +311,10 @@ mod handler {
         let peer_id = guard_self_peer_id(&ctx.state, peer_id);
         let revision = revision.map(|r| {
             if let coco::Revision::Branch { name, peer_id } = r {
-                coco::Revision::Branch { name, peer_id: guard_self_peer_id(&ctx.state, peer_id) }
+                coco::Revision::Branch {
+                    name,
+                    peer_id: guard_self_peer_id(&ctx.state, peer_id),
+                }
             } else {
                 r
             }
