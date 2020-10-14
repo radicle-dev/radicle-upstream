@@ -265,16 +265,11 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Error + 'static>> {
     init_logging();
-    let waiting_room = WaitingRoom::new(waiting_room::Config::default());
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) = build_peer(
-        &alice_tmp_dir,
-        Shared::from(waiting_room.clone()),
-        RunConfig::default(),
-    )
-    .await?;
+    let (alice_peer, alice_state, alice_signer) =
+        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice = {
         let alice_signer = alice_signer.clone();
         alice_state
@@ -284,22 +279,12 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_repo_path = bob_tmp_dir.path().join("radicle");
-    let (bob_peer, bob_state, bob_signer) = build_peer(
-        &bob_tmp_dir,
-        Shared::from(waiting_room.clone()),
-        RunConfig::default(),
-    )
-    .await?;
+    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
     let bob = bob_state.init_owner(&bob_signer, "bob").await?;
 
     let eve_tmp_dir = tempfile::tempdir()?;
     let eve_repo_path = eve_tmp_dir.path().join("radicle");
-    let (eve_peer, eve_state, eve_signer) = build_peer(
-        &eve_tmp_dir,
-        Shared::from(waiting_room),
-        RunConfig::default(),
-    )
-    .await?;
+    let (eve_peer, eve_state, eve_signer) = build_peer(&eve_tmp_dir, RunConfig::default()).await?;
     let _eve = eve_state.init_owner(&eve_signer, "eve").await?;
 
     tokio::task::spawn(alice_peer.into_running());
@@ -364,8 +349,8 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
     };
     {
         let bob_addr = bob_state.listen_addr();
-        let bob_peer_id = bob_state.peer_id().clone();
-        let fetch_url = project.urn().into_rad_url(bob_peer_id.clone());
+        let bob_peer_id = bob_state.peer_id();
+        let fetch_url = project.urn().into_rad_url(bob_peer_id);
 
         eve_state.fetch(fetch_url, vec![bob_addr]).await?;
     }
