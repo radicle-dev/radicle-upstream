@@ -6,7 +6,7 @@
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
-  import { ConnectionStatusIndicator } from "../Component";
+  import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 
   export let identity = null;
 
@@ -135,14 +135,6 @@
     </li>
   </ul>
   <ul class="bottom">
-    <li class="item indicator" data-cy="network">
-      <Tooltip value={JSON.stringify(peerState)}>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
-          <Icon.Network />
-        </a>
-      </Tooltip>
-    </li>
     <li
       class="item indicator"
       data-cy="search"
@@ -156,7 +148,7 @@
     </li>
     <li class="item indicator" data-cy="search">
       <!-- svelte-ignore a11y-missing-attribute -->
-      <ConnectionStatusIndicator />
+      <ConnectionStatusIndicator {peerState} />
     </li>
     <li
       class="item indicator"
