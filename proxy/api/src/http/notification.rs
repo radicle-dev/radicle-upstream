@@ -60,8 +60,6 @@ mod handler {
         let filter = |notification: Notification| async move {
             match notification.clone() {
                 Notification::LocalPeerStatusChanged(_old, _new) => {
-                    // let res: Result<impl sse::ServerSentEvent, Infallible> =
-                    //     Ok((sse::event("LOCAL_PEER_STATUS_CHANGED"), sse::json(new)));
                     Some(map_to_event(notification))
                 },
                 _ => None,
