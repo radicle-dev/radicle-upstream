@@ -207,6 +207,7 @@ mod handler {
         project_urn: coco::Urn,
         query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
+        log::debug!("http::source::commits query={:?}", query);
         let default_branch = ctx
             .state
             .find_default_branch(project_urn)
@@ -276,7 +277,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let branch = ctx
             .state
-            .get_branch(project_urn, None, None)
+            .find_default_branch(project_urn)
             .await
             .map_err(error::Error::from)?;
         let tags = ctx
@@ -298,6 +299,13 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
+        log::debug!(
+            "http::source::tree urn={}, prefix={:?}, peer.id={:?} revision={:?}",
+            project_urn,
+            prefix,
+            peer_id,
+            revision
+        );
         let branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -317,6 +325,7 @@ mod handler {
 
 /// Bundled query params to pass to the commits handler.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CommitsQuery {
     /// PeerId to scope the query by.
     peer_id: Option<coco::PeerId>,
@@ -328,13 +337,14 @@ impl From<CommitsQuery> for git::Branch {
     fn from(CommitsQuery { peer_id, branch }: CommitsQuery) -> Self {
         match peer_id {
             None => Self::local(&branch),
-            Some(peer_id) => Self::remote(&branch, &peer_id.to_string()),
+            Some(peer_id) => Self::remote(&format!("heads/{}", branch), &peer_id.to_string()),
         }
     }
 }
 
 /// Bundled query params to pass to the blob handler.
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
@@ -356,6 +366,7 @@ pub struct BranchQuery {
 
 /// Bundled query params to pass to the tree handler.
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
@@ -367,6 +378,7 @@ pub struct TreeQuery {
 
 /// The output structure when calling the `/revisions` endpoint.
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Revisions {
     /// The [`identity::Identity`] that owns these revisions.
     identity: identity::Identity,

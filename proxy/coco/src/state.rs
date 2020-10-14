@@ -405,6 +405,7 @@ impl State {
         };
         let reference = NamespacedRef::head(urn.id, remote.clone(), &name);
 
+        log::debug!("WHO'S THAT REF?! {}", reference);
         let exists = {
             let reference = reference.clone();
             self.api
