@@ -18,7 +18,7 @@ export interface Pool {
 
   // Update the list of receiver addresses. Returns once the
   // transaction has been included in the chain.
-  updateReceiverAddresses(addresses: string[]): Promise<void>;
+  updateReceiverAddresses(data: PoolData, addresses: string[]): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
@@ -83,18 +83,21 @@ export function make(wallet: Wallet): Pool {
   async function updateAmountPerBlock(
     amountPerBlock: BigNumberish
   ): Promise<void> {
-    // TODO only update the settings that need changes. In particular
-    // only update members that have been added or removed
     await poolContract
       .setAmountPerBlock(amountPerBlock)
       .then(tx => tx.wait())
       .finally(loadPoolData);
   }
 
-  async function updateReceiverAddresses(addresses: string[]): Promise<void> {
-    // TODO only update the settings that need changes. In particular
-    // only update members that have been added or removed
-    const txs = addresses.map(address =>
+  async function updateReceiverAddresses(
+    data: PoolData,
+    addresses: string[]
+  ): Promise<void> {
+    // TODO(nuno): Read instance `data` instead of receiving as an argument.
+    const newAddresses = addresses.filter(
+      x => !data.receiverAddresses.includes(x)
+    );
+    const txs = newAddresses.map(address =>
       poolContract.setReceiver(address, 1).then(tx => tx.wait())
     );
 

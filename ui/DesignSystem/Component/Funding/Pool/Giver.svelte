@@ -65,12 +65,16 @@
     push(path.poolTopUp());
   };
 
-  // Extract the list of members from the provided raw input string
+  // Extract the list of unique members from the provided raw input string.
   function extractMembers(raw: string): string[] {
-    return raw
-      .split(",")
-      .map(e => e.trim())
-      .filter(e => e.length > 0);
+    return [
+      ...new Set(
+        raw
+          .split(",")
+          .map(e => e.trim())
+          .filter(e => e.length > 0)
+      ),
+    ];
   }
 
   /* On clicks */
@@ -80,8 +84,10 @@
   }
 
   function onSaveMembers(): Promise<void> {
-    const membersList = members.split(",").map(x => x.trim());
-    return pool.updateReceiverAddresses(membersList);
+    if (!data) {
+      throw new Error("Something went wrong");
+    }
+    return pool.updateReceiverAddresses(data, extractMembers(members));
   }
 </script>
 
