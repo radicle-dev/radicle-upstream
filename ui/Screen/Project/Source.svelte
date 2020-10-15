@@ -33,13 +33,15 @@
   // Reset some stores on first load
   reset();
 
-  $: fetchObject({
-    path: $objectPath,
-    peerId: $currentPeerId,
-    projectId: project.id,
-    revision: $currentRevision,
-    type: $objectType,
-  });
+  $: if ($currentPeerId) {
+    fetchObject({
+      path: $objectPath,
+      peerId: $currentPeerId,
+      projectId: project.id,
+      revision: $currentRevision,
+      type: $objectType,
+    });
+  }
 </script>
 
 <style>
@@ -84,15 +86,17 @@
 <div class="wrapper">
   <div class="container center-content">
     <div class="column-left">
-      <!-- Tree -->
-      <div class="source-tree" data-cy="source-tree">
-        <Folder
-          currentRevision={$currentRevision}
-          currentPeerId={$currentPeerId}
-          projectId={project.id}
-          toplevel
-          name={project.metadata.name} />
-      </div>
+      {#if $currentPeerId}
+        <!-- Tree -->
+        <div class="source-tree" data-cy="source-tree">
+          <Folder
+            currentRevision={$currentRevision}
+            currentPeerId={$currentPeerId}
+            projectId={project.id}
+            toplevel
+            name={project.metadata.name} />
+        </div>
+      {/if}
     </div>
 
     <div class="column-right">

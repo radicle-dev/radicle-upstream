@@ -72,6 +72,7 @@ pub struct Error {
 }
 
 /// Handler to convert [`error::Error`] to [`Error`] response.
+#[allow(clippy::too_many_lines)]
 pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
     log::error!("{:?}", err);
 
@@ -118,6 +119,13 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         StatusCode::CONFLICT,
                         "ENTITY_EXISTS",
                         format!("the identity '{}' already exists", urn),
+                    ),
+                    coco::state::Error::Storage(state::error::storage::Error::Blob(
+                        state::error::blob::Error::NotFound(_),
+                    )) => (
+                        StatusCode::NOT_FOUND,
+                        "NOT_FOUND",
+                        "entity not found".to_string(),
                     ),
                     coco::state::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,

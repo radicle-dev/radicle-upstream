@@ -29,8 +29,8 @@ use crate::{
 use super::{
     announcement, control, gossip,
     run_state::{
-        AnnounceInput, Command, Config as RunConfig, ControlCommand, Event, Input, RequestCommand,
-        RequestInput, RunState, SyncInput, TimeoutInput,
+        AnnounceInput, Command, Config as RunConfig, ControlCommand, ControlInput, Event, Input,
+        RequestCommand, RequestInput, RunState, SyncInput, TimeoutInput,
     },
     sync, RECEIVER_CAPACITY,
 };
@@ -88,6 +88,9 @@ impl Subroutines {
             coalesced.push(
                 control_receiver
                     .map(|request| match request {
+                        control::Request::CurrentStatus(sender) => {
+                            Input::Control(ControlInput::Status(sender))
+                        },
                         control::Request::Urn(urn, time, sender) => {
                             Input::Request(RequestInput::Requested(urn, time, Some(sender)))
                         },
@@ -189,6 +192,8 @@ impl Future for Subroutines {
                 Poll::Ready(Some(input)) => {
                     log::debug!("handling subroutine input: {:?}", input);
 
+                    let old_status = self.run_state.status.clone();
+
                     if let Some(event) = Event::maybe_from(&input) {
                         // Ignore if there are no subscribers.
                         self.subscriber.send(event).ok();
@@ -198,6 +203,15 @@ impl Future for Subroutines {
                         let task = self.spawn_command(cmd);
 
                         self.pending_tasks.push(task);
+                    }
+
+                    if old_status != self.run_state.status {
+                        self.subscriber
+                            .send(Event::StatusChanged(
+                                old_status,
+                                self.run_state.status.clone(),
+                            ))
+                            .ok();
                     }
                 },
                 Poll::Ready(None) => return Poll::Ready(Ok(())),
@@ -235,6 +249,7 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
 /// Fulfill control requests by sending the scheduled responses.
 async fn control_respond(cmd: control::Response) {
     match cmd {
+        control::Response::CurrentStatus(sender, status) => sender.send(status).ok(),
         control::Response::Urn(sender, request) => sender.send(request).ok(),
     };
 }

@@ -89,6 +89,22 @@ async fn run(
         subscriptions,
     } = rigging;
 
+    let peer_subscriptions = subscriptions.clone();
+    let peer_event_broadcast = {
+        let mut peer_events = peer.subscribe();
+
+        async move {
+            loop {
+                if let coco::PeerEvent::StatusChanged(old, new) = peer_events.recv().await.unwrap()
+                {
+                    peer_subscriptions
+                        .broadcast(notification::Notification::LocalPeerStatusChanged(old, new))
+                        .await
+                }
+            }
+        }
+    };
+
     let server = async move {
         log::info!("... API");
         let api = http::api(ctx, subscriptions, killswitch, enable_fixture_creation);
@@ -111,6 +127,7 @@ async fn run(
     tokio::select! {
         server_status = server => server_status,
         peer_status = peer => Ok(peer_status?),
+        peer_event_broadcast_status = peer_event_broadcast => peer_event_broadcast_status,
     }
 }
 

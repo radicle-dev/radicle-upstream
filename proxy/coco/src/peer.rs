@@ -27,7 +27,7 @@ pub use control::Control;
 pub mod gossip;
 
 mod run_state;
-pub use run_state::{AnnounceConfig, Config as RunConfig, Event, SyncConfig};
+pub use run_state::{AnnounceConfig, Config as RunConfig, Event, Status, SyncConfig};
 
 mod subroutines;
 use subroutines::Subroutines;

@@ -6,6 +6,7 @@
   import {
     AdditionalActionsDropdown,
     Copyable,
+    ConnectionStatusIndicator,
     EmptyState,
     Dropdown,
     Illustration,
@@ -1122,6 +1123,9 @@
         <EmptyState
           text="Hey, I'm a tent."
           illustration={IllustrationVariant.Tent} />
+      </Swatch>
+      <Swatch>
+        <ConnectionStatusIndicator />
       </Swatch>
     </Section>
   </div>

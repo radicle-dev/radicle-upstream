@@ -1,6 +1,5 @@
 import { parse, stringify, ParsedQs } from "qs";
 import regexparam from "regexparam";
-import { RevisionQuery } from "./source";
 
 export const blank = (): string => "/";
 export const settings = (): string => "/settings";
