@@ -176,6 +176,7 @@ mod handler {
         urn: coco::Urn,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
+        let peer_id = http::guard_self_peer_id(&ctx.state, peer_id);
         let path = ctx
             .state
             .checkout(urn, peer_id, path)
