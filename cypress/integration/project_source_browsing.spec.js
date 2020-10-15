@@ -16,7 +16,7 @@ context("project source browsing", () => {
     it("shows the correct numbers", () => {
       cy.pick("header", "project-stats").contains("2 Branches");
       cy.pick("header", "project-stats").contains("4 Contributors");
-      cy.pick("horizontal-menu", "Commits", "counter").contains("14");
+      cy.pick("horizontal-menu", "Commits", "counter").contains("15");
     });
   });
 
@@ -24,7 +24,7 @@ context("project source browsing", () => {
     context("commit history", () => {
       it("shows the commit history for the default branch", () => {
         // Wait for the commit tab to be updated
-        cy.pick("horizontal-menu", "Commits", "counter").contains("14");
+        cy.pick("horizontal-menu", "Commits", "counter").contains("15");
         cy.pick("horizontal-menu", "Commits").click();
         cy.pick("commits-page").should("exist");
         cy.pick("commit-teaser")
@@ -121,13 +121,11 @@ context("project source browsing", () => {
         );
 
         // there is a commit teaser
-        cy.pick("commit-teaser").contains("Alexander Simmerl").should("exist");
+        cy.pick("commit-teaser").contains("Rūdolfs Ošiņš").should("exist");
         cy.pick("commit-teaser")
-          .contains(
-            "Merge pull request #4 from FintanH/fintan/update-readme-no-sig"
-          )
+          .contains("Add files with special characters in their filenames (#5)")
           .should("exist");
-        cy.pick("commit-teaser").contains("223aaf8").should("exist");
+        cy.pick("commit-teaser").contains("a0dd912").should("exist");
 
         // the readme is shown
         cy.pick("file-source").within(() => {
@@ -141,12 +139,12 @@ context("project source browsing", () => {
         context("when there is a README file", () => {
           it("shows the README file", () => {
             // It contains the commit teaser for the latest commit.
-            cy.pick("project-screen", "commit-teaser").contains("223aaf8");
+            cy.pick("project-screen", "commit-teaser").contains("a0dd912");
             cy.pick("project-screen", "commit-teaser").contains(
-              "Merge pull request #4"
+              "Add files with special characters in their filenames (#5)"
             );
             cy.pick("project-screen", "commit-teaser").contains(
-              "Alexander Simmerl"
+              "Rūdolfs Ošiņš"
             );
 
             cy.pick("project-screen", "file-source").contains("README.md");

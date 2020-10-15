@@ -485,7 +485,7 @@ mod test {
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
                 "branches": 1,
-                "commits": 14,
+                "commits": 15,
                 "contributors": 4,
             },
         });
