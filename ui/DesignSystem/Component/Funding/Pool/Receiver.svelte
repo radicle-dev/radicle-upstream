@@ -27,10 +27,6 @@
     justify-content: space-between;
   }
 
-  header {
-    width: 80%;
-  }
-
   h3,
   p {
     color: #546474;
@@ -43,6 +39,7 @@
   .item {
     display: flex;
     align-items: center;
+    min-width: 200px;
   }
 
   .item > * {

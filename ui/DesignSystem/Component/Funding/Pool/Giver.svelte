@@ -92,124 +92,120 @@
 </script>
 
 <style>
-  .pool-give-container {
-    margin: 20px 0 60px 0px;
+  .outgoing-container {
+    margin: 2rem 0;
+    padding: var(--content-padding) 0px;
+
+    border: 1px solid #ebeff3;
+    box-sizing: border-box;
+    border-radius: 8px;
   }
-  .row {
-    padding: 1.75rem 0px;
-    display: flex;
-    justify-content: space-between;
+
+  h3,
+  p {
+    color: #546474;
   }
 
   header {
-    width: 60%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: var(--content-padding);
+    padding-top: 0px;
+    border-bottom: 1px solid #ebeff3;
   }
 
-  .item {
-    display: inline-flex;
+  .row {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
   }
 
-  .item > * {
-    margin: 0 5px;
+  .row * + * {
+    margin-left: 10px;
   }
-  .row + .row {
-    border-top: solid 1px var(--color-foreground-level-2);
+
+  strong {
+    font-weight: bold;
+  }
+
+  .content {
+    padding: var(--content-padding);
   }
 </style>
 
-<div class="pool-give-container">
-  <h3>Give</h3>
-
+<div class="outgoing-container">
   <Remote store={pool.data} let:data={poolData}>
-    <ul>
-      <!-- Make all options below disabled if the pool is disabled -->
-      <li class="row">
-        <header>
-          <p class="typo-text-bold">Balance</p>
-          <p>
-            The current balance of your pool. Currently ${poolData.amountPerBlock}
-            per month is required to keep your support going, so you don’t need to
-            top up for {Math.floor(poolData.amountPerBlock / poolData.balance)} months.
-          </p>
-        </header>
-        <div class="item">
-          <h3>
-            <currency>DAI</currency>
-            {poolData.balance}
-          </h3>
-          <Button
-            dataCy="top-up-pool-button"
-            variant="secondary"
-            on:click={openSendModal}>
-            Top up your pool 😉
-          </Button>
-          <Button
-            dataCy="drain-pool-button"
-            variant="outline"
-            on:click={() => {
-              console.log('Open modal to input amount');
-            }}>
-            Drain up your pool
-          </Button>
-        </div>
-      </li>
-      <li class="row">
-        <header>
-          <p class="typo-text-bold">Monthly contribution</p>
-          <p>
-            Set a fixed monthly amount to contribute to your pool. With ${monthlyContribution}
-            per month, pool members get ${parseInt(monthlyContribution) / members.split(',').length}
-            a month each. This is accessible in real time, so if a user is in the
-            pool for 2 days, they can already claim $0.95).
-          </p>
-        </header>
-        <div class="item">
+    <header>
+      <div class="row">
+        <h3>Outgoing support</h3>
+        <span class="row">
           <Input.Text
             dataCy="modal-amount-input"
             placeholder="Enter the amount"
             bind:value={monthlyContribution}
             showLeftItem
             validation={$amountValidationStore}
-            style="max-width: 200px;">
+            style="max-width: 150px; margin-left: 10px;">
             <div slot="left" style="position: absolute; top: 9px; left: 10px;">
               <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
             </div>
           </Input.Text>
-          <TxButton
-            disabled={!saveMonthlyContributionEnabled}
-            title={'Save'}
-            onClick={onSaveMonthlyContribution}
-            variant={'outline'}
-            successMessage={'Pool monthly contribution successfully updated'}
-            errorMessage={e => `Failed to save pool: ${e}`} />
-        </div>
-      </li>
-      <li class="row">
-        <header>
-          <p class="typo-text-bold">Edit your pool</p>
-          <p>
-            These are the projects, users, and teams in your pool. Remove anyone
-            you don’t want to support anymore or add new ones you want to start
-            supporting.
-          </p>
-        </header>
-        <div class="item">
-          <Input.Textarea
-            validation={$membersValidationStore}
-            style="min-width: 400px;"
-            bind:value={members}
-            placeholder="Enter a list of comma-separated addresses here" />
+          <p>monthly</p>
+        </span>
+        <TxButton
+          disabled={!saveMonthlyContributionEnabled}
+          title={'Save'}
+          onClick={onSaveMonthlyContribution}
+          variant={'transparent'}
+          successMessage={'Pool monthly contribution successfully updated'}
+          errorMessage={e => `Failed to save pool: ${e}`} />
+      </div>
+      <div class="row">
+        <h3>{poolData.balance} DAI</h3>
+        <Button
+          dataCy="top-up-pool-button"
+          variant="vanilla"
+          on:click={openSendModal}
+          style="margin-left: 12px">
+          Top up
+        </Button>
+        <Button
+          dataCy="drain-pool-button"
+          variant="outline"
+          disabled
+          style="margin-left: 12px">
+          Drain
+        </Button>
+      </div>
+    </header>
 
-          <TxButton
-            disabled={!saveMembersEnabled}
-            title={'Save'}
-            onClick={onSaveMembers}
-            variant={'outline'}
-            successMessage={'Pool members list successfully updated'}
-            errorMessage={e => `Failed to save pool: ${e}`} />
-        </div>
-      </li>
-    </ul>
+    <div class="content">
+      <p>
+        <strong>{poolData.amountPerBlock} DAI</strong> per month will be taken from
+        your <strong>{poolData.balance} DAI</strong> that you’ve added to this contract,
+        which means that <strong>{poolData.amountPerBlock / poolData.receiverAddresses.length}
+          DAI</strong> per month will be evenly spread between the <strong>{poolData.receiverAddresses.length}</strong>
+        people you’re supporting. To keep the support going, top up by <strong>October
+          14th</strong> (TODO).
+      </p>
+
+      <div style="margin-top: var(--content-padding)">
+        <Input.Textarea
+          validation={$membersValidationStore}
+          style="min-width: 400px;"
+          bind:value={members}
+          placeholder="Enter a list of comma-separated addresses here" />
+
+        <TxButton
+          disabled={!saveMembersEnabled}
+          title={'Save'}
+          onClick={onSaveMembers}
+          variant={'outline'}
+          successMessage={'Pool members list successfully updated'}
+          errorMessage={e => `Failed to save pool: ${e}`} />
+      </div>
+    </div>
   </Remote>
 </div>
