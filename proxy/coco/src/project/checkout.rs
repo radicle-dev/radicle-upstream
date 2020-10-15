@@ -77,7 +77,7 @@ impl Ownership {
             Self::Local(peer_id) => {
                 let url = LocalUrl::from_urn(urn, peer_id);
                 Self::local(&url, path, builder)
-            }
+            },
             Self::Remote {
                 handle,
                 remote,
@@ -85,7 +85,7 @@ impl Ownership {
             } => {
                 let url = LocalUrl::from_urn(urn, local);
                 Self::remote(&handle, remote, url, default_branch, path, builder)
-            }
+            },
         }
     }
 
