@@ -164,7 +164,7 @@ context("onboarding", () => {
 
         // Has to be no more than 32 characters long.
         cy.pick("handle-input").clear();
-        cy.pick("handle-input").type("aaaaaaaaaabbbbbbbbbbccccccccccddd");
+        cy.pick("handle-input").type("x".repeat(33));
         cy.pick("enter-name-screen").contains(
           "Your display name should not be longer than 32 characters."
         );
