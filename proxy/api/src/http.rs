@@ -208,6 +208,7 @@ where
 }
 
 /// Guard against access of wrong paths by the owners peer id.
+#[must_use]
 pub fn guard_self_peer_id(
     state: &coco::State,
     peer_id: Option<coco::PeerId>,
@@ -220,6 +221,7 @@ pub fn guard_self_peer_id(
 }
 
 /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
+#[must_use]
 pub fn guard_self_revision(
     state: &coco::State,
     revision: Option<coco::Revision<coco::PeerId>>,
