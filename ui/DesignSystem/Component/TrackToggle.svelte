@@ -6,12 +6,14 @@
   import { Icon } from "../Primitive";
   import Hoverable from "./Hoverable.svelte";
 
-  export let style = "";
-  export let tracking: boolean = false;
+  export let disabled: boolean = false;
   export let expanded: boolean = false;
+  export let tracking: boolean = false;
+  export let style = "";
 
   export let warning: boolean = false;
 
+  const dispatch = createEventDispatcher();
   let active: boolean = false;
 
   const down = () => {
@@ -23,8 +25,6 @@
     tracking = !tracking;
     dispatch(tracking ? track.Event.Track : track.Event.Untrack);
   };
-
-  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -112,23 +112,32 @@
   .left.tracking.warning.hover :global(svg) {
     fill: var(--color-background);
   }
+  .disabled {
+    cursor: auto;
+  }
 </style>
 
 <Hoverable let:hovering={hover}>
   <div
-    class:hover
     class:active
+    class:hover
     class:tracking
     class:warning
     class="toggle"
     {style}
     on:mousedown={down}
     on:mouseup={up}>
-    <div class="left" class:hover class:active class:tracking class:warning>
+    <div
+      class="left"
+      class:active
+      class:disabled
+      class:hover={hover && !disabled}
+      class:tracking
+      class:warning>
       {#if !tracking}
         <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Follow</p>
-      {:else if hover}
+      {:else if hover && !disabled}
         <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Unfollow</p>
       {:else if expanded}
