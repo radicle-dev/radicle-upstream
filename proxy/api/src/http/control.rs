@@ -82,9 +82,14 @@ mod handler {
                 let _ = coco::control::track_fake_peer(&ctx.state, &signer, &meta, &user_handle);
             }
         }
+        let branch = ctx
+            .state
+            .get_branch(meta.urn(), None, None)
+            .await
+            .map_err(error::Error::from)?;
         let stats = ctx
             .state
-            .with_browser(meta.urn(), |browser| Ok(browser.get_stats()?))
+            .with_browser(branch, |browser| Ok(browser.get_stats()?))
             .await
             .map_err(error::Error::from)?;
         let project: project::Project = (meta, stats).into();

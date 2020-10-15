@@ -1,49 +1,88 @@
-import { writable } from "svelte/store";
-
 import * as api from "./api";
 import * as event from "./event";
+import * as project from "./project";
 import * as remote from "./remote";
-// import * as waitingRoom from "./waitingRoom";
-import { ValidationStatus } from "./validation";
+import * as validation from "./validation";
 
-interface UntrackedProject {
-  urn: string;
-}
+// STATE
+const projectSearchStore = remote.createStore<project.Project>();
+export const projectSearch = projectSearchStore.readable;
+
+// FIXME(xla): Use Request type once serialised and returned by the API.
+const projectRequestStore = remote.createStore<boolean>();
+export const projectRequest = projectRequestStore.readable;
 
 enum Kind {
-  Update = "UPDATE",
+  Reset = "RESET",
+  RequestProject = "REQUEST_PROJECT",
+  SearchProject = "SEARCH_PROJECT",
 }
 
-interface Update extends event.Event<Kind> {
-  kind: Kind.Update;
+interface Reset extends event.Event<Kind> {
+  kind: Kind.Reset;
+}
+
+interface RequestProject extends event.Event<Kind> {
+  kind: Kind.RequestProject;
   urn: string;
 }
 
-type Msg = Update;
+interface SearchProject extends event.Event<Kind> {
+  kind: Kind.SearchProject;
+  urn: string;
+}
+
+type Msg = Reset | RequestProject | SearchProject;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
-    case Kind.Update:
-      requestStore.loading();
+    case Kind.Reset:
+      projectSearchStore.reset();
+
+      break;
+
+    case Kind.RequestProject:
+      projectRequestStore.loading();
+      // FIXME(xla): This truly belongs in project.ts.
       api
-        .put<null, boolean>(`projects/request/${formatUrn(msg.urn)}`, null)
+        .put<null, boolean>(`projects/request/${msg.urn}`, null)
+        .then(projectRequestStore.success)
+        .catch(projectRequestStore.error);
+
+      break;
+    case Kind.SearchProject:
+      projectSearchStore.loading();
+      // FIXME(xla): A verbatim copy from project.ts fetch, it should be consolidated.
+      api
+        .get<project.Project>(`projects/${msg.urn}`)
         .then(res => {
           console.log(res);
-          requestStore.success(res);
+          projectSearchStore.success(res);
         })
-        .catch(requestStore.error);
+        .catch(projectSearchStore.error);
+
       break;
   }
 };
 
-// TODO(sos): Encapsulate this in a urn.ts module or something so it's easy to
-// copy/paste URNs app-wide (see https://github.com/radicle-dev/radicle-upstream/issues/840)
-const formatUrn = (urn: string) => (urn[0] === "%" ? urn.split("%")[1] : urn);
+export const reset = event.create<Kind, Msg>(Kind.Reset, update);
+export const requestProject = event.create<Kind, Msg>(
+  Kind.RequestProject,
+  update
+);
+export const searchProject = event.create<Kind, Msg>(
+  Kind.SearchProject,
+  update
+);
 
-const requestStore = remote.createStore<boolean>();
-export const request = requestStore.readable;
+// URN validation.
+const VALID_URN_MATCH = /^rad:git:[1-9A-HJ-NP-Za-km-z]{59}/;
+const urnConstraints = {
+  format: {
+    pattern: VALID_URN_MATCH,
+    message: `Not a valid project URN`,
+  },
+};
 
-// TODO(sos): actual validation
-export const validation = writable({ status: ValidationStatus.Success });
-
-export const updateUrn = event.create<Kind, Msg>(Kind.Update, update);
+export const urnValidationStore = (): validation.ValidationStore =>
+  validation.createValidationStore(urnConstraints);

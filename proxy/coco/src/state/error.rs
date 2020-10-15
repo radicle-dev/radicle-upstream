@@ -1,7 +1,10 @@
 //! Capture `State` related error variants.
 
 use librad::{
-    git::repo,
+    git::{
+        repo,
+        types::{NamespacedRef, Single},
+    },
     meta::entity,
     net,
     uri::{self, RadUrn},
@@ -64,6 +67,22 @@ pub enum Error {
     /// Verifcation error.
     #[error(transparent)]
     Verification(#[from] entity::HistoryVerificationError),
+
+    /// There were no references for a Browser to be initialised.
+    #[error("we could not find a default branch for '{name}@{urn}'")]
+    NoDefaultBranch {
+        /// Name of the project.
+        name: String,
+        /// RadUrn of the project.
+        urn: RadUrn,
+    },
+
+    /// Could not find a `NamespacedRef` when searching for it in the `Storage`.
+    #[error("we could not find the '{reference}'")]
+    MissingRef {
+        /// The reference that we looked for in the `Storage`.
+        reference: NamespacedRef<Single>,
+    },
 }
 
 impl Error {
@@ -78,4 +97,10 @@ impl Error {
 /// dependency to match on the variant. Instead, they can import `coco::state::error::storage`.
 pub mod storage {
     pub use librad::git::storage::Error;
+}
+
+/// Re-export the underlying [`blob::Error`] so that consumers don't need to add `librad` as a
+/// dependency to match on the variant. Instead, they can import `coco::state::error::blob`.
+pub mod blob {
+    pub use librad::git::ext::blob::Error;
 }

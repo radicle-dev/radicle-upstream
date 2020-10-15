@@ -72,6 +72,7 @@ pub struct Error {
 }
 
 /// Handler to convert [`error::Error`] to [`Error`] response.
+#[allow(clippy::too_many_lines)]
 pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
     log::error!("{:?}", err);
 
@@ -119,6 +120,13 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "ENTITY_EXISTS",
                         format!("the identity '{}' already exists", urn),
                     ),
+                    coco::state::Error::Storage(state::error::storage::Error::Blob(
+                        state::error::blob::Error::NotFound(_),
+                    )) => (
+                        StatusCode::NOT_FOUND,
+                        "NOT_FOUND",
+                        "entity not found".to_string(),
+                    ),
                     coco::state::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
@@ -134,6 +142,9 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "GIT_ERROR",
                         coco::source::Error::NoBranches.to_string(),
                     ),
+                    coco::state::Error::Source(coco::source::Error::PathNotFound(path)) => {
+                        (StatusCode::NOT_FOUND, "NOT_FOUND", path.to_string())
+                    },
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
                         // gaphql::error.
