@@ -112,7 +112,7 @@ impl Ownership {
         {
             builder.remote_create(move |repo, _remote_name, url| {
                 let mut remote = Remote::new(url, name.clone());
-                let heads = FlatRef::heads(PhantomData, peer).with_name("head/*");
+                let heads = FlatRef::heads(PhantomData, peer).with_name("heads/*");
                 let remotes = FlatRef::heads(PhantomData, name.clone());
                 remote.fetch_spec = Some(remotes.refspec(heads, Force::True).into_dyn());
                 remote.create(repo)
