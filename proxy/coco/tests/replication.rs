@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
@@ -257,6 +258,112 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
         alice_events,
         coco::PeerEvent::PeerSynced(peer_id) if peer_id == bob_peer_id
     )?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Error + 'static>> {
+    init_logging();
+
+    let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let (alice_peer, alice_state, alice_signer) =
+        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = {
+        let alice_signer = alice_signer.clone();
+        alice_state
+            .init_owner(&alice_signer.clone(), "alice")
+            .await?
+    };
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_repo_path = bob_tmp_dir.path().join("radicle");
+    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let bob = bob_state.init_owner(&bob_signer, "bob").await?;
+
+    let eve_tmp_dir = tempfile::tempdir()?;
+    let eve_repo_path = eve_tmp_dir.path().join("radicle");
+    let (eve_peer, eve_state, eve_signer) = build_peer(&eve_tmp_dir, RunConfig::default()).await?;
+    let _eve = eve_state.init_owner(&eve_signer, "eve").await?;
+
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
+    tokio::task::spawn(eve_peer.into_running());
+
+    let project = alice_state
+        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .await?;
+
+    let project = {
+        let alice_peer_id = alice_state.peer_id();
+        let alice_addr = alice_state.listen_addr();
+        let bob_peer_id = bob_state.peer_id();
+        let bob_addr = bob_state.listen_addr();
+        let urn = bob_state
+            .clone_project(
+                project.urn().into_rad_url(alice_peer_id),
+                vec![alice_addr].into_iter(),
+            )
+            .await
+            .expect("unable to clone project");
+        let urn = eve_state
+            .clone_project(urn.into_rad_url(bob_peer_id), vec![bob_addr].into_iter())
+            .await
+            .expect("unable to clone project");
+        eve_state.get_project(urn.clone(), None).await?
+    };
+
+    let commit_id = {
+        let alice_peer_id = alice_state.peer_id();
+        let path = bob_state
+            .checkout(project.urn(), alice_peer_id, bob_repo_path)
+            .await?;
+        let repo = git2::Repository::open(path)?;
+        let oid = repo
+            .find_reference(&format!("refs/heads/{}", project.default_branch()))?
+            .target()
+            .expect("Missing first commit");
+        let commit = repo.find_commit(oid)?;
+        let commit_id = {
+            let empty_tree = {
+                let mut index = repo.index()?;
+                let oid = index.write_tree()?;
+                repo.find_tree(oid)?
+            };
+
+            let author = git2::Signature::now(bob.name(), &format!("{}@example.com", bob.name()))?;
+            repo.commit(
+                Some(&format!("refs/heads/{}", project.default_branch())),
+                &author,
+                &author,
+                "Successor commit",
+                &empty_tree,
+                &[&commit],
+            )?
+        };
+
+        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        commit_id
+    };
+    {
+        let bob_addr = bob_state.listen_addr();
+        let bob_peer_id = bob_state.peer_id();
+        let fetch_url = project.urn().into_rad_url(bob_peer_id);
+
+        eve_state.fetch(fetch_url, vec![bob_addr]).await?;
+    }
+
+    let path = {
+        let alice_peer_id = alice_state.peer_id();
+        eve_state
+            .checkout(project.urn(), alice_peer_id, eve_repo_path)
+            .await?
+    };
+
+    let repo = git2::Repository::open(path)?;
+    assert_matches!(repo.find_commit(commit_id), Err(_));
 
     Ok(())
 }

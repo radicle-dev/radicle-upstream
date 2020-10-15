@@ -115,7 +115,7 @@ fn tree_filter(
 mod handler {
     use warp::{path::Tail, reply, Rejection, Reply};
 
-    use coco::{oid, PeerId};
+    use coco::oid;
 
     use crate::{context, error, session, session::settings};
 
@@ -131,8 +131,8 @@ mod handler {
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
-        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
-        let revision = guard_self_revision(&ctx.state, revision);
+        let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
+        let revision = super::http::guard_self_revision(&ctx.state, revision);
 
         let theme = if let Some(true) = highlight {
             Some(match &current_session.settings.appearance.theme {
@@ -165,7 +165,7 @@ mod handler {
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
+        let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
         let default_branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -210,7 +210,7 @@ mod handler {
         project_urn: coco::Urn,
         mut query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer_id = guard_self_peer_id(&ctx.state, query.peer_id);
+        let peer_id = super::http::guard_self_peer_id(&ctx.state, query.peer_id);
         query.peer_id = peer_id;
 
         let default_branch = ctx
@@ -304,8 +304,8 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer_id = guard_self_peer_id(&ctx.state, peer_id);
-        let revision = guard_self_revision(&ctx.state, revision);
+        let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
+        let revision = super::http::guard_self_revision(&ctx.state, revision);
         let branch = ctx
             .state
             .get_branch(project_urn, peer_id, None)
@@ -320,32 +320,6 @@ mod handler {
             .map_err(error::Error::from)?;
 
         Ok(reply::json(&tree))
-    }
-
-    /// Guard against access of wrong paths by the owners peer id.
-    fn guard_self_peer_id(state: &coco::State, peer_id: Option<PeerId>) -> Option<PeerId> {
-        match peer_id {
-            Some(peer_id) if peer_id == state.peer_id() => None,
-            Some(peer_id) => Some(peer_id),
-            None => None,
-        }
-    }
-
-    /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
-    fn guard_self_revision(
-        state: &coco::State,
-        revision: Option<coco::Revision<PeerId>>,
-    ) -> Option<coco::Revision<PeerId>> {
-        revision.map(|r| {
-            if let coco::Revision::Branch { name, peer_id } = r {
-                coco::Revision::Branch {
-                    name,
-                    peer_id: guard_self_peer_id(state, peer_id),
-                }
-            } else {
-                r
-            }
-        })
     }
 }
 
