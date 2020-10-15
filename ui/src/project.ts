@@ -336,7 +336,9 @@ const projectNameConstraints = {
   },
   length: {
     minimum: 2,
-    message: "Your project name should be at least 2 characters long.",
+    maximum: 64,
+    tooShort: "Your project name should be at least 2 characters long.",
+    tooLong: "Your project name should not be longer than 64 characters.",
   },
   format: {
     pattern: new RegExp(projectNameMatch, "i"),
