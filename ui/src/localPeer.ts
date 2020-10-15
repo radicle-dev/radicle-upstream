@@ -27,7 +27,7 @@ interface Syncing {
 }
 
 interface Online {
-  kind: StatusType.Syncing;
+  kind: StatusType.Online;
   connected: number;
 }
 
