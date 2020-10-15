@@ -87,14 +87,13 @@
     return items;
   };
 
-  const handleCheckout = async (event, project) => {
+  const handleCheckout = async (event, project, peerId) => {
     try {
       screen.lock();
       const path = await checkout(
         project.id,
         event.detail.checkoutDirectoryPath,
-        "PEER_ID_GOES_HERE",
-        "BRANCH_TO_CHECK_OUT_GOES_HERE"
+        peerId
       );
 
       notification.info(
@@ -157,7 +156,7 @@
         </div>
         <div slot="right">
           <CheckoutButton
-            on:checkout={ev => handleCheckout(ev, project)}
+            on:checkout={ev => handleCheckout(ev, project, $currentPeerId)}
             projectName={project.metadata.name} />
         </div>
         <div slot="top">
