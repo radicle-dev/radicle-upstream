@@ -10,7 +10,7 @@
 </script>
 
 <style>
-  .container {
+  .pool-container {
     min-width: var(--content-min-width);
     max-width: var(--content-max-width);
     padding: 0 var(--content-padding);
@@ -21,9 +21,7 @@
   }
 </style>
 
-<div class="container">
-  <h2>Pool</h2>
-  <p>We should explain what the pool is and why users shoudl opt-in.</p>
+<div class="pool-container">
   <Receiver {pool} />
   <Giver {pool} />
 </div>

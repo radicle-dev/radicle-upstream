@@ -12,18 +12,37 @@
 </script>
 
 <style>
-  .content {
+  .incoming-container {
     margin: 2rem 0;
+    padding: var(--content-padding);
+    padding-top: calc(1.2 * var(--content-padding));
+
+    border: 1px solid #ebeff3;
+    box-sizing: border-box;
+    border-radius: 8px;
   }
 
   .row {
-    padding: 1.75rem 0px;
     display: flex;
     justify-content: space-between;
   }
 
   header {
     width: 80%;
+  }
+
+  h3,
+  p {
+    color: #546474;
+  }
+
+  header h3 + p {
+    margin-top: 10px;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
   }
 
   .item > * {
@@ -35,24 +54,22 @@
 </style>
 
 <Remote store={pool.data} let:data={poolData}>
-  <div class="content">
-    <h3>Collect</h3>
-
+  <div class="incoming-container">
     <div class="row">
       <header>
+        <h3>Incoming support</h3>
         <p>
-          Hi there! You've got
-          <currency>DAI</currency>
-          {poolData.collectableFunds} waiting to be collected. This is the sum of
-          all the donations you are eligible to receive.
+          Funds from your supporters. Do you like money? Cash out to your
+          connected wallet!
         </p>
       </header>
       <div class="item">
+        <h3>{poolData.collectableFunds} DAI</h3>
         <TxButton
           disabled={poolData.collectableFunds <= 0}
-          title={'Collect your funds 🥳'}
+          title={'Cash out'}
           onClick={collectFunds}
-          variant={'outline'}
+          variant={'primary'}
           successMessage={'Funds successfully collected'}
           errorMessage={e => `Failed to collect funds: ${e}`} />
       </div>
