@@ -579,13 +579,14 @@ impl State {
         destination: PathBuf,
     ) -> Result<PathBuf, Error>
     where
-        P: Into<Option<PeerId>> + Clone + Send + 'static,
+        P: Into<Option<PeerId>> + Send + 'static,
     {
-        let proj = self.get_project(urn.clone(), peer_id.clone()).await?;
+        let peer_id = peer_id.into();
+        let proj = self.get_project(urn.clone(), peer_id).await?;
         let include_path = self.update_include(urn.clone()).await?;
         let checkout = project::Checkout::new(proj, destination, include_path);
 
-        let ownership = match peer_id.into() {
+        let ownership = match peer_id {
             None => project::checkout::Ownership::Local(self.peer_id()),
             Some(remote) => {
                 let handle = {
