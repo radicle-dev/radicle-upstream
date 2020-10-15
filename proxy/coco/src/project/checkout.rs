@@ -1,11 +1,16 @@
 use std::{
     ffi,
+    marker::PhantomData,
     path::{self, PathBuf},
 };
 
 pub use librad::meta::project::Project;
 use librad::{
-    git::{include, local::url::LocalUrl, types::remote::Remote},
+    git::{
+        include,
+        local::url::LocalUrl,
+        types::{remote::Remote, FlatRef, Force},
+    },
     peer::PeerId,
     uri::RadUrn,
 };
@@ -69,49 +74,57 @@ impl Ownership {
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
         match self {
-            Self::Local(peer_id) => Self::local(peer_id, urn, path, builder),
+            Self::Local(peer_id) => {
+                let url = LocalUrl::from_urn(urn, peer_id);
+                Self::local(&url, path, builder)
+            }
             Self::Remote {
                 handle,
                 remote,
                 local,
-            } => Self::remote(&handle, remote, local, urn, default_branch, path, builder),
+            } => {
+                let url = LocalUrl::from_urn(urn, local);
+                Self::remote(&handle, remote, url, default_branch, path, builder)
+            }
         }
     }
 
     /// See [`Checkout::run`].
     fn local(
-        local: PeerId,
-        urn: RadUrn,
+        url: &LocalUrl,
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
         builder.remote_create(|repo, _remote_name, url| repo.remote(config::RAD_REMOTE, url));
-        let url = LocalUrl::from_urn(urn, local).to_string();
-        git2::build::RepoBuilder::clone(builder, &url, path)
+        git2::build::RepoBuilder::clone(builder, &url.to_string(), path)
     }
 
     /// See [`Checkout::run`].
     fn remote(
         handle: &str,
-        remote: PeerId,
-        local: PeerId,
-        urn: RadUrn,
+        peer: PeerId,
+        url: LocalUrl,
         default_branch: &str,
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
-        let name = format!("{}@{}", handle, remote);
-        builder.remote_create(move |repo, _remote_name, url| {
-            Remote::new(url, name.clone()).create(repo)
-        });
-        let remote_url = LocalUrl::from_urn(urn.clone(), remote).to_string();
-        let repo = git2::build::RepoBuilder::clone(builder, &remote_url, path)?;
+        let name = format!("{}@{}", handle, peer);
+        {
+            builder.remote_create(move |repo, _remote_name, url| {
+                let mut remote = Remote::new(url, name.clone());
+                let heads = FlatRef::heads(PhantomData, peer).with_name("head/*");
+                let remotes = FlatRef::heads(PhantomData, name.clone());
+                remote.fetch_spec = Some(remotes.refspec(heads, Force::True).into_dyn());
+                remote.create(repo)
+            });
+        }
+
+        let repo = git2::build::RepoBuilder::clone(builder, &url.to_string(), path)?;
 
         // Create a rad remote and push the default branch so we can set it as the
         // upstream.
         {
-            let local_url = LocalUrl::from_urn(urn, local);
-            let mut remote = Remote::rad_remote(local_url, None).create(&repo)?;
+            let mut remote = Remote::rad_remote(url, None).create(&repo)?;
             remote.push(&[&format!("refs/heads/{}", default_branch)], None)?;
         }
 
@@ -145,14 +158,14 @@ where
     /// ## Remote Clone
     ///
     /// If the `Ownership` is `Remote` this means that we are cloning based off of a peer's
-    /// project. The `url` to clone from is made up of the provided `urn` and the remote's
-    /// `PeerId`.
-    /// Due to the semantics of cloning in `git`, this means that the remote that is
-    /// created points to this `url`. We keep with the format of `librad::git::include` for the
-    /// name of the remote as `<peer_handle>@<peer_id>`.
-    /// To finalise the setup of the clone, we also want to add the `rad` remote, which is the
-    /// designated remote the user pushes their own work to update their monorepo for this project.
-    /// To do this, we create `url` that is built using the provided `urn` and the user's `PeerId`
+    /// project.
+    /// Due to this we need to point the remote to the specific remote in our project's hierarchy.
+    /// What this means is that we need to set up a fetch refspec in the form of
+    /// `refs/remotes/<peer_id>/heads/*` where the name of the remote is given by
+    /// `<user_handle>@<peer_id>` -- this keeps in line with `librad::git::include`. To finalise
+    /// the setup of the clone, we also want to add the `rad` remote, which is the designated
+    /// remote the user pushes their own work to update their monorepo for this project.
+    /// To do this, we create a `url` that is built using the provided `urn` and the user's `PeerId`
     /// and create the `rad` remote. Finally, we initialise the `default_branch` of the proejct --
     /// think upstream branch in git. We do this by pushing to the `rad` remote. This means that
     /// the working copy will be now setup where when we open it up we see the initial branch as
@@ -165,8 +178,8 @@ where
     ///     url = rad://hyymr17h1fg5zk7duikgc7xoqonqorhwnxxs98kdb63f9etnsjxxmo@hwd1yrerzpjbmtshsqw6ajokqtqrwaswty6p7kfeer3yt1n76t46iqggzcr.git
     ///     fetch = +refs/heads/*:refs/remotes/rad/*
     /// [remote "banana@hyy36ey56mfayah398n7w4i8hy5ywci43hbyhwf1krfwonc1ur87ch"]
-    ///     url = rad://hyy36ey56mfayah398n7w4i8hy5ywci43hbyhwf1krfwonc1ur87ch@hwd1yrerzpjbmtshsqw6ajokqtqrwaswty6p7kfeer3yt1n76t46iqggzcr.git
-    ///     fetch = +refs/heads/*:refs/remotes/banana@hyy36ey56mfayah398n7w4i8hy5ywci43hbyhwf1krfwonc1ur87ch/*
+    ///     url = rad://hyymr17h1fg5zk7duikgc7xoqonqorhwnxxs98kdb63f9etnsjxxmo@hwd1yrerzpjbmtshsqw6ajokqtqrwaswty6p7kfeer3yt1n76t46iqggzcr.git
+    ///     fetch = +refs/remotes/hyy36ey56mfayah398n7w4i8hy5ywci43hbyhwf1krfwonc1ur87ch/heads/*:refs/remotes/banana@hyy36ey56mfayah398n7w4i8hy5ywci43hbyhwf1krfwonc1ur87ch/*
     /// [branch "master"]
     ///     remote = rad
     ///     merge = refs/heads/master
