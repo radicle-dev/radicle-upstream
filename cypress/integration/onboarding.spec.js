@@ -1,4 +1,4 @@
-context("identity creation", () => {
+context("onboarding", () => {
   const validUser = {
     handle: "rafalca",
     passphrase: "curled",
