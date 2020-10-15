@@ -1,7 +1,7 @@
 <script lang="ts">
   import { setContext } from "svelte";
 
-  export let data: any;
+  export let data: unknown;
   export let name: string;
 
   setContext(name, data);

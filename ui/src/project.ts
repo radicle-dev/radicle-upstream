@@ -285,8 +285,9 @@ export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
-export const formatNameInput = (input: string) => input.replace(" ", "-");
-export const extractName = (repoPath: string) =>
+export const formatNameInput = (input: string): string =>
+  input.replace(" ", "-");
+export const extractName = (repoPath: string): string =>
   repoPath.split("/").slice(-1)[0];
 
 const fetchBranches = async (path: string) => {

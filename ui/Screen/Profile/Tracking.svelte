@@ -65,11 +65,6 @@
   .undiscovered-project:hover {
     background-color: var(--color-background);
   }
-
-  .project-name {
-    color: var(--color-foreground-level-6);
-    padding-bottom: 0.375rem;
-  }
 </style>
 
 <div class="container">
