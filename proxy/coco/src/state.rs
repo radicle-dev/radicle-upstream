@@ -581,7 +581,7 @@ impl State {
     where
         P: Into<Option<PeerId>> + Clone + Send + 'static,
     {
-        let proj = self.get_project(urn.clone(), None).await?;
+        let proj = self.get_project(urn.clone(), peer_id.clone()).await?;
         let include_path = self.update_include(urn.clone()).await?;
         let checkout = project::Checkout::new(proj, destination, include_path);
 
