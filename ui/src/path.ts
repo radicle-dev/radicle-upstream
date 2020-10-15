@@ -11,7 +11,7 @@ export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
 export const profileTracking = (): string => "/profile/tracking";
-export const profileWallet = (): string => "/profile/wallet";
+export const profileFunding = (): string => "/profile/funding";
 export const registerUser = (): string => "/user-registration";
 export const onboarding = (): string => "/onboarding";
 

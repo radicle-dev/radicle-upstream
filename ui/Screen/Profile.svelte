@@ -14,12 +14,12 @@
 
   import Projects from "./Profile/Projects.svelte";
   import Tracking from "./Profile/Tracking.svelte";
-  import Wallet from "./Profile/Wallet.svelte";
+  import Funding from "./Profile/Funding.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/projects": Projects,
-    "/profile/wallet": Wallet,
+    "/profile/funding": Funding,
     "/profile/tracking": Tracking,
     "*": NotFound,
   };
@@ -50,8 +50,8 @@
   if (isExperimental()) {
     topbarMenuItems.push({
       icon: Icon.Wallet,
-      title: "Wallet",
-      href: path.profileWallet(),
+      title: "Funding",
+      href: path.profileFunding(),
       looseActiveStateMatching: false,
     });
   }

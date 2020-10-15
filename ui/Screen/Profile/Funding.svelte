@@ -1,8 +1,9 @@
 <script lang="ts">
   import { build, Status } from "../../src/wallet";
+  import { make } from "../../src/funding/pool";
 
   import { Button } from "../../DesignSystem/Primitive";
-  import Funding from "../Funding.svelte";
+  import Pool from "../Funding/Pool.svelte";
 
   const wallet = build();
   // instantiate pool using the wallet store?
@@ -18,6 +19,7 @@
     <Button on:click={wallet.disconnect}>disconnect</Button>
     <div>Address: {$wallet.connected.account.address}</div>
     <div>Balance: {$wallet.connected.account.balance} eth</div>
-    <Funding {wallet} />
+
+    <Pool pool={make(wallet)} />
   {/if}
 </div>
