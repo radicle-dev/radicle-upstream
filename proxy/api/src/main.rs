@@ -107,11 +107,17 @@ async fn run(
 
     let server = async move {
         log::info!("... API");
-        let api = http::api(ctx, subscriptions, killswitch, enable_fixture_creation);
+        let api = http::api(
+            ctx,
+            subscriptions.clone(),
+            killswitch,
+            enable_fixture_creation,
+        );
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
             async move {
                 poisonpill.recv().await;
+                subscriptions.clear().await;
             },
         )?;
 

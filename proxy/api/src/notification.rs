@@ -37,6 +37,11 @@ impl Subscriptions {
             .retain(|_id, sender| sender.send(notification.clone()).is_ok());
     }
 
+    /// Drop all stored senders, which terminates associated receivers and their streams.
+    pub async fn clear(&self) {
+        self.subs.write().await.clear();
+    }
+
     /// Set up a new subscription, ready to receive [`Notification`].
     pub async fn subscribe(&self) -> mpsc::UnboundedReceiver<Notification> {
         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
