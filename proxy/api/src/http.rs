@@ -207,6 +207,35 @@ where
         .boxed()
 }
 
+/// Guard against access of wrong paths by the owners peer id.
+pub fn guard_self_peer_id(
+    state: &coco::State,
+    peer_id: Option<coco::PeerId>,
+) -> Option<coco::PeerId> {
+    match peer_id {
+        Some(peer_id) if peer_id == state.peer_id() => None,
+        Some(peer_id) => Some(peer_id),
+        None => None,
+    }
+}
+
+/// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
+pub fn guard_self_revision(
+    state: &coco::State,
+    revision: Option<coco::Revision<coco::PeerId>>,
+) -> Option<coco::Revision<coco::PeerId>> {
+    revision.map(|r| {
+        if let coco::Revision::Branch { name, peer_id } = r {
+            coco::Revision::Branch {
+                name,
+                peer_id: guard_self_peer_id(state, peer_id),
+            }
+        } else {
+            r
+        }
+    })
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
