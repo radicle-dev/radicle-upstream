@@ -19,7 +19,9 @@ const handleConstraints = {
   },
   length: {
     minimum: 2,
-    message: "Your display name should be at least 2 characters long.",
+    maximum: 32,
+    tooShort: "Your display name should be at least 2 characters long.",
+    tooLong: "Your display name should not be longer than 32 characters.",
   },
   format: {
     pattern: new RegExp(HANDLE_MATCH, "i"),
