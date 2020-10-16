@@ -1,3 +1,5 @@
+import { derived } from "svelte/store";
+
 import * as remote from "./remote";
 
 // TYPES
@@ -33,12 +35,12 @@ interface Online {
 
 type Status = Stopped | Offline | Started | Syncing | Online;
 
-enum EventKind {
-  StatusChanged = "LOCAL_PEER_STATUS_CHANGED",
+enum Event {
+  StatusChanged = "statusChanged",
 }
 
 interface StatusChanged {
-  kind: EventKind.StatusChanged;
+  type: Event.StatusChanged;
   old: Status;
   new: Status;
 }
@@ -46,18 +48,31 @@ interface StatusChanged {
 export type PeerEvent = StatusChanged;
 
 // STATE
-const statusStore = remote.createStore<Status>();
-export const status = statusStore.readable;
-
-statusStore.start(() => {
+const eventStore = remote.createStore<PeerEvent>();
+eventStore.start(() => {
   const source = new EventSource(
     "http://localhost:8080/v1/notifications/local_peer_events"
   );
 
-  source.addEventListener(EventKind.StatusChanged, (event: Event): void => {
-    const changed = JSON.parse((event as MessageEvent).data);
-    statusStore.success(changed.new);
+  source.addEventListener("message", (msg: MessageEvent) => {
+    const peerEvent: PeerEvent = JSON.parse(msg.data);
+    eventStore.success(peerEvent);
   });
 
   return (): void => source.close();
 });
+
+export const status = derived(
+  eventStore,
+  (data: remote.Data<PeerEvent>): remote.Data<Status> => {
+    if (data.status === remote.Status.Success) {
+      const peerEvent = data.data;
+      switch (peerEvent.type) {
+        case Event.StatusChanged:
+          return { status: remote.Status.Success, data: peerEvent.new };
+      }
+    }
+
+    return data;
+  }
+);

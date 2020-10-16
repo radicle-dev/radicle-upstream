@@ -27,6 +27,7 @@ mod handler {
     use std::convert::Infallible;
 
     use futures::StreamExt as _;
+    use serde::Serialize;
     use warp::{sse, Rejection, Reply};
 
     use crate::{
@@ -51,7 +52,7 @@ mod handler {
         )]);
         let filter = |notification: Notification| async move {
             match notification.clone() {
-                Notification::LocalPeer(event) => Some(map_to_event(event)),
+                Notification::LocalPeer(event) => Some(map_to_sse(event)),
             }
         };
 
@@ -60,11 +61,11 @@ mod handler {
         ))
     }
 
-    /// Helper for mapping [`Notification::LocalPeerStatusChanged`] events onto
-    /// [`sse::ServerSentEvent`]s.
-    fn map_to_event(
-        event: notification::LocalPeer,
-    ) -> Result<impl sse::ServerSentEvent, Infallible> {
-        Ok((sse::event(event.to_string()), sse::json(event)))
+    /// Helper to produce valid [`sse::ServerSentEvent`]s from [`Serialize`]ed payloads.
+    fn map_to_sse<T>(payload: T) -> Result<impl sse::ServerSentEvent, Infallible>
+    where
+        T: Serialize + Send + Sync + 'static,
+    {
+        Ok(sse::json(payload))
     }
 }
