@@ -2,7 +2,7 @@ import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Badge from "./Badge.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
-import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
+import ConnectionStatus from "./ConnectionStatus.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
@@ -53,7 +53,7 @@ export {
   Badge,
   Comment,
   Copyable,
-  ConnectionStatusIndicator,
+  ConnectionStatus,
   Dropdown,
   EmptyState,
   Error,

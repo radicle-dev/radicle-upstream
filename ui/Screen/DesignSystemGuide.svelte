@@ -6,7 +6,7 @@
   import {
     AdditionalActionsDropdown,
     Copyable,
-    ConnectionStatusIndicator,
+    ConnectionStatus,
     EmptyState,
     Dropdown,
     Illustration,
@@ -1125,7 +1125,7 @@
           illustration={IllustrationVariant.Tent} />
       </Swatch>
       <Swatch>
-        <ConnectionStatusIndicator />
+        <ConnectionStatus />
       </Swatch>
     </Section>
   </div>

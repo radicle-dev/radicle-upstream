@@ -6,7 +6,7 @@
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
-  import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
+  import ConnectionStatus from "./ConnectionStatus.svelte";
 
   export let identity = null;
 </script>
@@ -139,7 +139,7 @@
       data-cy="search">
       <a href={path.network()} use:link>
         <!-- svelte-ignore a11y-missing-attribute -->
-        <ConnectionStatusIndicator />
+        <ConnectionStatus />
       </a>
     </li>
     <li

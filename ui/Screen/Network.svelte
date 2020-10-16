@@ -1,12 +1,11 @@
 <script lang="typescript">
   import { connectedPeers, events } from "../src/localPeer";
 
+  import ConnectionStatus from "../DesignSystem/Component/ConnectionStatus.svelte";
   import Copyable from "../DesignSystem/Component/Copyable.svelte";
-  import IconNetwork from "../DesignSystem/Primitive/Icon/Network.svelte";
   import List from "../DesignSystem/Component/List.svelte";
   import Remote from "../DesignSystem/Component/Remote.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
-  import { stringify } from "querystring";
 </script>
 
 <style>
@@ -90,7 +89,7 @@
         <h1>Network</h1>
         <div class="peer-stats typo-mono">
           <div class="peer-stats-item">
-            <IconNetwork />
+            <ConnectionStatus />
             <p style="margin-left: 0.5rem;">3 Peers</p>
           </div>
         </div>

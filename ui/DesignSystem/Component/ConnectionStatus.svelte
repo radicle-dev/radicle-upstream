@@ -5,8 +5,8 @@
   import { Icon } from "../Primitive";
   import Tooltip from "./Tooltip.svelte";
 
-  import Syncing from "./ConnectionStatusIndicator/Syncing.svelte";
-  import Offline from "./ConnectionStatusIndicator/Offline.svelte";
+  import Syncing from "./ConnectionStatus/Syncing.svelte";
+  import Offline from "./ConnectionStatus/Offline.svelte";
 </script>
 
 <style>
