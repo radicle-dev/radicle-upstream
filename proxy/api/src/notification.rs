@@ -12,8 +12,7 @@ use std::{
 use serde::Serialize;
 use tokio::sync::{mpsc, RwLock};
 
-use coco::convert::MaybeFrom;
-use coco::{PeerEvent, PeerStatus};
+use coco::{convert::MaybeFrom, PeerEvent, PeerStatus};
 
 /// Significant events happening during proxy runtime.
 #[derive(Clone, Debug)]
@@ -50,7 +49,7 @@ impl MaybeFrom<PeerEvent> for Notification {
         match event {
             PeerEvent::StatusChanged(old, new) => {
                 Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
-            }
+            },
             _ => None,
         }
     }
