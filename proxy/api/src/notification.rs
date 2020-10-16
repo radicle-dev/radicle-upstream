@@ -2,7 +2,6 @@
 
 use std::{
     collections::HashMap,
-    net::SocketAddr,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -16,7 +15,7 @@ use tokio::sync::{mpsc, RwLock};
 #[derive(Clone, Debug, Serialize)]
 pub enum Notification {
     /// Our local peer started listening on a local socket.
-    LocalPeerListening(SocketAddr),
+    LocalPeerStatusChanged(coco::PeerStatus, coco::PeerStatus),
 }
 
 /// Manage active subscriptions and broadcast [`Notification`]s.
@@ -36,6 +35,11 @@ impl Subscriptions {
             .write()
             .await
             .retain(|_id, sender| sender.send(notification.clone()).is_ok());
+    }
+
+    /// Drop all stored senders, which terminates associated receivers and their streams.
+    pub async fn clear(&self) {
+        self.subs.write().await.clear();
     }
 
     /// Set up a new subscription, ready to receive [`Notification`].

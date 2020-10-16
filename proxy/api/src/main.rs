@@ -8,13 +8,7 @@ use tokio::{
 };
 
 use api::{config, context, env, http, notification, session};
-use coco::{
-    keystore,
-    request::waiting_room::{self, WaitingRoom},
-    seed,
-    shared::Shared,
-    signer, Peer, RunConfig, SyncConfig,
-};
+use coco::{keystore, seed, signer, Peer, RunConfig, SyncConfig};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
@@ -95,13 +89,35 @@ async fn run(
         subscriptions,
     } = rigging;
 
+    let peer_subscriptions = subscriptions.clone();
+    let peer_event_broadcast = {
+        let mut peer_events = peer.subscribe();
+
+        async move {
+            loop {
+                if let coco::PeerEvent::StatusChanged(old, new) = peer_events.recv().await.unwrap()
+                {
+                    peer_subscriptions
+                        .broadcast(notification::Notification::LocalPeerStatusChanged(old, new))
+                        .await
+                }
+            }
+        }
+    };
+
     let server = async move {
         log::info!("... API");
-        let api = http::api(ctx, subscriptions, killswitch, enable_fixture_creation);
+        let api = http::api(
+            ctx,
+            subscriptions.clone(),
+            killswitch,
+            enable_fixture_creation,
+        );
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
             async move {
                 poisonpill.recv().await;
+                subscriptions.clear().await;
             },
         )?;
 
@@ -117,6 +133,7 @@ async fn run(
     tokio::select! {
         server_status = server => server_status,
         peer_status = peer => Ok(peer_status?),
+        peer_event_broadcast_status = peer_event_broadcast => peer_event_broadcast_status,
     }
 }
 
@@ -155,13 +172,6 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
 
     let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
-    // TODO(finto): We should store and load the waiting room
-    let waiting_room = {
-        let mut config = waiting_room::Config::default();
-        config.delta = Duration::from_secs(10);
-        Shared::from(WaitingRoom::new(config))
-    };
-
     let (peer, state) = {
         let seeds = session::settings(&store).await?.coco.seeds;
         let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
@@ -174,7 +184,6 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
             config,
             signer.clone(),
             store.clone(),
-            waiting_room.clone(),
             RunConfig {
                 sync: SyncConfig {
                     max_peers: 1,
@@ -187,12 +196,13 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         .await?
     };
 
+    let peer_control = peer.control();
     let subscriptions = notification::Subscriptions::default();
     let ctx = context::Context {
+        peer_control,
         state,
-        signer,
+        signer: Some(signer),
         store,
-        waiting_room,
     };
 
     Ok(Rigging {

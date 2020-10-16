@@ -6,8 +6,19 @@
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
+  import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 
   export let identity = null;
+
+  let peerState;
+
+  const sse = new EventSource(
+    "http://localhost:8080/v1/notifications/local_peer_status"
+  );
+
+  sse.addEventListener("LOCAL_PEER_STATUS_CHANGED", event => {
+    peerState = JSON.parse(event.data);
+  });
 </script>
 
 <style>
@@ -131,6 +142,10 @@
           <Icon.MagnifyingGlass />
         </a>
       </Tooltip>
+    </li>
+    <li class="item indicator" data-cy="search">
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <ConnectionStatusIndicator {peerState} />
     </li>
     <li
       class="item indicator"

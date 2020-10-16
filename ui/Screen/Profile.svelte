@@ -62,7 +62,7 @@
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
   <Header.Large
     name={identity.metadata.handle}
-    urn={identity.shareableEntityIdentifier}
+    urn={identity.urn}
     avatarFallback={identity.avatarFallback}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />

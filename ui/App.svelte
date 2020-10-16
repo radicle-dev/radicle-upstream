@@ -22,7 +22,9 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import Modal from "./Modal";
+  import ModalNewProject from "./Modal/NewProject.svelte";
+  import ModalSearch from "./Modal/Search.svelte";
+  import ModalShortcuts from "./Modal/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
   import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
@@ -58,9 +60,9 @@
   };
 
   const modalRoutes = {
-    "/new-project": Modal.NewProject,
-    "/search": Modal.Search,
-    "/shortcuts": Modal.Shortcuts,
+    "/new-project": ModalNewProject,
+    "/search": ModalSearch,
+    "/shortcuts": ModalShortcuts,
   };
 
   $: switch ($store.status) {

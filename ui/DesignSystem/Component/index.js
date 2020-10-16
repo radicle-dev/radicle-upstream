@@ -2,6 +2,7 @@ import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Badge from "./Badge.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
+import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
@@ -28,6 +29,7 @@ import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
+import ShareableIdentifier from "./ShareableIdentifier.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
@@ -51,6 +53,7 @@ export {
   Badge,
   Comment,
   Copyable,
+  ConnectionStatusIndicator,
   Dropdown,
   EmptyState,
   Error,
@@ -80,6 +83,7 @@ export {
   RevisionSelector,
   Row,
   SegmentedControl,
+  ShareableIdentifier,
   Sidebar,
   SidebarLayout,
   Spinner,

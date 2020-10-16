@@ -1,42 +1,39 @@
 <script>
   import { fade } from "svelte/transition";
+  import { push } from "svelte-spa-router";
+
+  import { FADE_DURATION } from "../../src/config.ts";
+  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
+  import * as modal from "../../src/modal.ts";
+  import * as path from "../../src/path.ts";
+  import { tracked, fetchTracked } from "../../src/project.ts";
+
   import {
     EmptyState,
     Hoverable,
     List,
     ProjectList,
     Remote,
+    ShareableIdentifier,
     TrackToggle,
-    Urn,
   } from "../../DesignSystem/Component";
 
-  import { tracked, fetchTracked } from "../../src/project.ts";
-  import { FADE_DURATION } from "../../src/config.ts";
-  import * as path from "../../src/path.ts";
-  import * as modal from "../../src/modal.ts";
-  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
+  const onSelect = project => {
+    push(path.projectSource(project.id));
+  };
 
   fetchTracked();
   $: console.log($tracked);
 
   // const untracked = [
   //   {
-  //     urn: "@hyndb5gs95gwtsf37tncz4ag3wqrg4ejw3qqga6x1srw9jp8jw59d6.git",
-  //     metadata: {
-  //       name: "snickers",
-  //     },
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
   //   },
   //   {
-  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-  //     metadata: {
-  //       name: "marsbar",
-  //     },
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
   //   },
   //   {
-  //     urn: "@hwd1yren6nte7ofh1sijz3tgc31cdmfb7zg7ya7gfgzwhhzgau8u13hkkjw.git",
-  //     metadata: {
-  //       name: "nougati",
-  //     },
+  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
   //   },
   // ];
 
@@ -58,7 +55,7 @@
   .undiscovered-project {
     padding: 1.5rem;
     flex: 1;
-    min-height: 4.5rem;
+    min-height: 6rem;
 
     display: flex;
     align-items: center;
@@ -78,7 +75,7 @@
 <div class="container">
   <Remote store={tracked} let:data={projects}>
     {#if projects.length > 0}
-      <ProjectList {projects} />
+      <ProjectList {projects} on:select={ev => onSelect(ev.detail)} />
     {:else}
       <EmptyState
         text="You're not following any projects yet."
@@ -104,8 +101,7 @@
             class="undiscovered-project"
             out:fade|local={{ duration: FADE_DURATION }}>
             <div>
-              <p class="project-name typo-text-bold">{project.metadata.name}</p>
-              <Urn urn={project.urn} showCopyOnlyOnHover />
+              <ShareableIdentifier urn={project.urn} />
             </div>
             {#if hover}
               <div transition:fade={{ duration: FADE_DURATION }}>
