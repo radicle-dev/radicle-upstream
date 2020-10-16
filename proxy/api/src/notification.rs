@@ -49,7 +49,7 @@ impl MaybeFrom<PeerEvent> for Notification {
         match event {
             PeerEvent::StatusChanged(old, new) => {
                 Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
-            }
+            },
             _ => None,
         }
     }

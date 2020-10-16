@@ -11,6 +11,7 @@ mod control;
 mod error;
 mod identity;
 mod notification;
+mod peer;
 mod project;
 mod session;
 mod source;
@@ -55,6 +56,7 @@ pub fn api(
     let project_filter = path("projects")
         .and(with_unsealed_guard(ctx.clone()))
         .and(project::filters(ctx.clone()));
+    let peer_filter = path("peer").and(peer::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
     let source_filter = path("source")
         .and(with_unsealed_guard(ctx.clone()))
@@ -65,6 +67,7 @@ pub fn api(
         control_filter,
         identity_filter,
         notification_filter,
+        peer_filter,
         project_filter,
         session_filter,
         source_filter

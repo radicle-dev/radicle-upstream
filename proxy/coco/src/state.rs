@@ -1,6 +1,7 @@
 //! Utility to work with the peer api of librad.
 
 use std::{
+    collections::HashMap,
     convert::TryFrom,
     net::SocketAddr,
     path::{self, PathBuf},
@@ -94,6 +95,11 @@ impl State {
     #[must_use]
     pub fn listen_addr(&self) -> SocketAddr {
         self.api.listen_addr()
+    }
+
+    /// List of currently connected peers.
+    pub async fn connected_peers(&self) -> HashMap<PeerId, SocketAddr> {
+        self.api.protocol().connected_peers().await
     }
 
     /// Get the default owner for this `PeerApi`.
