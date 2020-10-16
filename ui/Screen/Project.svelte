@@ -167,7 +167,7 @@
               on:select={() => {
                 resetCurrentRevision();
               }} />
-            <TrackToggle />
+            <TrackToggle disabled expanded tracking />
           </div>
         </div>
       </Header.Large>

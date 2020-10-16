@@ -5,7 +5,7 @@ use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, AnnounceConfig, Hash, RunConfig, Urn};
+use coco::{seed::Seed, AnnounceConfig, RunConfig};
 
 #[macro_use]
 mod common;
@@ -113,79 +113,6 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         .map(|_| ());
     tokio::pin!(announced);
     timeout(Duration::from_secs(1), announced.next()).await?;
-
-    Ok(())
-}
-
-/// Verify that asking the network for an unkown urn returns no providers.
-#[tokio::test(core_threads = 2)]
-async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
-
-    let tmp_dir = tempfile::tempdir()?;
-    let (peer, state) = build_peer(&tmp_dir, RunConfig::default()).await?;
-
-    tokio::spawn(peer.into_running());
-
-    let unkown_urn = Urn {
-        id: Hash::hash(b"project0"),
-        proto: librad::uri::Protocol::Git,
-        path: "user/imperative-language".parse::<librad::uri::Path>()?,
-    };
-
-    let res = state
-        .providers(unkown_urn, Duration::from_secs(5))
-        .await
-        .next()
-        .await;
-
-    assert!(res.is_none(), "didn't expected to obtain any providers");
-
-    Ok(())
-}
-
-/// Verify that asking the network for a URN owned by a seed peer returns said peer.
-#[tokio::test(core_threads = 2)]
-async fn providers() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
-
-    let alice_tmp_dir = tempfile::tempdir()?;
-    let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice_addr = alice_state.listen_addr();
-    let alice_peer_id = alice_state.peer_id();
-
-    let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state) = build_peer_with_seeds(
-        &bob_tmp_dir,
-        vec![Seed {
-            addr: alice_addr,
-            peer_id: alice_peer_id,
-        }],
-        RunConfig::default(),
-    )
-    .await?;
-    let bob_events = bob_peer.subscribe();
-
-    tokio::spawn(alice_peer.into_running());
-    tokio::spawn(bob_peer.into_running());
-
-    connected(bob_events, &alice_peer_id).await?;
-
-    let target_urn = {
-        let project = radicle_project(alice_repo_path.clone());
-        let user = alice_state.init_owner("cloudhead").await.unwrap();
-        let created_project = alice_state.init_project(&user, project).await.unwrap();
-        created_project.urn()
-    };
-
-    let res = bob_state
-        .providers(target_urn, Duration::from_secs(1))
-        .await
-        .next()
-        .await;
-
-    assert_eq!(res.map(|info| info.peer_id), Some(alice_peer_id));
 
     Ok(())
 }

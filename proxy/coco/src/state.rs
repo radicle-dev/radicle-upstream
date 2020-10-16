@@ -2,10 +2,8 @@
 
 use std::{
     convert::TryFrom,
-    future::Future,
-    net::{IpAddr, SocketAddr},
+    net::SocketAddr,
     path::{self, PathBuf},
-    time::Duration,
 };
 
 use librad::{
@@ -18,7 +16,7 @@ use librad::{
     },
     keys,
     meta::{entity, project as librad_project, user},
-    net::{gossip::PeerInfo, peer::PeerApi},
+    net::peer::PeerApi,
     paths,
     peer::PeerId,
     uri::{RadUrl, RadUrn},
@@ -509,15 +507,6 @@ impl State {
             .await??;
 
         Ok(user)
-    }
-
-    /// Query the network for providers of the given [`RadUrn`] within a given `timeout`.
-    pub fn providers(
-        &self,
-        urn: RadUrn,
-        timeout: Duration,
-    ) -> impl Future<Output = impl futures::Stream<Item = PeerInfo<IpAddr>>> {
-        self.api.providers(urn, timeout)
     }
 
     /// Wrapper around the storage track.
