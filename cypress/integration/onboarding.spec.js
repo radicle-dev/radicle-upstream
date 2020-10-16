@@ -126,16 +126,22 @@ context("onboarding", () => {
     });
 
     context("handle", () => {
-      it("prevents the user from submitting an invalid handle", () => {
-        cy.pick("handle-input").type("_rafalca");
-        cy.pick("next-button").click();
-
-        // Handle is required.
+      it("requires the user to input a handle", () => {
         cy.pick("handle-input").clear();
+        cy.pick("next-button").click();
         cy.pick("enter-name-screen").contains(
           "You must provide a display name"
         );
+      });
 
+      it("starts validation after at least 2 characters are input", () => {
+        cy.pick("handle-input").type("@");
+        cy.pick("validation-error-icon").should("not.be.visible");
+        cy.pick("handle-input").type("@");
+        cy.pick("validation-error-icon").should("be.visible");
+      });
+
+      it("prevents the user from submitting an invalid handle", () => {
         // No spaces.
         cy.pick("handle-input").type("no spaces");
         cy.pick("handle-input").should("have.value", "no-spaces");
@@ -164,7 +170,7 @@ context("onboarding", () => {
 
         // Has to be no more than 32 characters long.
         cy.pick("handle-input").clear();
-        cy.pick("handle-input").type("x".repeat(33));
+        cy.pick("handle-input").invoke("val", "x".repeat(33)).trigger("input");
         cy.pick("enter-name-screen").contains(
           "Your display name should not be longer than 32 characters."
         );
