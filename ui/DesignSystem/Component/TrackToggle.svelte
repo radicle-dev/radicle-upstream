@@ -42,12 +42,10 @@
   .toggle.hover {
     border: 1px solid var(--color-secondary-level-2);
     background-color: var(--color-secondary-level-2);
-    box-shadow: 0 0 0 1px var(--color-secondary-level-2);
   }
   .toggle.active {
     border: 1px solid var(--color-secondary-level-1);
     background-color: var(--color-secondary-level-1);
-    box-shadow: 0 0 0 1px var(--color-secondary-level-1);
   }
   .toggle.tracking {
     border: 1px solid var(--color-foreground-level-3);
@@ -57,18 +55,15 @@
   .toggle.tracking.hover {
     border: 1px solid var(--color-foreground-level-2);
     background-color: var(--color-foreground-level-2);
-    box-shadow: 0 0 0 1px var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
   }
   .toggle.tracking.hover.warning {
     color: var(--color-background);
     border: none;
-    box-shadow: none;
   }
   .toggle.tracking.active {
     border: 1px solid var(--color-foreground-level-2);
     background-color: var(--color-foreground-level-2);
-    box-shadow: 0 0 0 1px var(--color-foreground-level-2);
     color: var(--color-foreground-level-4);
   }
   .left {
