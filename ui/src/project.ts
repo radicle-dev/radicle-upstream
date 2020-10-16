@@ -345,8 +345,20 @@ const projectNameConstraints = {
   },
 };
 
+const projectDescriptionConstraints = {
+  length: {
+    maximum: 256,
+    tooLong:
+      "Your project description should not be longer than 256 characters.",
+  },
+};
+
 export const nameValidationStore = (): validation.ValidationStore => {
   return validation.createValidationStore(projectNameConstraints);
+};
+
+export const descriptionValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore(projectDescriptionConstraints);
 };
 
 export const repositoryPathValidationStore = (

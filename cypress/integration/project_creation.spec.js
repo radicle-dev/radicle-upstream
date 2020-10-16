@@ -132,7 +132,7 @@ context("project creation", () => {
       });
 
       context("name", () => {
-        it.only("prevents the user from creating a project with an invalid name", () => {
+        it("prevents the user from creating a project with an invalid name", () => {
           // the submit button is disabled when name is not present
           cy.pick("page", "name").clear();
           cy.pick("create-project-button").should("be.disabled");
@@ -167,10 +167,38 @@ context("project creation", () => {
 
           // has to be no more than 64 characters long
           cy.pick("page", "name").clear();
-          cy.pick("page", "name").type("x".repeat(65));
+          cy.pick("page", "name")
+            .invoke("val", "x".repeat(257))
+            .trigger("input");
           cy.pick("page").contains(
             "Your project name should not be longer than 64 characters."
           );
+        });
+      });
+
+      context("description", () => {
+        it("prevents the user from creating a project with an invalid description", () => {
+          withEmptyDirectoryStub(() => {
+            cy.pick("new-project", "choose-path-button").click();
+
+            // entering a description is not mandatory and should not block
+            // project creation
+            cy.pick("page", "name").type("rx");
+            cy.pick("page", "description").type("xxxx");
+            cy.pick("create-project-button").should("be.enabled");
+            cy.pick("page", "description").clear();
+            cy.pick("create-project-button").should("be.enabled");
+
+            // the project description has to be no more than 256 characters long
+            cy.pick("page", "description").clear();
+            cy.pick("page", "description")
+              .invoke("val", "x".repeat(257))
+              .trigger("input");
+            cy.pick("page").contains(
+              "Your project description should not be longer than 256 characters."
+            );
+            cy.pick("create-project-button").should("be.disabled");
+          });
         });
       });
 

@@ -54,6 +54,12 @@ interface FormatConstraints {
     message: string;
   };
   firstHandleChar?: FirstHandleCharOptions;
+  length?: {
+    minimum?: number;
+    maximum?: number;
+    tooShort?: string;
+    tooLong?: string;
+  };
 }
 
 validatejs.validators.firstHandleChar = (
