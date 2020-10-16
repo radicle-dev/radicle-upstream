@@ -1,20 +1,12 @@
 <script>
-  export let peerState;
+  import { status as store, StatusType } from "../../src/localPeer.ts";
 
-  $: {
-    console.log(peerState);
-
-    if (peerState) {
-      state = peerState.type;
-    }
-  }
-
-  let state = "offline"; // stopped | offline | syncing | online
-
+  import Remote from "../Component/Remote.svelte";
   import { Icon } from "../Primitive";
+  import Tooltip from "./Tooltip.svelte";
+
   import Syncing from "./ConnectionStatusIndicator/Syncing.svelte";
   import Offline from "./ConnectionStatusIndicator/Offline.svelte";
-  import Tooltip from "./Tooltip.svelte";
 </script>
 
 <style>
@@ -27,36 +19,37 @@
   }
 </style>
 
-<div>
-  {#if state === 'online'}
-    <Tooltip
-      value={`You’re connected to ${peerState && peerState.connected} peers`}>
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <a>
-        <Icon.Network />
-      </a>
-    </Tooltip>
-  {:else if state === 'syncing'}
-    <Tooltip
-      value={`Syncing with ${peerState && peerState.syncs} peers to get new content from your network`}>
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <a>
-        <Syncing />
-      </a>
-    </Tooltip>
-  {:else if state === 'offline' || state === 'started'}
-    <Tooltip value="You’re not connected to any peers">
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <a>
-        <Offline />
-      </a>
-    </Tooltip>
-  {:else if state === 'stopped'}
-    <Tooltip value="The app couldn't start your peer">
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <a>
-        <Offline style="fill: var(--color-negative);" />
-      </a>
-    </Tooltip>
-  {/if}
-</div>
+<Remote {store} let:data={status}>
+  <div>
+    {#if status.type === StatusType.Online}
+      <Tooltip value={`You’re connected to ${status.connected} peers`}>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <Icon.Network />
+        </a>
+      </Tooltip>
+    {:else if status.type === StatusType.Syncing}
+      <Tooltip
+        value={`Syncing with ${status.syncs} peers to get new content from your network`}>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <Syncing />
+        </a>
+      </Tooltip>
+    {:else if status.type === StatusType.Offline || status.type === StatusType.Started}
+      <Tooltip value="You’re not connected to any peers">
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <Offline />
+        </a>
+      </Tooltip>
+    {:else if status.type === StatusType.Stopped}
+      <Tooltip value="The app couldn't start your peer">
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <Offline style="fill: var(--color-negative);" />
+        </a>
+      </Tooltip>
+    {/if}
+  </div>
+</Remote>
