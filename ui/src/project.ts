@@ -209,21 +209,18 @@ export const create = (input: CreateInput): Promise<Project> => {
 };
 
 interface CheckoutInput {
-  remote: string;
-  branch: string;
+  peerId?: string;
   path: string;
 }
 
 export const checkout = (
   id: string,
   path: string,
-  remote: string,
-  branch: string
+  peerId?: string
 ): Promise<boolean> => {
-  return api.post<CheckoutInput, boolean>(`projects/${id}`, {
-    branch,
+  return api.post<CheckoutInput, boolean>(`projects/${id}/checkout`, {
     path,
-    remote,
+    peerId,
   });
 };
 

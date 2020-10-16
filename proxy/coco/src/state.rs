@@ -563,6 +563,10 @@ impl State {
 
     /// Creates a working copy for the project of the given `urn`.
     ///
+    /// The `destination` is the directory where the caller wishes to place the working copy.
+    ///
+    /// The `peer_id` is from which peer we wish to base our checkout from.
+    ///
     /// # Errors
     ///
     /// * if the project can't be found
@@ -575,13 +579,34 @@ impl State {
         destination: PathBuf,
     ) -> Result<PathBuf, Error>
     where
-        P: Into<Option<PeerId>> + Clone + Send + 'static,
+        P: Into<Option<PeerId>> + Send + 'static,
     {
+        let peer_id = peer_id.into();
         let proj = self.get_project(urn.clone(), peer_id).await?;
-        let include_path = self.update_include(urn).await?;
+        let include_path = self.update_include(urn.clone()).await?;
         let checkout = project::Checkout::new(proj, destination, include_path);
 
-        checkout.run(self.peer_id()).map_err(Error::from)
+        let ownership = match peer_id {
+            None => project::checkout::Ownership::Local(self.peer_id()),
+            Some(remote) => {
+                let handle = {
+                    self.api
+                        .with_storage(move |storage| {
+                            let rad_self = storage.get_rad_self_of(&urn, remote)?;
+                            Ok::<_, Error>(rad_self.name().to_string())
+                        })
+                        .await??
+                };
+                project::checkout::Ownership::Remote {
+                    handle,
+                    remote,
+                    local: self.peer_id(),
+                }
+            },
+        };
+        tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
+            .await
+            .expect("blocking checkout failed")
     }
 
     /// Prepare the include file for the given `project` with the latest tracked peers.
@@ -598,6 +623,7 @@ impl State {
             tracked.into_iter().map(|(peer_id, user)| (user, peer_id)),
         );
         let include_path = include.file_path();
+        log::info!("creating include file @ '{:?}'", include_path);
         include.save()?;
 
         Ok(include_path)
