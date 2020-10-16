@@ -14,9 +14,7 @@ use librad::{
     uri::{self, RadUrl, RadUrn},
 };
 
-use crate::request::{
-    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
-};
+use crate::request::{Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut};
 
 /// The maximum number of query attempts that can be made for a single request.
 const MAX_QUERIES: Queries = Queries::new(5);
@@ -173,7 +171,7 @@ impl<T, D> WaitingRoom<T, D> {
     fn transition<Prev, Next>(
         &mut self,
         matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
-        transition: impl FnOnce(Prev) -> Result<Next, Error>,
+        transition: impl FnOnce(Prev) -> Either<Request<TimedOut, T>, Next>,
         urn: &RadUrn,
     ) -> Result<(), Error>
     where
@@ -183,14 +181,16 @@ impl<T, D> WaitingRoom<T, D> {
     {
         match self.get(urn) {
             None => Err(Error::MissingUrn(urn.clone())),
-            Some(request) => {
-                match sequence_result(request.clone().transition(matcher, transition))? {
-                    Either::Right(next) => {
-                        self.requests.insert(urn.id.clone(), next.into());
-                        Ok(())
-                    },
-                    Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
-                }
+            Some(request) => match request.clone().transition(matcher, transition) {
+                Either::Right(Either::Right(next)) => {
+                    self.requests.insert(urn.id.clone(), next.into());
+                    Ok(())
+                },
+                Either::Right(Either::Left(timeout)) => {
+                    self.requests.insert(urn.id.clone(), timeout.clone().into());
+                    Err(timeout.into())
+                },
+                Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
             },
         }
     }
@@ -222,10 +222,7 @@ impl<T, D> WaitingRoom<T, D> {
                 },
                 _ => None,
             },
-            |previous| match previous {
-                Either::Left(timeout) => Err(timeout.into()),
-                Either::Right(request) => Ok(request),
-            },
+            |previous| previous,
             urn,
         )
     }
@@ -261,7 +258,7 @@ impl<T, D> WaitingRoom<T, D> {
                 },
                 _ => None,
             },
-            Ok,
+            Either::Right,
             &urn,
         )
     }
@@ -287,10 +284,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Found(request) => Some(request),
                 _ => None,
             },
-            |previous| match previous.cloning(max_queries, max_clones, authority, timestamp) {
-                Either::Left(timeout) => Err(timeout.into()),
-                Either::Right(request) => Ok(request),
-            },
+            |previous| previous.cloning(max_queries, max_clones, authority, timestamp),
             &urn,
         )
     }
@@ -318,7 +312,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.failed(authority, timestamp)),
+            |previous| Either::Right(previous.failed(authority, timestamp)),
             &urn,
         )
     }
@@ -341,7 +335,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.cloned(url.clone(), timestamp)),
+            |previous| Either::Right(previous.cloned(url.clone(), timestamp)),
             &url.urn,
         )
     }
@@ -359,7 +353,11 @@ impl<T, D> WaitingRoom<T, D> {
     where
         T: Clone,
     {
-        self.transition(|request| request.cancel(timestamp).right(), Ok, urn)
+        self.transition(
+            |request| request.cancel(timestamp).right(),
+            Either::Right,
+            urn,
+        )
     }
 
     /// Return the list of all `RadUrn`/`SomeRequest` pairs in the `WaitingRoom`.
@@ -557,6 +555,8 @@ mod test {
             })
         );
 
+        assert_matches!(waiting_room.get(&urn), Some(SomeRequest::TimedOut(_)));
+
         Ok(())
     }
 
@@ -606,6 +606,8 @@ mod test {
                 attempts: 17,
             })
         );
+
+        assert_matches!(waiting_room.get(&urn), Some(SomeRequest::TimedOut(_)));
 
         Ok(())
     }
