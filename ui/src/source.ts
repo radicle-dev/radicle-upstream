@@ -144,13 +144,13 @@ const revisionsStore = remote.createStore<Revisions>();
 export const revisions = revisionsStore.readable;
 
 export const objectType = writable(ObjectType.Tree);
-export const resetObjectType = () => objectType.set(ObjectType.Tree);
+export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
-export const resetObjectPath = () => objectPath.set(null);
+export const resetObjectPath = (): void => objectPath.set(null);
 export const currentRevision = writable(null);
-export const resetCurrentRevision = () => currentRevision.set(null);
+export const resetCurrentRevision = (): void => currentRevision.set(null);
 export const currentPeerId = writable(null);
-export const resetCurrentPeerId = () => currentPeerId.set(null);
+export const resetCurrentPeerId = (): void => currentPeerId.set(null);
 
 // EVENTS
 enum Kind {
