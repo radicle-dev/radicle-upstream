@@ -26,18 +26,25 @@ pub enum Notification {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {
+    /// Transition between two statuses occurred.
     #[serde(rename_all = "camelCase")]
-    StatusChanged { old: PeerStatus, new: PeerStatus },
+    StatusChanged {
+        /// The [`PeerStatus`] before.
+        old: PeerStatus,
+        /// The new [`PeerStatus`].
+        new: PeerStatus,
+    },
 }
 
 impl fmt::Display for LocalPeer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            StatusChanged => write!(f, "LOCAL_PEER_STATUS_CHANGED"),
+            Self::StatusChanged { .. } => write!(f, "LOCAL_PEER_STATUS_CHANGED"),
         }
     }
 }
 
+#[allow(clippy::wildcard_enum_match_arm)]
 impl MaybeFrom<PeerEvent> for Notification {
     fn maybe_from(event: PeerEvent) -> Option<Self> {
         match event {
