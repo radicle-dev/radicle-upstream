@@ -7,11 +7,13 @@
 
   import WithContext from "./WithContext.svelte";
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let store: Readable<remote.Data<any>>;
   export let context: string | undefined = undefined;
 
   // Shorthand for casting these states
   type ErrorState = { status: remote.Status.Error; error: error.Error };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type SuccessState = { status: remote.Status.Success; data: any };
 
   // If no error slot was provided, svelte will instantiate the fallback div

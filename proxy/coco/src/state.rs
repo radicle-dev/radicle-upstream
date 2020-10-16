@@ -604,7 +604,9 @@ impl State {
                 }
             },
         };
-        checkout.run(ownership).map_err(Error::from)
+        tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
+            .await
+            .expect("blocking checkout failed")
     }
 
     /// Prepare the include file for the given `project` with the latest tracked peers.
