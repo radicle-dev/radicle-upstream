@@ -1,7 +1,11 @@
 <script lang="typescript">
+  import { connectedPeers } from "../src/localPeer.ts";
+
   import Copyable from "../DesignSystem/Component/Copyable.svelte";
-  import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
   import IconNetwork from "../DesignSystem/Primitive/Icon/Network.svelte";
+  import List from "../DesignSystem/Component/List.svelte";
+  import Remote from "../DesignSystem/Component/Remote.svelte";
+  import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
 </script>
 
 <style>
@@ -95,20 +99,20 @@
       <div class="column-left">
         <div class="connected-peers">
           <h3>Connected Peers</h3>
-          <ul>
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent="hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@34.91.29.42:12345"
-              notificationText="Peer address copied to clipboad">
-              <li>
-                <p class="typo-mono-bold">34.91.29.42:12345</p>
-                <p class="typo-text-small-mono">
-                  hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k
-                </p>
-              </li>
-            </Copyable>
-          </ul>
+          <Remote store={connectedPeers} let:data={peers}>
+            <List items={peers} on:select let:item={peer} style="padding: 0;">
+              <Copyable
+                showIcon={false}
+                styleContent={false}
+                copyContent="hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@34.91.29.42:12345"
+                notificationText="Peer address copied to clipboad">
+                <div style="padding: 0.2rem 0.4rem;">
+                  <p class="typo-mono-bold">{peer.addr}</p>
+                  <p class="typo-text-small-mono">{peer.peerId}</p>
+                </div>
+              </Copyable>
+            </List>
+          </Remote>
         </div>
       </div>
       <div class="column-right">

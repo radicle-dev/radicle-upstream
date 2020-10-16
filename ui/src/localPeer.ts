@@ -1,5 +1,6 @@
 import { derived } from "svelte/store";
 
+import * as api from "./api";
 import * as remote from "./remote";
 
 // TYPES
@@ -47,6 +48,11 @@ interface StatusChanged {
 
 export type PeerEvent = StatusChanged;
 
+interface RemotePeer {
+  addr: string;
+  peerId: string;
+}
+
 // STATE
 const eventStore = remote.createStore<PeerEvent>();
 eventStore.start(() => {
@@ -60,6 +66,16 @@ eventStore.start(() => {
   });
 
   return (): void => source.close();
+});
+
+const connectedPeersStore = remote.createStore<RemotePeer[]>();
+export const connectedPeers = connectedPeersStore.readable;
+
+connectedPeersStore.start(() => {
+  api
+    .get<RemotePeer[]>(`peer/connected_peers`)
+    .then(connectedPeersStore.success)
+    .catch(connectedPeersStore.error);
 });
 
 export const status = derived(
