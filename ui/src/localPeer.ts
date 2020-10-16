@@ -1,4 +1,4 @@
-import { derived } from "svelte/store";
+import { derived, writable } from "svelte/store";
 
 import * as api from "./api";
 import * as remote from "./remote";
@@ -54,15 +54,14 @@ interface RemotePeer {
 }
 
 // STATE
-const eventStore = remote.createStore<PeerEvent>();
-eventStore.start(() => {
+const eventStore = writable<PeerEvent | null>(null, set => {
   const source = new EventSource(
     "http://localhost:8080/v1/notifications/local_peer_events"
   );
 
   source.addEventListener("message", (msg: MessageEvent) => {
     const peerEvent: PeerEvent = JSON.parse(msg.data);
-    eventStore.success(peerEvent);
+    set(peerEvent);
   });
 
   return (): void => source.close();
@@ -72,23 +71,39 @@ const connectedPeersStore = remote.createStore<RemotePeer[]>();
 export const connectedPeers = connectedPeersStore.readable;
 
 connectedPeersStore.start(() => {
-  api
-    .get<RemotePeer[]>(`peer/connected_peers`)
-    .then(connectedPeersStore.success)
-    .catch(connectedPeersStore.error);
+  const update = () => {
+    api
+      .get<RemotePeer[]>(`peer/connected_peers`)
+      .then(connectedPeersStore.success)
+      .catch(connectedPeersStore.error);
+  };
+
+  update();
+
+  return eventStore.subscribe((peerEvent: PeerEvent | null) => {
+    if (!peerEvent) return;
+
+    switch (peerEvent.type) {
+      case Event.StatusChanged:
+        update();
+
+        break;
+    }
+  });
 });
 
 export const status = derived(
   eventStore,
-  (data: remote.Data<PeerEvent>): remote.Data<Status> => {
-    if (data.status === remote.Status.Success) {
-      const peerEvent = data.data;
-      switch (peerEvent.type) {
-        case Event.StatusChanged:
-          return { status: remote.Status.Success, data: peerEvent.new };
-      }
+  (peerEvent: PeerEvent | null, set): void => {
+    if (!peerEvent) {
+      set({ status: remote.Status.Loading });
+      return;
     }
 
-    return data;
-  }
+    switch (peerEvent.type) {
+      case Event.StatusChanged:
+        set({ status: remote.Status.Success, data: peerEvent.new });
+    }
+  },
+  { status: remote.Status.Loading } as remote.Data<Status>
 );
