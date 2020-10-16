@@ -28,7 +28,7 @@ use crate::{
 };
 
 /// Default time to wait between announcement subroutine runs.
-const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(60);
+const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(5);
 
 /// Default number of peers a full sync is attempting with up on startup.
 /// TODO(xla): Revise number.

@@ -2,7 +2,6 @@
 
 use std::{
     collections::HashMap,
-    fmt,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -25,6 +24,18 @@ pub enum Notification {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {
+    /// Announced updates on the network.
+    #[serde(rename_all = "camelCase")]
+    Announced {
+        /// List of new refs that have been announced.
+        updates: coco::AnnouncementUpdates,
+    },
+    /// Sync with a peer has completed.
+    #[serde(rename_all = "camelCase")]
+    PeerSynced {
+        /// [`PeerId`] of the synced peer.
+        peer_id: coco::PeerId,
+    },
     /// Transition between two statuses occurred.
     #[serde(rename_all = "camelCase")]
     StatusChanged {
@@ -35,18 +46,16 @@ pub enum LocalPeer {
     },
 }
 
-impl fmt::Display for LocalPeer {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::StatusChanged { .. } => write!(f, "LOCAL_PEER_STATUS_CHANGED"),
-        }
-    }
-}
-
 #[allow(clippy::wildcard_enum_match_arm)]
 impl MaybeFrom<PeerEvent> for Notification {
     fn maybe_from(event: PeerEvent) -> Option<Self> {
         match event {
+            PeerEvent::Announced(updates) => {
+                Some(Self::LocalPeer(LocalPeer::Announced { updates }))
+            },
+            PeerEvent::PeerSynced(peer_id) => {
+                Some(Self::LocalPeer(LocalPeer::PeerSynced { peer_id }))
+            },
             PeerEvent::StatusChanged(old, new) => {
                 Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
             },

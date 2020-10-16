@@ -55,8 +55,8 @@ pub mod keystore;
 pub mod oid;
 pub mod peer;
 pub use peer::{
-    AnnounceConfig, Control as PeerControl, Event as PeerEvent, Peer, RunConfig,
-    Status as PeerStatus, SyncConfig,
+    AnnounceConfig, Announcement, Control as PeerControl, Event as PeerEvent, Peer, RunConfig,
+    Status as PeerStatus, SyncConfig, Updates as AnnouncementUpdates,
 };
 pub mod state;
 pub use state::State;

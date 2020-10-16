@@ -19,7 +19,7 @@ use crate::{
 };
 
 mod announcement;
-pub use announcement::Announcement;
+pub use announcement::{Announcement, Updates};
 
 mod control;
 pub use control::Control;

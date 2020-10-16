@@ -1,11 +1,12 @@
 <script lang="typescript">
-  import { connectedPeers } from "../src/localPeer";
+  import { connectedPeers, events } from "../src/localPeer";
 
   import Copyable from "../DesignSystem/Component/Copyable.svelte";
   import IconNetwork from "../DesignSystem/Primitive/Icon/Network.svelte";
   import List from "../DesignSystem/Component/List.svelte";
   import Remote from "../DesignSystem/Component/Remote.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
+  import { stringify } from "querystring";
 </script>
 
 <style>
@@ -118,12 +119,9 @@
       <div class="column-right">
         <h3>Event log</h3>
         <div class="event-log">
-          <div class="event-log-item">
-            Started listening on <span class="typo-bold">address</span>
-          </div>
-          <div class="event-log-item">
-            Connected to <span class="typo-bold">peer_id</span>
-          </div>
+          {#each $events as event}
+            <div class="event-log-item">{JSON.stringify(event)}</div>
+          {/each}
         </div>
       </div>
     </div>

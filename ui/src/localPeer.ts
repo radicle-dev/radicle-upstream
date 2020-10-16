@@ -1,4 +1,4 @@
-import { derived, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
 
 import * as api from "./api";
 import * as remote from "./remote";
@@ -37,16 +37,16 @@ interface Online {
 type Status = Stopped | Offline | Started | Syncing | Online;
 
 enum Event {
+  Announced = "announced",
+  PeerSynced = "peerSynced",
   StatusChanged = "statusChanged",
 }
 
-interface StatusChanged {
-  type: Event.StatusChanged;
-  old: Status;
-  new: Status;
-}
-
-export type PeerEvent = StatusChanged;
+export type PeerEvent =
+  | { type: Event.Announced; updates: string[] }
+  // FIXME(xla): Much like RadUrns peer ids need to be properly typed.
+  | { type: Event.PeerSynced; peerId: string }
+  | { type: Event.StatusChanged; old: Status; new: Status };
 
 interface RemotePeer {
   addr: string;
@@ -92,17 +92,29 @@ connectedPeersStore.start(() => {
   });
 });
 
+export const events = derived(
+  eventStore,
+  (peerEvent: PeerEvent | null, set: (events: PeerEvent[]) => void): void => {
+    if (!peerEvent) return;
+
+    const val = get(events);
+    const len = val.push(peerEvent);
+    if (len > 1000) {
+      val.shift();
+    }
+    set(val);
+  },
+  []
+);
+
 export const status = derived(
   eventStore,
-  (peerEvent: PeerEvent | null, set): void => {
-    if (!peerEvent) {
-      set({ status: remote.Status.Loading });
-      return;
-    }
-
-    switch (peerEvent.type) {
-      case Event.StatusChanged:
-        set({ status: remote.Status.Success, data: peerEvent.new });
+  (
+    peerEvent: PeerEvent | null,
+    set: (status: remote.Data<Status>) => void
+  ): void => {
+    if (peerEvent && peerEvent.type === Event.StatusChanged) {
+      set({ status: remote.Status.Success, data: peerEvent.new });
     }
   },
   { status: remote.Status.Loading } as remote.Data<Status>
