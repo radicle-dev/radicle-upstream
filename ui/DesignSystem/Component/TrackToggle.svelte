@@ -120,13 +120,17 @@
 <Hoverable let:hovering={hover}>
   <div
     class:active
-    class:hover
+    class:hover={hover && !disabled}
     class:tracking
     class:warning
     class="toggle"
     {style}
-    on:mousedown={down}
-    on:mouseup={up}>
+    on:mousedown={() => {
+      !disabled && down();
+    }}
+    on:mouseup={() => {
+      !disabled && up();
+    }}>
     <div
       class="left"
       class:active
