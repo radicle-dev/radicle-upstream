@@ -1,0 +1,127 @@
+<script lang="typescript">
+  import Copyable from "../DesignSystem/Component/Copyable.svelte";
+  import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
+  import IconNetwork from "../DesignSystem/Primitive/Icon/Network.svelte";
+</script>
+
+<style>
+  .container {
+    height: 100vh;
+  }
+
+  .header {
+    background-color: var(--color-foreground-level-1);
+    display: flex;
+    height: 8rem;
+  }
+
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 auto;
+    max-width: var(--content-max-width);
+    padding: 0 var(--content-padding);
+    width: 100%;
+  }
+
+  .peer-stats {
+    display: flex;
+    margin-top: 0.5rem;
+  }
+
+  .peer-stats-item {
+    color: var(--color-foreground-level-6);
+    display: flex;
+    margin-right: 1rem;
+  }
+
+  .layout {
+    display: flex;
+    height: 100%;
+    margin-bottom: 4rem;
+    padding: 0 var(--content-padding);
+    width: inherit;
+  }
+
+  .center-content {
+    margin: 0 auto;
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+  }
+
+  .column-left {
+    display: flex;
+    flex-direction: column;
+    padding-right: 0.75rem;
+  }
+
+  .column-right {
+    display: flex;
+    flex-direction: column;
+    padding-left: 0.75rem;
+    min-width: var(--content-min-width);
+    width: 100%;
+  }
+
+  .connected-peers {
+    width: 30rem;
+  }
+
+  .event-log {
+    height: 100%;
+    overflow-y: scroll;
+  }
+
+  h3 {
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<SidebarLayout>
+  <div class="container">
+    <div class="header">
+      <div class="header-content">
+        <h1>Network</h1>
+        <div class="peer-stats typo-mono">
+          <div class="peer-stats-item">
+            <IconNetwork />
+            <p style="margin-left: 0.5rem;">3 Peers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="layout center-content">
+      <div class="column-left">
+        <div class="connected-peers">
+          <h3>Connected Peers</h3>
+          <ul>
+            <Copyable
+              showIcon={false}
+              styleContent={false}
+              copyContent="hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@34.91.29.42:12345"
+              notificationText="Peer address copied to clipboad">
+              <li>
+                <p class="typo-mono-bold">34.91.29.42:12345</p>
+                <p class="typo-text-small-mono">
+                  hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k
+                </p>
+              </li>
+            </Copyable>
+          </ul>
+        </div>
+      </div>
+      <div class="column-right">
+        <h3>Event log</h3>
+        <div class="event-log">
+          <div class="event-log-item">
+            Started listening on <span class="typo-bold">address</span>
+          </div>
+          <div class="event-log-item">
+            Connected to <span class="typo-bold">peer_id</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</SidebarLayout>

@@ -25,6 +25,7 @@
   import ModalNewProject from "./Modal/NewProject.svelte";
   import ModalSearch from "./Modal/Search.svelte";
   import ModalShortcuts from "./Modal/Shortcuts.svelte";
+  import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -44,6 +45,7 @@
     "/onboarding": Onboarding,
     "/settings": Settings,
     "/discovery": Discovery,
+    "/network": Network,
     "/profile/*": Profile,
     "/orgs/register": OrgRegistration,
     "/orgs/:id/members/register": MemberRegistration,

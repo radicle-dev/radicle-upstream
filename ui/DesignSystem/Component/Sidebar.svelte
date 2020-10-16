@@ -133,9 +133,14 @@
         </a>
       </Tooltip>
     </li>
-    <li class="item indicator" data-cy="search">
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <ConnectionStatusIndicator />
+    <li
+      class="item indicator"
+      class:active={path.active(path.network(), $location)}
+      data-cy="search">
+      <a href={path.network()} use:link>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <ConnectionStatusIndicator />
+      </a>
     </li>
     <li
       class="item indicator"
