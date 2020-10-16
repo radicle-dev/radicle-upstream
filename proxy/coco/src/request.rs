@@ -333,12 +333,3 @@ impl<T> Request<Cloning, T> {
         }
     }
 }
-
-/// Due to the lack of higher-kinded types we have to write our own specific sequence here that
-/// works with a `Result` embedded in an `Either`.
-fn sequence_result<A, B, E>(either: Either<A, Result<B, E>>) -> Result<Either<A, B>, E> {
-    match either {
-        Either::Left(a) => Ok(Either::Left(a)),
-        Either::Right(r) => Ok(Either::Right(r?)),
-    }
-}
