@@ -136,7 +136,7 @@
     "prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
     "reset:state": "scripts/reset-state.sh"
   },
   "dependencies": {
