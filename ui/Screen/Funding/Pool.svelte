@@ -8,12 +8,6 @@
 </script>
 
 <style>
-  .pool-container {
-    min-width: var(--content-min-width);
-    max-width: var(--content-max-width);
-    padding: 0 var(--content-padding);
-  }
-
   .container div + div {
     margin-top: var(--content-padding);
   }

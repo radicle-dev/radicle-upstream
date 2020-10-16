@@ -6,10 +6,18 @@
   import Pool from "../Funding/Pool.svelte";
 
   const wallet = build();
-  // instantiate pool using the wallet store?
 </script>
 
-<div>
+<style>
+  .funding-container {
+    min-width: var(--content-min-width);
+    max-width: var(--content-max-width);
+    padding: 0 var(--content-padding);
+    margin: 0 auto;
+  }
+</style>
+
+<div class="funding-container">
   {#if $wallet.status === Status.NotConnected}
     <Button on:click={wallet.connect}>connect</Button>
     {#if $wallet.error}Failed to connect: {$wallet.error.message}{/if}
