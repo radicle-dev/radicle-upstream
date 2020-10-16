@@ -2,6 +2,7 @@
 
 use std::{
     collections::HashMap,
+    fmt,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -11,11 +12,41 @@ use std::{
 use serde::Serialize;
 use tokio::sync::{mpsc, RwLock};
 
+use coco::convert::MaybeFrom;
+use coco::{PeerEvent, PeerStatus};
+
 /// Significant events happening during proxy runtime.
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug)]
 pub enum Notification {
-    /// Our local peer started listening on a local socket.
-    LocalPeerStatusChanged(coco::PeerStatus, coco::PeerStatus),
+    /// Event observed about the local peer.
+    LocalPeer(LocalPeer),
+}
+
+/// Event observed about the local peer.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum LocalPeer {
+    #[serde(rename_all = "camelCase")]
+    StatusChanged { old: PeerStatus, new: PeerStatus },
+}
+
+impl fmt::Display for LocalPeer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            StatusChanged => write!(f, "LOCAL_PEER_STATUS_CHANGED"),
+        }
+    }
+}
+
+impl MaybeFrom<PeerEvent> for Notification {
+    fn maybe_from(event: PeerEvent) -> Option<Self> {
+        match event {
+            PeerEvent::StatusChanged(old, new) => {
+                Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
+            }
+            _ => None,
+        }
+    }
 }
 
 /// Manage active subscriptions and broadcast [`Notification`]s.

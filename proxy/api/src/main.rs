@@ -8,7 +8,7 @@ use tokio::{
 };
 
 use api::{config, context, env, http, notification, session};
-use coco::{keystore, seed, signer, Peer, RunConfig, SyncConfig};
+use coco::{convert::MaybeFrom as _, keystore, seed, signer, Peer, RunConfig, SyncConfig};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
@@ -95,11 +95,10 @@ async fn run(
 
         async move {
             loop {
-                if let coco::PeerEvent::StatusChanged(old, new) = peer_events.recv().await.unwrap()
+                if let Some(notification) =
+                    notification::Notification::maybe_from(peer_events.recv().await.unwrap())
                 {
-                    peer_subscriptions
-                        .broadcast(notification::Notification::LocalPeerStatusChanged(old, new))
-                        .await
+                    peer_subscriptions.broadcast(notification).await
                 }
             }
         }
