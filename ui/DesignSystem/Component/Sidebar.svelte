@@ -9,19 +9,6 @@
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 
   export let identity = null;
-
-  let peerState;
-
-  // FIXME(rudolfs): cypress tests break when EventSource is initialised.
-  if (!window["Cypress"]) {
-    const sse = new EventSource(
-      "http://localhost:8080/v1/notifications/local_peer_status"
-    );
-
-    sse.addEventListener("LOCAL_PEER_STATUS_CHANGED", event => {
-      peerState = JSON.parse(event.data);
-    });
-  }
 </script>
 
 <style>
@@ -148,7 +135,7 @@
     </li>
     <li class="item indicator" data-cy="search">
       <!-- svelte-ignore a11y-missing-attribute -->
-      <ConnectionStatusIndicator {peerState} />
+      <ConnectionStatusIndicator />
     </li>
     <li
       class="item indicator"
