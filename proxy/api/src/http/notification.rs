@@ -10,15 +10,15 @@ pub fn filters(ctx: context::Context, subscriptions: Subscriptions) -> BoxedFilt
     local_peer_status_stream(ctx, subscriptions)
 }
 
-/// `GET /local_peer_status`
+/// `GET /local_peer_events`
 pub fn local_peer_status_stream(
     ctx: context::Context,
     subscriptions: Subscriptions,
 ) -> BoxedFilter<(impl Reply,)> {
-    path!("local_peer_status")
+    path!("local_peer_events")
         .and(http::with_context(ctx))
         .and(warp::any().map(move || subscriptions.clone()))
-        .and_then(handler::local_peer_status)
+        .and_then(handler::local_peer_events)
         .boxed()
 }
 
@@ -31,11 +31,11 @@ mod handler {
 
     use crate::{
         context,
-        notification::{Notification, Subscriptions},
+        notification::{self, Notification, Subscriptions},
     };
 
-    /// Sets up peer status notification stream.
-    pub async fn local_peer_status(
+    /// Sets up local peer events notification stream.
+    pub async fn local_peer_events(
         ctx: context::Context,
         subscriptions: Subscriptions,
     ) -> Result<impl Reply, Rejection> {
@@ -43,15 +43,15 @@ mod handler {
         let current_status = peer_control.current_status().await;
         let subscriber = subscriptions.subscribe().await;
 
-        let initial = futures::stream::iter(vec![Notification::LocalPeerStatusChanged(
-            current_status.clone(),
-            current_status,
+        let initial = futures::stream::iter(vec![Notification::LocalPeer(
+            notification::LocalPeer::StatusChanged {
+                old: current_status.clone(),
+                new: current_status,
+            },
         )]);
         let filter = |notification: Notification| async move {
             match notification.clone() {
-                Notification::LocalPeerStatusChanged(_old, _new) => {
-                    Some(map_to_event(notification))
-                },
+                Notification::LocalPeer(event) => Some(map_to_event(event)),
             }
         };
 
@@ -62,32 +62,9 @@ mod handler {
 
     /// Helper for mapping [`Notification::LocalPeerStatusChanged`] events onto
     /// [`sse::ServerSentEvent`]s.
-    fn map_to_event(notification: Notification) -> Result<impl sse::ServerSentEvent, Infallible> {
-        match notification {
-            Notification::LocalPeerStatusChanged(_old, new) => {
-                Ok((sse::event("LOCAL_PEER_STATUS_CHANGED"), sse::json(new)))
-            },
-        }
-    }
-
-    #[allow(clippy::unwrap_used)]
-    #[cfg(test)]
-    mod test {
-        use warp::filters::sse;
-
-        use crate::notification;
-
-        #[test]
-        fn json_serialize() -> Result<(), Box<dyn std::error::Error>> {
-            sse::json(coco::PeerStatus::Started);
-
-            super::map_to_event(notification::Notification::LocalPeerStatusChanged(
-                coco::PeerStatus::Stopped,
-                coco::PeerStatus::Started,
-            ))
-            .unwrap();
-
-            Ok(())
-        }
+    fn map_to_event(
+        event: notification::LocalPeer,
+    ) -> Result<impl sse::ServerSentEvent, Infallible> {
+        Ok((sse::event(event.to_string()), sse::json(event)))
     }
 }
