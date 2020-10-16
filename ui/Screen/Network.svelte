@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { connectedPeers } from "../src/localPeer.ts";
+  import { connectedPeers } from "../src/localPeer";
 
   import Copyable from "../DesignSystem/Component/Copyable.svelte";
   import IconNetwork from "../DesignSystem/Primitive/Icon/Network.svelte";
