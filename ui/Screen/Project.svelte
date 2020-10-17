@@ -1,10 +1,17 @@
 <script>
+  import { getContext } from "svelte";
+
   import { isExperimental, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
-  import { checkout, fetch, project as store } from "../src/project.ts";
+  import {
+    checkout,
+    fetch,
+    isMaintainer,
+    project as store,
+  } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
   import {
     commits as commitsStore,
@@ -16,6 +23,7 @@
     resetCurrentPeerId,
     revisions as revisionsStore,
   } from "../src/source.ts";
+  import { CSSPosition } from "../src/style.ts";
 
   import {
     Header,
@@ -23,6 +31,7 @@
     Remote,
     RevisionSelector,
     SidebarLayout,
+    Tooltip,
     TrackToggle,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
@@ -48,6 +57,9 @@
 
   export let params = null;
   const projectId = params.id;
+  const session = getContext("session");
+  const trackTooltipMaintainer = "You can't unfollow your own project";
+  const trackTooltip = "Unfollowing is not yet supported";
 
   // Reset some stores on first load
   resetCurrentRevision();
@@ -167,7 +179,11 @@
               on:select={() => {
                 resetCurrentRevision();
               }} />
-            <TrackToggle disabled expanded tracking />
+            <Tooltip
+              position={CSSPosition.Left}
+              value={isMaintainer(project, session.identity.urn) ? trackTooltipMaintainer : trackTooltip}>
+              <TrackToggle blocked expanded tracking />
+            </Tooltip>
           </div>
         </div>
       </Header.Large>
