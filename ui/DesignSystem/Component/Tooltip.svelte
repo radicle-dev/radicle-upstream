@@ -15,8 +15,17 @@
   };
 
   const show = (_event: MouseEvent) => {
-    const containerRect = container!.getBoundingClientRect();
-    const messageRect = message!.getBoundingClientRect();
+    if (!container) {
+      console.error("container element not present");
+      return;
+    }
+    if (!message) {
+      console.error("message element not present");
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const messageRect = message.getBoundingClientRect();
 
     tooltip = {
       className: Visibility.Visible,
