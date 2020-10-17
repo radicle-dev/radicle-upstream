@@ -56,6 +56,13 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     assert_eq!(have, want);
 
+    // Assert maintainer was replicated as well.
+    {
+        let have = bob_state.get_user(alice.urn()).await?;
+        let want = alice_state.get_user(alice.urn()).await?;
+        assert_eq!(have, want);
+    }
+
     Ok(())
 }
 

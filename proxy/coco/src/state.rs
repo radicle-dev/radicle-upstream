@@ -156,16 +156,30 @@ impl State {
         addr_hints: Addrs,
     ) -> Result<RadUrn, Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
+        Addrs: IntoIterator<Item = SocketAddr> + Clone + Send + 'static,
     {
-        Ok(self
-            .api
-            .with_storage(move |storage| {
-                let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addr_hints)?;
-                repo.set_rad_self(storage::RadSelfSpec::Default)?;
-                Ok::<_, repo::Error>(repo.urn)
-            })
-            .await??)
+        let project_urn = {
+            let url = url.clone();
+            let addrs = addr_hints.clone();
+
+            self.api
+                .with_storage(move |storage| {
+                    let repo = storage.clone_repo::<librad_project::ProjectInfo, _>(url, addrs)?;
+                    repo.set_rad_self(storage::RadSelfSpec::Default)?;
+                    Ok::<_, repo::Error>(repo.urn)
+                })
+                .await??
+        };
+
+        let project = self.get_project(project_urn.clone(), None).await?;
+
+        for user_urn in project.maintainers() {
+            let addrs = addr_hints.clone();
+            let user_url = user_urn.clone().into_rad_url(url.clone().authority);
+            self.clone_user(user_url, addrs).await?;
+        }
+
+        Ok(project_urn)
     }
 
     /// Get the project found at `urn`.
