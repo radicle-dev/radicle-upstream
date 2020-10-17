@@ -401,7 +401,8 @@ impl<T, D> WaitingRoom<T, D> {
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
                 request.elapsed(timestamp.clone()) >= self.config.delta.clone()
-                    && request.attempts().clones == Clones::new(0)
+                    || (request.attempts().clones == Clones::new(0)
+                        && request.attempts().queries == Queries::new(0))
             });
 
         created.or(requested).map(|(urn, _request)| urn)
@@ -643,10 +644,10 @@ mod test {
     #[test]
     fn cloning_fails_back_to_requested() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 5;
-        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config {
             max_queries: Queries::new(1),
             max_clones: Clones::new(NUM_CLONES),
-            delta: (),
+            delta: 5,
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -660,16 +661,22 @@ mod test {
             });
         }
 
-        let _ = waiting_room.request(&urn, ());
-        waiting_room.queried(&urn, ())?;
+        let _ = waiting_room.request(&urn, 0);
+        waiting_room.queried(&urn, 1)?;
 
         for url in peers {
-            waiting_room.found(url.clone(), ())?;
-            waiting_room.cloning(url.clone(), ())?;
-            waiting_room.cloning_failed(url, ())?;
+            waiting_room.found(url.clone(), 2)?;
+            waiting_room.cloning(url.clone(), 2)?;
+            waiting_room.cloning_failed(url, 2)?;
         }
 
         assert_matches!(waiting_room.get(&urn), Some(SomeRequest::Requested(_)));
+
+        let request = waiting_room.next_query(3);
+        assert_eq!(request, None);
+
+        let request = waiting_room.next_query(7);
+        assert_eq!(request, Some(urn));
 
         Ok(())
     }
