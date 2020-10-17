@@ -401,8 +401,6 @@ impl<T, D> WaitingRoom<T, D> {
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
                 request.elapsed(timestamp.clone()) >= self.config.delta.clone()
-                    || (request.attempts().clones == Clones::new(0)
-                        && request.attempts().queries == Queries::new(0))
             });
 
         created.or(requested).map(|(urn, _request)| urn)
