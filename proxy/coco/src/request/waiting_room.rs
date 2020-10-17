@@ -401,7 +401,7 @@ impl<T, D> WaitingRoom<T, D> {
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
                 request.elapsed(timestamp.clone()) >= self.config.delta.clone()
-                    || request.attempts().clones == Clones::new(0)
+                    && request.attempts().clones == Clones::new(0)
             });
 
         created.or(requested).map(|(urn, _request)| urn)
@@ -526,6 +526,34 @@ mod test {
             request,
             Some(SomeRequest::Requested(Request::new(urn, ()).request(())))
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn timeout_on_delta() -> Result<(), Box<dyn std::error::Error>> {
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config {
+            delta: 5,
+            ..Config::default()
+        });
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let _ = waiting_room.request(&urn, 0);
+
+        // Initial schedule to be querying after it has been requested.
+        let request = waiting_room.next_query(1);
+        assert_eq!(request, Some(urn.clone()));
+
+        waiting_room.queried(&urn, 2)?;
+
+        // Should not return the urn again before delta has elapsed.
+        let request = waiting_room.next_query(3);
+        assert_eq!(request, None);
+
+        // Should return the urn again after delta has elapsed.
+        let request = waiting_room.next_query(7);
+        assert_eq!(request, Some(urn));
 
         Ok(())
     }
