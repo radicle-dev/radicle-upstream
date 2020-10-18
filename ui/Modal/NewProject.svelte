@@ -6,8 +6,6 @@
   import { Variant as IllustrationVariant } from "../src/illustration";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
-  import * as remote from "../src/remote";
-  import * as urn from "../src/urn";
   import {
     clearLocalState,
     create,
@@ -19,10 +17,13 @@
     repositoryPathValidationStore,
     RepoType,
   } from "../src/project";
-  import { ValidationStatus } from "../src/validation";
+  import * as remote from "../src/remote";
   import * as screen from "../src/screen";
-  import type { Settings } from "../src/settings";
   import { dismissRemoteHelperHint, settings } from "../src/session";
+  import type { Settings } from "../src/settings";
+  import { CSSPosition } from "../src/style";
+  import * as urn from "../src/urn";
+  import { ValidationStatus } from "../src/validation";
 
   import { Button, Flex, Input } from "../DesignSystem/Primitive";
   import {
@@ -32,7 +33,6 @@
     RemoteHelperHint,
     Tooltip,
   } from "../DesignSystem/Component";
-  import { CSSPosition } from "../src/style";
 
   let currentSelection: RepoType;
   let nameInput: HTMLInputElement;
@@ -55,6 +55,8 @@
     currentSelection = type;
     // Reset the name validation on selection switch
     nameValidation = nameValidationStore();
+    newRepositoryPath = "";
+    existingRepositoryPath = "";
   };
 
   const createProject = async () => {
@@ -102,15 +104,16 @@
   $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0))
     pathValidation.validate(repositoryPath);
 
-  $: {
-    if (name.length > 0) {
-      name = formatNameInput(name);
-      nameValidation.validate(name);
-    }
+  $: if (name.length > 0) {
+    name = formatNameInput(name);
+    nameValidation.validate(name);
   }
 
   // Use the directory name for existing projects as the project name.
-  $: name = extractName(existingRepositoryPath);
+  $: if (existingRepositoryPath.length > 0) {
+    name = extractName(existingRepositoryPath);
+    nameValidation.validate(name);
+  }
 
   // Reset the project name when switching between new and existing repo.
   $: isExisting && (name = "");
