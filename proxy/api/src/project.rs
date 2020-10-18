@@ -124,8 +124,9 @@ impl Projects {
         };
         for project in state.list_projects().await? {
             let refs = state.list_owner_project_refs(project.urn()).await?;
+            let default_branch = state.find_default_branch(project.urn()).await?;
             let project = state
-                .with_browser(project.urn(), |browser| {
+                .with_browser(default_branch, |browser| {
                     let project_stats = browser.get_stats()?;
                     Ok((project, project_stats).into())
                 })
@@ -217,8 +218,9 @@ impl Iterator for IntoIter {
 ///   * Failed to get the stats of the project.
 pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Project, error::Error> {
     let project = state.get_project(project_urn.clone(), None).await?;
+    let branch = state.find_default_branch(project_urn.clone()).await?;
     let project_stats = state
-        .with_browser(project_urn, |browser| Ok(browser.get_stats()?))
+        .with_browser(branch, |browser| Ok(browser.get_stats()?))
         .await?;
 
     Ok((project, project_stats).into())
@@ -246,14 +248,17 @@ pub async fn list_for_user(
     let mut projects = vec![];
 
     for project in state.list_projects().await? {
-        if state
+        let tracked = state
             .tracked(project.urn())
             .await?
             .into_iter()
-            .any(|(_, project_user)| project_user.urn() == *user)
-        {
+            .find(|(_, project_user)| project_user.urn() == *user);
+        if let Some((peer, _)) = tracked {
+            let branch = state
+                .get_branch(project.urn(), peer, project.default_branch().to_owned())
+                .await?;
             let proj = state
-                .with_browser(project.urn(), |browser| {
+                .with_browser(branch, |browser| {
                     let project_stats = browser.get_stats()?;
                     Ok((project, project_stats).into())
                 })

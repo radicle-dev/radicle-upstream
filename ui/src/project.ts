@@ -217,21 +217,18 @@ export const create = (input: CreateInput): Promise<Project> => {
 };
 
 interface CheckoutInput {
-  remote: string;
-  branch: string;
+  peerId?: string;
   path: string;
 }
 
 export const checkout = (
   id: string,
   path: string,
-  remote: string,
-  branch: string
+  peerId?: string
 ): Promise<boolean> => {
-  return api.post<CheckoutInput, boolean>(`projects/${id}`, {
-    branch,
+  return api.post<CheckoutInput, boolean>(`projects/${id}/checkout`, {
     path,
-    remote,
+    peerId,
   });
 };
 
@@ -293,8 +290,9 @@ export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
-export const formatNameInput = (input: string) => input.replace(" ", "-");
-export const extractName = (repoPath: string) =>
+export const formatNameInput = (input: string): string =>
+  input.replace(" ", "-");
+export const extractName = (repoPath: string): string =>
   repoPath.split("/").slice(-1)[0];
 
 const fetchBranches = async (path: string) => {

@@ -2,7 +2,7 @@
 
 use std::{
     collections::HashMap,
-    net::SocketAddr,
+    fmt,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -12,11 +12,47 @@ use std::{
 use serde::Serialize;
 use tokio::sync::{mpsc, RwLock};
 
+use coco::{convert::MaybeFrom, PeerEvent, PeerStatus};
+
 /// Significant events happening during proxy runtime.
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug)]
 pub enum Notification {
-    /// Our local peer started listening on a local socket.
-    LocalPeerListening(SocketAddr),
+    /// Event observed about the local peer.
+    LocalPeer(LocalPeer),
+}
+
+/// Event observed about the local peer.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum LocalPeer {
+    /// Transition between two statuses occurred.
+    #[serde(rename_all = "camelCase")]
+    StatusChanged {
+        /// The [`PeerStatus`] before.
+        old: PeerStatus,
+        /// The new [`PeerStatus`].
+        new: PeerStatus,
+    },
+}
+
+impl fmt::Display for LocalPeer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::StatusChanged { .. } => write!(f, "LOCAL_PEER_STATUS_CHANGED"),
+        }
+    }
+}
+
+#[allow(clippy::wildcard_enum_match_arm)]
+impl MaybeFrom<PeerEvent> for Notification {
+    fn maybe_from(event: PeerEvent) -> Option<Self> {
+        match event {
+            PeerEvent::StatusChanged(old, new) => {
+                Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
+            },
+            _ => None,
+        }
+    }
 }
 
 /// Manage active subscriptions and broadcast [`Notification`]s.
@@ -36,6 +72,11 @@ impl Subscriptions {
             .write()
             .await
             .retain(|_id, sender| sender.send(notification.clone()).is_ok());
+    }
+
+    /// Drop all stored senders, which terminates associated receivers and their streams.
+    pub async fn clear(&self) {
+        self.subs.write().await.clear();
     }
 
     /// Set up a new subscription, ready to receive [`Notification`].

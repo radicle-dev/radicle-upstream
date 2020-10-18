@@ -25,17 +25,23 @@
 
   const project = getContext("project");
 
-  // Reset some stores on first load
-  resetObjectPath();
-  resetObjectType();
+  const reset = () => {
+    resetObjectPath();
+    resetObjectType();
+  };
 
-  $: fetchObject({
-    path: $objectPath,
-    peerId: $currentPeerId,
-    projectId: project.id,
-    revision: $currentRevision,
-    type: $objectType,
-  });
+  // Reset some stores on first load
+  reset();
+
+  $: if ($currentPeerId) {
+    fetchObject({
+      path: $objectPath,
+      peerId: $currentPeerId,
+      projectId: project.id,
+      revision: $currentRevision,
+      type: $objectType,
+    });
+  }
 </script>
 
 <style>
@@ -80,15 +86,17 @@
 <div class="wrapper">
   <div class="container center-content">
     <div class="column-left">
-      <!-- Tree -->
-      <div class="source-tree" data-cy="source-tree">
-        <Folder
-          currentRevision={$currentRevision}
-          currentPeerId={$currentPeerId}
-          projectId={project.id}
-          toplevel
-          name={project.metadata.name} />
-      </div>
+      {#if $currentPeerId}
+        <!-- Tree -->
+        <div class="source-tree" data-cy="source-tree">
+          <Folder
+            currentRevision={$currentRevision}
+            currentPeerId={$currentPeerId}
+            projectId={project.id}
+            toplevel
+            name={project.metadata.name} />
+        </div>
+      {/if}
     </div>
 
     <div class="column-right">
@@ -126,6 +134,15 @@
             {/if}
           </Remote>
         {/if}
+        <div slot="error" let:error>
+          <EmptyState
+            headerText={error.message}
+            text="This file doesn't exist on this branch."
+            primaryActionText="Back to source"
+            illustration={IllustrationVariant.Eyes}
+            on:primaryAction={reset}
+            style="height: 320px;" />
+        </div>
       </Remote>
     </div>
   </div>

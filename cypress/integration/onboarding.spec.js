@@ -1,4 +1,4 @@
-context("identity creation", () => {
+context("onboarding", () => {
   const validUser = {
     handle: "rafalca",
     passphrase: "curled",
@@ -40,7 +40,7 @@ context("identity creation", () => {
 
       // Success screen.
       cy.pick("urn")
-        .contains(/rafalca@/)
+        .contains(/hwd[\w]{56}/)
         .should("exist");
 
       // Land on profile screen.
@@ -63,7 +63,7 @@ context("identity creation", () => {
 
       // Success screen.
       cy.pick("urn")
-        .contains(/rafalca@/)
+        .contains(/hwd[\w]{56}/)
         .should("exist");
 
       // Land on profile screen.
@@ -101,7 +101,7 @@ context("identity creation", () => {
       cy.pick("repeat-passphrase-input").type("1234");
       cy.pick("set-passphrase-button").click();
       cy.pick("urn")
-        .contains(/cloudhead@/)
+        .contains(/hwd[\w]{56}/)
         .should("exist");
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains("cloudhead");

@@ -15,6 +15,7 @@ export type ValidationState =
   | { status: ValidationStatus.Success };
 
 export interface ValidationStore extends Readable<ValidationState> {
+  reset: () => void;
   validate: (input: string) => void;
 }
 
@@ -58,8 +59,8 @@ interface FormatConstraints {
 validatejs.validators.firstHandleChar = (
   value: string,
   options: FirstHandleCharOptions,
-  _key: any,
-  _attributes: any
+  _key: unknown,
+  _attributes: unknown
 ) => {
   if (!value.match(new RegExp("^[a-z0-9]", "i"))) {
     return `Your ${options.valueName} should start with a letter or a number.`;
@@ -77,6 +78,11 @@ export const createValidationStore = (
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { subscribe, update } = internalStore;
   let inputStore: Writable<string> | undefined = undefined;
+
+  const reset = () => {
+    inputStore = undefined;
+    internalStore.set(initialState);
+  };
 
   const runValidations = async (input: string): Promise<void> => {
     // Always start with Loading
@@ -166,6 +172,7 @@ export const createValidationStore = (
   };
 
   return {
+    reset,
     subscribe,
     validate,
   };

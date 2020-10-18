@@ -6,6 +6,7 @@
   import {
     AdditionalActionsDropdown,
     Copyable,
+    ConnectionStatusIndicator,
     EmptyState,
     Dropdown,
     Illustration,
@@ -16,6 +17,7 @@
     Rad,
     Row,
     SegmentedControl,
+    ShareableIdentifier,
     Spinner,
     Stats,
     SupportButton,
@@ -275,7 +277,6 @@
 
   const identity = {
     id: "123abcd.git",
-    shareableEntityIdentifier: "cloudhead@123abcd.git",
     metadata: {
       handle: "cloudhead",
     },
@@ -1091,6 +1092,11 @@
       </Swatch>
 
       <Swatch>
+        <ShareableIdentifier
+          urn="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
+      </Swatch>
+
+      <Swatch>
         <Spinner />
         <TransactionSpinner state="positive" />
         <TransactionSpinner variant="small" />
@@ -1117,6 +1123,9 @@
         <EmptyState
           text="Hey, I'm a tent."
           illustration={IllustrationVariant.Tent} />
+      </Swatch>
+      <Swatch>
+        <ConnectionStatusIndicator />
       </Swatch>
     </Section>
   </div>

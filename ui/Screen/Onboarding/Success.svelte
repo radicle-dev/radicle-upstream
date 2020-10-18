@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Urn } from "../../DesignSystem/Component";
+  import { ShareableIdentifier } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
 
   export let id = null;
@@ -40,16 +40,13 @@
   <div class="content">
     <h1 style="text-align: center; margin-bottom: 1.5rem;">All set!</h1>
 
-    <Urn
-      urn={id}
-      showCopyOnlyOnHover
-      notificationText={`Radicle ID copied to your clipboard.`} />
+    <ShareableIdentifier urn={id} />
 
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
       color: var(--color-foreground-level-6);">
-      This is your Radicle ID — it's unique to you!<br /> Click to copy it and share
-      it with others so that they can find you.
+      This is your handle — it's unique to you!<br /> Click to copy it and share
+      with others so that they can find you.
     </p>
 
     <Button dataCy="go-to-profile-button" on:click={next}>

@@ -189,7 +189,7 @@ revisions.subscribe(store => {
 
 // Local stores
 export const objectType = writable(ObjectType.Tree);
-export const resetObjectType = () => objectType.set(ObjectType.Tree);
+export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = () => objectPath.set(null);
 

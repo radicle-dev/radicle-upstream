@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import Router from "svelte-spa-router";
   import { isExperimental, openPath } from "../../native/ipc.js";
 
@@ -97,8 +97,7 @@
       const path = await checkout(
         project.id,
         event.detail.checkoutDirectoryPath,
-        "PEER_ID_GOES_HERE",
-        "BRANCH_TO_CHECK_OUT_GOES_HERE"
+        peerId
       );
 
       notification.info(

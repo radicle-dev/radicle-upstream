@@ -25,10 +25,7 @@
 #![feature(hash_set_entry)]
 #![feature(or_patterns)]
 
-use std::{
-    net::SocketAddr,
-    time::{Duration, Instant},
-};
+use std::net::SocketAddr;
 
 pub use librad::{
     git::{include, local::url::LocalUrl},
@@ -50,6 +47,7 @@ pub use radicle_surf::{
 
 pub mod config;
 pub mod control;
+pub mod convert;
 pub mod git_helper;
 mod identifier;
 pub use identifier::Identifier;
@@ -57,10 +55,9 @@ pub mod keystore;
 pub mod oid;
 pub mod peer;
 pub use peer::{
-    AnnounceConfig, AnnounceEvent, Event as PeerEvent, Peer, RequestEvent, RunConfig, SyncConfig,
-    SyncEvent,
+    AnnounceConfig, Control as PeerControl, Event as PeerEvent, Peer, RunConfig,
+    Status as PeerStatus, SyncConfig,
 };
-pub mod shared;
 pub mod state;
 pub use state::State;
 pub mod project;
@@ -76,9 +73,12 @@ pub use source::{
     Revisions, Tag, Tree, TreeEntry,
 };
 
+mod spawn_abortable;
+pub use spawn_abortable::{Error as SpawnAbortableError, SpawnAbortable};
+
 pub mod user;
 
-/// Constructs a [`Peer`] and [`State`] pair from a [`PeerConfig`].
+/// Constructs a [`Peer`] and [`State`] pair from a [`net::peer::PeerConfig`].
 ///
 /// # Errors
 ///
@@ -88,7 +88,6 @@ pub async fn into_peer_state<I>(
     config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
     store: kv::Store,
-    waiting_room: shared::Shared<request::waiting_room::WaitingRoom<Instant, Duration>>,
     run_config: RunConfig,
 ) -> Result<(Peer, State), state::Error>
 where
@@ -98,7 +97,7 @@ where
     let (api, run_loop) = peer.accept()?;
 
     let state = State::new(api, signer);
-    let peer = Peer::new(run_loop, state.clone(), store, waiting_room, run_config);
+    let peer = Peer::new(run_loop, state.clone(), store, run_config);
 
     Ok((peer, state))
 }
