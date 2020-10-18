@@ -13,12 +13,10 @@
 
   import Projects from "./Profile/Projects.svelte";
   import Tracking from "./Profile/Tracking.svelte";
-  import Wallet from "./Profile/Wallet.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/projects": Projects,
-    "/profile/wallet": Wallet,
     "/profile/tracking": Tracking,
     "*": NotFound,
   };

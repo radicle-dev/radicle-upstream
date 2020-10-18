@@ -1,6 +1,7 @@
 <script>
+  import { Variant as IllustrationVariant } from "../src/illustration.ts";
   import * as notification from "../src/notification.ts";
-  import * as transaction from "../src/transaction.ts";
+  import { ValidationStatus } from "../src/validation.ts";
 
   import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
@@ -15,16 +16,12 @@
     Placeholder,
     ProjectCard,
     Rad,
-    Row,
     SegmentedControl,
     ShareableIdentifier,
     Spinner,
     Stats,
     SupportButton,
     TrackToggle,
-    TransactionCenter,
-    TransactionSpinner,
-    TransactionStatusbar,
     Tooltip,
     Urn,
   } from "../DesignSystem/Component";
@@ -34,8 +31,6 @@
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
   import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
   import ColorSwatch from "./DesignSystemGuide/ColorSwatch.svelte";
-  import { ValidationStatus } from "../src/validation.ts";
-  import { Variant as IllustrationVariant } from "../src/illustration.ts";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -114,176 +109,6 @@
     },
   ];
 
-  const transactions1 = [
-    {
-      id: "0a1b2c3a",
-      messages: [
-        {
-          type: transaction.MessageType.UserRegistration,
-          handle: "xla",
-          id: "xla@123abcd.git",
-        },
-      ],
-      state: {
-        type: transaction.StateType.Settled,
-        minConfirmations: 6,
-        timestamp: {
-          nanos: 0,
-          secs: 1589806729,
-        },
-      },
-    },
-    {
-      id: "0a1b2c3b",
-      messages: [
-        {
-          type: transaction.MessageType.OrgRegistration,
-          orgId: "monadic",
-        },
-      ],
-      state: {
-        type: transaction.StateType.Confirmed,
-        confirmations: 2,
-        minConfirmations: 6,
-        timestamp: {
-          nanos: 0,
-          secs: 1589806729,
-        },
-      },
-    },
-    {
-      id: "0a1b2c3c",
-      messages: [
-        {
-          type: transaction.MessageType.OrgRegistration,
-          orgId: "monadic",
-        },
-      ],
-      state: {
-        type: transaction.StateType.Pending,
-        timestamp: {
-          nanos: 0,
-          secs: 1589806729,
-        },
-      },
-    },
-    {
-      id: "0a1b2c3d",
-      messages: [
-        {
-          type: transaction.MessageType.MemberRegistration,
-          orgId: "monadic",
-          handle: "xla",
-        },
-      ],
-      state: {
-        type: transaction.StateType.Failed,
-        timestamp: {
-          nanos: 0,
-          secs: 1589806729,
-        },
-      },
-    },
-  ];
-
-  const transactions2 = [
-    {
-      id: "0a1b2c3a",
-      messages: [
-        {
-          type: transaction.MessageType.OrgRegistration,
-          orgId: "monadic",
-        },
-      ],
-      state: {
-        type: transaction.StateType.Pending,
-        timestamp: {
-          nanos: 0,
-          secs: 1589806729,
-        },
-      },
-    },
-    {
-      id: "0a1b2c3b",
-      messages: [
-        {
-          type: transaction.MessageType.ProjectRegistration,
-          domainType: "org",
-          domainId: "monadic",
-          projectName: "upstream",
-          cocId: "upstream@123abcd.git",
-        },
-      ],
-      state: {
-        type: transaction.StateType.Pending,
-        timestamp: {
-          nanos: 0,
-          secs: 1589806729,
-        },
-      },
-    },
-  ];
-
-  const transactions3 = [
-    {
-      id: "0a1b2c3a",
-      messages: [
-        {
-          type: transaction.MessageType.OrgRegistration,
-          orgId: "monadic",
-        },
-      ],
-      state: {
-        type: transaction.StateType.Settled,
-        minConfirmations: 6,
-        timestamp: {
-          nanos: 0,
-          secs: 1589806729,
-        },
-      },
-    },
-  ];
-
-  const orgs = [
-    {
-      id: "%monadic",
-      metadata: {
-        name: "monadic",
-      },
-      avatarFallback: {
-        emoji: "☔️",
-        background: {
-          b: 61,
-          g: 187,
-          r: 148,
-        },
-      },
-    },
-    {
-      id: "%sveltejs",
-      metadata: {
-        name: "sveltejs",
-      },
-      avatarFallback: {
-        emoji: "🚊",
-        background: {
-          b: 112,
-          g: 27,
-          r: 205,
-        },
-      },
-    },
-  ];
-
-  const identity = {
-    id: "123abcd.git",
-    metadata: {
-      handle: "cloudhead",
-    },
-    registered: null,
-    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" },
-  };
-
   const dropdownOptions1 = [
     { variant: "text", value: "1", title: "Option 1" },
     {
@@ -292,37 +117,6 @@
       title: "Longer option keeps going",
     },
     { variant: "text", value: "3", title: "Option 3" },
-  ];
-
-  const dropdownOptions2 = [
-    {
-      variant: "avatar",
-      value: "1",
-      avatarProps: {
-        variant: "circle",
-        title: identity.metadata.handle,
-        avatarFallback: identity.avatarFallback,
-        imageUrl: identity.imageUrl,
-      },
-    },
-    {
-      variant: "avatar",
-      value: "2",
-      avatarProps: {
-        variant: "square",
-        title: orgs[0].metadata.name,
-        avatarFallback: orgs[0].avatarFallback,
-      },
-    },
-    {
-      variant: "avatar",
-      value: "3",
-      avatarProps: {
-        variant: "square",
-        title: orgs[1].metadata.name,
-        avatarFallback: orgs[1].avatarFallback,
-      },
-    },
   ];
 
   const segmentedControlOptions = [
@@ -709,13 +503,6 @@
           options={dropdownOptions1}
           disabled={true} />
       </Swatch>
-
-      <Swatch>
-        <Dropdown
-          placeholder="Select domain..."
-          value="2"
-          options={dropdownOptions2} />
-      </Swatch>
     </Section>
 
     <h1 style="margin-bottom: 92px">Components</h1>
@@ -767,7 +554,6 @@
           style="margin-right: 16px"
           size="regular"
           variant="circle"
-          registered={true}
           avatarFallback={avatarFallback1}
           title="cloudhead" />
       </Swatch>
@@ -900,128 +686,7 @@
       </Swatch>
 
       <Swatch>
-        <ProjectCard
-          title="Radicle"
-          description="Best project in the world"
-          showRegisteredBadge={true} />
-      </Swatch>
-    </Section>
-
-    <Section title="Transaction" subTitle="Row, Accordion and Statusbar">
-      <Swatch>
-        <Row style="width:100%" disabled={false}>
-          <div slot="left">
-            <p class="typo-text-bold">Your Wallet</p>
-          </div>
-
-          <div slot="right">
-            <Avatar title="user" avatarFallback={avatarFallback1} />
-          </div>
-        </Row>
-      </Swatch>
-
-      <Swatch>
-        <div style="flex-direction: column; width: 100%">
-          <Row variant="top">
-            <div slot="left">
-              <p class="typo-text-bold">Cost 1</p>
-            </div>
-
-            <div slot="right">
-              <Rad rad={4} usd={4} />
-            </div>
-          </Row>
-          <Row variant="middle">
-            <div slot="left">
-              <p class="typo-text-bold">Cost 2</p>
-            </div>
-
-            <div slot="right">
-              <Rad rad={4} usd={4} />
-            </div>
-          </Row>
-          <Row variant="bottom">
-            <div slot="left">
-              <p class="typo-text-bold">Total</p>
-            </div>
-
-            <div slot="right">
-              <Rad rad={8} usd={8} size="big" />
-            </div>
-          </Row>
-        </div>
-      </Swatch>
-
-      <Swatch>
-        <div style="display: flex;">
-          <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionCenter
-              summary={transaction.summarizeTransactions(transactions1)}
-              transactions={transactions1}
-              style="position: absolute; bottom: 0; right: 0;" />
-          </div>
-          <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionCenter
-              summary={transaction.summarizeTransactions(transactions2)}
-              transactions={transactions2}
-              style="position: absolute; bottom: 0; right: 0;" />
-          </div>
-          <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionCenter
-              summary={transaction.summarizeTransactions(transactions3)}
-              transactions={transactions3}
-              style="position: absolute; bottom: 0; right: 0;" />
-          </div>
-        </div>
-      </Swatch>
-
-      <Swatch>
-        <div style="flex-direction: column; width: 100%">
-          <TransactionStatusbar
-            text={transaction.statusText({
-              type: transaction.StateType.Pending,
-              timestamp: {
-                nanos: 0,
-                secs: 1589806729,
-              },
-            })}
-            progress={0}
-            variant="caution"
-            style="margin-bottom: 5px;" />
-          <TransactionStatusbar
-            text={transaction.statusText({
-              type: transaction.StateType.Confirmed,
-              confirmations: 2,
-              minConfirmations: 6,
-              timestamp: {
-                nanos: 0,
-                secs: 1589806729,
-              },
-            })}
-            progress={(2 / 6) * 100}
-            variant="caution"
-            style="margin-bottom: 5px;" />
-          <TransactionStatusbar
-            text={transaction.statusText({
-              type: transaction.StateType.Failed,
-              timestamp: {
-                nanos: 0,
-                secs: 1585819617,
-              },
-            })}
-            variant="negative"
-            style="margin-bottom: 5px;" />
-          <TransactionStatusbar
-            text={transaction.statusText({
-              type: transaction.StateType.Settled,
-              minConfirmations: 6,
-              timestamp: {
-                nanos: 0,
-                secs: 1585819617,
-              },
-            })}
-            variant="positive" />
-        </div>
+        <ProjectCard title="Radicle" description="Best project in the world" />
       </Swatch>
     </Section>
 
@@ -1098,15 +763,6 @@
 
       <Swatch>
         <Spinner />
-        <TransactionSpinner state="positive" />
-        <TransactionSpinner variant="small" />
-        <TransactionSpinner />
-        <TransactionSpinner progress={(1 / 6) * 100} />
-        <TransactionSpinner progress={(2 / 6) * 100} />
-        <TransactionSpinner state="negative" progress={(2 / 6) * 100} rotate />
-        <TransactionSpinner state="negative" progress={(4 / 6) * 100} />
-        <TransactionSpinner state="negative" progress={100} />
-        <TransactionSpinner state="negative" />
       </Swatch>
 
       <Swatch>

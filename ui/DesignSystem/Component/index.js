@@ -39,13 +39,7 @@ import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
-import Transaction from "./Transaction.svelte";
-import TransactionCenter from "./Transaction/Center.svelte";
-import TransactionSpinner from "./Transaction/Spinner.svelte";
-import TransactionStatusbar from "./Transaction/Statusbar.svelte";
-import Row from "./Transaction/Row.svelte";
 import Urn from "./Urn.svelte";
-import Wallet from "./Wallet.svelte";
 import QR from "./QR.svelte";
 
 export {
@@ -80,7 +74,6 @@ export {
   Remote,
   RemoteHelperHint,
   RevisionSelector,
-  Row,
   SegmentedControl,
   ShareableIdentifier,
   Sidebar,
@@ -91,11 +84,6 @@ export {
   Tooltip,
   Topbar,
   TrackToggle,
-  Transaction,
-  TransactionCenter,
-  TransactionSpinner,
-  TransactionStatusbar,
   Urn,
-  Wallet,
   QR,
 };

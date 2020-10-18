@@ -1,38 +1,14 @@
-import * as org from "../org";
 import * as project from "../project";
 import * as session from "../session";
 import * as settings from "../settings";
 import * as source from "../source";
-import * as user from "../user";
 
 type MockedResponse =
-  | org.Org
   | project.Project
   | project.Project[]
   | session.Session
   | source.LocalState
-  | user.User
   | null;
-
-// just to give an idea of how we'd stub the api with other endpoints
-const userMock: user.User = {
-  handle: "rafalca",
-};
-
-export const orgMock: org.Org = {
-  id: "radicle",
-  accountId: "5EEAHNstTd1QGN3889TZNZ24U3PVVEvDbRp8S7FyUwmN2LtN",
-  shareableEntityIdentifier: "radicle@123abcd.git",
-  avatarFallback: {
-    background: {
-      r: 255,
-      g: 67,
-      b: 34,
-    },
-    emoji: "🔥",
-  },
-  members: [userMock],
-};
 
 export const upstreamProjectMock: project.Project = {
   id: "%rad:git:hwd1yregn1xe4krjs5h7ag5ceut9rwmjssr8e8t4pw6nrwdxgc761o3x4sa",
@@ -92,13 +68,6 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
   let response: MockedResponse;
 
   switch (prefix) {
-    case "orgs":
-      response = param === "radicle" ? orgMock : null;
-      break;
-    //
-    case "user":
-      response = userMock;
-      break;
     case "projects":
       response =
         param === "contributed"
