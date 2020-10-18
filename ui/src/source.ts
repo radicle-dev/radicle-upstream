@@ -191,7 +191,7 @@ revisions.subscribe(store => {
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
-export const resetObjectPath = () => objectPath.set(null);
+export const resetObjectPath = (): void => objectPath.set(null);
 
 export const currentRevision = writable<Branch | Tag | undefined>(undefined);
 currentRevision.subscribe(revision => {
@@ -201,10 +201,10 @@ currentRevision.subscribe(revision => {
   }
 });
 
-export const resetCurrentRevision = () => currentRevision.set(undefined);
+export const resetCurrentRevision = (): void => currentRevision.set(undefined);
 
 export const currentPeerId = writable<string | undefined>(undefined);
-export const resetCurrentPeerId = () =>
+export const resetCurrentPeerId = (): void =>
   updateCurrentPeerId({ peerId: undefined });
 
 // EVENTS
