@@ -6,7 +6,7 @@
   import { Icon } from "../Primitive";
   import Hoverable from "./Hoverable.svelte";
 
-  export let blocked: boolean = false;
+  export let disabled: boolean = false;
   export let expanded: boolean = false;
   export let tracking: boolean = false;
   export let style = "";
@@ -17,13 +17,13 @@
   let active: boolean = false;
 
   const down = () => {
-    if (blocked) return;
+    if (disabled) return;
 
     active = true;
   };
 
   const up = () => {
-    if (blocked) return;
+    if (disabled) return;
 
     active = false;
     tracking = !tracking;
@@ -111,7 +111,7 @@
   .left.tracking.warning.hover :global(svg) {
     fill: var(--color-background);
   }
-  .blocked {
+  .disabled {
     cursor: not-allowed;
   }
 </style>
@@ -119,28 +119,28 @@
 <Hoverable let:hovering={hover}>
   <div
     class:active
-    class:hover={hover && !blocked}
+    class:hover={hover && !disabled}
     class:tracking
     class:warning
     class="toggle"
     {style}
     on:mousedown={() => {
-      !blocked && down();
+      !disabled && down();
     }}
     on:mouseup={() => {
-      !blocked && up();
+      !disabled && up();
     }}>
     <div
       class="left"
       class:active
-      class:blocked
-      class:hover={hover && !blocked}
+      class:disabled
+      class:hover={hover && !disabled}
       class:tracking
       class:warning>
       {#if !tracking}
         <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Follow</p>
-      {:else if hover && !blocked}
+      {:else if hover && !disabled}
         <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Unfollow</p>
       {:else if expanded}
