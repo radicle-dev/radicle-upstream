@@ -97,7 +97,7 @@
       const path = await checkout(
         project.id,
         event.detail.checkoutDirectoryPath,
-        peerId
+        $currentPeerId
       );
 
       notification.info(
