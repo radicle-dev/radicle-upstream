@@ -14,7 +14,7 @@
     title: project.metadata.name,
     description: project.metadata.description,
     showRegisteredBadge: !!project.registration,
-    showMaintainerBadge: isMaintainer(project, urn),
+    showMaintainerBadge: isMaintainer(urn, project),
   });
 </script>
 
