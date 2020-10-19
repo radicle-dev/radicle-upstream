@@ -6,28 +6,26 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as notification from "./notification";
 import * as remote from "./remote";
-import { Appearance, CoCo, Settings } from "./settings";
+import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 
 // TYPES
 
 export interface Session {
-  identity?: identity.Identity;
+  identity: identity.Identity;
   settings: Settings;
 }
 
 // STATE
-const sessionStore = remote.createStore<Session>();
+const sessionStore = remote.createStore<Session | null>();
 export const session = sessionStore.readable;
 
-export const settings: Readable<Settings | null> = derived(
-  sessionStore,
-  sess => {
-    if (sess.status === remote.Status.Success) {
-      return sess.data.settings;
-    }
-    return null;
+export const settings: Readable<Settings> = derived(sessionStore, sess => {
+  if (sess.status === remote.Status.Success && sess.data) {
+    return sess.data.settings;
+  } else {
+    return defaultSetttings();
   }
-);
+});
 
 // EVENTS
 enum Kind {
@@ -59,6 +57,13 @@ type Msg = Clear | ClearCache | Fetch | UpdateSettings;
 const fetchSession = (): Promise<void> =>
   api
     .get<Session>(`session`)
+    .catch(error => {
+      if (error instanceof api.ResponseError && error.response.status === 404) {
+        return null;
+      } else {
+        throw error;
+      }
+    })
     .then(sessionStore.success)
     .catch(sessionStore.error);
 

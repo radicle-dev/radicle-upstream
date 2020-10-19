@@ -60,8 +60,15 @@ mod handler {
     /// Fetch the [`session::Session`].
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
         let sess = session::current(ctx.state.clone(), &ctx.store).await?;
-
-        Ok(reply::json(&sess))
+        if sess.identity.is_some() {
+            Ok(reply::json(&sess).into_response())
+        } else {
+            Ok(warp::reply::with_status(
+                reply::json(&serde_json::Value::Null),
+                StatusCode::NOT_FOUND,
+            )
+            .into_response())
+        }
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.

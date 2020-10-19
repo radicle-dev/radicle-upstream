@@ -55,6 +55,21 @@ export const sessionMock: session.Session = {
       seeds: ["seed.radicle.xyz"],
     },
   },
+  identity: {
+    id: "foo",
+    metadata: {
+      handle: "bar",
+    },
+    avatarFallback: {
+      background: {
+        r: 0,
+        g: 0,
+        b: 0,
+      },
+      emoji: "",
+    },
+    shareableEntityIdentifier: "@aef",
+  },
 };
 
 export const localStateMock: source.LocalState = {

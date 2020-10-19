@@ -56,7 +56,7 @@
       break;
 
     case remote.Status.Success:
-      if ($store.data.identity === null) {
+      if ($store.data === null) {
         hotkeys.disable();
         push(path.onboarding());
       } else {

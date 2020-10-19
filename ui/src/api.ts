@@ -11,6 +11,24 @@ interface Init extends Options {
   query?: Record<string, unknown>;
 }
 
+export class ResponseError extends Error {
+  public response;
+  constructor(response: Response, body_: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = body_;
+    if (
+      typeof body === "object" &&
+      body !== null &&
+      typeof body.message === "string"
+    ) {
+      super(body.message);
+    } else {
+      super("Response error");
+    }
+    this.response = response;
+  }
+}
+
 const request = (endpoint: string, init?: Init): Request => {
   if (init !== undefined && init.query !== undefined) {
     endpoint = `${endpoint}?${qs.stringify(init.query)}`;
@@ -30,7 +48,7 @@ const http = async <T>(req: RequestInfo): Promise<T> => {
 
   // For non-success status codes we throw the body as it carries the error type.
   if (!res.ok) {
-    throw body;
+    throw new ResponseError(res, body);
   }
 
   return body;
