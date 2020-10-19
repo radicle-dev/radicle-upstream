@@ -4,10 +4,10 @@
   import { Button, Icon, Input } from "../../../Primitive";
   import { Remote, TxButton } from "../../../Component";
 
-  import * as notification from "../../../../src/notification";
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as _pool from "../../../../src/funding/pool";
+
   import {
     amountStore,
     amountValidationStore,
@@ -33,10 +33,11 @@
 
   let monthlyContribution = "";
   let validatingAmount = false;
+  $: amountValidation = amountValidationStore(data ? data.balance : 0);
   $: amountStore.set(monthlyContribution ? monthlyContribution.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) amountValidationStore.validate($amountStore);
+    if (validatingAmount) amountValidation.validate($amountStore);
   }
 
   // Necessary type to comply with Textarea.bind:value type.
@@ -49,8 +50,8 @@
   }
 
   $: saveMonthlyContributionEnabled =
-    $amountValidationStore &&
-    $amountValidationStore.status === ValidationStatus.Success &&
+    $amountValidation &&
+    $amountValidation.status === ValidationStatus.Success &&
     data &&
     monthlyContribution.valueOf() !== data.amountPerBlock.valueOf();
 
@@ -146,7 +147,7 @@
             placeholder="Enter the amount"
             bind:value={monthlyContribution}
             showLeftItem
-            validation={$amountValidationStore}
+            validation={$amountValidation}
             style="max-width: 150px; margin-left: 10px;">
             <div slot="left" style="position: absolute; top: 9px; left: 10px;">
               <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />

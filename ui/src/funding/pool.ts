@@ -1,17 +1,19 @@
-import { writable } from "svelte/store";
+import * as svelteStore from "svelte/store";
 import { PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/PoolFactory";
 import { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
 import * as validation from "../validation";
 
-import { Wallet } from "../wallet";
+import { Wallet, Account, Status } from "../wallet";
 import * as remote from "../remote";
 import { BigNumberish } from "ethers";
-import { intros } from "svelte/internal";
 
-export const store = writable<Pool | null>(null);
+export const store = svelteStore.writable<Pool | null>(null);
 
 export interface Pool {
   data: remote.Store<PoolData>;
+
+  // Get the account that owns this pool. Should be the connected wallet account.
+  getAccount: () => Account | undefined;
 
   // Update the contribution amount per block. Returns once the
   // transaction has been included in the chain.
@@ -52,7 +54,6 @@ export interface PoolData {
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
   const address = "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
-
   const poolContract: PoolContract = PoolFactory.connect(
     address,
     wallet.signer
@@ -79,6 +80,11 @@ export function make(wallet: Wallet): Pool {
     } catch (error) {
       data.error(error);
     }
+  }
+
+  function getAccount(): Account | undefined {
+    const w = svelteStore.get(wallet);
+    return w.status === Status.Connected ? w.connected.account : undefined;
   }
 
   async function updateAmountPerBlock(
@@ -129,6 +135,7 @@ export function make(wallet: Wallet): Pool {
 
   return {
     data,
+    getAccount,
     updateAmountPerBlock,
     updateReceiverAddresses,
     topUp,
@@ -139,8 +146,8 @@ export function make(wallet: Wallet): Pool {
 /**
  * Stores
  */
-export const membersStore = writable("");
-export const amountStore = writable("");
+export const membersStore = svelteStore.writable("");
+export const amountStore = svelteStore.writable("");
 
 /**
  *
@@ -177,9 +184,16 @@ export const membersValidationStore: validation.ValidationStore = validation.cre
   contraints.members
 );
 
-export const amountValidationStore: validation.ValidationStore = validation.createValidationStore(
-  contraints.amount
-);
+export const amountValidationStore = (
+  balance: BigNumberish
+): validation.ValidationStore => {
+  return validation.createValidationStore(contraints.amount, [
+    {
+      promise: amount => Promise.resolve(balance >= amount),
+      validationMessage: "Insufficient balance",
+    },
+  ]);
+};
 
 /* Temporary sketch code */
 

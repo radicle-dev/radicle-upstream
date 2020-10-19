@@ -93,10 +93,12 @@ export type State =
   | { status: Status.Connected; connected: Connected };
 
 export interface Connected {
-  account: {
-    address: string;
-    balance: string;
-  };
+  account: Account;
+}
+
+export interface Account {
+  address: string;
+  balance: string;
 }
 
 export interface Wallet extends svelteStore.Readable<State> {

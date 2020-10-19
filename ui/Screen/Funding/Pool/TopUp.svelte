@@ -18,18 +18,17 @@
   let validatingAmount = false;
   let amount: number;
 
+  const amountValidation = amountValidationStore(get(store).getAccount().balance);
   $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) amountValidationStore.validate($amountStore);
+    if (validatingAmount) amountValidation.validate($amountStore);
   }
   $: disableConfirmation =
-    $amountValidationStore &&
-    $amountValidationStore.status !== ValidationStatus.Success;
+    $amountValidation && $amountValidation.status !== ValidationStatus.Success;
 
   async function onConfirmed(): Promise<void> {
-    const pool = get(store);
-    await pool.topUp(amount);
+    await get(store).topUp(amount);
     pop();
     resolve();
   }
@@ -104,7 +103,7 @@
         bind:value={amount}
         showLeftItem
         autofocus
-        validation={$amountValidationStore}>
+        validation={$amountValidation}>
         <div slot="left" style="position: absolute; top: 9px; left: 10px;">
           <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
         </div>
