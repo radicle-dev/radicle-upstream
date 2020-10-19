@@ -1,4 +1,4 @@
-import { parse, stringify, ParsedQs } from "qs";
+import { parse, ParsedQs } from "qs";
 import regexparam from "regexparam";
 
 export const blank = (): string => "/";
@@ -11,29 +11,12 @@ export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
 export const profileTracking = (): string => "/profile/tracking";
 export const profileWallet = (): string => "/profile/wallet";
-export const registerUser = (): string => "/user-registration";
 export const onboarding = (): string => "/onboarding";
 
 export const userProfile = (urn: string): string => `/user/${urn}`;
 export const userProfileProjects = (urn: string): string =>
   `/user/${urn}/projects`;
 
-export const orgs = (id: string): string => `/orgs/${id}`;
-export const orgOnboard = (id: string): string => `/orgs/${id}/onboard`;
-export const orgRegistration = (): string => `/orgs/register`;
-export const orgProjects = (id: string): string => `/orgs/${id}/projects`;
-export const orgFund = (id: string): string => `/orgs/${id}/fund`;
-export const orgMembers = (id: string): string => `/orgs/${id}/members`;
-export const memberRegistration = (id: string): string =>
-  `/orgs/${id}/members/register`;
-
-export const sendFunds = (): string => "/send-funds";
-export const registerProject = (domainId: string): string =>
-  `/projects/register/${domainId}`;
-export const registerExistingProject = (
-  projectId: string,
-  domainId: string
-): string => `/projects/${projectId}/register/${domainId}`;
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>
@@ -51,9 +34,6 @@ export const parseQueryString = (querystring: string): ParsedQs => {
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
 export const projectCommits = (id: string): string => `/projects/${id}/commits`;
-
-export const transactions = (id: string, viewerAccountId: string): string =>
-  `/transactions/${id}?${stringify({ viewerAccountId })}`;
 
 export const designSystemGuide = (): string => "/design-system-guide";
 

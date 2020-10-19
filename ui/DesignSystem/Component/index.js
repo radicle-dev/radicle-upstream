@@ -22,7 +22,6 @@ import Overlay from "./Overlay.svelte";
 import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
-import Rad from "./Rad.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
@@ -39,13 +38,7 @@ import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
-import Transaction from "./Transaction.svelte";
-import TransactionCenter from "./Transaction/Center.svelte";
-import TransactionSpinner from "./Transaction/Spinner.svelte";
-import TransactionStatusbar from "./Transaction/Statusbar.svelte";
-import Row from "./Transaction/Row.svelte";
 import Urn from "./Urn.svelte";
-import Wallet from "./Wallet.svelte";
 import QR from "./QR.svelte";
 
 export {
@@ -73,14 +66,12 @@ export {
   Placeholder,
   ProjectCard,
   ProjectList,
-  Rad,
   RadicleLogo,
   RadioOption,
   Stats,
   Remote,
   RemoteHelperHint,
   RevisionSelector,
-  Row,
   SegmentedControl,
   ShareableIdentifier,
   Sidebar,
@@ -91,11 +82,6 @@ export {
   Tooltip,
   Topbar,
   TrackToggle,
-  Transaction,
-  TransactionCenter,
-  TransactionSpinner,
-  TransactionStatusbar,
   Urn,
-  Wallet,
   QR,
 };
