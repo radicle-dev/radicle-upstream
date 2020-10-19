@@ -13,9 +13,10 @@ export const profileTracking = (): string => "/profile/tracking";
 export const profileWallet = (): string => "/profile/wallet";
 export const onboarding = (): string => "/onboarding";
 
-export const userProfile = (urn: string): string => `/user/${urn}`;
-export const userProfileProjects = (urn: string): string =>
-  `/user/${urn}/projects`;
+export const userProfile = (peerId: string, urn: string): string =>
+  `/user/${urn}/${peerId}`;
+export const userProfileProjects = (peerId: string, urn: string): string =>
+  `/user/${urn}/${peerId}/projects`;
 
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;

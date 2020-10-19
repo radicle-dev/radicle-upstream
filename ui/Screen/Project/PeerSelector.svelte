@@ -12,6 +12,8 @@
   export let expanded = false;
   export let revisions = null;
 
+  console.log(revisions);
+
   let currentSelectedPeer;
 
   const session = getContext("session");
@@ -36,11 +38,11 @@
     expanded = false;
   };
 
-  const handleOpenProfile = urn => {
-    if (urn === session.identity.urn) {
+  const handleOpenProfile = identity => {
+    if (identity.urn === session.identity.urn) {
       push(path.profileProjects());
     } else {
-      push(path.userProfileProjects(urn));
+      push(path.userProfileProjects(identity.peerId, identity.urn));
     }
   };
 

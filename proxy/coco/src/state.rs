@@ -154,7 +154,7 @@ impl State {
         addr_hints: Addrs,
     ) -> Result<RadUrn, Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
+        Addrs: IntoIterator<Item = SocketAddr> + Clone + Send + 'static,
     {
         Ok(self
             .api
@@ -255,6 +255,20 @@ impl State {
             .await??)
     }
 
+    pub async fn get_contributor(
+        &self,
+        user_urn: RadUrn,
+        peer_id: PeerId,
+    ) -> Result<Option<user::User<entity::Draft>>, Error> {
+        // TODO(xla): Check for the right errors which should produce a non-existing user.
+        let user = self
+            .api
+            .with_storage(move |storage| storage.metadata_of(&user_urn, Some(peer_id)))
+            .await??;
+
+        Ok(Some(user))
+    }
+
     /// Returns the list of [`user::User`]s known for your peer.
     ///
     /// # Errors
@@ -296,7 +310,7 @@ impl State {
     ///   * Failed to clone the user.
     pub async fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
+        Addrs: IntoIterator<Item = SocketAddr> + Clone + Send + 'static,
     {
         Ok(self
             .api

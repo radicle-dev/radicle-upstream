@@ -1,6 +1,7 @@
-<script lang="ts">
+<script lang="typescript">
   import Router from "svelte-spa-router";
 
+  import { fetchContributor, contributor as store } from "../src/identity";
   import * as path from "../src/path";
 
   import {
@@ -10,11 +11,10 @@
     SidebarLayout,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
-  import { fetch, identity as store } from "../src/identity";
 
   import Projects from "./UserProfile/Projects.svelte";
   import NotFound from "./NotFound.svelte";
-  export let params: { urn: string };
+  export let params: { peerId: string; urn: string };
 
   const screenRoutes = {
     "/user/:urn/projects": Projects,
@@ -30,7 +30,7 @@
     },
   ];
 
-  $: fetch({ urn: params.urn });
+  $: fetchContributor({ peerId: params.peerId, urn: params.urn });
 </script>
 
 <SidebarLayout>

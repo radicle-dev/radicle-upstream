@@ -29,9 +29,13 @@ export const store = creationStore.readable;
 const identityStore = remote.createStore<Identity>();
 export const identity = identityStore.readable;
 
+const contributorStore = remote.createStore<Identity>();
+export const contributor = contributorStore.readable;
+
 // EVENTS
 enum Kind {
   Fetch = "FETCH",
+  FetchContributor = "FETCH_CONTRIBUTOR",
 }
 
 interface Fetch extends event.Event<Kind> {
@@ -39,7 +43,13 @@ interface Fetch extends event.Event<Kind> {
   urn: string;
 }
 
-type Msg = Fetch;
+interface FetchContributor extends event.Event<Kind> {
+  kind: Kind.FetchContributor;
+  peerId: string;
+  urn: string;
+}
+
+type Msg = Fetch | FetchContributor;
 
 interface CreateInput {
   handle: string;
@@ -47,6 +57,10 @@ interface CreateInput {
 }
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
+export const fetchContributor = event.create<Kind, Msg>(
+  Kind.FetchContributor,
+  update
+);
 
 function update(msg: Msg): void {
   switch (msg.kind) {
@@ -56,6 +70,15 @@ function update(msg: Msg): void {
         .get<Identity>(`identities/${msg.urn}`)
         .then(identityStore.success)
         .catch(identityStore.error);
+      break;
+
+    case Kind.FetchContributor:
+      contributorStore.loading();
+      api
+        .get<Identity>(`identities/${msg.urn}/${msg.peerId}`)
+        .then(contributorStore.success)
+        .catch(contributorStore.error);
+
       break;
   }
 }

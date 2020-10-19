@@ -9,15 +9,16 @@ use crate::{context, http};
 
 /// Combination of all routes.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    tracked_filter(ctx.clone())
+    checkout_filter(ctx.clone())
         .or(contributed_filter(ctx.clone()))
-        .or(user_filter(ctx.clone()))
-        .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(request_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
-        .or(track_filter(ctx))
+        .or(get_contributor_filter(ctx.clone()))
+        .or(request_filter(ctx.clone()))
+        .or(track_filter(ctx.clone()))
+        .or(tracked_filter(ctx.clone()))
+        .or(user_filter(ctx))
         .boxed()
 }
 
@@ -66,7 +67,7 @@ fn discover_filter(
         .and_then(handler::discover)
 }
 
-/// `GET /<id>`
+/// `GET /<urn>`
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -77,7 +78,20 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `PUT /request/<id>`
+/// `GET /<urn>/contributors/<peer_id>`
+fn get_contributor_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::get()
+        .and(http::with_context(ctx))
+        .and(path::param::<coco::Urn>())
+        .and(path("contributors"))
+        .and(path::param::<coco::PeerId>())
+        .and(path::end())
+        .and_then(handler::get_contributor)
+}
+
+/// `PUT /request/<urn>`
 fn request_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -189,9 +203,23 @@ mod handler {
         Ok(reply::json(&feed))
     }
 
-    /// Get the [`project::Project`] for the given `id`.
+    /// Get the [`project::Project`] for the given `urn`.
     pub async fn get(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
+    }
+
+    /// Get the [`coco::User`] for the given `urn` and `pper_id` if it exists.
+    pub async fn get_contributor(
+        ctx: context::Context,
+        urn: coco::Urn,
+        peer_id: coco::PeerId,
+    ) -> Result<impl Reply, Rejection> {
+        let user = ctx
+            .state
+            .get_contributor(urn, peer_id)
+            .await
+            .map_err(Error::from)?;
+        Ok(reply::json(&user))
     }
 
     /// List all projects the current user has contributed to.
