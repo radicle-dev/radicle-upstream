@@ -327,3 +327,9 @@ export const repositoryPathValidationStore = (
     );
   }
 };
+
+// Checks if the provided user is part of the maintainer list of the project.
+// FIXME(xla): Urns should be properly typed.
+export const isMaintainer = (userUrn: string, project: Project): boolean => {
+  return project.metadata.maintainers.includes(userUrn);
+};

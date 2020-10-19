@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Project } from "../../src/project";
+  import { isMaintainer } from "../../src/project";
 
   import { Flex } from "../Primitive";
   import List from "./List.svelte";
@@ -12,7 +13,7 @@
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
     description: project.metadata.description,
-    showMaintainerBadge: project.metadata.maintainers.includes(urn),
+    showMaintainerBadge: isMaintainer(urn, project),
   });
 </script>
 
