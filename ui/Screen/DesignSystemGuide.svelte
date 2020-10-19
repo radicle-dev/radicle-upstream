@@ -15,7 +15,6 @@
     Notification,
     Placeholder,
     ProjectCard,
-    Rad,
     SegmentedControl,
     ShareableIdentifier,
     Spinner,
@@ -693,26 +692,6 @@
     <Section title="Misc" subTitle="Everything else">
       <Swatch>
         <Placeholder style="width: 300px; height: 100px" />
-      </Swatch>
-
-      <Swatch>
-        <Rad rad="200" usd="2" />
-      </Swatch>
-
-      <Swatch>
-        <Rad rad="200" usd="2" variant="debit" />
-      </Swatch>
-
-      <Swatch>
-        <Rad rad="10" usd="0.1" />
-      </Swatch>
-
-      <Swatch>
-        <Rad rad="20" usd="2" />
-      </Swatch>
-
-      <Swatch>
-        <Rad rad="20" usd="2" />
       </Swatch>
 
       <Swatch>
