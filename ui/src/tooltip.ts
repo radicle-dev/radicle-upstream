@@ -15,8 +15,6 @@ export const calculatePosition = (
   container: DOMRect,
   message: DOMRect
 ): Position => {
-  const offsetY = container.height < 32 ? (32 - container.height) / 2 : 0;
-
   switch (position) {
     case CSSPosition.Top:
       return {
@@ -27,7 +25,7 @@ export const calculatePosition = (
     case CSSPosition.Right:
       return {
         x: container.right + 8,
-        y: container.top - offsetY,
+        y: container.top + container.height / 2 - 16,
       };
 
     case CSSPosition.Bottom:
