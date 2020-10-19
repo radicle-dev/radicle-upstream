@@ -164,6 +164,7 @@
         position: absolute; top: 8px; right: 10px;" />
     {:else if validation && validation.status === Status.Error}
       <Icon.ExclamationCircle
+        dataCy="validation-error-icon"
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
       <div class="validation-row">
