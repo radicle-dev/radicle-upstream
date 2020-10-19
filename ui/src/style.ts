@@ -9,8 +9,8 @@ export type ButtonVariant =
   | "destructive";
 
 export enum CSSPosition {
+  Top = "top",
   Right = "right",
   Bottom = "bottom",
-  Top = "top",
   Left = "left",
 }
