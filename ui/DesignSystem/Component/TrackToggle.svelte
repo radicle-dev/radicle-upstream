@@ -17,10 +17,14 @@
   let active: boolean = false;
 
   const down = () => {
+    if (disabled) return;
+
     active = true;
   };
 
   const up = () => {
+    if (disabled) return;
+
     active = false;
     tracking = !tracking;
     dispatch(tracking ? track.Event.Track : track.Event.Untrack);
@@ -108,7 +112,7 @@
     fill: var(--color-background);
   }
   .disabled {
-    cursor: auto;
+    cursor: not-allowed;
   }
 </style>
 
