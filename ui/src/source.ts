@@ -246,6 +246,8 @@ const update = (msg: Msg): void => {
       break;
 
     case Kind.FetchRevisions:
+      revisionsStore.loading();
+
       api
         .get<Revisions>(`source/revisions/${msg.projectId}`)
         .then(revisions => revisionsStore.success(revisions))
