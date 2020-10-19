@@ -21,7 +21,6 @@ export type Avatar = EmojiAvatar | RemoteAvatar;
 export enum Usage {
   Any = "any",
   Identity = "identity",
-  Org = "org",
 }
 
 // EVENTS

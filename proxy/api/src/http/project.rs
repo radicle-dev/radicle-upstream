@@ -113,7 +113,7 @@ fn tracked_filter(
         .and_then(handler::list_tracked)
 }
 
-/// `GET /user/<id>`
+/// `GET /user/<urn>`
 fn user_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
