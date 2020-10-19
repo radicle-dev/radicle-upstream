@@ -14,8 +14,7 @@ async fn can_observe_timers() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
-    let (alice_peer, _alice_state, _alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let (alice_peer, _alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
 
     let alice_events = alice_peer.subscribe();
 
