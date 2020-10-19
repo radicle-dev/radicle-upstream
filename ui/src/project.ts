@@ -2,13 +2,9 @@ import { get, writable } from "svelte/store";
 
 import * as api from "./api";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
-import * as currency from "./currency";
 import * as event from "./event";
-import * as org from "./org";
 import * as remote from "./remote";
 import { getLocalState, LocalState } from "./source";
-import * as transaction from "./transaction";
-import * as user from "./user";
 import * as validation from "./validation";
 
 // TYPES.
@@ -48,23 +44,9 @@ export interface Project {
   shareableEntityIdentifier: string;
   metadata: Metadata;
   stats: Stats;
-  registration?: org.Org | user.User;
 }
 
 type Projects = Project[];
-
-// The domain under which a registered project falls
-export enum Domain {
-  User = "user",
-  Org = "org",
-}
-
-export interface Registered {
-  domainType: Domain;
-  domainId: string;
-  name: string;
-  maybeProjectId?: string;
-}
 
 // STATE
 const creationStore = remote.createStore<Project>();
@@ -142,11 +124,6 @@ interface CreateInput {
   defaultBranch: string;
 }
 
-interface RegisterInput {
-  transactionFee: currency.MicroRad;
-  maybeCocoId?: string;
-}
-
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.ClearLocalState:
@@ -222,40 +199,6 @@ export const checkout = (
     path,
     peerId,
   });
-};
-
-export const getOrgProject = (
-  orgId: string,
-  projectName: string
-): Promise<Registered> => {
-  return api.get<Registered>(`orgs/${orgId}/projects/${projectName}`);
-};
-
-// Resolve the api base for the given project domain
-const apiBase = (domain: Domain): string => {
-  switch (domain) {
-    case Domain.Org:
-      return "orgs";
-    case Domain.User:
-      return "users";
-  }
-};
-
-export const register = (
-  domainType: Domain,
-  domainId: string,
-  projectName: string,
-  transactionFee: currency.MicroRad,
-  maybeCocoId?: string
-): Promise<transaction.Transaction> => {
-  const base = apiBase(domainType);
-  return api.post<RegisterInput, transaction.Transaction>(
-    `${base}/${domainId}/projects/${projectName}`,
-    {
-      transactionFee,
-      maybeCocoId,
-    }
-  );
 };
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
