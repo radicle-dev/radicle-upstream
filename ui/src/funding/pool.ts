@@ -92,7 +92,21 @@ export function make(wallet: Wallet): Pool {
   ): Promise<void> {
     await poolContract
       .setAmountPerBlock(amountPerBlock)
-      .then(tx => tx.wait())
+      .then(tx => {
+        const _tx: Tx = {
+          hash: tx.hash,
+          status: tx.blockNumber
+            ? TxStatus.Included
+            : TxStatus.AwaitingInclusion,
+          inner: {
+            kind: PoolTxKind.UpdateMonthlyContribution,
+            amount: tx.value,
+          },
+        };
+        addTx(_tx);
+        console.log("Added tx with hash", _tx.hash);
+        tx.wait();
+      })
       .finally(loadPoolData);
   }
 
@@ -199,13 +213,13 @@ export const amountValidationStore = (
 
 enum TxStatus {
   // The transaction is pending user approval on their waLlet app.
-  PendingApproval,
+  PendingApproval = "Pending Approval",
   // The transaction as been approved and is awaiting to be included in a block.
-  AwaitingInclusion,
+  AwaitingInclusion = "Awaiting inclusion",
   // The transaction as been included in the block. End of its life cycle.
-  Included,
+  Included = "Included",
   // The transaction as been rejected.
-  Rejected,
+  Rejected = "Rejected",
 }
 
 enum PoolTxKind {
@@ -217,24 +231,24 @@ enum PoolTxKind {
 
 interface TopUp {
   kind: PoolTxKind.TopUp;
-  amount: string;
+  amount: BigNumberish;
 }
 
 interface CollectFunds {
   kind: PoolTxKind.CollectFunds;
-  amount: string;
+  amount: BigNumberish;
 }
 
 interface UpdateMonthlyContribution {
   kind: PoolTxKind.UpdateMonthlyContribution;
   // The value the monthly contribution is being set to.
-  amount: string;
+  amount: BigNumberish;
 }
 
 interface UpdateMonthlyContribution {
   kind: PoolTxKind.UpdateMonthlyContribution;
   // The value the monthly contribution is being set to.
-  amount: string;
+  amount: BigNumberish;
 }
 
 interface UpdateBeneficiaries {
@@ -258,7 +272,7 @@ interface Tx {
   inner: PoolTx;
 }
 
-const transactions: Tx[] = [];
+export const transactions: Tx[] = [];
 
 function addTx(tx: Tx) {
   transactions.push(tx);

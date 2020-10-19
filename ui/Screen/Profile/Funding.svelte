@@ -1,6 +1,6 @@
 <script lang="ts">
   import { build, Status } from "../../src/wallet";
-  import { make } from "../../src/funding/pool";
+  import { make, transactions } from "../../src/funding/pool";
 
   import { Button } from "../../DesignSystem/Primitive";
   import Pool from "../Funding/Pool.svelte";
@@ -31,3 +31,7 @@
     <Pool pool={make(wallet)} />
   {/if}
 </div>
+
+{#each transactions as tx}
+  - Status: {tx.status} | Hash: {tx.hash} | {tx.inner.kind} |
+{/each}
