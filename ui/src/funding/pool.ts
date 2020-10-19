@@ -6,6 +6,7 @@ import * as validation from "../validation";
 import { Wallet } from "../wallet";
 import * as remote from "../remote";
 import { BigNumberish } from "ethers";
+import { intros } from "svelte/internal";
 
 export const store = writable<Pool | null>(null);
 
@@ -179,3 +180,106 @@ export const membersValidationStore: validation.ValidationStore = validation.cre
 export const amountValidationStore: validation.ValidationStore = validation.createValidationStore(
   contraints.amount
 );
+
+/* Temporary sketch code */
+
+enum TxStatus {
+  // The transaction is pending user approval on their waLlet app.
+  PendingApproval,
+  // The transaction as been approved and is awaiting to be included in a block.
+  AwaitingInclusion,
+  // The transaction as been included in the block. End of its life cycle.
+  Included,
+  // The transaction as been rejected.
+  Rejected,
+}
+
+enum PoolTxKind {
+  TopUp,
+  CollectFunds,
+  UpdateMonthlyContribution,
+  UpdateBeneficiaries,
+}
+
+interface TopUp {
+  kind: PoolTxKind.TopUp;
+  amount: string;
+}
+
+interface CollectFunds {
+  kind: PoolTxKind.CollectFunds;
+  amount: string;
+}
+
+interface UpdateMonthlyContribution {
+  kind: PoolTxKind.UpdateMonthlyContribution;
+  // The value the monthly contribution is being set to.
+  amount: string;
+}
+
+interface UpdateMonthlyContribution {
+  kind: PoolTxKind.UpdateMonthlyContribution;
+  // The value the monthly contribution is being set to.
+  amount: string;
+}
+
+interface UpdateBeneficiaries {
+  kind: PoolTxKind.UpdateMonthlyContribution;
+}
+
+type PoolTx =
+  | TopUp
+  | CollectFunds
+  | UpdateMonthlyContribution
+  | UpdateBeneficiaries;
+
+interface Tx {
+  // The hash of the transaction that uniquely identifies it.
+  hash: string;
+
+  // The status of the transaction
+  status: TxStatus;
+
+  // The underlying transaction.
+  inner: PoolTx;
+}
+
+const transactions: Tx[] = [];
+
+function addTx(tx: Tx) {
+  transactions.push(tx);
+}
+
+function updateTxStatus(hash: string, status: TxStatus) {
+  const tx = transactions.find(tx => tx.hash === hash);
+  if (tx) {
+    tx.status = status;
+  }
+}
+
+// Cap the amount of managed transactions
+function cap() {
+  transactions.length = Math.min(transactions.length, 5);
+}
+
+function updateAll() {
+  transactions.forEach(tx => {
+    const newStatus = lookupStatus(tx.hash);
+    if (newStatus) tx.status = newStatus;
+  });
+}
+
+// TODO(nuno): Lookup the actual status of a transaction with the given hash.
+function lookupStatus(_hash: string): TxStatus | undefined {
+  function randomInt(max: number) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
+
+  const statuses = [
+    TxStatus.PendingApproval,
+    TxStatus.AwaitingInclusion,
+    TxStatus.Included,
+    TxStatus.Rejected,
+  ];
+  return statuses[randomInt(statuses.length)];
+}
