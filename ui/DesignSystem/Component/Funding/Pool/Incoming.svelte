@@ -39,14 +39,12 @@
   .item {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     min-width: 200px;
   }
 
   .item > * {
     margin: 0 5px;
-  }
-  .row + .row {
-    border-top: solid 1px var(--color-foreground-level-2);
   }
 </style>
 
@@ -62,13 +60,14 @@
       </header>
       <div class="item">
         <h3>{poolData.collectableFunds} DAI</h3>
-        <TxButton
-          disabled={poolData.collectableFunds <= 0}
-          title={'Cash out'}
-          onClick={collectFunds}
-          variant={'primary'}
-          successMessage={'Funds successfully collected'}
-          errorMessage={e => `Failed to collect funds: ${e}`} />
+        {#if poolData.collectableFunds > 0}
+          <TxButton
+            title={'Cash out'}
+            onClick={collectFunds}
+            variant={'primary'}
+            successMessage={'Funds successfully collected'}
+            errorMessage={e => `Failed to collect funds: ${e}`} />
+        {/if}
       </div>
     </div>
   </div>
