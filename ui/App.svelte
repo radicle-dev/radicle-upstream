@@ -26,17 +26,9 @@
   import ModalSearch from "./Modal/Search.svelte";
   import ModalShortcuts from "./Modal/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
-  import Org from "./Screen/Org.svelte";
-  import OrgRegistration from "./Screen/OrgRegistration.svelte";
-  import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
-  import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
-  import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
-  import TransactionDetails from "./Screen/TransactionDetails.svelte";
-  import Untracked from "./Screen/Project/Untracked.svelte";
-  import UserRegistration from "./Screen/UserRegistration.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -45,20 +37,10 @@
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
-    "/orgs/register": OrgRegistration,
-    "/orgs/:id/members/register": MemberRegistration,
-    "/orgs/:id": Org,
-    "/orgs/:id/*": Org,
-    "/projects/untracked/:urn": Untracked,
-    "/projects/register/:domainId": ProjectRegistration,
-    "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
-    "/user-registration": UserRegistration,
-    "/transactions/:id": TransactionDetails,
-    "/send-funds": SendFunds,
     "*": NotFound,
   };
 

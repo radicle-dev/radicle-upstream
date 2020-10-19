@@ -47,7 +47,7 @@ pub use radicle_surf::{
 
 pub mod config;
 pub mod control;
-mod convert;
+pub mod convert;
 pub mod git_helper;
 mod identifier;
 pub use identifier::Identifier;

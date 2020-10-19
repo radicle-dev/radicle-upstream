@@ -126,23 +126,22 @@ context("onboarding", () => {
     });
 
     context("handle", () => {
-      it("prevents the user from submitting an invalid handle", () => {
-        const characterError =
-          "Your display name has unsupported characters in it. You can only use basic letters, numbers, and the _ and - characters.";
-        const firstCharacterError =
-          "Your display name should start with a letter or a number.";
-        const lengthError =
-          "Your display name should be at least 2 characters long.";
-
-        cy.pick("handle-input").type("_rafalca");
-        cy.pick("next-button").click();
-
-        // Handle is required.
+      it("requires the user to input a handle", () => {
         cy.pick("handle-input").clear();
+        cy.pick("next-button").click();
         cy.pick("enter-name-screen").contains(
           "You must provide a display name"
         );
+      });
 
+      it("starts validation after at least 2 characters are input", () => {
+        cy.pick("handle-input").type("@");
+        cy.pick("validation-error-icon").should("not.be.visible");
+        cy.pick("handle-input").type("@");
+        cy.pick("validation-error-icon").should("be.visible");
+      });
+
+      it("prevents the user from submitting an invalid handle", () => {
         // No spaces.
         cy.pick("handle-input").type("no spaces");
         cy.pick("handle-input").should("have.value", "no-spaces");
@@ -150,22 +149,31 @@ context("onboarding", () => {
         // No special characters.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("bad$");
-        cy.pick("enter-name-screen").contains(characterError);
-
-        // Can't start with an underscore.
-        cy.pick("handle-input").clear();
-        cy.pick("handle-input").type("_nein");
-        cy.pick("enter-name-screen").contains(firstCharacterError);
+        cy.pick("enter-name-screen").contains(
+          "Your display name has unsupported characters in it. You can only " +
+            "use basic letters, numbers, and the _ and - characters."
+        );
 
         // Can't start with a dash.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("-não");
-        cy.pick("enter-name-screen").contains(firstCharacterError);
+        cy.pick("enter-name-screen").contains(
+          "Your display name should start with a letter or a number."
+        );
 
         // Has to be at least two characters long.
         cy.pick("handle-input").clear();
         cy.pick("handle-input").type("x");
-        cy.pick("enter-name-screen").contains(lengthError);
+        cy.pick("enter-name-screen").contains(
+          "Your display name should be at least 2 characters long."
+        );
+
+        // Has to be no more than 32 characters long.
+        cy.pick("handle-input").clear();
+        cy.pick("handle-input").invoke("val", "x".repeat(33)).trigger("input");
+        cy.pick("enter-name-screen").contains(
+          "Your display name should not be longer than 32 characters."
+        );
       });
     });
 

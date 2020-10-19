@@ -2,7 +2,6 @@
   import type { EmojiAvatar, RGBValue } from "../../src/avatar";
 
   import Emoji from "./Emoji.svelte";
-  import Icon from "./Icon";
 
   export let style = "";
   export let dataCy = "";
@@ -12,7 +11,6 @@
   export let imageUrl = "";
   export let avatarFallback: EmojiAvatar | undefined = undefined;
   export let title = "";
-  export let registered = false;
 
   export let variant: "circle" | "square" = "circle";
 
@@ -146,11 +144,6 @@
         var(--title-color, var(--color-foreground))">
         {title}
       </p>
-      {#if registered}
-        <Icon.RegisteredSmall
-          dataCy="registered-badge"
-          style="fill: var(--color-primary);" />
-      {/if}
     {:else}
       <p
         class="typo-text-bold"
@@ -158,11 +151,6 @@
         var(--color-foreground))">
         {title}
       </p>
-      {#if registered}
-        <Icon.RegisteredSmall
-          dataCy="registered-badge"
-          style="fill: var(--color-primary);" />
-      {/if}
     {/if}
   {/if}
 </div>

@@ -39,7 +39,8 @@ enum EventKind {
 
 interface StatusChanged {
   kind: EventKind.StatusChanged;
-  status: Status;
+  old: Status;
+  new: Status;
 }
 
 export type PeerEvent = StatusChanged;
@@ -50,11 +51,12 @@ export const status = statusStore.readable;
 
 statusStore.start(() => {
   const source = new EventSource(
-    "http://localhost:8080/v1/notifications/local_peer_status"
+    "http://localhost:8080/v1/notifications/local_peer_events"
   );
 
   source.addEventListener(EventKind.StatusChanged, (event: Event): void => {
-    statusStore.success(JSON.parse((event as MessageEvent).data));
+    const changed = JSON.parse((event as MessageEvent).data);
+    statusStore.success(changed.new);
   });
 
   return (): void => source.close();

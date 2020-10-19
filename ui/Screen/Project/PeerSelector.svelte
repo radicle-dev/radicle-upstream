@@ -57,7 +57,6 @@
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     padding: 0.5rem;
-    margin-right: 1rem;
     display: flex;
     cursor: pointer;
     justify-content: space-between;
@@ -86,6 +85,7 @@
   .peer-dropdown-container {
     display: flex;
     position: absolute;
+    right: 0;
     top: 0;
   }
 
@@ -115,7 +115,10 @@
   }
 </style>
 
-<Overlay {expanded} on:hide={hideDropdown} style="position: relative;">
+<Overlay
+  {expanded}
+  on:hide={hideDropdown}
+  style="margin-right: 1rem; position: relative; user-select: none;">
   <div
     class="peer-selector"
     data-cy="peer-selector"

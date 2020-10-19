@@ -1,7 +1,6 @@
 <script>
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
 
-  export let org = null;
   export let user = null;
   export let title = null;
 </script>
@@ -21,14 +20,6 @@
       variant="circle" />
 
     <Icon.Icon.RegisteredSmall
-      style="margin-left: 6px; fill: var(--color-primary);" />
-  {:else if org}
-    <Avatar
-      avatarFallback={org.avatarFallback}
-      title={`${org.name} / ${title}`}
-      variant="square" />
-
-    <Icon.RegisteredSmall
       style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
     <Icon.Box />

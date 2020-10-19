@@ -26,9 +26,6 @@ import CrossCircle from "./CrossCircle.svelte";
 import Cross from "./Cross.svelte";
 import CrossSmall from "./CrossSmall.svelte";
 import CurrencyUSD from "./CurrencyUSD.svelte";
-import CurrencyEUR from "./CurrencyEUR.svelte";
-import CurrencyRAD from "./CurrencyRAD.svelte";
-import CurrencyRADSmall from "./CurrencyRADSmall.svelte";
 import Ellipsis from "./Ellipsis.svelte";
 import EllipsisSmall from "./EllipsisSmall.svelte";
 import Envelope from "./Envelope.svelte";
@@ -96,9 +93,6 @@ export default {
   Cross,
   CrossSmall,
   CurrencyUSD,
-  CurrencyEUR,
-  CurrencyRAD,
-  CurrencyRADSmall,
   Ellipsis,
   EllipsisSmall,
   Envelope,

@@ -1,9 +1,9 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
-use coco::{signer, PeerControl};
+use coco::PeerControl;
 
 #[cfg(test)]
-use coco::{keystore, RunConfig};
+use coco::{keystore, signer, RunConfig};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -12,8 +12,6 @@ pub struct Context {
     pub peer_control: PeerControl,
     /// [`coco::State`] to operate on the local monorepo.
     pub state: coco::State,
-    /// [`coco::signer::BoxedSigner`] for write operations on the monorepo.
-    pub signer: Option<signer::BoxedSigner>,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
 }
@@ -48,7 +46,6 @@ impl Context {
         Ok(Self {
             peer_control,
             state,
-            signer: Some(signer),
             store,
         })
     }
