@@ -12,7 +12,6 @@
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
     description: project.metadata.description,
-    showRegisteredBadge: !!project.registration,
     showMaintainerBadge: project.metadata.maintainers.includes(urn),
   });
 </script>
