@@ -12,24 +12,18 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = {
-        let alice_signer = alice_signer.clone();
-        alice_state
-            .init_owner(&alice_signer.clone(), "alice")
-            .await?
-    };
+    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = alice_state.init_owner("alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let bob = bob_state.init_owner(&bob_signer, "bob").await?;
+    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let bob = bob_state.init_owner("bob").await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
 
     let project = alice_state
-        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await?;
 
     let urn = {
