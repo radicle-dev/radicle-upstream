@@ -88,14 +88,14 @@ pub async fn requested(
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
     run_config: RunConfig,
-) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
+) -> Result<(Peer, State), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let conf = config::default(key, tmp_dir.path())?;
     let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
-    Ok((peer, state, signer))
+    Ok((peer, state))
 }
 
 #[allow(dead_code)]
@@ -103,7 +103,7 @@ pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
     run_config: RunConfig,
-) -> Result<(Peer, State, signer::BoxedSigner), Box<dyn std::error::Error>> {
+) -> Result<(Peer, State), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
@@ -113,7 +113,7 @@ pub async fn build_peer_with_seeds(
 
     let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
-    Ok((peer, state, signer))
+    Ok((peer, state))
 }
 
 pub fn init_logging() {

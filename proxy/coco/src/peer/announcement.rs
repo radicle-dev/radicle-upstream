@@ -156,9 +156,9 @@ mod test {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer.clone());
+        let state = State::new(api, signer);
 
-        let _owner = state.init_owner(&signer, "cloudhead").await?;
+        let _owner = state.init_owner("cloudhead").await?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(&state).await?;
