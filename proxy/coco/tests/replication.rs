@@ -19,19 +19,18 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = alice_state.init_owner("alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
+    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let _bob = bob_state.init_owner("bob").await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
 
     let project = alice_state
-        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await?;
 
     let project_urn = {
@@ -64,12 +63,11 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = alice_state.init_owner("alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, _bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
@@ -104,23 +102,18 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = alice_state.init_owner("alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
+    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let _bob = bob_state.init_owner("bob").await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
 
     let project = alice_state
-        .init_project(
-            &alice_signer,
-            &alice,
-            shia_le_pathbuf(alice_repo_path.clone()),
-        )
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
         .await?;
 
     let project_urn = {
@@ -212,7 +205,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) = build_peer(
+    let (alice_peer, alice_state) = build_peer(
         &alice_tmp_dir,
         RunConfig {
             sync: SyncConfig {
@@ -228,7 +221,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     let alice_events = alice_peer.subscribe();
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
+    let (bob_peer, bob_state) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
@@ -239,14 +232,10 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_peer_id = bob_state.peer_id();
 
-    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
-    let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
+    let alice = alice_state.init_owner("alice").await?;
+    let _bob = bob_state.init_owner("bob").await?;
     alice_state
-        .init_project(
-            &alice_signer,
-            &alice,
-            shia_le_pathbuf(alice_repo_path.clone()),
-        )
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
         .await?;
 
     let bob_events = bob_peer.subscribe();
@@ -268,31 +257,25 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = {
-        let alice_signer = alice_signer.clone();
-        alice_state
-            .init_owner(&alice_signer.clone(), "alice")
-            .await?
-    };
+    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = alice_state.init_owner("alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_repo_path = bob_tmp_dir.path().join("radicle");
-    let (bob_peer, bob_state, bob_signer) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let bob = bob_state.init_owner(&bob_signer, "bob").await?;
+    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let bob = bob_state.init_owner("bob").await?;
 
     let eve_tmp_dir = tempfile::tempdir()?;
     let eve_repo_path = eve_tmp_dir.path().join("radicle");
-    let (eve_peer, eve_state, eve_signer) = build_peer(&eve_tmp_dir, RunConfig::default()).await?;
-    let _eve = eve_state.init_owner(&eve_signer, "eve").await?;
+    let (eve_peer, eve_state) = build_peer(&eve_tmp_dir, RunConfig::default()).await?;
+    let _eve = eve_state.init_owner("eve").await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
     tokio::task::spawn(eve_peer.into_running());
 
     let project = alice_state
-        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await?;
 
     let project = {

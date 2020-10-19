@@ -1,52 +1,36 @@
-<script lang="ts">
+<script lang="typescript">
   import { CSSPosition } from "../../src/style";
+  import { calculatePosition, Visibility } from "../../src/tooltip";
 
   export let value = "";
 
   export let position: CSSPosition = CSSPosition.Right;
 
-  enum Visibility {
-    Hidden = "hidden",
-    Visible = "visible",
-  }
+  let container: Element | null = null;
+  let message: Element | null = null;
+  let tooltip = { className: Visibility.Hidden, x: 0, y: 0 };
 
-  let tooltip = { className: Visibility.Hidden, positionX: 0, positionY: 0 };
-
-  const hideTooltip = () => {
+  const hide = () => {
     tooltip.className = Visibility.Hidden;
   };
 
-  // TODO(sos): there may exist a better way to type this event
-  const showTooltip = (e: {
-    target: { closest: (div: string) => HTMLDivElement };
-  }) => {
-    const rect = e.target.closest("[data-tooltip]").getBoundingClientRect();
-    const offsetY = rect.height < 32 ? (32 - rect.height) / 2 : 0;
-    if (position === CSSPosition.Right) {
-      tooltip = {
-        positionY: rect.top - offsetY,
-        positionX: rect.right + 8,
-        className: Visibility.Visible,
-      };
-    } else if (position === CSSPosition.Left) {
-      tooltip = {
-        positionY: rect.top - offsetY,
-        positionX: rect.left - rect.width - 24,
-        className: Visibility.Visible,
-      };
-    } else if (position === CSSPosition.Bottom) {
-      tooltip = {
-        positionY: rect.bottom + 8,
-        positionX: rect.left + rect.width / 2,
-        className: Visibility.Visible,
-      };
-    } else if (position === CSSPosition.Top) {
-      tooltip = {
-        positionY: rect.top - 40,
-        positionX: rect.left + rect.width / 2,
-        className: Visibility.Visible,
-      };
+  const show = (_event: MouseEvent) => {
+    if (!container) {
+      console.error("container element not present");
+      return;
     }
+    if (!message) {
+      console.error("message element not present");
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const messageRect = message.getBoundingClientRect();
+
+    tooltip = {
+      className: Visibility.Visible,
+      ...calculatePosition(position, containerRect, messageRect),
+    };
   };
 </script>
 
@@ -110,15 +94,16 @@
 
 {#if value.length > 0}
   <div
-    style="height: 100%;"
-    data-tooltip
+    bind:this={container}
     data-cy="tooltip"
-    on:mouseenter={event => showTooltip(event)}
-    on:mouseleave={hideTooltip}>
+    on:mouseenter={show}
+    on:mouseleave={hide}
+    style="height: 100%;">
     <slot />
     <div
-      style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
-      class={`tooltip ${tooltip.className} ${position}`}>
+      bind:this={message}
+      class={`tooltip ${tooltip.className} ${position}`}
+      style={`top: ${tooltip.y}px; left: ${tooltip.x}px;`}>
       <p>{value}</p>
     </div>
     <span class="triangle" />
