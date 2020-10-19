@@ -21,7 +21,7 @@ elif [ "$platform" == "Linux" ]; then
         "$config_home/radicle"
         "$config_home/radicle-upstream"
         "$data_home/radicle"
-        "$config_home/radicle-upstream"
+        "$data_home/radicle-upstream"
     );
 else
     echo "Unsupported platform $platform"

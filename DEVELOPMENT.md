@@ -210,11 +210,10 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { Placeholder, Rad } from "../DesignSystem/Component";
+      import { Placeholder } from "../DesignSystem/Component";
     </script>
 
     <Placeholder style="width: 300px; height: 100px" />
-    <Rad amount="200" />
     ```
 
 Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
@@ -256,7 +255,7 @@ To avoid extra wrappers for positioning and spacing, and to allow style
 overrides, components expose a `style` prop:
 
 ```html
-  <Rad amount={200} style="margin-right: 24px" size="big" />
+  <Component style="margin-right: 24px"/>
 ```
 
 For very common alignment cases we have a helper primitive called `<Flex>`.
