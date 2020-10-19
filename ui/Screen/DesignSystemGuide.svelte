@@ -34,6 +34,7 @@
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
   import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
   import ColorSwatch from "./DesignSystemGuide/ColorSwatch.svelte";
+  import { CSSPosition } from "../src/style";
   import { ValidationStatus } from "../src/validation.ts";
   import { Variant as IllustrationVariant } from "../src/illustration.ts";
 
@@ -891,6 +892,32 @@
           message="Error with icon and"
           showIcon={true}
           actionText="Action" />
+      </Swatch>
+    </Section>
+
+    <Section title="Tooltips" subTitle="Top, Right, Bottom, Left">
+      <Swatch>
+        <Tooltip value="Top" position={CSSPosition.Top}>
+          <Button variant="outline">Hover me!</Button>
+        </Tooltip>
+      </Swatch>
+
+      <Swatch>
+        <Tooltip value="Right" position={CSSPosition.Right}>
+          <Button variant="outline">Hover me!</Button>
+        </Tooltip>
+      </Swatch>
+
+      <Swatch>
+        <Tooltip value="Bottom" position={CSSPosition.Bottom}>
+          <Button variant="outline">Hover me!</Button>
+        </Tooltip>
+      </Swatch>
+
+      <Swatch>
+        <Tooltip value="Left" position={CSSPosition.Left}>
+          <Button variant="outline">Hover me!</Button>
+        </Tooltip>
       </Swatch>
     </Section>
 
