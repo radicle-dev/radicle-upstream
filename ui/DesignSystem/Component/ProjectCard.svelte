@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Icon } from "../Primitive";
   import Badge from "../Component/Badge.svelte";
   import { BadgeType } from "../../src/badge";
 
@@ -7,7 +6,6 @@
 
   export let description = "";
 
-  export let showRegisteredBadge: boolean = false;
   export let showMaintainerBadge: boolean = false;
 </script>
 
@@ -35,10 +33,6 @@
     color: var(--color-foreground-level-6);
   }
 
-  .registered {
-    display: flex;
-  }
-
   .desc {
     color: var(--color-foreground-level-6);
     overflow: hidden;
@@ -51,11 +45,6 @@
   <div class="container">
     <div class="title-row">
       <p class="typo-text-bold">{title}</p>
-      {#if showRegisteredBadge}
-        <div data-cy="registered" class="registered">
-          <Icon.RegisteredSmall style="fill: var(--color-primary);" />
-        </div>
-      {/if}
       {#if showMaintainerBadge}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}

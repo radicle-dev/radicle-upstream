@@ -7,6 +7,7 @@
 
   import WithContext from "./WithContext.svelte";
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let store: Readable<remote.Data<any>>;
   export let context: string | undefined = undefined;
 

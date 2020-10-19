@@ -17,6 +17,7 @@ export type Data<T> =
 
 // Shorthand for casting these states
 export type ErrorState = { status: Status.Error; error: Error };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SuccessState = { status: Status.Success; data: any };
 
 // A Store is a typesafe svelte readable store that exposes `updateStatus`

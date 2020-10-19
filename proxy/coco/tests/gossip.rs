@@ -5,7 +5,7 @@ use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, AnnounceConfig, Hash, RunConfig, Urn};
+use coco::{seed::Seed, AnnounceConfig, RunConfig};
 
 #[macro_use]
 mod common;
@@ -20,7 +20,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) = build_peer(
+    let (alice_peer, alice_state) = build_peer(
         &alice_tmp_dir,
         RunConfig {
             announce: AnnounceConfig {
@@ -34,9 +34,9 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::spawn(alice_peer.into_running());
 
-    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+    let alice = alice_state.init_owner("alice").await?;
     alice_state
-        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await
         .expect("unable to init project");
 
@@ -59,7 +59,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) = build_peer(
+    let (alice_peer, alice_state) = build_peer(
         &alice_tmp_dir,
         RunConfig {
             announce: AnnounceConfig {
@@ -71,10 +71,10 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     .await?;
     let alice_addr = alice_state.listen_addr();
     let alice_peer_id = alice_state.peer_id();
-    let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+    let alice = alice_state.init_owner("alice").await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
+    let (bob_peer, bob_state) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
@@ -83,7 +83,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         RunConfig::default(),
     )
     .await?;
-    let _bob = bob_state.init_owner(&bob_signer, "bob").await?;
+    let _bob = bob_state.init_owner("bob").await?;
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
@@ -93,7 +93,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     connected(bob_connected, &alice_peer_id).await?;
 
     let project = alice_state
-        .init_project(&alice_signer, &alice, shia_le_pathbuf(alice_repo_path))
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await?;
 
     let announced = bob_events
@@ -117,99 +117,18 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     Ok(())
 }
 
-/// Verify that asking the network for an unkown urn returns no providers.
-#[tokio::test(core_threads = 2)]
-async fn providers_is_none() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
-
-    let tmp_dir = tempfile::tempdir()?;
-    let (peer, state, _signer) = build_peer(&tmp_dir, RunConfig::default()).await?;
-
-    tokio::spawn(peer.into_running());
-
-    let unkown_urn = Urn {
-        id: Hash::hash(b"project0"),
-        proto: librad::uri::Protocol::Git,
-        path: "user/imperative-language".parse::<librad::uri::Path>()?,
-    };
-
-    let res = state
-        .providers(unkown_urn, Duration::from_secs(5))
-        .await
-        .next()
-        .await;
-
-    assert!(res.is_none(), "didn't expected to obtain any providers");
-
-    Ok(())
-}
-
-/// Verify that asking the network for a URN owned by a seed peer returns said peer.
-#[tokio::test(core_threads = 2)]
-async fn providers() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
-
-    let alice_tmp_dir = tempfile::tempdir()?;
-    let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice_addr = alice_state.listen_addr();
-    let alice_peer_id = alice_state.peer_id();
-
-    let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, _bob_signer) = build_peer_with_seeds(
-        &bob_tmp_dir,
-        vec![Seed {
-            addr: alice_addr,
-            peer_id: alice_peer_id,
-        }],
-        RunConfig::default(),
-    )
-    .await?;
-    let bob_events = bob_peer.subscribe();
-
-    tokio::spawn(alice_peer.into_running());
-    tokio::spawn(bob_peer.into_running());
-
-    connected(bob_events, &alice_peer_id).await?;
-
-    let target_urn = {
-        let project = radicle_project(alice_repo_path.clone());
-        let user = alice_state
-            .init_owner(&alice_signer, "cloudhead")
-            .await
-            .unwrap();
-        let created_project = alice_state
-            .init_project(&alice_signer, &user, project)
-            .await
-            .unwrap();
-        created_project.urn()
-    };
-
-    let res = bob_state
-        .providers(target_urn, Duration::from_secs(1))
-        .await
-        .next()
-        .await;
-
-    assert_eq!(res.map(|info| info.peer_id), Some(alice_peer_id));
-
-    Ok(())
-}
-
 #[tokio::test(core_threads = 2)]
 async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state, alice_signer) =
-        build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice_addr = alice_state.listen_addr();
     let alice_peer_id = alice_state.peer_id();
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state, bob_signer) = build_peer_with_seeds(
+    let (bob_peer, bob_state) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
             addr: alice_addr,
@@ -228,15 +147,12 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     connected(bob_events, &alice_peer_id).await?;
 
-    bob_state.init_owner(&bob_signer, "bob").await?;
+    bob_state.init_owner("bob").await?;
 
     let urn = {
-        let alice = alice_state.init_owner(&alice_signer, "alice").await?;
+        let alice = alice_state.init_owner("alice").await?;
         let project = radicle_project(alice_repo_path.clone());
-        alice_state
-            .init_project(&alice_signer, &alice, project)
-            .await?
-            .urn()
+        alice_state.init_project(&alice, project).await?.urn()
     };
 
     bob_control.request_urn(&urn, Instant::now()).await;

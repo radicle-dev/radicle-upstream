@@ -141,7 +141,7 @@
     "prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
     "deploy:dev:contracts": "./scripts/deploy-dev-contracts.js",
     "reset:state": "scripts/reset-state.sh"
   },
