@@ -4,13 +4,11 @@ use std::{collections::HashSet, ops::Deref as _};
 
 use kv::Codec as _;
 
-use librad::{
-    net::peer::{Gossip, Rev},
-    uri::{path::ParseError, Path, RadUrn},
-};
+use librad::uri::{path::ParseError, Path, RadUrn};
 
 use crate::{
     oid::Oid,
+    peer::gossip,
     state::{self, State},
 };
 
@@ -47,14 +45,7 @@ pub type Updates = HashSet<Announcement>;
 /// * if the announcemnet of one of the project heads failed
 pub async fn announce(state: &State, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
-        let protocol = state.api.protocol();
-
-        let have = Gossip {
-            urn: urn.clone(),
-            rev: Some(Rev::Git((*hash).into())),
-            origin: None,
-        };
-        protocol.announce(have).await;
+        gossip::announce(state, urn, hash).await;
     }
 }
 
@@ -165,9 +156,9 @@ mod test {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
         let config = config::default(key, tmp_dir.path())?;
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer.clone());
+        let state = State::new(api, signer);
 
-        let _owner = state.init_owner(&signer, "cloudhead").await?;
+        let _owner = state.init_owner("cloudhead").await?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(&state).await?;

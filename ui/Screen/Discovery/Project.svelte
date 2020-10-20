@@ -1,5 +1,5 @@
 <script>
-  import { Avatar, Icon } from "../../DesignSystem/Primitive";
+  import { Avatar } from "../../DesignSystem/Primitive";
   import {
     ShareableIdentifier,
     Stats,
@@ -49,11 +49,6 @@
     overflow: hidden;
   }
 
-  .registered {
-    display: flex;
-    margin-left: 5px;
-  }
-
   .bottom {
     display: flex;
     justify-content: space-between;
@@ -67,20 +62,7 @@
   data-cy="project-card">
   <div class="header">
     <div class="title">
-      {#if project.registration}
-        <h3 style="color: var(--color-foreground-level-4);">
-          {project.domain}
-        </h3>
-        <h3 class="typo-overflow-ellipsis">
-          &nbsp;{`/ ${project.metadata.name}`}
-        </h3>
-        <div class="registered">
-          <Icon.RegisteredSmall
-            style="fill: var(--color-primary); position: relative; bottom: -5px;" />
-        </div>
-      {:else}
-        <h3 class="typo-overflow-ellipsis">{project.metadata.name}</h3>
-      {/if}
+      <h3 class="typo-overflow-ellipsis">{project.metadata.name}</h3>
     </div>
 
     {#if showTrackButton}

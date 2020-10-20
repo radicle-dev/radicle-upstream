@@ -22,19 +22,14 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import Modal from "./Modal";
+  import ModalManageRemotes from "./Modal/ManageRemotes.svelte";
+  import ModalNewProject from "./Modal/NewProject.svelte";
+  import ModalSearch from "./Modal/Search.svelte";
+  import ModalShortcuts from "./Modal/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
-  import Org from "./Screen/Org.svelte";
-  import OrgRegistration from "./Screen/OrgRegistration.svelte";
-  import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
-  import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
-  import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
-  import TransactionDetails from "./Screen/TransactionDetails.svelte";
-  import Untracked from "./Screen/Project/Untracked.svelte";
-  import UserRegistration from "./Screen/UserRegistration.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -43,28 +38,18 @@
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
-    "/orgs/register": OrgRegistration,
-    "/orgs/:id/members/register": MemberRegistration,
-    "/orgs/:id": Org,
-    "/orgs/:id/*": Org,
-    "/projects/untracked/:urn": Untracked,
-    "/projects/register/:domainId": ProjectRegistration,
-    "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
-    "/user-registration": UserRegistration,
-    "/transactions/:id": TransactionDetails,
-    "/send-funds": SendFunds,
     "*": NotFound,
   };
 
   const modalRoutes = {
-    "/manage-remotes": Modal.ManageRemotes,
-    "/new-project": Modal.NewProject,
-    "/search": Modal.Search,
-    "/shortcuts": Modal.Shortcuts,
+    "/manage-remotes": ModalManageRemotes,
+    "/new-project": ModalNewProject,
+    "/search": ModalSearch,
+    "/shortcuts": ModalShortcuts,
   };
 
   $: switch ($store.status) {

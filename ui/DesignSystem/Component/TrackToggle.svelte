@@ -1,33 +1,34 @@
-<script lang="ts">
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
+
+  import * as track from "../../src/track";
 
   import { Icon } from "../Primitive";
   import Hoverable from "./Hoverable.svelte";
 
-  export let style = "";
-  export let tracking: boolean = false;
+  export let disabled: boolean = false;
   export let expanded: boolean = false;
+  export let tracking: boolean = false;
+  export let style = "";
 
   export let warning: boolean = false;
 
+  const dispatch = createEventDispatcher();
   let active: boolean = false;
 
-  enum TrackingEvent {
-    Track = "track",
-    Untrack = "untrack",
-  }
-
   const down = () => {
+    if (disabled) return;
+
     active = true;
   };
 
   const up = () => {
+    if (disabled) return;
+
     active = false;
     tracking = !tracking;
-    dispatch(tracking ? TrackingEvent.Track : TrackingEvent.Untrack);
+    dispatch(tracking ? track.Event.Track : track.Event.Untrack);
   };
-
-  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -45,12 +46,10 @@
   .toggle.hover {
     border: 1px solid var(--color-secondary-level-2);
     background-color: var(--color-secondary-level-2);
-    box-shadow: 0 0 0 1px var(--color-secondary-level-2);
   }
   .toggle.active {
     border: 1px solid var(--color-secondary-level-1);
     background-color: var(--color-secondary-level-1);
-    box-shadow: 0 0 0 1px var(--color-secondary-level-1);
   }
   .toggle.tracking {
     border: 1px solid var(--color-foreground-level-3);
@@ -60,18 +59,15 @@
   .toggle.tracking.hover {
     border: 1px solid var(--color-foreground-level-2);
     background-color: var(--color-foreground-level-2);
-    box-shadow: 0 0 0 1px var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
   }
   .toggle.tracking.hover.warning {
     color: var(--color-background);
     border: none;
-    box-shadow: none;
   }
   .toggle.tracking.active {
     border: 1px solid var(--color-foreground-level-2);
     background-color: var(--color-foreground-level-2);
-    box-shadow: 0 0 0 1px var(--color-foreground-level-2);
     color: var(--color-foreground-level-4);
   }
   .left {
@@ -115,23 +111,36 @@
   .left.tracking.warning.hover :global(svg) {
     fill: var(--color-background);
   }
+  .disabled {
+    cursor: not-allowed;
+  }
 </style>
 
 <Hoverable let:hovering={hover}>
   <div
-    class:hover
     class:active
+    class:hover={hover && !disabled}
     class:tracking
     class:warning
     class="toggle"
     {style}
-    on:mousedown={down}
-    on:mouseup={up}>
-    <div class="left" class:hover class:active class:tracking class:warning>
+    on:mousedown={() => {
+      !disabled && down();
+    }}
+    on:mouseup={() => {
+      !disabled && up();
+    }}>
+    <div
+      class="left"
+      class:active
+      class:disabled
+      class:hover={hover && !disabled}
+      class:tracking
+      class:warning>
       {#if !tracking}
         <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Follow</p>
-      {:else if hover}
+      {:else if hover && !disabled}
         <Icon.Network style="margin: 0 8px 0 12px" />
         <p class="typo-text-bold" style="margin-right: 12px">Unfollow</p>
       {:else if expanded}

@@ -14,11 +14,7 @@ use librad::{
     uri::{self, RadUrl, RadUrn},
 };
 
-use crate::request::{
-    sequence_result, Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut,
-};
-
-pub mod stream;
+use crate::request::{Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut};
 
 /// The maximum number of query attempts that can be made for a single request.
 const MAX_QUERIES: Queries = Queries::new(5);
@@ -150,14 +146,14 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     /// If there is no such `urn` then it create a fresh `Request` using the `urn` and `timestamp`
     /// and it will return `None`.
-    pub fn request(&mut self, urn: RadUrn, timestamp: T) -> Option<SomeRequest<T>>
+    pub fn request(&mut self, urn: &RadUrn, timestamp: T) -> Option<SomeRequest<T>>
     where
         T: Clone,
     {
-        match self.get(&urn) {
+        match self.get(urn) {
             None => {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
-                self.requests.insert(urn.id, request);
+                self.requests.insert(urn.id.clone(), request);
                 None
             },
             Some(request) => Some(request.clone()),
@@ -175,7 +171,7 @@ impl<T, D> WaitingRoom<T, D> {
     fn transition<Prev, Next>(
         &mut self,
         matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
-        transition: impl FnOnce(Prev) -> Result<Next, Error>,
+        transition: impl FnOnce(Prev) -> Either<Request<TimedOut, T>, Next>,
         urn: &RadUrn,
     ) -> Result<(), Error>
     where
@@ -185,14 +181,16 @@ impl<T, D> WaitingRoom<T, D> {
     {
         match self.get(urn) {
             None => Err(Error::MissingUrn(urn.clone())),
-            Some(request) => {
-                match sequence_result(request.clone().transition(matcher, transition))? {
-                    Either::Right(next) => {
-                        self.requests.insert(urn.id.clone(), next.into());
-                        Ok(())
-                    },
-                    Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
-                }
+            Some(request) => match request.clone().transition(matcher, transition) {
+                Either::Right(Either::Right(next)) => {
+                    self.requests.insert(urn.id.clone(), next.into());
+                    Ok(())
+                },
+                Either::Right(Either::Left(timeout)) => {
+                    self.requests.insert(urn.id.clone(), timeout.clone().into());
+                    Err(timeout.into())
+                },
+                Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
             },
         }
     }
@@ -224,10 +222,7 @@ impl<T, D> WaitingRoom<T, D> {
                 },
                 _ => None,
             },
-            |previous| match previous {
-                Either::Left(timeout) => Err(timeout.into()),
-                Either::Right(request) => Ok(request),
-            },
+            |previous| previous,
             urn,
         )
     }
@@ -263,7 +258,7 @@ impl<T, D> WaitingRoom<T, D> {
                 },
                 _ => None,
             },
-            Ok,
+            Either::Right,
             &urn,
         )
     }
@@ -289,10 +284,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Found(request) => Some(request),
                 _ => None,
             },
-            |previous| match previous.cloning(max_queries, max_clones, authority, timestamp) {
-                Either::Left(timeout) => Err(timeout.into()),
-                Either::Right(request) => Ok(request),
-            },
+            |previous| previous.cloning(max_queries, max_clones, authority, timestamp),
             &urn,
         )
     }
@@ -320,7 +312,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.failed(authority, timestamp)),
+            |previous| Either::Right(previous.failed(authority, timestamp)),
             &urn,
         )
     }
@@ -334,7 +326,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn cloned(&mut self, urn: &RadUrn, url: RadUrl, timestamp: T) -> Result<(), Error>
+    pub fn cloned(&mut self, url: &RadUrl, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -343,8 +335,8 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Ok(previous.cloned(url, timestamp)),
-            urn,
+            |previous| Either::Right(previous.cloned(url.clone(), timestamp)),
+            &url.urn,
         )
     }
 
@@ -361,7 +353,11 @@ impl<T, D> WaitingRoom<T, D> {
     where
         T: Clone,
     {
-        self.transition(|request| request.cancel(timestamp).right(), Ok, urn)
+        self.transition(
+            |request| request.cancel(timestamp).right(),
+            Either::Right,
+            urn,
+        )
     }
 
     /// Return the list of all `RadUrn`/`SomeRequest` pairs in the `WaitingRoom`.
@@ -405,7 +401,6 @@ impl<T, D> WaitingRoom<T, D> {
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
                 request.elapsed(timestamp.clone()) >= self.config.delta.clone()
-                    || request.attempts().clones == Clones::new(0)
             });
 
         created.or(requested).map(|(urn, _request)| urn)
@@ -418,7 +413,7 @@ impl<T, D> WaitingRoom<T, D> {
             .and_then(|(urn, request)| match request {
                 SomeRequest::Found(request) => {
                     request.iter().find_map(|(peer_id, status)| match status {
-                        Status::Available => Some(urn.clone().into_rad_url(peer_id.clone())),
+                        Status::Available => Some(urn.clone().into_rad_url(*peer_id)),
                         _ => None,
                     })
                 },
@@ -460,7 +455,7 @@ mod test {
             urn,
             authority: peer,
         };
-        let request = waiting_room.request(url.urn.clone(), 0);
+        let request = waiting_room.request(&url.urn, 0);
 
         assert_eq!(request, None);
 
@@ -481,7 +476,7 @@ mod test {
         let expected = SomeRequest::Found(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0),
+                .into_found(url.authority, 0),
         );
         assert_eq!(waiting_room.get(&url.urn), Some(&expected));
 
@@ -489,18 +484,18 @@ mod test {
         let expected = SomeRequest::Cloning(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0)
-                .cloning(MAX_QUERIES, MAX_CLONES, url.authority.clone(), 0)
+                .into_found(url.authority, 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, url.authority, 0)
                 .unwrap_right(),
         );
         assert_eq!(waiting_room.get(&url.urn), Some(&expected));
 
-        waiting_room.cloned(&url.urn, url.clone(), 0)?;
+        waiting_room.cloned(&url, 0)?;
         let expected = SomeRequest::Cloned(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0)
-                .cloning(MAX_QUERIES, MAX_CLONES, url.authority.clone(), 0)
+                .into_found(url.authority, 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, url.authority, 0)
                 .unwrap_right()
                 .cloned(url.clone(), 0),
         );
@@ -515,8 +510,8 @@ mod test {
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
-        waiting_room.request(urn.clone(), ());
-        let request = waiting_room.request(urn.clone(), ());
+        waiting_room.request(&urn, ());
+        let request = waiting_room.request(&urn, ());
 
         assert_eq!(
             request,
@@ -524,12 +519,40 @@ mod test {
         );
 
         waiting_room.queried(&urn, ())?;
-        let request = waiting_room.request(urn.clone(), ());
+        let request = waiting_room.request(&urn, ());
 
         assert_eq!(
             request,
             Some(SomeRequest::Requested(Request::new(urn, ()).request(())))
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn timeout_on_delta() -> Result<(), Box<dyn std::error::Error>> {
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config {
+            delta: 5,
+            ..Config::default()
+        });
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let _ = waiting_room.request(&urn, 0);
+
+        // Initial schedule to be querying after it has been requested.
+        let request = waiting_room.next_query(1);
+        assert_eq!(request, Some(urn.clone()));
+
+        waiting_room.queried(&urn, 2)?;
+
+        // Should not return the urn again before delta has elapsed.
+        let request = waiting_room.next_query(3);
+        assert_eq!(request, None);
+
+        // Should return the urn again after delta has elapsed.
+        let request = waiting_room.next_query(7);
+        assert_eq!(request, Some(urn));
 
         Ok(())
     }
@@ -546,7 +569,7 @@ mod test {
             .parse()
             .expect("failed to parse the urn");
 
-        let _ = waiting_room.request(urn.clone(), ());
+        let _ = waiting_room.request(&urn, ());
         for _ in 0..NUM_QUERIES {
             waiting_room.queried(&urn, ())?;
         }
@@ -558,6 +581,8 @@ mod test {
                 attempts: 17,
             })
         );
+
+        assert_matches!(waiting_room.get(&urn), Some(SomeRequest::TimedOut(_)));
 
         Ok(())
     }
@@ -583,7 +608,7 @@ mod test {
             });
         }
 
-        let _ = waiting_room.request(urn.clone(), ());
+        let _ = waiting_room.request(&urn, ());
         waiting_room.queried(&urn, ())?;
 
         for url in &peers {
@@ -609,16 +634,18 @@ mod test {
             })
         );
 
+        assert_matches!(waiting_room.get(&urn), Some(SomeRequest::TimedOut(_)));
+
         Ok(())
     }
 
     #[test]
     fn cloning_fails_back_to_requested() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 5;
-        let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config {
             max_queries: Queries::new(1),
             max_clones: Clones::new(NUM_CLONES),
-            delta: (),
+            delta: 5,
         });
         let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
@@ -632,16 +659,22 @@ mod test {
             });
         }
 
-        let _ = waiting_room.request(urn.clone(), ());
-        waiting_room.queried(&urn, ())?;
+        let _ = waiting_room.request(&urn, 0);
+        waiting_room.queried(&urn, 1)?;
 
         for url in peers {
-            waiting_room.found(url.clone(), ())?;
-            waiting_room.cloning(url.clone(), ())?;
-            waiting_room.cloning_failed(url, ())?;
+            waiting_room.found(url.clone(), 2)?;
+            waiting_room.cloning(url.clone(), 2)?;
+            waiting_room.cloning_failed(url, 2)?;
         }
 
         assert_matches!(waiting_room.get(&urn), Some(SomeRequest::Requested(_)));
+
+        let request = waiting_room.next_query(3);
+        assert_eq!(request, None);
+
+        let request = waiting_room.next_query(7);
+        assert_eq!(request, Some(urn));
 
         Ok(())
     }
@@ -656,7 +689,7 @@ mod test {
         let peer = PeerId::from(SecretKey::new());
 
         // created
-        let _ = waiting_room.request(urn.clone(), ());
+        let _ = waiting_room.request(&urn, ());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
@@ -675,7 +708,7 @@ mod test {
         );
 
         // found
-        let found = is_requested.into_found(peer.clone(), ());
+        let found = is_requested.into_found(peer, ());
         waiting_room.insert(urn.clone(), found.clone());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
@@ -685,7 +718,7 @@ mod test {
 
         // cloning
         let cloning = found
-            .cloning(config.max_queries, config.max_clones, peer.clone(), ())
+            .cloning(config.max_queries, config.max_clones, peer, ())
             .unwrap_right();
         waiting_room.insert(urn.clone(), cloning.clone());
         waiting_room.canceled(&urn, ())?;
@@ -734,23 +767,18 @@ mod test {
         let ready = waiting_room.find_by_state(RequestState::Cloned);
         assert_eq!(ready, None);
 
-        let _ = waiting_room.request(url.urn.clone(), 0);
+        let _ = waiting_room.request(&url.urn, 0);
         waiting_room.queried(&url.urn, 0)?;
         waiting_room.found(url.clone(), 0)?;
         waiting_room.cloning(url.clone(), 0)?;
-        waiting_room.cloned(&url.urn, url.clone(), 0)?;
+        waiting_room.cloned(&url, 0)?;
 
         let ready = waiting_room.find_by_state(RequestState::Cloned);
         let expected = SomeRequest::Cloned(
             Request::new(url.urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority.clone(), 0)
-                .cloning(
-                    config.max_queries,
-                    config.max_clones,
-                    url.authority.clone(),
-                    0,
-                )
+                .into_found(url.authority, 0)
+                .cloning(config.max_queries, config.max_clones, url.authority, 0)
                 .unwrap_right()
                 .cloned(url.clone(), 0),
         );

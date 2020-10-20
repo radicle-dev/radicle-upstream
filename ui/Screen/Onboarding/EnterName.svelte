@@ -10,19 +10,30 @@
 
   export let handle = "";
 
-  $: if (handle.length > 0) handle = onboarding.formatHandleInput(handle);
-
   let beginValidation = false;
-  const validationStore = onboarding.createHandleValidationStore();
 
-  $: beginValidation && validationStore.validate(handle);
-  $: allowNext = (handle && validationPasses()) || !validationStarted();
+  const validationStore = onboarding.createHandleValidationStore();
 
   const validationPasses = () =>
     $validationStore.status === ValidationStatus.Success;
-
   const validationStarted = () =>
     $validationStore.status !== ValidationStatus.NotStarted;
+
+  $: beginValidation && validationStore.validate(handle);
+  $: allowNext = (handle && validationPasses()) || !validationStarted();
+  $: {
+    if (handle.length > 0) {
+      handle = onboarding.formatHandleInput(handle);
+    }
+
+    // Start validations only after the user enters the least amount of required
+    // characters. This is to avoid showing an empty form with a validation
+    // message initially as the field is required and the minimum count of
+    // characters is 2.
+    if (handle.length > 1) {
+      beginValidation = true;
+    }
+  }
 
   const next = () => {
     if (!allowNext) return;
@@ -33,6 +44,14 @@
     if (!validationPasses()) return;
 
     dispatch("next", handle);
+  };
+
+  const onKeydown = (event: KeyboardEvent) => {
+    switch (event.code) {
+      case "Enter":
+        next();
+        break;
+    }
   };
 </script>
 
@@ -75,7 +94,7 @@
       autofocus
       placeholder="Enter a display name (e.g. coolprogrammer3000)"
       bind:value={handle}
-      on:enter={next}
+      on:keydown={onKeydown}
       dataCy="handle-input"
       validation={$validationStore}
       hint="↵"

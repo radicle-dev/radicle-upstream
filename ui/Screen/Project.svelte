@@ -1,10 +1,17 @@
 <script>
+  import { getContext } from "svelte";
+
   import { isExperimental, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
-  import { checkout, fetch, project as store } from "../src/project.ts";
+  import {
+    checkout,
+    fetch,
+    isMaintainer,
+    project as store,
+  } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
   import {
     commits as commitsStore,
@@ -16,6 +23,7 @@
     resetCurrentPeerId,
     revisions as revisionsStore,
   } from "../src/source.ts";
+  import { CSSPosition } from "../src/style.ts";
 
   import {
     Header,
@@ -23,6 +31,7 @@
     Remote,
     RevisionSelector,
     SidebarLayout,
+    Tooltip,
     TrackToggle,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
@@ -48,6 +57,9 @@
 
   export let params = null;
   const projectId = params.id;
+  const session = getContext("session");
+  const trackTooltipMaintainer = "You can't unfollow your own project";
+  const trackTooltip = "Unfollowing is not yet supported";
 
   // Reset some stores on first load
   resetCurrentRevision();
@@ -87,14 +99,13 @@
     return items;
   };
 
-  const handleCheckout = async (event, project) => {
+  const handleCheckout = async (event, project, peerId) => {
     try {
       screen.lock();
       const path = await checkout(
         project.id,
         event.detail.checkoutDirectoryPath,
-        "PEER_ID_GOES_HERE",
-        "BRANCH_TO_CHECK_OUT_GOES_HERE"
+        peerId
       );
 
       notification.info(
@@ -157,7 +168,7 @@
         </div>
         <div slot="right">
           <CheckoutButton
-            on:checkout={ev => handleCheckout(ev, project)}
+            on:checkout={ev => handleCheckout(ev, project, $currentPeerId)}
             projectName={project.metadata.name} />
         </div>
         <div slot="top">
@@ -168,7 +179,11 @@
               on:select={() => {
                 resetCurrentRevision();
               }} />
-            <TrackToggle />
+            <Tooltip
+              position={CSSPosition.Left}
+              value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
+              <TrackToggle disabled expanded tracking />
+            </Tooltip>
           </div>
         </div>
       </Header.Large>

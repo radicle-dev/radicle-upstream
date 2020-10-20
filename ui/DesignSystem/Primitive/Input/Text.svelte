@@ -1,6 +1,4 @@
-<script lang="ts">
-  import { createEventDispatcher } from "svelte";
-
+<script lang="typescript">
   import Icon from "../Icon";
   import Spinner from "../../Component/Spinner.svelte";
   import KeyHint from "../../Component/KeyHint.svelte";
@@ -23,18 +21,10 @@
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
 
-  const dispatch = createEventDispatcher();
-
   // Can't use normal `autofocus` attribute on the `inputElement`:
   // "Autofocus processing was blocked because a document's URL has a fragment".
   // preventScroll is necessary for onboarding animations to work.
   $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
-
-  const onKeydown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      dispatch("enter");
-    }
-  };
 
   $: showHint = hint.length > 0 && value.length === 0;
 </script>
@@ -118,7 +108,7 @@
   .left-item-wrapper {
     align-items: center;
     display: flex;
-    height: 100%;
+    height: 2.5rem;
     justify-content: center;
     left: 0px;
     padding-left: 0.5rem;
@@ -146,7 +136,7 @@
     {disabled}
     on:change
     on:input
-    on:keydown={onKeydown}
+    on:keydown
     bind:this={inputElement}
     {spellcheck}
     style={inputStyle} />
@@ -174,6 +164,7 @@
         position: absolute; top: 8px; right: 10px;" />
     {:else if validation && validation.status === Status.Error}
       <Icon.ExclamationCircle
+        dataCy="validation-error-icon"
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
       <div class="validation-row">

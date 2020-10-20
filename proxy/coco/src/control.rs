@@ -10,7 +10,7 @@ use librad::{
 use radicle_surf::vcs::git::git2;
 
 use crate::{
-    config, project, signer,
+    config, project,
     state::{Error, State},
     user::User,
 };
@@ -38,11 +38,7 @@ pub fn reset_monorepo() -> Result<(), std::io::Error> {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub async fn setup_fixtures(
-    api: &State,
-    signer: &signer::BoxedSigner,
-    owner: &User,
-) -> Result<(), Error> {
+pub async fn setup_fixtures(api: &State, owner: &User) -> Result<(), Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -63,7 +59,7 @@ pub async fn setup_fixtures(
     ];
 
     for info in infos {
-        replicate_platinum(api, signer, owner, info.0, info.1, info.2).await?;
+        replicate_platinum(api, owner, info.0, info.1, info.2).await?;
     }
 
     Ok(())
@@ -78,7 +74,6 @@ pub async fn setup_fixtures(
 /// the coco project.
 pub async fn replicate_platinum(
     api: &State,
-    signer: &signer::BoxedSigner,
     owner: &User,
     name: &str,
     description: &str,
@@ -99,7 +94,7 @@ pub async fn replicate_platinum(
         },
     };
 
-    let meta = api.init_project(signer, owner, project_creation).await?;
+    let meta = api.init_project(owner, project_creation).await?;
 
     // Push branches and tags.
     {
@@ -144,7 +139,6 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 /// Create and track a fake peer.
 pub async fn track_fake_peer(
     state: &State,
-    signer: &signer::BoxedSigner,
     project: &librad_project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (
@@ -159,7 +153,7 @@ pub async fn track_fake_peer(
     //   to fake_user
     let urn = project.urn();
     let fake_user =
-        state.init_user(signer, fake_user_handle).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+        state.init_user(fake_user_handle).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
     let remote = generate_peer_id();
     let monorepo = git2::Repository::open(state.monorepo()).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
@@ -226,7 +220,7 @@ pub async fn track_fake_peer(
     }
 
     state
-        .track(urn, remote.clone())
+        .track(urn, remote)
         .await
         .expect("failed to track peer");
 
