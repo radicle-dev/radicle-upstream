@@ -97,7 +97,7 @@
             resetObjectPath();
             resetObjectType();
           }}>{projectName}</span>
-        <span>/ {path.split('/').join(' / ')}</span>
+        <span>/ {path && path.split('/').join(' / ')}</span>
       </span>
     </div>
     <div class="commit-header">
