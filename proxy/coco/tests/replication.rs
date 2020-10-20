@@ -2,12 +2,13 @@ use std::time::Duration;
 
 use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
+use pretty_assertions::assert_eq;
 use tokio::time::timeout;
 
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, RunConfig, SyncConfig};
+use coco::{config, seed::Seed, state, RunConfig, SyncConfig};
 
 #[macro_use]
 mod common;
@@ -54,6 +55,15 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let want = vec![project_urn];
 
     assert_eq!(have, want);
+
+    {
+        let another_peer = librad::peer::PeerId::from(librad::keys::SecretKey::new());
+        bob_state.track(project.urn(), another_peer).await?;
+        let alice = alice.to_builder().build().unwrap();
+        let fuck_off = bob_state.tracked(project.urn()).await?;
+        let what: Vec<_> = vec![state::Remote::Maintainer { peer_id: alice_state.peer_id(), user: alice }];
+        assert_eq!(fuck_off, what);
+    }
 
     Ok(())
 }

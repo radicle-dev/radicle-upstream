@@ -15,6 +15,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
+        .or(remotes_filter(ctx.clone()))
         .or(request_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
         .or(track_filter(ctx))
@@ -75,6 +76,17 @@ fn get_filter(
         .and(path::param::<coco::Urn>())
         .and(path::end())
         .and_then(handler::get)
+}
+
+/// `GET /<id>/remotes`
+fn remotes_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_context(ctx)
+        .and(warp::get())
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and_then(handler::remotes)
 }
 
 /// `PUT /request/<id>`
@@ -192,6 +204,11 @@ mod handler {
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
+    }
+
+    /// TODO(finto): Document
+    pub async fn remotes(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        Ok(reply::json(&ctx.state.tracked(urn).await.map_err(Error::from)?))
     }
 
     /// List all projects the current user has contributed to.

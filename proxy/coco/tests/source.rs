@@ -1,7 +1,7 @@
 use nonempty::NonEmpty;
 use pretty_assertions::assert_eq;
 
-use coco::RunConfig;
+use coco::{state, RunConfig};
 
 mod common;
 use common::{build_peer, init_logging, shia_le_pathbuf};
@@ -37,7 +37,7 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
             .await?
     };
 
-    let peers = bob_state.tracked(urn.clone()).await?;
+    let peers = bob_state.tracked(urn.clone()).await?.into_iter().filter_map(state::Remote::into_user).collect();
 
     let bob = bob.to_data().build()?;
 

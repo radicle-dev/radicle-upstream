@@ -252,6 +252,7 @@ pub async fn list_for_user(
             .tracked(project.urn())
             .await?
             .into_iter()
+            .filter_map(coco::state::Remote::into_user)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer, _)) = tracked {
             let branch = state

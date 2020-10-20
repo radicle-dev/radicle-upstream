@@ -249,6 +249,7 @@ mod handler {
             .tracked(project_urn.clone())
             .await
             .map_err(error::Error::from)?;
+        let peers = peers.into_iter().filter_map(coco::state::Remote::into_user).collect();
         let peer_id = ctx.state.peer_id();
         let owner = owner
             .to_data()

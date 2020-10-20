@@ -71,7 +71,7 @@ pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
     for project in state.list_projects().await? {
         let project_urn = project.urn();
-        for peer in state.tracked(project_urn).await? {
+        for peer in state.tracked(project_urn).await?.into_iter().filter_map(coco::state::Remote::into_user) {
             let user = peer.into();
             if !users.contains(&user) {
                 users.push(user)
