@@ -393,7 +393,7 @@ context("project source browsing", () => {
             cy.pick("expand-special").click();
 
             cy.pick("source-tree").contains("-dash-").click();
-            cy.contains("platinum / special / -dash").should("exist");
+            cy.contains("platinum / special / -dash-").should("exist");
 
             cy.pick("source-tree").contains("...").click();
             cy.contains("platinum / special / ...").should("exist");
