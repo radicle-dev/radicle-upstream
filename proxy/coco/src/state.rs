@@ -521,6 +521,18 @@ impl State {
             .await??)
     }
 
+    /// Wrapper around the storage untrack.
+    ///
+    /// # Errors
+    ///
+    /// * When the storage operation fails.
+    pub async fn untrack(&self, urn: RadUrn, remote: PeerId) -> Result<(), Error> {
+        Ok(self
+            .api
+            .with_storage(move |storage| storage.untrack(&urn, &remote))
+            .await??)
+    }
+
     /// Get the [`user::User`]s that are tracking this project, including their [`PeerId`].
     ///
     /// # Errors
