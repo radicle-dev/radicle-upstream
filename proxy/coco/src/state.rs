@@ -154,7 +154,7 @@ impl State {
         addr_hints: Addrs,
     ) -> Result<RadUrn, Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr> + Clone + Send + 'static,
+        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
         Ok(self
             .api
@@ -310,7 +310,7 @@ impl State {
     ///   * Failed to clone the user.
     pub async fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, Error>
     where
-        Addrs: IntoIterator<Item = SocketAddr> + Clone + Send + 'static,
+        Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
         Ok(self
             .api
