@@ -264,7 +264,7 @@ const update = (msg: Msg): void => {
               query: {
                 peerId: msg.peerId,
                 revision: msg.revision,
-                path: msg.path,
+                path: encodeURIComponent(msg.path),
                 highlight: !isMarkdown(msg.path),
               },
             })
