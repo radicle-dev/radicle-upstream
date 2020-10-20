@@ -389,7 +389,7 @@ context("project source browsing", () => {
         });
 
         context("for filenames with special characters", () => {
-          it.only("does not break", () => {
+          it("does not break", () => {
             cy.pick("expand-special").click();
 
             cy.pick("source-tree").contains("-dash-").click();
