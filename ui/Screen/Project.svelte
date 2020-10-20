@@ -1,25 +1,26 @@
-<script lang="typescript">
+<script lang="ts">
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
+  import type { Project } from "../src/project";
+  import type {
+    PeerRevisions,
+    CommitsStore,
+    SupportedRevision,
+  } from "../src/source";
+
   import { isExperimental, openPath } from "../../native/ipc.js";
 
-  import * as remote from "../src/remote.ts";
-  import * as notification from "../src/notification.ts";
-  import * as path from "../src/path.ts";
+  import * as notification from "../src/notification";
+  import * as path from "../src/path";
+  import * as remote from "../src/remote";
   import {
     checkout,
     fetch,
     isMaintainer,
     project as store,
-  } from "../src/project.ts";
-  import * as screen from "../src/screen.ts";
-  import type {
-    Project,
-    PeerRevisions,
-    CommitsStore,
-    SupportedRevision,
-  } from "../src/project.ts"; // Annoying but necessary type import
+  } from "../src/project";
+  import * as screen from "../src/screen";
   import {
     commits as commitsStore,
     currentPeerId,
@@ -29,8 +30,8 @@
     revisions as revisionsStore,
     updateCurrentPeerId,
     updateCurrentRevision,
-  } from "../src/source.ts";
-  import { CSSPosition } from "../src/style.ts";
+  } from "../src/source";
+  import { CSSPosition } from "../src/style";
 
   import {
     Header,
