@@ -167,7 +167,7 @@
   };
 
   // Peers to be displayed in peer selector
-  $: availablePeers = revisions && revisions.map(rev => rev.identity);
+  $: availablePeers = (revisions && revisions.map(rev => rev.identity)) || [];
 
   // Revisions that belong to the current selected peer, formatted for display in revision selector
   $: currentPeerRevisions =

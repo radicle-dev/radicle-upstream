@@ -11,7 +11,7 @@
   import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
   export let currentPeerId: string | undefined;
-  export let availablePeers: identity.Identity[];
+  export let availablePeers: identity.Identity[] | [];
   export let maintainers: string[] | undefined = undefined;
 
   let expanded = false,
