@@ -413,8 +413,8 @@ context("project source browsing", () => {
             cy.pick("source-tree").contains("c++").click();
             cy.contains("platinum / special / c++").should("exist");
 
-            // cy.pick("source-tree").contains("faux\\path").click();
-            // cy.contains("platinum / special / faux\\path").should("exist");
+            cy.pick("source-tree").contains("faux\\path").click();
+            cy.contains("platinum / special / faux\\path").should("exist");
 
             cy.pick("source-tree").contains("i need some space").click();
             cy.contains("platinum / special / i need some space").should(
