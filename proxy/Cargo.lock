@@ -1909,9 +1909,9 @@ dependencies = [
 
 [[package]]
 name = "radicle-surf"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a683a05a2c99be50c2932d3f64dae8b5f0602dca6799f7efc70c79162af25852"
+checksum = "bb223cdd0832dcce4fdd8b654f322252e472e861957f79bb84297541a5ac1db9"
 dependencies = [
  "either",
  "git2",
