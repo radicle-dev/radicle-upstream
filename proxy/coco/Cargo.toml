@@ -37,7 +37,7 @@ git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "1861d6a870ff43898b16b196c5f10636f9444e77"
 
 [dependencies.radicle-surf]
-version = "0.4.1"
+version = "0.5.0"
 features = ["serialize"]
 
 [dev-dependencies]
