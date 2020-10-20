@@ -12,6 +12,7 @@
     defaultBranch,
     localState,
     nameValidationStore,
+    descriptionValidationStore,
     formatNameInput,
     extractName,
     repositoryPathValidationStore,
@@ -38,6 +39,7 @@
   let nameInput: HTMLInputElement;
 
   const dispatch = createEventDispatcher();
+  let startValidations = false;
 
   $: isNew = currentSelection === RepoType.New;
   $: isExisting = currentSelection === RepoType.Existing;
@@ -48,15 +50,15 @@
   let existingRepositoryPath = "";
 
   let nameValidation = nameValidationStore();
+  let descriptionValidation = descriptionValidationStore();
 
   let loading = false;
 
   const setCurrentSelection = (type: RepoType) => {
     currentSelection = type;
-    // Reset the name validation on selection switch
+    // Reset validations on selection switch
     nameValidation = nameValidationStore();
-    newRepositoryPath = "";
-    existingRepositoryPath = "";
+    descriptionValidation = descriptionValidationStore();
   };
 
   const createProject = async () => {
@@ -101,12 +103,17 @@
   $: pathValidation = repositoryPathValidationStore(isNew);
 
   $: repositoryPath = isNew ? newRepositoryPath : existingRepositoryPath;
-  $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0))
-    pathValidation.validate(repositoryPath);
 
-  $: if (name.length > 0) {
-    name = formatNameInput(name);
+  $: if (repositoryPath.length > 0 || (currentSelection && name.length > 0)) {
+    startValidations = true;
+  }
+
+  $: name = formatNameInput(name);
+
+  $: if (startValidations) {
     nameValidation.validate(name);
+    descriptionValidation.validate(description);
+    pathValidation.validate(repositoryPath);
   }
 
   // Use the directory name for existing projects as the project name.
@@ -122,8 +129,14 @@
   $: validName =
     name.length > 0 && $nameValidation.status === ValidationStatus.Success;
 
+  $: validDescription =
+    description.length === 0 ||
+    (description.length > 0 &&
+      $descriptionValidation.status === ValidationStatus.Success);
+
   $: disableSubmit =
     !validName ||
+    !validDescription ||
     $pathValidation.status !== ValidationStatus.Success ||
     loading;
 
@@ -263,6 +276,7 @@
       dataCy="description"
       style="margin-top: 1rem; margin-bottom: 1rem;"
       placeholder="Project description"
+      validation={$descriptionValidation}
       bind:value={description} />
 
     <Flex style="margin-top: 1rem">

@@ -2,8 +2,6 @@
 
 use serde::{Deserialize, Serialize};
 
-use coco::signer;
-
 use crate::{avatar, error};
 
 /// The users personal identifying metadata and keys.
@@ -51,12 +49,8 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub async fn create(
-    state: &coco::State,
-    key: &signer::BoxedSigner,
-    handle: &str,
-) -> Result<Identity, error::Error> {
-    let user = state.init_owner(key, handle).await?;
+pub async fn create(state: &coco::State, handle: &str) -> Result<Identity, error::Error> {
+    let user = state.init_owner(handle).await?;
     Ok((state.peer_id(), user).into())
 }
 

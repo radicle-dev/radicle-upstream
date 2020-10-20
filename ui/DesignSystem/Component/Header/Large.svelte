@@ -8,7 +8,6 @@
   export let name: string;
   export let urn: string;
   export let description: string = "";
-  export let registered: boolean = false;
 
   export let avatarFallback: EmojiAvatar | undefined = undefined;
   export let avatarShape: "circle" | "square" = "circle";
@@ -122,11 +121,6 @@
           <h1 data-cy="entity-name" style="display: flex; align-items: center;">
             {name}
           </h1>
-          {#if registered}
-            <Icon.Registered
-              dataCy="verified-badge"
-              style="fill: var(--color-primary); margin-left: 6px;" />
-          {/if}
         </div>
         <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {#if description.length > 0}

@@ -2,14 +2,10 @@ import { get, writable } from "svelte/store";
 
 import * as api from "./api";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
-import * as currency from "./currency";
 import * as event from "./event";
-import * as org from "./org";
 import * as remote from "./remote";
 import * as source from "./source";
 import { getLocalState, LocalState } from "./source";
-import * as transaction from "./transaction";
-import * as user from "./user";
 import * as validation from "./validation";
 
 // TYPES.
@@ -49,23 +45,9 @@ export interface Project {
   shareableEntityIdentifier: string;
   metadata: Metadata;
   stats: Stats;
-  registration?: org.Org | user.User;
 }
 
 type Projects = Project[];
-
-// The domain under which a registered project falls
-export enum Domain {
-  User = "user",
-  Org = "org",
-}
-
-export interface Registered {
-  domainType: Domain;
-  domainId: string;
-  name: string;
-  maybeProjectId?: string;
-}
 
 // STATE
 const creationStore = remote.createStore<Project>();
@@ -150,11 +132,6 @@ interface CreateInput {
   defaultBranch: string;
 }
 
-interface RegisterInput {
-  transactionFee: currency.MicroRad;
-  maybeCocoId?: string;
-}
-
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.ClearLocalState:
@@ -230,40 +207,6 @@ export const checkout = (
     path,
     peerId,
   });
-};
-
-export const getOrgProject = (
-  orgId: string,
-  projectName: string
-): Promise<Registered> => {
-  return api.get<Registered>(`orgs/${orgId}/projects/${projectName}`);
-};
-
-// Resolve the api base for the given project domain
-const apiBase = (domain: Domain): string => {
-  switch (domain) {
-    case Domain.Org:
-      return "orgs";
-    case Domain.User:
-      return "users";
-  }
-};
-
-export const register = (
-  domainType: Domain,
-  domainId: string,
-  projectName: string,
-  transactionFee: currency.MicroRad,
-  maybeCocoId?: string
-): Promise<transaction.Transaction> => {
-  const base = apiBase(domainType);
-  return api.post<RegisterInput, transaction.Transaction>(
-    `${base}/${domainId}/projects/${projectName}`,
-    {
-      transactionFee,
-      maybeCocoId,
-    }
-  );
 };
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
@@ -342,7 +285,9 @@ const projectNameConstraints = {
   },
   length: {
     minimum: 2,
-    message: "Your project name should be at least 2 characters long.",
+    maximum: 64,
+    tooShort: "Your project name should be at least 2 characters long.",
+    tooLong: "Your project name should not be longer than 64 characters.",
   },
   format: {
     pattern: new RegExp(projectNameMatch, "i"),
@@ -351,8 +296,20 @@ const projectNameConstraints = {
   },
 };
 
+const projectDescriptionConstraints = {
+  length: {
+    maximum: 256,
+    tooLong:
+      "Your project description should not be longer than 256 characters.",
+  },
+};
+
 export const nameValidationStore = (): validation.ValidationStore => {
   return validation.createValidationStore(projectNameConstraints);
+};
+
+export const descriptionValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore(projectDescriptionConstraints);
 };
 
 export const repositoryPathValidationStore = (
@@ -391,4 +348,10 @@ export const repositoryPathValidationStore = (
       ]
     );
   }
+};
+
+// Checks if the provided user is part of the maintainer list of the project.
+// FIXME(xla): Urns should be properly typed.
+export const isMaintainer = (userUrn: string, project: Project): boolean => {
+  return project.metadata.maintainers.includes(userUrn);
 };

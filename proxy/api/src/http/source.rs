@@ -409,7 +409,7 @@ mod test {
 
     use radicle_surf::vcs::git;
 
-    use crate::{context, http, identity, session};
+    use crate::{context, error, http, identity, session};
 
     #[tokio::test]
     async fn blob() -> Result<(), Box<dyn std::error::Error>> {
@@ -417,23 +417,7 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
-
+        let urn = replicate_platinum(&ctx).await?;
         let revision = coco::Revision::Branch {
             name: "master".to_string(),
             peer_id: None,
@@ -557,23 +541,7 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
-
+        let urn = replicate_platinum(&ctx).await?;
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
             peer_id: None,
@@ -618,23 +586,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
-
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
+        let urn = replicate_platinum(&ctx).await?;
 
         let res = request()
             .method("GET")
@@ -663,23 +615,7 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
-
+        let urn = replicate_platinum(&ctx).await?;
         let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
 
         let res = request()
@@ -726,22 +662,7 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
+        let urn = replicate_platinum(&ctx).await?;
 
         let branch = git::Branch::local("master");
         let res = request()
@@ -805,7 +726,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let peer_id = ctx.state.peer_id();
-        let id = identity::create(&ctx.state, &ctx.signer.clone().unwrap(), "cloudhead").await?;
+        let id = identity::create(&ctx.state, "cloudhead").await?;
 
         let owner = ctx.state.get_user(id.urn.clone()).await?;
         let owner = coco::user::verify(owner)?;
@@ -814,7 +735,6 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.state,
-            &ctx.signer.clone().unwrap(),
             &owner,
             "git-platinum",
             "fixture data",
@@ -823,13 +743,8 @@ mod test {
         .await?;
         let urn = platinum_project.urn();
 
-        let (remote, fintohaps) = coco::control::track_fake_peer(
-            &ctx.state,
-            &ctx.signer.unwrap(),
-            &platinum_project,
-            "fintohaps",
-        )
-        .await;
+        let (remote, fintohaps) =
+            coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
 
         let res = request()
             .method("GET")
@@ -884,22 +799,7 @@ mod test {
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
+        let urn = replicate_platinum(&ctx).await?;
 
         let res = request()
             .method("GET")
@@ -928,23 +828,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
-
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
+        let urn = replicate_platinum(&ctx).await?;
 
         let prefix = "src";
         let revision = coco::Revision::Branch {
@@ -1015,23 +899,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
-
-        let urn = {
-            let owner = ctx
-                .state
-                .init_owner(&ctx.signer.clone().unwrap(), "cloudhead")
-                .await?;
-            let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
-                &ctx.signer.unwrap(),
-                &owner,
-                "git-platinum",
-                "fixture data",
-                "master",
-            )
-            .await?;
-            platinum_project.urn()
-        };
+        let urn = replicate_platinum(&ctx).await?;
 
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
@@ -1062,5 +930,18 @@ mod test {
         });
 
         Ok(())
+    }
+
+    async fn replicate_platinum(ctx: &context::Context) -> Result<coco::Urn, error::Error> {
+        let owner = ctx.state.init_owner("cloudhead").await?;
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.state,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .await?;
+        Ok(platinum_project.urn())
     }
 }

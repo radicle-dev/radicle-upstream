@@ -200,7 +200,6 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
     let ctx = context::Context {
         peer_control,
         state,
-        signer: Some(signer),
         store,
     };
 

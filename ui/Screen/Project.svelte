@@ -1,13 +1,25 @@
 <script lang="typescript">
+  import { getContext } from "svelte";
   import Router from "svelte-spa-router";
+
   import { isExperimental, openPath } from "../../native/ipc.js";
 
-  import * as notification from "../src/notification";
-  import * as path from "../src/path";
-  import { checkout, fetch, project as store } from "../src/project";
-  import type { Project } from "../src/project"; // Annoying but necessary type import
-  import * as remote from "../src/remote";
-  import * as screen from "../src/screen";
+  import * as remote from "../src/remote.ts";
+  import * as notification from "../src/notification.ts";
+  import * as path from "../src/path.ts";
+  import {
+    checkout,
+    fetch,
+    isMaintainer,
+    project as store,
+  } from "../src/project.ts";
+  import * as screen from "../src/screen.ts";
+  import type {
+    Project,
+    PeerRevisions,
+    CommitsStore,
+    SupportedRevision,
+  } from "../src/project.ts"; // Annoying but necessary type import
   import {
     commits as commitsStore,
     currentPeerId,
@@ -15,8 +27,10 @@
     resetCurrentRevision,
     resetCurrentPeerId,
     revisions as revisionsStore,
-  } from "../src/source";
-  import * as source from "../src/source";
+    updateCurrentPeerId,
+    updateCurrentRevision,
+  } from "../src/source.ts";
+  import { CSSPosition } from "../src/style.ts";
 
   import {
     Header,
@@ -24,6 +38,7 @@
     Remote,
     RevisionSelector,
     SidebarLayout,
+    Tooltip,
     TrackToggle,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
@@ -49,6 +64,9 @@
 
   export let params: { id: string };
   const projectId = params.id;
+  const session = getContext("session");
+  const trackTooltipMaintainer = "You can't unfollow your own project";
+  const trackTooltip = "Unfollowing is not yet supported";
 
   // Reset user-manipulated stores on first load
   resetCurrentRevision();
@@ -119,10 +137,10 @@
 
   // Workaround for stores: https://github.com/sveltejs/language-tools/issues/493
   // TODO(sos): should be removed if/when this is fixed.
-  let revisions: source.PeerRevisions[] | undefined;
+  let revisions: PeerRevisions[] | undefined;
   let project: Project | undefined;
-  let commits: source.CommitsStore | undefined;
-  let currentRevision: source.SupportedRevision | undefined;
+  let commits: CommitsStore | undefined;
+  let currentRevision: SupportedRevision | undefined;
 
   $: {
     const rs = $revisionsStore;
@@ -140,13 +158,11 @@
   }
 
   const updatePeer = (ev: CustomEvent<{ peerId: string }>) => {
-    source.updateCurrentPeerId({ peerId: ev.detail.peerId });
+    updateCurrentPeerId({ peerId: ev.detail.peerId });
   };
 
-  const updateRevision = (
-    ev: CustomEvent<{ revision: source.SupportedRevision }>
-  ) => {
-    source.updateCurrentRevision({ revision: ev.detail.revision });
+  const updateRevision = (ev: CustomEvent<{ revision: SupportedRevision }>) => {
+    updateCurrentRevision({ revision: ev.detail.revision });
   };
 
   // Peers to be displayed in peer selector
@@ -201,18 +217,25 @@
           </div>
           <div slot="right">
             <CheckoutButton
-              on:checkout={ev => project && handleCheckout(ev, project)} />
+              on:checkout={ev => handleCheckout(ev, project, $currentPeerId)}
+              projectName={project.metadata.name} />
           </div>
           <div slot="top">
             <div style="display: flex">
-              {#if availablePeers && project}
-                <PeerSelector
-                  {availablePeers}
-                  currentPeerId={$currentPeerId}
-                  on:select={updatePeer}
-                  maintainers={project.metadata.maintainers} />
-              {/if}
-              <TrackToggle />
+              <PeerSelector
+                {availablePeers}
+                bind:currentPeerId={$currentPeerId}
+                on:select={updatePeer}
+                maintainers={project.metadata.maintainers} />
+              <Tooltip
+                position={CSSPosition.Left}
+                value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
+                <TrackToggle
+                  style="margin-left: 1rem;"
+                  disabled
+                  expanded
+                  tracking />
+              </Tooltip>
             </div>
           </div>
         </Header.Large>

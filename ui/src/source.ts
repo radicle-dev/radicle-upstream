@@ -321,6 +321,8 @@ const update = (msg: Msg): void => {
       break;
 
     case Kind.FetchRevisions:
+      revisionsStore.loading();
+
       api
         .get<PeerRevisionsResponse>(`source/revisions/${msg.projectId}`)
         .then(response => {
