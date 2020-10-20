@@ -218,8 +218,7 @@
           </div>
           <div slot="right">
             <CheckoutButton
-              on:checkout={ev => handleCheckout(ev, project, $currentPeerId)}
-              projectName={project.metadata.name} />
+              on:checkout={ev => project && handleCheckout(ev, project)} />
           </div>
           <div slot="top">
             <div style="display: flex">
