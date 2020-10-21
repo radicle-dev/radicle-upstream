@@ -71,7 +71,17 @@ pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
     for project in state.list_projects().await? {
         let project_urn = project.urn();
-        for peer in state.tracked(project_urn).await?.into_iter().filter_map(coco::state::Remote::into_user) {
+        for peer in
+            state
+                .tracked(project_urn)
+                .await?
+                .into_iter()
+                .filter_map(|remote| match remote {
+                    coco::state::Remote::Tracking { peer_id, user }
+                    | coco::state::Remote::Maintainer { peer_id, user } => Some((peer_id, user)),
+                    coco::state::Remote::Searching { .. } => None,
+                })
+        {
             let user = peer.into();
             if !users.contains(&user) {
                 users.push(user)

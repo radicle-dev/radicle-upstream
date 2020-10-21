@@ -60,9 +60,17 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         let another_peer = librad::peer::PeerId::from(librad::keys::SecretKey::new());
         bob_state.track(project.urn(), another_peer).await?;
         let alice = alice.to_builder().build().unwrap();
-        let fuck_off = bob_state.tracked(project.urn()).await?;
-        let what: Vec<_> = vec![state::Remote::Maintainer { peer_id: alice_state.peer_id(), user: alice }];
-        assert_eq!(fuck_off, what);
+        let have = bob_state.tracked(project.urn()).await?;
+        let want: Vec<_> = vec![
+            state::Remote::Maintainer {
+                peer_id: alice_state.peer_id(),
+                user: alice,
+            },
+            state::Remote::Searching {
+                peer_id: another_peer,
+            },
+        ];
+        assert_eq!(have, want);
     }
 
     Ok(())

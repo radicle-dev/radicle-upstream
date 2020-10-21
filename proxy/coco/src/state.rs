@@ -45,27 +45,30 @@ pub struct State {
     signer: signer::BoxedSigner,
 }
 
+/// Remote peers of a [`Project`] and their known user.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase", tag = "type")]
 pub enum Remote<User> {
-    #[serde(rename_all = "camelCase")]
-    Searching { peer_id: PeerId },
+    /// Project maintainer.
+    Maintainer {
+        /// Maintainers peer id.
+        peer_id: PeerId,
+        /// Maintainers user.
+        user: User,
+    },
 
-    #[serde(rename_all = "camelCase")]
-    Tracking { peer_id: PeerId, user: User },
+    /// Tracked remote peer not yet found on the network.
+    Searching {
+        /// Tracked remote peers id.
+        peer_id: PeerId,
+    },
 
-    #[serde(rename_all = "camelCase")]
-    Maintainer { peer_id: PeerId, user: User },
-}
-
-impl<U> Remote<U> {
-    pub fn into_user(self) -> Option<(PeerId, U)> {
-        match self {
-            Self::Searching { .. } => None,
-            Self::Tracking { peer_id, user } => Some((peer_id, user)),
-            Self::Maintainer { peer_id, user } => Some((peer_id, user)),
-        }
-    }
+    /// Tracked remote peer.
+    Tracking {
+        /// Tracked remote peers id.
+        peer_id: PeerId,
+        /// Tracked remote peers user.
+        user: User,
+    },
 }
 
 impl State {
@@ -389,7 +392,7 @@ impl State {
             None => git::Branch::local(&reference.name),
             Some(peer) => {
                 git::Branch::remote(&format!("heads/{}", reference.name), &peer.to_string())
-            },
+            }
         };
         let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
@@ -421,7 +424,7 @@ impl State {
             None => {
                 let project = self.get_project(urn.clone(), None).await?;
                 project.default_branch().to_owned()
-            },
+            }
             Some(name) => name,
         };
 
@@ -569,15 +572,9 @@ impl State {
                     if storage.has_ref(&NamespacedRef::rad_self(repo.urn.id.clone(), peer_id))? {
                         let user = repo.get_rad_self_of(peer_id)?;
                         if project.maintainers().contains(&user.urn()) {
-                            remotes.push(Remote::Maintainer {
-                                peer_id,
-                                user,
-                            })
+                            remotes.push(Remote::Maintainer { peer_id, user })
                         } else {
-                            remotes.push(Remote::Tracking {
-                                peer_id,
-                                user,
-                            })
+                            remotes.push(Remote::Tracking { peer_id, user })
                         }
                     } else {
                         remotes.push(Remote::Searching { peer_id })
@@ -629,7 +626,7 @@ impl State {
                     remote,
                     local: self.peer_id(),
                 }
-            },
+            }
         };
         tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
             .await
@@ -647,7 +644,12 @@ impl State {
         let include = Include::from_tracked_users(
             self.paths().git_includes_dir().to_path_buf(),
             local_url,
-            tracked.into_iter().filter_map(Remote::into_user).map(|(p, u)| (u, p)),
+            tracked.into_iter().filter_map(|remote| match remote {
+                Remote::Tracking { peer_id, user } | Remote::Maintainer { peer_id, user } => {
+                    Some((user, peer_id))
+                }
+                Remote::Searching { .. } => None,
+            }),
         );
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);

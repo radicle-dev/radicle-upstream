@@ -9,16 +9,16 @@ use crate::{context, http};
 
 /// Combination of all routes.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    tracked_filter(ctx.clone())
-        .or(contributed_filter(ctx.clone()))
-        .or(user_filter(ctx.clone()))
+    contributed_filter(ctx.clone())
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(remotes_filter(ctx.clone()))
-        .or(request_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
-        .or(track_filter(ctx))
+        .or(peers_filter(ctx.clone()))
+        .or(request_filter(ctx.clone()))
+        .or(track_filter(ctx.clone()))
+        .or(tracked_filter(ctx.clone()))
+        .or(user_filter(ctx))
         .boxed()
 }
 
@@ -78,15 +78,15 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `GET /<id>/remotes`
-fn remotes_filter(
+/// `GET /<urn>/peers`
+fn peers_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::get())
         .and(path::param::<coco::Urn>())
         .and(path::end())
-        .and_then(handler::remotes)
+        .and_then(handler::peers)
 }
 
 /// `PUT /request/<id>`
@@ -206,11 +206,6 @@ mod handler {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
     }
 
-    /// TODO(finto): Document
-    pub async fn remotes(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
-        Ok(reply::json(&ctx.state.tracked(urn).await.map_err(Error::from)?))
-    }
-
     /// List all projects the current user has contributed to.
     pub async fn list_contributed(ctx: context::Context) -> Result<impl Reply, Rejection> {
         let projects = project::Projects::list(&ctx.state).await?;
@@ -236,6 +231,20 @@ mod handler {
         let projects = project::Projects::list(&ctx.state).await?.tracked;
 
         Ok(reply::json(&projects))
+    }
+
+    /// List the remote peers for a project.
+    pub async fn peers(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        let peers: Vec<project::Remote> = ctx
+            .state
+            .tracked(urn)
+            .await
+            .map_err(Error::from)?
+            .into_iter()
+            .map(Into::into)
+            .collect::<Vec<_>>();
+
+        Ok(reply::json(&peers))
     }
 
     /// Kick off a network request for the [`project::Project`] of the given `id`.
@@ -529,7 +538,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}", urn))
+            .path(&format!("/{}/", urn))
             .reply(&api)
             .await;
 

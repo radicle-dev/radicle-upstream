@@ -5,7 +5,7 @@ use std::{collections::HashSet, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
-use crate::error;
+use crate::{error, identity};
 
 /// Object encapsulating project metadata.
 #[derive(Deserialize, Serialize)]
@@ -69,6 +69,44 @@ where
             shareable_entity_identifier: format!("%{}", id),
             metadata: project.into(),
             stats,
+        }
+    }
+}
+
+/// Remote peers of a [`Project`] and their known [`identity::Identity`].
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum Remote {
+    /// Maintainer of the project.
+    #[serde(rename_all = "camelCase")]
+    Maintainer {
+        /// [`identity::Identity`] of the maintainer.
+        identity: identity::Identity,
+    },
+    /// Locally racked peer that hasn't been found on the network.
+    #[serde(rename_all = "camelCase")]
+    Searching {
+        /// Known [`coco::PeerId`] of the tracked peer.
+        peer_id: coco::PeerId,
+    },
+    /// Tracked remote peer to get updates from for a [`Project`]
+    #[serde(rename_all = "camelCase")]
+    Tracking {
+        /// [`coco::PeerId`] of the tracked peer.
+        identity: identity::Identity,
+    },
+}
+
+impl<S> From<coco::state::Remote<coco::MetaUser<S>>> for Remote {
+    fn from(remote: coco::state::Remote<coco::MetaUser<S>>) -> Self {
+        match remote {
+            coco::state::Remote::Maintainer { peer_id, user } => Self::Maintainer {
+                identity: (peer_id, user).into(),
+            },
+            coco::state::Remote::Searching { peer_id } => Self::Searching { peer_id },
+            coco::state::Remote::Tracking { peer_id, user } => Self::Tracking {
+                identity: (peer_id, user).into(),
+            },
         }
     }
 }
@@ -252,7 +290,11 @@ pub async fn list_for_user(
             .tracked(project.urn())
             .await?
             .into_iter()
-            .filter_map(coco::state::Remote::into_user)
+            .filter_map(|remote| match remote {
+                coco::state::Remote::Tracking { peer_id, user }
+                | coco::state::Remote::Maintainer { peer_id, user } => Some((peer_id, user)),
+                coco::state::Remote::Searching { .. } => None,
+            })
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer, _)) = tracked {
             let branch = state

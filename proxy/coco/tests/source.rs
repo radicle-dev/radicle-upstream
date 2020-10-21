@@ -37,7 +37,16 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
             .await?
     };
 
-    let peers = bob_state.tracked(urn.clone()).await?.into_iter().filter_map(state::Remote::into_user).collect();
+    let peers = bob_state
+        .tracked(urn.clone())
+        .await?
+        .into_iter()
+        .filter_map(|remote| match remote {
+            state::Remote::Tracking { peer_id, user }
+            | state::Remote::Maintainer { peer_id, user } => Some((peer_id, user)),
+            state::Remote::Searching { .. } => None,
+        })
+        .collect();
 
     let bob = bob.to_data().build()?;
 

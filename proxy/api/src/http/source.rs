@@ -249,7 +249,14 @@ mod handler {
             .tracked(project_urn.clone())
             .await
             .map_err(error::Error::from)?;
-        let peers = peers.into_iter().filter_map(coco::state::Remote::into_user).collect();
+        let peers = peers
+            .into_iter()
+            .filter_map(|remote| match remote {
+                coco::state::Remote::Tracking { peer_id, user }
+                | coco::state::Remote::Maintainer { peer_id, user } => Some((peer_id, user)),
+                coco::state::Remote::Searching { .. } => None,
+            })
+            .collect();
         let peer_id = ctx.state.peer_id();
         let owner = owner
             .to_data()
