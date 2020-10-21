@@ -172,6 +172,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         let alice_peer_id = alice_state.peer_id();
         let fetch_url = project.urn().into_rad_url(alice_peer_id);
 
+        println!("GOT THIS FAR");
         bob_state
             .fetch(fetch_url, vec![alice_addr])
             .await

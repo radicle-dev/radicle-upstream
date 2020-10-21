@@ -3,7 +3,7 @@
 use librad::{
     git::{
         repo,
-        types::{NamespacedRef, Single},
+        types::{namespace, NamespacedRef, Single},
     },
     meta::entity,
     net,
@@ -48,6 +48,9 @@ pub enum Error {
     #[error(transparent)]
     PeerApi(#[from] net::peer::ApiError),
 
+    #[error(transparent)]
+    ReferenceName(#[from] librad::git::ext::reference::name::Error),
+
     /// Repo error.
     #[error(transparent)]
     Repo(#[from] repo::Error),
@@ -59,6 +62,12 @@ pub enum Error {
     /// Storage error.
     #[error(transparent)]
     Storage(#[from] storage::Error),
+
+    #[error(transparent)]
+    Transport(#[from] librad::git::local::transport::Error),
+
+    #[error("uhoh")]
+    TransportTimeout,
 
     /// Emitted when the parsing of a [`librad::uri::Path`] failed.
     #[error(transparent)]
@@ -81,7 +90,7 @@ pub enum Error {
     #[error("we could not find the '{reference}'")]
     MissingRef {
         /// The reference that we looked for in the `Storage`.
-        reference: NamespacedRef<Single>,
+        reference: NamespacedRef<namespace::Legacy, Single>,
     },
 }
 

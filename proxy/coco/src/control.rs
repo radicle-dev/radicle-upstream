@@ -3,6 +3,7 @@
 use std::{convert::TryFrom, env, io, path};
 
 use librad::{
+    git::ext::{OneLevel, RefLike},
     keys,
     meta::{entity, project as librad_project},
     peer::PeerId,
@@ -39,22 +40,27 @@ pub fn reset_monorepo() -> Result<(), std::io::Error> {
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
 pub async fn setup_fixtures(api: &State, owner: &User) -> Result<(), Error> {
+    let default = OneLevel::from(RefLike::try_from("master").unwrap());
     let infos = vec![
-        ("monokel", "A looking glass into the future", "master"),
+        (
+            "monokel",
+            "A looking glass into the future",
+            default.clone(),
+        ),
         (
             "Monadic",
             "Open source organization of amazing things.",
-            "master",
+            default.clone(),
         ),
         (
             "open source coin",
             "Research for the sustainability of the open source community.",
-            "master",
+            default.clone(),
         ),
         (
             "radicle",
             "Decentralized open source collaboration",
-            "master",
+            default,
         ),
     ];
 
@@ -77,7 +83,7 @@ pub async fn replicate_platinum(
     owner: &User,
     name: &str,
     description: &str,
-    default_branch: &str,
+    default_branch: OneLevel,
 ) -> Result<librad_project::Project<entity::Draft>, Error> {
     // Construct path for fixtures to clone into.
     let monorepo = api.monorepo();
@@ -88,7 +94,7 @@ pub async fn replicate_platinum(
 
     let project_creation = project::Create {
         description: description.to_string(),
-        default_branch: default_branch.to_string(),
+        default_branch,
         repo: project::Repo::Existing {
             path: platinum_into.clone(),
         },

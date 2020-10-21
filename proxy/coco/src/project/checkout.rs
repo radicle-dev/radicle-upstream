@@ -1,4 +1,5 @@
 use std::{
+    convert::TryFrom,
     ffi,
     marker::PhantomData,
     path::{self, PathBuf},
@@ -7,6 +8,7 @@ use std::{
 pub use librad::meta::project::Project;
 use librad::{
     git::{
+        ext::{OneLevel, RefLike, RefspecPattern},
         include,
         local::url::LocalUrl,
         types::{remote::Remote, FlatRef, Force},
@@ -37,6 +39,7 @@ where
 {
     /// The project.
     project: Project<ST>,
+    default_branch: OneLevel,
     /// The path on the filesystem where we're going to checkout to.
     path: P,
     /// Absolute path of the include file that will be set in the working copy config.
@@ -69,7 +72,7 @@ impl Ownership {
     pub fn clone(
         self,
         urn: RadUrn,
-        default_branch: &str,
+        default_branch: &OneLevel,
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
@@ -104,17 +107,18 @@ impl Ownership {
         handle: &str,
         peer: PeerId,
         url: LocalUrl,
-        default_branch: &str,
+        default_branch: &OneLevel,
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
-        let name = format!("{}@{}", handle, peer);
+        let name = RefLike::try_from(format!("{}@{}", handle, peer)).unwrap();
         {
             builder.remote_create(move |repo, _remote_name, url| {
-                let mut remote = Remote::new(url, name.clone());
-                let heads = FlatRef::heads(PhantomData, peer).with_name("heads/*");
-                let remotes = FlatRef::heads(PhantomData, name.clone());
-                remote.fetch_spec = Some(remotes.refspec(heads, Force::True).into_dyn());
+                let mut remote = Remote::new(url, name.as_str().to_string());
+                let heads: FlatRef<PeerId, _> = FlatRef::heads(PhantomData, peer)
+                    .with_name(RefspecPattern::try_from("heads/*").unwrap());
+                let remotes: FlatRef<RefLike, _> = FlatRef::heads(PhantomData, name.clone());
+                remote.fetch_spec = Some(remotes.refspec(heads, Force::True).boxed());
                 remote.create(repo)
             });
         }
@@ -125,7 +129,7 @@ impl Ownership {
         // upstream.
         {
             let mut remote = Remote::rad_remote(url, None).create(&repo)?;
-            remote.push(&[&format!("refs/heads/{}", default_branch)], None)?;
+            remote.push(&[&format!("refs/heads/{}", default_branch.as_str())], None)?;
         }
 
         Ok(repo)
@@ -138,9 +142,15 @@ where
     ST: Clone,
 {
     /// Create a new `Checkout` with the mock `Credential::Password` helper.
-    pub fn new(project: Project<ST>, path: P, include_path: PathBuf) -> Self {
+    pub fn new(
+        project: Project<ST>,
+        default_branch: OneLevel,
+        path: P,
+        include_path: PathBuf,
+    ) -> Self {
         Self {
             project,
+            default_branch,
             path,
             include_path,
         }
@@ -210,16 +220,16 @@ where
 
         // Clone the repository
         let mut builder = git2::build::RepoBuilder::new();
-        builder.branch(self.project.default_branch());
+        builder.branch(self.default_branch.as_str());
         let repo = ownership.clone(
             self.project.urn(),
-            self.project.default_branch(),
+            &self.default_branch,
             &project_path,
             &mut builder,
         )?;
 
         // Set configurations
-        super::set_rad_upstream(&repo, self.project.default_branch())?;
+        super::set_rad_upstream(&repo, &self.default_branch)?;
         include::set_include_path(&repo, self.include_path)?;
 
         Ok(project_path)

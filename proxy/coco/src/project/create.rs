@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use librad::{
     git::{
+        ext::{OneLevel, RefLike},
         local::url::LocalUrl,
         types::{remote::Remote, FlatRef},
     },
@@ -97,7 +98,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
     pub fn create(
         &self,
         description: &str,
-        default_branch: &str,
+        default_branch: &OneLevel,
     ) -> Result<git2::Repository, git2::Error> {
         match &self {
             Self::Existing { .. } => {
@@ -112,7 +113,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 options.no_reinit(true);
                 options.mkpath(true);
                 options.description(description);
-                options.initial_head(default_branch);
+                options.initial_head(default_branch.as_str());
 
                 let repo = git2::Repository::init_opts(path, &options)?;
                 // First use the config to initialize a commit signature for the user.
@@ -130,7 +131,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                     // commit and making that be the parent of the initial commit, but here this
                     // is the first commit so there will be no parent.
                     repo.commit(
-                        Some(&format!("refs/heads/{}", default_branch)),
+                        Some(&format!("refs/heads/{}", default_branch.as_str())),
                         &sig,
                         &sig,
                         "Initial commit",
@@ -160,7 +161,7 @@ pub struct Create<Path> {
     /// Description of the project we want to create.
     pub description: String,
     /// The default branch name for the project.
-    pub default_branch: String,
+    pub default_branch: OneLevel,
     /// How the repository should be created or opened.
     pub repo: Repo<Path>,
 }
@@ -213,7 +214,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         let project = project::Project::<entity::Draft>::create(name, owner.urn())?
             .to_builder()
             .set_description(self.description.clone())
-            .set_default_branch(self.default_branch.clone())
+            .set_default_branch(self.default_branch.as_str().to_string())
             .add_key(key)
             .add_certifier(owner.urn())
             .build()?;
@@ -226,13 +227,13 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     fn setup_remote(
         repo: &git2::Repository,
         url: LocalUrl,
-        default_branch: &str,
+        default_branch: &OneLevel,
     ) -> Result<(), Error> {
-        if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
+        if let Err(err) = repo.resolve_reference_from_short_name(default_branch.as_str()) {
             log::error!("error while trying to find default branch: {:?}", err);
             return Err(Error::MissingDefaultBranch {
                 repo_path: repo.path().to_path_buf(),
-                branch: default_branch.to_string(),
+                branch: default_branch.as_str().to_string(),
             });
         }
 
@@ -249,8 +250,9 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     }
 
     /// Push the default branch to the provided remote.
-    fn push_default(remote: &mut git2::Remote, default_branch: &str) -> Result<(), Error> {
-        let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
+    fn push_default(remote: &mut git2::Remote, default_branch: &OneLevel) -> Result<(), Error> {
+        let default: FlatRef<RefLike, _> =
+            FlatRef::head(PhantomData, None, default_branch.clone().into());
         log::debug!("Pushing default branch '{}'", default);
         remote.push(&[default.to_string()], None)?;
         Ok(())
