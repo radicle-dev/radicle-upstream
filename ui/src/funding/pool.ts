@@ -1,12 +1,13 @@
 import * as svelteStore from "svelte/store";
 import { PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/PoolFactory";
 import { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
+import type { ContractTransaction } from "radicle-contracts/contract-bindings/ethers/Pool";
+
 import * as validation from "../validation";
 
 import { Wallet, Account, Status } from "../wallet";
 import * as remote from "../remote";
 import { BigNumberish } from "ethers";
-import { stat } from "fs";
 
 export const store = svelteStore.writable<Pool | null>(null);
 
@@ -88,24 +89,11 @@ export function make(wallet: Wallet): Pool {
     return w.status === Status.Connected ? w.connected.account : undefined;
   }
 
-  async function updateAmountPerBlock(
-    amountPerBlock: BigNumberish
-  ): Promise<void> {
+  async function updateAmountPerBlock(amount: BigNumberish): Promise<void> {
     await poolContract
-      .setAmountPerBlock(amountPerBlock)
+      .setAmountPerBlock(amount)
       .then(tx => {
-        const _tx: Tx = {
-          hash: tx.hash,
-          status: tx.blockNumber
-            ? TxStatus.Included
-            : TxStatus.AwaitingInclusion,
-          inner: {
-            kind: PoolTxKind.UpdateMonthlyContribution,
-            amount: tx.value,
-          },
-        };
-        addTx(_tx);
-        console.log("Added tx with hash", _tx.hash);
+        addTx(newTx.amountPerBlock(tx));
         tx.wait();
       })
       .finally(loadPoolData);
@@ -120,7 +108,10 @@ export function make(wallet: Wallet): Pool {
       x => !data.receiverAddresses.includes(x)
     );
     const txs = newAddresses.map(address =>
-      poolContract.setReceiver(address, 1).then(tx => tx.wait())
+      poolContract.setReceiver(address, 1).then(tx => {
+        addTx(newTx.beneficiaries(tx));
+        tx.wait();
+      })
     );
 
     // TODO check transaction status
@@ -132,6 +123,7 @@ export function make(wallet: Wallet): Pool {
       gasLimit: 200 * 1000,
       value,
     });
+    addTx(newTx.topUp(tx));
     const receipt = await tx.wait();
     if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
@@ -141,6 +133,7 @@ export function make(wallet: Wallet): Pool {
 
   async function collect(): Promise<void> {
     const tx = await poolContract.collect();
+    addTx(newTx.collect(tx));
     const receipt = await tx.wait();
     if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
@@ -224,10 +217,10 @@ enum TxStatus {
 }
 
 enum PoolTxKind {
-  TopUp,
-  CollectFunds,
-  UpdateMonthlyContribution,
-  UpdateBeneficiaries,
+  TopUp = "Top Up",
+  CollectFunds = "Collect Funds",
+  UpdateMonthlyContribution = "Update Monthly Contribution",
+  UpdateBeneficiaries = "Update beneficiaries",
 }
 
 interface TopUp {
@@ -253,7 +246,7 @@ interface UpdateMonthlyContribution {
 }
 
 interface UpdateBeneficiaries {
-  kind: PoolTxKind.UpdateMonthlyContribution;
+  kind: PoolTxKind.UpdateBeneficiaries;
 }
 
 type PoolTx =
@@ -271,6 +264,53 @@ export interface Tx {
 
   // The underlying transaction.
   inner: PoolTx;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace newTx {
+  /* Smart constructors for `Tx` values */
+  export function amountPerBlock(txc: ContractTransaction): Tx {
+    return {
+      hash: txc.hash,
+      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
+      inner: {
+        kind: PoolTxKind.UpdateMonthlyContribution,
+        amount: txc.value,
+      },
+    };
+  }
+
+  export function beneficiaries(txc: ContractTransaction): Tx {
+    return {
+      hash: txc.hash,
+      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
+      inner: {
+        kind: PoolTxKind.UpdateBeneficiaries,
+      },
+    };
+  }
+
+  export function collect(txc: ContractTransaction): Tx {
+    return {
+      hash: txc.hash,
+      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
+      inner: {
+        kind: PoolTxKind.CollectFunds,
+        amount: txc.value,
+      },
+    };
+  }
+
+  export function topUp(txc: ContractTransaction): Tx {
+    return {
+      hash: txc.hash,
+      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
+      inner: {
+        kind: PoolTxKind.TopUp,
+        amount: txc.value,
+      },
+    };
+  }
 }
 
 export const transactions = svelteStore.writable<Tx[]>([]);

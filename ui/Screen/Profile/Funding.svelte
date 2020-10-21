@@ -23,6 +23,10 @@
     padding: 0 var(--content-padding);
     margin: 0 auto;
   }
+
+  strong {
+    font-weight: bold;
+  }
 </style>
 
 <div class="funding-container">
@@ -40,8 +44,8 @@
   {/if}
 </div>
 
-<ul>
+<ol>
   {#each txs as tx}
-    <li>Status: {tx.status} | Hash: {tx.hash} | {tx.inner.kind}</li>
+    <li>• <strong>{tx.inner.kind}</strong> - {tx.status} - {tx.hash}</li>
   {/each}
-</ul>
+</ol>
