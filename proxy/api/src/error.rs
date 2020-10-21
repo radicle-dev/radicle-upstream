@@ -20,4 +20,8 @@ pub enum Error {
     /// Issues when access persistent storage.
     #[error(transparent)]
     Store(#[from] kv::Error),
+
+    /// The key store is sealed
+    #[error("Keystore is sealed")]
+    KeystoreSealed,
 }
