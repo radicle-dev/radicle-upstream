@@ -1,8 +1,8 @@
 import * as svelteStore from "svelte/store";
 import { PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/PoolFactory";
 import { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
-import type { ContractTransaction } from "radicle-contracts/contract-bindings/ethers/Pool";
 
+import * as transaction from "../transaction";
 import * as validation from "../validation";
 
 import { Wallet, Account, Status } from "../wallet";
@@ -93,7 +93,7 @@ export function make(wallet: Wallet): Pool {
     await poolContract
       .setAmountPerBlock(amount)
       .then(tx => {
-        addTx(newTx.amountPerBlock(tx));
+        transaction.add(transaction.amountPerBlock(tx));
         tx.wait();
       })
       .finally(loadPoolData);
@@ -109,7 +109,7 @@ export function make(wallet: Wallet): Pool {
     );
     const txs = newAddresses.map(address =>
       poolContract.setReceiver(address, 1).then(tx => {
-        addTx(newTx.beneficiaries(tx));
+        transaction.add(transaction.beneficiaries(tx));
         tx.wait();
       })
     );
@@ -123,7 +123,7 @@ export function make(wallet: Wallet): Pool {
       gasLimit: 200 * 1000,
       value,
     });
-    addTx(newTx.topUp(tx));
+    transaction.add(transaction.topUp(tx));
     const receipt = await tx.wait();
     if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
@@ -133,7 +133,7 @@ export function make(wallet: Wallet): Pool {
 
   async function collect(): Promise<void> {
     const tx = await poolContract.collect();
-    addTx(newTx.collect(tx));
+    transaction.add(transaction.collect(tx));
     const receipt = await tx.wait();
     if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
@@ -202,169 +202,3 @@ export const amountValidationStore = (
     },
   ]);
 };
-
-/* Temporary sketch code */
-
-enum TxStatus {
-  // The transaction is pending user approval on their waLlet app.
-  PendingApproval = "Pending Approval",
-  // The transaction as been approved and is awaiting to be included in a block.
-  AwaitingInclusion = "Awaiting inclusion",
-  // The transaction as been included in the block. End of its life cycle.
-  Included = "Included",
-  // The transaction as been rejected.
-  Rejected = "Rejected",
-}
-
-enum PoolTxKind {
-  TopUp = "Top Up",
-  CollectFunds = "Collect Funds",
-  UpdateMonthlyContribution = "Update Monthly Contribution",
-  UpdateBeneficiaries = "Update beneficiaries",
-}
-
-interface TopUp {
-  kind: PoolTxKind.TopUp;
-  amount: BigNumberish;
-}
-
-interface CollectFunds {
-  kind: PoolTxKind.CollectFunds;
-  amount: BigNumberish;
-}
-
-interface UpdateMonthlyContribution {
-  kind: PoolTxKind.UpdateMonthlyContribution;
-  // The value the monthly contribution is being set to.
-  amount: BigNumberish;
-}
-
-interface UpdateMonthlyContribution {
-  kind: PoolTxKind.UpdateMonthlyContribution;
-  // The value the monthly contribution is being set to.
-  amount: BigNumberish;
-}
-
-interface UpdateBeneficiaries {
-  kind: PoolTxKind.UpdateBeneficiaries;
-}
-
-type PoolTx =
-  | TopUp
-  | CollectFunds
-  | UpdateMonthlyContribution
-  | UpdateBeneficiaries;
-
-export interface Tx {
-  // The hash of the transaction that uniquely identifies it.
-  hash: string;
-
-  // The status of the transaction
-  status: TxStatus;
-
-  // The underlying transaction.
-  inner: PoolTx;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
-namespace newTx {
-  /* Smart constructors for `Tx` values */
-  export function amountPerBlock(txc: ContractTransaction): Tx {
-    return {
-      hash: txc.hash,
-      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-      inner: {
-        kind: PoolTxKind.UpdateMonthlyContribution,
-        amount: txc.value,
-      },
-    };
-  }
-
-  export function beneficiaries(txc: ContractTransaction): Tx {
-    return {
-      hash: txc.hash,
-      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-      inner: {
-        kind: PoolTxKind.UpdateBeneficiaries,
-      },
-    };
-  }
-
-  export function collect(txc: ContractTransaction): Tx {
-    return {
-      hash: txc.hash,
-      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-      inner: {
-        kind: PoolTxKind.CollectFunds,
-        amount: txc.value,
-      },
-    };
-  }
-
-  export function topUp(txc: ContractTransaction): Tx {
-    return {
-      hash: txc.hash,
-      status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-      inner: {
-        kind: PoolTxKind.TopUp,
-        amount: txc.value,
-      },
-    };
-  }
-}
-
-export const transactions = svelteStore.writable<Tx[]>([]);
-
-const POLL_INTERVAL = 10000;
-setInterval(() => {
-  updateAll();
-}, POLL_INTERVAL);
-
-function addTx(tx: Tx) {
-  transactions.update(txs => {
-    txs.push(tx);
-    return txs;
-  });
-}
-
-function updateTxStatus(hash: string, status: TxStatus) {
-  transactions.subscribe(txs => {
-    const tx = txs.find(tx => tx.hash === hash);
-    if (tx) {
-      tx.status = status;
-    }
-  });
-}
-
-// Cap the amount of managed transactions
-function cap() {
-  transactions.update(txs => {
-    txs.length = Math.min(txs.length, 5);
-    return txs;
-  });
-}
-
-function updateAll() {
-  transactions.update(txs => {
-    txs.forEach(tx => {
-      const newStatus = lookupStatus(tx.hash);
-      if (newStatus) tx.status = newStatus;
-    });
-    return txs;
-  });
-}
-
-// TODO(nuno): Lookup the actual status of a transaction with the given hash.
-function lookupStatus(_hash: string): TxStatus | undefined {
-  function randomInt(max: number) {
-    return Math.floor(Math.random() * Math.floor(max));
-  }
-
-  const statuses = [
-    TxStatus.PendingApproval,
-    TxStatus.AwaitingInclusion,
-    TxStatus.Included,
-    TxStatus.Rejected,
-  ];
-  return statuses[randomInt(statuses.length)];
-}

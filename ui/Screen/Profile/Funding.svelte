@@ -1,6 +1,7 @@
 <script lang="ts">
   import { build, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
+  import * as transaction from "../../src/transaction";
 
   import { Button } from "../../DesignSystem/Primitive";
 
@@ -8,9 +9,9 @@
 
   const wallet = build();
 
-  let txs: pool.Tx[] = [];
+  let txs: transaction.Tx[] = [];
 
-  $: pool.transactions.subscribe(xs => {
+  $: transaction.store.subscribe(xs => {
     console.log("Updates to transactions");
     txs = xs;
   });
