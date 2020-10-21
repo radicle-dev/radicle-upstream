@@ -125,10 +125,3 @@ export const updateCoCo = (coco: CoCo): void =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     settings: { ...get(settings), coco },
   });
-
-export const parseSeedsInput = (input: string): string[] => {
-  return input
-    .replace(/\r\n|\n|\r|\s/gm, ",")
-    .split(",")
-    .filter(seed => seed !== "");
-};
