@@ -387,6 +387,54 @@ context("project source browsing", () => {
             cy.contains("Binary content").should("exist");
           });
         });
+
+        context("for filenames with special characters", () => {
+          it("does not break", () => {
+            cy.pick("expand-special").click();
+
+            cy.pick("source-tree").contains("-dash-").click();
+            cy.contains("platinum / special / -dash-").should("exist");
+
+            cy.pick("source-tree").contains("...").click();
+            cy.contains("platinum / special / ...").should("exist");
+
+            cy.pick("source-tree").contains(":colon:").click();
+            cy.contains("platinum / special / :colon:").should("exist");
+
+            cy.pick("source-tree").contains(";semicolon;").click();
+            cy.contains("platinum / special / ;semicolon;").should("exist");
+
+            cy.pick("source-tree").contains("@at@").click();
+            cy.contains("platinum / special / @at@").should("exist");
+
+            cy.pick("source-tree").contains("_underscore_").click();
+            cy.contains("platinum / special / _underscore_").should("exist");
+
+            cy.pick("source-tree").contains("c++").click();
+            cy.contains("platinum / special / c++").should("exist");
+
+            cy.pick("source-tree").contains("faux\\path").click();
+            cy.contains("platinum / special / faux\\path").should("exist");
+
+            cy.pick("source-tree").contains("i need some space").click();
+            cy.contains("platinum / special / i need some space").should(
+              "exist"
+            );
+
+            cy.pick("source-tree")
+              .contains("qs?param1=value?param2=value2#hash")
+              .click();
+            cy.contains(
+              "platinum / special / qs?param1=value?param2=value2#hash"
+            ).should("exist");
+
+            cy.pick("source-tree").contains("~tilde~").click();
+            cy.contains("platinum / special / ~tilde~").should("exist");
+
+            cy.pick("source-tree").contains("👹👹👹").click();
+            cy.contains("platinum / special / 👹👹👹").should("exist");
+          });
+        });
       });
     });
   });
