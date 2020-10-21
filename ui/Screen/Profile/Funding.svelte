@@ -1,11 +1,19 @@
 <script lang="ts">
   import { build, Status } from "../../src/wallet";
-  import { make, transactions } from "../../src/funding/pool";
+  import * as pool from "../../src/funding/pool";
 
   import { Button } from "../../DesignSystem/Primitive";
+
   import Pool from "../Funding/Pool.svelte";
 
   const wallet = build();
+
+  let txs: pool.Tx[] = [];
+
+  $: pool.transactions.subscribe(xs => {
+    console.log("Updates to transactions");
+    txs = xs;
+  });
 </script>
 
 <style>
@@ -28,10 +36,12 @@
     <div>Address: {$wallet.connected.account.address}</div>
     <div>Balance: {$wallet.connected.account.balance} eth</div>
 
-    <Pool pool={make(wallet)} />
+    <Pool pool={pool.make(wallet)} />
   {/if}
 </div>
 
-{#each transactions as tx}
-  - Status: {tx.status} | Hash: {tx.hash} | {tx.inner.kind} |
-{/each}
+<ul>
+  {#each txs as tx}
+    <li>Status: {tx.status} | Hash: {tx.hash} | {tx.inner.kind}</li>
+  {/each}
+</ul>

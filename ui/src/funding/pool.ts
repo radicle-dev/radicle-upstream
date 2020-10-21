@@ -6,6 +6,7 @@ import * as validation from "../validation";
 import { Wallet, Account, Status } from "../wallet";
 import * as remote from "../remote";
 import { BigNumberish } from "ethers";
+import { stat } from "fs";
 
 export const store = svelteStore.writable<Pool | null>(null);
 
@@ -261,7 +262,7 @@ type PoolTx =
   | UpdateMonthlyContribution
   | UpdateBeneficiaries;
 
-interface Tx {
+export interface Tx {
   // The hash of the transaction that uniquely identifies it.
   hash: string;
 
@@ -272,28 +273,39 @@ interface Tx {
   inner: PoolTx;
 }
 
-export const transactions: Tx[] = [];
+export const transactions = svelteStore.writable<Tx[]>([]);
 
 function addTx(tx: Tx) {
-  transactions.push(tx);
+  transactions.update(txs => {
+    txs.push(tx);
+    return txs;
+  });
 }
 
 function updateTxStatus(hash: string, status: TxStatus) {
-  const tx = transactions.find(tx => tx.hash === hash);
-  if (tx) {
-    tx.status = status;
-  }
+  transactions.subscribe(txs => {
+    const tx = txs.find(tx => tx.hash === hash);
+    if (tx) {
+      tx.status = status;
+    }
+  });
 }
 
 // Cap the amount of managed transactions
 function cap() {
-  transactions.length = Math.min(transactions.length, 5);
+  transactions.update(txs => {
+    txs.length = Math.min(txs.length, 5);
+    return txs;
+  });
 }
 
 function updateAll() {
-  transactions.forEach(tx => {
-    const newStatus = lookupStatus(tx.hash);
-    if (newStatus) tx.status = newStatus;
+  transactions.update(txs => {
+    txs.forEach(tx => {
+      const newStatus = lookupStatus(tx.hash);
+      if (newStatus) tx.status = newStatus;
+    });
+    return txs;
   });
 }
 
