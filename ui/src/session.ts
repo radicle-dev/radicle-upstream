@@ -6,6 +6,7 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as notification from "./notification";
 import * as remote from "./remote";
+import * as screen from "./screen";
 import { Appearance, CoCo, Settings } from "./settings";
 
 import { createValidationStore, ValidationStatus } from "./validation";
@@ -149,25 +150,48 @@ export const seedValidation = createValidationStore(
   ]
 );
 
-let restartNotificationShown = false;
+let restartNotificationVisible = false;
+
+const reloadProxy = async () => {
+  await window.fetch("http://localhost:8080/v1/control/reload");
+  notification.info("Reloading peer configuration, hang in there…");
+
+  // Prevent the user from interacting with the UI while proxy is reloading.
+  screen.lock();
+  let proxyStopped = true;
+
+  while (proxyStopped) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const resp = await api.get<Session>(`session`);
+      if (resp) {
+        proxyStopped = false;
+      }
+    } catch {
+      // Ignore failed attempts to connect.
+    }
+  }
+  screen.unlock();
+
+  restartNotificationVisible = false;
+};
 
 const showRestartNotification = (): void => {
   // The restart notification is sticky and will stay visible until the user
   // clicks the "Restart" button, no need to show it multiple times.
-  if (restartNotificationShown) return;
+  if (restartNotificationVisible) return;
 
   notification.error(
     "Restart the app to connect to your new seed",
     false,
     "Restart",
     () => {
-      // TODO(rudolfs): implement proxy/app restart
-      console.log("restart");
+      reloadProxy();
     },
     true
   );
 
-  restartNotificationShown = true;
+  restartNotificationVisible = true;
 };
 
 export const addSeed = async (seed: string): Promise<boolean> => {
