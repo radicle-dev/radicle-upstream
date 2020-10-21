@@ -62,12 +62,16 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         let alice = alice.to_builder().build().unwrap();
         let have = bob_state.tracked(project.urn()).await?;
         let want: Vec<_> = vec![
-            state::Remote::Maintainer {
+            coco::project::Peer::Remote {
                 peer_id: alice_state.peer_id(),
-                user: alice,
+                status: coco::project::ReplicationStatus::Replicated {
+                    role: coco::project::Role::Maintainer,
+                    user: alice,
+                },
             },
-            state::Remote::Searching {
+            coco::project::Peer::Remote {
                 peer_id: another_peer,
+                status: coco::project::ReplicationStatus::NotReplicated,
             },
         ];
         assert_eq!(have, want);

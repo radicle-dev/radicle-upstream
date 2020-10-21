@@ -73,39 +73,53 @@ where
     }
 }
 
-/// Remote peers of a [`Project`] and their known [`identity::Identity`].
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase", tag = "type")]
-pub enum Remote {
-    /// Maintainer of the project.
-    #[serde(rename_all = "camelCase")]
-    Maintainer {
-        /// [`identity::Identity`] of the maintainer.
-        identity: identity::Identity,
-    },
-    /// Locally racked peer that hasn't been found on the network.
-    #[serde(rename_all = "camelCase")]
-    Searching {
-        /// Known [`coco::PeerId`] of the tracked peer.
-        peer_id: coco::PeerId,
-    },
-    /// Tracked remote peer to get updates from for a [`Project`]
-    #[serde(rename_all = "camelCase")]
-    Tracking {
-        /// [`coco::PeerId`] of the tracked peer.
-        identity: identity::Identity,
-    },
+#[derive(Serialize)]
+pub struct Peer(coco::project::Peer<identity::Identity>);
+
+impl Deref for Peer {
+    type Target = coco::project::Peer<identity::Identity>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
-impl<S> From<coco::state::Remote<coco::MetaUser<S>>> for Remote {
-    fn from(remote: coco::state::Remote<coco::MetaUser<S>>) -> Self {
-        match remote {
-            coco::state::Remote::Maintainer { peer_id, user } => Self::Maintainer {
-                identity: (peer_id, user).into(),
+impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
+    fn from(peer: coco::project::Peer<coco::MetaUser<S>>) -> Self {
+        match peer {
+            coco::project::Peer::Local { peer_id, status } => match status {
+                coco::project::ReplicationStatus::NotReplicated => {
+                    Self(coco::project::Peer::Local {
+                        peer_id,
+                        status: coco::project::ReplicationStatus::NotReplicated,
+                    })
+                },
+                coco::project::ReplicationStatus::Replicated { role, user } => {
+                    Self(coco::project::Peer::Local {
+                        peer_id,
+                        status: coco::project::ReplicationStatus::Replicated {
+                            role,
+                            user: (peer_id, user).into(),
+                        },
+                    })
+                },
             },
-            coco::state::Remote::Searching { peer_id } => Self::Searching { peer_id },
-            coco::state::Remote::Tracking { peer_id, user } => Self::Tracking {
-                identity: (peer_id, user).into(),
+            coco::project::Peer::Remote { peer_id, status } => match status {
+                coco::project::ReplicationStatus::NotReplicated => {
+                    Self(coco::project::Peer::Remote {
+                        peer_id,
+                        status: coco::project::ReplicationStatus::NotReplicated,
+                    })
+                },
+                coco::project::ReplicationStatus::Replicated { role, user } => {
+                    Self(coco::project::Peer::Remote {
+                        peer_id,
+                        status: coco::project::ReplicationStatus::Replicated {
+                            role,
+                            user: (peer_id, user).into(),
+                        },
+                    })
+                },
             },
         }
     }
@@ -290,10 +304,12 @@ pub async fn list_for_user(
             .tracked(project.urn())
             .await?
             .into_iter()
-            .filter_map(|remote| match remote {
-                coco::state::Remote::Tracking { peer_id, user }
-                | coco::state::Remote::Maintainer { peer_id, user } => Some((peer_id, user)),
-                coco::state::Remote::Searching { .. } => None,
+            .filter_map(|peer| match peer {
+                coco::project::Peer::Remote {
+                    peer_id,
+                    status: coco::project::ReplicationStatus::Replicated { user, .. },
+                } => Some((peer_id, user)),
+                _ => None,
             })
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer, _)) = tracked {

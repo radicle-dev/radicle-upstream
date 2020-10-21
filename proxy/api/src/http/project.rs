@@ -236,9 +236,9 @@ mod handler {
 
     /// List the remote peers for a project.
     pub async fn peers(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
-        let peers: Vec<project::Remote> = ctx
+        let peers: Vec<project::Peer> = ctx
             .state
-            .tracked(urn)
+            .list_project_peers(urn)
             .await
             .map_err(Error::from)?
             .into_iter()

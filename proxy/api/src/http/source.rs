@@ -251,10 +251,12 @@ mod handler {
             .map_err(error::Error::from)?;
         let peers = peers
             .into_iter()
-            .filter_map(|remote| match remote {
-                coco::state::Remote::Tracking { peer_id, user }
-                | coco::state::Remote::Maintainer { peer_id, user } => Some((peer_id, user)),
-                coco::state::Remote::Searching { .. } => None,
+            .filter_map(|peer| match peer {
+                coco::project::Peer::Remote {
+                    peer_id,
+                    status: coco::project::ReplicationStatus::Replicated { user, .. },
+                } => Some((peer_id, user)),
+                _ => None,
             })
             .collect();
         let peer_id = ctx.state.peer_id();
