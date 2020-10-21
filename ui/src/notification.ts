@@ -44,6 +44,7 @@ interface ShowError extends event.Event<Kind> {
   showIcon: boolean;
   actionText?: string;
   actionHandler?: () => void;
+  sticky?: boolean;
 }
 
 interface ShowInfo extends event.Event<Kind> {
@@ -52,6 +53,7 @@ interface ShowInfo extends event.Event<Kind> {
   showIcon: boolean;
   actionText?: string;
   actionHandler?: () => void;
+  sticky?: boolean;
 }
 
 type Msg = Remove | ShowError | ShowInfo;
@@ -66,31 +68,39 @@ const show = (
   showIcon: boolean,
   message: string,
   actionText?: string,
-  actionHandler?: () => void
+  actionHandler?: () => void,
+  sticky?: boolean
 ): void => {
   const id = Math.random();
-  notifications = [
-    ...notifications,
-    {
-      id,
-      level,
-      message,
-      showIcon,
-      actionText: actionText || "Close",
-      actionHandler: () => {
-        if (actionHandler) {
-          actionHandler();
-        }
+  const notification = {
+    id,
+    level,
+    message,
+    showIcon,
+    actionText: actionText || "Close",
+    actionHandler: () => {
+      if (actionHandler) {
+        actionHandler();
+      }
 
-        remove(id);
-      },
+      remove(id);
     },
-  ];
+  };
+
+  // Keep sticky notifications at the bottom of the stack.
+  if (sticky) {
+    notifications = [...notifications, notification];
+  } else {
+    notifications = [notification, ...notifications];
+  }
   store.set(notifications);
 
-  setTimeout(() => {
-    filter(id);
-  }, config.NOTIFICATION_TIMEOUT);
+  // Don't dismiss sticky notifications automatically.
+  if (!sticky) {
+    setTimeout(() => {
+      filter(id);
+    }, config.NOTIFICATION_TIMEOUT);
+  }
 };
 
 const update = (msg: Msg): void => {
@@ -101,7 +111,8 @@ const update = (msg: Msg): void => {
         msg.showIcon,
         msg.message,
         msg.actionText,
-        msg.actionHandler
+        msg.actionHandler,
+        msg.sticky
       );
 
       break;
@@ -112,7 +123,8 @@ const update = (msg: Msg): void => {
         msg.showIcon,
         msg.message,
         msg.actionText,
-        msg.actionHandler
+        msg.actionHandler,
+        msg.sticky
       );
 
       break;
@@ -131,20 +143,22 @@ export const error = (
   message: string,
   showIcon = false,
   actionText?: string,
-  actionHandler?: () => void
+  actionHandler?: () => void,
+  sticky = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowError,
     update
-  )({ message, showIcon, actionText, actionHandler });
+  )({ message, showIcon, actionText, actionHandler, sticky });
 
 export const info = (
   message: string,
   showIcon = false,
   actionText?: string,
-  actionHandler?: () => void
+  actionHandler?: () => void,
+  sticky = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowInfo,
     update
-  )({ message, showIcon, actionText, actionHandler });
+  )({ message, showIcon, actionText, actionHandler, sticky });
