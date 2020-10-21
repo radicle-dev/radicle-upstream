@@ -1,10 +1,12 @@
 import { get, writable } from "svelte/store";
 
 import * as api from "./api";
-import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
+import * as config from "./config";
 import * as event from "./event";
+import * as identity from "./identity";
 import * as remote from "./remote";
-import { getLocalState, LocalState } from "./source";
+import * as source from "./source";
+import * as urn from "./urn";
 import * as validation from "./validation";
 
 // TYPES.
@@ -52,6 +54,9 @@ type Projects = Project[];
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
+const peersStore = remote.createStore<identity.Identity[]>();
+export const peers = peersStore.readable;
+
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;
 
@@ -61,7 +66,7 @@ export const projects = projectsStore.readable;
 const trackedStore = remote.createStore<Projects>();
 export const tracked = trackedStore.readable;
 
-const localStateStore = remote.createStore<LocalState>();
+const localStateStore = remote.createStore<source.LocalState>();
 export const localState = localStateStore.readable;
 
 // EVENTS
@@ -70,6 +75,7 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchPeers = "FETCH_PEERS",
   FetchTracked = "FETCH_TRACKED",
   FetchUser = "FETCH_USER",
   FetchLocalState = "FETCH_LOCAL_STATE",
@@ -94,6 +100,11 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
+interface FetchPeers extends event.Event<Kind> {
+  kind: Kind.FetchPeers;
+  id: urn.Urn;
+}
+
 interface FetchTracked extends event.Event<Kind> {
   kind: Kind.FetchTracked;
 }
@@ -114,6 +125,7 @@ type Msg =
   | Fetch
   | FetchList
   | FetchLocalState
+  | FetchPeers
   | FetchTracked
   | FetchUser;
 
@@ -142,7 +154,11 @@ const update = (msg: Msg): void => {
       projectStore.loading();
       api
         .get<Project>(`projects/${msg.id}`)
-        .then(projectStore.success)
+        .then((project: Project) => {
+          projectStore.success(project);
+
+          fetchPeers({ id: msg.id });
+        })
         .catch(projectStore.error);
 
       break;
@@ -157,6 +173,15 @@ const update = (msg: Msg): void => {
 
       break;
 
+    case Kind.FetchPeers:
+      peersStore.loading();
+      api
+        .get<identity.Identity[]>(`projects/${msg.id}/peers`)
+        .then(peersStore.success)
+        .catch(peersStore.error);
+
+      break;
+
     case Kind.FetchTracked:
       trackedStore.loading();
       api
@@ -167,7 +192,8 @@ const update = (msg: Msg): void => {
 
     case Kind.FetchLocalState:
       localStateStore.loading();
-      getLocalState(msg.path)
+      source
+        .getLocalState(msg.path)
         .then(localStateStore.success)
         .catch(localStateStore.error);
       break;
@@ -203,6 +229,7 @@ export const checkout = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchPeers = event.create<Kind, Msg>(Kind.FetchPeers, update);
 export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
 export const fetchLocalState = event.create<Kind, Msg>(
   Kind.FetchLocalState,
@@ -221,7 +248,9 @@ projectsStore.start(fetchList);
 // NEW PROJECT
 
 export const localStateError = writable<string>("");
-export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
+export const defaultBranch = writable<string>(
+  config.DEFAULT_BRANCH_FOR_NEW_PROJECTS
+);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
@@ -234,7 +263,7 @@ const fetchBranches = async (path: string) => {
   fetchLocalState({ path });
 
   localStateError.set("");
-  defaultBranch.set(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
+  defaultBranch.set(config.DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
   // This is just a safe guard. Since the validations on the constraints are
   // executed first, an empty path should not make it this far.
@@ -243,7 +272,7 @@ const fetchBranches = async (path: string) => {
   }
 
   try {
-    const state = await getLocalState(path);
+    const state = await source.getLocalState(path);
     if (!state.branches.includes(get(defaultBranch))) {
       defaultBranch.set(state.branches[0]);
     }

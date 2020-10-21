@@ -1,8 +1,12 @@
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
+import * as urn from "./urn";
 
 // TYPES
+// FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
+export type PeerId = string;
+
 export interface Avatar {
   background: {
     r: number;
@@ -13,13 +17,14 @@ export interface Avatar {
 }
 
 export interface Identity {
-  id: string;
+  avatarFallback: Avatar;
   metadata: {
     handle: string;
   };
-  registered?: string;
-  avatarFallback: Avatar;
+  peerId: PeerId;
   shareableEntityIdentifier: string;
+  // FIXME(xla): Properly type urns.
+  urn: urn.Urn;
 }
 
 // STATE

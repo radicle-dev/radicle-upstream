@@ -4,6 +4,7 @@ import * as api from "./api";
 import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
+import * as urn from "./urn";
 
 // TYPES
 interface Person {
@@ -93,17 +94,14 @@ interface Tree extends SourceObject {
   path: string;
 }
 
-interface Revision {
-  user: identity.Identity;
-  branches: Branch[];
-  tags: Tag[];
-}
-
-type Revisions = Revision[];
-
 interface Readme {
   content: string;
   path?: string;
+}
+
+export interface Revisions {
+  branches: Branch[];
+  tags: Tag[];
 }
 
 export enum RevisionType {
@@ -115,7 +113,6 @@ export enum RevisionType {
 export interface Branch {
   type: RevisionType.Branch;
   name: string;
-  peerId?: string;
 }
 
 export interface Tag {
@@ -128,7 +125,7 @@ export interface Sha {
   sha: string;
 }
 
-export type RevisionQuery = Branch | Tag | Sha;
+export type Revision = Branch | Tag | Sha;
 
 // STATE
 const commitStore = remote.createStore<Commit>();
@@ -169,8 +166,9 @@ interface FetchCommit extends event.Event<Kind> {
 
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
-  projectId: string;
-  revision: Branch;
+  branch: Branch;
+  peerId: identity.PeerId;
+  projectUrn: urn.Urn;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -183,7 +181,7 @@ interface FetchObject extends event.Event<Kind> {
   path: string;
   peerId: string;
   projectId: string;
-  revision: RevisionQuery;
+  revision: Revision;
   type: ObjectType;
 }
 
@@ -230,10 +228,10 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
-        .get<Commits>(`source/commits/${msg.projectId}/`, {
+        .get<Commits>(`source/commits/${msg.projectUrn}/`, {
           query: {
-            peerId: msg.revision.peerId,
-            branch: msg.revision.name,
+            branch: msg.branch.name,
+            peerId: msg.peerId,
           },
         })
         .then(response => {
@@ -304,7 +302,7 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 export const tree = (
   projectId: string,
   peerId: string,
-  revision: RevisionQuery,
+  revision: Revision,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
@@ -322,7 +320,7 @@ export const tree = (
 const blob = (
   projectId: string,
   peerId: string,
-  revision: RevisionQuery,
+  revision: Revision,
   path: string,
   highlight: boolean
 ): Promise<Blob> =>
@@ -356,14 +354,14 @@ export const formatTime = (t: number): string => {
 };
 
 export const revisionQueryEq = (
-  query1: RevisionQuery,
-  query2: RevisionQuery
+  query1: Revision,
+  query2: Revision
 ): boolean => {
   if (
     query1.type === RevisionType.Branch &&
     query2.type === RevisionType.Branch
   ) {
-    return query1.name === query2.name && query1.peerId === query2.peerId;
+    return query1.name === query2.name;
   } else if (
     query1.type === RevisionType.Tag &&
     query2.type === RevisionType.Tag
@@ -382,7 +380,7 @@ export const revisionQueryEq = (
 export const readme = (
   projectId: string,
   peerId: string,
-  revision: RevisionQuery
+  revision: Revision
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
 

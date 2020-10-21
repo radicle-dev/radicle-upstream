@@ -1,54 +1,32 @@
-<script>
-  import { createEventDispatcher, getContext } from "svelte";
-  import { push } from "svelte-spa-router";
+<script lang="typescript">
+  import { createEventDispatcher } from "svelte";
 
-  import * as path from "../../src/path.ts";
-  import { BadgeType } from "../../src/badge.ts";
+  import type { Identity, PeerId } from "../../src/identity";
+  import { CSSPosition } from "../../src/style";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
-  import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
+  import { Overlay, Tooltip } from "../../DesignSystem/Component";
 
-  export let currentPeerId = null;
-  export let expanded = false;
-  export let revisions = null;
+  export let expanded: boolean = false;
+  export let peers: Identity[];
+  export let selected: Identity;
 
-  let currentSelectedPeer;
-
-  const session = getContext("session");
-  const { metadata } = getContext("project");
-
-  $: if (currentPeerId) {
-    currentSelectedPeer = revisions.find(rev => {
-      return rev.identity.peerId === currentPeerId;
-    });
-  } else {
-    // The API returns a revision list where the first entry is the default
-    // peer.
-    currentSelectedPeer = revisions[0];
-    currentPeerId = currentSelectedPeer.identity.peerId;
-  }
-
-  const showDropdown = () => {
-    expanded = true;
-  };
-
-  const hideDropdown = () => {
+  const hide = () => {
     expanded = false;
   };
 
-  const handleOpenProfile = urn => {
-    if (urn === session.identity.urn) {
-      push(path.profileProjects());
-    } else {
-      push(path.userProfileProjects(urn));
-    }
+  const show = () => {
+    expanded = true;
   };
 
   const dispatch = createEventDispatcher();
-  const selectPeer = peerId => {
-    hideDropdown();
-    currentPeerId = peerId;
-    dispatch("select", { peerId });
+  const open = (peer: Identity) => {
+    hide();
+    dispatch("open", peer);
+  };
+  const select = (peer: Identity) => {
+    hide();
+    dispatch("select", peer);
   };
 </script>
 
@@ -117,26 +95,24 @@
 
 <Overlay
   {expanded}
-  on:hide={hideDropdown}
+  on:hide={hide}
   style="margin-right: 1rem; position: relative; user-select: none;">
   <div
     class="peer-selector"
     data-cy="peer-selector"
-    on:click|stopPropagation={showDropdown}
+    on:click|stopPropagation={show}
     hidden={expanded}>
     <div class="selector-avatar typo-overflow-ellipsis">
       <Avatar
-        avatarFallback={currentSelectedPeer.identity.avatarFallback}
+        avatarFallback={selected.avatarFallback}
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
       <p class="typo-text-bold typo-overflow-ellipsis">
-        {currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}
+        {selected.metadata.handle || selected.shareableEntityIdentifier}
       </p>
       <p>
-        {#if metadata.maintainers.includes(currentSelectedPeer.identity.urn)}
-          <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
-        {/if}
+        <slot name="badge" peer={selected} />
       </p>
     </div>
     <div class="selector-expand">
@@ -146,37 +122,31 @@
   </div>
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
-      {#each revisions as repo}
+      {#each peers as peer}
         <div
           class="peer"
-          class:selected={repo.identity.peerId == currentSelectedPeer.identity.peerId}
-          data-peer-handle={repo.identity.metadata.handle}>
-          <div
-            style="display: flex;"
-            on:click={() => selectPeer(repo.identity.peerId)}>
+          class:selected={peer.peerId == selected.peerId}
+          data-peer-handle={peer.metadata.handle}>
+          <div style="display: flex;" on:click={() => select(peer)}>
             <Avatar
-              avatarFallback={repo.identity.avatarFallback}
+              avatarFallback={peer.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
             8px;"
               size="small"
               variant="circle" />
             <p class="typo-text-bold typo-overflow-ellipsis">
-              {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
+              {peer.metadata.handle || peer.shareableEntityIdentifier}
             </p>
             <p>
-              {#if metadata.maintainers.includes(repo.identity.urn)}
-                <Badge
-                  style="margin-left: 0.5rem"
-                  variant={BadgeType.Maintainer} />
-              {/if}
+              <slot name="badge" {peer} />
             </p>
           </div>
-          <Tooltip value="Go to profile" position="top">
+          <Tooltip value="Go to profile" position={CSSPosition.Top}>
             <div
-              data-cy={repo.identity.metadata.handle}
+              data-cy={peer.metadata.handle}
               class="open-profile"
               on:click={() => {
-                handleOpenProfile(repo.identity.urn);
+                open(peer);
               }}>
               <Icon.ArrowBoxUpRight />
             </div>

@@ -4,6 +4,7 @@
   import { isExperimental, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
+  import { BadgeType } from "../src/badge.ts";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import {
@@ -11,6 +12,7 @@
     fetch,
     isMaintainer,
     project as store,
+    peers as peersStore,
   } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
   import {
@@ -26,6 +28,7 @@
   import { CSSPosition } from "../src/style.ts";
 
   import {
+    Badge,
     Header,
     HorizontalMenu,
     Remote,
@@ -122,6 +125,13 @@
       screen.unlock();
     }
   };
+  const selectPeer = event => {
+    console.log(event);
+    resetCurrentRevision();
+  };
+  const selectRevision = event => {
+    console.log(event);
+  };
 
   fetch({ id: projectId });
   fetchRevisions({ projectId });
@@ -139,55 +149,59 @@
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
-    <Remote store={revisionsStore} let:data={revisions} context="revisions">
-      <Header.Large
-        name={project.metadata.name}
-        urn={project.id}
-        description={project.metadata.description}
-        stats={project.stats}>
-        <div slot="left">
-          <div style="display: flex">
+    <Header.Large urn={project.id} stats={project.stats} {...project.metadata}>
+      <div slot="top">
+        <div style="display: flex">
+          <Remote store={peersStore} let:data={peers}>
+            {#if peers.length > 0}
+              <PeerSelector {peers} on:select={selectPeer} selected={peers[0]}>
+                <div slot="badge" let:peer>
+                  {#if isMaintainer(peer.urn, project)}
+                    <Badge
+                      style="margin-left: 0.5rem"
+                      variant={BadgeType.Maintainer} />
+                  {/if}
+                </div>
+              </PeerSelector>
+              <Tooltip
+                position={CSSPosition.Left}
+                value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
+                <TrackToggle disabled expanded tracking />
+              </Tooltip>
+            {/if}
+          </Remote>
+        </div>
+      </div>
+      <div slot="left">
+        <div style="display: flex">
+          <Remote
+            store={revisionsStore}
+            let:data={revisions}
+            context="revisions">
             <div class="revision-selector-wrapper">
-              {#if $currentPeerId}
-                <RevisionSelector
-                  currentPeerId={$currentPeerId}
-                  bind:currentRevision={$currentRevision}
-                  {revisions} />
-              {/if}
+              <RevisionSelector
+                on:select={selectRevision}
+                selected={$currentRevision}
+                {revisions} />
             </div>
-            <Remote store={commitsStore} let:data={commits}>
+          </Remote>
+          <Remote store={commitsStore} let:data={commits}>
+            <HorizontalMenu
+              items={topbarMenuItems(project, commits.stats.commits)} />
+            <div slot="loading">
               <HorizontalMenu
-                items={topbarMenuItems(project, commits.stats.commits)} />
-              <div slot="loading">
-                <HorizontalMenu
-                  items={topbarMenuItems(project, null)}
-                  style="display: inline" />
-              </div>
-            </Remote>
-          </div>
+                items={topbarMenuItems(project, null)}
+                style="display: inline" />
+            </div>
+          </Remote>
         </div>
-        <div slot="right">
-          <CheckoutButton
-            on:checkout={ev => handleCheckout(ev, project, $currentPeerId)}
-            projectName={project.metadata.name} />
-        </div>
-        <div slot="top">
-          <div style="display: flex">
-            <PeerSelector
-              bind:currentPeerId={$currentPeerId}
-              {revisions}
-              on:select={() => {
-                resetCurrentRevision();
-              }} />
-            <Tooltip
-              position={CSSPosition.Left}
-              value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-              <TrackToggle disabled expanded tracking />
-            </Tooltip>
-          </div>
-        </div>
-      </Header.Large>
-    </Remote>
+      </div>
+      <div slot="right">
+        <CheckoutButton
+          on:checkout={ev => handleCheckout(ev, project, $currentPeerId)}
+          projectName={project.metadata.name} />
+      </div>
+    </Header.Large>
     <Router {routes} />
   </Remote>
 </SidebarLayout>
