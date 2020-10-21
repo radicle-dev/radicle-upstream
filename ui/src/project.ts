@@ -35,6 +35,29 @@ export interface Existing {
 
 type Repo = New | Existing;
 
+export enum RemoteType {
+  Maintainer = "maintainer",
+  Searching = "searching",
+  Tracking = "tracking",
+}
+
+export interface Maintainer {
+  type: RemoteType.Maintainer;
+  identity: identity.Identity;
+}
+
+export interface Searching {
+  type: RemoteType.Searching;
+  peerId: identity.PeerId;
+}
+
+export interface Tracking {
+  type: RemoteType.Maintainer;
+  identity: identity.Identity;
+}
+
+export type Remote = Maintainer | Searching | Tracking;
+
 export interface Stats {
   branches: number;
   commits: number;
@@ -54,7 +77,7 @@ type Projects = Project[];
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
-const peersStore = remote.createStore<identity.Identity[]>();
+const peersStore = remote.createStore<Remote[]>();
 export const peers = peersStore.readable;
 
 const projectStore = remote.createStore<Project>();

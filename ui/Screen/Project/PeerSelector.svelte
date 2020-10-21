@@ -1,14 +1,16 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { Identity, PeerId } from "../../src/identity";
+  import type { Identity } from "../../src/identity";
+  import type { Remote } from "../../src/project";
+  import { RemoteType, Maintainer, Tracking } from "../../src/project";
   import { CSSPosition } from "../../src/style";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import { Overlay, Tooltip } from "../../DesignSystem/Component";
 
   export let expanded: boolean = false;
-  export let peers: Identity[];
+  export let peers: Remote[];
   export let selected: Identity;
 
   const hide = () => {
@@ -122,31 +124,31 @@
   </div>
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
-      {#each peers as peer}
+      {#each peers as { identity }}
         <div
           class="peer"
-          class:selected={peer.peerId == selected.peerId}
-          data-peer-handle={peer.metadata.handle}>
-          <div style="display: flex;" on:click={() => select(peer)}>
+          class:selected={identity.peerId == selected.peerId}
+          data-peer-handle={identity.metadata.handle}>
+          <div style="display: flex;" on:click={() => select(identity)}>
             <Avatar
-              avatarFallback={peer.avatarFallback}
+              avatarFallback={identity.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
             8px;"
               size="small"
               variant="circle" />
             <p class="typo-text-bold typo-overflow-ellipsis">
-              {peer.metadata.handle || peer.shareableEntityIdentifier}
+              {identity.metadata.handle || identity.shareableEntityIdentifier}
             </p>
             <p>
-              <slot name="badge" {peer} />
+              <slot name="badge" peer={identity} />
             </p>
           </div>
           <Tooltip value="Go to profile" position={CSSPosition.Top}>
             <div
-              data-cy={peer.metadata.handle}
+              data-cy={identity.metadata.handle}
               class="open-profile"
               on:click={() => {
-                open(peer);
+                open(identity);
               }}>
               <Icon.ArrowBoxUpRight />
             </div>
