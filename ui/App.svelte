@@ -37,7 +37,7 @@
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
-    "/projects/:id/*": Project,
+    "/projects/:urn/*": Project,
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,

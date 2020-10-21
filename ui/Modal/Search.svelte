@@ -27,7 +27,7 @@
 
   const navigateToProject = (project: Project) => {
     dispatch("hide");
-    push(path.projectSource(project.id));
+    push(path.projectSource(project.urn));
   };
   const navigateToUntracked = () => {
     dispatch("hide");

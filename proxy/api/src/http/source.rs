@@ -5,7 +5,7 @@ use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use radicle_surf::vcs::git;
 
-use crate::{context, http, identity};
+use crate::{context, http};
 
 /// Combination of all source filters.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
@@ -14,13 +14,12 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(commit_filter(ctx.clone()))
         .or(commits_filter(ctx.clone()))
         .or(local_state_filter())
-        .or(revisions_filter(ctx.clone()))
         .or(tags_filter(ctx.clone()))
         .or(tree_filter(ctx))
         .boxed()
 }
 
-/// `GET /blob/<project_id>?revision=<revision>&path=<path>`
+/// `GET /blob/<project_urn>?revision=<revision>&path=<path>`
 fn blob_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -32,7 +31,7 @@ fn blob_filter(
         .and_then(handler::blob)
 }
 
-/// `GET /branches/<project_id>`
+/// `GET /branches/<project_urn>?peerId=<peer_id>`
 fn branches_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -44,7 +43,7 @@ fn branches_filter(
         .and_then(handler::branches)
 }
 
-/// `GET /commit/<project_id>/<sha1>`
+/// `GET /commit/<project_urn>/<sha1>`
 fn commit_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -56,7 +55,7 @@ fn commit_filter(
         .and_then(handler::commit)
 }
 
-/// `GET /commits/<project_id>?branch=<branch>`
+/// `GET /commits/<project_urn>?branch=<branch>&peerId=<peer_id>`
 fn commits_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -68,7 +67,7 @@ fn commits_filter(
         .and_then(handler::commits)
 }
 
-/// `GET /branches/<project_id>`
+/// `GET /local-state/<path>`
 fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("local-state")
         .and(warp::get())
@@ -76,19 +75,7 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
         .and_then(handler::local_state)
 }
 
-/// `GET /revisions/<project_id>`
-fn revisions_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("revisions")
-        .and(warp::get())
-        .and(http::with_context(ctx.clone()))
-        .and(http::with_owner_guard(ctx))
-        .and(path::param::<coco::Urn>())
-        .and_then(handler::revisions)
-}
-
-/// `GET /tags/<project_id>`
+/// `GET /tags/<project_urn>?peer_id=<peer_id>`
 fn tags_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -96,10 +83,12 @@ fn tags_filter(
         .and(warp::get())
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
+        .and(warp::query::<TagQuery>())
+        .and(path::end())
         .and_then(handler::tags)
 }
 
-/// `GET /tree/<project_id>/<revision>/<prefix>`
+/// `GET /tree/<project_id>?peerId=<peer_id>&prefix=<prefix>*revision=<revision>`
 fn tree_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -238,58 +227,17 @@ mod handler {
         Ok(reply::json(&state))
     }
 
-    /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions(
-        ctx: context::Context,
-        owner: coco::user::User,
-        project_urn: coco::Urn,
-    ) -> Result<impl Reply, Rejection> {
-        let peers = ctx
-            .state
-            .tracked(project_urn.clone())
-            .await
-            .map_err(error::Error::from)?;
-        let peers = peers
-            .into_iter()
-            .filter_map(|peer| match peer {
-                coco::project::Peer::Remote {
-                    peer_id,
-                    status: coco::project::ReplicationStatus::Replicated { user, .. },
-                } => Some((peer_id, user)),
-                _ => None,
-            })
-            .collect();
-        let peer_id = ctx.state.peer_id();
-        let owner = owner
-            .to_data()
-            .build()
-            .map_err(coco::state::Error::from)
-            .map_err(error::Error::from)?;
-        let branch = ctx
-            .state
-            .find_default_branch(project_urn)
-            .await
-            .map_err(error::Error::from)?;
-        let revisions: Vec<super::Revisions> = ctx
-            .state
-            .with_browser(branch, |browser| {
-                // TODO(finto): downgraded verified user, which should not be needed.
-                Ok(coco::revisions(browser, peer_id, owner, peers)?
-                    .into_iter()
-                    .map(|revision| revision.into())
-                    .collect())
-            })
-            .await
-            .map_err(error::Error::from)?;
-
-        Ok(reply::json(&revisions))
-    }
-
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
         ctx: context::Context,
         project_urn: coco::Urn,
+        super::TagQuery { peer_id }: super::TagQuery,
     ) -> Result<impl Reply, Rejection> {
+        if let Some(_peer_id) = peer_id {
+            let tags: Vec<coco::Tag> = vec![];
+            return Ok(reply::json(&tags));
+        }
+
         let branch = ctx
             .state
             .find_default_branch(project_urn)
@@ -386,26 +334,12 @@ pub struct TreeQuery {
     revision: Option<coco::Revision<coco::PeerId>>,
 }
 
-/// The output structure when calling the `/revisions` endpoint.
-#[derive(Serialize)]
+/// A query param for [`handler::tags`].
+#[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Revisions {
-    /// The [`identity::Identity`] that owns these revisions.
-    identity: identity::Identity,
-    /// The branches for this project.
-    branches: Vec<coco::Branch>,
-    /// The branches for this project.
-    tags: Vec<coco::Tag>,
-}
-
-impl<S> From<coco::Revisions<coco::PeerId, coco::MetaUser<S>>> for Revisions {
-    fn from(other: coco::Revisions<coco::PeerId, coco::MetaUser<S>>) -> Self {
-        Self {
-            identity: (other.peer_id, other.user).into(),
-            branches: other.branches,
-            tags: other.tags,
-        }
-    }
+pub struct TagQuery {
+    /// PeerId to scope the query by.
+    peer_id: Option<coco::PeerId>,
 }
 
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
@@ -419,7 +353,7 @@ mod test {
 
     use radicle_surf::vcs::git;
 
-    use crate::{context, error, http, identity, session};
+    use crate::{context, error, http};
 
     #[tokio::test]
     async fn blob() -> Result<(), Box<dyn std::error::Error>> {
@@ -724,80 +658,6 @@ mod test {
                     ],
                 }),
             );
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn revisions() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let peer_id = ctx.state.peer_id();
-        let id = identity::create(&ctx.state, "cloudhead").await?;
-
-        let owner = ctx.state.get_user(id.urn.clone()).await?;
-        let owner = coco::user::verify(owner)?;
-
-        session::set_identity(&ctx.store, id)?;
-
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.state,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .await?;
-        let urn = platinum_project.urn();
-
-        let (remote, fintohaps) =
-            coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/revisions/{}", urn))
-            .reply(&api)
-            .await;
-
-        let owner = owner.to_data().build()?; // TODO(finto): Unverify owner, unfortunately
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(
-                have,
-                json!([
-                    super::Revisions {
-                        identity: (peer_id, owner).into(),
-                        branches: vec![
-                            coco::Branch::from("dev".to_string()),
-                            coco::Branch::from("master".to_string())
-                        ],
-                        tags: vec![
-                            coco::Tag::from("v0.1.0".to_string()),
-                            coco::Tag::from("v0.2.0".to_string()),
-                            coco::Tag::from("v0.3.0".to_string()),
-                            coco::Tag::from("v0.4.0".to_string()),
-                            coco::Tag::from("v0.5.0".to_string())
-                        ]
-                    },
-                    super::Revisions {
-                        identity: (remote, fintohaps).into(),
-                        branches: vec![coco::Branch::from("master".to_string())],
-                        tags: vec![]
-                    },
-                ])
-            )
-        });
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/branches/{}?peerId={}", urn, remote))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!([coco::Branch::from("master".to_string())]));
         });
 
         Ok(())

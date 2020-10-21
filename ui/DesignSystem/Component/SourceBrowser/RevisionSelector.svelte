@@ -3,14 +3,16 @@
 
   import { isExperimental } from "../../../../native/ipc";
   import { RevisionType } from "../../../src/source";
-  import type { Revision, Revisions } from "../../../src/source";
+  import type { Branch, Revision, Revisions, Tag } from "../../../src/source";
 
   import { Icon } from "../../Primitive";
   import Overlay from "../Overlay.svelte";
 
   export let expanded: boolean = false;
-  export let selected: Revision;
+  export let selected: Branch | Tag;
   export let revisions: Revisions;
+  console.log(selected);
+  console.log(revisions);
 
   const dispatch = createEventDispatcher();
   const hide = () => {
@@ -124,37 +126,37 @@
   <div class="revision-dropdown-container">
     <div class="revision-dropdown" hidden={!expanded}>
       <ul>
-        {#each revisions.branches as branch}
+        {#each revisions.branches as { name }}
           <li
             class="branch"
-            class:selected={selected.type === RevisionType.Branch && selected.name === branch}
-            data-branch={branch}
+            class:selected={selected.type === RevisionType.Branch && selected.name === name}
+            data-branch={name}
             on:click|stopPropagation={() => select({
                 type: RevisionType.Branch,
-                name: branch,
+                name: name,
               })}>
             <Icon.Branch
               dataCy="branch-icon"
               style="vertical-align: bottom; fill:
             var(--color-foreground-level-4)" />
-            <span class="revision-name typo-text">{branch}</span>
+            <span class="revision-name typo-text">{name}</span>
           </li>
         {/each}
         {#if isExperimental()}
-          {#each revisions.tags as tag}
+          {#each revisions.tags as { name }}
             <li
               class="tag"
-              class:selected={(selected.type === RevisionType.Tag) === tag && selected.name === tag}
-              data-tag={tag}
+              class:selected={selected.type === RevisionType.Tag && selected.name === name}
+              data-tag={name}
               on:click|stopPropagation={() => select({
                   type: RevisionType.Tag,
-                  name: tag,
+                  name: name,
                 })}>
               <Icon.Label
                 dataCy="tag-icon"
                 style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
-              <span class="revision-name typo-text">{tag}</span>
+              <span class="revision-name typo-text">{name}</span>
             </li>
           {/each}
         {/if}

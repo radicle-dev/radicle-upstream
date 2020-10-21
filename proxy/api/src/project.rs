@@ -45,7 +45,7 @@ where
 #[serde(rename_all = "camelCase")]
 pub struct Project {
     /// Unique identifier of the project in the network.
-    pub id: coco::Urn,
+    pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
@@ -62,11 +62,11 @@ where
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
-        let id = project.urn();
+        let urn = project.urn();
 
         Self {
-            id: id.clone(),
-            shareable_entity_identifier: format!("%{}", id),
+            urn: urn.clone(),
+            shareable_entity_identifier: format!("%{}", urn),
             metadata: project.into(),
             stats,
         }
@@ -93,7 +93,7 @@ impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
                         peer_id,
                         status: coco::project::ReplicationStatus::NotReplicated,
                     })
-                },
+                }
                 coco::project::ReplicationStatus::Replicated { role, user } => {
                     Self(coco::project::Peer::Local {
                         peer_id,
@@ -102,7 +102,7 @@ impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
                             user: (peer_id, user).into(),
                         },
                     })
-                },
+                }
             },
             coco::project::Peer::Remote { peer_id, status } => match status {
                 coco::project::ReplicationStatus::NotReplicated => {
@@ -110,7 +110,7 @@ impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
                         peer_id,
                         status: coco::project::ReplicationStatus::NotReplicated,
                     })
-                },
+                }
                 coco::project::ReplicationStatus::Replicated { role, user } => {
                     Self(coco::project::Peer::Remote {
                         peer_id,
@@ -119,7 +119,7 @@ impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
                             user: (peer_id, user).into(),
                         },
                     })
-                },
+                }
             },
         }
     }
@@ -349,7 +349,7 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
 
     let projects = vec![
             Project {
-                id: urn,
+                urn,
                 shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
                 metadata: Metadata {
                     name: "radicle-upstream".to_string(),
@@ -365,7 +365,7 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                 },
             },
             Project {
-                id: other_urn,
+                urn: other_urn,
                 shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd".to_string(),
                 metadata: Metadata {
                     name: "radicle-link".to_string(),

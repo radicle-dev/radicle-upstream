@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { SvelteComponent } from "svelte";
 
   import { link } from "svelte-spa-router";
@@ -7,7 +7,7 @@
   export let icon: typeof SvelteComponent;
   export let title: string;
   export let active: boolean;
-  export let counter: string | undefined;
+  export let counter: number | undefined;
 </script>
 
 <style>

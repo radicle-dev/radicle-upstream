@@ -2,7 +2,6 @@
   import { createEventDispatcher } from "svelte";
 
   import { BadgeType } from "../../src/badge";
-  import type { Identity } from "../../src/identity";
   import { Role } from "../../src/project";
   import type { User } from "../../src/project";
   import { CSSPosition } from "../../src/style";
@@ -23,11 +22,11 @@
   };
 
   const dispatch = createEventDispatcher();
-  const open = (peer: Identity) => {
+  const open = (peer: User) => {
     hide();
     dispatch("open", peer);
   };
-  const select = (peer: Identity) => {
+  const select = (peer: User) => {
     hide();
     dispatch("select", peer);
   };
@@ -125,23 +124,23 @@
   </div>
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
-      {#each peers as { role, identity }}
+      {#each peers as peer}
         <div
           class="peer"
-          class:selected={identity.peerId == selected.identity.peerId}
-          data-peer-handle={identity.metadata.handle}>
-          <div style="display: flex;" on:click={() => select(identity)}>
+          class:selected={peer.identity.peerId == selected.identity.peerId}
+          data-peer-handle={peer.identity.metadata.handle}>
+          <div style="display: flex;" on:click={() => select(peer)}>
             <Avatar
-              avatarFallback={identity.avatarFallback}
+              avatarFallback={peer.identity.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
             8px;"
               size="small"
               variant="circle" />
             <p class="typo-text-bold typo-overflow-ellipsis">
-              {identity.metadata.handle || identity.shareableEntityIdentifier}
+              {peer.identity.metadata.handle || peer.identity.shareableEntityIdentifier}
             </p>
             <p>
-              {#if role === Role.Maintainer}
+              {#if peer.role === Role.Maintainer}
                 <Badge
                   style="margin-left: 0.5rem"
                   variant={BadgeType.Maintainer} />
@@ -150,10 +149,10 @@
           </div>
           <Tooltip value="Go to profile" position={CSSPosition.Top}>
             <div
-              data-cy={identity.metadata.handle}
+              data-cy={peer.identity.metadata.handle}
               class="open-profile"
               on:click={() => {
-                open(identity);
+                open(peer);
               }}>
               <Icon.ArrowBoxUpRight />
             </div>

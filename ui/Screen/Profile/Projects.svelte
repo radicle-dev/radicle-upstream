@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
@@ -19,7 +19,7 @@
   };
 
   const select = (event: { detail: Project }) =>
-    push(path.projectSource(event.detail.id));
+    push(path.projectSource(event.detail.urn));
 
   const session = getContext("session");
 </script>

@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { createEventDispatcher, onDestroy } from "svelte";
   import { push } from "svelte-spa-router";
 
@@ -76,7 +76,7 @@
           : { type: RepoType.Existing, path: existingRepositoryPath },
       });
 
-      push(path.projectSource(response.id));
+      push(path.projectSource(response.urn));
       notification.info(
         `Project ${response.metadata.name} successfully created`
       );

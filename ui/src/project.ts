@@ -74,9 +74,14 @@ export interface Remote {
 }
 
 export type Peer = Local | Remote;
+export interface User {
+  type: PeerType;
+  identity: identity.Identity;
+  role: Role;
+}
 
 export interface Project {
-  id: string;
+  urn: urn.Urn;
   shareableEntityIdentifier: string;
   metadata: Metadata;
   stats: Stats;
@@ -99,23 +104,31 @@ type Projects = Project[];
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
-const peersStore = remote.createStore<Remote[]>();
-export const peerSelection: Readable<remote.Data<User[]>> = derived(
-  peersStore,
-  store => {
-    if (store.status === remote.Status.Success) {
-      const peers = store.data
-        .filter(peer => peer.status.type === ReplicationStatusType.Replicated)
-        .map(peer => {
-          const { role, user } = peer.status as Replicated;
-          return { identity: user, role };
-        });
-      return { status: remote.Status.Success, data: peers };
-    }
+const localStateStore = remote.createStore<source.LocalState>();
+export const localState = localStateStore.readable;
 
-    return store;
+const peersStore = remote.createStore<Peer[]>();
+export const peerSelection: Readable<remote.Data<{
+  default: User;
+  peers: User[];
+}>> = derived(peersStore, store => {
+  if (store.status === remote.Status.Success) {
+    const peers = store.data
+      .filter(peer => peer.status.type === ReplicationStatusType.Replicated)
+      .map(peer => {
+        const { role, user } = peer.status as Replicated;
+        return { type: peer.type, identity: user, role };
+      });
+
+    // TODO(xla): Apply proper heuristic to set default.
+    return {
+      status: remote.Status.Success,
+      data: { default: peers[0], peers },
+    };
   }
-);
+
+  return store;
+});
 
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;
@@ -126,8 +139,24 @@ export const projects = projectsStore.readable;
 const trackedStore = remote.createStore<Projects>();
 export const tracked = trackedStore.readable;
 
-const localStateStore = remote.createStore<source.LocalState>();
-export const localState = localStateStore.readable;
+const revisionsStore = remote.createStore<source.Revisions>();
+export const revisionSelection = revisionsStore.readable;
+
+const selectedPeerStore = writable<User | null>(null);
+export const selectedPeer = derived(
+  [selectedPeerStore, peerSelection],
+  ([selected, selection]) => {
+    if (selected) {
+      return selected;
+    }
+
+    if (selection.status === remote.Status.Success) {
+      return selection.data.default;
+    }
+
+    return null;
+  }
+);
 
 // EVENTS
 enum Kind {
@@ -136,6 +165,7 @@ enum Kind {
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
   FetchPeers = "FETCH_PEERS",
+  FetchRevisions = "FETCH_REVISIONS",
   FetchTracked = "FETCH_TRACKED",
   FetchUser = "FETCH_USER",
   FetchLocalState = "FETCH_LOCAL_STATE",
@@ -152,7 +182,7 @@ interface Create extends event.Event<Kind> {
 
 interface Fetch extends event.Event<Kind> {
   kind: Kind.Fetch;
-  id: string;
+  urn: string;
 }
 
 interface FetchList extends event.Event<Kind> {
@@ -162,7 +192,13 @@ interface FetchList extends event.Event<Kind> {
 
 interface FetchPeers extends event.Event<Kind> {
   kind: Kind.FetchPeers;
-  id: urn.Urn;
+  urn: urn.Urn;
+}
+
+interface FetchRevisions extends event.Event<Kind> {
+  kind: Kind.FetchRevisions;
+  peer: User;
+  urn: urn.Urn;
 }
 
 interface FetchTracked extends event.Event<Kind> {
@@ -186,6 +222,7 @@ type Msg =
   | FetchList
   | FetchLocalState
   | FetchPeers
+  | FetchRevisions
   | FetchTracked
   | FetchUser;
 
@@ -212,12 +249,15 @@ const update = (msg: Msg): void => {
       break;
     case Kind.Fetch:
       projectStore.loading();
+      peersStore.reset();
+      revisionsStore.reset();
+
       api
-        .get<Project>(`projects/${msg.id}`)
+        .get<Project>(`projects/${msg.urn}`)
         .then((project: Project) => {
           projectStore.success(project);
 
-          fetchPeers({ id: msg.id });
+          fetchPeers({ urn: msg.urn });
         })
         .catch(projectStore.error);
 
@@ -226,6 +266,7 @@ const update = (msg: Msg): void => {
     // TODO(sos): determine if viewing another user's profile shows you tracked || contributed || (tracked && contributed)
     case Kind.FetchList:
       projectsStore.loading();
+
       api
         .get<Projects>("projects/contributed")
         .then(projectsStore.success)
@@ -235,15 +276,31 @@ const update = (msg: Msg): void => {
 
     case Kind.FetchPeers:
       peersStore.loading();
+
       api
-        .get<identity.Identity[]>(`projects/${msg.id}/peers`)
-        .then(peersStore.success)
+        .get<Peer[]>(`projects/${msg.urn}/peers`)
+        .then(peers => {
+          peersStore.success(peers);
+
+          fetchRevisions({ urn: msg.urn, peer: get(selectedPeer) });
+        })
         .catch(peersStore.error);
+
+      break;
+
+    case Kind.FetchRevisions:
+      revisionsStore.loading();
+
+      source
+        .fetchRevisions(msg.urn, msg.peer.identity.peerId)
+        .then(revisionsStore.success)
+        .catch(revisionsStore.error);
 
       break;
 
     case Kind.FetchTracked:
       trackedStore.loading();
+
       api
         .get<Projects>("projects/tracked")
         .then(trackedStore.success)
@@ -277,11 +334,11 @@ interface CheckoutInput {
 }
 
 export const checkout = (
-  id: string,
+  urn: urn.Urn,
   path: string,
-  peerId?: string
+  peerId?: identity.PeerId
 ): Promise<boolean> => {
-  return api.post<CheckoutInput, boolean>(`projects/${id}/checkout`, {
+  return api.post<CheckoutInput, boolean>(`projects/${urn}/checkout`, {
     path,
     peerId,
   });
@@ -290,15 +347,19 @@ export const checkout = (
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 export const fetchPeers = event.create<Kind, Msg>(Kind.FetchPeers, update);
-export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
-export const fetchLocalState = event.create<Kind, Msg>(
-  Kind.FetchLocalState,
+export const fetchRevisions = event.create<Kind, Msg>(
+  Kind.FetchRevisions,
   update
 );
-
 export const fetchTracked = event.create<Kind, Msg>(Kind.FetchTracked, update);
+export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
+
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,
+  update
+);
+export const fetchLocalState = event.create<Kind, Msg>(
+  Kind.FetchLocalState,
   update
 );
 

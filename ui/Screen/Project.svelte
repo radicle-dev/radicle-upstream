@@ -1,30 +1,32 @@
-<script>
+<script lang="typescript">
   import { getContext } from "svelte";
 
   import { isExperimental, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
-  import * as notification from "../src/notification.ts";
-  import * as path from "../src/path.ts";
+  import * as menu from "../src/menu";
+  import * as notification from "../src/notification";
+  import * as path from "../src/path";
   import {
     checkout,
     fetch,
     isMaintainer,
     project as store,
     peerSelection,
-  } from "../src/project.ts";
-  import * as screen from "../src/screen.ts";
+    revisionSelection,
+    selectedPeer,
+  } from "../src/project";
+  import type { Project, User } from "../src/project";
+  import * as screen from "../src/screen";
   import {
     commits as commitsStore,
     currentRevision,
-    currentPeerId,
-    fetchCommits,
-    fetchRevisions,
     resetCurrentRevision,
     resetCurrentPeerId,
-    revisions as revisionsStore,
-  } from "../src/source.ts";
-  import { CSSPosition } from "../src/style.ts";
+    RevisionType,
+  } from "../src/source";
+  import { CSSPosition } from "../src/style";
+  import type { Urn } from "../src/urn";
 
   import {
     Header,
@@ -47,17 +49,17 @@
   import PeerSelector from "./Project/PeerSelector.svelte";
 
   const routes = {
-    "/projects/:id/": Source,
-    "/projects/:id/source": Source,
-    "/projects/:id/issues": Issues,
-    "/projects/:id/issue": Issue,
-    "/projects/:id/commit/:hash": Commit,
-    "/projects/:id/commits": Commits,
-    "/projects/:id/revisions": Revisions,
+    "/projects/:urn/": Source,
+    "/projects/:urn/source": Source,
+    "/projects/:urn/issues": Issues,
+    "/projects/:urn/issue": Issue,
+    "/projects/:urn/commit/:hash": Commit,
+    "/projects/:urn/commits": Commits,
+    "/projects/:urn/revisions": Revisions,
   };
 
-  export let params = null;
-  const projectId = params.id;
+  export let params: { urn: Urn };
+  const urn = params.urn;
   const session = getContext("session");
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
@@ -66,19 +68,22 @@
   resetCurrentRevision();
   resetCurrentPeerId();
 
-  $: topbarMenuItems = (project, commitCounter) => {
+  $: topbarMenuItems = (
+    project: Project,
+    commitCounter?: number
+  ): menu.HorizontalItem[] => {
     const items = [
       {
         icon: Icon.House,
         title: "Source",
-        href: path.projectSource(project.id),
+        href: path.projectSource(project.urn),
         looseActiveStateMatching: true,
       },
       {
         icon: Icon.Commit,
         title: "Commits",
         counter: commitCounter,
-        href: path.projectCommits(project.id),
+        href: path.projectCommits(project.urn),
         looseActiveStateMatching: true,
       },
     ];
@@ -87,26 +92,30 @@
         {
           icon: Icon.ExclamationCircle,
           title: "Issues",
-          href: path.projectIssues(projectId),
+          href: path.projectIssues(urn),
           looseActiveStateMatching: false,
         },
         {
           icon: Icon.Revision,
           title: "Revisions",
-          href: path.projectRevisions(projectId),
+          href: path.projectRevisions(urn),
           looseActiveStateMatching: false,
         }
       );
     return items;
   };
 
-  const handleCheckout = async (event, project, peerId) => {
+  const handleCheckout = async (
+    { detail: checkoutDirectoryPath }: CustomEvent,
+    project: Project,
+    peer: User
+  ) => {
     try {
       screen.lock();
       const path = await checkout(
-        project.id,
-        event.detail.checkoutDirectoryPath,
-        peerId
+        project.urn,
+        checkoutDirectoryPath,
+        peer.identity.peerId
       );
 
       notification.info(
@@ -123,18 +132,19 @@
       screen.unlock();
     }
   };
-  const selectPeer = event => {
+  const selectPeer = (event: CustomEvent) => {
     console.log(event);
     resetCurrentRevision();
   };
-  const selectRevision = event => {
+  const selectRevision = (event: CustomEvent) => {
     console.log(event);
   };
 
-  fetch({ id: projectId });
-  fetchRevisions({ projectId });
-  $: if ($currentRevision)
-    fetchCommits({ projectId, revision: $currentRevision });
+  $: console.log($selectedPeer);
+  fetch({ urn });
+  /* fetchRevisions({ projectId }); */
+  /* $: if ($currentRevision) */
+  /*   fetchCommits({ projectId, revision: $currentRevision }); */
 </script>
 
 <style>
@@ -147,15 +157,15 @@
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
-    <Header.Large urn={project.id} stats={project.stats} {...project.metadata}>
+    <Header.Large urn={project.urn} stats={project.stats} {...project.metadata}>
       <div slot="top">
         <div style="display: flex">
-          <Remote store={peerSelection} let:data={peers}>
-            {#if peers.length > 0}
+          <Remote store={peerSelection} let:data>
+            {#if data.peers.length > 0}
               <PeerSelector
-                {peers}
+                peers={data.peers}
                 on:select={selectPeer}
-                selected={peers[0]} />
+                selected={$selectedPeer || data.default} />
               <Tooltip
                 position={CSSPosition.Left}
                 value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
@@ -167,14 +177,11 @@
       </div>
       <div slot="left">
         <div style="display: flex">
-          <Remote
-            store={revisionsStore}
-            let:data={revisions}
-            context="revisions">
+          <Remote store={revisionSelection} let:data={revisions}>
             <div class="revision-selector-wrapper">
               <RevisionSelector
                 on:select={selectRevision}
-                selected={$currentRevision}
+                selected={$currentRevision || { type: RevisionType.Branch, name: project.metadata.defaultBranch }}
                 {revisions} />
             </div>
           </Remote>
@@ -183,7 +190,7 @@
               items={topbarMenuItems(project, commits.stats.commits)} />
             <div slot="loading">
               <HorizontalMenu
-                items={topbarMenuItems(project, null)}
+                items={topbarMenuItems(project)}
                 style="display: inline" />
             </div>
           </Remote>
@@ -191,8 +198,7 @@
       </div>
       <div slot="right">
         <CheckoutButton
-          on:checkout={ev => handleCheckout(ev, project, $currentPeerId)}
-          projectName={project.metadata.name} />
+          on:checkout={ev => handleCheckout(ev, project, $selectedPeer)} />
       </div>
     </Header.Large>
     <Router {routes} />

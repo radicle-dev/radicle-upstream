@@ -137,9 +137,6 @@ export const commits = commitsStore.readable;
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
-const revisionsStore = remote.createStore<Revisions>();
-export const revisions = revisionsStore.readable;
-
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
@@ -153,7 +150,6 @@ export const resetCurrentPeerId = (): void => currentPeerId.set(null);
 enum Kind {
   FetchCommit = "FETCH_COMMIT",
   FetchCommits = "FETCH_COMMITS",
-  FetchRevisions = "FETCH_REVISIONS",
   FetchObject = "FETCH_OBJECT",
 }
 
@@ -169,11 +165,6 @@ interface FetchCommits extends event.Event<Kind> {
   branch: Branch;
   peerId: identity.PeerId;
   projectUrn: urn.Urn;
-}
-
-interface FetchRevisions extends event.Event<Kind> {
-  kind: Kind.FetchRevisions;
-  projectId: string;
 }
 
 interface FetchObject extends event.Event<Kind> {
@@ -211,7 +202,7 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
   return days;
 };
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchObject;
+type Msg = FetchCommit | FetchCommits | FetchObject;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -241,15 +232,6 @@ const update = (msg: Msg): void => {
           });
         })
         .catch(commitsStore.error);
-      break;
-
-    case Kind.FetchRevisions:
-      revisionsStore.loading();
-
-      api
-        .get<Revisions>(`source/revisions/${msg.projectId}`)
-        .then(revisions => revisionsStore.success(revisions))
-        .catch(revisionsStore.error);
       break;
 
     case Kind.FetchObject:
@@ -287,12 +269,54 @@ const update = (msg: Msg): void => {
   }
 };
 
+export const fetchBranches = (
+  projectUrn: urn.Urn,
+  peerId?: identity.PeerId
+): Promise<Branch[]> => {
+  return api
+    .get<string[]>(`source/branches/${projectUrn}`, {
+      query: {
+        peerId,
+      },
+    })
+    .then(names =>
+      names.map(name => {
+        return { type: RevisionType.Branch, name };
+      })
+    );
+};
+
+export const fetchTags = (
+  projectUrn: urn.Urn,
+  peerId?: identity.PeerId
+): Promise<Tag[]> => {
+  return api
+    .get<string[]>(`source/tags/${projectUrn}`, {
+      query: {
+        peerId,
+      },
+    })
+    .then(names =>
+      names.map(name => {
+        return { type: RevisionType.Tag, name };
+      })
+    );
+};
+
+export const fetchRevisions = (
+  projectUrn: urn.Urn,
+  peerId?: identity.PeerId
+): Promise<Revisions> => {
+  return Promise.all([
+    fetchBranches(projectUrn, peerId),
+    fetchTags(projectUrn, peerId),
+  ]).then(([branches, tags]) => {
+    return { branches, tags };
+  });
+};
+
 export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
 export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
-export const fetchRevisions = event.create<Kind, Msg>(
-  Kind.FetchRevisions,
-  update
-);
 export const fetchObject = event.create<Kind, Msg>(Kind.FetchObject, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {

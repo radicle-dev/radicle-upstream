@@ -431,7 +431,7 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "id": meta.id,
+            "urn": meta.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -440,7 +440,7 @@ mod test {
                 ],
                 "name": "Upstream",
             },
-            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
+            "shareableEntityIdentifier": format!("%{}", meta.urn.to_string()),
             "stats": {
                 "branches": 1,
                 "commits": 1,
@@ -493,7 +493,7 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "id": meta.id,
+            "urn": meta.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -502,7 +502,7 @@ mod test {
                     maintainer
                 ],
             },
-            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
+            "shareableEntityIdentifier": format!("%{}", meta.urn.to_string()),
             "stats": {
                 "branches": 1,
                 "commits": 15,
@@ -587,7 +587,7 @@ mod test {
 
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.into_iter().next().unwrap();
-        let coco_project = ctx.state.get_project(project.id.clone(), None).await?;
+        let coco_project = ctx.state.get_project(project.urn.clone(), None).await?;
 
         let user: identity::Identity =
             coco::control::track_fake_peer(&ctx.state, &coco_project, "rafalca")
@@ -643,7 +643,7 @@ mod test {
         let res = request().method("GET").path("/discover").reply(&api).await;
         let want = json!([
             {
-                "id": "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c",
+                "urn": "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c",
                 "metadata": {
                     "defaultBranch": "main",
                     "description": "It is not the slumber of reason that engenders monsters, \
@@ -659,7 +659,7 @@ mod test {
                 },
             },
             {
-                "id": "rad:git:hwd1yrefz6xkwb46xkt7dhmwsjendiaqsaynpjwweqrqjc8muaath4gsf7o",
+                "urn": "rad:git:hwd1yrefz6xkwb46xkt7dhmwsjendiaqsaynpjwweqrqjc8muaath4gsf7o",
                 "metadata": {
                     "defaultBranch": "main",
                     "description": "The monstrous complexity of our reality, a reality cross-hatched with fibre-optic cables, \
@@ -699,7 +699,7 @@ mod test {
             .method("PUT")
             .path(&format!(
                 "/{}/track/{}",
-                project.id,
+                project.urn,
                 coco::control::generate_peer_id()
             ))
             .reply(&api)
