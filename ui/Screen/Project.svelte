@@ -4,7 +4,6 @@
   import { isExperimental, openPath } from "../../native/ipc.js";
   import Router from "svelte-spa-router";
 
-  import { BadgeType } from "../src/badge.ts";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import {
@@ -12,7 +11,7 @@
     fetch,
     isMaintainer,
     project as store,
-    peers as peersStore,
+    peerSelection,
   } from "../src/project.ts";
   import * as screen from "../src/screen.ts";
   import {
@@ -28,7 +27,6 @@
   import { CSSPosition } from "../src/style.ts";
 
   import {
-    Badge,
     Header,
     HorizontalMenu,
     Remote,
@@ -152,17 +150,12 @@
     <Header.Large urn={project.id} stats={project.stats} {...project.metadata}>
       <div slot="top">
         <div style="display: flex">
-          <Remote store={peersStore} let:data={peers}>
+          <Remote store={peerSelection} let:data={peers}>
             {#if peers.length > 0}
-              <PeerSelector {peers} on:select={selectPeer} selected={peers[0]}>
-                <div slot="badge" let:peer>
-                  {#if isMaintainer(peer.urn, project)}
-                    <Badge
-                      style="margin-left: 0.5rem"
-                      variant={BadgeType.Maintainer} />
-                  {/if}
-                </div>
-              </PeerSelector>
+              <PeerSelector
+                {peers}
+                on:select={selectPeer}
+                selected={peers[0]} />
               <Tooltip
                 position={CSSPosition.Left}
                 value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>

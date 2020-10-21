@@ -1,4 +1,4 @@
-import { get, writable } from "svelte/store";
+import { derived, get, writable, Readable } from "svelte/store";
 
 import * as api from "./api";
 import * as config from "./config";
@@ -35,28 +35,52 @@ export interface Existing {
 
 type Repo = New | Existing;
 
-export enum RemoteType {
+export enum Role {
+  Contributor = "contributor",
   Maintainer = "maintainer",
-  Searching = "searching",
-  Tracking = "tracking",
+  Tracker = "tracker",
 }
 
-export interface Maintainer {
-  type: RemoteType.Maintainer;
-  identity: identity.Identity;
+export enum ReplicationStatusType {
+  NotReplicated = "notReplicated",
+  Replicated = "replicated",
 }
 
-export interface Searching {
-  type: RemoteType.Searching;
-  peerId: identity.PeerId;
+export interface NotReplicated {
+  type: ReplicationStatusType.NotReplicated;
 }
 
-export interface Tracking {
-  type: RemoteType.Maintainer;
-  identity: identity.Identity;
+export interface Replicated {
+  type: ReplicationStatusType.Replicated;
+  role: Role;
+  user: identity.Identity;
 }
 
-export type Remote = Maintainer | Searching | Tracking;
+export type ReplicationStatus = NotReplicated | Replicated;
+
+export enum PeerType {
+  Local = "local",
+  Remote = "remote",
+}
+
+export interface Local {
+  type: PeerType.Local;
+  status: ReplicationStatus;
+}
+
+export interface Remote {
+  type: PeerType.Remote;
+  status: ReplicationStatus;
+}
+
+export type Peer = Local | Remote;
+
+export interface Project {
+  id: string;
+  shareableEntityIdentifier: string;
+  metadata: Metadata;
+  stats: Stats;
+}
 
 export interface Stats {
   branches: number;
@@ -64,11 +88,9 @@ export interface Stats {
   contributors: number;
 }
 
-export interface Project {
-  id: string;
-  shareableEntityIdentifier: string;
-  metadata: Metadata;
-  stats: Stats;
+export interface User {
+  identity: identity.Identity;
+  role: Role;
 }
 
 type Projects = Project[];
@@ -78,7 +100,22 @@ const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
 const peersStore = remote.createStore<Remote[]>();
-export const peers = peersStore.readable;
+export const peerSelection: Readable<remote.Data<User[]>> = derived(
+  peersStore,
+  store => {
+    if (store.status === remote.Status.Success) {
+      const peers = store.data
+        .filter(peer => peer.status.type === ReplicationStatusType.Replicated)
+        .map(peer => {
+          const { role, user } = peer.status as Replicated;
+          return { identity: user, role };
+        });
+      return { status: remote.Status.Success, data: peers };
+    }
+
+    return store;
+  }
+);
 
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;

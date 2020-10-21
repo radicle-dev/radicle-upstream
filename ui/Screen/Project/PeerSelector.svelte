@@ -1,17 +1,18 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
+  import { BadgeType } from "../../src/badge";
   import type { Identity } from "../../src/identity";
-  import type { Remote } from "../../src/project";
-  import { RemoteType, Maintainer, Tracking } from "../../src/project";
+  import { Role } from "../../src/project";
+  import type { User } from "../../src/project";
   import { CSSPosition } from "../../src/style";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
-  import { Overlay, Tooltip } from "../../DesignSystem/Component";
+  import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
   export let expanded: boolean = false;
-  export let peers: Remote[];
-  export let selected: Identity;
+  export let peers: User[];
+  export let selected: User;
 
   const hide = () => {
     expanded = false;
@@ -106,12 +107,12 @@
     hidden={expanded}>
     <div class="selector-avatar typo-overflow-ellipsis">
       <Avatar
-        avatarFallback={selected.avatarFallback}
+        avatarFallback={selected.identity.avatarFallback}
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
       <p class="typo-text-bold typo-overflow-ellipsis">
-        {selected.metadata.handle || selected.shareableEntityIdentifier}
+        {selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}
       </p>
       <p>
         <slot name="badge" peer={selected} />
@@ -124,10 +125,10 @@
   </div>
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
-      {#each peers as { identity }}
+      {#each peers as { role, identity }}
         <div
           class="peer"
-          class:selected={identity.peerId == selected.peerId}
+          class:selected={identity.peerId == selected.identity.peerId}
           data-peer-handle={identity.metadata.handle}>
           <div style="display: flex;" on:click={() => select(identity)}>
             <Avatar
@@ -140,7 +141,11 @@
               {identity.metadata.handle || identity.shareableEntityIdentifier}
             </p>
             <p>
-              <slot name="badge" peer={identity} />
+              {#if role === Role.Maintainer}
+                <Badge
+                  style="margin-left: 0.5rem"
+                  variant={BadgeType.Maintainer} />
+              {/if}
             </p>
           </div>
           <Tooltip value="Go to profile" position={CSSPosition.Top}>
