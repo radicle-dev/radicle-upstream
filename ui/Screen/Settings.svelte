@@ -1,13 +1,15 @@
 <script>
   import { onMount } from "svelte";
 
-  import { clear, settings, updateAppearance } from "../src/session.ts";
   import {
+    clear,
+    settings,
     seedValidation,
-    themeOptions,
     addSeed,
     removeSeed,
-  } from "../src/settings.ts";
+    updateAppearance,
+  } from "../src/session.ts";
+  import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
   import { getVersion, isDev } from "../../native/ipc.js";
