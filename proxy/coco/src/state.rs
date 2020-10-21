@@ -392,7 +392,7 @@ impl State {
             None => git::Branch::local(&reference.name),
             Some(peer) => {
                 git::Branch::remote(&format!("heads/{}", reference.name), &peer.to_string())
-            }
+            },
         };
         let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
@@ -424,7 +424,7 @@ impl State {
             None => {
                 let project = self.get_project(urn.clone(), None).await?;
                 project.default_branch().to_owned()
-            }
+            },
             Some(name) => name,
         };
 
@@ -626,7 +626,7 @@ impl State {
                     remote,
                     local: self.peer_id(),
                 }
-            }
+            },
         };
         tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
             .await
@@ -647,7 +647,7 @@ impl State {
             tracked.into_iter().filter_map(|remote| match remote {
                 Remote::Tracking { peer_id, user } | Remote::Maintainer { peer_id, user } => {
                     Some((user, peer_id))
-                }
+                },
                 Remote::Searching { .. } => None,
             }),
         );
