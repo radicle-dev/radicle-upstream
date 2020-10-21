@@ -275,6 +275,11 @@ export interface Tx {
 
 export const transactions = svelteStore.writable<Tx[]>([]);
 
+const POLL_INTERVAL = 10000;
+setInterval(() => {
+  updateAll();
+}, POLL_INTERVAL);
+
 function addTx(tx: Tx) {
   transactions.update(txs => {
     txs.push(tx);
