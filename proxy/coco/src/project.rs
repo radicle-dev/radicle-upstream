@@ -21,15 +21,15 @@ fn set_rad_upstream(repo: &git2::Repository, default_branch: &str) -> Result<(),
     branch.set_upstream(Some(&format!("{}/{}", config::RAD_REMOTE, default_branch)))
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {
+    Tracker,
     Contributer,
     Maintainer,
-    Tracker,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Peer<U> {
     #[serde(rename_all = "camelCase")]
@@ -44,7 +44,25 @@ pub enum Peer<U> {
     },
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
+impl<U> Peer<U> {
+    pub fn map<V, F>(self, f: F) -> Peer<V>
+    where
+        F: FnOnce(U) -> V,
+    {
+        match self {
+            Self::Local { peer_id, status } => Peer::Local {
+                peer_id,
+                status: status.map(f),
+            },
+            Self::Remote { peer_id, status } => Peer::Remote {
+                peer_id,
+                status: status.map(f),
+            },
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum ReplicationStatus<U> {
     NotReplicated,
@@ -53,4 +71,19 @@ pub enum ReplicationStatus<U> {
         role: Role,
         user: U,
     },
+}
+
+impl<U> ReplicationStatus<U> {
+    pub fn map<V, F>(self, f: F) -> ReplicationStatus<V>
+    where
+        F: FnOnce(U) -> V,
+    {
+        match self {
+            Self::NotReplicated => ReplicationStatus::NotReplicated,
+            Self::Replicated { role, user } => ReplicationStatus::Replicated {
+                role,
+                user: f(user),
+            },
+        }
+    }
 }

@@ -59,14 +59,19 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     {
         let another_peer = librad::peer::PeerId::from(librad::keys::SecretKey::new());
         bob_state.track(project.urn(), another_peer).await?;
-        let alice = alice.to_builder().build().unwrap();
-        let have = bob_state.tracked(project.urn()).await?;
+        let mut have: Vec<coco::project::Peer<String>> = bob_state
+            .tracked(project.urn())
+            .await?
+            .into_iter()
+            .map(|peer| peer.map(|user| user.name().to_string()))
+            .collect();
+        have.sort();
         let want: Vec<_> = vec![
             coco::project::Peer::Remote {
                 peer_id: alice_state.peer_id(),
                 status: coco::project::ReplicationStatus::Replicated {
                     role: coco::project::Role::Maintainer,
-                    user: alice,
+                    user: alice.name().to_string(),
                 },
             },
             coco::project::Peer::Remote {
