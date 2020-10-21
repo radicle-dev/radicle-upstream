@@ -96,6 +96,7 @@ fn peers_filter(
     http::with_context(ctx)
         .and(warp::get())
         .and(path::param::<coco::Urn>())
+        .and(path("peers"))
         .and(path::end())
         .and_then(handler::peers)
 }
