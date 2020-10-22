@@ -9,7 +9,6 @@
 
 <style>
   p {
-    color: var(--color-background);
     margin-bottom: 1.5rem;
   }
 
@@ -19,6 +18,7 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    color: #fff; /* I know... but this design doesn't work in dark mode. */
   }
 </style>
 
@@ -32,7 +32,7 @@
       We're not totally sure what's going on, but we can't load the app right
       now because the background process won't start up.
     </p>
-    <Button style="display: flex;" on:click={tweet}>
+    <Button style="display: flex; color: #fff;" on:click={tweet}>
       Reach out for support
     </Button>
   </div>
