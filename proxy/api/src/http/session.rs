@@ -130,7 +130,7 @@ mod test {
                         }
                     },
                     "coco": {
-                        "seeds": [],
+                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
                     },
                 },
             }),
@@ -171,7 +171,7 @@ mod test {
                         }
                     },
                     "coco": {
-                        "seeds": [],
+                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
                     },
                 },
             }),

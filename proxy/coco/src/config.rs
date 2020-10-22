@@ -104,6 +104,7 @@ pub fn configure<D>(
 }
 
 /// Builds a static discovery over the list of given `seeds`.
+#[allow(clippy::as_conversions)]
 #[must_use]
 pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> Disco {
     discovery::Static::new(

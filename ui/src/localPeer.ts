@@ -10,24 +10,24 @@ export enum StatusType {
 }
 
 interface Stopped {
-  kind: StatusType.Stopped;
+  type: StatusType.Stopped;
 }
 
 interface Offline {
-  kind: StatusType.Offline;
+  type: StatusType.Offline;
 }
 
 interface Started {
-  kind: StatusType.Started;
+  type: StatusType.Started;
 }
 
 interface Syncing {
-  kind: StatusType.Syncing;
+  type: StatusType.Syncing;
   syncs: number;
 }
 
 interface Online {
-  kind: StatusType.Online;
+  type: StatusType.Online;
   connected: number;
 }
 
@@ -38,7 +38,7 @@ enum EventKind {
 }
 
 interface StatusChanged {
-  kind: EventKind.StatusChanged;
+  type: EventKind.StatusChanged;
   old: Status;
   new: Status;
 }

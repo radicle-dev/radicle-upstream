@@ -62,6 +62,11 @@ pub struct CoCo {
 
 impl Default for CoCo {
     fn default() -> Self {
-        Self { seeds: vec![] }
+        Self {
+            seeds: vec![
+                "hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"
+                    .to_string(),
+            ],
+        }
     }
 }
