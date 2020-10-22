@@ -18,7 +18,7 @@
   import {
     SidebarLayout,
     SegmentedControl,
-    Urn,
+    StyledCopyable,
   } from "../DesignSystem/Component";
 
   const updateTheme = event =>
@@ -221,7 +221,7 @@
           <div class="seeds">
             {#each $settings.coco.seeds as seed (seed)}
               <div class="seed">
-                <Urn urn={seed} />
+                <StyledCopyable value={seed} />
                 <Icon.Cross
                   on:click={() => removeSeed(seed)}
                   variant="medium"
