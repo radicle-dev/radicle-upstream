@@ -14,7 +14,6 @@
     Dropdown,
     Illustration,
     Notification,
-    Placeholder,
     ProjectCard,
     SegmentedControl,
     ShareableIdentifier,
@@ -717,10 +716,6 @@
     </Section>
 
     <Section title="Misc" subTitle="Everything else">
-      <Swatch>
-        <Placeholder style="width: 300px; height: 100px" />
-      </Swatch>
-
       <Swatch>
         <AdditionalActionsDropdown
           headerTitle="Copy this title"

@@ -210,10 +210,10 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { Placeholder } from "../DesignSystem/Component";
+      import { TrackToggle } from "../DesignSystem/Component";
     </script>
 
-    <Placeholder style="width: 300px; height: 100px" />
+    <TrackToggle />
     ```
 
 Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
