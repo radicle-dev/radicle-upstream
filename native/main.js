@@ -134,7 +134,7 @@ const resetState = () => {
 
 app.on("will-quit", () => {
   if (proxyChildProcess) {
-    proxyChildProcess.kill("SIGHUP");
+    proxyChildProcess.kill("SIGTERM");
   }
 });
 
