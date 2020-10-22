@@ -149,24 +149,6 @@ export const seedValidation = createValidationStore(
   ]
 );
 
-let restartNotificationVisible = false;
-
-const showRestartNotification = (): void => {
-  // The restart notification is sticky and will stay visible until the user
-  // clicks the "Restart" button, no need to show it multiple times.
-  if (restartNotificationVisible) return;
-
-  notification.info(
-    "Restart the app to connect to your new seed",
-    false,
-    true,
-    false,
-    undefined
-  );
-
-  restartNotificationVisible = true;
-};
-
 export const addSeed = async (seed: string): Promise<boolean> => {
   // This has to be awaited contrary to what tslint suggests, because we're
   // running async remote validations in in the background. If we remove the
@@ -176,7 +158,7 @@ export const addSeed = async (seed: string): Promise<boolean> => {
   if (get(seedValidation).status !== ValidationStatus.Success) return false;
 
   updateCoCo({ seeds: [...get(settings).coco.seeds, seed] });
-  showRestartNotification();
+  notification.info("New Seed added");
   return true;
 };
 
@@ -184,6 +166,6 @@ export const removeSeed = (seed: string): void => {
   updateCoCo({
     seeds: get(settings).coco.seeds.filter((x: string) => x !== seed),
   });
-  showRestartNotification();
+  notification.info("Seed removed");
   seedValidation.reset();
 };
