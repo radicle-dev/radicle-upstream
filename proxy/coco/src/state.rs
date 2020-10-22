@@ -73,7 +73,7 @@ impl State {
     /// Provide the caller with this state's [`transport::Results`] so that they can call
     /// [`transport::Results::wait`]. This should be used for testing purposes.
     ///
-    /// See https://github.com/radicle-dev/radicle-link/issues/381 for hope.
+    /// See <https://github.com/radicle-dev/radicle-link/issues/381> for hope.
     #[must_use]
     pub fn transport_results(&self) -> Arc<transport::Results> {
         transport::LocalTransportFactory::configure(self.transport.clone())
