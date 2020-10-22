@@ -94,6 +94,7 @@ async fn run(
     if let Some(seeds_sender) = seeds_sender {
         let seeds_store = ctx.store.clone();
         tokio::spawn(async move {
+            let mut last_seeds: Vec<seed::Seed> = vec![];
             let mut timer = tokio::time::interval(Duration::from_secs(1));
 
             loop {
@@ -105,9 +106,15 @@ async fn run(
                     vec![]
                 });
 
-                if seeds_sender.broadcast(seeds).is_err() {
+                if seeds == last_seeds {
+                    continue;
+                }
+
+                if seeds_sender.broadcast(seeds.clone()).is_err() {
                     break;
                 }
+
+                last_seeds = seeds;
             }
         });
     }

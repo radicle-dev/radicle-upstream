@@ -103,6 +103,8 @@ pub fn configure<D>(
     }
 }
 
+/// Builds a static discovery over the list of given `seeds`.
+#[must_use]
 pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> Disco {
     discovery::Static::new(
         seeds
@@ -111,11 +113,15 @@ pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> Disco {
     )
 }
 
+/// Stream based discovery based on a watch.
 pub struct StreamDiscovery {
+    /// Stream of new sets of seeds coming from configuration changes.
     seeds_receiver: watch::Receiver<Vec<seed::Seed>>,
 }
 
 impl StreamDiscovery {
+    /// Returns a new streaming discovery.
+    #[must_use]
     pub fn new(seeds_receiver: watch::Receiver<Vec<seed::Seed>>) -> Self {
         Self { seeds_receiver }
     }
@@ -130,6 +136,7 @@ impl discovery::Discovery for StreamDiscovery {
 
         tokio::spawn(async move {
             while let Some(seeds) = self.seeds_receiver.recv().await {
+                println!("NEXT SEEDS: {:?}", seeds);
                 for pair in seeds
                     .into_iter()
                     .map(|seed| (seed.peer_id, vec![seed.addr]))
