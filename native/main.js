@@ -24,12 +24,8 @@ let mainWindow;
 let proxyChildProcess;
 
 const startApp = () => {
-  if (app.commandLine.hasSwitch("reset-state")) {
-    resetState();
-  } else {
-    startProxy();
-    createWindow();
-  }
+  startProxy();
+  createWindow();
 };
 
 ipcMain.handle(ipc.DIALOG_SHOWOPENDIALOG, async () => {
@@ -120,21 +116,9 @@ const startProxy = () => {
   });
 };
 
-const resetState = () => {
-  execFile(proxyPath, ["--reset-state"], (error, stdout, stderr) => {
-    console.log(stdout);
-    console.log(stderr);
-    app.exit();
-
-    if (error) {
-      console.log(error);
-    }
-  });
-};
-
 app.on("will-quit", () => {
   if (proxyChildProcess) {
-    proxyChildProcess.kill("SIGHUP");
+    proxyChildProcess.kill("SIGTERM");
   }
 });
 

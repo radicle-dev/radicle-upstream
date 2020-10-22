@@ -110,7 +110,12 @@ pub async fn build_peer_with_seeds(
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let paths = Paths::from_root(tmp_dir.path())?;
-    let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
+    let conf = config::configure(
+        paths,
+        key,
+        *config::LOCALHOST_ANY,
+        config::static_seed_discovery(seeds),
+    );
 
     let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
