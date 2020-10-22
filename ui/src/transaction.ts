@@ -173,7 +173,7 @@ async function lookupStatus(hash: string): Promise<TxStatus | undefined> {
 export const progressPercentage = (status: TxStatus): number => {
   switch (status) {
     case TxStatus.AwaitingInclusion:
-      return 55;
+      return 17;
     case TxStatus.Included:
       return 100;
     default:
