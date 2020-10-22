@@ -4,7 +4,7 @@
 
   import {
     amountStore,
-    amountValidationStore,
+    topUpAmountValidationStore,
     store,
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
@@ -18,7 +18,9 @@
   let validatingAmount = false;
   let amount: number;
 
-  const amountValidation = amountValidationStore(get(store).getAccount().balance);
+  const amountValidation = topUpAmountValidationStore(
+    get(store).getAccount().balance
+  );
   $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;

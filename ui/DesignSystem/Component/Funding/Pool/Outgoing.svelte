@@ -10,7 +10,7 @@
 
   import {
     amountStore,
-    amountValidationStore,
+    monthlyContributionValidationStore,
     membersStore,
     membersValidationStore,
   } from "../../../../src/funding/pool";
@@ -33,7 +33,7 @@
 
   let monthlyContribution = "";
   let validatingAmount = false;
-  $: amountValidation = amountValidationStore(data ? data.balance : 0);
+  $: amountValidation = monthlyContributionValidationStore();
   $: amountStore.set(monthlyContribution ? monthlyContribution.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;

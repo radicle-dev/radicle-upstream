@@ -175,8 +175,20 @@ const contraints = {
     },
   },
 
-  // The contraints for a valid amount input.
-  amount: {
+  // The contraints for a valid monthly contribution.
+  monthlyContribution: {
+    presence: {
+      message: "The amount is required",
+      allowEmpty: false,
+    },
+    numericality: {
+      strict: true,
+      greaterThan: -1,
+    },
+  },
+
+  // The contraints for a valid pool top up amount input.
+  topUpAmount: {
     presence: {
       message: "The amount is required",
       allowEmpty: false,
@@ -192,10 +204,14 @@ export const membersValidationStore: validation.ValidationStore = validation.cre
   contraints.members
 );
 
-export const amountValidationStore = (
+export const monthlyContributionValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore(contraints.monthlyContribution);
+};
+
+export const topUpAmountValidationStore = (
   balance: BigNumberish
 ): validation.ValidationStore => {
-  return validation.createValidationStore(contraints.amount, [
+  return validation.createValidationStore(contraints.topUpAmount, [
     {
       promise: amount => Promise.resolve(balance >= amount),
       validationMessage: "Insufficient balance",
