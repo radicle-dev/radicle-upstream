@@ -31,7 +31,7 @@
     <Emoji emoji="🧻" size="huge" style="margin-bottom: 1.5rem;" />
     <p>
       We're not totally sure what's going on, but we can't load the app right
-      because the background process won't start up.
+      now because the background process won't start up.
     </p>
     <Button style="display: flex;" on:click={tweet}>
       Tweet at us for help
