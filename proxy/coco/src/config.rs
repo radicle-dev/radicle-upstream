@@ -41,7 +41,6 @@ impl Default for Paths {
         Self::Default
     }
 }
-
 impl TryFrom<Paths> for paths::Paths {
     type Error = io::Error;
 
@@ -90,11 +89,7 @@ pub fn configure<D>(
     key: keys::SecretKey,
     listen_addr: SocketAddr,
     disco: D,
-) -> net::peer::PeerConfig<D, keys::SecretKey>
-where
-    D: discovery::Discovery<Addr = SocketAddr>,
-    <D as discovery::Discovery>::Stream: 'static,
-{
+) -> net::peer::PeerConfig<D, keys::SecretKey> {
     let gossip_params = net::gossip::MembershipParams::default();
     let storage_config = net::peer::StorageConfig::default();
 
@@ -120,6 +115,12 @@ pub struct StreamDiscovery {
     seeds_receiver: watch::Receiver<Vec<seed::Seed>>,
 }
 
+impl StreamDiscovery {
+    pub fn new(seeds_receiver: watch::Receiver<Vec<seed::Seed>>) -> Self {
+        Self { seeds_receiver }
+    }
+}
+
 impl discovery::Discovery for StreamDiscovery {
     type Addr = SocketAddr;
     type Stream = mpsc::Receiver<(PeerId, Vec<SocketAddr>)>;
@@ -128,7 +129,7 @@ impl discovery::Discovery for StreamDiscovery {
         let (mut sender, receiver) = mpsc::channel(1024);
 
         tokio::spawn(async move {
-            if let Some(seeds) = self.seeds_receiver.recv().await {
+            while let Some(seeds) = self.seeds_receiver.recv().await {
                 for pair in seeds
                     .into_iter()
                     .map(|seed| (seed.peer_id, vec![seed.addr]))

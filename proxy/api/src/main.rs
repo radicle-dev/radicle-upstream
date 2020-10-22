@@ -4,7 +4,7 @@ use tempfile::TempDir;
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
-    sync::mpsc,
+    sync::{mpsc, watch},
 };
 
 use api::{config, context, env, http, notification, session};
@@ -21,6 +21,7 @@ struct Rigging {
     temp: Option<TempDir>,
     ctx: context::Context,
     peer: Peer,
+    seeds_sender: Option<watch::Sender<Vec<seed::Seed>>>,
     subscriptions: notification::Subscriptions,
 }
 
@@ -86,8 +87,30 @@ async fn run(
         temp: _dont_drop_me,
         ctx,
         peer,
+        seeds_sender,
         subscriptions,
     } = rigging;
+
+    if let Some(seeds_sender) = seeds_sender {
+        let seeds_store = ctx.store.clone();
+        tokio::spawn(async move {
+            let mut timer = tokio::time::interval(Duration::from_secs(1));
+
+            loop {
+                let _timestamp = timer.tick().await;
+
+                let seeds = session::settings(&seeds_store).await.unwrap().coco.seeds;
+                let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
+                    log::error!("Error parsing seed list {:?}: {}", seeds, err);
+                    vec![]
+                });
+
+                if seeds_sender.broadcast(seeds).is_err() {
+                    break;
+                }
+            }
+        });
+    }
 
     let peer_subscriptions = subscriptions.clone();
     let peer_event_broadcast = {
@@ -171,20 +194,14 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
 
     let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
-    let (peer, state) = {
-        let seeds = session::settings(&store).await?.coco.seeds;
-        let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
-            log::error!("Error parsing seed list {:?}: {}", seeds, err);
-            vec![]
-        });
+    let (peer, state, seeds_sender) = if args.test {
         let config = coco::config::configure(
             paths,
             key,
             *coco::config::INADDR_ANY,
-            coco::config::static_seed_discovery(seeds),
+            coco::config::static_seed_discovery(vec![]),
         );
-
-        coco::into_peer_state(
+        let (peer, state) = coco::into_peer_state(
             config,
             signer.clone(),
             store.clone(),
@@ -197,7 +214,40 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
                 ..RunConfig::default()
             },
         )
-        .await?
+        .await?;
+
+        (peer, state, None)
+    } else {
+        let seeds = session::settings(&store).await?.coco.seeds;
+        let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
+            log::error!("Error parsing seed list {:?}: {}", seeds, err);
+            vec![]
+        });
+        let (seeds_sender, seeds_receiver) = watch::channel(seeds);
+
+        let config = coco::config::configure(
+            paths,
+            key,
+            *coco::config::INADDR_ANY,
+            coco::config::StreamDiscovery::new(seeds_receiver),
+        );
+
+        let (peer, state) = coco::into_peer_state(
+            config,
+            signer.clone(),
+            store.clone(),
+            RunConfig {
+                sync: SyncConfig {
+                    max_peers: 1,
+                    on_startup: true,
+                    period: Duration::from_secs(5),
+                },
+                ..RunConfig::default()
+            },
+        )
+        .await?;
+
+        (peer, state, Some(seeds_sender))
     };
 
     let peer_control = peer.control();
@@ -212,6 +262,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         temp,
         ctx,
         peer,
+        seeds_sender,
         subscriptions,
     })
 }
