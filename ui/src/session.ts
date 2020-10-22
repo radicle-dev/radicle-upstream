@@ -152,30 +152,6 @@ export const seedValidation = createValidationStore(
 
 let restartNotificationVisible = false;
 
-const reloadProxy = async () => {
-  await window.fetch("http://localhost:8080/v1/control/reload");
-  notification.info("Reloading peer configuration, hang in there…");
-
-  // Prevent the user from interacting with the UI while proxy is reloading.
-  screen.lock();
-  let proxyStopped = true;
-
-  while (proxyStopped) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    try {
-      const resp = await api.get<Session>(`session`);
-      if (resp) {
-        proxyStopped = false;
-      }
-    } catch {
-      // Ignore failed attempts to connect.
-    }
-  }
-  screen.unlock();
-
-  restartNotificationVisible = false;
-};
-
 const showRestartNotification = (): void => {
   // The restart notification is sticky and will stay visible until the user
   // clicks the "Restart" button, no need to show it multiple times.
@@ -184,11 +160,9 @@ const showRestartNotification = (): void => {
   notification.error(
     "Restart the app to connect to your new seed",
     false,
-    "Restart",
-    () => {
-      reloadProxy();
-    },
-    true
+    true,
+    false,
+    undefined
   );
 
   restartNotificationVisible = true;

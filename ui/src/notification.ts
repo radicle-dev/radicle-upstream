@@ -11,13 +11,15 @@ export enum Level {
   Info = "INFO",
 }
 
+type ActionHandler = () => void;
+
 interface Notification {
   id: ID;
   level: Level;
   showIcon: boolean;
   message: string;
-  actionText: string;
-  actionHandler: () => void;
+  actionText: string | false;
+  actionHandler: ActionHandler | false;
 }
 
 type Notifications = Notification[];
@@ -42,18 +44,18 @@ interface ShowError extends event.Event<Kind> {
   kind: Kind.ShowError;
   message: string;
   showIcon: boolean;
-  actionText?: string;
-  actionHandler?: () => void;
-  sticky?: boolean;
+  actionText: string | false;
+  actionHandler: ActionHandler | false;
+  sticky: boolean;
 }
 
 interface ShowInfo extends event.Event<Kind> {
   kind: Kind.ShowInfo;
   message: string;
   showIcon: boolean;
-  actionText?: string;
-  actionHandler?: () => void;
-  sticky?: boolean;
+  actionText: string | false;
+  actionHandler: ActionHandler | false;
+  sticky: boolean;
 }
 
 type Msg = Remove | ShowError | ShowInfo;
@@ -67,9 +69,9 @@ const show = (
   level: Level,
   showIcon: boolean,
   message: string,
-  actionText?: string,
-  actionHandler?: () => void,
-  sticky?: boolean
+  actionText: string | false,
+  actionHandler: ActionHandler | false,
+  sticky: boolean
 ): void => {
   const id = Math.random();
   const notification = {
@@ -77,7 +79,7 @@ const show = (
     level,
     message,
     showIcon,
-    actionText: actionText || "Close",
+    actionText,
     actionHandler: () => {
       if (actionHandler) {
         actionHandler();
@@ -141,10 +143,10 @@ const remove = (id: ID): void =>
 
 export const error = (
   message: string,
-  showIcon = false,
-  actionText?: string,
-  actionHandler?: () => void,
-  sticky = false
+  showIcon: boolean = false,
+  sticky: boolean = false,
+  actionText: string | false = "Close",
+  actionHandler: ActionHandler | false = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowError,
@@ -153,10 +155,10 @@ export const error = (
 
 export const info = (
   message: string,
-  showIcon = false,
-  actionText?: string,
-  actionHandler?: () => void,
-  sticky = false
+  showIcon: boolean = false,
+  sticky: boolean = false,
+  actionText: string | false = "Close",
+  actionHandler: ActionHandler | false = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowInfo,
