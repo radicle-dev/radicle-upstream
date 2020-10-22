@@ -107,7 +107,7 @@ export interface Wallet extends svelteStore.Readable<State> {
   signer: ethers.Signer;
 }
 
-export const provider: Provider = new ethers.providers.JsonRpcProvider(
+export const provider = new ethers.providers.JsonRpcProvider(
   "http://localhost:8545"
 );
 
