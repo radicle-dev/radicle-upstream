@@ -158,7 +158,6 @@ export const addSeed = async (seed: string): Promise<boolean> => {
   if (get(seedValidation).status !== ValidationStatus.Success) return false;
 
   updateCoCo({ seeds: [...get(settings).coco.seeds, seed] });
-  notification.info("New Seed added");
   return true;
 };
 
@@ -166,6 +165,5 @@ export const removeSeed = (seed: string): void => {
   updateCoCo({
     seeds: get(settings).coco.seeds.filter((x: string) => x !== seed),
   });
-  notification.info("Seed removed");
   seedValidation.reset();
 };
