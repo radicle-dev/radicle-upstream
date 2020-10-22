@@ -6,7 +6,6 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as notification from "./notification";
 import * as remote from "./remote";
-import * as screen from "./screen";
 import { Appearance, CoCo, Settings } from "./settings";
 
 import { createValidationStore, ValidationStatus } from "./validation";
