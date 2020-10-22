@@ -59,11 +59,5 @@ statusStore.start(() => {
     statusStore.success(changed.new);
   });
 
-  // Switch the connection status indicator icon to "Stopped" when we get
-  // disconnected from the SSE endpoint during peer configuration reload.
-  source.addEventListener("error", (): void => {
-    statusStore.success({ type: StatusType.Stopped });
-  });
-
   return (): void => source.close();
 });
