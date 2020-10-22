@@ -3,8 +3,7 @@
   import { Fullscreen } from "../DesignSystem/Component";
 
   const tweet = () => {
-    window.location.href =
-      "https://twitter.com/intent/tweet?text=@radicle_xyz help, my Upstream won't start.";
+    window.location.href = "https://radicle.community/c/support/13";
   };
 </script>
 
@@ -34,7 +33,7 @@
       now because the background process won't start up.
     </p>
     <Button style="display: flex;" on:click={tweet}>
-      Tweet at us for help
+      Reach out for support
     </Button>
   </div>
 </Fullscreen>
