@@ -567,6 +567,17 @@ impl State {
     }
 
     // TODO(xla): Account for projects not replicated but wanted.
+    /// Constructs the list of [`project::Peer`] for the given `urn`. The basis is the list of
+    /// tracking peers of the project combined with the local view.
+    ///
+    /// # Errors
+    ///
+    /// * if the project is not present in the monorepo
+    /// * if the retrieval of tracking peers fails
+    ///
+    /// # Panics
+    ///
+    /// * if the default owner can't be fetched
     pub async fn list_project_peers(
         &self,
         urn: RadUrn,
@@ -575,7 +586,10 @@ impl State {
 
         let mut peers: Vec<project::Peer<user::User<entity::Draft>>> = vec![];
 
-        let owner = self.default_owner().await.unwrap();
+        let owner = self
+            .default_owner()
+            .await
+            .expect("unable to find state owner");
         let refs = self.list_owner_project_refs(urn.clone()).await?;
         let status = if refs.heads.is_empty() {
             project::ReplicationStatus::Replicated {
@@ -659,6 +673,7 @@ impl State {
     /// # Errors
     ///
     /// * if getting the list of tracked peers fails
+    #[allow(clippy::wildcard_enum_match_arm)]
     pub async fn update_include(&self, urn: RadUrn) -> Result<PathBuf, Error> {
         let local_url = LocalUrl::from_urn(urn.clone(), self.peer_id());
         let tracked = self.tracked(urn).await?;

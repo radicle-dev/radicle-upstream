@@ -8,7 +8,7 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, state, RunConfig, SyncConfig};
+use coco::{config, seed::Seed, RunConfig, SyncConfig};
 
 #[macro_use]
 mod common;

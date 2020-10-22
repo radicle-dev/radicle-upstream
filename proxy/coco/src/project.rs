@@ -21,25 +21,36 @@ fn set_rad_upstream(repo: &git2::Repository, default_branch: &str) -> Result<(),
     branch.set_upstream(Some(&format!("{}/{}", config::RAD_REMOTE, default_branch)))
 }
 
+/// Relation of the peer to the project.
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {
+    /// Replicating, but not participating.
     Tracker,
+    /// Participated with unique changes.
     Contributer,
+    /// Part of the set of maintainers.
     Maintainer,
 }
 
+/// Distinct views on a prpject.
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Peer<U> {
+    /// Represents the local peer.
     #[serde(rename_all = "camelCase")]
     Local {
+        /// [`PeerId`] of the peer.
         peer_id: PeerId,
+        /// Encoded state of replication.
         status: ReplicationStatus<U>,
     },
+    /// Represents a remote peer.
     #[serde(rename_all = "camelCase")]
     Remote {
+        /// [`PeerId`] of the peer.
         peer_id: PeerId,
+        /// Encoded state of replication.
         status: ReplicationStatus<U>,
     },
 }

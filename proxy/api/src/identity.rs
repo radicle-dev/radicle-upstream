@@ -69,6 +69,7 @@ pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Identity, error::
 /// Retrieve the list of identities known to the session user.
 ///
 /// # Errors
+#[allow(clippy::wildcard_enum_match_arm)]
 pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
     for project in state.list_projects().await? {

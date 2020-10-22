@@ -73,6 +73,7 @@ where
     }
 }
 
+/// Codified relation in form of roles and availability of project views.
 #[derive(Serialize)]
 pub struct Peer(coco::project::Peer<identity::Identity>);
 
@@ -293,6 +294,7 @@ pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Project,
 /// * We couldn't get a project list.
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
+#[allow(clippy::wildcard_enum_match_arm)]
 pub async fn list_for_user(
     state: &coco::State,
     user: &coco::Urn,

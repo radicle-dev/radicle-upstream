@@ -1,7 +1,7 @@
 use nonempty::NonEmpty;
 use pretty_assertions::assert_eq;
 
-use coco::{state, RunConfig};
+use coco::RunConfig;
 
 mod common;
 use common::{build_peer, init_logging, shia_le_pathbuf};
