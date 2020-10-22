@@ -137,6 +137,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         vec![project_urn.clone()]
     );
 
+    let results = alice_state.transport_results();
     let commit_id = {
         let repo = git2::Repository::open(alice_repo_path.join(project.name()))?;
         let oid = repo
@@ -166,13 +167,13 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
         commit_id
     };
+    assert!(results.wait(Duration::from_secs(3)).is_some());
 
     {
         let alice_addr = alice_state.listen_addr();
         let alice_peer_id = alice_state.peer_id();
         let fetch_url = project.urn().into_rad_url(alice_peer_id);
 
-        println!("GOT THIS FAR");
         bob_state
             .fetch(fetch_url, vec![alice_addr])
             .await
@@ -298,6 +299,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         eve_state.get_project(urn.clone(), None).await?
     };
 
+    let results = bob_state.transport_results();
     let commit_id = {
         let alice_peer_id = alice_state.peer_id();
         let path = bob_state
@@ -331,6 +333,8 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
         commit_id
     };
+    assert!(results.wait(Duration::from_secs(3)).is_some());
+
     {
         let bob_addr = bob_state.listen_addr();
         let bob_peer_id = bob_state.peer_id();

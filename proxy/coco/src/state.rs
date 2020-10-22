@@ -46,7 +46,7 @@ pub struct State {
     signer: signer::BoxedSigner,
     /// A handle to the [`transport::Results`] which allows us to call [`transport::Results::wait`]
     /// on the results to ensure git has cleaned everything up.
-    transport_results: Arc<transport::Results>,
+    transport: transport::Settings,
 }
 
 impl State {
@@ -58,22 +58,29 @@ impl State {
         // Register the transport so to use git2 to execute actions such as checkouts, fetch, and
         // push. The transport will then handle the interaction with the monorepo.
         transport::register();
-        let transport_results = transport::LocalTransportFactory::configure(transport::Settings {
+        let transport = transport::Settings {
             paths: paths.clone(),
             signer: signer.clone(),
-        });
+        };
 
         Self {
             api,
             signer,
-            transport_results,
+            transport,
         }
+    }
+
+    /// Provide the caller with this state's [`transport::Results`] so that they can call
+    /// [`transport::Results::wait`]. This should be used for testing purposes.
+    #[must_use]
+    pub fn transport_results(&self) -> Arc<transport::Results> {
+        transport::LocalTransportFactory::configure(self.transport.clone())
     }
 
     /// Ensure that we give the local transport some time to process any final tasks. See
     /// [`transport::Results::wait`] for more information.
-    pub(crate) fn process_transport_result(&self) -> Result<(), Error> {
-        if let Some(results) = self.transport_results.wait(Duration::from_secs(3)) {
+    fn process_transport_results(results: &Arc<transport::Results>) -> Result<(), Error> {
+        if let Some(results) = results.wait(Duration::from_secs(3)) {
             for result in results {
                 result.expect("transport thread panicked")?;
             }
@@ -497,20 +504,24 @@ impl State {
 
         let local_peer_id = self.api.peer_id();
 
-        let meta = self
-            .api
-            .with_storage(move |storage| {
-                let repo = storage.create_repo(&meta)?;
-                log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
+        let meta = {
+            let results = self.transport_results();
+            let meta = self
+                .api
+                .with_storage(move |storage| {
+                    let repo = storage.create_repo(&meta)?;
+                    log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                let repo = project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
-                log::debug!("Setup repository at path '{}'", repo.path().display());
+                    let repo = project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
+                    log::debug!("Setup repository at path '{}'", repo.path().display());
 
-                Ok::<_, Error>(meta)
-            })
-            .await??;
+                    Ok::<_, Error>(meta)
+                })
+                .await??;
 
-        self.process_transport_result()?;
+            Self::process_transport_results(&results)?;
+            meta
+        };
 
         Ok(meta)
     }
@@ -627,12 +638,17 @@ impl State {
                 }
             },
         };
-        let path =
-            tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
-                .await
-                .expect("blocking checkout failed")?;
 
-        self.process_transport_result()?;
+        let path = {
+            let results = self.transport_results();
+            let path =
+                tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
+                    .await
+                    .expect("blocking checkout failed")?;
+
+            Self::process_transport_results(&results)?;
+            path
+        };
 
         Ok(path)
     }
