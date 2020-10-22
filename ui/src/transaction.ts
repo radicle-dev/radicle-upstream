@@ -1,4 +1,5 @@
 import * as svelteStore from "svelte/store";
+import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
 import type { ContractTransaction } from "radicle-contracts/contract-bindings/ethers/Pool";
 import { BigNumberish } from "ethers";
@@ -6,9 +7,9 @@ import { BigNumberish } from "ethers";
 import { provider } from "./wallet";
 
 // The store where all managed transactions are stored.
-export const store = svelteStore.writable<Tx[]>([]);
+export const store = persistentStore<Tx[]>("radicle-transactions-store", []);
 
-// Periodically refresh the status of all managed store.
+// Periodically refresh the status of all stored transactions.
 const POLL_INTERVAL_MILLIS = 10000;
 setInterval(() => {
   updateAll();
