@@ -73,7 +73,6 @@
     notification.info(
       "You’ll be notified on your profile when this project has been found.",
       false,
-      false,
       "View profile",
       () => {
         dispatch("hide");
