@@ -157,7 +157,7 @@ const showRestartNotification = (): void => {
   // clicks the "Restart" button, no need to show it multiple times.
   if (restartNotificationVisible) return;
 
-  notification.error(
+  notification.info(
     "Restart the app to connect to your new seed",
     false,
     true,
