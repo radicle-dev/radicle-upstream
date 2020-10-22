@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
+use coco::git;
+
 use crate::context;
 
 /// Combination of all control filters.
@@ -49,12 +51,10 @@ fn reload_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use std::convert::TryFrom as _;
-
     use tokio::sync::mpsc;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use coco::{git::ext, state, user};
+    use coco::user;
 
     use crate::{context, error, project};
 
@@ -65,17 +65,12 @@ mod handler {
         owner: user::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let default_branch = ext::OneLevel::from(
-            ext::RefLike::try_from(input.default_branch)
-                .map_err(state::Error::from)
-                .map_err(error::Error::from)?,
-        );
         let meta = coco::control::replicate_platinum(
             &ctx.state,
             &owner,
             &input.name,
             &input.description,
-            default_branch,
+            input.default_branch,
         )
         .await
         .map_err(error::Error::from)?;
@@ -119,7 +114,7 @@ pub struct CreateInput {
     /// Long form outline.
     description: String,
     /// Configured default branch.
-    default_branch: String,
+    default_branch: git::ext::OneLevel,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
 }

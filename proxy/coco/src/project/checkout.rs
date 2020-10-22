@@ -33,17 +33,20 @@ pub enum Error {
 }
 
 /// The data necessary for checking out a project.
-pub struct Checkout<P, ST>
+pub struct Checkout<P>
 where
     P: AsRef<path::Path>,
 {
-    /// The project.
-    project: Project<ST>,
-    default_branch: OneLevel,
+    /// The URN identifier for the project we are checking out.
+    pub urn: RadUrn,
+    /// The name of the project.
+    pub name: String,
+    /// The default branch of the project.
+    pub default_branch: OneLevel,
     /// The path on the filesystem where we're going to checkout to.
-    path: P,
+    pub path: P,
     /// Absolute path of the include file that will be set in the working copy config.
-    include_path: PathBuf,
+    pub include_path: PathBuf,
 }
 
 /// We want to know whether we're checking out from one of our own copies, or if we're checking out
@@ -111,12 +114,14 @@ impl Ownership {
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
-        let name = RefLike::try_from(format!("{}@{}", handle, peer)).unwrap();
+        let name =
+            RefLike::try_from(format!("{}@{}", handle, peer)).expect("failed to parse remote name");
         {
             builder.remote_create(move |repo, _remote_name, url| {
                 let mut remote = Remote::new(url, name.as_str().to_string());
-                let heads: FlatRef<PeerId, _> = FlatRef::heads(PhantomData, peer)
-                    .with_name(RefspecPattern::try_from("heads/*").unwrap());
+                let heads: FlatRef<PeerId, _> = FlatRef::heads(PhantomData, peer).with_name(
+                    RefspecPattern::try_from("heads/*").expect("'heads/*' failed to parse"),
+                );
                 let remotes: FlatRef<RefLike, _> = FlatRef::heads(PhantomData, name.clone());
                 remote.fetch_spec = Some(remotes.refspec(heads, Force::True).boxed());
                 remote.create(repo)
@@ -136,26 +141,10 @@ impl Ownership {
     }
 }
 
-impl<P, ST> Checkout<P, ST>
+impl<P> Checkout<P>
 where
     P: AsRef<path::Path>,
-    ST: Clone,
 {
-    /// Create a new `Checkout` with the mock `Credential::Password` helper.
-    pub fn new(
-        project: Project<ST>,
-        default_branch: OneLevel,
-        path: P,
-        include_path: PathBuf,
-    ) -> Self {
-        Self {
-            project,
-            default_branch,
-            path,
-            include_path,
-        }
-    }
-
     /// Based off of the `Ownership`, clone the project using the provided inputs.
     ///
     /// ## Local Clone
@@ -207,26 +196,20 @@ where
         let path = &self.path.as_ref();
         let project_path = if let Some(destination) = path.components().next_back() {
             let destination: &ffi::OsStr = destination.as_ref();
-            let project_name = self.project.name().to_string();
-            let name: &ffi::OsStr = project_name.as_ref();
+            let name: &ffi::OsStr = self.name.as_ref();
             if destination == name {
                 path.to_path_buf()
             } else {
                 path.join(name)
             }
         } else {
-            path.join(&self.project.name().to_string())
+            path.join(&self.name)
         };
 
         // Clone the repository
         let mut builder = git2::build::RepoBuilder::new();
         builder.branch(self.default_branch.as_str());
-        let repo = ownership.clone(
-            self.project.urn(),
-            &self.default_branch,
-            &project_path,
-            &mut builder,
-        )?;
+        let repo = ownership.clone(self.urn, &self.default_branch, &project_path, &mut builder)?;
 
         // Set configurations
         super::set_rad_upstream(&repo, &self.default_branch)?;

@@ -48,6 +48,7 @@ pub enum Error {
     #[error(transparent)]
     PeerApi(#[from] net::peer::ApiError),
 
+    /// Failed to parse a reference.
     #[error(transparent)]
     ReferenceName(#[from] librad::git::ext::reference::name::Error),
 
@@ -63,11 +64,9 @@ pub enum Error {
     #[error(transparent)]
     Storage(#[from] storage::Error),
 
+    /// An error occurred on the local git transport level.
     #[error(transparent)]
     Transport(#[from] librad::git::local::transport::Error),
-
-    #[error("uhoh")]
-    TransportTimeout,
 
     /// Emitted when the parsing of a [`librad::uri::Path`] failed.
     #[error(transparent)]

@@ -40,27 +40,26 @@ pub fn reset_monorepo() -> Result<(), std::io::Error> {
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
 pub async fn setup_fixtures(api: &State, owner: &User) -> Result<(), Error> {
-    let default = OneLevel::from(RefLike::try_from("master").unwrap());
     let infos = vec![
         (
             "monokel",
             "A looking glass into the future",
-            default.clone(),
+            default_branch(),
         ),
         (
             "Monadic",
             "Open source organization of amazing things.",
-            default.clone(),
+            default_branch(),
         ),
         (
             "open source coin",
             "Research for the sustainability of the open source community.",
-            default.clone(),
+            default_branch(),
         ),
         (
             "radicle",
             "Decentralized open source collaboration",
-            default,
+            default_branch(),
         ),
     ];
 
@@ -282,6 +281,10 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
     Ok(())
 }
 
+/// **Testing Only**
+///
+/// Default reference name for testing purposes.
+#[must_use]
 pub fn default_branch() -> OneLevel {
-    OneLevel::from(RefLike::try_from("master").unwrap())
+    OneLevel::from(RefLike::try_from("master").expect("failed to parse 'master'"))
 }
