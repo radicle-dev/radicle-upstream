@@ -20,7 +20,7 @@ pub enum Error {
 }
 
 /// A peer used to seed our client.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Seed {
     /// The seed peer id.
     pub peer_id: peer::PeerId,
