@@ -49,10 +49,12 @@ fn reload_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
+    use std::convert::TryFrom as _;
+
     use tokio::sync::mpsc;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use coco::user;
+    use coco::{git::ext, state, user};
 
     use crate::{context, error, project};
 
@@ -63,12 +65,17 @@ mod handler {
         owner: user::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
+        let default_branch = ext::OneLevel::from(
+            ext::RefLike::try_from(input.default_branch)
+                .map_err(state::Error::from)
+                .map_err(error::Error::from)?,
+        );
         let meta = coco::control::replicate_platinum(
             &ctx.state,
             &owner,
             &input.name,
             &input.description,
-            &input.default_branch,
+            default_branch,
         )
         .await
         .map_err(error::Error::from)?;

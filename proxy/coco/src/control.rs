@@ -281,3 +281,7 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
 
     Ok(())
 }
+
+pub fn default_branch() -> OneLevel {
+    OneLevel::from(RefLike::try_from("master").unwrap())
+}

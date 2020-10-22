@@ -49,7 +49,7 @@ pub enum Error {
 }
 
 /// The data required to either open an existing repository or create a new one.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Repo<Path> {
     /// Open an existing repository.
@@ -155,7 +155,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
 }
 
 /// The data required for creating a new project.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Create<Path> {
     /// Description of the project we want to create.

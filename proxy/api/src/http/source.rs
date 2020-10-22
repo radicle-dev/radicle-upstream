@@ -738,7 +738,7 @@ mod test {
             &owner,
             "git-platinum",
             "fixture data",
-            "master",
+            coco::control::default_branch(),
         )
         .await?;
         let urn = platinum_project.urn();
@@ -939,7 +939,7 @@ mod test {
             &owner,
             "git-platinum",
             "fixture data",
-            "master",
+            coco::control::default_branch(),
         )
         .await?;
         Ok(platinum_project.urn())

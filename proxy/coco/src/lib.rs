@@ -28,7 +28,7 @@
 use std::net::SocketAddr;
 
 pub use librad::{
-    git::{include, local::url::LocalUrl},
+    git::{self, include, local::url::LocalUrl},
     hash::Hash,
     keys,
     meta::{project::Project, user::User as MetaUser},
