@@ -111,6 +111,7 @@
       notification.info(
         `${project.metadata.name} checked out to ${path}`,
         true,
+        false,
         "Open folder",
         () => {
           openPath(path);

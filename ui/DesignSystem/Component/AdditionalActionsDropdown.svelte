@@ -7,7 +7,7 @@
   import { Icon } from "../Primitive";
   import Overlay from "./Overlay.svelte";
   import Tooltip from "./Tooltip.svelte";
-  import Urn from "./Urn.svelte";
+  import StyledCopyable from "./StyledCopyable.svelte";
 
   interface MenuItem {
     title: string;
@@ -134,7 +134,7 @@
       <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
         {#if headerTitle}
           <div class="header">
-            <Urn urn={headerTitle} truncate />
+            <StyledCopyable value={headerTitle} truncate />
           </div>
         {/if}
 
