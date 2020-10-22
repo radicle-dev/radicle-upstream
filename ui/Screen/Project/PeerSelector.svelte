@@ -81,6 +81,7 @@
 
   .selector-expand {
     align-self: flex-end;
+    margin-left: 0.5rem;
   }
 
   .peer-dropdown-container {
@@ -113,6 +114,7 @@
     display: flex;
     justify-content: center;
     cursor: pointer;
+    margin-left: 0.5rem;
   }
 
   .remotes:hover {
