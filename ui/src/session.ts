@@ -186,4 +186,5 @@ export const removeSeed = (seed: string): void => {
     seeds: get(settings).coco.seeds.filter((x: string) => x !== seed),
   });
   showRestartNotification();
+  seedValidation.reset();
 };
