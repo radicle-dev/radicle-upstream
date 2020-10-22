@@ -7,7 +7,6 @@
     RemoteListItem,
   } from "../DesignSystem/Component";
   import { Button, Input } from "../DesignSystem/Primitive";
-  import { Variant } from "../src/illustration";
 
   const remotes = [
     {
