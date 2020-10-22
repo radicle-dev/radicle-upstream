@@ -5,11 +5,10 @@
 
   export let style = "";
   export let contentStyle = "";
-  export let dataCy = null;
-  export let escapable = true;
+  export let escapable: boolean = true;
   export let onClose = pop;
 
-  const onKeydown = event => {
+  const onKeydown = (event: KeyboardEvent) => {
     if (
       escapable &&
       event.target === document.body &&
@@ -52,7 +51,7 @@
   </div>
 {/if}
 
-<div class="fullscreen" data-cy={dataCy} {style}>
+<div class="fullscreen" {style}>
   <div class="content" style={contentStyle}>
     <slot />
   </div>
