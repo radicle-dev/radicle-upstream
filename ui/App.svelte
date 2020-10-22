@@ -18,6 +18,8 @@
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
 
+  import TransactionCenter from "./App/TransactionCenter.svelte";
+
   import Blank from "./Screen/Blank.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
@@ -95,6 +97,8 @@
 <ModalOverlay {modalRoutes} />
 <NotificationFaucet />
 <Theme />
+
+<TransactionCenter />
 
 <Remote {store} context="session">
   <Router {routes} />

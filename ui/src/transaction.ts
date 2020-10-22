@@ -8,7 +8,9 @@ export const store = svelteStore.writable<Tx[]>([]);
 
 // Periodically refresh the status of all managed store.
 const POLL_INTERVAL_MILLIS = 10000;
-setInterval(() => updateAll, POLL_INTERVAL_MILLIS);
+setInterval(() => {
+  updateAll();
+}, POLL_INTERVAL_MILLIS);
 
 export interface Tx {
   // The hash of the transaction
@@ -21,7 +23,7 @@ export interface Tx {
   inner: PoolTx;
 }
 
-enum TxStatus {
+export enum TxStatus {
   // The transaction is pending user approval on their waLlet app.
   PendingApproval = "Pending Approval",
   // The transaction as been approved and is awaiting to be included in a block.
@@ -164,3 +166,31 @@ function lookupStatus(_hash: string): TxStatus | undefined {
   ];
   return statuses[randomInt(statuses.length)];
 }
+
+/* UI helper functions */
+
+export const progressPercentage = (status: TxStatus): number => {
+  switch (status) {
+    case TxStatus.AwaitingInclusion:
+      return 55;
+    case TxStatus.Included:
+      return 100;
+    default:
+      return 0;
+  }
+};
+
+export const colorForStatus = (status: TxStatus): string => {
+  switch (status) {
+    case TxStatus.PendingApproval:
+      return "var(--color-caution)";
+    case TxStatus.AwaitingInclusion:
+      return "var(--color-caution)";
+    case TxStatus.Rejected:
+      return "var(--color-negative)";
+    case TxStatus.Included:
+      return "var(--color-positive)";
+    default:
+      return "var(--color-caution)";
+  }
+};

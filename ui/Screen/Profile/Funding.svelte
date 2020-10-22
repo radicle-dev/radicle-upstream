@@ -1,7 +1,7 @@
 <script lang="ts">
   import { build, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
-  import * as transaction from "../../src/transaction";
+  // import * as transaction from "../../src/transaction";
 
   import { Button } from "../../DesignSystem/Primitive";
 
@@ -9,12 +9,12 @@
 
   const wallet = build();
 
-  let txs: transaction.Tx[] = [];
+  // let txs: transaction.Tx[] = [];
 
-  $: transaction.store.subscribe(xs => {
-    console.log("Updates to transactions");
-    txs = xs;
-  });
+  // $: transaction.store.subscribe(xs => {
+  //   console.log("Updates to transactions");
+  //   txs = xs;
+  // });
 </script>
 
 <style>
@@ -44,9 +44,9 @@
     <Pool pool={pool.make(wallet)} />
   {/if}
 </div>
-
+<!--
 <ol>
   {#each txs as tx}
     <li>• <strong>{tx.inner.kind}</strong> - {tx.status} - {tx.hash}</li>
   {/each}
-</ol>
+</ol> -->

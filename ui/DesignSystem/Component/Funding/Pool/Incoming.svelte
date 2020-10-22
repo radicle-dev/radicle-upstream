@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { Remote, TxButton } from "../../../Component";
 
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
