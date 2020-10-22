@@ -137,7 +137,6 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         vec![project_urn.clone()]
     );
 
-    let results = alice_state.transport_results();
     let commit_id = {
         let repo = git2::Repository::open(alice_repo_path.join(project.name()))?;
         let oid = repo
@@ -163,11 +162,15 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
             )?
         };
 
-        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        {
+            let results = alice_state.transport_results();
+            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+            assert!(results.wait(Duration::from_secs(3)).is_some());
+        }
+
         commit_id
     };
-    assert!(results.wait(Duration::from_secs(3)).is_some());
 
     {
         let alice_addr = alice_state.listen_addr();
@@ -299,12 +302,12 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         eve_state.get_project(urn.clone(), None).await?
     };
 
-    let results = bob_state.transport_results();
     let commit_id = {
         let alice_peer_id = alice_state.peer_id();
         let path = bob_state
             .checkout(project.urn(), alice_peer_id, bob_repo_path)
             .await?;
+
         let repo = git2::Repository::open(path)?;
         let oid = repo
             .find_reference(&format!("refs/heads/{}", project.default_branch()))?
@@ -329,11 +332,15 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
             )?
         };
 
-        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        {
+            let results = bob_state.transport_results();
+            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+            assert!(results.wait(Duration::from_secs(3)).is_some());
+        }
+
         commit_id
     };
-    assert!(results.wait(Duration::from_secs(3)).is_some());
 
     {
         let bob_addr = bob_state.listen_addr();
