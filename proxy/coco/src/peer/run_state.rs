@@ -1,7 +1,7 @@
 //! State machine to manage the current mode of operation during peer lifecycle.
 
 use std::{
-    collections::HashSet,
+    collections::HashMap,
     time::{Duration, Instant},
 };
 
@@ -299,7 +299,7 @@ pub struct RunState {
     /// Confiugration to change how input [`Input`]s are interpreted.
     config: Config,
     /// Tracking remote peers that have an active connection.
-    connected_peers: HashSet<PeerId>,
+    connected_peers: HashMap<PeerId, usize>,
     /// Current internal status.
     pub status: Status,
     /// Timestamp of last status change.
@@ -317,7 +317,7 @@ impl From<Config> for RunState {
 
         Self {
             config,
-            connected_peers: HashSet::new(),
+            connected_peers: HashMap::new(),
             status: Status::Stopped,
             status_since: Instant::now(),
             waiting_room: WaitingRoom::new(waiting_room_config),
@@ -330,7 +330,7 @@ impl RunState {
     #[cfg(test)]
     fn new(
         config: Config,
-        connected_peers: HashSet<PeerId>,
+        connected_peers: HashMap<PeerId, usize>,
         status: Status,
         status_since: Instant,
     ) -> Self {
@@ -352,7 +352,7 @@ impl RunState {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
             Input::Control(control_input) => self.handle_control(control_input),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
-            Input::PeerSync(_peer_sync_input) => vec![],
+            Input::PeerSync(peer_sync_input) => self.handle_peer_sync(peer_sync_input),
             Input::Request(request_input) => self.handle_request(request_input),
             Input::Timeout(timeout_input) => self.handle_timeout(timeout_input),
         };
@@ -383,8 +383,24 @@ impl RunState {
         }
     }
 
+    fn handle_peer_sync(&mut self, input: SyncInput) -> Vec<Command> {
+        match (&self.status, input) {
+            (Status::Syncing { syncs }, SyncInput::Started(_peer_id)) => {
+                self.status = Status::Syncing { syncs: *syncs + 1 };
+            },
+            (Status::Syncing { syncs }, SyncInput::Failed(_peer_id)) => {
+                self.status = Status::Syncing { syncs: *syncs - 1 };
+            },
+            (Status::Syncing { syncs }, SyncInput::Succeeded(_peer_id)) => {
+                self.status = Status::Syncing { syncs: *syncs - 1 };
+            },
+            _ => {},
+        }
+
+        vec![]
+    }
+
     /// Handle [`ProtolEvent`]s.
-    #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
         match (&self.status, event) {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
@@ -394,61 +410,73 @@ impl RunState {
 
                 vec![]
             },
-            // Sync with first incoming peer.
-            //
-            // In case the peer is configured to sync on startup we start syncing, otherwise we go
-            // online straight away.
-            // TODO(xla): Also issue sync if we come online after a certain period of being
-            // disconnected from any peer.
-            (Status::Started { .. }, ProtocolEvent::Connected(ref peer_id)) => {
-                self.connected_peers.insert(*peer_id);
-
-                if self.config.sync.on_startup {
-                    self.status = Status::Syncing { syncs: 1 };
-                    self.status_since = Instant::now();
-
-                    vec![
-                        Command::SyncPeer(*peer_id),
-                        Command::StartSyncTimeout(self.config.sync.period),
-                    ]
+            (state, ProtocolEvent::Connected(peer_id)) => {
+                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
+                    *counter += 1;
                 } else {
-                    self.status = Status::Online {
-                        connected: self.connected_peers.len(),
-                    };
-                    self.status_since = Instant::now();
-
-                    vec![]
-                }
-            },
-            // Sync until configured maximum of peers is reached.
-            (Status::Syncing { syncs }, ProtocolEvent::Connected(peer_id))
-                if *syncs < self.config.sync.max_peers =>
-            {
-                self.connected_peers.insert(peer_id);
-
-                if syncs + 1 == self.config.sync.max_peers {
-                    self.status = Status::Online {
-                        connected: self.connected_peers.len(),
-                    };
-                    self.status_since = Instant::now();
-                } else {
-                    self.status = Status::Syncing { syncs: syncs + 1 };
+                    self.connected_peers.insert(peer_id, 1);
                 }
 
-                vec![Command::SyncPeer(peer_id)]
-            }
-            // Sync until configured maximum of peers is reached.
-            (Status::Online { .. }, ProtocolEvent::Connected(peer_id)) => {
-                self.connected_peers.insert(peer_id);
-                self.status = Status::Online {
-                    connected: self.connected_peers.len(),
-                };
+                match state {
+                    // This should be impossible to hit.
+                    Status::Stopped => unreachable!(),
+                    Status::Offline => {
+                        self.status = Status::Online {
+                            connected: self.connected_peers.len(),
+                        };
 
-                vec![]
+                        vec![]
+                    },
+                    Status::Started => {
+                        // Sync with first incoming peer.
+                        //
+                        // In case the peer is configured to sync on startup we start syncing,
+                        // otherwise we go online straight away.
+                        // TODO(xla): Also issue sync if we come online after a certain period of
+                        // being disconnected from any peer.
+                        if self.config.sync.on_startup {
+                            self.status = Status::Syncing { syncs: 0 };
+                            self.status_since = Instant::now();
+
+                            vec![
+                                Command::SyncPeer(peer_id),
+                                Command::StartSyncTimeout(self.config.sync.period),
+                            ]
+                        } else {
+                            self.status = Status::Online {
+                                connected: self.connected_peers.len(),
+                            };
+                            self.status_since = Instant::now();
+
+                            vec![]
+                        }
+                    },
+                    // Issue syncs until we reach maximum amount of peers to sync with.
+                    Status::Syncing { syncs } if *syncs < self.config.sync.max_peers => {
+                        vec![Command::SyncPeer(peer_id)]
+                    },
+                    // Noop.
+                    Status::Syncing { .. } => vec![],
+                    // Update status with its connected peers.
+                    Status::Online { .. } => {
+                        self.status = Status::Online {
+                            connected: self.connected_peers.len(),
+                        };
+                        vec![]
+                    },
+                }
             },
             // Remove peer that just disconnected.
             (_, ProtocolEvent::Disconnecting(peer_id)) => {
-                self.connected_peers.remove(&peer_id);
+                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
+                    *counter -= 1;
+
+                    if *counter == 0 {
+                        self.connected_peers.remove(&peer_id);
+                    }
+                } else {
+                    unreachable!();
+                }
 
                 // Go offline if we have no more connected peers left.
                 if self.connected_peers.is_empty() {
