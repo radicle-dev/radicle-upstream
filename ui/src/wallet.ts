@@ -107,6 +107,10 @@ export interface Wallet extends svelteStore.Readable<State> {
   signer: ethers.Signer;
 }
 
+export const provider: Provider = new ethers.providers.JsonRpcProvider(
+  "http://localhost:8545"
+);
+
 export function build(): Wallet {
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
@@ -117,9 +121,6 @@ export function build(): Wallet {
     qrcodeModal: QRCodeModal,
   });
 
-  const provider = new ethers.providers.JsonRpcProvider(
-    "http://localhost:8545"
-  );
   const signer = new WalletConnectSigner(walletConnect, provider);
 
   window.ethereumDebug = new EthereumDebug(provider);
@@ -199,5 +200,13 @@ class EthereumDebug {
       blocks -= 1;
       await this.provider.send("evm_mine", []);
     }
+  }
+
+  async setBlockTime(seconds = 5) {
+    await this.provider.send("evm_setTime", [seconds]);
+  }
+
+  async increaseTime(seconds = 5) {
+    await this.provider.send("evm_increaseTime", [seconds]);
   }
 }
