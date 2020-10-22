@@ -201,6 +201,7 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
         peer_control,
         state,
         store,
+        test: args.test,
     };
 
     Ok(Rigging {
