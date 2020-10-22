@@ -136,13 +136,18 @@ impl discovery::Discovery for StreamDiscovery {
         let (mut sender, receiver) = mpsc::channel(1024);
 
         tokio::spawn(async move {
+            let mut last_seeds: Vec<seed::Seed> = vec![];
+
             while let Some(seeds) = self.seeds_receiver.recv().await {
-                for pair in seeds
-                    .into_iter()
-                    .map(|seed| (seed.peer_id, vec![seed.addr]))
-                {
+                if last_seeds == seeds {
+                    continue;
+                }
+
+                for pair in seeds.iter().map(|seed| (seed.peer_id, vec![seed.addr])) {
                     sender.send(pair).await.ok();
                 }
+
+                last_seeds = seeds;
             }
         });
 
