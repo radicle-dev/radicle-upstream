@@ -177,7 +177,12 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
             log::error!("Error parsing seed list {:?}: {}", seeds, err);
             vec![]
         });
-        let config = coco::config::configure(paths, key, *coco::config::INADDR_ANY, seeds);
+        let config = coco::config::configure(
+            paths,
+            key,
+            *coco::config::INADDR_ANY,
+            coco::config::static_seed_discovery(seeds),
+        );
 
         coco::into_peer_state(
             config,

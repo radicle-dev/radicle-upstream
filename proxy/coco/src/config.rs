@@ -72,24 +72,28 @@ pub fn default(
     path: impl AsRef<std::path::Path>,
 ) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, key, *LOCALHOST_ANY, vec![]))
+    Ok(configure(
+        paths,
+        key,
+        *LOCALHOST_ANY,
+        static_seed_discovery(vec![]),
+    ))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn configure(
+pub fn configure<D>(
     paths: paths::Paths,
     key: keys::SecretKey,
     listen_addr: SocketAddr,
-    seeds: Vec<seed::Seed>,
-) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
+    disco: D,
+) -> net::peer::PeerConfig<D, keys::SecretKey>
+where
+    D: discovery::Discovery<Addr = SocketAddr>,
+    <D as discovery::Discovery>::Stream: 'static,
+{
     let gossip_params = net::gossip::MembershipParams::default();
-    let disco = discovery::Static::new(
-        seeds
-            .into_iter()
-            .map(seed::Seed::into as fn(seed::Seed) -> (peer::PeerId, SocketAddr)),
-    );
     let storage_config = net::peer::StorageConfig::default();
 
     net::peer::PeerConfig {
@@ -100,4 +104,12 @@ pub fn configure(
         disco,
         storage_config,
     }
+}
+
+pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> Disco {
+    discovery::Static::new(
+        seeds
+            .into_iter()
+            .map(seed::Seed::into as fn(seed::Seed) -> (peer::PeerId, SocketAddr)),
+    )
 }
