@@ -137,7 +137,6 @@ impl discovery::Discovery for StreamDiscovery {
 
         tokio::spawn(async move {
             while let Some(seeds) = self.seeds_receiver.recv().await {
-                println!("NEXT SEEDS: {:?}", seeds);
                 for pair in seeds
                     .into_iter()
                     .map(|seed| (seed.peer_id, vec![seed.addr]))
