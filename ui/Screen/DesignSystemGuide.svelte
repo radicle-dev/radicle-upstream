@@ -10,9 +10,9 @@
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
+    Fullscreen,
     Dropdown,
     Illustration,
-    ModalLayout,
     Notification,
     Placeholder,
     ProjectCard,
@@ -150,7 +150,7 @@
   }
 </style>
 
-<ModalLayout full>
+<Fullscreen>
   <div class="layout">
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
@@ -792,4 +792,4 @@
       </Swatch>
     </Section>
   </div>
-</ModalLayout>
+</Fullscreen>

@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
   import { pop } from "svelte-spa-router";
 
   import { Icon } from "../Primitive";
 
+  export let style = "";
+  export let contentStyle = "";
   export let dataCy = null;
-  export let full = false;
   export let escapable = true;
   export let onClose = pop;
 
@@ -27,7 +28,7 @@
     top: 22px;
   }
 
-  .modal {
+  .fullscreen {
     align-items: center;
     display: flex;
     height: 100vh;
@@ -41,21 +42,18 @@
     height: 100%;
     width: 100%;
   }
-  .content.center {
-    width: 540px;
-  }
 </style>
 
 <svelte:window on:keydown={onKeydown} />
 
 {#if escapable}
-  <div data-cy="modal-close-button" class="close">
+  <div class="close">
     <Icon.Cross on:click={onClose} />
   </div>
 {/if}
 
-<div class="modal" data-cy={dataCy}>
-  <div class="content" class:center={!full}>
+<div class="fullscreen" data-cy={dataCy} {style}>
+  <div class="content" style={contentStyle}>
     <slot />
   </div>
 </div>
