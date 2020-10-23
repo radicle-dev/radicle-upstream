@@ -78,13 +78,7 @@ pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
             .tracked(project_urn)
             .await?
             .into_iter()
-            .filter_map(|peer| match peer {
-                coco::project::Peer::Remote {
-                    peer_id,
-                    status: coco::project::ReplicationStatus::Replicated { user, .. },
-                } => Some((peer_id, user)),
-                _ => None,
-            })
+            .filter_map(coco::project::Peer::replicated_remote)
         {
             let user = peer.into();
             if !users.contains(&user) {

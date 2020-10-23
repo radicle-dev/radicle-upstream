@@ -258,7 +258,7 @@ mod handler {
             .with_browser(branch, |browser| {
                 peers
                     .into_iter()
-                    .filter_map(|peer| coco::project::Peer::replicated(&peer))
+                    .filter_map(coco::project::Peer::replicated)
                     .map(|peer| coco::revisions(browser, peer).map(super::Revisions::from))
                     .collect()
             })

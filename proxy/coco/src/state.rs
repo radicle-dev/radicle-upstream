@@ -680,13 +680,7 @@ impl State {
         let include = Include::from_tracked_users(
             self.paths().git_includes_dir().to_path_buf(),
             local_url,
-            tracked.into_iter().filter_map(|peer| match peer {
-                project::Peer::Remote {
-                    peer_id,
-                    status: project::ReplicationStatus::Replicated { user, .. },
-                } => Some((user, peer_id)),
-                _ => None,
-            }),
+            tracked.into_iter().filter_map(project::Peer::replicated_remote).map(|(p, u)| (u, p)),
         );
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);

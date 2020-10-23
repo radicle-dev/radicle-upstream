@@ -306,13 +306,7 @@ pub async fn list_for_user(
             .tracked(project.urn())
             .await?
             .into_iter()
-            .filter_map(|peer| match peer {
-                coco::project::Peer::Remote {
-                    peer_id,
-                    status: coco::project::ReplicationStatus::Replicated { user, .. },
-                } => Some((peer_id, user)),
-                _ => None,
-            })
+            .filter_map(coco::project::Peer::replicated_remote)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer, _)) = tracked {
             let branch = state

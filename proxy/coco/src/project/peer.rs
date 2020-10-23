@@ -37,7 +37,7 @@ pub enum Peer<U> {
 }
 
 impl<U> Peer<U> {
-    pub fn replicated(&self) -> Option<Self>
+    pub fn replicated(self) -> Option<Self>
     where
         U: Clone,
     {
@@ -54,15 +54,12 @@ impl<U> Peer<U> {
         }
     }
 
-    pub fn replicated_remote(&self) -> Option<(PeerId, U)>
-    where
-        U: Clone,
-    {
+    pub fn replicated_remote(self) -> Option<(PeerId, U)> {
         match self {
             Self::Remote {
                 peer_id,
                 status: ReplicationStatus::Replicated { user, .. },
-            } => Some((*peer_id, user.clone())),
+            } => Some((peer_id, user)),
             _ => None,
         }
     }
