@@ -46,7 +46,6 @@ interface ShowError extends event.Event<Kind> {
   showIcon: boolean;
   actionText: string | false;
   actionHandler: ActionHandler | false;
-  sticky: boolean;
 }
 
 interface ShowInfo extends event.Event<Kind> {
@@ -55,7 +54,6 @@ interface ShowInfo extends event.Event<Kind> {
   showIcon: boolean;
   actionText: string | false;
   actionHandler: ActionHandler | false;
-  sticky: boolean;
 }
 
 type Msg = Remove | ShowError | ShowInfo;
@@ -70,8 +68,7 @@ const show = (
   showIcon: boolean,
   message: string,
   actionText: string | false,
-  actionHandler: ActionHandler | false,
-  sticky: boolean
+  actionHandler: ActionHandler | false
 ): void => {
   const id = Math.random();
   const notification = {
@@ -89,20 +86,12 @@ const show = (
     },
   };
 
-  // Keep sticky notifications at the bottom of the stack.
-  if (sticky) {
-    notifications = [...notifications, notification];
-  } else {
-    notifications = [notification, ...notifications];
-  }
+  notifications = [notification, ...notifications];
   store.set(notifications);
 
-  // Don't dismiss sticky notifications automatically.
-  if (!sticky) {
-    setTimeout(() => {
-      filter(id);
-    }, config.NOTIFICATION_TIMEOUT);
-  }
+  setTimeout(() => {
+    filter(id);
+  }, config.NOTIFICATION_TIMEOUT);
 };
 
 const update = (msg: Msg): void => {
@@ -113,8 +102,7 @@ const update = (msg: Msg): void => {
         msg.showIcon,
         msg.message,
         msg.actionText,
-        msg.actionHandler,
-        msg.sticky
+        msg.actionHandler
       );
 
       break;
@@ -125,8 +113,7 @@ const update = (msg: Msg): void => {
         msg.showIcon,
         msg.message,
         msg.actionText,
-        msg.actionHandler,
-        msg.sticky
+        msg.actionHandler
       );
 
       break;
@@ -144,23 +131,21 @@ const remove = (id: ID): void =>
 export const error = (
   message: string,
   showIcon: boolean = false,
-  sticky: boolean = false,
   actionText: string | false = "Close",
   actionHandler: ActionHandler | false = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowError,
     update
-  )({ message, showIcon, actionText, actionHandler, sticky });
+  )({ message, showIcon, actionText, actionHandler });
 
 export const info = (
   message: string,
   showIcon: boolean = false,
-  sticky: boolean = false,
   actionText: string | false = "Close",
   actionHandler: ActionHandler | false = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowInfo,
     update
-  )({ message, showIcon, actionText, actionHandler, sticky });
+  )({ message, showIcon, actionText, actionHandler });
