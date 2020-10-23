@@ -50,7 +50,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let rigging = rig(args).await?;
         let (mut tx, rx) = mpsc::channel(1);
-        let runner = run_rigging(rigging, (tx.clone(), rx), args.test);
+        let runner = run_rigging(rigging, (tx.clone(), rx));
 
         tokio::select! {
             r = runner => match r {
@@ -97,7 +97,6 @@ enum RunError {
 async fn run_rigging(
     rigging: Rigging,
     (killswitch, mut poisonpill): (mpsc::Sender<()>, mpsc::Receiver<()>),
-    enable_fixture_creation: bool,
 ) -> Result<(), RunError> {
     // Required for `tokio::select`. We can’t put it on the element directly, though.
     #![allow(clippy::unreachable)]
@@ -165,7 +164,6 @@ async fn run_rigging(
             ctx,
             subscriptions.clone(),
             killswitch,
-            enable_fixture_creation,
         );
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
