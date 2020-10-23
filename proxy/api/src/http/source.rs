@@ -83,7 +83,6 @@ fn revisions_filter(
     path("revisions")
         .and(warp::get())
         .and(http::with_context(ctx.clone()))
-        .and(http::with_owner_guard(ctx))
         .and(path::param::<coco::Urn>())
         .and_then(handler::revisions)
 }
@@ -242,29 +241,12 @@ mod handler {
     #[allow(clippy::wildcard_enum_match_arm)]
     pub async fn revisions(
         ctx: context::Context,
-        owner: coco::user::User,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let peers = ctx
             .state
-            .tracked(project_urn.clone())
+            .list_project_peers(project_urn.clone())
             .await
-            .map_err(error::Error::from)?;
-        let peers = peers
-            .into_iter()
-            .filter_map(|peer| match peer {
-                coco::project::Peer::Remote {
-                    peer_id,
-                    status: coco::project::ReplicationStatus::Replicated { user, .. },
-                } => Some((peer_id, user)),
-                _ => None,
-            })
-            .collect();
-        let peer_id = ctx.state.peer_id();
-        let owner = owner
-            .to_data()
-            .build()
-            .map_err(coco::state::Error::from)
             .map_err(error::Error::from)?;
         let branch = ctx
             .state
@@ -274,11 +256,11 @@ mod handler {
         let revisions: Vec<super::Revisions> = ctx
             .state
             .with_browser(branch, |browser| {
-                // TODO(finto): downgraded verified user, which should not be needed.
-                Ok(coco::revisions(browser, peer_id, owner, peers)?
+                peers
                     .into_iter()
-                    .map(|revision| revision.into())
-                    .collect())
+                    .filter_map(|peer| coco::project::Peer::replicated(&peer))
+                    .map(|peer| coco::revisions(browser, peer).map(super::Revisions::from))
+                    .collect()
             })
             .await
             .map_err(error::Error::from)?;

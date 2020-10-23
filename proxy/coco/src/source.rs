@@ -2,18 +2,21 @@
 
 use std::{convert::TryFrom, fmt, path, str::FromStr};
 
-use nonempty::NonEmpty;
 use serde::{ser::SerializeStruct as _, Deserialize, Serialize, Serializer};
 use syntect::{
     easy::HighlightLines, highlighting::ThemeSet, parsing::SyntaxSet, util::LinesWithEndings,
 };
 
+use librad::peer::PeerId;
 use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchType, Browser, Rev, Stats},
 };
 
-use crate::oid::Oid;
+use crate::{
+    oid::Oid,
+    project::{Peer, ReplicationStatus},
+};
 
 /// An error occurred when interacting with [`radicle_surf`] for browsing source code.
 #[derive(Debug, thiserror::Error)]
@@ -789,52 +792,55 @@ where
     })
 }
 
-/// Get all [`Revisions`] for a given project.
-///
-/// # Parameters
-///
-/// * `peer_id` - the identifier of this peer
-/// * `owner` - the owner of this peer, i.e. the current user
-/// * `peers` - an iterator of a peer and the default self it used for this project
-///
-/// # Errors
-///
-///   * [`Error::Git`]
-pub fn revisions<P, U>(
+pub fn peer_revisions<P, U>(
     browser: &Browser,
     peer_id: P,
-    owner: U,
-    peers: Vec<(P, U)>,
-) -> Result<NonEmpty<Revisions<P, U>>, Error>
+    user: U,
+) -> Result<Revisions<P, U>, Error>
 where
     P: Clone + ToString,
 {
-    let mut user_revisions = vec![];
+    let remote_branches = branches(browser, Some(into_branch_type(Some(peer_id.clone()))))?;
 
+    Ok(Revisions {
+        peer_id,
+        user,
+        branches: remote_branches,
+        // TODO(rudolfs): implement remote peer tags once we decide how
+        // https://radicle.community/t/git-tags/214
+        tags: vec![],
+    })
+}
+
+pub fn local_revisions<P, U>(
+    browser: &Browser,
+    peer_id: P,
+    user: U,
+) -> Result<Revisions<P, U>, Error>
+where
+    P: Clone + ToString,
+{
     let local_branches = branches(browser, Some(BranchType::Local))?;
-    if !local_branches.is_empty() {
-        user_revisions.push(Revisions {
+    Ok(Revisions {
+        peer_id,
+        user,
+        branches: local_branches,
+        tags: tags(browser)?,
+    })
+}
+
+pub fn revisions<U>(browser: &Browser, peer: Peer<U>) -> Result<Revisions<PeerId, U>, Error> {
+    match peer {
+        Peer::Local {
             peer_id,
-            user: owner,
-            branches: local_branches,
-            tags: tags(browser)?,
-        })
-    }
-
-    for (peer_id, user) in peers {
-        let remote_branches = branches(browser, Some(into_branch_type(Some(peer_id.clone()))))?;
-
-        user_revisions.push(Revisions {
+            status: ReplicationStatus::Replicated { user, .. },
+        } => local_revisions(browser, peer_id, user),
+        Peer::Remote {
             peer_id,
-            user,
-            branches: remote_branches,
-            // TODO(rudolfs): implement remote peer tags once we decide how
-            // https://radicle.community/t/git-tags/214
-            tags: vec![],
-        });
+            status: ReplicationStatus::Replicated { user, .. },
+        } => peer_revisions(browser, peer_id, user),
+        _ => Err(todo!()),
     }
-
-    NonEmpty::from_vec(user_revisions).ok_or(Error::EmptyRevisions)
 }
 
 /// Turn an `Option<P>` into a [`BranchType`]. If the `P` is present then this is
