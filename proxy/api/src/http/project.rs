@@ -242,7 +242,7 @@ mod handler {
             .await
             .map_err(Error::from)?
             .into_iter()
-            .map(Into::into)
+            .map(project::Peer::from)
             .collect::<Vec<_>>();
 
         Ok(reply::json(&peers))
