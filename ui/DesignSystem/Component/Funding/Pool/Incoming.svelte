@@ -65,7 +65,7 @@
       <div class="item">
         <p>Balance</p>
         <h3>{poolData.collectableFunds} DAI</h3>
-        {#if poolData.collectableFunds > 0}
+        {#if poolData.collectableFunds > 0 && !ongoingCollect}
           <TxButton
             disabled={ongoingCollect}
             title={'Cash out'}

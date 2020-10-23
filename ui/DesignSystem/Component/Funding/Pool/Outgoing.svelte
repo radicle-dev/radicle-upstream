@@ -171,12 +171,14 @@
           </Input.Text>
           <p>monthly</p>
         </span>
-        <TxButton
-          disabled={!saveMonthlyContributionEnabled}
-          title={'Save'}
-          onClick={onSaveMonthlyContribution}
-          variant={'transparent'}
-          errorMessage={e => `Failed to save pool: ${e}`} />
+        {#if saveMonthlyContributionEnabled && ongoingMonthlyContributionUpdate}
+          <TxButton
+            disabled={!saveMonthlyContributionEnabled}
+            title={'Save'}
+            onClick={onSaveMonthlyContribution}
+            variant={'transparent'}
+            errorMessage={e => `Failed to save pool: ${e}`} />
+        {/if}
       </div>
       <div class="row">
         <h3>{poolData.balance} DAI</h3>
@@ -216,12 +218,14 @@
           bind:value={members}
           placeholder="Enter a list of comma-separated addresses here" />
 
-        <TxButton
-          disabled={!saveMembersEnabled}
-          title={'Save'}
-          onClick={onSaveMembers}
-          variant={'outline'}
-          errorMessage={e => `Failed to save pool: ${e}`} />
+        {#if saveMembersEnabled && !ongoingBeneficiariesUpdate}
+          <TxButton
+            disabled={!saveMembersEnabled}
+            title={'Save'}
+            onClick={onSaveMembers}
+            variant={'outline'}
+            errorMessage={e => `Failed to save pool: ${e}`} />
+        {/if}
       </div>
     </div>
   </Remote>
