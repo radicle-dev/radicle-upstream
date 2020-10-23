@@ -12,7 +12,7 @@ export const store = persistentStore<Tx[]>("radicle-transactions-store", []);
 // Periodically refresh the status of all stored transactions.
 const POLL_INTERVAL_MILLIS = 10000;
 setInterval(() => {
-  updateAll();
+  updateStatuses();
 }, POLL_INTERVAL_MILLIS);
 
 export interface Tx {
@@ -143,12 +143,14 @@ function cap() {
   });
 }
 
-async function updateAll() {
+async function updateStatuses() {
   store.update(txs => {
-    txs.forEach(async tx => {
-      const newStatus = await lookupStatus(tx.hash);
-      if (newStatus) tx.status = newStatus;
-    });
+    txs
+      .filter(tx => tx.status === TxStatus.AwaitingInclusion)
+      .forEach(async tx => {
+        const newStatus = await lookupStatus(tx.hash);
+        if (newStatus) tx.status = newStatus;
+      });
     return txs;
   });
 }
