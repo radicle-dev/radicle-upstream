@@ -162,8 +162,13 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
             )?
         };
 
-        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        {
+            let results = alice_state.transport_results();
+            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+            assert!(results.wait(Duration::from_secs(3)).is_some());
+        }
+
         commit_id
     };
 
@@ -302,6 +307,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         let path = bob_state
             .checkout(project.urn(), alice_peer_id, bob_repo_path)
             .await?;
+
         let repo = git2::Repository::open(path)?;
         let oid = repo
             .find_reference(&format!("refs/heads/{}", project.default_branch()))?
@@ -326,10 +332,16 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
             )?
         };
 
-        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        {
+            let results = bob_state.transport_results();
+            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+            assert!(results.wait(Duration::from_secs(3)).is_some());
+        }
+
         commit_id
     };
+
     {
         let bob_addr = bob_state.listen_addr();
         let bob_peer_id = bob_state.peer_id();

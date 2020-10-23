@@ -3,29 +3,38 @@
 
   import {
     clear,
-    parseSeedsInput,
     settings,
+    seedValidation,
+    addSeed,
+    removeSeed,
     updateAppearance,
-    updateCoCo,
   } from "../src/session.ts";
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
   import { getVersion, isDev } from "../../native/ipc.js";
 
-  import { Button, Input } from "../DesignSystem/Primitive";
-  import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
-
-  let seedInputValue = $settings.coco.seeds.join("\n");
+  import { Button, Icon, Input } from "../DesignSystem/Primitive";
+  import {
+    SidebarLayout,
+    SegmentedControl,
+    StyledCopyable,
+  } from "../DesignSystem/Component";
 
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 
-  const updateSeeds = event => {
-    const seeds = parseSeedsInput(event.target.value);
-    updateCoCo({ ...$settings.coco, seeds });
-    seedInputValue = seeds.join("\n");
+  let seedInputValue;
+
+  const submitSeed = async () => {
+    if (await addSeed(seedInputValue)) {
+      seedInputValue = "";
+    }
   };
+
+  $: if (seedInputValue === "") {
+    seedValidation.reset();
+  }
 
   let version;
 
@@ -59,6 +68,12 @@
     padding: 0 12px;
   }
 
+  .section-item-single {
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 12px;
+  }
+
   .info {
     flex: 1;
   }
@@ -68,6 +83,41 @@
     justify-content: flex-end;
     align-items: center;
     margin-left: 16px;
+  }
+
+  .seed-entry-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .seed-entry-field {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .seeds {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    width: 100%;
+  }
+
+  .seed {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--color-foreground-level-2);
+    padding: 1.5rem 1rem 1.5rem 1rem;
+    cursor: default;
+  }
+
+  .seed:last-of-type {
+    border-bottom: 1px solid var(--color-foreground-level-2);
   }
 
   .title {
@@ -139,7 +189,7 @@
       <header>
         <h3>Network</h3>
       </header>
-      <div class="section-item" style="align-items: flex-start;">
+      <div class="section-item-single">
         <div class="info">
           <p class="typo-text-bold">
             Seeds help you see more projects and people on the network
@@ -151,13 +201,35 @@
               more about seeds </a>
           </p>
         </div>
-        <div class="action typo-mono">
-          <Input.Textarea
-            style="flex: 1; height: 6rem;"
-            bind:value={seedInputValue}
-            on:change={updateSeeds}
-            placeholder="Enter seeds here" />
-        </div>
+        <form class="seed-entry-form" on:submit|preventDefault>
+          <div class="seed-entry-field">
+            <Input.Text
+              hint="v"
+              bind:value={seedInputValue}
+              placeholder="Paste seed address here"
+              style="margin-right: 8px; min-width: 224px; width: 100%;"
+              validation={$seedValidation} />
+            <Button
+              style="display: flex;"
+              on:click={submitSeed}
+              disabled={!seedInputValue}
+              variant="outline">
+              Add
+            </Button>
+          </div>
+
+          <div class="seeds">
+            {#each $settings.coco.seeds as seed (seed)}
+              <div class="seed">
+                <StyledCopyable value={seed} />
+                <Icon.Cross
+                  on:click={() => removeSeed(seed)}
+                  variant="medium"
+                  style="margin-left: 1.5rem; cursor:pointer;" />
+              </div>
+            {/each}
+          </div>
+        </form>
       </div>
     </section>
 

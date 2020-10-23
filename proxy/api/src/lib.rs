@@ -24,13 +24,16 @@
     clippy::shadow_reuse
 )]
 
-pub mod avatar;
-pub mod config;
-pub mod context;
+mod avatar;
+mod config;
+mod context;
 pub mod env;
-pub mod error;
-pub mod http;
-pub mod identity;
-pub mod notification;
-pub mod project;
-pub mod session;
+mod error;
+mod http;
+mod identity;
+mod notification;
+mod process;
+mod project;
+mod session;
+
+pub use process::{run, Args};

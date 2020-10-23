@@ -328,7 +328,7 @@ mod test {
                 &owner,
                 "git-platinum",
                 "fixture data",
-                "master",
+                coco::control::default_branch(),
             )
             .await?;
             platinum_project.urn()
@@ -412,7 +412,7 @@ mod test {
                 name: "Upstream".to_string(),
             },
             description: "Desktop client for radicle.".into(),
-            default_branch: "master".into(),
+            default_branch: coco::control::default_branch(),
         };
 
         let res = request()
@@ -471,7 +471,7 @@ mod test {
                 path: repo_path.clone(),
             },
             description: "Desktop client for radicle.".into(),
-            default_branch: "master".into(),
+            default_branch: coco::control::default_branch(),
         };
 
         // Create the repository for which we'll create a project for
@@ -526,7 +526,7 @@ mod test {
                 &owner,
                 "git-platinum",
                 "fixture data",
-                "master",
+                coco::control::default_branch(),
             )
             .await?;
             platinum_project.urn()
