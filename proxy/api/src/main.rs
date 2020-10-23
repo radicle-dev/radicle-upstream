@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let rigging = rig(args).await?;
         let (mut tx, rx) = mpsc::channel(1);
-        let runner = run(rigging, (tx.clone(), rx), args.test);
+        let runner = run(rigging, (tx.clone(), rx));
 
         tokio::select! {
             r = runner => match r {
@@ -81,7 +81,6 @@ enum RunError {
 async fn run(
     rigging: Rigging,
     (killswitch, mut poisonpill): (mpsc::Sender<()>, mpsc::Receiver<()>),
-    enable_fixture_creation: bool,
 ) -> Result<(), RunError> {
     let Rigging {
         temp: _dont_drop_me,
@@ -136,12 +135,7 @@ async fn run(
 
     let server = async move {
         log::info!("... API");
-        let api = http::api(
-            ctx,
-            subscriptions.clone(),
-            killswitch,
-            enable_fixture_creation,
-        );
+        let api = http::api(ctx, subscriptions.clone(), killswitch);
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
             async move {
