@@ -36,7 +36,6 @@ macro_rules! combine {
 pub fn api(
     ctx: context::Context,
     subscriptions: Subscriptions,
-    selfdestruct: mpsc::Sender<()>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let test = ctx.test();
 
@@ -51,12 +50,22 @@ pub fn api(
             }
         })
         .untuple_one()
-        .and(control::filters(ctx.clone(), selfdestruct));
+        .and(control::filters(ctx.clone()));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter =
         path("notifications").and(notification::filters(ctx.clone(), subscriptions));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
+    let keystore_filter = path("keystore")
+        .and(warp::post())
+        .and(path::end())
+        .and(with_context(ctx.clone()))
+        .and_then(|_ctx| async move {
+            Ok::<_, warp::Rejection>(warp::reply::with_status(
+                warp::reply(),
+                warp::http::StatusCode::NO_CONTENT,
+            ))
+        });
     let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
@@ -66,6 +75,7 @@ pub fn api(
         notification_filter,
         project_filter,
         session_filter,
+        keystore_filter,
         source_filter
     ));
 

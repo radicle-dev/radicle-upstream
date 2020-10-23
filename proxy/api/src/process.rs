@@ -1,16 +1,16 @@
 //! Provides [`run`] to run the proxy process.
+use futures::prelude::*;
 use std::{convert::TryFrom, time::Duration};
-
 use tempfile::TempDir;
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
-    sync::{mpsc, watch},
+    sync::watch,
 };
 
-use coco::{convert::MaybeFrom as _, keystore, seed, signer, Peer, RunConfig, SyncConfig};
+use coco::{convert::MaybeFrom as _, seed, signer, Peer, RunConfig, SyncConfig};
 
-use crate::{config, context, http, notification, session};
+use crate::{config, context, http, notification, service, session};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
@@ -26,11 +26,9 @@ struct Rigging {
     /// The context provided to the API
     ctx: context::Context,
     /// The [`Peer`] to run
-    peer: Peer,
+    peer: Option<Peer>,
     /// Channel to receive updates to the seed nodes from the API
     seeds_sender: Option<watch::Sender<Vec<seed::Seed>>>,
-    /// Subscriptions for [`Peer`] events passed to the API
-    subscriptions: notification::Subscriptions,
 }
 
 /// Run the proxy process
@@ -46,26 +44,32 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
+    let mut service_manager = service::Manager::new();
     let mut sighup = signal(SignalKind::hangup())?;
-    loop {
-        let rigging = rig(args).await?;
-        let (mut tx, rx) = mpsc::channel(1);
-        let runner = run_rigging(rigging, (tx.clone(), rx));
 
-        tokio::select! {
-            r = runner => match r {
-                // We've been shut down, ignore
-                Err(RunError::Peer(coco::peer::Error::Spawn(_))) | Ok(()) => {
-                    log::debug!("aborted")
-                },
-                // Actual error, abort the process
-                Err(e) => return Err(e.into()),
-            },
-
-            Some(()) = sighup.recv() => {
+    let mut handle = service_manager.handle();
+    tokio::spawn(async move {
+        loop {
+            if sighup.recv().await.is_some() {
                 log::info!("SIGHUP received, reloading...");
-                tx.send(()).await.ok();
+                handle.reset();
+            } else {
+                break;
             }
+        }
+    });
+
+    loop {
+        let notified_restart = service_manager.notified_restart();
+        let service_handle = service_manager.handle();
+        let config = service_manager.config().await;
+        let rigging = rig(args, service_handle, config).await?;
+        let result = run_rigging(rigging, notified_restart).await;
+        match result {
+            // We've been shut down, ignore
+            Err(RunError::Peer(coco::peer::Error::Spawn(_))) | Ok(()) => log::debug!("aborted"),
+            // Actual error, abort the process
+            Err(e) => return Err(e.into()),
         }
 
         // Give sled some time to clean up if we're in persistent mode
@@ -96,7 +100,7 @@ enum RunError {
 /// Errors when either the peer or the API error.
 async fn run_rigging(
     rigging: Rigging,
-    (killswitch, mut poisonpill): (mpsc::Sender<()>, mpsc::Receiver<()>),
+    restart_signal: impl Future<Output = ()> + Send + 'static,
 ) -> Result<(), RunError> {
     // Required for `tokio::select`. We can’t put it on the element directly, though.
     #![allow(clippy::unreachable)]
@@ -105,7 +109,6 @@ async fn run_rigging(
         ctx,
         peer,
         seeds_sender,
-        subscriptions,
     } = rigging;
 
     if let Some(seeds_sender) = seeds_sender {
@@ -140,31 +143,16 @@ async fn run_rigging(
         });
     }
 
+    let subscriptions = notification::Subscriptions::default();
     let peer_subscriptions = subscriptions.clone();
-    let peer_event_broadcast = {
-        let mut peer_events = peer.subscribe();
-
-        async move {
-            loop {
-                if let Some(notification) = notification::Notification::maybe_from(
-                    peer_events
-                        .recv()
-                        .await
-                        .expect("Failed to receive peer event"),
-                ) {
-                    peer_subscriptions.broadcast(notification).await
-                }
-            }
-        }
-    };
 
     let server = async move {
         log::info!("... API");
-        let api = http::api(ctx, subscriptions.clone(), killswitch);
+        let api = http::api(ctx, subscriptions.clone());
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
             async move {
-                poisonpill.recv().await;
+                restart_signal.await;
                 subscriptions.clear().await;
             },
         )?;
@@ -172,26 +160,51 @@ async fn run_rigging(
         server.await;
         Ok(())
     };
-    let peer = async move {
-        log::info!("... peer");
-        peer.into_running().await
-    };
 
-    log::info!("Starting...");
-    tokio::select! {
-        server_status = server => server_status,
-        peer_status = peer => Ok(peer_status?),
-        peer_event_broadcast_status = peer_event_broadcast => peer_event_broadcast_status,
+    if let Some(peer) = peer {
+        let peer_event_broadcast = {
+            let mut peer_events = peer.subscribe();
+
+            async move {
+                loop {
+                    if let Some(notification) = notification::Notification::maybe_from(
+                        peer_events
+                            .recv()
+                            .await
+                            .expect("Failed to receive peer event"),
+                    ) {
+                        peer_subscriptions.broadcast(notification).await
+                    }
+                }
+            }
+        };
+        let peer = async move {
+            log::info!("... peer");
+            peer.into_running().await
+        };
+
+        log::info!("Starting...");
+        let result = tokio::select! {
+            server_status = server => server_status,
+            peer_status = peer => Ok(peer_status?),
+            peer_event_broadcast_status = peer_event_broadcast => peer_event_broadcast_status,
+        };
+        log::info!("done");
+        result
+    } else {
+        server.await
     }
 }
 
 /// Create [`Rigging`] to run the peer and API.
-async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
+async fn rig(
+    args: Args,
+    service_handle: service::Handle,
+    config: service::Config,
+) -> Result<Rigging, Box<dyn std::error::Error>> {
     log::debug!("rigging up");
 
-    let pw = keystore::SecUtf8::from("radicle-upstream");
-
-    let (temp, paths, store, key) = if args.test {
+    let (temp, paths, store) = if args.test {
         let temp_dir = tempfile::tempdir()?;
         log::debug!(
             "Temporary path being used for this run is: {:?}",
@@ -205,92 +218,102 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
             let path = temp_dir.path().join("store");
             kv::Store::new(kv::Config::new(path).flush_every_ms(100))
         }?;
-        let key = keystore::Keystorage::memory(pw)?.get();
-
-        Ok::<_, Box<dyn std::error::Error>>((Some(temp_dir), paths, store, key))
+        (Some(temp_dir), paths, store)
     } else {
         let paths = coco::Paths::try_from(coco::config::Paths::default())?;
         let store = {
             let path = config::dirs().data_dir().join("store");
             kv::Store::new(kv::Config::new(path).flush_every_ms(100))
         }?;
-        let key = keystore::Keystorage::file(&paths, pw).init()?;
-
-        Ok((None, paths, store, key))
-    }?;
-
-    let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
-
-    let (peer, state, seeds_sender) = if args.test {
-        let config = coco::config::configure(
-            paths,
-            key,
-            *coco::config::INADDR_ANY,
-            coco::config::static_seed_discovery(vec![]),
-        );
-        let (peer, state) = coco::into_peer_state(
-            config,
-            signer.clone(),
-            store.clone(),
-            RunConfig {
-                sync: SyncConfig {
-                    max_peers: 1,
-                    on_startup: true,
-                    period: Duration::from_secs(5),
-                },
-                ..RunConfig::default()
-            },
-        )
-        .await?;
-
-        (peer, state, None)
-    } else {
-        let seeds = session::settings(&store).await?.coco.seeds;
-        let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
-            log::error!("Error parsing seed list {:?}: {}", seeds, err);
-            vec![]
-        });
-        let (seeds_sender, seeds_receiver) = watch::channel(seeds);
-
-        let config = coco::config::configure(
-            paths,
-            key,
-            *coco::config::INADDR_ANY,
-            coco::config::StreamDiscovery::new(seeds_receiver),
-        );
-
-        let (peer, state) = coco::into_peer_state(
-            config,
-            signer.clone(),
-            store.clone(),
-            RunConfig {
-                sync: SyncConfig {
-                    max_peers: 1,
-                    on_startup: true,
-                    period: Duration::from_secs(5),
-                },
-                ..RunConfig::default()
-            },
-        )
-        .await?;
-
-        (peer, state, Some(seeds_sender))
+        (None, paths, store)
     };
 
-    let peer_control = peer.control();
-    let subscriptions = notification::Subscriptions::default();
-    let ctx = context::Context::Unsealed(context::Unsealed {
-        peer_control,
-        state,
-        store,
-        test: args.test,
-    });
+    if let Some(key) = config.key {
+        let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
+        let (peer, state, seeds_sender) = if args.test {
+            let config = coco::config::configure(
+                paths,
+                key,
+                *coco::config::INADDR_ANY,
+                coco::config::static_seed_discovery(vec![]),
+            );
+            let (peer, state) = coco::into_peer_state(
+                config,
+                signer.clone(),
+                store.clone(),
+                RunConfig {
+                    sync: SyncConfig {
+                        max_peers: 1,
+                        on_startup: true,
+                        period: Duration::from_secs(5),
+                    },
+                    ..RunConfig::default()
+                },
+            )
+            .await?;
 
-    Ok(Rigging {
-        temp,
-        ctx,
-        peer,
-        seeds_sender,
-        subscriptions,
-    })
+            (peer, state, None)
+        } else {
+            let seeds = session::settings(&store).await?.coco.seeds;
+            let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
+                log::error!("Error parsing seed list {:?}: {}", seeds, err);
+                vec![]
+            });
+            let (seeds_sender, seeds_receiver) = watch::channel(seeds);
+
+            let config = coco::config::configure(
+                paths,
+                key,
+                *coco::config::INADDR_ANY,
+                coco::config::StreamDiscovery::new(seeds_receiver),
+            );
+
+            let (peer, state) = coco::into_peer_state(
+                config,
+                signer.clone(),
+                store.clone(),
+                RunConfig {
+                    sync: SyncConfig {
+                        max_peers: 1,
+                        on_startup: true,
+                        period: Duration::from_secs(5),
+                    },
+                    ..RunConfig::default()
+                },
+            )
+            .await?;
+
+            (peer, state, Some(seeds_sender))
+        };
+
+        let peer_control = peer.control();
+        let ctx = context::Context::Unsealed(context::Unsealed {
+            peer_control,
+            state,
+            store,
+            test: args.test,
+            service_handle: service_handle.clone(),
+        });
+
+        Ok(Rigging {
+            temp,
+            ctx,
+            peer: Some(peer),
+            seeds_sender,
+        })
+    } else {
+        log::debug!("using sealed context");
+        let ctx = context::Context::Sealed(context::Sealed {
+            store,
+            paths,
+            test: args.test,
+            service_handle,
+        });
+        Ok(Rigging {
+            temp,
+            ctx,
+            peer: None,
+            seeds_sender: None,
+        })
+    }
 }

@@ -1,6 +1,8 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
+use crate::service;
 use coco::PeerControl;
+use tokio::sync::mpsc;
 
 #[cfg(test)]
 use coco::{keystore, signer, RunConfig};
@@ -31,6 +33,13 @@ impl Context {
             Self::Unsealed(unsealed) => &unsealed.store,
         }
     }
+
+    pub fn service_handle(&mut self) -> &mut service::Handle {
+        match self {
+            Context::Sealed(sealed) => &mut sealed.service_handle,
+            Context::Unsealed(unsealed) => &mut unsealed.service_handle,
+        }
+    }
 }
 
 impl From<Unsealed> for Context {
@@ -56,6 +65,7 @@ pub struct Unsealed {
     pub state: coco::State,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
+    pub service_handle: service::Handle,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -65,6 +75,8 @@ pub struct Sealed {
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
+    pub paths: coco::Paths,
+    pub service_handle: service::Handle,
 }
 
 impl Unsealed {
@@ -99,6 +111,7 @@ impl Unsealed {
             state,
             store,
             test: false,
+            service_handle: service::Handle::dummy(),
         })
     }
 }

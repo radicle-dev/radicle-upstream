@@ -34,6 +34,7 @@ mod identity;
 mod notification;
 mod process;
 mod project;
+mod service;
 mod session;
 
 pub use process::{run, Args};

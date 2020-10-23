@@ -8,6 +8,7 @@ use crate::{context, http};
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     delete_filter(ctx.clone())
         .or(get_filter(ctx.clone()))
+        .or(unseal_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
         .boxed()
 }
@@ -44,11 +45,39 @@ fn update_settings_filter(
         .and_then(handler::update_settings)
 }
 
+/// `POST /unseal`
+fn unseal_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("unseal")
+        .and(warp::post())
+        .and(path::end())
+        .and(http::with_context(ctx))
+        .and_then(handler::unseal)
+}
+
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error, session};
+
+    pub async fn unseal(ctx: context::Context) -> Result<impl Reply, Rejection> {
+        match ctx {
+            context::Context::Unsealed(unsealed) => {},
+            context::Context::Sealed(mut sealed) => {
+                // let key = coco::keystore::Keystorage::file(
+                //     &sealed.paths,
+                //     coco::keystore::SecUtf8::from("my-secret-key"),
+                // )
+                // .init()
+                // .map_err(crate::error::Error::from)?;
+                let key = coco::keys::SecretKey::new();
+                sealed.service_handle.set_secret_key(key);
+            },
+        }
+        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
+    }
 
     /// Clear the current [`session::Session`].
     pub async fn delete(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {

@@ -1,6 +1,9 @@
 Cypress.Commands.add("resetProxyState", async () => {
   console.log("Reset Proxy state");
   await fetch("http://localhost:8080/v1/control/reset");
+  await fetch("http://localhost:8080/v1/session/unseal", {
+    method: "POST",
+  });
 });
 
 Cypress.Commands.add("pick", (...ids) => {
@@ -30,16 +33,17 @@ Cypress.Commands.add(
     })
 );
 
-Cypress.Commands.add(
-  "onboardUser",
-  async (handle = "secretariat") =>
-    await fetch("http://localhost:8080/v1/identities", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        handle,
-      }),
-    })
-);
+Cypress.Commands.add("onboardUser", async (handle = "secretariat") => {
+  await fetch("http://localhost:8080/v1/session/unseal", {
+    method: "POST",
+  });
+  await fetch("http://localhost:8080/v1/identities", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      handle,
+    }),
+  });
+});
