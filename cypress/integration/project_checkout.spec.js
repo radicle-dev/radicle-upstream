@@ -35,7 +35,7 @@ context("project checkout", () => {
   };
 
   beforeEach(() => {
-    cy.resetAllState();
+    cy.resetProxyState();
     cy.onboardUser();
     cy.createProjectWithFixture();
     cy.visit("./public/index.html");
