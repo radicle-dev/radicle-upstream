@@ -50,8 +50,8 @@
     min-width: 200px;
   }
 
-  .item > * {
-    margin: 0 5px;
+  .item > * + * {
+    margin-left: 7px;
   }
 </style>
 
@@ -60,12 +60,10 @@
     <div class="row">
       <header>
         <h3>Incoming support</h3>
-        <p>
-          Funds from your supporters. Do you like money? Cash out to your
-          connected wallet!
-        </p>
+        <p>Funds from your supporters will show up here.</p>
       </header>
       <div class="item">
+        <p>Balance</p>
         <h3>{poolData.collectableFunds} DAI</h3>
         {#if poolData.collectableFunds > 0}
           <TxButton
