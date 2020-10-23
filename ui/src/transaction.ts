@@ -1,3 +1,4 @@
+import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
 import type { ContractTransaction } from "radicle-contracts/contract-bindings/ethers/Pool";
@@ -41,32 +42,32 @@ type PoolTx =
   | UpdateBeneficiaries;
 
 interface TopUp {
-  kind: PoolTxKind.TopUp;
+  kind: TxKind.TopUp;
   amount: BigNumberish;
 }
 
 interface CollectFunds {
-  kind: PoolTxKind.CollectFunds;
+  kind: TxKind.CollectFunds;
   amount: BigNumberish;
 }
 
 interface UpdateMonthlyContribution {
-  kind: PoolTxKind.UpdateMonthlyContribution;
+  kind: TxKind.UpdateMonthlyContribution;
   // The value the monthly contribution is being set to.
   amount: BigNumberish;
 }
 
 interface UpdateMonthlyContribution {
-  kind: PoolTxKind.UpdateMonthlyContribution;
+  kind: TxKind.UpdateMonthlyContribution;
   // The value the monthly contribution is being set to.
   amount: BigNumberish;
 }
 
 interface UpdateBeneficiaries {
-  kind: PoolTxKind.UpdateBeneficiaries;
+  kind: TxKind.UpdateBeneficiaries;
 }
 
-enum PoolTxKind {
+export enum TxKind {
   TopUp = "Top Up",
   CollectFunds = "Collect Funds",
   UpdateMonthlyContribution = "Update Monthly Contribution",
@@ -79,7 +80,7 @@ export function amountPerBlock(txc: ContractTransaction): Tx {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     inner: {
-      kind: PoolTxKind.UpdateMonthlyContribution,
+      kind: TxKind.UpdateMonthlyContribution,
       amount: txc.value,
     },
   };
@@ -90,7 +91,7 @@ export function beneficiaries(txc: ContractTransaction): Tx {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     inner: {
-      kind: PoolTxKind.UpdateBeneficiaries,
+      kind: TxKind.UpdateBeneficiaries,
     },
   };
 }
@@ -100,7 +101,7 @@ export function collect(txc: ContractTransaction): Tx {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     inner: {
-      kind: PoolTxKind.CollectFunds,
+      kind: TxKind.CollectFunds,
       amount: txc.value,
     },
   };
@@ -111,7 +112,7 @@ export function topUp(txc: ContractTransaction): Tx {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     inner: {
-      kind: PoolTxKind.TopUp,
+      kind: TxKind.TopUp,
       amount: txc.value,
     },
   };
@@ -169,6 +170,14 @@ async function lookupStatus(hash: string): Promise<TxStatus | undefined> {
 }
 
 /* UI helper functions */
+
+// Check if there is an ongoing transaction of a given kind.
+export function ongoing(txKind: TxKind): boolean {
+  const txs: Tx[] = svelteStore.get(store);
+  return txs.some(
+    tx => tx.status === TxStatus.AwaitingInclusion && tx.inner.kind === txKind
+  );
+}
 
 export const colorForStatus = (status: TxStatus): string => {
   switch (status) {

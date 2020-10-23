@@ -3,12 +3,19 @@
 
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
   import * as _pool from "../../../../src/funding/pool";
+  import * as transaction from "../../../../src/transaction";
 
   export let pool: _pool.Pool;
 
   const collectFunds = async (): Promise<void> => {
     await pool.collect();
   };
+
+  let ongoingCollect = false;
+
+  transaction.store.subscribe(_ => {
+    ongoingCollect = transaction.ongoing(transaction.TxKind.CollectFunds);
+  });
 </script>
 
 <style>
@@ -62,6 +69,7 @@
         <h3>{poolData.collectableFunds} DAI</h3>
         {#if poolData.collectableFunds > 0}
           <TxButton
+            disabled={ongoingCollect}
             title={'Cash out'}
             onClick={collectFunds}
             variant={'primary'}

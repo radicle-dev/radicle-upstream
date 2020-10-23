@@ -7,6 +7,7 @@
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as _pool from "../../../../src/funding/pool";
+  import * as transaction from "../../../../src/transaction";
 
   import {
     amountStore,
@@ -21,6 +22,20 @@
 
   // The loaded PoolData, updated at on `pool.data.subscribe`.
   let data: _pool.PoolData | undefined;
+
+  let ongoingTopUp = false;
+  let ongoingMonthlyContributionUpdate = false;
+  let ongoingBeneficiariesUpdate = false;
+
+  transaction.store.subscribe(_ => {
+    ongoingTopUp = transaction.ongoing(transaction.TxKind.TopUp);
+    ongoingMonthlyContributionUpdate = transaction.ongoing(
+      transaction.TxKind.UpdateMonthlyContribution
+    );
+    ongoingBeneficiariesUpdate = transaction.ongoing(
+      transaction.TxKind.UpdateBeneficiaries
+    );
+  });
 
   pool.data.subscribe(store => {
     if (store.status === remote.Status.Success) {
@@ -143,6 +158,7 @@
         <h3>Outgoing support</h3>
         <span class="row">
           <Input.Text
+            disabled={ongoingMonthlyContributionUpdate}
             dataCy="modal-amount-input"
             placeholder="Enter the amount"
             bind:value={monthlyContribution}
@@ -165,6 +181,7 @@
       <div class="row">
         <h3>{poolData.balance} DAI</h3>
         <Button
+          disabled={ongoingTopUp}
           dataCy="top-up-pool-button"
           variant="vanilla"
           on:click={openSendModal}
@@ -193,6 +210,7 @@
 
       <div style="margin-top: var(--content-padding)">
         <Input.Textarea
+          disabled={ongoingBeneficiariesUpdate}
           validation={$membersValidationStore}
           style="min-width: 400px;"
           bind:value={members}
