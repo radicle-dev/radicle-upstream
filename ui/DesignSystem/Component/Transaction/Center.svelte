@@ -12,7 +12,7 @@
 
   // Transaction center element. Set by the view.
   let element: SvelteComponent;
-  let expand = true;
+  let expand = false;
   const stack = null;
 
   const toggleStack = ev => {
@@ -21,7 +21,8 @@
       : element === ev.target || element.contains(ev.target);
   };
 
-  $: negative = !!transactions.find(tx => tx.status === TxStatus.Rejected);
+  $: expand = transactions.some(tx => tx.status === TxStatus.AwaitingInclusion);
+  $: negative = transactions.some(tx => tx.status === TxStatus.Rejected);
 </script>
 
 <style>
