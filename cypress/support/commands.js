@@ -3,11 +3,6 @@ Cypress.Commands.add("resetProxyState", async () => {
   await fetch("http://localhost:8080/v1/control/reset");
 });
 
-Cypress.Commands.add("resetSessionState", async () => {
-  console.log("Reset Session state");
-  await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
-});
-
 Cypress.Commands.add("pick", (...ids) => {
   const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
   cy.get(selectorString);
