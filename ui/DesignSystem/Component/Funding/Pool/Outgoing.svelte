@@ -181,6 +181,7 @@
         {/if}
       </div>
       <div class="row">
+        <p>Balance</p>
         <h3>{poolData.balance} DAI</h3>
         {#if !ongoingTopUp}
           <Button
