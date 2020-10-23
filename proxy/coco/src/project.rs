@@ -28,7 +28,7 @@ pub enum Role {
     /// Replicating, but not participating.
     Tracker,
     /// Participated with unique changes.
-    Contributer,
+    Contributor,
     /// Part of the set of maintainers.
     Maintainer,
 }

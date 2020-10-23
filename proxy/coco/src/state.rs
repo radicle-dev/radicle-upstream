@@ -603,7 +603,7 @@ impl State {
             }
         } else {
             project::ReplicationStatus::Replicated {
-                role: project::Role::Contributer,
+                role: project::Role::Contributor,
                 user: owner,
             }
         };
