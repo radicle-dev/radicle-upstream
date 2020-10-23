@@ -14,7 +14,7 @@ pub fn filters(
     selfdestruct: mpsc::Sender<()>,
 ) -> BoxedFilter<(impl Reply,)> {
     create_project_filter(ctx)
-        .or(reload_filter(selfdestruct))
+        .or(reset_filter(selfdestruct))
         .boxed()
 }
 
@@ -29,13 +29,13 @@ fn create_project_filter(
         .and_then(handler::create_project)
 }
 
-/// GET /reload
-fn reload_filter(
+/// GET /reset
+fn reset_filter(
     selfdestruct: mpsc::Sender<()>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("reload")
+    path!("reset")
         .map(move || selfdestruct.clone())
-        .and_then(handler::reload)
+        .and_then(handler::reset)
 }
 
 /// Control handlers for conversion between core domain and http request fulfilment.
@@ -88,7 +88,7 @@ mod handler {
     }
 
     /// Abort the server task, which causes `main` to restart it.
-    pub async fn reload(mut notify: mpsc::Sender<()>) -> Result<impl Reply, Rejection> {
+    pub async fn reset(mut notify: mpsc::Sender<()>) -> Result<impl Reply, Rejection> {
         log::warn!("reload requested");
         Ok(reply::json(&notify.send(()).await.is_ok()))
     }

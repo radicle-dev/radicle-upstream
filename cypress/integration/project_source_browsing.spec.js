@@ -1,6 +1,6 @@
 context("project source browsing", () => {
   before(() => {
-    cy.resetAllState();
+    cy.resetProxyState();
     cy.onboardUser("cloudhead");
 
     // TODO(sos): add fake peers again when we have a peer testnet

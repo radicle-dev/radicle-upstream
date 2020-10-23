@@ -5,7 +5,7 @@ context("onboarding", () => {
   };
 
   beforeEach(() => {
-    cy.resetAllState();
+    cy.resetProxyState();
     cy.visit("./public/index.html");
     cy.pick("welcome-screen").should("exist");
   });

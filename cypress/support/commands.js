@@ -1,21 +1,11 @@
-Cypress.Commands.add("resetCocoState", async () => {
-  console.log("Reset CoCo state");
-  await fetch("http://localhost:8080/v1/control/reload");
+Cypress.Commands.add("resetProxyState", async () => {
+  console.log("Reset Proxy state");
+  await fetch("http://localhost:8080/v1/control/reset");
 });
 
 Cypress.Commands.add("resetSessionState", async () => {
   console.log("Reset Session state");
   await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
-});
-
-Cypress.Commands.add("resetAllState", async () => {
-  console.log("Reset CoCo, Registry and session state");
-  try {
-    await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
-    await fetch("http://localhost:8080/v1/control/reload");
-  } catch (error) {
-    console.error(error);
-  }
 });
 
 Cypress.Commands.add("pick", (...ids) => {
