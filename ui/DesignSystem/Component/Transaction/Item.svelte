@@ -8,9 +8,6 @@
 
   export let tx: transaction.Tx = null;
 
-  $: progress = transaction.progressPercentage(tx.status);
-  $: color = transaction.colorForStatus(tx.status);
-
   //   $: iconState = transaction.iconState(tx.state);
 </script>
 
@@ -46,7 +43,7 @@
 <div class="item" on:click data-cy="transaction-item">
   <div class="info">
     <div class="icon">
-      <TransactionSpinner {progress} {color} />
+      <TransactionSpinner status={tx.status} />
     </div>
     <ItemDescription {tx} />
   </div>

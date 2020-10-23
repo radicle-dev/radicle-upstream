@@ -1,8 +1,8 @@
 <script lang="typescript">
-  export let progress: number;
-  export let rotate: boolean = false;
-  export let color: string;
-  export let style: string;
+  import { TxStatus, colorForStatus } from "../../../src/transaction";
+
+  export let status: TxStatus = TxStatus.AwaitingInclusion;
+  export let style: string | undefined;
   export let variant = "regular"; // small | regular | inverted
 
   const sizes = {
@@ -19,8 +19,9 @@
   // Progress is a percentage value.
   const max_progress = 100;
 
-  $: positive = Math.random() >= 0.5; // FIXME(nuno)
-  $: spin = progress < 100 || rotate;
+  $: color = colorForStatus(status);
+  $: progress = status === TxStatus.AwaitingInclusion ? 33 : max_progress;
+  $: spin = progress !== max_progress;
 
   $: size = sizes[variant];
   $: strokeWidth = strokeWidths[variant];
@@ -78,7 +79,8 @@
   {#if variant === 'inverted'}
     <circle cx={center} cy={center} r={radius} fill={color} />
   {/if}
-  {#if positive}
+
+  {#if status === TxStatus.Included}
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"

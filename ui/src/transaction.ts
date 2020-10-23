@@ -228,23 +228,14 @@ export function summaryCounts(txs: Tx[]): SummaryCounts {
   );
 }
 
-export const summaryIconProgress = (counts: SummaryCounts): number => {
-  return counts.awaiting > 0 ? 100 - counts.sum / counts.awaiting : 100;
-};
-
-export const summaryIconRotate = (counts: SummaryCounts): boolean => {
-  return counts.rejected > 0 || counts.awaiting > 0;
-};
-
-export const summaryIconColor = (counts: SummaryCounts): string => {
-  console.log("summaryIconColor counts:", counts);
+export const summaryStatus = (counts: SummaryCounts): TxStatus => {
   if (counts.rejected > 0) {
-    return colorForStatus(TxStatus.Rejected);
+    return TxStatus.Rejected;
   } else if (counts.awaiting > 0) {
-    return colorForStatus(TxStatus.AwaitingInclusion);
+    return TxStatus.AwaitingInclusion;
   }
 
-  return colorForStatus(TxStatus.Included);
+  return TxStatus.Included;
 };
 
 export const summaryText = (counts: SummaryCounts): string => {

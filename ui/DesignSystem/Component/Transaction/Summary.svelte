@@ -6,9 +6,7 @@
 
   export let counts: transaction.SummaryCounts;
 
-  $: progress = transaction.summaryIconProgress(counts);
-  $: rotate = transaction.summaryIconRotate(counts);
-  $: color = transaction.summaryIconColor(counts);
+  $: status = transaction.summaryStatus(counts);
   $: text = transaction.summaryText(counts);
 </script>
 
@@ -28,11 +26,7 @@
 <div class="summary" on:click>
   <Flex>
     <div slot="left" class="text">
-      <TransactionSpinner
-        {progress}
-        {rotate}
-        {color}
-        style="margin: 11px 12px;" />
+      <TransactionSpinner {status} style="margin: 11px 12px;" />
       <p class="typo-text-small-bold">{text}</p>
     </div>
     <div slot="right">
