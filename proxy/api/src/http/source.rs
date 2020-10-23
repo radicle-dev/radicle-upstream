@@ -401,6 +401,7 @@ impl<S> From<coco::Revisions<coco::PeerId, coco::MetaUser<S>>> for Revisions {
 mod test {
     use std::{convert::TryFrom, env};
 
+    use nonempty::NonEmpty;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
@@ -757,10 +758,10 @@ mod test {
                 json!([
                     super::Revisions {
                         identity: (peer_id, owner).into(),
-                        branches: vec![
-                            coco::Branch::from("dev".to_string()),
-                            coco::Branch::from("master".to_string())
-                        ],
+                        branches: NonEmpty {
+                            head: coco::Branch::from("dev".to_string()),
+                            tail: vec![coco::Branch::from("master".to_string())]
+                        },
                         tags: vec![
                             coco::Tag::from("v0.1.0".to_string()),
                             coco::Tag::from("v0.2.0".to_string()),
@@ -771,7 +772,7 @@ mod test {
                     },
                     super::Revisions {
                         identity: (remote, fintohaps).into(),
-                        branches: vec![coco::Branch::from("master".to_string())],
+                        branches: NonEmpty::new(coco::Branch::from("master".to_string())),
                         tags: vec![]
                     },
                 ])

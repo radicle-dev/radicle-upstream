@@ -792,7 +792,15 @@ where
     })
 }
 
-pub fn peer_revisions<P, U>(
+/// Provide the [`Revisions`] for the given `peer_id`, looking for the branches as
+/// [`BranchType::Remote`].
+///
+/// If there are no branches then this returns `None`.
+///
+/// # Errors
+///
+///   * If we cannot get the branches from the `Browser`
+pub fn remote_revision<P, U>(
     browser: &Browser,
     peer_id: P,
     user: U,
@@ -813,6 +821,14 @@ where
     )
 }
 
+/// Provide the [`Revisions`] for the given `peer_id`, looking for the branches as
+/// [`BranchType::Local`].
+///
+/// If there are no branches then this returns `None`.
+///
+/// # Errors
+///
+///   * If we cannot get the branches from the `Browser`
 pub fn local_revisions<P, U>(
     browser: &Browser,
     peer_id: P,
@@ -833,6 +849,16 @@ where
     )
 }
 
+/// Provide the [`Revisions`] of a replicated peer.
+///
+/// Since a replicated peer is one that we have locally, this means that they have a user profile
+/// to build the revision with.
+///
+/// However, if the [`Peer`] does not have any related branches this function will return `None`.
+///
+/// # Errors
+///
+///   * If we cannot get the branches from the `Browser`
 pub fn revisions<U>(
     browser: &Browser,
     peer: Peer<Replicated<U>>,
@@ -845,7 +871,7 @@ pub fn revisions<U>(
         Peer::Remote {
             peer_id,
             status: Replicated { user, .. },
-        } => peer_revisions(browser, peer_id, user),
+        } => remote_revision(browser, peer_id, user),
     }
 }
 

@@ -669,8 +669,7 @@ impl State {
             local_url,
             tracked
                 .into_iter()
-                .filter_map(project::Peer::replicated_remote)
-                .map(|(p, u)| (u, p)),
+                .filter_map(|peer| project::Peer::replicated_remote(peer).map(|(p, u)| (u, p))),
         );
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);
