@@ -16,7 +16,7 @@ use radicle_surf::{
 
 use crate::{
     oid::Oid,
-    project::{Peer, peer},
+    project::{peer, Peer},
 };
 
 /// An error occurred when interacting with [`radicle_surf`] for browsing source code.

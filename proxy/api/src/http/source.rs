@@ -751,22 +751,20 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
-                json!([
-                    super::Revisions {
-                        identity: (peer_id, owner).into(),
-                        branches: NonEmpty {
-                            head: coco::Branch::from("dev".to_string()),
-                            tail: vec![coco::Branch::from("master".to_string())]
-                        },
-                        tags: vec![
-                            coco::Tag::from("v0.1.0".to_string()),
-                            coco::Tag::from("v0.2.0".to_string()),
-                            coco::Tag::from("v0.3.0".to_string()),
-                            coco::Tag::from("v0.4.0".to_string()),
-                            coco::Tag::from("v0.5.0".to_string())
-                        ]
+                json!([super::Revisions {
+                    identity: (peer_id, owner).into(),
+                    branches: NonEmpty {
+                        head: coco::Branch::from("dev".to_string()),
+                        tail: vec![coco::Branch::from("master".to_string())]
                     },
-                ])
+                    tags: vec![
+                        coco::Tag::from("v0.1.0".to_string()),
+                        coco::Tag::from("v0.2.0".to_string()),
+                        coco::Tag::from("v0.3.0".to_string()),
+                        coco::Tag::from("v0.4.0".to_string()),
+                        coco::Tag::from("v0.5.0".to_string())
+                    ]
+                },])
             )
         });
 

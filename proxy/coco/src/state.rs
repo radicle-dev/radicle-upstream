@@ -578,8 +578,7 @@ impl State {
     pub async fn tracked(
         &self,
         urn: RadUrn,
-    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error>
-    {
+    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error> {
         let project = self.get_project(urn.clone(), None).await?;
         Ok(self
             .api
@@ -621,8 +620,7 @@ impl State {
     pub async fn list_project_peers(
         &self,
         urn: RadUrn,
-    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error>
-    {
+    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error> {
         let project = self.get_project(urn.clone(), None).await?;
 
         let mut peers = vec![];

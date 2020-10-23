@@ -8,7 +8,7 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, RunConfig, SyncConfig, project::peer};
+use coco::{config, project::peer, seed::Seed, RunConfig, SyncConfig};
 
 #[macro_use]
 mod common;
@@ -73,10 +73,7 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
             },
             coco::project::Peer::Remote {
                 peer_id: alice_state.peer_id(),
-                status: peer::Status::replicated(
-                    peer::Role::Maintainer,
-                    alice.name().to_string(),
-                ),
+                status: peer::Status::replicated(peer::Role::Maintainer, alice.name().to_string()),
             },
         ];
         assert_eq!(have, want);

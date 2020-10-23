@@ -142,7 +142,7 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 }
 
 /// TODO(finto): Burn this. It's just a big foot gun and it breaks whenever we try to access
-/// signed_refs.
+/// `signed_refs`.
 ///
 /// Create and track a fake peer.
 pub async fn track_fake_peer(
