@@ -571,7 +571,7 @@ impl State {
     /// # Errors
     ///
     /// * When the storage operation fails.
-    pub async fn untrack(&self, urn: RadUrn, remote: PeerId) -> Result<(), Error> {
+    pub async fn untrack(&self, urn: RadUrn, remote: PeerId) -> Result<bool, Error> {
         Ok(self
             .api
             .with_storage(move |storage| storage.untrack(&urn, &remote))
