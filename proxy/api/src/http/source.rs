@@ -742,9 +742,6 @@ mod test {
         .await?;
         let urn = platinum_project.urn();
 
-        let (remote, fintohaps) =
-            coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
-
         let res = request()
             .method("GET")
             .path(&format!("/revisions/{}", urn))
@@ -770,23 +767,8 @@ mod test {
                             coco::Tag::from("v0.5.0".to_string())
                         ]
                     },
-                    super::Revisions {
-                        identity: (remote, fintohaps).into(),
-                        branches: NonEmpty::new(coco::Branch::from("master".to_string())),
-                        tags: vec![]
-                    },
                 ])
             )
-        });
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/branches/{}?peerId={}", urn, remote))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!([coco::Branch::from("master".to_string())]));
         });
 
         Ok(())
