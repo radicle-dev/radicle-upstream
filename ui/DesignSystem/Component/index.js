@@ -25,7 +25,8 @@ import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
-import RemoteListItem from "./RemoteListItem.svelte";
+import TrackedRemoteListItem from "./TrackedRemoteListItem.svelte";
+import UntrackedRemoteListItem from "./UntrackedRemoteListItem.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import ShareableIdentifier from "./ShareableIdentifier.svelte";
@@ -70,7 +71,8 @@ export {
   Stats,
   Remote,
   RemoteHelperHint,
-  RemoteListItem,
+  TrackedRemoteListItem,
+  UntrackedRemoteListItem,
   RevisionSelector,
   SegmentedControl,
   ShareableIdentifier,

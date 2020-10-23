@@ -1,36 +1,35 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import { Variant as IllustrationVariant } from "../src/illustration";
 
   import {
     Illustration,
     List,
-    RemoteListItem,
+    TrackedRemoteListItem,
+    UntrackedRemoteListItem,
   } from "../DesignSystem/Component";
   import { Button, Input } from "../DesignSystem/Primitive";
 
-  const remotes = [
-    {
-      handle: "cloudhead",
-      peerID: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k",
-      maintainer: true,
-      synced: true,
-    },
-    {
-      handle: "juliendonck",
-      peerID: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k",
-      maintainer: false,
-      synced: true,
-    },
+  const revisions = getContext("revisions");
+  const metadata = getContext("metadata");
+
+  const trackedRemotes = revisions.map(revision => {
+    return {
+      handle: revision.identity.metadata.handle,
+      peerID: revision.identity.peerId,
+      maintainer: metadata.maintainers.includes(revision.identity.urn),
+      avatarFallback: revision.identity.avatarFallback,
+    };
+  });
+
+  // TODO(rudolfs): get these somewhere.
+  const mockPendingRemotes = [
     {
       handle: null,
       peerID: "hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k",
       maintainer: null,
-      synced: false,
     },
   ];
-
-  const syncedRemotes = remotes.filter(remote => remote.synced === true);
-  const unsyncedRemotes = remotes.filter(remote => remote.synced === false);
 </script>
 
 <style>
@@ -68,12 +67,12 @@
     <Button variant="secondary" disabled>Add remote</Button>
   </div>
   <List
-    items={syncedRemotes}
+    items={trackedRemotes}
     let:item={remote}
     style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
-    <RemoteListItem {remote} />
+    <TrackedRemoteListItem {remote} projectName={metadata.name} />
   </List>
-  {#if unsyncedRemotes.length > 0}
+  {#if mockPendingRemotes.length > 0}
     <div style="display: flex; width: 100%; margin-top: 1.5rem;">
       <p class="typo-text-bold">Still looking…</p>
       <p
@@ -83,10 +82,10 @@
       </p>
     </div>
     <List
-      items={unsyncedRemotes}
+      items={mockPendingRemotes}
       let:item={remote}
       style="width: 100%; margin: 1rem 0 0; padding: 0;">
-      <RemoteListItem {remote} />
+      <UntrackedRemoteListItem {remote} projectName={metadata.name} />
     </List>
   {/if}
 </div>

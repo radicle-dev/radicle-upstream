@@ -194,7 +194,10 @@
       <div class="peer remotes">
         <div
           style="display: flex;"
-          on:click={() => modal.toggle(path.manageRemotes())}>
+          on:click={() => modal.toggle(path.manageRemotes(), [
+              { name: 'metadata', data: metadata },
+              { name: 'revisions', data: revisions },
+            ])}>
           <Icon.Pen style="margin-right: .5rem;" />
           <p>Manage remotes</p>
         </div>
