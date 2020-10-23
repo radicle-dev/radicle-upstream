@@ -424,7 +424,7 @@ impl RunState {
     }
 
     /// Handle [`ProtolEvent`]s.
-    #[allow(clippy::wildcard_enum_match_arm, clippy::unreachable)]
+    #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
         match (&self.status, event) {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
@@ -500,7 +500,8 @@ impl RunState {
                         self.connected_peers.remove(&peer_id);
                     }
                 } else {
-                    unreachable!();
+                    log::error!("The impossible has happened, somehow we disconnected from '{}' without already being connected to them", peer_id);
+                    return vec![];
                 }
 
                 // Go offline if we have no more connected peers left.
