@@ -8,6 +8,8 @@ import * as notification from "./notification";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings } from "./settings";
 
+import { createValidationStore, ValidationStatus } from "./validation";
+
 // TYPES
 
 export interface Session {
@@ -126,9 +128,42 @@ export const updateCoCo = (coco: CoCo): void =>
     settings: { ...get(settings), coco },
   });
 
-export const parseSeedsInput = (input: string): string[] => {
-  return input
-    .replace(/\r\n|\n|\r|\s/gm, ",")
-    .split(",")
-    .filter(seed => seed !== "");
+const VALID_SEED_MATCH = /^[\w\d]{54}@[\w\d.]*:[\d]{1,5}$/;
+
+const checkSeedUniqueness = (seed: string): Promise<boolean> => {
+  return Promise.resolve(!get(settings).coco.seeds.includes(seed));
+};
+
+export const seedValidation = createValidationStore(
+  {
+    format: {
+      pattern: VALID_SEED_MATCH,
+      message: "This is not a valid seed address",
+    },
+  },
+  [
+    {
+      promise: checkSeedUniqueness,
+      validationMessage: "This seed already exists",
+    },
+  ]
+);
+
+export const addSeed = async (seed: string): Promise<boolean> => {
+  // This has to be awaited contrary to what tslint suggests, because we're
+  // running async remote validations in in the background. If we remove the
+  // async then the seed input form will have to be submitted twice to take any
+  // effect.
+  await seedValidation.validate(seed);
+  if (get(seedValidation).status !== ValidationStatus.Success) return false;
+
+  updateCoCo({ seeds: [...get(settings).coco.seeds, seed] });
+  return true;
+};
+
+export const removeSeed = (seed: string): void => {
+  updateCoCo({
+    seeds: get(settings).coco.seeds.filter((x: string) => x !== seed),
+  });
+  seedValidation.reset();
 };

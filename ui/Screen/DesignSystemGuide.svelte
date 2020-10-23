@@ -10,11 +10,10 @@
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
+    Fullscreen,
     Dropdown,
     Illustration,
-    ModalLayout,
     Notification,
-    Placeholder,
     ProjectCard,
     SegmentedControl,
     ShareableIdentifier,
@@ -22,8 +21,8 @@
     Stats,
     SupportButton,
     TrackToggle,
+    StyledCopyable,
     Tooltip,
-    Urn,
   } from "../DesignSystem/Component";
 
   import Section from "./DesignSystemGuide/Section.svelte";
@@ -150,7 +149,7 @@
   }
 </style>
 
-<ModalLayout full>
+<Fullscreen>
   <div class="layout">
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
@@ -718,10 +717,6 @@
 
     <Section title="Misc" subTitle="Everything else">
       <Swatch>
-        <Placeholder style="width: 300px; height: 100px" />
-      </Swatch>
-
-      <Swatch>
         <AdditionalActionsDropdown
           headerTitle="Copy this title"
           menuItems={additionalActionsDropdownItems} />
@@ -751,15 +746,16 @@
       </Swatch>
 
       <Swatch>
-        <Urn urn="5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu" />
+        <StyledCopyable
+          value="hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"
+          notificationText="The seed was copied to your clipboard" />
       </Swatch>
 
       <Swatch>
-        <Urn
-          urn="%rad:git:copy-me-to-see-the-full-urn"
-          showOnHover
-          truncate
-          notificationText="The urn was copied to your clipboard" />
+        <StyledCopyable
+          value="hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
+          notificationText="The hash was copied to your clipboard"
+          truncate />
       </Swatch>
 
       <Swatch>
@@ -791,4 +787,4 @@
       </Swatch>
     </Section>
   </div>
-</ModalLayout>
+</Fullscreen>
