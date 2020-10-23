@@ -184,7 +184,6 @@
         <h3>{poolData.balance} DAI</h3>
         {#if !ongoingTopUp}
           <Button
-            disabled={ongoingTopUp}
             dataCy="top-up-pool-button"
             variant="vanilla"
             on:click={openSendModal}
