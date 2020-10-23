@@ -160,11 +160,7 @@ async fn run_rigging(
 
     let server = async move {
         log::info!("... API");
-        let api = http::api(
-            ctx,
-            subscriptions.clone(),
-            killswitch,
-        );
+        let api = http::api(ctx, subscriptions.clone(), killswitch);
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
             async move {
