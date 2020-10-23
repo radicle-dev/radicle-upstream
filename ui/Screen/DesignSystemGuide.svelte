@@ -10,11 +10,10 @@
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
+    Fullscreen,
     Dropdown,
     Illustration,
-    ModalLayout,
     Notification,
-    Placeholder,
     ProjectCard,
     SegmentedControl,
     ShareableIdentifier,
@@ -150,7 +149,7 @@
   }
 </style>
 
-<ModalLayout full>
+<Fullscreen>
   <div class="layout">
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
@@ -718,10 +717,6 @@
 
     <Section title="Misc" subTitle="Everything else">
       <Swatch>
-        <Placeholder style="width: 300px; height: 100px" />
-      </Swatch>
-
-      <Swatch>
         <AdditionalActionsDropdown
           headerTitle="Copy this title"
           menuItems={additionalActionsDropdownItems} />
@@ -792,4 +787,4 @@
       </Swatch>
     </Section>
   </div>
-</ModalLayout>
+</Fullscreen>
