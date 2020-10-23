@@ -1,13 +1,19 @@
 <script>
+  import { setContext } from "svelte";
   import * as modal from "../../src/modal";
 
   export let modalRoutes = {};
   const store = modal.store;
 
-  let content;
   const clickOutside = () => {
     modal.hide();
   };
+
+  $: if ($store.contexts) {
+    for (const context of $store.contexts) {
+      setContext(context.name, context.data);
+    }
+  }
 </script>
 
 <style>
@@ -42,9 +48,6 @@
 <div class="modal" class:hide={!$store.show}>
   <div class="overlay" on:click={clickOutside} />
   <div class="content">
-    <svelte:component
-      this={modalRoutes[$store.route]}
-      bind:content
-      on:hide={modal.hide} />
+    <svelte:component this={modalRoutes[$store.route]} on:hide={modal.hide} />
   </div>
 </div>
