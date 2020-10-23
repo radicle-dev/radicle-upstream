@@ -154,7 +154,6 @@ async function updateStatuses() {
   });
 }
 
-// TODO(nuno): Lookup the actual status of a transaction with the given hash.
 async function lookupStatus(hash: string): Promise<TxStatus | undefined> {
   const tx_receipt = await provider.getTransactionReceipt(hash);
 
@@ -170,17 +169,6 @@ async function lookupStatus(hash: string): Promise<TxStatus | undefined> {
 }
 
 /* UI helper functions */
-
-export const progressPercentage = (status: TxStatus): number => {
-  switch (status) {
-    case TxStatus.AwaitingInclusion:
-      return 17;
-    case TxStatus.Included:
-      return 100;
-    default:
-      return 0;
-  }
-};
 
 export const colorForStatus = (status: TxStatus): string => {
   switch (status) {
