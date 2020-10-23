@@ -1,4 +1,4 @@
-use std::{path::PathBuf, time::Duration};
+use std::{convert::TryFrom, path::PathBuf, time::Duration};
 
 use futures::{future, StreamExt as _};
 use tokio::{
@@ -8,6 +8,7 @@ use tokio::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
+    git::ext::{OneLevel, RefLike},
     keys::SecretKey,
     net::protocol::ProtocolEvent,
     peer::PeerId,
@@ -139,7 +140,7 @@ pub fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
             name: "radicalise".to_string(),
         },
         description: "the people".to_string(),
-        default_branch: "power".to_string(),
+        default_branch: OneLevel::from(RefLike::try_from("power").unwrap()),
     }
 }
 
@@ -151,6 +152,6 @@ pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
             name: "just".to_string(),
         },
         description: "do".to_string(),
-        default_branch: "it".to_string(),
+        default_branch: OneLevel::from(RefLike::try_from("it").unwrap()),
     }
 }
