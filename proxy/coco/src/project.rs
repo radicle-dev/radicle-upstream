@@ -14,7 +14,7 @@ pub use checkout::Checkout;
 
 /// TODO(finto)
 pub mod peer;
-pub use peer::{Peer, ReplicationStatus, Role};
+pub use peer::{Peer, Replicated, Role, Status as ReplicationStatus};
 
 /// Set the upstream of the default branch to the rad remote branch.
 fn set_rad_upstream(repo: &git2::Repository, default_branch: &str) -> Result<(), git2::Error> {

@@ -15,7 +15,7 @@ use radicle_surf::{
 
 use crate::{
     oid::Oid,
-    project::{Peer, ReplicationStatus},
+    project::{Peer, Replicated},
 };
 
 /// An error occurred when interacting with [`radicle_surf`] for browsing source code.
@@ -829,17 +829,19 @@ where
     })
 }
 
-pub fn revisions<U>(browser: &Browser, peer: Peer<U>) -> Result<Revisions<PeerId, U>, Error> {
+pub fn revisions<U>(
+    browser: &Browser,
+    peer: Peer<Replicated<U>>,
+) -> Result<Revisions<PeerId, U>, Error> {
     match peer {
         Peer::Local {
             peer_id,
-            status: ReplicationStatus::Replicated { user, .. },
+            status: Replicated { user, .. },
         } => local_revisions(browser, peer_id, user),
         Peer::Remote {
             peer_id,
-            status: ReplicationStatus::Replicated { user, .. },
+            status: Replicated { user, .. },
         } => peer_revisions(browser, peer_id, user),
-        _ => Err(todo!()),
     }
 }
 

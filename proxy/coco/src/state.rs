@@ -533,7 +533,8 @@ impl State {
     pub async fn tracked(
         &self,
         urn: RadUrn,
-    ) -> Result<Vec<project::Peer<user::User<entity::Draft>>>, Error> {
+    ) -> Result<Vec<project::Peer<project::ReplicationStatus<user::User<entity::Draft>>>>, Error>
+    {
         let project = self.get_project(urn.clone(), None).await?;
         Ok(self
             .api
@@ -546,15 +547,9 @@ impl State {
                     {
                         let user = repo.get_rad_self_of(peer_id)?;
                         if project.maintainers().contains(&user.urn()) {
-                            project::ReplicationStatus::Replicated {
-                                role: project::Role::Maintainer,
-                                user,
-                            }
+                            project::ReplicationStatus::replicated(project::Role::Maintainer, user)
                         } else {
-                            project::ReplicationStatus::Replicated {
-                                role: project::Role::Tracker,
-                                user,
-                            }
+                            project::ReplicationStatus::replicated(project::Role::Tracker, user)
                         }
                     } else {
                         project::ReplicationStatus::NotReplicated
@@ -581,10 +576,11 @@ impl State {
     pub async fn list_project_peers(
         &self,
         urn: RadUrn,
-    ) -> Result<Vec<project::Peer<user::User<entity::Draft>>>, Error> {
+    ) -> Result<Vec<project::Peer<project::ReplicationStatus<user::User<entity::Draft>>>>, Error>
+    {
         let project = self.get_project(urn.clone(), None).await?;
 
-        let mut peers: Vec<project::Peer<user::User<entity::Draft>>> = vec![];
+        let mut peers = vec![];
 
         let owner = self
             .default_owner()
@@ -592,20 +588,11 @@ impl State {
             .expect("unable to find state owner");
         let refs = self.list_owner_project_refs(urn.clone()).await?;
         let status = if refs.heads.is_empty() {
-            project::ReplicationStatus::Replicated {
-                role: project::Role::Tracker,
-                user: owner,
-            }
+            project::ReplicationStatus::replicated(project::Role::Tracker, owner)
         } else if project.maintainers().contains(&owner.urn()) {
-            project::ReplicationStatus::Replicated {
-                role: project::Role::Maintainer,
-                user: owner,
-            }
+            project::ReplicationStatus::replicated(project::Role::Maintainer, owner)
         } else {
-            project::ReplicationStatus::Replicated {
-                role: project::Role::Contributor,
-                user: owner,
-            }
+            project::ReplicationStatus::replicated(project::Role::Contributor, owner)
         };
 
         peers.push(project::Peer::Local {
@@ -680,7 +667,10 @@ impl State {
         let include = Include::from_tracked_users(
             self.paths().git_includes_dir().to_path_buf(),
             local_url,
-            tracked.into_iter().filter_map(project::Peer::replicated_remote).map(|(p, u)| (u, p)),
+            tracked
+                .into_iter()
+                .filter_map(project::Peer::replicated_remote)
+                .map(|(p, u)| (u, p)),
         );
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);

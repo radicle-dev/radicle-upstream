@@ -5,6 +5,8 @@ use std::{collections::HashSet, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
+use coco::project::peer;
+
 use crate::{error, identity};
 
 /// Object encapsulating project metadata.
@@ -75,54 +77,25 @@ where
 
 /// Codified relation in form of roles and availability of project views.
 #[derive(Serialize)]
-pub struct Peer(coco::project::Peer<identity::Identity>);
+pub struct Peer(peer::Peer<peer::Status<identity::Identity>>);
 
 impl Deref for Peer {
-    type Target = coco::project::Peer<identity::Identity>;
+    type Target = peer::Peer<peer::Status<identity::Identity>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
-    fn from(peer: coco::project::Peer<coco::MetaUser<S>>) -> Self {
-        match peer {
-            coco::project::Peer::Local { peer_id, status } => match status {
-                coco::project::ReplicationStatus::NotReplicated => {
-                    Self(coco::project::Peer::Local {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::NotReplicated,
-                    })
-                },
-                coco::project::ReplicationStatus::Replicated { role, user } => {
-                    Self(coco::project::Peer::Local {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::Replicated {
-                            role,
-                            user: (peer_id, user).into(),
-                        },
-                    })
-                },
+impl<S> From<peer::Peer<peer::Status<coco::MetaUser<S>>>> for Peer {
+    fn from(peer: peer::Peer<peer::Status<coco::MetaUser<S>>>) -> Self {
+        let peer_id = peer.peer_id();
+        Peer(peer.map(|status| match status {
+            peer::Status::Replicated(replicated) => {
+                peer::Status::replicated(replicated.role, (peer_id, replicated.user).into())
             },
-            coco::project::Peer::Remote { peer_id, status } => match status {
-                coco::project::ReplicationStatus::NotReplicated => {
-                    Self(coco::project::Peer::Remote {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::NotReplicated,
-                    })
-                },
-                coco::project::ReplicationStatus::Replicated { role, user } => {
-                    Self(coco::project::Peer::Remote {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::Replicated {
-                            role,
-                            user: (peer_id, user).into(),
-                        },
-                    })
-                },
-            },
-        }
+            peer::Status::NotReplicated => peer::Status::NotReplicated,
+        }))
     }
 }
 
