@@ -16,7 +16,7 @@ use radicle_surf::{
 
 use crate::{
     oid::Oid,
-    project::{Peer, Replicated},
+    project::{Peer, peer},
 };
 
 /// An error occurred when interacting with [`radicle_surf`] for browsing source code.
@@ -861,16 +861,16 @@ where
 ///   * If we cannot get the branches from the `Browser`
 pub fn revisions<U>(
     browser: &Browser,
-    peer: Peer<Replicated<U>>,
+    peer: Peer<peer::Replicated<U>>,
 ) -> Result<Option<Revisions<PeerId, U>>, Error> {
     match peer {
         Peer::Local {
             peer_id,
-            status: Replicated { user, .. },
+            status: peer::Replicated { user, .. },
         } => local_revisions(browser, peer_id, user),
         Peer::Remote {
             peer_id,
-            status: Replicated { user, .. },
+            status: peer::Replicated { user, .. },
         } => remote_revision(browser, peer_id, user),
     }
 }

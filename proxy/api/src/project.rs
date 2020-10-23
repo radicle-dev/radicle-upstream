@@ -90,12 +90,7 @@ impl Deref for Peer {
 impl<S> From<peer::Peer<peer::Status<coco::MetaUser<S>>>> for Peer {
     fn from(peer: peer::Peer<peer::Status<coco::MetaUser<S>>>) -> Self {
         let peer_id = peer.peer_id();
-        Self(peer.map(|status| match status {
-            peer::Status::Replicated(replicated) => {
-                peer::Status::replicated(replicated.role, (peer_id, replicated.user).into())
-            },
-            peer::Status::NotReplicated => peer::Status::NotReplicated,
-        }))
+        Self(peer.map(|status| status.map(|user| (peer_id, user).into())))
     }
 }
 
@@ -258,7 +253,6 @@ pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Project,
 /// * We couldn't get a project list.
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
-#[allow(clippy::wildcard_enum_match_arm)]
 pub async fn list_for_user(
     state: &coco::State,
     user: &coco::Urn,

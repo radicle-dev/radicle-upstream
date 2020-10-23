@@ -239,7 +239,6 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    #[allow(clippy::wildcard_enum_match_arm)]
     pub async fn revisions(
         ctx: context::Context,
         project_urn: coco::Urn,

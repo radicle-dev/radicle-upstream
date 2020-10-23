@@ -28,7 +28,7 @@ use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
 
 use crate::{
-    project,
+    project::{self, peer},
     seed::Seed,
     signer, source,
     user::{verify as verify_user, User},
@@ -578,7 +578,7 @@ impl State {
     pub async fn tracked(
         &self,
         urn: RadUrn,
-    ) -> Result<Vec<project::Peer<project::ReplicationStatus<user::User<entity::Draft>>>>, Error>
+    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error>
     {
         let project = self.get_project(urn.clone(), None).await?;
         Ok(self
@@ -592,12 +592,12 @@ impl State {
                     {
                         let user = repo.get_rad_self_of(peer_id)?;
                         if project.maintainers().contains(&user.urn()) {
-                            project::ReplicationStatus::replicated(project::Role::Maintainer, user)
+                            peer::Status::replicated(peer::Role::Maintainer, user)
                         } else {
-                            project::ReplicationStatus::replicated(project::Role::Tracker, user)
+                            peer::Status::replicated(peer::Role::Tracker, user)
                         }
                     } else {
-                        project::ReplicationStatus::NotReplicated
+                        peer::Status::NotReplicated
                     };
                     peers.push(project::Peer::Remote { peer_id, status })
                 }
@@ -621,7 +621,7 @@ impl State {
     pub async fn list_project_peers(
         &self,
         urn: RadUrn,
-    ) -> Result<Vec<project::Peer<project::ReplicationStatus<user::User<entity::Draft>>>>, Error>
+    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error>
     {
         let project = self.get_project(urn.clone(), None).await?;
 
@@ -633,11 +633,11 @@ impl State {
             .expect("unable to find state owner");
         let refs = self.list_owner_project_refs(urn.clone()).await?;
         let status = if refs.heads.is_empty() {
-            project::ReplicationStatus::replicated(project::Role::Tracker, owner)
+            peer::Status::replicated(peer::Role::Tracker, owner)
         } else if project.maintainers().contains(&owner.urn()) {
-            project::ReplicationStatus::replicated(project::Role::Maintainer, owner)
+            peer::Status::replicated(peer::Role::Maintainer, owner)
         } else {
-            project::ReplicationStatus::replicated(project::Role::Contributor, owner)
+            peer::Status::replicated(peer::Role::Contributor, owner)
         };
 
         peers.push(project::Peer::Local {
@@ -722,7 +722,6 @@ impl State {
     /// # Errors
     ///
     /// * if getting the list of tracked peers fails
-    #[allow(clippy::wildcard_enum_match_arm)]
     pub async fn update_include(&self, urn: RadUrn) -> Result<PathBuf, Error> {
         let local_url = LocalUrl::from_urn(urn.clone(), self.peer_id());
         let tracked = self.tracked(urn).await?;

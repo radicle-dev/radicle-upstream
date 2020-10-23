@@ -18,7 +18,7 @@ pub use checkout::Checkout;
 /// A [`Peer`] can be `Local` or `Remote`, it can be `NotReplicated` or `Replicated`, and it can be
 /// a `Tracker`, `Contributor`, or `Maintainer` of the project.
 pub mod peer;
-pub use peer::{Peer, Replicated, Role, Status as ReplicationStatus};
+pub use peer::Peer;
 
 /// Set the upstream of the default branch to the rad remote branch.
 fn set_rad_upstream(repo: &git2::Repository, default_branch: &OneLevel) -> Result<(), git2::Error> {
