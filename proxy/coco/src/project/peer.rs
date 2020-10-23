@@ -71,7 +71,7 @@ impl<U> Peer<Status<U>> {
     }
 }
 
-impl<U> Peer<U> {
+impl<S> Peer<S> {
     pub fn peer_id(&self) -> PeerId {
         match self {
             Peer::Local { peer_id, .. } => *peer_id,
@@ -79,9 +79,16 @@ impl<U> Peer<U> {
         }
     }
 
-    pub fn map<V, F>(self, f: F) -> Peer<V>
+    pub fn status(&self) -> &S {
+        match self {
+            Peer::Local { status, .. } => &status,
+            Peer::Remote { status, .. } => &status,
+        }
+    }
+
+    pub fn map<T, F>(self, f: F) -> Peer<T>
     where
-        F: FnOnce(U) -> V,
+        F: FnOnce(S) -> T,
     {
         match self {
             Self::Local { peer_id, status } => Peer::Local {

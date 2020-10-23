@@ -2,6 +2,7 @@
 
 use std::{convert::TryFrom, fmt, path, str::FromStr};
 
+use nonempty::NonEmpty;
 use serde::{ser::SerializeStruct as _, Deserialize, Serialize, Serializer};
 use syntect::{
     easy::HighlightLines, highlighting::ThemeSet, parsing::SyntaxSet, util::LinesWithEndings,
@@ -426,15 +427,14 @@ where
 }
 
 /// Bundled response to retrieve both [`Branch`]es and [`Tag`]s for a user's repo.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Revisions<P, U> {
     /// The peer identifier for the user.
     pub peer_id: P,
     /// The user who owns these revisions.
     pub user: U,
     /// List of [`git::Branch`].
-    pub branches: Vec<Branch>,
+    pub branches: NonEmpty<Branch>,
     /// List of [`git::Tag`].
     pub tags: Vec<Tag>,
 }
@@ -796,43 +796,47 @@ pub fn peer_revisions<P, U>(
     browser: &Browser,
     peer_id: P,
     user: U,
-) -> Result<Revisions<P, U>, Error>
+) -> Result<Option<Revisions<P, U>>, Error>
 where
     P: Clone + ToString,
 {
     let remote_branches = branches(browser, Some(into_branch_type(Some(peer_id.clone()))))?;
-
-    Ok(Revisions {
-        peer_id,
-        user,
-        branches: remote_branches,
-        // TODO(rudolfs): implement remote peer tags once we decide how
-        // https://radicle.community/t/git-tags/214
-        tags: vec![],
-    })
+    Ok(
+        NonEmpty::from_vec(remote_branches).map(|branches| Revisions {
+            peer_id,
+            user,
+            branches,
+            // TODO(rudolfs): implement remote peer tags once we decide how
+            // https://radicle.community/t/git-tags/214
+            tags: vec![],
+        }),
+    )
 }
 
 pub fn local_revisions<P, U>(
     browser: &Browser,
     peer_id: P,
     user: U,
-) -> Result<Revisions<P, U>, Error>
+) -> Result<Option<Revisions<P, U>>, Error>
 where
     P: Clone + ToString,
 {
     let local_branches = branches(browser, Some(BranchType::Local))?;
-    Ok(Revisions {
-        peer_id,
-        user,
-        branches: local_branches,
-        tags: tags(browser)?,
-    })
+    let tags = tags(browser)?;
+    Ok(
+        NonEmpty::from_vec(local_branches).map(|branches| Revisions {
+            peer_id,
+            user,
+            branches,
+            tags,
+        }),
+    )
 }
 
 pub fn revisions<U>(
     browser: &Browser,
     peer: Peer<Replicated<U>>,
-) -> Result<Revisions<PeerId, U>, Error> {
+) -> Result<Option<Revisions<PeerId, U>>, Error> {
     match peer {
         Peer::Local {
             peer_id,

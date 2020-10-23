@@ -90,7 +90,7 @@ impl Deref for Peer {
 impl<S> From<peer::Peer<peer::Status<coco::MetaUser<S>>>> for Peer {
     fn from(peer: peer::Peer<peer::Status<coco::MetaUser<S>>>) -> Self {
         let peer_id = peer.peer_id();
-        Peer(peer.map(|status| match status {
+        Self(peer.map(|status| match status {
             peer::Status::Replicated(replicated) => {
                 peer::Status::replicated(replicated.role, (peer_id, replicated.user).into())
             },

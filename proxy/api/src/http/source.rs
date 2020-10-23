@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use nonempty::NonEmpty;
 use radicle_surf::vcs::git;
 
 use crate::{context, http, identity};
@@ -82,7 +83,7 @@ fn revisions_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
-        .and(http::with_context(ctx.clone()))
+        .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and_then(handler::revisions)
 }
@@ -259,7 +260,11 @@ mod handler {
                 peers
                     .into_iter()
                     .filter_map(coco::project::Peer::replicated)
-                    .map(|peer| coco::revisions(browser, peer).map(super::Revisions::from))
+                    .filter_map(|peer| {
+                        coco::revisions(browser, peer)
+                            .transpose()
+                            .map(|revision| revision.map(super::Revisions::from))
+                    })
                     .collect()
             })
             .await
@@ -376,7 +381,7 @@ struct Revisions {
     /// The [`identity::Identity`] that owns these revisions.
     identity: identity::Identity,
     /// The branches for this project.
-    branches: Vec<coco::Branch>,
+    branches: NonEmpty<coco::Branch>,
     /// The branches for this project.
     tags: Vec<coco::Tag>,
 }
