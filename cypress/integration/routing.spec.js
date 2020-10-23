@@ -2,8 +2,7 @@ context("routing", () => {
   context("session persistancy", () => {
     context("first time app start with no stored session data", () => {
       it("opens on the identity creation wizard", () => {
-        cy.resetCocoState();
-        cy.resetSessionState();
+        cy.resetProxyState();
         cy.visit("./public/index.html");
         cy.pick("get-started-button").should("exist");
       });

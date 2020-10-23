@@ -70,7 +70,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
                 for (head, hash) in &refs.heads {
                     list.insert((
                         RadUrn {
-                            path: head.parse::<Path>()?,
+                            path: head.as_str().parse::<Path>()?,
                             ..project.urn()
                         },
                         Oid::from(*hash.deref()),

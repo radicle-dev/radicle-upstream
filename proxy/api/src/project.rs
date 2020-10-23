@@ -166,15 +166,6 @@ impl Projects {
 
         Ok(projects)
     }
-
-    /// Give back an `Iter` that can be used to iterate over the projects. It first yields
-    /// contributed projects and then tracked projects.
-    pub fn iter(&self) -> Iter<'_> {
-        Iter {
-            contributed: self.contributed.iter(),
-            tracked: self.tracked.iter(),
-        }
-    }
 }
 
 /// An iterator over [`Projects`] that first yields contributed projects and then tracked projects.

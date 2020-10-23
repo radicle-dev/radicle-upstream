@@ -1,7 +1,7 @@
 //! State machine to manage the current mode of operation during peer lifecycle.
 
 use std::{
-    collections::HashSet,
+    collections::HashMap,
     time::{Duration, Instant},
 };
 
@@ -221,7 +221,9 @@ pub enum Status {
     /// Phase where the local peer tries get up-to-date.
     #[serde(rename_all = "camelCase")]
     Syncing {
-        /// Number of synchronisation attempts.
+        /// Number of completed syncs.
+        synced: usize,
+        /// Number of synchronisation underway.
         syncs: usize,
     },
     /// The local peer is operational and is able to interact with the peers it has connected to.
@@ -299,7 +301,17 @@ pub struct RunState {
     /// Confiugration to change how input [`Input`]s are interpreted.
     config: Config,
     /// Tracking remote peers that have an active connection.
-    connected_peers: HashSet<PeerId>,
+    ///
+    /// As a peer known by [`PeerId`] can be connected multiple times, e.g. when opening a git
+    /// connection to clone and fetch, tracking the connection count per peer is paramount to not
+    /// falsely end up in an unconnected state despite the fact the protocol is connected, alive
+    /// and kicking. The following scenario led to an offline state when a `HashSet` was used in
+    /// the past:
+    ///
+    /// `Connected(Peer1) -> Connected(Peer1) -> Disconnecting(Peer1)`
+    //
+    // FIXME(xla): Use a `Option<NonEmpty>` here to express the invariance.
+    connected_peers: HashMap<PeerId, usize>,
     /// Current internal status.
     pub status: Status,
     /// Timestamp of last status change.
@@ -317,7 +329,7 @@ impl From<Config> for RunState {
 
         Self {
             config,
-            connected_peers: HashSet::new(),
+            connected_peers: HashMap::new(),
             status: Status::Stopped,
             status_since: Instant::now(),
             waiting_room: WaitingRoom::new(waiting_room_config),
@@ -330,7 +342,7 @@ impl RunState {
     #[cfg(test)]
     fn new(
         config: Config,
-        connected_peers: HashSet<PeerId>,
+        connected_peers: HashMap<PeerId, usize>,
         status: Status,
         status_since: Instant,
     ) -> Self {
@@ -352,7 +364,7 @@ impl RunState {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
             Input::Control(control_input) => self.handle_control(control_input),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
-            Input::PeerSync(_peer_sync_input) => vec![],
+            Input::PeerSync(peer_sync_input) => self.handle_peer_sync(&peer_sync_input),
             Input::Request(request_input) => self.handle_request(request_input),
             Input::Timeout(timeout_input) => self.handle_timeout(timeout_input),
         };
@@ -383,6 +395,34 @@ impl RunState {
         }
     }
 
+    /// Handle [`SyncInput`]s.
+    fn handle_peer_sync(&mut self, input: &SyncInput) -> Vec<Command> {
+        if let Status::Syncing { synced, syncs } = self.status {
+            match input {
+                SyncInput::Started(_peer_id) => {
+                    self.status = Status::Syncing {
+                        synced,
+                        syncs: syncs + 1,
+                    };
+                },
+                SyncInput::Failed(_peer_id) | SyncInput::Succeeded(_peer_id) => {
+                    self.status = if synced + 1 >= self.config.sync.max_peers {
+                        Status::Online {
+                            connected: self.connected_peers.len(),
+                        }
+                    } else {
+                        Status::Syncing {
+                            synced: synced + 1,
+                            syncs: syncs - 1,
+                        }
+                    };
+                },
+            }
+        }
+
+        vec![]
+    }
+
     /// Handle [`ProtolEvent`]s.
     #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
@@ -394,61 +434,75 @@ impl RunState {
 
                 vec![]
             },
-            // Sync with first incoming peer.
-            //
-            // In case the peer is configured to sync on startup we start syncing, otherwise we go
-            // online straight away.
-            // TODO(xla): Also issue sync if we come online after a certain period of being
-            // disconnected from any peer.
-            (Status::Started { .. }, ProtocolEvent::Connected(ref peer_id)) => {
-                self.connected_peers.insert(*peer_id);
-
-                if self.config.sync.on_startup {
-                    self.status = Status::Syncing { syncs: 1 };
-                    self.status_since = Instant::now();
-
-                    vec![
-                        Command::SyncPeer(*peer_id),
-                        Command::StartSyncTimeout(self.config.sync.period),
-                    ]
+            (state, ProtocolEvent::Connected(peer_id)) => {
+                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
+                    *counter += 1;
                 } else {
-                    self.status = Status::Online {
-                        connected: self.connected_peers.len(),
-                    };
-                    self.status_since = Instant::now();
-
-                    vec![]
-                }
-            },
-            // Sync until configured maximum of peers is reached.
-            (Status::Syncing { syncs }, ProtocolEvent::Connected(peer_id))
-                if *syncs < self.config.sync.max_peers =>
-            {
-                self.connected_peers.insert(peer_id);
-
-                if syncs + 1 == self.config.sync.max_peers {
-                    self.status = Status::Online {
-                        connected: self.connected_peers.len(),
-                    };
-                    self.status_since = Instant::now();
-                } else {
-                    self.status = Status::Syncing { syncs: syncs + 1 };
+                    self.connected_peers.insert(peer_id, 1);
                 }
 
-                vec![Command::SyncPeer(peer_id)]
-            }
-            // Sync until configured maximum of peers is reached.
-            (Status::Online { .. }, ProtocolEvent::Connected(peer_id)) => {
-                self.connected_peers.insert(peer_id);
-                self.status = Status::Online {
-                    connected: self.connected_peers.len(),
-                };
+                match state {
+                    Status::Offline => {
+                        self.status = Status::Online {
+                            connected: self.connected_peers.len(),
+                        };
 
-                vec![]
+                        vec![]
+                    },
+                    Status::Started => {
+                        // Sync with first incoming peer.
+                        //
+                        // In case the peer is configured to sync on startup we start syncing,
+                        // otherwise we go online straight away.
+                        // TODO(xla): Also issue sync if we come online after a certain period of
+                        // being disconnected from any peer.
+                        if self.config.sync.on_startup {
+                            self.status = Status::Syncing {
+                                synced: 0,
+                                syncs: 0,
+                            };
+                            self.status_since = Instant::now();
+
+                            vec![
+                                Command::SyncPeer(peer_id),
+                                Command::StartSyncTimeout(self.config.sync.period),
+                            ]
+                        } else {
+                            self.status = Status::Online {
+                                connected: self.connected_peers.len(),
+                            };
+                            self.status_since = Instant::now();
+
+                            vec![]
+                        }
+                    },
+                    // Issue syncs until we reach maximum amount of peers to sync with.
+                    Status::Syncing { syncs, .. } if *syncs < self.config.sync.max_peers => {
+                        vec![Command::SyncPeer(peer_id)]
+                    },
+                    // Update status with its connected peers.
+                    Status::Online { .. } => {
+                        self.status = Status::Online {
+                            connected: self.connected_peers.len(),
+                        };
+                        vec![]
+                    },
+                    // Noop
+                    Status::Stopped | Status::Syncing { .. } => vec![],
+                }
             },
             // Remove peer that just disconnected.
             (_, ProtocolEvent::Disconnecting(peer_id)) => {
-                self.connected_peers.remove(&peer_id);
+                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
+                    *counter -= 1;
+
+                    if *counter == 0 {
+                        self.connected_peers.remove(&peer_id);
+                    }
+                } else {
+                    log::error!("The impossible has happened, somehow we disconnected from '{}' without already being connected to them", peer_id);
+                    return vec![];
+                }
 
                 // Go offline if we have no more connected peers left.
                 if self.connected_peers.is_empty() {
@@ -588,7 +642,7 @@ impl RunState {
 #[cfg(test)]
 mod test {
     use std::{
-        collections::HashSet,
+        collections::{HashMap, HashSet},
         iter::FromIterator,
         net::{IpAddr, SocketAddr},
         time::{Duration, Instant},
@@ -606,7 +660,7 @@ mod test {
 
     use super::{
         AnnounceInput, Command, Config, Input, RequestCommand, RequestInput, RunState, Status,
-        SyncConfig, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
+        SyncConfig, SyncInput, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
     };
 
     #[test]
@@ -615,7 +669,7 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         let cmds = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert!(cmds.is_empty());
@@ -636,7 +690,7 @@ mod test {
                 },
                 ..Config::default()
             },
-            HashSet::new(),
+            HashMap::new(),
             status,
             status_since,
         );
@@ -653,24 +707,28 @@ mod test {
     #[test]
     fn transition_to_online_after_sync_max_peers() {
         let status = Status::Syncing {
-            syncs: DEFAULT_SYNC_MAX_PEERS - 1,
+            synced: DEFAULT_SYNC_MAX_PEERS - 1,
+            syncs: 1,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)))
         };
         assert_matches!(state.status, Status::Online {..});
     }
 
     #[test]
     fn transition_to_online_after_sync_period() {
-        let status = Status::Syncing { syncs: 3 };
+        let status = Status::Syncing {
+            synced: 0,
+            syncs: 3,
+        };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = state.transition(Input::Timeout(TimeoutInput::SyncPeriod));
         assert_matches!(state.status, Status::Online {..});
@@ -683,7 +741,7 @@ mod test {
         let status_since = Instant::now();
         let mut state = RunState::new(
             Config::default(),
-            HashSet::from_iter(vec![peer_id]),
+            HashMap::from_iter(vec![(peer_id, 1)]),
             status,
             status_since,
         );
@@ -706,12 +764,12 @@ mod test {
                 },
                 ..Config::default()
             },
-            HashSet::new(),
+            HashMap::new(),
             status,
             status_since,
         );
 
-        for i in 0..(max_peers - 1) {
+        for _i in 0..(max_peers - 1) {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
 
@@ -721,19 +779,26 @@ mod test {
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
                 assert_eq!(*sync_id, peer_id);
             });
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Started(peer_id)));
             assert_matches!(state.status, Status::Syncing{ syncs: syncing_peers, .. } => {
-                assert_eq!(i + 1, syncing_peers);
+                assert_eq!(syncing_peers, 1);
             });
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)));
         }
 
         // Issue last sync.
-        let cmds = {
+        {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+            let cmds = state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)));
+
+            assert!(!cmds.is_empty(), "expected command");
+            assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
+
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Started(peer_id)));
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)));
         };
-        assert!(!cmds.is_empty(), "expected command");
-        assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
+
         // Expect to be online at this point.
         assert_matches!(state.status, Status::Online {..});
 
@@ -760,7 +825,7 @@ mod test {
                 },
                 ..Config::default()
             },
-            HashSet::new(),
+            HashMap::new(),
             status,
             status_since,
         );
@@ -779,7 +844,7 @@ mod test {
     fn issue_announce_while_online() {
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(AnnounceInput::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
@@ -787,7 +852,7 @@ mod test {
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(AnnounceInput::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
@@ -799,7 +864,7 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Request(RequestInput::Requested(
             urn.clone(),
             Instant::now(),
@@ -809,7 +874,7 @@ mod test {
 
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Request(RequestInput::Requested(
             urn.clone(),
             Instant::now(),
@@ -819,7 +884,7 @@ mod test {
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Request(RequestInput::Requested(
             urn.clone(),
             Instant::now(),
@@ -827,9 +892,12 @@ mod test {
         )));
         assert_matches!(cmds.first(), None);
 
-        let status = Status::Syncing { syncs: 1 };
+        let status = Status::Syncing {
+            synced: 0,
+            syncs: 1,
+        };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Request(RequestInput::Requested(
             urn.clone(),
             Instant::now(),
@@ -843,9 +911,9 @@ mod test {
             assert_eq!(*have, urn);
         });
 
-        let status = Status::Online { connected: 0 };
+        let status = Status::Online { connected: 1 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Request(RequestInput::Requested(
             urn.clone(),
             Instant::now(),
@@ -876,7 +944,7 @@ mod test {
 
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         assert!(state
             .transition(Input::Request(RequestInput::Requested(

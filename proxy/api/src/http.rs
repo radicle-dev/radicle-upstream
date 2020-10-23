@@ -37,7 +37,6 @@ pub fn api(
     ctx: context::Context,
     subscriptions: Subscriptions,
     selfdestruct: mpsc::Sender<()>,
-    enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let test = ctx.test;
 
@@ -52,11 +51,7 @@ pub fn api(
             }
         })
         .untuple_one()
-        .and(control::filters(
-            ctx.clone(),
-            selfdestruct,
-            enable_fixture_creation,
-        ));
+        .and(control::filters(ctx.clone(), selfdestruct));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter =
         path("notifications").and(notification::filters(ctx.clone(), subscriptions));

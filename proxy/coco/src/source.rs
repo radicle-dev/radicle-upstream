@@ -890,7 +890,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::convert::TryFrom;
+    use std::convert::TryFrom as _;
 
     use librad::keys::SecretKey;
 
@@ -906,9 +906,14 @@ mod tests {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer);
         let owner = state.init_owner("cloudhead").await?;
-        let platinum_project =
-            control::replicate_platinum(&state, &owner, "git-platinum", "fixture data", "master")
-                .await?;
+        let platinum_project = control::replicate_platinum(
+            &state,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            control::default_branch(),
+        )
+        .await?;
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
