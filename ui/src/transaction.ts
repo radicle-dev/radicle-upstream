@@ -1,4 +1,3 @@
-import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
 import type { ContractTransaction } from "radicle-contracts/contract-bindings/ethers/Pool";
@@ -192,4 +191,81 @@ export const colorForStatus = (status: TxStatus): string => {
     case TxStatus.Included:
       return "var(--color-positive)";
   }
+};
+
+export interface SummaryCounts {
+  rejected: number;
+  awaiting: number;
+  included: number;
+
+  sum: number;
+}
+
+export function summaryCounts(txs: Tx[]): SummaryCounts {
+  return txs.reduce(
+    (acc, tx): SummaryCounts => {
+      acc.sum += 1;
+      switch (tx.status) {
+        case TxStatus.AwaitingInclusion:
+          acc.awaiting += 1;
+          break;
+        case TxStatus.Rejected:
+          acc.rejected += 1;
+          break;
+        case TxStatus.Included:
+          acc.included += 1;
+          break;
+      }
+
+      return acc;
+    },
+    {
+      rejected: 0,
+      awaiting: 0,
+      included: 0,
+      sum: 0,
+    }
+  );
+}
+
+export const summaryIconProgress = (counts: SummaryCounts): number => {
+  return counts.awaiting > 0 ? 100 - counts.sum / counts.awaiting : 100;
+};
+
+export const summaryIconRotate = (counts: SummaryCounts): boolean => {
+  return counts.rejected > 0 || counts.awaiting > 0;
+};
+
+export const summaryIconColor = (counts: SummaryCounts): string => {
+  console.log("summaryIconColor counts:", counts);
+  if (counts.rejected > 0) {
+    return colorForStatus(TxStatus.Rejected);
+  } else if (counts.awaiting > 0) {
+    return colorForStatus(TxStatus.AwaitingInclusion);
+  }
+
+  return colorForStatus(TxStatus.Included);
+};
+
+export const summaryText = (counts: SummaryCounts): string => {
+  let sum = 0;
+  let state = "included";
+
+  if (counts.included > 0) {
+    sum = counts.included;
+  }
+  if (counts.rejected > 0) {
+    sum = counts.rejected;
+    state = "rejected";
+  }
+  if (counts.awaiting > 0) {
+    sum = counts.awaiting;
+    state = "awaiting";
+  }
+
+  if (sum > 1) {
+    return `${sum} transactions ${state}`;
+  }
+
+  return `Transaction ${state}`;
 };

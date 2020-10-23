@@ -1,14 +1,7 @@
 <script lang="typescript">
-  import type { Tx } from "../../../src/transaction.ts";
-  import {
-    colorForStatus,
-    progressPercentage,
-    TxStatus,
-  } from "../../../src/transaction.ts";
-
-  export let tx: Tx;
-
+  export let progress: number;
   export let rotate: boolean = false;
+  export let color: string;
   export let style: string;
   export let variant = "regular"; // small | regular | inverted
 
@@ -26,10 +19,8 @@
   // Progress is a percentage value.
   const max_progress = 100;
 
-  $: progress = progressPercentage(tx.status);
-  $: color = colorForStatus(tx.status);
-  $: positive = tx.status === TxStatus.Included;
-  $: spin = progress === 0 || rotate;
+  $: positive = Math.random() >= 0.5; // FIXME(nuno)
+  $: spin = progress < 100 || rotate;
 
   $: size = sizes[variant];
   $: strokeWidth = strokeWidths[variant];
@@ -97,7 +88,6 @@
       15.2929C9.68342 14.9024 10.3166 14.9024 10.7071 15.2929L14 18.5858L20.2929
       12.2929C20.6834 11.9024 21.3166 11.9024 21.7071 12.2929Z"
       fill={color} />
-    y
   {:else}
     <path
       d="M16 22C15.6022 22 15.2206 21.842 14.9393 21.5607C14.658 21.2794 14.5
@@ -112,6 +102,5 @@
       17.2449 10.3273C17.3392 10.4311 17.4107 10.5534 17.4546 10.6866C17.4986
       10.8197 17.514 10.9605 17.5 11.1L17 16.1Z"
       fill={color} />
-    n
   {/if}
 </svg>
