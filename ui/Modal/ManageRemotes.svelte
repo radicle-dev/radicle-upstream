@@ -13,7 +13,7 @@
   const revisions = getContext("revisions");
   const metadata = getContext("metadata");
 
-  const trackedRemotes = revisions.map(revision => {
+  const trackedRemotes = revisions.map((revision: any) => {
     return {
       handle: revision.identity.metadata.handle,
       peerID: revision.identity.peerId,

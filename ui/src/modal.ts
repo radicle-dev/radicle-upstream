@@ -15,7 +15,7 @@ export const hide = (): void =>
   overlayStore.set({ show: false, route: null, contexts: null });
 
 // TODO(rudolfs): what's the type of contexts?
-export const toggle = (route: string, contexts: any): void => {
+export const toggle = (route: string, contexts = []): void => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (get(store).show && get(store).route === route) {
     hide();
