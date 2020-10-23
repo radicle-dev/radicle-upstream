@@ -2,8 +2,7 @@ import { GET_VERSION } from "../../native/ipc.js";
 
 context("settings", () => {
   beforeEach(() => {
-    cy.resetCocoState();
-    cy.resetSessionState();
+    cy.resetProxyState();
     cy.onboardUser();
 
     cy.visit("public/index.html");

@@ -94,7 +94,7 @@ context("project creation", () => {
   };
 
   beforeEach(() => {
-    cy.resetAllState();
+    cy.resetProxyState();
     cy.onboardUser();
     cy.visit("./public/index.html");
   });
