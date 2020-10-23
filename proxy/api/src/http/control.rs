@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use coco::git;
+
 use crate::context;
 
 /// Combination of all control filters.
@@ -57,7 +59,7 @@ mod handler {
             &owner,
             &input.name,
             &input.description,
-            &input.default_branch,
+            input.default_branch,
         )
         .await
         .map_err(error::Error::from)?;
@@ -101,7 +103,7 @@ pub struct CreateInput {
     /// Long form outline.
     description: String,
     /// Configured default branch.
-    default_branch: String,
+    default_branch: git::ext::OneLevel,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
 }
