@@ -143,7 +143,7 @@ impl discovery::Discovery for StreamDiscovery {
                     continue;
                 }
 
-                for seed in seeds.iter() {
+                for seed in &seeds {
                     let pair = (seed.peer_id, vec![seed.addr]);
                     sender.send(pair).await.ok();
                 }
