@@ -301,6 +301,16 @@ pub struct RunState {
     /// Confiugration to change how input [`Input`]s are interpreted.
     config: Config,
     /// Tracking remote peers that have an active connection.
+    ///
+    /// As a peer known by [`PeerId`] can be connected multiple times, e.g. when opening a git
+    /// connection to clone and fetch, tracking the connection count per peer is paramount to not
+    /// falsely end up in an unconnected state despite the fact the protocol is connected, alive
+    /// and kicking. The following scenario led to an offline state when a `HashSet` was used in
+    /// the past:
+    ///
+    /// `Connected(Peer1) -> Connected(Peer1) -> Disconnecting(Peer1)`
+    //
+    // FIXME(xla): Use a `Option<NonEmpty>` here to express the invariance.
     connected_peers: HashMap<PeerId, usize>,
     /// Current internal status.
     pub status: Status,
