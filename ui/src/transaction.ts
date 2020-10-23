@@ -120,7 +120,7 @@ export function topUp(txc: ContractTransaction): Tx {
 
 export function add(tx: Tx) {
   store.update(txs => {
-    txs.push(tx);
+    txs.unshift(tx);
     return txs;
   });
   cap();
