@@ -2,7 +2,9 @@
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
-use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
+
+use coco::git;
 
 use crate::context;
 
@@ -10,9 +12,8 @@ use crate::context;
 pub fn filters(
     ctx: context::Context,
     selfdestruct: mpsc::Sender<()>,
-    enable_fixture_creation: bool,
 ) -> BoxedFilter<(impl Reply,)> {
-    create_project_filter(ctx, enable_fixture_creation)
+    create_project_filter(ctx)
         .or(reload_filter(selfdestruct))
         .boxed()
 }
@@ -20,18 +21,8 @@ pub fn filters(
 /// POST /create-project
 fn create_project_filter(
     ctx: context::Context,
-    enabled: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
-        .map(move || enabled)
-        .and_then(|enable| async move {
-            if enable {
-                Ok(())
-            } else {
-                Err(reject::not_found())
-            }
-        })
-        .untuple_one()
         .and(super::with_context(ctx.clone()))
         .and(super::with_owner_guard(ctx))
         .and(warp::body::json())
@@ -68,7 +59,7 @@ mod handler {
             &owner,
             &input.name,
             &input.description,
-            &input.default_branch,
+            input.default_branch,
         )
         .await
         .map_err(error::Error::from)?;
@@ -112,7 +103,7 @@ pub struct CreateInput {
     /// Long form outline.
     description: String,
     /// Configured default branch.
-    default_branch: String,
+    default_branch: git::ext::OneLevel,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
 }
