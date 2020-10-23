@@ -117,7 +117,6 @@
           disabled={disableConfirmation}
           dataCy="review-transfer-button"
           onClick={onConfirmed}
-          successMessage={`Successfully added eth ${amount} to your pool`}
           errorMessage={e => `Could not top up pool funds: ${e.message}`} />
       </div>
     </div>

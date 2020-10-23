@@ -65,7 +65,6 @@
             title={'Cash out'}
             onClick={collectFunds}
             variant={'primary'}
-            successMessage={'Funds successfully collected'}
             errorMessage={e => `Failed to collect funds: ${e}`} />
         {/if}
       </div>

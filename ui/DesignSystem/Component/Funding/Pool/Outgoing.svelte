@@ -160,7 +160,6 @@
           title={'Save'}
           onClick={onSaveMonthlyContribution}
           variant={'transparent'}
-          successMessage={'Pool monthly contribution successfully updated'}
           errorMessage={e => `Failed to save pool: ${e}`} />
       </div>
       <div class="row">
@@ -204,7 +203,6 @@
           title={'Save'}
           onClick={onSaveMembers}
           variant={'outline'}
-          successMessage={'Pool members list successfully updated'}
           errorMessage={e => `Failed to save pool: ${e}`} />
       </div>
     </div>

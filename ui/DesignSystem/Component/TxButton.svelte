@@ -9,16 +9,18 @@
   export let variant: ButtonVariant = "primary";
   export let dataCy = "";
   export let onClick: () => Promise<void>;
-  export let successMessage: string = "Success";
   export let errorMessage: (error: any) => string;
   export let disabled = false;
 
   let running = false;
+  // TODO(nuno): Better this message.
+  const successMessage: string =
+    "Transaction approved. Pending mining. Please, wait..";
 
   async function userDidClick(): Promise<void> {
     try {
       running = true;
-      notification.info("Confirm the transaction on your wallet app 📲");
+      notification.info("Approve the transaction on your wallet app 📲");
       await onClick();
       // Waiting a moment here smoothes the UI.
       await continueAfter(0.4);
