@@ -169,7 +169,7 @@
               <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
             </div>
           </Input.Text>
-          <p>monthly</p>
+          <p>per month</p>
         </span>
         {#if saveMonthlyContributionEnabled && ongoingMonthlyContributionUpdate}
           <TxButton
@@ -182,14 +182,16 @@
       </div>
       <div class="row">
         <h3>{poolData.balance} DAI</h3>
-        <Button
-          disabled={ongoingTopUp}
-          dataCy="top-up-pool-button"
-          variant="vanilla"
-          on:click={openSendModal}
-          style="margin-left: 12px">
-          Top up
-        </Button>
+        {#if !ongoingTopUp}
+          <Button
+            disabled={ongoingTopUp}
+            dataCy="top-up-pool-button"
+            variant="vanilla"
+            on:click={openSendModal}
+            style="margin-left: 12px">
+            Top up
+          </Button>
+        {/if}
         <Button
           dataCy="drain-pool-button"
           variant="outline"
