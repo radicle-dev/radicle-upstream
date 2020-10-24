@@ -5,11 +5,7 @@ import * as project from "./project";
 import * as remote from "./remote";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 
-import {
-  localStateMock,
-  surfProjectMock,
-  upstreamProjectMock,
-} from "./__mocks__/api";
+import { localStateMock, upstreamProjectMock } from "./__mocks__/api";
 
 jest.mock("./api");
 

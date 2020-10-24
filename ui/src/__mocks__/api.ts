@@ -10,7 +10,7 @@ type MockedResponse =
   | source.LocalState
   | null;
 
-export const upstreamProjectMock: project.Project = {
+const upstreamProjectMock: project.Project = {
   id: "%rad:git:hwd1yregn1xe4krjs5h7ag5ceut9rwmjssr8e8t4pw6nrwdxgc761o3x4sa",
   shareableEntityIdentifier: "sos@{}",
   metadata: {
