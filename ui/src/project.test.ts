@@ -114,21 +114,3 @@ describe("fetching a project", () => {
     });
   });
 });
-
-describe("fetching a list of projects for user profile", () => {
-  it("creates and updates a store", () => {
-    const store = project.projects;
-
-    expect(get(store)).toEqual({ status: remote.Status.Loading });
-
-    // Store doesn't fetch until it has a subscriber
-    store.subscribe(() => null);
-
-    process.nextTick(() => {
-      expect(get(store)).toEqual({
-        status: remote.Status.Success,
-        data: [upstreamProjectMock, surfProjectMock],
-      });
-    });
-  });
-});
