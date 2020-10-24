@@ -1,3 +1,7 @@
+//! The `peer` module models the data representing a peer's relation to a project.
+//!
+//! A [`Peer`] can be `Local` or `Remote`, it can be `NotReplicated` or `Replicated`, and it
+//! can be a `Tracker`, `Contributor`, or `Maintainer` of the project.
 use serde::Serialize;
 
 use librad::peer::PeerId;
@@ -106,8 +110,8 @@ impl<S> Peer<S> {
     }
 }
 
+#[allow(clippy::use_self)]
 impl<S> Peer<S> {
-    #![allow(clippy::use_self)]
     /// Apply the function `f` to the `status` of the `Peer`. This allows us to easily change the
     /// underlying type of the `Peer` without changing the `peer_id` field.
     pub fn map<T, F>(self, f: F) -> Peer<T>
@@ -138,8 +142,8 @@ pub struct Replicated<U> {
     pub user: U,
 }
 
+#[allow(clippy::use_self)]
 impl<U> Replicated<U> {
-    #![allow(clippy::use_self)]
     /// Apply the supplied function `f` to the `user` field of `Replicated`. This leaves the `role`
     /// field untouched.
     ///
@@ -179,8 +183,8 @@ impl<U> Status<U> {
     }
 }
 
+#[allow(clippy::use_self)]
 impl<U> Status<U> {
-    #![allow(clippy::use_self)]
     /// Apply the supplied function `f` to [`Replicated`], otherwise it leaves the `NotReplicated`
     /// variant untouched.
     pub fn map<V, F>(self, f: F) -> Status<V>

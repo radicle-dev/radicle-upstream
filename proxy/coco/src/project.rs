@@ -13,10 +13,6 @@ pub use create::{Create, Repo};
 pub mod checkout;
 pub use checkout::Checkout;
 
-/// The `peer` module models the data representing a peer's relation to a project.
-///
-/// A [`Peer`] can be `Local` or `Remote`, it can be `NotReplicated` or `Replicated`, and it can be
-/// a `Tracker`, `Contributor`, or `Maintainer` of the project.
 pub mod peer;
 pub use peer::Peer;
 
