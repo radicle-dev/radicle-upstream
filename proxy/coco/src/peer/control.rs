@@ -11,6 +11,7 @@ use crate::request;
 use super::run_state::Status;
 
 /// Requests sent to the peer.
+#[allow(clippy::pub_enum_variant_names)]
 #[derive(Debug)]
 pub enum Request {
     /// Request the current status.
