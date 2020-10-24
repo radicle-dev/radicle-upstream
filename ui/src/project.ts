@@ -71,7 +71,6 @@ enum Kind {
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
   FetchTracked = "FETCH_TRACKED",
-  FetchUser = "FETCH_USER",
   FetchLocalState = "FETCH_LOCAL_STATE",
 }
 
@@ -98,11 +97,6 @@ interface FetchTracked extends event.Event<Kind> {
   kind: Kind.FetchTracked;
 }
 
-interface FetchUser extends event.Event<Kind> {
-  kind: Kind.FetchUser;
-  urn: string;
-}
-
 interface FetchLocalState extends event.Event<Kind> {
   kind: Kind.FetchLocalState;
   path: string;
@@ -114,8 +108,7 @@ type Msg =
   | Fetch
   | FetchList
   | FetchLocalState
-  | FetchTracked
-  | FetchUser;
+  | FetchTracked;
 
 // REQUEST INPUTS
 interface CreateInput {
@@ -171,13 +164,6 @@ const update = (msg: Msg): void => {
         .then(localStateStore.success)
         .catch(localStateStore.error);
       break;
-
-    case Kind.FetchUser:
-      projectsStore.loading();
-      api
-        .get<Projects>(`projects/user/${msg.urn}`)
-        .then(projectsStore.success)
-        .catch(projectsStore.error);
   }
 };
 
@@ -203,7 +189,6 @@ export const checkout = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
-export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
 export const fetchLocalState = event.create<Kind, Msg>(
   Kind.FetchLocalState,
   update
@@ -215,11 +200,11 @@ export const clearLocalState = event.create<Kind, Msg>(
   update
 );
 
-// Fetch initial list when the store has been subcribed to for the first time.
-projectsStore.start(fetchList);
+export const fetchUserList = (urn: string): Promise<Project[]> => {
+  return api.get<Projects>(`projects/user/${urn}`);
+};
 
 // NEW PROJECT
-
 export const localStateError = writable<string>("");
 export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
