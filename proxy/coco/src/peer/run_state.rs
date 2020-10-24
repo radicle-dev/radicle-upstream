@@ -154,14 +154,18 @@ pub enum AnnounceInput {
     Tick,
 }
 
-/// Announcement subroutine for status events.
+/// Requests from the peer control.
 #[derive(Debug)]
 pub enum ControlInput {
+    /// Request a project request.
+    ProjectRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),
+    /// Request the list of project requests.
+    ProjectRequests(oneshot::Sender<Vec<SomeRequest<Instant>>>),
     /// New status.
     Status(oneshot::Sender<Status>),
 }
 
-/// Request even that wishes to fetch an identity from the network.
+/// Request event for projects requested from the network.
 #[derive(Debug)]
 pub enum RequestInput {
     /// Started cloning the requested urn from a peer.
@@ -181,7 +185,7 @@ pub enum RequestInput {
     Requested(
         RadUrn,
         Instant,
-        Option<oneshot::Sender<Option<SomeRequest<Instant>>>>,
+        Option<oneshot::Sender<SomeRequest<Instant>>>,
     ),
     /// [`WaitingRoom`] query interval.
     Tick,
@@ -389,6 +393,21 @@ impl RunState {
     /// Handle [`ControlInput`]s.
     fn handle_control(&self, input: ControlInput) -> Vec<Command> {
         match input {
+            ControlInput::ProjectRequest(urn, sender) => vec![Command::Control(
+                ControlCommand::Respond(control::Response::GetProjectRequest(
+                    sender,
+                    self.waiting_room.get(&urn).cloned(),
+                )),
+            )],
+            ControlInput::ProjectRequests(sender) => vec![Command::Control(
+                ControlCommand::Respond(control::Response::GetProjectRequests(
+                    sender,
+                    self.waiting_room
+                        .iter()
+                        .map(|pair| pair.1.clone())
+                        .collect::<Vec<_>>(),
+                )),
+            )],
             ControlInput::Status(sender) => vec![Command::Control(ControlCommand::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
@@ -608,10 +627,18 @@ impl RunState {
             },
             (_, RequestInput::Requested(urn, time, maybe_sender)) => {
                 let maybe_request = self.waiting_room.request(&urn, time);
+                let request = match maybe_request {
+                    Some(req) => req,
+                    None => self
+                        .waiting_room
+                        .get(&urn)
+                        .expect("request should be present")
+                        .clone(),
+                };
 
                 if let Some(sender) = maybe_sender {
                     vec![Command::Control(ControlCommand::Respond(
-                        control::Response::Urn(sender, maybe_request),
+                        control::Response::Urn(sender, request),
                     ))]
                 } else {
                     vec![]

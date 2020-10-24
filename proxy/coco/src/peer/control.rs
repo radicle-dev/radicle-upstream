@@ -15,11 +15,18 @@ use super::run_state::Status;
 pub enum Request {
     /// Request the current status.
     CurrentStatus(oneshot::Sender<Status>),
+    /// Request a project request.
+    GetProjectRequest(
+        RadUrn,
+        oneshot::Sender<Option<request::SomeRequest<Instant>>>,
+    ),
+    /// Request the current project requests.
+    GetProjectRequests(oneshot::Sender<Vec<request::SomeRequest<Instant>>>),
     /// Request a urn to be fetched from the network.
     Urn(
         RadUrn,
         Instant,
-        oneshot::Sender<Option<request::SomeRequest<Instant>>>,
+        oneshot::Sender<request::SomeRequest<Instant>>,
     ),
 }
 
@@ -28,10 +35,20 @@ pub enum Request {
 pub enum Response {
     /// Response to a status request.
     CurrentStatus(oneshot::Sender<Status>, Status),
-    /// Response to a urn request.
-    Urn(
+    /// Response to get project request request.
+    GetProjectRequest(
         oneshot::Sender<Option<request::SomeRequest<Instant>>>,
         Option<request::SomeRequest<Instant>>,
+    ),
+    /// Response to list project requests request.
+    GetProjectRequests(
+        oneshot::Sender<Vec<request::SomeRequest<Instant>>>,
+        Vec<request::SomeRequest<Instant>>,
+    ),
+    /// Response to a urn request.
+    Urn(
+        oneshot::Sender<request::SomeRequest<Instant>>,
+        request::SomeRequest<Instant>,
     ),
 }
 
@@ -61,13 +78,40 @@ impl Control {
         receiver.await.expect("receiver is gone")
     }
 
+    /// Initiate a new reuest to fetch a project request.
+    pub async fn get_project_request(
+        &mut self,
+        urn: &RadUrn,
+    ) -> Option<request::SomeRequest<Instant>> {
+        let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<Instant>>>();
+
+        self.sender
+            .send(Request::GetProjectRequest(urn.clone(), sender))
+            .await
+            .expect("peer is gone");
+
+        receiver.await.expect("receiver is gone")
+    }
+
+    /// Initiate a new reuest for the list of existing project requests.
+    pub async fn get_project_requests(&mut self) -> Vec<request::SomeRequest<Instant>> {
+        let (sender, receiver) = oneshot::channel::<Vec<request::SomeRequest<Instant>>>();
+
+        self.sender
+            .send(Request::GetProjectRequests(sender))
+            .await
+            .expect("peer is gone");
+
+        receiver.await.expect("receiver is gone")
+    }
+
     /// Initiate a new request for the `urn`.
     pub async fn request_urn(
         &mut self,
         urn: &RadUrn,
         time: Instant,
-    ) -> Option<request::SomeRequest<Instant>> {
-        let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<Instant>>>();
+    ) -> request::SomeRequest<Instant> {
+        let (sender, receiver) = oneshot::channel::<request::SomeRequest<Instant>>();
 
         self.sender
             .send(Request::Urn(urn.clone(), time, sender))

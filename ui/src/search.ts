@@ -3,13 +3,14 @@ import * as event from "./event";
 import * as project from "./project";
 import * as remote from "./remote";
 import * as validation from "./validation";
+import * as waitingRoom from "./waitingRoom";
 
 // STATE
 const projectSearchStore = remote.createStore<project.Project>();
 export const projectSearch = projectSearchStore.readable;
 
 // FIXME(xla): Use Request type once serialised and returned by the API.
-const projectRequestStore = remote.createStore<boolean>();
+const projectRequestStore = remote.createStore<waitingRoom.ProjectRequest>();
 export const projectRequest = projectRequestStore.readable;
 
 enum Kind {
@@ -45,7 +46,10 @@ const update = (msg: Msg): void => {
       projectRequestStore.loading();
       // FIXME(xla): This truly belongs in project.ts.
       api
-        .put<null, boolean>(`projects/request/${msg.urn}`, null)
+        .put<null, waitingRoom.ProjectRequest>(
+          `projects/requests/${msg.urn}`,
+          null
+        )
         .then(projectRequestStore.success)
         .catch(projectRequestStore.error);
 

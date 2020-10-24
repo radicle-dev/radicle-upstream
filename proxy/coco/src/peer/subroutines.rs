@@ -91,6 +91,12 @@ impl Subroutines {
                         control::Request::CurrentStatus(sender) => {
                             Input::Control(ControlInput::Status(sender))
                         },
+                        control::Request::GetProjectRequest(urn, sender) => {
+                            Input::Control(ControlInput::ProjectRequest(urn, sender))
+                        },
+                        control::Request::GetProjectRequests(sender) => {
+                            Input::Control(ControlInput::ProjectRequests(sender))
+                        },
                         control::Request::Urn(urn, time, sender) => {
                             Input::Request(RequestInput::Requested(urn, time, Some(sender)))
                         },
@@ -250,6 +256,8 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
 async fn control_respond(cmd: control::Response) {
     match cmd {
         control::Response::CurrentStatus(sender, status) => sender.send(status).ok(),
+        control::Response::GetProjectRequest(sender, request) => sender.send(request).ok(),
+        control::Response::GetProjectRequests(sender, requests) => sender.send(requests).ok(),
         control::Response::Urn(sender, request) => sender.send(request).ok(),
     };
 }
