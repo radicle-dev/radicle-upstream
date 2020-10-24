@@ -18,7 +18,9 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(peers_filter(ctx.clone()))
         .or(request_filter(ctx.clone()))
         .or(track_filter(ctx.clone()))
-        .or(user_filter(ctx))
+        .or(user_filter(ctx.clone()))
+        .or(track_filter(ctx.clone()))
+        .or(untrack_filter(ctx))
         .boxed()
 }
 
@@ -124,6 +126,19 @@ fn track_filter(
         .and(path::param::<coco::PeerId>())
         .and(path::end())
         .and_then(handler::track)
+}
+
+/// `PUT /<urn>/untrack/<peer_id>`
+fn untrack_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_context(ctx)
+        .and(warp::put())
+        .and(path::param::<coco::Urn>())
+        .and(path("untrack"))
+        .and(path::param::<coco::PeerId>())
+        .and(path::end())
+        .and_then(handler::untrack)
 }
 
 /// `GET /user/<urn>`
@@ -265,6 +280,16 @@ mod handler {
         peer_id: coco::PeerId,
     ) -> Result<impl Reply, Rejection> {
         ctx.state.track(urn, peer_id).await.map_err(Error::from)?;
+        Ok(reply::json(&true))
+    }
+
+    /// Untrack the peer for the provided project.
+    pub async fn untrack(
+        ctx: context::Context,
+        urn: coco::Urn,
+        peer_id: coco::PeerId,
+    ) -> Result<impl Reply, Rejection> {
+        ctx.state.untrack(urn, peer_id).await.map_err(Error::from)?;
         Ok(reply::json(&true))
     }
 }
@@ -699,6 +724,76 @@ mod test {
             .method("PUT")
             .path(&format!(
                 "/{}/track/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn untrack() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let owner = ctx.state.init_owner("cloudhead").await?;
+        coco::control::setup_fixtures(&ctx.state, &owner).await?;
+        let projects = project::Projects::list(&ctx.state).await?;
+        let project = projects.contributed.first().expect("no projects setup");
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/untrack/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn untrack_after_track() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let owner = ctx.state.init_owner("cloudhead").await?;
+        coco::control::setup_fixtures(&ctx.state, &owner).await?;
+        let projects = project::Projects::list(&ctx.state).await?;
+        let project = projects.contributed.first().expect("no projects setup");
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/track/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
+        });
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/untrack/{}",
                 project.id,
                 coco::control::generate_peer_id()
             ))
