@@ -13,13 +13,13 @@ export interface Avatar {
 }
 
 export interface Identity {
-  id: string;
+  avatarFallback: Avatar;
   metadata: {
     handle: string;
   };
-  registered?: string;
-  avatarFallback: Avatar;
+  peerId: string;
   shareableEntityIdentifier: string;
+  urn: string;
 }
 
 // STATE
@@ -65,11 +65,7 @@ export const createIdentity = (input: CreateInput): Promise<Identity> => {
 };
 
 // MOCK
-export const fallback = {
-  id: "cloudhead@123abcd.git",
-  metadata: {
-    handle: "cloudhead",
-  },
+export const fallback: Identity = {
   avatarFallback: {
     background: {
       r: 122,
@@ -78,4 +74,11 @@ export const fallback = {
     },
     emoji: "💡",
   },
+  metadata: {
+    handle: "cloudhead",
+  },
+  peerId: "hwd1yreyza9z77xzp1rwyxw9uk4kdrrzag5uybd7w1ihke18xxhxn6qu4oy",
+  shareableEntityIdentifier:
+    "rad:git:hwd1yreyza9z77xzp1rwyxw9uk4kdrrzag5uybd7w1ihke18xxhxn6qu4oy",
+  urn: "rad:git:hwd1yreyza9z77xzp1rwyxw9uk4kdrrzag5uybd7w1ihke18xxhxn6qu4oy",
 };

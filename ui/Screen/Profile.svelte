@@ -1,8 +1,9 @@
-<script lang="ts">
+<script lang="typescript">
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
   import * as path from "../src/path";
+  import type { Session } from "../src/session";
 
   import {
     Header,
@@ -44,14 +45,13 @@
     },
   ];
 
-  const identity = getContext("session").identity;
+  const session: Session = getContext("session");
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
   <Header.Large
-    name={identity.metadata.handle}
-    urn={identity.urn}
-    avatarFallback={identity.avatarFallback}>
+    name={session.identity.metadata.handle}
+    urn={session.identity.urn}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

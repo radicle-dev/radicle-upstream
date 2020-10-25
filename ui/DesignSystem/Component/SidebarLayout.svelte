@@ -1,12 +1,16 @@
-<script lang="ts">
+<script lang="typescript">
   import { getContext } from "svelte";
+
+  import { fallback } from "../../src/identity";
+  import type { Session } from "../../src/session";
 
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy = "";
   export let style = "";
 
-  const session = getContext("session");
+  const session: Session = getContext("session");
+  const identity = session.identity || fallback;
 </script>
 
 <style>
@@ -19,7 +23,7 @@
 </style>
 
 <div data-cy={dataCy}>
-  <Sidebar identity={session.identity} />
+  <Sidebar {identity} />
 
   <div class="container">
     <div class="content" {style}>

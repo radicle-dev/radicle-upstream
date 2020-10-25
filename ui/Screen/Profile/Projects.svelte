@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
@@ -6,6 +6,7 @@
   import * as path from "../../src/path";
   import { projects as projectsStore } from "../../src/project";
   import type { Project } from "../../src/project";
+  import type { Session } from "../../src/session";
 
   import {
     EmptyState,
@@ -21,7 +22,7 @@
   const select = (event: { detail: Project }) =>
     push(path.projectSource(event.detail.id));
 
-  const session = getContext("session");
+  const session: Session = getContext("session");
 </script>
 
 <Remote store={projectsStore} let:data={projects}>
