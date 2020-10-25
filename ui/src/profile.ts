@@ -1,3 +1,5 @@
+import { get } from "svelte/store";
+
 import * as project from "./project";
 import * as remote from "./remote";
 import * as waitingRoom from "./waitingRoom";
@@ -11,15 +13,11 @@ const requestedProjectsStore = remote.createStore<
 export const requestedProjects = requestedProjectsStore.readable;
 
 export const fetchFollowingProjects = (): void => {
-  project
-    .fetchTracking()
-    .then(followingProjectsStore.success)
-    .catch(followingProjectsStore.error);
+  remote.fetch(followingProjectsStore, project.fetchTracking());
 };
 
 export const fetchRequestedProjects = (): void => {
-  project
-    .fetchSearching()
-    .then(requestedProjectsStore.success)
-    .catch(requestedProjectsStore.error);
+  remote.fetch(requestedProjectsStore, project.fetchSearching(), reqs => {
+    return reqs.filter(req => req.type !== waitingRoom.Status.Cloned);
+  });
 };
