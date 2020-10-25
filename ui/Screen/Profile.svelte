@@ -11,13 +11,13 @@
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
+  import Following from "./Profile/Following.svelte";
   import Projects from "./Profile/Projects.svelte";
-  import Tracking from "./Profile/Tracking.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
+    "/profile/following": Following,
     "/profile/projects": Projects,
-    "/profile/tracking": Tracking,
     "*": NotFound,
   };
 
@@ -39,7 +39,7 @@
     {
       icon: Icon.Network,
       title: "Following",
-      href: path.profileTracking(),
+      href: path.profileFollowing(),
       looseActiveStateMatching: false,
     },
   ];

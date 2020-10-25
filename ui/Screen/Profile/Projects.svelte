@@ -26,7 +26,7 @@
 
 <Remote store={projectsStore} let:data={projects}>
   {#if projects.length > 0}
-    <ProjectList {projects} urn={session.identity.urn} on:select={select} />
+    <ProjectList {projects} userUrn={session.identity.urn} on:select={select} />
   {:else}
     <EmptyState
       text="You don't have any projects yet."

@@ -6,6 +6,7 @@ import * as event from "./event";
 import * as remote from "./remote";
 import { getLocalState, LocalState } from "./source";
 import * as validation from "./validation";
+import * as waitingRoom from "./waitingRoom";
 
 // TYPES.
 export interface Metadata {
@@ -94,10 +95,6 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
-interface FetchTracked extends event.Event<Kind> {
-  kind: Kind.FetchTracked;
-}
-
 interface FetchUser extends event.Event<Kind> {
   kind: Kind.FetchUser;
   urn: string;
@@ -114,7 +111,6 @@ type Msg =
   | Fetch
   | FetchList
   | FetchLocalState
-  | FetchTracked
   | FetchUser;
 
 // REQUEST INPUTS
@@ -155,14 +151,6 @@ const update = (msg: Msg): void => {
         .then(projectsStore.success)
         .catch(projectsStore.error);
 
-      break;
-
-    case Kind.FetchTracked:
-      trackedStore.loading();
-      api
-        .get<Projects>("projects/tracked")
-        .then(trackedStore.success)
-        .catch(trackedStore.error);
       break;
 
     case Kind.FetchLocalState:
@@ -209,11 +197,18 @@ export const fetchLocalState = event.create<Kind, Msg>(
   update
 );
 
-export const fetchTracked = event.create<Kind, Msg>(Kind.FetchTracked, update);
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,
   update
 );
+
+export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {
+  return api.get<waitingRoom.ProjectRequest[]>("projects/requests");
+};
+
+export const fetchTracking = (): Promise<Project[]> => {
+  return api.get<Project[]>("projects/tracked");
+};
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);

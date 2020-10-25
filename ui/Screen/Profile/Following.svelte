@@ -1,12 +1,19 @@
-<script>
+<script lang="typescript">
+  import { getContext } from "svelte";
   import { fade } from "svelte/transition";
   import { push } from "svelte-spa-router";
 
-  import { FADE_DURATION } from "../../src/config.ts";
-  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
-  import * as modal from "../../src/modal.ts";
-  import * as path from "../../src/path.ts";
-  import { tracked, fetchTracked } from "../../src/project.ts";
+  import { FADE_DURATION } from "../../src/config";
+  import { Variant as IllustrationVariant } from "../../src/illustration";
+  import * as modal from "../../src/modal";
+  import * as path from "../../src/path";
+  import {
+    followingProjects,
+    fetchFollowingProjects,
+    fetchRequestedProjects,
+    requestedProjects,
+  } from "../../src/profile";
+  import type { Project } from "../../src/project";
 
   import {
     EmptyState,
@@ -18,26 +25,16 @@
     TrackToggle,
   } from "../../DesignSystem/Component";
 
-  const onSelect = project => {
+  const session = getContext("session");
+  const onCancel = (urn: string): void => {
+    console.log("cancel search", urn);
+  };
+  const onSelect = ({ detail: project }: { detail: Project }) => {
     push(path.projectSource(project.id));
   };
 
-  fetchTracked();
-  $: console.log($tracked);
-
-  // const untracked = [
-  //   {
-  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
-  //   },
-  //   {
-  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
-  //   },
-  //   {
-  //     urn: "rad:git:hwd1yrermy9kfw69u4obq9wcej1mbx1qn4byg4u35hd61c5qmnwxd5at8to",
-  //   },
-  // ];
-
-  const untracked = [];
+  fetchFollowingProjects();
+  fetchRequestedProjects();
 </script>
 
 <style>
@@ -68,10 +65,13 @@
 </style>
 
 <div class="container">
-  <Remote store={tracked} let:data={projects}>
-    {#if projects.length > 0}
-      <ProjectList {projects} on:select={ev => onSelect(ev.detail)} />
-    {:else}
+  <Remote store={followingProjects} let:data={projects}>
+    <ProjectList
+      {projects}
+      userUrn={session.identity.urn}
+      on:select={onSelect} />
+
+    <div slot="empty">
       <EmptyState
         text="You're not following any projects yet."
         illustration={IllustrationVariant.Horse}
@@ -79,10 +79,10 @@
         on:primaryAction={() => {
           modal.toggle(path.search());
         }} />
-    {/if}
+    </div>
   </Remote>
 
-  {#if untracked.length}
+  <Remote store={requestedProjects} let:data={requests}>
     <div out:fade|local={{ duration: FADE_DURATION }}>
       <div class="header">
         <p class="typo-text-bold">Still looking…&nbsp;</p>
@@ -90,26 +90,26 @@
           These projects haven't been found in your network yet or don't exist.
         </p>
       </div>
-      <List items={untracked} let:item={project}>
+      <List items={requests} let:item={request}>
         <Hoverable let:hovering={hover} style="flex: 1;">
           <div
             class="undiscovered-project"
             out:fade|local={{ duration: FADE_DURATION }}>
             <div>
-              <ShareableIdentifier urn={project.urn} />
+              <ShareableIdentifier urn={request.urn} />
             </div>
             {#if hover}
               <div transition:fade={{ duration: FADE_DURATION }}>
                 <TrackToggle
-                  tracking={true}
                   expanded
                   warning
-                  on:untrack={() => console.log(`untrack ${project.urn}`)} />
+                  tracking={true}
+                  on:untrack={() => onCancel(request.urn)} />
               </div>
             {/if}
           </div>
         </Hoverable>
       </List>
     </div>
-  {/if}
+  </Remote>
 </div>
