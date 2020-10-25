@@ -36,8 +36,6 @@
 
   fetchFollowingProjects();
   fetchRequestedProjects();
-
-  $: console.log($requestedProjects);
 </script>
 
 <style>
