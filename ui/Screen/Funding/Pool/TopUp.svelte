@@ -49,7 +49,7 @@
     justify-content: center;
     flex-direction: column;
     padding: 3rem 2rem 2rem 2rem;
-    width: 540px;
+    width: 650px;
     background: var(--color-background);
     border-radius: 0.5rem;
   }
@@ -113,6 +113,15 @@
     padding: 0.5rem;
   }
 
+  .address {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    display: inline-flex;
+    max-width: 80px;
+  }
+
   .submit {
     display: flex;
     justify-content: flex-end;
@@ -154,7 +163,10 @@
       <p class="typo-text-bold subheading">From</p>
       <div class="row">
         <p>Your external wallet</p>
-        <p>1327.9430 DAI 0×32Be...2D88</p>
+        <p>
+          <span>{get(store).getAccount().balance} DAI <span
+              class="address">{get(store).getAccount().address}</span></span>
+        </p>
       </div>
     </div>
 
