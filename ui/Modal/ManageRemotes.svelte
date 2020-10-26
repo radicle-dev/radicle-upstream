@@ -17,12 +17,19 @@
     peerValidation,
     project as store,
   } from "../src/project";
+  import type { Urn } from "../src/urn";
 
   let newRemote: PeerId;
 
   $: if (newRemote === "") {
     peerValidation.reset();
   }
+
+  const submitRemote = async (projectId: Urn) => {
+    if (await addRemote(projectId, newRemote)) {
+      newRemote = "";
+    }
+  };
 </script>
 
 <style>
@@ -77,7 +84,7 @@
           style="display: flex; align-self: flex-start;"
           variant="secondary"
           disabled={!newRemote}
-          on:click={() => addRemote(project.id, newRemote)}>
+          on:click={() => submitRemote(project.id)}>
           Add remote
         </Button>
       </div>
