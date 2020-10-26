@@ -12,12 +12,9 @@ interface Following {
 
 // STATE
 const followingProjectsStore = remote.createStore<project.Project[]>();
-export const followingProjects = followingProjectsStore.readable;
-
 const requestedProjectsStore = remote.createStore<
   waitingRoom.ProjectRequest[]
 >();
-export const requestedProjects = requestedProjectsStore.readable;
 
 export const following: Readable<remote.Data<Following | null>> = derived(
   [followingProjectsStore, requestedProjectsStore],
@@ -45,7 +42,12 @@ export const following: Readable<remote.Data<Following | null>> = derived(
     ) {
       let data = null;
       if (follows.data.length > 0 || requests.data.length > 0) {
-        data = { follows: follows.data, requests: requests.data };
+        data = {
+          follows: follows.data,
+          requests: requests.data.filter(
+            req => req.type !== waitingRoom.Status.Cancelled
+          ),
+        };
       }
       return { status: remote.Status.Success, data };
     }
