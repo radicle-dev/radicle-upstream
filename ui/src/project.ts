@@ -8,6 +8,7 @@ import * as remote from "./remote";
 import { getLocalState, LocalState } from "./source";
 import * as urn from "./urn";
 import * as validation from "./validation";
+import * as waitingRoom from "./waitingRoom";
 
 // TYPES.
 export interface Metadata {
@@ -191,10 +192,6 @@ interface FetchPeers extends event.Event<Kind> {
   urn: urn.Urn;
 }
 
-interface FetchTracked extends event.Event<Kind> {
-  kind: Kind.FetchTracked;
-}
-
 interface FetchLocalState extends event.Event<Kind> {
   kind: Kind.FetchLocalState;
   path: string;
@@ -219,7 +216,6 @@ type Msg =
   | FetchList
   | FetchPeers
   | FetchLocalState
-  | FetchTracked
   | TrackPeer
   | UntrackPeer;
 
@@ -277,14 +273,6 @@ const update = (msg: Msg): void => {
         })
         .catch(peersStore.error);
 
-      break;
-
-    case Kind.FetchTracked:
-      trackedStore.loading();
-      api
-        .get<Projects>("projects/tracked")
-        .then(trackedStore.success)
-        .catch(trackedStore.error);
       break;
 
     case Kind.FetchLocalState:
@@ -346,11 +334,18 @@ export const fetchLocalState = event.create<Kind, Msg>(
   update
 );
 
-export const fetchTracked = event.create<Kind, Msg>(Kind.FetchTracked, update);
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,
   update
 );
+
+export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {
+  return api.get<waitingRoom.ProjectRequest[]>("projects/requests");
+};
+
+export const fetchTracking = (): Promise<Project[]> => {
+  return api.get<Project[]>("projects/tracked");
+};
 
 export const fetchUserList = (urn: string): Promise<Project[]> => {
   return api.get<Projects>(`projects/user/${urn}`);

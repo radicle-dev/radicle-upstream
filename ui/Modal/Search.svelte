@@ -76,7 +76,7 @@
       "View profile",
       () => {
         dispatch("hide");
-        push(path.profileProjects());
+        push(path.profileFollowing());
       }
     );
   }

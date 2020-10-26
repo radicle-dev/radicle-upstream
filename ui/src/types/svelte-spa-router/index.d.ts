@@ -3,7 +3,7 @@ declare module "svelte-spa-router" {
   import { Readable } from "svelte/store";
 
   export const location: Readable<string>;
-  export function link(node: HTMLElement, hrefVar: string): void;
+  export function link(node: HTMLElement): void;
   export function pop(): void;
   export function push(path: string): void;
 
