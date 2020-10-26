@@ -1,6 +1,9 @@
 <script lang="typescript">
-  import { Remote, TxButton } from "../../../Component";
+  import { Remote } from "../../../Component";
+  import { Button } from "../../../Primitive";
 
+  import * as modal from "../../../../src/modal";
+  import * as path from "../../../../src/path";
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
   import * as _pool from "../../../../src/funding/pool";
   import * as transaction from "../../../../src/transaction";
@@ -8,7 +11,8 @@
   export let pool: _pool.Pool;
 
   const collectFunds = async (): Promise<void> => {
-    await pool.collect();
+    _pool.store.set(pool);
+    modal.toggle(path.collectFunds());
   };
 
   let ongoingCollect = false;
@@ -66,12 +70,13 @@
         <p>Balance</p>
         <h3>{poolData.collectableFunds} DAI</h3>
         {#if poolData.collectableFunds > 0 && !ongoingCollect}
-          <TxButton
+          <Button
+            style="margin-left: 10px;"
             disabled={ongoingCollect}
-            title={'Cash out'}
-            onClick={collectFunds}
-            variant={'primary'}
-            errorMessage={e => `Failed to collect funds: ${e}`} />
+            on:click={collectFunds}
+            variant={'primary'}>
+            Cash out
+          </Button>
         {/if}
       </div>
     </div>

@@ -31,7 +31,8 @@
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
-  import TopUp from "./Screen/Funding/Pool/TopUp.svelte";
+  import ModalTopUp from "./Screen/Funding/Pool/TopUp.svelte";
+  import ModalCollect from "./Screen/Funding/Pool/Collect.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -51,7 +52,8 @@
     "/new-project": ModalNewProject,
     "/search": ModalSearch,
     "/shortcuts": ModalShortcuts,
-    "/pool/top-up": TopUp,
+    "/pool/top-up": ModalTopUp,
+    "/pool/collect": ModalCollect,
   };
 
   $: switch ($store.status) {

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { push } from "svelte-spa-router";
-
   import { Button, Icon, Input } from "../../../Primitive";
   import { Remote, TxButton } from "../../../Component";
 
@@ -172,7 +170,7 @@
           </Input.Text>
           <p>per month</p>
         </span>
-        {#if saveMonthlyContributionEnabled && ongoingMonthlyContributionUpdate}
+        {#if saveMonthlyContributionEnabled && !ongoingMonthlyContributionUpdate}
           <TxButton
             disabled={!saveMonthlyContributionEnabled}
             title={'Save'}
