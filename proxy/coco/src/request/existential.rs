@@ -25,7 +25,11 @@ use super::{
 /// When we pattern match we get back the request parameterised over the specific state and can
 /// work in a type safe manner with this request.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(bound = "T: serde_millis::Milliseconds")]
+#[serde(
+    bound = "T: serde_millis::Milliseconds",
+    rename_all = "camelCase",
+    tag = "type"
+)]
 pub enum SomeRequest<T> {
     /// The `Request` has been created.
     Created(Request<Created, T>),
