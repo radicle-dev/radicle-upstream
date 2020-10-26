@@ -33,8 +33,11 @@ cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 
 echo "--- Run proxy docs"
-RUSTDOCFLAGS="-D intra-doc-link-resolution-failure" \
-  (cd proxy && time cargo doc --workspace --no-deps --all-features --document-private-items)
+(
+  cd proxy
+  export RUSTDOCFLAGS="-D intra-doc-link-resolution-failure"
+  time cargo doc --workspace --no-deps --all-features --document-private-items
+)
 
 echo "--- Run proxy fmt"
 (cd proxy && time cargo fmt --all -- --check)
