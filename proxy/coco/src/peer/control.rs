@@ -80,7 +80,7 @@ impl Control {
         receiver.await.expect("receiver is gone")
     }
 
-    /// Initiate a new reuest to fetch a project request.
+    /// Initiate a new request to fetch a project request.
     pub async fn get_project_request(
         &mut self,
         urn: &RadUrn,
