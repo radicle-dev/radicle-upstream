@@ -1,5 +1,3 @@
-import { get } from "svelte/store";
-
 import * as project from "./project";
 import * as remote from "./remote";
 import * as waitingRoom from "./waitingRoom";
