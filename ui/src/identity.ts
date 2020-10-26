@@ -2,6 +2,9 @@ import * as api from "./api";
 import * as remote from "./remote";
 
 // TYPES
+// FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
+export type PeerId = string;
+
 export interface Avatar {
   background: {
     r: number;

@@ -48,6 +48,7 @@ export enum ReplicationStatusType {
 
 export interface NotReplicated {
   type: ReplicationStatusType.NotReplicated;
+  peerId: identity.PeerId;
 }
 
 export interface Replicated {
@@ -127,6 +128,26 @@ export const peerSelection: Readable<remote.Data<{
   return store;
 });
 
+export const pendingPeers: Readable<remote.Data<{
+  peers: User[];
+}>> = derived(peersStore, store => {
+  if (store.status === remote.Status.Success) {
+    const peers = store.data
+      .filter(peer => peer.status.type === ReplicationStatusType.NotReplicated)
+      .map(peer => {
+        const { peerId } = peer as NotReplicated;
+        return { peerId };
+      });
+
+    return {
+      status: remote.Status.Success,
+      data: { peers },
+    };
+  }
+
+  return store;
+});
+
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;
 
@@ -148,6 +169,8 @@ enum Kind {
   FetchPeers = "FETCH_PEERS",
   FetchTracked = "FETCH_TRACKED",
   FetchLocalState = "FETCH_LOCAL_STATE",
+  TrackPeer = "TRACK_PEER",
+  UntrackPeer = "UNTRACK_PEER",
 }
 
 interface ClearLocalState extends event.Event<Kind> {
@@ -183,6 +206,18 @@ interface FetchLocalState extends event.Event<Kind> {
   path: string;
 }
 
+interface TrackPeer extends event.Event<Kind> {
+  kind: Kind.TrackPeer;
+  urn: urn.Urn;
+  peerId: identity.PeerId;
+}
+
+interface UntrackPeer extends event.Event<Kind> {
+  kind: Kind.UntrackPeer;
+  urn: urn.Urn;
+  peerId: identity.PeerId;
+}
+
 type Msg =
   | ClearLocalState
   | Create
@@ -190,7 +225,9 @@ type Msg =
   | FetchList
   | FetchPeers
   | FetchLocalState
-  | FetchTracked;
+  | FetchTracked
+  | TrackPeer
+  | UntrackPeer;
 
 // REQUEST INPUTS
 interface CreateInput {
@@ -262,6 +299,18 @@ const update = (msg: Msg): void => {
         .then(localStateStore.success)
         .catch(localStateStore.error);
       break;
+
+    case Kind.TrackPeer:
+      peersStore.loading();
+      api
+        .put<null, boolean>(`projects/${msg.urn}/track/${msg.peerId}`, null)
+        .then(() => {
+          fetchPeers({ urn: msg.urn });
+        })
+        .catch(e => {
+          console.log(e);
+        });
+      break;
   }
 };
 
@@ -302,6 +351,15 @@ export const clearLocalState = event.create<Kind, Msg>(
 export const fetchUserList = (urn: string): Promise<Project[]> => {
   return api.get<Projects>(`projects/user/${urn}`);
 };
+
+export const trackPeer = (urn: urn.Urn, peerId: identity.PeerId): void =>
+  event.create<Kind, Msg>(
+    Kind.TrackPeer,
+    update
+  )({
+    urn: urn,
+    peerId: peerId,
+  });
 
 // NEW PROJECT
 export const localStateError = writable<string>("");

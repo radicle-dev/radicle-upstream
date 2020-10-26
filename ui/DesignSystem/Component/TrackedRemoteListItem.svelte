@@ -1,8 +1,12 @@
 <script>
   import { Avatar, Flex } from "../../DesignSystem/Primitive";
-  import TrackToggle from "./TrackToggle.svelte";
   import Badge from "./Badge.svelte";
+  import Tooltip from "./Tooltip.svelte";
+
+  import TrackToggle from "./TrackToggle.svelte";
   import { BadgeType } from "../../src/badge.ts";
+  import { CSSPosition } from "../../src/style";
+  import { PeerType, Role } from "../../src/project";
 
   export let peer = null;
   export let projectName = null;
@@ -19,7 +23,7 @@
       <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
         {peer.identity.metadata.handle} / {projectName}
       </p>
-      {#if peer.role === 'maintainer'}
+      {#if peer.role === Role.Maintainer}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </div>
@@ -30,6 +34,23 @@
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
-    <TrackToggle disabled tracking expanded />
+    {#if peer.type === PeerType.Local}
+      <Tooltip
+        position={CSSPosition.Top}
+        value="Can't unfollow your own remote">
+        <TrackToggle disabled tracking expanded />
+      </Tooltip>
+    {:else if peer.role === Role.Maintainer}
+      <Tooltip
+        position={CSSPosition.Top}
+        value="Can't unfollow the maintainer's remote">
+        <TrackToggle disabled tracking expanded />
+      </Tooltip>
+    {:else}
+      <Tooltip>
+        <!-- TODO(rudolfs): handle untrack -->
+        <TrackToggle tracking expanded />
+      </Tooltip>
+    {/if}
   </div>
 </Flex>

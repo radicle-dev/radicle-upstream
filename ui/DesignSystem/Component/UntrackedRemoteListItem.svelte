@@ -2,13 +2,13 @@
   import { Flex } from "../../DesignSystem/Primitive";
   import TrackToggle from "./TrackToggle.svelte";
 
-  export let remote = null;
+  export let peer = null;
   export let projectName = null;
 
-  const firstSix = remote.peerID.substring(0, 7);
-  const lastSix = remote.peerID.substring(
-    remote.peerID.length - 7,
-    remote.peerID.length
+  const firstSix = peer.peerId.substring(0, 7);
+  const lastSix = peer.peerId.substring(
+    peer.peerId.length - 7,
+    peer.peerId.length
   );
 </script>
 
@@ -19,6 +19,6 @@
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
-    <TrackToggle />
+    <TrackToggle expanded tracking />
   </div>
 </Flex>
