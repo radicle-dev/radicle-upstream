@@ -62,8 +62,8 @@ interface ShowSuccess extends event.Event<Kind> {
   kind: Kind.ShowSuccess;
   message: string;
   showIcon: boolean;
-  actionText?: string;
-  actionHandler?: () => void;
+  actionText: string | false;
+  actionHandler: () => void | undefined;
 }
 
 type Msg = Remove | ShowError | ShowInfo | ShowSuccess;
