@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Variant as IllustrationVariant } from "../src/illustration";
-
+  import { Button, Input } from "../DesignSystem/Primitive";
   import {
     Illustration,
     List,
@@ -8,8 +7,9 @@
     TrackedRemoteListItem,
     UntrackedRemoteListItem,
   } from "../DesignSystem/Component";
-  import { Button, Input } from "../DesignSystem/Primitive";
 
+  import type { PeerId } from "../src/identity";
+  import { Variant as IllustrationVariant } from "../src/illustration";
   import {
     pendingPeers,
     peerSelection,
@@ -17,11 +17,7 @@
     trackPeer,
   } from "../src/project";
 
-  let newRemote;
-
-  const addRemote = projectUrn => {
-    trackPeer(projectUrn, newRemote);
-  };
+  let newRemote: PeerId;
 </script>
 
 <style>
@@ -60,7 +56,9 @@
         bind:value={newRemote}
         placeholder="Enter a remote"
         style="width: 100%; margin-right: .5rem;" />
-      <Button variant="secondary" on:click={() => addRemote(project.id)}>
+      <Button
+        variant="secondary"
+        on:click={() => trackPeer(project.id, newRemote)}>
         Add remote
       </Button>
     </div>

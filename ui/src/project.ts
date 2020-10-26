@@ -48,7 +48,6 @@ export enum ReplicationStatusType {
 
 export interface NotReplicated {
   type: ReplicationStatusType.NotReplicated;
-  peerId: identity.PeerId;
 }
 
 export interface Replicated {
@@ -66,15 +65,18 @@ export enum PeerType {
 
 export interface Local {
   type: PeerType.Local;
+  peerId: identity.PeerId;
   status: ReplicationStatus;
 }
 
 export interface Remote {
   type: PeerType.Remote;
+  peerId: identity.PeerId;
   status: ReplicationStatus;
 }
 
 export type Peer = Local | Remote;
+
 export interface User {
   type: PeerType;
   identity: identity.Identity;
@@ -85,11 +87,6 @@ export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
-}
-
-export interface User {
-  identity: identity.Identity;
-  role: Role;
 }
 
 export interface Project {
@@ -115,7 +112,7 @@ export const peerSelection: Readable<remote.Data<{
       .filter(peer => peer.status.type === ReplicationStatusType.Replicated)
       .map(peer => {
         const { role, user } = peer.status as Replicated;
-        return { type: peer.type, identity: user, role };
+        return { type: peer.type, peerId: peer.peerId, identity: user, role };
       });
 
     // TODO(xla): Apply proper heuristic to set default.
@@ -129,15 +126,12 @@ export const peerSelection: Readable<remote.Data<{
 });
 
 export const pendingPeers: Readable<remote.Data<{
-  peers: User[];
+  peers: Peer[];
 }>> = derived(peersStore, store => {
   if (store.status === remote.Status.Success) {
-    const peers = store.data
-      .filter(peer => peer.status.type === ReplicationStatusType.NotReplicated)
-      .map(peer => {
-        const { peerId } = peer as NotReplicated;
-        return { peerId };
-      });
+    const peers = store.data.filter(
+      peer => peer.status.type === ReplicationStatusType.NotReplicated
+    );
 
     return {
       status: remote.Status.Success,

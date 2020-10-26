@@ -5,7 +5,7 @@
   const dispatch = createEventDispatcher();
 
   export let items: SvelteComponent;
-  export let styleHoverState = true;
+  export let styleHoverState: boolean = true;
 
   export let dataCy = "";
   export let style = "";
