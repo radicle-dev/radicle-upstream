@@ -7,12 +7,7 @@
   import { Variant as IllustrationVariant } from "../../src/illustration";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
-  import {
-    followingProjects,
-    fetchFollowingProjects,
-    fetchRequestedProjects,
-    requestedProjects,
-  } from "../../src/profile";
+  import { following as store, fetchFollowing } from "../../src/profile";
   import type { Project } from "../../src/project";
   import type { Authenticated } from "../../src/session";
 
@@ -34,8 +29,7 @@
     push(path.projectSource(project.id));
   };
 
-  fetchFollowingProjects();
-  fetchRequestedProjects();
+  fetchFollowing();
 </script>
 
 <style>
@@ -66,11 +60,43 @@
 </style>
 
 <div class="container">
-  <Remote store={followingProjects} let:data={projects}>
+  <Remote {store} let:data={{ follows, requests }}>
     <ProjectList
-      {projects}
+      projects={follows}
       userUrn={session.identity.urn}
       on:select={onSelect} />
+
+    {#if requests.length > 0}
+      <div out:fade|local={{ duration: FADE_DURATION }}>
+        <div class="header">
+          <p class="typo-text-bold">Still looking…&nbsp;</p>
+          <p style="color: var(--color-foreground-level-6);">
+            These projects haven't been found in your network yet or don't
+            exist.
+          </p>
+        </div>
+        <List items={requests} let:item={request}>
+          <Hoverable let:hovering={hover} style="flex: 1;">
+            <div
+              class="undiscovered-project"
+              out:fade|local={{ duration: FADE_DURATION }}>
+              <div>
+                <ShareableIdentifier urn={request.urn} />
+              </div>
+              {#if hover}
+                <div transition:fade={{ duration: FADE_DURATION }}>
+                  <TrackToggle
+                    expanded
+                    warning
+                    tracking={true}
+                    on:untrack={() => onCancel(request.urn)} />
+                </div>
+              {/if}
+            </div>
+          </Hoverable>
+        </List>
+      </div>
+    {/if}
 
     <div slot="empty">
       <EmptyState
@@ -80,37 +106,6 @@
         on:primaryAction={() => {
           modal.toggle(path.search());
         }} />
-    </div>
-  </Remote>
-
-  <Remote store={requestedProjects} let:data={requests}>
-    <div out:fade|local={{ duration: FADE_DURATION }}>
-      <div class="header">
-        <p class="typo-text-bold">Still looking…&nbsp;</p>
-        <p style="color: var(--color-foreground-level-6);">
-          These projects haven't been found in your network yet or don't exist.
-        </p>
-      </div>
-      <List items={requests} let:item={request}>
-        <Hoverable let:hovering={hover} style="flex: 1;">
-          <div
-            class="undiscovered-project"
-            out:fade|local={{ duration: FADE_DURATION }}>
-            <div>
-              <ShareableIdentifier urn={request.urn} />
-            </div>
-            {#if hover}
-              <div transition:fade={{ duration: FADE_DURATION }}>
-                <TrackToggle
-                  expanded
-                  warning
-                  tracking={true}
-                  on:untrack={() => onCancel(request.urn)} />
-              </div>
-            {/if}
-          </div>
-        </Hoverable>
-      </List>
     </div>
   </Remote>
 </div>
