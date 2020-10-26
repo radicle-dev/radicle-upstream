@@ -44,9 +44,7 @@
     <WithContext {data} name={context}>
       <slot {data} />
     </WithContext>
-  {:else if Array.isArray(data) && data.length === 0}
-    <slot name="empty" />
-  {:else if data === null}
+  {:else if (Array.isArray(data) && data.length === 0) || data === null}
     <slot name="empty" />
   {:else}
     <slot {data} />
