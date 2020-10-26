@@ -36,27 +36,21 @@
 
   .left {
     display: flex;
+    min-width: 0;
+    margin-right: 1.5rem;
   }
 
   .metadata {
     display: flex;
     flex-direction: column;
     align-self: center;
+    width: -webkit-fill-available;
   }
 
   .description {
     margin-top: 1rem;
     margin-bottom: 0.5rem;
     color: var(--color-foreground-level-6);
-    height: 1.5rem; /* 1 line */
-    max-width: 60vw;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-  .user {
-    display: flex;
-    align-items: center;
   }
 
   .project-stats {
@@ -117,14 +111,10 @@
       {/if}
 
       <div class="metadata">
-        <div class="user">
-          <h1 data-cy="entity-name" style="display: flex; align-items: center;">
-            {name}
-          </h1>
-        </div>
+        <h1 data-cy="entity-name" class="typo-overflow-ellipsis">{name}</h1>
         <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {#if description.length > 0}
-          <p class="description">{description}</p>
+          <p class="description typo-overflow-ellipsis">{description}</p>
         {/if}
         {#if stats}
           <div class="project-stats" data-cy="project-stats">
