@@ -68,7 +68,8 @@ pub struct Sealed {
 }
 
 impl Unsealed {
-    /// Initialises a new [`ContextUnselaed`] the given temporary directory.
+    /// Initialises a new [`Unsealed`] context with the store and coco state in the given temporary
+    /// directory.
     ///
     /// # Errors
     ///
