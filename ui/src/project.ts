@@ -295,7 +295,6 @@ const update = (msg: Msg): void => {
       break;
 
     case Kind.TrackPeer:
-      peersStore.loading();
       api
         .put<null, boolean>(`projects/${msg.urn}/track/${msg.peerId}`, null)
         .then(() => {
@@ -307,7 +306,6 @@ const update = (msg: Msg): void => {
       break;
 
     case Kind.UntrackPeer:
-      peersStore.loading();
       api
         .put<null, boolean>(`projects/${msg.urn}/untrack/${msg.peerId}`, null)
         .then(() => {
