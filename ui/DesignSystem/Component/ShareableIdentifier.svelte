@@ -2,8 +2,9 @@
   import { Icon } from "../Primitive";
   import Copyable from "./Copyable.svelte";
 
-  export let style = "";
-  export let urn = "";
+  export let style: string = "";
+  export let urn: string = "";
+
   const hash = urn.replace("rad:git:", "");
 </script>
 

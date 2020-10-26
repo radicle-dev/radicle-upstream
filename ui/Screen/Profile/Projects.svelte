@@ -6,6 +6,7 @@
   import * as path from "../../src/path";
   import { fetchList, projects as store } from "../../src/project";
   import type { Project } from "../../src/project";
+  import type { Authenticated } from "../../src/session";
 
   import {
     EmptyState,
@@ -14,7 +15,7 @@
     Remote,
   } from "../../DesignSystem/Component";
 
-  const session = getContext("session");
+  const session: Authenticated = getContext("session");
 
   const create = () => {
     modal.toggle(path.newProject());
@@ -26,14 +27,14 @@
 </script>
 
 <Remote {store} let:data={projects}>
-  {#if projects.length > 0}
-    <ProjectList {projects} urn={session.identity.urn} on:select={select} />
-  {:else}
+  <ProjectList {projects} userUrn={session.identity.urn} on:select={select} />
+
+  <div slot="empty">
     <EmptyState
       text="You don't have any projects yet."
       primaryActionText="Start your first project"
       on:primaryAction={create} />
-  {/if}
+  </div>
 
   <div slot="error" let:error>
     <Error message={error && error.message} />

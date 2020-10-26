@@ -1,14 +1,15 @@
-<script>
+<script lang="typescript">
   import { location, link } from "svelte-spa-router";
 
-  import * as modal from "../../src/modal.ts";
-  import * as path from "../../src/path.ts";
+  import type { Identity } from "../../src/identity";
+  import * as modal from "../../src/modal";
+  import * as path from "../../src/path";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 
-  export let identity = null;
+  export let identity: Identity;
 </script>
 
 <style>

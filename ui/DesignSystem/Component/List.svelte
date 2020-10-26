@@ -46,11 +46,13 @@
 </style>
 
 <div class="list-container" {style}>
-  <ul data-cy={dataCy}>
-    {#each items as item}
-      <li on:click={() => dispatch('select', item)}>
-        <slot {item} />
-      </li>
-    {/each}
-  </ul>
+  {#if items.length > 0}
+    <ul data-cy={dataCy}>
+      {#each items as item}
+        <li on:click={() => dispatch('select', item)}>
+          <slot {item} />
+        </li>
+      {/each}
+    </ul>
+  {/if}
 </div>
