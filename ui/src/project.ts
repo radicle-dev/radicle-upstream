@@ -481,10 +481,9 @@ export const repositoryPathValidationStore = (
 const VALID_PEER_MATCH = /^[\w\d]{54}$/;
 
 const checkPeerUniqueness = (peer: string): Promise<boolean> => {
-  console.log(get(peersStore));
   return Promise.resolve(
     !get(peersStore)
-      .data.map(peer => {
+      .data.map((peer: Peer) => {
         return peer.peerId;
       })
       .includes(peer)
