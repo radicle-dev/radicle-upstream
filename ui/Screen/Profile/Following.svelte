@@ -8,6 +8,7 @@
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { following as store, fetchFollowing } from "../../src/profile";
+  import { cancelRequest } from "../../src/project";
   import type { Project } from "../../src/project";
   import type { Authenticated } from "../../src/session";
 
@@ -22,9 +23,6 @@
   } from "../../DesignSystem/Component";
 
   const session: Authenticated = getContext("session");
-  const onCancel = (urn: string): void => {
-    console.log("cancel search", urn);
-  };
   const onSelect = ({ detail: project }: { detail: Project }) => {
     push(path.projectSource(project.id));
   };
@@ -89,7 +87,7 @@
                     expanded
                     warning
                     tracking={true}
-                    on:untrack={() => onCancel(request.urn)} />
+                    on:untrack={() => cancelRequest(request.urn)} />
                 </div>
               {/if}
             </div>
