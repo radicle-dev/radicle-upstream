@@ -121,6 +121,11 @@
     cursor: pointer;
     background-color: var(--color-foreground-level-2);
   }
+
+  .remotes p {
+    white-space: nowrap;
+    margin-right: 0.5rem;
+  }
 </style>
 
 <Overlay
