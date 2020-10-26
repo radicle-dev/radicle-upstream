@@ -64,14 +64,24 @@ pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Identity, error::
     Ok((state.peer_id(), user).into())
 }
 
+// TODO(finto): Check if this is used and if so, express more elegantly after
+// radicle-dev/radicle-link#374.
 /// Retrieve the list of identities known to the session user.
 ///
 /// # Errors
+///
+///  * If we cannot get the list of projects
+///  * If we cannot get the tracked peers for a given project
 pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
     for project in state.list_projects().await? {
         let project_urn = project.urn();
-        for peer in state.tracked(project_urn).await? {
+        for peer in state
+            .tracked(project_urn)
+            .await?
+            .into_iter()
+            .filter_map(coco::project::Peer::replicated_remote)
+        {
             let user = peer.into();
             if !users.contains(&user) {
                 users.push(user)

@@ -9,19 +9,22 @@ use crate::{context, http};
 
 /// Combination of all routes.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    tracked_filter(ctx.clone())
-        .or(contributed_filter(ctx.clone()))
-        .or(user_filter(ctx.clone()))
-        .or(checkout_filter(ctx.clone()))
+    checkout_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(request_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
-        .or(track_filter(ctx))
+        .or(owner_contributed_filter(ctx.clone()))
+        .or(owner_tracked_filter(ctx.clone()))
+        .or(peers_filter(ctx.clone()))
+        .or(request_filter(ctx.clone()))
+        .or(track_filter(ctx.clone()))
+        .or(user_filter(ctx.clone()))
+        .or(track_filter(ctx.clone()))
+        .or(untrack_filter(ctx))
         .boxed()
 }
 
-/// `POST /<id>/checkout`
+/// `POST /<urn>/checkout`
 fn checkout_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -30,17 +33,6 @@ fn checkout_filter(
         .and(path::param::<coco::Urn>())
         .and(warp::body::json())
         .and_then(handler::checkout)
-}
-
-/// `GET /contributed`
-fn contributed_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("contributed")
-        .and(warp::get())
-        .and(http::with_context(ctx))
-        .and(path::end())
-        .and_then(handler::list_contributed)
 }
 
 /// `POST /`
@@ -66,7 +58,7 @@ fn discover_filter(
         .and_then(handler::discover)
 }
 
-/// `GET /<id>`
+/// `GET /<urn>`
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -77,7 +69,41 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `PUT /request/<id>`
+/// `GET /contributed`
+fn owner_contributed_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("contributed")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and_then(handler::list_owner_contributed)
+}
+
+/// `GET /tracked`
+fn owner_tracked_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("tracked")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and_then(handler::list_owner_tracked)
+}
+
+/// `GET /<urn>/peers`
+fn peers_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_context(ctx)
+        .and(warp::get())
+        .and(path::param::<coco::Urn>())
+        .and(path("peers"))
+        .and(path::end())
+        .and_then(handler::peers)
+}
+
+/// `PUT /request/<urn>`
 fn request_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -102,15 +128,17 @@ fn track_filter(
         .and_then(handler::track)
 }
 
-/// `GET /tracked`
-fn tracked_filter(
+/// `PUT /<urn>/untrack/<peer_id>`
+fn untrack_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("tracked")
-        .and(warp::get())
-        .and(http::with_context(ctx))
+    http::with_context(ctx)
+        .and(warp::put())
+        .and(path::param::<coco::Urn>())
+        .and(path("untrack"))
+        .and(path::param::<coco::PeerId>())
         .and(path::end())
-        .and_then(handler::list_tracked)
+        .and_then(handler::untrack)
 }
 
 /// `GET /user/<urn>`
@@ -122,7 +150,7 @@ fn user_filter(
         .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
-        .and_then(handler::list_for_user)
+        .and_then(handler::list_user)
 }
 
 /// Project handlers to implement conversion and translation between core domain and http request
@@ -133,6 +161,21 @@ mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error::Error, http, project};
+
+    /// Checkout a [`project::Project`]'s source code.
+    pub async fn checkout(
+        ctx: context::Context,
+        urn: coco::Urn,
+        super::CheckoutInput { path, peer_id }: super::CheckoutInput,
+    ) -> Result<impl Reply, Rejection> {
+        let peer_id = http::guard_self_peer_id(&ctx.state, peer_id);
+        let path = ctx
+            .state
+            .checkout(urn, peer_id, path)
+            .await
+            .map_err(Error::from)?;
+        Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
+    }
 
     /// Create a new [`project::Project`].
     pub async fn create(
@@ -167,21 +210,6 @@ mod handler {
         ))
     }
 
-    /// Checkout a [`project::Project`]'s source code.
-    pub async fn checkout(
-        ctx: context::Context,
-        urn: coco::Urn,
-        super::CheckoutInput { path, peer_id }: super::CheckoutInput,
-    ) -> Result<impl Reply, Rejection> {
-        let peer_id = http::guard_self_peer_id(&ctx.state, peer_id);
-        let path = ctx
-            .state
-            .checkout(urn, peer_id, path)
-            .await
-            .map_err(Error::from)?;
-        Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
-    }
-
     /// Get a feed of untracked projects.
     pub async fn discover(_ctx: context::Context) -> Result<impl Reply, Rejection> {
         let feed = project::discover()?;
@@ -195,17 +223,24 @@ mod handler {
     }
 
     /// List all projects the current user has contributed to.
-    pub async fn list_contributed(ctx: context::Context) -> Result<impl Reply, Rejection> {
+    pub async fn list_owner_contributed(ctx: context::Context) -> Result<impl Reply, Rejection> {
         let projects = project::Projects::list(&ctx.state).await?;
 
         Ok(reply::json(&projects.contributed))
+    }
+
+    /// List all projects tracked by the current user.
+    pub async fn list_owner_tracked(ctx: context::Context) -> Result<impl Reply, Rejection> {
+        let projects = project::Projects::list(&ctx.state).await?.tracked;
+
+        Ok(reply::json(&projects))
     }
 
     /// This lists all the projects for a given `user`. This `user` should not be your particular
     /// `user` (i.e. the "default user"), but rather should be another user that you are tracking.
     ///
     /// See [`project::list_for_user`] for more information.
-    pub async fn list_for_user(
+    pub async fn list_user(
         ctx: context::Context,
         user_id: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
@@ -214,11 +249,18 @@ mod handler {
         Ok(reply::json(&projects))
     }
 
-    /// List all projects tracked by the current user.
-    pub async fn list_tracked(ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let projects = project::Projects::list(&ctx.state).await?.tracked;
+    /// List the remote peers for a project.
+    pub async fn peers(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+        let peers: Vec<project::Peer> = ctx
+            .state
+            .list_project_peers(urn)
+            .await
+            .map_err(Error::from)?
+            .into_iter()
+            .map(project::Peer::from)
+            .collect::<Vec<_>>();
 
-        Ok(reply::json(&projects))
+        Ok(reply::json(&peers))
     }
 
     /// Kick off a network request for the [`project::Project`] of the given `id`.
@@ -238,6 +280,16 @@ mod handler {
         peer_id: coco::PeerId,
     ) -> Result<impl Reply, Rejection> {
         ctx.state.track(urn, peer_id).await.map_err(Error::from)?;
+        Ok(reply::json(&true))
+    }
+
+    /// Untrack the peer for the provided project.
+    pub async fn untrack(
+        ctx: context::Context,
+        urn: coco::Urn,
+        peer_id: coco::PeerId,
+    ) -> Result<impl Reply, Rejection> {
+        ctx.state.untrack(urn, peer_id).await.map_err(Error::from)?;
         Ok(reply::json(&true))
     }
 }
@@ -304,7 +356,7 @@ mod test {
                 &owner,
                 "git-platinum",
                 "fixture data",
-                "master",
+                coco::control::default_branch(),
             )
             .await?;
             platinum_project.urn()
@@ -388,7 +440,7 @@ mod test {
                 name: "Upstream".to_string(),
             },
             description: "Desktop client for radicle.".into(),
-            default_branch: "master".into(),
+            default_branch: coco::control::default_branch(),
         };
 
         let res = request()
@@ -447,7 +499,7 @@ mod test {
                 path: repo_path.clone(),
             },
             description: "Desktop client for radicle.".into(),
-            default_branch: "master".into(),
+            default_branch: coco::control::default_branch(),
         };
 
         // Create the repository for which we'll create a project for
@@ -502,7 +554,7 @@ mod test {
                 &owner,
                 "git-platinum",
                 "fixture data",
-                "master",
+                coco::control::default_branch(),
             )
             .await?;
             platinum_project.urn()
@@ -512,7 +564,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}", urn))
+            .path(&format!("/{}/", urn))
             .reply(&api)
             .await;
 
@@ -672,6 +724,76 @@ mod test {
             .method("PUT")
             .path(&format!(
                 "/{}/track/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn untrack() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let owner = ctx.state.init_owner("cloudhead").await?;
+        coco::control::setup_fixtures(&ctx.state, &owner).await?;
+        let projects = project::Projects::list(&ctx.state).await?;
+        let project = projects.contributed.first().expect("no projects setup");
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/untrack/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn untrack_after_track() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = context::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let owner = ctx.state.init_owner("cloudhead").await?;
+        coco::control::setup_fixtures(&ctx.state, &owner).await?;
+        let projects = project::Projects::list(&ctx.state).await?;
+        let project = projects.contributed.first().expect("no projects setup");
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/track/{}",
+                project.id,
+                coco::control::generate_peer_id()
+            ))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, true);
+        });
+
+        let res = request()
+            .method("PUT")
+            .path(&format!(
+                "/{}/untrack/{}",
                 project.id,
                 coco::control::generate_peer_id()
             ))

@@ -14,6 +14,8 @@ pub struct Context {
     pub state: coco::State,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
+    /// Flag to control if the stack is set up in test mode.
+    pub test: bool,
 }
 
 impl Context {
@@ -47,6 +49,7 @@ impl Context {
             peer_control,
             state,
             store,
+            test: false,
         })
     }
 }

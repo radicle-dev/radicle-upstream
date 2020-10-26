@@ -3,6 +3,7 @@
 use std::{convert::TryFrom, env, io, path};
 
 use librad::{
+    git::ext::{OneLevel, RefLike},
     keys,
     meta::{entity, project as librad_project},
     peer::PeerId,
@@ -40,21 +41,25 @@ pub fn reset_monorepo() -> Result<(), std::io::Error> {
 /// [`librad::paths::Paths`].
 pub async fn setup_fixtures(api: &State, owner: &User) -> Result<(), Error> {
     let infos = vec![
-        ("monokel", "A looking glass into the future", "master"),
+        (
+            "monokel",
+            "A looking glass into the future",
+            default_branch(),
+        ),
         (
             "Monadic",
             "Open source organization of amazing things.",
-            "master",
+            default_branch(),
         ),
         (
             "open source coin",
             "Research for the sustainability of the open source community.",
-            "master",
+            default_branch(),
         ),
         (
             "radicle",
             "Decentralized open source collaboration",
-            "master",
+            default_branch(),
         ),
     ];
 
@@ -77,7 +82,7 @@ pub async fn replicate_platinum(
     owner: &User,
     name: &str,
     description: &str,
-    default_branch: &str,
+    default_branch: OneLevel,
 ) -> Result<librad_project::Project<entity::Draft>, Error> {
     // Construct path for fixtures to clone into.
     let monorepo = api.monorepo();
@@ -88,7 +93,7 @@ pub async fn replicate_platinum(
 
     let project_creation = project::Create {
         description: description.to_string(),
-        default_branch: default_branch.to_string(),
+        default_branch,
         repo: project::Repo::Existing {
             path: platinum_into.clone(),
         },
@@ -136,6 +141,9 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
     Ok(path::Path::new("file://").join(platinum_path))
 }
 
+/// TODO(finto): Burn this. It's just a big foot gun and it breaks whenever we try to access
+/// `signed_refs`.
+///
 /// Create and track a fake peer.
 pub async fn track_fake_peer(
     state: &State,
@@ -274,4 +282,12 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
     }
 
     Ok(())
+}
+
+/// **Testing Only**
+///
+/// Default reference name for testing purposes.
+#[must_use]
+pub fn default_branch() -> OneLevel {
+    OneLevel::from(RefLike::try_from("master").expect("failed to parse 'master'"))
 }

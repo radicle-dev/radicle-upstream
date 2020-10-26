@@ -204,7 +204,7 @@ complexity. Currently you'll find the following types of components in the
     <Button variant="secondary">OK</Button>
     ```
 
-  - `Component`: reusable low-to-high complexity components and layouts.
+  - `Component`: reusable low-to-high complexity components.
 
     Sub-folders in `DesignSystem/Component` should only be created for breaking
     up larger components into smaller fragments. If a component is broken up in
@@ -213,10 +213,10 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { Placeholder } from "../DesignSystem/Component";
+      import { TrackToggle } from "../DesignSystem/Component";
     </script>
 
-    <Placeholder style="width: 300px; height: 100px" />
+    <TrackToggle />
     ```
 
 Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
@@ -235,10 +235,6 @@ directory named after the screen, like so:
 │   └── TransactionSummaryStep.svelte
 └── RegisterProject.svelte             # screen
 ```
-
-When multiple screens share the same layout it should be extracted into a
-separate component. Layout components are suffixed with "Layout":
-`DesignSystem/Components/ModalLayout.svelt`.
 
 Finally, our file and directory naming rules are as follows:
 

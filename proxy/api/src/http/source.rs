@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use nonempty::NonEmpty;
 use radicle_surf::vcs::git;
 
 use crate::{context, http, identity};
@@ -82,8 +83,7 @@ fn revisions_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
-        .and(http::with_context(ctx.clone()))
-        .and(http::with_owner_guard(ctx))
+        .and(http::with_context(ctx))
         .and(path::param::<coco::Urn>())
         .and_then(handler::revisions)
 }
@@ -241,19 +241,12 @@ mod handler {
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
         ctx: context::Context,
-        owner: coco::user::User,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let peers = ctx
             .state
-            .tracked(project_urn.clone())
+            .list_project_peers(project_urn.clone())
             .await
-            .map_err(error::Error::from)?;
-        let peer_id = ctx.state.peer_id();
-        let owner = owner
-            .to_data()
-            .build()
-            .map_err(coco::state::Error::from)
             .map_err(error::Error::from)?;
         let branch = ctx
             .state
@@ -263,11 +256,15 @@ mod handler {
         let revisions: Vec<super::Revisions> = ctx
             .state
             .with_browser(branch, |browser| {
-                // TODO(finto): downgraded verified user, which should not be needed.
-                Ok(coco::revisions(browser, peer_id, owner, peers)?
+                peers
                     .into_iter()
-                    .map(|revision| revision.into())
-                    .collect())
+                    .filter_map(coco::project::Peer::replicated)
+                    .filter_map(|peer| {
+                        coco::revisions(browser, peer)
+                            .transpose()
+                            .map(|revision| revision.map(super::Revisions::from))
+                    })
+                    .collect()
             })
             .await
             .map_err(error::Error::from)?;
@@ -383,7 +380,7 @@ struct Revisions {
     /// The [`identity::Identity`] that owns these revisions.
     identity: identity::Identity,
     /// The branches for this project.
-    branches: Vec<coco::Branch>,
+    branches: NonEmpty<coco::Branch>,
     /// The branches for this project.
     tags: Vec<coco::Tag>,
 }
@@ -403,6 +400,7 @@ impl<S> From<coco::Revisions<coco::PeerId, coco::MetaUser<S>>> for Revisions {
 mod test {
     use std::{convert::TryFrom, env};
 
+    use nonempty::NonEmpty;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
@@ -738,13 +736,10 @@ mod test {
             &owner,
             "git-platinum",
             "fixture data",
-            "master",
+            coco::control::default_branch(),
         )
         .await?;
         let urn = platinum_project.urn();
-
-        let (remote, fintohaps) =
-            coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
 
         let res = request()
             .method("GET")
@@ -756,38 +751,21 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
-                json!([
-                    super::Revisions {
-                        identity: (peer_id, owner).into(),
-                        branches: vec![
-                            coco::Branch::from("dev".to_string()),
-                            coco::Branch::from("master".to_string())
-                        ],
-                        tags: vec![
-                            coco::Tag::from("v0.1.0".to_string()),
-                            coco::Tag::from("v0.2.0".to_string()),
-                            coco::Tag::from("v0.3.0".to_string()),
-                            coco::Tag::from("v0.4.0".to_string()),
-                            coco::Tag::from("v0.5.0".to_string())
-                        ]
+                json!([super::Revisions {
+                    identity: (peer_id, owner).into(),
+                    branches: NonEmpty {
+                        head: coco::Branch::from("dev".to_string()),
+                        tail: vec![coco::Branch::from("master".to_string())]
                     },
-                    super::Revisions {
-                        identity: (remote, fintohaps).into(),
-                        branches: vec![coco::Branch::from("master".to_string())],
-                        tags: vec![]
-                    },
-                ])
+                    tags: vec![
+                        coco::Tag::from("v0.1.0".to_string()),
+                        coco::Tag::from("v0.2.0".to_string()),
+                        coco::Tag::from("v0.3.0".to_string()),
+                        coco::Tag::from("v0.4.0".to_string()),
+                        coco::Tag::from("v0.5.0".to_string())
+                    ]
+                },])
             )
-        });
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/branches/{}?peerId={}", urn, remote))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!([coco::Branch::from("master".to_string())]));
         });
 
         Ok(())
@@ -939,7 +917,7 @@ mod test {
             &owner,
             "git-platinum",
             "fixture data",
-            "master",
+            coco::control::default_branch(),
         )
         .await?;
         Ok(platinum_project.urn())

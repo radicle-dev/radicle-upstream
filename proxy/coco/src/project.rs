@@ -1,5 +1,6 @@
 //! Project creation data and functions.
 
+use librad::git::ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
 use crate::config;
@@ -12,8 +13,15 @@ pub use create::{Create, Repo};
 pub mod checkout;
 pub use checkout::Checkout;
 
+pub mod peer;
+pub use peer::Peer;
+
 /// Set the upstream of the default branch to the rad remote branch.
-fn set_rad_upstream(repo: &git2::Repository, default_branch: &str) -> Result<(), git2::Error> {
-    let mut branch = repo.find_branch(default_branch, git2::BranchType::Local)?;
-    branch.set_upstream(Some(&format!("{}/{}", config::RAD_REMOTE, default_branch)))
+fn set_rad_upstream(repo: &git2::Repository, default_branch: &OneLevel) -> Result<(), git2::Error> {
+    let mut branch = repo.find_branch(default_branch.as_str(), git2::BranchType::Local)?;
+    branch.set_upstream(Some(&format!(
+        "{}/{}",
+        config::RAD_REMOTE,
+        default_branch.as_str()
+    )))
 }

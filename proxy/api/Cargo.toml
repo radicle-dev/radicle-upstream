@@ -16,6 +16,7 @@ anyhow = "1.0"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
 log = "0.4"
+nonempty = { version = "0.6", features = [ "serialize" ] }
 percent-encoding = "2.1"
 pico-args = "0.3"
 pretty_env_logger = "0.3"

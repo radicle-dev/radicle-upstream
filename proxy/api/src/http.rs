@@ -2,7 +2,7 @@
 
 use serde::Deserialize;
 use tokio::sync::mpsc;
-use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use crate::{context, notification::Subscriptions};
 
@@ -37,14 +37,21 @@ pub fn api(
     ctx: context::Context,
     subscriptions: Subscriptions,
     selfdestruct: mpsc::Sender<()>,
-    enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    let test = ctx.test;
+
     let avatar_filter = path("avatars").and(avatar::get_filter());
-    let control_filter = path("control").and(control::filters(
-        ctx.clone(),
-        selfdestruct,
-        enable_fixture_creation,
-    ));
+    let control_filter = path("control")
+        .map(move || test)
+        .and_then(|enable| async move {
+            if enable {
+                Ok(())
+            } else {
+                Err(reject::not_found())
+            }
+        })
+        .untuple_one()
+        .and(control::filters(ctx.clone(), selfdestruct));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter =
         path("notifications").and(notification::filters(ctx.clone(), subscriptions));

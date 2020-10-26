@@ -1,4 +1,4 @@
-use std::{path::PathBuf, time::Duration};
+use std::{convert::TryFrom, path::PathBuf, time::Duration};
 
 use futures::{future, StreamExt as _};
 use tokio::{
@@ -8,6 +8,7 @@ use tokio::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
+    git::ext::{OneLevel, RefLike},
     keys::SecretKey,
     net::protocol::ProtocolEvent,
     peer::PeerId,
@@ -109,7 +110,12 @@ pub async fn build_peer_with_seeds(
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let paths = Paths::from_root(tmp_dir.path())?;
-    let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
+    let conf = config::configure(
+        paths,
+        key,
+        *config::LOCALHOST_ANY,
+        config::static_seed_discovery(seeds),
+    );
 
     let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
@@ -134,7 +140,7 @@ pub fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
             name: "radicalise".to_string(),
         },
         description: "the people".to_string(),
-        default_branch: "power".to_string(),
+        default_branch: OneLevel::from(RefLike::try_from("power").unwrap()),
     }
 }
 
@@ -146,6 +152,6 @@ pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
             name: "just".to_string(),
         },
         description: "do".to_string(),
-        default_branch: "it".to_string(),
+        default_branch: OneLevel::from(RefLike::try_from("it").unwrap()),
     }
 }

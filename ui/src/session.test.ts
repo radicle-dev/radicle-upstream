@@ -30,30 +30,21 @@ describe("appearance settings", () => {
   });
 });
 
-describe("seed settings", () => {
-  it("parses seed textarea input", () => {
-    const desiredResult = ["seed.radicle.xyz", "192.134.54.13", "192.168.1.0"];
-
-    const newlineSeparated =
-      "seed.radicle.xyz\n192.134.54.13   \n\n192.168.1.0\n";
-    const commaSeparated = "seed.radicle.xyz, 192.134.54.13,192.168.1.0,,,,,,";
-    const carriageReturnSeparated =
-      "seed.radicle.xyz\r\n192.134.54.13  \r \r\n192.168.1.0\n";
-
-    expect(session.parseSeedsInput(newlineSeparated)).toEqual(desiredResult);
-    expect(session.parseSeedsInput(commaSeparated)).toEqual(desiredResult);
-    expect(session.parseSeedsInput(carriageReturnSeparated)).toEqual(
-      desiredResult
-    );
-    expect(session.parseSeedsInput("")).toEqual([]);
-  });
-
+describe("coco settings", () => {
   it("sends a request to update CoCo settings when updateCoCo is called", () => {
-    session.updateCoCo({ seeds: ["new_seed.radicle.xyz"] });
+    session.updateCoCo({
+      seeds: [
+        "hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345",
+      ],
+    });
 
     expect(api.set).toHaveBeenCalledWith("session/settings", {
       ...defaultSettings,
-      coco: { seeds: ["new_seed.radicle.xyz"] },
+      coco: {
+        seeds: [
+          "hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345",
+        ],
+      },
     });
   });
 });

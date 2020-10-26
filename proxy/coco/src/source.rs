@@ -8,12 +8,16 @@ use syntect::{
     easy::HighlightLines, highlighting::ThemeSet, parsing::SyntaxSet, util::LinesWithEndings,
 };
 
+use librad::peer::PeerId;
 use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchType, Browser, Rev, Stats},
 };
 
-use crate::oid::Oid;
+use crate::{
+    oid::Oid,
+    project::{peer, Peer},
+};
 
 /// An error occurred when interacting with [`radicle_surf`] for browsing source code.
 #[derive(Debug, thiserror::Error)]
@@ -423,15 +427,14 @@ where
 }
 
 /// Bundled response to retrieve both [`Branch`]es and [`Tag`]s for a user's repo.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Revisions<P, U> {
     /// The peer identifier for the user.
     pub peer_id: P,
     /// The user who owns these revisions.
     pub user: U,
     /// List of [`git::Branch`].
-    pub branches: Vec<Branch>,
+    pub branches: NonEmpty<Branch>,
     /// List of [`git::Tag`].
     pub tags: Vec<Tag>,
 }
@@ -789,52 +792,87 @@ where
     })
 }
 
-/// Get all [`Revisions`] for a given project.
+/// Provide the [`Revisions`] for the given `peer_id`, looking for the branches as
+/// [`BranchType::Remote`].
 ///
-/// # Parameters
-///
-/// * `peer_id` - the identifier of this peer
-/// * `owner` - the owner of this peer, i.e. the current user
-/// * `peers` - an iterator of a peer and the default self it used for this project
+/// If there are no branches then this returns `None`.
 ///
 /// # Errors
 ///
-///   * [`Error::Git`]
-pub fn revisions<P, U>(
+///   * If we cannot get the branches from the `Browser`
+pub fn remote_revision<P, U>(
     browser: &Browser,
     peer_id: P,
-    owner: U,
-    peers: Vec<(P, U)>,
-) -> Result<NonEmpty<Revisions<P, U>>, Error>
+    user: U,
+) -> Result<Option<Revisions<P, U>>, Error>
 where
     P: Clone + ToString,
 {
-    let mut user_revisions = vec![];
-
-    let local_branches = branches(browser, Some(BranchType::Local))?;
-    if !local_branches.is_empty() {
-        user_revisions.push(Revisions {
-            peer_id,
-            user: owner,
-            branches: local_branches,
-            tags: tags(browser)?,
-        })
-    }
-
-    for (peer_id, user) in peers {
-        let remote_branches = branches(browser, Some(into_branch_type(Some(peer_id.clone()))))?;
-
-        user_revisions.push(Revisions {
+    let remote_branches = branches(browser, Some(into_branch_type(Some(peer_id.clone()))))?;
+    Ok(
+        NonEmpty::from_vec(remote_branches).map(|branches| Revisions {
             peer_id,
             user,
-            branches: remote_branches,
+            branches,
             // TODO(rudolfs): implement remote peer tags once we decide how
             // https://radicle.community/t/git-tags/214
             tags: vec![],
-        });
-    }
+        }),
+    )
+}
 
-    NonEmpty::from_vec(user_revisions).ok_or(Error::EmptyRevisions)
+/// Provide the [`Revisions`] for the given `peer_id`, looking for the branches as
+/// [`BranchType::Local`].
+///
+/// If there are no branches then this returns `None`.
+///
+/// # Errors
+///
+///   * If we cannot get the branches from the `Browser`
+pub fn local_revisions<P, U>(
+    browser: &Browser,
+    peer_id: P,
+    user: U,
+) -> Result<Option<Revisions<P, U>>, Error>
+where
+    P: Clone + ToString,
+{
+    let local_branches = branches(browser, Some(BranchType::Local))?;
+    let tags = tags(browser)?;
+    Ok(
+        NonEmpty::from_vec(local_branches).map(|branches| Revisions {
+            peer_id,
+            user,
+            branches,
+            tags,
+        }),
+    )
+}
+
+/// Provide the [`Revisions`] of a replicated peer.
+///
+/// Since a replicated peer is one that we have locally, this means that they have a user profile
+/// to build the revision with.
+///
+/// However, if the [`Peer`] does not have any related branches this function will return `None`.
+///
+/// # Errors
+///
+///   * If we cannot get the branches from the `Browser`
+pub fn revisions<U>(
+    browser: &Browser,
+    peer: Peer<peer::Replicated<U>>,
+) -> Result<Option<Revisions<PeerId, U>>, Error> {
+    match peer {
+        Peer::Local {
+            peer_id,
+            status: peer::Replicated { user, .. },
+        } => local_revisions(browser, peer_id, user),
+        Peer::Remote {
+            peer_id,
+            status: peer::Replicated { user, .. },
+        } => remote_revision(browser, peer_id, user),
+    }
 }
 
 /// Turn an `Option<P>` into a [`BranchType`]. If the `P` is present then this is
@@ -852,7 +890,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::convert::TryFrom;
+    use std::convert::TryFrom as _;
 
     use librad::keys::SecretKey;
 
@@ -868,9 +906,14 @@ mod tests {
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer);
         let owner = state.init_owner("cloudhead").await?;
-        let platinum_project =
-            control::replicate_platinum(&state, &owner, "git-platinum", "fixture data", "master")
-                .await?;
+        let platinum_project = control::replicate_platinum(
+            &state,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            control::default_branch(),
+        )
+        .await?;
         let urn = platinum_project.urn();
         let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 

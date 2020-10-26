@@ -6,14 +6,13 @@
   import * as remote from "./src/remote.ts";
   import * as hotkeys from "./src/hotkeys.ts";
 
-  import { clear, fetch, session as store } from "./src/session.ts";
+  import { fetch, session as store } from "./src/session.ts";
 
   import {
     NotificationFaucet,
     Remote,
     ModalOverlay,
   } from "./DesignSystem/Component";
-  import { Button } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
@@ -21,6 +20,7 @@
   import TransactionCenter from "./App/TransactionCenter.svelte";
 
   import Blank from "./Screen/Blank.svelte";
+  import Bsod from "./Screen/Bsod.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
@@ -87,10 +87,6 @@
     justify-content: center;
     align-items: center;
   }
-
-  h2 {
-    margin-bottom: 2rem;
-  }
 </style>
 
 <Hotkeys />
@@ -104,7 +100,6 @@
   <Router {routes} />
 
   <div slot="error" class="error">
-    <h2>We're having trouble logging you into radicle. 😪</h2>
-    <Button on:click={clear}>Clear Session</Button>
+    <Bsod />
   </div>
 </Remote>

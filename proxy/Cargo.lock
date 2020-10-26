@@ -78,6 +78,7 @@ dependencies = [
  "http",
  "kv",
  "log",
+ "nonempty 0.6.0",
  "percent-encoding 2.1.0",
  "pico-args",
  "pretty_assertions",
@@ -358,7 +359,7 @@ dependencies = [
  "lazy_static",
  "librad",
  "log",
- "nonempty",
+ "nonempty 0.6.0",
  "pretty_assertions",
  "pretty_env_logger",
  "radicle-git-helpers",
@@ -1224,7 +1225,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=dc23136019e5885e7599441c90c7e8ed5747253b#dc23136019e5885e7599441c90c7e8ed5747253b"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=85c2fadd91255a187fab6763504198c7f4dbb36d#85c2fadd91255a187fab6763504198c7f4dbb36d"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1248,7 +1249,7 @@ dependencies = [
  "multibase",
  "multihash",
  "nom",
- "nonempty",
+ "nonempty 0.5.0",
  "num_cpus",
  "percent-encoding 2.1.0",
  "quinn",
@@ -1527,6 +1528,15 @@ name = "nonempty"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ff7ac1e5ea23db6d61ad103e91864675049644bf47c35912336352fa4e9c109"
+
+[[package]]
+name = "nonempty"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fa586da3e43cc7df44aae0e21ed2e743218b876de3f38035683d30bd8a3828e"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "nonzero_ext"
@@ -1877,7 +1887,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=dc23136019e5885e7599441c90c7e8ed5747253b#dc23136019e5885e7599441c90c7e8ed5747253b"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=85c2fadd91255a187fab6763504198c7f4dbb36d#85c2fadd91255a187fab6763504198c7f4dbb36d"
 dependencies = [
  "anyhow",
  "git2",
@@ -1916,7 +1926,7 @@ dependencies = [
  "either",
  "git2",
  "lazy_static",
- "nonempty",
+ "nonempty 0.5.0",
  "regex",
  "serde",
  "thiserror",

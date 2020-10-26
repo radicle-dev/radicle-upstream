@@ -17,9 +17,8 @@ import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
-import ModalLayout from "./ModalLayout.svelte";
+import Fullscreen from "./Fullscreen.svelte";
 import Overlay from "./Overlay.svelte";
-import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
@@ -32,14 +31,14 @@ import ShareableIdentifier from "./ShareableIdentifier.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
-import TxButton from "./TxButton.svelte";
+import StyledCopyable from "./StyledCopyable.svelte";
 import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import Timeline from "./Timeline.svelte";
+import TxButton from "./TxButton.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
-import Urn from "./Urn.svelte";
 import QR from "./QR.svelte";
 
 export {
@@ -62,9 +61,8 @@ export {
   NavigationButtons,
   Notification,
   NotificationFaucet,
-  ModalLayout,
+  Fullscreen,
   Overlay,
-  Placeholder,
   ProjectCard,
   ProjectList,
   RadicleLogo,
@@ -79,11 +77,11 @@ export {
   Sidebar,
   SidebarLayout,
   Spinner,
+  StyledCopyable,
   SupportButton,
   Timeline,
   Tooltip,
   Topbar,
   TrackToggle,
-  Urn,
   QR,
 };
