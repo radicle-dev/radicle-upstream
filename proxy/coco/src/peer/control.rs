@@ -15,17 +15,24 @@ use super::run_state::Status;
 #[allow(clippy::pub_enum_variant_names)]
 #[derive(Debug)]
 pub enum Request {
-    /// Request the current status.
+    /// Request the current peer status.
     CurrentStatus(oneshot::Sender<Status>),
-    /// Request a project request.
-    GetProjectRequest(
+
+    /// Cancel an ongoing project search.
+    CancelSearch(
+        RadUrn,
+        Instant,
+        oneshot::Sender<Result<(), waiting_room::Error>>,
+    ),
+    /// Get a project search.
+    GetSearch(
         RadUrn,
         oneshot::Sender<Option<request::SomeRequest<Instant>>>,
     ),
-    /// Request the current project requests.
-    GetProjectRequests(oneshot::Sender<Vec<request::SomeRequest<Instant>>>),
-    /// Request a urn to be fetched from the network.
-    Urn(
+    /// List all project searches.
+    ListSearches(oneshot::Sender<Vec<request::SomeRequest<Instant>>>),
+    /// Initiate a search for a project on the network.
+    StartSearch(
         RadUrn,
         Instant,
         oneshot::Sender<waiting_room::Created<Instant>>,
@@ -37,18 +44,24 @@ pub enum Request {
 pub enum Response {
     /// Response to a status request.
     CurrentStatus(oneshot::Sender<Status>, Status),
-    /// Response to get project request request.
-    GetProjectRequest(
+
+    /// Response to a cancel project search request.
+    CancelSearch(
+        oneshot::Sender<Result<(), waiting_room::Error>>,
+        Result<(), waiting_room::Error>,
+    ),
+    /// Response to get project search request.
+    GetSearch(
         oneshot::Sender<Option<request::SomeRequest<Instant>>>,
         Option<request::SomeRequest<Instant>>,
     ),
-    /// Response to list project requests request.
-    GetProjectRequests(
+    /// Response to list project searches request.
+    ListSearches(
         oneshot::Sender<Vec<request::SomeRequest<Instant>>>,
         Vec<request::SomeRequest<Instant>>,
     ),
-    /// Response to a urn request.
-    Urn(
+    /// Response to a start project search request..
+    StartSearch(
         oneshot::Sender<waiting_room::Created<Instant>>,
         waiting_room::Created<Instant>,
     ),
@@ -80,7 +93,27 @@ impl Control {
         receiver.await.expect("receiver is gone")
     }
 
-    /// Initiate a new request to fetch a project request.
+    /// Cancel an ongoing search for a project.
+    ///
+    /// # Errors
+    ///
+    /// * if the waiting room returns an error
+    pub async fn cancel_project_request(
+        &mut self,
+        urn: &RadUrn,
+        timestamp: Instant,
+    ) -> Result<(), waiting_room::Error> {
+        let (sender, receiver) = oneshot::channel::<Result<(), waiting_room::Error>>();
+
+        self.sender
+            .send(Request::CancelSearch(urn.clone(), timestamp, sender))
+            .await
+            .expect("peer is gone");
+
+        receiver.await.expect("receiver is gone")
+    }
+
+    /// Initiate a new request to fetch a project from the network.
     pub async fn get_project_request(
         &mut self,
         urn: &RadUrn,
@@ -88,7 +121,7 @@ impl Control {
         let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<Instant>>>();
 
         self.sender
-            .send(Request::GetProjectRequest(urn.clone(), sender))
+            .send(Request::GetSearch(urn.clone(), sender))
             .await
             .expect("peer is gone");
 
@@ -100,7 +133,7 @@ impl Control {
         let (sender, receiver) = oneshot::channel::<Vec<request::SomeRequest<Instant>>>();
 
         self.sender
-            .send(Request::GetProjectRequests(sender))
+            .send(Request::ListSearches(sender))
             .await
             .expect("peer is gone");
 
@@ -108,15 +141,15 @@ impl Control {
     }
 
     /// Initiate a new request for the `urn`.
-    pub async fn request_urn(
+    pub async fn request_project(
         &mut self,
         urn: &RadUrn,
-        time: Instant,
+        timestamp: Instant,
     ) -> request::SomeRequest<Instant> {
         let (sender, receiver) = oneshot::channel::<waiting_room::Created<Instant>>();
 
         self.sender
-            .send(Request::Urn(urn.clone(), time, sender))
+            .send(Request::StartSearch(urn.clone(), timestamp, sender))
             .await
             .expect("peer is gone");
 
