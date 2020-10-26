@@ -1,7 +1,8 @@
-<script lang="ts">
+<script lang="typescript">
   import Router from "svelte-spa-router";
 
   import * as path from "../src/path";
+  import { fetchUser, user as store } from "../src/userProfile";
 
   import {
     Header,
@@ -10,17 +11,16 @@
     SidebarLayout,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
-  import { fetch, identity as store } from "../src/identity";
 
   import Projects from "./UserProfile/Projects.svelte";
   import NotFound from "./NotFound.svelte";
+
   export let params: { urn: string };
 
   const screenRoutes = {
     "/user/:urn/projects": Projects,
     "*": NotFound,
   };
-
   const topbarMenuItems = [
     {
       icon: Icon.ChevronLeftRight,
@@ -30,7 +30,7 @@
     },
   ];
 
-  $: fetch({ urn: params.urn });
+  fetchUser(params.urn);
 </script>
 
 <SidebarLayout>

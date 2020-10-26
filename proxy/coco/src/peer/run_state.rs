@@ -185,7 +185,7 @@ pub enum RequestInput {
     Requested(
         RadUrn,
         Instant,
-        Option<oneshot::Sender<SomeRequest<Instant>>>,
+        Option<oneshot::Sender<waiting_room::Created<Instant>>>,
     ),
     /// [`WaitingRoom`] query interval.
     Tick,
@@ -626,16 +626,7 @@ impl RunState {
                 }
             },
             (_, RequestInput::Requested(urn, time, maybe_sender)) => {
-                let maybe_request = self.waiting_room.request(&urn, time);
-                let request = match maybe_request {
-                    Some(req) => req,
-                    None => self
-                        .waiting_room
-                        .get(&urn)
-                        .expect("request should be present")
-                        .clone(),
-                };
-
+                let request = self.waiting_room.request(&urn, time);
                 if let Some(sender) = maybe_sender {
                     vec![Command::Control(ControlCommand::Respond(
                         control::Response::Urn(sender, request),
