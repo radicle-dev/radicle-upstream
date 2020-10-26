@@ -36,7 +36,7 @@
 
   .left {
     display: flex;
-    min-width: 0;
+    min-width: 35rem;
     margin-right: 1.5rem;
   }
 
