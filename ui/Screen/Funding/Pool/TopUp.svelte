@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
@@ -10,10 +11,12 @@
   import { ValidationStatus } from "../../../src/validation";
 
   import { TxButton } from "../../../DesignSystem/Component";
-  import { Icon, Input } from "../../../DesignSystem/Primitive";
+  import { Button, Icon, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
   if ($store === null) pop();
+
+  const dispatch = createEventDispatcher();
 
   let validatingAmount = false;
   let amount: number;
@@ -31,8 +34,12 @@
 
   async function onConfirmed(): Promise<void> {
     await get(store).topUp(amount);
-    pop();
+    dispatch("hide");
     resolve();
+  }
+
+  async function onCancel(): Promise<void> {
+    dispatch("hide");
   }
 </script>
 
@@ -46,6 +53,7 @@
     background: var(--color-background);
     border-radius: 0.5rem;
   }
+
   header {
     display: flex;
     flex-direction: column;
@@ -58,32 +66,57 @@
     border-radius: 0.25rem;
   }
   .icon {
-    height: 2.5rem;
-    width: 2.5rem;
-    border-radius: 1.25rem;
-    background-color: var(--color-primary-level-1);
+    height: 56px;
+    width: 56px;
+    border-radius: 50%;
+    background-color: var(--color-primary-level-5);
+    border: 2px solid #5555ff;
     display: flex;
     justify-content: center;
     align-items: center;
     margin-bottom: 1rem;
   }
 
-  .submit {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 1.5rem;
-  }
-
   .from-to {
-    display: grid;
-    grid-template-columns: 13rem 1.5rem 13rem;
-    grid-column-gap: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 1rem;
   }
 
-  .from {
+  .sub-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    margin-top: 1rem;
+  }
+
+  .sub-section p {
+    color: var(--color-foreground-level-6);
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    border: 1px solid var(--color-foreground-level-3);
+    box-sizing: border-box;
+    border-radius: 4px;
+
+    padding: 10px;
+  }
+
+  .subheading {
+    color: var(--color-foreground-level-6);
+    padding: 0.5rem;
+  }
+
+  .submit {
     display: flex;
     justify-content: flex-end;
+    margin-top: 2rem;
   }
 </style>
 
@@ -91,28 +124,52 @@
   <div data-cy="preparation-step">
     <header>
       <div class="icon">
-        <Icon.ArrowUp style="fill: var(--color-primary)" />
+        <Icon.ArrowDown style="fill: #5555FF" />
       </div>
-      <h2>Top up your pool 😉</h2>
+      <h2>Top up</h2>
+
+      <div class="from-to">
+        <p class="typo-text-bold subheading">Your external wallet</p>
+        <p class="typo-text-bold subheading">-&gt;</p>
+        <p class="typo-text-bold subheading">Outgoing support</p>
+      </div>
     </header>
-    <p
-      class="typo-text-bold"
-      style="color: var(--color-foreground-level-6); padding: 0.5rem;">
-      Amount
-    </p>
-    <Input.Text
-      dataCy="modal-amount-input"
-      placeholder="Enter the amount"
-      bind:value={amount}
-      showLeftItem
-      autofocus
-      validation={$amountValidation}>
-      <div slot="left" style="position: absolute; top: 9px; left: 10px;">
-        <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
+
+    <div class="sub-section">
+      <p class="typo-text-bold subheading">Amount</p>
+      <Input.Text
+        dataCy="modal-amount-input"
+        placeholder="Enter the amount"
+        bind:value={amount}
+        showLeftItem
+        autofocus
+        validation={$amountValidation}>
+        <div slot="left" style="position: absolute; top: 9px; left: 10px;">
+          <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
+        </div>
+      </Input.Text>
+    </div>
+
+    <div class="sub-section">
+      <p class="typo-text-bold subheading">From</p>
+      <div class="row">
+        <p>Your external wallet</p>
+        <p>1327.9430 DAI 0×32Be...2D88</p>
       </div>
-    </Input.Text>
+    </div>
+
+    <div class="sub-section">
+      <p class="typo-text-bold subheading">To</p>
+      <div class="row">
+        <p>Outgoing support balance</p>
+      </div>
+    </div>
 
     <div class="submit">
+      <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>
+        Cancel
+      </Button>
+
       <TxButton
         title="Confirm"
         disabled={disableConfirmation}
