@@ -1,5 +1,4 @@
 <script>
-  import { setContext } from "svelte";
   import * as modal from "../../src/modal";
 
   export let modalRoutes = {};
@@ -8,12 +7,6 @@
   const clickOutside = () => {
     modal.hide();
   };
-
-  $: if ($store.contexts) {
-    for (const context of $store.contexts) {
-      setContext(context.name, context.data);
-    }
-  }
 </script>
 
 <style>

@@ -1,10 +1,12 @@
-import { get, writable } from "svelte/store";
+import { derived, get, writable, Readable } from "svelte/store";
 
 import * as api from "./api";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 import * as event from "./event";
+import * as identity from "./identity";
 import * as remote from "./remote";
 import { getLocalState, LocalState } from "./source";
+import * as urn from "./urn";
 import * as validation from "./validation";
 
 // TYPES.
@@ -33,10 +35,60 @@ export interface Existing {
 
 type Repo = New | Existing;
 
+export enum Role {
+  Contributor = "contributor",
+  Maintainer = "maintainer",
+  Tracker = "tracker",
+}
+
+export enum ReplicationStatusType {
+  NotReplicated = "notReplicated",
+  Replicated = "replicated",
+}
+
+export interface NotReplicated {
+  type: ReplicationStatusType.NotReplicated;
+}
+
+export interface Replicated {
+  type: ReplicationStatusType.Replicated;
+  role: Role;
+  user: identity.Identity;
+}
+
+export type ReplicationStatus = NotReplicated | Replicated;
+
+export enum PeerType {
+  Local = "local",
+  Remote = "remote",
+}
+
+export interface Local {
+  type: PeerType.Local;
+  status: ReplicationStatus;
+}
+
+export interface Remote {
+  type: PeerType.Remote;
+  status: ReplicationStatus;
+}
+
+export type Peer = Local | Remote;
+export interface User {
+  type: PeerType;
+  identity: identity.Identity;
+  role: Role;
+}
+
 export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
+}
+
+export interface User {
+  identity: identity.Identity;
+  role: Role;
 }
 
 export interface Project {
@@ -51,6 +103,29 @@ type Projects = Project[];
 // STATE
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
+
+const peersStore = remote.createStore<Peer[]>();
+export const peerSelection: Readable<remote.Data<{
+  default: User;
+  peers: User[];
+}>> = derived(peersStore, store => {
+  if (store.status === remote.Status.Success) {
+    const peers = store.data
+      .filter(peer => peer.status.type === ReplicationStatusType.Replicated)
+      .map(peer => {
+        const { role, user } = peer.status as Replicated;
+        return { type: peer.type, identity: user, role };
+      });
+
+    // TODO(xla): Apply proper heuristic to set default.
+    return {
+      status: remote.Status.Success,
+      data: { default: peers[0], peers },
+    };
+  }
+
+  return store;
+});
 
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;
@@ -70,6 +145,7 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchPeers = "FETCH_PEERS",
   FetchTracked = "FETCH_TRACKED",
   FetchLocalState = "FETCH_LOCAL_STATE",
 }
@@ -93,6 +169,11 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
+interface FetchPeers extends event.Event<Kind> {
+  kind: Kind.FetchPeers;
+  urn: urn.Urn;
+}
+
 interface FetchTracked extends event.Event<Kind> {
   kind: Kind.FetchTracked;
 }
@@ -107,6 +188,7 @@ type Msg =
   | Create
   | Fetch
   | FetchList
+  | FetchPeers
   | FetchLocalState
   | FetchTracked;
 
@@ -133,9 +215,13 @@ const update = (msg: Msg): void => {
       break;
     case Kind.Fetch:
       projectStore.loading();
+      peersStore.reset();
       api
         .get<Project>(`projects/${msg.id}`)
-        .then(projectStore.success)
+        .then((project: Project) => {
+          projectStore.success(project);
+          fetchPeers({ urn: msg.id });
+        })
         .catch(projectStore.error);
 
       break;
@@ -147,6 +233,18 @@ const update = (msg: Msg): void => {
         .get<Projects>("projects/contributed")
         .then(projectsStore.success)
         .catch(projectsStore.error);
+
+      break;
+
+    case Kind.FetchPeers:
+      peersStore.loading();
+
+      api
+        .get<Peer[]>(`projects/${msg.urn}/peers`)
+        .then(peers => {
+          peersStore.success(peers);
+        })
+        .catch(peersStore.error);
 
       break;
 
@@ -189,6 +287,7 @@ export const checkout = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchPeers = event.create<Kind, Msg>(Kind.FetchPeers, update);
 export const fetchLocalState = event.create<Kind, Msg>(
   Kind.FetchLocalState,
   update

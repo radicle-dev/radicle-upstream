@@ -4,7 +4,7 @@
   import Badge from "./Badge.svelte";
   import { BadgeType } from "../../src/badge.ts";
 
-  export let remote = null;
+  export let peer = null;
   export let projectName = null;
 </script>
 
@@ -12,21 +12,21 @@
   <div slot="left" style="max-width: 22em">
     <div style="display: flex;">
       <Avatar
-        avatarFallback={remote.avatarFallback}
+        avatarFallback={peer.identity.avatarFallback}
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
       <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
-        {remote.handle} / {projectName}
+        {peer.identity.metadata.handle} / {projectName}
       </p>
-      {#if remote.maintainer}
+      {#if peer.role === 'maintainer'}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </div>
     <p
       class="typo-text typo-overflow-ellipsis"
       style="color: var(--color-foreground-level-5); padding-top: 0.5rem;">
-      {remote.peerID}
+      {peer.identity.peerId}
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
