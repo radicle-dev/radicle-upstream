@@ -90,7 +90,10 @@
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
-          <TrackedRemoteListItem {peer} projectName={project.metadata.name} />
+          <TrackedRemoteListItem
+            {peer}
+            projectName={project.metadata.name}
+            projectId={project.id} />
         </List>
       {/if}
     </Remote>
@@ -110,7 +113,10 @@
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1rem 0 0; padding: 0;">
-          <UntrackedRemoteListItem {peer} projectName={project.metadata.name} />
+          <UntrackedRemoteListItem
+            {peer}
+            projectName={project.metadata.name}
+            projectId={project.id} />
         </List>
       {/if}
     </Remote>

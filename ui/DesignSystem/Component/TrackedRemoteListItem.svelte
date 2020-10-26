@@ -6,10 +6,15 @@
   import TrackToggle from "./TrackToggle.svelte";
   import { BadgeType } from "../../src/badge.ts";
   import { CSSPosition } from "../../src/style";
-  import { PeerType, Role } from "../../src/project";
+  import { PeerType, removeRemote, Role } from "../../src/project";
 
   export let peer = null;
+  export let projectId = null;
   export let projectName = null;
+
+  const unfollowRemote = () => {
+    removeRemote(projectId, peer.peerId);
+  };
 </script>
 
 <Flex style="flex: 1; padding: 1.375rem 1.5rem;">
@@ -48,8 +53,7 @@
       </Tooltip>
     {:else}
       <Tooltip>
-        <!-- TODO(rudolfs): handle untrack -->
-        <TrackToggle tracking expanded />
+        <TrackToggle tracking expanded on:untrack={unfollowRemote} />
       </Tooltip>
     {/if}
   </div>

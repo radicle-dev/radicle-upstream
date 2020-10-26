@@ -305,6 +305,18 @@ const update = (msg: Msg): void => {
           console.log(e);
         });
       break;
+
+    case Kind.UntrackPeer:
+      peersStore.loading();
+      api
+        .put<null, boolean>(`projects/${msg.urn}/untrack/${msg.peerId}`, null)
+        .then(() => {
+          fetchPeers({ urn: msg.urn });
+        })
+        .catch(e => {
+          console.log(e);
+        });
+      break;
   }
 };
 
@@ -349,6 +361,15 @@ export const fetchUserList = (urn: string): Promise<Project[]> => {
 export const trackPeer = (urn: urn.Urn, peerId: identity.PeerId): void =>
   event.create<Kind, Msg>(
     Kind.TrackPeer,
+    update
+  )({
+    urn: urn,
+    peerId: peerId,
+  });
+
+export const untrackPeer = (urn: urn.Urn, peerId: identity.PeerId): void =>
+  event.create<Kind, Msg>(
+    Kind.UntrackPeer,
     update
   )({
     urn: urn,
@@ -519,6 +540,13 @@ export const addRemote = async (
 
   trackPeer(projectId, newRemote);
   return true;
+};
+
+export const removeRemote = (
+  projectId: urn.Urn,
+  remote: identity.PeerId
+): void => {
+  untrackPeer(projectId, remote);
 };
 
 // Checks if the provided user is part of the maintainer list of the project.

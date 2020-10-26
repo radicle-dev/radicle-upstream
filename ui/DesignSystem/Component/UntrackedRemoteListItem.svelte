@@ -2,14 +2,21 @@
   import { Flex } from "../../DesignSystem/Primitive";
   import TrackToggle from "./TrackToggle.svelte";
 
+  import { removeRemote } from "../../src/project";
+
   export let peer = null;
   export let projectName = null;
+  export let projectId = null;
 
   const firstSix = peer.peerId.substring(0, 7);
   const lastSix = peer.peerId.substring(
     peer.peerId.length - 7,
     peer.peerId.length
   );
+
+  const cancelRemoteTracking = () => {
+    removeRemote(projectId, peer.peerId);
+  };
 </script>
 
 <Flex style="flex: 1; padding: 1.375rem 1.5rem;">
@@ -19,6 +26,6 @@
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
-    <TrackToggle expanded tracking />
+    <TrackToggle expanded tracking on:untrack={cancelRemoteTracking} />
   </div>
 </Flex>
