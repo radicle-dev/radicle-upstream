@@ -15,7 +15,7 @@ either = "1.6"
 futures = { version = "0.3", features = [ "compat" ] }
 lazy_static = "1.4"
 log = "0.4"
-nonempty = "0.5"
+nonempty = "0.6"
 radicle-keystore = "0.1"
 serde = { version = "1.0", features = [ "derive" ] }
 serde_millis = "0.1"

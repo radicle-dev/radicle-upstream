@@ -5,7 +5,9 @@ use std::{collections::HashSet, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
-use crate::error;
+use coco::project::peer;
+
+use crate::{error, identity};
 
 /// Object encapsulating project metadata.
 #[derive(Deserialize, Serialize)]
@@ -70,6 +72,25 @@ where
             metadata: project.into(),
             stats,
         }
+    }
+}
+
+/// Codified relation in form of roles and availability of project views.
+#[derive(Serialize)]
+pub struct Peer(peer::Peer<peer::Status<identity::Identity>>);
+
+impl Deref for Peer {
+    type Target = peer::Peer<peer::Status<identity::Identity>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<S> From<peer::Peer<peer::Status<coco::MetaUser<S>>>> for Peer {
+    fn from(peer: peer::Peer<peer::Status<coco::MetaUser<S>>>) -> Self {
+        let peer_id = peer.peer_id();
+        Self(peer.map(|status| status.map(|user| (peer_id, user).into())))
     }
 }
 
@@ -243,6 +264,7 @@ pub async fn list_for_user(
             .tracked(project.urn())
             .await?
             .into_iter()
+            .filter_map(coco::project::Peer::replicated_remote)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer, _)) = tracked {
             let branch = state

@@ -2,12 +2,13 @@ use std::time::Duration;
 
 use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
+use pretty_assertions::assert_eq;
 use tokio::time::timeout;
 
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, RunConfig, SyncConfig};
+use coco::{config, project::peer, seed::Seed, RunConfig, SyncConfig};
 
 #[macro_use]
 mod common;
@@ -54,6 +55,29 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let want = vec![project_urn];
 
     assert_eq!(have, want);
+
+    {
+        let another_peer = librad::peer::PeerId::from(librad::keys::SecretKey::new());
+        bob_state.track(project.urn(), another_peer).await?;
+        let mut have = bob_state
+            .tracked(project.urn())
+            .await?
+            .into_iter()
+            .map(|peer| peer.map(|status| status.map(|user| user.name().to_string())))
+            .collect::<Vec<_>>();
+        have.sort_by(|p1, p2| p1.status().cmp(p2.status()));
+        let want: Vec<_> = vec![
+            coco::project::Peer::Remote {
+                peer_id: another_peer,
+                status: peer::Status::NotReplicated,
+            },
+            coco::project::Peer::Remote {
+                peer_id: alice_state.peer_id(),
+                status: peer::Status::replicated(peer::Role::Maintainer, alice.name().to_string()),
+            },
+        ];
+        assert_eq!(have, want);
+    }
 
     Ok(())
 }

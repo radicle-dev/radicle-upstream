@@ -13,6 +13,9 @@ pub use create::{Create, Repo};
 pub mod checkout;
 pub use checkout::Checkout;
 
+pub mod peer;
+pub use peer::Peer;
+
 /// Set the upstream of the default branch to the rad remote branch.
 fn set_rad_upstream(repo: &git2::Repository, default_branch: &OneLevel) -> Result<(), git2::Error> {
     let mut branch = repo.find_branch(default_branch.as_str(), git2::BranchType::Local)?;

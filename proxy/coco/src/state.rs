@@ -28,7 +28,7 @@ use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
 
 use crate::{
-    project,
+    project::{self, peer},
     seed::Seed,
     signer, source,
     user::{verify as verify_user, User},
@@ -590,16 +590,76 @@ impl State {
     pub async fn tracked(
         &self,
         urn: RadUrn,
-    ) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, Error> {
+    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error> {
+        let project = self.get_project(urn.clone(), None).await?;
         Ok(self
             .api
             .with_storage(move |storage| {
+                let mut peers = vec![];
                 let repo = storage.open_repo(urn)?;
-                repo.tracked()?
-                    .map(move |peer_id| repo.get_rad_self_of(peer_id).map(|user| (peer_id, user)))
-                    .collect::<Result<Vec<_>, _>>()
+                for peer_id in repo.tracked()? {
+                    let status = if storage
+                        .has_ref(&NamespacedRef::rad_self(repo.urn.id.clone(), peer_id))?
+                    {
+                        let user = repo.get_rad_self_of(peer_id)?;
+                        if project.maintainers().contains(&user.urn()) {
+                            peer::Status::replicated(peer::Role::Maintainer, user)
+                        } else {
+                            peer::Status::replicated(peer::Role::Tracker, user)
+                        }
+                    } else {
+                        peer::Status::NotReplicated
+                    };
+                    peers.push(project::Peer::Remote { peer_id, status })
+                }
+                Ok::<_, Error>(peers)
             })
             .await??)
+    }
+
+    // TODO(xla): Account for projects not replicated but wanted.
+    /// Constructs the list of [`project::Peer`] for the given `urn`. The basis is the list of
+    /// tracking peers of the project combined with the local view.
+    ///
+    /// # Errors
+    ///
+    /// * if the project is not present in the monorepo
+    /// * if the retrieval of tracking peers fails
+    ///
+    /// # Panics
+    ///
+    /// * if the default owner can't be fetched
+    pub async fn list_project_peers(
+        &self,
+        urn: RadUrn,
+    ) -> Result<Vec<project::Peer<peer::Status<user::User<entity::Draft>>>>, Error> {
+        let project = self.get_project(urn.clone(), None).await?;
+
+        let mut peers = vec![];
+
+        let owner = self
+            .default_owner()
+            .await
+            .expect("unable to find state owner");
+        let refs = self.list_owner_project_refs(urn.clone()).await?;
+        let status = if refs.heads.is_empty() {
+            peer::Status::replicated(peer::Role::Tracker, owner)
+        } else if project.maintainers().contains(&owner.urn()) {
+            peer::Status::replicated(peer::Role::Maintainer, owner)
+        } else {
+            peer::Status::replicated(peer::Role::Contributor, owner)
+        };
+
+        peers.push(project::Peer::Local {
+            peer_id: self.peer_id(),
+            status,
+        });
+
+        let mut remotes = self.tracked(urn).await?;
+
+        peers.append(&mut remotes);
+
+        Ok(peers)
     }
 
     /// Creates a working copy for the project of the given `urn`.
@@ -678,7 +738,9 @@ impl State {
         let include = Include::from_tracked_users(
             self.paths().git_includes_dir().to_path_buf(),
             local_url,
-            tracked.into_iter().map(|(peer_id, user)| (user, peer_id)),
+            tracked
+                .into_iter()
+                .filter_map(|peer| project::Peer::replicated_remote(peer).map(|(p, u)| (u, p))),
         );
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);
