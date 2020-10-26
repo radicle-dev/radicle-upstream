@@ -478,6 +478,46 @@ export const repositoryPathValidationStore = (
   }
 };
 
+const VALID_PEER_MATCH = /^[\w\d]{54}$/;
+
+const checkPeerUniqueness = (peer: string): Promise<boolean> => {
+  console.log(get(peersStore));
+  return Promise.resolve(
+    !get(peersStore)
+      .data.map(peer => {
+        return peer.peerId;
+      })
+      .includes(peer)
+  );
+};
+
+export const peerValidation = validation.createValidationStore(
+  {
+    format: {
+      pattern: VALID_PEER_MATCH,
+      message: "This is not a valid remote",
+    },
+  },
+  [
+    {
+      promise: checkPeerUniqueness,
+      validationMessage: "This remote is already being followed",
+    },
+  ]
+);
+
+export const addRemote = async (projectId, newRemote) => {
+  // This has to be awaited contrary to what tslint suggests, because we're
+  // running async remote validations in in the background. If we remove the
+  // async then the seed input form will have to be submitted twice to take any
+  // effect.
+  await peerValidation.validate(newRemote);
+  if (get(peerValidation).status !== validation.ValidationStatus.Success)
+    return false;
+
+  trackPeer(projectId, newRemote);
+};
+
 // Checks if the provided user is part of the maintainer list of the project.
 // FIXME(xla): Urns should be properly typed.
 export const isMaintainer = (userUrn: string, project: Project): boolean => {

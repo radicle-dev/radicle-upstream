@@ -11,13 +11,18 @@
   import type { PeerId } from "../src/identity";
   import { Variant as IllustrationVariant } from "../src/illustration";
   import {
+    addRemote,
     pendingPeers,
     peerSelection,
+    peerValidation,
     project as store,
-    trackPeer,
   } from "../src/project";
 
   let newRemote: PeerId;
+
+  $: if (newRemote === "") {
+    peerValidation.reset();
+  }
 </script>
 
 <style>
@@ -35,10 +40,19 @@
     outline: none;
   }
 
-  .input {
+  .remote-entry-form {
+    flex: 1;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
+  }
+
+  .remote-entry-field {
+    display: flex;
+    justify-content: flex-start;
     margin-top: 2rem;
+    width: 100%;
   }
 </style>
 
@@ -50,18 +64,24 @@
 
     <h1>Manage remotes</h1>
 
-    <div class="input">
-      <Input.Text
-        dataCy="remote-input"
-        bind:value={newRemote}
-        placeholder="Enter a remote"
-        style="width: 100%; margin-right: .5rem;" />
-      <Button
-        variant="secondary"
-        on:click={() => trackPeer(project.id, newRemote)}>
-        Add remote
-      </Button>
-    </div>
+    <form class="remote-entry-form" on:submit|preventDefault>
+      <div class="remote-entry-field">
+        <Input.Text
+          hint="v"
+          dataCy="remote-input"
+          bind:value={newRemote}
+          placeholder="Paste a remote address here"
+          validation={$peerValidation}
+          style="width: 100%; margin-right: .5rem;" />
+        <Button
+          style="display: flex; align-self: flex-start;"
+          variant="secondary"
+          disabled={!newRemote}
+          on:click={() => addRemote(project.id, newRemote)}>
+          Add remote
+        </Button>
+      </div>
+    </form>
 
     <Remote store={peerSelection} let:data>
       {#if data.peers.length > 0}
