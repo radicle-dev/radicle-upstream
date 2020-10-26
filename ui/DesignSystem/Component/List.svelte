@@ -1,10 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { SvelteComponent } from "svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let items: SvelteComponent;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export let items: any[];
+
   export let styleHoverState: boolean = true;
 
   export let dataCy = "";
