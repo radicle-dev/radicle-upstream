@@ -125,7 +125,7 @@ impl MaybeFrom<&Input> for Event {
     }
 }
 
-/// Significant events that occur during [`Peer`] lifetime.
+/// Significant events that occur during peer’s lifetime.
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Input {
@@ -378,7 +378,7 @@ impl RunState {
         cmds
     }
 
-    /// Handle [`AnnunceInput`]s.
+    /// Handle [`AnnounceInput`]s.
     fn handle_announce(&mut self, input: AnnounceInput) -> Vec<Command> {
         match (&self.status, input) {
             // Announce new updates while the peer is online.
@@ -442,7 +442,7 @@ impl RunState {
         vec![]
     }
 
-    /// Handle [`ProtolEvent`]s.
+    /// Handle [`ProtocolEvent`]s.
     #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
         match (&self.status, event) {
@@ -639,7 +639,7 @@ impl RunState {
         }
     }
 
-    /// Handle [`Timeout`]s.
+    /// Handle [`TimeoutInput`]s.
     fn handle_timeout(&mut self, input: TimeoutInput) -> Vec<Command> {
         match (&self.status, input) {
             // Go online if we exceed the sync period.
