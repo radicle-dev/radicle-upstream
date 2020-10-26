@@ -4,6 +4,7 @@
   import { Button, Icon, Input } from "../../../Primitive";
   import { Remote, TxButton } from "../../../Component";
 
+  import * as modal from "../../../../src/modal";
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as _pool from "../../../../src/funding/pool";
@@ -78,7 +79,7 @@
 
   const openSendModal = () => {
     _pool.store.set(pool);
-    push(path.poolTopUp());
+    modal.toggle(path.poolTopUp());
   };
 
   // Extract the list of unique members from the provided raw input string.

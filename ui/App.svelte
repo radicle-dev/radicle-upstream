@@ -44,7 +44,6 @@
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
-    "/pool/top-up": TopUp,
     "*": NotFound,
   };
 
@@ -52,6 +51,7 @@
     "/new-project": ModalNewProject,
     "/search": ModalSearch,
     "/shortcuts": ModalShortcuts,
+    "/pool/top-up": TopUp,
   };
 
   $: switch ($store.status) {

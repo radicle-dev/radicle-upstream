@@ -9,7 +9,7 @@
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
-  import { ModalLayout, TxButton } from "../../../DesignSystem/Component";
+  import { TxButton } from "../../../DesignSystem/Component";
   import { Icon, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
@@ -41,8 +41,10 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    margin: 92px 0 32px 0;
+    padding: 3rem 2rem 2rem 2rem;
     width: 540px;
+    background: var(--color-background);
+    border-radius: 0.5rem;
   }
   header {
     display: flex;
@@ -85,40 +87,38 @@
   }
 </style>
 
-<ModalLayout dataCy="page">
-  <div class="wrapper" data-cy="send-funds-modal">
-    <div data-cy="preparation-step">
-      <header>
-        <div class="icon">
-          <Icon.ArrowUp style="fill: var(--color-primary)" />
-        </div>
-        <h2>Top up your pool 😉</h2>
-      </header>
-      <p
-        class="typo-text-bold"
-        style="color: var(--color-foreground-level-6); padding: 0.5rem;">
-        Amount
-      </p>
-      <Input.Text
-        dataCy="modal-amount-input"
-        placeholder="Enter the amount"
-        bind:value={amount}
-        showLeftItem
-        autofocus
-        validation={$amountValidation}>
-        <div slot="left" style="position: absolute; top: 9px; left: 10px;">
-          <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
-        </div>
-      </Input.Text>
-
-      <div class="submit">
-        <TxButton
-          title="Confirm"
-          disabled={disableConfirmation}
-          dataCy="review-transfer-button"
-          onClick={onConfirmed}
-          errorMessage={e => `Could not top up pool funds: ${e.message}`} />
+<div class="wrapper" data-cy="send-funds-modal">
+  <div data-cy="preparation-step">
+    <header>
+      <div class="icon">
+        <Icon.ArrowUp style="fill: var(--color-primary)" />
       </div>
+      <h2>Top up your pool 😉</h2>
+    </header>
+    <p
+      class="typo-text-bold"
+      style="color: var(--color-foreground-level-6); padding: 0.5rem;">
+      Amount
+    </p>
+    <Input.Text
+      dataCy="modal-amount-input"
+      placeholder="Enter the amount"
+      bind:value={amount}
+      showLeftItem
+      autofocus
+      validation={$amountValidation}>
+      <div slot="left" style="position: absolute; top: 9px; left: 10px;">
+        <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
+      </div>
+    </Input.Text>
+
+    <div class="submit">
+      <TxButton
+        title="Confirm"
+        disabled={disableConfirmation}
+        dataCy="review-transfer-button"
+        onClick={onConfirmed}
+        errorMessage={e => `Could not top up pool funds: ${e.message}`} />
     </div>
   </div>
-</ModalLayout>
+</div>

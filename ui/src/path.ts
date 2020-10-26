@@ -18,8 +18,6 @@ export const userProfile = (urn: string): string => `/user/${urn}`;
 export const userProfileProjects = (urn: string): string =>
   `/user/${urn}/projects`;
 
-export const poolTopUp = (): string => "/pool/top-up";
-
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>
@@ -44,6 +42,7 @@ export const designSystemGuide = (): string => "/design-system-guide";
 export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
+export const poolTopUp = (): string => "/pool/top-up";
 
 export const active = (
   path: string,
