@@ -2,11 +2,12 @@
 
 use std::time::Instant;
 
+use either::Either;
 use tokio::sync::{mpsc, oneshot};
 
 use librad::uri::RadUrn;
 
-use crate::request;
+use crate::{request, request::waiting_room};
 
 use super::run_state::Status;
 
@@ -27,7 +28,7 @@ pub enum Request {
     Urn(
         RadUrn,
         Instant,
-        oneshot::Sender<request::SomeRequest<Instant>>,
+        oneshot::Sender<waiting_room::Created<Instant>>,
     ),
 }
 
@@ -48,8 +49,8 @@ pub enum Response {
     ),
     /// Response to a urn request.
     Urn(
-        oneshot::Sender<request::SomeRequest<Instant>>,
-        request::SomeRequest<Instant>,
+        oneshot::Sender<waiting_room::Created<Instant>>,
+        waiting_room::Created<Instant>,
     ),
 }
 
@@ -112,13 +113,15 @@ impl Control {
         urn: &RadUrn,
         time: Instant,
     ) -> request::SomeRequest<Instant> {
-        let (sender, receiver) = oneshot::channel::<request::SomeRequest<Instant>>();
+        let (sender, receiver) = oneshot::channel::<waiting_room::Created<Instant>>();
 
         self.sender
             .send(Request::Urn(urn.clone(), time, sender))
             .await
             .expect("peer is gone");
 
-        receiver.await.expect("receiver is gone")
+        match receiver.await.expect("receiver is gone") {
+            Either::Left(req) | Either::Right(req) => req,
+        }
     }
 }
