@@ -60,13 +60,13 @@
 </style>
 
 <div class="container">
-  <Remote {store} let:data={{ follows, requests }}>
+  <Remote {store} let:data>
     <ProjectList
-      projects={follows}
+      projects={data.follows}
       userUrn={session.identity.urn}
       on:select={onSelect} />
 
-    {#if requests.length > 0}
+    {#if data.requests.length > 0}
       <div out:fade|local={{ duration: FADE_DURATION }}>
         <div class="header">
           <p class="typo-text-bold">Still looking…&nbsp;</p>
@@ -75,7 +75,7 @@
             exist.
           </p>
         </div>
-        <List items={requests} let:item={request}>
+        <List items={data.requests} let:item={request}>
           <Hoverable let:hovering={hover} style="flex: 1;">
             <div
               class="undiscovered-project"
