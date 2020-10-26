@@ -15,7 +15,7 @@
     Remote,
   } from "../../DesignSystem/Component";
 
-  const session = getContext("session");
+  const session: Session = getContext("session");
 
   const create = () => {
     modal.toggle(path.newProject());
@@ -27,14 +27,14 @@
 </script>
 
 <Remote {store} let:data={projects}>
-  {#if projects.length > 0}
-    <ProjectList {projects} userUrn={session.identity.urn} on:select={select} />
-  {:else}
+  <ProjectList {projects} userUrn={session.identity.urn} on:select={select} />
+
+  <div slot="empty">
     <EmptyState
       text="You don't have any projects yet."
       primaryActionText="Start your first project"
       on:primaryAction={create} />
-  {/if}
+  </div>
 
   <div slot="error" let:error>
     <Error message={error && error.message} />
