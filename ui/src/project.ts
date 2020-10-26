@@ -506,7 +506,10 @@ export const peerValidation = validation.createValidationStore(
   ]
 );
 
-export const addRemote = async (projectId, newRemote) => {
+export const addRemote = async (
+  projectId: urn.Urn,
+  newRemote: identity.PeerId
+): Promise<boolean> => {
   // This has to be awaited contrary to what tslint suggests, because we're
   // running async remote validations in in the background. If we remove the
   // async then the seed input form will have to be submitted twice to take any
@@ -516,6 +519,7 @@ export const addRemote = async (projectId, newRemote) => {
     return false;
 
   trackPeer(projectId, newRemote);
+  return true;
 };
 
 // Checks if the provided user is part of the maintainer list of the project.
