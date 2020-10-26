@@ -1,5 +1,6 @@
 //! Endpoints and serialisation for [`crate::session::Session`] related types.
 
+use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, http};
@@ -53,6 +54,7 @@ fn unseal_filter(
         .and(warp::post())
         .and(path::end())
         .and(http::with_context(ctx))
+        .and(warp::body::json())
         .and_then(handler::unseal)
 }
 
@@ -60,24 +62,7 @@ fn unseal_filter(
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error, session};
-
-    pub async fn unseal(ctx: context::Context) -> Result<impl Reply, Rejection> {
-        match ctx {
-            context::Context::Unsealed(unsealed) => {},
-            context::Context::Sealed(mut sealed) => {
-                // let key = coco::keystore::Keystorage::file(
-                //     &sealed.paths,
-                //     coco::keystore::SecUtf8::from("my-secret-key"),
-                // )
-                // .init()
-                // .map_err(crate::error::Error::from)?;
-                let key = coco::keys::SecretKey::new();
-                sealed.service_handle.set_secret_key(key);
-            },
-        }
-        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
-    }
+    use crate::{context, error, http, session};
 
     /// Clear the current [`session::Session`].
     pub async fn delete(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
@@ -90,7 +75,8 @@ mod handler {
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
         match ctx {
             context::Context::Unsealed(unsealed) => {
-                let sess = session::current(unsealed.state.clone(), &unsealed.store).await?;
+                let sess = crate::session::get_current(&unsealed.store)?
+                    .ok_or(http::error::Routing::NoSession)?;
 
                 Ok(reply::json(&sess))
             },
@@ -107,6 +93,32 @@ mod handler {
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
+
+    /// Set the [`session::settings::Settings`] to the passed value.
+    pub async fn unseal(
+        mut ctx: context::Context,
+        input: super::UnsealInput,
+    ) -> Result<impl Reply, Rejection> {
+        // TODO(merle): Replace with correct password check
+        if input.passphrase != "radicle-upstream" {
+            return Ok(warp::reply::with_status(
+                reply::json(&serde_json::Value::Null),
+                StatusCode::FORBIDDEN,
+            )
+            .into_response());
+        }
+        let key = coco::keys::SecretKey::new();
+        ctx.service_handle().set_secret_key(key);
+        Ok(reply::json(&serde_json::Value::Null).into_response())
+    }
+}
+
+/// Bundled input data for unseal request.
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnsealInput {
+    /// Passphrase to unlock the keystore.
+    passphrase: String,
 }
 
 #[cfg(test)]
@@ -122,22 +134,15 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
+        session::initialize_test(&ctx, "cloudhead").await;
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
-        session::set_settings(&ctx.store, settings)?;
+        session::set_settings(&ctx.store, settings);
 
         let res = request().method("DELETE").path("/").reply(&api).await;
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
-
-        // Test that we reset the session to default.
-        let have = session::current(ctx.state.clone(), &ctx.store)
-            .await?
-            .settings;
-        let want = session::settings::Settings::default();
-
-        assert_eq!(have, want);
-
+        assert_eq!(session::get_current(&ctx.store)?.is_none(), true);
         Ok(())
     }
 
@@ -146,29 +151,14 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
+        let session = session::initialize_test(&ctx, "xla").await;
 
         let res = request().method("GET").path("/").reply(&api).await;
-
-        let have: Value = serde_json::from_slice(res.body())?;
-
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!({
-                "identity": Value::Null,
-                "settings": {
-                    "appearance": {
-                        "theme": "light",
-                        "hints": {
-                            "showRemoteHelper": true,
-                        }
-                    },
-                    "coco": {
-                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
-                    },
-                },
-            }),
-        );
+
+        let session_response = serde_json::from_slice::<session::Session>(res.body())?;
+
+        assert_eq!(session_response, session);
 
         Ok(())
     }
@@ -178,6 +168,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
+        session::initialize_test(&ctx, "cloudhead").await;
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
@@ -211,6 +202,8 @@ mod test {
             }),
         );
 
+        let session_res = serde_json::from_slice::<session::Session>(res.body())?;
+        assert_eq!(session_res.settings, settings);
         Ok(())
     }
 }

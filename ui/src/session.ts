@@ -6,30 +6,32 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as notification from "./notification";
 import * as remote from "./remote";
-import { Appearance, CoCo, Settings } from "./settings";
+import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 
 import { createValidationStore, ValidationStatus } from "./validation";
 
 // TYPES
 
 export interface Session {
-  identity?: identity.Identity;
+  identity: identity.Identity;
   settings: Settings;
 }
 
 // STATE
-const sessionStore = remote.createStore<Session>();
+const sessionStore = remote.createStore<Session | null>();
 export const session = sessionStore.readable;
 
-export const settings: Readable<Settings | null> = derived(
-  sessionStore,
-  sess => {
-    if (sess.status === remote.Status.Success) {
-      return sess.data.settings;
-    }
-    return null;
+export const settings: Readable<Settings> = derived(sessionStore, sess => {
+  if (
+    sess.status === remote.Status.Success &&
+    sess.data &&
+    (<Session>sess.data).settings
+  ) {
+    return (<Session>sess.data).settings;
+  } else {
+    return defaultSetttings();
   }
-);
+});
 
 // EVENTS
 enum Kind {
@@ -58,11 +60,41 @@ interface UpdateSettings extends event.Event<Kind> {
 
 type Msg = Clear | ClearCache | Fetch | UpdateSettings;
 
+const handleSessionError = async (
+  error: Error,
+  onUnseal?: boolean
+): Promise<Session | null> => {
+  if (error instanceof api.ResponseError) {
+    if (error.response.status === 404) {
+      return null;
+    } else if (error.response.status === 403) {
+      if (onUnseal) {
+        notification.error("Could not unlock the session.");
+      }
+      return {} as Session;
+    } else {
+      throw error;
+    }
+  } else {
+    throw error;
+  }
+};
+
 const fetchSession = (): Promise<void> =>
   api
     .get<Session>(`session`)
+    .catch(error => handleSessionError(error))
     .then(sessionStore.success)
     .catch(sessionStore.error);
+
+export const unseal = (passphrase: string): Promise<void> => {
+  sessionStore.loading();
+  return api
+    .post<unknown, Session>(`session/unseal`, { passphrase })
+    .catch(error => handleSessionError(error, true))
+    .then(sessionStore.success)
+    .catch(sessionStore.error);
+};
 
 const updateSettings = (settings: Settings): Promise<void> =>
   api

@@ -120,11 +120,10 @@ async fn run_rigging(
             loop {
                 let _timestamp = timer.tick().await;
 
-                let seeds = session::settings(&seeds_store)
+                let seeds = session::seeds(&seeds_store)
                     .await
                     .expect("Failed to read session store")
-                    .coco
-                    .seeds;
+                    .unwrap_or_default();
                 let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
                     log::error!("Error parsing seed list {:?}: {}", seeds, err);
                     vec![]
@@ -203,6 +202,7 @@ async fn rig(
     config: service::Config,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
     log::debug!("rigging up");
+    log::info!("has_key: {}", config.key.is_some());
 
     let (temp, paths, store) = if args.test {
         let temp_dir = tempfile::tempdir()?;
@@ -254,7 +254,7 @@ async fn rig(
 
             (peer, state, None)
         } else {
-            let seeds = session::settings(&store).await?.coco.seeds;
+            let seeds = session::seeds(&store).await.unwrap().unwrap_or_default();
             let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
                 log::error!("Error parsing seed list {:?}: {}", seeds, err);
                 vec![]

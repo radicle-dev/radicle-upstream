@@ -20,6 +20,7 @@
   import Blank from "./Screen/Blank.svelte";
   import Bsod from "./Screen/Bsod.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
+  import Lock from "./Screen/Lock.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
   import ModalNewProject from "./Modal/NewProject.svelte";
@@ -34,6 +35,7 @@
   const routes = {
     "/": Blank,
     "/onboarding": Onboarding,
+    "/lock": Lock,
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,
@@ -56,14 +58,21 @@
       break;
 
     case remote.Status.Success:
-      if ($store.data.identity === null) {
+      if ($store.data === null) {
         hotkeys.disable();
         push(path.onboarding());
-      } else {
+      } else if ($store.data.identity) {
         hotkeys.enable();
-        if ($location === path.blank() || $location === path.onboarding()) {
+        if (
+          $location === path.blank() ||
+          $location === path.onboarding() ||
+          $location === path.lock()
+        ) {
           push(path.profileProjects());
         }
+      } else {
+        hotkeys.disable();
+        push(path.lock());
       }
       break;
 

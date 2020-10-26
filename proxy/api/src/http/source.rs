@@ -130,12 +130,14 @@ mod handler {
             highlight,
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
-        let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
+        let settings = session::get_current(&ctx.store)?
+            .map(|session| session.settings)
+            .unwrap_or_default();
         let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
         let revision = super::http::guard_self_revision(&ctx.state, revision);
 
         let theme = if let Some(true) = highlight {
-            Some(match &current_session.settings.appearance.theme {
+            Some(match settings.appearance.theme {
                 settings::Theme::Dark => "base16-ocean.dark",
                 settings::Theme::Light => "base16-ocean.light",
             })
@@ -729,7 +731,7 @@ mod test {
         let owner = ctx.state.get_user(id.urn.clone()).await?;
         let owner = coco::user::verify(owner)?;
 
-        session::set_identity(&ctx.store, id)?;
+        session::initialize(&ctx.store, id)?;
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.state,

@@ -370,7 +370,7 @@ mod test {
         let urn = {
             let handle = "cloudhead";
             let owner = ctx.state.init_owner(handle).await?;
-            session::set_identity(&ctx.store, (ctx.state.peer_id(), owner.clone()).into())?;
+            session::initialize(&ctx.store, (ctx.state.peer_id(), owner.clone()).into())?;
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
@@ -452,7 +452,7 @@ mod test {
             let handle = "cloudhead";
             let id = identity::create(&ctx.state, handle).await?;
 
-            session::set_identity(&ctx.store, id)?;
+            session::initialize(&ctx.store, id)?;
         };
 
         let project = coco::project::Create {
@@ -512,7 +512,7 @@ mod test {
         {
             let handle = "cloudhead";
             let id = identity::create(&ctx.state, handle).await?;
-            session::set_identity(&ctx.store, id)?;
+            session::initialize(&ctx.store, id)?;
         };
 
         let project = coco::project::Create {

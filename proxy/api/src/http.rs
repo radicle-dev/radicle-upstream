@@ -1,7 +1,6 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use serde::Deserialize;
-use tokio::sync::mpsc;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use crate::{context, notification::Subscriptions};
@@ -112,22 +111,17 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
     warp::any()
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {
-            let session = crate::session::current(ctx.state.clone(), &ctx.store)
+            let session =
+                crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
+
+            let user = ctx
+                .state
+                .get_user(session.identity.urn)
                 .await
-                .expect("unable to get current sesison");
+                .expect("unable to get coco user");
+            let user = coco::user::verify(user).expect("unable to verify user");
 
-            if let Some(identity) = session.identity {
-                let user = ctx
-                    .state
-                    .get_user(identity.urn)
-                    .await
-                    .expect("unable to get coco user");
-                let user = coco::user::verify(user).expect("unable to verify user");
-
-                Ok(user)
-            } else {
-                Err(Rejection::from(error::Routing::MissingOwner))
-            }
+            Ok::<_, Rejection>(user)
         })
         .boxed()
 }

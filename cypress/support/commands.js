@@ -3,7 +3,17 @@ Cypress.Commands.add("resetProxyState", async () => {
   await fetch("http://localhost:8080/v1/control/reset");
   await fetch("http://localhost:8080/v1/session/unseal", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      passphrase: "radicle-upstream",
+    }),
   });
+});
+
+Cypress.Commands.add("sealKeystore", async () => {
+  await fetch("http://localhost:8080/v1/control/seal");
 });
 
 Cypress.Commands.add("pick", (...ids) => {
@@ -36,6 +46,12 @@ Cypress.Commands.add(
 Cypress.Commands.add("onboardUser", async (handle = "secretariat") => {
   await fetch("http://localhost:8080/v1/session/unseal", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      passphrase: "radicle-upstream",
+    }),
   });
   await fetch("http://localhost:8080/v1/identities", {
     method: "POST",
