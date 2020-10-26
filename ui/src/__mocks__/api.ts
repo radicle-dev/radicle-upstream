@@ -27,7 +27,7 @@ export const upstreamProjectMock: project.Project = {
   },
 };
 
-export const surfProjectMock: project.Project = {
+const surfProjectMock: project.Project = {
   id: "%rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
   shareableEntityIdentifier: "sos@{}",
   metadata: {

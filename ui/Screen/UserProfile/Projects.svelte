@@ -1,28 +1,25 @@
-<script>
+<script lang="typescript">
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../src/path.ts";
-  import {
-    fetchUserList,
-    projects as projectsStore,
-  } from "../../src/project.ts";
+  import * as path from "../../src/path";
+  import type { Project } from "../../src/project";
+  import { fetchProjects, projects as store } from "../../src/userProfile";
 
   import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
 
-  export let params = null;
+  export let params: { urn: string };
 
-  const select = event => {
-    const project = event.detail;
+  const select = ({ detail: project }: { detail: Project }) => {
     push(path.projectSource(project.id));
   };
 
-  $: fetchUserList({ urn: params.urn });
+  fetchProjects(params.urn);
 </script>
 
-<Remote store={projectsStore} let:data={projects}>
+<Remote {store} let:data={projects}>
   <ProjectList {projects} urn={params.urn} on:select={select} />
 
   <div slot="error" let:error>
-    <Error message={error.message} />
+    <Error message={error && error.message} />
   </div>
 </Remote>

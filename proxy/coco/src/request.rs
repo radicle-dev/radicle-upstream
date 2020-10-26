@@ -59,6 +59,7 @@ mod sealed;
 /// The `T` type parameter represents some timestamp that is chosen by the user of the `Request`
 /// API. Note that it makes it easy to test by just choosing `()` for the timestamp.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Request<S, T> {
     /// The identifier of the identity on the network.
     urn: RadUrn,
