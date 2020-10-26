@@ -2,14 +2,14 @@
   import { getContext } from "svelte";
 
   import { fallback } from "../../src/identity";
-  import type { Session } from "../../src/session";
+  import type { Authenticated } from "../../src/session";
 
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy = "";
   export let style = "";
 
-  const session: Session = getContext("session");
+  const session: Authenticated = getContext("session");
   const identity = session.identity || fallback;
 </script>
 

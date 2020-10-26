@@ -14,7 +14,7 @@
     requestedProjects,
   } from "../../src/profile";
   import type { Project } from "../../src/project";
-  import type { Session } from "../../src/session";
+  import type { Authenticated } from "../../src/session";
 
   import {
     EmptyState,
@@ -26,7 +26,7 @@
     TrackToggle,
   } from "../../DesignSystem/Component";
 
-  const session: Session = getContext("session");
+  const session: Authenticated = getContext("session");
   const onCancel = (urn: string): void => {
     console.log("cancel search", urn);
   };

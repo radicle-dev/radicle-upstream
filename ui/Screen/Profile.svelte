@@ -3,7 +3,7 @@
   import Router from "svelte-spa-router";
 
   import * as path from "../src/path";
-  import type { Session } from "../src/session";
+  import type { Authenticated } from "../src/session";
 
   import {
     Header,
@@ -45,7 +45,7 @@
     },
   ];
 
-  const session: Session = getContext("session");
+  const session: Authenticated = getContext("session");
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
