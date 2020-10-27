@@ -23,7 +23,7 @@
 <Flex style="flex: 1; padding: 1.375rem 1.5rem;">
   <div slot="left" style="max-width: 22em">
     <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
-      {firstSix}...{lastSix} / {projectName}
+      {firstSix}…{lastSix} / {projectName}
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
