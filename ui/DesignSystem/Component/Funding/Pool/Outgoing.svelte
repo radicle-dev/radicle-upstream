@@ -225,7 +225,10 @@
         <div class="steps">
           <Add />
           <Budget style={'margin-left: 20px'} />
-          <TopUp style={'margin-left: 20px'} balance={poolData.balance} />
+          <TopUp
+            style={'margin-left: 20px'}
+            balance={poolData.balance}
+            ongoing={ongoingTopUp} />
         </div>
       </div>
 
