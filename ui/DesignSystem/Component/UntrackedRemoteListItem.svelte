@@ -1,8 +1,8 @@
 <script>
+  import { removeRemote } from "../../src/project";
+  
   import { Flex } from "../../DesignSystem/Primitive";
   import TrackToggle from "./TrackToggle.svelte";
-
-  import { removeRemote } from "../../src/project";
 
   export let peer = null;
   export let projectName = null;

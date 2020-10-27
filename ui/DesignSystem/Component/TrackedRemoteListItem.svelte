@@ -1,12 +1,14 @@
 <script>
+  import { BadgeType } from "../../src/badge.ts";
+  import { PeerType, removeRemote, Role } from "../../src/project";
+  import { CSSPosition } from "../../src/style";
+  
   import { Avatar, Flex } from "../../DesignSystem/Primitive";
+  
   import Badge from "./Badge.svelte";
   import Tooltip from "./Tooltip.svelte";
-
   import TrackToggle from "./TrackToggle.svelte";
-  import { BadgeType } from "../../src/badge.ts";
-  import { CSSPosition } from "../../src/style";
-  import { PeerType, removeRemote, Role } from "../../src/project";
+
 
   export let peer = null;
   export let projectId = null;
