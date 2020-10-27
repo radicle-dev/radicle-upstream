@@ -110,6 +110,15 @@
     justify-content: space-between;
   }
 
+  .peer.selected {
+    background-color: var(--color-foreground-level-2);
+  }
+
+  .peer:hover {
+    cursor: pointer;
+    background-color: var(--color-foreground-level-2);
+  }
+
   .open-profile {
     display: flex;
     justify-content: center;
@@ -117,9 +126,8 @@
     margin-left: 0.5rem;
   }
 
-  .remotes:hover {
-    cursor: pointer;
-    background-color: var(--color-foreground-level-2);
+  .remotes {
+    justify-content: flex-start;
   }
 
   .remotes p {
@@ -162,11 +170,10 @@
       {#each revisions as repo}
         <div
           class="peer"
+          on:click={() => selectPeer(repo.identity.peerId)}
           class:selected={repo.identity.peerId == currentSelectedPeer.identity.peerId}
           data-peer-handle={repo.identity.metadata.handle}>
-          <div
-            style="display: flex;"
-            on:click={() => selectPeer(repo.identity.peerId)}>
+          <div style="display: flex;">
             <Avatar
               avatarFallback={repo.identity.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
@@ -196,16 +203,14 @@
           </Tooltip>
         </div>
       {/each}
-      <div class="peer remotes">
-        <div
-          style="display: flex;"
-          on:click={() => modal.toggle(path.manageRemotes(), [
-              { name: 'metadata', data: metadata },
-              { name: 'revisions', data: revisions },
-            ])}>
-          <Icon.Pen style="margin-right: .5rem;" />
-          <p>Manage remotes</p>
-        </div>
+      <div
+        class="peer remotes"
+        on:click={() => modal.toggle(path.manageRemotes(), [
+            { name: 'metadata', data: metadata },
+            { name: 'revisions', data: revisions },
+          ])}>
+        <Icon.Pen style="margin-right: .5rem;" />
+        <p>Manage remotes</p>
       </div>
     </div>
   </div>
