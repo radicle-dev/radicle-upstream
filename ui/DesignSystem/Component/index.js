@@ -6,7 +6,7 @@ import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
-import FollowButton from "./FollowButton.svelte";
+import FollowToggle from "./FollowToggle.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
@@ -49,7 +49,7 @@ export {
   Dropdown,
   EmptyState,
   Error,
-  FollowButton,
+  FollowToggle,
   Header,
   HorizontalMenu,
   Hoverable,

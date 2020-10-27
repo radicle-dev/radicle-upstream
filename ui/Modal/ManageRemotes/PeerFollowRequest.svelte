@@ -5,7 +5,7 @@
   import type { User } from "../../src/project";
 
   import { Flex } from "../../DesignSystem/Primitive";
-  import { FollowButton } from "../../DesignSystem/Component";
+  import { FollowToggle } from "../../DesignSystem/Component";
 
   export let peer: User;
   export let projectName: string;
@@ -27,7 +27,7 @@
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
-    <FollowButton
+    <FollowToggle
       expanded
       following
       on:unfollow={() => {

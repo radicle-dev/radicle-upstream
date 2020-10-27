@@ -9,7 +9,7 @@
   import { PeerType, Role } from "../../src/project";
 
   import { Avatar, Flex } from "../../DesignSystem/Primitive";
-  import { Badge, FollowButton, Tooltip } from "../../DesignSystem/Component";
+  import { Badge, FollowToggle, Tooltip } from "../../DesignSystem/Component";
 
   export let peer: User;
   export let projectUrn: Urn;
@@ -44,17 +44,17 @@
       <Tooltip
         position={CSSPosition.Top}
         value="Can't unfollow your own remote">
-        <FollowButton disabled following expanded />
+        <FollowToggle disabled following expanded />
       </Tooltip>
     {:else if peer.role === Role.Maintainer}
       <Tooltip
         position={CSSPosition.Top}
         value="Can't unfollow the maintainer's remote">
-        <FollowButton disabled following expanded />
+        <FollowToggle disabled following expanded />
       </Tooltip>
     {:else}
       <Tooltip>
-        <FollowButton
+        <FollowToggle
           following
           expanded
           on:untrack={() => {

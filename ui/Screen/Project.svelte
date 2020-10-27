@@ -26,7 +26,7 @@
   import { CSSPosition } from "../src/style.ts";
 
   import {
-    FollowButton,
+    FollowToggle,
     Header,
     HorizontalMenu,
     Remote,
@@ -182,7 +182,7 @@
             <Tooltip
               position={CSSPosition.Left}
               value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-              <FollowButton disabled expanded following />
+              <FollowToggle disabled expanded following />
             </Tooltip>
           </div>
         </div>

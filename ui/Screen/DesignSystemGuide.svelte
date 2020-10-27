@@ -10,7 +10,7 @@
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
-    FollowButton,
+    FollowToggle,
     Fullscreen,
     Dropdown,
     Illustration,
@@ -723,11 +723,11 @@
       </Swatch>
 
       <Swatch>
-        <FollowButton />
+        <FollowToggle />
       </Swatch>
 
       <Swatch>
-        <FollowButton warning expanded />
+        <FollowToggle warning expanded />
       </Swatch>
 
       <Swatch>

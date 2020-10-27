@@ -19,7 +19,7 @@
     ProjectList,
     Remote,
     ShareableIdentifier,
-    FollowButton,
+    FollowToggle,
   } from "../../DesignSystem/Component";
 
   const session: Authenticated = getContext("session");
@@ -83,7 +83,7 @@
               </div>
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
-                  <FollowButton
+                  <FollowToggle
                     expanded
                     warning
                     following={true}
