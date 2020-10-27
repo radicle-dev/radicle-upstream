@@ -224,7 +224,11 @@
         <h3>Getting Started</h3>
         <div class="steps">
           <Add />
-          <Budget style={'margin-left: 20px'} />
+          <Budget
+            currentValue={poolData.amountPerBlock}
+            ongoing={ongoingMonthlyContributionUpdate}
+            onSave={x => pool.updateAmountPerBlock(x)}
+            style={'margin-left: 20px'} />
           <TopUp
             style={'margin-left: 20px'}
             balance={poolData.balance}

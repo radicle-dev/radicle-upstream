@@ -1,8 +1,12 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
+  import { TxButton } from "../../../DesignSystem/Component";
+  import { Button, Icon, Input } from "../../../DesignSystem/Primitive";
+  import { resolve } from "path";
+
+  import * as modal from "../../../src/modal";
   import {
     amountStore,
     topUpAmountValidationStore,
@@ -10,13 +14,7 @@
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
-  import { TxButton } from "../../../DesignSystem/Component";
-  import { Button, Icon, Input } from "../../../DesignSystem/Primitive";
-  import { resolve } from "path";
-
   if ($store === null) pop();
-
-  const dispatch = createEventDispatcher();
 
   let validatingAmount = false;
   let amount: number;
@@ -34,12 +32,12 @@
 
   async function onConfirmed(): Promise<void> {
     await get(store).topUp(amount);
-    dispatch("hide");
+    modal.hide();
     resolve();
   }
 
   async function onCancel(): Promise<void> {
-    dispatch("hide");
+    modal.hide();
   }
 </script>
 
