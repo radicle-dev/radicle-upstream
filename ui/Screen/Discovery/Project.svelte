@@ -1,18 +1,18 @@
 <script>
   import { Avatar } from "../../DesignSystem/Primitive";
   import {
+    FollowButton,
     ShareableIdentifier,
     Stats,
-    TrackToggle,
     Tooltip,
   } from "../../DesignSystem/Component";
 
   export let project = null;
 
-  let showTrackButton = project.tracked;
+  let showFollowButton = project.tracked;
 
-  const toggleTrackButton = e => {
-    showTrackButton = project.tracked || e.type === "mouseenter";
+  const toggleFollowButton = e => {
+    showFollowButton = project.tracked || e.type === "mouseenter";
   };
 </script>
 
@@ -57,16 +57,16 @@
 
 <div
   class="container"
-  on:mouseenter={toggleTrackButton}
-  on:mouseleave={toggleTrackButton}
+  on:mouseenter={toggleFollowButton}
+  on:mouseleave={toggleFollowButton}
   data-cy="project-card">
   <div class="header">
     <div class="title">
       <h3 class="typo-overflow-ellipsis">{project.metadata.name}</h3>
     </div>
 
-    {#if showTrackButton}
-      <TrackToggle style="z-index: 10;" tracking={project.tracked} />
+    {#if showFollowButton}
+      <FollowButton style="z-index: 10;" following={project.tracked} />
     {/if}
   </div>
 

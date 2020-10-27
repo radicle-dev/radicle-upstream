@@ -5,7 +5,7 @@
   import type { User } from "../../src/project";
 
   import { Flex } from "../../DesignSystem/Primitive";
-  import TrackToggle from "./TrackToggle.svelte";
+  import FollowButton from "./FollowButton.svelte";
 
   export let peer: User;
   export let projectName: string;
@@ -27,10 +27,10 @@
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
-    <TrackToggle
+    <FollowButton
       expanded
       tracking
-      on:untrack={() => {
+      on:unfollow={() => {
         dispatch('cancel', { projectUrn, peerId: peer.peerId });
       }} />
   </div>

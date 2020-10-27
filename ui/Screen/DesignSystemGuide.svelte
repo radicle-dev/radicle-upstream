@@ -10,6 +10,7 @@
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
+    FollowButton,
     Fullscreen,
     Dropdown,
     Illustration,
@@ -20,7 +21,6 @@
     Spinner,
     Stats,
     SupportButton,
-    TrackToggle,
     StyledCopyable,
     Tooltip,
   } from "../DesignSystem/Component";
@@ -723,11 +723,11 @@
       </Swatch>
 
       <Swatch>
-        <TrackToggle />
+        <FollowButton />
       </Swatch>
 
       <Swatch>
-        <TrackToggle warning expanded />
+        <FollowButton warning expanded />
       </Swatch>
 
       <Swatch>

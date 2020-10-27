@@ -26,13 +26,13 @@
   import { CSSPosition } from "../src/style.ts";
 
   import {
+    FollowButton,
     Header,
     HorizontalMenu,
     Remote,
     RevisionSelector,
     SidebarLayout,
     Tooltip,
-    TrackToggle,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -182,7 +182,7 @@
             <Tooltip
               position={CSSPosition.Left}
               value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-              <TrackToggle disabled expanded tracking />
+              <FollowButton disabled expanded following />
             </Tooltip>
           </div>
         </div>

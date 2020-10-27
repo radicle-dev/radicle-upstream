@@ -12,7 +12,7 @@
 
   import Badge from "./Badge.svelte";
   import Tooltip from "./Tooltip.svelte";
-  import TrackToggle from "./TrackToggle.svelte";
+  import FollowButton from "./FollowButton.svelte";
 
   export let peer: User;
   export let projectUrn: Urn;
@@ -47,17 +47,17 @@
       <Tooltip
         position={CSSPosition.Top}
         value="Can't unfollow your own remote">
-        <TrackToggle disabled tracking expanded />
+        <FollowButton disabled following expanded />
       </Tooltip>
     {:else if peer.role === Role.Maintainer}
       <Tooltip
         position={CSSPosition.Top}
         value="Can't unfollow the maintainer's remote">
-        <TrackToggle disabled tracking expanded />
+        <FollowButton disabled following expanded />
       </Tooltip>
     {:else}
       <Tooltip>
-        <TrackToggle
+        <FollowButton
           tracking
           expanded
           on:untrack={() => {
