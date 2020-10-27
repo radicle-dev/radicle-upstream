@@ -6,6 +6,7 @@ import * as event from "./event";
 import * as remote from "./remote";
 import { getLocalState, LocalState } from "./source";
 import * as validation from "./validation";
+import * as waitingRoom from "./waitingRoom";
 
 // TYPES.
 export interface Metadata {
@@ -71,7 +72,6 @@ enum Kind {
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
   FetchTracked = "FETCH_TRACKED",
-  FetchUser = "FETCH_USER",
   FetchLocalState = "FETCH_LOCAL_STATE",
 }
 
@@ -94,28 +94,12 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
-interface FetchTracked extends event.Event<Kind> {
-  kind: Kind.FetchTracked;
-}
-
-interface FetchUser extends event.Event<Kind> {
-  kind: Kind.FetchUser;
-  urn: string;
-}
-
 interface FetchLocalState extends event.Event<Kind> {
   kind: Kind.FetchLocalState;
   path: string;
 }
 
-type Msg =
-  | ClearLocalState
-  | Create
-  | Fetch
-  | FetchList
-  | FetchLocalState
-  | FetchTracked
-  | FetchUser;
+type Msg = ClearLocalState | Create | Fetch | FetchList | FetchLocalState;
 
 // REQUEST INPUTS
 interface CreateInput {
@@ -157,27 +141,12 @@ const update = (msg: Msg): void => {
 
       break;
 
-    case Kind.FetchTracked:
-      trackedStore.loading();
-      api
-        .get<Projects>("projects/tracked")
-        .then(trackedStore.success)
-        .catch(trackedStore.error);
-      break;
-
     case Kind.FetchLocalState:
       localStateStore.loading();
       getLocalState(msg.path)
         .then(localStateStore.success)
         .catch(localStateStore.error);
       break;
-
-    case Kind.FetchUser:
-      projectsStore.loading();
-      api
-        .get<Projects>(`projects/user/${msg.urn}`)
-        .then(projectsStore.success)
-        .catch(projectsStore.error);
   }
 };
 
@@ -203,23 +172,33 @@ export const checkout = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
-export const fetchUserList = event.create<Kind, Msg>(Kind.FetchUser, update);
 export const fetchLocalState = event.create<Kind, Msg>(
   Kind.FetchLocalState,
   update
 );
 
-export const fetchTracked = event.create<Kind, Msg>(Kind.FetchTracked, update);
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,
   update
 );
 
-// Fetch initial list when the store has been subcribed to for the first time.
-projectsStore.start(fetchList);
+export const cancelRequest = (urn: string): Promise<null> => {
+  return api.del(`projects/requests/${urn}`);
+};
+
+export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {
+  return api.get<waitingRoom.ProjectRequest[]>("projects/requests");
+};
+
+export const fetchTracking = (): Promise<Project[]> => {
+  return api.get<Project[]>("projects/tracked");
+};
+
+export const fetchUserList = (urn: string): Promise<Project[]> => {
+  return api.get<Projects>(`projects/user/${urn}`);
+};
 
 // NEW PROJECT
-
 export const localStateError = writable<string>("");
 export const defaultBranch = writable<string>(DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 

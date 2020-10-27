@@ -1,4 +1,4 @@
-import { derived, writable, Readable } from "svelte/store";
+import { derived, get, writable, Readable } from "svelte/store";
 
 import { Error } from "./error";
 
@@ -117,4 +117,21 @@ export const chain = <I, O>(
   });
 
   return promise;
+};
+
+export const fetch = <T>(
+  store: Store<T>,
+  req: Promise<T>,
+  filter?: (val: T) => T
+): void => {
+  if (get(store).status === Status.NotAsked) {
+    store.loading();
+  }
+
+  req
+    .then(val => {
+      return filter ? filter(val) : val;
+    })
+    .then(store.success)
+    .catch(store.error);
 };

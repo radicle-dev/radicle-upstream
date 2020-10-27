@@ -7,19 +7,69 @@ use coco::{keystore, signer, RunConfig};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
-pub struct Context {
+#[allow(clippy::large_enum_variant)]
+pub enum Context {
+    /// Coco peer API is sealed and unavailable
+    Sealed(Sealed),
+    /// Coco peer API is unsealed and available
+    Unsealed(Unsealed),
+}
+
+impl Context {
+    /// Returns `true` if the stack is set up in test mode.
+    pub fn test(&self) -> bool {
+        match self {
+            Self::Sealed(sealed) => sealed.test,
+            Self::Unsealed(unsealed) => unsealed.test,
+        }
+    }
+
+    /// Returns the [`kv::Store`] for persistent storage.
+    pub fn store(&self) -> &kv::Store {
+        match self {
+            Self::Sealed(sealed) => &sealed.store,
+            Self::Unsealed(unsealed) => &unsealed.store,
+        }
+    }
+}
+
+impl From<Unsealed> for Context {
+    fn from(unsealed: Unsealed) -> Self {
+        Self::Unsealed(unsealed)
+    }
+}
+
+impl From<Sealed> for Context {
+    fn from(sealed: Sealed) -> Self {
+        Self::Sealed(sealed)
+    }
+}
+
+/// Context for HTTP requests with access to coco peer APIs.
+#[derive(Clone)]
+pub struct Unsealed {
+    /// [`kv::Store`] used for session state and cache.
+    pub store: kv::Store,
     /// Handle to inspect state and perform actions on the currently running local [`coco::Peer`].
     pub peer_control: PeerControl,
     /// [`coco::State`] to operate on the local monorepo.
     pub state: coco::State,
+    /// Flag to control if the stack is set up in test mode.
+    pub test: bool,
+}
+
+/// Context for HTTP request if the coco peer APIs have not been initialized yet.
+#[derive(Clone)]
+pub struct Sealed {
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
 }
 
-impl Context {
-    /// Initialises a new [`Context`] the given temporary directory.
+impl Unsealed {
+    /// Initialises a new [`Unsealed`] context with the store and coco state in the given temporary
+    /// directory.
     ///
     /// # Errors
     ///

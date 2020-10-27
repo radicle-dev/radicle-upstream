@@ -91,8 +91,17 @@ impl Subroutines {
                         control::Request::CurrentStatus(sender) => {
                             Input::Control(ControlInput::Status(sender))
                         },
-                        control::Request::Urn(urn, time, sender) => {
-                            Input::Request(RequestInput::Requested(urn, time, Some(sender)))
+                        control::Request::CancelSearch(urn, time, sender) => {
+                            Input::Control(ControlInput::CancelRequest(urn, time, sender))
+                        },
+                        control::Request::GetSearch(urn, sender) => {
+                            Input::Control(ControlInput::GetRequest(urn, sender))
+                        },
+                        control::Request::ListSearches(sender) => {
+                            Input::Control(ControlInput::ListRequests(sender))
+                        },
+                        control::Request::StartSearch(urn, time, sender) => {
+                            Input::Control(ControlInput::CreateRequest(urn, time, Some(sender)))
                         },
                     })
                     .boxed(),
@@ -250,7 +259,10 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
 async fn control_respond(cmd: control::Response) {
     match cmd {
         control::Response::CurrentStatus(sender, status) => sender.send(status).ok(),
-        control::Response::Urn(sender, request) => sender.send(request).ok(),
+        control::Response::CancelSearch(sender, request) => sender.send(request).ok(),
+        control::Response::GetSearch(sender, request) => sender.send(request).ok(),
+        control::Response::ListSearches(sender, requests) => sender.send(requests).ok(),
+        control::Response::StartSearch(sender, request) => sender.send(request).ok(),
     };
 }
 

@@ -40,8 +40,7 @@
   }
 </style>
 
-<!-- svelte-ignore a11y-missing-attribute -->
-<a data-cy={title} use:link={href}>
+<a data-cy={title} {href} use:link>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-secondary)" />

@@ -1,8 +1,8 @@
-<script lang="ts">
+<script lang="typescript">
   import type { Readable } from "svelte/store";
 
-  import * as notification from "../../src/notification";
   import * as error from "../../src/error";
+  import * as notification from "../../src/notification";
   import * as remote from "../../src/remote";
 
   import WithContext from "./WithContext.svelte";
@@ -39,6 +39,8 @@
     <WithContext {data} name={context}>
       <slot {data} />
     </WithContext>
+  {:else if (Array.isArray(data) && data.length === 0) || data === null}
+    <slot name="empty" />
   {:else}
     <slot {data} />
   {/if}
