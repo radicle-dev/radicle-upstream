@@ -524,7 +524,7 @@ export const peerValidation = validation.createValidationStore(
   ]
 );
 
-export const addRemote = async (
+export const addPeer = async (
   projectId: urn.Urn,
   newRemote: identity.PeerId
 ): Promise<boolean> => {
@@ -540,7 +540,7 @@ export const addRemote = async (
   return true;
 };
 
-export const removeRemote = (
+export const removePeer = (
   projectId: urn.Urn,
   remote: identity.PeerId
 ): void => {

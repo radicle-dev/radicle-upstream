@@ -10,33 +10,33 @@
 
   import { Variant as IllustrationVariant } from "../src/illustration";
   import {
-    addRemote,
+    addPeer,
     pendingPeers,
     peerSelection,
     peerValidation,
     project as store,
-    removeRemote,
+    removePeer,
   } from "../src/project";
 
-  let newRemote: PeerId;
+  let newPeer: PeerId;
 
-  $: if (newRemote === "") {
+  $: if (newPeer === "") {
     peerValidation.reset();
   }
 
-  const submitRemote = async (projectUrn: Urn) => {
-    if (await addRemote(projectUrn, newRemote)) {
-      newRemote = "";
+  const submitPeer = async (projectUrn: Urn) => {
+    if (await addPeer(projectUrn, newPeer)) {
+      newPeer = "";
     }
   };
 
   const cancelFollowRequest = (projectUrn: Urn, peerId: PeerId) => {
-    removeRemote(projectUrn, peerId);
+    removePeer(projectUrn, peerId);
     peerValidation.reset();
   };
 
-  const unfollowRemote = (projectUrn: Urn, peerId: PeerId) => {
-    removeRemote(projectUrn, peerId);
+  const unfollowPeer = (projectUrn: Urn, peerId: PeerId) => {
+    removePeer(projectUrn, peerId);
     peerValidation.reset();
   };
 </script>
@@ -56,7 +56,7 @@
     outline: none;
   }
 
-  .remote-entry-form {
+  .peer-entry-form {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -64,7 +64,7 @@
     width: 100%;
   }
 
-  .remote-entry-field {
+  .peer-entry-field {
     display: flex;
     justify-content: flex-start;
     margin-top: 2rem;
@@ -80,20 +80,19 @@
 
     <h1>Manage remotes</h1>
 
-    <form class="remote-entry-form" on:submit|preventDefault>
-      <div class="remote-entry-field">
+    <form class="peer-entry-form" on:submit|preventDefault>
+      <div class="peer-entry-field">
         <Input.Text
           hint="v"
-          dataCy="remote-input"
-          bind:value={newRemote}
+          bind:value={newPeer}
           placeholder="Paste a remote address here"
           validation={$peerValidation}
           style="width: 100%; margin-right: .5rem;" />
         <Button
           style="display: flex; align-self: flex-start;"
           variant="secondary"
-          disabled={!newRemote}
-          on:click={() => submitRemote(project.id)}>
+          disabled={!newPeer}
+          on:click={() => submitPeer(project.id)}>
           Follow remote
         </Button>
       </div>
@@ -109,7 +108,7 @@
           <Peer
             {peer}
             on:unfollow={event => {
-              unfollowRemote(event.detail.projectUrn, event.detail.peerId);
+              unfollowPeer(event.detail.projectUrn, event.detail.peerId);
             }}
             projectName={project.metadata.name}
             projectUrn={project.id} />
