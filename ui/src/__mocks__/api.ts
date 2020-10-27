@@ -2,6 +2,7 @@ import * as project from "../project";
 import * as session from "../session";
 import * as settings from "../settings";
 import * as source from "../source";
+import * as identity from "../identity";
 
 type MockedResponse =
   | project.Project
@@ -55,21 +56,7 @@ export const sessionMock: session.Session = {
       seeds: ["seed.radicle.xyz"],
     },
   },
-  identity: {
-    id: "foo",
-    metadata: {
-      handle: "bar",
-    },
-    avatarFallback: {
-      background: {
-        r: 0,
-        g: 0,
-        b: 0,
-      },
-      emoji: "",
-    },
-    shareableEntityIdentifier: "@aef",
-  },
+  identity: identity.fallback,
 };
 
 export const localStateMock: source.LocalState = {
