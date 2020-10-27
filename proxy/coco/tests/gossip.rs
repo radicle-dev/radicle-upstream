@@ -3,9 +3,10 @@ use std::time::{Duration, Instant};
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
-use librad::net::protocol::ProtocolEvent;
+use librad::net::{gossip, protocol::ProtocolEvent};
+use radicle_surf::vcs::git::git2;
 
-use coco::{seed::Seed, AnnounceConfig, RunConfig};
+use coco::{config, seed::Seed, AnnounceConfig, RunConfig};
 
 #[macro_use]
 mod common;
@@ -163,6 +164,144 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     // TODO(finto): List projects
     let project = bob_state.get_project(urn, None).await;
     assert!(project.is_ok());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn can_hear_commits() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
+
+    let run_config = RunConfig {
+        announce: AnnounceConfig {
+            interval: Duration::from_millis(100),
+        },
+        ..RunConfig::default()
+    };
+
+    let seed_tmp_dir = tempfile::tempdir()?;
+    let (seed_peer, seed_state) =
+        build_peer(&seed_tmp_dir, run_config.clone()).await?;
+    let _seed = {
+        seed_state
+            .init_owner("seedling.xyz")
+            .await?
+    };
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_repo_path = bob_tmp_dir.path().join("radicle");
+    let (bob_peer, bob_state) = build_peer_with_seeds(
+        &bob_tmp_dir,
+        vec![Seed {
+            addr: seed_state.listen_addr(),
+            peer_id: seed_state.peer_id(),
+        }],
+        run_config.clone(),
+    )
+    .await?;
+    let bob = bob_state.init_owner("bob").await?;
+
+    let eve_tmp_dir = tempfile::tempdir()?;
+    let (eve_peer, eve_state) = build_peer_with_seeds(
+        &eve_tmp_dir,
+        vec![Seed {
+            addr: seed_state.listen_addr(),
+            peer_id: seed_state.peer_id(),
+        }],
+        run_config.clone(),
+    )
+    .await?;
+    let _eve = eve_state.init_owner("eve").await?;
+
+    let seed_events = seed_peer.subscribe();
+    let bob_events = bob_peer.subscribe();
+    tokio::task::spawn(seed_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
+    tokio::task::spawn(eve_peer.into_running());
+
+    let project = bob_state
+        .init_project(
+            &bob,
+            shia_le_pathbuf(bob_repo_path.clone()),
+        )
+        .await?;
+
+    let project = {
+        let seed_peer_id = seed_state.peer_id();
+        let seed_addr = seed_state.listen_addr();
+        let bob_peer_id = bob_state.peer_id();
+        let urn = seed_state
+            .clone_project(
+                project.urn().into_rad_url(bob_peer_id),
+                vec![bob_state.listen_addr()].into_iter(),
+            )
+            .await
+            .expect("unable to clone project");
+        let urn = eve_state
+            .clone_project(urn.into_rad_url(seed_peer_id), vec![seed_addr].into_iter())
+            .await
+            .expect("unable to clone project");
+        eve_state.get_project(urn.clone(), None).await?
+    };
+
+    let commit_id = {
+        let repo = git2::Repository::open(bob_repo_path.join(project.name()))?;
+        let oid = repo
+            .find_reference(&format!("refs/heads/{}", project.default_branch()))?
+            .target()
+            .expect("Missing first commit");
+        let commit = repo.find_commit(oid)?;
+        let commit_id = {
+            let empty_tree = {
+                let mut index = repo.index()?;
+                let oid = index.write_tree()?;
+                repo.find_tree(oid)?
+            };
+
+            let author =
+                git2::Signature::now(bob.name(), &format!("{}@example.com", bob.name()))?;
+            repo.commit(
+                Some(&format!("refs/heads/{}", project.default_branch())),
+                &author,
+                &author,
+                "Successor commit",
+                &empty_tree,
+                &[&commit],
+            )?
+        };
+
+        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        commit_id
+    };
+
+    let announced = bob_events
+        .into_stream()
+        .filter_map(|res| match res.unwrap() {
+            coco::PeerEvent::Announced(updates) if updates.len() == 1 => future::ready(Some(())),
+            _ => future::ready(None),
+        })
+        .map(|_| ());
+    tokio::pin!(announced);
+    timeout(Duration::from_secs(1), announced.next()).await?;
+
+    let bob_peer_id = bob_state.peer_id();
+    let seed_heard = seed_events
+        .into_stream()
+        .filter_map(|res| match res.unwrap() {
+            coco::PeerEvent::Protocol(ProtocolEvent::Gossip(gossip::Info::Has(gossip)))
+                if gossip.provider.peer_id == bob_peer_id =>
+            {
+                future::ready(Some(()))
+            },
+            _ => future::ready(None),
+        })
+        .map(|_| ());
+    tokio::pin!(seed_heard);
+    timeout(Duration::from_secs(1), seed_heard.next()).await?;
+
+    assert!(seed_state.has_commit(project.urn(), commit_id).await?, "seed is missing the commit");
+    assert!(eve_state.has_commit(project.urn(), commit_id).await?, "eve is missing the commit");
 
     Ok(())
 }
