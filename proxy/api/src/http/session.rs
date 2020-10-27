@@ -28,7 +28,7 @@ fn get_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path::end())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::get)
 }
 
@@ -48,7 +48,7 @@ fn update_settings_filter(
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error, session};
+    use crate::{context, session};
 
     /// Clear the current [`session::Session`].
     pub async fn delete(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
@@ -58,14 +58,9 @@ mod handler {
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
-        match ctx {
-            context::Context::Unsealed(unsealed) => {
-                let sess = session::current(unsealed.state.clone(), &unsealed.store).await?;
-                Ok(reply::json(&sess))
-            },
-            context::Context::Sealed(_) => Err(Rejection::from(error::Error::KeystoreSealed)),
-        }
+    pub async fn get(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+        let sess = session::current(ctx.state.clone(), &ctx.store).await?;
+        Ok(reply::json(&sess))
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.
