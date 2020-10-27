@@ -13,17 +13,13 @@
 
   const dispatch = createEventDispatcher();
 
-  const firstSix = peer.peerId.substring(0, 7);
-  const lastSix = peer.peerId.substring(
-    peer.peerId.length - 7,
-    peer.peerId.length
-  );
+  const [head, tail] = peer.peerId.split(/(.{6}).*(.{6})/).filter(Boolean);
 </script>
 
 <Flex style="flex: 1; padding: 1.375rem 1.5rem;">
   <div slot="left" style="max-width: 22em">
     <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
-      {firstSix}…{lastSix} / {projectName}
+      {head}…{tail} / {projectName}
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">

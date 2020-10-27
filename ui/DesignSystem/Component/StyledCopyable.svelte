@@ -7,8 +7,7 @@
   export let notificationText = "Copied to your clipboard";
   export let truncate: boolean = false;
 
-  const firstSix = value.substring(0, 7);
-  const lastSix = value.substring(value.length - 7, value.length);
+  const [head, tail] = value.split(/(.{6}).*(.{6})/).filter(Boolean);
 
   let hover = false;
 </script>
@@ -32,9 +31,9 @@
       {#if !truncate || hover}
         <p class="typo-text-small-mono">{value}</p>
       {:else}
-        <p class="typo-text-small-mono">{firstSix}</p>
+        <p class="typo-text-small-mono">{head}</p>
         <Icon.EllipsisSmall />
-        <p class="typo-text-small-mono">{lastSix}</p>
+        <p class="typo-text-small-mono">{tail}</p>
       {/if}
     </Copyable>
   </div>
