@@ -1,18 +1,19 @@
-<script lang="ts">
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
-  import { Button } from "../Primitive";
-  import Illustration from "./Illustration.svelte";
 
   import { Variant as IllustrationVariant } from "../../src/illustration";
 
+  import { Button } from "../Primitive";
+  import Illustration from "./Illustration.svelte";
+
   const dispatch = createEventDispatcher();
 
-  export let style = "";
-  export let illustration = IllustrationVariant.Plant;
-  export let text = "Nothing to see here";
-  export let headerText = "";
-  export let primaryActionText = "";
-  export let secondaryActionText = "";
+  export let style: string = "";
+  export let illustration: IllustrationVariant = IllustrationVariant.Plant;
+  export let text: string = "Nothing to see here";
+  export let headerText: string = "";
+  export let primaryActionText: string = "";
+  export let secondaryActionText: string = "";
 
   const onPrimaryAction = () => {
     dispatch("primaryAction");

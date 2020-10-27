@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import type { Project } from "../../src/project";
   import { isMaintainer } from "../../src/project";
 
@@ -8,12 +8,12 @@
   import Stats from "./Stats.svelte";
 
   export let projects: Project[];
-  export let urn: string;
+  export let userUrn: string;
 
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
     description: project.metadata.description,
-    showMaintainerBadge: isMaintainer(urn, project),
+    showMaintainerBadge: isMaintainer(userUrn, project),
   });
 </script>
 
