@@ -78,7 +78,6 @@ mod handler {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -95,7 +94,7 @@ mod test {
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
-        session::set_settings(&ctx.store, settings);
+        session::set_settings(&ctx.store, settings)?;
 
         let res = request().method("DELETE").path("/").reply(&api).await;
         assert_eq!(res.status(), StatusCode::NO_CONTENT);

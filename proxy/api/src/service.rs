@@ -1,3 +1,5 @@
+//! Utilities for dynamic service configuration in [`crate::process`].
+
 use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
@@ -5,6 +7,9 @@ use tokio::sync::{mpsc, Notify};
 #[derive(Clone)]
 /// Persistent configuration for running the API and coco peer services.
 pub struct Config {
+    /// Secret key for the coco peer.
+    ///
+    /// If this is `None` coco is not started.
     pub key: Option<coco::keys::SecretKey>,
 }
 
@@ -42,15 +47,10 @@ impl Manager {
 
     /// Get the current configuration.
     pub async fn config(&mut self) -> Config {
-        loop {
-            let message = match self.message_receiver.try_recv() {
-                Ok(message) => message,
-                Err(_) => break,
-            };
-
+        while let Ok(message) = self.message_receiver.try_recv() {
             match message {
                 Message::Reset => self.config = Config { key: None },
-                Message::SetSecretKey { key } => self.config.key = Some(key),
+                Message::SetSecretKey(key) => self.config.key = Some(key),
                 Message::Seal => self.config.key = None,
             }
         }
@@ -58,6 +58,8 @@ impl Manager {
         self.config.clone()
     }
 
+    /// Returns a future that becomes ready when the service needs to restart because the
+    /// configuration has changed.
     pub fn notified_restart(&mut self) -> impl Future<Output = ()> + Send + 'static {
         let reload_notify = Arc::new(Notify::new());
         self.reload_notify = reload_notify.clone();
@@ -66,28 +68,34 @@ impl Manager {
 }
 
 /// Messages that are sent from [`Handle`] to [`Manager`] to change the service configuration.
+#[allow(clippy::clippy::large_enum_variant)]
 enum Message {
+    /// Reset the service to the initial configuration and delete all persisted state
     Reset,
-    SetSecretKey { key: coco::keys::SecretKey },
+    /// Unseal the key store with the given secret key
+    SetSecretKey(coco::keys::SecretKey),
+    /// Seal the key store and reload the services
     Seal,
 }
 
 /// A handle to communicate with [`Manager`].
 #[derive(Clone)]
 pub struct Handle {
+    /// Notifier to restart the services
     reload_notify: Arc<Notify>,
+    /// Sender side of the [`Message`] channel
     message_sender: mpsc::Sender<Message>,
 }
 
 impl Handle {
-    /// Reset all of the service state and restart the service
+    /// Reset the service to the initial configuration and delete all persisted state
     pub fn reset(&mut self) {
         self.send_message(Message::Reset)
     }
 
     /// Unseal the key store with the given secret key
     pub fn set_secret_key(&mut self, key: coco::keys::SecretKey) {
-        self.send_message(Message::SetSecretKey { key })
+        self.send_message(Message::SetSecretKey(key))
     }
 
     /// Seal the key store and reload the services

@@ -281,7 +281,6 @@ async fn rig(
     } else {
         let ctx = context::Context::Sealed(context::Sealed {
             store,
-            paths,
             test: args.test,
             service_handle,
             auth_cookie,

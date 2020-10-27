@@ -7,9 +7,7 @@ use crate::{context, http};
 
 /// Combination of all keystore filters.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    unseal_filter(ctx.clone())
-        .or(create_filter(ctx.clone()))
-        .boxed()
+    unseal_filter(ctx.clone()).or(create_filter(ctx)).boxed()
 }
 
 /// `POST /unseal`
@@ -63,6 +61,7 @@ mod handler {
         .into_response())
     }
 
+    /// Initialize the key store with a new key
     pub async fn create(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);

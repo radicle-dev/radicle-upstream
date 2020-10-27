@@ -74,11 +74,18 @@ pub fn initialize(
     Ok(session)
 }
 
+/// Update the session settings. Does nothing if there is no session yet.
+///
+/// # Errors
+///
+/// Errors when we cannot access the store.
 pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(), error::Error> {
-    let mut session = get_current(&store)?.unwrap();
-    session.settings = settings;
+    if let Some(mut session) = get_current(store)? {
+        session.settings = settings;
 
-    set_current(store, session)
+        set_current(store, session)?
+    }
+    Ok(())
 }
 
 /// Initialize a session for tests.
@@ -93,7 +100,7 @@ pub async fn initialize_test(ctx: &crate::context::Unsealed, owner_handle: &str)
         .init_owner(owner_handle)
         .await
         .expect("cannot init owner identity");
-    let identity = (ctx.state.peer_id(), owner.clone()).into();
+    let identity = (ctx.state.peer_id(), owner).into();
     initialize(&ctx.store, identity).expect("failed to initialize session")
 }
 
