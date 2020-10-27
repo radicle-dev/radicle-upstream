@@ -72,7 +72,7 @@
   }
 </style>
 
-<Remote {store} let:data={project} context="project">
+<Remote {store} let:data={project}>
   <div data-cy="remotes-modal" class="container">
     <Illustration
       style="margin-bottom: 1.5rem;"

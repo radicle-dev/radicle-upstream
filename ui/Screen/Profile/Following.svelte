@@ -86,7 +86,7 @@
                   <FollowToggle
                     expanded
                     warning
-                    following={true}
+                    following
                     on:unfollow={() => cancelRequest(request.urn)} />
                 </div>
               {/if}
