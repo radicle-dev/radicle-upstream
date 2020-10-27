@@ -93,7 +93,7 @@
           variant="secondary"
           disabled={!newPeer}
           on:click={() => submitPeer(project.id)}>
-          Follow remote
+          Follow
         </Button>
       </div>
     </form>
