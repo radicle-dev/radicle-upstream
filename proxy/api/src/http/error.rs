@@ -12,7 +12,7 @@ use crate::error;
 /// HTTP layer specific rejections.
 #[derive(Debug)]
 pub enum Routing {
-    /// The currently active [`coco::User`] is missing.
+    /// The currently active [`coco::user::User`] is missing.
     MissingOwner,
     /// The keystore is sealed, context does not have a signer.
     SealedKeystore,
@@ -20,7 +20,7 @@ pub enum Routing {
     NoSession,
     /// Query part of the URL cannot be deserialized.
     ///
-    /// Used by [`http::with_qs`] and [`http::with_qs_opt`].
+    /// Used by [`crate::http::with_qs`] and [`crate::http::with_qs_opt`].
     InvalidQuery {
         /// The original query string
         query: String,
@@ -31,7 +31,7 @@ pub enum Routing {
     },
     /// A query string is required but missing
     ///
-    /// Used by [`http::with_qs`].
+    /// Used by [`crate::http::with_qs`].
     QueryMissing,
 }
 

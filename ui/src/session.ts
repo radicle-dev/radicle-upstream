@@ -11,11 +11,16 @@ import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 import { createValidationStore, ValidationStatus } from "./validation";
 
 // TYPES
-
-export interface Session {
+export interface Authenticated {
   identity: identity.Identity;
   settings: Settings;
 }
+
+export interface Unauthenticated {
+  settings: Settings;
+}
+
+export type Session = Authenticated | Unauthenticated;
 
 // STATE
 const sessionStore = remote.createStore<Session | null>();
@@ -89,7 +94,7 @@ export const unseal = (passphrase: string): Promise<void> => {
       if (error instanceof api.ResponseError && error.response.status === 403) {
         sessionStore.success({} as Session);
       } else {
-        notification.error(`Could not unlock the session: ${  err.message}`);
+        notification.error(`Could not unlock the session: ${err.message}`);
       }
     })
     .then(fetchSession);

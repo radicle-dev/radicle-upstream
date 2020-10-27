@@ -1,6 +1,6 @@
 // Client representation of proxy waiting room requests, subscriptions, etc.
 
-enum Status {
+export enum Status {
   Created = "created",
   Requested = "requested",
   Found = "found",
@@ -8,7 +8,7 @@ enum Status {
   Cloned = "cloned",
   Cancelled = "cancelled",
   Failed = "failed",
-  TimedOut = "timed_out",
+  TimedOut = "timedOut",
 }
 
 export interface ProjectRequest {

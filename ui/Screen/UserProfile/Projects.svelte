@@ -17,7 +17,7 @@
 </script>
 
 <Remote {store} let:data={projects}>
-  <ProjectList {projects} urn={params.urn} on:select={select} />
+  <ProjectList {projects} userUrn={params.urn} on:select={select} />
 
   <div slot="error" let:error>
     <Error message={error && error.message} />

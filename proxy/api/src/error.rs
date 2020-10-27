@@ -24,4 +24,8 @@ pub enum Error {
     /// The key store is sealed
     #[error("Keystore is sealed")]
     KeystoreSealed,
+
+    /// Errors stemming from [`coco::request::waiting_room::WaitingRoom`] interactions.
+    #[error(transparent)]
+    WaitingRoom(#[from] coco::request::waiting_room::Error),
 }

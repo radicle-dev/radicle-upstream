@@ -9,19 +9,17 @@
   export let disabled: boolean = false;
   export let expanded: boolean = false;
   export let tracking: boolean = false;
+  export let warning: boolean = false;
   export let style = "";
 
-  export let warning: boolean = false;
-
-  const dispatch = createEventDispatcher();
   let active: boolean = false;
 
+  const dispatch = createEventDispatcher();
   const down = () => {
     if (disabled) return;
 
     active = true;
   };
-
   const up = () => {
     if (disabled) return;
 

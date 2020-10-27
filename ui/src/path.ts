@@ -9,7 +9,7 @@ export const discovery = (): string => "/discovery";
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
-export const profileTracking = (): string => "/profile/tracking";
+export const profileFollowing = (): string => "/profile/following";
 export const profileWallet = (): string => "/profile/wallet";
 export const onboarding = (): string => "/onboarding";
 export const lock = (): string => "/lock";
