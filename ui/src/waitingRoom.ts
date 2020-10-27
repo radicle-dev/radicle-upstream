@@ -8,7 +8,7 @@ export enum Status {
   Cloned = "cloned",
   Cancelled = "cancelled",
   Failed = "failed",
-  TimedOut = "timed_out",
+  TimedOut = "timedOut",
 }
 
 export interface ProjectRequest {

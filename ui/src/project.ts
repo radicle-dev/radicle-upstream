@@ -340,6 +340,10 @@ export const clearLocalState = event.create<Kind, Msg>(
   update
 );
 
+export const cancelRequest = (urn: string): Promise<null> => {
+  return api.del(`projects/requests/${urn}`);
+};
+
 export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {
   return api.get<waitingRoom.ProjectRequest[]>("projects/requests");
 };

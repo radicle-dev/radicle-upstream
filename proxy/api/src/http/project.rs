@@ -7,6 +7,8 @@ use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, http};
 
+mod request;
+
 /// Combination of all routes.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     checkout_filter(ctx.clone())
@@ -14,10 +16,9 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(discover_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
         .or(owner_contributed_filter(ctx.clone()))
-        .or(owner_requested_filter(ctx.clone()))
         .or(owner_tracked_filter(ctx.clone()))
         .or(peers_filter(ctx.clone()))
-        .or(request_filter(ctx.clone()))
+        .or(path("requests").and(request::filters(ctx.clone())))
         .or(track_filter(ctx.clone()))
         .or(user_filter(ctx.clone()))
         .or(track_filter(ctx.clone()))
@@ -81,17 +82,6 @@ fn owner_contributed_filter(
         .and_then(handler::list_owner_contributed)
 }
 
-/// `GET /requested`
-fn owner_requested_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
-        .and(warp::get())
-        .and(path("requests"))
-        .and(path::end())
-        .and_then(handler::list_owner_requested)
-}
-
 /// `GET /tracked`
 fn owner_tracked_filter(
     ctx: context::Context,
@@ -113,18 +103,6 @@ fn peers_filter(
         .and(path("peers"))
         .and(path::end())
         .and_then(handler::peers)
-}
-
-/// `PUT /request/<urn>`
-fn request_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
-        .and(warp::put())
-        .and(path("requests"))
-        .and(path::param::<coco::Urn>())
-        .and(path::end())
-        .and_then(handler::request)
 }
 
 /// `PUT /<urn>/track/<peer_id>`
@@ -168,7 +146,7 @@ fn user_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::{path::PathBuf, time::Instant};
+    use std::path::PathBuf;
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
@@ -241,13 +219,6 @@ mod handler {
         Ok(reply::json(&projects.contributed))
     }
 
-    /// List all project requests the current user has issued.
-    pub async fn list_owner_requested(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let requests = ctx.peer_control.get_project_requests().await;
-
-        Ok(reply::json(&requests))
-    }
-
     /// List all projects tracked by the current user.
     pub async fn list_owner_tracked(ctx: context::Context) -> Result<impl Reply, Rejection> {
         let projects = project::Projects::list(&ctx.state).await?.tracked;
@@ -280,16 +251,6 @@ mod handler {
             .collect::<Vec<_>>();
 
         Ok(reply::json(&peers))
-    }
-
-    /// Kick off a network request for the [`project::Project`] of the given `id`.
-    pub async fn request(
-        mut ctx: context::Context,
-        urn: coco::Urn,
-    ) -> Result<impl Reply, Rejection> {
-        let request = ctx.peer_control.request_urn(&urn, Instant::now()).await;
-
-        Ok(reply::json(&request))
     }
 
     /// Track the peer for the provided project.
@@ -349,8 +310,6 @@ pub struct MetadataInput {
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::time::Instant;
-
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
@@ -591,54 +550,6 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(project));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn request_project() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
-        );
-
-        let res = request()
-            .method("PUT")
-            .path(&format!("/requests/{}", urn))
-            .reply(&api)
-            .await;
-        let want = ctx.peer_control.get_project_request(&urn).await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn list_requested() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
-        );
-
-        let want = ctx.peer_control.request_urn(&urn, Instant::now()).await;
-        let res = request().method("GET").path("/requests").reply(&api).await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!([want]));
         });
 
         Ok(())
