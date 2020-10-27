@@ -289,9 +289,7 @@ const update = (msg: Msg): void => {
         .then(() => {
           fetchPeers({ urn: msg.urn });
         })
-        .catch(e => {
-          console.log(e);
-        });
+        .catch(peersStore.error);
       break;
 
     case Kind.UntrackPeer:
@@ -300,9 +298,7 @@ const update = (msg: Msg): void => {
         .then(() => {
           fetchPeers({ urn: msg.urn });
         })
-        .catch(e => {
-          console.log(e);
-        });
+        .catch(peersStore.error);
       break;
   }
 };
