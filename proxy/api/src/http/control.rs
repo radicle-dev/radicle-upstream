@@ -23,7 +23,7 @@ fn create_project_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
-        .and(super::with_context(ctx.clone()))
+        .and(super::with_context_unsealed(ctx.clone()))
         .and(super::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create_project)
@@ -50,7 +50,7 @@ mod handler {
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         owner: user::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {

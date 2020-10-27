@@ -16,7 +16,7 @@ pub fn local_peer_status_stream(
     subscriptions: Subscriptions,
 ) -> BoxedFilter<(impl Reply,)> {
     path!("local_peer_events")
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(warp::any().map(move || subscriptions.clone()))
         .and_then(handler::local_peer_events)
         .boxed()
@@ -36,7 +36,7 @@ mod handler {
 
     /// Sets up local peer events notification stream.
     pub async fn local_peer_events(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         subscriptions: Subscriptions,
     ) -> Result<impl Reply, Rejection> {
         let mut peer_control = ctx.peer_control;

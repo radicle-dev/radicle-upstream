@@ -151,6 +151,9 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         )
                     },
                 },
+                error::Error::KeystoreSealed => {
+                    (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string())
+                },
                 _ => {
                     // TODO(xla): Match all variants and properly transform similar to
                     // gaphql::error.
