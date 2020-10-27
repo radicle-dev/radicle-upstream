@@ -65,7 +65,7 @@ mod handler {
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
 
-    /// Kick off a network request for the [`project::Project`] of the given `id`.
+    /// Kick off a network request for the [`crate::project::Project`] of the given `id`.
     ///
     /// FIXME(xla): Endpoint ought to return `201` if the request was newly created, otherwise
     /// `200` if there was a request present for the urn.
