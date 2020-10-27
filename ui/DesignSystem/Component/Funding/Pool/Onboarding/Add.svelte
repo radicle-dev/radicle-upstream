@@ -2,12 +2,13 @@
   import { Box } from "../../../../Primitive";
 
   export let style = "";
+  export let done = false;
 </script>
 
 <style>
   h2,
   p {
-    margin-bottom: 1rem;
+    margin-top: 1rem;
   }
 
   p {
@@ -26,14 +27,14 @@
   }
 </style>
 
-<Box {style}>
+<Box {style} {done}>
   <h2>Add</h2>
   <p>
     Add receivers to your outgoing support by clicking the “Support” button on
     profiles or project pages.
   </p>
-  <span class="tip">
+  <p class="tip">
     Tip: Add any Ethereum address to receive outgoing support with the field
     below.
-  </span>
+  </p>
 </Box>

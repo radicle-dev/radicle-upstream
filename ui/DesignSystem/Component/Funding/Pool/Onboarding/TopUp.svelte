@@ -34,12 +34,7 @@
   }
 </style>
 
-<Box {style}>
-  {#if done}
-    <IconWrapper>
-      <Icon.CheckBox style="fill: var(--color-positive);" />
-    </IconWrapper>
-  {/if}
+<Box {style} {done}>
   <h2>Top up</h2>
   <p>Fill up your outgoing balance.</p>
   <p>Balance <strong>{balance} DAI</strong></p>

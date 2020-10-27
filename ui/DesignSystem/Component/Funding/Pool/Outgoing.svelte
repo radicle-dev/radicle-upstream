@@ -223,7 +223,7 @@
       <div class="onboarding">
         <h3>Getting Started</h3>
         <div class="steps">
-          <Add />
+          <Add done={poolData.receiverAddresses.length > 0} />
           <Budget
             currentValue={poolData.amountPerBlock}
             ongoing={ongoingMonthlyContributionUpdate}

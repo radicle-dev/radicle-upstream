@@ -1,5 +1,10 @@
 <script lang="typescript">
+  import { Icon } from "./";
+  import IconWrapper from "./Icon/IconWrapper.svelte";
+
   export let style = "";
+
+  export let done = false;
 </script>
 
 <style>
@@ -21,5 +26,10 @@
 </style>
 
 <div class="box" {style}>
+  {#if done}
+    <IconWrapper>
+      <Icon.CheckBox style="fill: var(--color-positive);" />
+    </IconWrapper>
+  {/if}
   <slot />
 </div>

@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { Box, Icon, Input } from "../../../../Primitive";
-  import IconWrapper from "../../../../Primitive/Icon/IconWrapper.svelte";
 
   import {
     amountStore,
@@ -56,12 +55,7 @@
   }
 </style>
 
-<Box {style}>
-  {#if done}
-    <IconWrapper>
-      <Icon.CheckBox style="fill: var(--color-positive);" />
-    </IconWrapper>
-  {/if}
+<Box {style} {done}>
   <h2>Budget</h2>
   <p>
     Set your monthly budget for outgoing support. This amount will flow to your
