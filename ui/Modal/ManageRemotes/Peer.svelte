@@ -55,7 +55,7 @@
     {:else}
       <Tooltip>
         <FollowButton
-          tracking
+          following
           expanded
           on:untrack={() => {
             dispatch('unfollow', { projectUrn, peerId: peer.peerId });
