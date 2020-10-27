@@ -35,17 +35,33 @@
     session.fetch();
   };
 
+  let retries = 0;
+
+  const createIdentityRetry = async (handle, passphrase) => {
+    await createIdentity({
+      handle: handle,
+      passphrase: passphrase,
+    })
+      .then(id => {
+        identity = id;
+        state = State.SuccessView;
+      })
+      .catch(error => {
+        if (error.message === "Failed to fetch" && retries < 10) {
+          retries += 1;
+          setTimeout(() => createIdentityRetry(handle, passphrase), 5000);
+        } else {
+          throw error;
+        }
+      });
+  };
+
   const onCreateIdentity = async (handle, passphrase) => {
     try {
       await session.createKeystore();
-      // TODO(merle): Replace timeout with check on api availability
-      await setTimeout(async () => {
-        identity = await createIdentity({
-          handle: handle,
-          passphrase: passphrase,
-        });
-        state = State.SuccessView;
-      }, 20000);
+      retries = 0;
+      // Retry until the API is up
+      await createIdentityRetry(handle, passphrase);
     } catch (error) {
       animateBackward();
       state = State.EnterName;
