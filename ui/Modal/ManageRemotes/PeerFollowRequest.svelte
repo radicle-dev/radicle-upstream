@@ -5,7 +5,7 @@
   import type { User } from "../../src/project";
 
   import { Flex } from "../../DesignSystem/Primitive";
-  import FollowButton from "./FollowButton.svelte";
+  import { FollowButton } from "../../DesignSystem/Component";
 
   export let peer: User;
   export let projectName: string;

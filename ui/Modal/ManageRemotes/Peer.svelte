@@ -9,10 +9,7 @@
   import { PeerType, Role } from "../../src/project";
 
   import { Avatar, Flex } from "../../DesignSystem/Primitive";
-
-  import Badge from "./Badge.svelte";
-  import Tooltip from "./Tooltip.svelte";
-  import FollowButton from "./FollowButton.svelte";
+  import { Badge, FollowButton, Tooltip } from "../../DesignSystem/Component";
 
   export let peer: User;
   export let projectUrn: Urn;

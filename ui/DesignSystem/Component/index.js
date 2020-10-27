@@ -7,8 +7,6 @@ import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
 import FollowButton from "./FollowButton.svelte";
-import FollowPeerListItem from "./FollowPeerListItem.svelte";
-import FollowPeerRequestListItem from "./FollowPeerRequestListItem.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
@@ -52,8 +50,6 @@ export {
   EmptyState,
   Error,
   FollowButton,
-  FollowPeerListItem,
-  FollowPeerRequestListItem,
   Header,
   HorizontalMenu,
   Hoverable,

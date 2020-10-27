@@ -1,12 +1,9 @@
 <script lang="ts">
   import { Button, Input } from "../DesignSystem/Primitive";
-  import {
-    Illustration,
-    List,
-    Remote,
-    FollowPeerListItem,
-    FollowPeerRequestListItem,
-  } from "../DesignSystem/Component";
+  import { Illustration, List, Remote } from "../DesignSystem/Component";
+
+  import Peer from "./ManageRemotes/Peer.svelte";
+  import PeerFollowRequest from "./ManageRemotes/PeerFollowRequest.svelte";
 
   import type { PeerId } from "../src/identity";
   import type { Urn } from "../src/urn";
@@ -109,7 +106,7 @@
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
-          <FollowPeerListItem
+          <Peer
             {peer}
             on:unfollow={event => {
               unfollowRemote(event.detail.projectUrn, event.detail.peerId);
@@ -135,7 +132,7 @@
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1rem 0 0; padding: 0;">
-          <FollowPeerRequestListItem
+          <PeerFollowRequest
             {peer}
             on:cancel={event => {
               cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
