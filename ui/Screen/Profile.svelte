@@ -50,6 +50,7 @@
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
   <Header.Large
+    avatarFallback={session.identity.avatarFallback}
     name={session.identity.metadata.handle}
     urn={session.identity.urn}>
     <div slot="left">
