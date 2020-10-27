@@ -116,10 +116,14 @@
       {/if}
 
       <div class="metadata">
-        <h1 data-cy="entity-name" class="typo-overflow-ellipsis">{name}</h1>
+        <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
+          {name}
+        </h1>
         <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {#if description.length > 0}
-          <p class="description typo-overflow-ellipsis">{description}</p>
+          <p class="description typo-overflow-ellipsis" title={description}>
+            {description}
+          </p>
         {/if}
         {#if stats}
           <div class="project-stats" data-cy="project-stats">
