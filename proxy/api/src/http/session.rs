@@ -62,7 +62,6 @@ mod handler {
         match ctx {
             context::Context::Unsealed(unsealed) => {
                 let sess = session::current(unsealed.state.clone(), &unsealed.store).await?;
-
                 Ok(reply::json(&sess))
             },
             context::Context::Sealed(_) => Err(Rejection::from(error::Error::KeystoreSealed)),
