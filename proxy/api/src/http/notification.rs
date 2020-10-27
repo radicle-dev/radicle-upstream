@@ -60,7 +60,7 @@ mod handler {
         ))
     }
 
-    /// Helper for mapping [`Notification::LocalPeerStatusChanged`] events onto
+    /// Helper for mapping [`Notification::LocalPeer`] events onto
     /// [`sse::ServerSentEvent`]s.
     fn map_to_event(
         event: notification::LocalPeer,
