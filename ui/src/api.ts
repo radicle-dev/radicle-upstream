@@ -38,6 +38,7 @@ const request = (endpoint: string, init?: Init): Request => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     ...init,
   });
 };

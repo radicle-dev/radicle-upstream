@@ -1,8 +1,10 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
+use std::sync::Arc;
+use tokio::sync::RwLock;
+
 use crate::service;
 use coco::PeerControl;
-use tokio::sync::mpsc;
 
 #[cfg(test)]
 use coco::{keystore, signer, RunConfig};
@@ -31,6 +33,13 @@ impl Context {
         match self {
             Self::Sealed(sealed) => &sealed.store,
             Self::Unsealed(unsealed) => &unsealed.store,
+        }
+    }
+
+    pub fn auth_cookie(&self) -> Arc<RwLock<Option<String>>> {
+        match self {
+            Self::Sealed(sealed) => sealed.auth_cookie.clone(),
+            Self::Unsealed(unsealed) => unsealed.auth_cookie.clone(),
         }
     }
 
@@ -66,6 +75,9 @@ pub struct Unsealed {
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
     pub service_handle: service::Handle,
+
+    /// Cookie set on unsealing the key store.
+    pub auth_cookie: Arc<RwLock<Option<String>>>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -77,6 +89,8 @@ pub struct Sealed {
     pub test: bool,
     pub paths: coco::Paths,
     pub service_handle: service::Handle,
+    /// Cookie set on unsealing the key store.
+    pub auth_cookie: Arc<RwLock<Option<String>>>,
 }
 
 impl Unsealed {
@@ -112,6 +126,7 @@ impl Unsealed {
             store,
             test: false,
             service_handle: service::Handle::dummy(),
+            auth_cookie: Arc::new(RwLock::new(None)),
         })
     }
 }

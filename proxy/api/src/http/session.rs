@@ -109,7 +109,14 @@ mod handler {
         }
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);
-        Ok(reply::json(&serde_json::Value::Null).into_response())
+
+        let auth_cookie_lock = ctx.auth_cookie();
+        let mut cookie = auth_cookie_lock.write().await;
+        *cookie = Some("chocolate".into());
+        Ok(
+            warp::reply::with_header(reply(), "Set-Cookie", "auth-cookie=chocolate; Path=/")
+                .into_response(),
+        )
     }
 }
 

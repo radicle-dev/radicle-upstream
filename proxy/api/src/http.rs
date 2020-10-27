@@ -80,7 +80,8 @@ pub fn api(
 
     let cors = warp::cors()
         .allow_any_origin()
-        .allow_headers(&[warp::http::header::CONTENT_TYPE])
+        .allow_credentials(true)
+        .allow_headers(&[warp::http::header::CONTENT_TYPE, warp::http::header::COOKIE])
         .allow_methods(&[
             warp::http::Method::DELETE,
             warp::http::Method::GET,
@@ -137,13 +138,21 @@ fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
 /// Otherwise the requests rejects with [`crate::error::Error::KeystoreSealed`].
 fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unsealed,)> {
     with_context(ctx)
-        .and_then(|ctx| async move {
-            match ctx {
+        .and(warp::filters::cookie::cookie("auth-cookie"))
+        .and_then(|ctx, cookie_value: String| async move {
+            let unsealed_ctx = match ctx {
                 context::Context::Sealed(_) => {
-                    Err(Rejection::from(crate::error::Error::KeystoreSealed))
+                    return Err(Rejection::from(crate::error::Error::KeystoreSealed))
                 },
-                context::Context::Unsealed(unsealed) => Ok(unsealed),
+                context::Context::Unsealed(unsealed) => unsealed,
+            };
+            let ctx_cookie = unsealed_ctx.auth_cookie.read().await;
+            if Some(&cookie_value) != ctx_cookie.as_ref() {
+                // TODO(merle): Create cookie specific error?
+                return Err(Rejection::from(crate::error::Error::KeystoreSealed));
             }
+            drop(ctx_cookie);
+            Ok(unsealed_ctx)
         })
         .boxed()
 }
