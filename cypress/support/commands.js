@@ -6,6 +6,7 @@ Cypress.Commands.add("resetProxyState", async () => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({
       passphrase: "radicle-upstream",
     }),
@@ -34,6 +35,7 @@ Cypress.Commands.add(
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({
         name,
         description,
@@ -49,6 +51,7 @@ Cypress.Commands.add("onboardUser", async (handle = "secretariat") => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({
       passphrase: "radicle-upstream",
     }),
@@ -58,6 +61,7 @@ Cypress.Commands.add("onboardUser", async (handle = "secretariat") => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({
       handle,
     }),

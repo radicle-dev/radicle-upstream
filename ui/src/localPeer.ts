@@ -51,7 +51,8 @@ export const status = statusStore.readable;
 
 statusStore.start(() => {
   const source = new EventSource(
-    "http://localhost:8080/v1/notifications/local_peer_events"
+    "http://localhost:8080/v1/notifications/local_peer_events",
+    { withCredentials: true }
   );
 
   source.addEventListener(EventKind.StatusChanged, (event: Event): void => {

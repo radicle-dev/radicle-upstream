@@ -101,11 +101,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(merle): Replace with correct password check
         if input.passphrase != "radicle-upstream" {
-            return Ok(warp::reply::with_status(
-                reply::json(&serde_json::Value::Null),
-                StatusCode::FORBIDDEN,
-            )
-            .into_response());
+            return Err(Rejection::from(error::Error::KeystoreSealed));
         }
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);
@@ -113,10 +109,12 @@ mod handler {
         let auth_cookie_lock = ctx.auth_cookie();
         let mut cookie = auth_cookie_lock.write().await;
         *cookie = Some("chocolate".into());
-        Ok(
-            warp::reply::with_header(reply(), "Set-Cookie", "auth-cookie=chocolate; Path=/")
-                .into_response(),
+        Ok(warp::reply::with_header(
+            reply::with_status(reply(), StatusCode::NO_CONTENT),
+            "Set-Cookie",
+            "auth-cookie=chocolate; Path=/",
         )
+        .into_response())
     }
 }
 

@@ -60,17 +60,11 @@ interface UpdateSettings extends event.Event<Kind> {
 
 type Msg = Clear | ClearCache | Fetch | UpdateSettings;
 
-const handleSessionError = async (
-  error: Error,
-  onUnseal?: boolean
-): Promise<Session | null> => {
+const handleSessionError = async (error: Error): Promise<Session | null> => {
   if (error instanceof api.ResponseError) {
     if (error.response.status === 404) {
       return null;
     } else if (error.response.status === 403) {
-      if (onUnseal) {
-        notification.error("Could not unlock the session.");
-      }
       return {} as Session;
     } else {
       throw error;
@@ -90,10 +84,15 @@ const fetchSession = (): Promise<void> =>
 export const unseal = (passphrase: string): Promise<void> => {
   sessionStore.loading();
   return api
-    .post<unknown, Session>(`session/unseal`, { passphrase })
-    .catch(error => handleSessionError(error, true))
-    .then(sessionStore.success)
-    .catch(sessionStore.error);
+    .set<unknown>(`session/unseal`, { passphrase })
+    .catch((err: error.Error) => {
+      if (error instanceof api.ResponseError && error.response.status === 403) {
+        sessionStore.success({} as Session);
+      } else {
+        notification.error(`Could not unlock the session: ${  err.message}`);
+      }
+    })
+    .then(fetchSession);
 };
 
 const updateSettings = (settings: Settings): Promise<void> =>

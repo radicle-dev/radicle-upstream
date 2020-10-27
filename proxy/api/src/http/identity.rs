@@ -69,7 +69,8 @@ mod handler {
         Ok(warp::reply::with_header(
             reply::with_status(reply::json(&id), StatusCode::CREATED),
             "Set-Cookie",
-            "auth-cookie=chocolate; Path=/"))
+            "auth-cookie=chocolate; Path=/",
+        ))
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
