@@ -38,7 +38,7 @@ pub fn api(
     subscriptions: Subscriptions,
     selfdestruct: mpsc::Sender<()>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let test = ctx.test;
+    let test = ctx.test();
 
     let avatar_filter = path("avatars").and(avatar::get_filter());
     let control_filter = path("control")
@@ -100,8 +100,8 @@ pub fn api(
 #[must_use]
 fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
     warp::any()
-        .and(with_context(ctx))
-        .and_then(|ctx: context::Context| async move {
+        .and(with_context_unsealed(ctx))
+        .and_then(|ctx: context::Unsealed| async move {
             let session = crate::session::current(ctx.state.clone(), &ctx.store)
                 .await
                 .expect("unable to get current sesison");
@@ -126,6 +126,22 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
 #[must_use]
 fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
     warp::any().map(move || ctx.clone()).boxed()
+}
+
+/// Assert that the context is unsealed and and passes [`context::Unsealed`] to the handler.
+///
+/// Otherwise the requests rejects with [`crate::error::Error::KeystoreSealed`].
+fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unsealed,)> {
+    with_context(ctx)
+        .and_then(|ctx| async move {
+            match ctx {
+                context::Context::Sealed(_) => {
+                    Err(Rejection::from(crate::error::Error::KeystoreSealed))
+                },
+                context::Context::Unsealed(unsealed) => Ok(unsealed),
+            }
+        })
+        .boxed()
 }
 
 /// Parses an optional query string with [`serde_qs`] and returns the result.

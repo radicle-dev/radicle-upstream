@@ -16,7 +16,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn cancel_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::delete())
         .and(path::param::<coco::Urn>())
         .and(path::end())
@@ -27,7 +27,7 @@ fn cancel_filter(
 fn create_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::put())
         .and(path::param::<coco::Urn>())
         .and(path::end())
@@ -38,7 +38,7 @@ fn create_filter(
 fn list_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::get())
         .and(path::end())
         .and_then(handler::list)
@@ -54,7 +54,7 @@ mod handler {
 
     /// Abort search for an ongoing request.
     pub async fn cancel(
-        mut ctx: context::Context,
+        mut ctx: context::Unsealed,
         urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         ctx.peer_control
@@ -70,7 +70,7 @@ mod handler {
     /// FIXME(xla): Endpoint ought to return `201` if the request was newly created, otherwise
     /// `200` if there was a request present for the urn.
     pub async fn create(
-        mut ctx: context::Context,
+        mut ctx: context::Unsealed,
         urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let request = ctx.peer_control.request_project(&urn, Instant::now()).await;
@@ -79,7 +79,7 @@ mod handler {
     }
 
     /// List all project requests the current user has issued.
-    pub async fn list(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
+    pub async fn list(mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let requests = ctx.peer_control.get_project_requests().await;
 
         Ok(reply::json(&requests))
@@ -99,8 +99,8 @@ mod test {
     #[tokio::test]
     async fn cancel() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(
             coco::Hash::hash(b"kisses-of-the-sun"),
@@ -123,8 +123,8 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(
             coco::Hash::hash(b"kisses-of-the-sun"),
@@ -149,8 +149,8 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(
             coco::Hash::hash(b"kisses-of-the-sun"),
