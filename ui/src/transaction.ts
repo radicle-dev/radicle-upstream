@@ -1,8 +1,7 @@
 import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
-import type { ContractTransaction } from "radicle-contracts/contract-bindings/ethers/Pool";
-import { BigNumberish } from "ethers";
+import { BigNumberish, ContractTransaction } from "ethers";
 
 import { provider } from "./wallet";
 
