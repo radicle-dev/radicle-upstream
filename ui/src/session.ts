@@ -89,15 +89,19 @@ const fetchSession = (): Promise<void> =>
 export const unseal = (passphrase: string): Promise<void> => {
   sessionStore.loading();
   return api
-    .set<unknown>(`session/unseal`, { passphrase })
-    .catch((err: error.Error) => {
+    .set<unknown>(`keystore/unseal`, { passphrase })
+    .catch((error: error.Error) => {
       if (error instanceof api.ResponseError && error.response.status === 403) {
         sessionStore.success({} as Session);
       } else {
-        notification.error(`Could not unlock the session: ${err.message}`);
+        notification.error(`Could not unlock the session: ${error.message}`);
       }
     })
     .then(fetchSession);
+};
+
+export const createKeystore = (): Promise<null> => {
+  return api.set<unknown>(`keystore`, {});
 };
 
 const updateSettings = (settings: Settings): Promise<void> =>

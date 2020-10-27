@@ -75,7 +75,10 @@ mod handler {
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
         let sess =
             crate::session::get_current(ctx.store())?.ok_or(http::error::Routing::NoSession)?;
-        Ok(reply::json(&sess))
+        match ctx {
+            context::Context::Unsealed(_) => Ok(reply::json(&sess)),
+            context::Context::Sealed(_) => Err(Rejection::from(error::Error::KeystoreSealed)),
+        }
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.

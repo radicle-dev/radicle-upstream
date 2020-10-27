@@ -37,11 +37,15 @@
 
   const onCreateIdentity = async (handle, passphrase) => {
     try {
-      identity = await createIdentity({
-        handle: handle,
-        passphrase: passphrase,
-      });
-      state = State.SuccessView;
+      await session.createKeystore();
+      // TODO(merle): Replace timeout with check on api availability
+      await setTimeout(async () => {
+        identity = await createIdentity({
+          handle: handle,
+          passphrase: passphrase,
+        });
+        state = State.SuccessView;
+      }, 20000);
     } catch (error) {
       animateBackward();
       state = State.EnterName;

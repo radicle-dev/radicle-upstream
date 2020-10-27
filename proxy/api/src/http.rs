@@ -9,6 +9,7 @@ mod avatar;
 mod control;
 mod error;
 mod identity;
+mod keystore;
 mod notification;
 mod project;
 mod session;
@@ -55,16 +56,7 @@ pub fn api(
         path("notifications").and(notification::filters(ctx.clone(), subscriptions));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
-    let keystore_filter = path("keystore")
-        .and(warp::post())
-        .and(path::end())
-        .and(with_context(ctx.clone()))
-        .and_then(|_ctx| async move {
-            Ok::<_, warp::Rejection>(warp::reply::with_status(
-                warp::reply(),
-                warp::http::StatusCode::NO_CONTENT,
-            ))
-        });
+    let keystore_filter = path("keystore").and(keystore::filters(ctx.clone()));
     let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
