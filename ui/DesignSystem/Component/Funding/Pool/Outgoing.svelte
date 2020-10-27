@@ -203,7 +203,7 @@
         {#if !ongoingTopUp}
           <Button
             dataCy="top-up-pool-button"
-            variant="vanilla"
+            variant="primary"
             on:click={openSendModal}
             style="margin-left: 12px">
             Top up
