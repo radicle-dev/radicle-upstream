@@ -1,21 +1,21 @@
-<script lang="typescript">
-  import { BadgeType } from "../../src/badge.ts";
-  import { PeerType, removeRemote, Role } from "../../src/project";
+<script lang="ts">
+  import { BadgeType } from "../../src/badge";
   import { CSSPosition } from "../../src/style";
-  
+  import { PeerType, removeRemote, Role, User } from "../../src/project";
+  import { Urn } from "../../src/urn";
+
   import { Avatar, Flex } from "../../DesignSystem/Primitive";
-  
+
   import Badge from "./Badge.svelte";
   import Tooltip from "./Tooltip.svelte";
   import TrackToggle from "./TrackToggle.svelte";
 
-
-  export let peer: Peer = null;
-  export let projectUrn: Urn = null;
-  export let projectName: string = null;
+  export let peer: User;
+  export let projectUrn: Urn;
+  export let projectName: string;
 
   const unfollowRemote = () => {
-    removeRemote(projectId, peer.peerId);
+    removeRemote(projectUrn, peer.peerId);
   };
 </script>
 

@@ -79,6 +79,7 @@ export interface Remote {
 export type Peer = Local | Remote;
 
 export interface User {
+  peerId: identity.PeerId;
   type: PeerType;
   identity: identity.Identity;
   role: Role;

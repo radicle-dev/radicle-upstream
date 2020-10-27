@@ -25,8 +25,8 @@
     peerValidation.reset();
   }
 
-  const submitRemote = async (projectId: Urn) => {
-    if (await addRemote(projectId, newRemote)) {
+  const submitRemote = async (projectUrn: Urn) => {
+    if (await addRemote(projectUrn, newRemote)) {
       newRemote = "";
     }
   };
@@ -100,7 +100,7 @@
           <TrackedRemoteListItem
             {peer}
             projectName={project.metadata.name}
-            projectId={project.id} />
+            projectUrn={project.id} />
         </List>
       {/if}
     </Remote>
@@ -123,7 +123,7 @@
           <UntrackedRemoteListItem
             {peer}
             projectName={project.metadata.name}
-            projectId={project.id} />
+            projectUrn={project.id} />
         </List>
       {/if}
     </Remote>

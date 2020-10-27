@@ -1,12 +1,13 @@
 <script lang="typescript">
-  import { removeRemote } from "../../src/project";
-  
+  import { removeRemote, User } from "../../src/project";
+  import { Urn } from "../../src/urn";
+
   import { Flex } from "../../DesignSystem/Primitive";
   import TrackToggle from "./TrackToggle.svelte";
 
-  export let peer: Peer = null;
-  export let projectName: string = null;
-  export let projectUrn: Urn = null;
+  export let peer: User;
+  export let projectName: string;
+  export let projectUrn: Urn;
 
   const firstSix = peer.peerId.substring(0, 7);
   const lastSix = peer.peerId.substring(
@@ -15,7 +16,7 @@
   );
 
   const cancelRemoteTracking = () => {
-    removeRemote(projectId, peer.peerId);
+    removeRemote(projectUrn, peer.peerId);
   };
 </script>
 
