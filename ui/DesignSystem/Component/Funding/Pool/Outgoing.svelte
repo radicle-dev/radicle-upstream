@@ -229,15 +229,6 @@
         </div>
       </div>
 
-      <p>
-        <strong>{poolData.amountPerBlock} DAI</strong> per month will be taken from
-        your <strong>{poolData.balance} DAI</strong> that you’ve added to this contract,
-        which means that <strong>{poolData.amountPerBlock / poolData.receiverAddresses.length}
-          DAI</strong> per month will be evenly spread between the <strong>{poolData.receiverAddresses.length}</strong>
-        people you’re supporting. To keep the support going, top up by <strong>October
-          14th</strong> (TODO).
-      </p>
-
       <div style="margin-top: var(--content-padding)">
         <Input.Textarea
           disabled={ongoingBeneficiariesUpdate}
