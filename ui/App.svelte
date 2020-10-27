@@ -1,11 +1,11 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
+  import * as hotkeys from "./src/hotkeys.ts";
+  import "./src/localPeer.ts";
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
-  import * as hotkeys from "./src/hotkeys.ts";
-
   import { fetch, session as store } from "./src/session.ts";
 
   import {

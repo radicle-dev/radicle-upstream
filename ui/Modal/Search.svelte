@@ -71,9 +71,9 @@
   // Fire notification when a request has been created.
   $: if ($request.status === remote.Status.Success) {
     notification.info(
-      "You’ll be notified on your profile when this project has been found.",
+      "You’ll be notified when this project has been found.",
       false,
-      "View profile",
+      "View list",
       () => {
         dispatch("hide");
         push(path.profileFollowing());
