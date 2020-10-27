@@ -35,10 +35,12 @@
 
   const cancelFollowRequest = (projectUrn: Urn, peerId: PeerId) => {
     removeRemote(projectUrn, peerId);
+    peerValidation.reset();
   };
 
   const unfollowRemote = (projectUrn: Urn, peerId: PeerId) => {
     removeRemote(projectUrn, peerId);
+    peerValidation.reset();
   };
 </script>
 
