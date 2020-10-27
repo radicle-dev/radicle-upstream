@@ -25,8 +25,6 @@ export interface Tx {
   inner: PoolTx;
 }
 
-cap(0);
-
 export enum TxStatus {
   // The transaction as been approved and is awaiting to be included in a block.
   AwaitingInclusion = "Awaiting inclusion",
