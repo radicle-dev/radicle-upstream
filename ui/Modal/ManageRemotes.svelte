@@ -4,8 +4,8 @@
     Illustration,
     List,
     Remote,
-    TrackedRemoteListItem,
-    UntrackedRemoteListItem,
+    FollowPeerListItem,
+    FollowPeerRequestListItem,
   } from "../DesignSystem/Component";
 
   import type { PeerId } from "../src/identity";
@@ -109,7 +109,7 @@
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
-          <TrackedRemoteListItem
+          <FollowPeerListItem
             {peer}
             on:unfollow={event => {
               unfollowRemote(event.detail.projectUrn, event.detail.peerId);
@@ -135,7 +135,7 @@
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1rem 0 0; padding: 0;">
-          <UntrackedRemoteListItem
+          <FollowPeerRequestListItem
             {peer}
             on:cancel={event => {
               cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);

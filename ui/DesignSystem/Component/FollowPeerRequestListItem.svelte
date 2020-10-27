@@ -29,7 +29,7 @@
   <div slot="right" style="display: flex; align-items: center;">
     <FollowButton
       expanded
-      tracking
+      following
       on:unfollow={() => {
         dispatch('cancel', { projectUrn, peerId: peer.peerId });
       }} />

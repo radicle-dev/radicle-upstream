@@ -7,6 +7,8 @@ import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
 import FollowButton from "./FollowButton.svelte";
+import FollowPeerListItem from "./FollowPeerListItem.svelte";
+import FollowPeerRequestListItem from "./FollowPeerRequestListItem.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
@@ -26,8 +28,6 @@ import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
-import TrackedRemoteListItem from "./TrackedRemoteListItem.svelte";
-import UntrackedRemoteListItem from "./UntrackedRemoteListItem.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import ShareableIdentifier from "./ShareableIdentifier.svelte";
@@ -52,6 +52,8 @@ export {
   EmptyState,
   Error,
   FollowButton,
+  FollowPeerListItem,
+  FollowPeerRequestListItem,
   Header,
   HorizontalMenu,
   Hoverable,
@@ -72,8 +74,6 @@ export {
   Stats,
   Remote,
   RemoteHelperHint,
-  TrackedRemoteListItem,
-  UntrackedRemoteListItem,
   RevisionSelector,
   SegmentedControl,
   ShareableIdentifier,
