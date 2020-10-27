@@ -95,7 +95,7 @@
           variant="secondary"
           disabled={!newRemote}
           on:click={() => submitRemote(project.id)}>
-          Add remote
+          Follow remote
         </Button>
       </div>
     </form>
