@@ -35,17 +35,6 @@
     color: var(--color-foreground-level-6);
   }
 
-  .tip {
-    font-size: 14px;
-    line-height: 18px;
-
-    display: flex;
-    align-items: center;
-    text-align: center;
-
-    color: var(--color-foreground-level-5);
-  }
-
   .row {
     display: flex;
     justify-content: space-between;

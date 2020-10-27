@@ -3,6 +3,7 @@
   import { Remote, TxButton } from "../../../Component";
   import Add from "./Onboarding/Add.svelte";
   import Budget from "./Onboarding/Budget.svelte";
+  import TopUp from "./Onboarding/TopUp.svelte";
 
   import * as modal from "../../../../src/modal";
   import * as path from "../../../../src/path";
@@ -20,6 +21,8 @@
   import { ValidationStatus } from "../../../../src/validation";
 
   export let pool: _pool.Pool;
+
+  $: _pool.store.set(pool);
 
   // The loaded PoolData, updated at on `pool.data.subscribe`.
   let data: _pool.PoolData | undefined;
@@ -222,7 +225,7 @@
         <div class="steps">
           <Add />
           <Budget style={'margin-left: 20px'} />
-          <Add style={'margin-left: 20px'} />
+          <TopUp style={'margin-left: 20px'} balance={poolData.balance} />
         </div>
       </div>
 
