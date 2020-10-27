@@ -40,11 +40,16 @@
     margin-right: 1.5rem;
   }
 
+  .avatar-left {
+    min-width: 46.5rem;
+  }
+
   .metadata {
     display: flex;
     flex-direction: column;
     align-self: center;
     width: -webkit-fill-available;
+    min-width: 0;
   }
 
   .description {
@@ -101,7 +106,7 @@
 
 <div data-cy="header" class="banner" bind:clientHeight={headerHeight}>
   <div class="banner-content">
-    <div class="left">
+    <div class={`left ${avatarFallback ? 'avatar-left' : ''}`}>
       {#if avatarFallback}
         <Avatar
           style="margin-right: 32px"
