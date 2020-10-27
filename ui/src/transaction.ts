@@ -135,9 +135,9 @@ export function updateStatus(hash: string, status: TxStatus) {
 }
 
 // Cap the amount of managed transactions
-function cap() {
+function cap(length = 7) {
   store.update(txs => {
-    txs.length = Math.min(txs.length, 7);
+    txs.length = Math.min(txs.length, length);
     return txs;
   });
 }
