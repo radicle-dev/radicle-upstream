@@ -222,8 +222,16 @@ async fn rig(
         (None, paths, store)
     };
 
-    if let Some(key) = config.key {
+    if let Some(_key) = config.key {
+        // We ignore `config.key` for now and use a hard-coded passphrase
+        let pw = coco::keystore::SecUtf8::from("radicle-upstream");
+        let key = if args.test {
+            coco::keystore::Keystorage::memory(pw)?.get()
+        } else {
+            coco::keystore::Keystorage::file(&paths, pw).init()?
+        };
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
+
         let (peer, state, seeds_sender) = if args.test {
             let config = coco::config::configure(
                 paths,
