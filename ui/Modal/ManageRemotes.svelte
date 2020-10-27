@@ -9,6 +9,8 @@
   } from "../DesignSystem/Component";
 
   import type { PeerId } from "../src/identity";
+  import type { Urn } from "../src/urn";
+
   import { Variant as IllustrationVariant } from "../src/illustration";
   import {
     addRemote,
@@ -16,8 +18,8 @@
     peerSelection,
     peerValidation,
     project as store,
+    removeRemote,
   } from "../src/project";
-  import type { Urn } from "../src/urn";
 
   let newRemote: PeerId;
 
@@ -29,6 +31,14 @@
     if (await addRemote(projectUrn, newRemote)) {
       newRemote = "";
     }
+  };
+
+  const cancelFollowRequest = (projectUrn: Urn, peerId: PeerId) => {
+    removeRemote(projectUrn, peerId);
+  };
+
+  const unfollowRemote = (projectUrn: Urn, peerId: PeerId) => {
+    removeRemote(projectUrn, peerId);
   };
 </script>
 
@@ -99,6 +109,9 @@
           style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
           <TrackedRemoteListItem
             {peer}
+            on:unfollow={event => {
+              unfollowRemote(event.detail.projectUrn, event.detail.peerId);
+            }}
             projectName={project.metadata.name}
             projectUrn={project.id} />
         </List>
@@ -122,6 +135,9 @@
           style="width: 100%; margin: 1rem 0 0; padding: 0;">
           <UntrackedRemoteListItem
             {peer}
+            on:cancel={event => {
+              cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
+            }}
             projectName={project.metadata.name}
             projectUrn={project.id} />
         </List>

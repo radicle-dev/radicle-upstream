@@ -1,6 +1,8 @@
 <script lang="typescript">
-  import { removeRemote, User } from "../../src/project";
-  import { Urn } from "../../src/urn";
+  import { createEventDispatcher } from "svelte";
+
+  import type { Urn } from "../../src/urn";
+  import type { User } from "../../src/project";
 
   import { Flex } from "../../DesignSystem/Primitive";
   import TrackToggle from "./TrackToggle.svelte";
@@ -9,15 +11,13 @@
   export let projectName: string;
   export let projectUrn: Urn;
 
+  const dispatch = createEventDispatcher();
+
   const firstSix = peer.peerId.substring(0, 7);
   const lastSix = peer.peerId.substring(
     peer.peerId.length - 7,
     peer.peerId.length
   );
-
-  const cancelRemoteTracking = () => {
-    removeRemote(projectUrn, peer.peerId);
-  };
 </script>
 
 <Flex style="flex: 1; padding: 1.375rem 1.5rem;">
@@ -27,6 +27,11 @@
     </p>
   </div>
   <div slot="right" style="display: flex; align-items: center;">
-    <TrackToggle expanded tracking on:untrack={cancelRemoteTracking} />
+    <TrackToggle
+      expanded
+      tracking
+      on:untrack={() => {
+        dispatch('cancel', { projectUrn, peerId: peer.peerId });
+      }} />
   </div>
 </Flex>

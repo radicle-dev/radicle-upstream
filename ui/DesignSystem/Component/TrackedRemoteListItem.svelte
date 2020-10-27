@@ -1,8 +1,12 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
+
+  import type { Urn } from "../../src/urn";
+  import type { User } from "../../src/project";
+
   import { BadgeType } from "../../src/badge";
   import { CSSPosition } from "../../src/style";
-  import { PeerType, removeRemote, Role, User } from "../../src/project";
-  import { Urn } from "../../src/urn";
+  import { PeerType, Role } from "../../src/project";
 
   import { Avatar, Flex } from "../../DesignSystem/Primitive";
 
@@ -14,9 +18,7 @@
   export let projectUrn: Urn;
   export let projectName: string;
 
-  const unfollowRemote = () => {
-    removeRemote(projectUrn, peer.peerId);
-  };
+  const dispatch = createEventDispatcher();
 </script>
 
 <Flex style="flex: 1; padding: 1.375rem 1.5rem;">
@@ -55,7 +57,12 @@
       </Tooltip>
     {:else}
       <Tooltip>
-        <TrackToggle tracking expanded on:untrack={unfollowRemote} />
+        <TrackToggle
+          tracking
+          expanded
+          on:untrack={() => {
+            dispatch('unfollow', { projectUrn, peerId: peer.peerId });
+          }} />
       </Tooltip>
     {/if}
   </div>
