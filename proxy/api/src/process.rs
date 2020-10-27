@@ -44,7 +44,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
-    let mut service_manager = service::Manager::new();
+    let mut service_manager = service::Manager::new(service::Config { key: None });
     let mut sighup = signal(SignalKind::hangup())?;
 
     let mut handle = service_manager.handle();
@@ -121,14 +121,9 @@ async fn run_rigging(
             loop {
                 let _timestamp = timer.tick().await;
 
-                let seeds = session::seeds(&seeds_store)
+                let seeds = session_seeds(&seeds_store)
                     .await
-                    .expect("Failed to read session store")
-                    .unwrap_or_default();
-                let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
-                    log::error!("Error parsing seed list {:?}: {}", seeds, err);
-                    vec![]
-                });
+                    .expect("Failed to read session store");
 
                 if seeds == last_seeds {
                     continue;
@@ -203,9 +198,6 @@ async fn rig(
     config: service::Config,
     auth_cookie: Arc<RwLock<Option<String>>>,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
-    log::debug!("rigging up");
-    log::info!("has_key: {}", config.key.is_some());
-
     let (temp, paths, store) = if args.test {
         let temp_dir = tempfile::tempdir()?;
         log::debug!(
@@ -239,28 +231,13 @@ async fn rig(
                 *coco::config::INADDR_ANY,
                 coco::config::static_seed_discovery(vec![]),
             );
-            let (peer, state) = coco::into_peer_state(
-                config,
-                signer.clone(),
-                store.clone(),
-                RunConfig {
-                    sync: SyncConfig {
-                        max_peers: 1,
-                        on_startup: true,
-                        period: Duration::from_secs(5),
-                    },
-                    ..RunConfig::default()
-                },
-            )
-            .await?;
+            let (peer, state) =
+                coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config())
+                    .await?;
 
             (peer, state, None)
         } else {
-            let seeds = session::seeds(&store).await.unwrap().unwrap_or_default();
-            let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
-                log::error!("Error parsing seed list {:?}: {}", seeds, err);
-                vec![]
-            });
+            let seeds = session_seeds(&store).await?;
             let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
             let config = coco::config::configure(
@@ -270,20 +247,9 @@ async fn rig(
                 coco::config::StreamDiscovery::new(seeds_receiver),
             );
 
-            let (peer, state) = coco::into_peer_state(
-                config,
-                signer.clone(),
-                store.clone(),
-                RunConfig {
-                    sync: SyncConfig {
-                        max_peers: 1,
-                        on_startup: true,
-                        period: Duration::from_secs(5),
-                    },
-                    ..RunConfig::default()
-                },
-            )
-            .await?;
+            let (peer, state) =
+                coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config())
+                    .await?;
 
             (peer, state, Some(seeds_sender))
         };
@@ -305,7 +271,6 @@ async fn rig(
             seeds_sender,
         })
     } else {
-        log::debug!("using sealed context");
         let ctx = context::Context::Sealed(context::Sealed {
             store,
             paths,
@@ -319,5 +284,28 @@ async fn rig(
             peer: None,
             seeds_sender: None,
         })
+    }
+}
+
+/// Get and resolve seed settings from the session store.
+async fn session_seeds(
+    store: &kv::Store,
+) -> Result<Vec<coco::seed::Seed>, Box<dyn std::error::Error>> {
+    let seeds = session::seeds(store).await?.unwrap_or_default();
+    Ok(seed::resolve(&seeds).await.unwrap_or_else(|err| {
+        log::error!("Error parsing seed list {:?}: {}", seeds, err);
+        vec![]
+    }))
+}
+
+/// [`RunConfig`] for the coco peer.
+fn coco_run_config() -> RunConfig {
+    RunConfig {
+        sync: SyncConfig {
+            max_peers: 1,
+            on_startup: true,
+            period: Duration::from_secs(5),
+        },
+        ..RunConfig::default()
     }
 }
