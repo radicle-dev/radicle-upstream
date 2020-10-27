@@ -1,6 +1,5 @@
 //! Endpoints and serialisation for [`crate::session::Session`] related types.
 
-use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, http};
@@ -9,7 +8,6 @@ use crate::{context, http};
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     delete_filter(ctx.clone())
         .or(get_filter(ctx.clone()))
-        .or(unseal_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
         .boxed()
 }
@@ -46,18 +44,6 @@ fn update_settings_filter(
         .and_then(handler::update_settings)
 }
 
-/// `POST /unseal`
-fn unseal_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("unseal")
-        .and(warp::post())
-        .and(path::end())
-        .and(http::with_context(ctx))
-        .and(warp::body::json())
-        .and_then(handler::unseal)
-}
-
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
@@ -90,43 +76,12 @@ mod handler {
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
-
-    /// Set the [`session::settings::Settings`] to the passed value.
-    pub async fn unseal(
-        mut ctx: context::Context,
-        input: super::UnsealInput,
-    ) -> Result<impl Reply, Rejection> {
-        // TODO(merle): Replace with correct password check
-        if input.passphrase != "radicle-upstream" {
-            return Err(Rejection::from(error::Error::KeystoreSealed));
-        }
-        let key = coco::keys::SecretKey::new();
-        ctx.service_handle().set_secret_key(key);
-
-        let auth_cookie_lock = ctx.auth_cookie();
-        let mut cookie = auth_cookie_lock.write().await;
-        *cookie = Some("chocolate".into());
-        Ok(warp::reply::with_header(
-            reply::with_status(reply(), StatusCode::NO_CONTENT),
-            "Set-Cookie",
-            "auth-cookie=chocolate; Path=/",
-        )
-        .into_response())
-    }
 }
 
-/// Bundled input data for unseal request.
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UnsealInput {
-    /// Passphrase to unlock the keystore.
-    passphrase: String,
-}
 
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
     use crate::{context, error, session};
