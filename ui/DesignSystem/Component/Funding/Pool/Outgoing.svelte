@@ -1,6 +1,8 @@
 <script lang="ts">
   import { Button, Icon, Input } from "../../../Primitive";
   import { Remote, TxButton } from "../../../Component";
+  import Add from "./Onboarding/Add.svelte";
+  import Budget from "./Onboarding/Budget.svelte";
 
   import * as modal from "../../../../src/modal";
   import * as path from "../../../../src/path";
@@ -148,6 +150,19 @@
   .content {
     padding: var(--content-padding);
   }
+
+  .onboarding .steps {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .onboarding {
+    margin-bottom: var(--content-padding);
+  }
+
+  .onboarding h3 {
+    margin-bottom: 1rem;
+  }
 </style>
 
 <div class="outgoing-container">
@@ -202,6 +217,15 @@
     </header>
 
     <div class="content">
+      <div class="onboarding">
+        <h3>Getting Started</h3>
+        <div class="steps">
+          <Add />
+          <Budget style={'margin-left: 20px'} />
+          <Add style={'margin-left: 20px'} />
+        </div>
+      </div>
+
       <p>
         <strong>{poolData.amountPerBlock} DAI</strong> per month will be taken from
         your <strong>{poolData.balance} DAI</strong> that you’ve added to this contract,

@@ -21,7 +21,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem;
+    padding: var(--content-padding);
   }
 
   .shortcut {

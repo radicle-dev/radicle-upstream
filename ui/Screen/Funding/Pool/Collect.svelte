@@ -29,7 +29,7 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    padding: 3rem 2rem 2rem 2rem;
+    padding: var(--content-padding);
     width: 650px;
     background: var(--color-background);
     border-radius: 0.5rem;
@@ -40,7 +40,7 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    padding: 2rem;
+    padding: var(--content-padding);
     margin-bottom: 1.5rem;
     background-color: var(--color-foreground-level-1);
     border: 1px solid var(--color-foreground-level-2);

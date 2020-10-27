@@ -152,7 +152,7 @@
     width: 37.5rem;
     background: var(--color-background);
     border-radius: 0.5rem;
-    padding: 3rem 2rem 2rem 2rem;
+    padding: var(--content-padding);
   }
 
   .create-project {
