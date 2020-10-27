@@ -155,7 +155,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         alice_state.init_project(&alice, project).await?.urn()
     };
 
-    bob_control.request_urn(&urn, Instant::now()).await;
+    bob_control.request_project(&urn, Instant::now()).await;
 
     requested(query_listener, &urn).await?;
     assert_cloned(clone_listener, &urn.clone().into_rad_url(alice_peer_id)).await?;

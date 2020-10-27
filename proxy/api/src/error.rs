@@ -20,4 +20,8 @@ pub enum Error {
     /// Issues when access persistent storage.
     #[error(transparent)]
     Store(#[from] kv::Error),
+
+    /// Errors stemming from [`coco::request::waiting_room::WaitingRoom`] interactions.
+    #[error(transparent)]
+    WaitingRoom(#[from] coco::request::waiting_room::Error),
 }
