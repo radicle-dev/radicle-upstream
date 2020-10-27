@@ -1,10 +1,9 @@
 <script>
-  import { Flex } from "../DesignSystem/Primitive";
   import { SidebarLayout } from "../DesignSystem/Component";
 </script>
 
 <SidebarLayout>
-  <Flex align="left">
+  <div class="display: flex; flex: 1;">
     <h2>Not Found</h2>
-  </Flex>
+  </div>
 </SidebarLayout>
