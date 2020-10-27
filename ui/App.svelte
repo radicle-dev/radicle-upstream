@@ -22,7 +22,7 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import ModalManageRemotes from "./Modal/ManageRemotes.svelte";
+  import ModalManagePeers from "./Modal/ManagePeers.svelte";
   import ModalNewProject from "./Modal/NewProject.svelte";
   import ModalSearch from "./Modal/Search.svelte";
   import ModalShortcuts from "./Modal/Shortcuts.svelte";
@@ -46,7 +46,7 @@
   };
 
   const modalRoutes = {
-    "/manage-remotes": ModalManageRemotes,
+    "/manage-peers": ModalManagePeers,
     "/new-project": ModalNewProject,
     "/search": ModalSearch,
     "/shortcuts": ModalShortcuts,

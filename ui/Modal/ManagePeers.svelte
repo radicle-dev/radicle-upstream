@@ -14,8 +14,8 @@
   import { Button, Input } from "../DesignSystem/Primitive";
   import { Illustration, List, Remote } from "../DesignSystem/Component";
 
-  import Peer from "./ManageRemotes/Peer.svelte";
-  import PeerFollowRequest from "./ManageRemotes/PeerFollowRequest.svelte";
+  import Peer from "./ManagePeers/Peer.svelte";
+  import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
 
   let newPeer: PeerId;
 

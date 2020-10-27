@@ -205,7 +205,7 @@
       {/each}
       <div
         class="peer remotes"
-        on:click={() => modal.toggle(path.manageRemotes(), [
+        on:click={() => modal.toggle(path.managePeers(), [
             { name: 'metadata', data: metadata },
             { name: 'revisions', data: revisions },
           ])}>
