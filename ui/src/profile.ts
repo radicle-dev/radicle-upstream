@@ -19,7 +19,7 @@ const requestedProjectsStore = remote.createStore<
 
 // Subscribe to request events from the local peer to refresh the lists.
 requestedProjectsStore.start(() => {
-  return localPeer.requestEvents.subscribe(event => {
+  return localPeer.requestEvents.subscribe(() => {
     fetchFollowing();
   });
 });
