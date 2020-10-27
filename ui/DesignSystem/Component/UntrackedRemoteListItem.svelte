@@ -1,12 +1,12 @@
-<script>
+<script lang="typescript">
   import { removeRemote } from "../../src/project";
   
   import { Flex } from "../../DesignSystem/Primitive";
   import TrackToggle from "./TrackToggle.svelte";
 
-  export let peer = null;
-  export let projectName = null;
-  export let projectId = null;
+  export let peer: Peer = null;
+  export let projectName: string = null;
+  export let projectUrn: Urn = null;
 
   const firstSix = peer.peerId.substring(0, 7);
   const lastSix = peer.peerId.substring(

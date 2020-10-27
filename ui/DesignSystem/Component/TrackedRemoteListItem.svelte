@@ -1,4 +1,4 @@
-<script>
+<script lang="typescript">
   import { BadgeType } from "../../src/badge.ts";
   import { PeerType, removeRemote, Role } from "../../src/project";
   import { CSSPosition } from "../../src/style";
@@ -10,9 +10,9 @@
   import TrackToggle from "./TrackToggle.svelte";
 
 
-  export let peer = null;
-  export let projectId = null;
-  export let projectName = null;
+  export let peer: Peer = null;
+  export let projectUrn: Urn = null;
+  export let projectName: string = null;
 
   const unfollowRemote = () => {
     removeRemote(projectId, peer.peerId);
