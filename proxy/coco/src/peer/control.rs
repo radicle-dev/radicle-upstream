@@ -60,7 +60,7 @@ pub enum Response {
         oneshot::Sender<Vec<request::SomeRequest<Instant>>>,
         Vec<request::SomeRequest<Instant>>,
     ),
-    /// Response to a start project search request..
+    /// Response to a start project search request.
     StartSearch(
         oneshot::Sender<waiting_room::Created<Instant>>,
         waiting_room::Created<Instant>,

@@ -12,7 +12,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 
-/// `DELETE /urn`
+/// `DELETE /<urn>`
 fn cancel_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {

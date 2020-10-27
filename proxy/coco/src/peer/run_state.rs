@@ -166,7 +166,7 @@ pub enum ControlInput {
         Instant,
         oneshot::Sender<Result<(), waiting_room::Error>>,
     ),
-    /// Initiate a new project search on the network..
+    /// Initiate a new project search on the network.
     CreateRequest(
         RadUrn,
         Instant,
