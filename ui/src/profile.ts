@@ -41,12 +41,14 @@ export const following: Readable<remote.Data<Following | null>> = derived(
       requests.status === remote.Status.Success
     ) {
       let data = null;
-      if (follows.data.length > 0 || requests.data.length > 0) {
+      const reqs = requests.data.filter(
+        req => req.type !== waitingRoom.Status.Cancelled
+      );
+
+      if (follows.data.length > 1 || reqs.length > 0) {
         data = {
           follows: follows.data,
-          requests: requests.data.filter(
-            req => req.type !== waitingRoom.Status.Cancelled
-          ),
+          requests: reqs,
         };
       }
       return { status: remote.Status.Success, data };
