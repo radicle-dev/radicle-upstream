@@ -1,6 +1,6 @@
 // Client representation of proxy waiting room requests, subscriptions, etc.
 
-enum Status {
+export enum Status {
   Created = "created",
   Requested = "requested",
   Found = "found",
