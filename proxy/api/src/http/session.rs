@@ -182,25 +182,6 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         let res = request().method("GET").path("/").reply(&api).await;
-        let have: Value = serde_json::from_slice(res.body())?;
-        assert_eq!(
-            have,
-            json!({
-                "identity": Value::Null,
-                "settings": {
-                    "appearance": {
-                        "theme": "dark",
-                        "hints": {
-                            "showRemoteHelper": true,
-                        }
-                    },
-                    "coco": {
-                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
-                    },
-                },
-            }),
-        );
-
         let session_res = serde_json::from_slice::<session::Session>(res.body())?;
         assert_eq!(session_res.settings, settings);
         Ok(())
