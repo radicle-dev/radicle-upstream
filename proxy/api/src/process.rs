@@ -109,7 +109,7 @@ async fn run_rigging(
     } = rigging;
 
     if let Some(seeds_sender) = seeds_sender {
-        let seeds_store = ctx.store.clone();
+        let seeds_store = ctx.store().clone();
         tokio::spawn(async move {
             let mut last_seeds: Vec<seed::Seed> = vec![];
             let mut timer = tokio::time::interval(Duration::from_secs(1));
@@ -279,12 +279,12 @@ async fn rig(args: Args) -> Result<Rigging, Box<dyn std::error::Error>> {
 
     let peer_control = peer.control();
     let subscriptions = notification::Subscriptions::default();
-    let ctx = context::Context {
+    let ctx = context::Context::Unsealed(context::Unsealed {
         peer_control,
         state,
         store,
         test: args.test,
-    };
+    });
 
     Ok(Rigging {
         temp,

@@ -7,6 +7,8 @@ use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, http};
 
+mod request;
+
 /// Combination of all routes.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     checkout_filter(ctx.clone())
@@ -14,10 +16,9 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(discover_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
         .or(owner_contributed_filter(ctx.clone()))
-        .or(owner_requested_filter(ctx.clone()))
         .or(owner_tracked_filter(ctx.clone()))
         .or(peers_filter(ctx.clone()))
-        .or(request_filter(ctx.clone()))
+        .or(path("requests").and(request::filters(ctx.clone())))
         .or(track_filter(ctx.clone()))
         .or(user_filter(ctx.clone()))
         .or(track_filter(ctx.clone()))
@@ -29,7 +30,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn checkout_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::post())
         .and(path::param::<coco::Urn>())
         .and(warp::body::json())
@@ -42,7 +43,7 @@ fn create_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
         .and(path::end())
-        .and(http::with_context(ctx.clone()))
+        .and(http::with_context_unsealed(ctx.clone()))
         .and(http::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create)
@@ -54,7 +55,7 @@ fn discover_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("discover")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::end())
         .and_then(handler::discover)
 }
@@ -63,7 +64,7 @@ fn discover_filter(
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::get())
         .and(path::param::<coco::Urn>())
         .and(path::end())
@@ -76,20 +77,9 @@ fn owner_contributed_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("contributed")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::end())
         .and_then(handler::list_owner_contributed)
-}
-
-/// `GET /requested`
-fn owner_requested_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
-        .and(warp::get())
-        .and(path("requests"))
-        .and(path::end())
-        .and_then(handler::list_owner_requested)
 }
 
 /// `GET /tracked`
@@ -98,7 +88,7 @@ fn owner_tracked_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tracked")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::end())
         .and_then(handler::list_owner_tracked)
 }
@@ -107,7 +97,7 @@ fn owner_tracked_filter(
 fn peers_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::get())
         .and(path::param::<coco::Urn>())
         .and(path("peers"))
@@ -115,23 +105,11 @@ fn peers_filter(
         .and_then(handler::peers)
 }
 
-/// `PUT /request/<urn>`
-fn request_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
-        .and(warp::put())
-        .and(path("requests"))
-        .and(path::param::<coco::Urn>())
-        .and(path::end())
-        .and_then(handler::request)
-}
-
 /// `PUT /<urn>/track/<peer_id>`
 fn track_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::put())
         .and(path::param::<coco::Urn>())
         .and(path("track"))
@@ -144,7 +122,7 @@ fn track_filter(
 fn untrack_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::put())
         .and(path::param::<coco::Urn>())
         .and(path("untrack"))
@@ -159,7 +137,7 @@ fn user_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("user")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
         .and_then(handler::list_user)
@@ -168,7 +146,7 @@ fn user_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::{path::PathBuf, time::Instant};
+    use std::path::PathBuf;
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
@@ -176,7 +154,7 @@ mod handler {
 
     /// Checkout a [`project::Project`]'s source code.
     pub async fn checkout(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         urn: coco::Urn,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
@@ -191,7 +169,7 @@ mod handler {
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         owner: coco::user::User,
         input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection> {
@@ -223,33 +201,26 @@ mod handler {
     }
 
     /// Get a feed of untracked projects.
-    pub async fn discover(_ctx: context::Context) -> Result<impl Reply, Rejection> {
+    pub async fn discover(_ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let feed = project::discover()?;
 
         Ok(reply::json(&feed))
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn get(ctx: context::Unsealed, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
     }
 
     /// List all projects the current user has contributed to.
-    pub async fn list_owner_contributed(ctx: context::Context) -> Result<impl Reply, Rejection> {
+    pub async fn list_owner_contributed(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let projects = project::Projects::list(&ctx.state).await?;
 
         Ok(reply::json(&projects.contributed))
     }
 
-    /// List all project requests the current user has issued.
-    pub async fn list_owner_requested(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let requests = ctx.peer_control.get_project_requests().await;
-
-        Ok(reply::json(&requests))
-    }
-
     /// List all projects tracked by the current user.
-    pub async fn list_owner_tracked(ctx: context::Context) -> Result<impl Reply, Rejection> {
+    pub async fn list_owner_tracked(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let projects = project::Projects::list(&ctx.state).await?.tracked;
 
         Ok(reply::json(&projects))
@@ -260,7 +231,7 @@ mod handler {
     ///
     /// See [`project::list_for_user`] for more information.
     pub async fn list_user(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         user_id: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let projects = project::list_for_user(&ctx.state, &user_id).await?;
@@ -269,7 +240,7 @@ mod handler {
     }
 
     /// List the remote peers for a project.
-    pub async fn peers(ctx: context::Context, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn peers(ctx: context::Unsealed, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         let peers: Vec<project::Peer> = ctx
             .state
             .list_project_peers(urn)
@@ -282,19 +253,9 @@ mod handler {
         Ok(reply::json(&peers))
     }
 
-    /// Kick off a network request for the [`project::Project`] of the given `id`.
-    pub async fn request(
-        mut ctx: context::Context,
-        urn: coco::Urn,
-    ) -> Result<impl Reply, Rejection> {
-        let request = ctx.peer_control.request_urn(&urn, Instant::now()).await;
-
-        Ok(reply::json(&request))
-    }
-
     /// Track the peer for the provided project.
     pub async fn track(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         urn: coco::Urn,
         peer_id: coco::PeerId,
     ) -> Result<impl Reply, Rejection> {
@@ -304,7 +265,7 @@ mod handler {
 
     /// Untrack the peer for the provided project.
     pub async fn untrack(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         urn: coco::Urn,
         peer_id: coco::PeerId,
     ) -> Result<impl Reply, Rejection> {
@@ -349,8 +310,6 @@ pub struct MetadataInput {
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::time::Instant;
-
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
@@ -364,8 +323,8 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = {
             let handle = "cloudhead";
@@ -445,8 +404,8 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         {
             let handle = "cloudhead";
@@ -506,8 +465,8 @@ mod test {
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let repo_path = dir.path().join("Upstream");
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         {
             let handle = "cloudhead";
@@ -565,8 +524,8 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = {
             let owner = ctx.state.init_owner("cloudhead").await?;
@@ -597,58 +556,10 @@ mod test {
     }
 
     #[tokio::test]
-    async fn request_project() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
-        );
-
-        let res = request()
-            .method("PUT")
-            .path(&format!("/requests/{}", urn))
-            .reply(&api)
-            .await;
-        let want = ctx.peer_control.get_project_request(&urn).await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn list_requested() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
-        );
-
-        let want = ctx.peer_control.request_urn(&urn, Instant::now()).await;
-        let res = request().method("GET").path("/requests").reply(&api).await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!([want]));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
     async fn list_for_user() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let owner = ctx.state.init_owner("cloudhead").await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
@@ -677,8 +588,8 @@ mod test {
     #[tokio::test]
     async fn list_contributed() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let owner = ctx.state.init_owner("cloudhead").await?;
 
@@ -703,8 +614,8 @@ mod test {
     #[tokio::test]
     async fn discover() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let owner = ctx.state.init_owner("cloudhead").await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
@@ -756,8 +667,8 @@ mod test {
     #[tokio::test]
     async fn track() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let owner = ctx.state.init_owner("cloudhead").await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
@@ -784,8 +695,8 @@ mod test {
     #[tokio::test]
     async fn untrack() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let owner = ctx.state.init_owner("cloudhead").await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
@@ -812,8 +723,8 @@ mod test {
     #[tokio::test]
     async fn untrack_after_track() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let owner = ctx.state.init_owner("cloudhead").await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;

@@ -1,12 +1,14 @@
-<script lang="ts">
+<script lang="typescript">
   import { getContext } from "svelte";
+
+  import type { Authenticated } from "../../src/session";
 
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy = "";
   export let style = "";
 
-  const session = getContext("session");
+  const session: Authenticated = getContext("session");
 </script>
 
 <style>

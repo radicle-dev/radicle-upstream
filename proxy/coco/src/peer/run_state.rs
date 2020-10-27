@@ -125,7 +125,7 @@ impl MaybeFrom<&Input> for Event {
     }
 }
 
-/// Significant events that occur during [`Peer`] lifetime.
+/// Significant events that occur during peer’s lifetime.
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Input {
@@ -157,12 +157,25 @@ pub enum AnnounceInput {
 /// Requests from the peer control.
 #[derive(Debug)]
 pub enum ControlInput {
-    /// Request a project request.
-    ProjectRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),
-    /// Request the list of project requests.
-    ProjectRequests(oneshot::Sender<Vec<SomeRequest<Instant>>>),
     /// New status.
     Status(oneshot::Sender<Status>),
+
+    /// Cancel an ongoing project search.
+    CancelRequest(
+        RadUrn,
+        Instant,
+        oneshot::Sender<Result<(), waiting_room::Error>>,
+    ),
+    /// Initiate a new project search on the network.
+    CreateRequest(
+        RadUrn,
+        Instant,
+        Option<oneshot::Sender<waiting_room::Created<Instant>>>,
+    ),
+    /// Request a project search.
+    GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),
+    /// Request the list of project searches.
+    ListRequests(oneshot::Sender<Vec<SomeRequest<Instant>>>),
 }
 
 /// Request event for projects requested from the network.
@@ -181,12 +194,6 @@ pub enum RequestInput {
     },
     /// Query the network for the `RadUrn`.
     Queried(RadUrn),
-    /// A urn was requested.
-    Requested(
-        RadUrn,
-        Instant,
-        Option<oneshot::Sender<waiting_room::Created<Instant>>>,
-    ),
     /// [`WaitingRoom`] query interval.
     Tick,
     /// The request for [`RadUrn`] timed out.
@@ -378,7 +385,7 @@ impl RunState {
         cmds
     }
 
-    /// Handle [`AnnunceInput`]s.
+    /// Handle [`AnnounceInput`]s.
     fn handle_announce(&mut self, input: AnnounceInput) -> Vec<Command> {
         match (&self.status, input) {
             // Announce new updates while the peer is online.
@@ -391,23 +398,38 @@ impl RunState {
     }
 
     /// Handle [`ControlInput`]s.
-    fn handle_control(&self, input: ControlInput) -> Vec<Command> {
+    fn handle_control(&mut self, input: ControlInput) -> Vec<Command> {
         match input {
-            ControlInput::ProjectRequest(urn, sender) => vec![Command::Control(
-                ControlCommand::Respond(control::Response::GetProjectRequest(
+            ControlInput::CancelRequest(urn, timestamp, sender) => vec![Command::Control(
+                ControlCommand::Respond(control::Response::CancelSearch(
                     sender,
-                    self.waiting_room.get(&urn).cloned(),
+                    self.waiting_room.canceled(&urn, timestamp),
                 )),
             )],
-            ControlInput::ProjectRequests(sender) => vec![Command::Control(
-                ControlCommand::Respond(control::Response::GetProjectRequests(
+            ControlInput::CreateRequest(urn, time, maybe_sender) => {
+                let request = self.waiting_room.request(&urn, time);
+                if let Some(sender) = maybe_sender {
+                    vec![Command::Control(ControlCommand::Respond(
+                        control::Response::StartSearch(sender, request),
+                    ))]
+                } else {
+                    vec![]
+                }
+            },
+            ControlInput::GetRequest(urn, sender) => {
+                vec![Command::Control(ControlCommand::Respond(
+                    control::Response::GetSearch(sender, self.waiting_room.get(&urn).cloned()),
+                ))]
+            },
+            ControlInput::ListRequests(sender) => vec![Command::Control(ControlCommand::Respond(
+                control::Response::ListSearches(
                     sender,
                     self.waiting_room
                         .iter()
                         .map(|pair| pair.1.clone())
                         .collect::<Vec<_>>(),
-                )),
-            )],
+                ),
+            ))],
             ControlInput::Status(sender) => vec![Command::Control(ControlCommand::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
@@ -442,7 +464,7 @@ impl RunState {
         vec![]
     }
 
-    /// Handle [`ProtolEvent`]s.
+    /// Handle [`ProtocolEvent`]s.
     #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
         match (&self.status, event) {
@@ -625,21 +647,11 @@ impl RunState {
                     Ok(_) => vec![],
                 }
             },
-            (_, RequestInput::Requested(urn, time, maybe_sender)) => {
-                let request = self.waiting_room.request(&urn, time);
-                if let Some(sender) = maybe_sender {
-                    vec![Command::Control(ControlCommand::Respond(
-                        control::Response::Urn(sender, request),
-                    ))]
-                } else {
-                    vec![]
-                }
-            },
             _ => vec![],
         }
     }
 
-    /// Handle [`Timeout`]s.
+    /// Handle [`TimeoutInput`]s.
     fn handle_timeout(&mut self, input: TimeoutInput) -> Vec<Command> {
         match (&self.status, input) {
             // Go online if we exceed the sync period.
@@ -677,8 +689,8 @@ mod test {
     };
 
     use super::{
-        AnnounceInput, Command, Config, Input, RequestCommand, RequestInput, RunState, Status,
-        SyncConfig, SyncInput, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
+        AnnounceInput, Command, Config, ControlInput, Input, RequestCommand, RequestInput,
+        RunState, Status, SyncConfig, SyncInput, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
     };
 
     #[test]
@@ -883,7 +895,7 @@ mod test {
         let status = Status::Stopped;
         let status_since = Instant::now();
         let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -893,7 +905,7 @@ mod test {
         let status = Status::Started;
         let status_since = Instant::now();
         let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -903,7 +915,7 @@ mod test {
         let status = Status::Offline;
         let status_since = Instant::now();
         let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -916,7 +928,7 @@ mod test {
         };
         let status_since = Instant::now();
         let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -932,7 +944,7 @@ mod test {
         let status = Status::Online { connected: 1 };
         let status_since = Instant::now();
         let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -965,7 +977,7 @@ mod test {
         let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         assert!(state
-            .transition(Input::Request(RequestInput::Requested(
+            .transition(Input::Control(ControlInput::CreateRequest(
                 urn.clone(),
                 Instant::now(),
                 None
