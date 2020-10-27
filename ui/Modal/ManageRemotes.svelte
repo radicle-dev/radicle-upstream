@@ -1,13 +1,5 @@
 <script lang="ts">
-  import { Button, Input } from "../DesignSystem/Primitive";
-  import { Illustration, List, Remote } from "../DesignSystem/Component";
-
-  import Peer from "./ManageRemotes/Peer.svelte";
-  import PeerFollowRequest from "./ManageRemotes/PeerFollowRequest.svelte";
-
   import type { PeerId } from "../src/identity";
-  import type { Urn } from "../src/urn";
-
   import { Variant as IllustrationVariant } from "../src/illustration";
   import {
     addPeer,
@@ -17,6 +9,13 @@
     project as store,
     removePeer,
   } from "../src/project";
+  import type { Urn } from "../src/urn";
+
+  import { Button, Input } from "../DesignSystem/Primitive";
+  import { Illustration, List, Remote } from "../DesignSystem/Component";
+
+  import Peer from "./ManageRemotes/Peer.svelte";
+  import PeerFollowRequest from "./ManageRemotes/PeerFollowRequest.svelte";
 
   let newPeer: PeerId;
 
