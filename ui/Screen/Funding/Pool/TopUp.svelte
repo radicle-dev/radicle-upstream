@@ -89,7 +89,7 @@
     flex-direction: column;
     justify-content: space-between;
 
-    margin-top: 1rem;
+    margin-top: 1.7rem;
   }
 
   .sub-section p {

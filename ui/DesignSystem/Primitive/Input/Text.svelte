@@ -96,8 +96,11 @@
   .validation-row {
     display: flex;
     align-items: center;
-    margin-top: 0.75rem;
-    margin-left: 0.75rem;
+
+    position: absolute;
+    left: 0;
+    margin-top: 2.7rem;
+    width: max-content;
   }
 
   .validation-row p {
