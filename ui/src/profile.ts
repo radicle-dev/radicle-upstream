@@ -45,7 +45,7 @@ export const following: Readable<remote.Data<Following | null>> = derived(
         req => req.type !== waitingRoom.Status.Cancelled
       );
 
-      if (follows.data.length > 1 || reqs.length > 0) {
+      if (follows.data.length > 0 || reqs.length > 0) {
         data = {
           follows: follows.data,
           requests: reqs,
