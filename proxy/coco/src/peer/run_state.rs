@@ -246,7 +246,7 @@ pub enum Status {
 }
 
 /// Set of knobs to change the behaviour of the [`RunState`].
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Config {
     /// Set of knobs to alter announce behaviour.
     pub announce: AnnounceConfig,
@@ -257,6 +257,7 @@ pub struct Config {
 }
 
 /// Set of knobs to alter announce behaviour.
+#[derive(Clone)]
 pub struct AnnounceConfig {
     /// Determines how often the announcement subroutine should be run.
     pub interval: Duration,
@@ -271,6 +272,7 @@ impl Default for AnnounceConfig {
 }
 
 /// Set of knobs to alter sync behaviour.
+#[derive(Clone)]
 pub struct SyncConfig {
     /// Number of peers that a full sync is attempted with upon startup.
     pub max_peers: usize,
@@ -291,6 +293,7 @@ impl Default for SyncConfig {
 }
 
 /// Set of knobs to alter the [`WaitingRoom`] behvaviour.
+#[derive(Clone)]
 pub struct WaitingRoomConfig {
     /// Interval at which to query the [`WaitingRoom`] for ready requests.
     pub interval: Duration,
