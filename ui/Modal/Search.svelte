@@ -17,7 +17,7 @@
   import { ValidationStatus } from "../src/validation";
 
   import { Icon, Input } from "../DesignSystem/Primitive";
-  import { Remote, TrackToggle } from "../DesignSystem/Component";
+  import { FollowToggle, Remote } from "../DesignSystem/Component";
 
   let id: string;
   let value: string;
@@ -47,7 +47,7 @@
         break;
     }
   };
-  const onTrack = () => {
+  const follow = () => {
     requestProject({ urn: value });
   };
 
@@ -151,7 +151,7 @@
       <div slot="error" style="padding: 1.5rem;">
         <div class="header typo-header-3">
           <span class="id">{id}</span>
-          <TrackToggle on:track={onTrack} style="margin-left: 1rem;" />
+          <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
         </div>
 
         <p style="color: var(--color-foreground-level-6);">

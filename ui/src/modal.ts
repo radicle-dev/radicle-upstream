@@ -4,7 +4,10 @@ type ModalOverlay =
   | { show: true; route: string }
   | { show: false; route: null };
 
-const overlayStore = writable<ModalOverlay>({ show: false, route: null });
+const overlayStore = writable<ModalOverlay>({
+  show: false,
+  route: null,
+});
 export const store = derived(overlayStore, $store => $store);
 
 export const hide = (): void => overlayStore.set({ show: false, route: null });

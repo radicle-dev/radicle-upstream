@@ -20,7 +20,7 @@
     ProjectList,
     Remote,
     ShareableIdentifier,
-    TrackToggle,
+    FollowToggle,
   } from "../../DesignSystem/Component";
 
   const session: Authenticated = getContext("session");
@@ -87,11 +87,11 @@
               </div>
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
-                  <TrackToggle
+                  <FollowToggle
                     expanded
                     warning
-                    tracking={true}
-                    on:untrack={() => onCancel(request.urn)} />
+                    following
+                    on:unfollow={() => onCancel(request.urn)} />
                 </div>
               {/if}
             </div>
