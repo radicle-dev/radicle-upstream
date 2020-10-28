@@ -2,7 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::{avatar, error};
+use crate::error;
+use radicle_avatar as avatar;
 
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]

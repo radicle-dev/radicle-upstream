@@ -15,9 +15,10 @@ pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
 
 /// Avatar handlers for conversion between core domain and http request fullfilment.
 mod handler {
+    use radicle_avatar as avatar;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{avatar, http::error};
+    use crate::http::error;
 
     /// Get the avatar for the given `id`.
     #[allow(clippy::wildcard_enum_match_arm)]

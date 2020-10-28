@@ -97,10 +97,11 @@ pub struct CreateInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_avatar as avatar;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use crate::{avatar, context, error, http, identity, session};
+    use crate::{context, error, http, identity, session};
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
