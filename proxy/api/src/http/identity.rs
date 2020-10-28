@@ -97,9 +97,10 @@ pub struct CreateInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use radicle_avatar as avatar;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
+    
+    use radicle_avatar as avatar;
 
     use crate::{context, error, http, identity, session};
 
