@@ -116,6 +116,9 @@ pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
     let old = load(store)?;
     let new = build(state).await?;
     let updates = diff(&old, &new);
+    // println!("OLD: {:?}", old);
+    // println!("NEW: {:?}", new);
+    // println!("UPDATED: {:?}", updates);
 
     announce(state, updates.iter()).await;
 
