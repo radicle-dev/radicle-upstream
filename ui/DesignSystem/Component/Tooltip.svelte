@@ -97,8 +97,7 @@
     bind:this={container}
     data-cy="tooltip"
     on:mouseenter={show}
-    on:mouseleave={hide}
-    style="height: 100%;">
+    on:mouseleave={hide}>
     <slot />
     <div
       bind:this={message}

@@ -1,5 +1,6 @@
 import { derived, Readable } from "svelte/store";
 
+import * as localPeer from "./localPeer";
 import * as project from "./project";
 import * as remote from "./remote";
 import * as waitingRoom from "./waitingRoom";
@@ -15,6 +16,13 @@ const followingProjectsStore = remote.createStore<project.Project[]>();
 const requestedProjectsStore = remote.createStore<
   waitingRoom.ProjectRequest[]
 >();
+
+// Subscribe to request events from the local peer to refresh the lists.
+requestedProjectsStore.start(() => {
+  return localPeer.requestEvents.subscribe(() => {
+    fetchFollowing();
+  });
+});
 
 export const following: Readable<remote.Data<Following | null>> = derived(
   [followingProjectsStore, requestedProjectsStore],
@@ -42,7 +50,9 @@ export const following: Readable<remote.Data<Following | null>> = derived(
     ) {
       let data = null;
       const reqs = requests.data.filter(
-        req => req.type !== waitingRoom.Status.Cancelled
+        req =>
+          req.type !== waitingRoom.Status.Cancelled &&
+          req.type !== waitingRoom.Status.TimedOut
       );
 
       if (follows.data.length > 0 || reqs.length > 0) {

@@ -17,7 +17,7 @@
   import { ValidationStatus } from "../src/validation";
 
   import { Icon, Input } from "../DesignSystem/Primitive";
-  import { Remote, TrackToggle } from "../DesignSystem/Component";
+  import { FollowToggle, Remote } from "../DesignSystem/Component";
 
   let id: string;
   let value: string;
@@ -26,12 +26,9 @@
   const urnValidation = urnValidationStore();
 
   const navigateToProject = (project: Project) => {
-    dispatch("hide");
+    reset();
     push(path.projectSource(project.id));
-  };
-  const navigateToUntracked = () => {
     dispatch("hide");
-    push(path.projectUntracked(value));
   };
   const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
@@ -45,11 +42,12 @@
         }
         break;
       case "Escape":
+        reset();
         dispatch("hide");
         break;
     }
   };
-  const onTrack = () => {
+  const follow = () => {
     requestProject({ urn: value });
   };
 
@@ -70,15 +68,10 @@
   }
   // Fire notification when a request has been created.
   $: if ($request.status === remote.Status.Success) {
-    notification.info(
-      "You’ll be notified on your profile when this project has been found.",
-      false,
-      "View profile",
-      () => {
-        dispatch("hide");
-        push(path.profileFollowing());
-      }
-    );
+    reset();
+    push(path.profileFollowing());
+    notification.info("You’ll be notified when this project has been found.");
+    dispatch("hide");
   }
 
   $: tracked = $store.status === remote.Status.Success;
@@ -157,8 +150,8 @@
 
       <div slot="error" style="padding: 1.5rem;">
         <div class="header typo-header-3">
-          <span class="id" on:click={navigateToUntracked}>{id}</span>
-          <TrackToggle on:track={onTrack} style="margin-left: 1rem;" />
+          <span class="id">{id}</span>
+          <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
         </div>
 
         <p style="color: var(--color-foreground-level-6);">

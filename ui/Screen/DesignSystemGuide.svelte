@@ -10,6 +10,7 @@
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
+    FollowToggle,
     Fullscreen,
     Dropdown,
     Illustration,
@@ -20,7 +21,6 @@
     Spinner,
     Stats,
     SupportButton,
-    TrackToggle,
     StyledCopyable,
     Tooltip,
   } from "../DesignSystem/Component";
@@ -723,11 +723,11 @@
       </Swatch>
 
       <Swatch>
-        <TrackToggle />
+        <FollowToggle />
       </Swatch>
 
       <Swatch>
-        <TrackToggle warning expanded />
+        <FollowToggle warning expanded />
       </Swatch>
 
       <Swatch>
@@ -747,7 +747,7 @@
 
       <Swatch>
         <StyledCopyable
-          value="hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"
+          value="hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"
           notificationText="The seed was copied to your clipboard" />
       </Swatch>
 

@@ -39,6 +39,7 @@ export const projectCommits = (id: string): string => `/projects/${id}/commits`;
 export const designSystemGuide = (): string => "/design-system-guide";
 
 // modal routes
+export const managePeers = (): string => "/manage-peers";
 export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";

@@ -11,6 +11,7 @@
   import { cancelRequest } from "../../src/project";
   import type { Project } from "../../src/project";
   import type { UnsealedSession } from "../../src/session";
+  import type { Urn } from "../../src/urn";
 
   import {
     EmptyState,
@@ -19,10 +20,13 @@
     ProjectList,
     Remote,
     ShareableIdentifier,
-    TrackToggle,
+    FollowToggle,
   } from "../../DesignSystem/Component";
 
   const session: UnsealedSession = getContext("session");
+  const onCancel = (urn: Urn): void => {
+    cancelRequest(urn).then(fetchFollowing);
+  };
   const onSelect = ({ detail: project }: { detail: Project }) => {
     push(path.projectSource(project.id));
   };
@@ -83,11 +87,11 @@
               </div>
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
-                  <TrackToggle
+                  <FollowToggle
                     expanded
                     warning
-                    tracking={true}
-                    on:untrack={() => cancelRequest(request.urn)} />
+                    following
+                    on:unfollow={() => onCancel(request.urn)} />
                 </div>
               {/if}
             </div>

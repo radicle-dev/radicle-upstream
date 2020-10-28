@@ -1,11 +1,11 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
+  import * as hotkeys from "./src/hotkeys.ts";
+  import "./src/localPeer.ts";
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
-  import * as hotkeys from "./src/hotkeys.ts";
-
   import { fetch, session as store, Status } from "./src/session.ts";
 
   import {
@@ -23,6 +23,7 @@
   import Lock from "./Screen/Lock.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
+  import ModalManagePeers from "./Modal/ManagePeers.svelte";
   import ModalNewProject from "./Modal/NewProject.svelte";
   import ModalSearch from "./Modal/Search.svelte";
   import ModalShortcuts from "./Modal/Shortcuts.svelte";
@@ -47,6 +48,7 @@
   };
 
   const modalRoutes = {
+    "/manage-peers": ModalManagePeers,
     "/new-project": ModalNewProject,
     "/search": ModalSearch,
     "/shortcuts": ModalShortcuts,

@@ -1,10 +1,12 @@
-import { get, writable } from "svelte/store";
+import { derived, get, writable, Readable } from "svelte/store";
 
 import * as api from "./api";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 import * as event from "./event";
+import * as identity from "./identity";
 import * as remote from "./remote";
 import { getLocalState, LocalState } from "./source";
+import * as urn from "./urn";
 import * as validation from "./validation";
 import * as waitingRoom from "./waitingRoom";
 
@@ -34,6 +36,55 @@ export interface Existing {
 
 type Repo = New | Existing;
 
+export enum Role {
+  Contributor = "contributor",
+  Maintainer = "maintainer",
+  Tracker = "tracker",
+}
+
+export enum ReplicationStatusType {
+  NotReplicated = "notReplicated",
+  Replicated = "replicated",
+}
+
+export interface NotReplicated {
+  type: ReplicationStatusType.NotReplicated;
+}
+
+export interface Replicated {
+  type: ReplicationStatusType.Replicated;
+  role: Role;
+  user: identity.Identity;
+}
+
+export type ReplicationStatus = NotReplicated | Replicated;
+
+export enum PeerType {
+  Local = "local",
+  Remote = "remote",
+}
+
+export interface Local {
+  type: PeerType.Local;
+  peerId: identity.PeerId;
+  status: ReplicationStatus;
+}
+
+export interface Remote {
+  type: PeerType.Remote;
+  peerId: identity.PeerId;
+  status: ReplicationStatus;
+}
+
+export type Peer = Local | Remote;
+
+export interface User {
+  peerId: identity.PeerId;
+  type: PeerType;
+  identity: identity.Identity;
+  role: Role;
+}
+
 export interface Stats {
   branches: number;
   commits: number;
@@ -53,6 +104,46 @@ type Projects = Project[];
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
+const peersStore = remote.createStore<Peer[]>();
+export const peerSelection: Readable<remote.Data<{
+  default: User;
+  peers: User[];
+}>> = derived(peersStore, store => {
+  if (store.status === remote.Status.Success) {
+    const peers = store.data
+      .filter(peer => peer.status.type === ReplicationStatusType.Replicated)
+      .map(peer => {
+        const { role, user } = peer.status as Replicated;
+        return { type: peer.type, peerId: peer.peerId, identity: user, role };
+      });
+
+    // TODO(xla): Apply proper heuristic to set default.
+    return {
+      status: remote.Status.Success,
+      data: { default: peers[0], peers },
+    };
+  }
+
+  return store;
+});
+
+export const pendingPeers: Readable<remote.Data<{
+  peers: Peer[];
+}>> = derived(peersStore, store => {
+  if (store.status === remote.Status.Success) {
+    const peers = store.data.filter(
+      peer => peer.status.type === ReplicationStatusType.NotReplicated
+    );
+
+    return {
+      status: remote.Status.Success,
+      data: { peers },
+    };
+  }
+
+  return store;
+});
+
 const projectStore = remote.createStore<Project>();
 export const project = projectStore.readable;
 
@@ -71,8 +162,11 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchPeers = "FETCH_PEERS",
   FetchTracked = "FETCH_TRACKED",
   FetchLocalState = "FETCH_LOCAL_STATE",
+  TrackPeer = "TRACK_PEER",
+  UntrackPeer = "UNTRACK_PEER",
 }
 
 interface ClearLocalState extends event.Event<Kind> {
@@ -94,12 +188,37 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
+interface FetchPeers extends event.Event<Kind> {
+  kind: Kind.FetchPeers;
+  urn: urn.Urn;
+}
+
 interface FetchLocalState extends event.Event<Kind> {
   kind: Kind.FetchLocalState;
   path: string;
 }
 
-type Msg = ClearLocalState | Create | Fetch | FetchList | FetchLocalState;
+interface TrackPeer extends event.Event<Kind> {
+  kind: Kind.TrackPeer;
+  urn: urn.Urn;
+  peerId: identity.PeerId;
+}
+
+interface UntrackPeer extends event.Event<Kind> {
+  kind: Kind.UntrackPeer;
+  urn: urn.Urn;
+  peerId: identity.PeerId;
+}
+
+type Msg =
+  | ClearLocalState
+  | Create
+  | Fetch
+  | FetchList
+  | FetchPeers
+  | FetchLocalState
+  | TrackPeer
+  | UntrackPeer;
 
 // REQUEST INPUTS
 interface CreateInput {
@@ -124,9 +243,13 @@ const update = (msg: Msg): void => {
       break;
     case Kind.Fetch:
       projectStore.loading();
+      peersStore.reset();
       api
         .get<Project>(`projects/${msg.id}`)
-        .then(projectStore.success)
+        .then((project: Project) => {
+          projectStore.success(project);
+          fetchPeers({ urn: msg.id });
+        })
         .catch(projectStore.error);
 
       break;
@@ -141,11 +264,41 @@ const update = (msg: Msg): void => {
 
       break;
 
+    case Kind.FetchPeers:
+      peersStore.loading();
+
+      api
+        .get<Peer[]>(`projects/${msg.urn}/peers`)
+        .then(peers => {
+          peersStore.success(peers);
+        })
+        .catch(peersStore.error);
+
+      break;
+
     case Kind.FetchLocalState:
       localStateStore.loading();
       getLocalState(msg.path)
         .then(localStateStore.success)
         .catch(localStateStore.error);
+      break;
+
+    case Kind.TrackPeer:
+      api
+        .put<null, boolean>(`projects/${msg.urn}/track/${msg.peerId}`, null)
+        .then(() => {
+          fetchPeers({ urn: msg.urn });
+        })
+        .catch(peersStore.error);
+      break;
+
+    case Kind.UntrackPeer:
+      api
+        .put<null, boolean>(`projects/${msg.urn}/untrack/${msg.peerId}`, null)
+        .then(() => {
+          fetchPeers({ urn: msg.urn });
+        })
+        .catch(peersStore.error);
       break;
   }
 };
@@ -172,6 +325,7 @@ export const checkout = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchPeers = event.create<Kind, Msg>(Kind.FetchPeers, update);
 export const fetchLocalState = event.create<Kind, Msg>(
   Kind.FetchLocalState,
   update
@@ -197,6 +351,24 @@ export const fetchTracking = (): Promise<Project[]> => {
 export const fetchUserList = (urn: string): Promise<Project[]> => {
   return api.get<Projects>(`projects/user/${urn}`);
 };
+
+export const trackPeer = (urn: urn.Urn, peerId: identity.PeerId): void =>
+  event.create<Kind, Msg>(
+    Kind.TrackPeer,
+    update
+  )({
+    urn: urn,
+    peerId: peerId,
+  });
+
+export const untrackPeer = (urn: urn.Urn, peerId: identity.PeerId): void =>
+  event.create<Kind, Msg>(
+    Kind.UntrackPeer,
+    update
+  )({
+    urn: urn,
+    peerId: peerId,
+  });
 
 // NEW PROJECT
 export const localStateError = writable<string>("");
@@ -319,6 +491,56 @@ export const repositoryPathValidationStore = (
       ]
     );
   }
+};
+
+const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
+
+const checkPeerUniqueness = (peer: string): Promise<boolean> => {
+  return Promise.resolve(
+    !get(peersStore)
+      .data.map((peer: Peer) => {
+        return peer.peerId;
+      })
+      .includes(peer)
+  );
+};
+
+export const peerValidation = validation.createValidationStore(
+  {
+    format: {
+      pattern: VALID_PEER_MATCH,
+      message: "This is not a valid remote",
+    },
+  },
+  [
+    {
+      promise: checkPeerUniqueness,
+      validationMessage: "This remote is already being followed",
+    },
+  ]
+);
+
+export const addPeer = async (
+  projectId: urn.Urn,
+  newRemote: identity.PeerId
+): Promise<boolean> => {
+  // This has to be awaited contrary to what tslint suggests, because we're
+  // running async remote validations in in the background. If we remove the
+  // async then the seed input form will have to be submitted twice to take any
+  // effect.
+  await peerValidation.validate(newRemote);
+  if (get(peerValidation).status !== validation.ValidationStatus.Success)
+    return false;
+
+  trackPeer(projectId, newRemote);
+  return true;
+};
+
+export const removePeer = (
+  projectId: urn.Urn,
+  remote: identity.PeerId
+): void => {
+  untrackPeer(projectId, remote);
 };
 
 // Checks if the provided user is part of the maintainer list of the project.
