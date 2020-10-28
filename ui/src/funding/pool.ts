@@ -218,3 +218,21 @@ export const topUpAmountValidationStore = (
     },
   ]);
 };
+
+export class OnboardingStatus {
+  receivers: boolean;
+  budget: boolean;
+  topUp: boolean;
+
+  constructor(data?: PoolData) {
+    this.receivers = (data && data.receiverAddresses.length > 0) || false;
+    this.budget =
+      (data && data.amountPerBlock.length > 0 && data.amountPerBlock !== "0") ||
+      false;
+    this.topUp = (data && data.balance > 0) || false;
+  }
+
+  isComplete(): boolean {
+    return this.receivers && this.budget && this.topUp;
+  }
+}

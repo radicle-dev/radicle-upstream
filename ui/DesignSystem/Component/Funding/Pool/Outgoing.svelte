@@ -41,12 +41,15 @@
     );
   });
 
+  let onboardingStatus = new _pool.OnboardingStatus();
+
   pool.data.subscribe(store => {
     if (store.status === remote.Status.Success) {
       const newData = store.data;
       data = newData;
       monthlyContribution = newData.amountPerBlock;
       members = newData.receiverAddresses.join(",");
+      onboardingStatus = new _pool.OnboardingStatus(newData);
     }
   });
 
@@ -220,21 +223,32 @@
     </header>
 
     <div class="content">
-      <div class="onboarding">
-        <h3>Getting Started</h3>
-        <div class="steps">
-          <Add done={poolData.receiverAddresses.length > 0} />
-          <Budget
-            currentValue={poolData.amountPerBlock}
-            ongoing={ongoingMonthlyContributionUpdate}
-            onSave={x => pool.updateAmountPerBlock(x)}
-            style={'margin-left: 20px'} />
-          <TopUp
-            style={'margin-left: 20px'}
-            balance={poolData.balance}
-            ongoing={ongoingTopUp} />
+      {#if !onboardingStatus.isComplete()}
+        <div class="onboarding">
+          <h3>Getting Started</h3>
+          <div class="steps">
+            <Add done={onboardingStatus.receivers} />
+            <Budget
+              currentValue={poolData.amountPerBlock}
+              ongoing={ongoingMonthlyContributionUpdate}
+              onSave={x => pool.updateAmountPerBlock(x)}
+              style={'margin-left: 20px'} />
+            <TopUp
+              style={'margin-left: 20px'}
+              balance={poolData.balance}
+              ongoing={ongoingTopUp} />
+          </div>
         </div>
-      </div>
+      {:else}
+        <p>
+          <strong>{poolData.amountPerBlock} DAI</strong> will be sent from your balance
+          over the course of a month. <strong>{poolData.amountPerBlock / poolData.receiverAddresses.length}
+            DAI
+          </strong> per month will go to each of the <strong>{poolData.receiverAddresses.length}
+            receiver{poolData.receiverAddresses.length === 1 ? '' : 's'}
+          </strong> you’re supporting.
+        </p>
+      {/if}
 
       <div style="margin-top: var(--content-padding)">
         <Input.Textarea
