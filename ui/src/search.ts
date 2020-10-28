@@ -38,6 +38,7 @@ type Msg = Reset | RequestProject | SearchProject;
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Reset:
+      projectRequestStore.reset();
       projectSearchStore.reset();
 
       break;
@@ -59,10 +60,7 @@ const update = (msg: Msg): void => {
       // FIXME(xla): A verbatim copy from project.ts fetch, it should be consolidated.
       api
         .get<project.Project>(`projects/${msg.urn}`)
-        .then(res => {
-          console.log(res);
-          projectSearchStore.success(res);
-        })
+        .then(projectSearchStore.success)
         .catch(projectSearchStore.error);
 
       break;
