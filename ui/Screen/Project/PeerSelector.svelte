@@ -2,7 +2,8 @@
   import { createEventDispatcher, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../src/path.ts";
+  import * as modal from "../../src/modal";
+  import * as path from "../../src/path";
   import { BadgeType } from "../../src/badge.ts";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
@@ -80,6 +81,7 @@
 
   .selector-expand {
     align-self: flex-end;
+    margin-left: 0.5rem;
   }
 
   .peer-dropdown-container {
@@ -108,10 +110,29 @@
     justify-content: space-between;
   }
 
+  .peer.selected {
+    background-color: var(--color-foreground-level-2);
+  }
+
+  .peer:hover {
+    cursor: pointer;
+    background-color: var(--color-foreground-level-2);
+  }
+
   .open-profile {
     display: flex;
     justify-content: center;
     cursor: pointer;
+    margin-left: 0.5rem;
+  }
+
+  .remotes {
+    justify-content: flex-start;
+  }
+
+  .remotes p {
+    white-space: nowrap;
+    margin-right: 0.5rem;
   }
 </style>
 
@@ -149,11 +170,10 @@
       {#each revisions as repo}
         <div
           class="peer"
+          on:click={() => selectPeer(repo.identity.peerId)}
           class:selected={repo.identity.peerId == currentSelectedPeer.identity.peerId}
           data-peer-handle={repo.identity.metadata.handle}>
-          <div
-            style="display: flex;"
-            on:click={() => selectPeer(repo.identity.peerId)}>
+          <div style="display: flex;">
             <Avatar
               avatarFallback={repo.identity.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
@@ -183,6 +203,16 @@
           </Tooltip>
         </div>
       {/each}
+      <div
+        class="peer remotes"
+        data-cy="manage-remotes"
+        on:click={() => modal.toggle(path.managePeers(), [
+            { name: 'metadata', data: metadata },
+            { name: 'revisions', data: revisions },
+          ])}>
+        <Icon.Pen style="margin-right: .5rem;" />
+        <p>Manage remotes</p>
+      </div>
     </div>
   </div>
 </Overlay>
