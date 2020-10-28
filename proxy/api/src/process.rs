@@ -142,7 +142,7 @@ async fn run_rigging(
     let peer_subscriptions = subscriptions.clone();
 
     let server = async move {
-        log::info!("... API");
+        log::info!("starting API");
         let api = http::api(ctx, subscriptions.clone());
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], 8080),
@@ -174,17 +174,15 @@ async fn run_rigging(
             }
         };
         let peer = async move {
-            log::info!("... peer");
+            log::info!("starting peer");
             peer.into_running().await
         };
 
-        log::info!("Starting...");
         let result = tokio::select! {
             server_status = server => server_status,
             peer_status = peer => Ok(peer_status?),
             peer_event_broadcast_status = peer_event_broadcast => peer_event_broadcast_status,
         };
-        log::info!("done");
         result
     } else {
         server.await
