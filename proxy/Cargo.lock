@@ -83,6 +83,7 @@ dependencies = [
  "pico-args",
  "pretty_assertions",
  "pretty_env_logger",
+ "radicle-avatar",
  "radicle-surf",
  "serde",
  "serde_json",
@@ -1882,6 +1883,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aa563d17ecb180e500da1cfd2b028310ac758de548efdd203e18f283af693f37"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "radicle-avatar"
+version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-avatar.git?rev=4e34e6b992fd9f465b0547a5693b47b0d41dea01#4e34e6b992fd9f465b0547a5693b47b0d41dea01"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

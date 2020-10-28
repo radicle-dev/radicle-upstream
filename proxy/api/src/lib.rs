@@ -24,7 +24,6 @@
     clippy::shadow_reuse
 )]
 
-mod avatar;
 mod config;
 mod context;
 pub mod env;
