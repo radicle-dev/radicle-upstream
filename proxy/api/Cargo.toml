@@ -36,6 +36,10 @@ features = [ "json-value" ]
 [dependencies.coco]
 path = "../coco"
 
+[dependencies.radicle-avatar]
+git = "https://github.com/radicle-dev/radicle-avatar.git"
+rev = "4e34e6b992fd9f465b0547a5693b47b0d41dea01"
+
 [dependencies.radicle-surf]
 version = "0.5.0"
 features = ["serialize"]

@@ -100,7 +100,9 @@ mod test {
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use crate::{avatar, context, error, http, identity, session};
+    use radicle_avatar as avatar;
+
+    use crate::{context, error, http, identity, session};
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
