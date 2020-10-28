@@ -16,7 +16,7 @@ pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
 /// Avatar handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
-    
+
     use radicle_avatar as avatar;
 
     use crate::http::error;
