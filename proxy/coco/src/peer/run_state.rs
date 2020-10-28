@@ -98,6 +98,8 @@ pub enum Event {
     PeerSynced(PeerId),
     /// Request fullfilled with a successful clone.
     RequestCloned(RadUrl),
+    /// Request is being cloned from a peer.
+    RequestCloning(RadUrl),
     /// Requested urn was queried on the network.
     RequestQueried(RadUrn),
     /// Waiting room interval ticked.
@@ -117,6 +119,7 @@ impl MaybeFrom<&Input> for Event {
             Input::PeerSync(SyncInput::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(event) => Some(Self::Protocol(event.clone())),
             Input::Request(RequestInput::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
+            Input::Request(RequestInput::Cloning(url)) => Some(Self::RequestCloning(url.clone())),
             Input::Request(RequestInput::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
             Input::Request(RequestInput::Tick) => Some(Self::RequestTick),
             Input::Request(RequestInput::TimedOut(urn)) => Some(Self::RequestTimedOut(urn.clone())),
