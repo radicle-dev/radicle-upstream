@@ -21,7 +21,7 @@
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
 
-  let inputHeight = null;
+  let inputHeight: number;
 
   // Can't use normal `autofocus` attribute on the `inputElement`:
   // "Autofocus processing was blocked because a document's URL has a fragment".
