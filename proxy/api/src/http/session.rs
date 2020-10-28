@@ -129,7 +129,7 @@ mod test {
                         }
                     },
                     "coco": {
-                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
+                        "seeds": ["hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"],
                     },
                 },
             }),
@@ -170,7 +170,7 @@ mod test {
                         }
                     },
                     "coco": {
-                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
+                        "seeds": ["hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"],
                     },
                 },
             }),
