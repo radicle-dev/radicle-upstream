@@ -4,7 +4,6 @@
   import type { Urn } from "../../src/urn";
   import type { User } from "../../src/project";
 
-  import { Flex } from "../../DesignSystem/Primitive";
   import { FollowToggle } from "../../DesignSystem/Component";
 
   export let peer: User;
@@ -16,18 +15,29 @@
   const [head, tail] = peer.peerId.split(/(.{6}).*(.{6})/).filter(Boolean);
 </script>
 
-<Flex style="flex: 1; padding: 1.375rem 1.5rem;">
-  <div slot="left" style="max-width: 22em">
+<style>
+  .peer-request {
+    display: flex;
+    padding: 1.375rem 1.5rem;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .left {
+    max-width: 22em;
+  }
+</style>
+
+<div class="peer-request" data-cy="peer-request">
+  <div class="left" style="max-width: 22em">
     <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
       {head}…{tail} / {projectName}
     </p>
   </div>
-  <div slot="right" style="display: flex; align-items: center;">
-    <FollowToggle
-      expanded
-      following
-      on:unfollow={() => {
-        dispatch('cancel', { projectUrn, peerId: peer.peerId });
-      }} />
-  </div>
-</Flex>
+  <FollowToggle
+    expanded
+    following
+    on:unfollow={() => {
+      dispatch('cancel', { projectUrn, peerId: peer.peerId });
+    }} />
+</div>

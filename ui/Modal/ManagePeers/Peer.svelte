@@ -8,7 +8,7 @@
   import { CSSPosition } from "../../src/style";
   import { PeerType, Role } from "../../src/project";
 
-  import { Avatar, Flex } from "../../DesignSystem/Primitive";
+  import { Avatar } from "../../DesignSystem/Primitive";
   import { Badge, FollowToggle, Tooltip } from "../../DesignSystem/Component";
 
   export let peer: User;
@@ -18,8 +18,22 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<Flex style="flex: 1; padding: 1.375rem 1.5rem;">
-  <div slot="left" style="max-width: 22em">
+<style>
+  .peer {
+    display: flex;
+    align-items: center;
+    padding: 1.375rem 1.5rem;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .left {
+    max-width: 22em;
+    flex-direction: column;
+  }
+</style>
+
+<div class="peer" data-cy="peer">
+  <div class="left">
     <div style="display: flex;">
       <Avatar
         avatarFallback={peer.identity.avatarFallback}
@@ -39,28 +53,22 @@
       {peer.identity.peerId}
     </p>
   </div>
-  <div slot="right" style="display: flex; align-items: center;">
-    {#if peer.type === PeerType.Local}
-      <Tooltip
-        position={CSSPosition.Top}
-        value="Can't unfollow your own remote">
-        <FollowToggle disabled following expanded />
-      </Tooltip>
-    {:else if peer.role === Role.Maintainer}
-      <Tooltip
-        position={CSSPosition.Top}
-        value="Can't unfollow the maintainer's remote">
-        <FollowToggle disabled following expanded />
-      </Tooltip>
-    {:else}
-      <Tooltip>
-        <FollowToggle
-          following
-          expanded
-          on:untrack={() => {
-            dispatch('unfollow', { projectUrn, peerId: peer.peerId });
-          }} />
-      </Tooltip>
-    {/if}
-  </div>
-</Flex>
+  {#if peer.type === PeerType.Local}
+    <Tooltip position={CSSPosition.Top} value="Can't unfollow your own remote">
+      <FollowToggle disabled following expanded />
+    </Tooltip>
+  {:else if peer.role === Role.Maintainer}
+    <Tooltip
+      position={CSSPosition.Top}
+      value="Can't unfollow the maintainer's remote">
+      <FollowToggle disabled following expanded />
+    </Tooltip>
+  {:else}
+    <FollowToggle
+      following
+      expanded
+      on:untrack={() => {
+        dispatch('unfollow', { projectUrn, peerId: peer.peerId });
+      }} />
+  {/if}
+</div>
