@@ -59,39 +59,47 @@ interface UpdateSettings extends event.Event<Kind> {
 
 type Msg = Clear | ClearCache | Fetch | UpdateSettings;
 
-const handleSessionError = async (error: Error): Promise<Session | null> => {
-  if (error instanceof api.ResponseError) {
-    if (error.response.status === 404) {
-      return null;
-    } else if (error.response.status === 403) {
-      return {} as Session;
-    } else {
-      throw error;
-    }
-  } else {
-    throw error;
-  }
+let retries = 0;
+
+const fetchSessionRetry = async () => {
+  return api
+    .get<Session>(`session`)
+    .then(sessionStore.success)
+    .catch(error => {
+      if (error instanceof api.ResponseError) {
+        if (error.response.status === 404) {
+          sessionStore.success(null);
+        } else if (error.response.status === 403) {
+          sessionStore.success({} as Session);
+        } else {
+          throw error;
+        }
+      } else if (error.message === "Failed to fetch" && retries < 10) {
+        retries += 1;
+        setTimeout(() => fetchSessionRetry(), 5000);
+      } else {
+        throw error;
+      }
+    });
 };
 
-const fetchSession = (): Promise<void> =>
-  api
-    .get<Session>(`session`)
-    .catch(error => handleSessionError(error))
-    .then(sessionStore.success)
-    .catch(sessionStore.error);
+const fetchSession = (): Promise<void> => {
+  retries = 0;
+  return fetchSessionRetry().catch(sessionStore.error);
+};
 
 export const unseal = (passphrase: string): Promise<void> => {
   sessionStore.loading();
   return api
     .set<unknown>(`keystore/unseal`, { passphrase })
-    .catch((error: error.Error) => {
-      if (error instanceof api.ResponseError && error.response.status === 403) {
-        sessionStore.success({} as Session);
-      } else {
-        notification.error(`Could not unlock the session: ${error.message}`);
-      }
+    .then(() => {
+      notification.info("Unsealing the session...");
+      fetchSession();
     })
-    .then(fetchSession);
+    .catch((error: error.Error) => {
+      sessionStore.success({} as Session);
+      notification.error(`Could not unlock the session: ${error.message}`);
+    });
 };
 
 export const createKeystore = (): Promise<null> => {
