@@ -11,16 +11,10 @@ import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 import { createValidationStore, ValidationStatus } from "./validation";
 
 // TYPES
-export interface Authenticated {
+export interface Session {
   identity: identity.Identity;
   settings: Settings;
 }
-
-export interface Unauthenticated {
-  settings: Settings;
-}
-
-export type Session = Authenticated | Unauthenticated;
 
 // STATE
 const sessionStore = remote.createStore<Session | null>();
