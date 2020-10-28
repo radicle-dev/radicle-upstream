@@ -7,7 +7,7 @@ import * as identity from "../identity";
 type MockedResponse =
   | project.Project
   | project.Project[]
-  | session.Session
+  | session.SessionData
   | source.LocalState
   | null;
 
@@ -44,7 +44,7 @@ const surfProjectMock: project.Project = {
   },
 };
 
-export const sessionMock: session.Session = {
+export const sessionMock: session.SessionData = {
   settings: {
     appearance: {
       theme: settings.Theme.Light,

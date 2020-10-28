@@ -110,3 +110,25 @@ export const set = async <T>(
       ...options,
     })
   );
+
+const delay = (delay: number) => {
+  return new Promise((resolve, _reject) => {
+    setTimeout(resolve, delay);
+  });
+};
+
+export const withRetry = async <T>(
+  request: () => Promise<T>,
+  delayTime: number
+): Promise<T> => {
+  for (let retries = 0; ; retries++) {
+    try {
+      return await request();
+    } catch (error) {
+      if (error.message !== "Failed to fetch" || retries > 200) {
+        throw error;
+      }
+    }
+    await delay(delayTime);
+  }
+};

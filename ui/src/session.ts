@@ -11,22 +11,32 @@ import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 import { createValidationStore, ValidationStatus } from "./validation";
 
 // TYPES
-export interface Session {
+export enum Status {
+  NoSession = "No_SESSION",
+  SealedSession = "SEALED_SESSION",
+  UnsealedSession = "UNSEALED_SESSION",
+}
+
+export type Session =
+  | { status: Status.NoSession }
+  | { status: Status.SealedSession }
+  | ({ status: Status.UnsealedSession } & SessionData);
+
+export interface SessionData {
   identity: identity.Identity;
   settings: Settings;
 }
 
 // STATE
-const sessionStore = remote.createStore<Session | null>();
+const sessionStore = remote.createStore<Session>();
 export const session = sessionStore.readable;
 
 export const settings: Readable<Settings> = derived(sessionStore, sess => {
   if (
     sess.status === remote.Status.Success &&
-    sess.data &&
-    (<Session>sess.data).settings
+    sess.data.status === Status.UnsealedSession
   ) {
-    return (<Session>sess.data).settings;
+    return sess.data.settings;
   } else {
     return defaultSetttings();
   }
@@ -59,24 +69,21 @@ interface UpdateSettings extends event.Event<Kind> {
 
 type Msg = Clear | ClearCache | Fetch | UpdateSettings;
 
-let retries = 0;
-
 const fetchSessionRetry = async () => {
   return api
-    .get<Session>(`session`)
-    .then(sessionStore.success)
-    .catch(error => {
+    .withRetry(() => api.get<SessionData>(`session`), 200)
+    .then(ses =>
+      sessionStore.success({ status: Status.UnsealedSession, ...ses })
+    )
+    .catch(async error => {
       if (error instanceof api.ResponseError) {
         if (error.response.status === 404) {
-          sessionStore.success(null);
+          sessionStore.success({ status: Status.NoSession });
         } else if (error.response.status === 403) {
-          sessionStore.success({} as Session);
+          sessionStore.success({ status: Status.SealedSession });
         } else {
           throw error;
         }
-      } else if (error.message === "Failed to fetch" && retries < 10) {
-        retries += 1;
-        setTimeout(() => fetchSessionRetry(), 5000);
       } else {
         throw error;
       }
@@ -84,22 +91,20 @@ const fetchSessionRetry = async () => {
 };
 
 const fetchSession = (): Promise<void> => {
-  retries = 0;
   return fetchSessionRetry().catch(sessionStore.error);
 };
 
-export const unseal = (passphrase: string): Promise<void> => {
+export const unseal = async (passphrase: string): Promise<void> => {
   sessionStore.loading();
-  return api
-    .set<unknown>(`keystore/unseal`, { passphrase })
-    .then(() => {
-      notification.info("Unsealing the session...");
-      fetchSession();
-    })
-    .catch((error: error.Error) => {
-      sessionStore.success({} as Session);
-      notification.error(`Could not unlock the session: ${error.message}`);
-    });
+  try {
+    await api.set<unknown>(`keystore/unseal`, { passphrase });
+  } catch (error) {
+    sessionStore.success({ status: Status.SealedSession });
+    notification.error(`Could not unlock the session: ${error.message}`);
+    return;
+  }
+  notification.info("Unsealing the session...");
+  await fetchSession();
 };
 
 export const createKeystore = (): Promise<null> => {

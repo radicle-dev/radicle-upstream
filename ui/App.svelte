@@ -6,7 +6,7 @@
   import * as remote from "./src/remote.ts";
   import * as hotkeys from "./src/hotkeys.ts";
 
-  import { fetch, session as store } from "./src/session.ts";
+  import { fetch, session as store, Status } from "./src/session.ts";
 
   import {
     NotificationFaucet,
@@ -58,10 +58,10 @@
       break;
 
     case remote.Status.Success:
-      if ($store.data === null) {
+      if ($store.data.status === Status.NoSession) {
         hotkeys.disable();
         push(path.onboarding());
-      } else if ($store.data.identity) {
+      } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
           $location === path.blank() ||
