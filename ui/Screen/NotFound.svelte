@@ -3,7 +3,7 @@
 </script>
 
 <SidebarLayout>
-  <div class="display: flex; flex: 1;">
+  <div style="display: flex; flex: 1;">
     <h2>Not Found</h2>
   </div>
 </SidebarLayout>
