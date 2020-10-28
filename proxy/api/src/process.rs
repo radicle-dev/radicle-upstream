@@ -114,7 +114,7 @@ async fn run_rigging(
 
     if let Some(seeds_sender) = seeds_sender {
         let seeds_store = ctx.store().clone();
-        tokio::spawn(async move {
+        coco::SpawnAbortable::new(async move {
             let mut last_seeds: Vec<seed::Seed> = vec![];
             let mut timer = tokio::time::interval(Duration::from_secs(1));
 
@@ -157,7 +157,7 @@ async fn run_rigging(
     };
 
     if let Some(peer) = peer {
-        let peer_event_broadcast = {
+        coco::SpawnAbortable::new({
             let mut peer_events = peer.subscribe();
 
             async move {
@@ -172,7 +172,7 @@ async fn run_rigging(
                     }
                 }
             }
-        };
+        });
         let peer = async move {
             log::info!("starting peer");
             peer.into_running().await
@@ -181,7 +181,6 @@ async fn run_rigging(
         let result = tokio::select! {
             server_status = server => server_status,
             peer_status = peer => Ok(peer_status?),
-            peer_event_broadcast_status = peer_event_broadcast => peer_event_broadcast_status,
         };
         result
     } else {
