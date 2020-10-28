@@ -1,10 +1,7 @@
 <script lang="typescript">
   import type { Tx } from "../../../src/transaction";
-  import { colorForStatus } from "../../../src/transaction";
 
   export let tx: Tx;
-
-  $: color = colorForStatus(tx.status);
 </script>
 
 <style>
@@ -23,7 +20,7 @@
   </p>
   <p
     class="typo-text-small"
-    style="color: {color}; text-transform: capitalize;">
-    {tx.status}
+    style="color: var(--color-foreground-level-5); text-transform: capitalize;">
+    {tx.hash.slice(0, 9)}
   </p>
 </div>

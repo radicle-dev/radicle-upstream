@@ -23,6 +23,10 @@ export interface Tx {
 
   // The underlying transaction
   inner: PoolTx;
+
+  // The date in which this transaction was created.
+  // In milliseconds since epoch.
+  date: number;
 }
 
 export enum TxStatus {
@@ -82,6 +86,7 @@ export function amountPerBlock(txc: ContractTransaction): Tx {
       kind: TxKind.UpdateMonthlyContribution,
       amount: txc.value,
     },
+    date: Date.now(),
   };
 }
 
@@ -92,6 +97,7 @@ export function beneficiaries(txc: ContractTransaction): Tx {
     inner: {
       kind: TxKind.UpdateBeneficiaries,
     },
+    date: Date.now(),
   };
 }
 
@@ -103,6 +109,7 @@ export function collect(txc: ContractTransaction): Tx {
       kind: TxKind.CollectFunds,
       amount: txc.value,
     },
+    date: Date.now(),
   };
 }
 
@@ -114,10 +121,11 @@ export function topUp(txc: ContractTransaction): Tx {
       kind: TxKind.TopUp,
       amount: txc.value,
     },
+    date: Date.now(),
   };
 }
 
-export function add(tx: Tx) {
+export function add(tx: Tx, date = Date.now()) {
   store.update(txs => {
     txs.unshift(tx);
     return txs;
@@ -156,6 +164,8 @@ async function updateStatuses() {
 
 async function lookupStatus(hash: string): Promise<TxStatus | undefined> {
   const tx_receipt = await provider.getTransactionReceipt(hash);
+
+  console.log(tx_receipt);
 
   // TODO(nuno): Need to workout a way of detecting failed txs prior to the
   // byzantium fork. Or might not be necessary at all.
