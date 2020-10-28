@@ -65,6 +65,11 @@
     margin-right: 1rem;
   }
 
+  .project-stat-item p {
+    margin-left: 0.5rem;
+    white-space: nowrap;
+  }
+
   .project-stat-separator {
     display: flex;
     color: var(--color-foreground-level-3);
@@ -125,14 +130,14 @@
           <div class="project-stats" data-cy="project-stats">
             <div class="project-stat-item">
               <Icon.Branch />
-              <p style="margin-left: 0.5rem; white-space: nowrap;">
+              <p>
                 {stats.branches === 1 ? `1 Branch` : `${stats.branches} Branches`}
               </p>
             </div>
             <span class="typo-mono-bold project-stat-separator">•</span>
             <div class="project-stat-item">
               <Icon.User />
-              <p style="margin-left: 0.5rem; white-space: nowrap;">
+              <p>
                 {stats.contributors === 1 ? `1 Contributor` : `${stats.contributors} Contributors`}
               </p>
             </div>
