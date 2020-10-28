@@ -115,9 +115,11 @@
 
 <Hoverable let:hovering={hover}>
   <div
+    data-cy="follow-toggle"
     class:active
     class:hover={hover && !disabled}
     class:following
+    class:disabled
     class:warning
     class="toggle"
     {style}
@@ -130,7 +132,6 @@
     <div
       class="left"
       class:active
-      class:disabled
       class:hover={hover && !disabled}
       class:following
       class:warning>

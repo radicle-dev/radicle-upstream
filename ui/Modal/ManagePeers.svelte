@@ -82,12 +82,14 @@
     <form class="peer-entry-form" on:submit|preventDefault>
       <div class="peer-entry-field">
         <Input.Text
+          dataCy="peer-input"
           hint="v"
           bind:value={newPeer}
           placeholder="Paste a remote address here"
           validation={$peerValidation}
           style="width: 100%; margin-right: .5rem;" />
         <Button
+          dataCy="follow-button"
           style="display: flex; align-self: flex-start;"
           variant="secondary"
           disabled={!newPeer}
@@ -100,6 +102,7 @@
     <Remote store={peerSelection} let:data>
       {#if data.peers.length > 0}
         <List
+          dataCy="followed-peers"
           items={data.peers}
           let:item={peer}
           styleHoverState={false}
@@ -126,6 +129,7 @@
           </p>
         </div>
         <List
+          dataCy="pending-peers"
           items={data.peers}
           let:item={peer}
           styleHoverState={false}
