@@ -1,3 +1,5 @@
+import * as svelteStore from "svelte/store";
+
 import * as api from "./api";
 import * as session from "./session";
 import * as settings from "./settings";
@@ -18,14 +20,15 @@ describe("clearing", () => {
 
 describe("appearance settings", () => {
   it("sends a request to update appearance settings when updateAppearance() is called", () => {
+    const currentSettings = svelteStore.get(session.settings);
     session.updateAppearance({
-      ...defaultSettings.appearance,
+      ...currentSettings.appearance,
       theme: settings.Theme.Dark,
     });
 
     expect(api.set).toHaveBeenCalledWith("session/settings", {
-      ...defaultSettings,
-      appearance: { ...defaultSettings.appearance, theme: settings.Theme.Dark },
+      ...currentSettings,
+      appearance: { ...currentSettings.appearance, theme: settings.Theme.Dark },
     });
   });
 });
