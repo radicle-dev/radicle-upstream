@@ -54,7 +54,6 @@
 
   .context {
     align-items: flex-end;
-
     display: flex;
     justify-content: space-between;
   }
