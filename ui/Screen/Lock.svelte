@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as session from "../src/session.ts";
+  import * as session from "../src/session";
 
   import { Button, Input } from "../DesignSystem/Primitive";
 

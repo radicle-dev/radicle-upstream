@@ -17,10 +17,12 @@ export enum Status {
   UnsealedSession = "UNSEALED_SESSION",
 }
 
+export type UnsealedSession = { status: Status.UnsealedSession } & SessionData;
+
 export type Session =
   | { status: Status.NoSession }
   | { status: Status.SealedSession }
-  | ({ status: Status.UnsealedSession } & SessionData);
+  | UnsealedSession;
 
 export interface SessionData {
   identity: identity.Identity;
