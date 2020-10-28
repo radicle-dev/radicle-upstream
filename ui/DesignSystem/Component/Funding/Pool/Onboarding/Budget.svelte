@@ -1,34 +1,13 @@
 <script lang="typescript">
-  import { Box, Icon, Input } from "../../../../Primitive";
-
-  import {
-    amountStore,
-    monthlyContributionValidationStore,
-  } from "../../../../../src/funding/pool";
-  import { ValidationStatus } from "../../../../../src/validation";
-  import TxButton from "../../../TxButton.svelte";
+  import { Box, Button, Icon, Input } from "../../../../Primitive";
 
   export let style = "";
   // The current set monthly contribution value.
   export let currentValue: string = "";
   // Whether there is already an ongoing tx setting the monthly contribution.
   export let ongoing = false;
-  // The action to run on save
-  export let onSave: (value: string) => Promise<void>;
-
-  let monthlyContribution = currentValue;
-  let validatingAmount = false;
-  $: amountValidation = monthlyContributionValidationStore();
-  $: amountStore.set(monthlyContribution ? monthlyContribution.toString() : "");
-  $: {
-    if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) amountValidation.validate($amountStore);
-  }
-
-  $: saveMonthlyContributionEnabled =
-    $amountValidation &&
-    $amountValidation.status === ValidationStatus.Success &&
-    monthlyContribution.valueOf() !== currentValue.valueOf();
+  // The action to run on edit
+  export let onEdit: (value: string) => void;
 
   $: done = currentValue > 0;
 </script>
@@ -62,26 +41,16 @@
     receivers in real time.
   </p>
 
-  <div class="row">
-    <Input.Text
-      disabled={false}
-      dataCy="modal-amount-input"
-      placeholder="Enter the amount"
-      bind:value={monthlyContribution}
-      showLeftItem
-      validation={$amountValidation}
-      style="max-width: 150px; margin-left: 10px;">
-      <div slot="left" style="position: absolute; top: 9px; left: 10px;">
-        <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
-      </div>
-    </Input.Text>
-    {#if saveMonthlyContributionEnabled}
-      <TxButton
-        title="✓"
-        disabled={ongoing}
-        onClick={() => onSave(monthlyContribution)}
-        style="margin-left: 7px"
-        variant={'secondary'} />
-    {/if}
-  </div>
+  <p class="typo-text-bold row">
+    <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
+    {currentValue} per month
+  </p>
+
+  <Button
+    disabled={ongoing}
+    on:click={onEdit}
+    style="margin-top: 1rem"
+    variant={'secondary'}>
+    {currentValue === '0' ? 'Set' : 'Edit'}
+  </Button>
 </Box>

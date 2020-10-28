@@ -33,6 +33,7 @@
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
   import ModalTopUp from "./Screen/Funding/Pool/TopUp.svelte";
+  import ModalUpdateMonthlyContribution from "./Screen/Funding/Pool/UpdateMonthlyContribution.svelte";
   import ModalCollect from "./Screen/Funding/Pool/Collect.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
@@ -55,6 +56,7 @@
     "/shortcuts": ModalShortcuts,
     "/pool/top-up": ModalTopUp,
     "/pool/collect": ModalCollect,
+    "/pool/update-monthly-contribution": ModalUpdateMonthlyContribution,
     "/transaction": ModalTransaction,
   };
 

@@ -102,8 +102,8 @@
 
   /* On clicks */
 
-  function onSaveMonthlyContribution(): Promise<void> {
-    return pool.updateAmountPerBlock(monthlyContribution);
+  function onEditMonthlyContribution() {
+    modal.toggle(path.updateMonthlyContribution());
   }
 
   function onSaveMembers(): Promise<void> {
@@ -145,10 +145,6 @@
     align-items: center;
   }
 
-  .row * + * {
-    margin-left: 10px;
-  }
-
   strong {
     font-weight: bold;
   }
@@ -176,33 +172,26 @@
     <header>
       <div class="row">
         <h3>Outgoing support</h3>
-        <span class="row">
-          <Input.Text
-            disabled={ongoingMonthlyContributionUpdate}
-            dataCy="modal-amount-input"
-            placeholder="Enter the amount"
-            bind:value={monthlyContribution}
-            showLeftItem
-            validation={$amountValidation}
-            style="max-width: 150px; margin-left: 10px;">
-            <div slot="left" style="position: absolute; top: 9px; left: 10px;">
-              <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
-            </div>
-          </Input.Text>
-          <p>per month</p>
+        <span class="row" style="margin-left: 14px">
+          <Icon.CurrencyDAI
+            style="fill: var(--color-foreground-level-6); padding-top: 3px; width: 20px; height: 20px;" />
+          <p>{poolData.amountPerBlock} per month</p>
         </span>
-        {#if saveMonthlyContributionEnabled && !ongoingMonthlyContributionUpdate}
-          <TxButton
-            disabled={!saveMonthlyContributionEnabled}
-            title={'Save'}
-            onClick={onSaveMonthlyContribution}
-            variant={'transparent'}
-            errorMessage={e => `Failed to save pool: ${e}`} />
-        {/if}
+        <Button
+          disabled={ongoingMonthlyContributionUpdate}
+          style="margin-left: 10px"
+          on:click={onEditMonthlyContribution}
+          variant={'transparent'}>
+          {poolData.amountPerBlock === '0' ? 'Set' : 'Edit'}
+        </Button>
       </div>
       <div class="row">
         <p>Balance</p>
-        <h3>{poolData.balance} DAI</h3>
+        <p class="typo-text-bold row" style="margin-left: 10px">
+          <Icon.CurrencyDAI
+            style="fill: var(--color-foreground-level-6); padding-top: 3px;" />
+          {poolData.balance}
+        </p>
         {#if !ongoingTopUp}
           <Button
             dataCy="top-up-pool-button"
@@ -231,7 +220,7 @@
             <Budget
               currentValue={poolData.amountPerBlock}
               ongoing={ongoingMonthlyContributionUpdate}
-              onSave={x => pool.updateAmountPerBlock(x)}
+              onEdit={onEditMonthlyContribution}
               style={'margin-left: 20px'} />
             <TopUp
               style={'margin-left: 20px'}
