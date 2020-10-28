@@ -60,12 +60,6 @@ interface UpdateMonthlyContribution {
   amount: BigNumberish;
 }
 
-interface UpdateMonthlyContribution {
-  kind: TxKind.UpdateMonthlyContribution;
-  // The value the monthly contribution is being set to.
-  amount: BigNumberish;
-}
-
 interface UpdateBeneficiaries {
   kind: TxKind.UpdateBeneficiaries;
 }
@@ -266,3 +260,7 @@ export const summaryText = (counts: SummaryCounts): string => {
 
   return `Transaction ${state}`;
 };
+
+// A store containing the hash of a transaction selected by the
+// user in the TransactionCenter.
+export const selectedStore = svelteStore.writable<string>("");

@@ -13,7 +13,7 @@
   const strokeWidths = {
     regular: 4,
     inverted: 6,
-    small: 2,
+    small: 0,
   };
 
   // Progress is a percentage value.

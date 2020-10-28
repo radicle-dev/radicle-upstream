@@ -27,6 +27,7 @@
   import ModalNewProject from "./Modal/NewProject.svelte";
   import ModalSearch from "./Modal/Search.svelte";
   import ModalShortcuts from "./Modal/Shortcuts.svelte";
+  import ModalTransaction from "./Modal/Transaction.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
@@ -54,6 +55,7 @@
     "/shortcuts": ModalShortcuts,
     "/pool/top-up": ModalTopUp,
     "/pool/collect": ModalCollect,
+    "/transaction": ModalTransaction,
   };
 
   $: switch ($store.status) {

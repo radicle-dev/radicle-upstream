@@ -44,6 +44,7 @@ export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
 export const poolTopUp = (): string => "/pool/top-up";
 export const collectFunds = (): string => "/pool/collect";
+export const transaction = (): string => "/transaction";
 
 export const active = (
   path: string,

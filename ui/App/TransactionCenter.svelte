@@ -1,13 +1,15 @@
 <script lang="typescript">
-  // import { push } from "svelte-spa-router";
-  // import * as path from "../src/path";
+  import * as modal from "../src/modal";
+  import * as path from "../src/path";
   import * as transaction from "../src/transaction";
 
   import Center from "../DesignSystem/Component/Transaction/Center.svelte";
 
-  const select = (_event: unknown) => {
-    console.log("TODO(nuno): Implement this");
-  }; // push(path.transactions(event.detail));
+  const onSelect = (event: { detail: string }) => {
+    const hash = event.detail;
+    transaction.selectedStore.set(hash);
+    modal.toggle(path.transaction());
+  };
 
   let txs: transaction.Tx[] = [];
   $: transaction.store.subscribe(xs => {
@@ -27,6 +29,6 @@
 
 {#if txs.length > 0}
   <div class="transaction-center">
-    <Center on:select={select} transactions={txs} />
+    <Center on:select={onSelect} transactions={txs} />
   </div>
 {/if}

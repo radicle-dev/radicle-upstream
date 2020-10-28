@@ -7,7 +7,6 @@
   import List from "./List.svelte";
   import Summary from "./Summary.svelte";
 
-  //   export let summary = null;
   export let transactions: Tx[] = [];
 
   // Transaction center element. Set by the view.
@@ -75,7 +74,7 @@
   class:negative
   style="--list-height: {stack && stack.offsetHeight}px">
   <div class="stack" class:expand>
-    <List {transactions} />
+    <List on:select {transactions} />
     <Summary counts={summaryCounts(transactions)} />
   </div>
 </div>
