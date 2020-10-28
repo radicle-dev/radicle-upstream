@@ -1,6 +1,7 @@
 <script>
   import { fade, fly } from "svelte/transition";
 
+  import { withRetry } from "../src/api.ts";
   import * as notification from "../src/notification.ts";
   import { State } from "../src/onboarding.ts";
   import { createIdentity } from "../src/identity.ts";
@@ -35,33 +36,15 @@
     session.fetch();
   };
 
-  let retries = 0;
-
-  const createIdentityRetry = async (handle, passphrase) => {
-    await createIdentity({
-      handle: handle,
-      passphrase: passphrase,
-    })
-      .then(id => {
-        identity = id;
-        state = State.SuccessView;
-      })
-      .catch(error => {
-        if (error.message === "Failed to fetch" && retries < 10) {
-          retries += 1;
-          setTimeout(() => createIdentityRetry(handle, passphrase), 5000);
-        } else {
-          throw error;
-        }
-      });
-  };
-
   const onCreateIdentity = async (handle, passphrase) => {
     try {
       await session.createKeystore();
-      retries = 0;
       // Retry until the API is up
-      await createIdentityRetry(handle, passphrase);
+      notification.info("Creating the idnetity...");
+      withRetry(() => createIdentity({ handle, passphrase }), 200).then(id => {
+        identity = id;
+        state = State.SuccessView;
+      });
     } catch (error) {
       animateBackward();
       state = State.EnterName;
