@@ -9,7 +9,7 @@
     session.unseal(passphrase);
   };
 
-  const onKeydown = event => {
+  const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter" && passphrase.length > 0) {
       unlock();
     }
