@@ -36,7 +36,7 @@
 
   .left {
     display: flex;
-    min-width: 35rem;
+    min-width: 16rem;
     margin-right: 1.5rem;
   }
 
@@ -129,14 +129,14 @@
           <div class="project-stats" data-cy="project-stats">
             <div class="project-stat-item">
               <Icon.Branch />
-              <p style="margin-left: 0.5rem;">
+              <p style="margin-left: 0.5rem; white-space: nowrap;">
                 {stats.branches === 1 ? `1 Branch` : `${stats.branches} Branches`}
               </p>
             </div>
             <span class="typo-mono-bold project-stat-separator">•</span>
             <div class="project-stat-item">
               <Icon.User />
-              <p style="margin-left: 0.5rem;">
+              <p style="margin-left: 0.5rem; white-space: nowrap;">
                 {stats.contributors === 1 ? `1 Contributor` : `${stats.contributors} Contributors`}
               </p>
             </div>
