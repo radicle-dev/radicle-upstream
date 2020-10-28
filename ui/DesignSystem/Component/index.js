@@ -6,6 +6,7 @@ import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
+import FollowToggle from "./FollowToggle.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
@@ -37,7 +38,6 @@ import SupportButton from "./SupportButton.svelte";
 import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
-import TrackToggle from "./TrackToggle.svelte";
 import QR from "./QR.svelte";
 
 export {
@@ -49,6 +49,7 @@ export {
   Dropdown,
   EmptyState,
   Error,
+  FollowToggle,
   Header,
   HorizontalMenu,
   Hoverable,
@@ -80,6 +81,5 @@ export {
   Timeline,
   Tooltip,
   Topbar,
-  TrackToggle,
   QR,
 };

@@ -76,6 +76,7 @@ pub fn api(
             warp::http::Method::DELETE,
             warp::http::Method::GET,
             warp::http::Method::POST,
+            warp::http::Method::PUT,
             warp::http::Method::OPTIONS,
         ]);
     let log = warp::log::custom(|info| {

@@ -210,10 +210,10 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { TrackToggle } from "../DesignSystem/Component";
+      import { RadicleLogo } from "../DesignSystem/Component";
     </script>
 
-    <TrackToggle />
+    <RadicleLogo />
     ```
 
 Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
