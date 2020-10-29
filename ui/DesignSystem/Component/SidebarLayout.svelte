@@ -17,6 +17,7 @@
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
     height: 100%;
+    min-width: 60rem;
   }
 </style>
 

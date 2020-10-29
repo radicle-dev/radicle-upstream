@@ -25,7 +25,7 @@
   import type { Settings } from "../src/settings";
   import { dismissRemoteHelperHint, settings } from "../src/session";
 
-  import { Button, Flex, Input } from "../DesignSystem/Primitive";
+  import { Button, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
     Illustration,
@@ -166,6 +166,12 @@
     margin-bottom: 2rem;
   }
 
+  .btn-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+
   .double-button {
     display: grid;
     grid-template-columns: auto auto;
@@ -276,24 +282,22 @@
       validation={$descriptionValidation}
       bind:value={description} />
 
-    <Flex style="margin-top: 1rem">
-      <div slot="right">
-        <div class="double-button">
-          <Button
-            dataCy="cancel-button"
-            variant="transparent"
-            on:click={() => dispatch('hide')}>
-            Cancel
-          </Button>
-          <Button
-            dataCy="create-project-button"
-            disabled={disableSubmit}
-            variant="primary"
-            on:click={createProject}>
-            Create project
-          </Button>
-        </div>
+    <div class="btn-container">
+      <div class="double-button">
+        <Button
+          dataCy="cancel-button"
+          variant="transparent"
+          on:click={() => dispatch('hide')}>
+          Cancel
+        </Button>
+        <Button
+          dataCy="create-project-button"
+          disabled={disableSubmit}
+          variant="primary"
+          on:click={createProject}>
+          Create project
+        </Button>
       </div>
-    </Flex>
+    </div>
   </div>
 </div>

@@ -605,50 +605,45 @@ impl RunState {
                 cmds
             },
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
-            (_, RequestInput::Cloning(url)) => {
-                match self.waiting_room.cloning(url.clone(), Instant::now()) {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
-
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(RequestCommand::TimedOut(url.urn))]
-                            },
-                            _ => vec![],
-                        }
-                    },
-                    Ok(_) => vec![],
-                }
-            },
+            (_, RequestInput::Cloning(url)) => self
+                .waiting_room
+                .cloning(url.clone(), Instant::now())
+                .map_or_else(
+                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+                    |_| vec![],
+                ),
             (_, RequestInput::Cloned(url)) => {
-                match self.waiting_room.cloned(&url, Instant::now()) {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
-
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(RequestCommand::TimedOut(url.urn))]
-                            },
-                            _ => vec![],
-                        }
-                    },
-                    Ok(_) => vec![],
-                }
+                self.waiting_room.cloned(&url, Instant::now()).map_or_else(
+                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+                    |_| vec![],
+                )
             },
             (_, RequestInput::Queried(urn)) => {
-                match self.waiting_room.queried(&urn, Instant::now()) {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
+                self.waiting_room.queried(&urn, Instant::now()).map_or_else(
+                    |error| Self::handle_waiting_room_timeout(urn, &error),
+                    |_| vec![],
+                )
+            },
+            (_, RequestInput::Failed { url, reason }) => {
+                log::warn!("Cloning failed with: {}", reason);
+                let urn = url.urn.clone();
+                self.waiting_room
+                    .cloning_failed(url, Instant::now())
+                    .map_or_else(
+                        |error| Self::handle_waiting_room_timeout(urn, &error),
+                        |_| vec![],
+                    )
+            },
+            _ => vec![],
+        }
+    }
 
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(RequestCommand::TimedOut(urn))]
-                            },
-                            _ => vec![],
-                        }
-                    },
-                    Ok(_) => vec![],
-                }
+    /// Handle [`waiting_room::Error`]s.
+    fn handle_waiting_room_timeout(urn: RadUrn, error: &waiting_room::Error) -> Vec<Command> {
+        log::warn!("WaitingRoom::Error : {}", error);
+        match error {
+            waiting_room::Error::TimeOut { .. } => {
+                vec![Command::Request(RequestCommand::TimedOut(urn))]
             },
             _ => vec![],
         }

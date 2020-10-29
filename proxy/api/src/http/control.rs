@@ -84,7 +84,7 @@ mod handler {
             .with_browser(branch, |browser| Ok(browser.get_stats()?))
             .await
             .map_err(error::Error::from)?;
-        let project: project::Project = (meta, stats).into();
+        let project: project::Full = (meta, stats).into();
 
         Ok(reply::with_status(
             reply::json(&project),

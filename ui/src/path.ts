@@ -4,8 +4,6 @@ import regexparam from "regexparam";
 export const blank = (): string => "/";
 export const settings = (): string => "/settings";
 
-export const discovery = (): string => "/discovery";
-
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";

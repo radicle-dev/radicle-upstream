@@ -22,7 +22,6 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import Lock from "./Screen/Lock.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import Discovery from "./Screen/Discovery.svelte";
   import ModalManagePeers from "./Modal/ManagePeers.svelte";
   import ModalNewProject from "./Modal/NewProject.svelte";
   import ModalSearch from "./Modal/Search.svelte";
@@ -38,7 +37,6 @@
     "/onboarding": Onboarding,
     "/lock": Lock,
     "/settings": Settings,
-    "/discovery": Discovery,
     "/profile/*": Profile,
     "/projects/:id/*": Project,
     "/user/:urn": UserProfile,
