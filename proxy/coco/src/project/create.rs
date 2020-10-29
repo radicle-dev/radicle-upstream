@@ -123,7 +123,7 @@ impl Repo {
                 }
 
                 Ok(ValidatedRepo(Self::Existing { path }))
-            }
+            },
             Self::New { name, path } => {
                 let repo_path = path.join(name.clone());
                 if repo_path.exists() {
@@ -131,7 +131,7 @@ impl Repo {
                 }
 
                 Ok(ValidatedRepo(Self::New { name, path }))
-            }
+            },
         }
     }
 
@@ -168,7 +168,7 @@ impl ValidatedRepo {
                 let path = self.0.full_path();
                 log::debug!("Setting up existing repository @ '{}'", path.display());
                 git2::Repository::open(path).map_err(Error::from)
-            }
+            },
             Self(Repo::New { .. }) => {
                 let path = self.0.full_path();
 
@@ -205,7 +205,7 @@ impl ValidatedRepo {
                 }
 
                 Ok(repo)
-            }
+            },
         }
     }
 }
@@ -264,10 +264,10 @@ impl Create<ValidatedRepo> {
                         Self::setup_remote(&repo, url, &self.default_branch)?;
                     }
                 };
-            }
+            },
             Err(_err) => {
                 Self::setup_remote(&repo, url, &self.default_branch)?;
-            }
+            },
         }
 
         Ok(repo)
