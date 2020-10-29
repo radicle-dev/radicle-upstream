@@ -12,7 +12,7 @@ import { createValidationStore, ValidationStatus } from "./validation";
 
 // TYPES
 export enum Status {
-  NoSession = "No_SESSION",
+  NoSession = "NO_SESSION",
   SealedSession = "SEALED_SESSION",
   UnsealedSession = "UNSEALED_SESSION",
 }

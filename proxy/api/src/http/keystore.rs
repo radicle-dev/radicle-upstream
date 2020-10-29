@@ -45,7 +45,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(merle): Replace with correct password check
         if input.passphrase != "radicle-upstream" {
-            return Err(Rejection::from(error::Error::KeystoreSealed));
+            return Err(Rejection::from(error::Error::WrongPassphrase));
         }
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);
