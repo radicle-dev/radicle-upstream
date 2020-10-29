@@ -230,7 +230,9 @@ impl Create<Repo> {
     ///
     /// It needs to be called before using [`Create::setup_repo`].
     ///
-    /// # Errors: See [`Repo::validate`]
+    /// # Errors
+    ///
+    /// See [`Repo::validate`]
     pub fn validate(self) -> Result<Create<ValidatedRepo>, validation::Error> {
         Ok(Create {
             description: self.description,
