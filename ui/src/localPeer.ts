@@ -5,6 +5,7 @@ import * as identity from "./identity";
 import * as notifiation from "./notification";
 import * as path from "./path";
 import * as remote from "./remote";
+import * as session from "./session";
 import * as urn from "./urn";
 
 // TYPES
@@ -69,20 +70,28 @@ export type Event =
   | RequestTimedOut
   | { type: EventType.StatusChanged; old: Status; new: Status };
 
-// STATE
-const eventStore = writable<Event | null>(null, set => {
-  const source = new EventSource(
-    "http://localhost:8080/v1/notifications/local_peer_events",
-    { withCredentials: true }
-  );
+let eventSource: EventSource | null = null;
 
-  source.addEventListener("message", (msg: MessageEvent): void => {
-    const event: Event = JSON.parse(msg.data);
-    set(event);
-  });
-
-  return (): void => source.close();
+session.session.subscribe(sess => {
+  if (
+    sess.status === remote.Status.Success &&
+    sess.data.status === session.Status.UnsealedSession
+  ) {
+    if (eventSource === null || eventSource.readyState === EventSource.CLOSED) {
+      eventSource = new EventSource(
+        "http://localhost:8080/v1/notifications/local_peer_events",
+        { withCredentials: true }
+      );
+      eventSource.addEventListener("message", msg => {
+        const event: Event = JSON.parse(msg.data);
+        eventStore.set(event);
+      });
+    }
+  }
 });
+
+// STATE
+const eventStore = writable<Event | null>(null);
 
 // Event handling.
 // FIXME(xla): Formalise event handling.
