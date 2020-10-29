@@ -19,7 +19,7 @@ use crate::{config, user::User};
 pub mod validation {
     use std::path::PathBuf;
 
-    /// Errors that occur when validating a [`Repo`]'s path.
+    /// Errors that occur when validating a [`super::Repo`]'s path.
     #[derive(Debug, thiserror::Error)]
     pub enum Error {
         /// The path already existed when trying to create a new project.
@@ -123,7 +123,7 @@ impl Repo {
                 }
 
                 Ok(ValidatedRepo(Self::Existing { path }))
-            },
+            }
             Self::New { name, path } => {
                 let repo_path = path.join(name.clone());
                 if repo_path.exists() {
@@ -131,7 +131,7 @@ impl Repo {
                 }
 
                 Ok(ValidatedRepo(Self::New { name, path }))
-            },
+            }
         }
     }
 
@@ -168,7 +168,7 @@ impl ValidatedRepo {
                 let path = self.0.full_path();
                 log::debug!("Setting up existing repository @ '{}'", path.display());
                 git2::Repository::open(path).map_err(Error::from)
-            },
+            }
             Self(Repo::New { .. }) => {
                 let path = self.0.full_path();
 
@@ -205,7 +205,7 @@ impl ValidatedRepo {
                 }
 
                 Ok(repo)
-            },
+            }
         }
     }
 }
@@ -230,9 +230,7 @@ impl Create<Repo> {
     ///
     /// It needs to be called before using [`Create::setup_repo`].
     ///
-    /// # Errors
-    ///
-    ///     * See [`Repo::validate`]
+    /// # Errors: See [`Repo::validate`]
     pub fn validate(self) -> Result<Create<ValidatedRepo>, validation::Error> {
         Ok(Create {
             description: self.description,
@@ -266,10 +264,10 @@ impl Create<ValidatedRepo> {
                         Self::setup_remote(&repo, url, &self.default_branch)?;
                     }
                 };
-            },
+            }
             Err(_err) => {
                 Self::setup_remote(&repo, url, &self.default_branch)?;
-            },
+            }
         }
 
         Ok(repo)
