@@ -155,7 +155,9 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         )
                     },
                 },
-                error::Error::KeystoreSealed | error::Error::WrongPassphrase => {
+                error::Error::KeystoreSealed
+                | error::Error::WrongPassphrase
+                | error::Error::InvalidAuthCookie => {
                     (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string())
                 },
                 _ => {

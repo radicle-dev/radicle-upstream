@@ -29,6 +29,10 @@ pub enum Error {
     #[error("Passphrase incorrect")]
     WrongPassphrase,
 
+    /// The request cookie differs from the context cookie
+    #[error("Invalid authentication cookie")]
+    InvalidAuthCookie,
+
     /// Errors stemming from [`coco::request::waiting_room::WaitingRoom`] interactions.
     #[error(transparent)]
     WaitingRoom(#[from] coco::request::waiting_room::Error),
