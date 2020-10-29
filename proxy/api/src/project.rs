@@ -56,10 +56,15 @@ pub struct Project<S> {
     pub stats: S,
 }
 
+/// A `Partial` project is one where we _weren't_ able to fetch the [`coco::Stats`] for it.
 pub type Partial = Project<()>;
+
+/// A `Full` project is one where we _were_ able to fetch the [`coco::Stats`] for it.
 pub type Full = Project<coco::Stats>;
 
 impl Partial {
+    /// Convert a `Partial` project into a `Full` one by providing the `stats` for the project.
+    #[allow(clippy::missing_const_for_fn)]
     pub fn fulfill(self, stats: coco::Stats) -> Full {
         Project {
             id: self.id,
