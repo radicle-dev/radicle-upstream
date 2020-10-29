@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as session from "../src/session";
 
-  import { Button, Input } from "../DesignSystem/Primitive";
+  import { Button, Emoji, Input } from "../DesignSystem/Primitive";
 
   let passphrase = "";
 
@@ -28,20 +28,28 @@
     display: flex;
     flex-direction: column;
   }
+  .form {
+    display: flex;
+    margin-top: 1.5rem;
+  }
 </style>
 
 <div class="lock">
-  <Input.Text
-    autofocus
-    placeholder="Enter your passphrase"
-    bind:value={passphrase}
-    dataCy="passphrase-input"
-    on:keydown={onKeydown}
-    style="width: 16rem; margin-bottom: 2rem;" />
-  <Button
-    dataCy="unlock-button"
-    disabled={passphrase.length === 0}
-    on:click={unlock}>
-    Unlock
-  </Button>
+  <Emoji emoji={'🚪'} size="huge" style="margin-bottom: 0.75rem;" />
+  <h3>Unlock the app</h3>
+  <div class="form">
+    <Input.Password
+      autofocus
+      placeholder="Enter your passphrase"
+      bind:value={passphrase}
+      dataCy="passphrase-input"
+      on:keydown={onKeydown}
+      style="width: 16rem; margin-right: 1rem;" />
+    <Button
+      dataCy="unlock-button"
+      disabled={passphrase.length === 0}
+      on:click={unlock}>
+      Unlock
+    </Button>
+  </div>
 </div>

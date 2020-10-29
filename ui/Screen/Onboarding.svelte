@@ -40,7 +40,7 @@
     try {
       await session.createKeystore();
       // Retry until the API is up
-      notification.info("Creating the idnetity...");
+      notification.info("Creating the identity...");
       withRetry(() => createIdentity({ handle, passphrase }), 200).then(id => {
         identity = id;
         state = State.SuccessView;
