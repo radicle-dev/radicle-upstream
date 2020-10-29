@@ -17,7 +17,9 @@ pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{avatar, http::error};
+    use radicle_avatar as avatar;
+
+    use crate::http::error;
 
     /// Get the avatar for the given `id`.
     #[allow(clippy::wildcard_enum_match_arm)]

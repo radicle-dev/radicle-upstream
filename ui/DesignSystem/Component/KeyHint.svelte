@@ -15,7 +15,7 @@
 
   .hint {
     background-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-5);
+    color: var(--color-foreground-level-6);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
   }

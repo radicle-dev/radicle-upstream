@@ -25,7 +25,6 @@
     clippy::similar_names
 )]
 
-mod avatar;
 mod config;
 mod context;
 pub mod env;
