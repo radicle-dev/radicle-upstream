@@ -21,7 +21,8 @@
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions,
     clippy::or_fun_call,
-    clippy::shadow_reuse
+    clippy::shadow_reuse,
+    clippy::similar_names
 )]
 
 mod config;
