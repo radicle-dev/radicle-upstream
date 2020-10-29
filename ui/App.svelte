@@ -107,4 +107,13 @@
   <div slot="error" class="error">
     <Bsod />
   </div>
+
+  <!-- TODO(julien): Dress up loading screen -->
+  <div slot="loading" class="error">
+    {#if $location === path.lock()}
+      <p>Unlocking the app...</p>
+    {:else}
+      <p>Loading...</p>
+    {/if}
+  </div>
 </Remote>

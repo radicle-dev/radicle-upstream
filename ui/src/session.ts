@@ -97,15 +97,16 @@ const fetchSession = (): Promise<void> => {
 };
 
 export const unseal = async (passphrase: string): Promise<void> => {
-  sessionStore.loading();
   try {
     await api.set<unknown>(`keystore/unseal`, { passphrase });
   } catch (error) {
+    sessionStore.loading();
     sessionStore.success({ status: Status.SealedSession });
     notification.error(`Could not unlock the session: ${error.message}`);
     return;
   }
   notification.info("Unsealing the session...");
+  sessionStore.loading();
   await fetchSession();
 };
 
