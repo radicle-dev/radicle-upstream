@@ -10,6 +10,8 @@ import {
 } from "@ethersproject/properties";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 
+import * as notification from "../src/notification";
+
 class WalletConnectSigner extends ethers.Signer {
   public walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
@@ -135,8 +137,10 @@ export function build(): Wallet {
     try {
       await walletConnect.connect();
     } catch (error) {
-      console.error(error);
       stateStore.set({ status: Status.NotConnected, error });
+      notification.error(
+        `Failed to connect wallet: ${error.toString().replace("Error: ", "")}`
+      );
     }
     await initialize();
   }
