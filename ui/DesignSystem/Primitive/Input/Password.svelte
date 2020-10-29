@@ -27,7 +27,7 @@
   // preventScroll is necessary for onboarding animations to work.
   $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
 
-  const onKeydown = (event: any) => {
+  const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
       dispatch("enter");
     }
