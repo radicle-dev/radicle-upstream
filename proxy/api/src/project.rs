@@ -53,7 +53,26 @@ pub struct Project {
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
     /// High-level statistics about the project
-    pub stats: coco::Stats,
+    pub stats: Option<coco::Stats>,
+}
+
+/// Construct a Project from its metadata and stats
+impl<ST> From<coco::Project<ST>> for Project
+where
+    ST: Clone,
+{
+    /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
+    /// for the repository.
+    fn from(project: coco::Project<ST>) -> Self {
+        let id = project.urn();
+
+        Self {
+            id: id.clone(),
+            shareable_entity_identifier: format!("%{}", id),
+            metadata: project.into(),
+            stats: None,
+        }
+    }
 }
 
 /// Construct a Project from its metadata and stats
@@ -70,7 +89,7 @@ where
             id: id.clone(),
             shareable_entity_identifier: format!("%{}", id),
             metadata: project.into(),
-            stats,
+            stats: Some(stats),
         }
     }
 }
@@ -109,6 +128,19 @@ impl Deref for Tracked {
     }
 }
 
+/// Partial failures that occur when getting the list of projects.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum Failure {
+    /// We couldn't get a default branch for the project.
+    DefaultBranch(Project),
+    /// We couldn't get the stats for the project.
+    Stats(Project),
+    /// We couldn't get the signed refs of the project, and so we can't determine if it's tracked
+    /// or contributed.
+    SignedRefs(Project),
+}
+
 /// All projects contained in a user's monorepo.
 #[derive(Serialize)]
 pub struct Projects {
@@ -125,6 +157,9 @@ pub struct Projects {
     /// The conditions imply that a project is "contributed" if I am the maintainer or I have
     /// contributed to the project.
     pub contributed: Vec<Project>,
+
+    /// A project that failed partially when trying to retrieve metadata for it.
+    pub failures: Vec<Failure>,
 }
 
 impl Projects {
@@ -142,16 +177,45 @@ impl Projects {
         let mut projects = Self {
             tracked: vec![],
             contributed: vec![],
+            failures: vec![],
         };
+
         for project in state.list_projects().await? {
-            let refs = state.list_owner_project_refs(project.urn()).await?;
-            let default_branch = state.find_default_branch(project.urn()).await?;
-            let project = state
-                .with_browser(default_branch, |browser| {
-                    let project_stats = browser.get_stats()?;
-                    Ok((project, project_stats).into())
-                })
-                .await?;
+            let mut project = Project::from(project);
+            let default_branch = match state.find_default_branch(project.id.clone()).await {
+                Err(err) => {
+                    Self::handle_failure(
+                        project,
+                        &mut projects,
+                        &err.into(),
+                        Failure::DefaultBranch,
+                    );
+                    continue;
+                },
+                Ok(branch) => branch,
+            };
+
+            let stats = match state
+                .with_browser(default_branch, |browser| Ok(browser.get_stats()?))
+                .await
+            {
+                Err(err) => {
+                    Self::handle_failure(project, &mut projects, &err.into(), Failure::Stats);
+                    continue;
+                },
+                Ok(stats) => stats,
+            };
+
+            project.stats = Some(stats);
+
+            let refs = match state.list_owner_project_refs(project.id.clone()).await {
+                Err(err) => {
+                    Self::handle_failure(project, &mut projects, &err.into(), Failure::SignedRefs);
+                    continue;
+                },
+                Ok(refs) => refs,
+            };
+
             if refs.heads.is_empty() {
                 projects.tracked.push(Tracked(project))
             } else {
@@ -160,6 +224,18 @@ impl Projects {
         }
 
         Ok(projects)
+    }
+
+    /// Helper method for logging the error as a warning and pushing the failure onto the failure
+    /// list.
+    fn handle_failure(
+        project: Project,
+        projects: &mut Self,
+        error: &error::Error,
+        failure: impl FnOnce(Project) -> Failure,
+    ) {
+        log::warn!("Failure for '{}': {}", project.id, error);
+        projects.failures.push(failure(project));
     }
 }
 
@@ -312,11 +388,11 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                     default_branch: "main".to_string(),
                     maintainers: HashSet::new(),
                 },
-                stats: coco::Stats {
+                stats: Some(coco::Stats {
                     contributors: 6,
                     branches: 36,
                     commits: 216
-                },
+                }),
             },
             Project {
                 id: other_urn,
@@ -330,11 +406,11 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                     default_branch: "main".to_string(),
                     maintainers: HashSet::new(),
                 },
-                stats: coco::Stats {
+                stats: Some(coco::Stats {
                     contributors: 7,
                     branches: 49,
                     commits: 343
-                },
+                }),
             },
         ];
 
