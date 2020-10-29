@@ -1,4 +1,4 @@
-//! Endpoints for handeling the keystore.
+//! Endpoints for handling the keystore.
 
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
@@ -32,7 +32,7 @@ fn create_filter(
         .and_then(handler::create)
 }
 
-/// Keystore handlers for conversion between core domain and HTTP request fullfilment.
+/// Keystore handlers for conversion between core domain and HTTP request fulfilment.
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
@@ -63,7 +63,7 @@ mod handler {
         .into_response())
     }
 
-    /// Initialize the key store with a new key
+    /// Initialize the keystore with a new key.
     pub async fn create(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         // TODO Load the real key from disk. The service manager ignores the key for now and uses a
         // hardcoded one.

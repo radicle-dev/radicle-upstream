@@ -142,7 +142,7 @@ fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unseale
             let ctx_cookie = unsealed_ctx.auth_cookie.read().await;
             if cookie_value != *ctx_cookie {
                 // TODO(merle): Create cookie specific error?
-                return Err(Rejection::from(crate::error::Error::KeystoreSealed));
+                return Err(Rejection::from(crate::error::Error::InvalidAuthCookie));
             }
             drop(ctx_cookie);
             Ok(unsealed_ctx)
