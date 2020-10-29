@@ -1,9 +1,12 @@
 <script lang="ts">
+  import * as svelteStore from "svelte/store";
+
   import { build, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 
   import { Button } from "../../DesignSystem/Primitive";
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
+  import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
 
   import Pool from "../Funding/Pool.svelte";
 
@@ -21,10 +24,9 @@
 
 <div class="funding-container">
   {#if $wallet.status === Status.Connected}
-    <Button on:click={wallet.disconnect}>disconnect</Button>
-    <div>Address: {$wallet.connected.account.address}</div>
-    <div>Balance: {$wallet.connected.account.balance} eth</div>
-
+    <WalletPanel
+      onDisconnect={wallet.disconnect}
+      account={$wallet.connected.account} />
     <Pool pool={pool.make(wallet)} />
   {:else}
     <ConnectWallet

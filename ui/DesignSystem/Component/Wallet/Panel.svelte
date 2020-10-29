@@ -1,0 +1,61 @@
+<script lang="typescript">
+  import { Button, Icon } from "../../Primitive";
+  import { Copyable } from "../../Component";
+
+  import * as wallet from "../../../src/wallet";
+
+  export let account: wallet.Account;
+  export let onDisconnect: () => void;
+</script>
+
+<style>
+  .wrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    text-align: center;
+    padding: var(--content-padding) 0;
+  }
+
+  .balance,
+  .address {
+    color: var(--color-foreground-level-6);
+  }
+
+  .balance {
+    display: flex;
+    align-items: center;
+  }
+
+  .address {
+    border: 1px solid var(--color-foreground-level-3);
+    border-radius: 4px;
+    padding: 7px 14px;
+
+    margin-left: 12px;
+  }
+</style>
+
+<div class="wrapper">
+  <p class="balance typo-text-bold">
+    <Icon.CurrencyDAI
+      style="fill: var(--color-foreground-level-6);  padding-top: 3px;" />
+    {account.balance}
+  </p>
+  <p class="address typo-text-bold">
+    <Copyable
+      showIcon={false}
+      styleContent={false}
+      copyContent={account.address}
+      notificationText="Address copied to the clipboard">
+      {account.address.slice(0, 6)}...{account.address.slice(-4)}
+    </Copyable>
+  </p>
+  <Button
+    style="margin-left: 7px;"
+    variant="transparent"
+    on:click={onDisconnect}>
+    Disconnect
+  </Button>
+</div>
