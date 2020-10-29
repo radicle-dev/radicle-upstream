@@ -32,7 +32,7 @@ fn create_filter(
         .and_then(handler::create)
 }
 
-/// Keystore handlers for conversion between core domain and HTTP request fullfilment.
+/// Keystore handlers for conversion between core domain and HTTP request fulfilment.
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
