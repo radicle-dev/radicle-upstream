@@ -1,4 +1,4 @@
-context.only("onboarding", () => {
+context("onboarding", () => {
   const validUser = {
     handle: "rafalca",
     passphrase: "curled",
