@@ -28,6 +28,7 @@ pub enum Error {
     #[error(transparent)]
     Create(#[from] crate::project::create::Error),
 
+    /// An error occurred while validating the path for creating a project.
     #[error(transparent)]
     CreateValidation(#[from] crate::project::create::validation::Error),
 

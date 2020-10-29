@@ -1,12 +1,6 @@
 //! Utility to work with the peer api of librad.
 
-use std::{
-    convert::TryFrom as _,
-    net::SocketAddr,
-    path::{self, PathBuf},
-    sync::Arc,
-    time::Duration,
-};
+use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf, sync::Arc, time::Duration};
 
 use librad::{
     git::{

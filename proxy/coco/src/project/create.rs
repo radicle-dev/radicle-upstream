@@ -1,7 +1,4 @@
-use std::{
-    marker::PhantomData,
-    path::{self, PathBuf},
-};
+use std::{marker::PhantomData, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -18,9 +15,11 @@ use radicle_surf::vcs::git::git2;
 
 use crate::{config, user::User};
 
+/// Validation Errors
 pub mod validation {
     use std::path::PathBuf;
 
+    /// Errors that occur when validating a [`Repo`]'s path.
     #[derive(Debug, thiserror::Error)]
     pub enum Error {
         /// The path already existed when trying to create a new project.
@@ -103,6 +102,14 @@ impl Repo {
         }
     }
 
+    /// Validate `Repo` into a [`ValidatedRepo`], ensuring that path passes certain criteria. These
+    /// criteria are documented in the **Errors** section.
+    ///
+    /// # Errors
+    ///
+    ///   * If we have `Repo::Existing` and the path does not exist
+    ///   * If we have `Repo::Existing` and the path does not point to a repository
+    ///   * If we have `Repo::New` and the path already exists
     pub fn validate(self) -> Result<ValidatedRepo, validation::Error> {
         match self {
             Self::Existing { path } => {
@@ -110,11 +117,12 @@ impl Repo {
                     return Err(validation::Error::PathDoesNotExist(path));
                 }
 
-                if !git2::Repository::open(path.clone()).is_ok() {
+                // TODO(finto): This may be too permissive. Need to look into git errors.
+                if git2::Repository::open(path.clone()).is_err() {
                     return Err(validation::Error::NotARepo(path));
                 }
 
-                Ok(ValidatedRepo(Repo::Existing { path }))
+                Ok(ValidatedRepo(Self::Existing { path }))
             },
             Self::New { name, path } => {
                 let repo_path = path.join(name.clone());
@@ -122,7 +130,7 @@ impl Repo {
                     return Err(validation::Error::AlreadExists(repo_path));
                 }
 
-                Ok(ValidatedRepo(Repo::New { name, path }))
+                Ok(ValidatedRepo(Self::New { name, path }))
             },
         }
     }
@@ -136,6 +144,7 @@ impl Repo {
     }
 }
 
+/// A `Repo` that has passed through validation, using [`Repo::validate`].
 pub struct ValidatedRepo(Repo);
 
 impl ValidatedRepo {
@@ -209,10 +218,21 @@ pub struct Create<R> {
     pub description: String,
     /// The default branch name for the project.
     pub default_branch: OneLevel,
+    /// The [`Repo`] to create with. It's left as a generic parameter so that we can have
+    /// `Create<Repo>` and `Create<ValidatedRepo>` for that sweet type safety.
     pub repo: R,
 }
 
 impl Create<Repo> {
+    #![allow(clippy::use_self)]
+    /// Validate `Create<Repo>` into a `Create<ValidatedRepo>`. This ensures that we have valid
+    /// paths when we attempt to create the working copy.
+    ///
+    /// It needs to be called before using [`Create::setup_repo`].
+    ///
+    /// # Errors
+    ///
+    ///     * See [`Repo::validate`]
     pub fn validate(self) -> Result<Create<ValidatedRepo>, validation::Error> {
         Ok(Create {
             description: self.description,
@@ -336,13 +356,7 @@ mod test {
 
     use assert_matches::assert_matches;
 
-    use librad::{
-        git::ext::{OneLevel, RefLike},
-        hash::Hash,
-        keys::SecretKey,
-        peer::PeerId,
-        uri,
-    };
+    use librad::git::ext::{OneLevel, RefLike};
 
     use super::*;
 
