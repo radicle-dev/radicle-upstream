@@ -63,7 +63,7 @@ mod handler {
         .into_response())
     }
 
-    /// Initialize the key store with a new key
+    /// Initialize the keystore with a new key.
     pub async fn create(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         // TODO Load the real key from disk. The service manager ignores the key for now and uses a
         // hardcoded one.
