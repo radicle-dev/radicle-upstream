@@ -496,11 +496,12 @@ impl State {
     /// Will error if:
     ///     * The signing of the project metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub async fn init_project<P: AsRef<path::Path> + Send + Sync + 'static>(
+    pub async fn init_project(
         &self,
         owner: &User,
-        project: project::Create<P>,
+        project: project::Create<project::Repo>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
+        let project = project.validate()?;
         let mut meta = project.build(owner, self.signer.public_key().into())?;
         meta.sign_by_user(&self.signer, owner)?;
 
@@ -514,8 +515,7 @@ impl State {
                     let repo = storage.create_repo(&meta)?;
                     log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                    let repo = project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
-                    log::debug!("Setup repository at path '{}'", repo.path().display());
+                    project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
 
                     Ok::<_, Error>(meta)
                 })
@@ -776,7 +776,7 @@ mod test {
 
     use super::{Error, State};
 
-    fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
+    fn fakie_project(path: PathBuf) -> project::Create<project::Repo> {
         project::Create {
             repo: project::Repo::New {
                 path,
@@ -789,7 +789,7 @@ mod test {
         }
     }
 
-    fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+    fn radicle_project(path: PathBuf) -> project::Create<project::Repo> {
         project::Create {
             repo: project::Repo::New {
                 path,

@@ -28,6 +28,9 @@ pub enum Error {
     #[error(transparent)]
     Create(#[from] crate::project::create::Error),
 
+    #[error(transparent)]
+    CreateValidation(#[from] crate::project::create::validation::Error),
+
     /// An error occurred while performing the checkout of a project.
     #[error(transparent)]
     Checkout(#[from] crate::project::checkout::Error),

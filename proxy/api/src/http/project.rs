@@ -134,8 +134,6 @@ fn user_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::path::PathBuf;
-
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error::Error, http, project};
@@ -159,7 +157,7 @@ mod handler {
     pub async fn create(
         ctx: context::Unsealed,
         owner: coco::user::User,
-        input: coco::project::Create<PathBuf>,
+        input: coco::project::Create<coco::project::Repo>,
     ) -> Result<impl Reply, Rejection> {
         let meta = ctx
             .state
@@ -397,7 +395,7 @@ mod test {
 
         let project = coco::project::Create {
             repo: coco::project::Repo::New {
-                path: dir.path(),
+                path: dir.path().to_path_buf(),
                 name: "Upstream".to_string(),
             },
             description: "Desktop client for radicle.".into(),

@@ -109,6 +109,30 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             include_error.to_string(),
                         ),
                     },
+                    coco::state::Error::CreateValidation(
+                        coco::project::create::validation::Error::AlreadExists(path),
+                    ) => (
+                        StatusCode::CONFLICT,
+                        "PATH_EXISTS",
+                        coco::project::create::validation::Error::AlreadExists(path.clone())
+                            .to_string(),
+                    ),
+                    coco::state::Error::CreateValidation(
+                        coco::project::create::validation::Error::PathDoesNotExist(path),
+                    ) => (
+                        StatusCode::NOT_FOUND,
+                        "PATH_DOES_NOT_EXIST",
+                        coco::project::create::validation::Error::PathDoesNotExist(path.clone())
+                            .to_string(),
+                    ),
+                    coco::state::Error::CreateValidation(
+                        coco::project::create::validation::Error::NotARepo(path),
+                    ) => (
+                        StatusCode::NOT_FOUND,
+                        "NOT_A_REPO",
+                        coco::project::create::validation::Error::NotARepo(path.clone())
+                            .to_string(),
+                    ),
                     coco::state::Error::Storage(state::error::storage::Error::AlreadyExists(
                         urn,
                     )) => (

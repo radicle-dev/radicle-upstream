@@ -18,6 +18,25 @@ use radicle_surf::vcs::git::git2;
 
 use crate::{config, user::User};
 
+pub mod validation {
+    use std::path::PathBuf;
+
+    #[derive(Debug, thiserror::Error)]
+    pub enum Error {
+        /// The path already existed when trying to create a new project.
+        #[error("the path provided '{0}' already exists")]
+        AlreadExists(PathBuf),
+
+        /// The path was expected to exist already but does not.
+        #[error("the path provided '{0}' does not exist when it was expected to")]
+        PathDoesNotExist(PathBuf),
+
+        /// The path was expected to point to a git repository but it did not.
+        #[error("the path '{0}' does not point to an existing repository")]
+        NotARepo(PathBuf),
+    }
+}
+
 /// Errors that occur when attempting to create a working copy of a project.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -51,22 +70,22 @@ pub enum Error {
 /// The data required to either open an existing repository or create a new one.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
-pub enum Repo<Path> {
+pub enum Repo {
     /// Open an existing repository.
     Existing {
         /// The path to the existing project.
-        path: Path,
+        path: PathBuf,
     },
     /// Create a new project where the final directory path is `<path>/<name>`.
     New {
         /// The name of the project.
         name: String,
         /// The directory where we create the project.
-        path: Path,
+        path: PathBuf,
     },
 }
 
-impl<Path: AsRef<path::Path>> Repo<Path> {
+impl Repo {
     /// Get the project name based off of `path` or `path` + `name`.
     ///
     /// # Errors
@@ -75,16 +94,51 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
     pub fn project_name(&self) -> Result<String, Error> {
         match self {
             Self::Existing { path } => path
-                .as_ref()
                 .components()
                 .next_back()
                 .and_then(|component| component.as_os_str().to_str())
                 .map(ToString::to_string)
-                .ok_or_else(|| Error::EmptyExistingPath(path.as_ref().to_path_buf())),
+                .ok_or_else(|| Error::EmptyExistingPath(path.to_path_buf())),
             Self::New { name, .. } => Ok(name.to_string()),
         }
     }
 
+    pub fn validate(self) -> Result<ValidatedRepo, validation::Error> {
+        match self {
+            Self::Existing { path } => {
+                if !path.exists() {
+                    return Err(validation::Error::PathDoesNotExist(path));
+                }
+
+                if !git2::Repository::open(path.clone()).is_ok() {
+                    return Err(validation::Error::NotARepo(path));
+                }
+
+                Ok(ValidatedRepo(Repo::Existing { path }))
+            },
+            Self::New { name, path } => {
+                let repo_path = path.join(name.clone());
+                if repo_path.exists() {
+                    return Err(validation::Error::AlreadExists(repo_path));
+                }
+
+                Ok(ValidatedRepo(Repo::New { name, path }))
+            },
+        }
+    }
+
+    /// Get the full path of the `Repo` creation data.
+    fn full_path(&self) -> PathBuf {
+        match self {
+            Self::Existing { path } => path.to_path_buf(),
+            Self::New { name, path } => path.join(name),
+        }
+    }
+}
+
+pub struct ValidatedRepo(Repo);
+
+impl ValidatedRepo {
     /// If we pass `Existing`, we're opening a repository at the provided path.
     ///
     /// If we pass `New`, we're creating a repository in the provided directory path, where the new
@@ -99,15 +153,16 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
         &self,
         description: &str,
         default_branch: &OneLevel,
-    ) -> Result<git2::Repository, git2::Error> {
+    ) -> Result<git2::Repository, Error> {
         match &self {
-            Self::Existing { .. } => {
-                let path = self.full_path();
+            Self(Repo::Existing { .. }) => {
+                let path = self.0.full_path();
                 log::debug!("Setting up existing repository @ '{}'", path.display());
-                git2::Repository::open(path)
+                git2::Repository::open(path).map_err(Error::from)
             },
-            Self::New { .. } => {
-                let path = self.full_path();
+            Self(Repo::New { .. }) => {
+                let path = self.0.full_path();
+
                 log::debug!("Setting up new repository @ '{}'", path.display());
                 let mut options = git2::RepositoryInitOptions::new();
                 options.no_reinit(true);
@@ -144,29 +199,30 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
             },
         }
     }
-
-    /// Get the full path of the `Repo` creation data.
-    fn full_path(&self) -> PathBuf {
-        match self {
-            Self::Existing { path } => path.as_ref().to_path_buf(),
-            Self::New { name, path } => path.as_ref().join(name),
-        }
-    }
 }
 
 /// The data required for creating a new project.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Create<Path> {
+pub struct Create<R> {
     /// Description of the project we want to create.
     pub description: String,
     /// The default branch name for the project.
     pub default_branch: OneLevel,
-    /// How the repository should be created or opened.
-    pub repo: Repo<Path>,
+    pub repo: R,
 }
 
-impl<Path: AsRef<path::Path>> Create<Path> {
+impl Create<Repo> {
+    pub fn validate(self) -> Result<Create<ValidatedRepo>, validation::Error> {
+        Ok(Create {
+            description: self.description,
+            default_branch: self.default_branch,
+            repo: self.repo.validate()?,
+        })
+    }
+}
+
+impl Create<ValidatedRepo> {
     /// Initialise the [`git2::Repository`] for the project found at `urn` in the `monorepo`.
     ///
     /// # Errors
@@ -210,7 +266,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         owner: &User,
         key: keys::PublicKey,
     ) -> Result<project::Project<entity::Draft>, Error> {
-        let name = self.repo.project_name()?;
+        let name = self.repo.0.project_name()?;
         let project = project::Project::<entity::Draft>::create(name, owner.urn())?
             .to_builder()
             .set_description(self.description.clone())
@@ -261,16 +317,56 @@ impl<Path: AsRef<path::Path>> Create<Path> {
 
 // Clippy is stupid and doesn't realise the `Create`s here are different types than `Self`.
 #[allow(clippy::use_self)]
-impl<Path: AsRef<path::Path>> Create<Path> {
+impl Create<Repo> {
     /// Transforms into an existing project.
     #[must_use]
-    pub fn into_existing(self) -> Create<PathBuf> {
+    pub fn into_existing(self) -> Create<Repo> {
+        let path = self.repo.full_path();
         Create {
-            repo: Repo::Existing {
-                path: self.repo.full_path(),
-            },
+            repo: Repo::Existing { path },
             description: self.description,
             default_branch: self.default_branch,
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::convert::TryFrom as _;
+
+    use assert_matches::assert_matches;
+
+    use librad::{
+        git::ext::{OneLevel, RefLike},
+        hash::Hash,
+        keys::SecretKey,
+        peer::PeerId,
+        uri,
+    };
+
+    use super::*;
+
+    #[test]
+    fn validation_fails_on_existing_directory() -> Result<(), Box<dyn std::error::Error>> {
+        let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
+        let exists = tmpdir.path().join("exists");
+        std::fs::create_dir(exists)?;
+
+        let create = Create {
+            description: "Radicle".to_string(),
+            default_branch: OneLevel::from(
+                RefLike::try_from("radicle").expect("failed to parse ref"),
+            ),
+            repo: Repo::New {
+                name: "exists".to_string(),
+                path: tmpdir.path().to_path_buf(),
+            },
+        };
+        assert_matches!(
+            create.validate().err(),
+            Some(validation::Error::AlreadExists(_))
+        );
+
+        Ok(())
     }
 }
