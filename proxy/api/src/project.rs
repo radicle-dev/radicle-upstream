@@ -304,7 +304,6 @@ impl Iterator for IntoIter {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-// TODO(finto): What if this fails?
 pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Full, error::Error> {
     let project = state.get_project(project_urn.clone(), None).await?;
     let branch = state.find_default_branch(project_urn.clone()).await?;
