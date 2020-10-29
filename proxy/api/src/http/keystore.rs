@@ -1,4 +1,4 @@
-//! Endpoints for handeling the keystore.
+//! Endpoints for handling the keystore.
 
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
