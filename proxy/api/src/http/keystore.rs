@@ -47,6 +47,8 @@ mod handler {
         if input.passphrase != "radicle-upstream" {
             return Err(Rejection::from(error::Error::WrongPassphrase));
         }
+        // TODO Load the real key from disk. The service manager ignores the key for now and uses a
+        // hardcoded one.
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);
 
@@ -63,6 +65,8 @@ mod handler {
 
     /// Initialize the key store with a new key
     pub async fn create(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
+        // TODO Load the real key from disk. The service manager ignores the key for now and uses a
+        // hardcoded one.
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);
 
