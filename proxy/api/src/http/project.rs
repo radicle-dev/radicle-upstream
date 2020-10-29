@@ -180,7 +180,7 @@ mod handler {
             })
             .await
             .map_err(Error::from)?;
-        let project: project::Project = (meta, stats).into();
+        let project: project::Full = (meta, stats).into();
 
         Ok(reply::with_status(
             reply::json(&project),
