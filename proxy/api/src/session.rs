@@ -35,13 +35,16 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 
 /// Get the seed nodes (see [`settings::CoCo::seeds`]) from the session settings current session.
 ///
-/// Returns `None` if no session exists.
+/// If there is no session yet, returns the seeds from the default value of [`settings::CoCo`].
 ///
 /// # Errors
 ///
 /// Errors if we cannot read data from the store.
-pub async fn seeds(store: &kv::Store) -> Result<Option<Vec<String>>, error::Error> {
-    Ok(get_current(store)?.map(|session| session.settings.coco.seeds))
+pub async fn seeds(store: &kv::Store) -> Result<Vec<String>, error::Error> {
+    let settings = get_current(store)?
+        .map(|session| session.settings)
+        .unwrap_or_default();
+    Ok(settings.coco.seeds)
 }
 
 /// Get the current session if present

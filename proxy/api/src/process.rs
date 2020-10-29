@@ -295,7 +295,7 @@ async fn rig(
 async fn session_seeds(
     store: &kv::Store,
 ) -> Result<Vec<coco::seed::Seed>, Box<dyn std::error::Error>> {
-    let seeds = session::seeds(store).await?.unwrap_or_default();
+    let seeds = session::seeds(store).await?;
     Ok(seed::resolve(&seeds).await.unwrap_or_else(|err| {
         log::error!("Error parsing seed list {:?}: {}", seeds, err);
         vec![]
