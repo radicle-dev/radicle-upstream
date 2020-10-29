@@ -17,13 +17,13 @@
   }
 </style>
 
-<div data-cy="urn" class="shareable-identifier typo-text" {style}>
+<div data-cy="urn" class="shareable-identifier typo-text" {style} title={hash}>
   <Copyable
     showIcon={false}
     styleContent={false}
     copyContent={urn}
     notificationText="Handle copied to clipboard">
     <Icon.At style="margin-right: 0.5rem;" />
-    {hash}
+    <p class="typo-overflow-ellipsis">{hash}</p>
   </Copyable>
 </div>

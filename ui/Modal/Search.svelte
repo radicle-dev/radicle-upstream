@@ -126,13 +126,12 @@
       autofocus
       bind:value
       hint="v"
-      inputStyle="color: var(--color-foreground-level-6);"
+      inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
       on:keydown={onKeydown}
       placeholder="Have a project id? Paste it here…"
       showLeftItem
-      style="border: none; border-radius: 0.5rem;"
       validation={$urnValidation}>
-      <div slot="left" style="display: flex;">
+      <div slot="left">
         <Icon.MagnifyingGlass />
       </div>
     </Input.Text>

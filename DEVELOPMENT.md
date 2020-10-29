@@ -254,35 +254,6 @@ overrides, components expose a `style` prop:
   <Component style="margin-right: 24px"/>
 ```
 
-For very common alignment cases we have a helper primitive called `<Flex>`.
-A `<Flex>` primitive offers two ways of aligning its contents:
-
-  - via the `align` prop;
-  - or by using slots.
-
-For when there is only one element to align, use the `align` prop, otherwise
-use slots:
-
-```html
-<Flex align="left">
-  <h1>Issues</h1>
-</Flex>
-
-<Flex style="margin-top: 48px;">
-  <div slot="left">
-    <Button style="margin-right: 24px">
-      Back
-    </Button>
-  </div>
-
-  <div slot="right">
-    <Button variant="primary">
-      Pay
-    </Button>
-  </div>
-</Flex>
-```
-
 
 #### Typography
 

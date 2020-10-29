@@ -151,7 +151,10 @@
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
-      <p class="typo-text-bold typo-overflow-ellipsis">
+      <p
+        class="typo-text-bold typo-overflow-ellipsis"
+        style="max-width: 7.5rem;"
+        title={currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}>
         {currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}
       </p>
       <p>

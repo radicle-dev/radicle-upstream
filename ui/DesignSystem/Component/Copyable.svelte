@@ -44,11 +44,13 @@
     cursor: pointer;
     display: inline-flex;
     white-space: nowrap;
+    width: 100%;
   }
 
   .basic {
     display: flex;
     min-height: 24px;
+    width: 100%;
   }
 
   .content {
