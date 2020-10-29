@@ -78,7 +78,7 @@ export function amountPerBlock(txc: ContractTransaction): Tx {
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     inner: {
       kind: TxKind.UpdateMonthlyContribution,
-      amount: txc.value,
+      amount: txc.value.toString(),
     },
     date: Date.now(),
   };
@@ -101,7 +101,7 @@ export function collect(txc: ContractTransaction): Tx {
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     inner: {
       kind: TxKind.CollectFunds,
-      amount: txc.value,
+      amount: txc.value.toString(),
     },
     date: Date.now(),
   };
@@ -113,7 +113,7 @@ export function topUp(txc: ContractTransaction): Tx {
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     inner: {
       kind: TxKind.TopUp,
-      amount: txc.value,
+      amount: txc.value.toString(),
     },
     date: Date.now(),
   };
