@@ -44,7 +44,7 @@ mod handler {
         input: super::UnsealInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(merle): Replace with correct password check
-        if input.passphrase != "radicle-upstream" {
+        if input.passphrase.unsecure() != "radicle-upstream" {
             return Err(Rejection::from(error::Error::WrongPassphrase));
         }
         // TODO Load the real key from disk. The service manager ignores the key for now and uses a
@@ -87,5 +87,5 @@ mod handler {
 #[serde(rename_all = "camelCase")]
 pub struct UnsealInput {
     /// Passphrase to unlock the keystore.
-    passphrase: String,
+    passphrase: coco::keystore::SecUtf8,
 }

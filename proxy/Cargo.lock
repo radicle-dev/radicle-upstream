@@ -85,6 +85,7 @@ dependencies = [
  "pretty_env_logger",
  "radicle-avatar",
  "radicle-surf",
+ "secstr",
  "serde",
  "serde_json",
  "serde_qs",
@@ -2185,6 +2186,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb003d53cef244a97516226b01155057c7fa6eb52914933c32f6c98a84182188"
 dependencies = [
  "libc",
+ "serde",
 ]
 
 [[package]]
