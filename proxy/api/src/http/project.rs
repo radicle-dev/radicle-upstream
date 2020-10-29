@@ -192,7 +192,7 @@ mod handler {
             })
             .await
             .map_err(Error::from)?;
-        let project: project::Project = (meta, stats).into();
+        let project: project::Full = (meta, stats).into();
 
         Ok(reply::with_status(
             reply::json(&project),
@@ -202,9 +202,7 @@ mod handler {
 
     /// Get a feed of untracked projects.
     pub async fn discover(_ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let feed = project::discover()?;
-
-        Ok(reply::json(&feed))
+        Ok(reply::json(&todo!()))
     }
 
     /// Get the [`project::Project`] for the given `id`.
