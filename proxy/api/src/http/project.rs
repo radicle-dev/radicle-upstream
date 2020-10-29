@@ -13,7 +13,6 @@ mod request;
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     checkout_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
-        .or(discover_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
         .or(owner_contributed_filter(ctx.clone()))
         .or(owner_tracked_filter(ctx.clone()))
