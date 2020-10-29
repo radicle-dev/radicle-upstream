@@ -9,8 +9,8 @@
     session.unseal(passphrase);
   };
 
-  const onKeydown = (event: KeyboardEvent) => {
-    if (event.key === "Enter" && passphrase.length > 0) {
+  const onEnter = () => {
+    if (passphrase.length > 0) {
       unlock();
     }
   };
@@ -43,7 +43,7 @@
       placeholder="Enter your passphrase"
       bind:value={passphrase}
       dataCy="passphrase-input"
-      on:keydown={onKeydown}
+      on:enter={onEnter}
       style="width: 16rem; margin-right: 1rem;" />
     <Button
       dataCy="unlock-button"
