@@ -26,6 +26,10 @@
     margin-right: 32px;
   }
 
+  .stat:last-child {
+    margin-right: 0;
+  }
+
   .stat p {
     color: var(--color-foreground-level-6);
   }
