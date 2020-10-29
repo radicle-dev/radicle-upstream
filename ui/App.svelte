@@ -21,7 +21,6 @@
   import Bsod from "./Screen/Bsod.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import Discovery from "./Screen/Discovery.svelte";
   import ModalManagePeers from "./Modal/ManagePeers.svelte";
   import ModalNewProject from "./Modal/NewProject.svelte";
   import ModalSearch from "./Modal/Search.svelte";
@@ -36,7 +35,6 @@
     "/": Blank,
     "/onboarding": Onboarding,
     "/settings": Settings,
-    "/discovery": Discovery,
     "/profile/*": Profile,
     "/projects/:id/*": Project,
     "/user/:urn": UserProfile,
