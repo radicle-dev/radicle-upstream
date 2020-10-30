@@ -45,8 +45,8 @@
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
       color: var(--color-foreground-level-6);">
-      This is your peerID — it's unique to your machine!<br /> Click to copy it and
-      share with others so that they can add you as a remote of a project.
+      This is your handle — it's unique to you!<br /> Click to copy it and share
+      with others so that they can find you.
     </p>
 
     <Button dataCy="go-to-profile-button" on:click={next}>

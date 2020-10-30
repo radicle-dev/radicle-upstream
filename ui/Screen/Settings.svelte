@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { getContext, onMount } from "svelte";
 
   import {
     clear,
@@ -11,7 +11,6 @@
   } from "../src/session.ts";
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
-  import * as identity from "../src/identity.ts";
   import * as modal from "../src/modal.ts";
   import { getVersion, isDev } from "../../native/ipc.js";
 
@@ -42,6 +41,8 @@
   onMount(async () => {
     version = await getVersion();
   });
+
+  const session = getContext("session");
 </script>
 
 <style>
@@ -178,7 +179,7 @@
           <p>Share your peerId with others so they can add you as a remote</p>
         </div>
         <div class="action">
-          <StyledCopyable value={identity.fallback.peerId} />
+          <StyledCopyable value={session.identity.peerId} />
         </div>
       </div>
     </section>
