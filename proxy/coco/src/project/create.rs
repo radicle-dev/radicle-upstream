@@ -17,7 +17,7 @@ use crate::{config, user::User};
 
 /// Validation Errors
 pub mod validation {
-    use std::path::PathBuf;
+    use std::{io, path::PathBuf};
 
     /// Errors that occur when validating a [`super::Repo`]'s path.
     #[derive(Debug, thiserror::Error)]
@@ -33,6 +33,10 @@ pub mod validation {
         /// The path was expected to point to a git repository but it did not.
         #[error("the path '{0}' does not point to an existing repository")]
         NotARepo(PathBuf),
+
+        /// When trying to inspect a path, and I/O error occurred.
+        #[error(transparent)]
+        Io(#[from] io::Error),
     }
 }
 
@@ -127,7 +131,9 @@ impl Repo {
             Self::New { name, path } => {
                 let repo_path = path.join(name.clone());
                 if repo_path.exists() {
-                    return Err(validation::Error::AlreadExists(repo_path));
+                    if repo_path.read_dir()?.next().is_some() {
+                        return Err(validation::Error::AlreadExists(repo_path));
+                    }
                 }
 
                 Ok(ValidatedRepo(Self::New { name, path }))
@@ -145,6 +151,7 @@ impl Repo {
 }
 
 /// A `Repo` that has passed through validation, using [`Repo::validate`].
+#[derive(Debug)]
 pub struct ValidatedRepo(Repo);
 
 impl ValidatedRepo {
@@ -361,7 +368,30 @@ mod test {
     use super::*;
 
     #[test]
-    fn validation_fails_on_existing_directory() -> Result<(), Box<dyn std::error::Error>> {
+    fn validation_fails_on_non_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>>
+    {
+        let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
+        let exists = tmpdir.path().join("exists");
+        std::fs::create_dir(exists.clone())?;
+        std::fs::File::create(exists.join("nonempty.rs"))?;
+
+        let create = Create {
+            description: "Radicle".to_string(),
+            default_branch: OneLevel::from(
+                RefLike::try_from("radicle").expect("failed to parse ref"),
+            ),
+            repo: Repo::New {
+                name: "exists".to_string(),
+                path: tmpdir.path().to_path_buf(),
+            },
+        };
+        assert_matches!(create.validate(), Err(validation::Error::AlreadExists(_)));
+
+        Ok(())
+    }
+
+    #[test]
+    fn validation_succeeds_on_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>> {
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
         std::fs::create_dir(exists)?;
@@ -376,10 +406,7 @@ mod test {
                 path: tmpdir.path().to_path_buf(),
             },
         };
-        assert_matches!(
-            create.validate().err(),
-            Some(validation::Error::AlreadExists(_))
-        );
+        assert_matches!(create.validate(), Ok(_));
 
         Ok(())
     }
