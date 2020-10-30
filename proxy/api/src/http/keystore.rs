@@ -1,5 +1,7 @@
 //! Endpoints for handling the keystore.
 
+use data_encoding::HEXLOWER;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
@@ -54,11 +56,12 @@ mod handler {
 
         let auth_cookie_lock = ctx.auth_cookie();
         let mut cookie = auth_cookie_lock.write().await;
-        *cookie = Some("chocolate".into());
+        let cookie_value = super::gen_cookie_value();
+        *cookie = Some(cookie_value.clone());
         Ok(warp::reply::with_header(
             reply::with_status(reply(), StatusCode::NO_CONTENT),
             "Set-Cookie",
-            "auth-cookie=chocolate; Path=/",
+            format!("auth-cookie={}; Path=/", cookie_value),
         )
         .into_response())
     }
@@ -72,11 +75,12 @@ mod handler {
 
         let auth_cookie_lock = ctx.auth_cookie();
         let mut cookie = auth_cookie_lock.write().await;
-        *cookie = Some("chocolate".into());
+        let cookie_value = super::gen_cookie_value();
+        *cookie = Some(cookie_value.clone());
         Ok(warp::reply::with_header(
             reply::with_status(reply(), StatusCode::NO_CONTENT),
             "Set-Cookie",
-            "auth-cookie=chocolate; Path=/",
+            format!("auth-cookie={}; Path=/", cookie_value),
         )
         .into_response())
     }
@@ -88,4 +92,10 @@ mod handler {
 pub struct UnsealInput {
     /// Passphrase to unlock the keystore.
     passphrase: coco::keystore::SecUtf8,
+}
+
+/// Generates a random cookie value.
+fn gen_cookie_value() -> String {
+    let randoms = rand::thread_rng().gen::<[u8; 32]>();
+    HEXLOWER.encode(&randoms)
 }
