@@ -68,6 +68,10 @@ pub enum Error {
         /// The default branch that was expected to be found.
         branch: String,
     },
+
+    /// An error occurred while validating input.
+    #[error(transparent)]
+    Validation(#[from] validation::Error),
 }
 
 /// The data required to either open an existing repository or create a new one.
@@ -130,10 +134,16 @@ impl Repo {
             },
             Self::New { name, path } => {
                 let repo_path = path.join(name.clone());
-                if repo_path.exists() {
-                    if repo_path.read_dir()?.next().is_some() {
-                        return Err(validation::Error::AlreadExists(repo_path));
-                    }
+
+                if repo_path.is_file() {
+                    return Err(validation::Error::AlreadExists(repo_path));
+                }
+
+                if repo_path.exists()
+                    && repo_path.is_dir()
+                    && repo_path.read_dir()?.next().is_some()
+                {
+                    return Err(validation::Error::AlreadExists(repo_path));
                 }
 
                 Ok(ValidatedRepo(Self::New { name, path }))
@@ -257,6 +267,9 @@ impl Create<ValidatedRepo> {
     ///   * Failed to setup the repository
     ///   * Failed to build the project entity
     pub fn setup_repo(&self, url: LocalUrl) -> Result<git2::Repository, Error> {
+        // Validate again to make sure nothing bad has snuck in
+        let _ = self.repo.0.clone().validate()?;
+
         let repo = self.repo.create(&self.description, &self.default_branch)?;
 
         // Test if the repo has setup rad remote.

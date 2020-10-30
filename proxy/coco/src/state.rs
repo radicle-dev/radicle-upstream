@@ -495,7 +495,7 @@ impl State {
         owner: &User,
         project: project::Create<project::Repo>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
-        let project = project.validate()?;
+        let project = project.validate().map_err(project::create::Error::from)?;
         let mut meta = project.build(owner, self.signer.public_key().into())?;
         meta.sign_by_user(&self.signer, owner)?;
 
