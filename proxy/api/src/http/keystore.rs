@@ -102,8 +102,5 @@ fn gen_cookie_value() -> String {
 
 /// Format the cookie header attributes.
 fn format_cookie_header(cookie_value: &str) -> String {
-    format!(
-        "auth-cookie={}; Path=/",
-        cookie_value
-    )
+    format!("auth-cookie={}; Path=/", cookie_value)
 }
