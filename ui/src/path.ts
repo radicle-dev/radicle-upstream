@@ -10,6 +10,7 @@ export const profileProjects = (): string => "/profile/projects";
 export const profileFollowing = (): string => "/profile/following";
 export const profileWallet = (): string => "/profile/wallet";
 export const onboarding = (): string => "/onboarding";
+export const lock = (): string => "/lock";
 
 export const userProfile = (urn: string): string => `/user/${urn}`;
 export const userProfileProjects = (urn: string): string =>

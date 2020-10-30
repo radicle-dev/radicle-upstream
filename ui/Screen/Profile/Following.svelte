@@ -10,7 +10,7 @@
   import { following as store, fetchFollowing } from "../../src/profile";
   import { cancelRequest } from "../../src/project";
   import type { Project } from "../../src/project";
-  import type { Authenticated } from "../../src/session";
+  import type { UnsealedSession } from "../../src/session";
   import type { Urn } from "../../src/urn";
 
   import {
@@ -23,7 +23,7 @@
     FollowToggle,
   } from "../../DesignSystem/Component";
 
-  const session: Authenticated = getContext("session");
+  const session: UnsealedSession = getContext("session");
   const onCancel = (urn: Urn): void => {
     cancelRequest(urn).then(fetchFollowing);
   };

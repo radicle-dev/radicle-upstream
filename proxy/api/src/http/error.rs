@@ -14,6 +14,8 @@ use crate::error;
 pub enum Routing {
     /// The currently active [`coco::user::User`] is missing.
     MissingOwner,
+    /// The keystore is sealed, context does not have a signer.
+    NoSession,
     /// Query part of the URL cannot be deserialized.
     ///
     /// Used by [`crate::http::with_qs`] and [`crate::http::with_qs_opt`].
@@ -43,6 +45,7 @@ impl fmt::Display for Routing {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingOwner => write!(f, "Owner is missing"),
+            Self::NoSession => write!(f, "No session has been created yet"),
             Self::InvalidQuery { query, error } => {
                 write!(f, "Invalid query string \"{}\": {}", query, error)
             },
@@ -85,6 +88,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                 Routing::MissingOwner => {
                     (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
                 },
+                Routing::NoSession => (StatusCode::NOT_FOUND, "NOT_FOUND", err.to_string()),
                 Routing::InvalidQuery { .. } => {
                     (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
                 },
@@ -151,7 +155,9 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         )
                     },
                 },
-                error::Error::KeystoreSealed => {
+                error::Error::KeystoreSealed
+                | error::Error::WrongPassphrase
+                | error::Error::InvalidAuthCookie => {
                     (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string())
                 },
                 _ => {
