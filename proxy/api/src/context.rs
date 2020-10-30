@@ -1,10 +1,12 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
 use std::sync::Arc;
+
 use tokio::sync::RwLock;
 
-use crate::service;
 use coco::PeerControl;
+
+use crate::service;
 
 #[cfg(test)]
 use coco::{keystore, signer, RunConfig};
