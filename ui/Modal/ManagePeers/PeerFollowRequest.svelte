@@ -4,15 +4,13 @@
   import type { Urn } from "../../src/urn";
   import type { User } from "../../src/project";
 
-  import { FollowToggle } from "../../DesignSystem/Component";
+  import { FollowToggle, StyledCopyable } from "../../DesignSystem/Component";
 
   export let peer: User;
   export let projectName: string;
   export let projectUrn: Urn;
 
   const dispatch = createEventDispatcher();
-
-  const [head, tail] = peer.peerId.split(/(.{6}).*(.{6})/).filter(Boolean);
 </script>
 
 <style>
@@ -31,9 +29,15 @@
 <div class="peer-request" data-cy="peer-request">
   <div class="left" style="max-width: 22em">
     <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
-      {head}…{tail} / {projectName}
+      {projectName}
     </p>
+    <StyledCopyable
+      style="margin: 0.5rem 0 0 -0.25rem;"
+      truncate
+      expandable={false}
+      value={peer.peerId} />
   </div>
+
   <FollowToggle
     expanded
     following
