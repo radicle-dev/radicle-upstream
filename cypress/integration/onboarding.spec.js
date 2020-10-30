@@ -4,7 +4,7 @@ context("onboarding", () => {
     passphrase: "curled",
   };
 
-  const radUrnRegex = /hwd[a-z0-9]{56}/;
+  const radIdRegex = /hwd[a-z0-9]{56}/;
 
   beforeEach(() => {
     cy.resetProxyState();
@@ -41,7 +41,7 @@ context("onboarding", () => {
       cy.focused().type("{enter}");
 
       // Success screen.
-      cy.pick("urn").contains(radUrnRegex).should("exist");
+      cy.pick("urn").contains(radIdRegex).should("exist");
 
       // Land on profile screen.
       cy.get("body").type("{enter}");
@@ -62,7 +62,7 @@ context("onboarding", () => {
       cy.pick("set-passphrase-button").click();
 
       // Success screen.
-      cy.pick("urn").contains(radUrnRegex).should("exist");
+      cy.pick("urn").contains(radIdRegex).should("exist");
 
       // Land on profile screen.
       cy.pick("go-to-profile-button").click();
@@ -83,7 +83,7 @@ context("onboarding", () => {
       cy.pick("set-passphrase-button").click();
 
       // Success screen.
-      cy.pick("urn").contains(radUrnRegex).should("exist");
+      cy.pick("urn").contains(radIdRegex).should("exist");
 
       // Land on profile screen.
       cy.pick("go-to-profile-button").click();
@@ -100,7 +100,7 @@ context("onboarding", () => {
       cy.pick("passphrase-input").type("1234");
       cy.pick("repeat-passphrase-input").type("1234");
       cy.pick("set-passphrase-button").click();
-      cy.pick("urn").contains(radUrnRegex).should("exist");
+      cy.pick("urn").contains(radIdRegex).should("exist");
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains("cloudhead");
     });
@@ -122,7 +122,7 @@ context("onboarding", () => {
       cy.pick("set-passphrase-button").click();
 
       // Success screen.
-      cy.pick("urn").contains(radUrnRegex).should("exist");
+      cy.pick("urn").contains(radIdRegex).should("exist");
 
       // Clear session to restart onboarding.
       cy.pick("sidebar", "settings").click();
