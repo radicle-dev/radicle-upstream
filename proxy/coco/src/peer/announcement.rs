@@ -45,7 +45,7 @@ pub type Updates = HashSet<Announcement>;
 /// * if the announcemnet of one of the project heads failed
 pub async fn announce(state: &State, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
-        gossip::announce(state, urn, hash).await;
+        gossip::announce(state, urn, Some(*hash)).await;
     }
 }
 
