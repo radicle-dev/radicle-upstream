@@ -128,7 +128,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                     coco::state::Error::CreateValidation(
                         coco::project::create::validation::Error::NotARepo(path),
                     ) => (
-                        StatusCode::NOT_FOUND,
+                        StatusCode::BAD_REQUEST,
                         "NOT_A_REPO",
                         coco::project::create::validation::Error::NotARepo(path.clone())
                             .to_string(),
