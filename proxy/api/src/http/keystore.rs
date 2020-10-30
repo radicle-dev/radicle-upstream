@@ -61,7 +61,7 @@ mod handler {
         Ok(warp::reply::with_header(
             reply::with_status(reply(), StatusCode::NO_CONTENT),
             "Set-Cookie",
-            format!("auth-cookie={}; Path=/", cookie_value),
+            super::format_cookie_header(&cookie_value),
         )
         .into_response())
     }
@@ -80,7 +80,7 @@ mod handler {
         Ok(warp::reply::with_header(
             reply::with_status(reply(), StatusCode::NO_CONTENT),
             "Set-Cookie",
-            format!("auth-cookie={}; Path=/", cookie_value),
+            super::format_cookie_header(&cookie_value),
         )
         .into_response())
     }
@@ -98,4 +98,12 @@ pub struct UnsealInput {
 fn gen_cookie_value() -> String {
     let randoms = rand::thread_rng().gen::<[u8; 32]>();
     HEXLOWER.encode(&randoms)
+}
+
+/// Format the cookie header attributes.
+fn format_cookie_header(cookie_value: &str) -> String {
+    format!(
+        "auth-cookie={}; Path=/",
+        cookie_value
+    )
 }
