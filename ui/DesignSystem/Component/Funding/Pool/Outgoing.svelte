@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { Button, Icon, Input } from "../../../Primitive";
-  import { Remote, TxButton } from "../../../Component";
+  import { Button, Icon } from "../../../Primitive";
+  import { Remote } from "../../../Component";
+
+  import Receivers from "./Receivers.svelte";
   import Add from "./Onboarding/Add.svelte";
   import Budget from "./Onboarding/Budget.svelte";
   import TopUp from "./Onboarding/TopUp.svelte";
@@ -14,11 +16,7 @@
   import {
     amountStore,
     monthlyContributionValidationStore,
-    membersStore,
-    membersValidationStore,
   } from "../../../../src/funding/pool";
-
-  import { ValidationStatus } from "../../../../src/validation";
 
   export let pool: _pool.Pool;
 
@@ -48,7 +46,6 @@
       const newData = store.data;
       data = newData;
       monthlyContribution = newData.amountPerBlock;
-      members = newData.receiverAddresses.join(",");
       onboardingStatus = new _pool.OnboardingStatus(newData);
     }
   });
@@ -62,43 +59,10 @@
     if (validatingAmount) amountValidation.validate($amountStore);
   }
 
-  // Necessary type to comply with Textarea.bind:value type.
-  let members: string = "";
-  let validatingMembers = false;
-  $: membersStore.set(members ? members.toString() : "");
-  $: {
-    if ($membersStore && $membersStore.length > 0) validatingMembers = true;
-    if (validatingMembers) membersValidationStore.validate($membersStore);
-  }
-
-  $: saveMonthlyContributionEnabled =
-    $amountValidation &&
-    $amountValidation.status === ValidationStatus.Success &&
-    data &&
-    monthlyContribution.valueOf() !== data.amountPerBlock.valueOf();
-
-  $: saveMembersEnabled =
-    $membersValidationStore &&
-    $membersValidationStore.status === ValidationStatus.Success &&
-    data &&
-    extractMembers(members).join(",") !== data.receiverAddresses.join(",");
-
   const openSendModal = () => {
     _pool.store.set(pool);
     modal.toggle(path.poolTopUp());
   };
-
-  // Extract the list of unique members from the provided raw input string.
-  function extractMembers(raw: string): string[] {
-    return [
-      ...new Set(
-        raw
-          .split(",")
-          .map(e => e.trim())
-          .filter(e => e.length > 0)
-      ),
-    ];
-  }
 
   /* On clicks */
 
@@ -106,11 +70,12 @@
     modal.toggle(path.updateMonthlyContribution());
   }
 
-  function onSaveMembers(): Promise<void> {
+  function onSaveReceivers(members: string[]): Promise<void> {
+    console.log("onSaveReceivers: ", members);
     if (!data) {
       throw new Error("Something went wrong");
     }
-    return pool.updateReceiverAddresses(data, extractMembers(members));
+    return pool.updateReceiverAddresses(data, members);
   }
 </script>
 
@@ -239,23 +204,10 @@
         </p>
       {/if}
 
-      <div style="margin-top: var(--content-padding)">
-        <Input.Textarea
-          disabled={ongoingBeneficiariesUpdate}
-          validation={$membersValidationStore}
-          style="min-width: 400px;"
-          bind:value={members}
-          placeholder="Enter a list of comma-separated addresses here" />
-
-        {#if saveMembersEnabled && !ongoingBeneficiariesUpdate}
-          <TxButton
-            disabled={!saveMembersEnabled}
-            title={'Save'}
-            onClick={onSaveMembers}
-            variant={'outline'}
-            errorMessage={e => `Failed to save pool: ${e}`} />
-        {/if}
-      </div>
+      <Receivers
+        receivers={poolData.receiverAddresses}
+        onSave={onSaveReceivers}
+        updating={ongoingBeneficiariesUpdate} />
     </div>
   </Remote>
 </div>
