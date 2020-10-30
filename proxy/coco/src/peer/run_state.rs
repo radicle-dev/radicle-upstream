@@ -391,12 +391,11 @@ impl RunState {
     /// Handle [`AnnounceInput`]s.
     fn handle_announce(&mut self, input: AnnounceInput) -> Vec<Command> {
         match (&self.status, input) {
-            // XXX(xla): Bring back.
             // Announce new updates while the peer is online.
-            // (
-            //     Status::Online { .. } | Status::Started { .. } | Status::Syncing { .. },
-            //     AnnounceInput::Tick,
-            // ) => vec![Command::Announce],
+            (
+                Status::Online { .. } | Status::Started { .. } | Status::Syncing { .. },
+                AnnounceInput::Tick,
+            ) => vec![Command::Announce],
             _ => vec![],
         }
     }
