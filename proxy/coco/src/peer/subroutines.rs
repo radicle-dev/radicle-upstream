@@ -206,6 +206,9 @@ impl Future for Subroutines {
                             ProtocolEvent::Connected(peer_id) => {
                                 log::info!("CONNECTED {}", peer_id);
                             }
+                            ProtocolEvent::Connected(peer_id) => {
+                                log::info!("DISCONNECTED {}", peer_id);
+                            }
                             ProtocolEvent::Gossip(librad::net::gossip::Info::Has(
                                 librad::net::gossip::Has {
                                     provider,
