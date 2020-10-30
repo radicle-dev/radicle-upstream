@@ -1,7 +1,6 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use serde::Deserialize;
-use tokio::sync::mpsc;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use crate::{context, notification::Subscriptions};
@@ -10,6 +9,7 @@ mod avatar;
 mod control;
 mod error;
 mod identity;
+mod keystore;
 mod notification;
 mod project;
 mod session;
@@ -36,7 +36,6 @@ macro_rules! combine {
 pub fn api(
     ctx: context::Context,
     subscriptions: Subscriptions,
-    selfdestruct: mpsc::Sender<()>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let test = ctx.test();
 
@@ -51,12 +50,13 @@ pub fn api(
             }
         })
         .untuple_one()
-        .and(control::filters(ctx.clone(), selfdestruct));
+        .and(control::filters(ctx.clone()));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter =
         path("notifications").and(notification::filters(ctx.clone(), subscriptions));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
+    let keystore_filter = path("keystore").and(keystore::filters(ctx.clone()));
     let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
@@ -66,12 +66,14 @@ pub fn api(
         notification_filter,
         project_filter,
         session_filter,
+        keystore_filter,
         source_filter
     ));
 
     let cors = warp::cors()
         .allow_any_origin()
-        .allow_headers(&[warp::http::header::CONTENT_TYPE])
+        .allow_credentials(true)
+        .allow_headers(&[warp::http::header::CONTENT_TYPE, warp::http::header::COOKIE])
         .allow_methods(&[
             warp::http::Method::DELETE,
             warp::http::Method::GET,
@@ -103,22 +105,17 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
     warp::any()
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {
-            let session = crate::session::current(ctx.state.clone(), &ctx.store)
+            let session =
+                crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
+
+            let user = ctx
+                .state
+                .get_user(session.identity.urn)
                 .await
-                .expect("unable to get current sesison");
+                .expect("unable to get coco user");
+            let user = coco::user::verify(user).expect("unable to verify user");
 
-            if let Some(identity) = session.identity {
-                let user = ctx
-                    .state
-                    .get_user(identity.urn)
-                    .await
-                    .expect("unable to get coco user");
-                let user = coco::user::verify(user).expect("unable to verify user");
-
-                Ok(user)
-            } else {
-                Err(Rejection::from(error::Routing::MissingOwner))
-            }
+            Ok::<_, Rejection>(user)
         })
         .boxed()
 }
@@ -134,13 +131,21 @@ fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
 /// Otherwise the requests rejects with [`crate::error::Error::KeystoreSealed`].
 fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unsealed,)> {
     with_context(ctx)
-        .and_then(|ctx| async move {
-            match ctx {
+        .and(warp::filters::cookie::optional("auth-cookie"))
+        .and_then(|ctx, cookie_value: Option<String>| async move {
+            let unsealed_ctx = match ctx {
                 context::Context::Sealed(_) => {
-                    Err(Rejection::from(crate::error::Error::KeystoreSealed))
+                    return Err(Rejection::from(crate::error::Error::KeystoreSealed))
                 },
-                context::Context::Unsealed(unsealed) => Ok(unsealed),
+                context::Context::Unsealed(unsealed) => unsealed,
+            };
+            let ctx_cookie = unsealed_ctx.auth_cookie.read().await;
+            if cookie_value != *ctx_cookie {
+                // TODO(merle): Create cookie specific error?
+                return Err(Rejection::from(crate::error::Error::InvalidAuthCookie));
             }
+            drop(ctx_cookie);
+            Ok(unsealed_ctx)
         })
         .boxed()
 }

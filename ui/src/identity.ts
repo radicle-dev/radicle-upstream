@@ -36,6 +36,7 @@ interface CreateInput {
 export const createIdentity = (input: CreateInput): Promise<Identity> => {
   return api.post<CreateInput, Identity>("identities", input);
 };
+
 export const fetch = (urn: string): Promise<Identity> => {
   return api.get<Identity>(`identities/${urn}`);
 };

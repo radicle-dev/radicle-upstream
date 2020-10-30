@@ -6,7 +6,7 @@
   import * as path from "../../src/path";
   import { fetchList, projects as store } from "../../src/project";
   import type { Project } from "../../src/project";
-  import type { Authenticated } from "../../src/session";
+  import type { UnsealedSession } from "../../src/session";
 
   import {
     EmptyState,
@@ -15,7 +15,7 @@
     Remote,
   } from "../../DesignSystem/Component";
 
-  const session: Authenticated = getContext("session");
+  const session: UnsealedSession = getContext("session");
 
   const create = () => {
     modal.toggle(path.newProject());
