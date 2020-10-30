@@ -39,10 +39,10 @@ impl Context {
     }
 
     /// Returns a mutable reference to the authentication cookie value.
-    pub fn auth_cookie(&self) -> Arc<RwLock<Option<String>>> {
+    pub fn auth_token(&self) -> Arc<RwLock<Option<String>>> {
         match self {
-            Self::Sealed(sealed) => sealed.auth_cookie.clone(),
-            Self::Unsealed(unsealed) => unsealed.auth_cookie.clone(),
+            Self::Sealed(sealed) => sealed.auth_token.clone(),
+            Self::Unsealed(unsealed) => unsealed.auth_token.clone(),
         }
     }
 
@@ -81,7 +81,7 @@ pub struct Unsealed {
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
-    pub auth_cookie: Arc<RwLock<Option<String>>>,
+    pub auth_token: Arc<RwLock<Option<String>>>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -94,7 +94,7 @@ pub struct Sealed {
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
-    pub auth_cookie: Arc<RwLock<Option<String>>>,
+    pub auth_token: Arc<RwLock<Option<String>>>,
 }
 
 impl Unsealed {
@@ -131,7 +131,7 @@ impl Unsealed {
             store,
             test: false,
             service_handle: service::Handle::dummy(),
-            auth_cookie: Arc::new(RwLock::new(None)),
+            auth_token: Arc::new(RwLock::new(None)),
         })
     }
 }

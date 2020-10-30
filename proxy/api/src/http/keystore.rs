@@ -54,14 +54,14 @@ mod handler {
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);
 
-        let auth_cookie_lock = ctx.auth_cookie();
-        let mut cookie = auth_cookie_lock.write().await;
-        let cookie_value = super::gen_cookie_value();
-        *cookie = Some(cookie_value.clone());
+        let auth_token_lock = ctx.auth_token();
+        let mut auth_token = auth_token_lock.write().await;
+        let token = super::gen_token();
+        *auth_token = Some(token.clone());
         Ok(warp::reply::with_header(
             reply::with_status(reply(), StatusCode::NO_CONTENT),
             "Set-Cookie",
-            super::format_cookie_header(&cookie_value),
+            super::format_cookie_header(&token),
         )
         .into_response())
     }
@@ -73,14 +73,14 @@ mod handler {
         let key = coco::keys::SecretKey::new();
         ctx.service_handle().set_secret_key(key);
 
-        let auth_cookie_lock = ctx.auth_cookie();
-        let mut cookie = auth_cookie_lock.write().await;
-        let cookie_value = super::gen_cookie_value();
-        *cookie = Some(cookie_value.clone());
+        let auth_token_lock = ctx.auth_token();
+        let mut auth_token = auth_token_lock.write().await;
+        let token = super::gen_token();
+        *auth_token = Some(token.clone());
         Ok(warp::reply::with_header(
             reply::with_status(reply(), StatusCode::NO_CONTENT),
             "Set-Cookie",
-            super::format_cookie_header(&cookie_value),
+            super::format_cookie_header(&token),
         )
         .into_response())
     }
@@ -94,13 +94,13 @@ pub struct UnsealInput {
     passphrase: coco::keystore::SecUtf8,
 }
 
-/// Generates a random cookie value.
-fn gen_cookie_value() -> String {
+/// Generates a random auth token.
+fn gen_token() -> String {
     let randoms = rand::thread_rng().gen::<[u8; 32]>();
     HEXLOWER.encode(&randoms)
 }
 
 /// Format the cookie header attributes.
-fn format_cookie_header(cookie_value: &str) -> String {
-    format!("auth-cookie={}; Path=/", cookie_value)
+fn format_cookie_header(token: &str) -> String {
+    format!("auth-token={}; Path=/", token)
 }
