@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::{convert::Infallible, fmt};
 use warp::{http::StatusCode, reject, reply, Rejection, Reply};
 
-use coco::state;
+use coco::{project::create, state};
 
 use crate::error;
 
@@ -112,6 +112,23 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "INTERNAL_ERROR",
                             include_error.to_string(),
                         ),
+                    },
+                    coco::state::Error::Create(create::Error::Validation(err)) => match err {
+                        create::validation::Error::AlreadExists(_) => {
+                            (StatusCode::CONFLICT, "PATH_EXISTS", err.to_string())
+                        },
+                        create::validation::Error::PathDoesNotExist(_) => (
+                            StatusCode::NOT_FOUND,
+                            "PATH_DOES_NOT_EXIST",
+                            err.to_string(),
+                        ),
+
+                        create::validation::Error::NotARepo(_) => {
+                            (StatusCode::BAD_REQUEST, "NOT_A_REPO", err.to_string())
+                        },
+                        create::validation::Error::Io(err) => {
+                            (StatusCode::BAD_REQUEST, "IO_ERROR", err.to_string())
+                        },
                     },
                     coco::state::Error::Storage(state::error::storage::Error::AlreadyExists(
                         urn,
