@@ -219,6 +219,9 @@ impl Future for Subroutines {
                             },
                             _ => {},
                         },
+                        Input::Request(RequestInput::Cloned(url)) => {
+                            log::info!("CLONED: {} from {}", url.urn, url.authority);
+                        },
                         _ => {},
                     }
 
