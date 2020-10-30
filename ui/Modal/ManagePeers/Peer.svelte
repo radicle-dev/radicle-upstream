@@ -53,22 +53,20 @@
       {peer.identity.peerId}
     </p>
   </div>
-  {#if peer.type === PeerType.Local}
-    <Tooltip position={CSSPosition.Top} value="Can't unfollow your own remote">
-      <FollowToggle disabled following expanded />
-    </Tooltip>
-  {:else if peer.role === Role.Maintainer}
-    <Tooltip
-      position={CSSPosition.Top}
-      value="Can't unfollow the maintainer's remote">
-      <FollowToggle disabled following expanded />
-    </Tooltip>
-  {:else}
-    <FollowToggle
-      following
-      expanded
-      on:untrack={() => {
-        dispatch('unfollow', { projectUrn, peerId: peer.peerId });
-      }} />
+  {#if peer.type !== PeerType.Local}
+    {#if peer.role === Role.Maintainer}
+      <Tooltip
+        position={CSSPosition.Top}
+        value="Can't unfollow the maintainer's remote">
+        <FollowToggle disabled following expanded />
+      </Tooltip>
+    {:else}
+      <FollowToggle
+        following
+        expanded
+        on:unfollow={() => {
+          dispatch('unfollow', { projectUrn, peerId: peer.peerId });
+        }} />
+    {/if}
   {/if}
 </div>

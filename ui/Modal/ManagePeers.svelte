@@ -5,9 +5,11 @@
     addPeer,
     pendingPeers,
     peerSelection,
+    PeerType,
     peerValidation,
     project as store,
     removePeer,
+    Role,
   } from "../src/project";
   import type { Urn } from "../src/urn";
 
@@ -103,7 +105,7 @@
       {#if data.peers.length > 0}
         <List
           dataCy="followed-peers"
-          items={data.peers}
+          items={data.peers.filter(peer => !(peer.type === PeerType.Local && peer.role === Role.Tracker))}
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
