@@ -11,6 +11,7 @@
   } from "../src/session.ts";
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
+  import * as identity from "../src/identity.ts";
   import * as modal from "../src/modal.ts";
   import { getVersion, isDev } from "../../native/ipc.js";
 
@@ -164,6 +165,20 @@
           <a class="typo-link" href="irc://freenode:1/radicle">
             #radicle on freenode
           </a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Peer ID</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p>Share your peerId with others so they can add you as a remote</p>
+        </div>
+        <div class="action">
+          <StyledCopyable value={identity.fallback.peerId} />
         </div>
       </div>
     </section>
