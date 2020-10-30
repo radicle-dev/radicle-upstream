@@ -176,7 +176,7 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <p>Share your peerId with others so they can add you as a remote</p>
+          <p>Share your peerID with others so they can add you as a remote</p>
         </div>
         <div class="action">
           <StyledCopyable value={session.identity.peerId} />
