@@ -5,10 +5,13 @@
     addPeer,
     pendingPeers,
     peerSelection,
+    PeerType,
     peerValidation,
     project as store,
     removePeer,
+    Role,
   } from "../src/project";
+  import type { User } from "../src/project";
   import type { Urn } from "../src/urn";
 
   import { Button, Input } from "../DesignSystem/Primitive";
@@ -37,6 +40,13 @@
   const unfollowPeer = (projectUrn: Urn, peerId: PeerId) => {
     removePeer(projectUrn, peerId);
     peerValidation.reset();
+  };
+
+  // Don't show our own peer in the list unless we have published something.
+  const filteredPeers = (peers: [User]) => {
+    return peers.filter(peer => {
+      return !(peer.type === PeerType.Local && peer.role === Role.Tracker);
+    });
   };
 </script>
 
@@ -103,7 +113,7 @@
       {#if data.peers.length > 0}
         <List
           dataCy="followed-peers"
-          items={data.peers}
+          items={filteredPeers(data.peers)}
           let:item={peer}
           styleHoverState={false}
           style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
