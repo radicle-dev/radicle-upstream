@@ -126,6 +126,11 @@ impl<T, D> WaitingRoom<T, D> {
         }
     }
 
+    /// Check that the `WaitingRoom` has the given `urn`.
+    pub fn has(&self, urn: &RadUrn) -> bool {
+        self.requests.contains_key(&urn.id)
+    }
+
     /// Get the underlying [`SomeRequest`] for the given `urn`.
     ///
     /// Returns `None` if there is no such request.
