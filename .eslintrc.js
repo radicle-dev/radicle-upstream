@@ -14,7 +14,7 @@ module.exports = {
     sourceType: "module",
   },
   extends: ["eslint:recommended"],
-  plugins: ["svelte3", "@typescript-eslint"],
+  plugins: ["svelte3", "@typescript-eslint", "jest", "mocha"],
   overrides: [
     {
       files: ["*.svelte"],
@@ -30,6 +30,18 @@ module.exports = {
         // props with default values.
         // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-inferrable-types.md
         "@typescript-eslint/no-inferrable-types": "off",
+      },
+    },
+    {
+      files: ["cypress/**/*.spec.js"],
+      rules: {
+        "mocha/no-exclusive-tests": "warn",
+      },
+    },
+    {
+      files: ["*.test.ts"],
+      rules: {
+        "jest/no-focused-tests": "warn",
       },
     },
   ],
