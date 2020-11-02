@@ -131,20 +131,19 @@ fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
 /// Otherwise the requests rejects with [`crate::error::Error::KeystoreSealed`].
 fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unsealed,)> {
     with_context(ctx)
-        .and(warp::filters::cookie::optional("auth-cookie"))
-        .and_then(|ctx, cookie_value: Option<String>| async move {
+        .and(warp::filters::cookie::optional("auth-token"))
+        .and_then(|ctx, token: Option<String>| async move {
             let unsealed_ctx = match ctx {
                 context::Context::Sealed(_) => {
                     return Err(Rejection::from(crate::error::Error::KeystoreSealed))
                 },
                 context::Context::Unsealed(unsealed) => unsealed,
             };
-            let ctx_cookie = unsealed_ctx.auth_cookie.read().await;
-            if cookie_value != *ctx_cookie {
-                // TODO(merle): Create cookie specific error?
+            let auth_token = unsealed_ctx.auth_token.read().await;
+            if token != *auth_token {
                 return Err(Rejection::from(crate::error::Error::InvalidAuthCookie));
             }
-            drop(ctx_cookie);
+            drop(auth_token);
             Ok(unsealed_ctx)
         })
         .boxed()

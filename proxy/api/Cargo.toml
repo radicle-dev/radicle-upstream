@@ -13,6 +13,7 @@ default-run = "api"
 
 [dependencies]
 anyhow = "1.0"
+data-encoding = "2.3"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
 log = "0.4"
@@ -20,6 +21,7 @@ nonempty = { version = "0.6", features = [ "serialize" ] }
 percent-encoding = "2.1"
 pico-args = "0.3"
 pretty_env_logger = "0.3"
+rand = "0.7"
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 serde_qs = "0.6"

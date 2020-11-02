@@ -59,12 +59,12 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    let auth_cookie = Arc::new(RwLock::new(None));
+    let auth_token = Arc::new(RwLock::new(None));
     loop {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
         let config = service_manager.config().await;
-        let rigging = rig(args, service_handle, config, auth_cookie.clone()).await?;
+        let rigging = rig(args, service_handle, config, auth_token.clone()).await?;
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
@@ -193,7 +193,7 @@ async fn rig(
     args: Args,
     service_handle: service::Handle,
     config: service::Config,
-    auth_cookie: Arc<RwLock<Option<String>>>,
+    auth_token: Arc<RwLock<Option<String>>>,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
     let (temp, paths, store) = if args.test {
         let temp_dir = tempfile::tempdir()?;
@@ -266,7 +266,7 @@ async fn rig(
             store,
             test: args.test,
             service_handle: service_handle.clone(),
-            auth_cookie,
+            auth_token,
         });
 
         Ok(Rigging {
@@ -280,7 +280,7 @@ async fn rig(
             store,
             test: args.test,
             service_handle,
-            auth_cookie,
+            auth_token,
         });
         Ok(Rigging {
             temp,

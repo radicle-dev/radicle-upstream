@@ -63,14 +63,8 @@ mod handler {
         let id = identity::create(&ctx.state, &input.handle).await?;
 
         session::initialize(&ctx.store, id.clone())?;
-        let mut cookie = ctx.auth_cookie.write().await;
-        *cookie = Some("chocolate".into());
 
-        Ok(warp::reply::with_header(
-            reply::with_status(reply::json(&id), StatusCode::CREATED),
-            "Set-Cookie",
-            "auth-cookie=chocolate; Path=/",
-        ))
+        Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
