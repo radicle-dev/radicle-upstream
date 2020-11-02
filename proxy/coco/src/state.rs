@@ -4,13 +4,13 @@ use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf, sync::Arc, time
 
 use librad::{
     git::{
-        ext::{OneLevel, RefLike},
         include::Include,
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
         types::{namespace, NamespacedRef, Single},
     },
+    git_ext::{OneLevel, RefLike},
     keys,
     meta::{entity, project as librad_project, user},
     net::peer::PeerApi,
@@ -759,11 +759,10 @@ mod test {
     use std::{convert::TryFrom as _, env, path::PathBuf, process::Command};
 
     use librad::{
-        git::{
-            ext::{OneLevel, RefLike},
-            storage,
-        },
+        git::storage,
+        git_ext::{OneLevel, RefLike},
         keys::SecretKey,
+        reflike,
     };
 
     use crate::{config, control, project, signer};
@@ -777,9 +776,7 @@ mod test {
                 name: "fakie-nose-kickflip-backside-180-to-handplant".to_string(),
             },
             description: "rad git tricks".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("dope").expect("failed to parse 'power'"),
-            ),
+            default_branch: OneLevel::from(reflike!("dope")),
         }
     }
 
@@ -790,9 +787,7 @@ mod test {
                 name: "radicalise".to_string(),
             },
             description: "the people".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("power").expect("failed to parse 'power'"),
-            ),
+            default_branch: OneLevel::from(reflike!("power")),
         }
     }
 

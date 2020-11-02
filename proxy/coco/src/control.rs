@@ -3,10 +3,11 @@
 use std::{convert::TryFrom, env, io, path};
 
 use librad::{
-    git::ext::{OneLevel, RefLike},
+    git_ext::OneLevel,
     keys,
     meta::{entity, project as librad_project},
     peer::PeerId,
+    reflike,
 };
 use radicle_surf::vcs::git::git2;
 
@@ -289,5 +290,5 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
 /// Default reference name for testing purposes.
 #[must_use]
 pub fn default_branch() -> OneLevel {
-    OneLevel::from(RefLike::try_from("master").expect("failed to parse 'master'"))
+    OneLevel::from(reflike!("master"))
 }
