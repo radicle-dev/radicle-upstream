@@ -27,6 +27,9 @@ export interface Tx {
   // The date in which this transaction was created.
   // In milliseconds since epoch.
   date: number;
+
+  // The gas info for this transaction
+  gas: Gas;
 }
 
 export enum TxStatus {
@@ -36,6 +39,12 @@ export enum TxStatus {
   Included = "Included",
   // The transaction as been rejected.
   Rejected = "Rejected",
+}
+
+export interface Gas {
+  used: BigNumberish | undefined;
+  limit: BigNumberish;
+  price: BigNumberish;
 }
 
 type PoolTx =
@@ -81,6 +90,11 @@ export function amountPerBlock(txc: ContractTransaction): Tx {
       amount: txc.value.toString(),
     },
     date: Date.now(),
+    gas: {
+      used: undefined,
+      limit: txc.gasLimit.toString(),
+      price: txc.gasPrice.toString(),
+    },
   };
 }
 
@@ -92,6 +106,11 @@ export function beneficiaries(txc: ContractTransaction): Tx {
       kind: TxKind.UpdateBeneficiaries,
     },
     date: Date.now(),
+    gas: {
+      used: undefined,
+      limit: txc.gasLimit.toString(),
+      price: txc.gasPrice.toString(),
+    },
   };
 }
 
@@ -104,6 +123,11 @@ export function collect(txc: ContractTransaction): Tx {
       amount: txc.value.toString(),
     },
     date: Date.now(),
+    gas: {
+      used: undefined,
+      limit: txc.gasLimit.toString(),
+      price: txc.gasPrice.toString(),
+    },
   };
 }
 
@@ -116,6 +140,11 @@ export function topUp(txc: ContractTransaction): Tx {
       amount: txc.value.toString(),
     },
     date: Date.now(),
+    gas: {
+      used: undefined,
+      limit: txc.gasLimit.toString(),
+      price: txc.gasPrice.toString(),
+    },
   };
 }
 
@@ -149,23 +178,21 @@ async function updateStatuses() {
     txs
       .filter(tx => tx.status === TxStatus.AwaitingInclusion)
       .forEach(async tx => {
-        const newStatus = await lookupStatus(tx.hash);
+        const receipt = await provider.getTransactionReceipt(tx.hash);
+        const newStatus = await status(receipt);
         if (newStatus) tx.status = newStatus;
+        tx.gas.used = receipt.gasUsed;
       });
     return txs;
   });
 }
 
-async function lookupStatus(hash: string): Promise<TxStatus | undefined> {
-  const tx_receipt = await provider.getTransactionReceipt(hash);
-
-  console.log(tx_receipt);
-
+async function status(receipt: any): Promise<TxStatus | undefined> {
   // TODO(nuno): Need to workout a way of detecting failed txs prior to the
   // byzantium fork. Or might not be necessary at all.
-  if (tx_receipt.byzantium && tx_receipt.status === 0) {
+  if (receipt.byzantium && receipt.status === 0) {
     return TxStatus.Rejected;
-  } else if (tx_receipt.blockNumber === null || tx_receipt.blockNumber === 0) {
+  } else if (receipt.blockNumber === null || receipt.blockNumber === 0) {
     return TxStatus.AwaitingInclusion;
   } else {
     return TxStatus.Included;

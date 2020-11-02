@@ -102,6 +102,10 @@
   .content .section .row + .row {
     margin-top: 1.5rem;
   }
+
+  .cost {
+    color: var(--color-negative);
+  }
 </style>
 
 <div class="wrapper">
@@ -120,14 +124,26 @@
   </header>
 
   <div class="content">
-    {#if !!tx.inner.amount}
-      <div class="section">
+    <div class="section">
+      {#if !!tx.inner.amount}
         <div class="row">
           <p>Amount</p>
-          <p class="typo-semi-bold">{tx.inner.amount} DAI</p>
+          <p class="typo-semi-bold cost">{tx.inner.amount} DAI</p>
         </div>
+      {/if}
+      <div class="row">
+        <p>Gas used</p>
+        <p class="typo-semi-bold cost">{tx.gas.used || 'Not yet known'}</p>
       </div>
-    {/if}
+      <div class="row">
+        <p>Gas limit</p>
+        <p class="typo-semi-bold cost">{tx.gas.limit}</p>
+      </div>
+      <div class="row">
+        <p>Gas price</p>
+        <p class="typo-semi-bold cost">{tx.gas.price}</p>
+      </div>
+    </div>
 
     <div class="section">
       <div class="row">

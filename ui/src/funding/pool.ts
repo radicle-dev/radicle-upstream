@@ -93,6 +93,7 @@ export function make(wallet: Wallet): Pool {
     await poolContract
       .setAmountPerBlock(amount)
       .then(tx => {
+        console.log("Nuno: ", JSON.stringify(tx));
         transaction.add(transaction.amountPerBlock(tx));
         tx.wait();
       })
