@@ -16,7 +16,7 @@ pub enum Routing {
     #[error("Owner is missing")]
     MissingOwner,
     /// The keystore is sealed, context does not have a signer.
-    #[error("No session has been createcd yet")]
+    #[error("No session has been created yet")]
     NoSession,
     /// Query part of the URL cannot be deserialized.
     ///
