@@ -78,6 +78,7 @@ dependencies = [
  "futures 0.3.6",
  "http",
  "kv",
+ "lazy_static",
  "log",
  "nonempty 0.6.0",
  "percent-encoding 2.1.0",

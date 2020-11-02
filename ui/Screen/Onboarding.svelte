@@ -41,10 +41,11 @@
       await session.createKeystore();
       // Retry until the API is up
       notification.info("Creating the identity...");
-      withRetry(() => createIdentity({ handle, passphrase }), 200).then(id => {
-        identity = id;
-        state = State.SuccessView;
-      });
+      identity = await withRetry(
+        () => createIdentity({ handle, passphrase }),
+        200
+      );
+      state = State.SuccessView;
     } catch (error) {
       animateBackward();
       state = State.EnterName;

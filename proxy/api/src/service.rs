@@ -4,13 +4,43 @@ use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
 
-#[derive(Clone)]
 /// Persistent configuration for running the API and coco peer services.
 pub struct Config {
     /// Secret key for the coco peer.
     ///
     /// If this is `None` coco is not started.
     pub key: Option<coco::keys::SecretKey>,
+    /// If set, we use a temporary directory for on-disk persistence.
+    pub temp_dir: Option<tempfile::TempDir>,
+}
+
+/// Error returned when constructing a new configuration
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Failed to create temporary directory
+    #[error("Failed to create temporary directory")]
+    TempDir(
+        #[source]
+        #[from]
+        std::io::Error,
+    ),
+}
+
+impl Config {
+    /// Create a new default configuration.c:w
+    ///
+    /// If `test_mode` is `true` then `Config::temp_dir` is set for temporary on-disk persistence.
+    fn new(test_mode: bool) -> Result<Self, Error> {
+        let temp_dir = if test_mode {
+            Some(tempfile::tempdir()?)
+        } else {
+            None
+        };
+        Ok(Self {
+            key: None,
+            temp_dir,
+        })
+    }
 }
 
 /// Manages changes to [`Config`].
@@ -23,18 +53,24 @@ pub struct Manager {
     message_receiver: mpsc::Receiver<Message>,
     /// The current configuration of the services
     config: Config,
+    /// If true we are running the service in test mode.
+    test_mode: bool,
 }
 
 impl Manager {
-    /// Create a new manager with the initial configuration
-    pub fn new(config: Config) -> Self {
+    /// Create a new manager.
+    ///
+    /// If `test_mode` is `true` then `Config::temp_dir` is set for temporary on-disk persitence.
+    pub fn new(test_mode: bool) -> Result<Self, Error> {
+        let config = Config::new(test_mode)?;
         let (message_sender, message_receiver) = mpsc::channel(10);
-        Self {
+        Ok(Self {
             reload_notify: Arc::new(Notify::new()),
             message_sender,
             message_receiver,
             config,
-        }
+            test_mode,
+        })
     }
 
     /// Get a handle to send updates to [`Manager`].
@@ -46,16 +82,16 @@ impl Manager {
     }
 
     /// Get the current configuration.
-    pub async fn config(&mut self) -> Config {
+    pub fn config(&mut self) -> Result<&Config, Error> {
         while let Ok(message) = self.message_receiver.try_recv() {
             match message {
-                Message::Reset => self.config = Config { key: None },
+                Message::Reset => self.config = Config::new(self.test_mode)?,
                 Message::SetSecretKey(key) => self.config.key = Some(key),
                 Message::Seal => self.config.key = None,
             }
         }
 
-        self.config.clone()
+        Ok(&self.config)
     }
 
     /// Returns a future that becomes ready when the service needs to restart because the

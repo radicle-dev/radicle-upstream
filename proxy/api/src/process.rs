@@ -1,7 +1,6 @@
 //! Provides [`run`] to run the proxy process.
 use futures::prelude::*;
 use std::{convert::TryFrom, sync::Arc, time::Duration};
-use tempfile::TempDir;
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
@@ -21,8 +20,6 @@ pub struct Args {
 
 /// Data required to run the peer and the API
 struct Rigging {
-    /// Optional temporary directory to use for storage
-    temp: Option<TempDir>,
     /// The context provided to the API
     ctx: context::Context,
     /// The [`Peer`] to run
@@ -44,7 +41,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
-    let mut service_manager = service::Manager::new(service::Config { key: None });
+    let mut service_manager = service::Manager::new(args.test)?;
     let mut sighup = signal(SignalKind::hangup())?;
 
     let mut handle = service_manager.handle();
@@ -63,7 +60,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
-        let config = service_manager.config().await;
+        let config = service_manager.config()?;
         let rigging = rig(args, service_handle, config, auth_token.clone()).await?;
         let result = run_rigging(rigging, notified_restart).await;
         match result {
@@ -73,10 +70,9 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
             Err(e) => return Err(e.into()),
         }
 
-        // Give sled some time to clean up if we're in persistent mode
-        if !args.test {
-            tokio::time::delay_for(Duration::from_millis(200)).await
-        }
+        // Give `coco::SpawnAbortable` some time to release all the resources.
+        // See https://github.com/radicle-dev/radicle-upstream/issues/1163
+        tokio::time::delay_for(Duration::from_millis(50)).await
     }
 }
 
@@ -106,7 +102,6 @@ async fn run_rigging(
     // Required for `tokio::select`. We can’t put it on the element directly, though.
     #![allow(clippy::unreachable)]
     let Rigging {
-        temp: _dont_drop_me,
         ctx,
         peer,
         seeds_sender,
@@ -182,26 +177,26 @@ async fn run_rigging(
             server_status = server => server_status,
             peer_status = peer => Ok(peer_status?),
         };
+        log::info!("DONE");
         result
     } else {
         server.await
     }
 }
 
+lazy_static::lazy_static! {
+    /// Fixed key to use in test mode
+    static ref TEST_KEY: coco::keys::SecretKey = coco::keys::SecretKey::new();
+}
+
 /// Create [`Rigging`] to run the peer and API.
 async fn rig(
     args: Args,
     service_handle: service::Handle,
-    config: service::Config,
+    config: &service::Config,
     auth_token: Arc<RwLock<Option<String>>>,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
-    let (temp, paths, store) = if args.test {
-        let temp_dir = tempfile::tempdir()?;
-        log::debug!(
-            "Temporary path being used for this run is: {:?}",
-            temp_dir.path()
-        );
-
+    let (paths, store) = if let Some(temp_dir) = &config.temp_dir {
         std::env::set_var("RAD_HOME", temp_dir.path());
         let paths =
             coco::Paths::try_from(coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()))?;
@@ -209,21 +204,21 @@ async fn rig(
             let path = temp_dir.path().join("store");
             kv::Store::new(kv::Config::new(path).flush_every_ms(100))
         }?;
-        (Some(temp_dir), paths, store)
+        (paths, store)
     } else {
         let paths = coco::Paths::try_from(coco::config::Paths::default())?;
         let store = {
             let path = config::dirs().data_dir().join("store");
             kv::Store::new(kv::Config::new(path).flush_every_ms(100))
         }?;
-        (None, paths, store)
+        (paths, store)
     };
 
     if let Some(_key) = config.key {
         // We ignore `config.key` for now and use a hard-coded passphrase
         let pw = coco::keystore::SecUtf8::from("radicle-upstream");
         let key = if args.test {
-            coco::keystore::Keystorage::memory(pw)?.get()
+            *TEST_KEY
         } else {
             coco::keystore::Keystorage::file(&paths, pw).init()?
         };
@@ -270,7 +265,6 @@ async fn rig(
         });
 
         Ok(Rigging {
-            temp,
             ctx,
             peer: Some(peer),
             seeds_sender,
@@ -283,7 +277,6 @@ async fn rig(
             auth_token,
         });
         Ok(Rigging {
-            temp,
             ctx,
             peer: None,
             seeds_sender: None,

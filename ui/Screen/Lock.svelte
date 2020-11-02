@@ -5,11 +5,14 @@
 
   let passphrase = "";
 
-  const unlock = () => {
-    session.unseal(passphrase);
+  const unlock = async () => {
+    const unlocked = await session.unseal(passphrase);
+    if (!unlocked) {
+      passphrase = "";
+    }
   };
 
-  const onEnter = () => {
+  const onEnter = async () => {
     if (passphrase.length > 0) {
       unlock();
     }
