@@ -1,18 +1,25 @@
-steps:
-  - label: "Test and package app on Linux"
-    command: ".buildkite/run.sh"
-    agents:
-      production: "true"
-      platform: "linux"
-    timeout_in_minutes: 60
-    env:
-      DOCKER_IMAGE: "gcr.io/opensourcecoin/radicle-upstream:0.5.0"
-      SHARED_MASTER_CACHE: true
-    artifact_paths:
-      - "dist/*.AppImage"
-      - "dist/*.snap"
-      - "cypress/screenshots/**/*.png"
+.test-linux: &test-linux
+  label: "Test and package app on Linux"
+  command: ".buildkite/run.sh"
+  agents:
+    production: "true"
+    platform: "linux"
+  timeout_in_minutes: 60
+  env:
+    DOCKER_IMAGE: "gcr.io/opensourcecoin/radicle-upstream:0.5.0"
+    SHARED_MASTER_CACHE: true
+  artifact_paths:
+    - "dist/*.AppImage"
+    - "dist/*.snap"
+    - "cypress/screenshots/**/*.png"
 
+steps:
+  - branches: master
+    concurrency: 1
+    concurrency_group: master
+    <<: *test-linux
+  - branches: "!master"
+    <<: *test-linux
   - label: "Test and package app on macOS"
     if: build.branch == 'master'
     command: ".buildkite/run.sh"
