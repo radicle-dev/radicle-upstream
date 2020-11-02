@@ -755,6 +755,14 @@
         <StyledCopyable
           value="hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
           notificationText="The hash was copied to your clipboard"
+          truncate
+          expandable={false} />
+      </Swatch>
+
+      <Swatch>
+        <StyledCopyable
+          value="hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
+          notificationText="The hash was copied to your clipboard"
           truncate />
       </Swatch>
 

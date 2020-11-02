@@ -564,6 +564,11 @@ impl RunState {
                     val: Gossip { urn, .. },
                 })),
             ) => {
+                // This message is uninteresting to the waiting room
+                if !self.waiting_room.has(&urn) {
+                    return vec![];
+                }
+
                 match self.waiting_room.found(
                     RadUrl {
                         urn: urn.clone(),
