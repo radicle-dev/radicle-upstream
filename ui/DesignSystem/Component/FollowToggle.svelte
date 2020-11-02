@@ -41,6 +41,7 @@
 </script>
 
 <Button
+  dataCy="follow-toggle"
   {disabled}
   {style}
   {variant}
