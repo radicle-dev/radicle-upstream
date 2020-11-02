@@ -13,31 +13,17 @@
   export let disabled = false;
 
   let running = false;
-  // TODO(nuno): Better this message.
-  const successMessage: string =
-    "Transaction approved. Pending mining. Please, wait..";
 
   async function userDidClick(): Promise<void> {
     try {
       running = true;
       notification.info("Approve the transaction on your wallet app 📲");
       await onClick();
-      // Waiting a moment here smoothes the UI.
-      await continueAfter(0.4);
-      notification.success(successMessage);
     } catch (error) {
       notification.error(errorMessage(error), true);
     } finally {
       running = false;
     }
-  }
-
-  function continueAfter(seconds: number): Promise<void> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve();
-      }, seconds * 1000);
-    });
   }
 </script>
 
