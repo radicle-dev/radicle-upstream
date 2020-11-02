@@ -2,7 +2,6 @@
   import { getContext } from "svelte";
   import { format } from "timeago.js";
 
-  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import {
     currentPeerId,
     currentRevision,
@@ -129,7 +128,7 @@
             {:else}
               <EmptyState
                 text="This project doesn't have a README yet."
-                illustration={IllustrationVariant.Eyes}
+                emoji="👀"
                 style="height: 320px;" />
             {/if}
           </Remote>
@@ -139,7 +138,7 @@
             headerText={error.message}
             text="This file doesn't exist on this branch."
             primaryActionText="Back to source"
-            illustration={IllustrationVariant.Eyes}
+            emoji="👀"
             on:primaryAction={reset}
             style="height: 320px;" />
         </div>

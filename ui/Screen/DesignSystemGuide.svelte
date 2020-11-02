@@ -779,16 +779,12 @@
         <EmptyState
           illustration={IllustrationVariant.Plant}
           primaryActionText="Take some action!" />
+        <EmptyState emoji="👀" secondaryActionText="Take some other action!" />
         <EmptyState
-          illustration={IllustrationVariant.Eyes}
-          secondaryActionText="Take some other action!" />
-        <EmptyState
-          illustration={IllustrationVariant.Telescope}
+          emoji="🔭"
           primaryActionText="Take the first action!"
           secondaryActionText="Take the secondary action!" />
-        <EmptyState
-          text="Hey, I'm a tent."
-          illustration={IllustrationVariant.Tent} />
+        <EmptyState text="Hey, I'm a tent." emoji="🎪" />
       </Swatch>
       <Swatch>
         <ConnectionStatusIndicator />

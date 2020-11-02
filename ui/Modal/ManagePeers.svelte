@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { PeerId } from "../src/identity";
-  import { Variant as IllustrationVariant } from "../src/illustration";
   import {
     addPeer,
     pendingPeers,
@@ -14,8 +13,8 @@
   import type { User } from "../src/project";
   import type { Urn } from "../src/urn";
 
-  import { Button, Input } from "../DesignSystem/Primitive";
-  import { Illustration, List, Remote } from "../DesignSystem/Component";
+  import { Button, Emoji, Input } from "../DesignSystem/Primitive";
+  import { List, Remote } from "../DesignSystem/Component";
 
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
@@ -83,9 +82,7 @@
 
 <Remote {store} let:data={project}>
   <div data-cy="remotes-modal" class="container">
-    <Illustration
-      style="margin-bottom: 1.5rem;"
-      variant={IllustrationVariant.Computer} />
+    <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
 
     <h1>Manage remotes</h1>
 

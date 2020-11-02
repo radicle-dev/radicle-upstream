@@ -5,7 +5,6 @@
     resetObjectPath,
     resetObjectType,
   } from "../../../src/source.ts";
-  import { Variant as IllustrationVariant } from "../../../src/illustration.ts";
 
   import { Icon, Markdown } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
@@ -113,7 +112,7 @@
   <div class="container">
     {#if blob.binary}
       <EmptyState
-        illustration={IllustrationVariant.Eyes}
+        emoji="👀"
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
     {:else if isMarkdown(path)}
