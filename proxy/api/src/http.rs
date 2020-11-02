@@ -177,7 +177,7 @@ where
             }
         })
         .and_then(|raw: Option<String>| async move {
-            if let Some(raw) = raw {
+            raw.map_or(Ok(None), |raw| {
                 let query = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
                 match serde_qs::from_str(&query) {
                     Ok(value) => Ok(Some(value)),
@@ -188,9 +188,7 @@ where
                         },
                     )),
                 }
-            } else {
-                Ok(None)
-            }
+            })
         })
         .boxed()
 }
