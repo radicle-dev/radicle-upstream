@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use coco::git;
+use coco::git_ext;
 
 use crate::context;
 
@@ -116,7 +116,7 @@ pub struct CreateInput {
     /// Long form outline.
     description: String,
     /// Configured default branch.
-    default_branch: git::ext::OneLevel,
+    default_branch: git_ext::OneLevel,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
 }

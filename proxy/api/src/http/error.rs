@@ -2,7 +2,7 @@
 //! for API consumers to act on.
 
 use serde::Serialize;
-use std::{convert::Infallible, fmt};
+use std::convert::Infallible;
 use warp::{http::StatusCode, reject, reply, Rejection, Reply};
 
 use coco::{project::create, state};
@@ -10,15 +10,18 @@ use coco::{project::create, state};
 use crate::error;
 
 /// HTTP layer specific rejections.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum Routing {
     /// The currently active [`coco::user::User`] is missing.
+    #[error("Owner is missing")]
     MissingOwner,
     /// The keystore is sealed, context does not have a signer.
+    #[error("No session has been created yet")]
     NoSession,
     /// Query part of the URL cannot be deserialized.
     ///
     /// Used by [`crate::http::with_qs`] and [`crate::http::with_qs_opt`].
+    #[error("Invalid query string \"{query}\": {error}")]
     InvalidQuery {
         /// The original query string
         query: String,
@@ -30,6 +33,7 @@ pub enum Routing {
     /// A query string is required but missing
     ///
     /// Used by [`crate::http::with_qs`].
+    #[error("Required query string is missing")]
     QueryMissing,
 }
 
@@ -38,19 +42,6 @@ impl reject::Reject for Routing {}
 impl From<Routing> for Rejection {
     fn from(err: Routing) -> Self {
         reject::custom(err)
-    }
-}
-
-impl fmt::Display for Routing {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::MissingOwner => write!(f, "Owner is missing"),
-            Self::NoSession => write!(f, "No session has been created yet"),
-            Self::InvalidQuery { query, error } => {
-                write!(f, "Invalid query string \"{}\": {}", query, error)
-            },
-            Self::QueryMissing => write!(f, "Required query string is missing"),
-        }
     }
 }
 
