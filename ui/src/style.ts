@@ -6,7 +6,8 @@ export type ButtonVariant =
   | "secondary"
   | "transparent"
   | "outline"
-  | "destructive";
+  | "destructive"
+  | "embedded";
 
 export enum CSSPosition {
   Top = "top",

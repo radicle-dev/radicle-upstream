@@ -23,7 +23,7 @@ export interface Pool {
 
   // Update the list of receiver addresses. Returns once the
   // transaction has been included in the chain.
-  updateReceiverAddresses(data: PoolData, addresses: string[]): Promise<void>;
+  updateReceiverAddresses(changeset: Changeset): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
@@ -99,22 +99,18 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
-  async function updateReceiverAddresses(
-    data: PoolData,
-    addresses: string[]
-  ): Promise<void> {
-    // TODO(nuno): Read instance `data` instead of receiving as an argument.
-    const newAddresses = addresses.filter(
-      x => !data.receiverAddresses.includes(x)
-    );
-    const txs = newAddresses.map(address =>
-      poolContract.setReceiver(address, 1).then(tx => {
-        transaction.add(transaction.beneficiaries(tx));
-        tx.wait();
-      })
-    );
+  async function updateReceiverAddresses(changeset: Changeset): Promise<void> {
+    const txs = [...changeset.entries()]
+      .filter(([_, status]) => status !== AddressStatus.Present)
+      .map(([address, status]) =>
+        poolContract
+          .setReceiver(address, status === AddressStatus.Added ? 1 : 0)
+          .then(tx => {
+            transaction.add(transaction.beneficiaries(tx));
+            tx.wait();
+          })
+      );
 
-    // TODO check transaction status
     await Promise.all(txs).finally(loadPoolData);
   }
 
@@ -235,4 +231,25 @@ export class OnboardingStatus {
   isComplete(): boolean {
     return this.receivers && this.budget && this.topUp;
   }
+}
+
+/* Receivers */
+
+export type Address = string;
+
+export enum AddressStatus {
+  // The address is being added
+  Added = "Added",
+  // The address is being removed
+  Removed = "Removed",
+  // The address is present already
+  Present = "Present",
+}
+
+// Describes a changeset regarding the list of addresses of a pool, i.e.,
+// which addresses are being added, removed, or that already exist already.
+export type Changeset = Map<string, AddressStatus>;
+
+export function displayAddress(x: Address): string {
+  return `${x.slice(0, 6)}...${x.slice(-6)}`;
 }

@@ -70,12 +70,9 @@
     modal.toggle(path.updateMonthlyContribution());
   }
 
-  function onSaveReceivers(members: string[]): Promise<void> {
-    console.log("onSaveReceivers: ", members);
-    if (!data) {
-      throw new Error("Something went wrong");
-    }
-    return pool.updateReceiverAddresses(data, members);
+  function onSaveReceivers(changeset: _pool.Changeset): Promise<void> {
+    console.log("onSaveReceivers: ", changeset);
+    return pool.updateReceiverAddresses(changeset);
   }
 </script>
 

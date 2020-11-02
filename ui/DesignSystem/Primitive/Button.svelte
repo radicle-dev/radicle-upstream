@@ -33,7 +33,6 @@
 
   .button :global(svg) {
     fill: var(--color-foreground-level-6);
-    margin-right: 8px;
   }
 
   .primary :global(svg),
@@ -320,6 +319,39 @@
     border-color: var(--color-negative-level-1);
     color: var(--color-background);
   }
+
+  .embedded {
+    background: none;
+    border: none;
+  }
+
+  .embedded :global(svg) {
+    fill: var(--color-foreground-level-5);
+    margin: 0px;
+  }
+
+  .embedded:hover :global(svg) {
+    fill: var(--color-foreground-level-3);
+  }
+
+  .embedded:active :global(svg) {
+    fill: var(--color-foreground-level-4);
+  }
+
+  .embedded.disabled {
+    fill: var(--color-foreground-level-3);
+    cursor: not-allowed;
+  }
+
+  .embedded.disabled:hover,
+  .embedded.disabled:active {
+    box-shadow: 0 0 0 0;
+    fill: var(--color-foreground-level-3);
+  }
+
+  .embedded.disabled :global(svg) {
+    fill: var(--color-foreground-level-3);
+  }
 </style>
 
 <button
@@ -330,5 +362,5 @@
   on:click
   {style}>
   <svelte:component this={icon} />
-  <slot />
+  <slot style="margin-left: 8px;" />
 </button>

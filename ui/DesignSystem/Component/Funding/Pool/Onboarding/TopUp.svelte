@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { Box, Button, Icon } from "../../../../Primitive";
-  import IconWrapper from "../../../../Primitive/Icon/IconWrapper.svelte";
 
   import * as modal from "../../../../../src/modal";
   import * as path from "../../../../../src/path";
