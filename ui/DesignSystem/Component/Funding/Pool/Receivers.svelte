@@ -14,12 +14,15 @@
 
   let changeset: Changeset = new Map();
 
-  $: changeset = updatedChangeset();
+  $: updating, refreshChangeset();
 
-  function updatedChangeset(): Changeset {
-    // TODO(nuno): verify this works as desired
-    receivers.forEach(r => changeset.set(r, AddressStatus.Present));
-    return changeset;
+  function refreshChangeset(): Changeset {
+    // Refresh the changeset only when something changed
+    // **after** updating, not during. By doing so we keep
+    // displaying the changes that are being awaiting inclusion.
+    if (!updating) {
+      changeset = new Map(receivers.map(r => [r, AddressStatus.Present]));
+    }
   }
 
   function toggleReceiver(x: Address) {
