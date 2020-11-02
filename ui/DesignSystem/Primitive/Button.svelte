@@ -362,5 +362,7 @@
   on:click
   {style}>
   <svelte:component this={icon} />
-  <slot style="margin-left: 8px;" />
+  <div style={icon ? 'margin-left: 8px;' : ''}>
+    <slot />
+  </div>
 </button>
