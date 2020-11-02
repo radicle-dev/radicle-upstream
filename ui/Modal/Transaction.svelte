@@ -110,14 +110,14 @@
 
 <div class="wrapper">
   <header>
-    <h2>{tx.inner.kind}</h2>
+    <h2>{tx.kind}</h2>
     <div class="from-to">
       <p class="typo-text-bold subheading">
-        {tx.inner.kind === TxKind.CollectFunds ? 'Incoming support' : 'Your connected wallet'}
+        {tx.kind === TxKind.CollectFunds ? 'Incoming support' : 'Your connected wallet'}
       </p>
       <p class="typo-text-bold subheading arrow">-&gt;</p>
       <p class="typo-text-bold subheading">
-        {tx.inner.kind === TxKind.CollectFunds ? 'Your connected wallet' : 'Outgoing support'}
+        {tx.kind === TxKind.CollectFunds ? 'Your connected wallet' : 'Outgoing support'}
       </p>
     </div>
     <p class="typo-text date">{new Date(tx.date).toUTCString()}</p>
@@ -125,10 +125,10 @@
 
   <div class="content">
     <div class="section">
-      {#if !!tx.inner.amount}
+      {#if !!tx.meta.amount}
         <div class="row">
           <p>Amount</p>
-          <p class="typo-semi-bold cost">{tx.inner.amount} DAI</p>
+          <p class="typo-semi-bold cost">{tx.meta.amount} DAI</p>
         </div>
       {/if}
       <div class="row">

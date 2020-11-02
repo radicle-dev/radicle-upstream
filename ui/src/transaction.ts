@@ -21,15 +21,18 @@ export interface Tx {
   // The status of the transaction
   status: TxStatus;
 
-  // The underlying transaction
-  inner: PoolTx;
-
   // The date in which this transaction was created.
   // In milliseconds since epoch.
   date: number;
 
   // The gas info for this transaction
   gas: Gas;
+
+  // The kind of transaction. The `meta` variant must depend upon it.
+  kind: TxKind;
+
+  // The underlying transaction data
+  meta: PoolTx;
 }
 
 export enum TxStatus {
@@ -54,24 +57,20 @@ type PoolTx =
   | UpdateBeneficiaries;
 
 interface TopUp {
-  kind: TxKind.TopUp;
   amount: BigNumberish;
 }
 
 interface CollectFunds {
-  kind: TxKind.CollectFunds;
   amount: BigNumberish;
 }
 
 interface UpdateMonthlyContribution {
-  kind: TxKind.UpdateMonthlyContribution;
   // The value the monthly contribution is being set to.
   amount: BigNumberish;
 }
 
-interface UpdateBeneficiaries {
-  kind: TxKind.UpdateBeneficiaries;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface UpdateBeneficiaries {}
 
 export enum TxKind {
   TopUp = "Top Up",
@@ -81,74 +80,52 @@ export enum TxKind {
 }
 
 /* Smart constructors for `Tx` values */
-export function amountPerBlock(txc: ContractTransaction): Tx {
-  return {
-    hash: txc.hash,
-    status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-    inner: {
-      kind: TxKind.UpdateMonthlyContribution,
-      amount: txc.value.toString(),
-    },
-    date: Date.now(),
-    gas: {
-      used: undefined,
-      limit: txc.gasLimit.toString(),
-      price: txc.gasPrice.toString(),
-    },
-  };
-}
 
-export function beneficiaries(txc: ContractTransaction): Tx {
-  return {
-    hash: txc.hash,
-    status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-    inner: {
-      kind: TxKind.UpdateBeneficiaries,
-    },
-    date: Date.now(),
-    gas: {
-      used: undefined,
-      limit: txc.gasLimit.toString(),
-      price: txc.gasPrice.toString(),
-    },
-  };
+export function amountPerBlock(txc: ContractTransaction): Tx {
+  return buildTx(TxKind.UpdateMonthlyContribution, txc);
 }
 
 export function collect(txc: ContractTransaction): Tx {
-  return {
-    hash: txc.hash,
-    status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-    inner: {
-      kind: TxKind.CollectFunds,
-      amount: txc.value.toString(),
-    },
-    date: Date.now(),
-    gas: {
-      used: undefined,
-      limit: txc.gasLimit.toString(),
-      price: txc.gasPrice.toString(),
-    },
-  };
+  return buildTx(TxKind.CollectFunds, txc);
 }
 
 export function topUp(txc: ContractTransaction): Tx {
+  return buildTx(TxKind.TopUp, txc);
+}
+
+export function beneficiaries(txc: ContractTransaction): Tx {
+  return buildTx(TxKind.UpdateBeneficiaries, txc);
+}
+
+function buildTx(kind: TxKind, txc: ContractTransaction): Tx {
   return {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-    inner: {
-      kind: TxKind.TopUp,
-      amount: txc.value.toString(),
-    },
+    meta: txMetadata(kind, txc),
     date: Date.now(),
     gas: {
       used: undefined,
       limit: txc.gasLimit.toString(),
       price: txc.gasPrice.toString(),
     },
+    kind,
   };
 }
 
-export function add(tx: Tx, date = Date.now()) {
+function txMetadata(kind: TxKind, txc: ContractTransaction): PoolTx {
+  switch (kind) {
+    case TxKind.CollectFunds:
+    case TxKind.TopUp:
+    case TxKind.UpdateMonthlyContribution:
+      return {
+        amount: txc.value.toString(),
+      };
+    case TxKind.UpdateBeneficiaries:
+      return {};
+  }
+}
+
+export function add(tx: Tx): void {
   store.update(txs => {
     txs.unshift(tx);
     return txs;
@@ -205,7 +182,7 @@ async function status(receipt: any): Promise<TxStatus | undefined> {
 export function ongoing(txKind: TxKind): boolean {
   const txs: Tx[] = svelteStore.get(store);
   return txs.some(
-    tx => tx.status === TxStatus.AwaitingInclusion && tx.inner.kind === txKind
+    tx => tx.status === TxStatus.AwaitingInclusion && tx.kind === txKind
   );
 }
 

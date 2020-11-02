@@ -16,7 +16,7 @@
   <p
     class="typo-text-small-bold"
     style="color: var(--color-foreground-level-6); width: max-content">
-    {tx.inner.kind}
+    {tx.kind}
   </p>
   <p
     class="typo-text-small"
