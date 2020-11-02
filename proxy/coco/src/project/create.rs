@@ -4,10 +4,10 @@ use serde::{Deserialize, Serialize};
 
 use librad::{
     git::{
-        ext::{OneLevel, RefLike},
         local::url::LocalUrl,
         types::{remote::Remote, FlatRef},
     },
+    git_ext::{OneLevel, RefLike},
     keys,
     meta::{entity, project},
 };
@@ -372,11 +372,9 @@ impl Create<Repo> {
 
 #[cfg(test)]
 mod test {
-    use std::convert::TryFrom as _;
-
     use assert_matches::assert_matches;
 
-    use librad::git::ext::{OneLevel, RefLike};
+    use librad::{git_ext::OneLevel, reflike};
 
     use super::*;
 
@@ -390,9 +388,7 @@ mod test {
 
         let create = Create {
             description: "Radicle".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("radicle").expect("failed to parse ref"),
-            ),
+            default_branch: OneLevel::from(reflike!("radicle")),
             repo: Repo::New {
                 name: "exists".to_string(),
                 path: tmpdir.path().to_path_buf(),
@@ -411,9 +407,7 @@ mod test {
 
         let create = Create {
             description: "Radicle".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("radicle").expect("failed to parse ref"),
-            ),
+            default_branch: OneLevel::from(reflike!("radicle")),
             repo: Repo::New {
                 name: "exists".to_string(),
                 path: tmpdir.path().to_path_buf(),

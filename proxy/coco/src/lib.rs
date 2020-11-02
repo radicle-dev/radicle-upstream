@@ -36,6 +36,8 @@ pub use librad::{
     uri::{self, RadUrn as Urn},
 };
 
+pub use radicle_git_ext as git_ext;
+
 pub use radicle_git_helpers::remote_helper;
 
 pub use radicle_surf::{
