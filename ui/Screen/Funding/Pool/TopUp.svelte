@@ -9,6 +9,7 @@
   import * as modal from "../../../src/modal";
   import {
     amountStore,
+    displayAddress,
     topUpAmountValidationStore,
     store,
   } from "../../../src/funding/pool";
@@ -111,15 +112,6 @@
     padding: 0.5rem;
   }
 
-  .address {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-
-    display: inline-flex;
-    max-width: 80px;
-  }
-
   .submit {
     display: flex;
     justify-content: flex-end;
@@ -163,7 +155,7 @@
         <p>Your external wallet</p>
         <p>
           <span>{get(store).getAccount().balance} DAI <span
-              class="address">{get(store).getAccount().address}</span></span>
+              class="address">{displayAddress(get(store).getAccount().address)}</span></span>
         </p>
       </div>
     </div>
