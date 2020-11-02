@@ -3,6 +3,7 @@
   import { Copyable } from "../../Component";
 
   import * as wallet from "../../../src/wallet";
+  import { displayAddress } from "../../../src/funding/pool";
 
   export let account: wallet.Account;
   export let onDisconnect: () => void;
@@ -49,7 +50,7 @@
       styleContent={false}
       copyContent={account.address}
       notificationText="Address copied to the clipboard">
-      {account.address.slice(0, 6)}...{account.address.slice(-4)}
+      {displayAddress(account.address)}
     </Copyable>
   </p>
   <Button

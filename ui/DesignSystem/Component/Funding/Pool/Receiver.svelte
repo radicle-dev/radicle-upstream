@@ -1,6 +1,7 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
 
+  import { Copyable } from "../../../Component";
   import { Button, Icon } from "../../../Primitive";
   import { displayAddress, AddressStatus } from "../../../../src/funding/pool";
   import type { Address } from "../../../../src/funding/pool";
@@ -71,5 +72,13 @@
     {disabled}
     variant="embedded"
     icon={iconForStatus(status)} />
-  <p class="content typo-text-bold">{displayAddress(address)}</p>
+  <p class="content typo-text-bold">
+    <Copyable
+      showIcon={false}
+      styleContent={false}
+      copyContent={address}
+      notificationText="Address copied to the clipboard">
+      {displayAddress(address)}
+    </Copyable>
+  </p>
 </span>
