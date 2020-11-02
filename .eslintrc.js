@@ -14,7 +14,7 @@ module.exports = {
     sourceType: "module",
   },
   extends: ["eslint:recommended"],
-  plugins: ["svelte3", "@typescript-eslint", "jest", "mocha"],
+  plugins: ["svelte3", "@typescript-eslint", "no-only-tests"],
   overrides: [
     {
       files: ["*.svelte"],
@@ -30,18 +30,6 @@ module.exports = {
         // props with default values.
         // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-inferrable-types.md
         "@typescript-eslint/no-inferrable-types": "off",
-      },
-    },
-    {
-      files: ["cypress/**/*.spec.js"],
-      rules: {
-        "mocha/no-exclusive-tests": "warn",
-      },
-    },
-    {
-      files: ["*.test.ts"],
-      rules: {
-        "jest/no-focused-tests": "warn",
       },
     },
   ],
@@ -68,6 +56,8 @@ module.exports = {
     // require at least one whitespace after comments( // and /*)
     // https://eslint.org/docs/rules/spaced-comment
     "spaced-comment": ["warn", "always"],
+    // Disallow focused tests
+    "no-only-tests/no-only-tests": "error",
   },
   settings: {
     "svelte3/preprocess": eslintSveltePreprocess(svelteConfig.preprocess),
