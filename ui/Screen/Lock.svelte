@@ -6,7 +6,7 @@
   let passphrase = "";
 
   const unlock = async () => {
-    const unlocked = await session.unseal(passphrase);
+    await session.unseal(passphrase);
   };
 
   const onEnter = () => {
