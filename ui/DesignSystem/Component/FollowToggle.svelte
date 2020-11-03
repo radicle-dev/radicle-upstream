@@ -8,6 +8,13 @@
   export let disabled: boolean = false;
   export let following: boolean = false;
 
+  // Set this to true if you don't want the button to toggle.
+  //
+  // Useful for when the button triggers an action that removes the component
+  // containing this button -- it prevents a visual flicker of the button just
+  // before it disappears.
+  export let actAsButton: boolean = false;
+
   const dispatch = createEventDispatcher();
 
   let hovering: boolean = false;
@@ -17,8 +24,11 @@
   const click = () => {
     if (disabled) return;
 
-    following = !following;
-    dispatch(following ? "follow" : "unfollow");
+    dispatch(!following ? "follow" : "unfollow");
+
+    if (!actAsButton) {
+      following = !following;
+    }
   };
 
   const mouseenter = () => {

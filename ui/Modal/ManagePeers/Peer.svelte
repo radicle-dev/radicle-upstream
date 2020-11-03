@@ -68,6 +68,7 @@
     {:else}
       <FollowToggle
         following
+        actAsButton
         on:unfollow={() => {
           dispatch('unfollow', { projectUrn, peerId: peer.peerId });
         }} />

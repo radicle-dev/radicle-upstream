@@ -767,6 +767,29 @@
       </Swatch>
 
       <Swatch>
+        <FollowToggle
+          actAsButton
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
+        <FollowToggle
+          following
+          actAsButton
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
         <SupportButton />
       </Swatch>
 

@@ -40,6 +40,7 @@
 
   <FollowToggle
     following
+    actAsButton
     on:unfollow={() => {
       dispatch('cancel', { projectUrn, peerId: peer.peerId });
     }} />

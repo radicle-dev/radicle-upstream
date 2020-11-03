@@ -150,7 +150,10 @@
       <div slot="error" style="padding: 1.5rem;">
         <div class="header typo-header-3">
           <span class="id">{id}</span>
-          <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
+          <FollowToggle
+            actAsButton
+            on:follow={follow}
+            style="margin-left: 1rem;" />
         </div>
 
         <p style="color: var(--color-foreground-level-6);">
