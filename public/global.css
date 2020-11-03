@@ -19,7 +19,7 @@ body {
 
 a {
   color: var(--color-foreground);
-  cursor: pointer;
+  cursor: pointer !important;
   text-decoration: none;
 }
 
@@ -38,4 +38,19 @@ a {
 
 .lock-screen {
   cursor: wait;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+span {
+  cursor: default;
+}
+
+a > p,
+a > span {
+  cursor: pointer;
 }

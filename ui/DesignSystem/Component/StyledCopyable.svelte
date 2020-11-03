@@ -29,9 +29,11 @@
       styleContent={hover}
       showIcon={true}>
       {#if !truncate || (expandable && hover)}
-        <p class="typo-text-small-mono">{value}</p>
+        <p class="typo-text-small-mono" style="cursor: pointer;">{value}</p>
       {:else}
-        <p class="typo-text-small-mono">{head}…{tail}</p>
+        <p class="typo-text-small-mono" style="cursor: pointer;">
+          {head}…{tail}
+        </p>
       {/if}
     </Copyable>
   </div>
