@@ -117,7 +117,7 @@
 
 <div class="commit-page" data-cy="commit-page">
   <Remote {store} let:data={commit}>
-    <Header.Back style="padding: 1rem;" on:arrowClick={() => pop()}>
+    <Header.Back style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
       <h3 style="margin-bottom: .75rem">{commit.header.summary}</h3>
       <div class="metadata">
         <span class="field">
