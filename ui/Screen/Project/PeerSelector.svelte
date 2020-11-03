@@ -93,7 +93,7 @@
 
   .peer-dropdown {
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;
     max-width: 30rem;
@@ -108,6 +108,14 @@
     user-select: none;
     align-items: center;
     justify-content: space-between;
+    background-color: var(--color-background);
+  }
+
+  .peer:first-child {
+    border-radius: 0.1875rem 0.1875rem 0 0;
+  }
+  .peer:last-child {
+    border-radius: 0 0 0.1875rem 0.1875rem;
   }
 
   .peer.selected {
