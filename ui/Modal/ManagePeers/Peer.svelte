@@ -9,7 +9,12 @@
   import { PeerType, Role } from "../../src/project";
 
   import { Avatar } from "../../DesignSystem/Primitive";
-  import { Badge, FollowToggle, Tooltip } from "../../DesignSystem/Component";
+  import {
+    Badge,
+    FollowToggle,
+    StyledCopyable,
+    Tooltip,
+  } from "../../DesignSystem/Component";
 
   export let peer: User;
   export let projectUrn: Urn;
@@ -47,28 +52,25 @@
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </div>
-    <p
-      class="typo-text typo-overflow-ellipsis"
-      style="color: var(--color-foreground-level-5); padding-top: 0.5rem;">
-      {peer.identity.peerId}
-    </p>
+    <StyledCopyable
+      style="margin: 0.5rem 0 0 -0.25rem;"
+      truncate
+      expandable={false}
+      value={peer.peerId} />
   </div>
-  {#if peer.type === PeerType.Local}
-    <Tooltip position={CSSPosition.Top} value="Can't unfollow your own remote">
-      <FollowToggle disabled following expanded />
-    </Tooltip>
-  {:else if peer.role === Role.Maintainer}
-    <Tooltip
-      position={CSSPosition.Top}
-      value="Can't unfollow the maintainer's remote">
-      <FollowToggle disabled following expanded />
-    </Tooltip>
-  {:else}
-    <FollowToggle
-      following
-      expanded
-      on:untrack={() => {
-        dispatch('unfollow', { projectUrn, peerId: peer.peerId });
-      }} />
+  {#if peer.type !== PeerType.Local}
+    {#if peer.role === Role.Maintainer}
+      <Tooltip
+        position={CSSPosition.Top}
+        value="Can't unfollow the maintainer's remote">
+        <FollowToggle disabled following />
+      </Tooltip>
+    {:else}
+      <FollowToggle
+        following
+        on:unfollow={() => {
+          dispatch('unfollow', { projectUrn, peerId: peer.peerId });
+        }} />
+    {/if}
   {/if}
 </div>

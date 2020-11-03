@@ -723,11 +723,47 @@
       </Swatch>
 
       <Swatch>
-        <FollowToggle />
+        <FollowToggle
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
       </Swatch>
 
       <Swatch>
-        <FollowToggle warning expanded />
+        <FollowToggle
+          following
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
+        <FollowToggle
+          disabled
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
+        <FollowToggle
+          disabled
+          following
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
       </Swatch>
 
       <Swatch>
@@ -749,6 +785,14 @@
         <StyledCopyable
           value="hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"
           notificationText="The seed was copied to your clipboard" />
+      </Swatch>
+
+      <Swatch>
+        <StyledCopyable
+          value="hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
+          notificationText="The hash was copied to your clipboard"
+          truncate
+          expandable={false} />
       </Swatch>
 
       <Swatch>

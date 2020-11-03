@@ -11,7 +11,7 @@ rm -rf "$YARN_TEMPDIR"
 mkdir -p "$YARN_TEMPDIR"
 
 echo "--- Installing yarn dependencies"
-time TMPDIR="$YARN_TEMPDIR" yarn install
+time TMPDIR="$YARN_TEMPDIR" yarn install --frozen-lockfile
 
 echo "--- Loading proxy/target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"

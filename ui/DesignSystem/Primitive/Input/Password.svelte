@@ -1,23 +1,24 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
-
-  import { ValidationStatus } from "../../../src/validation.ts";
 
   import Icon from "../Icon";
   import KeyHint from "../../Component/KeyHint.svelte";
 
-  export let style = null;
-  export let inputStyle = null;
-  export let placeholder = null;
-  export let value = null;
-  export let dataCy = null;
-  export let inputElement = null;
-  export let hint = null;
+  import type { ValidationState } from "../../../src/validation";
+  import { ValidationStatus } from "../../../src/validation";
 
-  export let disabled = null;
-  export let validation = null;
-  export let spellcheck = false;
-  export let autofocus = false;
+  export let style = "";
+  export let inputStyle = "";
+  export let placeholder = "";
+  export let value = "";
+  export let dataCy = "";
+  export let disabled: boolean = false;
+  export let inputElement: HTMLInputElement | undefined = undefined;
+
+  export let validation: ValidationState | undefined = undefined;
+  export let hint = "";
+  export let spellcheck: boolean = false;
+  export let autofocus: boolean = false;
 
   const dispatch = createEventDispatcher();
 
@@ -26,13 +27,13 @@
   // preventScroll is necessary for onboarding animations to work.
   $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
 
-  const onKeydown = event => {
+  const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
       dispatch("enter");
     }
   };
 
-  $: showHint = hint !== null && (value === "" || value === null);
+  $: showHint = hint.length > 0 && value.length === 0;
 </script>
 
 <style>

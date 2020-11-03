@@ -6,7 +6,7 @@
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
-  import { fetch, session as store } from "./src/session.ts";
+  import { fetch, session as store, Status } from "./src/session.ts";
 
   import {
     NotificationFaucet,
@@ -20,6 +20,7 @@
   import Blank from "./Screen/Blank.svelte";
   import Bsod from "./Screen/Bsod.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
+  import Lock from "./Screen/Lock.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import ModalManagePeers from "./Modal/ManagePeers.svelte";
   import ModalNewProject from "./Modal/NewProject.svelte";
@@ -34,6 +35,7 @@
   const routes = {
     "/": Blank,
     "/onboarding": Onboarding,
+    "/lock": Lock,
     "/settings": Settings,
     "/profile/*": Profile,
     "/projects/:id/*": Project,
@@ -56,14 +58,21 @@
       break;
 
     case remote.Status.Success:
-      if ($store.data.identity === null) {
+      if ($store.data.status === Status.NoSession) {
         hotkeys.disable();
         push(path.onboarding());
-      } else {
+      } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
-        if ($location === path.blank() || $location === path.onboarding()) {
+        if (
+          $location === path.blank() ||
+          $location === path.onboarding() ||
+          $location === path.lock()
+        ) {
           push(path.profileProjects());
         }
+      } else {
+        hotkeys.disable();
+        push(path.lock());
       }
       break;
 
@@ -95,5 +104,14 @@
 
   <div slot="error" class="error">
     <Bsod />
+  </div>
+
+  <!-- TODO(julien): Dress up loading screen -->
+  <div slot="loading" class="error">
+    {#if $location === path.lock()}
+      <p>Unlocking the app...</p>
+    {:else}
+      <p>Loading...</p>
+    {/if}
   </div>
 </Remote>

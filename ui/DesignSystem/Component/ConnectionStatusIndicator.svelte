@@ -7,6 +7,14 @@
 
   import Syncing from "./ConnectionStatusIndicator/Syncing.svelte";
   import Offline from "./ConnectionStatusIndicator/Offline.svelte";
+
+  const peerCount = count => {
+    if (count === 1) {
+      return "1 peer";
+    } else {
+      return `${count} peers`;
+    }
+  };
 </script>
 
 <style>
@@ -22,7 +30,7 @@
 <Remote {store} let:data={status}>
   <div>
     {#if status.type === StatusType.Online}
-      <Tooltip value={`You’re connected to ${status.connected} peers`}>
+      <Tooltip value={`You’re connected to ${peerCount(status.connected)}`}>
         <!-- svelte-ignore a11y-missing-attribute -->
         <a>
           <Icon.Network />
@@ -30,7 +38,7 @@
       </Tooltip>
     {:else if status.type === StatusType.Syncing}
       <Tooltip
-        value={`Syncing with ${status.syncs} peers to get new content from your network`}>
+        value={`Syncing with ${peerCount(status.syncs)} to get new content from your network`}>
         <!-- svelte-ignore a11y-missing-attribute -->
         <a>
           <Syncing />

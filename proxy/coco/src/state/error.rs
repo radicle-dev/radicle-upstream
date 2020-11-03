@@ -50,7 +50,7 @@ pub enum Error {
 
     /// Failed to parse a reference.
     #[error(transparent)]
-    ReferenceName(#[from] librad::git::ext::reference::name::Error),
+    ReferenceName(#[from] librad::git_ext::reference::name::Error),
 
     /// Repo error.
     #[error(transparent)]
@@ -110,5 +110,5 @@ pub mod storage {
 /// Re-export the underlying [`blob::Error`] so that consumers don't need to add `librad` as a
 /// dependency to match on the variant. Instead, they can import `coco::state::error::blob`.
 pub mod blob {
-    pub use librad::git::ext::blob::Error;
+    pub use librad::git_ext::blob::Error;
 }

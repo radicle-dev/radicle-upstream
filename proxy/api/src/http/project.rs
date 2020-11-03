@@ -134,8 +134,6 @@ fn user_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::path::PathBuf;
-
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error::Error, http, project};
@@ -159,7 +157,7 @@ mod handler {
     pub async fn create(
         ctx: context::Unsealed,
         owner: coco::user::User,
-        input: coco::project::Create<PathBuf>,
+        input: coco::project::Create<coco::project::Repo>,
     ) -> Result<impl Reply, Rejection> {
         let meta = ctx
             .state
@@ -310,7 +308,7 @@ mod test {
         let urn = {
             let handle = "cloudhead";
             let owner = ctx.state.init_owner(handle).await?;
-            session::set_identity(&ctx.store, (ctx.state.peer_id(), owner.clone()).into())?;
+            session::initialize(&ctx.store, (ctx.state.peer_id(), owner.clone()).into())?;
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
@@ -392,12 +390,12 @@ mod test {
             let handle = "cloudhead";
             let id = identity::create(&ctx.state, handle).await?;
 
-            session::set_identity(&ctx.store, id)?;
+            session::initialize(&ctx.store, id)?;
         };
 
         let project = coco::project::Create {
             repo: coco::project::Repo::New {
-                path: dir.path(),
+                path: dir.path().to_path_buf(),
                 name: "Upstream".to_string(),
             },
             description: "Desktop client for radicle.".into(),
@@ -452,7 +450,7 @@ mod test {
         {
             let handle = "cloudhead";
             let id = identity::create(&ctx.state, handle).await?;
-            session::set_identity(&ctx.store, id)?;
+            session::initialize(&ctx.store, id)?;
         };
 
         let project = coco::project::Create {

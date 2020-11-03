@@ -1,4 +1,4 @@
-use std::{convert::TryFrom, path::PathBuf, time::Duration};
+use std::{path::PathBuf, time::Duration};
 
 use futures::{future, StreamExt as _};
 use tokio::{
@@ -8,11 +8,11 @@ use tokio::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
-    git::ext::{OneLevel, RefLike},
+    git_ext::OneLevel,
     keys::SecretKey,
     net::protocol::ProtocolEvent,
     peer::PeerId,
-    signer,
+    reflike, signer,
     uri::{RadUrl, RadUrn},
 };
 
@@ -133,25 +133,25 @@ pub fn init_logging() {
 }
 
 #[allow(dead_code)]
-pub fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+pub fn radicle_project(path: PathBuf) -> project::Create<project::Repo> {
     project::Create {
         repo: project::Repo::New {
             path,
             name: "radicalise".to_string(),
         },
         description: "the people".to_string(),
-        default_branch: OneLevel::from(RefLike::try_from("power").unwrap()),
+        default_branch: OneLevel::from(reflike!("power")),
     }
 }
 
 #[allow(dead_code)]
-pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
+pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<project::Repo> {
     project::Create {
         repo: project::Repo::New {
             path,
             name: "just".to_string(),
         },
         description: "do".to_string(),
-        default_branch: OneLevel::from(RefLike::try_from("it").unwrap()),
+        default_branch: OneLevel::from(reflike!("it")),
     }
 }

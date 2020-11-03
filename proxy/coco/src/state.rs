@@ -1,22 +1,16 @@
 //! Utility to work with the peer api of librad.
 
-use std::{
-    convert::TryFrom as _,
-    net::SocketAddr,
-    path::{self, PathBuf},
-    sync::Arc,
-    time::Duration,
-};
+use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf, sync::Arc, time::Duration};
 
 use librad::{
     git::{
-        ext::{OneLevel, RefLike},
         include::Include,
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
         types::{namespace, NamespacedRef, Single},
     },
+    git_ext::{OneLevel, RefLike},
     keys,
     meta::{entity, project as librad_project, user},
     net::peer::PeerApi,
@@ -496,11 +490,12 @@ impl State {
     /// Will error if:
     ///     * The signing of the project metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub async fn init_project<P: AsRef<path::Path> + Send + Sync + 'static>(
+    pub async fn init_project(
         &self,
         owner: &User,
-        project: project::Create<P>,
+        project: project::Create<project::Repo>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
+        let project = project.validate().map_err(project::create::Error::from)?;
         let mut meta = project.build(owner, self.signer.public_key().into())?;
         meta.sign_by_user(&self.signer, owner)?;
 
@@ -514,8 +509,7 @@ impl State {
                     let repo = storage.create_repo(&meta)?;
                     log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                    let repo = project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
-                    log::debug!("Setup repository at path '{}'", repo.path().display());
+                    project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
 
                     Ok::<_, Error>(meta)
                 })
@@ -767,40 +761,35 @@ mod test {
     use std::{convert::TryFrom as _, env, path::PathBuf, process::Command};
 
     use librad::{
-        git::{
-            ext::{OneLevel, RefLike},
-            storage,
-        },
+        git::storage,
+        git_ext::{OneLevel, RefLike},
         keys::SecretKey,
+        reflike,
     };
 
     use crate::{config, control, project, signer};
 
     use super::{Error, State};
 
-    fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
+    fn fakie_project(path: PathBuf) -> project::Create<project::Repo> {
         project::Create {
             repo: project::Repo::New {
                 path,
                 name: "fakie-nose-kickflip-backside-180-to-handplant".to_string(),
             },
             description: "rad git tricks".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("dope").expect("failed to parse 'power'"),
-            ),
+            default_branch: OneLevel::from(reflike!("dope")),
         }
     }
 
-    fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+    fn radicle_project(path: PathBuf) -> project::Create<project::Repo> {
         project::Create {
             repo: project::Repo::New {
                 path,
                 name: "radicalise".to_string(),
             },
             description: "the people".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("power").expect("failed to parse 'power'"),
-            ),
+            default_branch: OneLevel::from(reflike!("power")),
         }
     }
 

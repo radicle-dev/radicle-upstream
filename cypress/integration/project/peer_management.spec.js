@@ -15,10 +15,6 @@ context("project peer management", () => {
       .contains("li", "secretariat / platinum")
       .within(() => {
         cy.contains("maintainer").should("exist");
-        cy.pick("follow-toggle").contains("Following").should("exist");
-        cy.pick("follow-toggle").trigger("mouseenter");
-        cy.pick("follow-toggle").should("have.class", "disabled");
-        cy.pick("tooltip").contains("Can't unfollow your own remote");
       });
   });
 
@@ -35,7 +31,7 @@ context("project peer management", () => {
     cy.pick("follow-button").click();
 
     cy.pick("pending-peers")
-      .contains("li", "hynsej…iuzk4c / platinum")
+      .contains("li", "hynsejpd…keiuzk4c")
       .within(() => {
         cy.pick("follow-toggle").contains("Following").should("exist");
         cy.pick("follow-toggle").trigger("mouseenter");
@@ -62,11 +58,11 @@ context("project peer management", () => {
 
     // Allows deleting a peer follow request.
     cy.pick("pending-peers")
-      .contains("li", "hynsej…iuzk4c / platinum")
+      .contains("li", "hynsejpd…keiuzk4c")
       .within(() => {
         cy.pick("follow-toggle").click();
       });
 
-    cy.contains("li", "hynsej…iuzk4c / platinum").should("not.exist");
+    cy.contains("li", "hynsejpd…keiuzk4c").should("not.exist");
   });
 });
