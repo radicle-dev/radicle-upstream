@@ -21,6 +21,7 @@
     clippy::multiple_crate_versions,
     clippy::or_fun_call,
     clippy::shadow_reuse,
+    clippy::clippy::option_if_let_else,
     clippy::similar_names
 )]
 

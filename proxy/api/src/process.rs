@@ -183,11 +183,6 @@ async fn run_rigging(
     }
 }
 
-lazy_static::lazy_static! {
-    /// Fixed key to use in test mode
-    static ref TEST_KEY: coco::keys::SecretKey = coco::keys::SecretKey::new();
-}
-
 /// Create [`Rigging`] to run the peer and API.
 async fn rig(
     service_handle: service::Handle,
