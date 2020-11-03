@@ -206,7 +206,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::DefaultBranch(project));
                     continue;
-                }
+                },
                 Ok(branch) => branch,
             };
 
@@ -218,7 +218,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::Stats(project));
                     continue;
-                }
+                },
                 Ok(stats) => stats,
             };
 
@@ -229,7 +229,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::SignedRefs(project));
                     continue;
-                }
+                },
                 Ok(refs) => refs,
             };
 

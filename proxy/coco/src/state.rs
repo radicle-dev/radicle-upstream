@@ -425,7 +425,7 @@ impl State {
             None => {
                 let project = self.get_project(urn.clone(), None).await?;
                 project.default_branch().to_owned()
-            }
+            },
             Some(name) => name,
         }
         .parse()?;
@@ -704,7 +704,7 @@ impl State {
                     remote,
                     local: self.peer_id(),
                 }
-            }
+            },
         };
 
         let path = {
