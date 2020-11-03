@@ -1,6 +1,5 @@
 <script>
   import * as path from "../../src/path.ts";
-  import { Variant as IllustrationVariant } from "../../src/illustration.ts";
   import { push } from "svelte-spa-router";
   import IssueCard from "./Issues/IssueCard.svelte";
   import {
@@ -100,7 +99,7 @@
     </List>
   {:else}
     <EmptyState
-      illustration={IllustrationVariant.Telescope}
+      emoji="🔭"
       text="There’s nothing here yet, get started by creating your first issue."
       primaryActionText="Open a new issue" />
   {/if}

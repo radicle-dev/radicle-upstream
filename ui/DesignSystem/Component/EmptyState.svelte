@@ -3,13 +3,14 @@
 
   import { Variant as IllustrationVariant } from "../../src/illustration";
 
-  import { Button } from "../Primitive";
+  import { Button, Emoji } from "../Primitive";
   import Illustration from "./Illustration.svelte";
 
   const dispatch = createEventDispatcher();
 
   export let style: string = "";
   export let illustration: IllustrationVariant = IllustrationVariant.Plant;
+  export let emoji: string = "";
   export let text: string = "Nothing to see here";
   export let headerText: string = "";
   export let primaryActionText: string = "";
@@ -61,11 +62,17 @@
 </style>
 
 <div class="empty-state" data-cy="empty-state" {style}>
-  <Illustration variant={illustration} />
+  {#if emoji.length}
+    <Emoji {emoji} size="huge" {style} />
+  {:else}
+    <Illustration variant={illustration} />
+  {/if}
   {#if headerText.length}
     <h3>{headerText}</h3>
   {/if}
-  <p class="text">{text}</p>
+  {#if text.length}
+    <p class="text">{text}</p>
+  {/if}
   {#if primaryActionText.length}
     <Button
       dataCy="primary-action"

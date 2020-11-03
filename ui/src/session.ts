@@ -105,7 +105,6 @@ export const unseal = async (passphrase: string): Promise<void> => {
     notification.error(`Could not unlock the session: ${error.message}`);
     return;
   }
-  notification.info("Unsealing the session...");
   sessionStore.loading();
   await fetchSession();
 };
