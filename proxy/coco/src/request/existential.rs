@@ -117,7 +117,7 @@ impl<T, L: Into<SomeRequest<T>>, R: Into<SomeRequest<T>>> From<Either<L, R>> for
 
 impl<T> SomeRequest<T> {
     /// Get the `RadUrn` of whatever kind of [`Request`] is below.
-    pub fn urn(&self) -> &RadUrn {
+    pub const fn urn(&self) -> &RadUrn {
         match self {
             SomeRequest::Created(request) => request.urn(),
             SomeRequest::Requested(request) => request.urn(),
@@ -130,7 +130,7 @@ impl<T> SomeRequest<T> {
     }
 
     /// Get the [`Attempts`] of whatever kind of [`Request`] is below.
-    pub fn attempts(&self) -> &Attempts {
+    pub const fn attempts(&self) -> &Attempts {
         match self {
             SomeRequest::Created(request) => &request.attempts,
             SomeRequest::Requested(request) => &request.attempts,

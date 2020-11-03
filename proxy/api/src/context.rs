@@ -23,7 +23,7 @@ pub enum Context {
 
 impl Context {
     /// Returns `true` if the stack is set up in test mode.
-    pub fn test(&self) -> bool {
+    pub const fn test(&self) -> bool {
         match self {
             Self::Sealed(sealed) => sealed.test,
             Self::Unsealed(unsealed) => unsealed.test,
@@ -31,7 +31,7 @@ impl Context {
     }
 
     /// Returns the [`kv::Store`] for persistent storage.
-    pub fn store(&self) -> &kv::Store {
+    pub const fn store(&self) -> &kv::Store {
         match self {
             Self::Sealed(sealed) => &sealed.store,
             Self::Unsealed(unsealed) => &unsealed.store,

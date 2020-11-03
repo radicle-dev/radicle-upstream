@@ -91,7 +91,7 @@ impl Status {
     /// because you know what? It's actually in progress.
     /// And finally, the last case is that both `Status`es agree the `Status` is `Available`.
     #[must_use]
-    pub fn join(self, other: Self) -> Self {
+    pub const fn join(self, other: Self) -> Self {
         match (self, other) {
             (Self::Failed, _) | (_, Self::Failed) => Self::Failed,
             (Self::InProgress, _) | (_, Self::InProgress) => Self::InProgress,
