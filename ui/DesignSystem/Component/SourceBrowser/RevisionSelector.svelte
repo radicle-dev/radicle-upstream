@@ -86,7 +86,7 @@
     position: relative;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;
     max-width: 30rem;
@@ -112,8 +112,14 @@
   .tag.selected:hover {
     background-color: var(--color-foreground-level-2);
   }
-  .revision-dropdown ul:last-child li {
-    border-radius: 0 0 3px 3px;
+  .revision-dropdown li:only-child {
+    border-radius: 0.1875rem;
+  }
+  .revision-dropdown li:first-child:not(:only-child) {
+    border-radius: 0.1875rem 0.1875rem 0 0;
+  }
+  .revision-dropdown li:last-child:not(:only-child) {
+    border-radius: 0 0 0.1875rem 0.1875rem;
   }
 </style>
 
