@@ -60,8 +60,8 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
-        let config = service_manager.config()?;
-        let rigging = rig(args, service_handle, config, auth_token.clone()).await?;
+        let environment = service_manager.environment()?;
+        let rigging = rig(args, service_handle, environment, auth_token.clone()).await?;
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
@@ -192,10 +192,10 @@ lazy_static::lazy_static! {
 async fn rig(
     args: Args,
     service_handle: service::Handle,
-    config: &service::Config,
+    environment: &service::Environment,
     auth_token: Arc<RwLock<Option<String>>>,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
-    let (paths, store) = if let Some(temp_dir) = &config.temp_dir {
+    let (paths, store) = if let Some(temp_dir) = &environment.temp_dir {
         std::env::set_var("RAD_HOME", temp_dir.path());
         let paths =
             coco::Paths::try_from(coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()))?;
@@ -213,8 +213,8 @@ async fn rig(
         (paths, store)
     };
 
-    if let Some(_key) = config.key {
-        // We ignore `config.key` for now and use a hard-coded passphrase
+    if let Some(_key) = environment.key {
+        // We ignore `environment.key` for now and use a hard-coded passphrase
         let pw = coco::keystore::SecUtf8::from("radicle-upstream");
         let key = if args.test {
             *TEST_KEY

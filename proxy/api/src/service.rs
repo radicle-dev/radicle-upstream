@@ -1,11 +1,11 @@
-//! Utilities for dynamic service configuration in [`crate::process`].
+//! Utilities for changing the service environment used in [`crate::process`].
 
 use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
 
-/// Persistent configuration for running the API and coco peer services.
-pub struct Config {
+/// Persistent environment with depedencies for running the API and coco peer services.
+pub struct Environment {
     /// Secret key for the coco peer.
     ///
     /// If this is `None` coco is not started.
@@ -14,7 +14,7 @@ pub struct Config {
     pub temp_dir: Option<tempfile::TempDir>,
 }
 
-/// Error returned when constructing a new configuration
+/// Error returned when creating a new [`Environment`].
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Failed to create temporary directory
@@ -26,10 +26,11 @@ pub enum Error {
     ),
 }
 
-impl Config {
-    /// Create a new default configuration.c:w
+impl Environment {
+    /// Create a new initial environment.
     ///
-    /// If `test_mode` is `true` then `Config::temp_dir` is set for temporary on-disk persistence.
+    /// If `test_mode` is `true` then `Environment::temp_dir` is set for temporary on-disk
+    /// persistence.
     fn new(test_mode: bool) -> Result<Self, Error> {
         let temp_dir = if test_mode {
             Some(tempfile::tempdir()?)
@@ -43,7 +44,7 @@ impl Config {
     }
 }
 
-/// Manages changes to [`Config`].
+/// Manages changes to [`Environment`].
 pub struct Manager {
     /// Notifier to restart the services
     reload_notify: Arc<Notify>,
@@ -51,8 +52,8 @@ pub struct Manager {
     message_sender: mpsc::Sender<Message>,
     /// Receiver side of the [`Message`] channel
     message_receiver: mpsc::Receiver<Message>,
-    /// The current configuration of the services
-    config: Config,
+    /// The current environemtn of the services
+    environment: Environment,
     /// If true we are running the service in test mode.
     test_mode: bool,
 }
@@ -60,15 +61,16 @@ pub struct Manager {
 impl Manager {
     /// Create a new manager.
     ///
-    /// If `test_mode` is `true` then `Config::temp_dir` is set for temporary on-disk persitence.
+    /// If `test_mode` is `true` then `Environment::temp_dir` is set for temporary on-disk
+    /// persistence.
     pub fn new(test_mode: bool) -> Result<Self, Error> {
-        let config = Config::new(test_mode)?;
+        let environment = Environment::new(test_mode)?;
         let (message_sender, message_receiver) = mpsc::channel(10);
         Ok(Self {
             reload_notify: Arc::new(Notify::new()),
             message_sender,
             message_receiver,
-            config,
+            environment,
             test_mode,
         })
     }
@@ -81,21 +83,21 @@ impl Manager {
         }
     }
 
-    /// Get the current configuration.
-    pub fn config(&mut self) -> Result<&Config, Error> {
+    /// Get the current environment
+    pub fn environment(&mut self) -> Result<&Environment, Error> {
         while let Ok(message) = self.message_receiver.try_recv() {
             match message {
-                Message::Reset => self.config = Config::new(self.test_mode)?,
-                Message::SetSecretKey(key) => self.config.key = Some(key),
-                Message::Seal => self.config.key = None,
+                Message::Reset => self.environment = Environment::new(self.test_mode)?,
+                Message::SetSecretKey(key) => self.environment.key = Some(key),
+                Message::Seal => self.environment.key = None,
             }
         }
 
-        Ok(&self.config)
+        Ok(&self.environment)
     }
 
     /// Returns a future that becomes ready when the service needs to restart because the
-    /// configuration has changed.
+    /// environment has changed.
     pub fn notified_restart(&mut self) -> impl Future<Output = ()> + Send + 'static {
         let reload_notify = Arc::new(Notify::new());
         self.reload_notify = reload_notify.clone();
@@ -103,10 +105,10 @@ impl Manager {
     }
 }
 
-/// Messages that are sent from [`Handle`] to [`Manager`] to change the service configuration.
+/// Messages that are sent from [`Handle`] to [`Manager`] to change the service environment.
 #[allow(clippy::clippy::large_enum_variant)]
 enum Message {
-    /// Reset the service to the initial configuration and delete all persisted state
+    /// Reset the service to the initial environment and delete all persisted state
     Reset,
     /// Unseal the key store with the given secret key
     SetSecretKey(coco::keys::SecretKey),
