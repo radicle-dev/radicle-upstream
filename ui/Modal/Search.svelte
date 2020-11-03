@@ -27,7 +27,7 @@
 
   const navigateToProject = (project: Project) => {
     reset();
-    push(path.projectSource(project.id));
+    push(path.projectSource(project.urn));
     dispatch("hide");
   };
   const onKeydown = (event: KeyboardEvent) => {

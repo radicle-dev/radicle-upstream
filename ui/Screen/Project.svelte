@@ -17,6 +17,7 @@
     selectedPeer,
   } from "../src/project";
   import type { Project, User } from "../src/project";
+  import type { UnsealedSession } from "../src/session";
   import * as screen from "../src/screen";
   import {
     commits as commitsStore,
@@ -59,8 +60,9 @@
   };
 
   export let params: { urn: Urn };
+
   const urn = params.urn;
-  const session = getContext("session");
+  const session: UnsealedSession = getContext("session");
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
@@ -108,8 +110,13 @@
   const handleCheckout = async (
     { detail: checkoutDirectoryPath }: CustomEvent,
     project: Project,
-    peer: User
+    peer: User | null
   ) => {
+    if (peer === null) {
+      notification.error(`Can't checkout without a peer selected`);
+      return;
+    }
+
     try {
       screen.lock();
       const path = await checkout(
@@ -169,7 +176,7 @@
               <Tooltip
                 position={CSSPosition.Left}
                 value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-                <FollowToggle disabled followign />
+                <FollowToggle disabled following />
               </Tooltip>
             {/if}
           </Remote>
@@ -198,8 +205,7 @@
       </div>
       <div slot="right">
         <CheckoutButton
-          on:checkout={ev => handleCheckout(ev, project, $selectedPeer)}
-          projectName={project.metadata.name} />
+          on:checkout={ev => handleCheckout(ev, project, $selectedPeer)} />
       </div>
     </Header.Large>
     <Router {routes} />
