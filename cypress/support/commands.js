@@ -1,7 +1,7 @@
 Cypress.Commands.add("resetProxyState", async () => {
   console.log("Reset Proxy state");
   await fetchOk("http://localhost:8080/v1/control/reset");
-  await fetchOk("http://localhost:8080/v1/keystore/unseal", {
+  await fetchOk("http://localhost:8080/v1/keystore", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -46,7 +46,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("onboardUser", async (handle = "secretariat") => {
-  await fetchOk("http://localhost:8080/v1/keystore/unseal", {
+  await fetchOk("http://localhost:8080/v1/keystore", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -1,4 +1,7 @@
 //! Storage of secret keys.
+//!
+//! This module provides the [`KeyStore`] trait and the [`file()`] and [`memory()`] functions to
+//! construct specific [`KeyStore`] implementations.
 
 use std::convert::Infallible;
 
@@ -6,140 +9,153 @@ use librad::{keys, paths};
 pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{self, Pwhash, SecretBoxError},
-    file, memory, FileStorage, Keystore, MemoryStorage, SecretKeyExt,
+    file, Keystore, SecretKeyExt,
 };
+
+/// Storage for one secret key.
+pub trait KeyStore {
+    /// Create a key and store it encrypted with the given passphrase.
+    ///
+    /// # Errors
+    ///
+    /// Errors when the storage backend fails to persist the key or a key already exists.
+    fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error>;
+
+    /// Get the secret from the storage.
+    ///
+    /// # Errors
+    ///
+    /// * Errors if the password is wrong.
+    /// * Errors if backend fails to retrieve the data.
+    /// * Errors if there is no key in the storage yet.
+    fn get(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error>;
+}
 
 /// File name component of the file path to the key.
 const KEY_PATH: &str = "librad.key";
 
-/// Storage for putting and getting the necessary cryptographic keys.
+/// Create a [`KeyStore`] that is backed by an encrypted file on disk.
 ///
-/// The type parameter `S` determines the concrete storage backend in use.
-pub struct Keystorage<S> {
-    /// Store to sign operations on the monorepo.
-    store: S,
+/// The key file is named `librad.key` and located under in the `paths` key directory.
+#[must_use]
+pub fn file(paths: paths::Paths) -> impl KeyStore + Send + Sync {
+    FileStore { paths }
+}
+
+/// File-backed [`KeyStore`]
+struct FileStore {
+    /// Determines the location of the key file when a key is loaded or written.
+    paths: paths::Paths,
 }
 
 /// Concrete type of the [`FileStorage`] in use.
-type File = FileStorage<
+type FileStorage = radicle_keystore::FileStorage<
     Pwhash<SecUtf8>,
     keys::PublicKey,
     keys::SecretKey,
     <keys::SecretKey as SecretKeyExt>::Metadata,
 >;
 
-/// Concrete type of the [`MemoryStorage`] in use.
-type Memory = MemoryStorage<
-    Pwhash<SecUtf8>,
-    keys::PublicKey,
-    keys::SecretKey,
-    <keys::SecretKey as SecretKeyExt>::Metadata,
->;
-
-impl Keystorage<File> {
-    /// Create a file-backed keystore, suitable for production use.
-    #[must_use = "must use CocoStore to put/get a key"]
-    pub fn file(paths: &paths::Paths, pw: SecUtf8) -> Self {
-        let key_path = paths.keys_dir().join(KEY_PATH);
-        let crypto = Pwhash::new(pw, *crypto::KDF_PARAMS_PROD);
-        Self {
-            store: FileStorage::new(&key_path, crypto),
-        }
+impl FileStore {
+    /// Get the [`FileStorage`] backend for this key store.
+    fn store(&self, passphrase: SecUtf8) -> FileStorage {
+        let key_path = self.paths.keys_dir().join(KEY_PATH);
+        let crypto = Pwhash::new(passphrase, *crypto::KDF_PARAMS_PROD);
+        FileStorage::new(&key_path, crypto)
     }
+}
 
-    /// Fetch the [`keys::SecretKey`]
-    ///
-    /// # Errors
-    ///
-    /// If no key is stored in this store (i.e. [`Self::init`] was not called), decryption fails,
-    /// or some IO error occurred.
-    pub fn get(&self) -> Result<keys::SecretKey, Error> {
-        Ok(self.store.get_key().map(|pair| pair.secret_key)?)
-    }
-
-    /// Attempt to get a [`keys::SecretKey`], otherwise we create one and store it.
-    ///
-    /// # Errors
-    ///
-    /// Fails with [`FileError`]
-    pub fn init(&mut self) -> Result<keys::SecretKey, Error> {
-        match self.store.get_key() {
-            Ok(keypair) => Ok(keypair.secret_key),
-            Err(file::Error::NoSuchKey) => {
+impl KeyStore for FileStore {
+    fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+        let mut store = self.store(passphrase);
+        match store.get_key() {
+            Ok(_keypair) => Err(FileError::KeyExists.into()),
+            Err(FileError::NoSuchKey) => {
                 let key = keys::SecretKey::new();
-                self.store.put_key(key)?;
+                store.put_key(key)?;
                 Ok(key)
             },
             Err(err) => Err(err.into()),
         }
     }
+
+    fn get(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+        let key_pair = self.store(passphrase).get_key()?;
+        Ok(key_pair.secret_key)
+    }
 }
 
-impl Keystorage<Memory> {
-    /// Create an in-memory keystore, suitable for testing.
-    ///
-    /// A fresh [`keys::SecretKey`] will be generated every time this variant is
-    /// instantiated.
-    ///
-    /// # Note
-    ///
-    /// This is not feature-gated behind `#[cfg(test)]`, because the sibling `api` crate needs to
-    /// be able to access it. Use with extreme caution, and only from `#[cfg(test)]` code!
-    ///
-    /// # Errors
-    ///
-    /// If sealing the generated key fails.
-    pub fn memory(pw: SecUtf8) -> Result<Self, Error> {
-        let mut store = MemoryStorage::new(Pwhash::new(pw, *crypto::KDF_PARAMS_TEST));
+/// Create an insecure in-memory [`KeyStore`].
+#[must_use]
+pub fn memory() -> impl KeyStore + Send + Sync {
+    MemoryStore {
+        key_and_passphrase: std::sync::Mutex::new(None),
+    }
+}
+
+/// Insecure in-memory [`KeyStore`]
+struct MemoryStore {
+    /// Secret key and passphrase if present
+    key_and_passphrase: std::sync::Mutex<Option<(keys::SecretKey, SecUtf8)>>,
+}
+
+impl KeyStore for MemoryStore {
+    fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+        let mut key_and_passphrase = self
+            .key_and_passphrase
+            .lock()
+            .expect("Failed to access memory key");
+        if key_and_passphrase.is_some() {
+            return Err(FileError::KeyExists.into());
+        }
+
         let key = keys::SecretKey::new();
-        store.put_key(key)?;
-
-        Ok(Self { store })
+        *key_and_passphrase = Some((key, passphrase));
+        Ok(key)
     }
 
-    /// Fetch the [`keys::SecretKey`]
-    #[must_use = "clippy insists this must be used :shrug:"]
-    pub fn get(&self) -> keys::SecretKey {
-        self.store
-            .get_key()
-            .map(|pair| pair.secret_key)
-            .expect("constructor ensures a key is present")
+    fn get(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+        if let Some((key, stored_passphrase)) = &*self
+            .key_and_passphrase
+            .lock()
+            .expect("Failed to access memory key")
+        {
+            if *stored_passphrase == passphrase {
+                Ok(*key)
+            } else {
+                Err(FileError::Crypto(SecretBoxError::InvalidKey).into())
+            }
+        } else {
+            Err(FileError::NoSuchKey.into())
+        }
     }
 }
 
-/// Synonym for an error when interacting with a file-backed store for [`librad::keys`].
+/// Error type for the [`FileStorage`] backend.
 type FileError = file::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
 
-/// Synonym for an error when interacting with a memory store for [`librad::keys`].
-type MemoryError = memory::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
-
-/// The [`Keystorage`] can result in two kinds of errors depending on what storage you're using.
+/// Errors that occur when creating or unsealing keys.
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// Errors that occurred when interacting with the `librad.key`.
-    #[error(transparent)]
-    File(#[from] FileError),
-
-    /// Errors that occurred when using the in-memory backend.
-    #[error(transparent)]
-    Mem(#[from] MemoryError),
+#[error(transparent)]
+pub struct Error {
+    #[from]
+    /// The inner error
+    inner: FileError,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::Keystorage;
-    use radicle_keystore::pinentry::SecUtf8;
+impl Error {
+    /// Returns `true` if the error indicates that an invalid password was used to decrypt the
+    /// secret key.
+    #[must_use]
+    pub const fn is_invalid_password(&self) -> bool {
+        #[allow(clippy::wildcard_enum_match_arm)]
+        matches!(self.inner, FileError::Crypto(SecretBoxError::InvalidKey))
+    }
 
-    #[allow(clippy::panic)]
-    #[test]
-    fn can_create_key() {
-        let pw = SecUtf8::from("asdf");
-        let store = Keystorage::memory(pw).expect("could not create keystorage");
-        let key = store.get();
-
-        assert!(
-            key.as_ref() == store.get().as_ref(),
-            "the stored key was not equal to the one retrieved"
-        )
+    /// Returns `true` if the error indicates that a key already exists in the store.
+    #[must_use]
+    pub const fn is_key_exists(&self) -> bool {
+        #[allow(clippy::wildcard_enum_match_arm)]
+        matches!(self.inner, FileError::KeyExists)
     }
 }
