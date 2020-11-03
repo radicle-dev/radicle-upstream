@@ -8,11 +8,11 @@ use std::{
 pub use librad::meta::project::Project;
 use librad::{
     git::{
-        ext::{OneLevel, RefLike, RefspecPattern},
         include,
         local::url::LocalUrl,
         types::{remote::Remote, FlatRef, Force},
     },
+    git_ext::{OneLevel, RefLike, RefspecPattern},
     peer::PeerId,
     uri::RadUrn,
 };
