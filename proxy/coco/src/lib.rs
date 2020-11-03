@@ -5,7 +5,6 @@
     clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
-    clippy::restriction,
     clippy::unwrap_used,
     missing_docs,
     unused_import_braces,
@@ -22,13 +21,12 @@
     clippy::similar_names,
     clippy::too_many_lines
 )]
-#![feature(hash_set_entry)]
-#![feature(or_patterns)]
+#![feature(duration_zero, hash_set_entry, or_patterns)]
 
 use std::net::SocketAddr;
 
 pub use librad::{
-    git::{include, local::url::LocalUrl},
+    git::{self, include, local::url::LocalUrl},
     hash::Hash,
     keys,
     meta::{project::Project, user::User as MetaUser},
@@ -37,6 +35,8 @@ pub use librad::{
     peer::PeerId,
     uri::{self, RadUrn as Urn},
 };
+
+pub use radicle_git_ext as git_ext;
 
 pub use radicle_git_helpers::remote_helper;
 
@@ -84,14 +84,15 @@ pub mod user;
 ///
 /// * peer construction from config fails.
 /// * accept on the peer fails.
-pub async fn into_peer_state<I>(
-    config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
+pub async fn into_peer_state<D>(
+    config: net::peer::PeerConfig<D, keys::SecretKey>,
     signer: librad::signer::BoxedSigner,
     store: kv::Store,
     run_config: RunConfig,
 ) -> Result<(Peer, State), state::Error>
 where
-    I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
+    D: discovery::Discovery<Addr = SocketAddr> + Send,
+    <D as discovery::Discovery>::Stream: 'static,
 {
     let peer = config.try_into_peer().await?;
     let (api, run_loop) = peer.accept()?;

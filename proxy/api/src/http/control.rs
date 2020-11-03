@@ -1,55 +1,51 @@
 //! Endpoints to manipulate app state in test mode.
 
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc;
-use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
+
+use coco::git_ext;
 
 use crate::context;
 
 /// Combination of all control filters.
-pub fn filters(
-    ctx: context::Context,
-    selfdestruct: mpsc::Sender<()>,
-    enable_fixture_creation: bool,
-) -> BoxedFilter<(impl Reply,)> {
-    create_project_filter(ctx, enable_fixture_creation)
-        .or(reload_filter(selfdestruct))
+pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
+    create_project_filter(ctx.clone())
+        .or(seal_filter(ctx.clone()))
+        .or(reset_filter(ctx))
         .boxed()
 }
 
 /// POST /create-project
 fn create_project_filter(
     ctx: context::Context,
-    enabled: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
-        .map(move || enabled)
-        .and_then(|enable| async move {
-            if enable {
-                Ok(())
-            } else {
-                Err(reject::not_found())
-            }
-        })
-        .untuple_one()
-        .and(super::with_context(ctx.clone()))
+        .and(super::with_context_unsealed(ctx.clone()))
         .and(super::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create_project)
 }
 
-/// GET /reload
-fn reload_filter(
-    selfdestruct: mpsc::Sender<()>,
+/// GET /reset
+fn reset_filter(
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("reload")
-        .map(move || selfdestruct.clone())
-        .and_then(handler::reload)
+    path!("reset")
+        .and(super::with_context(ctx))
+        .and_then(handler::reset)
+}
+
+/// GET /seal
+fn seal_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path!("seal")
+        .and(super::with_context(ctx))
+        .and_then(handler::seal)
 }
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use tokio::sync::mpsc;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use coco::user;
@@ -59,7 +55,7 @@ mod handler {
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         owner: user::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
@@ -68,7 +64,7 @@ mod handler {
             &owner,
             &input.name,
             &input.description,
-            &input.default_branch,
+            input.default_branch,
         )
         .await
         .map_err(error::Error::from)?;
@@ -88,7 +84,7 @@ mod handler {
             .with_browser(branch, |browser| Ok(browser.get_stats()?))
             .await
             .map_err(error::Error::from)?;
-        let project: project::Project = (meta, stats).into();
+        let project: project::Full = (meta, stats).into();
 
         Ok(reply::with_status(
             reply::json(&project),
@@ -97,9 +93,17 @@ mod handler {
     }
 
     /// Abort the server task, which causes `main` to restart it.
-    pub async fn reload(mut notify: mpsc::Sender<()>) -> Result<impl Reply, Rejection> {
+    pub async fn reset(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         log::warn!("reload requested");
-        Ok(reply::json(&notify.send(()).await.is_ok()))
+        ctx.service_handle().reset();
+        Ok(reply::json(&()))
+    }
+
+    /// Seals the keystore.
+    pub async fn seal(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
+        log::warn!("keystore seal requested");
+        ctx.service_handle().seal();
+        Ok(reply::with_status("keystore sealed", StatusCode::OK))
     }
 }
 
@@ -112,7 +116,7 @@ pub struct CreateInput {
     /// Long form outline.
     description: String,
     /// Configured default branch.
-    default_branch: String,
+    default_branch: git_ext::OneLevel,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
 }

@@ -1,7 +1,7 @@
 use nonempty::NonEmpty;
 use pretty_assertions::assert_eq;
 
-use coco::{state, RunConfig};
+use coco::RunConfig;
 
 mod common;
 use common::{build_peer, init_logging, shia_le_pathbuf};
@@ -17,7 +17,7 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let bob = bob_state.init_owner("bob").await?;
+    let _bob = bob_state.init_owner("bob").await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
@@ -37,41 +37,26 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
             .await?
     };
 
-    let peers = bob_state
-        .tracked(urn.clone())
-        .await?
-        .into_iter()
-        .filter_map(|peer| match peer {
-            coco::project::Peer::Remote {
-                peer_id,
-                status: coco::project::ReplicationStatus::Replicated { user, .. },
-            } => Some((peer_id, user)),
-            _ => None,
-        })
-        .collect();
-
-    let bob = bob.to_data().build()?;
+    let peers = bob_state.list_project_peers(urn.clone()).await?;
 
     let branch = bob_state.find_default_branch(urn).await?;
     let revisions = bob_state
         .with_browser(branch, |browser| {
-            coco::source::revisions(browser, bob_state.peer_id(), bob, peers)
+            peers
+                .into_iter()
+                .filter_map(coco::project::Peer::replicated)
+                .filter_map(|peer| coco::source::revisions(browser, peer).transpose())
+                .collect::<Result<Vec<_>, _>>()
         })
         .await?;
 
     let expected = coco::source::Revisions {
         peer_id: alice_state.peer_id(),
         user: alice.to_data().build()?,
-        branches: vec![coco::source::Branch::from("it".to_string())],
+        branches: NonEmpty::new(coco::source::Branch::from("it".to_string())),
         tags: vec![],
     };
-    assert_eq!(
-        revisions,
-        NonEmpty {
-            head: expected,
-            tail: vec![]
-        }
-    );
+    assert_eq!(revisions, vec![expected],);
 
     Ok(())
 }

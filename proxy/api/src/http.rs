@@ -1,8 +1,7 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use serde::Deserialize;
-use tokio::sync::mpsc;
-use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use crate::{context, notification::Subscriptions};
 
@@ -10,6 +9,7 @@ mod avatar;
 mod control;
 mod error;
 mod identity;
+mod keystore;
 mod notification;
 mod project;
 mod session;
@@ -36,20 +36,27 @@ macro_rules! combine {
 pub fn api(
     ctx: context::Context,
     subscriptions: Subscriptions,
-    selfdestruct: mpsc::Sender<()>,
-    enable_fixture_creation: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    let test = ctx.test();
+
     let avatar_filter = path("avatars").and(avatar::get_filter());
-    let control_filter = path("control").and(control::filters(
-        ctx.clone(),
-        selfdestruct,
-        enable_fixture_creation,
-    ));
+    let control_filter = path("control")
+        .map(move || test)
+        .and_then(|enable| async move {
+            if enable {
+                Ok(())
+            } else {
+                Err(reject::not_found())
+            }
+        })
+        .untuple_one()
+        .and(control::filters(ctx.clone()));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter =
         path("notifications").and(notification::filters(ctx.clone(), subscriptions));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
+    let keystore_filter = path("keystore").and(keystore::filters(ctx.clone()));
     let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
@@ -59,16 +66,19 @@ pub fn api(
         notification_filter,
         project_filter,
         session_filter,
+        keystore_filter,
         source_filter
     ));
 
     let cors = warp::cors()
         .allow_any_origin()
-        .allow_headers(&[warp::http::header::CONTENT_TYPE])
+        .allow_credentials(true)
+        .allow_headers(&[warp::http::header::CONTENT_TYPE, warp::http::header::COOKIE])
         .allow_methods(&[
             warp::http::Method::DELETE,
             warp::http::Method::GET,
             warp::http::Method::POST,
+            warp::http::Method::PUT,
             warp::http::Method::OPTIONS,
         ]);
     let log = warp::log::custom(|info| {
@@ -93,24 +103,19 @@ pub fn api(
 #[must_use]
 fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
     warp::any()
-        .and(with_context(ctx))
-        .and_then(|ctx: context::Context| async move {
-            let session = crate::session::current(ctx.state.clone(), &ctx.store)
+        .and(with_context_unsealed(ctx))
+        .and_then(|ctx: context::Unsealed| async move {
+            let session =
+                crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
+
+            let user = ctx
+                .state
+                .get_user(session.identity.urn)
                 .await
-                .expect("unable to get current sesison");
+                .expect("unable to get coco user");
+            let user = coco::user::verify(user).expect("unable to verify user");
 
-            if let Some(identity) = session.identity {
-                let user = ctx
-                    .state
-                    .get_user(identity.urn)
-                    .await
-                    .expect("unable to get coco user");
-                let user = coco::user::verify(user).expect("unable to verify user");
-
-                Ok(user)
-            } else {
-                Err(Rejection::from(error::Routing::MissingOwner))
-            }
+            Ok::<_, Rejection>(user)
         })
         .boxed()
 }
@@ -119,6 +124,29 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
 #[must_use]
 fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
     warp::any().map(move || ctx.clone()).boxed()
+}
+
+/// Assert that the context is unsealed and and passes [`context::Unsealed`] to the handler.
+///
+/// Otherwise the requests rejects with [`crate::error::Error::KeystoreSealed`].
+fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unsealed,)> {
+    with_context(ctx)
+        .and(warp::filters::cookie::optional("auth-token"))
+        .and_then(|ctx, token: Option<String>| async move {
+            let unsealed_ctx = match ctx {
+                context::Context::Sealed(_) => {
+                    return Err(Rejection::from(crate::error::Error::KeystoreSealed))
+                },
+                context::Context::Unsealed(unsealed) => unsealed,
+            };
+            let auth_token = unsealed_ctx.auth_token.read().await;
+            if token != *auth_token {
+                return Err(Rejection::from(crate::error::Error::InvalidAuthCookie));
+            }
+            drop(auth_token);
+            Ok(unsealed_ctx)
+        })
+        .boxed()
 }
 
 /// Parses an optional query string with [`serde_qs`] and returns the result.
@@ -149,7 +177,7 @@ where
             }
         })
         .and_then(|raw: Option<String>| async move {
-            if let Some(raw) = raw {
+            raw.map_or(Ok(None), |raw| {
                 let query = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
                 match serde_qs::from_str(&query) {
                     Ok(value) => Ok(Some(value)),
@@ -160,9 +188,7 @@ where
                         },
                     )),
                 }
-            } else {
-                Ok(None)
-            }
+            })
         })
         .boxed()
 }

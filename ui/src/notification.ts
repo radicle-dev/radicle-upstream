@@ -1,4 +1,4 @@
-import { Writable, writable } from "svelte/store";
+import { Readable, derived, get, writable } from "svelte/store";
 
 import * as config from "./config";
 import * as event from "./event";
@@ -11,20 +11,25 @@ export enum Level {
   Info = "INFO",
 }
 
+type ActionHandler = () => void;
+
 interface Notification {
   id: ID;
   level: Level;
   showIcon: boolean;
   message: string;
-  actionText: string;
-  actionHandler: () => void;
+  actionText: string | false;
+  actionHandler: ActionHandler | false;
 }
 
 type Notifications = Notification[];
 
 // STATE
-let notifications: Notifications = [];
-export const store: Writable<Notifications> = writable([]);
+const notificationsStore = writable([]);
+export const store: Readable<Notifications> = derived(
+  notificationsStore,
+  (state: Notifications) => state
+);
 
 // EVENTS
 enum Kind {
@@ -42,51 +47,53 @@ interface ShowError extends event.Event<Kind> {
   kind: Kind.ShowError;
   message: string;
   showIcon: boolean;
-  actionText?: string;
-  actionHandler?: () => void;
+  actionText: string | false;
+  actionHandler: ActionHandler | false;
 }
 
 interface ShowInfo extends event.Event<Kind> {
   kind: Kind.ShowInfo;
   message: string;
   showIcon: boolean;
-  actionText?: string;
-  actionHandler?: () => void;
+  actionText: string | false;
+  actionHandler: ActionHandler | false;
 }
 
 type Msg = Remove | ShowError | ShowInfo;
 
 const filter = (id: ID): void => {
-  notifications = notifications.filter(n => n.id !== id);
-  store.set(notifications);
+  const notifications = get(notificationsStore).filter(
+    (n: Notification) => n.id !== id
+  );
+  notificationsStore.set(notifications);
 };
 
 const show = (
   level: Level,
   showIcon: boolean,
   message: string,
-  actionText?: string,
-  actionHandler?: () => void
+  actionText: string | false,
+  actionHandler: ActionHandler | false
 ): void => {
   const id = Math.random();
-  notifications = [
-    ...notifications,
-    {
-      id,
-      level,
-      message,
-      showIcon,
-      actionText: actionText || "Close",
-      actionHandler: () => {
-        if (actionHandler) {
-          actionHandler();
-        }
+  const notification = {
+    id,
+    level,
+    message,
+    showIcon,
+    actionText,
+    actionHandler: () => {
+      if (actionHandler) {
+        actionHandler();
+      }
 
-        remove(id);
-      },
+      remove(id);
     },
-  ];
-  store.set(notifications);
+  };
+
+  const notifications = get(notificationsStore);
+  notifications.unshift(notification);
+  notificationsStore.set(notifications);
 
   setTimeout(() => {
     filter(id);
@@ -129,9 +136,9 @@ const remove = (id: ID): void =>
 
 export const error = (
   message: string,
-  showIcon = false,
-  actionText?: string,
-  actionHandler?: () => void
+  showIcon: boolean = false,
+  actionText: string | false = "Close",
+  actionHandler: ActionHandler | false = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowError,
@@ -140,9 +147,9 @@ export const error = (
 
 export const info = (
   message: string,
-  showIcon = false,
-  actionText?: string,
-  actionHandler?: () => void
+  showIcon: boolean = false,
+  actionText: string | false = "Close",
+  actionHandler: ActionHandler | false = false
 ): void =>
   event.create<Kind, Msg>(
     Kind.ShowInfo,

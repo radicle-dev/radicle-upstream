@@ -16,7 +16,7 @@ pub fn local_peer_status_stream(
     subscriptions: Subscriptions,
 ) -> BoxedFilter<(impl Reply,)> {
     path!("local_peer_events")
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(warp::any().map(move || subscriptions.clone()))
         .and_then(handler::local_peer_events)
         .boxed()
@@ -36,7 +36,7 @@ mod handler {
 
     /// Sets up local peer events notification stream.
     pub async fn local_peer_events(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         subscriptions: Subscriptions,
     ) -> Result<impl Reply, Rejection> {
         let mut peer_control = ctx.peer_control;
@@ -51,20 +51,12 @@ mod handler {
         )]);
         let filter = |notification: Notification| async move {
             match notification.clone() {
-                Notification::LocalPeer(event) => Some(map_to_event(event)),
+                Notification::LocalPeer(event) => Some(Ok::<_, Infallible>(sse::json(event))),
             }
         };
 
         Ok(sse::reply(
             sse::keep_alive().stream(initial.chain(subscriber).filter_map(filter)),
         ))
-    }
-
-    /// Helper for mapping [`Notification::LocalPeerStatusChanged`] events onto
-    /// [`sse::ServerSentEvent`]s.
-    fn map_to_event(
-        event: notification::LocalPeer,
-    ) -> Result<impl sse::ServerSentEvent, Infallible> {
-        Ok((sse::event(event.to_string()), sse::json(event)))
     }
 }

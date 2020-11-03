@@ -5,6 +5,8 @@ use std::{collections::HashSet, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
+use coco::project::peer;
+
 use crate::{error, identity};
 
 /// Object encapsulating project metadata.
@@ -43,7 +45,7 @@ where
 /// See [`Projects`] for a detailed breakdown of both kinds of projects.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Project {
+pub struct Project<S> {
     /// Unique identifier of the project in the network.
     pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
@@ -51,11 +53,49 @@ pub struct Project {
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
     /// High-level statistics about the project
-    pub stats: coco::Stats,
+    pub stats: S,
+}
+
+/// A `Partial` project is one where we _weren't_ able to fetch the [`coco::Stats`] for it.
+pub type Partial = Project<()>;
+
+/// A `Full` project is one where we _were_ able to fetch the [`coco::Stats`] for it.
+pub type Full = Project<coco::Stats>;
+
+impl Partial {
+    /// Convert a `Partial` project into a `Full` one by providing the `stats` for the project.
+    #[allow(clippy::missing_const_for_fn)]
+    pub fn fulfill(self, stats: coco::Stats) -> Full {
+        Project {
+            urn: self.urn,
+            shareable_entity_identifier: self.shareable_entity_identifier,
+            metadata: self.metadata,
+            stats,
+        }
+    }
 }
 
 /// Construct a Project from its metadata and stats
-impl<ST> From<(coco::Project<ST>, coco::Stats)> for Project
+impl<ST> From<coco::Project<ST>> for Partial
+where
+    ST: Clone,
+{
+    /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
+    /// for the repository.
+    fn from(project: coco::Project<ST>) -> Self {
+        let urn = project.urn();
+
+        Self {
+            urn: urn.clone(),
+            shareable_entity_identifier: format!("%{}", urn),
+            metadata: project.into(),
+            stats: (),
+        }
+    }
+}
+
+/// Construct a Project from its metadata and stats
+impl<ST> From<(coco::Project<ST>, coco::Stats)> for Full
 where
     ST: Clone,
 {
@@ -73,55 +113,22 @@ where
     }
 }
 
+/// Codified relation in form of roles and availability of project views.
 #[derive(Serialize)]
-pub struct Peer(coco::project::Peer<identity::Identity>);
+pub struct Peer(peer::Peer<peer::Status<identity::Identity>>);
 
 impl Deref for Peer {
-    type Target = coco::project::Peer<identity::Identity>;
+    type Target = peer::Peer<peer::Status<identity::Identity>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
-    fn from(peer: coco::project::Peer<coco::MetaUser<S>>) -> Self {
-        match peer {
-            coco::project::Peer::Local { peer_id, status } => match status {
-                coco::project::ReplicationStatus::NotReplicated => {
-                    Self(coco::project::Peer::Local {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::NotReplicated,
-                    })
-                }
-                coco::project::ReplicationStatus::Replicated { role, user } => {
-                    Self(coco::project::Peer::Local {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::Replicated {
-                            role,
-                            user: (peer_id, user).into(),
-                        },
-                    })
-                }
-            },
-            coco::project::Peer::Remote { peer_id, status } => match status {
-                coco::project::ReplicationStatus::NotReplicated => {
-                    Self(coco::project::Peer::Remote {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::NotReplicated,
-                    })
-                }
-                coco::project::ReplicationStatus::Replicated { role, user } => {
-                    Self(coco::project::Peer::Remote {
-                        peer_id,
-                        status: coco::project::ReplicationStatus::Replicated {
-                            role,
-                            user: (peer_id, user).into(),
-                        },
-                    })
-                }
-            },
-        }
+impl<S> From<peer::Peer<peer::Status<coco::MetaUser<S>>>> for Peer {
+    fn from(peer: peer::Peer<peer::Status<coco::MetaUser<S>>>) -> Self {
+        let peer_id = peer.peer_id();
+        Self(peer.map(|status| status.map(|user| (peer_id, user).into())))
     }
 }
 
@@ -130,14 +137,27 @@ impl<S> From<coco::project::Peer<coco::MetaUser<S>>> for Peer {
 /// See [`Projects`] for a detailed breakdown of both kinds of projects.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Tracked(Project);
+pub struct Tracked(Full);
 
 impl Deref for Tracked {
-    type Target = Project;
+    type Target = Full;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
+}
+
+/// Partial failures that occur when getting the list of projects.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum Failure {
+    /// We couldn't get a default branch for the project.
+    DefaultBranch(Partial),
+    /// We couldn't get the stats for the project.
+    Stats(Partial),
+    /// We couldn't get the signed refs of the project, and so we can't determine if it's tracked
+    /// or contributed.
+    SignedRefs(Full),
 }
 
 /// All projects contained in a user's monorepo.
@@ -155,7 +175,10 @@ pub struct Projects {
     ///
     /// The conditions imply that a project is "contributed" if I am the maintainer or I have
     /// contributed to the project.
-    pub contributed: Vec<Project>,
+    pub contributed: Vec<Full>,
+
+    /// A project that failed partially when trying to retrieve metadata for it.
+    pub failures: Vec<Failure>,
 }
 
 impl Projects {
@@ -173,16 +196,43 @@ impl Projects {
         let mut projects = Self {
             tracked: vec![],
             contributed: vec![],
+            failures: vec![],
         };
+
         for project in state.list_projects().await? {
-            let refs = state.list_owner_project_refs(project.urn()).await?;
-            let default_branch = state.find_default_branch(project.urn()).await?;
-            let project = state
-                .with_browser(default_branch, |browser| {
-                    let project_stats = browser.get_stats()?;
-                    Ok((project, project_stats).into())
-                })
-                .await?;
+            let project = Project::from(project);
+            let default_branch = match state.find_default_branch(project.urn.clone()).await {
+                Err(err) => {
+                    log::warn!("Failure for '{}': {}", project.urn, err);
+                    projects.failures.push(Failure::DefaultBranch(project));
+                    continue;
+                }
+                Ok(branch) => branch,
+            };
+
+            let stats = match state
+                .with_browser(default_branch, |browser| Ok(browser.get_stats()?))
+                .await
+            {
+                Err(err) => {
+                    log::warn!("Failure for '{}': {}", project.urn, err);
+                    projects.failures.push(Failure::Stats(project));
+                    continue;
+                }
+                Ok(stats) => stats,
+            };
+
+            let project = project.fulfill(stats);
+
+            let refs = match state.list_owner_project_refs(project.urn.clone()).await {
+                Err(err) => {
+                    log::warn!("Failure for '{}': {}", project.urn, err);
+                    projects.failures.push(Failure::SignedRefs(project));
+                    continue;
+                }
+                Ok(refs) => refs,
+            };
+
             if refs.heads.is_empty() {
                 projects.tracked.push(Tracked(project))
             } else {
@@ -192,29 +242,20 @@ impl Projects {
 
         Ok(projects)
     }
-
-    /// Give back an `Iter` that can be used to iterate over the projects. It first yields
-    /// contributed projects and then tracked projects.
-    pub fn iter(&self) -> Iter<'_> {
-        Iter {
-            contributed: self.contributed.iter(),
-            tracked: self.tracked.iter(),
-        }
-    }
 }
 
 /// An iterator over [`Projects`] that first yields contributed projects and then tracked projects.
 #[must_use = "iterators are lazy and do nothing unless consumed"]
 pub struct Iter<'a> {
     /// Iterator over contributed projects.
-    contributed: std::slice::Iter<'a, Project>,
+    contributed: std::slice::Iter<'a, Full>,
 
     /// Iterator over tracked projects.
     tracked: std::slice::Iter<'a, Tracked>,
 }
 
 impl<'a> Iterator for Iter<'a> {
-    type Item = &'a Project;
+    type Item = &'a Full;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.contributed
@@ -227,7 +268,7 @@ impl<'a> Iterator for Iter<'a> {
 }
 
 impl IntoIterator for Projects {
-    type Item = Project;
+    type Item = Full;
     type IntoIter = IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -243,14 +284,14 @@ impl IntoIterator for Projects {
 #[must_use = "iterators are lazy and do nothing unless consumed"]
 pub struct IntoIter {
     /// Iterator over contributed projects.
-    contributed: std::vec::IntoIter<Project>,
+    contributed: std::vec::IntoIter<Full>,
 
     /// Iterator over tracked projects.
     tracked: std::vec::IntoIter<Tracked>,
 }
 
 impl Iterator for IntoIter {
-    type Item = Project;
+    type Item = Full;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.contributed
@@ -268,7 +309,7 @@ impl Iterator for IntoIter {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Project, error::Error> {
+pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Full, error::Error> {
     let project = state.get_project(project_urn.clone(), None).await?;
     let branch = state.find_default_branch(project_urn.clone()).await?;
     let project_stats = state
@@ -296,7 +337,7 @@ pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Project,
 pub async fn list_for_user(
     state: &coco::State,
     user: &coco::Urn,
-) -> Result<Vec<Project>, error::Error> {
+) -> Result<Vec<Full>, error::Error> {
     let mut projects = vec![];
 
     for project in state.list_projects().await? {
@@ -304,13 +345,7 @@ pub async fn list_for_user(
             .tracked(project.urn())
             .await?
             .into_iter()
-            .filter_map(|peer| match peer {
-                coco::project::Peer::Remote {
-                    peer_id,
-                    status: coco::project::ReplicationStatus::Replicated { user, .. },
-                } => Some((peer_id, user)),
-                _ => None,
-            })
+            .filter_map(coco::project::Peer::replicated_remote)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer, _)) = tracked {
             let branch = state
@@ -326,63 +361,5 @@ pub async fn list_for_user(
             projects.push(proj);
         }
     }
-    Ok(projects)
-}
-
-/// Returns a stubbed feed of `Project`s
-///
-/// # Errors
-///
-///   * Parsing an empty path fails (it shouldn't really).
-pub fn discover() -> Result<Vec<Project>, error::Error> {
-    let urn = coco::Urn::new(
-        coco::Hash::hash(b"hash"),
-        coco::uri::Protocol::Git,
-        coco::uri::Path::empty(),
-    );
-
-    let other_urn = coco::Urn::new(
-        coco::Hash::hash(b"something_else"),
-        coco::uri::Protocol::Git,
-        coco::uri::Path::empty(),
-    );
-
-    let projects = vec![
-            Project {
-                urn,
-                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
-                metadata: Metadata {
-                    name: "radicle-upstream".to_string(),
-                    description: "It is not the slumber of reason that engenders monsters, \
-                        but vigilant and insomniac rationality.".to_string(),
-                    default_branch: "main".to_string(),
-                    maintainers: HashSet::new(),
-                },
-                stats: coco::Stats {
-                    contributors: 6,
-                    branches: 36,
-                    commits: 216
-                },
-            },
-            Project {
-                urn: other_urn,
-                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd".to_string(),
-                metadata: Metadata {
-                    name: "radicle-link".to_string(),
-                    description: "The monstrous complexity of our reality, a reality \
-                    cross-hatched with fibre-optic cables, radio and microwaves, \
-                    oil and gas pipelines, aerial and shipping routes, and the unrelenting, \
-                    simultaneous execution of millions of communication protocols with every passing millisecond.".to_string(),
-                    default_branch: "main".to_string(),
-                    maintainers: HashSet::new(),
-                },
-                stats: coco::Stats {
-                    contributors: 7,
-                    branches: 49,
-                    commits: 343
-                },
-            },
-        ];
-
     Ok(projects)
 }

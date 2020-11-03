@@ -201,7 +201,7 @@ complexity. Currently you'll find the following types of components in the
     <Button variant="secondary">OK</Button>
     ```
 
-  - `Component`: reusable low-to-high complexity components and layouts.
+  - `Component`: reusable low-to-high complexity components.
 
     Sub-folders in `DesignSystem/Component` should only be created for breaking
     up larger components into smaller fragments. If a component is broken up in
@@ -210,10 +210,10 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { Placeholder } from "../DesignSystem/Component";
+      import { RadicleLogo } from "../DesignSystem/Component";
     </script>
 
-    <Placeholder style="width: 300px; height: 100px" />
+    <RadicleLogo />
     ```
 
 Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
@@ -232,10 +232,6 @@ directory named after the screen, like so:
 │   └── TransactionSummaryStep.svelte
 └── RegisterProject.svelte             # screen
 ```
-
-When multiple screens share the same layout it should be extracted into a
-separate component. Layout components are suffixed with "Layout":
-`DesignSystem/Components/ModalLayout.svelt`.
 
 Finally, our file and directory naming rules are as follows:
 
@@ -256,35 +252,6 @@ overrides, components expose a `style` prop:
 
 ```html
   <Component style="margin-right: 24px"/>
-```
-
-For very common alignment cases we have a helper primitive called `<Flex>`.
-A `<Flex>` primitive offers two ways of aligning its contents:
-
-  - via the `align` prop;
-  - or by using slots.
-
-For when there is only one element to align, use the `align` prop, otherwise
-use slots:
-
-```html
-<Flex align="left">
-  <h1>Issues</h1>
-</Flex>
-
-<Flex style="margin-top: 48px;">
-  <div slot="left">
-    <Button style="margin-right: 24px">
-      Back
-    </Button>
-  </div>
-
-  <div slot="right">
-    <Button variant="primary">
-      Pay
-    </Button>
-  </div>
-</Flex>
 ```
 
 

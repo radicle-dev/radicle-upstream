@@ -1,6 +1,6 @@
 context("user profile", () => {
   before(() => {
-    cy.resetAllState();
+    cy.resetProxyState();
     cy.onboardUser("cloudhead");
     cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
       "ele",

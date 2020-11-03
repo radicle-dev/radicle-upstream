@@ -3,7 +3,6 @@
   import { push } from "svelte-spa-router";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config";
-  import { Variant as IllustrationVariant } from "../src/illustration";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
   import * as remote from "../src/remote";
@@ -25,10 +24,9 @@
   import type { Settings } from "../src/settings";
   import { dismissRemoteHelperHint, settings } from "../src/session";
 
-  import { Button, Flex, Input } from "../DesignSystem/Primitive";
+  import { Button, Emoji, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
-    Illustration,
     RadioOption,
     RemoteHelperHint,
     Tooltip,
@@ -166,6 +164,12 @@
     margin-bottom: 2rem;
   }
 
+  .btn-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+
   .double-button {
     display: grid;
     grid-template-columns: auto auto;
@@ -181,9 +185,10 @@
 
 <div class="container" data-cy="page">
   <div class="create-project" data-cy="create-project">
-    <Illustration
-      style="align-self: center; margin-bottom: 1rem;"
-      variant={IllustrationVariant.Star} />
+    <Emoji
+      emoji={'🌠'}
+      size="huge"
+      style="align-self: center; margin-bottom: 1rem;" />
     <h2 style="margin-bottom: 3rem;">Start a new project</h2>
 
     <div class="radio-selector">
@@ -276,24 +281,22 @@
       validation={$descriptionValidation}
       bind:value={description} />
 
-    <Flex style="margin-top: 1rem">
-      <div slot="right">
-        <div class="double-button">
-          <Button
-            dataCy="cancel-button"
-            variant="transparent"
-            on:click={() => dispatch('hide')}>
-            Cancel
-          </Button>
-          <Button
-            dataCy="create-project-button"
-            disabled={disableSubmit}
-            variant="primary"
-            on:click={createProject}>
-            Create project
-          </Button>
-        </div>
+    <div class="btn-container">
+      <div class="double-button">
+        <Button
+          dataCy="cancel-button"
+          variant="transparent"
+          on:click={() => dispatch('hide')}>
+          Cancel
+        </Button>
+        <Button
+          dataCy="create-project-button"
+          disabled={disableSubmit}
+          variant="primary"
+          on:click={createProject}>
+          Create project
+        </Button>
       </div>
-    </Flex>
+    </div>
   </div>
 </div>

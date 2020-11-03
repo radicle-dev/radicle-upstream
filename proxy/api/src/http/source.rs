@@ -25,7 +25,7 @@ fn blob_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(http::with_qs::<BlobQuery>())
         .and_then(handler::blob)
@@ -37,7 +37,7 @@ fn branches_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(warp::query::<BranchQuery>())
         .and_then(handler::branches)
@@ -49,7 +49,7 @@ fn commit_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::param::<coco::oid::Oid>())
         .and_then(handler::commit)
@@ -61,7 +61,7 @@ fn commits_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(warp::query::<CommitsQuery>())
         .and_then(handler::commits)
@@ -81,7 +81,7 @@ fn tags_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(warp::query::<TagQuery>())
         .and(path::end())
@@ -94,7 +94,7 @@ fn tree_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(http::with_qs::<TreeQuery>())
         .and_then(handler::tree)
@@ -110,7 +110,7 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -119,12 +119,14 @@ mod handler {
             highlight,
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
-        let current_session = session::current(ctx.state.clone(), &ctx.store).await?;
+        let settings = session::get_current(&ctx.store)?
+            .map(|session| session.settings)
+            .unwrap_or_default();
         let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
         let revision = super::http::guard_self_revision(&ctx.state, revision);
 
         let theme = if let Some(true) = highlight {
-            Some(match &current_session.settings.appearance.theme {
+            Some(match settings.appearance.theme {
                 settings::Theme::Dark => "base16-ocean.dark",
                 settings::Theme::Light => "base16-ocean.light",
             })
@@ -150,7 +152,7 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
@@ -173,7 +175,7 @@ mod handler {
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         project_urn: coco::Urn,
         sha1: oid::Oid,
     ) -> Result<impl Reply, Rejection> {
@@ -195,7 +197,7 @@ mod handler {
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         project_urn: coco::Urn,
         mut query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
@@ -229,7 +231,7 @@ mod handler {
 
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         project_urn: coco::Urn,
         super::TagQuery { peer_id }: super::TagQuery,
     ) -> Result<impl Reply, Rejection> {
@@ -254,7 +256,7 @@ mod handler {
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
@@ -358,8 +360,8 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
         let revision = coco::Revision::Branch {
@@ -482,8 +484,8 @@ mod test {
     #[tokio::test]
     async fn blob_dev_branch() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
         let revision = coco::Revision::Branch {
@@ -528,8 +530,8 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
         let urn = replicate_platinum(&ctx).await?;
 
         let res = request()
@@ -556,8 +558,8 @@ mod test {
     #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
         let sha1 = coco::oid::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
@@ -603,8 +605,8 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
 
@@ -633,8 +635,8 @@ mod test {
     #[tokio::test]
     async fn local_state() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let mut path = env::current_dir()?;
         path.push("../../fixtures/git-platinum");
@@ -666,8 +668,8 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
 
@@ -696,8 +698,8 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
         let urn = replicate_platinum(&ctx).await?;
 
         let prefix = "src";
@@ -767,8 +769,8 @@ mod test {
             .add(b'=');
 
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
         let urn = replicate_platinum(&ctx).await?;
 
         let revision = coco::Revision::Branch {
@@ -802,14 +804,14 @@ mod test {
         Ok(())
     }
 
-    async fn replicate_platinum(ctx: &context::Context) -> Result<coco::Urn, error::Error> {
+    async fn replicate_platinum(ctx: &context::Unsealed) -> Result<coco::Urn, error::Error> {
         let owner = ctx.state.init_owner("cloudhead").await?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.state,
             &owner,
             "git-platinum",
             "fixture data",
-            "master",
+            coco::control::default_branch(),
         )
         .await?;
         Ok(platinum_project.urn())

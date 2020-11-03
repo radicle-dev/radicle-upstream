@@ -20,4 +20,20 @@ pub enum Error {
     /// Issues when access persistent storage.
     #[error(transparent)]
     Store(#[from] kv::Error),
+
+    /// The key store is sealed
+    #[error("Keystore is sealed")]
+    KeystoreSealed,
+
+    /// The passphrase was incorrect
+    #[error("Passphrase incorrect")]
+    WrongPassphrase,
+
+    /// The request auth token differs from the one in context
+    #[error("Invalid authentication token")]
+    InvalidAuthCookie,
+
+    /// Errors stemming from [`coco::request::waiting_room::WaitingRoom`] interactions.
+    #[error(transparent)]
+    WaitingRoom(#[from] coco::request::waiting_room::Error),
 }

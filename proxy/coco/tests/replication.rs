@@ -8,7 +8,7 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, seed::Seed, state, RunConfig, SyncConfig};
+use coco::{config, project::peer, seed::Seed, RunConfig, SyncConfig};
 
 #[macro_use]
 mod common;
@@ -59,19 +59,21 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     {
         let another_peer = librad::peer::PeerId::from(librad::keys::SecretKey::new());
         bob_state.track(project.urn(), another_peer).await?;
-        let alice = alice.to_builder().build().unwrap();
-        let have = bob_state.tracked(project.urn()).await?;
+        let mut have = bob_state
+            .tracked(project.urn())
+            .await?
+            .into_iter()
+            .map(|peer| peer.map(|status| status.map(|user| user.name().to_string())))
+            .collect::<Vec<_>>();
+        have.sort_by(|p1, p2| p1.status().cmp(p2.status()));
         let want: Vec<_> = vec![
             coco::project::Peer::Remote {
-                peer_id: alice_state.peer_id(),
-                status: coco::project::ReplicationStatus::Replicated {
-                    role: coco::project::Role::Maintainer,
-                    user: alice,
-                },
+                peer_id: another_peer,
+                status: peer::Status::NotReplicated,
             },
             coco::project::Peer::Remote {
-                peer_id: another_peer,
-                status: coco::project::ReplicationStatus::NotReplicated,
+                peer_id: alice_state.peer_id(),
+                status: peer::Status::replicated(peer::Role::Maintainer, alice.name().to_string()),
             },
         ];
         assert_eq!(have, want);
@@ -184,8 +186,13 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
             )?
         };
 
-        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        {
+            let results = alice_state.transport_results();
+            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+            assert!(results.wait(Duration::from_secs(3)).is_some());
+        }
+
         commit_id
     };
 
@@ -324,6 +331,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         let path = bob_state
             .checkout(project.urn(), alice_peer_id, bob_repo_path)
             .await?;
+
         let repo = git2::Repository::open(path)?;
         let oid = repo
             .find_reference(&format!("refs/heads/{}", project.default_branch()))?
@@ -348,10 +356,16 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
             )?
         };
 
-        let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-        rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+        {
+            let results = bob_state.transport_results();
+            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
+            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
+            assert!(results.wait(Duration::from_secs(3)).is_some());
+        }
+
         commit_id
     };
+
     {
         let bob_addr = bob_state.listen_addr();
         let bob_peer_id = bob_state.peer_id();

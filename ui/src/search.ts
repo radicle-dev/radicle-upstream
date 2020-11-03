@@ -3,13 +3,14 @@ import * as event from "./event";
 import * as project from "./project";
 import * as remote from "./remote";
 import * as validation from "./validation";
+import * as waitingRoom from "./waitingRoom";
 
 // STATE
 const projectSearchStore = remote.createStore<project.Project>();
 export const projectSearch = projectSearchStore.readable;
 
 // FIXME(xla): Use Request type once serialised and returned by the API.
-const projectRequestStore = remote.createStore<boolean>();
+const projectRequestStore = remote.createStore<waitingRoom.ProjectRequest>();
 export const projectRequest = projectRequestStore.readable;
 
 enum Kind {
@@ -37,6 +38,7 @@ type Msg = Reset | RequestProject | SearchProject;
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Reset:
+      projectRequestStore.reset();
       projectSearchStore.reset();
 
       break;
@@ -45,7 +47,10 @@ const update = (msg: Msg): void => {
       projectRequestStore.loading();
       // FIXME(xla): This truly belongs in project.ts.
       api
-        .put<null, boolean>(`projects/request/${msg.urn}`, null)
+        .put<null, waitingRoom.ProjectRequest>(
+          `projects/requests/${msg.urn}`,
+          null
+        )
         .then(projectRequestStore.success)
         .catch(projectRequestStore.error);
 
@@ -55,10 +60,7 @@ const update = (msg: Msg): void => {
       // FIXME(xla): A verbatim copy from project.ts fetch, it should be consolidated.
       api
         .get<project.Project>(`projects/${msg.urn}`)
-        .then(res => {
-          console.log(res);
-          projectSearchStore.success(res);
-        })
+        .then(projectSearchStore.success)
         .catch(projectSearchStore.error);
 
       break;

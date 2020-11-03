@@ -1,12 +1,14 @@
-<script lang="ts">
+<script lang="typescript">
   import { getContext } from "svelte";
+
+  import type { UnsealedSession } from "../../src/session";
 
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy = "";
   export let style = "";
 
-  const session = getContext("session");
+  const session: UnsealedSession = getContext("session");
 </script>
 
 <style>
@@ -15,6 +17,7 @@
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
     height: 100%;
+    min-width: 60rem;
   }
 </style>
 

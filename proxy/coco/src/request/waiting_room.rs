@@ -63,6 +63,9 @@ impl<T> From<Request<TimedOut, T>> for Error {
     }
 }
 
+/// Holds either the newly created request or the request already present for the requested urn.
+pub type Created<T> = Either<SomeRequest<T>, SomeRequest<T>>;
+
 /// A `WaitingRoom` knows about a set of `Request`s that have been made, and can look them up via
 /// their `RadUrn`.
 ///
@@ -123,6 +126,11 @@ impl<T, D> WaitingRoom<T, D> {
         }
     }
 
+    /// Check that the `WaitingRoom` has the given `urn`.
+    pub fn has(&self, urn: &RadUrn) -> bool {
+        self.requests.contains_key(&urn.id)
+    }
+
     /// Get the underlying [`SomeRequest`] for the given `urn`.
     ///
     /// Returns `None` if there is no such request.
@@ -146,17 +154,17 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     /// If there is no such `urn` then it create a fresh `Request` using the `urn` and `timestamp`
     /// and it will return `None`.
-    pub fn request(&mut self, urn: &RadUrn, timestamp: T) -> Option<SomeRequest<T>>
+    pub fn request(&mut self, urn: &RadUrn, timestamp: T) -> Either<SomeRequest<T>, SomeRequest<T>>
     where
         T: Clone,
     {
         match self.get(urn) {
             None => {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
-                self.requests.insert(urn.id.clone(), request);
-                None
+                self.requests.insert(urn.id.clone(), request.clone());
+                Either::Left(request)
             },
-            Some(request) => Some(request.clone()),
+            Some(request) => Either::Right(request.clone()),
         }
     }
 
@@ -455,9 +463,10 @@ mod test {
             urn,
             authority: peer,
         };
-        let request = waiting_room.request(&url.urn, 0);
+        let have = waiting_room.request(&url.urn, 0);
+        let want = waiting_room.get(&url.urn).unwrap();
 
-        assert_eq!(request, None);
+        assert_eq!(have, Either::Left(want.clone()));
 
         let created = waiting_room.find_by_state(RequestState::Created);
         assert_eq!(
@@ -515,7 +524,7 @@ mod test {
 
         assert_eq!(
             request,
-            Some(SomeRequest::Created(Request::new(urn.clone(), ())))
+            Either::Right(SomeRequest::Created(Request::new(urn.clone(), ())))
         );
 
         waiting_room.queried(&urn, ())?;
@@ -523,7 +532,7 @@ mod test {
 
         assert_eq!(
             request,
-            Some(SomeRequest::Requested(Request::new(urn, ()).request(())))
+            Either::Right(SomeRequest::Requested(Request::new(urn, ()).request(())))
         );
 
         Ok(())

@@ -1,8 +1,9 @@
-<script lang="ts">
+<script lang="typescript">
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
   import * as path from "../src/path";
+  import type { UnsealedSession } from "../src/session";
 
   import {
     Header,
@@ -11,13 +12,13 @@
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
+  import Following from "./Profile/Following.svelte";
   import Projects from "./Profile/Projects.svelte";
-  import Tracking from "./Profile/Tracking.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
+    "/profile/following": Following,
     "/profile/projects": Projects,
-    "/profile/tracking": Tracking,
     "*": NotFound,
   };
 
@@ -39,19 +40,19 @@
     {
       icon: Icon.Network,
       title: "Following",
-      href: path.profileTracking(),
+      href: path.profileFollowing(),
       looseActiveStateMatching: false,
     },
   ];
 
-  const identity = getContext("session").identity;
+  const session: UnsealedSession = getContext("session");
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
   <Header.Large
-    name={identity.metadata.handle}
-    urn={identity.urn}
-    avatarFallback={identity.avatarFallback}>
+    avatarFallback={session.identity.avatarFallback}
+    name={session.identity.metadata.handle}
+    urn={session.identity.urn}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

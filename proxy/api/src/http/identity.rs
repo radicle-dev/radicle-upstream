@@ -17,7 +17,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn create_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::post())
         .and(warp::body::json())
         .and_then(handler::create)
@@ -27,7 +27,7 @@ fn create_filter(
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::get())
         .and(path::param::<coco::Urn>())
         .and_then(handler::get)
@@ -37,7 +37,7 @@ fn get_filter(
 fn list_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context(ctx)
+    http::with_context_unsealed(ctx)
         .and(warp::get())
         .and(path::end())
         .and_then(handler::list)
@@ -51,33 +51,30 @@ mod handler {
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
-        ctx: context::Context,
+        ctx: context::Unsealed,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        if let Some(identity) = session::current(ctx.state.clone(), &ctx.store)
-            .await?
-            .identity
-        {
+        if let Some(session) = session::get_current(&ctx.store)? {
             return Err(Rejection::from(error::Error::from(
-                coco::state::Error::already_exists(identity.urn),
+                coco::state::Error::already_exists(session.identity.urn),
             )));
         }
 
         let id = identity::create(&ctx.state, &input.handle).await?;
 
-        session::set_identity(&ctx.store, id.clone())?;
+        session::initialize(&ctx.store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(ctx: context::Context, id: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn get(ctx: context::Unsealed, id: coco::Urn) -> Result<impl Reply, Rejection> {
         let id = identity::get(&ctx.state, id.clone()).await?;
         Ok(reply::json(&id))
     }
 
     /// Retrieve the list of identities known to the session user.
-    pub async fn list(ctx: context::Context) -> Result<impl Reply, Rejection> {
+    pub async fn list(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let users = identity::list(&ctx.state).await?;
         Ok(reply::json(&users))
     }
@@ -100,13 +97,15 @@ mod test {
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use crate::{avatar, context, error, http, identity, session};
+    use radicle_avatar as avatar;
+
+    use crate::{context, error, http, identity, session};
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let res = request()
             .method("POST")
@@ -118,8 +117,8 @@ mod test {
             .await;
 
         let urn = {
-            let session = session::current(ctx.state.clone(), &ctx.store).await?;
-            session.identity.expect("failed to set identity").urn
+            let session = session::get_current(&ctx.store)?.expect("no session exists");
+            session.identity.urn
         };
 
         let peer_id = ctx.state.peer_id();
@@ -155,8 +154,8 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let user = ctx.state.init_user("cloudhead").await?;
 
@@ -190,8 +189,8 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
+        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone().into());
 
         let fintohaps: identity::Identity = {
             let id = identity::create(&ctx.state, "cloudhead").await?;
@@ -201,14 +200,14 @@ mod test {
                 coco::user::verify(user)?
             };
 
-            session::set_identity(&ctx.store, id)?;
+            session::initialize(&ctx.store, id)?;
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
                 &owner,
                 "git-platinum",
                 "fixture data",
-                "master",
+                coco::control::default_branch(),
             )
             .await?;
 

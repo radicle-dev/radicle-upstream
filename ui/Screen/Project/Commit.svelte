@@ -6,7 +6,7 @@
   import { commit as store, fetchCommit } from "../../src/source.ts";
   import * as remote from "../../src/remote.ts";
 
-  import { Flex, Icon } from "../../DesignSystem/Primitive";
+  import { Icon } from "../../DesignSystem/Primitive";
   import { Header, Remote } from "../../DesignSystem/Component";
 
   import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
@@ -50,6 +50,12 @@
   .branch {
     margin: 0 0.5rem;
     color: var(--color-foreground-level-6);
+  }
+
+  .context {
+    align-items: flex-end;
+    display: flex;
+    justify-content: space-between;
   }
 
   .author {
@@ -111,7 +117,7 @@
 
 <div class="commit-page" data-cy="commit-page">
   <Remote {store} let:data={commit}>
-    <Header.Back style="padding: 1rem;" on:arrowClick={() => pop()}>
+    <Header.Back style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
       <h3 style="margin-bottom: .75rem">{commit.header.summary}</h3>
       <div class="metadata">
         <span class="field">
@@ -146,8 +152,8 @@
         {commit.header.description}
       </pre>
       <hr />
-      <Flex style="align-items: flex-end">
-        <div slot="left">
+      <div class="context">
+        <div>
           <p class="field">
             Authored by <span class="author typo-semi-bold"> {commit.header.author.name} </span>
             <span class="typo-mono">&lt;{commit.header.author.email}&gt;</span>
@@ -161,13 +167,11 @@
             </p>
           {/if}
         </div>
-        <div slot="right">
-          <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
-          <p class="field">
-            Commit <span class="hash">{commit.header.sha1}</span>
-          </p>
-        </div>
-      </Flex>
+        <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
+        <p class="field">
+          Commit <span class="hash">{commit.header.sha1}</span>
+        </p>
+      </div>
     </div>
 
     <main>

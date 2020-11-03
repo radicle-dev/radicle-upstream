@@ -17,7 +17,7 @@
   import { ValidationStatus } from "../src/validation";
 
   import { Icon, Input } from "../DesignSystem/Primitive";
-  import { Remote, TrackToggle } from "../DesignSystem/Component";
+  import { FollowToggle, Remote } from "../DesignSystem/Component";
 
   let id: string;
   let value: string;
@@ -26,12 +26,9 @@
   const urnValidation = urnValidationStore();
 
   const navigateToProject = (project: Project) => {
+    reset();
+    push(path.projectSource(project.id));
     dispatch("hide");
-    push(path.projectSource(project.urn));
-  };
-  const navigateToUntracked = () => {
-    dispatch("hide");
-    push(path.projectUntracked(value));
   };
   const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
@@ -45,11 +42,12 @@
         }
         break;
       case "Escape":
+        reset();
         dispatch("hide");
         break;
     }
   };
-  const onTrack = () => {
+  const follow = () => {
     requestProject({ urn: value });
   };
 
@@ -70,15 +68,10 @@
   }
   // Fire notification when a request has been created.
   $: if ($request.status === remote.Status.Success) {
-    notification.info(
-      "You’ll be notified on your profile when this project has been found.",
-      false,
-      "View profile",
-      () => {
-        dispatch("hide");
-        push(path.profileProjects());
-      }
-    );
+    reset();
+    push(path.profileFollowing());
+    notification.info("You’ll be notified when this project has been found.");
+    dispatch("hide");
   }
 
   $: tracked = $store.status === remote.Status.Success;
@@ -133,13 +126,12 @@
       autofocus
       bind:value
       hint="v"
-      inputStyle="color: var(--color-foreground-level-6);"
+      inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
       on:keydown={onKeydown}
       placeholder="Have a project id? Paste it here…"
       showLeftItem
-      style="border: none; border-radius: 0.5rem;"
       validation={$urnValidation}>
-      <div slot="left" style="display: flex;">
+      <div slot="left">
         <Icon.MagnifyingGlass />
       </div>
     </Input.Text>
@@ -157,8 +149,8 @@
 
       <div slot="error" style="padding: 1.5rem;">
         <div class="header typo-header-3">
-          <span class="id" on:click={navigateToUntracked}>{id}</span>
-          <TrackToggle on:track={onTrack} style="margin-left: 1rem;" />
+          <span class="id">{id}</span>
+          <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
         </div>
 
         <p style="color: var(--color-foreground-level-6);">

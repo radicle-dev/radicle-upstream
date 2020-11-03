@@ -2,6 +2,8 @@
   import { createEventDispatcher } from "svelte";
 
   import { BadgeType } from "../../src/badge";
+  import * as modal from "../../src/modal";
+  import * as path from "../../src/path";
   import { Role } from "../../src/project";
   import type { User } from "../../src/project";
   import { CSSPosition } from "../../src/style";
@@ -34,12 +36,15 @@
 
 <style>
   .peer-selector {
+    display: flex;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    padding: 0.5rem;
-    display: flex;
+    padding: 0 0.5rem;
+    align-items: center;
+    height: 2.5rem;
     cursor: pointer;
     justify-content: space-between;
+    background-color: var(--color-foreground-level-1);
   }
 
   .peer-selector:hover {
@@ -59,19 +64,19 @@
   }
 
   .selector-expand {
-    align-self: flex-end;
+    margin-left: 0.5rem;
   }
 
   .peer-dropdown-container {
     display: flex;
     position: absolute;
     right: 0;
-    top: 0;
+    top: -1px;
   }
 
   .peer-dropdown {
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;
     max-width: 30rem;
@@ -82,16 +87,44 @@
   .peer {
     display: flex;
     color: var(--color-foreground-level-6);
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    height: 2.5rem;
     user-select: none;
     align-items: center;
     justify-content: space-between;
+    background-color: var(--color-background);
+  }
+
+  .peer:first-child {
+    border-radius: 0.1875rem 0.1875rem 0 0;
+  }
+  .peer:last-child {
+    border-radius: 0 0 0.1875rem 0.1875rem;
+  }
+
+  .peer.selected {
+    background-color: var(--color-foreground-level-2);
+  }
+
+  .peer:hover {
+    cursor: pointer;
+    background-color: var(--color-foreground-level-2);
   }
 
   .open-profile {
     display: flex;
     justify-content: center;
     cursor: pointer;
+    margin-left: 0.5rem;
+  }
+
+  .remotes {
+    justify-content: flex-start;
+  }
+
+  .remotes p {
+    white-space: nowrap;
+    margin-right: 0.5rem;
   }
 </style>
 
@@ -110,7 +143,10 @@
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
-      <p class="typo-text-bold typo-overflow-ellipsis">
+      <p
+        class="typo-text-bold typo-overflow-ellipsis"
+        style="max-width: 7.5rem;"
+        title={selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}>
         {selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}
       </p>
       <p>
@@ -128,8 +164,9 @@
         <div
           class="peer"
           class:selected={peer.identity.peerId == selected.identity.peerId}
-          data-peer-handle={peer.identity.metadata.handle}>
-          <div style="display: flex;" on:click={() => select(peer)}>
+          data-peer-handle={peer.identity.metadata.handle}
+          on:click={() => select(peer)}>
+          <div style="display: flex;">
             <Avatar
               avatarFallback={peer.identity.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
@@ -159,6 +196,13 @@
           </Tooltip>
         </div>
       {/each}
+      <div
+        class="peer remotes"
+        data-cy="manage-remotes"
+        on:click={() => modal.toggle(path.managePeers())}>
+        <Icon.Pen style="margin-right: .5rem;" />
+        <p>Manage remotes</p>
+      </div>
     </div>
   </div>
 </Overlay>

@@ -1,4 +1,4 @@
-import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
+import { DIALOG_SHOWOPENDIALOG } from "../../../native/ipc.js";
 
 context("project creation", () => {
   const withEmptyDirectoryStub = callback => {
@@ -94,7 +94,7 @@ context("project creation", () => {
   };
 
   beforeEach(() => {
-    cy.resetAllState();
+    cy.resetProxyState();
     cy.onboardUser();
     cy.visit("./public/index.html");
   });

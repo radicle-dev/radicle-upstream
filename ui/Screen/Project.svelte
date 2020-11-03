@@ -29,13 +29,13 @@
   import type { Urn } from "../src/urn";
 
   import {
+    FollowToggle,
     Header,
     HorizontalMenu,
     Remote,
     RevisionSelector,
     SidebarLayout,
     Tooltip,
-    TrackToggle,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -169,7 +169,7 @@
               <Tooltip
                 position={CSSPosition.Left}
                 value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-                <TrackToggle disabled expanded tracking />
+                <FollowToggle disabled followign />
               </Tooltip>
             {/if}
           </Remote>
@@ -198,7 +198,8 @@
       </div>
       <div slot="right">
         <CheckoutButton
-          on:checkout={ev => handleCheckout(ev, project, $selectedPeer)} />
+          on:checkout={ev => handleCheckout(ev, project, $selectedPeer)}
+          projectName={project.metadata.name} />
       </div>
     </Header.Large>
     <Router {routes} />

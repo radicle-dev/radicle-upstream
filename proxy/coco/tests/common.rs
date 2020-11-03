@@ -8,10 +8,11 @@ use tokio::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
+    git_ext::OneLevel,
     keys::SecretKey,
     net::protocol::ProtocolEvent,
     peer::PeerId,
-    signer,
+    reflike, signer,
     uri::{RadUrl, RadUrn},
 };
 
@@ -109,7 +110,12 @@ pub async fn build_peer_with_seeds(
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
     let paths = Paths::from_root(tmp_dir.path())?;
-    let conf = config::configure(paths, key, *config::LOCALHOST_ANY, seeds);
+    let conf = config::configure(
+        paths,
+        key,
+        *config::LOCALHOST_ANY,
+        config::static_seed_discovery(seeds),
+    );
 
     let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
 
@@ -127,25 +133,25 @@ pub fn init_logging() {
 }
 
 #[allow(dead_code)]
-pub fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+pub fn radicle_project(path: PathBuf) -> project::Create<project::Repo> {
     project::Create {
         repo: project::Repo::New {
             path,
             name: "radicalise".to_string(),
         },
         description: "the people".to_string(),
-        default_branch: "power".to_string(),
+        default_branch: OneLevel::from(reflike!("power")),
     }
 }
 
 #[allow(dead_code)]
-pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<PathBuf> {
+pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<project::Repo> {
     project::Create {
         repo: project::Repo::New {
             path,
             name: "just".to_string(),
         },
         description: "do".to_string(),
-        default_branch: "it".to_string(),
+        default_branch: OneLevel::from(reflike!("it")),
     }
 }

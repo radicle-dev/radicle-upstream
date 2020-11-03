@@ -67,7 +67,11 @@ impl Subroutines {
         subscriber: broadcast::Sender<Event>,
         control_receiver: mpsc::Receiver<control::Request>,
     ) -> Self {
-        let announce_timer = interval(run_config.announce.interval);
+        let announce_timer = if run_config.announce.interval.is_zero() {
+            None
+        } else {
+            Some(interval(run_config.announce.interval))
+        };
         let waiting_room_timer = interval(run_config.waiting_room.interval);
         let (input_sender, inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
         let run_state = RunState::from(run_config);
@@ -75,11 +79,14 @@ impl Subroutines {
         let inputs = {
             let mut coalesced = SelectAll::new();
             coalesced.push(protocol_events.map(Input::Protocol).boxed());
-            coalesced.push(
-                announce_timer
-                    .map(|_tick| Input::Announce(AnnounceInput::Tick))
-                    .boxed(),
-            );
+
+            if let Some(timer) = announce_timer {
+                coalesced.push(
+                    timer
+                        .map(|_tick| Input::Announce(AnnounceInput::Tick))
+                        .boxed(),
+                );
+            }
             coalesced.push(
                 waiting_room_timer
                     .map(|_tick| Input::Request(RequestInput::Tick))
@@ -91,8 +98,17 @@ impl Subroutines {
                         control::Request::CurrentStatus(sender) => {
                             Input::Control(ControlInput::Status(sender))
                         },
-                        control::Request::Urn(urn, time, sender) => {
-                            Input::Request(RequestInput::Requested(urn, time, Some(sender)))
+                        control::Request::CancelSearch(urn, time, sender) => {
+                            Input::Control(ControlInput::CancelRequest(urn, time, sender))
+                        },
+                        control::Request::GetSearch(urn, sender) => {
+                            Input::Control(ControlInput::GetRequest(urn, sender))
+                        },
+                        control::Request::ListSearches(sender) => {
+                            Input::Control(ControlInput::ListRequests(sender))
+                        },
+                        control::Request::StartSearch(urn, time, sender) => {
+                            Input::Control(ControlInput::CreateRequest(urn, time, Some(sender)))
                         },
                     })
                     .boxed(),
@@ -250,7 +266,10 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
 async fn control_respond(cmd: control::Response) {
     match cmd {
         control::Response::CurrentStatus(sender, status) => sender.send(status).ok(),
-        control::Response::Urn(sender, request) => sender.send(request).ok(),
+        control::Response::CancelSearch(sender, request) => sender.send(request).ok(),
+        control::Response::GetSearch(sender, request) => sender.send(request).ok(),
+        control::Response::ListSearches(sender, requests) => sender.send(requests).ok(),
+        control::Response::StartSearch(sender, request) => sender.send(request).ok(),
     };
 }
 

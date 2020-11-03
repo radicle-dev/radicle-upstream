@@ -36,5 +36,17 @@ export const themeOptions: Option[] = [
   },
 ];
 
+export const defaultSetttings = (): Settings => ({
+  appearance: {
+    theme: Theme.Light,
+    hints: {
+      showRemoteHelper: true,
+    },
+  },
+  coco: {
+    seeds: [],
+  },
+});
+
 // gives back the OS you're using in hotkeys.svelte & shortcuts.svelte
 export const isMac: boolean = navigator.platform.includes("Mac");

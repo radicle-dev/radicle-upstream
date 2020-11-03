@@ -1,4 +1,4 @@
-import { DIALOG_SHOWOPENDIALOG, OPEN_PATH } from "../../native/ipc.js";
+import { DIALOG_SHOWOPENDIALOG, OPEN_PATH } from "../../../native/ipc.js";
 
 context("project checkout", () => {
   const withWorkspaceStub = callback => {
@@ -35,7 +35,7 @@ context("project checkout", () => {
   };
 
   beforeEach(() => {
-    cy.resetAllState();
+    cy.resetProxyState();
     cy.onboardUser();
     cy.createProjectWithFixture();
     cy.visit("./public/index.html");

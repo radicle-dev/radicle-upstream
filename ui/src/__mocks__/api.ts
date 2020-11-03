@@ -2,11 +2,12 @@ import * as project from "../project";
 import * as session from "../session";
 import * as settings from "../settings";
 import * as source from "../source";
+import * as identity from "../identity";
 
 type MockedResponse =
   | project.Project
   | project.Project[]
-  | session.Session
+  | session.SessionData
   | source.LocalState
   | null;
 
@@ -27,8 +28,8 @@ export const upstreamProjectMock: project.Project = {
   },
 };
 
-export const surfProjectMock: project.Project = {
-  urn: "rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
+const surfProjectMock: project.Project = {
+  id: "%rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
   shareableEntityIdentifier: "sos@{}",
   metadata: {
     name: "radicle-surf",
@@ -43,7 +44,7 @@ export const surfProjectMock: project.Project = {
   },
 };
 
-export const sessionMock: session.Session = {
+export const sessionMock: session.SessionData = {
   settings: {
     appearance: {
       theme: settings.Theme.Light,
@@ -55,6 +56,7 @@ export const sessionMock: session.Session = {
       seeds: ["seed.radicle.xyz"],
     },
   },
+  identity: identity.fallback,
 };
 
 export const localStateMock: source.LocalState = {

@@ -2,7 +2,9 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::{avatar, error};
+use radicle_avatar as avatar;
+
+use crate::error;
 
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -69,6 +71,9 @@ pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Identity, error::
 /// Retrieve the list of identities known to the session user.
 ///
 /// # Errors
+///
+///  * If we cannot get the list of projects
+///  * If we cannot get the tracked peers for a given project
 pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
     for project in state.list_projects().await? {
@@ -77,13 +82,7 @@ pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
             .tracked(project_urn)
             .await?
             .into_iter()
-            .filter_map(|peer| match peer {
-                coco::project::Peer::Remote {
-                    peer_id,
-                    status: coco::project::ReplicationStatus::Replicated { user, .. },
-                } => Some((peer_id, user)),
-                _ => None,
-            })
+            .filter_map(coco::project::Peer::replicated_remote)
         {
             let user = peer.into();
             if !users.contains(&user) {

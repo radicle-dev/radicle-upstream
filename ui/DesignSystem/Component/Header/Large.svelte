@@ -36,27 +36,22 @@
 
   .left {
     display: flex;
+    min-width: 16rem;
+    margin-right: 1.5rem;
   }
 
   .metadata {
     display: flex;
     flex-direction: column;
     align-self: center;
+    width: -webkit-fill-available;
+    min-width: 0;
   }
 
   .description {
     margin-top: 1rem;
     margin-bottom: 0.5rem;
     color: var(--color-foreground-level-6);
-    height: 1.5rem; /* 1 line */
-    max-width: 60vw;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-  .user {
-    display: flex;
-    align-items: center;
   }
 
   .project-stats {
@@ -70,6 +65,11 @@
     margin-right: 1rem;
   }
 
+  .project-stat-item p {
+    margin-left: 0.5rem;
+    white-space: nowrap;
+  }
+
   .project-stat-separator {
     display: flex;
     color: var(--color-foreground-level-3);
@@ -80,6 +80,7 @@
     background-color: var(--color-background);
     position: sticky;
     top: 0;
+    z-index: 1;
   }
 
   .elevation {
@@ -117,27 +118,27 @@
       {/if}
 
       <div class="metadata">
-        <div class="user">
-          <h1 data-cy="entity-name" style="display: flex; align-items: center;">
-            {name}
-          </h1>
-        </div>
+        <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
+          {name}
+        </h1>
         <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {#if description.length > 0}
-          <p class="description">{description}</p>
+          <p class="description typo-overflow-ellipsis" title={description}>
+            {description}
+          </p>
         {/if}
         {#if stats}
           <div class="project-stats" data-cy="project-stats">
             <div class="project-stat-item">
               <Icon.Branch />
-              <p style="margin-left: 0.5rem;">
+              <p>
                 {stats.branches === 1 ? `1 Branch` : `${stats.branches} Branches`}
               </p>
             </div>
             <span class="typo-mono-bold project-stat-separator">•</span>
             <div class="project-stat-item">
               <Icon.User />
-              <p style="margin-left: 0.5rem;">
+              <p>
                 {stats.contributors === 1 ? `1 Contributor` : `${stats.contributors} Contributors`}
               </p>
             </div>

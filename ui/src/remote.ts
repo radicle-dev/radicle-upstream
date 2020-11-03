@@ -1,4 +1,4 @@
-import { derived, writable, Readable } from "svelte/store";
+import { derived, get, writable, Readable } from "svelte/store";
 
 import { Error } from "./error";
 
@@ -25,7 +25,7 @@ export interface Store<T> extends Readable<Data<T>> {
   success: (response: T) => void;
   error: (error: Error) => void;
   readable: Readable<Data<T>>;
-  start: (start: Starter) => void;
+  start: (start: StartStopNotifier<Data<T>>) => void;
   reset: () => void;
 }
 
@@ -38,15 +38,17 @@ interface Update<T> {
   (status: Status.Error, payload: Error): void;
 }
 
-declare type Starter = () => void;
+declare type Subscriber<T> = (value: T) => void;
+declare type Unsubscriber = () => void;
+declare type StartStopNotifier<T> = (set: Subscriber<T>) => Unsubscriber | void;
 
 // TODO(sos): add @param docs here, consider making generic type T required
 export const createStore = <T>(): Store<T> => {
-  let starter: Starter | null;
+  let starter: StartStopNotifier<Data<T>> | null;
   const initialState = { status: Status.NotAsked } as Data<T>;
-  const internalStore = writable(initialState, () => {
+  const internalStore = writable(initialState, set => {
     if (starter) {
-      return starter();
+      return starter(set);
     }
   });
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -83,7 +85,7 @@ export const createStore = <T>(): Store<T> => {
     loading: (): void => updateInternalStore(Status.Loading),
     error: (error: Error): void => updateInternalStore(Status.Error, error),
     readable: derived(internalStore, $store => $store),
-    start: (start: Starter): void => {
+    start: (start: StartStopNotifier<Data<T>>): void => {
       starter = start;
     },
     reset: resetInternalStore,
@@ -112,4 +114,21 @@ export const chain = <I, O>(
   });
 
   return promise;
+};
+
+export const fetch = <T>(
+  store: Store<T>,
+  req: Promise<T>,
+  filter?: (val: T) => T
+): void => {
+  if (get(store).status === Status.NotAsked) {
+    store.loading();
+  }
+
+  req
+    .then(val => {
+      return filter ? filter(val) : val;
+    })
+    .then(store.success)
+    .catch(store.error);
 };

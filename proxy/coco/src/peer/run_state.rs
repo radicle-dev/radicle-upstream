@@ -1,7 +1,7 @@
 //! State machine to manage the current mode of operation during peer lifecycle.
 
 use std::{
-    collections::HashSet,
+    collections::HashMap,
     time::{Duration, Instant},
 };
 
@@ -98,6 +98,8 @@ pub enum Event {
     PeerSynced(PeerId),
     /// Request fullfilled with a successful clone.
     RequestCloned(RadUrl),
+    /// Request is being cloned from a peer.
+    RequestCloning(RadUrl),
     /// Requested urn was queried on the network.
     RequestQueried(RadUrn),
     /// Waiting room interval ticked.
@@ -117,6 +119,7 @@ impl MaybeFrom<&Input> for Event {
             Input::PeerSync(SyncInput::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(event) => Some(Self::Protocol(event.clone())),
             Input::Request(RequestInput::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
+            Input::Request(RequestInput::Cloning(url)) => Some(Self::RequestCloning(url.clone())),
             Input::Request(RequestInput::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
             Input::Request(RequestInput::Tick) => Some(Self::RequestTick),
             Input::Request(RequestInput::TimedOut(urn)) => Some(Self::RequestTimedOut(urn.clone())),
@@ -125,7 +128,7 @@ impl MaybeFrom<&Input> for Event {
     }
 }
 
-/// Significant events that occur during [`Peer`] lifetime.
+/// Significant events that occur during peer’s lifetime.
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Input {
@@ -154,14 +157,31 @@ pub enum AnnounceInput {
     Tick,
 }
 
-/// Announcement subroutine for status events.
+/// Requests from the peer control.
 #[derive(Debug)]
 pub enum ControlInput {
     /// New status.
     Status(oneshot::Sender<Status>),
+
+    /// Cancel an ongoing project search.
+    CancelRequest(
+        RadUrn,
+        Instant,
+        oneshot::Sender<Result<(), waiting_room::Error>>,
+    ),
+    /// Initiate a new project search on the network.
+    CreateRequest(
+        RadUrn,
+        Instant,
+        Option<oneshot::Sender<waiting_room::Created<Instant>>>,
+    ),
+    /// Request a project search.
+    GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),
+    /// Request the list of project searches.
+    ListRequests(oneshot::Sender<Vec<SomeRequest<Instant>>>),
 }
 
-/// Request even that wishes to fetch an identity from the network.
+/// Request event for projects requested from the network.
 #[derive(Debug)]
 pub enum RequestInput {
     /// Started cloning the requested urn from a peer.
@@ -177,12 +197,6 @@ pub enum RequestInput {
     },
     /// Query the network for the `RadUrn`.
     Queried(RadUrn),
-    /// A urn was requested.
-    Requested(
-        RadUrn,
-        Instant,
-        Option<oneshot::Sender<Option<SomeRequest<Instant>>>>,
-    ),
     /// [`WaitingRoom`] query interval.
     Tick,
     /// The request for [`RadUrn`] timed out.
@@ -221,7 +235,9 @@ pub enum Status {
     /// Phase where the local peer tries get up-to-date.
     #[serde(rename_all = "camelCase")]
     Syncing {
-        /// Number of synchronisation attempts.
+        /// Number of completed syncs.
+        synced: usize,
+        /// Number of synchronisation underway.
         syncs: usize,
     },
     /// The local peer is operational and is able to interact with the peers it has connected to.
@@ -299,7 +315,17 @@ pub struct RunState {
     /// Confiugration to change how input [`Input`]s are interpreted.
     config: Config,
     /// Tracking remote peers that have an active connection.
-    connected_peers: HashSet<PeerId>,
+    ///
+    /// As a peer known by [`PeerId`] can be connected multiple times, e.g. when opening a git
+    /// connection to clone and fetch, tracking the connection count per peer is paramount to not
+    /// falsely end up in an unconnected state despite the fact the protocol is connected, alive
+    /// and kicking. The following scenario led to an offline state when a `HashSet` was used in
+    /// the past:
+    ///
+    /// `Connected(Peer1) -> Connected(Peer1) -> Disconnecting(Peer1)`
+    //
+    // FIXME(xla): Use a `Option<NonEmpty>` here to express the invariance.
+    connected_peers: HashMap<PeerId, usize>,
     /// Current internal status.
     pub status: Status,
     /// Timestamp of last status change.
@@ -317,7 +343,7 @@ impl From<Config> for RunState {
 
         Self {
             config,
-            connected_peers: HashSet::new(),
+            connected_peers: HashMap::new(),
             status: Status::Stopped,
             status_since: Instant::now(),
             waiting_room: WaitingRoom::new(waiting_room_config),
@@ -330,7 +356,7 @@ impl RunState {
     #[cfg(test)]
     fn new(
         config: Config,
-        connected_peers: HashSet<PeerId>,
+        connected_peers: HashMap<PeerId, usize>,
         status: Status,
         status_since: Instant,
     ) -> Self {
@@ -352,7 +378,7 @@ impl RunState {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
             Input::Control(control_input) => self.handle_control(control_input),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
-            Input::PeerSync(_peer_sync_input) => vec![],
+            Input::PeerSync(peer_sync_input) => self.handle_peer_sync(&peer_sync_input),
             Input::Request(request_input) => self.handle_request(request_input),
             Input::Timeout(timeout_input) => self.handle_timeout(timeout_input),
         };
@@ -362,7 +388,7 @@ impl RunState {
         cmds
     }
 
-    /// Handle [`AnnunceInput`]s.
+    /// Handle [`AnnounceInput`]s.
     fn handle_announce(&mut self, input: AnnounceInput) -> Vec<Command> {
         match (&self.status, input) {
             // Announce new updates while the peer is online.
@@ -375,15 +401,73 @@ impl RunState {
     }
 
     /// Handle [`ControlInput`]s.
-    fn handle_control(&self, input: ControlInput) -> Vec<Command> {
+    fn handle_control(&mut self, input: ControlInput) -> Vec<Command> {
         match input {
+            ControlInput::CancelRequest(urn, timestamp, sender) => vec![Command::Control(
+                ControlCommand::Respond(control::Response::CancelSearch(
+                    sender,
+                    self.waiting_room.canceled(&urn, timestamp),
+                )),
+            )],
+            ControlInput::CreateRequest(urn, time, maybe_sender) => {
+                let request = self.waiting_room.request(&urn, time);
+                if let Some(sender) = maybe_sender {
+                    vec![Command::Control(ControlCommand::Respond(
+                        control::Response::StartSearch(sender, request),
+                    ))]
+                } else {
+                    vec![]
+                }
+            },
+            ControlInput::GetRequest(urn, sender) => {
+                vec![Command::Control(ControlCommand::Respond(
+                    control::Response::GetSearch(sender, self.waiting_room.get(&urn).cloned()),
+                ))]
+            },
+            ControlInput::ListRequests(sender) => vec![Command::Control(ControlCommand::Respond(
+                control::Response::ListSearches(
+                    sender,
+                    self.waiting_room
+                        .iter()
+                        .map(|pair| pair.1.clone())
+                        .collect::<Vec<_>>(),
+                ),
+            ))],
             ControlInput::Status(sender) => vec![Command::Control(ControlCommand::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
         }
     }
 
-    /// Handle [`ProtolEvent`]s.
+    /// Handle [`SyncInput`]s.
+    fn handle_peer_sync(&mut self, input: &SyncInput) -> Vec<Command> {
+        if let Status::Syncing { synced, syncs } = self.status {
+            match input {
+                SyncInput::Started(_peer_id) => {
+                    self.status = Status::Syncing {
+                        synced,
+                        syncs: syncs + 1,
+                    };
+                },
+                SyncInput::Failed(_peer_id) | SyncInput::Succeeded(_peer_id) => {
+                    self.status = if synced + 1 >= self.config.sync.max_peers {
+                        Status::Online {
+                            connected: self.connected_peers.len(),
+                        }
+                    } else {
+                        Status::Syncing {
+                            synced: synced + 1,
+                            syncs: syncs - 1,
+                        }
+                    };
+                },
+            }
+        }
+
+        vec![]
+    }
+
+    /// Handle [`ProtocolEvent`]s.
     #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
         match (&self.status, event) {
@@ -394,61 +478,75 @@ impl RunState {
 
                 vec![]
             },
-            // Sync with first incoming peer.
-            //
-            // In case the peer is configured to sync on startup we start syncing, otherwise we go
-            // online straight away.
-            // TODO(xla): Also issue sync if we come online after a certain period of being
-            // disconnected from any peer.
-            (Status::Started { .. }, ProtocolEvent::Connected(ref peer_id)) => {
-                self.connected_peers.insert(*peer_id);
-
-                if self.config.sync.on_startup {
-                    self.status = Status::Syncing { syncs: 1 };
-                    self.status_since = Instant::now();
-
-                    vec![
-                        Command::SyncPeer(*peer_id),
-                        Command::StartSyncTimeout(self.config.sync.period),
-                    ]
+            (state, ProtocolEvent::Connected(peer_id)) => {
+                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
+                    *counter += 1;
                 } else {
-                    self.status = Status::Online {
-                        connected: self.connected_peers.len(),
-                    };
-                    self.status_since = Instant::now();
-
-                    vec![]
-                }
-            },
-            // Sync until configured maximum of peers is reached.
-            (Status::Syncing { syncs }, ProtocolEvent::Connected(peer_id))
-                if *syncs < self.config.sync.max_peers =>
-            {
-                self.connected_peers.insert(peer_id);
-
-                if syncs + 1 == self.config.sync.max_peers {
-                    self.status = Status::Online {
-                        connected: self.connected_peers.len(),
-                    };
-                    self.status_since = Instant::now();
-                } else {
-                    self.status = Status::Syncing { syncs: syncs + 1 };
+                    self.connected_peers.insert(peer_id, 1);
                 }
 
-                vec![Command::SyncPeer(peer_id)]
-            }
-            // Sync until configured maximum of peers is reached.
-            (Status::Online { .. }, ProtocolEvent::Connected(peer_id)) => {
-                self.connected_peers.insert(peer_id);
-                self.status = Status::Online {
-                    connected: self.connected_peers.len(),
-                };
+                match state {
+                    Status::Offline => {
+                        self.status = Status::Online {
+                            connected: self.connected_peers.len(),
+                        };
 
-                vec![]
+                        vec![]
+                    },
+                    Status::Started => {
+                        // Sync with first incoming peer.
+                        //
+                        // In case the peer is configured to sync on startup we start syncing,
+                        // otherwise we go online straight away.
+                        // TODO(xla): Also issue sync if we come online after a certain period of
+                        // being disconnected from any peer.
+                        if self.config.sync.on_startup {
+                            self.status = Status::Syncing {
+                                synced: 0,
+                                syncs: 0,
+                            };
+                            self.status_since = Instant::now();
+
+                            vec![
+                                Command::SyncPeer(peer_id),
+                                Command::StartSyncTimeout(self.config.sync.period),
+                            ]
+                        } else {
+                            self.status = Status::Online {
+                                connected: self.connected_peers.len(),
+                            };
+                            self.status_since = Instant::now();
+
+                            vec![]
+                        }
+                    },
+                    // Issue syncs until we reach maximum amount of peers to sync with.
+                    Status::Syncing { syncs, .. } if *syncs < self.config.sync.max_peers => {
+                        vec![Command::SyncPeer(peer_id)]
+                    },
+                    // Update status with its connected peers.
+                    Status::Online { .. } => {
+                        self.status = Status::Online {
+                            connected: self.connected_peers.len(),
+                        };
+                        vec![]
+                    },
+                    // Noop
+                    Status::Stopped | Status::Syncing { .. } => vec![],
+                }
             },
             // Remove peer that just disconnected.
             (_, ProtocolEvent::Disconnecting(peer_id)) => {
-                self.connected_peers.remove(&peer_id);
+                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
+                    *counter -= 1;
+
+                    if *counter == 0 {
+                        self.connected_peers.remove(&peer_id);
+                    }
+                } else {
+                    log::error!("The impossible has happened, somehow we disconnected from '{}' without already being connected to them", peer_id);
+                    return vec![];
+                }
 
                 // Go offline if we have no more connected peers left.
                 if self.connected_peers.is_empty() {
@@ -466,6 +564,11 @@ impl RunState {
                     val: Gossip { urn, .. },
                 })),
             ) => {
+                // This message is uninteresting to the waiting room
+                if !self.waiting_room.has(&urn) {
+                    return vec![];
+                }
+
                 match self.waiting_room.found(
                     RadUrl {
                         urn: urn.clone(),
@@ -507,67 +610,51 @@ impl RunState {
                 cmds
             },
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
-            (_, RequestInput::Cloning(url)) => {
-                match self.waiting_room.cloning(url.clone(), Instant::now()) {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
-
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(RequestCommand::TimedOut(url.urn))]
-                            },
-                            _ => vec![],
-                        }
-                    },
-                    Ok(_) => vec![],
-                }
-            },
+            (_, RequestInput::Cloning(url)) => self
+                .waiting_room
+                .cloning(url.clone(), Instant::now())
+                .map_or_else(
+                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+                    |_| vec![],
+                ),
             (_, RequestInput::Cloned(url)) => {
-                match self.waiting_room.cloned(&url, Instant::now()) {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
-
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(RequestCommand::TimedOut(url.urn))]
-                            },
-                            _ => vec![],
-                        }
-                    },
-                    Ok(_) => vec![],
-                }
+                self.waiting_room.cloned(&url, Instant::now()).map_or_else(
+                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+                    |_| vec![],
+                )
             },
             (_, RequestInput::Queried(urn)) => {
-                match self.waiting_room.queried(&urn, Instant::now()) {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
-
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(RequestCommand::TimedOut(urn))]
-                            },
-                            _ => vec![],
-                        }
-                    },
-                    Ok(_) => vec![],
-                }
+                self.waiting_room.queried(&urn, Instant::now()).map_or_else(
+                    |error| Self::handle_waiting_room_timeout(urn, &error),
+                    |_| vec![],
+                )
             },
-            (_, RequestInput::Requested(urn, time, maybe_sender)) => {
-                let maybe_request = self.waiting_room.request(&urn, time);
-
-                if let Some(sender) = maybe_sender {
-                    vec![Command::Control(ControlCommand::Respond(
-                        control::Response::Urn(sender, maybe_request),
-                    ))]
-                } else {
-                    vec![]
-                }
+            (_, RequestInput::Failed { url, reason }) => {
+                log::warn!("Cloning failed with: {}", reason);
+                let urn = url.urn.clone();
+                self.waiting_room
+                    .cloning_failed(url, Instant::now())
+                    .map_or_else(
+                        |error| Self::handle_waiting_room_timeout(urn, &error),
+                        |_| vec![],
+                    )
             },
             _ => vec![],
         }
     }
 
-    /// Handle [`Timeout`]s.
+    /// Handle [`waiting_room::Error`]s.
+    fn handle_waiting_room_timeout(urn: RadUrn, error: &waiting_room::Error) -> Vec<Command> {
+        log::warn!("WaitingRoom::Error : {}", error);
+        match error {
+            waiting_room::Error::TimeOut { .. } => {
+                vec![Command::Request(RequestCommand::TimedOut(urn))]
+            },
+            _ => vec![],
+        }
+    }
+
+    /// Handle [`TimeoutInput`]s.
     fn handle_timeout(&mut self, input: TimeoutInput) -> Vec<Command> {
         match (&self.status, input) {
             // Go online if we exceed the sync period.
@@ -588,7 +675,7 @@ impl RunState {
 #[cfg(test)]
 mod test {
     use std::{
-        collections::HashSet,
+        collections::{HashMap, HashSet},
         iter::FromIterator,
         net::{IpAddr, SocketAddr},
         time::{Duration, Instant},
@@ -605,8 +692,8 @@ mod test {
     };
 
     use super::{
-        AnnounceInput, Command, Config, Input, RequestCommand, RequestInput, RunState, Status,
-        SyncConfig, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
+        AnnounceInput, Command, Config, ControlInput, Input, RequestCommand, RequestInput,
+        RunState, Status, SyncConfig, SyncInput, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
     };
 
     #[test]
@@ -615,7 +702,7 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         let cmds = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert!(cmds.is_empty());
@@ -636,7 +723,7 @@ mod test {
                 },
                 ..Config::default()
             },
-            HashSet::new(),
+            HashMap::new(),
             status,
             status_since,
         );
@@ -653,24 +740,28 @@ mod test {
     #[test]
     fn transition_to_online_after_sync_max_peers() {
         let status = Status::Syncing {
-            syncs: DEFAULT_SYNC_MAX_PEERS - 1,
+            synced: DEFAULT_SYNC_MAX_PEERS - 1,
+            syncs: 1,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)))
         };
         assert_matches!(state.status, Status::Online {..});
     }
 
     #[test]
     fn transition_to_online_after_sync_period() {
-        let status = Status::Syncing { syncs: 3 };
+        let status = Status::Syncing {
+            synced: 0,
+            syncs: 3,
+        };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = state.transition(Input::Timeout(TimeoutInput::SyncPeriod));
         assert_matches!(state.status, Status::Online {..});
@@ -683,7 +774,7 @@ mod test {
         let status_since = Instant::now();
         let mut state = RunState::new(
             Config::default(),
-            HashSet::from_iter(vec![peer_id]),
+            HashMap::from_iter(vec![(peer_id, 1)]),
             status,
             status_since,
         );
@@ -706,12 +797,12 @@ mod test {
                 },
                 ..Config::default()
             },
-            HashSet::new(),
+            HashMap::new(),
             status,
             status_since,
         );
 
-        for i in 0..(max_peers - 1) {
+        for _i in 0..(max_peers - 1) {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
 
@@ -721,19 +812,26 @@ mod test {
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
                 assert_eq!(*sync_id, peer_id);
             });
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Started(peer_id)));
             assert_matches!(state.status, Status::Syncing{ syncs: syncing_peers, .. } => {
-                assert_eq!(i + 1, syncing_peers);
+                assert_eq!(syncing_peers, 1);
             });
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)));
         }
 
         // Issue last sync.
-        let cmds = {
+        {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+            let cmds = state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)));
+
+            assert!(!cmds.is_empty(), "expected command");
+            assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
+
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Started(peer_id)));
+            let _cmds = state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)));
         };
-        assert!(!cmds.is_empty(), "expected command");
-        assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
+
         // Expect to be online at this point.
         assert_matches!(state.status, Status::Online {..});
 
@@ -760,7 +858,7 @@ mod test {
                 },
                 ..Config::default()
             },
-            HashSet::new(),
+            HashMap::new(),
             status,
             status_since,
         );
@@ -779,7 +877,7 @@ mod test {
     fn issue_announce_while_online() {
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(AnnounceInput::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
@@ -787,7 +885,7 @@ mod test {
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(AnnounceInput::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
@@ -799,8 +897,8 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -809,8 +907,8 @@ mod test {
 
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -819,18 +917,21 @@ mod test {
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
         )));
         assert_matches!(cmds.first(), None);
 
-        let status = Status::Syncing { syncs: 1 };
+        let status = Status::Syncing {
+            synced: 0,
+            syncs: 1,
+        };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -843,10 +944,10 @@ mod test {
             assert_eq!(*have, urn);
         });
 
-        let status = Status::Online { connected: 0 };
+        let status = Status::Online { connected: 1 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
-        let cmds = state.transition(Input::Request(RequestInput::Requested(
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -876,10 +977,10 @@ mod test {
 
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashSet::new(), status, status_since);
+        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
 
         assert!(state
-            .transition(Input::Request(RequestInput::Requested(
+            .transition(Input::Control(ControlInput::CreateRequest(
                 urn.clone(),
                 Instant::now(),
                 None

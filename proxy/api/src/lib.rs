@@ -5,7 +5,6 @@
     clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
-    clippy::restriction,
     clippy::unwrap_used,
     missing_docs,
     unused_import_braces,
@@ -21,16 +20,20 @@
     clippy::missing_inline_in_public_items,
     clippy::multiple_crate_versions,
     clippy::or_fun_call,
-    clippy::shadow_reuse
+    clippy::shadow_reuse,
+    clippy::similar_names
 )]
 
-pub mod avatar;
-pub mod config;
-pub mod context;
+mod config;
+mod context;
 pub mod env;
-pub mod error;
-pub mod http;
-pub mod identity;
-pub mod notification;
-pub mod project;
-pub mod session;
+mod error;
+mod http;
+mod identity;
+mod notification;
+mod process;
+mod project;
+mod service;
+mod session;
+
+pub use process::{run, Args};

@@ -1,21 +1,31 @@
-<script lang="ts">
+<script lang="typescript">
   import type { Project } from "../../src/project";
   import { isMaintainer } from "../../src/project";
 
-  import { Flex } from "../Primitive";
   import List from "./List.svelte";
   import ProjectCard from "./ProjectCard.svelte";
   import Stats from "./Stats.svelte";
 
   export let projects: Project[];
-  export let urn: string;
+  export let userUrn: string;
 
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
     description: project.metadata.description,
-    showMaintainerBadge: isMaintainer(urn, project),
+    showMaintainerBadge: isMaintainer(userUrn, project),
   });
 </script>
+
+<style>
+  .list-item {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 1.375rem 1.5rem;
+    align-items: center;
+    min-width: 0;
+  }
+</style>
 
 <List
   dataCy="project-list"
@@ -23,19 +33,15 @@
   on:select
   let:item={project}
   style="margin: 0 auto;">
-  <Flex
-    style="flex: 1; padding: 1.375rem 1.5rem;"
-    dataCy={`project-list-entry-${project.metadata.name}`}>
-    <div slot="left">
-      <ProjectCard {...projectCardProps(project)} />
-    </div>
-    <div slot="right" style="display: flex; align-items: center;">
-      {#if project.stats}
-        <Stats
-          branches={project.stats.branches}
-          commits={project.stats.commits}
-          contributors={project.stats.contributors} />
-      {/if}
-    </div>
-  </Flex>
+  <div
+    class="list-item"
+    data-cy={`project-list-entry-${project.metadata.name}`}>
+    <ProjectCard {...projectCardProps(project)} />
+    {#if project.stats}
+      <Stats
+        branches={project.stats.branches}
+        commits={project.stats.commits}
+        contributors={project.stats.contributors} />
+    {/if}
+  </div>
 </List>
