@@ -39,7 +39,6 @@
   </div>
 
   <FollowToggle
-    expanded
     following
     on:unfollow={() => {
       dispatch('cancel', { projectUrn, peerId: peer.peerId });
