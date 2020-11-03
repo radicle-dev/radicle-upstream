@@ -328,6 +328,8 @@
   {title}
   {disabled}
   on:click
+  on:mouseenter
+  on:mouseleave
   {style}>
   <svelte:component this={icon} />
   <slot />

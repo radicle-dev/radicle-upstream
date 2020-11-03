@@ -3,7 +3,6 @@
   import { push } from "svelte-spa-router";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config";
-  import { Variant as IllustrationVariant } from "../src/illustration";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
   import * as remote from "../src/remote";
@@ -25,10 +24,9 @@
   import type { Settings } from "../src/settings";
   import { dismissRemoteHelperHint, settings } from "../src/session";
 
-  import { Button, Input } from "../DesignSystem/Primitive";
+  import { Button, Emoji, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
-    Illustration,
     RadioOption,
     RemoteHelperHint,
     Tooltip,
@@ -187,9 +185,10 @@
 
 <div class="container" data-cy="page">
   <div class="create-project" data-cy="create-project">
-    <Illustration
-      style="align-self: center; margin-bottom: 1rem;"
-      variant={IllustrationVariant.Star} />
+    <Emoji
+      emoji={'🌠'}
+      size="huge"
+      style="align-self: center; margin-bottom: 1rem;" />
     <h2 style="margin-bottom: 3rem;">Start a new project</h2>
 
     <div class="radio-selector">

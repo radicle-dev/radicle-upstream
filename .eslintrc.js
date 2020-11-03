@@ -14,7 +14,7 @@ module.exports = {
     sourceType: "module",
   },
   extends: ["eslint:recommended"],
-  plugins: ["svelte3", "@typescript-eslint"],
+  plugins: ["svelte3", "@typescript-eslint", "no-only-tests"],
   overrides: [
     {
       files: ["*.svelte"],
@@ -56,6 +56,8 @@ module.exports = {
     // require at least one whitespace after comments( // and /*)
     // https://eslint.org/docs/rules/spaced-comment
     "spaced-comment": ["warn", "always"],
+    // Disallow focused tests
+    "no-only-tests/no-only-tests": "error",
   },
   settings: {
     "svelte3/preprocess": eslintSveltePreprocess(svelteConfig.preprocess),

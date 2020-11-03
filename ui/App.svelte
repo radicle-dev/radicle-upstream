@@ -9,6 +9,7 @@
   import { fetch, session as store, Status } from "./src/session.ts";
 
   import {
+    EmptyState,
     NotificationFaucet,
     Remote,
     ModalOverlay,
@@ -109,9 +110,9 @@
   <!-- TODO(julien): Dress up loading screen -->
   <div slot="loading" class="error">
     {#if $location === path.lock()}
-      <p>Unlocking the app...</p>
+      <EmptyState headerText="Unlocking the app..." emoji="🚪" text="" />
     {:else}
-      <p>Loading...</p>
+      <EmptyState headerText="Loading..." emoji="🕵️" text="" />
     {/if}
   </div>
 </Remote>

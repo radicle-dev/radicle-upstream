@@ -4,7 +4,6 @@
   import { push } from "svelte-spa-router";
 
   import { FADE_DURATION } from "../../src/config";
-  import { Variant as IllustrationVariant } from "../../src/illustration";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { following as store, fetchFollowing } from "../../src/profile";
@@ -88,8 +87,6 @@
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
                   <FollowToggle
-                    expanded
-                    warning
                     following
                     on:unfollow={() => onCancel(request.urn)} />
                 </div>
@@ -103,7 +100,7 @@
     <div slot="empty">
       <EmptyState
         text="You're not following any projects yet."
-        illustration={IllustrationVariant.Horse}
+        emoji="🐎"
         primaryActionText="Look for a project"
         on:primaryAction={() => {
           modal.toggle(path.search());
