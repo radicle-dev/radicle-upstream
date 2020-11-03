@@ -13,7 +13,7 @@ pub async fn announce(state: &State, urn: &RadUrn, rev: Option<Oid>) {
     protocol
         .announce(Gossip {
             urn: urn.clone(),
-            rev: rev.map(|rev| Rev::Git((rev).into())),
+            rev: rev.map(|rev| Rev::Git(rev.into())),
             origin: None,
         })
         .await;
