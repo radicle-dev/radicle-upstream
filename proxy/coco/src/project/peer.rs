@@ -83,6 +83,7 @@ impl<U> Peer<Status<U>> {
     /// Get the user details for a `Remote` peer.
     ///
     /// This will return `Some` if the `Peer` is `Replicated`, and `None` otherwise.
+    #[allow(clippy::missing_const_for_fn)]
     pub fn replicated_remote(self) -> Option<(PeerId, U)> {
         match self {
             Self::Remote {
@@ -96,14 +97,14 @@ impl<U> Peer<Status<U>> {
 
 impl<S> Peer<S> {
     /// Get the [`PeerId`] of the `Peer`, regardless whether they are `Local` or `Remote`.
-    pub fn peer_id(&self) -> PeerId {
+    pub const fn peer_id(&self) -> PeerId {
         match self {
             Self::Local { peer_id, .. } | Self::Remote { peer_id, .. } => *peer_id,
         }
     }
 
     /// Get the `status` of the `Peer`, regardless whether they are `Local` or `Remote`.
-    pub fn status(&self) -> &S {
+    pub const fn status(&self) -> &S {
         match self {
             Self::Local { status, .. } | Self::Remote { status, .. } => status,
         }

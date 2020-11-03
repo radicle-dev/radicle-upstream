@@ -5,7 +5,6 @@
     clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
-    clippy::restriction,
     clippy::unwrap_used,
     missing_docs,
     unused_import_braces,
