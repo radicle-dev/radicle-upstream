@@ -208,39 +208,6 @@ impl Future for Subroutines {
                 Poll::Ready(Some(input)) => {
                     log::debug!("handling subroutine input: {:?}", input);
 
-                    match &input {
-                        Input::Protocol(protocol_event) => match protocol_event {
-                            ProtocolEvent::Connected(peer_id) => {
-                                log::info!("CONNECTED {}", peer_id);
-                            },
-                            ProtocolEvent::Disconnecting(peer_id) => {
-                                log::info!("DISCONNECTED {}", peer_id);
-                            },
-                            ProtocolEvent::Gossip(librad::net::gossip::Info::Has(
-                                librad::net::gossip::Has {
-                                    provider,
-                                    val: librad::net::peer::Gossip { urn, rev, origin },
-                                },
-                            )) => {
-                                log::info!(
-                                    "HAS: {}/{:?}@{:?} from {:?}",
-                                    urn,
-                                    rev,
-                                    origin,
-                                    provider.peer_id,
-                                );
-                            },
-                            ProtocolEvent::Membership(membership) => {
-                                log::info!("MEMBERSHIP: {:?}", membership)
-                            },
-                            _ => {},
-                        },
-                        Input::Request(RequestInput::Cloned(url)) => {
-                            log::info!("CLONED: {} from {}", url.urn, url.authority);
-                        },
-                        _ => {},
-                    }
-
                     let old_status = self.run_state.status.clone();
 
                     if let Some(event) = Event::maybe_from(&input) {

@@ -519,7 +519,7 @@ impl State {
             meta
         };
 
-        crate::peer::gossip::announce(&self, &meta.urn(), None).await;
+        crate::peer::gossip::announce(self, &meta.urn(), None).await;
 
         Ok(meta)
     }
