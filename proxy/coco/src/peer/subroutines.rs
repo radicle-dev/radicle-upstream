@@ -67,7 +67,11 @@ impl Subroutines {
         subscriber: broadcast::Sender<Event>,
         control_receiver: mpsc::Receiver<control::Request>,
     ) -> Self {
-        let announce_timer = interval(run_config.announce.interval);
+        let announce_timer = if run_config.announce.interval.is_zero() {
+            None
+        } else {
+            Some(interval(run_config.announce.interval))
+        };
         let waiting_room_timer = interval(run_config.waiting_room.interval);
         let (input_sender, inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
         let run_state = RunState::from(run_config);
@@ -75,11 +79,14 @@ impl Subroutines {
         let inputs = {
             let mut coalesced = SelectAll::new();
             coalesced.push(protocol_events.map(Input::Protocol).boxed());
-            coalesced.push(
-                announce_timer
-                    .map(|_tick| Input::Announce(AnnounceInput::Tick))
-                    .boxed(),
-            );
+
+            if let Some(timer) = announce_timer {
+                coalesced.push(
+                    timer
+                        .map(|_tick| Input::Announce(AnnounceInput::Tick))
+                        .boxed(),
+                );
+            }
             coalesced.push(
                 waiting_room_timer
                     .map(|_tick| Input::Request(RequestInput::Tick))
