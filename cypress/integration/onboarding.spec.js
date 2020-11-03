@@ -105,10 +105,7 @@ context("onboarding", () => {
       cy.pick("entity-name").contains("cloudhead");
     });
 
-    // TODO We skip these tests because deleting the session and
-    // unsealing the proxy in test mode currently resets all state
-    // including previously created identities.
-    it.skip("is not possible to create the same identity again", () => {
+    it("is not possible to create the same identity again", () => {
       // Intro screen.
       cy.pick("get-started-button").click();
 
@@ -123,7 +120,9 @@ context("onboarding", () => {
 
       // Success screen.
       cy.pick("urn").contains(radIdRegex).should("exist");
+      cy.pick("go-to-profile-button").click();
 
+      cy.log("reset session");
       // Clear session to restart onboarding.
       cy.pick("sidebar", "settings").click();
       cy.pick("clear-session-button").click();
@@ -139,11 +138,9 @@ context("onboarding", () => {
       cy.pick("passphrase-input").type(validUser.passphrase);
       cy.pick("repeat-passphrase-input").type(validUser.passphrase);
       cy.pick("set-passphrase-button").click();
-      cy.pick("notification")
-        .contains(
-          /Could not create identity: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
-        )
-        .should("exist");
+      cy.contains(
+        /Could not create identity: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
+      ).should("exist");
       cy.pick("handle-input").should("exist");
     });
 
