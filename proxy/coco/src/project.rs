@@ -1,6 +1,6 @@
 //! Project creation data and functions.
 
-use librad::git::ext::OneLevel;
+use librad::git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
 use crate::config;

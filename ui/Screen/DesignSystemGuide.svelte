@@ -723,11 +723,47 @@
       </Swatch>
 
       <Swatch>
-        <FollowToggle />
+        <FollowToggle
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
       </Swatch>
 
       <Swatch>
-        <FollowToggle warning expanded />
+        <FollowToggle
+          following
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
+        <FollowToggle
+          disabled
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
+        <FollowToggle
+          disabled
+          following
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
       </Swatch>
 
       <Swatch>

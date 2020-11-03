@@ -63,12 +63,11 @@
       <Tooltip
         position={CSSPosition.Top}
         value="Can't unfollow the maintainer's remote">
-        <FollowToggle disabled following expanded />
+        <FollowToggle disabled following />
       </Tooltip>
     {:else}
       <FollowToggle
         following
-        expanded
         on:unfollow={() => {
           dispatch('unfollow', { projectUrn, peerId: peer.peerId });
         }} />

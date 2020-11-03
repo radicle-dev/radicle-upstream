@@ -182,7 +182,7 @@
             <Tooltip
               position={CSSPosition.Left}
               value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-              <FollowToggle disabled expanded following />
+              <FollowToggle disabled following />
             </Tooltip>
           </div>
         </div>

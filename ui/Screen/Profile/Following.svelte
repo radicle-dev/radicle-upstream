@@ -87,8 +87,6 @@
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
                   <FollowToggle
-                    expanded
-                    warning
                     following
                     on:unfollow={() => onCancel(request.urn)} />
                 </div>
