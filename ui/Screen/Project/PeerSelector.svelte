@@ -55,12 +55,15 @@
 
 <style>
   .peer-selector {
+    display: flex;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    padding: 0.5rem;
-    display: flex;
+    padding: 0 0.5rem;
+    align-items: center;
+    height: 2.5rem;
     cursor: pointer;
     justify-content: space-between;
+    background-color: var(--color-foreground-level-1);
   }
 
   .peer-selector:hover {
@@ -80,7 +83,6 @@
   }
 
   .selector-expand {
-    align-self: flex-end;
     margin-left: 0.5rem;
   }
 
@@ -88,7 +90,7 @@
     display: flex;
     position: absolute;
     right: 0;
-    top: 0;
+    top: -1px;
   }
 
   .peer-dropdown {
@@ -104,7 +106,8 @@
   .peer {
     display: flex;
     color: var(--color-foreground-level-6);
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    height: 2.5rem;
     user-select: none;
     align-items: center;
     justify-content: space-between;

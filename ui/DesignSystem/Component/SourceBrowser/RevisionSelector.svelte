@@ -56,7 +56,9 @@
   .revision-selector {
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    align-items: center;
+    height: 2.5rem;
     display: flex;
     cursor: pointer;
     justify-content: space-between;
@@ -74,12 +76,9 @@
     justify-content: space-between;
     width: 100%;
   }
-  .selector-expand {
-    align-self: flex-end;
-  }
   .revision-dropdown-container {
     position: absolute;
-    top: 0px;
+    top: -1px;
     min-width: 100%;
   }
   .revision-dropdown {
@@ -96,7 +95,9 @@
   .branch,
   .tag {
     color: var(--color-foreground-level-6);
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    align-items: center;
+    height: 2.5rem;
     cursor: pointer;
     overflow-wrap: anywhere;
     user-select: none;
@@ -148,10 +149,8 @@
         </p>
       </div>
     </div>
-    <div class="selector-expand">
-      <Icon.ChevronUpDown
-        style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
-    </div>
+    <Icon.ChevronUpDown
+      style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
   </div>
   <div class="revision-dropdown-container">
     <div class="revision-dropdown" hidden={!expanded}>
