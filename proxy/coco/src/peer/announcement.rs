@@ -113,16 +113,15 @@ pub fn load(store: &kv::Store) -> Result<Updates, Error> {
 /// * if it can't build the new list of updates
 /// * access to the storage fails
 pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
-    // let old = load(store)?;
+    let old = load(store)?;
     let new = build(state).await?;
-    // let updates = diff(&old, &new);
-    let updates = new;
+    let updates = diff(&old, &new);
 
     announce(state, updates.iter()).await;
 
-    // if !updates.is_empty() {
-    //     save(store, updates.clone()).map_err(Error::from)?;
-    // }
+    if !updates.is_empty() {
+        save(store, updates.clone()).map_err(Error::from)?;
+    }
 
     Ok(updates)
 }

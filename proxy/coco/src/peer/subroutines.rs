@@ -220,7 +220,7 @@ impl Future for Subroutines {
                                     urn,
                                     rev,
                                     origin,
-                                    provider
+                                    provider.peer_id,
                                 );
                             },
                             ProtocolEvent::Membership(membership) => {
