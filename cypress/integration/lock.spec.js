@@ -1,6 +1,4 @@
-// TODO We skip these tests because sealing the proxy in test mode
-// currently resets all state including the identity.
-context.skip("lock screen", () => {
+context("lock screen", () => {
   beforeEach(() => {
     cy.resetProxyState();
     cy.onboardUser();
@@ -16,9 +14,9 @@ context.skip("lock screen", () => {
     cy.pick("unlock-button").should("exist");
     cy.pick("passphrase-input").type("wrong-pw");
     cy.pick("unlock-button").click();
-    cy.pick("notification")
-      .contains(/Could not unlock the session/)
-      .should("exist");
+    cy.contains(/Could not unlock the session: Passphrase incorrect/).should(
+      "exist"
+    );
     cy.pick("passphrase-input").should("have.value", "");
     cy.pick("unlock-button").should("be.disabled");
   });

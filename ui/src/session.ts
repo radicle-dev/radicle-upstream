@@ -96,17 +96,23 @@ const fetchSession = (): Promise<void> => {
   return fetchSessionRetry().catch(sessionStore.error);
 };
 
-export const unseal = async (passphrase: string): Promise<void> => {
+/**
+ * Unseal the key store with the given passphrase and reload the
+ * session. Returns `true` if unsealing was successful and `false`
+ * otherwise.
+ */
+export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await api.set<unknown>(`keystore/unseal`, { passphrase });
   } catch (error) {
     sessionStore.loading();
     sessionStore.success({ status: Status.SealedSession });
     notification.error(`Could not unlock the session: ${error.message}`);
-    return;
+    return false;
   }
   sessionStore.loading();
   await fetchSession();
+  return true;
 };
 
 export const createKeystore = (): Promise<null> => {
