@@ -12,6 +12,8 @@ pub struct Environment {
     pub key: Option<coco::keys::SecretKey>,
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
+    /// If true we are running the service in test mode.
+    pub test_mode: bool,
 }
 
 /// Error returned when creating a new [`Environment`].
@@ -40,6 +42,7 @@ impl Environment {
         Ok(Self {
             key: None,
             temp_dir,
+            test_mode,
         })
     }
 }
@@ -54,8 +57,6 @@ pub struct Manager {
     message_receiver: mpsc::Receiver<Message>,
     /// The current environemtn of the services
     environment: Environment,
-    /// If true we are running the service in test mode.
-    test_mode: bool,
 }
 
 impl Manager {
@@ -71,7 +72,6 @@ impl Manager {
             message_sender,
             message_receiver,
             environment,
-            test_mode,
         })
     }
 
@@ -87,7 +87,10 @@ impl Manager {
     pub fn environment(&mut self) -> Result<&Environment, Error> {
         while let Ok(message) = self.message_receiver.try_recv() {
             match message {
-                Message::Reset => self.environment = Environment::new(self.test_mode)?,
+                Message::Reset => {
+                    let test_mode = self.environment.test_mode;
+                    self.environment = Environment::new(test_mode)?
+                },
                 Message::SetSecretKey(key) => self.environment.key = Some(key),
                 Message::Seal => self.environment.key = None,
             }

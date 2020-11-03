@@ -61,7 +61,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
         let environment = service_manager.environment()?;
-        let rigging = rig(args, service_handle, environment, auth_token.clone()).await?;
+        let rigging = rig(service_handle, environment, auth_token.clone()).await?;
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
@@ -190,7 +190,6 @@ lazy_static::lazy_static! {
 
 /// Create [`Rigging`] to run the peer and API.
 async fn rig(
-    args: Args,
     service_handle: service::Handle,
     environment: &service::Environment,
     auth_token: Arc<RwLock<Option<String>>>,
@@ -216,14 +215,14 @@ async fn rig(
     if let Some(_key) = environment.key {
         // We ignore `environment.key` for now and use a hard-coded passphrase
         let pw = coco::keystore::SecUtf8::from("radicle-upstream");
-        let key = if args.test {
+        let key = if environment.test_mode {
             *TEST_KEY
         } else {
             coco::keystore::Keystorage::file(&paths, pw).init()?
         };
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
-        let (peer, state, seeds_sender) = if args.test {
+        let (peer, state, seeds_sender) = if environment.test_mode {
             let config = coco::config::configure(
                 paths,
                 key,
@@ -258,7 +257,7 @@ async fn rig(
             peer_control,
             state,
             store,
-            test: args.test,
+            test: environment.test_mode,
             service_handle: service_handle.clone(),
             auth_token,
         });
@@ -271,7 +270,7 @@ async fn rig(
     } else {
         let ctx = context::Context::Sealed(context::Sealed {
             store,
-            test: args.test,
+            test: environment.test_mode,
             service_handle,
             auth_token,
         });
