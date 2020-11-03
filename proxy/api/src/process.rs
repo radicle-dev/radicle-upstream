@@ -177,7 +177,6 @@ async fn run_rigging(
             server_status = server => server_status,
             peer_status = peer => Ok(peer_status?),
         };
-        log::info!("DONE");
         result
     } else {
         server.await

@@ -12,7 +12,7 @@
     }
   };
 
-  const onEnter = async () => {
+  const onEnter = () => {
     if (passphrase.length > 0) {
       unlock();
     }
