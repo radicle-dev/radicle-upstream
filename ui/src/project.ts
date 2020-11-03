@@ -211,7 +211,7 @@ interface Create extends event.Event<Kind> {
 
 interface Fetch extends event.Event<Kind> {
   kind: Kind.Fetch;
-  urn: string;
+  urn: urn.Urn;
 }
 
 interface FetchList extends event.Event<Kind> {
@@ -276,10 +276,10 @@ const update = (msg: Msg): void => {
       projectStore.loading();
       peersStore.reset();
       api
-        .get<Project>(`projects/${msg.id}`)
+        .get<Project>(`projects/${msg.urn}`)
         .then((project: Project) => {
           projectStore.success(project);
-          fetchPeers({ urn: msg.id });
+          fetchPeers({ urn: msg.urn });
         })
         .catch(projectStore.error);
 
@@ -359,10 +359,6 @@ export const checkout = (
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 export const fetchPeers = event.create<Kind, Msg>(Kind.FetchPeers, update);
-export const fetchLocalState = event.create<Kind, Msg>(
-  Kind.FetchLocalState,
-  update
-);
 
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,
