@@ -56,7 +56,9 @@
   .revision-selector {
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    align-items: center;
+    height: 2.5rem;
     display: flex;
     cursor: pointer;
     justify-content: space-between;
@@ -74,19 +76,16 @@
     justify-content: space-between;
     width: 100%;
   }
-  .selector-expand {
-    align-self: flex-end;
-  }
   .revision-dropdown-container {
     position: absolute;
-    top: 0px;
+    top: -1px;
     min-width: 100%;
   }
   .revision-dropdown {
     position: relative;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;
     max-width: 30rem;
@@ -96,7 +95,9 @@
   .branch,
   .tag {
     color: var(--color-foreground-level-6);
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    align-items: center;
+    height: 2.5rem;
     cursor: pointer;
     overflow-wrap: anywhere;
     user-select: none;
@@ -112,8 +113,14 @@
   .tag.selected:hover {
     background-color: var(--color-foreground-level-2);
   }
-  .revision-dropdown ul:last-child li {
-    border-radius: 0 0 3px 3px;
+  .revision-dropdown li:only-child {
+    border-radius: 0.1875rem;
+  }
+  .revision-dropdown li:first-child:not(:only-child) {
+    border-radius: 0.1875rem 0.1875rem 0 0;
+  }
+  .revision-dropdown li:last-child:not(:only-child) {
+    border-radius: 0 0 0.1875rem 0.1875rem;
   }
 </style>
 
@@ -142,10 +149,8 @@
         </p>
       </div>
     </div>
-    <div class="selector-expand">
-      <Icon.ChevronUpDown
-        style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
-    </div>
+    <Icon.ChevronUpDown
+      style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
   </div>
   <div class="revision-dropdown-container">
     <div class="revision-dropdown" hidden={!expanded}>
