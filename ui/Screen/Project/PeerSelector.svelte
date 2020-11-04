@@ -150,7 +150,9 @@
         {selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}
       </p>
       <p>
-        <slot name="badge" peer={selected} />
+        {#if selected.role === Role.Maintainer}
+          <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
+        {/if}
       </p>
     </div>
     <div class="selector-expand">
