@@ -48,7 +48,7 @@ fn create_filter(
         .and(warp::body::json())
         .and_then(handler::create)
 }
-///
+
 /// `GET /failed`
 fn failed_filter(
     ctx: context::Context,
