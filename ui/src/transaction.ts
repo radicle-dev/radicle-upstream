@@ -33,6 +33,12 @@ export interface Tx {
 
   // The underlying transaction data
   meta: PoolTx;
+
+  // The sender of this transaction
+  from: string;
+
+  // The destination of this transaction
+  to?: string;
 }
 
 export enum TxStatus {
@@ -109,6 +115,8 @@ function buildTx(kind: TxKind, txc: ContractTransaction): Tx {
       price: txc.gasPrice.toString(),
     },
     kind,
+    from: txc.from,
+    to: txc.to,
   };
 }
 
@@ -158,7 +166,7 @@ async function updateStatuses() {
         const receipt = await provider.getTransactionReceipt(tx.hash);
         const newStatus = await status(receipt);
         if (newStatus) tx.status = newStatus;
-        tx.gas.used = receipt.gasUsed;
+        tx.gas.used = receipt.gasUsed.toString();
       });
     return txs;
   });

@@ -1,7 +1,9 @@
 <script lang="typescript">
   import { get } from "svelte/store";
+  import { Copyable } from "../DesignSystem/Component";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
 
+  import { displayAddress } from "../src/funding/pool";
   import {
     selectedStore,
     store as transactionsStore,
@@ -52,7 +54,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1rem;
+    margin: 2rem auto;
   }
 
   header .from-to .arrow {
@@ -60,21 +62,13 @@
     padding: 0 1rem;
   }
 
-  header .icon {
-    height: 56px;
-    width: 56px;
-    border-radius: 50%;
-    background-color: var(--color-primary-level-5);
-    border: 2px solid #5555ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 1rem;
+  header .from-to .address {
+    color: var(--color-foreground-level-5);
+    font-size: 14px;
   }
 
   header .date {
     color: var(--color-foreground-level-4);
-    margin-top: 1rem;
   }
 
   .content .section {
@@ -114,10 +108,30 @@
     <div class="from-to">
       <p class="typo-text-bold subheading">
         {tx.kind === TxKind.CollectFunds ? 'Incoming support' : 'Your connected wallet'}
+        <br />
+        <span class="address">
+          <Copyable
+            showIcon={false}
+            styleContent={false}
+            copyContent={tx.from}
+            notificationText="Address copied to the clipboard">
+            {displayAddress(tx.from)}
+          </Copyable>
+        </span>
       </p>
       <p class="typo-text-bold subheading arrow">-&gt;</p>
       <p class="typo-text-bold subheading">
         {tx.kind === TxKind.CollectFunds ? 'Your connected wallet' : 'Outgoing support'}
+        <br />
+        <span class="address">
+          <Copyable
+            showIcon={false}
+            styleContent={false}
+            copyContent={tx.to}
+            notificationText="Address copied to the clipboard">
+            {tx.to ? displayAddress(tx.to) : 'n/a'}
+          </Copyable>
+        </span>
       </p>
     </div>
     <p class="typo-text date">{new Date(tx.date).toUTCString()}</p>
