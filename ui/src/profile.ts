@@ -1,7 +1,7 @@
 import { derived, Readable } from "svelte/store";
 
+import * as error from "./error";
 import * as localPeer from "./localPeer";
-import * as notification from "./notification";
 import * as project from "./project";
 import * as remote from "./remote";
 import * as waitingRoom from "./waitingRoom";
@@ -79,11 +79,10 @@ export const fetchFollowing = (): void => {
 
 export const showNotificationsForFailedProjects = async (): Promise<void> => {
   const failedProjects = await project.fetchFailed();
-  failedProjects.forEach(project => {
-    notification.error(
-      `The project ${project.metadata.name} could not be loaded`,
-      true,
-      "Dismiss"
+  failedProjects.forEach(failedProject => {
+    error.show(
+      `The project ${failedProject.metadata.name} could not be loaded`,
+      project
     );
   });
 };
