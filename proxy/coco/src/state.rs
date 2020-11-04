@@ -495,21 +495,27 @@ impl State {
         owner: &User,
         project: project::Create<project::Repo>,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
-        let project = project.validate().map_err(project::create::Error::from)?;
         let mut meta = project.build(owner, self.signer.public_key().into())?;
         meta.sign_by_user(&self.signer, owner)?;
 
         let local_peer_id = self.api.peer_id();
+        let url = LocalUrl::from_urn(meta.urn(), local_peer_id);
+
+        let repository = project
+            .validate(url)
+            .map_err(project::create::Error::from)?;
 
         let meta = {
             let results = self.transport_results();
             let meta = self
                 .api
                 .with_storage(move |storage| {
-                    let repo = storage.create_repo(&meta)?;
+                    let _ = storage.create_repo(&meta)?;
                     log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                    project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
+                    repository
+                        .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
+                        .map_err(project::create::Error::from)?;
 
                     Ok::<_, Error>(meta)
                 })
