@@ -12,7 +12,9 @@ pub struct Environment {
     pub key: Option<coco::keys::SecretKey>,
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
+    /// Paths for on-disk persistence.
     pub coco_paths: coco::Paths,
+    /// A reference to the key store.
     pub key_store: Arc<dyn coco::keystore::KeyStore + Send + Sync>,
     /// If true we are running the service in test mode.
     pub test_mode: bool,

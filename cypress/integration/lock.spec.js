@@ -14,7 +14,7 @@ context("lock screen", () => {
     cy.pick("unlock-button").should("exist");
     cy.pick("passphrase-input").type("wrong-pw");
     cy.pick("unlock-button").click();
-    cy.contains(/Could not unlock the session: incorrect password/).should(
+    cy.contains(/Could not unlock the session: incorrect passphrase/).should(
       "exist"
     );
     cy.pick("passphrase-input").should("have.value", "");

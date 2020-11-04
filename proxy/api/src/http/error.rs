@@ -167,8 +167,8 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                     if key_store_err.is_invalid_password() {
                         (
                             StatusCode::FORBIDDEN,
-                            "INCORRECT_PASSWORD",
-                            "incorrect password".to_string(),
+                            "INCORRECT_PASSPHRASE",
+                            "incorrect passphrase".to_string(),
                         )
                     } else if key_store_err.is_key_exists() {
                         (
