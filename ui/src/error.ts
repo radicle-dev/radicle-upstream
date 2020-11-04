@@ -12,7 +12,7 @@ export interface Error {
   variant: Variant;
 }
 
-export const show = (message: string, context: any): void => {
+export const show = (message: string, context: unknown): void => {
   console.error({ message, context });
 
   notification.error(message, true, "Copy error", () => {
