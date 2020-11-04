@@ -65,8 +65,8 @@ impl Context {
         &mut self,
         passphrase: coco::keystore::SecUtf8,
     ) -> Result<(), crate::error::Error> {
-        let key_store = self.key_store();
-        let key = tokio::task::spawn_blocking(move || key_store.get(passphrase))
+        let keystore = self.keystore();
+        let key = tokio::task::spawn_blocking(move || keystore.get(passphrase))
             .await
             .expect("Task to unseal key was aborted")?;
         self.service_handle().set_secret_key(key);
@@ -83,18 +83,18 @@ impl Context {
         &mut self,
         passphrase: coco::keystore::SecUtf8,
     ) -> Result<(), crate::error::Error> {
-        let key_store = self.key_store();
-        let key = tokio::task::spawn_blocking(move || key_store.create_key(passphrase))
+        let keystore = self.keystore();
+        let key = tokio::task::spawn_blocking(move || keystore.create_key(passphrase))
             .await
             .expect("Task to create key was aborted")?;
         self.service_handle().set_secret_key(key);
         Ok(())
     }
 
-    fn key_store(&self) -> Arc<dyn coco::keystore::KeyStore + Sync + Send> {
+    fn keystore(&self) -> Arc<dyn coco::keystore::Keystore + Sync + Send> {
         match self {
-            Self::Sealed(sealed) => sealed.key_store.clone(),
-            Self::Unsealed(unsealed) => unsealed.key_store.clone(),
+            Self::Sealed(sealed) => sealed.keystore.clone(),
+            Self::Unsealed(unsealed) => unsealed.keystore.clone(),
         }
     }
 }
@@ -127,7 +127,7 @@ pub struct Unsealed {
     /// Cookie set on unsealing the key store.
     pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
-    pub key_store: Arc<dyn coco::keystore::KeyStore + Send + Sync>,
+    pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -142,7 +142,7 @@ pub struct Sealed {
     /// Cookie set on unsealing the key store.
     pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
-    pub key_store: Arc<dyn coco::keystore::KeyStore + Send + Sync>,
+    pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
 }
 
 impl Unsealed {
@@ -179,7 +179,7 @@ impl Unsealed {
             test: false,
             service_handle: service::Handle::dummy(),
             auth_token: Arc::new(RwLock::new(None)),
-            key_store: Arc::new(coco::keystore::memory()),
+            keystore: Arc::new(coco::keystore::memory()),
         })
     }
 }

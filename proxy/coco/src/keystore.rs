@@ -1,7 +1,7 @@
 //! Storage of secret keys.
 //!
-//! This module provides the [`KeyStore`] trait and the [`file()`] and [`memory()`] functions to
-//! construct specific [`KeyStore`] implementations.
+//! This module provides the [`Keystore`] trait and the [`file()`] and [`memory()`] functions to
+//! construct specific [`Keystore`] implementations.
 
 use std::convert::Infallible;
 
@@ -9,11 +9,11 @@ use librad::{keys, paths};
 pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{self, Pwhash, SecretBoxError},
-    file, Keystore, SecretKeyExt,
+    file, Keystore as _, SecretKeyExt,
 };
 
 /// Storage for one secret key.
-pub trait KeyStore {
+pub trait Keystore {
     /// Create a key and store it encrypted with the given passphrase.
     ///
     /// # Errors
@@ -34,15 +34,15 @@ pub trait KeyStore {
 /// File name component of the file path to the key.
 const KEY_PATH: &str = "librad.key";
 
-/// Create a [`KeyStore`] that is backed by an encrypted file on disk.
+/// Create a [`Keystore`] that is backed by an encrypted file on disk.
 ///
 /// The key file is named `librad.key` and located under in the `paths` key directory.
 #[must_use]
-pub fn file(paths: paths::Paths) -> impl KeyStore + Send + Sync {
+pub fn file(paths: paths::Paths) -> impl Keystore + Send + Sync {
     FileStore { paths }
 }
 
-/// File-backed [`KeyStore`]
+/// File-backed [`Keystore`]
 struct FileStore {
     /// Determines the location of the key file when a key is loaded or written.
     paths: paths::Paths,
@@ -65,7 +65,7 @@ impl FileStore {
     }
 }
 
-impl KeyStore for FileStore {
+impl Keystore for FileStore {
     fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
         let mut store = self.store(passphrase);
         match store.get_key() {
@@ -85,21 +85,21 @@ impl KeyStore for FileStore {
     }
 }
 
-/// Create an insecure in-memory [`KeyStore`].
+/// Create an insecure in-memory [`Keystore`].
 #[must_use]
-pub fn memory() -> impl KeyStore + Send + Sync {
+pub fn memory() -> impl Keystore + Send + Sync {
     MemoryStore {
         key_and_passphrase: std::sync::Mutex::new(None),
     }
 }
 
-/// Insecure in-memory [`KeyStore`]
+/// Insecure in-memory [`Keystore`]
 struct MemoryStore {
     /// Secret key and passphrase if present
     key_and_passphrase: std::sync::Mutex<Option<(keys::SecretKey, SecUtf8)>>,
 }
 
-impl KeyStore for MemoryStore {
+impl Keystore for MemoryStore {
     fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
         let mut key_and_passphrase = self
             .key_and_passphrase

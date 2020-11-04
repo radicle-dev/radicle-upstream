@@ -15,7 +15,7 @@ pub struct Environment {
     /// Paths for on-disk persistence.
     pub coco_paths: coco::Paths,
     /// A reference to the key store.
-    pub key_store: Arc<dyn coco::keystore::KeyStore + Send + Sync>,
+    pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
     /// If true we are running the service in test mode.
     pub test_mode: bool,
 }
@@ -41,22 +41,22 @@ impl Environment {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
             let coco_paths = coco::Paths::from_root(temp_dir.path())?;
-            let key_store = Arc::new(coco::keystore::memory());
+            let keystore = Arc::new(coco::keystore::memory());
             Ok(Self {
                 key: None,
                 temp_dir: Some(temp_dir),
                 coco_paths,
-                key_store,
+                keystore,
                 test_mode,
             })
         } else {
             let coco_paths = coco::Paths::new()?;
-            let key_store = Arc::new(coco::keystore::file(coco_paths.clone()));
+            let keystore = Arc::new(coco::keystore::file(coco_paths.clone()));
             Ok(Self {
                 key: None,
                 temp_dir: None,
                 coco_paths,
-                key_store,
+                keystore,
                 test_mode,
             })
         }
