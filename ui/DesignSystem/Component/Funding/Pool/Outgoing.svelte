@@ -79,7 +79,7 @@
 <style>
   .outgoing-container {
     margin: 2rem 0;
-    padding: var(--content-padding) 0px;
+    padding: var(--content-padding) 0px 0px 0;
 
     border: 1px solid #ebeff3;
     box-sizing: border-box;
@@ -126,6 +126,19 @@
 
   .onboarding h3 {
     margin-bottom: 1rem;
+  }
+
+  .tip {
+    font-size: 14px;
+    line-height: 18px;
+
+    display: flex;
+    align-items: center;
+    text-align: center;
+
+    margin-top: calc(1.5 * var(--content-padding));
+
+    color: var(--color-foreground-level-5);
   }
 </style>
 
@@ -205,6 +218,12 @@
         receivers={poolData.receiverAddresses}
         onSave={onSaveReceivers}
         updating={ongoingBeneficiariesUpdate} />
+
+      {#if onboardingStatus.isComplete()}
+        <div class="tip">
+          ⓘ To stop or pause your generosity, set the monthly contribution to 0.
+        </div>
+      {/if}
     </div>
   </Remote>
 </div>
