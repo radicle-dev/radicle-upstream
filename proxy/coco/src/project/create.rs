@@ -78,26 +78,22 @@ impl Repo {
 /// The data required for creating a new project.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Create<R> {
+pub struct Create {
     /// Description of the project we want to create.
     pub description: String,
     /// The default branch name for the project.
     pub default_branch: OneLevel,
-    /// The [`Repo`] to create with. It's left as a generic parameter so that we can have
-    /// `Create<Repo>` and `Create<ValidatedRepo>` for that sweet type safety.
-    pub repo: R,
+    /// What kind of working copy we're working with, i.e. new or existing.
+    pub repo: Repo,
 }
 
-impl Create<Repo> {
-    #![allow(clippy::use_self)]
-    /// Validate `Create<Repo>` into a `Create<ValidatedRepo>`. This ensures that we have valid
+impl Create {
+    /// Validate `Create` into a [`validation::Repository`]. This ensures that we have valid
     /// paths when we attempt to create the working copy.
-    ///
-    /// It needs to be called before using [`Create::setup_repo`].
     ///
     /// # Errors
     ///
-    /// See [`Repo::validate`]
+    /// See [`validation::Repository::validate`]
     pub fn validate(self, url: LocalUrl) -> Result<validation::Repository, validation::Error> {
         Ok(validation::Repository::validate(
             self.repo,
@@ -132,12 +128,12 @@ impl Create<Repo> {
 
 // Clippy is stupid and doesn't realise the `Create`s here are different types than `Self`.
 #[allow(clippy::use_self)]
-impl Create<Repo> {
+impl Create {
     /// Transforms into an existing project.
     #[must_use]
-    pub fn into_existing(self) -> Create<Repo> {
+    pub fn into_existing(self) -> Self {
         let path = self.repo.full_path();
-        Create {
+        Self {
             repo: Repo::Existing { path },
             description: self.description,
             default_branch: self.default_branch,

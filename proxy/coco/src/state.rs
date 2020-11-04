@@ -493,7 +493,7 @@ impl State {
     pub async fn init_project(
         &self,
         owner: &User,
-        project: project::Create<project::Repo>,
+        project: project::Create,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
         let mut meta = project.build(owner, self.signer.public_key().into())?;
         meta.sign_by_user(&self.signer, owner)?;
