@@ -1,8 +1,8 @@
 <script lang="typescript">
   import { getContext } from "svelte";
+  import Router from "svelte-spa-router";
 
   import { isExperimental, openPath } from "../../native/ipc.js";
-  import Router from "svelte-spa-router";
 
   import * as menu from "../src/menu";
   import * as notification from "../src/notification";
@@ -14,6 +14,7 @@
     project as store,
     peerSelection,
     revisionSelection,
+    selectPeer,
     selectedPeer,
   } from "../src/project";
   import type { Project, User } from "../src/project";
@@ -139,19 +140,15 @@
       screen.unlock();
     }
   };
-  const selectPeer = (event: CustomEvent) => {
-    console.log(event);
-    resetCurrentRevision();
+  const onSelectPeer = ({ detail: peer }: { detail: User }) => {
+    selectPeer(peer);
   };
   const selectRevision = (event: CustomEvent) => {
     console.log(event);
   };
 
-  $: console.log($selectedPeer);
+  // Initialise the screen by fetching the project and associated data.
   fetch({ urn });
-  /* fetchRevisions({ projectId }); */
-  /* $: if ($currentRevision) */
-  /*   fetchCommits({ projectId, revision: $currentRevision }); */
 </script>
 
 <style>
@@ -171,7 +168,7 @@
             {#if data.peers.length > 0}
               <PeerSelector
                 peers={data.peers}
-                on:select={selectPeer}
+                on:select={onSelectPeer}
                 selected={$selectedPeer || data.default} />
               <Tooltip
                 position={CSSPosition.Left}

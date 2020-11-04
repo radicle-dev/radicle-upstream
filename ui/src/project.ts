@@ -196,6 +196,7 @@ enum Kind {
   FetchRevisions = "FETCH_REVISIONS",
   FetchTracked = "FETCH_TRACKED",
   FetchLocalState = "FETCH_LOCAL_STATE",
+  SelectPeer = "SELECT_PEER",
   TrackPeer = "TRACK_PEER",
   UntrackPeer = "UNTRACK_PEER",
 }
@@ -211,7 +212,7 @@ interface Create extends event.Event<Kind> {
 
 interface Fetch extends event.Event<Kind> {
   kind: Kind.Fetch;
-  urn: urn.Urn;
+  urn: string;
 }
 
 interface FetchList extends event.Event<Kind> {
@@ -219,14 +220,24 @@ interface FetchList extends event.Event<Kind> {
   urn?: string;
 }
 
+interface FetchLocalState extends event.Event<Kind> {
+  kind: Kind.FetchLocalState;
+  path: string;
+}
+
 interface FetchPeers extends event.Event<Kind> {
   kind: Kind.FetchPeers;
   urn: urn.Urn;
 }
 
-interface FetchLocalState extends event.Event<Kind> {
-  kind: Kind.FetchLocalState;
-  path: string;
+interface FetchRevisions extends event.Event<Kind> {
+  kind: Kind.FetchRevisions;
+  urn: urn.Urn;
+}
+
+interface SelectPeer extends event.Event<Kind> {
+  kind: Kind.SelectPeer;
+  peer: User;
 }
 
 interface TrackPeer extends event.Event<Kind> {
@@ -246,8 +257,10 @@ type Msg =
   | Create
   | Fetch
   | FetchList
-  | FetchPeers
   | FetchLocalState
+  | FetchPeers
+  | FetchRevisions
+  | SelectPeer
   | TrackPeer
   | UntrackPeer;
 
@@ -263,7 +276,9 @@ const update = (msg: Msg): void => {
     case Kind.ClearLocalState:
       localStateStore.reset();
       localStateError.set("");
+
       break;
+
     case Kind.Create:
       creationStore.loading();
       api
@@ -272,6 +287,7 @@ const update = (msg: Msg): void => {
         .catch(creationStore.error);
 
       break;
+
     case Kind.Fetch:
       projectStore.loading();
       peersStore.reset();
@@ -279,13 +295,12 @@ const update = (msg: Msg): void => {
         .get<Project>(`projects/${msg.urn}`)
         .then((project: Project) => {
           projectStore.success(project);
-          fetchPeers({ urn: msg.urn });
+          fetchPeers(msg.urn);
         })
         .catch(projectStore.error);
 
       break;
 
-    // TODO(sos): determine if viewing another user's profile shows you tracked || contributed || (tracked && contributed)
     case Kind.FetchList:
       projectsStore.loading();
 
@@ -293,18 +308,6 @@ const update = (msg: Msg): void => {
         .get<Projects>("projects/contributed")
         .then(projectsStore.success)
         .catch(projectsStore.error);
-
-      break;
-
-    case Kind.FetchPeers:
-      peersStore.loading();
-
-      api
-        .get<Peer[]>(`projects/${msg.urn}/peers`)
-        .then(peers => {
-          peersStore.success(peers);
-        })
-        .catch(peersStore.error);
 
       break;
 
@@ -316,11 +319,48 @@ const update = (msg: Msg): void => {
         .catch(localStateStore.error);
       break;
 
+    case Kind.FetchPeers:
+      peersStore.loading();
+
+      api
+        .get<Peer[]>(`projects/${msg.urn}/peers`)
+        .then(peers => {
+          peersStore.success(peers);
+          fetchRevisions(msg.urn);
+        })
+        .catch(peersStore.error);
+
+      break;
+
+    case Kind.FetchRevisions: {
+      revisionsStore.loading();
+
+      const currentPeer = get(selectedPeer);
+
+      if (!currentPeer) {
+        console.log("Can't fetch revisions without selected peer");
+        return;
+      }
+
+      source
+        .fetchRevisions(msg.urn, currentPeer.peerId)
+        .then(revisionsStore.success)
+        .catch(revisionsStore.error);
+
+      break;
+    }
+
+    case Kind.SelectPeer: {
+      selectedPeerStore.set(msg.peer);
+
+      break;
+    }
+
     case Kind.TrackPeer:
       api
         .put<null, boolean>(`projects/${msg.urn}/track/${msg.peerId}`, null)
         .then(() => {
-          fetchPeers({ urn: msg.urn });
+          fetchPeers(msg.urn);
         })
         .catch(peersStore.error);
       break;
@@ -329,7 +369,7 @@ const update = (msg: Msg): void => {
       api
         .put<null, boolean>(`projects/${msg.urn}/untrack/${msg.peerId}`, null)
         .then(() => {
-          fetchPeers({ urn: msg.urn });
+          fetchPeers(msg.urn);
         })
         .catch(peersStore.error);
       break;
@@ -358,7 +398,12 @@ export const checkout = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
-export const fetchPeers = event.create<Kind, Msg>(Kind.FetchPeers, update);
+export const fetchPeers = (projectUrn: urn.Urn): void =>
+  event.create<Kind, Msg>(Kind.FetchPeers, update)({ urn: projectUrn });
+export const fetchRevisions = (projectUrn: urn.Urn): void =>
+  event.create<Kind, Msg>(Kind.FetchRevisions, update)({ urn: projectUrn });
+export const selectPeer = (peer: User): void =>
+  event.create<Kind, Msg>(Kind.SelectPeer, update)({ peer });
 
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,
