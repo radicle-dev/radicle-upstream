@@ -141,6 +141,22 @@ export const peerSelection: Readable<remote.Data<{
   return store;
 });
 
+const selectedPeerStore = writable<User | null>(null);
+export const selectedPeer = derived(
+  [selectedPeerStore, peerSelection],
+  ([selected, selection]) => {
+    if (selected) {
+      return selected;
+    }
+
+    if (selection.status === remote.Status.Success) {
+      return selection.data.default;
+    }
+
+    return null;
+  }
+);
+
 export const pendingPeers: Readable<remote.Data<{
   peers: Peer[];
 }>> = derived(peersStore, store => {
@@ -168,11 +184,36 @@ const trackedStore = remote.createStore<Projects>();
 export const tracked = trackedStore.readable;
 
 const revisionsStore = remote.createStore<source.Revisions>();
-export const revisionSelection = revisionsStore.readable;
+export const revisionSelection: Readable<remote.Data<{
+  default: source.Branch;
+  branches: source.Branch[];
+  tags: source.Tag[];
+}>> = derived([projectStore, revisionsStore], ([project, store]) => {
+  if (store.status === remote.Status.Success) {
+    let defaultBranch = store.data.branches[0];
 
-const selectedPeerStore = writable<User | null>(null);
-export const selectedPeer = derived(
-  [selectedPeerStore, peerSelection],
+    if (project.status === remote.Status.Success) {
+      const projectDefault = store.data.branches.find(
+        (branch: source.Branch) => branch.name === project.data.metadata.name
+      );
+
+      if (projectDefault) {
+        defaultBranch = projectDefault;
+      }
+    }
+
+    return {
+      status: remote.Status.Success,
+      data: { ...store.data, default: defaultBranch },
+    };
+  }
+
+  return store;
+});
+
+const selectedRevisionStore = writable<source.Revision | null>(null);
+export const selectedRevision = derived(
+  [selectedRevisionStore, revisionSelection],
   ([selected, selection]) => {
     if (selected) {
       return selected;
@@ -197,6 +238,7 @@ enum Kind {
   FetchTracked = "FETCH_TRACKED",
   FetchLocalState = "FETCH_LOCAL_STATE",
   SelectPeer = "SELECT_PEER",
+  SelectRevision = "SELECT_REVISION",
   TrackPeer = "TRACK_PEER",
   UntrackPeer = "UNTRACK_PEER",
 }
@@ -240,6 +282,11 @@ interface SelectPeer extends event.Event<Kind> {
   peer: User;
 }
 
+interface SelectRevision extends event.Event<Kind> {
+  kind: Kind.SelectRevision;
+  revision: source.Revision;
+}
+
 interface TrackPeer extends event.Event<Kind> {
   kind: Kind.TrackPeer;
   urn: urn.Urn;
@@ -261,6 +308,7 @@ type Msg =
   | FetchPeers
   | FetchRevisions
   | SelectPeer
+  | SelectRevision
   | TrackPeer
   | UntrackPeer;
 
@@ -356,6 +404,12 @@ const update = (msg: Msg): void => {
       break;
     }
 
+    case Kind.SelectRevision: {
+      selectedRevisionStore.set(msg.revision);
+
+      break;
+    }
+
     case Kind.TrackPeer:
       api
         .put<null, boolean>(`projects/${msg.urn}/track/${msg.peerId}`, null)
@@ -404,6 +458,8 @@ export const fetchRevisions = (projectUrn: urn.Urn): void =>
   event.create<Kind, Msg>(Kind.FetchRevisions, update)({ urn: projectUrn });
 export const selectPeer = (peer: User): void =>
   event.create<Kind, Msg>(Kind.SelectPeer, update)({ peer });
+export const selectRevision = (revision: source.Revision): void =>
+  event.create<Kind, Msg>(Kind.SelectRevision, update)({ revision });
 
 export const clearLocalState = event.create<Kind, Msg>(
   Kind.ClearLocalState,

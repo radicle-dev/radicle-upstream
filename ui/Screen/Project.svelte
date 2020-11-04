@@ -16,17 +16,14 @@
     revisionSelection,
     selectPeer,
     selectedPeer,
+    selectRevision,
+    selectedRevision,
   } from "../src/project";
   import type { Project, User } from "../src/project";
   import type { UnsealedSession } from "../src/session";
   import * as screen from "../src/screen";
-  import {
-    commits as commitsStore,
-    currentRevision,
-    resetCurrentRevision,
-    resetCurrentPeerId,
-    RevisionType,
-  } from "../src/source";
+  import { commits as commitsStore } from "../src/source";
+  import type { Revision } from "../src/source";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
 
@@ -67,10 +64,6 @@
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
-  // Reset some stores on first load
-  resetCurrentRevision();
-  resetCurrentPeerId();
-
   $: topbarMenuItems = (
     project: Project,
     commitCounter?: number
@@ -109,7 +102,7 @@
   };
 
   const handleCheckout = async (
-    { detail: checkoutDirectoryPath }: CustomEvent,
+    { detail: checkoutPath }: { detail: string },
     project: Project,
     peer: User | null
   ) => {
@@ -122,7 +115,7 @@
       screen.lock();
       const path = await checkout(
         project.urn,
-        checkoutDirectoryPath,
+        checkoutPath,
         peer.identity.peerId
       );
 
@@ -143,8 +136,8 @@
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {
     selectPeer(peer);
   };
-  const selectRevision = (event: CustomEvent) => {
-    console.log(event);
+  const onSelectRevision = ({ detail: revision }: { detail: Revision }) => {
+    selectRevision(revision);
   };
 
   // Initialise the screen by fetching the project and associated data.
@@ -184,8 +177,8 @@
           <Remote store={revisionSelection} let:data={revisions}>
             <div class="revision-selector-wrapper">
               <RevisionSelector
-                on:select={selectRevision}
-                selected={$currentRevision || { type: RevisionType.Branch, name: project.metadata.defaultBranch }}
+                on:select={onSelectRevision}
+                selected={$selectedRevision || revisions.default}
                 {revisions} />
             </div>
           </Remote>
