@@ -1,3 +1,6 @@
+//! Validation logic for safely checking that a [`super::Repo`] is valid before setting up the
+//! working copy.
+
 use std::{io, marker::PhantomData, path::PathBuf};
 
 use librad::{
@@ -144,7 +147,7 @@ impl Repository {
                     url,
                     default_branch,
                 })
-            }
+            },
             super::Repo::New { name, path } => {
                 let repo_path = path.join(name.clone());
 
@@ -165,7 +168,7 @@ impl Repository {
                     url,
                     default_branch,
                 })
-            }
+            },
         }
     }
 
@@ -188,7 +191,7 @@ impl Repository {
                 );
                 Self::setup_remote(&repo, url, &default_branch)?;
                 Ok(repo)
-            }
+            },
             Self::New {
                 path,
                 name,
@@ -230,7 +233,7 @@ impl Repository {
                 Self::setup_remote(&repo, url, &default_branch)?;
 
                 Ok(repo)
-            }
+            },
         }
     }
 

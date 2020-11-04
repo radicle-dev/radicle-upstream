@@ -764,12 +764,7 @@ impl From<&State> for Seed {
 mod test {
     use std::{env, path::PathBuf};
 
-    use librad::{
-        git::storage,
-        git_ext::OneLevel,
-        keys::SecretKey,
-        reflike,
-    };
+    use librad::{git::storage, git_ext::OneLevel, keys::SecretKey, reflike};
 
     use crate::{config, control, project, signer};
 

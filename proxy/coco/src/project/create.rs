@@ -12,7 +12,6 @@ use radicle_surf::vcs::git::git2;
 
 use crate::user::User;
 
-/// Validation Errors
 pub mod validation;
 
 /// Errors that occur when attempting to create a working copy of a project.
