@@ -3,10 +3,10 @@
   import { pop } from "svelte-spa-router";
 
   import * as modal from "../../../src/modal";
-  import { store } from "../../../src/funding/pool";
+  import { displayAddress, store } from "../../../src/funding/pool";
 
-  import { Remote, TxButton } from "../../../DesignSystem/Component";
-  import { Button, Icon, Input } from "../../../DesignSystem/Primitive";
+  import { Copyable, Remote, TxButton } from "../../../DesignSystem/Component";
+  import { Button, Icon } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
   if ($store === null) pop();
@@ -89,20 +89,15 @@
     padding: 10px;
   }
 
+  .row p {
+    display: flex;
+    align-items: center;
+  }
+
   .subheading {
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
   }
-
-  .address {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-
-    display: inline-flex;
-    max-width: 80px;
-  }
-
   .submit {
     display: flex;
     justify-content: flex-end;
@@ -129,7 +124,11 @@
       <div class="sub-section">
         <p class="typo-text-bold subheading">From</p>
         <div class="row">
-          <p>Your incoming support ({poolData.collectableFunds} DAI)</p>
+          <p>
+            Your incoming support (
+            <Icon.CurrencyDAI style="padding-top: 3px;" />
+            {poolData.collectableFunds})
+          </p>
         </div>
       </div>
 
@@ -137,7 +136,15 @@
         <p class="typo-text-bold subheading">To</p>
         <div class="row">
           <p>Your connected account</p>
-          <p class="address">{get(store).getAccount().address}</p>
+          <span class="address">
+            <Copyable
+              showIcon={false}
+              styleContent={false}
+              copyContent={get(store).getAccount().address}
+              notificationText="Address copied to the clipboard">
+              {displayAddress(get(store).getAccount().address)}
+            </Copyable>
+          </span>
         </div>
       </div>
 

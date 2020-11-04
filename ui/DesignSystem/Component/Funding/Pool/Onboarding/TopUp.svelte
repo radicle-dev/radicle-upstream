@@ -36,7 +36,12 @@
 <Box {style} {done}>
   <h2>Top up</h2>
   <p>Fill up your outgoing balance.</p>
-  <p>Balance <strong>{balance} DAI</strong></p>
+  <p style="display: flex; align-items: center;">
+    Balance <strong style="display: flex; margin-left: 10px;">
+      <Icon.CurrencyDAI
+        style="fill: var(--color-foreground-level-6); padding-top: 3px;" />
+      {balance}</strong>
+  </p>
   {#if !done}
     <Button
       disabled={ongoing}

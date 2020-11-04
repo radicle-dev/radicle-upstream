@@ -1,12 +1,13 @@
 <script lang="typescript">
   import { Remote } from "../../../Component";
-  import { Button } from "../../../Primitive";
+  import { Button, Icon } from "../../../Primitive";
 
   import * as modal from "../../../../src/modal";
   import * as path from "../../../../src/path";
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
   import * as _pool from "../../../../src/funding/pool";
   import * as transaction from "../../../../src/transaction";
+  import CurrencyDai from "../../../Primitive/Icon/CurrencyDAI.svelte";
 
   export let pool: _pool.Pool;
 
@@ -68,7 +69,11 @@
       </header>
       <div class="item">
         <p>Balance</p>
-        <h3>{poolData.collectableFunds} DAI</h3>
+        <h3 style="display: flex; margin-left: 10px">
+          <Icon.CurrencyDAI
+            style="fill: var(--color-foreground-level-6); padding-top: 3px;" />
+          {poolData.collectableFunds}
+        </h3>
         {#if poolData.collectableFunds > 0 && !ongoingCollect}
           <Button
             style="margin-left: 10px;"

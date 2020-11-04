@@ -2,7 +2,7 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { TxButton } from "../../../DesignSystem/Component";
+  import { Copyable, TxButton } from "../../../DesignSystem/Component";
   import { Button, Icon, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
@@ -117,6 +117,10 @@
     justify-content: flex-end;
     margin-top: 2rem;
   }
+
+  .address {
+    margin-left: 10px;
+  }
 </style>
 
 <div class="wrapper" data-cy="send-funds-modal">
@@ -153,9 +157,20 @@
       <p class="typo-text-bold subheading">From</p>
       <div class="row">
         <p>Your external wallet</p>
-        <p>
-          <span>{get(store).getAccount().balance} DAI <span
-              class="address">{displayAddress(get(store).getAccount().address)}</span></span>
+        <p style="display: flex; align-items: center;">
+          <span style="display: flex; align-items: center;"><Icon.CurrencyDAI
+              style="padding-top: 3px;" />
+            {get(store).getAccount().balance}
+          </span>
+          <span class="address">
+            <Copyable
+              showIcon={false}
+              styleContent={false}
+              copyContent={get(store).getAccount().address}
+              notificationText="Address copied to the clipboard">
+              {displayAddress(get(store).getAccount().address)}
+            </Copyable>
+          </span>
         </p>
       </div>
     </div>

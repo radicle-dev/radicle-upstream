@@ -42,7 +42,8 @@
   </p>
 
   <p class="typo-text-bold row">
-    <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
+    <Icon.CurrencyDAI
+      style="fill: var(--color-foreground-level-6); padding-top: 3px;" />
     {currentValue} per month
   </p>
 
