@@ -770,7 +770,7 @@ mod test {
 
     use super::{Error, State};
 
-    fn fakie_project(path: PathBuf) -> project::Create<project::Repo> {
+    fn fakie_project(path: PathBuf) -> project::Create {
         project::Create {
             repo: project::Repo::New {
                 path,
@@ -781,7 +781,7 @@ mod test {
         }
     }
 
-    fn radicle_project(path: PathBuf) -> project::Create<project::Repo> {
+    fn radicle_project(path: PathBuf) -> project::Create {
         project::Create {
             repo: project::Repo::New {
                 path,
