@@ -1,16 +1,6 @@
 Cypress.Commands.add("resetProxyState", async () => {
   console.log("Reset Proxy state");
   await fetchOk("http://localhost:8080/v1/control/reset");
-  await fetchOk("http://localhost:8080/v1/keystore", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      passphrase: "radicle-upstream",
-    }),
-  });
 });
 
 Cypress.Commands.add("sealKeystore", async () => {

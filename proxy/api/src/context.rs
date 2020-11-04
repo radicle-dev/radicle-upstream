@@ -53,6 +53,50 @@ impl Context {
             Self::Unsealed(unsealed) => &mut unsealed.service_handle,
         }
     }
+
+    /// Unseal the key store and restart the coco service with the obtained key.
+    ///
+    /// # Errors
+    ///
+    /// * Errors if the password is wrong.
+    /// * Errors if backend fails to retrieve the data.
+    /// * Errors if there is no key in the storage yet.
+    pub async fn unseal_keystore(
+        &mut self,
+        passphrase: coco::keystore::SecUtf8,
+    ) -> Result<(), crate::error::Error> {
+        let key_store = self.key_store();
+        let key = tokio::task::spawn_blocking(move || key_store.get(passphrase))
+            .await
+            .expect("Task to unseal key was aborted")?;
+        self.service_handle().set_secret_key(key);
+        Ok(())
+    }
+
+    /// Create a key and store it encrypted with the given passphrase. Then restart the coco
+    /// service to use the new key.
+    ///
+    /// # Errors
+    ///
+    /// Errors when the storage backend fails to persist the key or a key already exists.
+    pub async fn create_key(
+        &mut self,
+        passphrase: coco::keystore::SecUtf8,
+    ) -> Result<(), crate::error::Error> {
+        let key_store = self.key_store();
+        let key = tokio::task::spawn_blocking(move || key_store.create_key(passphrase))
+            .await
+            .expect("Task to create key was aborted")?;
+        self.service_handle().set_secret_key(key);
+        Ok(())
+    }
+
+    fn key_store(&self) -> Arc<dyn coco::keystore::KeyStore + Sync + Send> {
+        match self {
+            Self::Sealed(sealed) => sealed.key_store.clone(),
+            Self::Unsealed(unsealed) => unsealed.key_store.clone(),
+        }
+    }
 }
 
 impl From<Unsealed> for Context {
@@ -82,6 +126,8 @@ pub struct Unsealed {
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
     pub auth_token: Arc<RwLock<Option<String>>>,
+    /// Reference to the key store.
+    pub key_store: Arc<dyn coco::keystore::KeyStore + Send + Sync>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -97,45 +143,6 @@ pub struct Sealed {
     pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
     pub key_store: Arc<dyn coco::keystore::KeyStore + Send + Sync>,
-}
-
-impl Sealed {
-    /// Unseal the key store and restart the coco service with the obtained key.
-    ///
-    /// # Errors
-    ///
-    /// * Errors if the password is wrong.
-    /// * Errors if backend fails to retrieve the data.
-    /// * Errors if there is no key in the storage yet.
-    pub async fn unseal_keystore(
-        &mut self,
-        passphrase: coco::keystore::SecUtf8,
-    ) -> Result<(), crate::error::Error> {
-        let key_store = self.key_store.clone();
-        let key = tokio::task::spawn_blocking(move || key_store.get(passphrase))
-            .await
-            .expect("Task to unseal key was aborted")?;
-        self.service_handle.set_secret_key(key);
-        Ok(())
-    }
-
-    /// Create a key and store it encrypted with the given passphrase. Then restart the coco
-    /// service to use the new key.
-    ///
-    /// # Errors
-    ///
-    /// Errors when the storage backend fails to persist the key or a key already exists.
-    pub async fn create_key(
-        &mut self,
-        passphrase: coco::keystore::SecUtf8,
-    ) -> Result<(), crate::error::Error> {
-        let key_store = self.key_store.clone();
-        let key = tokio::task::spawn_blocking(move || key_store.create_key(passphrase))
-            .await
-            .expect("Task to create key was aborted")?;
-        self.service_handle.set_secret_key(key);
-        Ok(())
-    }
 }
 
 impl Unsealed {
@@ -172,6 +179,7 @@ impl Unsealed {
             test: false,
             service_handle: service::Handle::dummy(),
             auth_token: Arc::new(RwLock::new(None)),
+            key_store: Arc::new(coco::keystore::memory()),
         })
     }
 }

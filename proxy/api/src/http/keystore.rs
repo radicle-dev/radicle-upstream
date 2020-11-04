@@ -46,9 +46,7 @@ mod handler {
         mut ctx: context::Context,
         input: super::UnsealInput,
     ) -> Result<impl Reply, Rejection> {
-        if let context::Context::Sealed(ref mut sealed) = ctx {
-            sealed.unseal_keystore(input.passphrase).await?;
-        }
+        ctx.unseal_keystore(input.passphrase).await?;
 
         let auth_token_lock = ctx.auth_token();
         let mut auth_token = auth_token_lock.write().await;
@@ -67,9 +65,7 @@ mod handler {
         mut ctx: context::Context,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        if let context::Context::Sealed(ref mut sealed) = ctx {
-            sealed.create_key(input.passphrase).await?;
-        }
+        ctx.create_key(input.passphrase).await?;
 
         let auth_token_lock = ctx.auth_token();
         let mut auth_token = auth_token_lock.write().await;

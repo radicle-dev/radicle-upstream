@@ -239,6 +239,7 @@ async fn rig(
             test: environment.test_mode,
             service_handle: service_handle.clone(),
             auth_token,
+            key_store: environment.key_store.clone(),
         });
 
         Ok(Rigging {
