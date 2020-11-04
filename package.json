@@ -115,7 +115,7 @@
     "test:integration:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test-watch wait:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
-    "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn false; status=$?; [[ $CI == true ]] && kill `pidof api`; exit $status",
+    "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn false; status=$?; [ $CI == true ] && kill `pidof api`; exit $status",
     "wait:debug": "wait-on tcp:8080 && yarn cypress:open",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && electron-builder --publish never",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:8080 && NODE_ENV=development electron .",
