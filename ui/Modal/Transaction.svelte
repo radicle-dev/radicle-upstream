@@ -1,6 +1,7 @@
 <script lang="typescript">
   import { get } from "svelte/store";
   import { Copyable } from "../DesignSystem/Component";
+  import { Icon } from "../DesignSystem/Primitive";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
 
   import { displayAddress } from "../src/funding/pool";
@@ -98,6 +99,12 @@
   }
 
   .cost {
+    display: flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 3px;
+
+    background-color: var(--color-negative-level-1);
     color: var(--color-negative);
   }
 </style>
@@ -142,20 +149,27 @@
       {#if !!tx.meta.amount}
         <div class="row">
           <p>Amount</p>
-          <p class="typo-semi-bold cost">{tx.meta.amount} DAI</p>
+          <p class="typo-semi-bold cost">
+            -
+            <Icon.CurrencyDAI
+              style="fill: var(--color-negative); padding-left: 7px; margin-top: 3px;" />
+            {tx.meta.amount}
+          </p>
         </div>
       {/if}
       <div class="row">
         <p>Gas used</p>
-        <p class="typo-semi-bold cost">{tx.gas.used || 'Not yet known'}</p>
+        <p class="typo-semi-bold cost">
+          - {tx.gas.used ? `${tx.gas.used} gwei` : 'Not yet known'}
+        </p>
       </div>
       <div class="row">
         <p>Gas limit</p>
-        <p class="typo-semi-bold cost">{tx.gas.limit}</p>
+        <p class="typo-semi-bold cost">- {tx.gas.limit} gwei</p>
       </div>
       <div class="row">
         <p>Gas price</p>
-        <p class="typo-semi-bold cost">{tx.gas.price}</p>
+        <p class="typo-semi-bold cost">- {tx.gas.price} gwei</p>
       </div>
     </div>
 
