@@ -82,7 +82,7 @@ export const showNotificationsForFailedProjects = async (): Promise<void> => {
   failedProjects.forEach(failedProject => {
     error.show(
       `The project ${failedProject.metadata.name} could not be loaded`,
-      project
+      failedProject
     );
   });
 };
