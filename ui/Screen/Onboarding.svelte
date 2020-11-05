@@ -17,7 +17,7 @@
   let identity;
   let handle;
   let state = State.Welcome;
-  let requesting = false;
+  let createIdentityInProgress = false;
 
   let inY = 1000;
   let outY = -1000;
@@ -41,8 +41,7 @@
   const onCreateIdentity = async (handle, passphrase) => {
     try {
       screen.lock();
-      requesting = true;
-      notification.info("Creating the identity...");
+      createIdentityInProgress = true;
       await session.createKeystore(passphrase);
       // Retry until the API is up
       identity = await withRetry(() => createIdentity({ handle }), 200);
@@ -55,7 +54,7 @@
       );
     } finally {
       screen.unlock();
-      requesting = false;
+      createIdentityInProgress = false;
     }
   };
 </script>
@@ -105,7 +104,7 @@
     <div class="content" in:fly={{ y: inY }} out:fly={{ y: outY }}>
       <div class="inner">
         <EnterPassphrase
-          disabled={requesting}
+          disabled={createIdentityInProgress}
           on:previous={() => {
             animateBackward();
             state = State.EnterName;

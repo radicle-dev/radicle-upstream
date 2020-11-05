@@ -78,7 +78,10 @@
   }
 
   $: allowNext =
-    passphrase && passphrase === repeatedPassphrase && !validations;
+    passphrase &&
+    passphrase === repeatedPassphrase &&
+    !validations &&
+    !disabled;
 
   let ran = false;
 
@@ -169,7 +172,7 @@
 
       <Button
         dataCy="set-passphrase-button"
-        disabled={!allowNext || disabled}
+        disabled={!allowNext}
         on:click={next}>
         Set passphrase
       </Button>

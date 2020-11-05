@@ -107,7 +107,6 @@
     <Bsod />
   </div>
 
-  <!-- TODO(julien): Dress up loading screen -->
   <div slot="loading" class="error">
     <EmptyState headerText="Loading..." emoji="🕵️" text="" />
   </div>
