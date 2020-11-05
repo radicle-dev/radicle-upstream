@@ -13,16 +13,16 @@ export const OPEN_PATH = "IPC_OPEN_PATH";
 //
 // The workaround is to use the electron native open dialog. As a bonus we
 // can configure it to allow users to create new directories.
-export const getDirectoryPath = (): void =>
+export const getDirectoryPath = (): Promise<string> =>
   window.electron.ipcRenderer.invoke(DIALOG_SHOWOPENDIALOG);
 
-export const getVersion = (): string =>
+export const getVersion = (): Promise<string> =>
   window.electron.ipcRenderer.invoke(GET_VERSION);
 
-export const copyToClipboard = (text: string): void =>
+export const copyToClipboard = (text: string): Promise<void> =>
   window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);
 
-export const openPath = (path: string): string =>
+export const openPath = (path: string): Promise<void> =>
   window.electron.ipcRenderer.invoke(OPEN_PATH, path);
 
 // Informs whether it's running in a development environment.
