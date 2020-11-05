@@ -124,12 +124,12 @@
         {/if}
         <div slot="error" let:error>
           <EmptyState
-            headerText={error.message}
-            text="This file doesn't exist on this branch."
-            primaryActionText="Back to source"
             emoji="👀"
+            headerText={error.message}
             on:primaryAction={ev => console.log('primary action', ev)}
-            style="height: 320px;" />
+            primaryActionText="Back to source"
+            style="height: 320px;"
+            text="This file doesn't exist on this branch." />
         </div>
       </Remote>
     </div>

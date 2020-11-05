@@ -1,5 +1,6 @@
 <script lang="typescript">
   import { format } from "timeago.js";
+
   import {
     isMarkdown,
     resetObjectPath,
@@ -9,8 +10,9 @@
   import * as urn from "../../../src/urn";
 
   import { Icon, Markdown } from "../../Primitive";
-  import CommitTeaser from "./CommitTeaser.svelte";
   import EmptyState from "../EmptyState.svelte";
+
+  import CommitTeaser from "./CommitTeaser.svelte";
 
   export let blob: Blob;
   export let path: string;
