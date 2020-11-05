@@ -1,4 +1,4 @@
-import { DIALOG_SHOWOPENDIALOG, OPEN_PATH } from "../../../native/ipc.js";
+import { DIALOG_SHOWOPENDIALOG, OPEN_PATH } from "../../../native/ipc";
 
 context("project checkout", () => {
   const withWorkspaceStub = callback => {

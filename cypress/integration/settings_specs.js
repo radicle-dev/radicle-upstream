@@ -1,4 +1,4 @@
-import { GET_VERSION } from "../../native/ipc.js";
+import { GET_VERSION } from "../../native/ipc";
 
 context("settings", () => {
   beforeEach(() => {

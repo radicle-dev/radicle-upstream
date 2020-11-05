@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { SvelteComponent } from "svelte";
 
-  import { copyToClipboard } from "../../../native/ipc.js";
+  import { copyToClipboard } from "../../../native/ipc";
   import * as notification from "../../src/notification";
   import Icon from "../Primitive/Icon";
 
