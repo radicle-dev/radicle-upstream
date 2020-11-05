@@ -33,7 +33,7 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
-    /// When trying to inspect a path, and I/O error occurred.
+    /// When trying to inspect a path, an I/O error occurred.
     #[error(transparent)]
     Io(#[from] io::Error),
 
@@ -83,7 +83,7 @@ pub enum Repository {
         /// The default branch the repository should be set up with.
         default_branch: OneLevel,
     },
-    /// A new repository will be created with using these fields.
+    /// A new repository will be created using these fields.
     New {
         /// The path to the working copy.
         path: PathBuf,
@@ -104,17 +104,18 @@ impl Repository {
     ///
     /// **Existing**:
     ///   * The path provided should exist
-    ///   * The path provided should have at least one components, which forms the name of the
+    ///   * The path provided should have at least one component, which forms the name of the
     ///   project. E.g. `Developer/radicle-upstream` is the directory and `radicle-upstream` is the
     ///   project name.
     ///   * The path leads to a git repository
     ///   * The default branch passed exists in the repository
-    ///   * If a `rad` remote exists, that it: a. Has a url b. If it does have a url, that it
-    ///     matches the one provided here
+    ///   * If a `rad` remote exists, that it:
+    ///         * Has a url field
+    ///         * If it does have a url field, that it matches the one provided here
     ///
     /// **New**:
-    ///   * The path provided does not exist a. If it does exist, it should be a directory and it
-    ///     should be empty
+    ///   * The path provided does not exist:
+    ///         * If it does exist, it should be a directory and it should be empty
     ///
     /// # Errors
     ///
@@ -172,12 +173,11 @@ impl Repository {
         }
     }
 
-    /// Initialise the [`git2::Repository`] for the project found at `urn` in the `monorepo`.
+    /// Initialise the [`git2::Repository`].
     ///
     /// # Errors
     ///
     ///   * Failed to setup the repository
-    ///   * Failed to build the project entity
     pub fn setup_repo(self, description: &str) -> Result<git2::Repository, Error> {
         match self {
             Self::Existing {
