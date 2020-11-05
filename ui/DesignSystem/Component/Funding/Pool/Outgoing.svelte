@@ -22,9 +22,6 @@
 
   $: _pool.store.set(pool);
 
-  // The loaded PoolData, updated at on `pool.data.subscribe`.
-  let data: _pool.PoolData | undefined;
-
   let ongoingTopUp = false;
   let ongoingCashout = false;
   let ongoingMonthlyContributionUpdate = false;
@@ -46,7 +43,6 @@
   pool.data.subscribe(store => {
     if (store.status === remote.Status.Success) {
       const newData = store.data;
-      data = newData;
       monthlyContribution = newData.amountPerBlock;
       onboardingStatus = new _pool.OnboardingStatus(newData);
     }
@@ -183,8 +179,9 @@
             Top up
           </Button>
         {/if}
-        {#if !ongoingCashout}
+        {#if !ongoingCashout && !ongoingTopUp}
           <Button
+            disabled={poolData.balance === 0}
             dataCy="drain-pool-button"
             variant="outline"
             on:click={openCashoutModal}
