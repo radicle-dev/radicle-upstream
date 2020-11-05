@@ -108,10 +108,10 @@ impl Keystorage<Memory> {
 }
 
 /// Synonym for an error when interacting with a file-backed store for [`librad::keys`].
-type FileError = file::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
+pub type FileError = file::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
 
 /// Synonym for an error when interacting with a memory store for [`librad::keys`].
-type MemoryError = memory::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
+pub type MemoryError = memory::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
 
 /// The [`Keystorage`] can result in two kinds of errors depending on what storage you're using.
 #[derive(Debug, thiserror::Error)]
