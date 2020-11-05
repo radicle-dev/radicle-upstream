@@ -46,14 +46,9 @@ export const settings: Readable<Settings> = derived(sessionStore, sess => {
 
 // EVENTS
 enum Kind {
-  Clear = "CLEAR",
   ClearCache = "CLEAR_CACHE",
   Fetch = "FETCH",
   UpdateSettings = "UPDATE_SETTINGS",
-}
-
-interface Clear extends event.Event<Kind> {
-  kind: Kind.Clear;
 }
 
 interface ClearCache extends event.Event<Kind> {
@@ -69,7 +64,7 @@ interface UpdateSettings extends event.Event<Kind> {
   settings: Settings;
 }
 
-type Msg = Clear | ClearCache | Fetch | UpdateSettings;
+type Msg = ClearCache | Fetch | UpdateSettings;
 
 const fetchSessionRetry = async () => {
   return api
@@ -127,16 +122,6 @@ const updateSettings = (settings: Settings): Promise<void> =>
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
-    case Kind.Clear:
-      api
-        .del(`session`)
-        .then(fetchSession)
-        .catch(reason => {
-          console.error("DEL session failed: ", reason);
-        });
-
-      break;
-
     case Kind.Fetch:
       sessionStore.loading();
       fetchSession().catch(reason => {
@@ -154,7 +139,6 @@ const update = (msg: Msg): void => {
   }
 };
 
-export const clear = event.create<Kind, Msg>(Kind.Clear, update);
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 
 export const updateAppearance = (appearance: Appearance): void =>
