@@ -74,7 +74,7 @@ UI features that are experimental or under construction that find their way
 into the main branch must be placed behind the feature flag, to make them
 inaccessible for the general public.
 
-We do that by using `native > ipc.js > isExperimental` as a feature flag to
+We do that by using `native > ipc.ts > isExperimental` as a feature flag to
 enable or disable said features accordingly to the mode in which we are running
 the app.
 
