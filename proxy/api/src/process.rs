@@ -1,6 +1,6 @@
 //! Provides [`run`] to run the proxy process.
 use futures::prelude::*;
-use std::{convert::TryFrom, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
@@ -183,48 +183,27 @@ async fn run_rigging(
     }
 }
 
-lazy_static::lazy_static! {
-    /// Fixed key to use in test mode
-    static ref TEST_KEY: coco::keys::SecretKey = coco::keys::SecretKey::new();
-}
-
 /// Create [`Rigging`] to run the peer and API.
 async fn rig(
     service_handle: service::Handle,
     environment: &service::Environment,
     auth_token: Arc<RwLock<Option<String>>>,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
-    let (paths, store) = if let Some(temp_dir) = &environment.temp_dir {
+    let store_path = if let Some(temp_dir) = &environment.temp_dir {
         std::env::set_var("RAD_HOME", temp_dir.path());
-        let paths =
-            coco::Paths::try_from(coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()))?;
-        let store = {
-            let path = temp_dir.path().join("store");
-            kv::Store::new(kv::Config::new(path).flush_every_ms(100))
-        }?;
-        (paths, store)
+        temp_dir.path().join("store")
     } else {
-        let paths = coco::Paths::try_from(coco::config::Paths::default())?;
-        let store = {
-            let path = config::dirs().data_dir().join("store");
-            kv::Store::new(kv::Config::new(path).flush_every_ms(100))
-        }?;
-        (paths, store)
+        config::dirs().data_dir().join("store")
     };
 
-    if let Some(_key) = environment.key {
-        // We ignore `environment.key` for now and use a hard-coded passphrase
-        let pw = coco::keystore::SecUtf8::from("radicle-upstream");
-        let key = if environment.test_mode {
-            *TEST_KEY
-        } else {
-            coco::keystore::Keystorage::file(&paths, pw).init()?
-        };
+    let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
+
+    if let Some(key) = environment.key {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
         let (peer, state, seeds_sender) = if environment.test_mode {
             let config = coco::config::configure(
-                paths,
+                environment.coco_paths.clone(),
                 key,
                 *coco::config::INADDR_ANY,
                 coco::config::static_seed_discovery(vec![]),
@@ -239,7 +218,7 @@ async fn rig(
             let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
             let config = coco::config::configure(
-                paths,
+                environment.coco_paths.clone(),
                 key,
                 *coco::config::INADDR_ANY,
                 coco::config::StreamDiscovery::new(seeds_receiver),
@@ -260,6 +239,7 @@ async fn rig(
             test: environment.test_mode,
             service_handle: service_handle.clone(),
             auth_token,
+            keystore: environment.keystore.clone(),
         });
 
         Ok(Rigging {
@@ -273,6 +253,7 @@ async fn rig(
             test: environment.test_mode,
             service_handle,
             auth_token,
+            keystore: environment.keystore.clone(),
         });
         Ok(Rigging {
             ctx,
