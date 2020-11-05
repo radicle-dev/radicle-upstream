@@ -11,8 +11,6 @@
   export let expanded: boolean = false;
   export let selected: Branch | Tag;
   export let revisions: Revisions;
-  console.log(selected);
-  console.log(revisions);
 
   const dispatch = createEventDispatcher();
   const hide = () => {

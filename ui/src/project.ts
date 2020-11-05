@@ -413,6 +413,7 @@ const update = (msg: Msg): void => {
     case Kind.SelectRevision: {
       const selected = msg.revision as source.Branch | source.Tag;
       const current = get(selectedRevision);
+
       if (selected.type !== current.type && selected.name !== current.name) {
         selectedRevisionStore.set(msg.revision);
       }

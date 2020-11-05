@@ -1,19 +1,17 @@
-<script>
+<script lang="typescript">
   import { getContext } from "svelte";
   import { format } from "timeago.js";
 
+  import { selectedPeer, selectedRevision } from "../../src/project";
+  import type { Project } from "../../src/project";
   import {
-    currentPeerId,
-    currentRevision,
     object as objectStore,
     ObjectType,
     objectPath,
     objectType,
     readme,
-    resetObjectPath,
-    resetObjectType,
     fetchObject,
-  } from "../../src/source.ts";
+  } from "../../src/source";
 
   import { EmptyState, Remote } from "../../DesignSystem/Component";
 
@@ -22,22 +20,17 @@
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
 
-  const project = getContext("project");
+  const project: Project = getContext("project");
 
-  const reset = () => {
-    resetObjectPath();
-    resetObjectType();
-  };
+  $: console.log($selectedPeer);
+  $: console.log($selectedRevision);
 
-  // Reset some stores on first load
-  reset();
-
-  $: if ($currentPeerId) {
+  $: if ($selectedPeer && selectedRevision) {
     fetchObject({
       path: $objectPath,
-      peerId: $currentPeerId,
-      projectId: project.id,
-      revision: $currentRevision,
+      peerId: $selectedPeer.peerId,
+      projectUrn: project.urn,
+      revision: $selectedRevision,
       type: $objectType,
     });
   }
@@ -85,13 +78,13 @@
 <div class="wrapper">
   <div class="container center-content">
     <div class="column-left">
-      {#if $currentPeerId}
+      {#if $selectedPeer}
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
-            currentRevision={$currentRevision}
-            currentPeerId={$currentPeerId}
-            projectId={project.id}
+            currentRevision={$selectedRevision}
+            currentPeerId={$selectedPeer.peerId}
+            projectUrn={project.urn}
             toplevel
             name={project.metadata.name} />
         </div>
@@ -121,7 +114,7 @@
 
           <!-- Readme -->
           <Remote
-            store={readme(project.id, $currentPeerId, $currentRevision)}
+            store={readme(project.urn, $selectedPeer.peerId, $selectedRevision)}
             let:data={readme}>
             {#if readme}
               <Readme content={readme.content} path={readme.path} />
@@ -139,7 +132,7 @@
             text="This file doesn't exist on this branch."
             primaryActionText="Back to source"
             emoji="👀"
-            on:primaryAction={reset}
+            on:primaryAction={console.log}
             style="height: 320px;" />
         </div>
       </Remote>
