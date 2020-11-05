@@ -58,7 +58,7 @@ impl Context {
     ///
     /// # Errors
     ///
-    /// * Errors if the password is wrong.
+    /// * Errors if the passphrase is wrong.
     /// * Errors if backend fails to retrieve the data.
     /// * Errors if there is no key in the storage yet.
     pub async fn unseal_keystore(

@@ -25,7 +25,7 @@ pub trait Keystore {
     ///
     /// # Errors
     ///
-    /// * Errors if the password is wrong.
+    /// * Errors if the passphrase is wrong.
     /// * Errors if backend fails to retrieve the data.
     /// * Errors if there is no key in the storage yet.
     fn get(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error>;
@@ -144,10 +144,10 @@ pub struct Error {
 }
 
 impl Error {
-    /// Returns `true` if the error indicates that an invalid password was used to decrypt the
+    /// Returns `true` if the error indicates that an invalid passphrase was used to decrypt the
     /// secret key.
     #[must_use]
-    pub const fn is_invalid_password(&self) -> bool {
+    pub const fn is_invalid_passphrase(&self) -> bool {
         #[allow(clippy::wildcard_enum_match_arm)]
         matches!(self.inner, FileError::Crypto(SecretBoxError::InvalidKey))
     }

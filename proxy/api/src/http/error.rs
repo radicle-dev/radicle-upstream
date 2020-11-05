@@ -164,7 +164,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                     },
                 },
                 error::Error::Keystore(keystore_err) => {
-                    if keystore_err.is_invalid_password() {
+                    if keystore_err.is_invalid_passphrase() {
                         (
                             StatusCode::FORBIDDEN,
                             "INCORRECT_PASSPHRASE",
