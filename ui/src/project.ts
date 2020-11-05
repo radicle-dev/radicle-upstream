@@ -118,6 +118,9 @@ export const creation = creationStore.readable;
 const localStateStore = remote.createStore<source.LocalState>();
 export const localState = localStateStore.readable;
 
+const objectStore = remote.createStore<source.SourceObject>();
+export const object = objectStore.readable;
+
 const peersStore = remote.createStore<Peer[]>();
 export const peerSelection: Readable<remote.Data<{
   default: User;
@@ -233,6 +236,7 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchObject = "FETCH_OBJECT",
   FetchPeers = "FETCH_PEERS",
   FetchRevisions = "FETCH_REVISIONS",
   FetchTracked = "FETCH_TRACKED",
@@ -265,6 +269,15 @@ interface FetchList extends event.Event<Kind> {
 interface FetchLocalState extends event.Event<Kind> {
   kind: Kind.FetchLocalState;
   path: string;
+}
+
+interface FetchObject extends event.Event<Kind> {
+  kind: Kind.FetchObject;
+  type: source.ObjectType;
+  projectUrn: urn.Urn;
+  peerId: identity.PeerId;
+  path: string;
+  revision: source.Revision;
 }
 
 interface FetchPeers extends event.Event<Kind> {
@@ -305,6 +318,7 @@ type Msg =
   | Fetch
   | FetchList
   | FetchLocalState
+  | FetchObject
   | FetchPeers
   | FetchRevisions
   | SelectPeer
@@ -367,6 +381,23 @@ const update = (msg: Msg): void => {
         .catch(localStateStore.error);
       break;
 
+    case Kind.FetchObject: {
+      objectStore.loading();
+
+      source
+        .fetchObject(
+          msg.type,
+          msg.projectUrn,
+          msg.peerId,
+          msg.path,
+          msg.revision
+        )
+        .then(objectStore.success)
+        .catch(objectStore.error);
+
+      break;
+    }
+
     case Kind.FetchPeers:
       peersStore.loading();
 
@@ -414,7 +445,7 @@ const update = (msg: Msg): void => {
       const selected = msg.revision as source.Branch | source.Tag;
       const current = get(selectedRevision);
 
-      if (selected.type !== current.type && selected.name !== current.name) {
+      if (selected.type !== current.type || selected.name !== current.name) {
         selectedRevisionStore.set(msg.revision);
       }
 
@@ -463,6 +494,23 @@ export const checkout = (
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchObject = (
+  type: source.ObjectType,
+  projectUrn: urn.Urn,
+  peerId: identity.PeerId,
+  path: string,
+  revision: source.Revision
+): void =>
+  event.create<Kind, Msg>(
+    Kind.FetchObject,
+    update
+  )({
+    type,
+    projectUrn,
+    peerId,
+    path,
+    revision,
+  });
 export const fetchPeers = (projectUrn: urn.Urn): void =>
   event.create<Kind, Msg>(Kind.FetchPeers, update)({ urn: projectUrn });
 export const fetchRevisions = (projectUrn: urn.Urn): void =>

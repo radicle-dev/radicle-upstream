@@ -7,7 +7,7 @@ import * as remote from "./remote";
 import * as urn from "./urn";
 
 // TYPES
-interface Person {
+export interface Person {
   avatar: string;
   email: string;
   name: string;
@@ -77,12 +77,12 @@ export interface LocalState {
   managed: boolean;
 }
 
-interface SourceObject {
+export interface SourceObject {
   path: string;
   info: Info;
 }
 
-interface Blob extends SourceObject {
+export interface Blob extends SourceObject {
   binary?: boolean;
   html?: boolean;
   content: string;
@@ -134,9 +134,6 @@ export const commit = commitStore.readable;
 const commitsStore = remote.createStore<CommitsStore>();
 export const commits = commitsStore.readable;
 
-const objectStore = remote.createStore<SourceObject>();
-export const object = objectStore.readable;
-
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
@@ -163,42 +160,7 @@ interface FetchCommits extends event.Event<Kind> {
   projectUrn: urn.Urn;
 }
 
-interface FetchObject extends event.Event<Kind> {
-  kind: Kind.FetchObject;
-  path: string;
-  peerId: identity.PeerId;
-  projectUrn: urn.Urn;
-  revision: Revision;
-  type: ObjectType;
-}
-
-const groupCommits = (history: CommitSummary[]): CommitHistory => {
-  const days: CommitHistory = [];
-  let groupDate: Date | undefined = undefined;
-
-  for (const commit of history) {
-    const time = commit.committerTime;
-    const date = new Date(time * 1000);
-    const isNewDay =
-      !days.length ||
-      !groupDate ||
-      date.getDate() < groupDate.getDate() ||
-      date.getMonth() < groupDate.getMonth() ||
-      date.getFullYear() < groupDate.getFullYear();
-
-    if (isNewDay) {
-      days.push({
-        time: time,
-        commits: [],
-      });
-      groupDate = date;
-    }
-    days[days.length - 1].commits.push(commit);
-  }
-  return days;
-};
-
-type Msg = FetchCommit | FetchCommits | FetchObject;
+type Msg = FetchCommit | FetchCommits;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -228,40 +190,39 @@ const update = (msg: Msg): void => {
           });
         })
         .catch(commitsStore.error);
+
       break;
+  }
+};
 
-    case Kind.FetchObject:
-      objectStore.loading();
+export const fetchObject = (
+  type: ObjectType,
+  projectUrn: urn.Urn,
+  peerId: identity.PeerId,
+  path: string,
+  revision: Revision
+): Promise<SourceObject> => {
+  switch (type) {
+    case ObjectType.Blob: {
+      return api.get<SourceObject>(`source/blob/${projectUrn}`, {
+        query: {
+          path: encodeURIComponent(path),
+          peerId: peerId,
+          revision: revision,
+          highlight: !isMarkdown(path),
+        },
+      });
+    }
 
-      switch (msg.type) {
-        case ObjectType.Blob:
-          api
-            .get<SourceObject>(`source/blob/${msg.projectUrn}`, {
-              query: {
-                peerId: msg.peerId,
-                revision: msg.revision,
-                path: encodeURIComponent(msg.path),
-                highlight: !isMarkdown(msg.path),
-              },
-            })
-            .then(objectStore.success)
-            .catch(objectStore.error);
-          break;
-
-        case ObjectType.Tree:
-          api
-            .get<SourceObject>(`source/tree/${msg.projectUrn}`, {
-              query: {
-                peerId: msg.peerId,
-                revision: msg.revision,
-                prefix: msg.path,
-              },
-            })
-            .then(objectStore.success)
-            .catch(objectStore.error);
-          break;
-      }
-      break;
+    case ObjectType.Tree: {
+      return api.get<SourceObject>(`source/tree/${projectUrn}`, {
+        query: {
+          peerId: peerId,
+          revision: revision,
+          prefix: path,
+        },
+      });
+    }
   }
 };
 
@@ -313,7 +274,6 @@ export const fetchRevisions = (
 
 export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
 export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
-export const fetchObject = event.create<Kind, Msg>(Kind.FetchObject, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);
@@ -404,22 +364,48 @@ export const readme = (
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
 
-  remote
-    .chain(objectStore.readable, readme)
-    .then((object: SourceObject) => {
-      if (object.info.objectType === ObjectType.Tree) {
-        const path = findReadme(object as Tree);
+  /* remote */
+  /*   .chain(objectStore.readable, readme) */
+  /*   .then((object: SourceObject) => { */
+  /*     if (object.info.objectType === ObjectType.Tree) { */
+  /*       const path = findReadme(object as Tree); */
 
-        if (path) {
-          return blob(projectId, peerId, revision, path, false);
-        }
-      }
+  /*       if (path) { */
+  /*         return blob(projectId, peerId, revision, path, false); */
+  /*       } */
+  /*     } */
 
-      return null;
-    })
-    .then(blob => (blob && !blob.binary ? blob : null))
-    .then(readme.success)
-    .catch(readme.error);
+  /*     return null; */
+  /*   }) */
+  /*   .then(blob => (blob && !blob.binary ? blob : null)) */
+  /*   .then(readme.success) */
+  /*   .catch(readme.error); */
 
   return readme.readable;
+};
+
+const groupCommits = (history: CommitSummary[]): CommitHistory => {
+  const days: CommitHistory = [];
+  let groupDate: Date | undefined = undefined;
+
+  for (const commit of history) {
+    const time = commit.committerTime;
+    const date = new Date(time * 1000);
+    const isNewDay =
+      !days.length ||
+      !groupDate ||
+      date.getDate() < groupDate.getDate() ||
+      date.getMonth() < groupDate.getMonth() ||
+      date.getFullYear() < groupDate.getFullYear();
+
+    if (isNewDay) {
+      days.push({
+        time: time,
+        commits: [],
+      });
+      groupDate = date;
+    }
+    days[days.length - 1].commits.push(commit);
+  }
+  return days;
 };

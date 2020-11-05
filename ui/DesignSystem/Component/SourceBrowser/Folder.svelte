@@ -15,7 +15,7 @@
 
   import File from "./File.svelte";
 
-  export let name: string;
+  export let name: string = "";
   export let peerId: PeerId;
   export let projectUrn: urn.Urn;
   export let revision: Revision;

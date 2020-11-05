@@ -154,7 +154,11 @@
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
-    <Header.Large urn={project.urn} stats={project.stats} {...project.metadata}>
+    <Header.Large
+      urn={project.urn}
+      name={project.metadata.name}
+      description={project.metadata.description}
+      stats={project.stats}>
       <div slot="top">
         <div style="display: flex">
           <Remote store={peerSelection} let:data>

@@ -1,19 +1,21 @@
-<script>
+<script lang="typescript">
   import { format } from "timeago.js";
   import {
     isMarkdown,
     resetObjectPath,
     resetObjectType,
-  } from "../../../src/source.ts";
+  } from "../../../src/source";
+  import type { Blob } from "../../../src/source";
+  import * as urn from "../../../src/urn";
 
   import { Icon, Markdown } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
   import EmptyState from "../EmptyState.svelte";
 
-  export let blob = null;
-  export let path = null;
-  export let projectId = null;
-  export let projectName = null;
+  export let blob: Blob;
+  export let path: string;
+  export let projectName: string;
+  export let projectUrn: urn.Urn;
 </script>
 
 <style>
@@ -101,12 +103,12 @@
     </div>
     <div class="commit-header">
       <CommitTeaser
-        {projectId}
-        user={{ username: blob.info.lastCommit.author.name, avatar: blob.info.lastCommit.author.avatar }}
-        commitMessage={blob.info.lastCommit.summary}
-        commitSha={blob.info.lastCommit.sha1}
+        message={blob.info.lastCommit.summary}
+        {projectUrn}
+        sha={blob.info.lastCommit.sha1}
+        style="height: 100%"
         timestamp={format(blob.info.lastCommit.committerTime * 1000)}
-        style="height: 100%" />
+        user={blob.info.lastCommit.author} />
     </div>
   </header>
   <div class="container">

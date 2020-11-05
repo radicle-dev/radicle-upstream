@@ -2,16 +2,15 @@
   import { getContext } from "svelte";
   import { format } from "timeago.js";
 
-  import { selectedPeer, selectedRevision } from "../../src/project";
-  import type { Project } from "../../src/project";
   import {
-    object as objectStore,
-    ObjectType,
-    objectPath,
-    objectType,
-    readme,
     fetchObject,
-  } from "../../src/source";
+    object as store,
+    selectedPeer,
+    selectedRevision,
+  } from "../../src/project";
+  import type { Project } from "../../src/project";
+  import { ObjectType, objectPath, objectType, readme } from "../../src/source";
+  import * as urn from "../../src/urn";
 
   import { EmptyState, Remote } from "../../DesignSystem/Component";
 
@@ -20,16 +19,17 @@
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
 
+  export let params: { urn: urn.Urn };
   const project: Project = getContext("project");
 
   $: if ($selectedPeer && $selectedRevision) {
-    fetchObject({
-      path: $objectPath,
-      peerId: $selectedPeer.peerId,
-      projectUrn: project.urn,
-      revision: $selectedRevision,
-      type: $objectType,
-    });
+    fetchObject(
+      $objectType,
+      project.urn,
+      $selectedPeer.peerId,
+      $objectPath,
+      $selectedRevision
+    );
   }
 </script>
 
@@ -79,7 +79,6 @@
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
-            name={project.metadata.name}
             peerId={$selectedPeer.peerId}
             projectUrn={project.urn}
             revision={$selectedRevision}
@@ -90,23 +89,23 @@
 
     <div class="column-right">
       <!-- Object -->
-      <Remote store={objectStore} let:data={object}>
+      <Remote {store} let:data={object}>
         {#if object.info.objectType === ObjectType.Blob}
           <FileSource
             blob={object}
             path={$objectPath}
             projectName={project.metadata.name}
-            projectId={project.id} />
+            projectUrn={project.urn} />
         {:else if object.path === ''}
           <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
-              projectId={project.id}
-              user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
-              commitMessage={object.info.lastCommit.summary}
-              commitSha={object.info.lastCommit.sha1}
+              message={object.info.lastCommit.summary}
+              sha={object.info.lastCommit.sha1}
+              projectUrn={project.urn}
+              style="height: 100%"
               timestamp={format(object.info.lastCommit.committerTime * 1000)}
-              style="height: 100%" />
+              user={object.info.lastCommit.author} />
           </div>
 
           <!-- Readme -->

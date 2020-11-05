@@ -1,17 +1,19 @@
-<script>
+<script lang="typescript">
   import { link } from "svelte-spa-router";
 
-  import * as path from "../../../src/path.ts";
+  import * as path from "../../../src/path";
+  import * as source from "../../../src/source";
+  import * as urn from "../../../src/urn";
 
   import { Icon } from "../../Primitive";
 
-  export let projectId = null;
-  export let commitMessage = null;
-  export let timestamp = null;
-  export let commitSha = null;
-  export let user = null;
-
-  export let style = null;
+  export let message: string;
+  export let projectUrn: urn.Urn;
+  // FIXME(xla): Should be a proper type `Sha`.
+  export let sha: string;
+  export let style: string = "";
+  export let timestamp: string;
+  export let user: source.Person;
 </script>
 
 <style>
@@ -56,18 +58,18 @@
     <Icon.Commit style="fill: var(--color-secondary)" />
     <a
       class="commit-sha typo-text-small-mono"
-      href={path.projectCommit(projectId, commitSha)}
+      href={path.projectCommit(projectUrn, sha)}
       use:link>
-      {commitSha.substring(0, 7)}
+      {sha.substring(0, 7)}
     </a>
-    <p class="commit-message typo-text-small">{commitMessage}</p>
+    <p class="commit-message typo-text-small">{message}</p>
   </div>
 
   <div class="align-right">
     <p
       class="typo-text-small-bold"
       style="margin-right: 8px; color: var(--color-foreground-level-6)">
-      {user.username}
+      {user.name}
     </p>
     <p class="typo-text-small" style="color: var(--color-foreground-level-6)">
       {timestamp}
