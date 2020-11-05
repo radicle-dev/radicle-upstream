@@ -6,6 +6,7 @@
   import * as path from "../../src/path";
   import { fetchList, projects as store } from "../../src/project";
   import type { Project } from "../../src/project";
+  import { showNotificationsForFailedProjects } from "../../src/profile";
   import type { UnsealedSession } from "../../src/session";
 
   import {
@@ -24,6 +25,7 @@
     push(path.projectSource(project.id));
 
   fetchList();
+  showNotificationsForFailedProjects();
 </script>
 
 <Remote {store} let:data={projects}>
