@@ -157,7 +157,7 @@ mod handler {
     pub async fn create(
         ctx: context::Unsealed,
         owner: coco::user::User,
-        input: coco::project::Create<coco::project::Repo>,
+        input: coco::project::Create,
     ) -> Result<impl Reply, Rejection> {
         let meta = ctx
             .state

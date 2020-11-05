@@ -248,7 +248,7 @@ pub enum Status {
     },
 }
 
-/// Set of knobs to change the behaviour of the [`RunState`].
+/// Set of knobs to change the behaviour of the `RunState`.
 #[derive(Default)]
 pub struct Config {
     /// Set of knobs to alter announce behaviour.
