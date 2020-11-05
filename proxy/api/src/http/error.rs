@@ -181,6 +181,27 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         )
                     },
                 },
+                error::Error::Keystore(keystore_err) => {
+                    if keystore_err.is_invalid_passphrase() {
+                        (
+                            StatusCode::FORBIDDEN,
+                            "INCORRECT_PASSPHRASE",
+                            "incorrect passphrase".to_string(),
+                        )
+                    } else if keystore_err.is_key_exists() {
+                        (
+                            StatusCode::CONFLICT,
+                            "KEY_EXISTS",
+                            "A key already exists".to_string(),
+                        )
+                    } else {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "INTERNAL_SERVER_ERROR",
+                            err.to_string(),
+                        )
+                    }
+                },
                 error::Error::KeystoreSealed
                 | error::Error::WrongPassphrase
                 | error::Error::InvalidAuthCookie => {

@@ -115,8 +115,8 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
   return true;
 };
 
-export const createKeystore = (): Promise<null> => {
-  return api.set<unknown>(`keystore`, {});
+export const createKeystore = (passphrase: string): Promise<null> => {
+  return api.set<unknown>(`keystore`, { passphrase });
 };
 
 const updateSettings = (settings: Settings): Promise<void> =>

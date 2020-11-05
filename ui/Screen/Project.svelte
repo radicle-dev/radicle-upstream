@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { isExperimental, openPath } from "../../native/ipc.js";
+  import { isExperimental, openPath } from "../../native/ipc";
   import Router from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
