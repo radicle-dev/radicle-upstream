@@ -7,7 +7,6 @@
   // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
   import * as _pool from "../../../../src/funding/pool";
   import * as transaction from "../../../../src/transaction";
-  import CurrencyDai from "../../../Primitive/Icon/CurrencyDAI.svelte";
 
   export let pool: _pool.Pool;
 

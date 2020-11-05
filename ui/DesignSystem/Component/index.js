@@ -3,6 +3,7 @@ import Badge from "./Badge.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
+import Dai from "./Dai.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
@@ -47,6 +48,7 @@ export {
   Comment,
   Copyable,
   ConnectionStatusIndicator,
+  Dai,
   Dropdown,
   EmptyState,
   Error,

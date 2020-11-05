@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Icon } from "../../../Primitive";
-  import { Remote } from "../../../Component";
+  import { Dai, Remote } from "../../../Component";
 
   import Receivers from "./Receivers.svelte";
   import Add from "./Onboarding/Add.svelte";
@@ -91,7 +91,7 @@
 
   h3,
   p {
-    color: #546474;
+    color: var(--color-foreground-level-6);
   }
 
   header {
@@ -151,9 +151,7 @@
       <div class="row">
         <h3>Outgoing support</h3>
         <span class="row" style="margin-left: 14px">
-          <Icon.CurrencyDAI
-            style="fill: var(--color-foreground-level-6); padding-top: 3px; width: 20px; height: 20px;" />
-          <p>{poolData.amountPerBlock} per month</p>
+          <Dai>{poolData.amountPerBlock} per month</Dai>
         </span>
         <Button
           disabled={ongoingMonthlyContributionUpdate}
@@ -166,9 +164,7 @@
       <div class="row">
         <p>Balance</p>
         <p class="typo-text-bold row" style="margin-left: 10px">
-          <Icon.CurrencyDAI
-            style="fill: var(--color-foreground-level-6); padding-top: 3px;" />
-          {poolData.balance}
+          <Dai>{poolData.balance}</Dai>
         </p>
         {#if !ongoingTopUp}
           <Button
