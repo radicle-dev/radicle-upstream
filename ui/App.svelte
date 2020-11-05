@@ -107,12 +107,7 @@
     <Bsod />
   </div>
 
-  <!-- TODO(julien): Dress up loading screen -->
   <div slot="loading" class="error">
-    {#if $location === path.lock()}
-      <EmptyState headerText="Unlocking the app..." emoji="🚪" text="" />
-    {:else}
-      <EmptyState headerText="Loading..." emoji="🕵️" text="" />
-    {/if}
+    <EmptyState headerText="Loading..." emoji="🕵️" text="" />
   </div>
 </Remote>

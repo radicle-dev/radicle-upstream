@@ -133,7 +133,7 @@ pub fn init_logging() {
 }
 
 #[allow(dead_code)]
-pub fn radicle_project(path: PathBuf) -> project::Create<project::Repo> {
+pub fn radicle_project(path: PathBuf) -> project::Create {
     project::Create {
         repo: project::Repo::New {
             path,
@@ -145,7 +145,7 @@ pub fn radicle_project(path: PathBuf) -> project::Create<project::Repo> {
 }
 
 #[allow(dead_code)]
-pub fn shia_le_pathbuf(path: PathBuf) -> project::Create<project::Repo> {
+pub fn shia_le_pathbuf(path: PathBuf) -> project::Create {
     project::Create {
         repo: project::Repo::New {
             path,

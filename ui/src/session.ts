@@ -105,8 +105,6 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await api.set<unknown>(`keystore/unseal`, { passphrase });
   } catch (error) {
-    sessionStore.loading();
-    sessionStore.success({ status: Status.SealedSession });
     notification.error(`Could not unlock the session: ${error.message}`);
     return false;
   }
@@ -115,8 +113,8 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
   return true;
 };
 
-export const createKeystore = (): Promise<null> => {
-  return api.set<unknown>(`keystore`, {});
+export const createKeystore = (passphrase: string): Promise<null> => {
+  return api.set<unknown>(`keystore`, { passphrase });
 };
 
 const updateSettings = (settings: Settings): Promise<void> =>

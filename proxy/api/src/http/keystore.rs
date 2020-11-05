@@ -31,6 +31,7 @@ fn create_filter(
     warp::post()
         .and(path::end())
         .and(http::with_context(ctx))
+        .and(warp::body::json())
         .and_then(handler::create)
 }
 
@@ -38,21 +39,14 @@ fn create_filter(
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error};
+    use crate::context;
 
     /// Unseal the keystore.
     pub async fn unseal(
         mut ctx: context::Context,
         input: super::UnsealInput,
     ) -> Result<impl Reply, Rejection> {
-        // TODO(merle): Replace with correct password check
-        if input.passphrase.unsecure() != "radicle-upstream" {
-            return Err(Rejection::from(error::Error::WrongPassphrase));
-        }
-        // TODO Load the real key from disk. The service manager ignores the key for now and uses a
-        // hardcoded one.
-        let key = coco::keys::SecretKey::new();
-        ctx.service_handle().set_secret_key(key);
+        ctx.unseal_keystore(input.passphrase).await?;
 
         let auth_token_lock = ctx.auth_token();
         let mut auth_token = auth_token_lock.write().await;
@@ -67,11 +61,11 @@ mod handler {
     }
 
     /// Initialize the keystore with a new key.
-    pub async fn create(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
-        // TODO Load the real key from disk. The service manager ignores the key for now and uses a
-        // hardcoded one.
-        let key = coco::keys::SecretKey::new();
-        ctx.service_handle().set_secret_key(key);
+    pub async fn create(
+        mut ctx: context::Context,
+        input: super::CreateInput,
+    ) -> Result<impl Reply, Rejection> {
+        ctx.create_key(input.passphrase).await?;
 
         let auth_token_lock = ctx.auth_token();
         let mut auth_token = auth_token_lock.write().await;
@@ -91,6 +85,14 @@ mod handler {
 #[serde(rename_all = "camelCase")]
 pub struct UnsealInput {
     /// Passphrase to unlock the keystore.
+    passphrase: coco::keystore::SecUtf8,
+}
+
+/// Bundled input data for `create` request.
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateInput {
+    /// Passphrase to encrypt the keystore with.
     passphrase: coco::keystore::SecUtf8,
 }
 

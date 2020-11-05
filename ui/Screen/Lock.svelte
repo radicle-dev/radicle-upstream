@@ -1,16 +1,23 @@
 <script lang="ts">
+  import * as screen from "../src/screen";
   import * as session from "../src/session";
 
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
 
   let passphrase = "";
+  let unlockInProgress = false;
 
   const unlock = async () => {
-    await session.unseal(passphrase);
+    unlockInProgress = true;
+    screen.lock();
+    await session.unseal(passphrase).finally(() => {
+      screen.unlock();
+      unlockInProgress = false;
+    });
   };
 
   const onEnter = () => {
-    if (passphrase.length > 0) {
+    if (passphrase.length > 0 && !unlockInProgress) {
       unlock();
     }
   };
@@ -42,12 +49,13 @@
       autofocus
       placeholder="Enter your passphrase"
       bind:value={passphrase}
+      disabled={unlockInProgress}
       dataCy="passphrase-input"
       on:enter={onEnter}
       style="width: 16rem; margin-right: 1rem;" />
     <Button
       dataCy="unlock-button"
-      disabled={passphrase.length === 0}
+      disabled={passphrase.length === 0 || unlockInProgress}
       on:click={unlock}>
       Unlock
     </Button>
