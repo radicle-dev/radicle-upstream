@@ -167,7 +167,7 @@
           class="peer"
           class:selected={peer.identity.peerId == selected.identity.peerId}
           data-peer-handle={peer.identity.metadata.handle}
-          on:click={() => select(peer)}>
+          on:click|stopPropagation={() => select(peer)}>
           <div style="display: flex;">
             <Avatar
               avatarFallback={peer.identity.avatarFallback}
@@ -190,7 +190,7 @@
             <div
               data-cy={peer.identity.metadata.handle}
               class="open-profile"
-              on:click={() => {
+              on:click|stopPropagation={() => {
                 open(peer);
               }}>
               <Icon.ArrowBoxUpRight />

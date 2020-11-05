@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { getContext } from "svelte";
-  import Router from "svelte-spa-router";
+  import Router, { push } from "svelte-spa-router";
 
   import { isExperimental, openPath } from "../../native/ipc.js";
 
@@ -59,7 +59,7 @@
 
   export let params: { urn: Urn };
 
-  const urn = params.urn;
+  const { urn } = params;
   const session: UnsealedSession = getContext("session");
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
@@ -133,6 +133,13 @@
       screen.unlock();
     }
   };
+  const onOpenPeer = ({ detail: peer }: { detail: User }) => {
+    if (peer.identity.urn === session.identity.urn) {
+      push(path.profileProjects());
+    } else {
+      push(path.userProfileProjects(peer.identity.urn));
+    }
+  };
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {
     selectPeer(peer);
   };
@@ -165,6 +172,7 @@
             {#if data.peers.length > 0}
               <PeerSelector
                 peers={data.peers}
+                on:open={onOpenPeer}
                 on:select={onSelectPeer}
                 selected={$selectedPeer || data.default} />
               <Tooltip
