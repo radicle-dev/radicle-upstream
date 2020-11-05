@@ -399,13 +399,23 @@ const update = (msg: Msg): void => {
     }
 
     case Kind.SelectPeer: {
-      selectedPeerStore.set(msg.peer);
+      const current = get(selectedPeer);
+
+      if (msg.peer.peerId !== current.peerId) {
+        const currentProject = get(projectStore);
+        selectedPeerStore.set(msg.peer);
+        fetchRevisions(currentProject.data.urn);
+      }
 
       break;
     }
 
     case Kind.SelectRevision: {
-      selectedRevisionStore.set(msg.revision);
+      const selected = msg.revision as source.Branch | source.Tag;
+      const current = get(selectedRevision);
+      if (selected.type !== current.type && selected.name !== current.name) {
+        selectedRevisionStore.set(msg.revision);
+      }
 
       break;
     }
