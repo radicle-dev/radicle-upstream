@@ -1,5 +1,5 @@
 context("project source browsing", () => {
-  before(() => {
+  beforeEach(() => {
     cy.resetProxyState();
     cy.onboardUser("cloudhead");
 

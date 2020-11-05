@@ -4,6 +4,8 @@ context("onboarding", () => {
     passphrase: "curled",
   };
 
+  const radIdRegex = /hwd[a-z0-9]{56}/;
+
   beforeEach(() => {
     cy.resetProxyState();
     cy.visit("./public/index.html");
@@ -39,9 +41,7 @@ context("onboarding", () => {
       cy.focused().type("{enter}");
 
       // Success screen.
-      cy.pick("urn")
-        .contains(/hwd[\w]{56}/)
-        .should("exist");
+      cy.pick("urn").contains(radIdRegex).should("exist");
 
       // Land on profile screen.
       cy.get("body").type("{enter}");
@@ -62,49 +62,11 @@ context("onboarding", () => {
       cy.pick("set-passphrase-button").click();
 
       // Success screen.
-      cy.pick("urn")
-        .contains(/hwd[\w]{56}/)
-        .should("exist");
+      cy.pick("urn").contains(radIdRegex).should("exist");
 
       // Land on profile screen.
       cy.pick("go-to-profile-button").click();
       cy.pick("entity-name").contains(validUser.handle);
-
-      // Clear session to restart onboarding.
-      cy.pick("sidebar", "settings").click();
-      cy.pick("clear-session-button").click();
-      cy.contains("A free and open-source way to host").should("exist");
-
-      // When creating the same identity again without resetting all data, it
-      // should show an error and return to the name entry screen.
-      cy.pick("get-started-button").click();
-
-      cy.pick("handle-input").type(validUser.handle);
-      cy.pick("next-button").click();
-
-      cy.pick("passphrase-input").type(validUser.passphrase);
-      cy.pick("repeat-passphrase-input").type(validUser.passphrase);
-      cy.pick("set-passphrase-button").click();
-      cy.pick("notification")
-        .contains(
-          /Could not create identity: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
-        )
-        .should("exist");
-      cy.pick("notification").contains("Close").click();
-      cy.contains("what should we call you?").should("exist");
-
-      // We can create a different identity with a new handle.
-      cy.pick("handle-input").clear();
-      cy.pick("handle-input").type("cloudhead");
-      cy.pick("next-button").click();
-      cy.pick("passphrase-input").type("1234");
-      cy.pick("repeat-passphrase-input").type("1234");
-      cy.pick("set-passphrase-button").click();
-      cy.pick("urn")
-        .contains(/hwd[\w]{56}/)
-        .should("exist");
-      cy.pick("go-to-profile-button").click();
-      cy.pick("entity-name").contains("cloudhead");
     });
 
     context("when clicking the back button on the passphrase screen", () => {

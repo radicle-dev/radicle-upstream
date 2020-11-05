@@ -1,4 +1,4 @@
-import { Writable, writable } from "svelte/store";
+import { Readable, derived, get, writable } from "svelte/store";
 
 import * as config from "./config";
 import * as event from "./event";
@@ -26,8 +26,11 @@ interface Notification {
 type Notifications = Notification[];
 
 // STATE
-let notifications: Notifications = [];
-export const store: Writable<Notifications> = writable([]);
+const notificationsStore = writable([]);
+export const store: Readable<Notifications> = derived(
+  notificationsStore,
+  (state: Notifications) => state
+);
 
 // EVENTS
 enum Kind {
@@ -69,8 +72,10 @@ interface ShowSuccess extends event.Event<Kind> {
 type Msg = Remove | ShowError | ShowInfo | ShowSuccess;
 
 const filter = (id: ID): void => {
-  notifications = notifications.filter(n => n.id !== id);
-  store.set(notifications);
+  const notifications = get(notificationsStore).filter(
+    (n: Notification) => n.id !== id
+  );
+  notificationsStore.set(notifications);
 };
 
 const show = (
@@ -96,8 +101,9 @@ const show = (
     },
   };
 
-  notifications = [notification, ...notifications];
-  store.set(notifications);
+  const notifications = get(notificationsStore);
+  notifications.unshift(notification);
+  notificationsStore.set(notifications);
 
   setTimeout(() => {
     filter(id);

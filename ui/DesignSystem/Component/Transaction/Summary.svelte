@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Flex, Icon } from "../../Primitive";
+  import { Icon } from "../../Primitive";
   import TransactionSpinner from "./Spinner.svelte";
 
   import * as transaction from "../../../src/transaction.ts";
@@ -24,13 +24,11 @@
 </style>
 
 <div class="summary" on:click>
-  <Flex>
-    <div slot="left" class="text">
-      <TransactionSpinner {status} style="margin: 11px 12px;" />
-      <p class="typo-text-small-bold">{text}</p>
-    </div>
-    <div slot="right">
-      <Icon.ChevronUpDown style="margin-right: 16px; vertical-align: middle;" />
-    </div>
-  </Flex>
+  <div class="text">
+    <TransactionSpinner {status} style="margin: 11px 12px;" />
+    <p class="typo-text-small-bold">{text}</p>
+  </div>
+  <div class="icon">
+    <Icon.ChevronUpDown style="margin-right: 16px; vertical-align: middle;" />
+  </div>
 </div>

@@ -5,7 +5,6 @@
     clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
-    clippy::restriction,
     clippy::unwrap_used,
     missing_docs,
     unused_import_braces,
@@ -22,8 +21,7 @@
     clippy::similar_names,
     clippy::too_many_lines
 )]
-#![feature(hash_set_entry)]
-#![feature(or_patterns)]
+#![feature(duration_zero, hash_set_entry, or_patterns)]
 
 use std::net::SocketAddr;
 
@@ -37,6 +35,8 @@ pub use librad::{
     peer::PeerId,
     uri::{self, RadUrn as Urn},
 };
+
+pub use radicle_git_ext as git_ext;
 
 pub use radicle_git_helpers::remote_helper;
 

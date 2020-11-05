@@ -290,7 +290,7 @@ impl Blob {
 
     /// Indicates if the content of the [`Blob`] is HTML.
     #[must_use]
-    pub fn is_html(&self) -> bool {
+    pub const fn is_html(&self) -> bool {
         matches!(self.content, BlobContent::Html(_))
     }
 }

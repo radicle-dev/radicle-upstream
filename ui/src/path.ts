@@ -4,8 +4,6 @@ import regexparam from "regexparam";
 export const blank = (): string => "/";
 export const settings = (): string => "/settings";
 
-export const discovery = (): string => "/discovery";
-
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
@@ -13,6 +11,7 @@ export const profileFollowing = (): string => "/profile/following";
 export const profileFunding = (): string => "/profile/funding";
 
 export const onboarding = (): string => "/onboarding";
+export const lock = (): string => "/lock";
 
 export const userProfile = (urn: string): string => `/user/${urn}`;
 export const userProfileProjects = (urn: string): string =>
@@ -39,6 +38,7 @@ export const projectCommits = (id: string): string => `/projects/${id}/commits`;
 export const designSystemGuide = (): string => "/design-system-guide";
 
 // modal routes
+export const managePeers = (): string => "/manage-peers";
 export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";

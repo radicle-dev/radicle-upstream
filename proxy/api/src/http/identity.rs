@@ -54,18 +54,15 @@ mod handler {
         ctx: context::Unsealed,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        if let Some(identity) = session::current(ctx.state.clone(), &ctx.store)
-            .await?
-            .identity
-        {
+        if let Some(session) = session::get_current(&ctx.store)? {
             return Err(Rejection::from(error::Error::from(
-                coco::state::Error::already_exists(identity.urn),
+                coco::state::Error::already_exists(session.identity.urn),
             )));
         }
 
         let id = identity::create(&ctx.state, &input.handle).await?;
 
-        session::set_identity(&ctx.store, id.clone())?;
+        session::initialize(&ctx.store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
@@ -100,7 +97,9 @@ mod test {
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use crate::{avatar, context, error, http, identity, session};
+    use radicle_avatar as avatar;
+
+    use crate::{context, error, http, identity, session};
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
@@ -118,8 +117,8 @@ mod test {
             .await;
 
         let urn = {
-            let session = session::current(ctx.state.clone(), &ctx.store).await?;
-            session.identity.expect("failed to set identity").urn
+            let session = session::get_current(&ctx.store)?.expect("no session exists");
+            session.identity.urn
         };
 
         let peer_id = ctx.state.peer_id();
@@ -201,7 +200,7 @@ mod test {
                 coco::user::verify(user)?
             };
 
-            session::set_identity(&ctx.store, id)?;
+            session::initialize(&ctx.store, id)?;
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,

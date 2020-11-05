@@ -226,7 +226,7 @@
 
   .outline {
     background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-foreground-level-2);
+    border-color: var(--color-foreground-level-3);
     color: var(--color-foreground-level-6);
   }
 
@@ -360,6 +360,8 @@
   {title}
   {disabled}
   on:click
+  on:mouseenter
+  on:mouseleave
   {style}>
   <svelte:component this={icon} />
   <div style={icon ? 'margin-left: 8px;' : ''}>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Emoji } from "../Primitive";
   import { Variant } from "../../src/illustration";
 
   export let dataCy = "";
@@ -240,18 +239,6 @@
         fill="#292F33" />
     {/if}
   </svg>
-{:else if variant === Variant.Tent}
-  <Emoji emoji={'🎪'} size="huge" {style} />
-{:else if variant === Variant.Eyes}
-  <Emoji emoji={'👀'} size="huge" {style} />
-{:else if variant === Variant.Telescope}
-  <Emoji emoji={'🔭'} size="huge" {style} />
-{:else if variant === Variant.Star}
-  <Emoji emoji={'🌠'} size="huge" {style} />
-{:else if variant === Variant.Horse}
-  <Emoji emoji={'🐎'} size="huge" {style} />
-{:else if variant === Variant.Computer}
-  <Emoji emoji={'💻'} size="huge" {style} />
 {:else if variant === Variant.Purse}
   <svg
     data-cy={dataCy}

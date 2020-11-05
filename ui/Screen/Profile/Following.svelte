@@ -4,13 +4,13 @@
   import { push } from "svelte-spa-router";
 
   import { FADE_DURATION } from "../../src/config";
-  import { Variant as IllustrationVariant } from "../../src/illustration";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { following as store, fetchFollowing } from "../../src/profile";
   import { cancelRequest } from "../../src/project";
   import type { Project } from "../../src/project";
-  import type { Authenticated } from "../../src/session";
+  import type { UnsealedSession } from "../../src/session";
+  import type { Urn } from "../../src/urn";
 
   import {
     EmptyState,
@@ -19,10 +19,13 @@
     ProjectList,
     Remote,
     ShareableIdentifier,
-    TrackToggle,
+    FollowToggle,
   } from "../../DesignSystem/Component";
 
-  const session: Authenticated = getContext("session");
+  const session: UnsealedSession = getContext("session");
+  const onCancel = (urn: Urn): void => {
+    cancelRequest(urn).then(fetchFollowing);
+  };
   const onSelect = ({ detail: project }: { detail: Project }) => {
     push(path.projectSource(project.id));
   };
@@ -83,11 +86,9 @@
               </div>
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
-                  <TrackToggle
-                    expanded
-                    warning
-                    tracking={true}
-                    on:untrack={() => cancelRequest(request.urn)} />
+                  <FollowToggle
+                    following
+                    on:unfollow={() => onCancel(request.urn)} />
                 </div>
               {/if}
             </div>
@@ -99,7 +100,7 @@
     <div slot="empty">
       <EmptyState
         text="You're not following any projects yet."
-        illustration={IllustrationVariant.Horse}
+        emoji="🐎"
         primaryActionText="Look for a project"
         on:primaryAction={() => {
           modal.toggle(path.search());

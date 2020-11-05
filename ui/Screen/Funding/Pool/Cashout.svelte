@@ -162,7 +162,7 @@
         showLeftItem
         autofocus
         validation={$amountValidation}>
-        <div slot="left" style="position: absolute; top: 9px; left: 10px;">
+        <div slot="left" style="position: absolute; top: 2px; left: 10px;">
           <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
         </div>
       </Input.Text>

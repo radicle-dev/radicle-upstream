@@ -1,20 +1,17 @@
 //! Endpoints to manipulate app state in test mode.
 
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc;
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use coco::git;
+use coco::git_ext;
 
 use crate::context;
 
 /// Combination of all control filters.
-pub fn filters(
-    ctx: context::Context,
-    selfdestruct: mpsc::Sender<()>,
-) -> BoxedFilter<(impl Reply,)> {
-    create_project_filter(ctx)
-        .or(reset_filter(selfdestruct))
+pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
+    create_project_filter(ctx.clone())
+        .or(seal_filter(ctx.clone()))
+        .or(reset_filter(ctx))
         .boxed()
 }
 
@@ -31,16 +28,24 @@ fn create_project_filter(
 
 /// GET /reset
 fn reset_filter(
-    selfdestruct: mpsc::Sender<()>,
+    ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("reset")
-        .map(move || selfdestruct.clone())
+        .and(super::with_context(ctx))
         .and_then(handler::reset)
+}
+
+/// GET /seal
+fn seal_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path!("seal")
+        .and(super::with_context(ctx))
+        .and_then(handler::seal)
 }
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use tokio::sync::mpsc;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use coco::user;
@@ -79,7 +84,7 @@ mod handler {
             .with_browser(branch, |browser| Ok(browser.get_stats()?))
             .await
             .map_err(error::Error::from)?;
-        let project: project::Project = (meta, stats).into();
+        let project: project::Full = (meta, stats).into();
 
         Ok(reply::with_status(
             reply::json(&project),
@@ -88,9 +93,17 @@ mod handler {
     }
 
     /// Abort the server task, which causes `main` to restart it.
-    pub async fn reset(mut notify: mpsc::Sender<()>) -> Result<impl Reply, Rejection> {
+    pub async fn reset(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         log::warn!("reload requested");
-        Ok(reply::json(&notify.send(()).await.is_ok()))
+        ctx.service_handle().reset();
+        Ok(reply::json(&()))
+    }
+
+    /// Seals the keystore.
+    pub async fn seal(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
+        log::warn!("keystore seal requested");
+        ctx.service_handle().seal();
+        Ok(reply::with_status("keystore sealed", StatusCode::OK))
     }
 }
 
@@ -103,7 +116,7 @@ pub struct CreateInput {
     /// Long form outline.
     description: String,
     /// Configured default branch.
-    default_branch: git::ext::OneLevel,
+    default_branch: git_ext::OneLevel,
     /// Create and track fake peers
     fake_peers: Option<Vec<String>>,
 }

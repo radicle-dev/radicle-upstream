@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { SvelteComponent } from "svelte";
 
-  import { copyToClipboard } from "../../../native/ipc.js";
+  import { copyToClipboard } from "../../../native/ipc";
   import * as notification from "../../src/notification";
   import Icon from "../Primitive/Icon";
 
@@ -49,13 +49,13 @@
   .basic {
     display: flex;
     min-height: 24px;
+    width: 100%;
+    padding-left: 0.25rem;
   }
 
   .content {
     align-items: center;
     background-color: var(--color-foreground-level-2);
-    padding: 0 4px;
-    margin-left: -4px;
     border-radius: 4px;
     color: var(--color-foreground-level-6);
   }

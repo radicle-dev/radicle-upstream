@@ -25,6 +25,14 @@ pub enum Error {
     #[error("Keystore is sealed")]
     KeystoreSealed,
 
+    /// The passphrase was incorrect
+    #[error("Passphrase incorrect")]
+    WrongPassphrase,
+
+    /// The request auth token differs from the one in context
+    #[error("Invalid authentication token")]
+    InvalidAuthCookie,
+
     /// Errors stemming from [`coco::request::waiting_room::WaitingRoom`] interactions.
     #[error(transparent)]
     WaitingRoom(#[from] coco::request::waiting_room::Error),

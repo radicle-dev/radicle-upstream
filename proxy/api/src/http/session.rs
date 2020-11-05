@@ -28,7 +28,7 @@ fn get_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path::end())
-        .and(http::with_context_unsealed(ctx))
+        .and(http::with_context(ctx))
         .and_then(handler::get)
 }
 
@@ -48,7 +48,7 @@ fn update_settings_filter(
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, session};
+    use crate::{context, error, http, session};
 
     /// Clear the current [`session::Session`].
     pub async fn delete(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
@@ -58,9 +58,13 @@ mod handler {
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let sess = session::current(ctx.state.clone(), &ctx.store).await?;
-        Ok(reply::json(&sess))
+    pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
+        let sess =
+            crate::session::get_current(ctx.store())?.ok_or(http::error::Routing::NoSession)?;
+        match ctx {
+            context::Context::Unsealed(_) => Ok(reply::json(&sess)),
+            context::Context::Sealed(_) => Err(Rejection::from(error::Error::KeystoreSealed)),
+        }
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.
@@ -77,7 +81,6 @@ mod handler {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
     use crate::{context, error, session};
@@ -87,6 +90,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
+        session::initialize_test(&ctx, "cloudhead").await;
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
@@ -94,15 +98,7 @@ mod test {
 
         let res = request().method("DELETE").path("/").reply(&api).await;
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
-
-        // Test that we reset the session to default.
-        let have = session::current(ctx.state.clone(), &ctx.store)
-            .await?
-            .settings;
-        let want = session::settings::Settings::default();
-
-        assert_eq!(have, want);
-
+        assert_eq!(session::get_current(&ctx.store)?.is_none(), true);
         Ok(())
     }
 
@@ -111,29 +107,14 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
+        let session = session::initialize_test(&ctx, "xla").await;
 
         let res = request().method("GET").path("/").reply(&api).await;
-
-        let have: Value = serde_json::from_slice(res.body())?;
-
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!({
-                "identity": Value::Null,
-                "settings": {
-                    "appearance": {
-                        "theme": "light",
-                        "hints": {
-                            "showRemoteHelper": true,
-                        }
-                    },
-                    "coco": {
-                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
-                    },
-                },
-            }),
-        );
+
+        let session_response = serde_json::from_slice::<session::Session>(res.body())?;
+
+        assert_eq!(session_response, session);
 
         Ok(())
     }
@@ -143,6 +124,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
+        session::initialize_test(&ctx, "cloudhead").await;
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
@@ -157,25 +139,8 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         let res = request().method("GET").path("/").reply(&api).await;
-        let have: Value = serde_json::from_slice(res.body())?;
-        assert_eq!(
-            have,
-            json!({
-                "identity": Value::Null,
-                "settings": {
-                    "appearance": {
-                        "theme": "dark",
-                        "hints": {
-                            "showRemoteHelper": true,
-                        }
-                    },
-                    "coco": {
-                        "seeds": ["hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"],
-                    },
-                },
-            }),
-        );
-
+        let session_res = serde_json::from_slice::<session::Session>(res.body())?;
+        assert_eq!(session_res.settings, settings);
         Ok(())
     }
 }

@@ -10,6 +10,7 @@
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
+    FollowToggle,
     Fullscreen,
     Dropdown,
     Illustration,
@@ -20,7 +21,6 @@
     Spinner,
     Stats,
     SupportButton,
-    TrackToggle,
     StyledCopyable,
     Tooltip,
   } from "../DesignSystem/Component";
@@ -723,11 +723,47 @@
       </Swatch>
 
       <Swatch>
-        <TrackToggle />
+        <FollowToggle
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
       </Swatch>
 
       <Swatch>
-        <TrackToggle warning expanded />
+        <FollowToggle
+          following
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
+        <FollowToggle
+          disabled
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
+      </Swatch>
+
+      <Swatch>
+        <FollowToggle
+          disabled
+          following
+          on:follow={() => {
+            console.log('follow');
+          }}
+          on:unfollow={() => {
+            console.log('unfollow');
+          }} />
       </Swatch>
 
       <Swatch>
@@ -747,8 +783,16 @@
 
       <Swatch>
         <StyledCopyable
-          value="hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"
+          value="hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"
           notificationText="The seed was copied to your clipboard" />
+      </Swatch>
+
+      <Swatch>
+        <StyledCopyable
+          value="hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
+          notificationText="The hash was copied to your clipboard"
+          truncate
+          expandable={false} />
       </Swatch>
 
       <Swatch>
@@ -771,16 +815,12 @@
         <EmptyState
           illustration={IllustrationVariant.Plant}
           primaryActionText="Take some action!" />
+        <EmptyState emoji="👀" secondaryActionText="Take some other action!" />
         <EmptyState
-          illustration={IllustrationVariant.Eyes}
-          secondaryActionText="Take some other action!" />
-        <EmptyState
-          illustration={IllustrationVariant.Telescope}
+          emoji="🔭"
           primaryActionText="Take the first action!"
           secondaryActionText="Take the secondary action!" />
-        <EmptyState
-          text="Hey, I'm a tent."
-          illustration={IllustrationVariant.Tent} />
+        <EmptyState text="Hey, I'm a tent." emoji="🎪" />
       </Swatch>
       <Swatch>
         <ConnectionStatusIndicator />

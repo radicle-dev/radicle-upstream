@@ -1,22 +1,16 @@
 //! Utility to work with the peer api of librad.
 
-use std::{
-    convert::TryFrom as _,
-    net::SocketAddr,
-    path::{self, PathBuf},
-    sync::Arc,
-    time::Duration,
-};
+use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf, sync::Arc, time::Duration};
 
 use librad::{
     git::{
-        ext::{OneLevel, RefLike},
         include::Include,
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
         types::{namespace, NamespacedRef, Single},
     },
+    git_ext::{OneLevel, RefLike},
     keys,
     meta::{entity, project as librad_project, user},
     net::peer::PeerApi,
@@ -496,26 +490,32 @@ impl State {
     /// Will error if:
     ///     * The signing of the project metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub async fn init_project<P: AsRef<path::Path> + Send + Sync + 'static>(
+    pub async fn init_project(
         &self,
         owner: &User,
-        project: project::Create<P>,
+        project: project::Create,
     ) -> Result<librad_project::Project<entity::Draft>, Error> {
         let mut meta = project.build(owner, self.signer.public_key().into())?;
         meta.sign_by_user(&self.signer, owner)?;
 
         let local_peer_id = self.api.peer_id();
+        let url = LocalUrl::from_urn(meta.urn(), local_peer_id);
+
+        let repository = project
+            .validate(url)
+            .map_err(project::create::Error::from)?;
 
         let meta = {
             let results = self.transport_results();
             let meta = self
                 .api
                 .with_storage(move |storage| {
-                    let repo = storage.create_repo(&meta)?;
+                    let _ = storage.create_repo(&meta)?;
                     log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                    let repo = project.setup_repo(LocalUrl::from_urn(repo.urn, local_peer_id))?;
-                    log::debug!("Setup repository at path '{}'", repo.path().display());
+                    repository
+                        .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
+                        .map_err(project::create::Error::from)?;
 
                     Ok::<_, Error>(meta)
                 })
@@ -762,43 +762,33 @@ impl From<&State> for Seed {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
-    use std::{convert::TryFrom as _, env, path::PathBuf, process::Command};
+    use std::{env, path::PathBuf};
 
-    use librad::{
-        git::{
-            ext::{OneLevel, RefLike},
-            storage,
-        },
-        keys::SecretKey,
-    };
+    use librad::{git::storage, git_ext::OneLevel, keys::SecretKey, reflike};
 
     use crate::{config, control, project, signer};
 
     use super::{Error, State};
 
-    fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
+    fn fakie_project(path: PathBuf) -> project::Create {
         project::Create {
             repo: project::Repo::New {
                 path,
                 name: "fakie-nose-kickflip-backside-180-to-handplant".to_string(),
             },
             description: "rad git tricks".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("dope").expect("failed to parse 'power'"),
-            ),
+            default_branch: OneLevel::from(reflike!("dope")),
         }
     }
 
-    fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+    fn radicle_project(path: PathBuf) -> project::Create {
         project::Create {
             repo: project::Repo::New {
                 path,
                 name: "radicalise".to_string(),
             },
             description: "the people".to_string(),
-            default_branch: OneLevel::from(
-                RefLike::try_from("power").expect("failed to parse 'power'"),
-            ),
+            default_branch: OneLevel::from(reflike!("power")),
         }
     }
 
@@ -975,89 +965,6 @@ mod test {
         user_handles.sort();
 
         assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn create_with_existing_remote_with_reset() -> Result<(), Box<dyn std::error::Error>> {
-        use radicle_surf::vcs::git::Branch;
-
-        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
-        let repo_path = tmp_dir.path().join("radicle");
-        let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key);
-        let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer);
-
-        let kalt = state.init_owner("kalt").await?;
-
-        let fakie = state
-            .init_project(&kalt, fakie_project(repo_path.clone()))
-            .await?;
-
-        assert!(repo_path.join(fakie.name()).exists());
-
-        // Simulate resetting the monorepo
-        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
-        let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key);
-        let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer);
-
-        // Create fakie project from the existing directory above.
-        let kalt = state.init_owner("kalt").await?;
-        let fakie = state
-            .init_project(&kalt, fakie_project(repo_path).into_existing())
-            .await?;
-
-        // Attempt to initialise a browser to ensure we can look at branches in the project
-        let branch = state.find_default_branch(fakie.urn()).await?;
-        let branches = state
-            .with_browser(branch, |browser| {
-                Ok(browser
-                    .list_branches(None)
-                    .map_err(crate::source::Error::from)?)
-            })
-            .await?;
-
-        assert_eq!(branches, vec![Branch::local("dope")]);
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn create_with_existing_remote() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
-        let repo_path = tmp_dir.path().join("radicle");
-        let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key);
-        let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer);
-
-        let kalt = state.init_owner("kalt").await?;
-        let fakie = state
-            .init_project(&kalt, fakie_project(repo_path.clone()))
-            .await?;
-        let fake_fakie = repo_path.join("fake-fakie");
-        let copy = Command::new("cp")
-            .arg("-rf")
-            .arg(repo_path.join(fakie.name()))
-            .arg(fake_fakie.clone())
-            .status()
-            .expect("failed to copy directory");
-
-        assert!(copy.success());
-
-        let fake_fakie = project::Create {
-            repo: project::Repo::Existing { path: fake_fakie },
-            description: "".to_string(),
-            default_branch: OneLevel::from(RefLike::try_from(fakie.default_branch())?),
-        };
-        let _fake_fakie = state.init_project(&kalt, fake_fakie).await?;
 
         Ok(())
     }

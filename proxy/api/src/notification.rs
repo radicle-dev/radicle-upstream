@@ -2,7 +2,6 @@
 
 use std::{
     collections::HashMap,
-    fmt,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -25,6 +24,26 @@ pub enum Notification {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {
+    /// A request for a project was cloned successfully.
+    #[serde(rename_all = "camelCase")]
+    RequestCloned {
+        /// Origin the project was cloned from.
+        peer: coco::PeerId,
+        /// Urn of the cloned project.
+        urn: coco::Urn,
+    },
+    /// A request for a project was queried on the network.
+    #[serde(rename_all = "camelCase")]
+    RequestQueried {
+        /// Urn of the queried project.
+        urn: coco::Urn,
+    },
+    /// A request for a project timed out.
+    #[serde(rename_all = "camelCase")]
+    RequestTimedOut {
+        /// Urn of the timed out project.
+        urn: coco::Urn,
+    },
     /// Transition between two statuses occurred.
     #[serde(rename_all = "camelCase")]
     StatusChanged {
@@ -35,18 +54,20 @@ pub enum LocalPeer {
     },
 }
 
-impl fmt::Display for LocalPeer {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::StatusChanged { .. } => write!(f, "LOCAL_PEER_STATUS_CHANGED"),
-        }
-    }
-}
-
 #[allow(clippy::wildcard_enum_match_arm)]
 impl MaybeFrom<PeerEvent> for Notification {
     fn maybe_from(event: PeerEvent) -> Option<Self> {
         match event {
+            PeerEvent::RequestCloned(url) => Some(Self::LocalPeer(LocalPeer::RequestCloned {
+                peer: url.authority,
+                urn: url.urn,
+            })),
+            PeerEvent::RequestQueried(urn) => {
+                Some(Self::LocalPeer(LocalPeer::RequestQueried { urn }))
+            },
+            PeerEvent::RequestTimedOut(urn) => {
+                Some(Self::LocalPeer(LocalPeer::RequestTimedOut { urn }))
+            },
             PeerEvent::StatusChanged(old, new) => {
                 Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
             },

@@ -74,7 +74,7 @@ UI features that are experimental or under construction that find their way
 into the main branch must be placed behind the feature flag, to make them
 inaccessible for the general public.
 
-We do that by using `native > ipc.js > isExperimental` as a feature flag to
+We do that by using `native > ipc.ts > isExperimental` as a feature flag to
 enable or disable said features accordingly to the mode in which we are running
 the app.
 
@@ -213,10 +213,10 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { TrackToggle } from "../DesignSystem/Component";
+      import { RadicleLogo } from "../DesignSystem/Component";
     </script>
 
-    <TrackToggle />
+    <RadicleLogo />
     ```
 
 Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
@@ -255,35 +255,6 @@ overrides, components expose a `style` prop:
 
 ```html
   <Component style="margin-right: 24px"/>
-```
-
-For very common alignment cases we have a helper primitive called `<Flex>`.
-A `<Flex>` primitive offers two ways of aligning its contents:
-
-  - via the `align` prop;
-  - or by using slots.
-
-For when there is only one element to align, use the `align` prop, otherwise
-use slots:
-
-```html
-<Flex align="left">
-  <h1>Issues</h1>
-</Flex>
-
-<Flex style="margin-top: 48px;">
-  <div slot="left">
-    <Button style="margin-right: 24px">
-      Back
-    </Button>
-  </div>
-
-  <div slot="right">
-    <Button variant="primary">
-      Pay
-    </Button>
-  </div>
-</Flex>
 ```
 
 

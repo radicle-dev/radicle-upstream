@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { isExperimental, openPath } from "../../native/ipc.js";
+  import { isExperimental, openPath } from "../../native/ipc";
   import Router from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
@@ -26,13 +26,13 @@
   import { CSSPosition } from "../src/style.ts";
 
   import {
+    FollowToggle,
     Header,
     HorizontalMenu,
     Remote,
     RevisionSelector,
     SidebarLayout,
     Tooltip,
-    TrackToggle,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -182,7 +182,7 @@
             <Tooltip
               position={CSSPosition.Left}
               value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-              <TrackToggle disabled expanded tracking />
+              <FollowToggle disabled following />
             </Tooltip>
           </div>
         </div>

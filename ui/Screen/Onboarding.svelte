@@ -1,6 +1,7 @@
 <script>
   import { fade, fly } from "svelte/transition";
 
+  import { withRetry } from "../src/api.ts";
   import * as notification from "../src/notification.ts";
   import { State } from "../src/onboarding.ts";
   import { createIdentity } from "../src/identity.ts";
@@ -37,10 +38,10 @@
 
   const onCreateIdentity = async (handle, passphrase) => {
     try {
-      identity = await createIdentity({
-        handle: handle,
-        passphrase: passphrase,
-      });
+      await session.createKeystore(passphrase);
+      // Retry until the API is up
+      notification.info("Creating the identity...");
+      identity = await withRetry(() => createIdentity({ handle }), 200);
       state = State.SuccessView;
     } catch (error) {
       animateBackward();

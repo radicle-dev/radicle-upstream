@@ -8,11 +8,11 @@ use std::{
 pub use librad::meta::project::Project;
 use librad::{
     git::{
-        ext::{OneLevel, RefLike, RefspecPattern},
         include,
         local::url::LocalUrl,
         types::{remote::Remote, FlatRef, Force},
     },
+    git_ext::{OneLevel, RefLike, RefspecPattern},
     peer::PeerId,
     uri::RadUrn,
 };
@@ -194,17 +194,18 @@ where
         // Check if the path provided ends in the 'directory_name' provided. If not we create the
         // full path to that name.
         let path = &self.path.as_ref();
-        let project_path = if let Some(destination) = path.components().next_back() {
-            let destination: &ffi::OsStr = destination.as_ref();
-            let name: &ffi::OsStr = self.name.as_ref();
-            if destination == name {
-                path.to_path_buf()
-            } else {
-                path.join(name)
-            }
-        } else {
-            path.join(&self.name)
-        };
+        let project_path: PathBuf =
+            path.components()
+                .next_back()
+                .map_or(path.join(&self.name), |destination| {
+                    let destination: &ffi::OsStr = destination.as_ref();
+                    let name: &ffi::OsStr = self.name.as_ref();
+                    if destination == name {
+                        path.to_path_buf()
+                    } else {
+                        path.join(name)
+                    }
+                });
 
         // Clone the repository
         let mut builder = git2::build::RepoBuilder::new();

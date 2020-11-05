@@ -2,21 +2,26 @@
 //! for API consumers to act on.
 
 use serde::Serialize;
-use std::{convert::Infallible, fmt};
+use std::convert::Infallible;
 use warp::{http::StatusCode, reject, reply, Rejection, Reply};
 
-use coco::state;
+use coco::{project::create, state};
 
 use crate::error;
 
 /// HTTP layer specific rejections.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum Routing {
     /// The currently active [`coco::user::User`] is missing.
+    #[error("Owner is missing")]
     MissingOwner,
+    /// The keystore is sealed, context does not have a signer.
+    #[error("No session has been created yet")]
+    NoSession,
     /// Query part of the URL cannot be deserialized.
     ///
     /// Used by [`crate::http::with_qs`] and [`crate::http::with_qs_opt`].
+    #[error("Invalid query string \"{query}\": {error}")]
     InvalidQuery {
         /// The original query string
         query: String,
@@ -28,6 +33,7 @@ pub enum Routing {
     /// A query string is required but missing
     ///
     /// Used by [`crate::http::with_qs`].
+    #[error("Required query string is missing")]
     QueryMissing,
 }
 
@@ -36,18 +42,6 @@ impl reject::Reject for Routing {}
 impl From<Routing> for Rejection {
     fn from(err: Routing) -> Self {
         reject::custom(err)
-    }
-}
-
-impl fmt::Display for Routing {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::MissingOwner => write!(f, "Owner is missing"),
-            Self::InvalidQuery { query, error } => {
-                write!(f, "Invalid query string \"{}\": {}", query, error)
-            },
-            Self::QueryMissing => write!(f, "Required query string is missing"),
-        }
     }
 }
 
@@ -85,6 +79,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                 Routing::MissingOwner => {
                     (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
                 },
+                Routing::NoSession => (StatusCode::NOT_FOUND, "NOT_FOUND", err.to_string()),
                 Routing::InvalidQuery { .. } => {
                     (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
                 },
@@ -108,6 +103,41 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "INTERNAL_ERROR",
                             include_error.to_string(),
                         ),
+                    },
+                    coco::state::Error::Create(create::Error::Validation(err)) => match err {
+                        create::validation::Error::AlreadExists(_) => {
+                            (StatusCode::CONFLICT, "PATH_EXISTS", err.to_string())
+                        },
+                        create::validation::Error::EmptyExistingPath(_) => {
+                            (StatusCode::BAD_REQUEST, "EMPTY_PATH", err.to_string())
+                        },
+                        create::validation::Error::Git(_) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "GIT_ERROR",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::MissingDefaultBranch { .. } => (
+                            StatusCode::BAD_REQUEST,
+                            "MISSING_DEFAULT_BRANCH",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::MissingUrl => {
+                            (StatusCode::BAD_REQUEST, "MISSING_URL", err.to_string())
+                        },
+                        create::validation::Error::PathDoesNotExist(_) => (
+                            StatusCode::NOT_FOUND,
+                            "PATH_DOES_NOT_EXIST",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::NotARepo(_) => {
+                            (StatusCode::BAD_REQUEST, "NOT_A_REPO", err.to_string())
+                        },
+                        create::validation::Error::Io(err) => {
+                            (StatusCode::BAD_REQUEST, "IO_ERROR", err.to_string())
+                        },
+                        create::validation::Error::UrlMismatch { .. } => {
+                            (StatusCode::BAD_REQUEST, "URL_MISMATCH", err.to_string())
+                        },
                     },
                     coco::state::Error::Storage(state::error::storage::Error::AlreadyExists(
                         urn,
@@ -151,7 +181,30 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         )
                     },
                 },
-                error::Error::KeystoreSealed => {
+                error::Error::Keystore(keystore_err) => {
+                    if keystore_err.is_invalid_passphrase() {
+                        (
+                            StatusCode::FORBIDDEN,
+                            "INCORRECT_PASSPHRASE",
+                            "incorrect passphrase".to_string(),
+                        )
+                    } else if keystore_err.is_key_exists() {
+                        (
+                            StatusCode::CONFLICT,
+                            "KEY_EXISTS",
+                            "A key already exists".to_string(),
+                        )
+                    } else {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "INTERNAL_SERVER_ERROR",
+                            err.to_string(),
+                        )
+                    }
+                },
+                error::Error::KeystoreSealed
+                | error::Error::WrongPassphrase
+                | error::Error::InvalidAuthCookie => {
                     (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string())
                 },
                 _ => {

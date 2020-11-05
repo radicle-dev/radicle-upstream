@@ -4,7 +4,7 @@
 
   import { isExperimental } from "../../native/ipc.js";
   import * as path from "../src/path";
-  import type { Authenticated } from "../src/session";
+  import type { UnsealedSession } from "../src/session";
 
   import {
     Header,
@@ -57,7 +57,7 @@
     });
   }
 
-  const session: Authenticated = getContext("session");
+  const session: UnsealedSession = getContext("session");
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">

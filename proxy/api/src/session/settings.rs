@@ -2,7 +2,7 @@
 use serde::{Deserialize, Serialize};
 
 /// User controlled parameters for application appearance, behaviour and state.
-#[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
     /// Currently set appearance parameters.
@@ -12,7 +12,7 @@ pub struct Settings {
 }
 
 /// Knobs for the look and feel.
-#[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Appearance {
     /// Currently active color scheme.
@@ -22,7 +22,7 @@ pub struct Appearance {
 }
 
 /// Color schemes available.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Theme {
     /// A dark theme.
@@ -38,7 +38,7 @@ impl Default for Theme {
 }
 
 /// User dismissable textual hints.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hints {
     /// Whether to show hints about how to set up the remote helper.
@@ -54,7 +54,7 @@ impl Default for Hints {
 }
 
 /// `CoCo` config parameters subject to user preferences
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct CoCo {
     /// Peers to connect to at startup.
     pub seeds: Vec<String>,
@@ -64,7 +64,7 @@ impl Default for CoCo {
     fn default() -> Self {
         Self {
             seeds: vec![
-                "hybh5cb7spafgs7skjg6qkssts3uxht31zskpgs4ypdzrnaq7ye83k@seedling.radicle.xyz:12345"
+                "hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"
                     .to_string(),
             ],
         }

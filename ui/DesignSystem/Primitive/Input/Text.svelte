@@ -21,6 +21,8 @@
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
 
+  let inputHeight: number;
+
   // Can't use normal `autofocus` attribute on the `inputElement`:
   // "Autofocus processing was blocked because a document's URL has a fragment".
   // preventScroll is necessary for onboarding animations to work.
@@ -99,8 +101,9 @@
 
     position: absolute;
     left: 0;
-    margin-top: 2.7rem;
     width: max-content;
+
+    margin: 0.75rem 0 0 0.75rem;
   }
 
   .validation-row p {
@@ -109,49 +112,47 @@
   }
 
   .left-item-wrapper {
-    align-items: center;
-    display: flex;
-    height: 2.5rem;
-    justify-content: center;
     left: 0px;
     padding-left: 0.5rem;
     position: absolute;
-    top: 0px;
+    height: 1.5rem;
   }
 
   .hint {
     justify-content: flex-start;
     position: absolute;
     right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
   }
 </style>
 
 <div {style} class="wrapper">
-  <input
-    data-cy={dataCy}
-    class:invalid={validation && validation.status === Status.Error}
-    class:padding={validation && validation.status !== Status.NotStarted}
-    class:left-item={showLeftItem}
-    {placeholder}
-    bind:value
-    {disabled}
-    on:change
-    on:input
-    on:keydown
-    bind:this={inputElement}
-    {spellcheck}
-    style={inputStyle} />
+  <div bind:clientHeight={inputHeight}>
+    <input
+      data-cy={dataCy}
+      class:invalid={validation && validation.status === Status.Error}
+      class:padding={validation && validation.status !== Status.NotStarted}
+      class:left-item={showLeftItem}
+      {placeholder}
+      bind:value
+      {disabled}
+      on:change
+      on:input
+      on:keydown
+      bind:this={inputElement}
+      {spellcheck}
+      style={inputStyle} />
+  </div>
 
   {#if showLeftItem}
-    <div class="left-item-wrapper">
+    <div
+      class="left-item-wrapper"
+      style={`top: calc((${inputHeight}px - 24px)/2)`}>
       <slot name="left" />
     </div>
   {/if}
 
   {#if showHint && !validation}
-    <div class="hint">
+    <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
       <KeyHint {hint} />
     </div>
   {/if}
@@ -164,17 +165,17 @@
     {:else if validation && validation.status === Status.Success && showSuccessCheck}
       <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
-        position: absolute; top: 8px; right: 10px;" />
+        position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
     {:else if validation && validation.status === Status.Error}
       <Icon.ExclamationCircle
         dataCy="validation-error-icon"
         style="fill: var(--color-negative); justify-content: flex-start;
-        position: absolute; top: 8px; right: 10px;" />
+        position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
       <div class="validation-row">
         <p>{validation.message}</p>
       </div>
     {:else if showHint}
-      <div class="hint">
+      <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
         <KeyHint {hint} />
       </div>
     {/if}
