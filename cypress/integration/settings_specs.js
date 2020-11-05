@@ -33,11 +33,4 @@ context("settings", () => {
       cy.get("[data-theme='dark']").should("exist");
     });
   });
-
-  context("session", () => {
-    it("state can be cleared", () => {
-      cy.pick("clear-session-button").click();
-      cy.pick("get-started-button").should("exist");
-    });
-  });
 });
