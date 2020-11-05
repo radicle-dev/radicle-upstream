@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { getDirectoryPath } from "../../../../native/ipc.js";
+  import { getDirectoryPath } from "../../../../native/ipc";
 
   import type { ButtonVariant } from "../../../src/style";
   import type { ValidationState } from "../../../src/validation";

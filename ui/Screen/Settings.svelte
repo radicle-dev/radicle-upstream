@@ -12,7 +12,7 @@
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
-  import { getVersion, isDev } from "../../native/ipc.js";
+  import { getVersion, isDev } from "../../native/ipc";
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
   import {

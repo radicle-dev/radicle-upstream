@@ -8,7 +8,7 @@ import {
 } from "electron";
 const { execFile } = require("child_process");
 import path from "path";
-import * as ipc from "./ipc.js";
+import * as ipc from "./ipc";
 
 const isDev = process.env.NODE_ENV === "development";
 const proxyPath = path.join(__dirname, "../../proxy");

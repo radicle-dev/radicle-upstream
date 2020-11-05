@@ -8,7 +8,7 @@ export default {
   input: "native/main.js",
   output: {
     sourcemap: true,
-    file: "dist/electron-main",
+    file: "native/main.comp.js",
     format: "cjs",
   },
   plugins: [
