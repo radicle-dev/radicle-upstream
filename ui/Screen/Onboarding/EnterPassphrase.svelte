@@ -8,6 +8,8 @@
 
   import { Button, Input } from "../../DesignSystem/Primitive";
 
+  export let disabled = false;
+
   const dispatch = createEventDispatcher();
 
   let repeatedPassphraseInput;
@@ -139,7 +141,8 @@
       hint="↵"
       style="margin-top: 1.5rem;"
       validation={passphraseValidation}
-      bind:value={passphrase} />
+      bind:value={passphrase}
+      {disabled} />
 
     <div class="repeat" hidden={!passphrase}>
       <p style="margin-bottom: 0.5rem;">And enter it again, just to be safe.</p>
@@ -150,7 +153,8 @@
         placeholder="Repeat the secure passphrase"
         hint="↵"
         validation={repeatedPassphraseValidation}
-        bind:value={repeatedPassphrase} />
+        bind:value={repeatedPassphrase}
+        {disabled} />
     </div>
 
     <div class="buttons">
@@ -158,13 +162,14 @@
         dataCy="back-button"
         variant="transparent"
         style="margin-right: 1rem;"
-        on:click={() => dispatch('previous')}>
+        on:click={() => dispatch('previous')}
+        {disabled}>
         Back
       </Button>
 
       <Button
         dataCy="set-passphrase-button"
-        disabled={!allowNext}
+        disabled={!allowNext || disabled}
         on:click={next}>
         Set passphrase
       </Button>
