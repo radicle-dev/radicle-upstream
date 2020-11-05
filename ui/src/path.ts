@@ -43,6 +43,7 @@ export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
 export const poolTopUp = (): string => "/pool/top-up";
+export const poolCashout = (): string => "/pool/cashout";
 export const collectFunds = (): string => "/pool/collect";
 export const updateMonthlyContribution = (): string =>
   "/pool/update-monthly-contribution";

@@ -28,6 +28,11 @@ export interface Pool {
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
   topUp(value: number): Promise<void>;
+
+  // Cashout funds from the pool to the connected wallet.
+  // Returns once the transaction has been included in the chain.
+  cashout(value: number): Promise<void>;
+
   // Collect funds the user has received up to now from givers and
   // transfer them to the users account.
   collect(): Promise<void>;
@@ -53,11 +58,13 @@ export interface PoolData {
   collectableFunds: number;
 }
 
+export const CONTRACT_ADDRESS: string =
+  "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
+
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
-  const address = "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
   const poolContract: PoolContract = PoolFactory.connect(
-    address,
+    CONTRACT_ADDRESS,
     wallet.signer
   );
 
@@ -127,6 +134,16 @@ export function make(wallet: Wallet): Pool {
     loadPoolData();
   }
 
+  async function cashout(amount: number): Promise<void> {
+    const tx = await poolContract.withdraw(amount);
+    transaction.add(transaction.cashout(tx));
+    const receipt = await tx.wait();
+    if (receipt.status === 0) {
+      throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
+    }
+    loadPoolData();
+  }
+
   async function collect(): Promise<void> {
     const tx = await poolContract.collect();
     transaction.add(transaction.collect(tx));
@@ -143,6 +160,7 @@ export function make(wallet: Wallet): Pool {
     updateAmountPerBlock,
     updateReceiverAddresses,
     topUp,
+    cashout,
     collect,
   };
 }

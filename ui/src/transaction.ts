@@ -57,12 +57,17 @@ export interface Gas {
 }
 
 type PoolTx =
+  | Cashout
   | TopUp
   | CollectFunds
   | UpdateMonthlyContribution
   | UpdateBeneficiaries;
 
 interface TopUp {
+  amount: BigNumberish;
+}
+
+interface Cashout {
   amount: BigNumberish;
 }
 
@@ -79,6 +84,7 @@ interface UpdateMonthlyContribution {
 interface UpdateBeneficiaries {}
 
 export enum TxKind {
+  Cashout = "Cash out",
   TopUp = "Top Up",
   CollectFunds = "Collect Funds",
   UpdateMonthlyContribution = "Update Monthly Contribution",
@@ -97,6 +103,10 @@ export function collect(txc: ContractTransaction): Tx {
 
 export function topUp(txc: ContractTransaction): Tx {
   return buildTx(TxKind.TopUp, txc);
+}
+
+export function cashout(txc: ContractTransaction): Tx {
+  return buildTx(TxKind.Cashout, txc);
 }
 
 export function beneficiaries(txc: ContractTransaction): Tx {
@@ -122,6 +132,7 @@ function buildTx(kind: TxKind, txc: ContractTransaction): Tx {
 
 function txMetadata(kind: TxKind, txc: ContractTransaction): PoolTx {
   switch (kind) {
+    case TxKind.Cashout:
     case TxKind.CollectFunds:
     case TxKind.TopUp:
     case TxKind.UpdateMonthlyContribution:
