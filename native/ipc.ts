@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference,spaced-comment
+/// <reference path="../native/preload.d.ts" />
+
 export const CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT";
 export const DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG";
 export const GET_VERSION = "GET_VERSION";
@@ -10,19 +13,20 @@ export const OPEN_PATH = "IPC_OPEN_PATH";
 //
 // The workaround is to use the electron native open dialog. As a bonus we
 // can configure it to allow users to create new directories.
-export const getDirectoryPath = () =>
+export const getDirectoryPath = (): void =>
   window.electron.ipcRenderer.invoke(DIALOG_SHOWOPENDIALOG);
 
-export const getVersion = () => window.electron.ipcRenderer.invoke(GET_VERSION);
+export const getVersion = (): string =>
+  window.electron.ipcRenderer.invoke(GET_VERSION);
 
-export const copyToClipboard = text =>
+export const copyToClipboard = (text: string): void =>
   window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);
 
-export const openPath = path =>
+export const openPath = (path: string): string =>
   window.electron.ipcRenderer.invoke(OPEN_PATH, path);
 
 // Informs whether it's running in a development environment.
-export const isDev = () => {
+export const isDev = (): boolean => {
   return window.electron.isDev;
 };
 
@@ -30,6 +34,6 @@ export const isDev = () => {
 // features under construction are enabled and can thus be used.
 // This option can only be enabled iff `isDev()` as we should only
 // want to toggle it while in development mode.
-export const isExperimental = () => {
+export const isExperimental = (): boolean => {
   return isDev() && window.electron.isExperimental;
 };

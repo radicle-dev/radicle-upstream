@@ -1,16 +1,22 @@
-import babel from "@rollup/plugin-babel";
+import commonjs from "@rollup/plugin-commonjs";
 import externals from "rollup-plugin-node-externals";
+import typescript from "@rollup/plugin-typescript";
+
+const production = !process.env.ROLLUP_WATCH;
 
 export default {
   input: "native/main.js",
   output: {
-    file: "native/main.comp.js",
+    sourcemap: true,
+    file: "dist/electron-main",
     format: "cjs",
   },
   plugins: [
-    babel({
-      babelHelpers: "runtime",
-      exclude: "node_modules/**",
+    commonjs(),
+
+    typescript({
+      // See https://github.com/rollup/plugins/issues/272
+      noEmitOnError: production,
     }),
 
     // This avoids the following warning:
