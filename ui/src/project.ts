@@ -340,6 +340,10 @@ export const cancelRequest = (urn: string): Promise<null> => {
   return api.del(`projects/requests/${urn}`);
 };
 
+export const fetchFailed = (): Promise<Project[]> => {
+  return api.get<Project[]>("projects/failed");
+};
+
 export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {
   return api.get<waitingRoom.ProjectRequest[]>("projects/requests");
 };

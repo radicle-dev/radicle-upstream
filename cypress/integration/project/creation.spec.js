@@ -1,4 +1,4 @@
-import { DIALOG_SHOWOPENDIALOG } from "../../../native/ipc.js";
+import { DIALOG_SHOWOPENDIALOG } from "../../../native/ipc";
 
 context("project creation", () => {
   const withEmptyDirectoryStub = callback => {

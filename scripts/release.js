@@ -1,4 +1,6 @@
-import util from "util";
+#!/usr/bin/env node
+
+const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
 const VERSION_MATCH = /bumping version in package.json from (.*) to (.*)/;

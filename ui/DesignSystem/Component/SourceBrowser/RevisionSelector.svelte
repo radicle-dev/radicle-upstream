@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { isExperimental } from "../../../../native/ipc.js";
+  import { isExperimental } from "../../../../native/ipc";
   import { RevisionType } from "../../../src/source.ts";
 
   import Overlay from "../Overlay.svelte";

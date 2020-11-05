@@ -5,6 +5,7 @@
   import * as notification from "../src/notification.ts";
   import { State } from "../src/onboarding.ts";
   import { createIdentity } from "../src/identity.ts";
+  import * as screen from "../src/screen.ts";
   import * as session from "../src/session.ts";
   import * as urn from "../src/urn.ts";
 
@@ -16,6 +17,7 @@
   let identity;
   let handle;
   let state = State.Welcome;
+  let createIdentityInProgress = false;
 
   let inY = 1000;
   let outY = -1000;
@@ -38,9 +40,10 @@
 
   const onCreateIdentity = async (handle, passphrase) => {
     try {
+      screen.lock();
+      createIdentityInProgress = true;
       await session.createKeystore(passphrase);
       // Retry until the API is up
-      notification.info("Creating the identity...");
       identity = await withRetry(() => createIdentity({ handle }), 200);
       state = State.SuccessView;
     } catch (error) {
@@ -49,6 +52,9 @@
       notification.error(
         `Could not create identity: ${urn.shorten(error.message)}`
       );
+    } finally {
+      screen.unlock();
+      createIdentityInProgress = false;
     }
   };
 </script>
@@ -98,6 +104,7 @@
     <div class="content" in:fly={{ y: inY }} out:fly={{ y: outY }}>
       <div class="inner">
         <EnterPassphrase
+          disabled={createIdentityInProgress}
           on:previous={() => {
             animateBackward();
             state = State.EnterName;
