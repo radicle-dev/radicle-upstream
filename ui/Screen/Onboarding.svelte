@@ -38,13 +38,10 @@
 
   const onCreateIdentity = async (handle, passphrase) => {
     try {
-      await session.createKeystore();
+      await session.createKeystore(passphrase);
       // Retry until the API is up
       notification.info("Creating the identity...");
-      identity = await withRetry(
-        () => createIdentity({ handle, passphrase }),
-        200
-      );
+      identity = await withRetry(() => createIdentity({ handle }), 200);
       state = State.SuccessView;
     } catch (error) {
       animateBackward();
