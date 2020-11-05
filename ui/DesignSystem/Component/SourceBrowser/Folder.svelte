@@ -1,36 +1,38 @@
-<script>
-  import * as path from "../../../src/path.ts";
+<script lang="typescript">
+  import type { PeerId } from "../../../src/identity";
+  import * as path from "../../../src/path";
   import {
     tree,
     objectPath,
     objectType,
     ObjectType,
-  } from "../../../src/source.ts";
+  } from "../../../src/source";
+  import type { Revision } from "../../../src/source";
+  import * as urn from "../../../src/urn";
 
   import { Icon } from "../../Primitive";
   import { Remote } from "../../Component";
 
   import File from "./File.svelte";
 
-  export let name = null;
-  export let projectId = null;
+  export let name: string;
+  export let peerId: PeerId;
+  export let projectUrn: urn.Urn;
+  export let revision: Revision;
 
-  export let currentRevision = null;
-  export let currentPeerId = null;
-
-  export let expanded = false;
-  export let toplevel = false;
+  export let expanded: boolean = false;
+  export let toplevel: boolean = false;
 
   // Starting-point of this recursive component, empty string means that it
   // starts the sidebar tree from the repository root. This prop should not be
   // used from outside of the component.
-  export let prefix = "";
+  export let prefix: string = "";
 
   const toggle = () => {
     expanded = !expanded;
   };
 
-  $: store = tree(projectId, currentPeerId, currentRevision, prefix);
+  $: store = tree(projectUrn, peerId, revision, prefix);
   $: active = prefix === $objectPath;
 </script>
 
@@ -81,15 +83,15 @@
       {#each tree.entries as entry}
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
-            {projectId}
-            {currentRevision}
-            {currentPeerId}
             name={entry.info.name}
-            prefix={`${entry.path}/`} />
+            {peerId}
+            prefix={`${entry.path}/`}
+            {projectUrn}
+            {revision} />
         {:else}
           <File
             active={entry.path === $objectPath}
-            href={path.projectSource(projectId)}
+            href={path.projectSource(projectUrn)}
             name={entry.info.name}
             on:click={() => {
               objectPath.set(entry.path);

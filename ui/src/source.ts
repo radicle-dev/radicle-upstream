@@ -151,8 +151,8 @@ enum Kind {
 
 interface FetchCommit extends event.Event<Kind> {
   kind: Kind.FetchCommit;
-  projectId: string;
-  peerId: string;
+  projectUrn: urn.Urn;
+  peerId: identity.PeerId;
   sha1: string;
 }
 
@@ -166,8 +166,8 @@ interface FetchCommits extends event.Event<Kind> {
 interface FetchObject extends event.Event<Kind> {
   kind: Kind.FetchObject;
   path: string;
-  peerId: string;
-  projectId: string;
+  peerId: identity.PeerId;
+  projectUrn: urn.Urn;
   revision: Revision;
   type: ObjectType;
 }
@@ -206,7 +206,7 @@ const update = (msg: Msg): void => {
       commitStore.loading();
 
       api
-        .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
+        .get<Commit>(`source/commit/${msg.projectUrn}/${msg.sha1}`)
         .then(commitStore.success)
         .catch(commitStore.error);
       break;
@@ -236,7 +236,7 @@ const update = (msg: Msg): void => {
       switch (msg.type) {
         case ObjectType.Blob:
           api
-            .get<SourceObject>(`source/blob/${msg.projectId}`, {
+            .get<SourceObject>(`source/blob/${msg.projectUrn}`, {
               query: {
                 peerId: msg.peerId,
                 revision: msg.revision,
@@ -250,7 +250,7 @@ const update = (msg: Msg): void => {
 
         case ObjectType.Tree:
           api
-            .get<SourceObject>(`source/tree/${msg.projectId}`, {
+            .get<SourceObject>(`source/tree/${msg.projectUrn}`, {
               query: {
                 peerId: msg.peerId,
                 revision: msg.revision,
@@ -320,15 +320,15 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 };
 
 export const tree = (
-  projectId: string,
-  peerId: string,
+  projectUrn: urn.Urn,
+  peerId: identity.PeerId,
   revision: Revision,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
 
   api
-    .get<Tree>(`source/tree/${projectId}`, {
+    .get<Tree>(`source/tree/${projectUrn}`, {
       query: { peerId: peerId, revision, prefix },
     })
     .then(treeStore.success)

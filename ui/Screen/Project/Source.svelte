@@ -22,10 +22,7 @@
 
   const project: Project = getContext("project");
 
-  $: console.log($selectedPeer);
-  $: console.log($selectedRevision);
-
-  $: if ($selectedPeer && selectedRevision) {
+  $: if ($selectedPeer && $selectedRevision) {
     fetchObject({
       path: $objectPath,
       peerId: $selectedPeer.peerId,
@@ -78,15 +75,15 @@
 <div class="wrapper">
   <div class="container center-content">
     <div class="column-left">
-      {#if $selectedPeer}
+      {#if $selectedPeer && $selectedRevision}
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
-            currentRevision={$selectedRevision}
-            currentPeerId={$selectedPeer.peerId}
+            name={project.metadata.name}
+            peerId={$selectedPeer.peerId}
             projectUrn={project.urn}
-            toplevel
-            name={project.metadata.name} />
+            revision={$selectedRevision}
+            toplevel />
         </div>
       {/if}
     </div>
@@ -132,7 +129,7 @@
             text="This file doesn't exist on this branch."
             primaryActionText="Back to source"
             emoji="👀"
-            on:primaryAction={console.log}
+            on:primaryAction={ev => console.log('primary action', ev)}
             style="height: 320px;" />
         </div>
       </Remote>
