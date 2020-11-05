@@ -82,16 +82,12 @@ const createWindow = () => {
 
   mainWindow.webContents.on("will-navigate", (event, url) => {
     event.preventDefault();
-    if (
-      url.toLowerCase().startsWith("irc://") ||
-      url.toLowerCase().startsWith("http://") ||
-      url.toLowerCase().startsWith("https://")
-    ) {
-      console.log(`Opening external URL: ${url}`);
-      shell.openExternal(url);
-    } else {
-      console.warn(`User tried opening URL with invalid URI scheme: ${url}`);
-    }
+    openExternalLink(url);
+  });
+
+  mainWindow.webContents.on("new-window", (event, url) => {
+    event.preventDefault();
+    openExternalLink(url);
   });
 
   mainWindow.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
@@ -102,6 +98,19 @@ const createWindow = () => {
 
     mainWindow = null;
   });
+};
+
+const openExternalLink = url => {
+  if (
+    url.toLowerCase().startsWith("irc://") ||
+    url.toLowerCase().startsWith("http://") ||
+    url.toLowerCase().startsWith("https://")
+  ) {
+    console.log(`Opening external URL: ${url}`);
+    shell.openExternal(url);
+  } else {
+    console.warn(`User tried opening URL with invalid URI scheme: ${url}`);
+  }
 };
 
 const startProxy = () => {
