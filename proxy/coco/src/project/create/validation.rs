@@ -49,7 +49,7 @@ pub enum Error {
     },
 
     /// The `rad` remote was found but it did not have a URL.
-    #[error("the `rad` exists but is missing its url field")]
+    #[error("the `rad` remote exists but is missing its url field")]
     MissingUrl,
 
     /// The path was expected to point to a git repository but it did not.
