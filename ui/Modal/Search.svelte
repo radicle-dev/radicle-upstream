@@ -128,7 +128,7 @@
       hint="v"
       inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
       on:keydown={onKeydown}
-      placeholder="Have a project id? Paste it here…"
+      placeholder="Have a project handle? Paste it here…"
       showLeftItem
       validation={$urnValidation}>
       <div slot="left">

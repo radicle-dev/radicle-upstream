@@ -144,59 +144,14 @@
 
     <section>
       <header>
-        <h3>Feedback</h3>
+        <h3>Peer Address</h3>
       </header>
       <div class="section-item">
         <div class="info">
-          <p class="typo-text-bold">Get in touch directly</p>
-        </div>
-        <div class="action">
-          <a
-            class="typo-link"
-            href="https://radicle.community/c/site-feedback/2">
-            radicle.community
-          </a>
-        </div>
-      </div>
-      <div class="section-item">
-        <div class="info">
-          <p class="typo-text-bold">Join the developer chat</p>
-        </div>
-        <div class="action">
-          <a class="typo-link" href="irc://freenode:1/radicle">
-            #radicle on freenode
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <header>
-        <h3>Peer ID</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p>Share your peerID with others so they can add you as a remote</p>
+          <p>Share your peer address with others to be added as a remote</p>
         </div>
         <div class="action">
           <StyledCopyable value={session.identity.peerId} />
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <header>
-        <h3>Appearance</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p class="typo-text-bold">Theme</p>
-        </div>
-        <div class="action">
-          <SegmentedControl
-            active={$settings.appearance.theme}
-            options={themeOptions}
-            on:select={updateTheme} />
         </div>
       </div>
     </section>
@@ -208,13 +163,13 @@
       <div class="section-item-single">
         <div class="info">
           <p class="typo-text-bold">
-            Seeds help you see more projects and people on the network
+            Seeds help you find more projects and people on the network
           </p>
           <!-- TODO(julien): link to actual docs abt seeds -->
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
             Enter seed addresses that you’d like to subscribe to here. <a style="color: var(--color-foreground-level-5);" class="typo-link" href="https://radicle.xyz/#upstream-faq"> Learn
-              more about seeds </a>
+              more about seeds. </a>
           </p>
         </div>
         <form class="seed-entry-form" on:submit|preventDefault>
@@ -246,6 +201,51 @@
             {/each}
           </div>
         </form>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Appearance</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Theme</p>
+        </div>
+        <div class="action">
+          <SegmentedControl
+            active={$settings.appearance.theme}
+            options={themeOptions}
+            on:select={updateTheme} />
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Feedback</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Get in touch directly</p>
+        </div>
+        <div class="action">
+          <a
+            class="typo-link"
+            href="https://radicle.community/c/site-feedback/2">
+            radicle.community
+          </a>
+        </div>
+      </div>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Join the developer chat</p>
+        </div>
+        <div class="action">
+          <a class="typo-link" href="irc://freenode:1/radicle">
+            #radicle on freenode
+          </a>
+        </div>
       </div>
     </section>
 
