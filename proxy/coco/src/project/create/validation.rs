@@ -5,7 +5,6 @@ use std::{io, marker::PhantomData, path::PathBuf};
 
 use librad::{
     git::{
-        include,
         local::url::LocalUrl,
         types::{remote::Remote, FlatRef},
     },
@@ -179,11 +178,7 @@ impl Repository {
     /// # Errors
     ///
     ///   * Failed to setup the repository
-    pub fn setup_repo(
-        self,
-        description: &str,
-        include_path: PathBuf,
-    ) -> Result<git2::Repository, super::Error> {
+    pub fn setup_repo(self, description: &str) -> Result<git2::Repository, super::Error> {
         let (repo, url, default_branch) = match self {
             Self::Existing {
                 repo,
@@ -210,7 +205,6 @@ impl Repository {
         }?;
 
         Self::setup_remote(&repo, url, &default_branch)?;
-        include::set_include_path(&repo, include_path)?;
         Ok(repo)
     }
 

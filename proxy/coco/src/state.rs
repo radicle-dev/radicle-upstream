@@ -4,7 +4,7 @@ use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf, sync::Arc, time
 
 use librad::{
     git::{
-        include::Include,
+        include::{self, Include},
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
@@ -505,27 +505,24 @@ impl State {
             .validate(url)
             .map_err(project::create::Error::from)?;
 
-        let include_path = self.update_include(meta.urn()).await?;
         let meta = {
             let results = self.transport_results();
-            let meta = self
+            let (meta, repo) = self
                 .api
                 .with_storage(move |storage| {
                     let _ = storage.create_repo(&meta)?;
                     log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                    repository
-                        .setup_repo(
-                            meta.description().as_ref().unwrap_or(&String::default()),
-                            include_path,
-                        )
+                    let repo = repository
+                        .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
                         .map_err(project::create::Error::from)?;
 
-                    Ok::<_, Error>(meta)
+                    Ok::<_, Error>((meta, repo))
                 })
                 .await??;
-
             Self::process_transport_results(&results)?;
+            let include_path = self.update_include(meta.urn()).await?;
+            include::set_include_path(&repo, include_path)?;
             meta
         };
 
