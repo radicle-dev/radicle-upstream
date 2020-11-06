@@ -5,7 +5,7 @@ import typescript from "@rollup/plugin-typescript";
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: "native/main.js",
+  input: "native/main.ts",
   output: {
     sourcemap: true,
     file: "native/main.comp.js",

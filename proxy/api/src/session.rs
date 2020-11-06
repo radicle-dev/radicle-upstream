@@ -22,17 +22,6 @@ pub struct Session {
     pub settings: settings::Settings,
 }
 
-/// Resets the session state.
-///
-/// # Errors
-///
-/// Errors if the state on disk can't be accessed.
-pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
-    Ok(store
-        .bucket::<&str, kv::Json<Session>>(Some(BUCKET_NAME))?
-        .remove(KEY_CURRENT)?)
-}
-
 /// Get the seed nodes (see [`settings::CoCo::seeds`]) from the session settings current session.
 ///
 /// If there is no session yet, returns the seeds from the default value of [`settings::CoCo`].
