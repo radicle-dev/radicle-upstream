@@ -1,5 +1,6 @@
 import { derived, Readable } from "svelte/store";
 
+import * as error from "./error";
 import * as localPeer from "./localPeer";
 import * as project from "./project";
 import * as remote from "./remote";
@@ -73,5 +74,15 @@ export const fetchFollowing = (): void => {
   remote.fetch(followingProjectsStore, project.fetchTracking());
   remote.fetch(requestedProjectsStore, project.fetchSearching(), reqs => {
     return reqs.filter(req => req.type !== waitingRoom.Status.Cloned);
+  });
+};
+
+export const showNotificationsForFailedProjects = async (): Promise<void> => {
+  const failedProjects = await project.fetchFailed();
+  failedProjects.forEach(failedProject => {
+    error.show(
+      `The project ${failedProject.metadata.name} could not be loaded`,
+      failedProject
+    );
   });
 };
