@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { get } from "svelte/store";
-  import { Copyable } from "../DesignSystem/Component";
+  import { Copyable, Dai } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
 
@@ -97,16 +97,6 @@
   .content .section .row + .row {
     margin-top: 1.5rem;
   }
-
-  .cost {
-    display: flex;
-    align-items: center;
-    padding: 3px 8px;
-    border-radius: 3px;
-
-    background-color: var(--color-negative-level-1);
-    color: var(--color-negative);
-  }
 </style>
 
 <div class="wrapper">
@@ -149,11 +139,8 @@
       {#if !!tx.meta.amount}
         <div class="row">
           <p>Amount</p>
-          <p class="typo-semi-bold cost">
-            -
-            <Icon.CurrencyDAI
-              style="fill: var(--color-negative); padding-left: 7px; margin-top: 3px;" />
-            {tx.meta.amount}
+          <p class="typo-semi-bold">
+            <Dai variant={'negative'}>{tx.meta.amount}</Dai>
           </p>
         </div>
       {/if}

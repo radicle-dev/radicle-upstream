@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { Button, Icon } from "../../Primitive";
-  import { Copyable } from "../../Component";
+  import { Button } from "../../Primitive";
+  import { Dai, Copyable } from "../../Component";
 
   import * as wallet from "../../../src/wallet";
   import { displayAddress } from "../../../src/funding/pool";
@@ -40,9 +40,7 @@
 
 <div class="wrapper">
   <p class="balance typo-text-bold">
-    <Icon.CurrencyDAI
-      style="fill: var(--color-foreground-level-6);  padding-top: 3px;" />
-    {account.balance}
+    <Dai>{account.balance}</Dai>
   </p>
   <p class="address typo-text-bold">
     <Copyable

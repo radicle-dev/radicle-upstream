@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { Remote } from "../../../Component";
-  import { Button, Icon } from "../../../Primitive";
+  import { Dai, Remote } from "../../../Component";
+  import { Button } from "../../../Primitive";
 
   import * as modal from "../../../../src/modal";
   import * as path from "../../../../src/path";
@@ -68,14 +68,12 @@
       </header>
       <div class="item">
         <p>Balance</p>
-        <h3 style="display: flex; margin-left: 10px">
-          <Icon.CurrencyDAI
-            style="fill: var(--color-foreground-level-6); padding-top: 3px;" />
-          {poolData.collectableFunds}
-        </h3>
+        <p class="typo-text-bold row">
+          <Dai>{poolData.collectableFunds}</Dai>
+        </p>
         {#if poolData.collectableFunds > 0 && !ongoingCollect}
           <Button
-            style="margin-left: 10px;"
+            style="margin-left: 12px;"
             disabled={ongoingCollect}
             on:click={collectFunds}
             variant={'primary'}>

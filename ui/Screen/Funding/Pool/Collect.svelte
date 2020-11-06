@@ -3,16 +3,15 @@
   import { pop } from "svelte-spa-router";
 
   import * as modal from "../../../src/modal";
-  import { displayAddress, store } from "../../../src/funding/pool";
+  import { store } from "../../../src/funding/pool";
 
-  import { Copyable, Remote, TxButton } from "../../../DesignSystem/Component";
-  import { Button, Icon } from "../../../DesignSystem/Primitive";
+  import { Remote, TxButton } from "../../../DesignSystem/Component";
+  import { Button } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
   if ($store === null) pop();
   $: pool = get(store);
 
-  const disableConfirmation = false;
   async function onConfirmed(): Promise<void> {
     await get(store).collect();
     modal.hide();
@@ -46,16 +45,9 @@
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.25rem;
   }
-  .icon {
-    height: 56px;
-    width: 56px;
-    border-radius: 50%;
-    background-color: var(--color-primary-level-5);
-    border: 2px solid #5555ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 1rem;
+
+  h2 {
+    margin-top: calc(var(--content-padding) / 2);
   }
 
   .from-to {
@@ -63,35 +55,6 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 1rem;
-  }
-
-  .sub-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    margin-top: 1.7rem;
-  }
-
-  .sub-section p {
-    color: var(--color-foreground-level-6);
-  }
-
-  .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    border: 1px solid var(--color-foreground-level-3);
-    box-sizing: border-box;
-    border-radius: 4px;
-
-    padding: 10px;
-  }
-
-  .row p {
-    display: flex;
-    align-items: center;
   }
 
   .subheading {
@@ -109,9 +72,6 @@
   <div class="wrapper" data-cy="send-funds-modal">
     <div data-cy="preparation-step">
       <header>
-        <div class="icon">
-          <Icon.ArrowUp style="fill: #5555FF" />
-        </div>
         <h2>Collect incoming support</h2>
 
         <div class="from-to">
@@ -120,33 +80,6 @@
           <p class="typo-text-bold subheading">Your connected wallet</p>
         </div>
       </header>
-
-      <div class="sub-section">
-        <p class="typo-text-bold subheading">From</p>
-        <div class="row">
-          <p>
-            Your incoming support (
-            <Icon.CurrencyDAI style="padding-top: 3px;" />
-            {poolData.collectableFunds})
-          </p>
-        </div>
-      </div>
-
-      <div class="sub-section">
-        <p class="typo-text-bold subheading">To</p>
-        <div class="row">
-          <p>Your connected account</p>
-          <span class="address">
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={get(store).getAccount().address}
-              notificationText="Address copied to the clipboard">
-              {displayAddress(get(store).getAccount().address)}
-            </Copyable>
-          </span>
-        </div>
-      </div>
 
       <div class="submit">
         <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>

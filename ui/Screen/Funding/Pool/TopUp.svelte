@@ -2,8 +2,8 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { Copyable, TxButton } from "../../../DesignSystem/Component";
-  import { Button, Icon, Input } from "../../../DesignSystem/Primitive";
+  import { Copyable, Dai, TxButton } from "../../../DesignSystem/Component";
+  import { Button, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
   import * as modal from "../../../src/modal";
@@ -64,16 +64,9 @@
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.25rem;
   }
-  .icon {
-    height: 56px;
-    width: 56px;
-    border-radius: 50%;
-    background-color: var(--color-primary-level-5);
-    border: 2px solid #5555ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 1rem;
+
+  h2 {
+    margin-top: calc(var(--content-padding) / 2);
   }
 
   .from-to {
@@ -95,18 +88,6 @@
     color: var(--color-foreground-level-6);
   }
 
-  .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    border: 1px solid var(--color-foreground-level-3);
-    box-sizing: border-box;
-    border-radius: 4px;
-
-    padding: 10px;
-  }
-
   .subheading {
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
@@ -117,18 +98,11 @@
     justify-content: flex-end;
     margin-top: 2rem;
   }
-
-  .address {
-    margin-left: 10px;
-  }
 </style>
 
 <div class="wrapper" data-cy="send-funds-modal">
   <div data-cy="preparation-step">
     <header>
-      <div class="icon">
-        <Icon.ArrowDown style="fill: #5555FF" />
-      </div>
       <h2>Top up</h2>
 
       <div class="from-to">
@@ -147,39 +121,10 @@
         showLeftItem
         autofocus
         validation={$amountValidation}>
-        <div slot="left" style="position: absolute; top: 2px; left: 10px;">
-          <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
+        <div slot="left" style="position: absolute; top: 1px; left: 12px;">
+          <Dai />
         </div>
       </Input.Text>
-    </div>
-
-    <div class="sub-section">
-      <p class="typo-text-bold subheading">From</p>
-      <div class="row">
-        <p>Your external wallet</p>
-        <p style="display: flex; align-items: center;">
-          <span style="display: flex; align-items: center;"><Icon.CurrencyDAI
-              style="padding-top: 3px;" />
-            {get(store).getAccount().balance}
-          </span>
-          <span class="address">
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={get(store).getAccount().address}
-              notificationText="Address copied to the clipboard">
-              {displayAddress(get(store).getAccount().address)}
-            </Copyable>
-          </span>
-        </p>
-      </div>
-    </div>
-
-    <div class="sub-section">
-      <p class="typo-text-bold subheading">To</p>
-      <div class="row">
-        <p>Outgoing support balance</p>
-      </div>
     </div>
 
     <div class="submit">

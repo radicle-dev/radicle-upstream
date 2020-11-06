@@ -2,8 +2,13 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { Copyable, Remote, TxButton } from "../../../DesignSystem/Component";
-  import { Button, Icon, Input } from "../../../DesignSystem/Primitive";
+  import {
+    Copyable,
+    Dai,
+    Remote,
+    TxButton,
+  } from "../../../DesignSystem/Component";
+  import { Button, Input, Icon } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
   import * as modal from "../../../src/modal";
@@ -126,9 +131,9 @@
           </div>
           <div class="balance">
             <Remote store={get(store).data} let:data={poolData}>
-              <Icon.CurrencyDAI
-                style="fill: var(--color-foreground-level-5); padding-top: 3px; width: 20px; height: 20px" />
-              {poolData.balance}
+              <Dai color={'var(--color-foreground-level-5'}>
+                {poolData.balance}
+              </Dai>
             </Remote>
           </div>
         </div>
@@ -145,9 +150,9 @@
             </Copyable>
           </div>
           <div class="balance">
-            <Icon.CurrencyDAI
-              style="fill: var(--color-foreground-level-5); padding-top: 3px; width: 20px; height: 20px" />
-            {get(store).getAccount().balance}
+            <Dai color={'var(--color-foreground-level-5'}>
+              {get(store).getAccount().balance}
+            </Dai>
           </div>
         </div>
       </div>
@@ -162,8 +167,8 @@
         showLeftItem
         autofocus
         validation={$amountValidation}>
-        <div slot="left" style="position: absolute; top: 2px; left: 10px;">
-          <Icon.CurrencyDAI style="fill: var(--color-foreground-level-6)" />
+        <div slot="left" style="position: absolute; top: 1px; left: 12px;">
+          <Dai />
         </div>
       </Input.Text>
     </div>

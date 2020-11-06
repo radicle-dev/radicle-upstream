@@ -163,7 +163,7 @@
       </div>
       <div class="row">
         <p>Balance</p>
-        <p class="typo-text-bold row" style="margin-left: 10px">
+        <p class="typo-text-bold row" style="margin-left: 12px">
           <Dai>{poolData.balance}</Dai>
         </p>
         {#if !ongoingTopUp}
