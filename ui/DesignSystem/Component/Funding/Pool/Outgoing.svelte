@@ -23,13 +23,13 @@
   $: _pool.store.set(pool);
 
   let ongoingTopUp = false;
-  let ongoingCashout = false;
+  let ongoingWithdraw = false;
   let ongoingMonthlyContributionUpdate = false;
   let ongoingBeneficiariesUpdate = false;
 
   transaction.store.subscribe(_ => {
     ongoingTopUp = transaction.ongoing(transaction.TxKind.TopUp);
-    ongoingCashout = transaction.ongoing(transaction.TxKind.Cashout);
+    ongoingWithdraw = transaction.ongoing(transaction.TxKind.Withdraw);
     ongoingMonthlyContributionUpdate = transaction.ongoing(
       transaction.TxKind.UpdateMonthlyContribution
     );
@@ -62,9 +62,9 @@
     modal.toggle(path.poolTopUp());
   };
 
-  const openCashoutModal = () => {
+  const openWithdrawModal = () => {
     _pool.store.set(pool);
-    modal.toggle(path.poolCashout());
+    modal.toggle(path.poolWithdraw());
   };
 
   /* On clicks */
@@ -175,14 +175,14 @@
             Top up
           </Button>
         {/if}
-        {#if !ongoingCashout && !ongoingTopUp}
+        {#if !ongoingWithdraw && !ongoingTopUp}
           <Button
             disabled={poolData.balance === 0}
             dataCy="drain-pool-button"
             variant="outline"
-            on:click={openCashoutModal}
+            on:click={openWithdrawModal}
             style="margin-left: 12px">
-            Cash out
+            Withdraw
           </Button>
         {/if}
       </div>

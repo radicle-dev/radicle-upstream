@@ -38,7 +38,7 @@
     $amountValidation && $amountValidation.status !== ValidationStatus.Success;
 
   async function onConfirmed(): Promise<void> {
-    await get(store).cashout(amount);
+    await get(store).withdraw(amount);
     modal.hide();
     resolve();
   }
@@ -115,7 +115,7 @@
 <div class="wrapper" data-cy="send-funds-modal">
   <div data-cy="preparation-step">
     <header>
-      <h2>Cash out</h2>
+      <h2>Withdraw</h2>
 
       <div class="from-to">
         <div class="from typo-text-bold subheading">
@@ -183,7 +183,7 @@
         disabled={disableConfirmation}
         dataCy="review-transfer-button"
         onClick={onConfirmed}
-        errorMessage={e => `Could not cashout pool funds: ${e.message}`} />
+        errorMessage={e => `Could not withdraw pool funds: ${e.message}`} />
     </div>
   </div>
 </div>

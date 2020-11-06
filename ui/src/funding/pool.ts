@@ -29,9 +29,9 @@ export interface Pool {
   // included in the chain.
   topUp(value: number): Promise<void>;
 
-  // Cashout funds from the pool to the connected wallet.
+  // Withdraw outgoing balance funds to the connected wallet.
   // Returns once the transaction has been included in the chain.
-  cashout(value: number): Promise<void>;
+  withdraw(value: number): Promise<void>;
 
   // Collect funds the user has received up to now from givers and
   // transfer them to the users account.
@@ -134,9 +134,9 @@ export function make(wallet: Wallet): Pool {
     loadPoolData();
   }
 
-  async function cashout(amount: number): Promise<void> {
+  async function withdraw(amount: number): Promise<void> {
     const tx = await poolContract.withdraw(amount);
-    transaction.add(transaction.cashout(tx));
+    transaction.add(transaction.withdraw(tx));
     const receipt = await tx.wait();
     if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
@@ -160,7 +160,7 @@ export function make(wallet: Wallet): Pool {
     updateAmountPerBlock,
     updateReceiverAddresses,
     topUp,
-    cashout,
+    withdraw,
     collect,
   };
 }
