@@ -33,7 +33,6 @@ export function setup(window: Window): void {
       invoke: (msg, params) => {
         return electronStubs[msg](params);
       },
-      on: () => undefined,
     },
     isDev: true,
     isExperimental: true,
