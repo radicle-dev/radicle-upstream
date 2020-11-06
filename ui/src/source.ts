@@ -90,13 +90,13 @@ export interface Blob extends SourceObject {
   content: string;
 }
 
-interface Tree extends SourceObject {
+export interface Tree extends SourceObject {
   entries: SourceObject[];
   info: Info;
   path: string;
 }
 
-interface Readme {
+export interface Readme {
   content: string;
   path?: string;
 }
@@ -360,30 +360,23 @@ export const revisionQueryEq = (
 };
 
 export const readme = (
-  projectId: string,
-  peerId: string,
-  revision: Revision
-): Readable<remote.Data<Readme | null>> => {
-  const readme = remote.createStore<Readme | null>();
+  projectUrn: urn.Urn,
+  peerId: identity.PeerId,
+  revision: Revision,
+  tree: Tree
+): Promise<Readme | null> => {
+  const path = findReadme(tree);
 
-  /* remote */
-  /*   .chain(objectStore.readable, readme) */
-  /*   .then((object: SourceObject) => { */
-  /*     if (object.info.objectType === ObjectType.Tree) { */
-  /*       const path = findReadme(object as Tree); */
+  return new Promise((resolve, reject) => {
+    if (!path) {
+      return resolve(null);
+    }
 
-  /*       if (path) { */
-  /*         return blob(projectId, peerId, revision, path, false); */
-  /*       } */
-  /*     } */
-
-  /*     return null; */
-  /*   }) */
-  /*   .then(blob => (blob && !blob.binary ? blob : null)) */
-  /*   .then(readme.success) */
-  /*   .catch(readme.error); */
-
-  return readme.readable;
+    blob(projectUrn, peerId, revision, path, false)
+      .then(blob => (blob && !blob.binary ? blob : null))
+      .then(resolve)
+      .catch(reject);
+  });
 };
 
 const groupCommits = (history: CommitSummary[]): CommitHistory => {

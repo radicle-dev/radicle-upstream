@@ -25,7 +25,7 @@ interface Root extends Shared {
   kind: CodeView.Root;
   lastCommit: source.LastCommit;
   project: project.Project;
-  readme: Blob | null;
+  readme: source.Readme | null;
 }
 
 type Code = File | Root;
@@ -45,28 +45,40 @@ export const code: Readable<remote.Data<Code>> = derived(
     }
 
     if (currentProject.status === remote.Status.Success) {
+      const { urn: projectUrn } = currentProject.data;
+      let lastCommit: source.LastCommit;
+
       source
         .fetchObject(
           source.ObjectType.Tree,
-          currentProject.data.urn,
+          projectUrn,
           selectedPeer.peerId,
           "",
           selectedRevision
         )
-        .then(obj =>
+        .then(tree => {
+          lastCommit = tree.info.lastCommit;
+
+          return source.readme(
+            projectUrn,
+            selectedPeer.peerId,
+            selectedRevision,
+            tree as source.Tree
+          );
+        })
+        .then(readme => {
           set({
             status: remote.Status.Success,
             data: {
               kind: CodeView.Root,
-              lastCommit: obj.info.lastCommit,
+              lastCommit,
               peer: selectedPeer,
               project: currentProject.data,
-              readme: null,
+              readme: readme,
               revision: selectedRevision,
             },
-          })
-        )
-        .catch(err => set({ status: remote.Status.Error, error: err }));
+          });
+        });
     }
   },
   { status: remote.Status.NotAsked } as remote.Data<Code>
