@@ -86,6 +86,7 @@
     "rollup-plugin-node-externals": "^2.1.6",
     "rollup-plugin-svelte": "^5.2.3",
     "rollup-plugin-terser": "^6.1.0",
+    "sinon": "^9.2.1",
     "sirv-cli": "^1.0.3",
     "standard-version": "^8.0.2",
     "svelte": "^3.24.0",
@@ -117,6 +118,7 @@
     "svelte:clean": "rm -rf public/bundle.*",
     "svelte:build": "yarn svelte:clean && rollup -c",
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
+    "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "proxy:build": "cd proxy && cargo build --all-features --all-targets",
     "proxy:build:release": "cd proxy && cargo build --release",
     "proxy:clean": "cd proxy && cargo clean",
@@ -137,6 +139,7 @@
   "dependencies": {
     "@types/jest": "^26.0.15",
     "@types/qs": "^6.9.2",
+    "@types/sinon": "^9.0.8",
     "marked": "^1.1.1",
     "pure-svg-code": "^1.0.6",
     "timeago.js": "^4.0.2",
