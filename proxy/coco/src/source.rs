@@ -900,10 +900,9 @@ mod tests {
     #[tokio::test]
     async fn browse_commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
-        let _ = librad::paths::Paths::from_root(tmp_dir.path())?;
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
-        let config = config::default(key, tmp_dir).expect("unable to get default config");
+        let config = config::default(key, tmp_dir.path()).expect("unable to get default config");
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer);
         let owner = state.init_owner("cloudhead").await?;
