@@ -24,6 +24,13 @@ interface Commit {
   changeset: Record<string, unknown>;
 }
 
+export interface LastCommit {
+  author: Person;
+  summary: string;
+  sha1: string;
+  committerTime: number;
+}
+
 interface Stats {
   branches: number;
   commits: number;
@@ -64,12 +71,7 @@ export enum ObjectType {
 interface Info {
   name: string;
   objectType: ObjectType;
-  lastCommit: {
-    author: Person;
-    summary: string;
-    sha1: string;
-    committerTime: number;
-  };
+  lastCommit: LastCommit;
 }
 
 export interface LocalState {

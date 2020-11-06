@@ -1,16 +1,8 @@
 <script lang="typescript">
-  import { getContext } from "svelte";
   import { format } from "timeago.js";
 
-  import {
-    fetchObject,
-    object as store,
-    selectedPeer,
-    selectedRevision,
-  } from "../../src/project";
-  import type { Project } from "../../src/project";
-  import { ObjectType, objectPath, objectType, readme } from "../../src/source";
-  import * as urn from "../../src/urn";
+  import { code as store, CodeView } from "../../src/screen/project";
+  import type { Blob } from "../../src/source";
 
   import { EmptyState, Remote } from "../../DesignSystem/Component";
 
@@ -18,19 +10,6 @@
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
-
-  export let params: { urn: urn.Urn };
-  const project: Project = getContext("project");
-
-  $: if ($selectedPeer && $selectedRevision) {
-    fetchObject(
-      $objectType,
-      project.urn,
-      $selectedPeer.peerId,
-      $objectPath,
-      $selectedRevision
-    );
-  }
 </script>
 
 <style>
@@ -74,64 +53,56 @@
 
 <div class="wrapper">
   <div class="container center-content">
-    <div class="column-left">
-      {#if $selectedPeer && $selectedRevision}
+    <Remote {store} let:data={view}>
+      <div class="column-left">
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
-            peerId={$selectedPeer.peerId}
-            projectUrn={project.urn}
-            revision={$selectedRevision}
+            peerId={view.peer.peerId}
+            projectUrn={view.project.urn}
+            revision={view.revision}
             toplevel />
         </div>
-      {/if}
-    </div>
+      </div>
 
-    <div class="column-right">
-      <!-- Object -->
-      <Remote {store} let:data={object}>
-        {#if object.info.objectType === ObjectType.Blob}
-          <FileSource
-            blob={object}
-            path={$objectPath}
-            projectName={project.metadata.name}
-            projectUrn={project.urn} />
-        {:else if object.path === ''}
-          <!-- Repository root -->
-          <div class="commit-header">
-            <CommitTeaser
-              message={object.info.lastCommit.summary}
-              sha={object.info.lastCommit.sha1}
-              projectUrn={project.urn}
-              style="height: 100%"
-              timestamp={format(object.info.lastCommit.committerTime * 1000)}
-              user={object.info.lastCommit.author} />
-          </div>
-
-          <!-- Readme -->
-          <Remote
-            store={readme(project.urn, $selectedPeer.peerId, $selectedRevision)}
-            let:data={readme}>
-            {#if readme}
-              <Readme content={readme.content} path={readme.path} />
-            {:else}
-              <EmptyState
-                text="This project doesn't have a README yet."
-                emoji="👀"
-                style="height: 320px;" />
-            {/if}
-          </Remote>
-        {/if}
-        <div slot="error" let:error>
-          <EmptyState
-            emoji="👀"
-            headerText={error.message}
-            on:primaryAction={ev => console.log('primary action', ev)}
-            primaryActionText="Back to source"
-            style="height: 320px;"
-            text="This file doesn't exist on this branch." />
+      <div class="column-right">
+        <div class="commit-header">
+          <CommitTeaser
+            message={view.lastCommit.summary}
+            sha={view.lastCommit.sha1}
+            projectUrn={view.project.urn}
+            style="height: 100%"
+            timestamp={format(view.lastCommit.committerTime * 1000)}
+            user={view.lastCommit.author} />
         </div>
-      </Remote>
-    </div>
+
+        {#if view.kind === CodeView.File}
+          {#if view.file instanceof Blob}
+            <FileSource
+              blob={view.file}
+              path={view.path}
+              projectName={view.project.metadata.name}
+              projectUrn={view.project.urn} />
+          {:else if view.file === Error}
+            <EmptyState
+              emoji="👀"
+              headerText={view.file.message}
+              on:primaryAction={ev => console.log('primary action', ev)}
+              primaryActionText="Back to source"
+              style="height: 320px;"
+              text="This file doesn't exist on this branch." />
+          {/if}
+        {:else if view.kind === CodeView.Root}
+          {#if view.readme}
+            <Readme content={view.readme.content} path={view.readme.path} />
+          {:else}
+            <EmptyState
+              text="This project doesn't have a README yet."
+              emoji="👀"
+              style="height: 320px;" />
+          {/if}
+        {/if}
+      </div>
+    </Remote>
   </div>
 </div>

@@ -185,6 +185,7 @@
         </div>
       </div>
       <div slot="left">
+        <!-- FIXME(xla): These elements belong in Source.svelte -->
         <div style="display: flex">
           <Remote store={revisionSelection} let:data={revisions}>
             <div class="revision-selector-wrapper">
