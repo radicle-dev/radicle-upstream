@@ -197,8 +197,11 @@ export const revisionSelection: Readable<remote.Data<{
 
     if (project.status === remote.Status.Success) {
       const projectDefault = store.data.branches.find(
-        (branch: source.Branch) => branch.name === project.data.metadata.name
+        (branch: source.Branch) =>
+          branch.name === project.data.metadata.defaultBranch
       );
+
+      console.log("project", project, projectDefault);
 
       if (projectDefault) {
         defaultBranch = projectDefault;
