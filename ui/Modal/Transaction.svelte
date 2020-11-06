@@ -1,7 +1,6 @@
 <script lang="typescript">
   import { get } from "svelte/store";
-  import { Copyable, Dai } from "../DesignSystem/Component";
-  import { Icon } from "../DesignSystem/Primitive";
+  import { Copyable, Dai, Gwei } from "../DesignSystem/Component";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
 
   import { displayAddress } from "../src/funding/pool";
@@ -144,19 +143,19 @@
           </p>
         </div>
       {/if}
-      <div class="row">
-        <p>Gas used</p>
-        <p class="typo-semi-bold cost">
-          - {tx.gas.used ? `${tx.gas.used} gwei` : 'Not yet known'}
-        </p>
-      </div>
+      {#if !!tx.gas.used}
+        <div class="row">
+          <p>Gas used</p>
+          <Gwei>{tx.gas.used}</Gwei>
+        </div>
+      {/if}
       <div class="row">
         <p>Gas limit</p>
-        <p class="typo-semi-bold cost">- {tx.gas.limit} gwei</p>
+        <Gwei>{tx.gas.limit}</Gwei>
       </div>
       <div class="row">
         <p>Gas price</p>
-        <p class="typo-semi-bold cost">- {tx.gas.price} gwei</p>
+        <Gwei>{tx.gas.price}</Gwei>
       </div>
     </div>
 

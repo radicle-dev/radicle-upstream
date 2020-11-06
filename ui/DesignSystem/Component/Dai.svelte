@@ -7,9 +7,6 @@
     variant === "regular"
       ? "var(--color-foreground-level-6)"
       : "var(--color-negative)";
-
-  console.log(color);
-  console.log(variant);
 </script>
 
 <style>

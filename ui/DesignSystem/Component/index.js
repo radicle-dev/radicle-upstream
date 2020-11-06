@@ -8,6 +8,7 @@ import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
 import FollowToggle from "./FollowToggle.svelte";
+import Gwei from "./Gwei.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
@@ -53,6 +54,7 @@ export {
   EmptyState,
   Error,
   FollowToggle,
+  Gwei,
   Header,
   HorizontalMenu,
   Hoverable,
