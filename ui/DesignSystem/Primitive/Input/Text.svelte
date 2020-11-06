@@ -99,7 +99,6 @@
     display: flex;
     align-items: center;
 
-    position: absolute;
     left: 0;
     width: max-content;
 
