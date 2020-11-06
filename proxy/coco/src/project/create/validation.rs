@@ -5,6 +5,7 @@ use std::{io, marker::PhantomData, path::PathBuf};
 
 use librad::{
     git::{
+        include,
         local::url::LocalUrl,
         types::{remote::Remote, FlatRef},
     },
@@ -178,8 +179,12 @@ impl Repository {
     /// # Errors
     ///
     ///   * Failed to setup the repository
-    pub fn setup_repo(self, description: &str) -> Result<git2::Repository, Error> {
-        match self {
+    pub fn setup_repo(
+        self,
+        description: &str,
+        include_path: PathBuf,
+    ) -> Result<git2::Repository, super::Error> {
+        let (repo, url, default_branch) = match self {
             Self::Existing {
                 repo,
                 url,
@@ -189,8 +194,7 @@ impl Repository {
                     "Setting up existing repository @ '{}'",
                     repo.path().display()
                 );
-                Self::setup_remote(&repo, url, &default_branch)?;
-                Ok(repo)
+                Ok::<_, Error>((repo, url, default_branch))
             },
             Self::New {
                 path,
@@ -199,42 +203,60 @@ impl Repository {
                 default_branch,
             } => {
                 let path = path.join(name);
-                log::debug!("Setting up new repository @ '{}'", path.display());
-                let mut options = git2::RepositoryInitOptions::new();
-                options.no_reinit(true);
-                options.mkpath(true);
-                options.description(description);
-                options.initial_head(default_branch.as_str());
-
-                let repo = git2::Repository::init_opts(path, &options)?;
-                // First use the config to initialize a commit signature for the user.
-                let sig = repo.signature()?;
-                // Now let's create an empty tree for this commit
-                let tree_id = {
-                    let mut index = repo.index()?;
-
-                    // For our purposes, we'll leave the index empty for now.
-                    index.write_tree()?
-                };
-                {
-                    let tree = repo.find_tree(tree_id)?;
-                    // Normally creating a commit would involve looking up the current HEAD
-                    // commit and making that be the parent of the initial commit, but here this
-                    // is the first commit so there will be no parent.
-                    repo.commit(
-                        Some(&format!("refs/heads/{}", default_branch.as_str())),
-                        &sig,
-                        &sig,
-                        "Initial commit",
-                        &tree,
-                        &[],
-                    )?;
-                }
-                Self::setup_remote(&repo, url, &default_branch)?;
-
-                Ok(repo)
+                let repo = Self::initialise(path, description, &default_branch)?;
+                Self::initial_commit(&repo, &default_branch)?;
+                Ok::<_, Error>((repo, url, default_branch))
             },
+        }?;
+
+        Self::setup_remote(&repo, url, &default_branch)?;
+        include::set_include_path(&repo, include_path)?;
+        Ok(repo)
+    }
+
+    fn initialise(
+        path: PathBuf,
+        description: &str,
+        default_branch: &OneLevel,
+    ) -> Result<git2::Repository, git2::Error> {
+        log::debug!("Setting up new repository @ '{}'", path.display());
+        let mut options = git2::RepositoryInitOptions::new();
+        options.no_reinit(true);
+        options.mkpath(true);
+        options.description(description);
+        options.initial_head(default_branch.as_str());
+
+        git2::Repository::init_opts(path, &options)
+    }
+
+    fn initial_commit(
+        repo: &git2::Repository,
+        default_branch: &OneLevel,
+    ) -> Result<(), git2::Error> {
+        // First use the config to initialize a commit signature for the user.
+        let sig = repo.signature()?;
+        // Now let's create an empty tree for this commit
+        let tree_id = {
+            let mut index = repo.index()?;
+
+            // For our purposes, we'll leave the index empty for now.
+            index.write_tree()?
+        };
+        {
+            let tree = repo.find_tree(tree_id)?;
+            // Normally creating a commit would involve looking up the current HEAD
+            // commit and making that be the parent of the initial commit, but here this
+            // is the first commit so there will be no parent.
+            repo.commit(
+                Some(&format!("refs/heads/{}", default_branch.as_str())),
+                &sig,
+                &sig,
+                "Initial commit",
+                &tree,
+                &[],
+            )?;
         }
+        Ok(())
     }
 
     /// Equips a repository with a rad remote for the given id. If the directory at the given path

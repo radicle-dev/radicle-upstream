@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 use librad::{
-    git::local::url::LocalUrl,
+    git::{include, local::url::LocalUrl},
     git_ext::OneLevel,
     keys,
     meta::{entity, project},
@@ -20,6 +20,10 @@ pub enum Error {
     /// Internal git error while trying to create the project.
     #[error(transparent)]
     Git(#[from] git2::Error),
+
+    /// An error occured building include files.
+    #[error(transparent)]
+    Include(#[from] include::Error),
 
     /// Entity meta error.
     #[error(transparent)]

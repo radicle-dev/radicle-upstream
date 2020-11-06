@@ -505,6 +505,7 @@ impl State {
             .validate(url)
             .map_err(project::create::Error::from)?;
 
+        let include_path = self.update_include(meta.urn()).await?;
         let meta = {
             let results = self.transport_results();
             let meta = self
@@ -514,7 +515,10 @@ impl State {
                     log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
                     repository
-                        .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
+                        .setup_repo(
+                            meta.description().as_ref().unwrap_or(&String::default()),
+                            include_path,
+                        )
                         .map_err(project::create::Error::from)?;
 
                     Ok::<_, Error>(meta)
@@ -560,10 +564,15 @@ impl State {
     ///
     /// * When the storage operation fails.
     pub async fn track(&self, urn: RadUrn, remote: PeerId) -> Result<(), Error> {
-        Ok(self
-            .api
-            .with_storage(move |storage| storage.track(&urn, &remote))
-            .await??)
+        {
+            let urn = urn.clone();
+            self.api
+                .with_storage(move |storage| storage.track(&urn, &remote))
+                .await??;
+        }
+        let path = self.update_include(urn).await?;
+        log::debug!("Updated include path @ `{}`", path.display());
+        Ok(())
     }
 
     /// Wrapper around the storage untrack.
@@ -572,10 +581,19 @@ impl State {
     ///
     /// * When the storage operation fails.
     pub async fn untrack(&self, urn: RadUrn, remote: PeerId) -> Result<bool, Error> {
-        Ok(self
-            .api
-            .with_storage(move |storage| storage.untrack(&urn, &remote))
-            .await??)
+        let res = {
+            let urn = urn.clone();
+            self.api
+                .with_storage(move |storage| storage.untrack(&urn, &remote))
+                .await??
+        };
+
+        // Only need to update if we did untrack an existing peer
+        if res {
+            let path = self.update_include(urn).await?;
+            log::debug!("Updated include path @ `{}`", path.display());
+        }
+        Ok(res)
     }
 
     /// Get the [`user::User`]s that are tracking this project, including their [`PeerId`].
