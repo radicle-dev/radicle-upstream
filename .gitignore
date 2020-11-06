@@ -12,6 +12,3 @@ cypress/fixtures/example.json
 cypress/workspace
 proxy/**/target
 proxy/**/*.rs.bk
-schema.gql
-ui/src/*.js
-ui/**/*.js.map
