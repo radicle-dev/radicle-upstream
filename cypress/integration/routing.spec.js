@@ -1,3 +1,5 @@
+import { ipcStub } from "../support";
+
 context("routing", () => {
   beforeEach(() => {
     cy.resetProxyState();
@@ -48,6 +50,29 @@ context("routing", () => {
           });
         }
       );
+    });
+  });
+
+  describe("blue screen of death", () => {
+    it("shows blue screen of death if there is a proxy error before onboarding", () => {
+      ipcStub.getStubs().then(stubs => {
+        stubs.sendMessage({
+          type: "ProxyError",
+          data: {},
+        });
+      });
+      cy.pick("blue-screen-of-death").should("exist");
+    });
+
+    it("shows blue screen of death if there is a proxy error after onboarding", () => {
+      cy.onboardUser();
+      ipcStub.getStubs().then(stubs => {
+        stubs.sendMessage({
+          type: "ProxyError",
+          data: {},
+        });
+      });
+      cy.pick("blue-screen-of-death").should("exist");
     });
   });
 });

@@ -6,9 +6,9 @@ import {
   clipboard,
   shell,
 } from "electron";
-import { execFile, ChildProcess } from "child_process";
 import path from "path";
-import * as ipc from "./ipc";
+import { execFile, ChildProcess } from "child_process";
+import { RendererMessage, MainMessage } from "./ipc-types";
 
 const isDev = process.env.NODE_ENV === "development";
 const proxyPath = path.join(__dirname, "../../proxy");
@@ -18,21 +18,87 @@ const proxyPath = path.join(__dirname, "../../proxy");
 // information please check https://github.com/electron/electron/issues/18397
 app.allowRendererProcessReuse = true;
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let mainWindow: BrowserWindow | null = null;
-let proxyChildProcess: ChildProcess | undefined;
+class WindowManager {
+  public window: BrowserWindow | null;
+  private messages: MainMessage[];
 
-const startApp = () => {
-  startProxy();
-  createWindow();
-};
+  constructor() {
+    this.window = null;
+    this.messages = [];
+  }
 
-ipcMain.handle(ipc.DIALOG_SHOWOPENDIALOG, async () => {
-  if (mainWindow === null) {
+  // Send a message on the "message" channel to the renderer window
+  sendMessage(message: MainMessage) {
+    if (this.window === null || this.window.webContents.isLoading()) {
+      this.messages.push(message);
+    } else {
+      this.window.webContents.send("message", message);
+    }
+  }
+
+  reload() {
+    if (this.window) {
+      this.window.reload();
+    }
+  }
+
+  open() {
+    if (this.window) {
+      return;
+    }
+
+    const window = new BrowserWindow({
+      width: 1200,
+      height: 680,
+      icon: path.join(__dirname, "../public/icon.png"),
+      show: false,
+      autoHideMenuBar: true,
+      webPreferences: {
+        preload: path.join(__dirname, "preload.js"),
+      },
+    });
+
+    window.once("ready-to-show", () => {
+      window.maximize();
+      window.show();
+    });
+
+    window.webContents.on("will-navigate", (event, url) => {
+      event.preventDefault();
+      openExternalLink(url);
+    });
+
+    window.webContents.on("new-window", (event, url) => {
+      event.preventDefault();
+      openExternalLink(url);
+    });
+
+    window.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
+    window.on("closed", () => {
+      this.window = null;
+    });
+
+    window.webContents.on("did-finish-load", () => {
+      this.messages.forEach(message => {
+        window.webContents.send("message", message);
+      });
+      this.messages = [];
+    });
+
+    this.window = window;
+  }
+}
+
+const windowManager = new WindowManager();
+let proxyProcess: ChildProcess | undefined;
+
+ipcMain.handle(RendererMessage.DIALOG_SHOWOPENDIALOG, async () => {
+  const window = windowManager.window;
+  if (window === null) {
     return;
   }
-  const result = await dialog.showOpenDialog(mainWindow, {
+
+  const result = await dialog.showOpenDialog(window, {
     properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
   });
 
@@ -43,69 +109,29 @@ ipcMain.handle(ipc.DIALOG_SHOWOPENDIALOG, async () => {
   }
 });
 
-ipcMain.handle(ipc.CLIPBOARD_WRITETEXT, async (_event, text) => {
+ipcMain.handle(RendererMessage.CLIPBOARD_WRITETEXT, async (_event, text) => {
   clipboard.writeText(text);
 });
 
-ipcMain.handle(ipc.OPEN_PATH, async (_event, path) => {
+ipcMain.handle(RendererMessage.OPEN_PATH, async (_event, path) => {
   shell.openPath(path);
 });
 
-ipcMain.handle(ipc.GET_VERSION, () => {
+ipcMain.handle(RendererMessage.GET_VERSION, () => {
   return app.getVersion();
 });
 
-const createWindow = () => {
-  const window = new BrowserWindow({
-    width: 1200,
-    height: 680,
-    icon: path.join(__dirname, "../public/icon.png"),
-    show: false,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-    },
+function setupWatcher() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const chokidar = require("chokidar");
+  const watcher = chokidar.watch(path.join(__dirname, "../public/**"), {
+    ignoreInitial: true,
   });
 
-  window.once("ready-to-show", () => {
-    window.maximize();
-    window.show();
+  watcher.on("change", () => {
+    windowManager.reload();
   });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let watcher: any | undefined;
-  if (isDev) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const chokidar = require("chokidar");
-    const newWatcher = chokidar.watch(path.join(__dirname, "../public/**"), {
-      ignoreInitial: true,
-    });
-
-    newWatcher.on("change", () => {
-      window.reload();
-    });
-  }
-
-  window.webContents.on("will-navigate", (event, url) => {
-    event.preventDefault();
-    openExternalLink(url);
-  });
-
-  window.webContents.on("new-window", (event, url) => {
-    event.preventDefault();
-    openExternalLink(url);
-  });
-
-  window.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
-  window.on("closed", () => {
-    if (watcher) {
-      watcher.close();
-    }
-    mainWindow = null;
-  });
-
-  mainWindow = window;
-};
+}
 
 const openExternalLink = (url: string): void => {
   if (
@@ -125,23 +151,52 @@ const startProxy = () => {
     return;
   }
 
-  proxyChildProcess = execFile(proxyPath, [], (error, _stdout, _stderr) => {
+  proxyProcess = execFile(proxyPath, [], (error, stdout, stderr) => {
+    let status = null;
+    let signal = null;
     if (error) {
-      console.log(error);
+      status = error.code === undefined ? null : error.code;
+      signal = error.signal === undefined ? null : error.signal;
+    } else {
+      status = 0;
     }
+
+    console.error(
+      "Proxy process exited with status code %s and signal %s",
+      status,
+      signal
+    );
+
+    windowManager.sendMessage({
+      type: "ProxyError",
+      data: {
+        status,
+        signal,
+        stdout,
+        stderr,
+      },
+    });
   });
 };
 
 app.on("will-quit", () => {
-  if (proxyChildProcess) {
-    proxyChildProcess.kill("SIGTERM");
+  if (proxyProcess) {
+    proxyProcess.kill();
   }
 });
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", startApp);
+app.on("ready", () => {
+  startProxy();
+
+  if (isDev) {
+    setupWatcher();
+  }
+
+  windowManager.open();
+});
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
@@ -153,9 +208,5 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) {
-    createWindow();
-  }
+  windowManager.open();
 });

@@ -1,10 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference,spaced-comment
-/// <reference path="../native/preload.d.ts" />
-
-export const CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT";
-export const DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG";
-export const GET_VERSION = "GET_VERSION";
-export const OPEN_PATH = "IPC_OPEN_PATH";
+/// <reference path="../../native/preload.d.ts" />
+import * as ipcTypes from "../../native/ipc-types";
 
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
@@ -14,16 +10,21 @@ export const OPEN_PATH = "IPC_OPEN_PATH";
 // The workaround is to use the electron native open dialog. As a bonus we
 // can configure it to allow users to create new directories.
 export const getDirectoryPath = (): Promise<string> =>
-  window.electron.ipcRenderer.invoke(DIALOG_SHOWOPENDIALOG);
+  window.electron.ipcRenderer.invoke(
+    ipcTypes.RendererMessage.DIALOG_SHOWOPENDIALOG
+  );
 
 export const getVersion = (): Promise<string> =>
-  window.electron.ipcRenderer.invoke(GET_VERSION);
+  window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.GET_VERSION);
 
 export const copyToClipboard = (text: string): Promise<void> =>
-  window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);
+  window.electron.ipcRenderer.invoke(
+    ipcTypes.RendererMessage.CLIPBOARD_WRITETEXT,
+    text
+  );
 
 export const openPath = (path: string): Promise<void> =>
-  window.electron.ipcRenderer.invoke(OPEN_PATH, path);
+  window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.OPEN_PATH, path);
 
 // Informs whether it's running in a development environment.
 export const isDev = (): boolean => {
@@ -37,3 +38,17 @@ export const isDev = (): boolean => {
 export const isExperimental = (): boolean => {
   return isDev() && window.electron.isExperimental;
 };
+
+// Register a listener for the `ipcTypes.ProxyError` message.
+export function listenProxyError(
+  f: (proxyError: ipcTypes.ProxyError) => void
+): void {
+  window.electron.ipcRenderer.on(
+    "message",
+    (_event: unknown, message: ipcTypes.MainMessage) => {
+      if (message.type === "ProxyError") {
+        f(message.data);
+      }
+    }
+  );
+}
