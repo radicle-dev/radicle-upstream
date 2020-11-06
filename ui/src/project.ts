@@ -201,8 +201,6 @@ export const revisionSelection: Readable<remote.Data<{
           branch.name === project.data.metadata.defaultBranch
       );
 
-      console.log("project", project, projectDefault);
-
       if (projectDefault) {
         defaultBranch = projectDefault;
       }
@@ -356,6 +354,8 @@ const update = (msg: Msg): void => {
     case Kind.Fetch:
       projectStore.loading();
       peersStore.reset();
+      revisionsStore.reset();
+
       api
         .get<Project>(`projects/${msg.urn}`)
         .then((project: Project) => {
