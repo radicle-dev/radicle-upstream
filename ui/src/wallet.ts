@@ -10,6 +10,9 @@ import {
 } from "@ethersproject/properties";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 
+import * as modal from "../src/modal";
+import * as path from "../src/path";
+
 import * as notification from "../src/notification";
 
 class WalletConnectSigner extends ethers.Signer {
@@ -118,9 +121,21 @@ export function build(): Wallet {
     status: Status.NotConnected,
   });
 
+  const qrCodeModal = {
+    open: (uri: string, _cb: any, _opts?: any) => {
+      uriStore.set(uri);
+      modal.toggle(path.walletQRCode());
+    },
+    close: async () => {
+      // N.B: this is actually called when the connection is established,
+      // not when the modal is closed per se.
+      modal.hide();
+    },
+  };
+
   let walletConnect = new WalletConnect({
     bridge: "https://bridge.walletconnect.org",
-    qrcodeModal: QRCodeModal,
+    qrcodeModal: qrCodeModal,
   });
 
   const signer = new WalletConnectSigner(walletConnect, provider);
@@ -143,6 +158,19 @@ export function build(): Wallet {
       );
     }
     await initialize();
+  }
+
+  async function disconnect() {
+    console.log("Disconnect");
+    await walletConnect.killSession();
+    // We need to reinitialize `WalletConnect` until this issue is fixed:
+    // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
+    walletConnect = new WalletConnect({
+      bridge: "https://bridge.walletconnect.org",
+      qrcodeModal: qrCodeModal,
+    });
+    signer.walletConnect = walletConnect;
+    stateStore.set({ status: Status.NotConnected });
   }
 
   async function initialize() {
@@ -172,17 +200,7 @@ export function build(): Wallet {
   return {
     subscribe: stateStore.subscribe,
     connect,
-    async disconnect() {
-      await walletConnect.killSession();
-      // We need to reinitialize `WalletConnect` until this issue is fixed:
-      // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
-      walletConnect = new WalletConnect({
-        bridge: "https://bridge.walletconnect.org",
-        qrcodeModal: QRCodeModal,
-      });
-      signer.walletConnect = walletConnect;
-      stateStore.set({ status: Status.NotConnected });
-    },
+    disconnect,
     signer,
   };
 }
@@ -214,3 +232,6 @@ class EthereumDebug {
     await this.provider.send("evm_increaseTime", [seconds]);
   }
 }
+
+// URI store for the URI used to build the connecting QRCode.
+export const uriStore = svelteStore.writable<string | undefined>(undefined);

@@ -2,14 +2,13 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { Copyable, Dai, TxButton } from "../../../DesignSystem/Component";
+  import { Dai, TxButton } from "../../../DesignSystem/Component";
   import { Button, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
   import * as modal from "../../../src/modal";
   import {
     amountStore,
-    displayAddress,
     topUpAmountValidationStore,
     store,
   } from "../../../src/funding/pool";

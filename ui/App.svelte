@@ -34,6 +34,7 @@
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
+  import ModalWalletQRCode from "./Modal/Wallet/QRCode.svelte";
   import ModalTopUp from "./Screen/Funding/Pool/TopUp.svelte";
   import ModalWithdraw from "./Screen/Funding/Pool/Withdraw.svelte";
   import ModalUpdateMonthlyContribution from "./Screen/Funding/Pool/UpdateMonthlyContribution.svelte";
@@ -58,6 +59,7 @@
     "/new-project": ModalNewProject,
     "/search": ModalSearch,
     "/shortcuts": ModalShortcuts,
+    "/wallet/qrcode": ModalWalletQRCode,
     "/pool/withdraw": ModalWithdraw,
     "/pool/top-up": ModalTopUp,
     "/pool/collect": ModalCollect,

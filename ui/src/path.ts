@@ -42,6 +42,7 @@ export const managePeers = (): string => "/manage-peers";
 export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
+export const walletQRCode = (): string => "/wallet/qrcode";
 export const poolTopUp = (): string => "/pool/top-up";
 export const poolWithdraw = (): string => "/pool/withdraw";
 export const collectFunds = (): string => "/pool/collect";
