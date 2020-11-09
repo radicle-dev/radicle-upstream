@@ -1,4 +1,4 @@
-import { DIALOG_SHOWOPENDIALOG, OPEN_PATH } from "../../../native/ipc";
+import { ipcStub } from "../../support";
 
 context("project checkout", () => {
   const withWorkspaceStub = callback => {
@@ -10,21 +10,9 @@ context("project checkout", () => {
       cy.exec(`rm -rf ${checkoutPath}`);
       cy.exec(`mkdir -p ${checkoutPath}`);
 
-      // Stub Electron native calls
-      cy.window().then(appWindow => {
-        appWindow.mockOpenPathCalled = false;
-
-        appWindow.electron = {
-          ipcRenderer: {
-            invoke: msg => {
-              if (msg === DIALOG_SHOWOPENDIALOG) {
-                return checkoutPath;
-              } else if (msg === OPEN_PATH) {
-                appWindow.mockOpenPathCalled = true;
-              }
-            },
-          },
-        };
+      ipcStub.getStubs().then(stubs => {
+        stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(checkoutPath);
+        stubs.IPC_OPEN_PATH.returns("");
       });
 
       callback(checkoutPath);
@@ -82,8 +70,8 @@ context("project checkout", () => {
           cy.wait(500);
 
           // Make sure mock is set up correctly.
-          cy.window().then(appWindow => {
-            expect(appWindow.mockOpenPathCalled).to.be.false;
+          ipcStub.getStubs().then(stubs => {
+            expect(stubs.IPC_OPEN_PATH.called).to.be.false;
           });
 
           // Perform the checkout.
@@ -101,8 +89,8 @@ context("project checkout", () => {
 
           // Make sure we do the electron call for opening the folder in the OS
           // file browser.
-          cy.window().then(appWindow => {
-            expect(appWindow.mockOpenPathCalled).to.be.true;
+          ipcStub.getStubs().then(stubs => {
+            expect(stubs.IPC_OPEN_PATH.called).to.be.true;
           });
 
           // Make sure the notification gets closed after we open the folder in
