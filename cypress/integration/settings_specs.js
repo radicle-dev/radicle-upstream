@@ -1,25 +1,8 @@
-import { GET_VERSION } from "../../native/ipc";
-
 context("settings", () => {
   beforeEach(() => {
     cy.resetProxyState();
     cy.onboardUser();
-
     cy.visit("public/index.html");
-    // stub native call and return the version number
-    cy.window().then(appWindow => {
-      appWindow.electron = {
-        ipcRenderer: {
-          invoke: msg => {
-            if (msg === GET_VERSION) {
-              return "v1.2.3";
-            }
-          },
-        },
-        isDev: true,
-        isExperimental: true,
-      };
-    });
     cy.pick("sidebar", "settings").click();
   });
 

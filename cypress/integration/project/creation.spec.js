@@ -1,4 +1,4 @@
-import { DIALOG_SHOWOPENDIALOG } from "../../../native/ipc";
+import { ipcStub } from "../../support";
 
 context("project creation", () => {
   const withEmptyDirectoryStub = callback => {
@@ -9,19 +9,8 @@ context("project creation", () => {
       cy.exec(`rm -rf ${emptyDirectoryPath}`);
       cy.exec(`mkdir -p ${emptyDirectoryPath}`);
 
-      // stub native call and return the directory path to the UI
-      cy.window().then(appWindow => {
-        appWindow.electron = {
-          ipcRenderer: {
-            invoke: msg => {
-              if (msg === DIALOG_SHOWOPENDIALOG) {
-                return emptyDirectoryPath;
-              }
-            },
-          },
-          isDev: true,
-          isExperimental: true,
-        };
+      ipcStub.getStubs().then(stubs => {
+        stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(emptyDirectoryPath);
       });
 
       callback();
@@ -41,18 +30,8 @@ context("project creation", () => {
       cy.exec(`git init ${noCommitsRepoPath}`);
 
       // stub native call and return the directory path to the UI
-      cy.window().then(appWindow => {
-        appWindow.electron = {
-          ipcRenderer: {
-            invoke: msg => {
-              if (msg === DIALOG_SHOWOPENDIALOG) {
-                return noCommitsRepoPath;
-              }
-            },
-          },
-          isDev: true,
-          isExperimental: true,
-        };
+      ipcStub.getStubs().then(stubs => {
+        stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(noCommitsRepoPath);
       });
 
       callback();
@@ -73,18 +52,8 @@ context("project creation", () => {
       );
 
       // stub native call and return the directory path to the UI
-      cy.window().then(appWindow => {
-        appWindow.electron = {
-          ipcRenderer: {
-            invoke: msg => {
-              if (msg === DIALOG_SHOWOPENDIALOG) {
-                return platinumPath;
-              }
-            },
-          },
-          isDev: true,
-          isExperimental: true,
-        };
+      ipcStub.getStubs().then(stubs => {
+        stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(platinumPath);
       });
 
       callback();
