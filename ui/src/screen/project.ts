@@ -1,4 +1,4 @@
-import { derived, Readable } from "svelte/store";
+import { derived, writable, Readable } from "svelte/store";
 
 import * as error from "../error";
 import * as project from "../project";
@@ -83,6 +83,36 @@ export const code: Readable<remote.Data<Code>> = derived(
   },
   { status: remote.Status.NotAsked } as remote.Data<Code>
 );
+
+const selectedCommitStore = writable<string | null>(null);
+export const commit: Readable<remote.Data<source.Commit>> = derived(
+  [project.project, selectedCommitStore],
+  ([currentProject, selectedCommit], set) => {
+    if (
+      currentProject.status === remote.Status.NotAsked ||
+      currentProject.status === remote.Status.Loading
+    ) {
+      set(currentProject);
+    }
+
+    if (!selectedCommit) {
+      return;
+    }
+
+    if (currentProject.status === remote.Status.Success) {
+      const { urn: projectUrn } = currentProject.data;
+
+      source
+        .fetchCommit(projectUrn, selectedCommit)
+        .then(commit => set({ status: remote.Status.Success, data: commit }));
+    }
+  },
+  { status: remote.Status.NotAsked } as remote.Data<source.Commit>
+);
+
+export const selectCommit = (hash: string): void => {
+  selectedCommitStore.set(hash);
+};
 
 export const commits: Readable<remote.Data<source.CommitsHistory>> = derived(
   [project.project, project.selectedPeer, project.selectedRevision],

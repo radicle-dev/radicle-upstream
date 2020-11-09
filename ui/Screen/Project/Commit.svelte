@@ -1,27 +1,26 @@
-<script>
+<script lang="typescript">
   import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as notification from "../../src/notification.ts";
-  import { commit as store, fetchCommit } from "../../src/source.ts";
-  import * as remote from "../../src/remote.ts";
+  import * as notification from "../../src/notification";
+  import { commit as store, selectCommit } from "../../src/screen/project";
+  import * as remote from "../../src/remote";
+  import * as urn from "../../src/urn";
 
   import { Icon } from "../../DesignSystem/Primitive";
   import { Header, Remote } from "../../DesignSystem/Component";
 
   import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
 
-  export let params = null;
-  const projectId = params.id;
-  const peerId = params.peerId;
-  const commitHash = params.hash;
+  export let params: { hash: string; urn: urn.Urn };
+  const { hash } = params;
 
   $: if ($store.status === remote.Status.Error) {
     console.log($store.error);
     notification.error("Could not fetch commit");
   }
 
-  fetchCommit({ projectId, peerId, sha1: commitHash });
+  selectCommit(hash);
 </script>
 
 <style>

@@ -13,7 +13,7 @@ export interface Person {
   name: string;
 }
 
-interface Commit {
+export interface Commit {
   sha1: string;
   branch: string;
   author: Person;
@@ -130,41 +130,16 @@ export interface Sha {
 export type Revision = Branch | Tag | Sha;
 
 // STATE
-const commitStore = remote.createStore<Commit>();
-export const commit = commitStore.readable;
-
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = (): void => objectPath.set(null);
 
-// EVENTS
-enum Kind {
-  FetchCommit = "FETCH_COMMIT",
-  FetchObject = "FETCH_OBJECT",
-}
-
-interface FetchCommit extends event.Event<Kind> {
-  kind: Kind.FetchCommit;
-  projectUrn: urn.Urn;
-  peerId: identity.PeerId;
-  sha1: string;
-}
-
-type Msg = FetchCommit;
-
-const update = (msg: Msg): void => {
-  switch (msg.kind) {
-    case Kind.FetchCommit:
-      commitStore.loading();
-
-      api
-        .get<Commit>(`source/commit/${msg.projectUrn}/${msg.sha1}`)
-        .then(commitStore.success)
-        .catch(commitStore.error);
-
-      break;
-  }
+export const fetchCommit = (
+  projectUrn: urn.Urn,
+  sha1: string
+): Promise<Commit> => {
+  return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
 
 export const fetchCommits = (
@@ -263,8 +238,6 @@ export const fetchRevisions = (
     return { branches, tags };
   });
 };
-
-export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);
