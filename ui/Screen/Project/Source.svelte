@@ -6,7 +6,6 @@
     CodeView,
     selectPath,
   } from "../../src/screen/project";
-  import type { Blob } from "../../src/source";
 
   import { EmptyState, Remote } from "../../DesignSystem/Component";
 
