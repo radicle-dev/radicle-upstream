@@ -1,9 +1,11 @@
+import * as commands from "../support/commands";
+
 context("settings", () => {
   beforeEach(() => {
-    cy.resetProxyState();
-    cy.onboardUser();
+    commands.resetProxyState();
+    commands.onboardUser();
     cy.visit("public/index.html");
-    cy.pick("sidebar", "settings").click();
+    commands.pick("sidebar", "settings").click();
   });
 
   context("theme", () => {
