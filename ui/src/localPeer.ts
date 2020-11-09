@@ -79,7 +79,7 @@ session.session.subscribe(sess => {
   ) {
     if (eventSource === null || eventSource.readyState === EventSource.CLOSED) {
       eventSource = new EventSource(
-        "http://localhost:8080/v1/notifications/local_peer_events",
+        "http://localhost:17246/v1/notifications/local_peer_events",
         { withCredentials: true }
       );
       eventSource.addEventListener("message", msg => {
