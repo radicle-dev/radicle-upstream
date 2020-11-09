@@ -1,23 +1,17 @@
 <script lang="typescript">
-  import { format } from "timeago.js";
+  import { createEventDispatcher } from "svelte";
 
-  import {
-    isMarkdown,
-    resetObjectPath,
-    resetObjectType,
-  } from "../../../src/source";
+  import { isMarkdown } from "../../../src/source";
   import type { Blob } from "../../../src/source";
-  import * as urn from "../../../src/urn";
 
   import { Icon, Markdown } from "../../Primitive";
   import EmptyState from "../EmptyState.svelte";
 
-  import CommitTeaser from "./CommitTeaser.svelte";
-
   export let blob: Blob;
   export let path: string;
   export let projectName: string;
-  export let projectUrn: urn.Urn;
+
+  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -47,11 +41,6 @@
 
   header .root-link:hover {
     text-decoration: underline;
-  }
-
-  header .commit-header {
-    height: 2.5rem;
-    margin: 0.5rem;
   }
 
   .line-numbers {
@@ -96,21 +85,9 @@
         <span
           class="typo-link root-link"
           data-cy="root-link"
-          on:click={() => {
-            resetObjectPath();
-            resetObjectType();
-          }}>{projectName}</span>
+          on:click={() => dispatch('root')}>{projectName}</span>
         <span>/ {path.split('/').join(' / ')}</span>
       </span>
-    </div>
-    <div class="commit-header">
-      <CommitTeaser
-        message={blob.info.lastCommit.summary}
-        {projectUrn}
-        sha={blob.info.lastCommit.sha1}
-        style="height: 100%"
-        timestamp={format(blob.info.lastCommit.committerTime * 1000)}
-        user={blob.info.lastCommit.author} />
     </div>
   </header>
   <div class="container">

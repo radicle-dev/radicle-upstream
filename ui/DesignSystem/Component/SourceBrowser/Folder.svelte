@@ -1,12 +1,8 @@
 <script lang="typescript">
   import type { PeerId } from "../../../src/identity";
   import * as path from "../../../src/path";
-  import {
-    tree,
-    objectPath,
-    objectType,
-    ObjectType,
-  } from "../../../src/source";
+  import { selectPath } from "../../../src/screen/project";
+  import { tree, objectPath, ObjectType } from "../../../src/source";
   import type { Revision } from "../../../src/source";
   import * as urn from "../../../src/urn";
 
@@ -94,8 +90,7 @@
             href={path.projectSource(projectUrn)}
             name={entry.info.name}
             on:click={() => {
-              objectPath.set(entry.path);
-              objectType.set(ObjectType.Blob);
+              selectPath(entry.path);
             }} />
         {/if}
       {/each}

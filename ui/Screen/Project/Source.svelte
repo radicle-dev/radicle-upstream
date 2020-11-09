@@ -1,7 +1,11 @@
 <script lang="typescript">
   import { format } from "timeago.js";
 
-  import { code as store, CodeView } from "../../src/screen/project";
+  import {
+    code as store,
+    CodeView,
+    selectPath,
+  } from "../../src/screen/project";
   import type { Blob } from "../../src/source";
 
   import { EmptyState, Remote } from "../../DesignSystem/Component";
@@ -10,6 +14,8 @@
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
+
+  const onRoot = () => selectPath("");
 </script>
 
 <style>
@@ -77,21 +83,11 @@
         </div>
 
         {#if view.kind === CodeView.File}
-          {#if view.file instanceof Blob}
-            <FileSource
-              blob={view.file}
-              path={view.path}
-              projectName={view.project.metadata.name}
-              projectUrn={view.project.urn} />
-          {:else if view.file === Error}
-            <EmptyState
-              emoji="👀"
-              headerText={view.file.message}
-              on:primaryAction={ev => console.log('primary action', ev)}
-              primaryActionText="Back to source"
-              style="height: 320px;"
-              text="This file doesn't exist on this branch." />
-          {/if}
+          <FileSource
+            blob={view.file}
+            path={view.path}
+            projectName={view.project.metadata.name}
+            on:root={onRoot} />
         {:else if view.kind === CodeView.Root}
           {#if view.readme}
             <Readme content={view.readme.content} path={view.readme.path} />
@@ -101,6 +97,14 @@
               emoji="👀"
               style="height: 320px;" />
           {/if}
+        {:else if view.kind === CodeView.Error}
+          <EmptyState
+            emoji="👀"
+            headerText={view.file.message}
+            on:primaryAction={ev => console.log('primary action', ev)}
+            primaryActionText="Back to source"
+            style="height: 320px;"
+            text="This file doesn't exist on this branch." />
         {/if}
       </div>
     </Remote>

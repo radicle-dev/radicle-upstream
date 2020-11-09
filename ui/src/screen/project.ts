@@ -8,31 +8,43 @@ import * as source from "../source";
 export enum CodeView {
   File = "FILE",
   Root = "ROOT",
+  Error = "ERROR",
 }
 
 interface Shared {
+  lastCommit: source.LastCommit;
   peer: project.User;
+  project: project.Project;
   revision: source.Revision;
+}
+
+interface Error {
+  kind: CodeView.Error;
+  error: error.Error;
 }
 
 interface File extends Shared {
   kind: CodeView.File;
-  file: source.Blob | error.Error;
-  project: project.Project;
+  file: source.Blob;
+  path: string;
 }
 
 interface Root extends Shared {
   kind: CodeView.Root;
-  lastCommit: source.LastCommit;
-  project: project.Project;
   readme: source.Readme | null;
 }
 
-type Code = File | Root;
+type Code = Error | File | Root;
 
+const selectedPathStore = writable<string | null>(null);
 export const code: Readable<remote.Data<Code>> = derived(
-  [project.project, project.selectedPeer, project.selectedRevision],
-  ([currentProject, selectedPeer, selectedRevision], set) => {
+  [
+    project.project,
+    project.selectedPeer,
+    project.selectedRevision,
+    selectedPathStore,
+  ],
+  ([currentProject, peer, revision, path], set) => {
     if (
       currentProject.status === remote.Status.NotAsked ||
       currentProject.status === remote.Status.Loading
@@ -40,7 +52,7 @@ export const code: Readable<remote.Data<Code>> = derived(
       set(currentProject);
     }
 
-    if (!selectedPeer || !selectedRevision) {
+    if (!peer || !revision) {
       return;
     }
 
@@ -48,41 +60,70 @@ export const code: Readable<remote.Data<Code>> = derived(
       const { urn: projectUrn } = currentProject.data;
       let lastCommit: source.LastCommit;
 
-      source
-        .fetchObject(
-          source.ObjectType.Tree,
-          projectUrn,
-          selectedPeer.peerId,
-          "",
-          selectedRevision
-        )
-        .then(tree => {
-          lastCommit = tree.info.lastCommit;
-
-          return source.readme(
+      if (!path || path === "") {
+        source
+          .fetchObject(
+            source.ObjectType.Tree,
             projectUrn,
-            selectedPeer.peerId,
-            selectedRevision,
-            tree as source.Tree
-          );
-        })
-        .then(readme => {
-          set({
-            status: remote.Status.Success,
-            data: {
-              kind: CodeView.Root,
-              lastCommit,
-              peer: selectedPeer,
-              project: currentProject.data,
-              readme: readme,
-              revision: selectedRevision,
-            },
+            peer.peerId,
+            "",
+            revision
+          )
+          .then(tree => {
+            lastCommit = tree.info.lastCommit;
+
+            return source.readme(
+              projectUrn,
+              peer.peerId,
+              revision,
+              tree as source.Tree
+            );
+          })
+          .then(readme => {
+            set({
+              status: remote.Status.Success,
+              data: {
+                kind: CodeView.Root,
+                lastCommit,
+                peer,
+                project: currentProject.data,
+                readme,
+                revision,
+              },
+            });
           });
-        });
+      } else {
+        source
+          .fetchObject(
+            source.ObjectType.Blob,
+            projectUrn,
+            peer.peerId,
+            path,
+            revision
+          )
+          .then(blob => {
+            set({
+              status: remote.Status.Success,
+              data: {
+                kind: CodeView.File,
+                lastCommit: blob.info.lastCommit,
+                file: blob as source.Blob,
+                path,
+                peer,
+                project: currentProject.data,
+                revision,
+              },
+            });
+          });
+      }
     }
   },
   { status: remote.Status.NotAsked } as remote.Data<Code>
 );
+
+export const selectPath = (path: string): void => {
+  selectedPathStore.set(path);
+};
 
 const selectedCommitStore = writable<string | null>(null);
 export const commit: Readable<remote.Data<source.Commit>> = derived(
