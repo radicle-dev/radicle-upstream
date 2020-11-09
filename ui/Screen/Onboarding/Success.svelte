@@ -45,7 +45,7 @@
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
       color: var(--color-foreground-level-6);">
-      This is a <span class="typo-text-bold">peer address</span>! It's unique to
+      This is your <span class="typo-text-bold">Device ID</span>! It's unique to
       you and this computer. You can find it at any time in your Settings page.
       You'll need to share it with others to collaborate.
     </p>

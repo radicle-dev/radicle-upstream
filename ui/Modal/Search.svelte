@@ -128,7 +128,7 @@
       hint="v"
       inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
       on:keydown={onKeydown}
-      placeholder="Have a project handle? Paste it here…"
+      placeholder="Paste a project's Radicle ID here…"
       showLeftItem
       validation={$urnValidation}>
       <div slot="left">
