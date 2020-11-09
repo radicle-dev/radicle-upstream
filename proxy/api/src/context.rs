@@ -2,6 +2,8 @@
 
 use std::sync::Arc;
 
+use data_encoding::HEXLOWER;
+use rand::Rng as _;
 use tokio::sync::RwLock;
 
 use coco::PeerControl;
@@ -54,7 +56,8 @@ impl Context {
         }
     }
 
-    /// Unseal the key store and restart the coco service with the obtained key.
+    /// Unseal the key store and restart the coco service with the obtained key. Returns the auth
+    /// token required to access the keystore.
     ///
     /// # Errors
     ///
@@ -64,17 +67,18 @@ impl Context {
     pub async fn unseal_keystore(
         &mut self,
         passphrase: coco::keystore::SecUtf8,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<String, crate::error::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.get(passphrase))
             .await
             .expect("Task to unseal key was aborted")?;
         self.service_handle().set_secret_key(key);
-        Ok(())
+        let auth_token = self.reset_auth_token().await;
+        Ok(auth_token)
     }
 
     /// Create a key and store it encrypted with the given passphrase. Then restart the coco
-    /// service to use the new key.
+    /// service to use the new key. Returns the auth token required to access the keystore.
     ///
     /// # Errors
     ///
@@ -82,13 +86,14 @@ impl Context {
     pub async fn create_key(
         &mut self,
         passphrase: coco::keystore::SecUtf8,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<String, crate::error::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.create_key(passphrase))
             .await
             .expect("Task to create key was aborted")?;
         self.service_handle().set_secret_key(key);
-        Ok(())
+        let auth_token = self.reset_auth_token().await;
+        Ok(auth_token)
     }
 
     fn keystore(&self) -> Arc<dyn coco::keystore::Keystore + Sync + Send> {
@@ -96,6 +101,21 @@ impl Context {
             Self::Sealed(sealed) => sealed.keystore.clone(),
             Self::Unsealed(unsealed) => unsealed.keystore.clone(),
         }
+    }
+
+    /// Generate a new authentication token and store it.
+    async fn reset_auth_token(&self) -> String {
+        let new_token_data = rand::thread_rng().gen::<[u8; 32]>();
+        let new_token = HEXLOWER.encode(&new_token_data);
+        let auth_token_lock = self.auth_token();
+        let mut auth_token = auth_token_lock.write().await;
+        *auth_token = Some(new_token.clone());
+        new_token
+    }
+
+    /// Returns `true` if `token` matches the stored authentication token.
+    pub async fn check_auth_token(&self, token: Option<String>) -> bool {
+        token == *self.auth_token().read().await
     }
 }
 
