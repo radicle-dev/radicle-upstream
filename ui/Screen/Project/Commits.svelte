@@ -1,16 +1,18 @@
-<script>
+<script lang="typescript">
   import { link } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as path from "../../src/path.ts";
-  import { commits as store, formatTime } from "../../src/source.ts";
+  import * as path from "../../src/path";
+  import { commits as store } from "../../src/screen/project";
+  import { formatTime } from "../../src/source";
+  import * as urn from "../../src/urn";
 
   import { Remote } from "../../DesignSystem/Component";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
 
-  export let params = null;
+  export let params: { urn: urn.Urn };
 
-  const projectId = params.id;
+  const projectUrn = params.urn;
 </script>
 
 <style>
@@ -60,16 +62,16 @@
         <ul>
           {#each history.commits as commit}
             <li class="commit">
-              <a href={path.projectCommit(projectId, commit.sha1)} use:link>
+              <a href={path.projectCommit(projectUrn, commit.sha1)} use:link>
                 <CommitTeaser
-                  {projectId}
-                  user={{ username: commit.author.name, avatar: commit.author.avatar }}
-                  commitMessage={commit.summary}
-                  commitSha={commit.sha1}
-                  timestamp={format(commit.committerTime * 1000)}
+                  message={commit.summary}
+                  {projectUrn}
+                  sha={commit.sha1}
                   style="background: none; --commit-message-color:
                   var(--color-foreground-level-6); --commit-sha-color:
-                  var(--color-foreground)" />
+                  var(--color-foreground)"
+                  timestamp={format(commit.committerTime * 1000)}
+                  user={commit.author} />
               </a>
             </li>
           {/each}

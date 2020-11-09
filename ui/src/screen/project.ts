@@ -83,3 +83,33 @@ export const code: Readable<remote.Data<Code>> = derived(
   },
   { status: remote.Status.NotAsked } as remote.Data<Code>
 );
+
+export const commits: Readable<remote.Data<source.CommitsHistory>> = derived(
+  [project.project, project.selectedPeer, project.selectedRevision],
+  ([currentProject, selectedPeer, selectedRevision], set) => {
+    if (
+      currentProject.status === remote.Status.NotAsked ||
+      currentProject.status === remote.Status.Loading
+    ) {
+      set(currentProject);
+    }
+
+    if (!selectedPeer || !selectedRevision) {
+      return;
+    }
+
+    if (currentProject.status === remote.Status.Success) {
+      // TODO(xla): Only branches are supported by the underlying endpoint, this should be extended to tags as well.
+      if (selectedRevision.type !== source.RevisionType.Branch) {
+        return;
+      }
+
+      const { urn: projectUrn } = currentProject.data;
+
+      source
+        .fetchCommits(projectUrn, selectedPeer.peerId, selectedRevision)
+        .then(commits => set({ status: remote.Status.Success, data: commits }));
+    }
+  },
+  { status: remote.Status.NotAsked } as remote.Data<source.CommitsHistory>
+);

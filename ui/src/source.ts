@@ -42,7 +42,7 @@ interface Commits {
   stats: Stats;
 }
 
-interface CommitsStore {
+export interface CommitsHistory {
   history: CommitHistory;
   stats: Stats;
 }
@@ -133,9 +133,6 @@ export type Revision = Branch | Tag | Sha;
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
 
-const commitsStore = remote.createStore<CommitsStore>();
-export const commits = commitsStore.readable;
-
 export const objectType = writable(ObjectType.Tree);
 export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
@@ -144,7 +141,6 @@ export const resetObjectPath = (): void => objectPath.set(null);
 // EVENTS
 enum Kind {
   FetchCommit = "FETCH_COMMIT",
-  FetchCommits = "FETCH_COMMITS",
   FetchObject = "FETCH_OBJECT",
 }
 
@@ -155,14 +151,7 @@ interface FetchCommit extends event.Event<Kind> {
   sha1: string;
 }
 
-interface FetchCommits extends event.Event<Kind> {
-  kind: Kind.FetchCommits;
-  branch: Branch;
-  peerId: identity.PeerId;
-  projectUrn: urn.Urn;
-}
-
-type Msg = FetchCommit | FetchCommits;
+type Msg = FetchCommit;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -173,28 +162,29 @@ const update = (msg: Msg): void => {
         .get<Commit>(`source/commit/${msg.projectUrn}/${msg.sha1}`)
         .then(commitStore.success)
         .catch(commitStore.error);
-      break;
-
-    case Kind.FetchCommits:
-      commitsStore.loading();
-
-      api
-        .get<Commits>(`source/commits/${msg.projectUrn}/`, {
-          query: {
-            branch: msg.branch.name,
-            peerId: msg.peerId,
-          },
-        })
-        .then(response => {
-          commitsStore.success({
-            stats: response.stats,
-            history: groupCommits(response.headers),
-          });
-        })
-        .catch(commitsStore.error);
 
       break;
   }
+};
+
+export const fetchCommits = (
+  projectUrn: urn.Urn,
+  peerId: identity.PeerId,
+  branch: Branch
+): Promise<CommitsHistory> => {
+  return api
+    .get<Commits>(`source/commits/${projectUrn}/`, {
+      query: {
+        branch: branch.name,
+        peerId: peerId,
+      },
+    })
+    .then(response => {
+      return {
+        stats: response.stats,
+        history: groupCommits(response.headers),
+      };
+    });
 };
 
 export const fetchObject = (
@@ -275,7 +265,6 @@ export const fetchRevisions = (
 };
 
 export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
-export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);

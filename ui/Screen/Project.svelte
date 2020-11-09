@@ -20,9 +20,9 @@
     selectedRevision,
   } from "../src/project";
   import type { Project, User } from "../src/project";
+  import { commits as commitsStore } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import * as screen from "../src/screen";
-  import { commits as commitsStore } from "../src/source";
   import type { Revision } from "../src/source";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
