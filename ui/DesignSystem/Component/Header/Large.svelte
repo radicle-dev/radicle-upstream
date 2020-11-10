@@ -125,8 +125,7 @@
         </h1>
         {#if urn}
           <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
-        {/if}
-        {#if peerId}
+        {:else if peerId}
           <StyledCopyable value={peerId} />
         {/if}
         {#if description.length > 0}
