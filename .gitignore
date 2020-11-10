@@ -3,6 +3,7 @@ yarn-error.log
 dist
 .DS_Store
 native/main.comp.js
+native/main.comp.js.map
 public/bundle.*
 public/twemoji
 cypress/videos
@@ -11,6 +12,3 @@ cypress/fixtures/example.json
 cypress/workspace
 proxy/**/target
 proxy/**/*.rs.bk
-schema.gql
-ui/src/*.js
-ui/**/*.js.map

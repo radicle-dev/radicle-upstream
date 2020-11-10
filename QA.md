@@ -52,8 +52,6 @@
     - Design Sytem Guide is not listed in the shortcuts modal <kbd>?</kbd> and
       the respective global hotkey is disabled <kbd>⌘</kbd>+<kbd>d</kbd>
     - Tags are not visible in the revision selector on the Project Source screen
-    - There is no "Session management" section and no "Clear session" button on
-      the Settings screen
 - [ ] App icon is shown correctly
   - [ ] macOS: dock, <kbd>⌘</kbd> + <kbd>tab</kbd> task switcher, mounted dmg,
         app icon, "About radicle-upstream" window

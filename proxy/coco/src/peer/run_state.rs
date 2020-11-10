@@ -28,7 +28,7 @@ use crate::{
 };
 
 /// Default time to wait between announcement subroutine runs.
-const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(60);
+const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(1);
 
 /// Default number of peers a full sync is attempting with up on startup.
 /// TODO(xla): Revise number.
@@ -248,7 +248,7 @@ pub enum Status {
     },
 }
 
-/// Set of knobs to change the behaviour of the [`RunState`].
+/// Set of knobs to change the behaviour of the `RunState`.
 #[derive(Default)]
 pub struct Config {
     /// Set of knobs to alter announce behaviour.

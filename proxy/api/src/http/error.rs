@@ -108,17 +108,35 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         create::validation::Error::AlreadExists(_) => {
                             (StatusCode::CONFLICT, "PATH_EXISTS", err.to_string())
                         },
+                        create::validation::Error::EmptyExistingPath(_) => {
+                            (StatusCode::BAD_REQUEST, "EMPTY_PATH", err.to_string())
+                        },
+                        create::validation::Error::Git(_) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "GIT_ERROR",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::MissingDefaultBranch { .. } => (
+                            StatusCode::BAD_REQUEST,
+                            "MISSING_DEFAULT_BRANCH",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::MissingUrl => {
+                            (StatusCode::BAD_REQUEST, "MISSING_URL", err.to_string())
+                        },
                         create::validation::Error::PathDoesNotExist(_) => (
                             StatusCode::NOT_FOUND,
                             "PATH_DOES_NOT_EXIST",
                             err.to_string(),
                         ),
-
                         create::validation::Error::NotARepo(_) => {
                             (StatusCode::BAD_REQUEST, "NOT_A_REPO", err.to_string())
                         },
                         create::validation::Error::Io(err) => {
                             (StatusCode::BAD_REQUEST, "IO_ERROR", err.to_string())
+                        },
+                        create::validation::Error::UrlMismatch { .. } => {
+                            (StatusCode::BAD_REQUEST, "URL_MISMATCH", err.to_string())
                         },
                     },
                     coco::state::Error::Storage(state::error::storage::Error::AlreadyExists(
@@ -162,6 +180,27 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "Incorrect input".to_string(),
                         )
                     },
+                },
+                error::Error::Keystore(keystore_err) => {
+                    if keystore_err.is_invalid_passphrase() {
+                        (
+                            StatusCode::FORBIDDEN,
+                            "INCORRECT_PASSPHRASE",
+                            "incorrect passphrase".to_string(),
+                        )
+                    } else if keystore_err.is_key_exists() {
+                        (
+                            StatusCode::CONFLICT,
+                            "KEY_EXISTS",
+                            "A key already exists".to_string(),
+                        )
+                    } else {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "INTERNAL_SERVER_ERROR",
+                            err.to_string(),
+                        )
+                    }
                 },
                 error::Error::KeystoreSealed
                 | error::Error::WrongPassphrase

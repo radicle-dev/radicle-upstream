@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["ui/**/*"],
-  "exclude": ["native/*", "node_modules/*", "public/*"],
+  "include": ["ui/**/*", "native/**/*.ts"],
+  "exclude": ["native/main.comp.js", "node_modules/*", "public/*"],
   "compilerOptions": {
     /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
     "target": "ES2018",
@@ -32,7 +32,7 @@
     /* Do not emit comments to output. */
     // "removeComments": true,
     /* Do not emit outputs. */
-    // "noEmit": true,
+    "noEmit": true,
     /* Import emit helpers from 'tslib'. */
     // "importHelpers": true,
     /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */

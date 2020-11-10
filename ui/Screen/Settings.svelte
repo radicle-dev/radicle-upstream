@@ -2,7 +2,6 @@
   import { getContext, onMount } from "svelte";
 
   import {
-    clear,
     settings,
     seedValidation,
     addSeed,
@@ -12,7 +11,7 @@
   import { themeOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
-  import { getVersion, isDev } from "../../native/ipc.js";
+  import { getVersion } from "../../native/ipc";
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
@@ -255,31 +254,6 @@
         </div>
       </div>
     </section>
-
-    {#if isDev()}
-      <section>
-        <header>
-          <h3>Session management</h3>
-        </header>
-        <div class="section-item">
-          <div class="info">
-            <p class="typo-text-bold">Clears all authentication data</p>
-            <p style="color: var(--color-foreground-level-6);">
-              This is similar to how logout works. You will have to create a new
-              identity or restore your existing identity.
-            </p>
-          </div>
-          <div class="action">
-            <Button
-              dataCy="clear-session-button"
-              variant="outline"
-              on:click={clear}>
-              Clear session
-            </Button>
-          </div>
-        </div>
-      </section>
-    {/if}
 
     <section>
       <header>

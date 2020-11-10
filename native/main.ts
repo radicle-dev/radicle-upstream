@@ -6,9 +6,9 @@ import {
   clipboard,
   shell,
 } from "electron";
-const { execFile } = require("child_process");
+import { execFile, ChildProcess } from "child_process";
 import path from "path";
-import * as ipc from "./ipc.js";
+import * as ipc from "./ipc";
 
 const isDev = process.env.NODE_ENV === "development";
 const proxyPath = path.join(__dirname, "../../proxy");
@@ -20,8 +20,8 @@ app.allowRendererProcessReuse = true;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
-let proxyChildProcess;
+let mainWindow: BrowserWindow | null = null;
+let proxyChildProcess: ChildProcess | undefined;
 
 const startApp = () => {
   startProxy();
@@ -29,6 +29,9 @@ const startApp = () => {
 };
 
 ipcMain.handle(ipc.DIALOG_SHOWOPENDIALOG, async () => {
+  if (mainWindow === null) {
+    return;
+  }
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
   });
@@ -53,7 +56,7 @@ ipcMain.handle(ipc.GET_VERSION, () => {
 });
 
 const createWindow = () => {
-  mainWindow = new BrowserWindow({
+  const window = new BrowserWindow({
     width: 1200,
     height: 680,
     icon: path.join(__dirname, "../public/icon.png"),
@@ -64,44 +67,57 @@ const createWindow = () => {
     },
   });
 
-  mainWindow.once("ready-to-show", () => {
-    mainWindow.maximize();
-    mainWindow.show();
+  window.once("ready-to-show", () => {
+    window.maximize();
+    window.show();
   });
 
-  let watcher;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let watcher: any | undefined;
   if (isDev) {
-    watcher = require("chokidar").watch(path.join(__dirname, "../public/**"), {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const chokidar = require("chokidar");
+    const newWatcher = chokidar.watch(path.join(__dirname, "../public/**"), {
       ignoreInitial: true,
     });
 
-    watcher.on("change", _p => {
-      mainWindow.reload();
+    newWatcher.on("change", () => {
+      window.reload();
     });
   }
 
-  mainWindow.webContents.on("will-navigate", (event, url) => {
+  window.webContents.on("will-navigate", (event, url) => {
     event.preventDefault();
-    if (
-      url.toLowerCase().startsWith("irc://") ||
-      url.toLowerCase().startsWith("http://") ||
-      url.toLowerCase().startsWith("https://")
-    ) {
-      console.log(`Opening external URL: ${url}`);
-      shell.openExternal(url);
-    } else {
-      console.warn(`User tried opening URL with invalid URI scheme: ${url}`);
-    }
+    openExternalLink(url);
   });
 
-  mainWindow.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
-  mainWindow.on("closed", () => {
+  window.webContents.on("new-window", (event, url) => {
+    event.preventDefault();
+    openExternalLink(url);
+  });
+
+  window.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
+  window.on("closed", () => {
     if (watcher) {
       watcher.close();
     }
-
     mainWindow = null;
   });
+
+  mainWindow = window;
+};
+
+const openExternalLink = (url: string): void => {
+  if (
+    url.toLowerCase().startsWith("irc://") ||
+    url.toLowerCase().startsWith("http://") ||
+    url.toLowerCase().startsWith("https://")
+  ) {
+    console.log(`Opening external URL: ${url}`);
+    shell.openExternal(url);
+  } else {
+    console.warn(`User tried opening URL with invalid URI scheme: ${url}`);
+  }
 };
 
 const startProxy = () => {

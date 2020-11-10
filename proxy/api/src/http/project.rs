@@ -13,6 +13,7 @@ mod request;
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     checkout_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
+        .or(failed_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
         .or(owner_contributed_filter(ctx.clone()))
         .or(owner_tracked_filter(ctx.clone()))
@@ -46,6 +47,17 @@ fn create_filter(
         .and(http::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create)
+}
+
+/// `GET /failed`
+fn failed_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("failed")
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
+        .and(path::end())
+        .and_then(handler::list_failed)
 }
 
 /// `GET /<urn>`
@@ -157,7 +169,7 @@ mod handler {
     pub async fn create(
         ctx: context::Unsealed,
         owner: coco::user::User,
-        input: coco::project::Create<coco::project::Repo>,
+        input: coco::project::Create,
     ) -> Result<impl Reply, Rejection> {
         let meta = ctx
             .state
@@ -189,6 +201,13 @@ mod handler {
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(ctx: context::Unsealed, urn: coco::Urn) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
+    }
+
+    /// List all failed projects.
+    pub async fn list_failed(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+        let projects = project::Projects::list(&ctx.state).await?;
+
+        Ok(reply::json(&projects.failures))
     }
 
     /// List all projects the current user has contributed to.
