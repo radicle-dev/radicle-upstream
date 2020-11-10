@@ -11,7 +11,7 @@ import { execFile, ChildProcess } from "child_process";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
 
 const isDev = process.env.NODE_ENV === "development";
-const proxyPath = path.join(__dirname, "../../proxy");
+const proxyPath = path.join(__dirname, "../proxy/target/debug/api");
 
 // The default value of app.allowRendererProcessReuse is deprecated, it is
 // currently "false".  It will change to be "true" in Electron 9.  For more

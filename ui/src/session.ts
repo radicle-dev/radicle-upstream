@@ -35,7 +35,9 @@ export const session = sessionStore.readable;
 
 sessionStore.subscribe(data => {
   if (data.status === remote.Status.Error) {
-    error.setFatal();
+    error.setFatal({
+      kind: error.FatalErrorKind.SESSION,
+    });
   }
 });
 
