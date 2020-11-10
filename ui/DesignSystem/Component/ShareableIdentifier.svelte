@@ -22,7 +22,7 @@
     showIcon={false}
     styleContent={false}
     copyContent={urn}
-    notificationText="Handle copied to clipboard">
+    notificationText="Radicle ID copied to clipboard">
     <Icon.At style="margin-right: 0.5rem;" />
     <p class="typo-overflow-ellipsis">{hash}</p>
   </Copyable>

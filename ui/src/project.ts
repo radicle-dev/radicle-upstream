@@ -1,4 +1,4 @@
-import { derived, get, writable, Readable } from "svelte/store";
+import { get, writable } from "svelte/store";
 
 import * as api from "./api";
 import * as config from "./config";

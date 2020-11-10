@@ -446,7 +446,7 @@ export const untrackPeer = (
     .catch(peersStore.error);
 };
 
-const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
+export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
 
 const checkPeerUniqueness = (peer: string): Promise<boolean> => {
   return Promise.resolve(

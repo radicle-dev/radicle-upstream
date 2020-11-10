@@ -91,7 +91,7 @@
           dataCy="peer-input"
           hint="v"
           bind:value={newPeer}
-          placeholder="Paste a remote address here"
+          placeholder="Paste a Device ID here…"
           validation={$peerValidation}
           style="width: 100%; margin-right: .5rem;" />
         <Button
@@ -100,7 +100,7 @@
           variant="secondary"
           disabled={!newPeer}
           on:click={() => submitPeer(project.id)}>
-          Follow
+          Add
         </Button>
       </div>
     </form>

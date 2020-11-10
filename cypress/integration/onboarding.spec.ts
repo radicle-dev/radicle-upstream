@@ -1,12 +1,11 @@
 import * as commands from "../support/commands";
+import { VALID_PEER_MATCH } from "../../ui/src/screen/project";
 
 context("onboarding", () => {
   const validUser = {
     handle: "rafalca",
     passphrase: "curled",
   };
-
-  const radIdRegex = /hwd[a-z0-9]{56}/;
 
   beforeEach(() => {
     commands.resetProxyState();
@@ -43,7 +42,7 @@ context("onboarding", () => {
       cy.focused().type("{enter}");
 
       // Success screen.
-      commands.pick("urn").contains(radIdRegex).should("exist");
+      commands.pick("peerId").contains(VALID_PEER_MATCH).should("exist");
 
       // Land on profile screen.
       cy.get("body").type("{enter}");
@@ -64,7 +63,7 @@ context("onboarding", () => {
       commands.pick("set-passphrase-button").click();
 
       // Success screen.
-      commands.pick("urn").contains(radIdRegex).should("exist");
+      commands.pick("peerId").contains(VALID_PEER_MATCH).should("exist");
 
       // Land on profile screen.
       commands.pick("go-to-profile-button").click();
