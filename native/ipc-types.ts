@@ -9,7 +9,7 @@ export interface ProxyError {
   stderr: string;
 }
 
-// Message kinds send from the renderer to the main process.
+// Message kinds sent from the renderer to the main process.
 export enum RendererMessage {
   CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT",
   DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG",
