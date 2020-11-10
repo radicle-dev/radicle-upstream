@@ -9,7 +9,7 @@ import { provider } from "./wallet";
 export const store = persistentStore<Tx[]>("radicle-transactions-store", []);
 
 // Periodically refresh the status of all stored transactions.
-const POLL_INTERVAL_MILLIS = 10000;
+const POLL_INTERVAL_MILLIS = 1000;
 setInterval(() => {
   updateStatuses();
 }, POLL_INTERVAL_MILLIS);
