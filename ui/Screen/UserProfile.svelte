@@ -37,7 +37,7 @@
   <Remote {store} let:data={identity}>
     <Header.Large
       name={identity.metadata.handle}
-      urn={identity.urn}
+      peerId={identity.peerId}
       avatarFallback={identity.avatarFallback}>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems} />

@@ -6,7 +6,7 @@ radicle code collaboration protocol.
 ### Run
 
 To start up the binary you can run: `cargo run`.
-After that the API is served on `http://127.0.0.1:8080/docs`.
+After that the API is served on `http://127.0.0.1:17246/docs`.
 
 
 ### Testing

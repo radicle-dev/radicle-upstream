@@ -87,8 +87,8 @@
       what should we call you?
     </h1>
     <p>
-      You’ll need a display name to interact on Radicle. This isn’t unique
-      across the network, but it helps others recognize you a little easier.
+      You’ll need a display name to use Radicle. This isn’t unique across the
+      network, but it will help others recognize you more easily.
     </p>
     <Input.Text
       autofocus

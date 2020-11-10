@@ -132,18 +132,18 @@ fn with_context(ctx: context::Context) -> BoxedFilter<(context::Context,)> {
 fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unsealed,)> {
     with_context(ctx)
         .and(warp::filters::cookie::optional("auth-token"))
-        .and_then(|ctx, token: Option<String>| async move {
+        .and_then(|ctx: context::Context, token: Option<String>| async move {
+            if !ctx.check_auth_token(token).await {
+                return Err(Rejection::from(crate::error::Error::InvalidAuthCookie));
+            }
+
             let unsealed_ctx = match ctx {
                 context::Context::Sealed(_) => {
                     return Err(Rejection::from(crate::error::Error::KeystoreSealed))
                 },
                 context::Context::Unsealed(unsealed) => unsealed,
             };
-            let auth_token = unsealed_ctx.auth_token.read().await;
-            if token != *auth_token {
-                return Err(Rejection::from(crate::error::Error::InvalidAuthCookie));
-            }
-            drop(auth_token);
+
             Ok(unsealed_ctx)
         })
         .boxed()

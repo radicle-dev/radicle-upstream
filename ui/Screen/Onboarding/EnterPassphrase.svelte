@@ -127,11 +127,11 @@
     <h1>Next, you'll need a passphrase.</h1>
 
     <p>
-      This is used to protect your account on this computer. Think of it like a
-      computer’s password. <span class="typo-text-bold">
-        You can’t recover your account with it,
-      </span> but it prevents someone from accessing your account if this computer
-      is stolen or hacked. Be sure to put this in a safe place!
+      This decrypts your key so you can access and publish to the Radicle
+      network. Be sure to store this in a safe place — <span
+        class="typo-text-bold">
+        there is no way to recover lost keys yet!
+      </span>
     </p>
 
     <Input.Password
