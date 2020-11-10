@@ -3,7 +3,8 @@
     "target": "es2018",
     "lib": ["dom", "es6", "es7"],
     "types": ["cypress"],
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
   },
   "include": ["**/*.ts"]
 }
