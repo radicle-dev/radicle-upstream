@@ -16,8 +16,6 @@
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
 
   const onRoot = () => selectPath("");
-
-  $: console.log($store);
 </script>
 
 <style>

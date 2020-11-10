@@ -51,6 +51,13 @@ export const peerSelection: Readable<remote.Data<{
   default: project.User;
   peers: project.User[];
 }>> = derived(peersStore, store => {
+  if (
+    store.status === remote.Status.NotAsked ||
+    store.status === remote.Status.Loading
+  ) {
+    return store;
+  }
+
   if (store.status === remote.Status.Success) {
     const peers = store.data
       .filter(
@@ -75,6 +82,13 @@ const selectedPeerStore = writable<project.User | null>(null);
 export const selectedPeer = derived(
   [selectedPeerStore, peerSelection],
   ([selected, selection]) => {
+    if (
+      selection.status === remote.Status.NotAsked ||
+      selection.status === remote.Status.Loading
+    ) {
+      return null;
+    }
+
     if (selected) {
       return selected;
     }
@@ -335,6 +349,9 @@ export const fetch = (projectUrn: urn.Urn): void => {
   projectStore.loading();
   peersStore.reset();
   revisionsStore.reset();
+  selectedPathStore.set(null);
+  selectedPeerStore.set(null);
+  selectedRevisionStore.set(null);
 
   project
     .fetch(projectUrn)
@@ -363,7 +380,6 @@ const fetchRevisions = (projectUrn: urn.Urn): void => {
   const currentPeer = get(selectedPeer);
 
   if (!currentPeer) {
-    console.log("Can't fetch revisions without selected peer");
     return;
   }
 

@@ -252,7 +252,7 @@ export const tree = (
 
   api
     .get<Tree>(`source/tree/${projectUrn}`, {
-      query: { peerId, revision, prefix },
+      query: { peerId, revision: { peerId, ...revision }, prefix },
     })
     .then(treeStore.success)
     .catch(treeStore.error);
@@ -268,7 +268,7 @@ const blob = (
   highlight: boolean
 ): Promise<Blob> =>
   api.get<Blob>(`source/blob/${projectId}`, {
-    query: { revision, peerId, path, highlight },
+    query: { highlight, peerId, path, revision: { peerId, ...revision } },
   });
 
 const findReadme = (tree: Tree): string | null => {
