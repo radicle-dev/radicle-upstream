@@ -501,7 +501,7 @@ export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
 const checkPeerUniqueness = async (peer: string): Promise<boolean> => {
   const thisPeer = get(peersStore);
   if (thisPeer.status === "SUCCESS") {
-    return thisPeer.data.map((peer: Peer) => peer.peerId).includes(peer);
+    return !thisPeer.data.map((peer: Peer) => peer.peerId).includes(peer);
   } else {
     return true;
   }
