@@ -7,20 +7,19 @@
   import * as menu from "../src/menu";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
+  import { checkout, isMaintainer } from "../src/project";
+  import type { Project, User } from "../src/project";
   import {
-    checkout,
+    commits as commitsStore,
+    current as store,
     fetch,
-    isMaintainer,
-    project as store,
     peerSelection,
     revisionSelection,
     selectPeer,
     selectedPeer,
     selectRevision,
     selectedRevision,
-  } from "../src/project";
-  import type { Project, User } from "../src/project";
-  import { commits as commitsStore } from "../src/screen/project";
+  } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import * as screen from "../src/screen";
   import type { Revision } from "../src/source";
@@ -148,7 +147,7 @@
   };
 
   // Initialise the screen by fetching the project and associated data.
-  fetch({ urn });
+  fetch(urn);
 </script>
 
 <style>

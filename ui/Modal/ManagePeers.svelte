@@ -1,16 +1,15 @@
 <script lang="ts">
   import type { PeerId } from "../src/identity";
+  import { PeerType, Role } from "../src/project";
+  import type { User } from "../src/project";
   import {
     addPeer,
+    current as store,
     pendingPeers,
     peerSelection,
-    PeerType,
     peerValidation,
-    project as store,
     removePeer,
-    Role,
-  } from "../src/project";
-  import type { User } from "../src/project";
+  } from "../src/screen/project";
   import type { Urn } from "../src/urn";
 
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
