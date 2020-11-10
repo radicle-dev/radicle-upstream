@@ -15,7 +15,10 @@ use tokio::{
 };
 
 use librad::{
-    net::{peer::Gossip, protocol::ProtocolEvent},
+    net::{
+        peer::{Gossip, PeerEvent},
+        protocol::ProtocolEvent,
+    },
     peer::PeerId,
     uri::{RadUrl, RadUrn},
 };
@@ -63,6 +66,7 @@ impl Subroutines {
         state: State,
         store: kv::Store,
         run_config: RunConfig,
+        peer_events: BoxStream<'static, PeerEvent>,
         protocol_events: BoxStream<'static, ProtocolEvent<Gossip>>,
         subscriber: broadcast::Sender<Event>,
         control_receiver: mpsc::Receiver<control::Request>,
@@ -78,6 +82,7 @@ impl Subroutines {
 
         let inputs = {
             let mut coalesced = SelectAll::new();
+            coalesced.push(peer_events.map(Input::Peer).boxed());
             coalesced.push(protocol_events.map(Input::Protocol).boxed());
 
             if let Some(timer) = announce_timer {

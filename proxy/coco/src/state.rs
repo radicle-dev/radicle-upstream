@@ -758,7 +758,7 @@ impl State {
             tracked
                 .into_iter()
                 .filter_map(|peer| project::Peer::replicated_remote(peer).map(|(p, u)| (u, p))),
-        );
+        )?;
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);
         include.save()?;

@@ -10,8 +10,8 @@ use tokio::sync::oneshot;
 
 use librad::{
     net::{
-        gossip::{Has, Info},
-        peer::Gossip,
+        gossip::{Has, Info, PutResult},
+        peer::{FetchInfo, Gossip, PeerEvent},
         protocol::ProtocolEvent,
     },
     peer::PeerId,
@@ -93,6 +93,8 @@ impl From<RequestCommand> for Command {
 pub enum Event {
     /// Announcement subroutine completed and emitted the enclosed updates.
     Announced(announcement::Updates),
+    /// An event from the underlying peer API.
+    Peer(PeerEvent),
     /// An event from the underlying coco network stack.
     /// FIXME(xla): Align variant naming to indicate observed occurrences.
     Protocol(ProtocolEvent<Gossip>),
@@ -118,6 +120,7 @@ impl MaybeFrom<&Input> for Event {
             Input::Announce(AnnounceInput::Succeeded(updates)) => {
                 Some(Self::Announced(updates.clone()))
             },
+            Input::Peer(event) => Some(Self::Peer(event.clone())),
             Input::PeerSync(SyncInput::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(event) => Some(Self::Protocol(event.clone())),
             Input::Request(RequestInput::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
@@ -138,6 +141,8 @@ pub enum Input {
     Announce(AnnounceInput),
     /// Peer state change events.
     Control(ControlInput),
+    /// Inputs from the underlying peer API.
+    Peer(PeerEvent),
     /// Inputs from the underlying coco protocol.
     Protocol(ProtocolEvent<Gossip>),
     /// Lifecycle events during peer sync operations.
@@ -379,6 +384,7 @@ impl RunState {
         let cmds = match input {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
             Input::Control(control_input) => self.handle_control(control_input),
+            Input::Peer(peer_event) => Self::handle_peer_event(peer_event),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
             Input::PeerSync(peer_sync_input) => self.handle_peer_sync(&peer_sync_input),
             Input::Request(request_input) => self.handle_request(request_input),
@@ -438,6 +444,16 @@ impl RunState {
             ControlInput::Status(sender) => vec![Command::Control(ControlCommand::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
+        }
+    }
+
+    fn handle_peer_event(event: PeerEvent) -> Vec<Command> {
+        match event {
+            PeerEvent::GossipFetch(FetchInfo {
+                result: PutResult::Applied(Gossip { urn, .. }),
+                ..
+            }) => vec![Command::Include(urn)],
+            PeerEvent::GossipFetch(_) => vec![],
         }
     }
 
@@ -590,9 +606,6 @@ impl RunState {
                     },
                     Ok(_) => vec![],
                 }
-            },
-            (_, ProtocolEvent::Gossip(Info::Applied(Gossip { urn, .. }))) => {
-                vec![Command::Include(urn)]
             },
             _ => vec![],
         }
