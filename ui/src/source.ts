@@ -328,7 +328,7 @@ export const fetchReadme = (
 ): Promise<Readme | null> => {
   const path = findReadme(tree);
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     if (!path) {
       return resolve(null);
     }
@@ -336,7 +336,7 @@ export const fetchReadme = (
     blob(projectUrn, peerId, revision, path, false)
       .then(blob => (blob && !blob.binary ? blob : null))
       .then(resolve)
-      .catch(reject);
+      .catch(() => resolve(null));
   });
 };
 

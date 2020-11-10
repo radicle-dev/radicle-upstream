@@ -164,6 +164,7 @@ export const selectedRevision = derived(
 );
 
 const selectedPathStore = writable<string | null>(null);
+
 export const params: Readable<remote.Data<Params>> = derived(
   [projectStore, selectedPeer, selectedRevision, selectedPathStore],
   ([remoteProject, peer, revision, selectedPath], set) => {
@@ -214,6 +215,10 @@ export const params: Readable<remote.Data<Params>> = derived(
         },
       });
     }
+
+    return (): void => {
+      set({ status: remote.Status.NotAsked });
+    };
   },
   { status: remote.Status.NotAsked } as remote.Data<Params>
 );
@@ -285,6 +290,10 @@ export const code: Readable<remote.Data<Code>> = derived(
           });
       }
     }
+
+    return (): void => {
+      set({ status: remote.Status.NotAsked });
+    };
   },
   { status: remote.Status.NotAsked } as remote.Data<Code>
 );
@@ -316,7 +325,7 @@ export const commit: Readable<remote.Data<source.Commit>> = derived(
 );
 
 export const commits: Readable<remote.Data<source.CommitsHistory>> = derived(
-  [projectStore, selectedPeerStore, selectedRevisionStore],
+  [projectStore, selectedPeer, selectedRevision],
   ([remoteProject, peer, revision], set) => {
     if (
       remoteProject.status === remote.Status.NotAsked ||
@@ -402,6 +411,7 @@ export const selectPeer = (peer: project.User): void => {
 
   if (peer.peerId !== current.peerId) {
     const currentProject = get(projectStore);
+    selectedPathStore.set(null);
     selectedPeerStore.set(peer);
     fetchRevisions(currentProject.data.urn);
   }
