@@ -1,4 +1,4 @@
-// Messages send from the main process to the renderer
+// Messages sent from the main process to the renderer
 export type MainMessage = { type: "ProxyError"; data: ProxyError };
 
 // Payload for the ProxyError `MainMessage`.
