@@ -3,12 +3,12 @@ import { derived, get, writable, Readable } from "svelte/store";
 import * as api from "./api";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 import * as event from "./event";
-import * as identity from "./identity";
+import type * as identity from "./identity";
 import * as remote from "./remote";
 import { getLocalState, LocalState } from "./source";
-import * as urn from "./urn";
+import type * as urn from "./urn";
 import * as validation from "./validation";
-import * as waitingRoom from "./waitingRoom";
+import type * as waitingRoom from "./waitingRoom";
 
 // TYPES.
 export interface Metadata {
@@ -416,10 +416,9 @@ const validateExistingRepository = (path: string): Promise<boolean> => {
   });
 };
 
-const validateNewRepository = (path: string): Promise<boolean> => {
-  return fetchBranches(path).then(() =>
-    get(localStateError).match("could not find repository")
-  );
+const validateNewRepository = async (path: string): Promise<boolean> => {
+  await fetchBranches(path);
+  return !!get(localStateError).match("could not find repository");
 };
 
 const projectNameConstraints = {
@@ -499,14 +498,13 @@ export const repositoryPathValidationStore = (
 
 export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
 
-const checkPeerUniqueness = (peer: string): Promise<boolean> => {
-  return Promise.resolve(
-    !get(peersStore)
-      .data.map((peer: Peer) => {
-        return peer.peerId;
-      })
-      .includes(peer)
-  );
+const checkPeerUniqueness = async (peer: string): Promise<boolean> => {
+  const thisPeer = get(peersStore);
+  if (thisPeer.status === "SUCCESS") {
+    return thisPeer.data.map((peer: Peer) => peer.peerId).includes(peer);
+  } else {
+    return true;
+  }
 };
 
 export const peerValidation = validation.createValidationStore(

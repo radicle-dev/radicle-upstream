@@ -1,9 +1,9 @@
 import * as api from "./api";
 import * as event from "./event";
-import * as project from "./project";
+import type * as project from "./project";
 import * as remote from "./remote";
 import * as validation from "./validation";
-import * as waitingRoom from "./waitingRoom";
+import type * as waitingRoom from "./waitingRoom";
 
 // STATE
 const projectSearchStore = remote.createStore<project.Project>();

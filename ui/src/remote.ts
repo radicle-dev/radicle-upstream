@@ -1,6 +1,6 @@
 import { derived, get, writable, Readable } from "svelte/store";
 
-import { Error } from "./error";
+import type { Error } from "./error";
 
 export enum Status {
   NotAsked = "NOT_ASKED",

@@ -1,9 +1,9 @@
 import { Readable, derived, get } from "svelte/store";
 
 import * as api from "./api";
-import * as error from "./error";
+import type * as error from "./error";
 import * as event from "./event";
-import * as identity from "./identity";
+import type * as identity from "./identity";
 import * as notification from "./notification";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
@@ -191,7 +191,7 @@ export const addSeed = async (seed: string): Promise<boolean> => {
   // running async remote validations in in the background. If we remove the
   // async then the seed input form will have to be submitted twice to take any
   // effect.
-  await seedValidation.validate(seed);
+  seedValidation.validate(seed);
   if (get(seedValidation).status !== ValidationStatus.Success) return false;
 
   updateCoCo({ seeds: [...get(settings).coco.seeds, seed] });

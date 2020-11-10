@@ -124,7 +124,7 @@ export const createValidationStore = (
 
             update(store => {
               // If the input has changed since this request was fired off, don't update
-              if (get(inputStore) !== input) return store;
+              if (inputStore && get(inputStore) !== input) return store;
               return {
                 status: ValidationStatus.Error,
                 message: remoteValidation.validationMessage,
@@ -138,7 +138,7 @@ export const createValidationStore = (
 
           update(store => {
             // If the input has changed since this request was fired off, don't update
-            if (get(inputStore) !== input) return store;
+            if (inputStore && get(inputStore) !== input) return store;
             return {
               status: ValidationStatus.Error,
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
@@ -158,7 +158,7 @@ export const createValidationStore = (
     // If we made it here, it's valid
     update(store => {
       // If the input has changed since this request was fired off, don't update
-      if (get(inputStore) !== input) return store;
+      if (inputStore && get(inputStore) !== input) return store;
       return { status: ValidationStatus.Success };
     });
   };

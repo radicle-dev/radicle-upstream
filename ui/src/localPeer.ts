@@ -1,12 +1,12 @@
 import { derived, writable, Readable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
-import * as identity from "./identity";
+import type * as identity from "./identity";
 import * as notifiation from "./notification";
 import * as path from "./path";
 import * as remote from "./remote";
 import * as session from "./session";
-import * as urn from "./urn";
+import type * as urn from "./urn";
 
 // TYPES
 export enum StatusType {
