@@ -27,7 +27,7 @@ use crate::{
 };
 
 use super::{
-    announcement, control, gossip,
+    announcement, control, gossip, include,
     run_state::{
         AnnounceInput, Command, Config as RunConfig, ControlCommand, ControlInput, Event, Input,
         RequestCommand, RequestInput, RunState, SyncInput, TimeoutInput,
@@ -144,6 +144,7 @@ impl Subroutines {
                     SpawnAbortable::new(control_respond(respond_command))
                 },
             },
+            Command::Include(urn) => SpawnAbortable::new(include::update(self.state.clone(), urn)),
             Command::SyncPeer(peer_id) => {
                 SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
             },

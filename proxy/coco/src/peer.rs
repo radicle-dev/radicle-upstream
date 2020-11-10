@@ -26,6 +26,8 @@ pub use control::Control;
 
 pub mod gossip;
 
+pub mod include;
+
 mod run_state;
 pub use run_state::{AnnounceConfig, Config as RunConfig, Event, Status, SyncConfig};
 

@@ -53,6 +53,8 @@ pub enum Command {
     Announce,
     /// Answer control requests.
     Control(ControlCommand),
+    /// Update the include file for the provided `RadUrn`.
+    Include(RadUrn),
     /// Fulfill request commands.
     Request(RequestCommand),
     /// Initiate a full sync with `PeerId`.
@@ -588,6 +590,9 @@ impl RunState {
                     },
                     Ok(_) => vec![],
                 }
+            },
+            (_, ProtocolEvent::Gossip(Info::Applied(Gossip { urn, .. }))) => {
+                vec![Command::Include(urn)]
             },
             _ => vec![],
         }
