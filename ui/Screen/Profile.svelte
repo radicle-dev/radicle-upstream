@@ -52,7 +52,7 @@
   <Header.Large
     avatarFallback={session.identity.avatarFallback}
     name={session.identity.metadata.handle}
-    urn={session.identity.urn}>
+    peerId={session.identity.peerId}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

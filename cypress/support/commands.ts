@@ -1,8 +1,8 @@
 export const resetProxyState = (): Cypress.Chainable<void> =>
-  requestOk({ url: "http://localhost:8080/v1/control/reset" });
+  requestOk({ url: "http://localhost:17246/v1/control/reset" });
 
 export const sealKeystore = (): Cypress.Chainable<void> =>
-  requestOk({ url: "http://localhost:8080/v1/control/seal" });
+  requestOk({ url: "http://localhost:17246/v1/control/seal" });
 
 export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
   const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
@@ -16,7 +16,7 @@ export const createProjectWithFixture = (
   fakePeers = []
 ): Cypress.Chainable<void> =>
   requestOk({
-    url: "http://localhost:8080/v1/control/create-project",
+    url: "http://localhost:17246/v1/control/create-project",
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export const onboardUser = (
   handle = "secretariat"
 ): Cypress.Chainable<void> => {
   requestOk({
-    url: "http://localhost:8080/v1/keystore",
+    url: "http://localhost:17246/v1/keystore",
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export const onboardUser = (
     }),
   });
   return requestOk({
-    url: "http://localhost:8080/v1/identities",
+    url: "http://localhost:17246/v1/identities",
     method: "POST",
     headers: {
       "Content-Type": "application/json",

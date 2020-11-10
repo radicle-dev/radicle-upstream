@@ -42,7 +42,7 @@
 <div class="container" data-cy="welcome-screen">
   <RadicleLogo />
 
-  <p>A free and open-source way to host, share, and build software together.</p>
+  <p>A peer-to-peer stack for building <br /> software together.</p>
 
   <Button
     style="flex-shrink: 0; margin-bottom: 1.5rem;"

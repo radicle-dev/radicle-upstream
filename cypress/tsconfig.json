@@ -4,7 +4,8 @@
     "lib": ["dom", "es6", "es7"],
     "types": ["cypress", "node"],
     "moduleResolution": "node",
-    "noEmit": true
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["**/*.ts"]
 }
