@@ -1,4 +1,3 @@
-import "./commands";
 import "./assertions";
 import * as ipcStub from "./ipc-stub";
 
