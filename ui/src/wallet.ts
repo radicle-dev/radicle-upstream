@@ -148,7 +148,6 @@ export function build(): Wallet {
       throw new Error("Already connected");
     }
 
-    stateStore.set({ status: Status.Connecting });
     try {
       await walletConnect.connect();
     } catch (error) {
