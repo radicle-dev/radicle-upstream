@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { ShareableIdentifier } from "../../DesignSystem/Component";
+  import { StyledCopyable } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
 
-  export let id = null;
+  export let peerId = null;
 
   const dispatch = createEventDispatcher();
 
@@ -40,7 +40,7 @@
   <div class="content">
     <h1 style="text-align: center; margin-bottom: 1.5rem;">All set!</h1>
 
-    <ShareableIdentifier urn={id} />
+    <StyledCopyable value={peerId} />
 
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
