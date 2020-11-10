@@ -4,9 +4,11 @@
 
   import { Avatar, Icon } from "../../Primitive";
   import ShareableIdentifier from "../ShareableIdentifier.svelte";
+  import StyledCopyable from "../StyledCopyable.svelte";
 
   export let name: string;
-  export let urn: string;
+  export let urn: string | null = null;
+  export let peerId: string | null = null;
   export let description: string = "";
 
   export let avatarFallback: EmojiAvatar | undefined = undefined;
@@ -121,7 +123,12 @@
         <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
           {name}
         </h1>
-        <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
+        {#if urn}
+          <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
+        {/if}
+        {#if peerId}
+          <StyledCopyable value={peerId} />
+        {/if}
         {#if description.length > 0}
           <p class="description typo-overflow-ellipsis" title={description}>
             {description}
