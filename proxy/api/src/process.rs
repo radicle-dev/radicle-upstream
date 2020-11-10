@@ -11,6 +11,9 @@ use coco::{convert::MaybeFrom as _, seed, signer, Peer, RunConfig, SyncConfig};
 
 use crate::{config, context, http, notification, service, session};
 
+/// The port the server binds to (17rad)
+const PORT: u16 = 17246;
+
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
 pub struct Args {
@@ -140,7 +143,7 @@ async fn run_rigging(
         log::info!("starting API");
         let api = http::api(ctx, subscriptions.clone());
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
-            ([127, 0, 0, 1], 8080),
+            ([127, 0, 0, 1], PORT),
             async move {
                 restart_signal.await;
                 subscriptions.clear().await;
