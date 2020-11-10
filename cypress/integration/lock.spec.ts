@@ -1,34 +1,36 @@
+import * as commands from "../support/commands";
+
 context("lock screen", () => {
   beforeEach(() => {
-    cy.resetProxyState();
-    cy.onboardUser();
-    cy.sealKeystore();
+    commands.resetProxyState();
+    commands.onboardUser();
+    commands.sealKeystore();
     cy.visit("./public/index.html");
   });
 
   it("opens on app start when an identity exists", () => {
-    cy.pick("unlock-button").should("exist");
+    commands.pick("unlock-button").should("exist");
   });
 
   it("shows an error notification if the passphrase is wrong", () => {
-    cy.pick("unlock-button").should("exist");
-    cy.pick("passphrase-input").type("wrong-pw");
-    cy.pick("unlock-button").click();
+    commands.pick("unlock-button").should("exist");
+    commands.pick("passphrase-input").type("wrong-pw");
+    commands.pick("unlock-button").click();
     cy.contains(/Could not unlock the session: incorrect passphrase/).should(
       "exist"
     );
-    cy.pick("passphrase-input").should("have.value", "wrong-pw");
-    cy.pick("unlock-button").should("not.be.disabled");
+    commands.pick("passphrase-input").should("have.value", "wrong-pw");
+    commands.pick("unlock-button").should("not.be.disabled");
   });
 
   it("routes to the profile page on successful unseal", () => {
-    cy.pick("unlock-button").should("exist");
+    commands.pick("unlock-button").should("exist");
     cy.focused().type("radicle-upstream");
     cy.focused().type("{enter}");
     // opens the profile page
-    cy.pick("entity-name").contains("secretariat");
+    commands.pick("entity-name").contains("secretariat");
     // checks that requests are successful
-    cy.pick("sidebar", "settings").click();
+    commands.pick("sidebar", "settings").click();
     cy.get("button[value='dark']").click();
     cy.get("[data-theme='dark']").should("exist");
   });
