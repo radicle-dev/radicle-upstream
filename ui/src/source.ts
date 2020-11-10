@@ -173,8 +173,8 @@ export const fetchObject = (
       return api.get<SourceObject>(`source/blob/${projectUrn}`, {
         query: {
           path: encodeURIComponent(path),
-          peerId: peerId,
-          revision: revision,
+          peerId,
+          revision,
           highlight: !isMarkdown(path),
         },
       });
@@ -183,8 +183,8 @@ export const fetchObject = (
     case ObjectType.Tree: {
       return api.get<SourceObject>(`source/tree/${projectUrn}`, {
         query: {
-          peerId: peerId,
-          revision: revision,
+          peerId,
+          revision,
           prefix: path,
         },
       });
@@ -252,7 +252,7 @@ export const tree = (
 
   api
     .get<Tree>(`source/tree/${projectUrn}`, {
-      query: { peerId: peerId, revision, prefix },
+      query: { peerId, revision, prefix },
     })
     .then(treeStore.success)
     .catch(treeStore.error);
@@ -320,7 +320,7 @@ export const revisionQueryEq = (
   }
 };
 
-export const readme = (
+export const fetchReadme = (
   projectUrn: urn.Urn,
   peerId: identity.PeerId,
   revision: Revision,

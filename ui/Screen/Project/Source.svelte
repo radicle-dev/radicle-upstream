@@ -2,7 +2,8 @@
   import { format } from "timeago.js";
 
   import {
-    code as store,
+    code,
+    params as store,
     CodeView,
     selectPath,
   } from "../../src/screen/project";
@@ -58,54 +59,58 @@
 
 <div class="wrapper">
   <div class="container center-content">
-    <Remote {store} let:data={view}>
+    <Remote {store} let:data={params}>
       <div class="column-left">
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">
           <Folder
-            peerId={view.peer.peerId}
-            projectUrn={view.project.urn}
-            revision={view.revision}
+            peerId={params.peer.peerId}
+            projectUrn={params.project.urn}
+            revision={params.revision}
             toplevel />
         </div>
       </div>
 
-      <div class="column-right">
-        <div class="commit-header">
-          <CommitTeaser
-            message={view.lastCommit.summary}
-            sha={view.lastCommit.sha1}
-            projectUrn={view.project.urn}
-            style="height: 100%"
-            timestamp={format(view.lastCommit.committerTime * 1000)}
-            user={view.lastCommit.author} />
-        </div>
-
-        {#if view.kind === CodeView.File}
-          <FileSource
-            blob={view.file}
-            path={view.path}
-            projectName={view.project.metadata.name}
-            on:root={onRoot} />
-        {:else if view.kind === CodeView.Root}
-          {#if view.readme}
-            <Readme content={view.readme.content} path={view.readme.path} />
-          {:else}
-            <EmptyState
-              text="This project doesn't have a README yet."
-              emoji="👀"
-              style="height: 320px;" />
+      <Remote store={code} let:data={view}>
+        <div class="column-right">
+          {#if view.kind === CodeView.File || view.kind === CodeView.Root}
+            <div class="commit-header">
+              <CommitTeaser
+                message={view.lastCommit.summary}
+                sha={view.lastCommit.sha1}
+                projectUrn={params.project.urn}
+                style="height: 100%"
+                timestamp={format(view.lastCommit.committerTime * 1000)}
+                user={view.lastCommit.author} />
+            </div>
           {/if}
-        {:else if view.kind === CodeView.Error}
-          <EmptyState
-            emoji="👀"
-            headerText={view.file.message}
-            on:primaryAction={ev => console.log('primary action', ev)}
-            primaryActionText="Back to source"
-            style="height: 320px;"
-            text="This file doesn't exist on this branch." />
-        {/if}
-      </div>
+
+          {#if view.kind === CodeView.File}
+            <FileSource
+              blob={view.file}
+              path={view.path}
+              projectName={params.project.metadata.name}
+              on:root={onRoot} />
+          {:else if view.kind === CodeView.Root}
+            {#if view.readme}
+              <Readme content={view.readme.content} path={view.readme.path} />
+            {:else}
+              <EmptyState
+                text="This project doesn't have a README yet."
+                emoji="👀"
+                style="height: 320px;" />
+            {/if}
+          {:else if view.kind === CodeView.Error}
+            <EmptyState
+              emoji="👀"
+              headerText={view.file.message}
+              on:primaryAction={onRoot}
+              primaryActionText="Back to source"
+              style="height: 320px;"
+              text="This file doesn't exist on this branch." />
+          {/if}
+        </div>
+      </Remote>
     </Remote>
   </div>
 </div>

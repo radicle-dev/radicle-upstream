@@ -1,9 +1,16 @@
-import { derived, writable, Readable } from "svelte/store";
+import { get, derived, writable, Readable } from "svelte/store";
 
 import * as error from "../error";
 import * as project from "../project";
 import * as remote from "../remote";
 import * as source from "../source";
+
+interface Params {
+  peer: project.User;
+  project: project.Project;
+  revision: source.Revision;
+  path: string;
+}
 
 export enum CodeView {
   File = "FILE",
@@ -13,9 +20,6 @@ export enum CodeView {
 
 interface Shared {
   lastCommit: source.LastCommit;
-  peer: project.User;
-  project: project.Project;
-  revision: source.Revision;
 }
 
 interface Error {
@@ -37,34 +41,87 @@ interface Root extends Shared {
 type Code = Error | File | Root;
 
 const selectedPathStore = writable<string | null>(null);
-export const code: Readable<remote.Data<Code>> = derived(
+export const params: Readable<remote.Data<Params>> = derived(
   [
     project.project,
     project.selectedPeer,
     project.selectedRevision,
     selectedPathStore,
   ],
-  ([currentProject, peer, revision, path], set) => {
+  ([remoteProject, peer, revision, selectedPath], set) => {
     if (
-      currentProject.status === remote.Status.NotAsked ||
-      currentProject.status === remote.Status.Loading
+      remoteProject.status === remote.Status.NotAsked ||
+      remoteProject.status === remote.Status.Loading
     ) {
-      set(currentProject);
+      set(remoteProject);
     }
 
+    // We can't continue meaningfully if either of them are missing.
     if (!peer || !revision) {
       return;
     }
 
-    if (currentProject.status === remote.Status.Success) {
-      const { urn: projectUrn } = currentProject.data;
+    if (remoteProject.status === remote.Status.Success) {
+      const path = selectedPath ? selectedPath : "";
+      const project = remoteProject.data;
+      const current = get(params);
+
+      if (current.status === remote.Status.Success) {
+        const {
+          project: { urn: currentUrn },
+          peer: { peerId: currentPeerId },
+          revision: currentRevision,
+          path: currentPath,
+        } = current.data;
+
+        if (
+          project.urn === currentUrn &&
+          peer.peerId === currentPeerId &&
+          revision.type === currentRevision.type &&
+          (revision as source.Branch | source.Tag).name ===
+            (currentRevision as source.Branch | source.Tag).name &&
+          path === currentPath
+        ) {
+          return;
+        }
+      }
+
+      set({
+        status: remote.Status.Success,
+        data: {
+          project,
+          peer,
+          revision,
+          path: path ? path : "",
+        },
+      });
+    }
+  },
+  { status: remote.Status.NotAsked } as remote.Data<Params>
+);
+
+export const code: Readable<remote.Data<Code>> = derived(
+  [params],
+  ([remoteParams], set) => {
+    if (
+      remoteParams.status === remote.Status.NotAsked ||
+      remoteParams.status === remote.Status.Loading
+    ) {
+      set(remoteParams);
+    }
+
+    if (remoteParams.status === remote.Status.Success) {
+      const {
+        data: { project, peer, revision, path },
+      } = remoteParams;
       let lastCommit: source.LastCommit;
 
-      if (!path || path === "") {
+      if (path === "") {
+        console.log("fetch root", peer.peerId);
         source
           .fetchObject(
             source.ObjectType.Tree,
-            projectUrn,
+            project.urn,
             peer.peerId,
             "",
             revision
@@ -72,23 +129,21 @@ export const code: Readable<remote.Data<Code>> = derived(
           .then(tree => {
             lastCommit = tree.info.lastCommit;
 
-            return source.readme(
-              projectUrn,
+            return source.fetchReadme(
+              project.urn,
               peer.peerId,
               revision,
               tree as source.Tree
             );
           })
           .then(readme => {
+            console.log("success", lastCommit);
             set({
               status: remote.Status.Success,
               data: {
                 kind: CodeView.Root,
                 lastCommit,
-                peer,
-                project: currentProject.data,
                 readme,
-                revision,
               },
             });
           });
@@ -96,7 +151,7 @@ export const code: Readable<remote.Data<Code>> = derived(
         source
           .fetchObject(
             source.ObjectType.Blob,
-            projectUrn,
+            project.urn,
             peer.peerId,
             path,
             revision
@@ -109,9 +164,6 @@ export const code: Readable<remote.Data<Code>> = derived(
                 lastCommit: blob.info.lastCommit,
                 file: blob as source.Blob,
                 path,
-                peer,
-                project: currentProject.data,
-                revision,
               },
             });
           });
