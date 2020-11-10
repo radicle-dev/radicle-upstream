@@ -46,7 +46,7 @@ export function listenProxyError(
   window.electron.ipcRenderer.on(
     "message",
     (_event: unknown, message: ipcTypes.MainMessage) => {
-      if (message.type === "ProxyError") {
+      if (message.kind === ipcTypes.MainMessageKind.PROXY_ERROR) {
         f(message.data);
       }
     }

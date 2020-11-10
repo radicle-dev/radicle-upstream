@@ -1,5 +1,12 @@
 // Messages sent from the main process to the renderer
-export type MainMessage = { type: "ProxyError"; data: ProxyError };
+export type MainMessage = {
+  kind: MainMessageKind.PROXY_ERROR;
+  data: ProxyError;
+};
+
+export enum MainMessageKind {
+  PROXY_ERROR = "PROXY_ERROR",
+}
 
 // Payload for the ProxyError `MainMessage`.
 export interface ProxyError {

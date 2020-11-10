@@ -8,7 +8,7 @@ import {
 } from "electron";
 import path from "path";
 import { execFile, ChildProcess } from "child_process";
-import { RendererMessage, MainMessage } from "./ipc-types";
+import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
 
 const isDev = process.env.NODE_ENV === "development";
 const proxyPath = path.join(__dirname, "../../proxy");
@@ -73,7 +73,6 @@ class WindowManager {
       openExternalLink(url);
     });
 
-    window.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
     window.on("closed", () => {
       this.window = null;
     });
@@ -84,6 +83,8 @@ class WindowManager {
       });
       this.messages = [];
     });
+
+    window.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
 
     this.window = window;
   }
@@ -168,7 +169,7 @@ const startProxy = () => {
     );
 
     windowManager.sendMessage({
-      type: "ProxyError",
+      kind: MainMessageKind.PROXY_ERROR,
       data: {
         status,
         signal,
