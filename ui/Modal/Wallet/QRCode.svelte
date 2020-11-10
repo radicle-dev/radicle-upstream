@@ -18,7 +18,6 @@
     align-items: center;
     flex-direction: column;
     padding: var(--content-padding);
-    padding-bottom: 1rem;
     width: 650px;
     background: var(--color-background);
     border-radius: 0.5rem;
@@ -45,8 +44,7 @@
     width: 100%;
     margin-top: var(--content-padding);
 
-    padding: var(--content-padding);
-    margin-bottom: 1.5rem;
+    padding: calc(var(--content-padding) * 0.75);
     background-color: var(--color-foreground-level-1);
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.25rem;
@@ -75,7 +73,8 @@
   <p>
     Not working? <a
       href="https://walletconnect.org/wallets"
-      class="typo-link">Check if your mobile wallet supports WalletConnect</a>.
+      class="typo-link typo-text-small-bold">Check if your mobile wallet
+      supports WalletConnect</a>.
   </p>
 
   <div class="waiting">
