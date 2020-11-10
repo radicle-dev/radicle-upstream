@@ -40,19 +40,22 @@
     position: relative;
   }
 
-  .receiver.removed:after {
-    content: "-";
-    color: var(--color-negative);
-    font-family: var(--typeface-medium);
-    font-size: 16px;
-  }
-
-  .receiver.removed .content {
+  .receiver.removed {
+    border-color: var(--color-negative);
     text-decoration: line-through;
   }
 
-  .receiver.added:after {
-    content: "+";
+  .receiver.removed,
+  .receiver.removed .content {
+    color: var(--color-negative);
+  }
+
+  .receiver.added {
+    border-color: var(--color-positive);
+    color: var(--color-positive);
+  }
+  .receiver.added,
+  .receiver.added .content {
     color: var(--color-positive);
   }
 
