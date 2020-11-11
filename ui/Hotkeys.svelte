@@ -6,7 +6,7 @@
   import * as screen from "./src/screen";
   import { isMac } from "./src/settings";
   import * as hotkeys from "./src/hotkeys";
-  import { isDev } from "../native/ipc";
+  import { isDev } from "./src/ipc";
 
   const toggle = (destination: string) => {
     if (path.active(destination, $location)) {

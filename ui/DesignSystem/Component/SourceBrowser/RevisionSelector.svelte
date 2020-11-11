@@ -1,9 +1,8 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { isExperimental } from "../../../../native/ipc";
-
-  import { RevisionType } from "../../../src/source.ts";
+  import { isExperimental } from "../../../src/ipc";
+  import { RevisionType } from "../../../src/source";
   import type { Branch, Revision, Revisions, Tag } from "../../../src/source";
 
   import { Icon } from "../../Primitive";
