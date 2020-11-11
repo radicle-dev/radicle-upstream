@@ -8,12 +8,12 @@ use librad::{
 use crate::{oid::Oid, State};
 
 /// Announce a new rev for the `urn`.
-pub async fn announce(state: &State, urn: &RadUrn, rev: &Oid) {
+pub async fn announce(state: &State, urn: &RadUrn, rev: Option<Oid>) {
     let protocol = state.api.protocol();
     protocol
         .announce(Gossip {
             urn: urn.clone(),
-            rev: Some(Rev::Git((*rev).into())),
+            rev: rev.map(|rev| Rev::Git(rev.into())),
             origin: None,
         })
         .await;

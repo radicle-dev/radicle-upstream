@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { ShareableIdentifier } from "../../DesignSystem/Component";
+  import { StyledCopyable } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
 
-  export let id = null;
+  export let peerId = null;
 
   const dispatch = createEventDispatcher();
 
@@ -40,13 +40,14 @@
   <div class="content">
     <h1 style="text-align: center; margin-bottom: 1.5rem;">All set!</h1>
 
-    <ShareableIdentifier urn={id} />
+    <StyledCopyable value={peerId} dataCy="peerId" />
 
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
       color: var(--color-foreground-level-6);">
-      This is your handle — it's unique to you!<br /> Click to copy it and share
-      with others so that they can find you.
+      This is your <span class="typo-text-bold">Device ID</span>! It's unique to
+      you and this computer. You can find it at any time in your Settings page.
+      You'll need to share it with others to collaborate.
     </p>
 
     <Button dataCy="go-to-profile-button" on:click={next}>

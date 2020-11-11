@@ -33,7 +33,7 @@
     /* Do not emit comments to output. */
     // "removeComments": true,
     /* Do not emit outputs. */
-    // "noEmit": true,
+    "noEmit": true,
     /* Import emit helpers from 'tslib'. */
     // "importHelpers": true,
     /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */

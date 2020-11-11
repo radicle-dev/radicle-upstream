@@ -3,6 +3,7 @@
   import Hoverable from "./Hoverable.svelte";
 
   export let style = "";
+  export let dataCy: string | null = null;
   export let value: string;
   export let notificationText = "Copied to your clipboard";
   export let truncate: boolean = false;
@@ -21,7 +22,7 @@
 </style>
 
 <Hoverable bind:hovering={hover}>
-  <div class="wrapper" {style}>
+  <div class="wrapper" {style} data-cy={dataCy}>
     <Copyable
       style="align-items: center; color: var(--color-foreground-level-6)"
       copyContent={value}
