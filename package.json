@@ -162,15 +162,15 @@
       "prettier --write"
     ],
     "*.js": [
-      "eslint --fix"
+      "eslint --fix --max-warnings=0"
     ],
     "*.svelte": [
       "prettier --plugin-search-dir=. --write",
-      "eslint --fix"
+      "eslint --fix --max-warnings=0"
     ],
     "*.ts": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix --max-warnings=0"
     ]
   }
 }
