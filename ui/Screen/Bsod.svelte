@@ -1,14 +1,31 @@
 <script lang="ts">
+  import type { SvelteComponent } from "svelte";
+  import * as svelteStore from "svelte/store";
+
   import { Button, Emoji, Icon } from "../DesignSystem/Primitive";
   import { Fullscreen } from "../DesignSystem/Component";
+
+  import * as notification from "../src/notification";
   import * as ipc from "../src/ipc";
   import * as error from "../src/error";
-  import * as svelteStore from "svelte/store";
 
   // We have to circumvent the type checker because svelte cannot
   // narrow types using `if` statements.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fatalError: svelteStore.Readable<any> = error.fatalError;
+
+  let copied = false;
+  let copyIcon: typeof SvelteComponent;
+  $: copyIcon = copied ? Icon.Check : Icon.Copy;
+
+  const copyToClipboard = (text: string) => {
+    ipc.copyToClipboard(text);
+    notification.info("Copied to your clipboard");
+    copied = true;
+    setTimeout(() => {
+      copied = false;
+    }, 2000);
+  };
 
   const tweet = () => {
     window.location.href = "https://radicle.community/c/support/13";
@@ -80,8 +97,8 @@
             dataCy="proxy-log-copy-clipboard"
             style="position: sticky; bottom: 0; margin-left: auto;"
             variant="secondary"
-            on:click={() => ipc.copyToClipboard($fatalError.data.stderr)}
-            icon={Icon.Copy}>
+            on:click={() => copyToClipboard($fatalError.data.stderr)}
+            icon={copyIcon}>
             Copy to clipboard
           </Button>
         </div>
