@@ -112,6 +112,7 @@
 
   strong {
     font-weight: bold;
+    margin: 0 5px;
   }
 
   .content {
@@ -143,46 +144,52 @@
 
     color: var(--color-foreground-level-5);
   }
+
+  .description {
+    display: flex;
+    align-items: center;
+  }
 </style>
 
 <div class="outgoing-container">
   <Remote store={pool.data} let:data={poolData}>
     <header>
       <div class="row">
-        <h3>Outgoing support</h3>
+        <h3>Support</h3>
         <span class="row" style="margin-left: 14px">
           <Dai>{poolData.amountPerBlock} per month</Dai>
         </span>
-        <Button
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a
+          class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
-          style="margin-left: 10px"
-          on:click={onEditMonthlyContribution}
-          variant={'transparent'}>
-          {poolData.amountPerBlock === '0' ? 'Set' : 'Edit'}
-        </Button>
+          style="margin-left: 12px;"
+          on:click={onEditMonthlyContribution}>
+          Edit
+        </a>
       </div>
       <div class="row">
-        <p>Balance</p>
+        <p>Remaining</p>
         <p class="typo-text-bold row" style="margin-left: 12px">
           <Dai>{poolData.balance}</Dai>
         </p>
-        {#if !ongoingTopUp}
-          <Button
-            dataCy="top-up-pool-button"
-            variant="primary"
-            on:click={openSendModal}
-            style="margin-left: 12px">
-            Top up
-          </Button>
-        {/if}
         {#if !ongoingWithdraw && !ongoingTopUp}
           <Button
             disabled={poolData.balance === 0}
             dataCy="drain-pool-button"
-            variant="outline"
+            variant="transparent"
             on:click={openWithdrawModal}
             style="margin-left: 12px">
             Withdraw
+          </Button>
+        {/if}
+        {#if !ongoingTopUp}
+          <Button
+            dataCy="top-up-pool-button"
+            variant="vanilla"
+            on:click={openSendModal}
+            style="margin-left: 12px">
+            Top up
           </Button>
         {/if}
       </div>
@@ -206,13 +213,11 @@
           </div>
         </div>
       {:else}
-        <p>
-          <strong>{poolData.amountPerBlock} DAI</strong> will be sent from your balance
-          over the course of a month. <strong>{poolData.amountPerBlock / poolData.receiverAddresses.length}
-            DAI
-          </strong> per month will go to each of the <strong>{poolData.receiverAddresses.length}
-            receiver{poolData.receiverAddresses.length === 1 ? '' : 's'}
-          </strong> you’re supporting.
+        <p class="description">
+          <strong style="margin-left: 0px"><Dai>
+              {poolData.amountPerBlock}
+            </Dai></strong> per month will go to each of the <strong>{poolData.receiverAddresses.length}
+          </strong> receivers you're supporting.
         </p>
       {/if}
 

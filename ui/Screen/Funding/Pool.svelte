@@ -23,6 +23,12 @@
   });
 </script>
 
+<style>
+  .pool-container {
+    width: 100%;
+  }
+</style>
+
 <div class="pool-container">
   <Remote store={pool.data} let:data={poolData}>
     {#if poolData.collectableFunds > 0}
