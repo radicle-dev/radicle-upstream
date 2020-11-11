@@ -9,7 +9,7 @@
   export let address: Address = "";
   export let disabled = false;
   export let status: AddressStatus;
-  export let onClick: (title: string) => void;
+  export let onClick: (title: string) => void | undefined;
 
   function iconForStatus(s: AddressStatus): SvelteComponent {
     switch (s) {
@@ -28,6 +28,7 @@
     align-items: center;
     justify-content: space-around;
 
+    height: 42px;
     padding: 0px 20px 0px 10px;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
@@ -70,11 +71,13 @@
 </style>
 
 <span class="receiver {status.toLowerCase()}" class:disabled>
-  <Button
-    on:click={() => onClick(address)}
-    {disabled}
-    variant="embedded"
-    icon={iconForStatus(status)} />
+  {#if onClick}
+    <Button
+      on:click={() => onClick(address)}
+      {disabled}
+      variant="embedded"
+      icon={iconForStatus(status)} />
+  {/if}
   <p class="content typo-text-bold">
     <Copyable
       showIcon={false}

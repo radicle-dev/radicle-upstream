@@ -9,12 +9,15 @@
 
   // The current list of receivers
   export let receivers: Address[] = [];
-  export let onSave: (changeset: pool.Changeset) => Promise<void>;
+  export let onSave: (
+    changeset: pool.Changeset
+  ) => Promise<void> | undefined = undefined;
   export let updating = false;
 
   let changeset: Changeset = new Map();
 
   $: updating, refreshChangeset();
+  $: editingMode = onSave !== undefined;
 
   function refreshChangeset(): Changeset {
     // Refresh the changeset only when something changed
@@ -91,7 +94,7 @@
   <div class="row">
     {#each [...changeset.entries()] as [address, status]}
       <Receiver
-        onClick={x => toggleReceiver(x)}
+        onClick={editingMode ? x => toggleReceiver(x) : undefined}
         {address}
         {status}
         disabled={updating} />
@@ -99,24 +102,26 @@
   </div>
 
   <div class="row">
-    <Input.Text
-      disabled={updating}
-      bind:value={newValue}
-      placeholder="Enter an Ethereum address or a Radicle handle"
-      style="min-width: 380px" />
+    {#if editingMode}
+      <Input.Text
+        disabled={updating}
+        bind:value={newValue}
+        placeholder="Enter an Ethereum address or a Radicle handle"
+        style="min-width: 380px" />
 
-    <Button
-      disabled={updating}
-      on:click={() => addNew(newValue)}
-      variant="outline"
-      style="margin-left: 8px; border-color: var(--color-foreground-level-3)">
-      <Icon.Plus />
-    </Button>
-    <TxButton
-      disabled={updating || !thereAreChanges(receivers, changeset)}
-      onClick={() => onSave(changeset)}
-      variant="secondary"
-      title="Save"
-      errorMessage={e => `Failed to update list of receivers: ${e.message}`} />
+      <Button
+        disabled={updating}
+        on:click={() => addNew(newValue)}
+        variant="outline"
+        style="margin-left: 8px; border-color: var(--color-foreground-level-3)">
+        <Icon.Plus />
+      </Button>
+      <TxButton
+        disabled={updating || !thereAreChanges(receivers, changeset)}
+        onClick={() => onSave(changeset)}
+        variant="secondary"
+        title="Save"
+        errorMessage={e => `Failed to update list of receivers: ${e.message}`} />
+    {/if}
   </div>
 </div>

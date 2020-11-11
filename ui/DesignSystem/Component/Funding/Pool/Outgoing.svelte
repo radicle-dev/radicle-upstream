@@ -218,6 +218,14 @@
               {poolData.amountPerBlock}
             </Dai></strong> per month will go to each of the <strong>{poolData.receiverAddresses.length}
           </strong> receivers you're supporting.
+          <!-- svelte-ignore a11y-missing-attribute -->
+          <a
+            class="typo-link"
+            disabled={ongoingMonthlyContributionUpdate}
+            style="margin-left: 12px;"
+            on:click={() => console.log('TODO(nuno)')}>
+            Edit
+          </a>
         </p>
       {/if}
 
