@@ -26,6 +26,7 @@ pub enum Error {
 /// Stop-gap until we can abort [`JoinHandle`]s directly:
 /// tokio-rs@cbb14a7bb9a13363e1abee8caff2bad1f996c263
 #[allow(clippy::missing_docs_in_private_items)]
+#[must_use = "keep the task running"]
 pub struct SpawnAbortable<T> {
     join_handle: JoinHandle<Result<T, future::Aborted>>,
     abort_handle: future::AbortHandle,
