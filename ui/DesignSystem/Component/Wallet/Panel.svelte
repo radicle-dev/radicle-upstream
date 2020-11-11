@@ -7,6 +7,7 @@
 
   export let account: wallet.Account;
   export let onDisconnect: () => void;
+  export let style = "";
 </script>
 
 <style>
@@ -46,7 +47,7 @@
   }
 </style>
 
-<div class="wrapper">
+<div class="wrapper" {style}>
   <h3>Balance</h3>
   <h1>
     <Dai color={'var(--color-secondary)'} size={'h1'}>

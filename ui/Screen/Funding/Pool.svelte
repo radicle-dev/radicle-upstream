@@ -7,12 +7,6 @@
   export let pool: Pool;
 </script>
 
-<style>
-  .container div + div {
-    margin-top: var(--content-padding);
-  }
-</style>
-
 <div class="pool-container">
   <Incoming {pool} />
   <Outgoing {pool} />

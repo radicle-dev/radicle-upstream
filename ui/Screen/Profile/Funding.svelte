@@ -14,13 +14,13 @@
   .funding-container {
     min-width: var(--content-min-width);
     max-width: var(--content-max-width);
-    padding: 0 var(--content-padding);
+    padding: var(--content-padding);
     margin: 0 auto;
   }
 
   .container {
     display: flex;
-    align-items: baseline;
+    align-items: flex-start;
   }
 </style>
 
@@ -29,7 +29,8 @@
     <div class="container">
       <WalletPanel
         onDisconnect={wallet.disconnect}
-        account={$wallet.connected.account} />
+        account={$wallet.connected.account}
+        style={'margin-right: var(--content-padding)'} />
       <Pool pool={pool.make(wallet)} />
     </div>
   {:else}

@@ -24,7 +24,6 @@
 
 <style>
   .incoming-container {
-    margin: 2rem 0;
     padding: calc(var(--content-padding) / 2);
 
     border: 1px solid #ebeff3;
