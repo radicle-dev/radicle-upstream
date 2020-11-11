@@ -49,7 +49,7 @@
 </script>
 
 <SidebarLayout dataCy="project-screen">
-  <Remote {store} let:data={project} context="project">
+  <Remote {store} let:data={{ project, peers }}>
     <Header.Large
       urn={project.urn}
       name={project.metadata.name}
