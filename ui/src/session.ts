@@ -33,6 +33,12 @@ export interface SessionData {
 const sessionStore = remote.createStore<Session>();
 export const session = sessionStore.readable;
 
+sessionStore.subscribe(data => {
+  if (data.status === remote.Status.Error) {
+    error.setFatal();
+  }
+});
+
 export const settings: Readable<Settings> = derived(sessionStore, sess => {
   if (
     sess.status === remote.Status.Success &&
