@@ -1,10 +1,11 @@
 <script lang="typescript">
-  import { link } from "svelte-spa-router";
+  import { push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path";
   import { commits as store } from "../../src/screen/project";
   import { formatTime } from "../../src/source";
+  import type { Commit } from "../../src/source";
   import * as urn from "../../src/urn";
 
   import { Remote } from "../../DesignSystem/Component";
@@ -12,7 +13,10 @@
 
   export let params: { urn: urn.Urn };
 
-  const projectUrn = params.urn;
+  const { urn: projectUrn } = params;
+  const onSelect = (commit: Commit) => {
+    push(path.projectCommit(projectUrn, commit.sha1));
+  };
 </script>
 
 <style>
@@ -34,8 +38,9 @@
   }
   .commit {
     border-bottom: 1px solid var(--color-foreground-level-3);
-    height: 3rem;
+    cursor: pointer;
     display: block;
+    height: 3rem;
     padding: 0.25rem 0;
   }
   .commit:first-child {
@@ -61,18 +66,16 @@
         </header>
         <ul>
           {#each history.commits as commit}
-            <li class="commit">
-              <a href={path.projectCommit(projectUrn, commit.sha1)} use:link>
-                <CommitTeaser
-                  message={commit.summary}
-                  {projectUrn}
-                  sha={commit.sha1}
-                  style="background: none; --commit-message-color:
-                  var(--color-foreground-level-6); --commit-sha-color:
-                  var(--color-foreground)"
-                  timestamp={format(commit.committerTime * 1000)}
-                  user={commit.author} />
-              </a>
+            <li class="commit" on:click={() => onSelect(commit)}>
+              <CommitTeaser
+                message={commit.summary}
+                {projectUrn}
+                sha={commit.sha1}
+                style="background: none; --commit-message-color:
+                var(--color-foreground-level-6); --commit-sha-color:
+                var(--color-foreground)"
+                timestamp={format(commit.committerTime * 1000)}
+                user={commit.author} />
             </li>
           {/each}
         </ul>
