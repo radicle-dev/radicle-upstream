@@ -26,6 +26,8 @@ pub use control::Control;
 
 pub mod gossip;
 
+pub mod include;
+
 mod run_state;
 pub use run_state::{AnnounceConfig, Config as RunConfig, Event, Status, SyncConfig};
 
@@ -131,12 +133,14 @@ impl Peer {
         let subroutines = {
             let barrier = barrier.clone();
             SpawnAbortable::new(async move {
+                let peer_events = state.api.subscribe().await.boxed();
                 let protocol_events = state.api.protocol().subscribe().await.boxed();
                 barrier.wait().await;
                 Subroutines::new(
                     state,
                     store,
                     run_config,
+                    peer_events,
                     protocol_events,
                     subscriber,
                     control_receiver,
