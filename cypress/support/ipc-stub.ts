@@ -1,4 +1,7 @@
-import * as ipc from "../../native/ipc";
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference,spaced-comment
+/// <reference path="../../native/preload.d.ts" />
+import { RendererMessage, MainMessage } from "../../native/ipc-types";
+import { EventEmitter } from "events";
 import * as sinon from "sinon";
 
 // Stubs for Electron IPC message handlers.
@@ -6,9 +9,10 @@ import * as sinon from "sinon";
 // `ipcRenderer.invoke(msg, params)` uses the `msg` argument to look
 // up the stub and call it.
 interface ElectronStubs {
-  [ipc.GET_VERSION]: sinon.SinonStub;
-  [ipc.DIALOG_SHOWOPENDIALOG]: sinon.SinonStub;
-  [ipc.OPEN_PATH]: sinon.SinonStub;
+  [RendererMessage.GET_VERSION]: sinon.SinonStub;
+  [RendererMessage.DIALOG_SHOWOPENDIALOG]: sinon.SinonStub;
+  [RendererMessage.OPEN_PATH]: sinon.SinonStub;
+  sendMessage: (message: MainMessage) => void;
 }
 
 declare global {
@@ -22,12 +26,20 @@ declare global {
 //
 // See `../../native/preload.js`.
 export function setup(window: Window): void {
+  const ipcRendererMessages = new EventEmitter();
   const electronStubs: ElectronStubs = {
-    [ipc.GET_VERSION]: sinon.stub().returns(Promise.resolve("v1.2.3")),
-    [ipc.DIALOG_SHOWOPENDIALOG]: sinon
+    [RendererMessage.GET_VERSION]: sinon
+      .stub()
+      .returns(Promise.resolve("v1.2.3")),
+    [RendererMessage.DIALOG_SHOWOPENDIALOG]: sinon
       .stub()
       .throws(new Error("not implemented")),
-    [ipc.OPEN_PATH]: sinon.stub().throws(new Error("not implemented")),
+    [RendererMessage.OPEN_PATH]: sinon
+      .stub()
+      .throws(new Error("not implemented")),
+    sendMessage: (message: MainMessage) => {
+      ipcRendererMessages.emit("message", undefined, message);
+    },
   };
 
   window.electronStubs = electronStubs;
@@ -37,6 +49,7 @@ export function setup(window: Window): void {
       invoke: (msg, params) => {
         return electronStubs[msg](params);
       },
+      on: ipcRendererMessages.on.bind(ipcRendererMessages),
     },
     isDev: true,
     isExperimental: true,

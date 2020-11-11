@@ -95,6 +95,7 @@
   }
 </style>
 
+<Bsod />
 <Hotkeys />
 <ModalOverlay {modalRoutes} />
 <NotificationFaucet />
@@ -102,10 +103,6 @@
 
 <Remote {store} context="session">
   <Router {routes} />
-
-  <div slot="error" class="error">
-    <Bsod />
-  </div>
 
   <div slot="loading" class="error">
     <EmptyState headerText="Loading..." emoji="🕵️" text="" />

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { isDev } from "../../native/ipc";
+  import { isDev } from "../src/ipc";
 
   import * as hotkeys from "../src/hotkeys";
   import { Variant as IllustrationVariant } from "../src/illustration";

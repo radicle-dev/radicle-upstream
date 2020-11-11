@@ -1,3 +1,5 @@
+import * as ipcTypes from "../../native/ipc-types";
+import { ipcStub } from "../support";
 import * as commands from "../support/commands";
 
 context("routing", () => {
@@ -50,6 +52,39 @@ context("routing", () => {
           });
         }
       );
+    });
+  });
+
+  describe("blue screen of death", () => {
+    it("shows blue screen of death if there is a proxy error before onboarding", () => {
+      ipcStub.getStubs().then(stubs => {
+        stubs.sendMessage({
+          kind: ipcTypes.MainMessageKind.PROXY_ERROR,
+          data: {
+            status: 1,
+            signal: null,
+            stdout: "",
+            stderr: "",
+          },
+        });
+      });
+      commands.pick("blue-screen-of-death").should("exist");
+    });
+
+    it("shows blue screen of death if there is a proxy error after onboarding", () => {
+      commands.onboardUser();
+      ipcStub.getStubs().then(stubs => {
+        stubs.sendMessage({
+          kind: ipcTypes.MainMessageKind.PROXY_ERROR,
+          data: {
+            status: 1,
+            signal: null,
+            stdout: "",
+            stderr: "",
+          },
+        });
+      });
+      commands.pick("blue-screen-of-death").should("exist");
     });
   });
 });
