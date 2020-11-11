@@ -269,5 +269,5 @@ export enum AddressStatus {
 export type Changeset = Map<string, AddressStatus>;
 
 export function displayAddress(x: Address): string {
-  return `${x.slice(0, 6)}...${x.slice(-6)}`;
+  return `${x.slice(0, 8)}...${x.slice(-8)}`;
 }

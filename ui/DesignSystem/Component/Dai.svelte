@@ -7,6 +7,16 @@
     variant === "regular"
       ? "var(--color-foreground-level-6)"
       : "var(--color-negative)";
+  export let size = "p"; // h1
+
+  function getSize(): number {
+    switch (size) {
+      case "h1":
+        return 36;
+      default:
+        return 20;
+    }
+  }
 </script>
 
 <style>
@@ -35,6 +45,6 @@
 <div class="dai" class:negative={variant === 'negative'} {style}>
   <div class="symbol" />
   <Icon.CurrencyDAI
-    style="fill: {color}; padding-top: 3px; width: 20px; height: 20px;" />
+    style="fill: {color}; padding-top: 3px; width: {getSize()}px; height: {getSize()}px;" />
   <slot />
 </div>

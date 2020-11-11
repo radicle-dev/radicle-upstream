@@ -1,10 +1,7 @@
 <script lang="ts">
-  import * as svelteStore from "svelte/store";
-
   import { build, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 
-  import { Button } from "../../DesignSystem/Primitive";
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
   import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
 
@@ -20,14 +17,21 @@
     padding: 0 var(--content-padding);
     margin: 0 auto;
   }
+
+  .container {
+    display: flex;
+    align-items: baseline;
+  }
 </style>
 
 <div class="funding-container">
   {#if $wallet.status === Status.Connected}
-    <WalletPanel
-      onDisconnect={wallet.disconnect}
-      account={$wallet.connected.account} />
-    <Pool pool={pool.make(wallet)} />
+    <div class="container">
+      <WalletPanel
+        onDisconnect={wallet.disconnect}
+        account={$wallet.connected.account} />
+      <Pool pool={pool.make(wallet)} />
+    </div>
   {:else}
     <ConnectWallet
       onConnect={wallet.connect}

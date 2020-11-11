@@ -12,37 +12,49 @@
 <style>
   .wrapper {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
+    flex-direction: column;
 
-    text-align: center;
-    padding: var(--content-padding) 0;
+    width: 35vw;
+    max-width: 400px;
+
+    border: 1px solid #ebeff3;
+    box-sizing: border-box;
+    border-radius: 8px;
+
+    padding-top: var(--content-padding);
+    padding-bottom: 0px;
   }
 
-  .balance,
+  h3,
+  h1 {
+    padding: 0 var(--content-padding);
+  }
+
+  h1 {
+    margin: 1.35rem 0 1rem -3px;
+    color: var(--color-secondary);
+  }
+
   .address {
-    color: var(--color-foreground-level-6);
-  }
-
-  .balance {
     display: flex;
     align-items: center;
-  }
+    justify-content: space-between;
 
-  .address {
-    border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
-    padding: 7px 14px;
-
-    margin-left: 12px;
+    border-top: 1px solid var(--color-foreground-level-2);
+    padding: calc(var(--content-padding) / 2) var(--content-padding);
+    color: var(--color-foreground-level-6);
   }
 </style>
 
 <div class="wrapper">
-  <p class="balance typo-text-bold">
-    <Dai>{account.balance}</Dai>
-  </p>
-  <p class="address typo-text-bold">
+  <h3>Balance</h3>
+  <h1>
+    <Dai color={'var(--color-secondary)'} size={'h1'}>
+      {wallet.abbreviateNumber(account.balance)}
+    </Dai>
+  </h1>
+
+  <div class="address typo-text">
     <Copyable
       showIcon={false}
       styleContent={false}
@@ -50,11 +62,12 @@
       notificationText="Address copied to the clipboard">
       {displayAddress(account.address)}
     </Copyable>
-  </p>
-  <Button
-    style="margin-left: 7px;"
-    variant="transparent"
-    on:click={onDisconnect}>
-    Disconnect
-  </Button>
+
+    <Button
+      variant="transparent"
+      on:click={onDisconnect}
+      style="color: var(--color-foreground-level-3)">
+      ↩
+    </Button>
+  </div>
 </div>
