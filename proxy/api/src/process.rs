@@ -116,11 +116,11 @@ async fn run_rigging(
 
     let subscriptions = notification::Subscriptions::default();
     let peer_subscriptions = subscriptions.clone();
-    let seeds_store = ctx.store().clone();
+    let server_ctx = ctx.clone();
 
     let server = async move {
         log::info!("starting API");
-        let api = http::api(ctx.clone(), subscriptions.clone());
+        let api = http::api(server_ctx, subscriptions.clone());
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
             ([127, 0, 0, 1], PORT),
             async move {
@@ -159,6 +159,7 @@ async fn run_rigging(
         tasks.push(peer.map_err(RunError::from).boxed());
 
         if let Some(seeds_sender) = seeds_sender {
+            let seeds_store = ctx.store().clone();
             let seeds_event_task = coco::SpawnAbortable::new(async move {
                 let mut last_seeds: Vec<seed::Seed> = vec![];
                 let mut timer = tokio::time::interval(Duration::from_secs(1));
