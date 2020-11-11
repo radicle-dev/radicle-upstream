@@ -232,6 +232,9 @@ impl Repository {
                 }
                 Self::setup_remote(&repo, url, &default_branch)?;
 
+                log::debug!("Setting upstream to default branch");
+                crate::project::set_rad_upstream(&repo, &default_branch)?;
+
                 Ok(repo)
             },
         }
@@ -250,10 +253,6 @@ impl Repository {
         let mut git_remote = Self::existing_remote(repo, &url)?
             .map_or_else(|| Remote::rad_remote(url, None).create(repo), Ok)?;
         Self::push_default(&mut git_remote, default_branch)?;
-
-        log::debug!("Setting upstream to default branch");
-        crate::project::set_rad_upstream(repo, default_branch)?;
-
         Ok(())
     }
 
