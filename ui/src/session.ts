@@ -191,7 +191,7 @@ export const addSeed = async (seed: string): Promise<boolean> => {
   // running async remote validations in in the background. If we remove the
   // async then the seed input form will have to be submitted twice to take any
   // effect.
-  seedValidation.validate(seed);
+  await seedValidation.validate(seed);
   if (get(seedValidation).status !== ValidationStatus.Success) return false;
 
   updateCoCo({ seeds: [...get(settings).coco.seeds, seed] });
