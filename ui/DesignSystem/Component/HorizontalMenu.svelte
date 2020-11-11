@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SvelteComponent } from "svelte";
+  import type { SvelteComponent } from "svelte";
   import { location } from "svelte-spa-router";
 
   import * as path from "../../src/path";
