@@ -23,12 +23,12 @@ export const show = (message: string, context: unknown): void => {
 
 // Fatal application errors that trigger a blue screen
 export type FatalError =
-  | { kind: FatalErrorKind.SESSION }
-  | { kind: FatalErrorKind.PROXY_EXIT; data: ipc.ProxyError };
+  | { kind: FatalErrorKind.Session }
+  | { kind: FatalErrorKind.ProxyExit; data: ipc.ProxyError };
 
 export enum FatalErrorKind {
-  SESSION = "SESSION",
-  PROXY_EXIT = "PROXY_EXIT",
+  Session = "SESSION",
+  ProxyExit = "PROXY_EXIT",
 }
 
 const fatalErrorWritable: svelteStore.Writable<FatalError | null> = svelteStore.writable(
@@ -43,7 +43,7 @@ export const setFatal = (fatalError: FatalError): void => {
 
 ipc.listenProxyError(proxyError => {
   console.error("Proxy process exited", { proxyError });
-  setFatal({ kind: FatalErrorKind.PROXY_EXIT, data: proxyError });
+  setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
 
 // Value is `true` if there was a fatal error
