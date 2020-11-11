@@ -25,12 +25,12 @@
 <style>
   .incoming-container {
     margin: 2rem 0;
-    padding: var(--content-padding);
-    padding-top: calc(1.2 * var(--content-padding));
+    padding: calc(var(--content-padding) / 2);
 
     border: 1px solid #ebeff3;
     box-sizing: border-box;
     border-radius: 8px;
+    background-color: var(--color-secondary-level-1);
   }
 
   .row {
@@ -38,20 +38,10 @@
     justify-content: space-between;
   }
 
-  h3,
-  p {
-    color: #546474;
-  }
-
-  header h3 + p {
-    margin-top: 10px;
-  }
-
-  .item {
+  .text {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    min-width: 200px;
+    color: var(--color-secondary);
   }
 
   .item > * + * {
@@ -62,25 +52,23 @@
 <Remote store={pool.data} let:data={poolData}>
   <div class="incoming-container">
     <div class="row">
-      <header>
-        <h3>Incoming support</h3>
-        <p>Funds from your supporters will show up here.</p>
-      </header>
-      <div class="item">
-        <p>Balance</p>
-        <p class="typo-text-bold row">
-          <Dai>{poolData.collectableFunds}</Dai>
-        </p>
-        {#if poolData.collectableFunds > 0 && !ongoingCollect}
-          <Button
-            style="margin-left: 12px;"
-            disabled={ongoingCollect}
-            on:click={collectFunds}
-            variant={'primary'}>
-            Cash out
-          </Button>
-        {/if}
+      <div class="text">
+        There’s
+        <div class="typo-text-bold">
+          <Dai color={'var(--color-secondary)'} style="margin-right: 5px">
+            {poolData.collectableFunds}
+          </Dai>
+        </div>
+        waiting on you from supporters.
       </div>
+
+      <Button
+        style="margin-left: 12px;"
+        disabled={ongoingCollect}
+        on:click={collectFunds}
+        variant={'secondary'}>
+        Cash out
+      </Button>
     </div>
   </div>
 </Remote>
