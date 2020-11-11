@@ -208,8 +208,8 @@ export const checkout = (
   urn: urn.Urn,
   path: string,
   peerId?: identity.PeerId
-): Promise<boolean> => {
-  return api.post<CheckoutInput, boolean>(`projects/${urn}/checkout`, {
+): Promise<string> => {
+  return api.post<CheckoutInput, string>(`projects/${urn}/checkout`, {
     path,
     peerId,
   });

@@ -87,7 +87,7 @@
         {:else}
           <File
             active={entry.path === $objectPath}
-            href={path.projectSource(projectUrn)}
+            href={path.projectSourceCode(projectUrn)}
             name={entry.info.name}
             on:click={() => {
               selectPath(entry.path);

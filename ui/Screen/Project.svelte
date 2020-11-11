@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { getContext } from "svelte";
-  import Router, { push } from "svelte-spa-router";
+  import { push } from "svelte-spa-router";
 
   import { isExperimental, openPath } from "../src/ipc";
   import * as menu from "../src/menu";
@@ -37,23 +37,8 @@
   import { Icon } from "../DesignSystem/Primitive";
 
   import Source from "./Project/Source.svelte";
-  import Issues from "./Project/Issues.svelte";
-  import Issue from "./Project/Issue.svelte";
-  import Revisions from "./Project/Revisions.svelte";
-  import Commit from "./Project/Commit.svelte";
-  import Commits from "./Project/Commits.svelte";
   import CheckoutButton from "./Project/CheckoutButton.svelte";
   import PeerSelector from "./Project/PeerSelector.svelte";
-
-  const routes = {
-    "/projects/:urn/": Source,
-    "/projects/:urn/source": Source,
-    "/projects/:urn/issues": Issues,
-    "/projects/:urn/issue": Issue,
-    "/projects/:urn/commit/:hash": Commit,
-    "/projects/:urn/commits": Commits,
-    "/projects/:urn/revisions": Revisions,
-  };
 
   export let params: { urn: Urn };
 
@@ -70,32 +55,17 @@
       {
         icon: Icon.House,
         title: "Source",
-        href: path.projectSource(project.urn),
+        href: path.projectSourceCode(project.urn),
         looseActiveStateMatching: true,
       },
       {
         icon: Icon.Commit,
         title: "Commits",
         counter: commitCounter,
-        href: path.projectCommits(project.urn),
+        href: path.projectSourceCommits(project.urn),
         looseActiveStateMatching: true,
       },
     ];
-    isExperimental() &&
-      items.push(
-        {
-          icon: Icon.ExclamationCircle,
-          title: "Issues",
-          href: path.projectIssues(urn),
-          looseActiveStateMatching: false,
-        },
-        {
-          icon: Icon.Revision,
-          title: "Revisions",
-          href: path.projectRevisions(urn),
-          looseActiveStateMatching: false,
-        }
-      );
     return items;
   };
 
@@ -209,6 +179,6 @@
           on:checkout={ev => handleCheckout(ev, project, $selectedPeer)} />
       </div>
     </Header.Large>
-    <Router {routes} />
+    <Source projectUrn={project.urn} />
   </Remote>
 </SidebarLayout>

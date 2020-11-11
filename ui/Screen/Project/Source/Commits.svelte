@@ -2,20 +2,20 @@
   import { push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as path from "../../src/path";
-  import { commits as store } from "../../src/screen/project";
-  import { formatTime } from "../../src/source";
-  import type { Commit } from "../../src/source";
-  import * as urn from "../../src/urn";
+  import * as path from "../../../src/path";
+  import { commits as store } from "../../../src/screen/project";
+  import { formatTime } from "../../../src/source";
+  import type { Commit } from "../../../src/source";
+  import * as urn from "../../../src/urn";
 
-  import { Remote } from "../../DesignSystem/Component";
-  import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
+  import { Remote } from "../../../DesignSystem/Component";
+  import CommitTeaser from "../../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
 
   export let params: { urn: urn.Urn };
 
   const { urn: projectUrn } = params;
   const onSelect = (commit: Commit) => {
-    push(path.projectCommit(projectUrn, commit.sha1));
+    push(path.projectSourceCommit(projectUrn, commit.sha1));
   };
 </script>
 

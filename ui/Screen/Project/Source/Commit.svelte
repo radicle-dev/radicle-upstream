@@ -2,15 +2,15 @@
   import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as notification from "../../src/notification";
-  import { commit as store, selectCommit } from "../../src/screen/project";
-  import * as remote from "../../src/remote";
-  import * as urn from "../../src/urn";
+  import * as notification from "../../../src/notification";
+  import { commit as store, selectCommit } from "../../../src/screen/project";
+  import * as remote from "../../../src/remote";
+  import * as urn from "../../../src/urn";
 
-  import { Icon } from "../../DesignSystem/Primitive";
-  import { Header, Remote } from "../../DesignSystem/Component";
+  import { Icon } from "../../../DesignSystem/Primitive";
+  import { Header, Remote } from "../../../DesignSystem/Component";
 
-  import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
+  import FileDiff from "../../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
 
   export let params: { hash: string; urn: urn.Urn };
   const { hash } = params;

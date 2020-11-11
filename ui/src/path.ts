@@ -18,16 +18,13 @@ export const userProfile = (urn: Urn): string => `/user/${urn}`;
 export const userProfileProjects = (urn: Urn): string =>
   `/user/${urn}/projects`;
 
-export const projectCommit = (urn: Urn, hash: string): string =>
-  `/projects/${urn}/commit/${hash}`;
-export const projectCommits = (urn: Urn): string => `/projects/${urn}/commits`;
-export const projectIssues = (urn: Urn): string => `/projects/${urn}/issues`;
-export const projectIssue = (urn: Urn): string => `/projects/${urn}/issue`;
-export const projectRevisions = (urn: Urn): string =>
-  `/projects/${urn}/revisions`;
-export const projectSource = (urn: Urn): string => `/projects/${urn}/source`;
-export const projectUntracked = (urn: string): string =>
-  `/projects/untracked/${urn}`;
+export const project = (urn: Urn): string => `/projects/${urn}`;
+export const projectSourceCode = (urn: Urn): string =>
+  `/projects/${urn}/source/code`;
+export const projectSourceCommit = (urn: Urn, hash: string): string =>
+  `/projects/${urn}/source/commit/${hash}`;
+export const projectSourceCommits = (urn: Urn): string =>
+  `/projects/${urn}/source/commits`;
 
 export const parseQueryString = (querystring: string): ParsedQs => {
   return parse(querystring);

@@ -58,7 +58,7 @@
     <Icon.Commit style="fill: var(--color-secondary)" />
     <a
       class="commit-sha typo-text-small-mono"
-      href={path.projectCommit(projectUrn, sha)}
+      href={path.projectSourceCommit(projectUrn, sha)}
       use:link>
       {sha.substring(0, 7)}
     </a>

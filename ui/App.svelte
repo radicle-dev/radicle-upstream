@@ -40,6 +40,7 @@
     "/settings": Settings,
     "/profile/*": Profile,
     "/projects/:urn/*": Project,
+    "/projects/:urn": Project,
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,

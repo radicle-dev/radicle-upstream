@@ -74,7 +74,7 @@
           : { type: RepoType.Existing, path: existingRepositoryPath },
       });
 
-      push(path.projectSource(response.urn));
+      push(path.project(response.urn));
       notification.info(
         `Project ${response.metadata.name} successfully created`
       );

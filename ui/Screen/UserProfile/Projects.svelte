@@ -10,7 +10,7 @@
   export let params: { urn: string };
 
   const select = ({ detail: project }: { detail: Project }) => {
-    push(path.projectSource(project.urn));
+    push(path.project(project.urn));
   };
 
   fetchProjects(params.urn);
