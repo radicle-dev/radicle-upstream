@@ -73,7 +73,6 @@ interface UpdateSettings extends event.Event<Kind> {
 type Msg = ClearCache | Fetch | UpdateSettings;
 
 const fetchSession = async (): Promise<void> => {
-  // return fetchSessionRetry().catch(sessionStore.error);
   try {
     const ses = await api.withRetry(() => api.get<SessionData>(`session`), 200);
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
