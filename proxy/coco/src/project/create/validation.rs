@@ -179,7 +179,7 @@ impl Repository {
     ///
     ///   * Failed to setup the repository
     pub fn setup_repo(self, description: &str) -> Result<git2::Repository, super::Error> {
-        let (repo, url, default_branch) = match self {
+        match self {
             Self::Existing {
                 repo,
                 url,
@@ -189,7 +189,8 @@ impl Repository {
                     "Setting up existing repository @ '{}'",
                     repo.path().display()
                 );
-                Ok::<_, Error>((repo, url, default_branch))
+                Self::setup_remote(&repo, url, &default_branch)?;
+                Ok(repo)
             },
             Self::New {
                 path,
@@ -198,14 +199,14 @@ impl Repository {
                 default_branch,
             } => {
                 let path = path.join(name);
+                log::debug!("Setting up new repository @ '{}'", path.display());
                 let repo = Self::initialise(path, description, &default_branch)?;
                 Self::initial_commit(&repo, &default_branch)?;
-                Ok::<_, Error>((repo, url, default_branch))
+                Self::setup_remote(&repo, url, &default_branch)?;
+                crate::project::set_rad_upstream(&repo, &default_branch)?;
+                Ok(repo)
             },
-        }?;
-
-        Self::setup_remote(&repo, url, &default_branch)?;
-        Ok(repo)
+        }
     }
 
     fn initialise(
@@ -266,10 +267,6 @@ impl Repository {
         let mut git_remote = Self::existing_remote(repo, &url)?
             .map_or_else(|| Remote::rad_remote(url, None).create(repo), Ok)?;
         Self::push_default(&mut git_remote, default_branch)?;
-
-        log::debug!("Setting upstream to default branch");
-        crate::project::set_rad_upstream(repo, default_branch)?;
-
         Ok(())
     }
 
