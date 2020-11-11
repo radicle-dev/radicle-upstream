@@ -25,7 +25,7 @@ interface Notification {
 type Notifications = Notification[];
 
 // STATE
-const notificationsStore = writable([]);
+const notificationsStore = writable<Notification[]>([]);
 export const store: Readable<Notifications> = derived(
   notificationsStore,
   (state: Notifications) => state
@@ -91,9 +91,7 @@ const show = (
     },
   };
 
-  const notifications = get(notificationsStore);
-  notifications.unshift(notification);
-  notificationsStore.set(notifications);
+  notificationsStore.update(notifications => [notification, ...notifications]);
 
   setTimeout(() => {
     filter(id);

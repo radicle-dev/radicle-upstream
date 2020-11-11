@@ -1,7 +1,7 @@
-import * as project from "../project";
-import * as session from "../session";
+import type * as project from "../project";
+import type * as session from "../session";
 import * as settings from "../settings";
-import * as source from "../source";
+import type * as source from "../source";
 import * as identity from "../identity";
 
 type MockedResponse =

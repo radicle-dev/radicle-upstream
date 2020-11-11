@@ -3,7 +3,7 @@ import { Readable, derived, get } from "svelte/store";
 import * as api from "./api";
 import * as error from "./error";
 import * as event from "./event";
-import * as identity from "./identity";
+import type * as identity from "./identity";
 import * as notification from "./notification";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
