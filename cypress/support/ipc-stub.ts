@@ -54,7 +54,8 @@ export function setup(window: Window): void {
   window.electron = {
     ipcRenderer: {
       invoke: (msg, params) => {
-        return electronStubs[msg](params);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return electronStubs[msg](params as any);
       },
       on: ipcRendererMessages.on.bind(ipcRendererMessages),
     },
