@@ -287,6 +287,15 @@ export const code: Readable<remote.Data<Code>> = derived(
                 path,
               },
             });
+          })
+          .catch(err => {
+            set({
+              status: remote.Status.Success,
+              data: {
+                kind: CodeView.Error,
+                error: err,
+              },
+            });
           });
       }
     }

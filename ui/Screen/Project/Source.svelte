@@ -103,7 +103,7 @@
           {:else if view.kind === CodeView.Error}
             <EmptyState
               emoji="👀"
-              headerText={view.file.message}
+              headerText={view.error}
               on:primaryAction={onRoot}
               primaryActionText="Back to source"
               style="height: 320px;"
