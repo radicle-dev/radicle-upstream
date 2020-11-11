@@ -112,7 +112,7 @@ async fn run_rigging(
 
     if let Some(seeds_sender) = seeds_sender {
         let seeds_store = ctx.store().clone();
-        coco::SpawnAbortable::new(async move {
+        let _seeds_event_task = coco::SpawnAbortable::new(async move {
             let mut last_seeds: Vec<seed::Seed> = vec![];
             let mut timer = tokio::time::interval(Duration::from_secs(1));
 
@@ -155,7 +155,7 @@ async fn run_rigging(
     };
 
     if let Some(peer) = peer {
-        coco::SpawnAbortable::new({
+        let _peer_event_task = coco::SpawnAbortable::new({
             let mut peer_events = peer.subscribe();
 
             async move {
