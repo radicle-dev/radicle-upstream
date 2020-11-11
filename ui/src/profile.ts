@@ -81,7 +81,7 @@ export const showNotificationsForFailedProjects = async (): Promise<void> => {
   const failedProjects = await project.fetchFailed();
   failedProjects.forEach(failedProject => {
     error.show({
-      code: "Project failed to load",
+      code: "project-request-failure",
       message: `The project ${failedProject.metadata.name} could not be loaded`,
       details: failedProject,
     });
