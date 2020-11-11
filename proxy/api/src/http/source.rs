@@ -233,13 +233,8 @@ mod handler {
     pub async fn tags(
         ctx: context::Unsealed,
         project_urn: coco::Urn,
-        super::TagQuery { peer_id }: super::TagQuery,
+        _query: super::TagQuery,
     ) -> Result<impl Reply, Rejection> {
-        if let Some(_peer_id) = peer_id {
-            let tags: Vec<coco::Tag> = vec![];
-            return Ok(reply::json(&tags));
-        }
-
         let branch = ctx
             .state
             .find_default_branch(project_urn)
