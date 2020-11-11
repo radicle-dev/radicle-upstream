@@ -4,7 +4,7 @@ use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf, sync::Arc, time
 
 use librad::{
     git::{
-        include::Include,
+        include::{self, Include},
         local::{transport, url::LocalUrl},
         refs::Refs,
         repo, storage,
@@ -507,21 +507,22 @@ impl State {
 
         let meta = {
             let results = self.transport_results();
-            let meta = self
+            let (meta, repo) = self
                 .api
                 .with_storage(move |storage| {
                     let _ = storage.create_repo(&meta)?;
                     log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
 
-                    repository
+                    let repo = repository
                         .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
                         .map_err(project::create::Error::from)?;
 
-                    Ok::<_, Error>(meta)
+                    Ok::<_, Error>((meta, repo))
                 })
                 .await??;
-
             Self::process_transport_results(&results)?;
+            let include_path = self.update_include(meta.urn()).await?;
+            include::set_include_path(&repo, include_path)?;
             meta
         };
 
@@ -562,10 +563,15 @@ impl State {
     ///
     /// * When the storage operation fails.
     pub async fn track(&self, urn: RadUrn, remote: PeerId) -> Result<(), Error> {
-        Ok(self
-            .api
-            .with_storage(move |storage| storage.track(&urn, &remote))
-            .await??)
+        {
+            let urn = urn.clone();
+            self.api
+                .with_storage(move |storage| storage.track(&urn, &remote))
+                .await??;
+        }
+        let path = self.update_include(urn).await?;
+        log::debug!("Updated include path @ `{}`", path.display());
+        Ok(())
     }
 
     /// Wrapper around the storage untrack.
@@ -574,10 +580,19 @@ impl State {
     ///
     /// * When the storage operation fails.
     pub async fn untrack(&self, urn: RadUrn, remote: PeerId) -> Result<bool, Error> {
-        Ok(self
-            .api
-            .with_storage(move |storage| storage.untrack(&urn, &remote))
-            .await??)
+        let res = {
+            let urn = urn.clone();
+            self.api
+                .with_storage(move |storage| storage.untrack(&urn, &remote))
+                .await??
+        };
+
+        // Only need to update if we did untrack an existing peer
+        if res {
+            let path = self.update_include(urn).await?;
+            log::debug!("Updated include path @ `{}`", path.display());
+        }
+        Ok(res)
     }
 
     /// Get the [`user::User`]s that are tracking this project, including their [`PeerId`].
@@ -743,7 +758,7 @@ impl State {
             tracked
                 .into_iter()
                 .filter_map(|peer| project::Peer::replicated_remote(peer).map(|(p, u)| (u, p))),
-        );
+        )?;
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);
         include.save()?;
