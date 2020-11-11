@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import type { PeerId } from "../src/identity";
   import { PeerType, Role } from "../src/project";
   import type { User } from "../src/project";
@@ -99,7 +99,7 @@
           style="display: flex; align-self: flex-start;"
           variant="secondary"
           disabled={!newPeer}
-          on:click={() => submitPeer(project.id)}>
+          on:click={() => submitPeer(project.urn)}>
           Add
         </Button>
       </div>
@@ -119,7 +119,7 @@
               unfollowPeer(event.detail.projectUrn, event.detail.peerId);
             }}
             projectName={project.metadata.name}
-            projectUrn={project.id} />
+            projectUrn={project.urn} />
         </List>
       {/if}
     </Remote>
@@ -146,7 +146,7 @@
               cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
             }}
             projectName={project.metadata.name}
-            projectUrn={project.id} />
+            projectUrn={project.urn} />
         </List>
       {/if}
     </Remote>
