@@ -329,6 +329,11 @@ export const commit: Readable<remote.Data<source.Commit>> = derived(
         .fetchCommit(projectUrn, commit)
         .then(commit => set({ status: remote.Status.Success, data: commit }));
     }
+
+    return () => {
+      selectedCommitStore.set(null);
+      set({ status: remote.Status.NotAsked });
+    };
   },
   { status: remote.Status.NotAsked } as remote.Data<source.Commit>
 );
