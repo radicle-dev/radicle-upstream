@@ -80,9 +80,10 @@ export const fetchFollowing = (): void => {
 export const showNotificationsForFailedProjects = async (): Promise<void> => {
   const failedProjects = await project.fetchFailed();
   failedProjects.forEach(failedProject => {
-    error.show(
-      `The project ${failedProject.metadata.name} could not be loaded`,
-      failedProject
-    );
+    error.show({
+      code: "Project failed to load",
+      message: `The project ${failedProject.metadata.name} could not be loaded`,
+      details: failedProject,
+    });
   });
 };

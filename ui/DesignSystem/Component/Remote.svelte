@@ -10,16 +10,23 @@
   export let store: Readable<remote.Data<any>>;
   export let context: string | undefined = undefined;
 
+  export let disableErrorLogging: boolean = false;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type SuccessState = { status: remote.Status.Success; data: any };
 
   // If no error slot was provided, svelte will instantiate the fallback div
   let noErrorSlotProvided: HTMLDivElement;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let storeValue: remote.Data<any>;
   $: storeValue = $store;
 
-  $: if (storeValue.status === remote.Status.Error && !!noErrorSlotProvided) {
+  $: if (
+    storeValue.status === remote.Status.Error &&
+    !!noErrorSlotProvided &&
+    !disableErrorLogging
+  ) {
     console.error("Remote error", storeValue.error);
     notification.error(storeValue.error.message);
   }
