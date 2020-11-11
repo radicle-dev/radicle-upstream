@@ -16,7 +16,7 @@
 
   const hide = () => (expanded = false);
 
-  let checkoutDirectoryPath;
+  let checkoutPath;
 </script>
 
 <style>
@@ -48,24 +48,22 @@
       style="margin-bottom: 0.5rem;"
       placeholder="~/path/to/folder"
       buttonVariant="outline"
-      bind:path={checkoutDirectoryPath} />
+      bind:path={checkoutPath} />
 
     {#if $settings.appearance.hints.showRemoteHelper}
       <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
     {/if}
 
     <Tooltip
-      value={!checkoutDirectoryPath ? 'Please select a folder' : ''}
+      value={!checkoutPath ? 'Please select a folder' : ''}
       position="bottom">
       <Button
         dataCy="checkout-button"
         on:click={() => {
-          dispatch('checkout', {
-            checkoutDirectoryPath: checkoutDirectoryPath,
-          });
+          dispatch('checkout', { checkoutPath: checkoutPath });
           toggleDropdown();
         }}
-        disabled={!checkoutDirectoryPath}
+        disabled={!checkoutPath}
         variant="secondary"
         style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
         Checkout

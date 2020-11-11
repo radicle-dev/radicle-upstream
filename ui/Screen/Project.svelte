@@ -100,7 +100,7 @@
   };
 
   const handleCheckout = async (
-    { detail: checkoutPath }: { detail: string },
+    { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
     project: Project,
     peer: User | null
   ) => {
