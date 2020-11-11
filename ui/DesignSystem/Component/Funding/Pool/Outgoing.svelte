@@ -81,7 +81,7 @@
 
 <style>
   .outgoing-container {
-    margin: 2rem 0;
+    margin: 0;
     padding: var(--content-padding) 0px 0px 0;
 
     border: 1px solid #ebeff3;

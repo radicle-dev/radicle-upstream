@@ -1,25 +1,11 @@
 <script lang="typescript">
-  import { Dai, Remote } from "../../../Component";
+  import { Dai } from "../../../Component";
   import { Button } from "../../../Primitive";
 
-  import * as modal from "../../../../src/modal";
-  import * as path from "../../../../src/path";
-  // N.B: Without this alias, rollup runs into issues importing 'Pool' or 'as pool'.
-  import * as _pool from "../../../../src/funding/pool";
-  import * as transaction from "../../../../src/transaction";
-
-  export let pool: _pool.Pool;
-
-  const collectFunds = async (): Promise<void> => {
-    _pool.store.set(pool);
-    modal.toggle(path.collectFunds());
-  };
-
-  let ongoingCollect = false;
-
-  transaction.store.subscribe(_ => {
-    ongoingCollect = transaction.ongoing(transaction.TxKind.CollectFunds);
-  });
+  export let amount: string = "0";
+  export let onCollect: () => void;
+  export let ongoingCollect = false;
+  export let style = "";
 </script>
 
 <style>
@@ -48,26 +34,24 @@
   }
 </style>
 
-<Remote store={pool.data} let:data={poolData}>
-  <div class="incoming-container">
-    <div class="row">
-      <div class="text">
-        There’s
-        <div class="typo-text-bold">
-          <Dai color={'var(--color-secondary)'} style="margin-right: 5px">
-            {poolData.collectableFunds}
-          </Dai>
-        </div>
-        waiting on you from supporters.
+<div class="incoming-container" {style}>
+  <div class="row">
+    <div class="text">
+      There’s
+      <div class="typo-text-bold">
+        <Dai color={'var(--color-secondary)'} style="margin-right: 5px">
+          {amount}
+        </Dai>
       </div>
-
-      <Button
-        style="margin-left: 12px;"
-        disabled={ongoingCollect}
-        on:click={collectFunds}
-        variant={'secondary'}>
-        Cash out
-      </Button>
+      waiting on you from supporters.
     </div>
+
+    <Button
+      style="margin-left: 12px;"
+      disabled={ongoingCollect}
+      on:click={onCollect}
+      variant={'secondary'}>
+      Cash out
+    </Button>
   </div>
-</Remote>
+</div>
