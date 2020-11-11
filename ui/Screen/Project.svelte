@@ -2,42 +2,28 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import { isExperimental, openPath } from "../src/ipc";
-  import * as menu from "../src/menu";
-  import * as notification from "../src/notification";
   import * as path from "../src/path";
-  import { checkout, isMaintainer } from "../src/project";
-  import type { Project, User } from "../src/project";
+  import { isMaintainer } from "../src/project";
   import {
-    commits as commitsStore,
     current as store,
     fetch,
     peerSelection,
-    revisionSelection,
     selectPeer,
     selectedPeer,
-    selectRevision,
-    selectedRevision,
   } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
-  import * as screen from "../src/screen";
-  import type { Revision } from "../src/source";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
 
   import {
     FollowToggle,
     Header,
-    HorizontalMenu,
     Remote,
-    RevisionSelector,
     SidebarLayout,
     Tooltip,
   } from "../DesignSystem/Component";
-  import { Icon } from "../DesignSystem/Primitive";
 
   import Source from "./Project/Source.svelte";
-  import CheckoutButton from "./Project/CheckoutButton.svelte";
   import PeerSelector from "./Project/PeerSelector.svelte";
 
   export let params: { urn: Urn };
@@ -47,60 +33,6 @@
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
-  $: topbarMenuItems = (
-    project: Project,
-    commitCounter?: number
-  ): menu.HorizontalItem[] => {
-    const items = [
-      {
-        icon: Icon.House,
-        title: "Source",
-        href: path.projectSourceCode(project.urn),
-        looseActiveStateMatching: true,
-      },
-      {
-        icon: Icon.Commit,
-        title: "Commits",
-        counter: commitCounter,
-        href: path.projectSourceCommits(project.urn),
-        looseActiveStateMatching: true,
-      },
-    ];
-    return items;
-  };
-
-  const handleCheckout = async (
-    { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
-    project: Project,
-    peer: User | null
-  ) => {
-    if (peer === null) {
-      notification.error(`Can't checkout without a peer selected`);
-      return;
-    }
-
-    try {
-      screen.lock();
-      const path = await checkout(
-        project.urn,
-        checkoutPath,
-        peer.identity.peerId
-      );
-
-      notification.info(
-        `${project.metadata.name} checked out to ${path}`,
-        true,
-        "Open folder",
-        () => {
-          openPath(path);
-        }
-      );
-    } catch (error) {
-      notification.error(`Checkout failed: ${error.message}`, true);
-    } finally {
-      screen.unlock();
-    }
-  };
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
     if (peer.identity.urn === session.identity.urn) {
       push(path.profileProjects());
@@ -111,21 +43,10 @@
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {
     selectPeer(peer);
   };
-  const onSelectRevision = ({ detail: revision }: { detail: Revision }) => {
-    selectRevision(revision);
-  };
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
 </script>
-
-<style>
-  .revision-selector-wrapper {
-    width: 18rem;
-    position: relative;
-    margin-right: 2rem;
-  }
-</style>
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
@@ -152,33 +73,7 @@
           </Remote>
         </div>
       </div>
-      <div slot="left">
-        <!-- FIXME(xla): These elements belong in Source.svelte -->
-        <div style="display: flex">
-          <Remote store={revisionSelection} let:data={revisions}>
-            <div class="revision-selector-wrapper">
-              <RevisionSelector
-                on:select={onSelectRevision}
-                selected={$selectedRevision || revisions.default}
-                {revisions} />
-            </div>
-          </Remote>
-          <Remote store={commitsStore} let:data={commits}>
-            <HorizontalMenu
-              items={topbarMenuItems(project, commits.stats.commits)} />
-            <div slot="loading">
-              <HorizontalMenu
-                items={topbarMenuItems(project)}
-                style="display: inline" />
-            </div>
-          </Remote>
-        </div>
-      </div>
-      <div slot="right">
-        <CheckoutButton
-          on:checkout={ev => handleCheckout(ev, project, $selectedPeer)} />
-      </div>
     </Header.Large>
-    <Source projectUrn={project.urn} />
+    <Source {project} />
   </Remote>
 </SidebarLayout>

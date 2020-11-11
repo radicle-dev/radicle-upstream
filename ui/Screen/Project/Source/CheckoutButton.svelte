@@ -1,22 +1,20 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Button, Input, Icon } from "../../DesignSystem/Primitive";
-  import { RemoteHelperHint, Tooltip } from "../../DesignSystem/Component";
-  import { dismissRemoteHelperHint, settings } from "../../src/session.ts";
-  import Overlay from "../../DesignSystem/Component/Overlay.svelte";
+  import { Button, Input, Icon } from "../../../DesignSystem/Primitive";
+  import { RemoteHelperHint, Tooltip } from "../../../DesignSystem/Component";
+  import Overlay from "../../../DesignSystem/Component/Overlay.svelte";
 
-  const dispatch = createEventDispatcher();
+  import { dismissRemoteHelperHint, settings } from "../../../src/session.ts";
 
+  let checkoutPath;
   let expanded = false;
 
+  const dispatch = createEventDispatcher();
+  const hide = () => (expanded = false);
   const toggleDropdown = () => {
     expanded = !expanded;
   };
-
-  const hide = () => (expanded = false);
-
-  let checkoutPath;
 </script>
 
 <style>
