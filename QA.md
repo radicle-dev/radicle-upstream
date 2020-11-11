@@ -177,7 +177,7 @@
 
 ### Proxy Error
 
-- [ ] Kill the proxy process while the app is running.
-- [ ] The app should show the blue screen with the proxy logs.
+- [ ] Killing the proxy process while the app is running shows a blue error
+      screen with the proxy logs.
 
 [re]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md
