@@ -1,7 +1,7 @@
 import { Readable, derived, get } from "svelte/store";
 
 import * as api from "./api";
-import type * as error from "./error";
+import * as error from "./error";
 import * as event from "./event";
 import type * as identity from "./identity";
 import * as notification from "./notification";
