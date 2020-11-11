@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SvelteComponent } from "svelte";
-  import * as svelteStore from "svelte/store";
+  import type * as svelteStore from "svelte/store";
 
   import { Button, Emoji, Icon } from "../DesignSystem/Primitive";
   import { Fullscreen } from "../DesignSystem/Component";
