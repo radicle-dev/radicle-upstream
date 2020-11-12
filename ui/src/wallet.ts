@@ -61,7 +61,6 @@ export function build(): Wallet {
       // N.B: this is actually called when the connection is established,
       // not when the modal is closed per se.
       modal.hide();
-      modal.toggle(path.linkAddress());
     },
   };
 
@@ -92,9 +91,6 @@ export function build(): Wallet {
   }
 
   async function disconnect() {
-    modal.toggle(path.linkAddress());
-    return;
-
     console.log("Disconnect");
     await walletConnect.killSession();
     // We need to reinitialize `WalletConnect` until this issue is fixed:
