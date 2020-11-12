@@ -1,19 +1,21 @@
 <script lang="typescript">
-  import { link } from "svelte-spa-router";
+  import { createEventDispatcher } from "svelte";
 
-  import * as path from "../../../src/path";
-  import * as source from "../../../src/source";
-  import * as urn from "../../../src/urn";
+  import type { Person } from "../../../src/source";
 
   import { Icon } from "../../Primitive";
 
   export let message: string;
-  export let projectUrn: urn.Urn;
   // FIXME(xla): Should be a proper type `Sha`.
   export let sha: string;
   export let style: string = "";
   export let timestamp: string;
-  export let user: source.Person;
+  export let user: Person;
+
+  const dispatch = createEventDispatcher();
+  const onSelect = () => {
+    dispatch("select", sha);
+  };
 </script>
 
 <style>
@@ -56,10 +58,8 @@
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <Icon.Commit style="fill: var(--color-secondary)" />
-    <a
-      class="commit-sha typo-text-small-mono"
-      href={path.projectSourceCommit(projectUrn, sha)}
-      use:link>
+    <!-- svelte-ignore a11y-missing-attribute -->
+    <a class="commit-sha typo-text-small-mono" on:click={onSelect}>
       {sha.substring(0, 7)}
     </a>
     <p class="commit-message typo-text-small">{message}</p>

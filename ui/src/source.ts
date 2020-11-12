@@ -1,9 +1,9 @@
 import { Readable, writable } from "svelte/store";
 
 import * as api from "./api";
-import * as identity from "./identity";
+import type { PeerId } from "./identity";
 import * as remote from "./remote";
-import * as urn from "./urn";
+import type { Urn } from "./urn";
 
 // TYPES
 export interface Person {
@@ -134,16 +134,13 @@ export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = (): void => objectPath.set(null);
 
-export const fetchCommit = (
-  projectUrn: urn.Urn,
-  sha1: string
-): Promise<Commit> => {
+export const fetchCommit = (projectUrn: Urn, sha1: string): Promise<Commit> => {
   return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
 
 export const fetchCommits = (
-  projectUrn: urn.Urn,
-  peerId: identity.PeerId,
+  projectUrn: Urn,
+  peerId: PeerId,
   branch: Branch
 ): Promise<CommitsHistory> => {
   return api
@@ -163,8 +160,8 @@ export const fetchCommits = (
 
 export const fetchObject = (
   type: ObjectType,
-  projectUrn: urn.Urn,
-  peerId: identity.PeerId,
+  projectUrn: Urn,
+  peerId: PeerId,
   path: string,
   revision: Revision
 ): Promise<SourceObject> => {
@@ -193,8 +190,8 @@ export const fetchObject = (
 };
 
 export const fetchBranches = (
-  projectUrn: urn.Urn,
-  peerId?: identity.PeerId
+  projectUrn: Urn,
+  peerId?: PeerId
 ): Promise<Branch[]> => {
   return api
     .get<string[]>(`source/branches/${projectUrn}`, {
@@ -209,10 +206,7 @@ export const fetchBranches = (
     );
 };
 
-export const fetchTags = (
-  projectUrn: urn.Urn,
-  peerId?: identity.PeerId
-): Promise<Tag[]> => {
+export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
   return api
     .get<string[]>(`source/tags/${projectUrn}`, {
       query: {
@@ -227,8 +221,8 @@ export const fetchTags = (
 };
 
 export const fetchRevisions = (
-  projectUrn: urn.Urn,
-  peerId?: identity.PeerId
+  projectUrn: Urn,
+  peerId?: PeerId
 ): Promise<Revisions> => {
   return Promise.all([
     fetchBranches(projectUrn, peerId),
@@ -238,22 +232,30 @@ export const fetchRevisions = (
   });
 };
 
+export const fetchTree = (
+  projectUrn: Urn,
+  peerId: PeerId,
+  revision: Revision,
+  prefix: string
+): Promise<Tree> => {
+  return api.get<Tree>(`source/tree/${projectUrn}`, {
+    query: { peerId, revision: { peerId, ...revision }, prefix },
+  });
+};
+
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);
 };
 
 export const tree = (
-  projectUrn: urn.Urn,
-  peerId: identity.PeerId,
+  projectUrn: Urn,
+  peerId: PeerId,
   revision: Revision,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
 
-  api
-    .get<Tree>(`source/tree/${projectUrn}`, {
-      query: { peerId, revision: { peerId, ...revision }, prefix },
-    })
+  fetchTree(projectUrn, peerId, revision, prefix)
     .then(treeStore.success)
     .catch(treeStore.error);
 
@@ -321,8 +323,8 @@ export const revisionQueryEq = (
 };
 
 export const fetchReadme = (
-  projectUrn: urn.Urn,
-  peerId: identity.PeerId,
+  projectUrn: Urn,
+  peerId: PeerId,
   revision: Revision,
   tree: Tree
 ): Promise<Readme | null> => {

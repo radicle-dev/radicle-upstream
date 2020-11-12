@@ -1,21 +1,19 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as path from "../../../src/path";
-  import { commits as store } from "../../../src/screen/project/source";
+  import { selectCommit, store } from "../../../src/screen/project/source";
   import { formatTime } from "../../../src/source";
   import type { Commit } from "../../../src/source";
-  import * as urn from "../../../src/urn";
+  import type { Urn } from "../../../src/urn";
 
   import { Remote } from "../../../DesignSystem/Component";
   import CommitTeaser from "../../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
 
-  export let params: { urn: urn.Urn };
+  export let params: { urn: Urn };
 
   const { urn: projectUrn } = params;
   const onSelect = (commit: Commit) => {
-    push(path.projectSourceCommit(projectUrn, commit.sha1));
+    selectCommit(commit);
   };
 </script>
 
@@ -58,14 +56,14 @@
 </style>
 
 <div class="commits-page" data-cy="commits-page">
-  <Remote {store} let:data={commits}>
-    {#each commits.history as history}
+  <Remote {store} let:data={{ history }}>
+    {#each history.history as group}
       <div class="commit-group">
         <header>
-          <p>{formatTime(history.time * 1000)}</p>
+          <p>{formatTime(group.time * 1000)}</p>
         </header>
         <ul>
-          {#each history.commits as commit}
+          {#each group.commits as commit}
             <li class="commit" on:click={() => onSelect(commit)}>
               <CommitTeaser
                 message={commit.summary}

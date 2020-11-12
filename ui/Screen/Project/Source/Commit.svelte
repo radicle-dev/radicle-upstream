@@ -3,16 +3,19 @@
   import { format } from "timeago.js";
 
   import * as notification from "../../../src/notification";
-  import { commit as store, fetchCommit } from "../../../src/screen/project/source";
+  import {
+    commit as store,
+    fetchCommit,
+  } from "../../../src/screen/project/source";
   import * as remote from "../../../src/remote";
-  import * as urn from "../../../src/urn";
+  import type { Urn } from "../../../src/urn";
 
   import { Icon } from "../../../DesignSystem/Primitive";
   import { Header, Remote } from "../../../DesignSystem/Component";
 
   import FileDiff from "../../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
 
-  export let params: { hash: string; urn: urn.Urn };
+  export let params: { hash: string; urn: Urn };
   const { hash } = params;
 
   $: if ($store.status === remote.Status.Error) {

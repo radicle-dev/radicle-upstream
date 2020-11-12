@@ -1,7 +1,7 @@
 import { parse, ParsedQs } from "qs";
 import regexparam from "regexparam";
 
-import { Urn } from "./urn";
+import type { Urn } from "./urn";
 
 export const blank = (): string => "/";
 export const settings = (): string => "/settings";

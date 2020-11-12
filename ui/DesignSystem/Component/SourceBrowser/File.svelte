@@ -1,11 +1,8 @@
-<script>
-  import { link } from "svelte-spa-router";
-
+<script lang="typescript">
   import { Icon } from "../../Primitive";
 
-  export let name = null;
-  export let href = null;
-  export let active = false;
+  export let active: boolean;
+  export let name: string;
 </script>
 
 <style>
@@ -25,12 +22,12 @@
     white-space: nowrap;
   }
 
-  a {
+  .file {
     display: flex;
     border-radius: 0.25rem;
   }
 
-  a:hover {
+  .file:hover {
     background-color: var(--color-foreground-level-1);
   }
 
@@ -45,8 +42,7 @@
   }
 </style>
 
-<!-- svelte-ignore a11y-missing-attribute -->
-<a class="file" class:active use:link={href} on:click>
+<div class="file" class:active on:click>
   <Icon.File />
   <span class="file-name">{name}</span>
-</a>
+</div>

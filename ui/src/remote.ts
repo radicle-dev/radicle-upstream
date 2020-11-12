@@ -15,12 +15,17 @@ export type Data<T> =
   | { status: Status.Success; data: T }
   | { status: Status.Error; error: Error };
 
+export const is = <T>(data: Data<T>, status: Status): boolean => {
+  return data.status === status;
+};
+
 // A Store is a typesafe svelte readable store that exposes `updateStatus`
 // and `update`. It's like a Writable but it can't be externally `set`, and
 // it only accepts data that conforms to the `RemoteData` interface
 //
 // a Readable store of Remote Data based on type T
 export interface Store<T> extends Readable<Data<T>> {
+  is: (status: Status) => boolean;
   loading: () => void;
   success: (response: T) => void;
   error: (error: Error) => void;
@@ -52,7 +57,7 @@ export const createStore = <T>(): Store<T> => {
     } else {
       return () => {
         set({ status: Status.NotAsked });
-      }
+      };
     }
   });
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -83,6 +88,9 @@ export const createStore = <T>(): Store<T> => {
   const resetInternalStore = () => update(() => ({ status: Status.NotAsked }));
 
   return {
+    is: (status: Status): boolean => {
+      return get(internalStore).status === status;
+    },
     subscribe,
     success: (response: T): void =>
       updateInternalStore(Status.Success, response),

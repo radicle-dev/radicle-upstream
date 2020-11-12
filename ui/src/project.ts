@@ -6,7 +6,7 @@ import * as event from "./event";
 import type * as identity from "./identity";
 import * as remote from "./remote";
 import * as source from "./source";
-import * as urn from "./urn";
+import type { Urn } from "./urn";
 import * as validation from "./validation";
 import type * as waitingRoom from "./waitingRoom";
 
@@ -92,7 +92,7 @@ export interface Stats {
 }
 
 export interface Project {
-  urn: urn.Urn;
+  urn: Urn;
   shareableEntityIdentifier: string;
   metadata: Metadata;
   stats: Stats;
@@ -205,7 +205,7 @@ interface CheckoutInput {
 }
 
 export const checkout = (
-  urn: urn.Urn,
+  urn: Urn,
   path: string,
   peerId?: identity.PeerId
 ): Promise<string> => {
@@ -230,7 +230,7 @@ export const cancelRequest = (urn: string): Promise<null> => {
   return api.del(`projects/requests/${urn}`);
 };
 
-export const fetch = (projectUrn: urn.Urn): Promise<Project> => {
+export const fetch = (projectUrn: Urn): Promise<Project> => {
   return api.get<Project>(`projects/${projectUrn}`);
 };
 
@@ -238,7 +238,7 @@ export const fetchFailed = (): Promise<Project[]> => {
   return api.get<Project[]>("projects/failed");
 };
 
-export const fetchPeers = (projectUrn: urn.Urn): Promise<Peer[]> => {
+export const fetchPeers = (projectUrn: Urn): Promise<Peer[]> => {
   return api.get<Peer[]>(`projects/${projectUrn}/peers`);
 };
 
@@ -255,14 +255,14 @@ export const fetchUserList = (urn: string): Promise<Project[]> => {
 };
 
 export const trackPeer = (
-  projectUrn: urn.Urn,
+  projectUrn: Urn,
   peerId: identity.PeerId
 ): Promise<boolean> => {
   return api.put<null, boolean>(`projects/${projectUrn}/track/${peerId}`, null);
 };
 
 export const untrackPeer = (
-  projectUrn: urn.Urn,
+  projectUrn: Urn,
   peerId: identity.PeerId
 ): Promise<boolean> => {
   return api.put<null, boolean>(
@@ -396,6 +396,6 @@ export const repositoryPathValidationStore = (
 };
 
 // Checks if the provided user is part of the maintainer list of the project.
-export const isMaintainer = (userUrn: urn.Urn, project: Project): boolean => {
+export const isMaintainer = (userUrn: Urn, project: Project): boolean => {
   return project.metadata.maintainers.includes(userUrn);
 };

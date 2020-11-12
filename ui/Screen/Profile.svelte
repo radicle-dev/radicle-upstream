@@ -52,14 +52,15 @@
   <Header
     avatarFallback={session.identity.avatarFallback}
     name={session.identity.metadata.handle}
-    peerId={session.identity.peerId} />
+    peerId={session.identity.peerId}>
+    <div slot="top">
+      <Router routes={menuRoutes} />
+    </div>
+  </Header>
 
   <ActionBar>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
-    </div>
-    <div slot="top">
-      <Router routes={menuRoutes} />
     </div>
   </ActionBar>
 

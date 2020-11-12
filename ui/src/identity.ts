@@ -1,6 +1,6 @@
 import * as api from "./api";
 import * as remote from "./remote";
-import * as urn from "./urn";
+import type { Urn } from "./urn";
 
 // TYPES
 // FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
@@ -23,7 +23,7 @@ export interface Identity {
   peerId: PeerId;
   shareableEntityIdentifier: string;
   // FIXME(xla): Properly type urns.
-  urn: urn.Urn;
+  urn: Urn;
 }
 
 // STATE

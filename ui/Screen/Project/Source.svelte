@@ -2,12 +2,14 @@
   import Router, { push } from "svelte-spa-router";
 
   import { openPath } from "../../src/ipc";
-  import * as menu from "../../src/menu";
+  import type { HorizontalItem } from "../../src/menu";
   import * as notification from "../../src/notification";
   import * as path from "../../src/path";
   import { checkout } from "../../src/project";
   import type { Project, User } from "../../src/project";
   import {
+    fetch,
+    selectRevision,
     store,
   } from "../../src/screen/project/source";
   import type { Revision } from "../../src/source";
@@ -74,7 +76,7 @@
   const topbarMenuItems = (
     project: Project,
     commitCounter?: number
-  ): menu.HorizontalItem[] => {
+  ): HorizontalItem[] => {
     const items = [
       {
         icon: IconHouse,
@@ -94,6 +96,7 @@
   };
 
   push(path.projectSourceCode(project.urn));
+  fetch(project, selectedPeer);
 </script>
 
 <style>
@@ -125,7 +128,5 @@
     </div>
   </ActionBar>
 
-  <!--
   <Router {routes} />
-  -->
 </Remote>

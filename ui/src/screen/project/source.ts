@@ -1,89 +1,168 @@
-import { get } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
+import type { Readable, Writable } from "svelte/store";
+import { push } from "svelte-spa-router";
 
-import * as error from "../../error";
-import { Project, User } from "../../project";
+import type * as error from "../../error";
+import * as path from "../../path";
+import type { Project, User } from "../../project";
 import * as remote from "../../remote";
 import * as source from "../../source";
 
-export enum CodeView {
-  File = "FILE",
-  Root = "ROOT",
+export enum ViewKind {
+  Blob = "BLOB",
   Error = "ERROR",
+  Root = "ROOT",
 }
 
-interface Shared {
-  lastCommit: source.LastCommit;
-  path: string;
+interface Blob {
+  kind: ViewKind.Blob;
+  blob: source.Blob;
 }
 
-interface Error extends Shared {
-  kind: CodeView.Error;
+interface Error {
+  kind: ViewKind.Error;
   error: error.Error;
 }
 
-interface File extends Shared {
-  kind: CodeView.File;
-  file: source.Blob;
-  path: string;
-}
-
-interface Root extends Shared {
-  kind: CodeView.Root;
+interface Root {
+  kind: ViewKind.Root;
   readme: source.Readme | null;
 }
 
-type Code = Error | File | Root;
+type View = Blob | Error | Root;
+
+export interface Code {
+  lastCommit: source.LastCommit;
+  path: string;
+  view: View;
+}
 
 interface Screen {
+  code: Writable<Code>;
   history: source.CommitsHistory;
+  path: Readable<string>;
+  peer: User;
+  project: Project;
   revisions: source.Revisions;
   selectedRevision: source.Branch | source.Tag;
+  tree: source.Tree;
 }
+
+const pathStore = writable<string>("");
 
 const screenStore = remote.createStore<Screen>();
 export const store = screenStore.readable;
 
 export const fetch = async (project: Project, peer: User): Promise<void> => {
-  screenStore.loading();
+  if (!screenStore.is(remote.Status.Success)) {
+    screenStore.loading();
+  }
 
   try {
     const revisions = await source.fetchRevisions(project.urn, peer.peerId);
     const selectedRevision = defaultRevision(project, revisions);
-    const history = await source.fetchCommits(
-      project.urn,
-      peer.peerId,
-      selectedRevision
-    );
+    const [history, tree] = await Promise.all([
+      source.fetchCommits(project.urn, peer.peerId, selectedRevision),
+      source.fetchTree(project.urn, peer.peerId, selectedRevision, ""),
+    ]);
+    const root = await fetchRoot(project, peer, selectedRevision, tree);
 
-    screenStore.success({ history, revisions, selectedRevision });
+    screenStore.success({
+      code: writable<Code>(root),
+      path: derived(pathStore, store => store),
+      history,
+      peer,
+      project,
+      revisions,
+      selectedRevision,
+      tree,
+    });
   } catch (err) {
     screenStore.error(err);
   }
 };
 
-const codeStore = remote.createStore<Code>();
-export const code = codeStore.readable;
+export const selectPath = async (path: string): Promise<void> => {
+  const screen = get(screenStore);
 
-export const fetchCode = (): void => {
-  return;
+  if (screen.status === remote.Status.Success) {
+    const {
+      data: { peer, project, selectedRevision, tree },
+    } = screen;
+
+    pathStore.set(path);
+
+    let code: Code;
+    try {
+      if (path === "") {
+        code = await fetchRoot(project, peer, selectedRevision, tree);
+      } else {
+        code = await fetchBlob(project, peer, selectedRevision, path);
+      }
+    } catch (err) {
+      code = {
+        lastCommit: tree.info.lastCommit,
+        path,
+        view: {
+          kind: ViewKind.Error,
+          error: err,
+        },
+      };
+    }
+
+    screen.data.code.set(code);
+  }
+};
+
+export const selectRevision = (revision: source.Revision): void => {
+  const current = get(screenStore);
+
+  if (current.status === remote.Status.Success) {
+    const { data } = current;
+    const { peer, project } = data;
+
+    Promise.all([
+      source.fetchCommits(project.urn, peer.peerId, revision as source.Branch),
+      source.fetchTree(project.urn, peer.peerId, revision, ""),
+    ])
+      .then(([history, tree]) => {
+        screenStore.success({
+          ...data,
+          history,
+          selectedRevision: revision as source.Branch | source.Tag,
+          tree,
+        });
+      })
+      .catch(screenStore.error);
+  }
 };
 
 const commitStore = remote.createStore<source.Commit>();
 export const commit = commitStore.readable;
 
-export const fetchCommit = (): void => {
-  return;
+export const fetchCommit = (sha1: string): void => {
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const {
+      data: { project },
+    } = screen;
+
+    source
+      .fetchCommit(project.urn, sha1)
+      .then(commitStore.success)
+      .catch(commitStore.error);
+  }
 };
 
-const commitsStore = remote.createStore<source.CommitsHistory>();
-export const commits = commitsStore.readable;
+export const selectCommit = (commit: source.Commit): void => {
+  const screen = get(screenStore);
 
-export const selectPath = (path: string): void => {
-  const current = get(codeStore);
-
-  if (current.status === remote.Status.Success) {
-    const { data } = current;
-    codeStore.success({ ...data, path });
+  if (screen.status === remote.Status.Success) {
+    const {
+      data: { project },
+    } = screen;
+    push(path.projectSourceCommit(project.urn, commit.sha1));
   }
 };
 
@@ -97,138 +176,49 @@ const defaultRevision = (
   return projectDefault ? projectDefault : revisions.branches[0];
 };
 
-/* export enum CodeView { */
-/*   File = "FILE", */
-/*   Root = "ROOT", */
-/*   Error = "ERROR", */
-/* } */
+const fetchBlob = async (
+  project: Project,
+  peer: User,
+  revision: source.Revision,
+  path: string
+): Promise<Code> => {
+  const blob = await source.fetchObject(
+    source.ObjectType.Blob,
+    project.urn,
+    peer.peerId,
+    path,
+    revision
+  );
+  return {
+    lastCommit: blob.info.lastCommit,
+    path,
+    view: {
+      kind: ViewKind.Blob,
+      blob: blob as source.Blob,
+    },
+  };
+};
 
-/* interface Shared { */
-/*   lastCommit: source.LastCommit; */
-/* } */
-
-/* interface Error { */
-/*   kind: CodeView.Error; */
-/*   error: error.Error; */
-/* } */
-
-/* interface File extends Shared { */
-/*   kind: CodeView.File; */
-/*   file: source.Blob; */
-/*   path: string; */
-/* } */
-
-/* interface Root extends Shared { */
-/*   kind: CodeView.Root; */
-/*   readme: source.Readme | null; */
-/* } */
-
-/* type Code = Error | File | Root; */
-
-/* const revisionsStore = remote.createStore<source.Revisions>(); */
-/* export const revisionSelection: Readable<remote.Data<{ */
-/*   default: source.Branch; */
-/*   branches: source.Branch[]; */
-/*   tags: source.Tag[]; */
-/* }>> = derived([projectStore, revisionsStore], ([project, store]) => { */
-/*   if (store.status === remote.Status.Success) { */
-/*     let defaultBranch = store.data.branches[0]; */
-
-/*     if (project.status === remote.Status.Success) { */
-/*       const projectDefault = store.data.branches.find( */
-/*         (branch: source.Branch) => */
-/*           branch.name === project.data.metadata.defaultBranch */
-/*       ); */
-
-/*       if (projectDefault) { */
-/*         defaultBranch = projectDefault; */
-/*       } */
-/*     } */
-
-/*     return { */
-/*       status: remote.Status.Success, */
-/*       data: { ...store.data, default: defaultBranch }, */
-/*     }; */
-/*   } */
-
-/*   return store; */
-/* }); */
-
-/* const selectedRevisionStore = writable<source.Revision | null>(null); */
-/* export const selectedRevision = derived( */
-/*   [selectedRevisionStore, revisionSelection], */
-/*   ([selected, selection]) => { */
-/*     if (selected) { */
-/*       return selected; */
-/*     } */
-
-/*     if (selection.status === remote.Status.Success) { */
-/*       return selection.data.default; */
-/*     } */
-
-/*     return null; */
-/*   } */
-/* ); */
-
-/* const selectedPathStore = writable<string | null>(null); */
-
-/* export const params: Readable<remote.Data<Params>> = derived( */
-/*   [projectStore, selectedPeer, selectedRevision, selectedPathStore], */
-/*   ([remoteProject, peer, revision, selectedPath], set) => { */
-/*     if ( */
-/*       remoteProject.status === remote.Status.NotAsked || */
-/*       remoteProject.status === remote.Status.Loading */
-/*     ) { */
-/*       set(remoteProject); */
-/*     } */
-
-/*     // We can't continue meaningfully if either of them are missing. */
-/*     if (!peer || !revision) { */
-/*       return; */
-/*     } */
-
-/*     if (remoteProject.status === remote.Status.Success) { */
-/*       const path = selectedPath ? selectedPath : ""; */
-/*       const project = remoteProject.data; */
-/*       const current = get(params); */
-
-/*       if (current.status === remote.Status.Success) { */
-/*         const { */
-/*           project: { urn: currentUrn }, */
-/*           peer: { peerId: currentPeerId }, */
-/*           revision: currentRevision, */
-/*           path: currentPath, */
-/*         } = current.data; */
-
-/*         if ( */
-/*           project.urn === currentUrn && */
-/*           peer.peerId === currentPeerId && */
-/*           revision.type === currentRevision.type && */
-/*           (revision as source.Branch | source.Tag).name === */
-/*             (currentRevision as source.Branch | source.Tag).name && */
-/*           path === currentPath */
-/*         ) { */
-/*           return; */
-/*         } */
-/*       } */
-
-/*       set({ */
-/*         status: remote.Status.Success, */
-/*         data: { */
-/*           project, */
-/*           peer, */
-/*           revision, */
-/*           path: path ? path : "", */
-/*         }, */
-/*       }); */
-/*     } */
-
-/*     return (): void => { */
-/*       set({ status: remote.Status.NotAsked }); */
-/*     }; */
-/*   }, */
-/*   { status: remote.Status.NotAsked } as remote.Data<Params> */
-/* ); */
+const fetchRoot = async (
+  project: Project,
+  peer: User,
+  revision: source.Revision,
+  tree: source.Tree
+): Promise<Code> => {
+  return {
+    lastCommit: tree.info.lastCommit,
+    path: "",
+    view: {
+      kind: ViewKind.Root,
+      readme: await source.fetchReadme(
+        project.urn,
+        peer.peerId,
+        revision,
+        tree
+      ),
+    },
+  };
+};
 
 /* export const code: Readable<remote.Data<Code>> = derived( */
 /*   [params], */
@@ -313,96 +303,3 @@ const defaultRevision = (
 /*   }, */
 /*   { status: remote.Status.NotAsked } as remote.Data<Code> */
 /* ); */
-
-/* const selectedCommitStore = writable<string | null>(null); */
-/* export const commit: Readable<remote.Data<source.Commit>> = derived( */
-/*   [projectStore, selectedCommitStore], */
-/*   ([remoteProject, commit], set) => { */
-/*     if ( */
-/*       remoteProject.status === remote.Status.NotAsked || */
-/*       remoteProject.status === remote.Status.Loading */
-/*     ) { */
-/*       set(remoteProject); */
-/*     } */
-
-/*     if (!commit) { */
-/*       return; */
-/*     } */
-
-/*     if (remoteProject.status === remote.Status.Success) { */
-/*       const { urn: projectUrn } = remoteProject.data; */
-
-/*       source */
-/*         .fetchCommit(projectUrn, commit) */
-/*         .then(commit => set({ status: remote.Status.Success, data: commit })); */
-/*     } */
-
-/*     return () => { */
-/*       selectedCommitStore.set(null); */
-/*       set({ status: remote.Status.NotAsked }); */
-/*     }; */
-/*   }, */
-/*   { status: remote.Status.NotAsked } as remote.Data<source.Commit> */
-/* ); */
-
-/* export const commits: Readable<remote.Data<source.CommitsHistory>> = derived( */
-/*   [projectStore, selectedPeer, selectedRevision], */
-/*   ([remoteProject, peer, revision], set) => { */
-/*     if ( */
-/*       remoteProject.status === remote.Status.NotAsked || */
-/*       remoteProject.status === remote.Status.Loading */
-/*     ) { */
-/*       set(remoteProject); */
-/*     } */
-
-/*     if (!peer || !revision) { */
-/*       return; */
-/*     } */
-
-/*     if (remoteProject.status === remote.Status.Success) { */
-/*       // TODO(xla): Only branches are supported by the underlying endpoint, this should be extended to tags as well. */
-/*       if (revision.type !== source.RevisionType.Branch) { */
-/*         return; */
-/*       } */
-
-/*       const { urn: projectUrn } = remoteProject.data; */
-
-/*       source */
-/*         .fetchCommits(projectUrn, peer.peerId, revision) */
-/*         .then(commits => set({ status: remote.Status.Success, data: commits })); */
-/*     } */
-/*   }, */
-/*   { status: remote.Status.NotAsked } as remote.Data<source.CommitsHistory> */
-/* ); */
-
-/* const fetchRevisions = (projectUrn: urn.Urn): void => { */
-/*   revisionsStore.loading(); */
-
-/*   const currentPeer = get(selectedPeer); */
-
-/*   if (!currentPeer) { */
-/*     return; */
-/*   } */
-
-/*   source */
-/*     .fetchRevisions(projectUrn, currentPeer.peerId) */
-/*     .then(revisionsStore.success) */
-/*     .catch(revisionsStore.error); */
-/* }; */
-
-/* export const selectCommit = (hash: string): void => { */
-/*   selectedCommitStore.set(hash); */
-/* }; */
-
-/* export const selectPath = (path: string): void => { */
-/*   selectedPathStore.set(path); */
-/* }; */
-
-/* export const selectRevision = (revision: source.Revision): void => { */
-/*   const selected = revision as source.Branch | source.Tag; */
-/*   const current = get(selectedRevision); */
-
-/*   if (selected.type !== current.type || selected.name !== current.name) { */
-/*     selectedRevisionStore.set(revision); */
-/*   } */
-/* }; */

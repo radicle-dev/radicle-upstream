@@ -17,8 +17,9 @@
     expanded = false;
   };
   const select = (revision: Revision) => {
-    hide();
     dispatch("select", revision);
+    selected = revision as Branch | Tag;
+    hide();
   };
   const toggle = () => (expanded = !expanded);
 </script>
