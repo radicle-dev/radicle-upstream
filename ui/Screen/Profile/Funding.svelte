@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { build, Status } from "../../src/wallet";
+  import { wallet, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
   import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
 
   import Pool from "../Funding/Pool.svelte";
-
-  const wallet = build();
 </script>
 
 <style>

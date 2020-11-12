@@ -17,6 +17,134 @@ import * as path from "../src/path";
 
 import * as notification from "../src/notification";
 
+export enum Status {
+  Connected = "CONNECTED",
+  Connecting = "CONNECTING",
+  NotConnected = "NOT_CONNECTED",
+}
+
+export type State =
+  | { status: Status.NotConnected; error?: Error }
+  | { status: Status.Connecting }
+  | { status: Status.Connected; connected: Connected };
+
+export interface Connected {
+  account: Account;
+}
+
+export interface Account {
+  address: string;
+  balance: string;
+}
+
+export interface Wallet extends svelteStore.Readable<State> {
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  signer: ethers.Signer;
+}
+
+export const provider = new ethers.providers.JsonRpcProvider(
+  "http://localhost:8545"
+);
+
+export function build(): Wallet {
+  const stateStore = svelteStore.writable<State>({
+    status: Status.NotConnected,
+  });
+
+  const qrCodeModal = {
+    open: (uri: string, _cb: unknown, _opts?: unknown) => {
+      uriStore.set(uri);
+      modal.toggle(path.walletQRCode());
+    },
+    close: async () => {
+      // N.B: this is actually called when the connection is established,
+      // not when the modal is closed per se.
+      modal.hide();
+      modal.toggle(path.linkAddress());
+    },
+  };
+
+  let walletConnect = new WalletConnect({
+    bridge: "https://bridge.walletconnect.org",
+    qrcodeModal: qrCodeModal,
+  });
+
+  const signer = new WalletConnectSigner(walletConnect, provider);
+
+  window.ethereumDebug = new EthereumDebug(provider);
+
+  // Connect to a wallet using walletconnect
+  async function connect() {
+    if (svelteStore.get(stateStore).status !== Status.NotConnected) {
+      throw new Error("Already connected");
+    }
+
+    try {
+      await walletConnect.connect();
+    } catch (error) {
+      stateStore.set({ status: Status.NotConnected, error });
+      notification.error(
+        `Failed to connect wallet: ${error.toString().replace("Error: ", "")}`
+      );
+    }
+    await initialize();
+  }
+
+  async function disconnect() {
+    modal.toggle(path.linkAddress());
+    return;
+
+    console.log("Disconnect");
+    await walletConnect.killSession();
+    // We need to reinitialize `WalletConnect` until this issue is fixed:
+    // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
+    walletConnect = new WalletConnect({
+      bridge: "https://bridge.walletconnect.org",
+      qrcodeModal: qrCodeModal,
+    });
+    signer.walletConnect = walletConnect;
+    stateStore.set({ status: Status.NotConnected });
+  }
+
+  async function initialize() {
+    if (!walletConnect.connected) {
+      return;
+    }
+
+    try {
+      stateStore.set({ status: Status.Connecting });
+      const accountAddress = await signer.getAddress();
+      const balance = await signer.getBalance();
+      const connected = {
+        account: {
+          address: accountAddress,
+          balance: balance.toString(),
+        },
+      };
+      stateStore.set({ status: Status.Connected, connected });
+    } catch (error) {
+      console.error(error);
+      stateStore.set({ status: Status.NotConnected, error });
+    }
+  }
+
+  initialize();
+
+  return {
+    subscribe: stateStore.subscribe,
+    connect,
+    disconnect,
+    signer,
+  };
+}
+
+declare global {
+  interface Window {
+    ethereumDebug: EthereumDebug;
+  }
+}
+
 class WalletConnectSigner extends ethers.Signer {
   public walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
@@ -88,130 +216,6 @@ function bytesLikeToString(
   }
 }
 
-export enum Status {
-  Connected = "CONNECTED",
-  Connecting = "CONNECTING",
-  NotConnected = "NOT_CONNECTED",
-}
-
-export type State =
-  | { status: Status.NotConnected; error?: Error }
-  | { status: Status.Connecting }
-  | { status: Status.Connected; connected: Connected };
-
-export interface Connected {
-  account: Account;
-}
-
-export interface Account {
-  address: string;
-  balance: string;
-}
-
-export interface Wallet extends svelteStore.Readable<State> {
-  connect(): Promise<void>;
-  disconnect(): Promise<void>;
-  signer: ethers.Signer;
-}
-
-export const provider = new ethers.providers.JsonRpcProvider(
-  "http://localhost:8545"
-);
-
-export function build(): Wallet {
-  const stateStore = svelteStore.writable<State>({
-    status: Status.NotConnected,
-  });
-
-  const qrCodeModal = {
-    open: (uri: string, _cb: unknown, _opts?: unknown) => {
-      uriStore.set(uri);
-      modal.toggle(path.walletQRCode());
-    },
-    close: async () => {
-      // N.B: this is actually called when the connection is established,
-      // not when the modal is closed per se.
-      modal.hide();
-    },
-  };
-
-  let walletConnect = new WalletConnect({
-    bridge: "https://bridge.walletconnect.org",
-    qrcodeModal: qrCodeModal,
-  });
-
-  const signer = new WalletConnectSigner(walletConnect, provider);
-
-  window.ethereumDebug = new EthereumDebug(provider);
-
-  // Connect to a wallet using walletconnect
-  async function connect() {
-    if (svelteStore.get(stateStore).status !== Status.NotConnected) {
-      throw new Error("Already connected");
-    }
-
-    try {
-      await walletConnect.connect();
-    } catch (error) {
-      stateStore.set({ status: Status.NotConnected, error });
-      notification.error(
-        `Failed to connect wallet: ${error.toString().replace("Error: ", "")}`
-      );
-    }
-    await initialize();
-  }
-
-  async function disconnect() {
-    console.log("Disconnect");
-    await walletConnect.killSession();
-    // We need to reinitialize `WalletConnect` until this issue is fixed:
-    // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
-    walletConnect = new WalletConnect({
-      bridge: "https://bridge.walletconnect.org",
-      qrcodeModal: qrCodeModal,
-    });
-    signer.walletConnect = walletConnect;
-    stateStore.set({ status: Status.NotConnected });
-  }
-
-  async function initialize() {
-    if (!walletConnect.connected) {
-      return;
-    }
-
-    try {
-      stateStore.set({ status: Status.Connecting });
-      const accountAddress = await signer.getAddress();
-      const balance = await signer.getBalance();
-      const connected = {
-        account: {
-          address: accountAddress,
-          balance: balance.toString(),
-        },
-      };
-      stateStore.set({ status: Status.Connected, connected });
-    } catch (error) {
-      console.error(error);
-      stateStore.set({ status: Status.NotConnected, error });
-    }
-  }
-
-  initialize();
-
-  return {
-    subscribe: stateStore.subscribe,
-    connect,
-    disconnect,
-    signer,
-  };
-}
-
-declare global {
-  interface Window {
-    ethereumDebug: EthereumDebug;
-  }
-}
-
 class EthereumDebug {
   private provider: ethers.providers.JsonRpcProvider;
 
@@ -256,3 +260,6 @@ export function abbreviateNumber(number: number): string {
   // format number and add suffix
   return scaled.toFixed(1) + suffix;
 }
+
+// The wallet singleton
+export const wallet = build();
