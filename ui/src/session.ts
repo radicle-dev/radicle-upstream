@@ -3,7 +3,7 @@ import { Readable, derived, get } from "svelte/store";
 import * as api from "./api";
 import * as error from "./error";
 import * as event from "./event";
-import * as identity from "./identity";
+import type * as identity from "./identity";
 import * as notification from "./notification";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
@@ -32,6 +32,12 @@ export interface SessionData {
 // STATE
 const sessionStore = remote.createStore<Session>();
 export const session = sessionStore.readable;
+
+sessionStore.subscribe(data => {
+  if (data.status === remote.Status.Error) {
+    error.setFatal();
+  }
+});
 
 export const settings: Readable<Settings> = derived(sessionStore, sess => {
   if (

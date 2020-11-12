@@ -1,7 +1,6 @@
 <script lang="typescript">
   import type { Readable } from "svelte/store";
 
-  import * as error from "../../src/error";
   import * as notification from "../../src/notification";
   import * as remote from "../../src/remote";
 
