@@ -75,7 +75,7 @@ export const setFatal = (fatalError: FatalError): void => {
 ipc.listenProxyError(proxyError => {
   log({
     code: Code.UnexpectedProxyExit,
-    message: "Proxy process exicted unexpectedly",
+    message: "Proxy process exited unexpectedly",
     details: { proxyError },
   });
   setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
