@@ -15,7 +15,7 @@ context("project peer management", () => {
   it("shows our own peer", () => {
     commands
       .pick("followed-peers")
-      .contains("li", "secretariat / platinum")
+      .contains("li", "secretariat")
       .within(() => {
         cy.contains("maintainer").should("exist");
       });

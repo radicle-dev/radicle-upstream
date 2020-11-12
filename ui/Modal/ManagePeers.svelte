@@ -119,7 +119,6 @@
             on:unfollow={event => {
               unfollowPeer(event.detail.projectUrn, event.detail.peerId);
             }}
-            projectName={project.metadata.name}
             projectUrn={project.id} />
         </List>
       {/if}
@@ -146,7 +145,6 @@
             on:cancel={event => {
               cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
             }}
-            projectName={project.metadata.name}
             projectUrn={project.id} />
         </List>
       {/if}
