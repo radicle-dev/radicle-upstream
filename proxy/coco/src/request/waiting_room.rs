@@ -139,6 +139,14 @@ impl<T, D> WaitingRoom<T, D> {
         self.requests.get(&urn.id)
     }
 
+    /// Permanently remove a request from the `WaitingRoom`. If the `urn` did exist in the
+    /// `WaitingRoom` then the request will be returned.
+    ///
+    /// Otherwise, it will return `None` if no such request existed.
+    pub fn remove(&mut self, urn: &RadUrn) -> Option<SomeRequest<T>> {
+        self.requests.remove(&urn.id)
+    }
+
     /// Get the [`Request::elapsed`] time between the `timestamp` provided and the current timestamp
     /// of the underlying `Request`.
     ///
@@ -794,5 +802,26 @@ mod test {
         assert_eq!(ready, Some((url.urn, &expected)));
 
         Ok(())
+    }
+
+    #[test]
+    fn can_remove_requests() {
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let peer = PeerId::from(SecretKey::new());
+        let url = RadUrl {
+            urn,
+            authority: peer,
+        };
+        assert_eq!(waiting_room.remove(&url.urn), None);
+
+        let expected = {
+            waiting_room.request(&url.urn, 0);
+            waiting_room.get(&url.urn).cloned()
+        };
+        let removed = waiting_room.remove(&url.urn);
+        assert_eq!(removed, expected);
     }
 }
