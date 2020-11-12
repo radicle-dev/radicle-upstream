@@ -35,7 +35,9 @@ export const session = sessionStore.readable;
 
 sessionStore.subscribe(data => {
   if (data.status === remote.Status.Error) {
-    error.setFatal();
+    error.setFatal({
+      kind: error.FatalErrorKind.Session,
+    });
   }
 });
 
@@ -74,7 +76,7 @@ type Msg = ClearCache | Fetch | UpdateSettings;
 
 const fetchSessionRetry = async () => {
   return api
-    .withRetry(() => api.get<SessionData>(`session`), 200)
+    .withRetry(() => api.get<SessionData>(`session`), 100, 50)
     .then(ses =>
       sessionStore.success({ status: Status.UnsealedSession, ...ses })
     )
