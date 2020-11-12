@@ -1,13 +1,13 @@
 import * as svelteStore from "svelte/store";
 import { PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/PoolFactory";
-import { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
+import type { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
 
 import * as transaction from "../transaction";
 import * as validation from "../validation";
 
 import { Wallet, Account, Status } from "../wallet";
 import * as remote from "../remote";
-import { BigNumberish } from "ethers";
+import type { BigNumberish } from "ethers";
 
 export const store = svelteStore.writable<Pool | null>(null);
 

@@ -1,4 +1,3 @@
-import QRCodeModal from "@walletconnect/qrcode-modal";
 import WalletConnect from "@walletconnect/client";
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
@@ -8,7 +7,10 @@ import {
   defineReadOnly,
   resolveProperties,
 } from "@ethersproject/properties";
-import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
+import type {
+  Provider,
+  TransactionRequest,
+} from "@ethersproject/abstract-provider";
 
 import * as modal from "../src/modal";
 import * as path from "../src/path";
@@ -122,7 +124,7 @@ export function build(): Wallet {
   });
 
   const qrCodeModal = {
-    open: (uri: string, _cb: any, _opts?: any) => {
+    open: (uri: string, _cb: unknown, _opts?: unknown) => {
       uriStore.set(uri);
       modal.toggle(path.walletQRCode());
     },
@@ -242,7 +244,7 @@ export function abbreviateNumber(number: number): string {
   const tier = (Math.log10(number) / 3) | 0;
 
   // if zero, we don't need a suffix
-  if (tier == 0) return `${number  }`;
+  if (tier == 0) return `${number}`;
 
   // get suffix and determine scale
   const suffix = SI_SYMBOL[tier];

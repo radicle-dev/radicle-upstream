@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
-  import { isExperimental } from "../../native/ipc.js";
+  import { isExperimental } from "../src/ipc";
   import * as path from "../src/path";
   import type { UnsealedSession } from "../src/session";
 

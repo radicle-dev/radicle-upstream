@@ -1,7 +1,8 @@
 import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
-import { BigNumberish, ContractTransaction } from "ethers";
+import type { BigNumberish, ContractTransaction } from "ethers";
+import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import { provider } from "./wallet";
 
@@ -152,7 +153,7 @@ export function add(tx: Tx): void {
   cap();
 }
 
-export function updateStatus(hash: string, status: TxStatus) {
+export function updateStatus(hash: string, status: TxStatus): void {
   store.subscribe(txs => {
     const tx = txs.find(tx => tx.hash === hash);
     if (tx) {
@@ -183,7 +184,9 @@ async function updateStatuses() {
   });
 }
 
-async function status(receipt: any): Promise<TxStatus | undefined> {
+async function status(
+  receipt: TransactionReceipt
+): Promise<TxStatus | undefined> {
   // TODO(nuno): Need to workout a way of detecting failed txs prior to the
   // byzantium fork. Or might not be necessary at all.
   if (receipt.byzantium && receipt.status === 0) {
