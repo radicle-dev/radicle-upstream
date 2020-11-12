@@ -4,11 +4,10 @@
   import type { User } from "../src/project";
   import {
     addPeer,
-    current as store,
     pendingPeers,
-    peerSelection,
     peerValidation,
     removePeer,
+    store,
   } from "../src/screen/project";
   import type { Urn } from "../src/urn";
 
@@ -79,7 +78,7 @@
   }
 </style>
 
-<Remote {store} let:data={project}>
+<Remote {store} let:data={{ peerSelection, project }}>
   <div data-cy="remotes-modal" class="container">
     <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
 
@@ -105,24 +104,20 @@
       </div>
     </form>
 
-    <Remote store={peerSelection} let:data>
-      {#if data.peers.length > 0}
-        <List
-          dataCy="followed-peers"
-          items={filteredPeers(data.peers)}
-          let:item={peer}
-          styleHoverState={false}
-          style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
-          <Peer
-            {peer}
-            on:unfollow={event => {
-              unfollowPeer(event.detail.projectUrn, event.detail.peerId);
-            }}
-            projectName={project.metadata.name}
-            projectUrn={project.urn} />
-        </List>
-      {/if}
-    </Remote>
+    <List
+      dataCy="followed-peers"
+      items={filteredPeers(peerSelection)}
+      let:item={peer}
+      styleHoverState={false}
+      style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
+      <Peer
+        {peer}
+        on:unfollow={event => {
+          unfollowPeer(event.detail.projectUrn, event.detail.peerId);
+        }}
+        projectName={project.metadata.name}
+        projectUrn={project.urn} />
+    </List>
 
     <Remote store={pendingPeers} let:data>
       {#if data.peers.length > 0}

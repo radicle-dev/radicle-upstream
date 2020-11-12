@@ -4,12 +4,11 @@
 
   import * as path from "../src/path";
   import { isMaintainer } from "../src/project";
+  import type { User } from "../src/project";
   import {
-    current as store,
     fetch,
-    peerSelection,
     selectPeer,
-    selectedPeer,
+    store,
   } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import { CSSPosition } from "../src/style";
@@ -49,7 +48,7 @@
 </script>
 
 <SidebarLayout dataCy="project-screen">
-  <Remote {store} let:data={{ project, peers }}>
+  <Remote {store} let:data={{ peerSelection, project, selectedPeer }}>
     <Header.Large
       urn={project.urn}
       name={project.metadata.name}
@@ -57,23 +56,19 @@
       stats={project.stats}>
       <div slot="top">
         <div style="display: flex">
-          <Remote store={peerSelection} let:data>
-            {#if data.peers.length > 0}
-              <PeerSelector
-                peers={data.peers}
-                on:open={onOpenPeer}
-                on:select={onSelectPeer}
-                selected={$selectedPeer || data.default} />
-              <Tooltip
-                position={CSSPosition.Left}
-                value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-                <FollowToggle disabled following />
-              </Tooltip>
-            {/if}
-          </Remote>
+          <PeerSelector
+            peers={peerSelection}
+            on:open={onOpenPeer}
+            on:select={onSelectPeer}
+            selected={selectedPeer} />
+          <Tooltip
+            position={CSSPosition.Left}
+            value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
+            <FollowToggle disabled following />
+          </Tooltip>
         </div>
       </div>
     </Header.Large>
-    <Source {project} />
+    <Source {project} {selectedPeer} />
   </Remote>
 </SidebarLayout>

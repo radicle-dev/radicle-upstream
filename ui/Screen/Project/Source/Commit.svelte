@@ -3,7 +3,7 @@
   import { format } from "timeago.js";
 
   import * as notification from "../../../src/notification";
-  import { commit as store, selectCommit } from "../../../src/screen/project";
+  import { commit as store, fetchCommit } from "../../../src/screen/project/source";
   import * as remote from "../../../src/remote";
   import * as urn from "../../../src/urn";
 
@@ -20,7 +20,7 @@
     notification.error("Could not fetch commit");
   }
 
-  selectCommit(hash);
+  fetchCommit(hash);
 </script>
 
 <style>

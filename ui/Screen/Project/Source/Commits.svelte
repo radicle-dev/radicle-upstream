@@ -3,7 +3,7 @@
   import { format } from "timeago.js";
 
   import * as path from "../../../src/path";
-  import { commits as store } from "../../../src/screen/project";
+  import { commits as store } from "../../../src/screen/project/source";
   import { formatTime } from "../../../src/source";
   import type { Commit } from "../../../src/source";
   import * as urn from "../../../src/urn";

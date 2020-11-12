@@ -4,7 +4,6 @@
   let scrollY = 0;
 
   $: if (wrapper) {
-    console.log(wrapper.getBoundingClientRect().top);
     scrollHeight = wrapper.getBoundingClientRect().top;
   }
 </script>

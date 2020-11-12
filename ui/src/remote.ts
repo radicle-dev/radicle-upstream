@@ -49,6 +49,10 @@ export const createStore = <T>(): Store<T> => {
   const internalStore = writable(initialState, set => {
     if (starter) {
       return starter(set);
+    } else {
+      return () => {
+        set({ status: Status.NotAsked });
+      }
     }
   });
   // eslint-disable-next-line @typescript-eslint/unbound-method

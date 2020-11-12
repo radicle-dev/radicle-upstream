@@ -8,12 +8,8 @@
   import { checkout } from "../../src/project";
   import type { Project, User } from "../../src/project";
   import {
-    commits as commitsStore,
-    revisionSelection,
-    selectedPeer,
-    selectRevision,
-    selectedRevision,
-  } from "../../src/screen/project";
+    store,
+  } from "../../src/screen/project/source";
   import type { Revision } from "../../src/source";
   import * as screen from "../../src/screen";
 
@@ -32,6 +28,7 @@
   import Commits from "./Source/Commits.svelte";
 
   export let project: Project;
+  export let selectedPeer: User;
 
   const routes = {
     "/projects/:urn/source/code": Code,
@@ -107,33 +104,28 @@
   }
 </style>
 
-<ActionBar>
-  <div slot="left">
-    <!-- FIXME(xla): These elements belong in Source.svelte -->
-    <div style="display: flex">
-      <Remote store={revisionSelection} let:data={revisions}>
+<Remote {store} let:data={{ history, revisions, selectedRevision }}>
+  <ActionBar>
+    <div slot="left">
+      <div style="display: flex">
         <div class="revision-selector-wrapper">
           <RevisionSelector
             on:select={onSelectRevision}
-            selected={$selectedRevision || revisions.default}
+            selected={selectedRevision}
             {revisions} />
         </div>
-      </Remote>
-      <Remote store={commitsStore} let:data={commits}>
-        <HorizontalMenu
-          items={topbarMenuItems(project, commits.stats.commits)} />
-        <div slot="loading">
-          <HorizontalMenu
-            items={topbarMenuItems(project)}
-            style="display: inline" />
-        </div>
-      </Remote>
-    </div>
-  </div>
-  <div slot="right">
-    <CheckoutButton
-      on:checkout={ev => onCheckout(ev, project, $selectedPeer)} />
-  </div>
-</ActionBar>
 
-<Router {routes} />
+        <HorizontalMenu
+          items={topbarMenuItems(project, history.stats.commits)} />
+      </div>
+    </div>
+    <div slot="right">
+      <CheckoutButton
+        on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
+    </div>
+  </ActionBar>
+
+  <!--
+  <Router {routes} />
+  -->
+</Remote>

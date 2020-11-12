@@ -3,10 +3,10 @@
 
   import {
     code,
-    params as store,
     CodeView,
     selectPath,
-  } from "../../../src/screen/project";
+    store,
+  } from "../../../src/screen/project/source";
 
   import CommitTeaser from "../../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import EmptyState from "../../../DesignSystem/Component/Remote.svelte";
@@ -59,7 +59,7 @@
 
 <div class="wrapper">
   <div class="container center-content">
-    <Remote {store} let:data={params}>
+    <Remote {store} let:data={{ project }}>
       <div class="column-left">
         <!-- Tree -->
         <div class="source-tree" data-cy="source-tree">

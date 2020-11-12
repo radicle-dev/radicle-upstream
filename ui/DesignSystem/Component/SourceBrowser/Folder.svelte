@@ -1,7 +1,7 @@
 <script lang="typescript">
   import type { PeerId } from "../../../src/identity";
   import * as path from "../../../src/path";
-  import { selectPath } from "../../../src/screen/project";
+  import { selectPath } from "../../../src/screen/project/source";
   import { tree, objectPath, ObjectType } from "../../../src/source";
   import type { Revision } from "../../../src/source";
   import * as urn from "../../../src/urn";

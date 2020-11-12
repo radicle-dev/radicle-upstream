@@ -1,74 +1,69 @@
-import { get, derived, writable, Readable } from "svelte/store";
+import { get, derived, Readable } from "svelte/store";
 
-import * as identity from "../identity";
+import type { PeerId} from "../identity";
 import * as project from "../project";
 import * as remote from "../remote";
-import * as urn from "../urn";
+import type { Urn } from "../urn";
 import * as validation from "../validation";
 
-const projectStore = remote.createStore<project.Project>();
-export const current = projectStore.readable;
+interface Screen {
+  peers: project.Peer[];
+  peerSelection: project.User[];
+  project: project.Project;
+  selectedPeer: project.User;
+}
 
-const peersStore = remote.createStore<project.Peer[]>();
-export const peerSelection: Readable<remote.Data<{
-  default: project.User;
-  peers: project.User[];
-}>> = derived(peersStore, store => {
-  if (
-    store.status === remote.Status.NotAsked ||
-    store.status === remote.Status.Loading
-  ) {
-    return store;
+const screenStore = remote.createStore<Screen>();
+export const store = screenStore.readable;
+
+export const fetch = (projectUrn: Urn): void => {
+  screenStore.loading();
+
+  let current: project.Project;
+
+  project
+    .fetch(projectUrn)
+    .then(p => {
+      current = p;
+
+      return project.fetchPeers(projectUrn);
+    })
+    .then(peers => {
+      const peerSelection = filterPeers(peers);
+      screenStore.success({ peers, peerSelection, project: current, selectedPeer: peerSelection[0] });
+    })
+    .catch(screenStore.error);
+};
+
+export const fetchPeers = (): void => {
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const { data: current } = screen;
+
+    project.fetchPeers(current.project.urn)
+      .then(peers => screenStore.success({ ...current, peers, peerSelection: filterPeers(peers) }))
+      .catch(screenStore.error);
   }
+};
 
-  if (store.status === remote.Status.Success) {
-    const peers = store.data
-      .filter(
-        peer => peer.status.type === project.ReplicationStatusType.Replicated
-      )
-      .map(peer => {
-        const { role, user } = peer.status as project.Replicated;
-        return { type: peer.type, peerId: peer.peerId, identity: user, role };
-      });
+export const selectPeer = (peer: project.User): void => {
+  const screen = get(screenStore);
 
-    // TODO(xla): Apply proper heuristic to set default.
-    return {
-      status: remote.Status.Success,
-      data: { default: peers[0], peers },
-    };
+  if (screen.status === remote.Status.Success) {
+    const { data: current } = screen;
+
+    if (peer.peerId !== current.selectedPeer.peerId) {
+      screenStore.success({ ...current, selectedPeer: peer });
+    }
   }
-
-  return store;
-});
-
-const selectedPeerStore = writable<project.User | null>(null);
-export const selectedPeer = derived(
-  [selectedPeerStore, peerSelection],
-  ([selected, selection]) => {
-    if (
-      selection.status === remote.Status.NotAsked ||
-      selection.status === remote.Status.Loading
-    ) {
-      return null;
-    }
-
-    if (selected) {
-      return selected;
-    }
-
-    if (selection.status === remote.Status.Success) {
-      return selection.data.default;
-    }
-
-    return null;
-  }
-);
+};
 
 export const pendingPeers: Readable<remote.Data<{
   peers: project.Peer[];
-}>> = derived(peersStore, store => {
+}>> = derived(screenStore, store => {
   if (store.status === remote.Status.Success) {
-    const peers = store.data.filter(
+    const peers = store.data.peers.filter(
       peer => peer.status.type === project.ReplicationStatusType.NotReplicated
     );
 
@@ -81,73 +76,42 @@ export const pendingPeers: Readable<remote.Data<{
   return store;
 });
 
-export const fetch = (projectUrn: urn.Urn): void => {
-  projectStore.loading();
-  peersStore.reset();
-  selectedPeerStore.set(null);
-
-  project
-    .fetch(projectUrn)
-    .then(p => {
-      projectStore.success(p);
-      fetchPeers(projectUrn);
-    })
-    .catch(projectStore.error);
-};
-
-const fetchPeers = (projectUrn: urn.Urn): void => {
-  peersStore.loading();
-
-  project
-    .fetchPeers(projectUrn)
-    .then(peers => {
-      peersStore.success(peers);
-      fetchRevisions(projectUrn);
-    })
-    .catch(peersStore.error);
-};
-
-export const selectPeer = (peer: project.User): void => {
-  const current = get(selectedPeer);
-
-  if (peer.peerId !== current.peerId) {
-    const currentProject = get(projectStore);
-    selectedPathStore.set(null);
-    selectedPeerStore.set(peer);
-    fetchRevisions(currentProject.data.urn);
-  }
-};
-
 export const trackPeer = (
-  projectUrn: urn.Urn,
-  peerId: identity.PeerId
+  projectUrn: Urn,
+  peerId: PeerId
 ): void => {
   project
     .trackPeer(projectUrn, peerId)
-    .then(() => fetchPeers(projectUrn))
-    .catch(peersStore.error);
+    .then(() => fetchPeers)
+    .catch(screenStore.error);
 };
 
 export const untrackPeer = (
-  projectUrn: urn.Urn,
-  peerId: identity.PeerId
+  projectUrn: Urn,
+  peerId: PeerId
 ): void => {
   project
     .untrackPeer(projectUrn, peerId)
-    .then(() => fetchPeers(projectUrn))
-    .catch(peersStore.error);
+    .then(() => fetchPeers())
+    .catch(screenStore.error);
 };
 
 export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
 
 const checkPeerUniqueness = (peer: string): Promise<boolean> => {
-  return Promise.resolve(
-    !get(peersStore)
-      .data.map((peer: project.Peer) => {
-        return peer.peerId;
-      })
-      .includes(peer)
-  );
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const { data: { peers } } = screen;
+    const includes = !peers.map((peer: project.Peer) => {
+          return peer.peerId;
+        })
+        .includes(peer);
+
+    return Promise.resolve(includes);
+  }
+
+  return Promise.resolve(false);
 };
 
 export const peerValidation = validation.createValidationStore(
@@ -166,8 +130,8 @@ export const peerValidation = validation.createValidationStore(
 );
 
 export const addPeer = async (
-  projectId: urn.Urn,
-  newRemote: identity.PeerId
+  projectId: Urn,
+  newRemote: PeerId
 ): Promise<boolean> => {
   // This has to be awaited contrary to what tslint suggests, because we're
   // running async remote validations in in the background. If we remove the
@@ -182,8 +146,18 @@ export const addPeer = async (
 };
 
 export const removePeer = (
-  projectId: urn.Urn,
-  remote: identity.PeerId
+  projectId: Urn,
+  remote: PeerId
 ): void => {
   untrackPeer(projectId, remote);
 };
+
+const filterPeers = (peers: project.Peer[]): project.User[] => {
+  return peers.filter(
+    peer => peer.status.type === project.ReplicationStatusType.Replicated
+  )
+  .map(peer => {
+    const { role, user } = peer.status as project.Replicated;
+    return { type: peer.type, peerId: peer.peerId, identity: user, role };
+  });
+}
