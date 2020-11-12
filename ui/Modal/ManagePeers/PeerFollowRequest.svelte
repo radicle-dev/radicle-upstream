@@ -16,7 +16,6 @@
   .peer-request {
     display: flex;
     padding: 1.375rem 1.5rem;
-    align-items: center;
     width: 100%;
     justify-content: space-between;
   }
