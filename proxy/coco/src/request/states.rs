@@ -205,7 +205,7 @@ impl AddAssign<usize> for Queries {
     fn add_assign(&mut self, other: usize) {
         match self {
             Self::Max(i) => *i += other,
-            Self::Infinite => {}
+            Self::Infinite => {},
         }
     }
 }
@@ -251,7 +251,7 @@ impl AddAssign<usize> for Clones {
     fn add_assign(&mut self, other: usize) {
         match self {
             Self::Max(i) => *i += other,
-            Self::Infinite => {}
+            Self::Infinite => {},
         }
     }
 }
