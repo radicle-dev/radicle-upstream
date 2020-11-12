@@ -141,13 +141,12 @@ export const fetchCommit = (projectUrn: Urn, sha1: string): Promise<Commit> => {
 export const fetchCommits = (
   projectUrn: Urn,
   peerId: PeerId,
-  branch: Branch
+  revision: Revision
 ): Promise<CommitsHistory> => {
   return api
     .get<Commits>(`source/commits/${projectUrn}/`, {
       query: {
-        branch: branch.name,
-        peerId: peerId,
+        revision: { ...revision, peerId },
       },
     })
     .then(response => {
@@ -239,7 +238,7 @@ export const fetchTree = (
   prefix: string
 ): Promise<Tree> => {
   return api.get<Tree>(`source/tree/${projectUrn}`, {
-    query: { peerId, revision: { peerId, ...revision }, prefix },
+    query: { peerId, revision: { ...revision, peerId }, prefix },
   });
 };
 

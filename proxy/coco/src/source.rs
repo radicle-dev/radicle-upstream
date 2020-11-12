@@ -415,13 +415,13 @@ where
             Revision::Branch { name, peer_id } => Ok(match peer_id {
                 Some(peer) => {
                     git::Branch::remote(&format!("heads/{}", name), &peer.to_string()).into()
-                },
+                }
                 None => git::Branch::local(&name).into(),
             }),
             Revision::Sha { sha } => {
                 let oid: git2::Oid = sha.into();
                 Ok(oid.into())
-            },
+            }
         }
     }
 }
@@ -514,10 +514,10 @@ fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobCon
                         );
                     }
                     BlobContent::Html(html)
-                },
+                }
                 _ => BlobContent::Ascii(content.to_owned()),
             }
-        },
+        }
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -629,7 +629,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
             }
@@ -668,8 +668,18 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'repo>(browser: &mut Browser<'repo>, branch: git::Branch) -> Result<Commits, Error> {
-    browser.branch(branch)?;
+pub fn commits<'repo, P>(
+    browser: &mut Browser<'repo>,
+    maybe_revision: Option<Revision<P>>,
+) -> Result<Commits, Error>
+where
+    P: ToString,
+{
+    let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
+
+    if let Some(revision) = maybe_revision {
+        browser.rev(revision)?;
+    }
 
     let headers = browser.get().iter().map(CommitHeader::from).collect();
     let stats = browser.get_stats()?;

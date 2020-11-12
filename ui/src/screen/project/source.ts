@@ -119,13 +119,14 @@ export const selectRevision = (revision: source.Revision): void => {
 
   if (current.status === remote.Status.Success) {
     const { data } = current;
-    const { peer, project } = data;
+    const { code, peer, project } = data;
 
     Promise.all([
-      source.fetchCommits(project.urn, peer.peerId, revision as source.Branch),
+      source.fetchCommits(project.urn, peer.peerId, revision),
       source.fetchTree(project.urn, peer.peerId, revision, ""),
     ])
       .then(([history, tree]) => {
+        code.set({ ...get(code), lastCommit: tree.info.lastCommit });
         screenStore.success({
           ...data,
           history,

@@ -3,8 +3,6 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use radicle_surf::vcs::git;
-
 use crate::{context, http};
 
 /// Combination of all source filters.
@@ -199,10 +197,9 @@ mod handler {
     pub async fn commits(
         ctx: context::Unsealed,
         project_urn: coco::Urn,
-        mut query: super::CommitsQuery,
+        super::CommitsQuery { revision }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer_id = super::http::guard_self_peer_id(&ctx.state, query.peer_id);
-        query.peer_id = peer_id;
+        let revision = super::http::guard_self_revision(&ctx.state, revision);
 
         let default_branch = ctx
             .state
@@ -212,7 +209,7 @@ mod handler {
         let commits = ctx
             .state
             .with_browser(default_branch, |mut browser| {
-                coco::commits(&mut browser, query.into())
+                coco::commits(&mut browser, revision)
             })
             .await
             .map_err(error::Error::from)?;
@@ -282,19 +279,8 @@ mod handler {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommitsQuery {
-    /// PeerId to scope the query by.
-    peer_id: Option<coco::PeerId>,
-    /// Branch to get the commit history for.
-    branch: String,
-}
-
-impl From<CommitsQuery> for git::Branch {
-    fn from(CommitsQuery { peer_id, branch }: CommitsQuery) -> Self {
-        match peer_id {
-            None => Self::local(&branch),
-            Some(peer_id) => Self::remote(&format!("heads/{}", branch), &peer_id.to_string()),
-        }
-    }
+    /// Revision to query at.
+    revision: Option<coco::Revision<coco::PeerId>>,
 }
 
 /// Bundled query params to pass to the blob handler.
