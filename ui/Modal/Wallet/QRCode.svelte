@@ -1,14 +1,12 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
 
-  import { Illustration, QR, Spinner } from "../../DesignSystem/Component";
+  import { Illustration, QR } from "../../DesignSystem/Component";
 
   import { uriStore } from "../../src/wallet";
   import { Variant as IllustrationVariant } from "../../src/illustration";
 
-  if ($uriStore === null) pop();
-
-  $: uri = $uriStore!;
+  $: uri = $uriStore || pop();
 </script>
 
 <style>
@@ -34,28 +32,6 @@
 
     box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 16px;
   }
-
-  .waiting {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-
-    width: 100%;
-    margin-top: var(--content-padding);
-
-    padding: calc(var(--content-padding) * 0.75);
-    background-color: var(--color-foreground-level-1);
-    border: 1px solid var(--color-foreground-level-2);
-    border-radius: 0.25rem;
-  }
-
-  .info {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    margin-left: calc(var(--content-padding) * 0.75);
-  }
 </style>
 
 <div class="qrcode-modal">
@@ -76,14 +52,4 @@
       class="typo-link typo-text-small-bold">Check if your mobile wallet
       supports WalletConnect</a>.
   </p>
-
-  <div class="waiting">
-    <Spinner />
-    <div class="info">
-      <p class="typo-text-bold">Waiting for you to scan...</p>
-      <p style="color: var(--color-foreground-level-5);">
-        This won’t cost you any Ether
-      </p>
-    </div>
-  </div>
 </div>
