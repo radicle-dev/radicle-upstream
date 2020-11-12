@@ -45,6 +45,7 @@ import InfoCircle from "./InfoCircle.svelte";
 import Key from "./Key.svelte";
 import Label from "./Label.svelte";
 import Ledger from "./Ledger.svelte";
+import Link from "./Link.svelte";
 import Lock from "./Lock.svelte";
 import LockSmall from "./LockSmall.svelte";
 import MagnifyingGlass from "./MagnifyingGlass.svelte";
@@ -113,6 +114,7 @@ export default {
   Key,
   Label,
   Ledger,
+  Link,
   Lock,
   LockSmall,
   MagnifyingGlass,
