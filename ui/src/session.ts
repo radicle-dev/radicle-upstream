@@ -88,7 +88,7 @@ const fetchSession = async (): Promise<void> => {
     }
 
     sessionStore.error({
-      code: "session-fetch-failure",
+      code: error.Code.SessionFetchFailure,
       message: "Failed to load the session",
       source: error.fromException(err),
     });

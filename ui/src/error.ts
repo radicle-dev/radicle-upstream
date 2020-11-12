@@ -3,10 +3,8 @@ import * as ipc from "./ipc";
 import * as svelteStore from "svelte/store";
 
 export interface Error {
-  // A code in kebab-case for easy identification of the error.
-  //
-  // This should not include interpolated data.
-  code: string;
+  // A unique code for easy identification of the error.
+  code: Code;
   // Message that is displayed to the user if the error is shown.
   message: string;
   // An optional stack trace
@@ -17,6 +15,13 @@ export interface Error {
   source?: Error;
 }
 
+export enum Code {
+  SessionFetchFailure = "SessionFetchFailure",
+  ProjectRequestFailure = "ProjectRequestFailure",
+  UnexpectedProxyExit = "UnexpectedProxyExit",
+  UnknownException = "UnknownException",
+}
+
 // Turn a Javascript `Error` into our `Error`.
 //
 // Uses the code `unknown-exception`.
@@ -25,7 +30,7 @@ export const fromException = (exception: globalThis.Error): Error => {
   const details = Object.assign({}, exception) as any;
   details.name = exception.name;
   return {
-    code: "unknown-exception",
+    code: Code.UnknownException,
     message: exception.message,
     stack: exception.stack,
     details,
@@ -59,7 +64,7 @@ export const setFatal = (): void => {
 
 ipc.listenProxyError(proxyError => {
   log({
-    code: "unexpected-proxy-exit",
+    code: Code.UnexpectedProxyExit,
     message: "Proxy process exicted unexpectedly",
     details: { proxyError },
   });
