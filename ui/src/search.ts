@@ -1,5 +1,6 @@
 import * as api from "./api";
 import * as event from "./event";
+import * as error from "./error";
 import type * as project from "./project";
 import * as remote from "./remote";
 import * as validation from "./validation";
@@ -51,8 +52,9 @@ const update = (msg: Msg): void => {
           `projects/requests/${msg.urn}`,
           null
         )
-        .then(projectRequestStore.success)
-        .catch(projectRequestStore.error);
+        .catch((err: Error) =>
+          projectRequestStore.error(error.fromException(err))
+        );
 
       break;
     case Kind.SearchProject:
@@ -61,7 +63,9 @@ const update = (msg: Msg): void => {
       api
         .get<project.Project>(`projects/${msg.urn}`)
         .then(projectSearchStore.success)
-        .catch(projectSearchStore.error);
+        .catch((err: Error) =>
+          projectRequestStore.error(error.fromException(err))
+        );
 
       break;
   }

@@ -16,8 +16,12 @@ export interface Error {
 }
 
 export enum Code {
-  SessionFetchFailure = "SessionFetchFailure",
+  LocalStateFetchFailure = "LocalStateFetchFailure",
+  ProjectCheckoutFailure = "ProjectCheckoutFailure",
   ProjectRequestFailure = "ProjectRequestFailure",
+  ProjectCreationFailure = "ProjectCreationFailure",
+  RemoteStoreError = "RemoteStoreError",
+  SessionFetchFailure = "SessionFetchFailure",
   UnexpectedProxyExit = "UnexpectedProxyExit",
   UnknownException = "UnknownException",
 }

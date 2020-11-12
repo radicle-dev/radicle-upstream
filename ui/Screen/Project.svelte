@@ -4,6 +4,7 @@
   import { isExperimental, openPath } from "../src/ipc";
   import Router from "svelte-spa-router";
 
+  import * as error from "../error";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import {
@@ -116,8 +117,12 @@
           openPath(path);
         }
       );
-    } catch (error) {
-      notification.error(`Checkout failed: ${error.message}`, true);
+    } catch (err) {
+      error.show({
+        code: error.Code.ProjectCheckoutFailure,
+        message: `Checkout failed: ${err.message}`,
+        source: err,
+      });
     } finally {
       screen.unlock();
     }
