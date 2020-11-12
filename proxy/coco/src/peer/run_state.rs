@@ -174,7 +174,7 @@ pub enum ControlInput {
     CancelRequest(
         RadUrn,
         Instant,
-        oneshot::Sender<Result<(), waiting_room::Error>>,
+        oneshot::Sender<Result<SomeRequest<Instant>, waiting_room::Error>>,
     ),
     /// Initiate a new project search on the network.
     CreateRequest(
@@ -411,12 +411,16 @@ impl RunState {
     /// Handle [`ControlInput`]s.
     fn handle_control(&mut self, input: ControlInput) -> Vec<Command> {
         match input {
-            ControlInput::CancelRequest(urn, timestamp, sender) => vec![Command::Control(
-                ControlCommand::Respond(control::Response::CancelSearch(
-                    sender,
-                    self.waiting_room.canceled(&urn, timestamp),
-                )),
-            )],
+            ControlInput::CancelRequest(urn, timestamp, sender) => {
+                let request = self.waiting_room.canceled(&urn, timestamp).map(|()| {
+                    self.waiting_room
+                        .remove(&urn)
+                        .expect("URN was found for cancel")
+                });
+                vec![Command::Control(ControlCommand::Respond(
+                    control::Response::CancelSearch(sender, request),
+                ))]
+            },
             ControlInput::CreateRequest(urn, time, maybe_sender) => {
                 let request = self.waiting_room.request(&urn, time);
                 if let Some(sender) = maybe_sender {
