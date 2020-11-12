@@ -5,7 +5,7 @@ use std::{
     future::Future,
     pin::Pin,
     task::{Context, Poll},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use futures::stream::{BoxStream, FuturesUnordered, SelectAll, StreamExt as _};
@@ -25,6 +25,7 @@ use librad::{
 
 use crate::{
     convert::MaybeFrom as _,
+    request::waiting_room::WaitingRoom,
     spawn_abortable::{self, SpawnAbortable},
     state::State,
 };
@@ -35,7 +36,7 @@ use super::{
         AnnounceInput, Command, Config as RunConfig, ControlCommand, ControlInput, Event, Input,
         RequestCommand, RequestInput, RunState, SyncInput, TimeoutInput,
     },
-    sync, RECEIVER_CAPACITY,
+    sync, waiting_room, RECEIVER_CAPACITY,
 };
 
 /// Management of "subroutine" tasks.
@@ -76,9 +77,18 @@ impl Subroutines {
         } else {
             Some(interval(run_config.announce.interval))
         };
-        let waiting_room_timer = interval(run_config.waiting_room.interval);
+        let waiting_room_config =
+            waiting_room::config::load(&store).unwrap_or_else(|_| run_config.waiting_room.clone());
+        let waiting_room_timer = interval(waiting_room_config.interval);
         let (input_sender, inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
-        let run_state = RunState::from(run_config);
+        let mut run_state = RunState::from(run_config);
+        {
+            let default = WaitingRoom::new(waiting_room_config.into());
+            run_state.set_waiting_room(match waiting_room::load(&store) {
+                Err(_) | Ok(None) => default,
+                Ok(Some(room)) => room,
+            });
+        }
 
         let inputs = {
             let mut coalesced = SelectAll::new();
@@ -150,11 +160,8 @@ impl Subroutines {
                 },
             },
             Command::Include(urn) => SpawnAbortable::new(include::update(self.state.clone(), urn)),
-            Command::SyncPeer(peer_id) => {
-                SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
-            },
-            Command::StartSyncTimeout(sync_period) => {
-                SpawnAbortable::new(start_sync_timeout(sync_period, self.input_sender.clone()))
+            Command::PersistWaitingRoom(waiting_room) => {
+                SpawnAbortable::new(persist_waiting_room(waiting_room, self.store.clone()))
             },
             Command::Request(RequestCommand::Query(urn)) => {
                 SpawnAbortable::new(query(urn, self.state.clone(), self.input_sender.clone()))
@@ -170,6 +177,12 @@ impl Subroutines {
                         .await
                         .ok();
                 })
+            },
+            Command::StartSyncTimeout(sync_period) => {
+                SpawnAbortable::new(start_sync_timeout(sync_period, self.input_sender.clone()))
+            },
+            Command::SyncPeer(peer_id) => {
+                SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
             },
         }
     }
@@ -277,6 +290,13 @@ async fn control_respond(cmd: control::Response) {
         control::Response::ListSearches(sender, requests) => sender.send(requests).ok(),
         control::Response::StartSearch(sender, request) => sender.send(request).ok(),
     };
+}
+
+async fn persist_waiting_room(waiting_room: WaitingRoom<Instant, Duration>, store: kv::Store) {
+    match waiting_room::save(&store, waiting_room) {
+        Ok(()) => log::debug!("Successfully persisted the waiting room"),
+        Err(err) => log::debug!("Error while persisting the waiting room: {}", err),
+    }
 }
 
 /// Run the sync with a single peer to reach state parity for locally tracked projects. On

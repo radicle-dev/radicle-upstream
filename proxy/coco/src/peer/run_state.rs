@@ -20,7 +20,7 @@ use librad::{
 
 use crate::{
     convert::MaybeFrom,
-    peer::{announcement, control},
+    peer::{self, announcement, control},
     request::{
         waiting_room::{self, WaitingRoom},
         SomeRequest,
@@ -39,12 +39,6 @@ const DEFAULT_SYNC_MAX_PEERS: usize = 5;
 // TODO(xla): Review duration.
 const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
 
-/// Default period at which we query the waiting room.
-const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis(500);
-
-/// Default period to consider until a query has timed out.
-const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10);
-
 /// Instructions to issue side-effectful operations which are the results from state transitions.
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
@@ -55,6 +49,8 @@ pub enum Command {
     Control(ControlCommand),
     /// Update the include file for the provided `RadUrn`.
     Include(RadUrn),
+    /// Tell the subroutine to persist the `WaitingRoom`.
+    PersistWaitingRoom(WaitingRoom<Instant, Duration>),
     /// Fulfill request commands.
     Request(RequestCommand),
     /// Initiate a full sync with `PeerId`.
@@ -263,7 +259,7 @@ pub struct Config {
     /// Set of knobs to alter sync behaviour.
     pub sync: SyncConfig,
     /// Set of knobs to alter [`WaitingRoom`] behaviour.
-    pub waiting_room: WaitingRoomConfig,
+    pub waiting_room: peer::waiting_room::Config,
 }
 
 /// Set of knobs to alter announce behaviour.
@@ -296,23 +292,6 @@ impl Default for SyncConfig {
             max_peers: DEFAULT_SYNC_MAX_PEERS,
             on_startup: false,
             period: DEFAULT_SYNC_PERIOD,
-        }
-    }
-}
-
-/// Set of knobs to alter the [`WaitingRoom`] behvaviour.
-pub struct WaitingRoomConfig {
-    /// Interval at which to query the [`WaitingRoom`] for ready requests.
-    pub interval: Duration,
-    /// Period to consider until a query has timed out.
-    pub timeout_period: Duration,
-}
-
-impl Default for WaitingRoomConfig {
-    fn default() -> Self {
-        Self {
-            timeout_period: DEFAULT_WAITING_ROOM_TIMEOUT,
-            interval: DEFAULT_WAITING_ROOM_INTERVAL,
         }
     }
 }
@@ -374,6 +353,10 @@ impl RunState {
             status_since,
             waiting_room: WaitingRoom::new(waiting_room::Config::default()),
         }
+    }
+
+    pub fn set_waiting_room(&mut self, waiting_room: WaitingRoom<Instant, Duration>) {
+        self.waiting_room = waiting_room;
     }
 
     /// Applies the `input` and based on the current state, transforms to the new state and in some
@@ -615,12 +598,13 @@ impl RunState {
     #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_request(&mut self, input: RequestInput) -> Vec<Command> {
         match (&self.status, input) {
-            // Check for new querie and clone requests.
+            // Check for new query and clone requests.
             (Status::Online { .. } | Status::Syncing { .. }, RequestInput::Tick) => {
                 let mut cmds = Vec::with_capacity(2);
 
                 if let Some(urn) = self.waiting_room.next_query(Instant::now()) {
                     cmds.push(Command::Request(RequestCommand::Query(urn)));
+                    cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
                 if let Some(url) = self.waiting_room.next_clone() {
                     cmds.push(Command::Request(RequestCommand::Clone(url)));
