@@ -74,7 +74,7 @@ type Msg = ClearCache | Fetch | UpdateSettings;
 
 const fetchSessionRetry = async () => {
   return api
-    .withRetry(() => api.get<SessionData>(`session`), 200)
+    .withRetry(() => api.get<SessionData>(`session`), 100, 50)
     .then(ses =>
       sessionStore.success({ status: Status.UnsealedSession, ...ses })
     )
