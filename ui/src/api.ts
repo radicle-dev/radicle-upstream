@@ -126,7 +126,7 @@ export const withRetry = async <T>(
     try {
       return await request();
     } catch (error) {
-      if (error.message !== "Failed to fetch" || retries > 0) {
+      if (error.message !== "Failed to fetch" || retries < 0) {
         throw error;
       }
     }
