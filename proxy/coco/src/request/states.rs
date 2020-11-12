@@ -205,7 +205,7 @@ impl AddAssign<usize> for Queries {
     fn add_assign(&mut self, other: usize) {
         match self {
             Self::Max(i) => *i += other,
-            Self::Infinite => {},
+            Self::Infinite => {}
         }
     }
 }
@@ -251,7 +251,7 @@ impl AddAssign<usize> for Clones {
     fn add_assign(&mut self, other: usize) {
         match self {
             Self::Max(i) => *i += other,
-            Self::Infinite => {},
+            Self::Infinite => {}
         }
     }
 }
@@ -277,6 +277,7 @@ impl Attempts {
     }
 
     /// Construct an `Attempts` where the number of queries and clones is `Infinite`.
+    #[must_use]
     pub const fn infinite() -> Self {
         Attempts {
             queries: Queries::Infinite,
