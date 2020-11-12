@@ -1,6 +1,6 @@
 import { get, derived, Readable } from "svelte/store";
 
-import type { PeerId} from "../identity";
+import type { PeerId } from "../identity";
 import * as project from "../project";
 import * as remote from "../remote";
 import type { Urn } from "../urn";
@@ -30,7 +30,12 @@ export const fetch = (projectUrn: Urn): void => {
     })
     .then(peers => {
       const peerSelection = filterPeers(peers);
-      screenStore.success({ peers, peerSelection, project: current, selectedPeer: peerSelection[0] });
+      screenStore.success({
+        peers,
+        peerSelection,
+        project: current,
+        selectedPeer: peerSelection[0],
+      });
     })
     .catch(screenStore.error);
 };
@@ -41,8 +46,15 @@ export const fetchPeers = (): void => {
   if (screen.status === remote.Status.Success) {
     const { data: current } = screen;
 
-    project.fetchPeers(current.project.urn)
-      .then(peers => screenStore.success({ ...current, peers, peerSelection: filterPeers(peers) }))
+    project
+      .fetchPeers(current.project.urn)
+      .then(peers =>
+        screenStore.success({
+          ...current,
+          peers,
+          peerSelection: filterPeers(peers),
+        })
+      )
       .catch(screenStore.error);
   }
 };
@@ -76,20 +88,14 @@ export const pendingPeers: Readable<remote.Data<{
   return store;
 });
 
-export const trackPeer = (
-  projectUrn: Urn,
-  peerId: PeerId
-): void => {
+export const trackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   project
     .trackPeer(projectUrn, peerId)
-    .then(() => fetchPeers)
+    .then(() => fetchPeers())
     .catch(screenStore.error);
 };
 
-export const untrackPeer = (
-  projectUrn: Urn,
-  peerId: PeerId
-): void => {
+export const untrackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   project
     .untrackPeer(projectUrn, peerId)
     .then(() => fetchPeers())
@@ -102,11 +108,14 @@ const checkPeerUniqueness = (peer: string): Promise<boolean> => {
   const screen = get(screenStore);
 
   if (screen.status === remote.Status.Success) {
-    const { data: { peers } } = screen;
-    const includes = !peers.map((peer: project.Peer) => {
-          return peer.peerId;
-        })
-        .includes(peer);
+    const {
+      data: { peers },
+    } = screen;
+    const includes = !peers
+      .map((peer: project.Peer) => {
+        return peer.peerId;
+      })
+      .includes(peer);
 
     return Promise.resolve(includes);
   }
@@ -145,19 +154,17 @@ export const addPeer = async (
   return true;
 };
 
-export const removePeer = (
-  projectId: Urn,
-  remote: PeerId
-): void => {
+export const removePeer = (projectId: Urn, remote: PeerId): void => {
   untrackPeer(projectId, remote);
 };
 
 const filterPeers = (peers: project.Peer[]): project.User[] => {
-  return peers.filter(
-    peer => peer.status.type === project.ReplicationStatusType.Replicated
-  )
-  .map(peer => {
-    const { role, user } = peer.status as project.Replicated;
-    return { type: peer.type, peerId: peer.peerId, identity: user, role };
-  });
-}
+  return peers
+    .filter(
+      peer => peer.status.type === project.ReplicationStatusType.Replicated
+    )
+    .map(peer => {
+      const { role, user } = peer.status as project.Replicated;
+      return { type: peer.type, peerId: peer.peerId, identity: user, role };
+    });
+};
