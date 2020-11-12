@@ -3,12 +3,12 @@ import { get, writable } from "svelte/store";
 import * as api from "./api";
 import * as config from "./config";
 import * as event from "./event";
-import * as identity from "./identity";
+import type * as identity from "./identity";
 import * as remote from "./remote";
 import * as source from "./source";
 import * as urn from "./urn";
 import * as validation from "./validation";
-import * as waitingRoom from "./waitingRoom";
+import type * as waitingRoom from "./waitingRoom";
 
 // TYPES.
 export interface Metadata {
@@ -315,10 +315,9 @@ const validateExistingRepository = (path: string): Promise<boolean> => {
   });
 };
 
-const validateNewRepository = (path: string): Promise<boolean> => {
-  return fetchBranches(path).then(() =>
-    get(localStateError).match("could not find repository")
-  );
+const validateNewRepository = async (path: string): Promise<boolean> => {
+  await fetchBranches(path);
+  return !!get(localStateError).match("could not find repository");
 };
 
 const projectNameConstraints = {

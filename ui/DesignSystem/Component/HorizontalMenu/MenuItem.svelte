@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { SvelteComponent } from "svelte";
-
+  import type { SvelteComponent } from "svelte";
   import { link } from "svelte-spa-router";
 
   export let href: string;
