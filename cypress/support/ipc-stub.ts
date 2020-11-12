@@ -12,7 +12,9 @@ interface ElectronStubs {
   [RendererMessage.GET_VERSION]: sinon.SinonStub;
   [RendererMessage.DIALOG_SHOWOPENDIALOG]: sinon.SinonStub;
   [RendererMessage.OPEN_PATH]: sinon.SinonStub;
+  [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => void;
   sendMessage: (message: MainMessage) => void;
+  getClipboard: () => string;
 }
 
 declare global {
@@ -27,6 +29,7 @@ declare global {
 // See `../../native/preload.js`.
 export function setup(window: Window): void {
   const ipcRendererMessages = new EventEmitter();
+  let clipboard = "";
   const electronStubs: ElectronStubs = {
     [RendererMessage.GET_VERSION]: sinon
       .stub()
@@ -37,9 +40,13 @@ export function setup(window: Window): void {
     [RendererMessage.OPEN_PATH]: sinon
       .stub()
       .throws(new Error("not implemented")),
+    [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => {
+      clipboard = text;
+    },
     sendMessage: (message: MainMessage) => {
       ipcRendererMessages.emit("message", undefined, message);
     },
+    getClipboard: () => clipboard,
   };
 
   window.electronStubs = electronStubs;
@@ -47,7 +54,8 @@ export function setup(window: Window): void {
   window.electron = {
     ipcRenderer: {
       invoke: (msg, params) => {
-        return electronStubs[msg](params);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return electronStubs[msg](params as any);
       },
       on: ipcRendererMessages.on.bind(ipcRendererMessages),
     },

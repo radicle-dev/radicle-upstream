@@ -63,12 +63,18 @@ context("routing", () => {
           data: {
             status: 1,
             signal: null,
-            stdout: "",
-            stderr: "",
+            stdout: "STDOUT",
+            stderr: "STDERR",
           },
         });
       });
       commands.pick("blue-screen-of-death").should("exist");
+      commands.pick("proxy-log").should("contain", "STDERR");
+      commands.pick("proxy-log-copy-clipboard").click();
+
+      ipcStub.getStubs().then(stubs => {
+        expect(stubs.getClipboard()).to.eq("STDERR");
+      });
     });
 
     it("shows blue screen of death if there is a proxy error after onboarding", () => {
@@ -79,12 +85,18 @@ context("routing", () => {
           data: {
             status: 1,
             signal: null,
-            stdout: "",
-            stderr: "",
+            stdout: "STDOUT",
+            stderr: "STDERR",
           },
         });
       });
       commands.pick("blue-screen-of-death").should("exist");
+      commands.pick("proxy-log").should("contain", "STDERR");
+      commands.pick("proxy-log-copy-clipboard").click();
+
+      ipcStub.getStubs().then(stubs => {
+        expect(stubs.getClipboard()).to.eq("STDERR");
+      });
     });
   });
 });
