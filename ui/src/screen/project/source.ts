@@ -1,10 +1,9 @@
-import { derived, get, writable, Readable } from "svelte/store";
+import { get } from "svelte/store";
 
 import * as error from "../../error";
 import { Project, User } from "../../project";
 import * as remote from "../../remote";
 import * as source from "../../source";
-import * as urn from "../../urn";
 
 export enum CodeView {
   File = "FILE",
@@ -36,7 +35,7 @@ interface Root extends Shared {
 type Code = Error | File | Root;
 
 interface Screen {
-  history: source.CommitsHistory,
+  history: source.CommitsHistory;
   revisions: source.Revisions;
   selectedRevision: source.Branch | source.Tag;
 }
@@ -48,18 +47,36 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
   screenStore.loading();
 
   try {
-    const revisions = await source.fetchRevisions(project.urn, peer.peerId)
+    const revisions = await source.fetchRevisions(project.urn, peer.peerId);
     const selectedRevision = defaultRevision(project, revisions);
-    const history = await source.fetchCommits(project.urn, peer.peerId, selectedRevision);
+    const history = await source.fetchCommits(
+      project.urn,
+      peer.peerId,
+      selectedRevision
+    );
 
     screenStore.success({ history, revisions, selectedRevision });
-  } catch(err) {
+  } catch (err) {
     screenStore.error(err);
   }
 };
 
 const codeStore = remote.createStore<Code>();
 export const code = codeStore.readable;
+
+export const fetchCode = (): void => {
+  return;
+};
+
+const commitStore = remote.createStore<source.Commit>();
+export const commit = commitStore.readable;
+
+export const fetchCommit = (): void => {
+  return;
+};
+
+const commitsStore = remote.createStore<source.CommitsHistory>();
+export const commits = commitsStore.readable;
 
 export const selectPath = (path: string): void => {
   const current = get(codeStore);
@@ -70,10 +87,12 @@ export const selectPath = (path: string): void => {
   }
 };
 
-const defaultRevision = (project: Project, revisions: source.Revisions): source.Branch => {
+const defaultRevision = (
+  project: Project,
+  revisions: source.Revisions
+): source.Branch => {
   const projectDefault = revisions.branches.find(
-    (branch: source.Branch) =>
-      branch.name === project.metadata.defaultBranch
+    (branch: source.Branch) => branch.name === project.metadata.defaultBranch
   );
   return projectDefault ? projectDefault : revisions.branches[0];
 };

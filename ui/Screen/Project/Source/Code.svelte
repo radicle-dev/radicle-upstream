@@ -59,51 +59,53 @@
 
 <div class="wrapper">
   <div class="container center-content">
-    <Remote {store} let:data={{ project }}>
-      <div class="column-left">
-        <!-- Tree -->
-        <div class="source-tree" data-cy="source-tree">
-          <Folder
-            peerId={params.peer.peerId}
-            projectUrn={params.project.urn}
-            revision={params.revision}
-            toplevel />
+    <Remote {store} let:data={{ kind, project, selectedPeer }}>
+      <Remote
+        store={code}
+        let:data={{ file, error, lastCommit, path, readme, selectedRevision }}>
+        <div class="column-left">
+          <!-- Tree -->
+          <div class="source-tree" data-cy="source-tree">
+            <Folder
+              peerId={selectedPeer.peerId}
+              projectUrn={project.urn}
+              revision={selectedRevision}
+              toplevel />
+          </div>
         </div>
-      </div>
 
-      <Remote store={code} let:data={view}>
         <div class="column-right">
-          {#if view.kind === CodeView.File || view.kind === CodeView.Root}
+          {#if kind === CodeView.File || kind === CodeView.Root}
             <div class="commit-header">
               <CommitTeaser
-                message={view.lastCommit.summary}
-                sha={view.lastCommit.sha1}
-                projectUrn={params.project.urn}
+                message={lastCommit.summary}
+                sha={lastCommit.sha1}
+                projectUrn={project.urn}
                 style="height: 100%"
-                timestamp={format(view.lastCommit.committerTime * 1000)}
-                user={view.lastCommit.author} />
+                timestamp={format(lastCommit.committerTime * 1000)}
+                user={lastCommit.author} />
             </div>
           {/if}
 
-          {#if view.kind === CodeView.File}
+          {#if kind === CodeView.File}
             <FileSource
-              blob={view.file}
-              path={view.path}
-              projectName={params.project.metadata.name}
+              blob={file}
+              {path}
+              projectName={project.metadata.name}
               on:root={onRoot} />
-          {:else if view.kind === CodeView.Root}
-            {#if view.readme}
-              <Readme content={view.readme.content} path={view.readme.path} />
+          {:else if kind === CodeView.Root}
+            {#if readme}
+              <Readme content={readme.content} path={readme.path} />
             {:else}
               <EmptyState
                 text="This project doesn't have a README yet."
                 emoji="👀"
                 style="height: 320px;" />
             {/if}
-          {:else if view.kind === CodeView.Error}
+          {:else if kind === CodeView.Error}
             <EmptyState
               emoji="👀"
-              headerText={view.error}
+              headerText={error}
               on:primaryAction={onRoot}
               primaryActionText="Back to source"
               style="height: 320px;"
