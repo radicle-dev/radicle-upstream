@@ -52,14 +52,24 @@ export const show = (error: Error): void => {
   });
 };
 
-const fatalErrorWritable: svelteStore.Writable<boolean> = svelteStore.writable(
-  false
+// Fatal application errors that trigger a blue screen
+export type FatalError =
+  | { kind: FatalErrorKind.Session }
+  | { kind: FatalErrorKind.ProxyExit; data: ipc.ProxyError };
+
+export enum FatalErrorKind {
+  Session = "SESSION",
+  ProxyExit = "PROXY_EXIT",
+}
+
+const fatalErrorWritable: svelteStore.Writable<FatalError | null> = svelteStore.writable(
+  null
 );
 
 // Notify the app that there was a fatal error and show the blue screen
 // of death.
-export const setFatal = (): void => {
-  fatalErrorWritable.set(true);
+export const setFatal = (fatalError: FatalError): void => {
+  fatalErrorWritable.set(fatalError);
 };
 
 ipc.listenProxyError(proxyError => {
@@ -68,8 +78,8 @@ ipc.listenProxyError(proxyError => {
     message: "Proxy process exicted unexpectedly",
     details: { proxyError },
   });
-  setFatal();
+  setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
 
 // Value is `true` if there was a fatal error
-export const fatalError: svelteStore.Readable<boolean> = fatalErrorWritable;
+export const fatalError: svelteStore.Readable<FatalError | null> = fatalErrorWritable;

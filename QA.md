@@ -175,5 +175,9 @@
 - [ ] All documented shortcuts (a list is provided by pressing `?`) work
 - [ ] Only one modal is allowed at a time (no modal stacking possible)
 
+### Proxy Error
+
+- [ ] Killing the proxy process while the app is running shows a blue error
+      screen with the proxy logs.
 
 [re]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md
