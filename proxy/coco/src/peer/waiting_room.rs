@@ -44,10 +44,10 @@ pub mod config {
         Error, BUCKET_NAME, DEFAULT_WAITING_ROOM_INTERVAL, DEFAULT_WAITING_ROOM_TIMEOUT, KEY_CONFIG,
     };
 
-    /// Set of knobs to alter the [`WaitingRoom`] behvaviour.
+    /// Set of knobs to alter the [`waiting_room::WaitingRoom`] behvaviour.
     #[derive(Clone, Debug, Deserialize, Serialize)]
     pub struct Config {
-        /// Interval at which to query the [`WaitingRoom`] for ready requests.
+        /// Interval at which to query the [`waiting_room::WaitingRoom`] for ready requests.
         pub interval: Duration,
         /// Period to consider until a query has timed out.
         pub timeout_period: Duration,
