@@ -17,10 +17,10 @@ use librad::{
 use crate::request::{Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut};
 
 /// The maximum number of query attempts that can be made for a single request.
-const MAX_QUERIES: Queries = Queries::new(5);
+const MAX_QUERIES: Queries = Queries::Infinite;
 
 /// The maximum number of clone attempts that can be made for a single request.
-const MAX_CLONES: Clones = Clones::new(5);
+const MAX_CLONES: Clones = Clones::Infinite;
 
 /// An error that can occur when interacting with the [`WaitingRoom`] API.
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
@@ -39,12 +39,12 @@ pub enum Error {
 
     /// The [`Request`] timed out when performing an operation on it by exceeding the number of
     /// attempts it was allowed to make.
-    #[error("encountered {timeout} time out after {attempts} attempts")]
+    #[error("encountered {timeout} time out after {attempts:?} attempts")]
     TimeOut {
         /// What kind of the time out that occurred.
         timeout: TimedOut,
         /// The number of attempts that were made when we timed out.
-        attempts: usize,
+        attempts: Option<usize>,
     },
 }
 
@@ -587,7 +587,7 @@ mod test {
             waiting_room.queried(&urn, ()),
             Err(Error::TimeOut {
                 timeout: TimedOut::Query,
-                attempts: 17,
+                attempts: Some(17),
             })
         );
 
@@ -639,7 +639,7 @@ mod test {
             ),
             Err(Error::TimeOut {
                 timeout: TimedOut::Clone,
-                attempts: 17,
+                attempts: Some(17),
             })
         );
 
