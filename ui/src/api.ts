@@ -119,13 +119,14 @@ const delay = (delay: number) => {
 
 export const withRetry = async <T>(
   request: () => Promise<T>,
-  delayTime: number
+  delayTime: number,
+  retries: number
 ): Promise<T> => {
-  for (let retries = 0; ; retries++) {
+  for (; ; retries--) {
     try {
       return await request();
     } catch (error) {
-      if (error.message !== "Failed to fetch" || retries > 200) {
+      if (error.message !== "Failed to fetch" || retries < 0) {
         throw error;
       }
     }

@@ -76,7 +76,11 @@ type Msg = ClearCache | Fetch | UpdateSettings;
 
 const fetchSession = async (): Promise<void> => {
   try {
-    const ses = await api.withRetry(() => api.get<SessionData>(`session`), 200);
+    const ses = await api.withRetry(
+      () => api.get<SessionData>(`session`),
+      100,
+      50
+    );
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
   } catch (err) {
     if (err instanceof api.ResponseError) {

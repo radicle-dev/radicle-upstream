@@ -43,7 +43,7 @@
       createIdentityInProgress = true;
       await session.createKeystore(passphrase);
       // Retry until the API is up
-      identity = await withRetry(() => createIdentity({ handle }), 200);
+      identity = await withRetry(() => createIdentity({ handle }), 100, 50);
       state = State.SuccessView;
     } catch (err) {
       animateBackward();
