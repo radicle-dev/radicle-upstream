@@ -1,12 +1,13 @@
 <script lang="typescript">
   import { location } from "svelte-spa-router";
 
-  import * as menu from "../../src/menu";
+  import type { HorizontalItem } from "../../src/menu";
   import * as path from "../../src/path";
 
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
+
   export let style = "";
-  export let items: menu.HorizontalItem[];
+  export let items: HorizontalItem[];
 </script>
 
 <style>

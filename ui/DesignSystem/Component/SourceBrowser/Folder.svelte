@@ -71,7 +71,7 @@
 <div class="container">
   <Remote {store} let:data={tree}>
     {#if expanded}
-      {#each tree.entries as entry}
+      {#each tree.entries as entry (entry.path)}
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
             {currentPath}

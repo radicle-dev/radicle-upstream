@@ -1,7 +1,7 @@
-<script>
+<script lang="typescript">
   import { Icon } from "../../Primitive";
 
-  export let file = null;
+  export let file;
 
   const lineNumberL = line => {
     switch (line.type) {

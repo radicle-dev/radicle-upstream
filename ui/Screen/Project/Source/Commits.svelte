@@ -4,14 +4,10 @@
   import { selectCommit, store } from "../../../src/screen/project/source";
   import { formatTime } from "../../../src/source";
   import type { Commit } from "../../../src/source";
-  import type { Urn } from "../../../src/urn";
 
   import { Remote } from "../../../DesignSystem/Component";
   import CommitTeaser from "../../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
 
-  export let params: { urn: Urn };
-
-  const { urn: projectUrn } = params;
   const onSelect = (commit: Commit) => {
     selectCommit(commit);
   };
@@ -57,17 +53,16 @@
 
 <div class="commits-page" data-cy="commits-page">
   <Remote {store} let:data={{ history }}>
-    {#each history.history as group}
+    {#each history.history as group (group.time)}
       <div class="commit-group">
         <header>
           <p>{formatTime(group.time * 1000)}</p>
         </header>
         <ul>
-          {#each group.commits as commit}
+          {#each group.commits as commit (commit.sha1)}
             <li class="commit" on:click={() => onSelect(commit)}>
               <CommitTeaser
                 message={commit.summary}
-                {projectUrn}
                 sha={commit.sha1}
                 style="background: none; --commit-message-color:
                 var(--color-foreground-level-6); --commit-sha-color:

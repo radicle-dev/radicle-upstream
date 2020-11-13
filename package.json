@@ -55,6 +55,7 @@
   },
   "main": "./native/main.comp.js",
   "devDependencies": {
+    "@types/jest": "^26.0.15",
     "@rollup/plugin-commonjs": "^15.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-typescript": "^5.0.2",
@@ -138,7 +139,6 @@
     "reset:state": "scripts/reset-state.sh"
   },
   "dependencies": {
-    "@types/jest": "^26.0.15",
     "@types/qs": "^6.9.2",
     "marked": "^1.1.1",
     "pure-svg-code": "^1.0.6",
