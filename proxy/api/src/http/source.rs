@@ -276,7 +276,7 @@ mod handler {
 }
 
 /// Bundled query params to pass to the commits handler.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommitsQuery {
     /// Revision to query at.
@@ -333,8 +333,6 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
-
-    use radicle_surf::vcs::git;
 
     use crate::{context, error, http};
 
@@ -591,10 +589,21 @@ mod test {
 
         let urn = replicate_platinum(&ctx).await?;
 
-        let branch = git::Branch::local("master");
+        let branch_name = "master";
+        let revision = coco::Revision::Branch {
+            name: branch_name.to_string(),
+            peer_id: None,
+        };
+        let query = super::CommitsQuery {
+            revision: Some(revision.clone()),
+        };
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}?branch={}", urn.clone(), branch.name))
+            .path(&format!(
+                "/commits/{}?branch={}",
+                urn.clone(),
+                serde_qs::to_string(&query).unwrap(),
+            ))
             .reply(&api)
             .await;
 
@@ -602,7 +611,7 @@ mod test {
         let want = ctx
             .state
             .with_browser(default_branch, |mut browser| {
-                coco::commits(&mut browser, branch.clone())
+                coco::commits(&mut browser, Some(revision.clone()))
             })
             .await?;
 
