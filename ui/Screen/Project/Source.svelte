@@ -37,13 +37,8 @@
   const onCheckout = async (
     { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
     project: Project,
-    peer: User | null
+    peer: User
   ) => {
-    if (peer === null) {
-      notification.error(`Can't checkout without a peer selected`);
-      return;
-    }
-
     try {
       screen.lock();
       const path = await checkout(
