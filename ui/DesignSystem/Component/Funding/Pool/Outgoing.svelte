@@ -6,6 +6,7 @@
   import Add from "./Onboarding/Add.svelte";
   import Budget from "./Onboarding/Budget.svelte";
   import TopUp from "./Onboarding/TopUp.svelte";
+  import GetStarted from "./GetStarted.svelte";
 
   import * as modal from "../../../../src/modal";
   import * as path from "../../../../src/path";
@@ -151,94 +152,8 @@
   }
 </style>
 
-<div class="outgoing-container">
-  <Remote store={pool.data} let:data={poolData}>
-    <header>
-      <div class="row">
-        <h3>Support</h3>
-        <span class="row" style="margin-left: 14px">
-          <Dai>{poolData.amountPerBlock} per month</Dai>
-        </span>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a
-          class="typo-link"
-          disabled={ongoingMonthlyContributionUpdate}
-          style="margin-left: 12px;"
-          on:click={onEditMonthlyContribution}>
-          Edit
-        </a>
-      </div>
-      <div class="row">
-        <p>Remaining</p>
-        <p class="typo-text-bold row" style="margin-left: 12px">
-          <Dai>{poolData.balance}</Dai>
-        </p>
-        {#if !ongoingWithdraw && !ongoingTopUp}
-          <Button
-            disabled={poolData.balance === 0}
-            dataCy="drain-pool-button"
-            variant="transparent"
-            on:click={openWithdrawModal}
-            style="margin-left: 12px">
-            Withdraw
-          </Button>
-        {/if}
-        {#if !ongoingTopUp}
-          <Button
-            dataCy="top-up-pool-button"
-            variant="vanilla"
-            on:click={openSendModal}
-            style="margin-left: 12px">
-            Top up
-          </Button>
-        {/if}
-      </div>
-    </header>
-
-    <div class="content">
-      {#if !onboardingStatus.isComplete()}
-        <div class="onboarding">
-          <h3>Getting Started</h3>
-          <div class="steps">
-            <Add done={onboardingStatus.receivers} />
-            <Budget
-              currentValue={poolData.amountPerBlock}
-              ongoing={ongoingMonthlyContributionUpdate}
-              onEdit={onEditMonthlyContribution}
-              style={'margin-left: 20px'} />
-            <TopUp
-              style={'margin-left: 20px'}
-              balance={poolData.balance}
-              ongoing={ongoingTopUp} />
-          </div>
-        </div>
-      {:else}
-        <p class="description">
-          <strong style="margin-left: 0px"><Dai>
-              {poolData.amountPerBlock}
-            </Dai></strong> per month will go to each of the <strong>{poolData.receiverAddresses.length}
-          </strong> receivers you're supporting.
-          <!-- svelte-ignore a11y-missing-attribute -->
-          <a
-            class="typo-link"
-            disabled={ongoingMonthlyContributionUpdate}
-            style="margin-left: 12px;"
-            on:click={() => console.log('TODO(nuno)')}>
-            Edit
-          </a>
-        </p>
-      {/if}
-
-      <Receivers
-        receivers={poolData.receiverAddresses}
-        onSave={onSaveReceivers}
-        updating={ongoingBeneficiariesUpdate} />
-
-      {#if onboardingStatus.isComplete()}
-        <div class="tip">
-          ⓘ To stop or pause your generosity, set the monthly contribution to 0.
-        </div>
-      {/if}
-    </div>
-  </Remote>
-</div>
+<Remote store={pool.data} let:data={poolData}>
+  {#if !onboardingStatus.isComplete()}
+    <GetStarted />
+  {/if}
+</Remote>
