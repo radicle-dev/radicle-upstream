@@ -61,7 +61,7 @@ fn commits_filter(
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
-        .and(warp::query::<CommitsQuery>())
+        .and(http::with_qs::<CommitsQuery>())
         .and_then(handler::commits)
 }
 
