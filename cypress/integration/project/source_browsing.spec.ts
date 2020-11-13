@@ -142,7 +142,7 @@ context("project source browsing", () => {
         commands.pick("commit-teaser").contains("a0dd912").should("exist");
 
         // the readme is shown
-        commands.pick("file-source").within(() => {
+        commands.pick("file-view").within(() => {
           cy.contains("README.md").should("exist");
         });
       });
@@ -165,11 +165,9 @@ context("project source browsing", () => {
               .pick("project-screen", "commit-teaser")
               .contains("Rūdolfs Ošiņš");
 
+            commands.pick("project-screen", "file-view").contains("README.md");
             commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
-            commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains(
                 "This repository is a data source for the Upstream front-end tests and the radicle-surf unit tests."
               );
@@ -180,35 +178,29 @@ context("project source browsing", () => {
               cy.contains(".i-am-well-hidden").click();
             });
             commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains("platinum / .i-am-well-hidden");
             commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains("platinum")
               .click();
-            commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
+            commands.pick("project-screen", "file-view").contains("README.md");
 
             commands.pick("source-tree").within(() => {
               cy.contains(".i-too-am-hidden").click();
             });
             commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains("platinum / .i-too-am-hidden");
-            commands.pick("project-screen", "file-source", "root-link").click();
-            commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
+            commands.pick("project-screen", "file-view", "root-link").click();
+            commands.pick("project-screen", "file-view").contains("README.md");
 
             // Switching between different revisions shows the correct README
             commands.pick("revision-selector").click();
             cy.get('.revision-dropdown [data-branch="dev"]').click();
+            commands.pick("project-screen", "file-view").contains("README.md");
             commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
-            commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains(
                 "This repository is a data source for the Upstream front-end tests."
               );
@@ -334,8 +326,9 @@ context("project source browsing", () => {
 
         commands.pick("source-tree").within(() => {
           commands.pick("expand-text").click();
-          cy.contains("arrows.txt").click();
-          cy.contains("arrows.txt").should("have.class", "active");
+          commands.pick("file-text/arrows.txt").contains("arrows.txt").click();
+
+          commands.pick("file-text/arrows.txt").should("have.class", "active");
         });
 
         commands
@@ -343,10 +336,7 @@ context("project source browsing", () => {
           .get("p")
           .should("have.class", "active");
 
-        commands
-          .pick("file-source", "file-header")
-          .contains("platinum")
-          .click();
+        commands.pick("file-view", "file-header").contains("platinum").click();
 
         commands
           .pick("horizontal-menu", "Code")
@@ -367,23 +357,33 @@ context("project source browsing", () => {
           commands.pick("expand-tree").click();
 
           // Open a file within nested folders.
-          cy.contains(".gitkeep").click();
-          cy.contains(".gitkeep").should("have.class", "active");
+          commands
+            .pick("file-this/is/a/really/deeply/nested/directory/tree/.gitkeep")
+            .click();
+          commands
+            .pick("file-this/is/a/really/deeply/nested/directory/tree/.gitkeep")
+            .should("have.class", "active");
 
           // Preserve expanded folder state when selecting a different file.
           cy.scrollTo("top");
           commands.pick("expand-text").click();
-          cy.contains("arrows.txt").click();
-          cy.contains("arrows.txt").should("have.class", "active");
-          cy.contains(".gitkeep").should("not.have.class", "active");
+          commands.pick("file-text/arrows.txt").click();
+          commands.pick("file-text/arrows.txt").should("have.class", "active");
+          commands
+            .pick("file-this/is/a/really/deeply/nested/directory/tree/.gitkeep")
+            .should("not.have.class", "active");
         });
       });
 
       it("highlights the selected file", () => {
         commands.pick("source-tree").within(() => {
-          cy.contains(".i-am-well-hidden").should("not.have.class", "active");
-          cy.contains(".i-am-well-hidden").click();
-          cy.contains(".i-am-well-hidden").should("have.class", "active");
+          commands
+            .pick("file-.i-am-well-hidden")
+            .should("not.have.class", "active");
+          commands.pick("file-.i-am-well-hidden").click();
+          commands
+            .pick("file-.i-am-well-hidden")
+            .should("have.class", "active");
         });
       });
 

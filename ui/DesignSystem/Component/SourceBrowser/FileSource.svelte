@@ -77,7 +77,7 @@
   }
 </style>
 
-<div class="file-source" data-cy="file-source">
+<div class="file-source">
   <header>
     <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />

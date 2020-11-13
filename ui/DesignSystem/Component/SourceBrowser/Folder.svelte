@@ -87,6 +87,7 @@
         {:else}
           <File
             active={entry.path === $currentPath}
+            dataCy={`file-${entry.path}`}
             name={entry.info.name}
             on:click={() => {
               onSelectPath({ detail: entry.path });

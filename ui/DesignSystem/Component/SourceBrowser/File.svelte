@@ -2,38 +2,35 @@
   import { Icon } from "../../Primitive";
 
   export let active: boolean;
+  export let dataCy: string = "";
   export let name: string;
 </script>
 
 <style>
   .file {
-    display: flex;
-    cursor: pointer;
-    padding: 0.25rem 0.25rem 0.25rem 0.25rem;
-    margin: 0.25rem 0;
-    color: var(--color-foreground-level-6);
-    line-height: 1.5em;
-    flex: 1;
-    width: 100%;
-  }
-
-  .file-name {
-    margin-left: 0.25rem;
-    white-space: nowrap;
-  }
-
-  .file {
-    display: flex;
     border-radius: 0.25rem;
+    color: var(--color-foreground-level-6);
+    cursor: pointer;
+    display: flex;
+    flex: 1;
+    line-height: 1.5em;
+    margin: 0.25rem 0;
+    padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+    width: 100%;
   }
 
   .file:hover {
     background-color: var(--color-foreground-level-1);
   }
 
+  .name {
+    margin-left: 0.25rem;
+    white-space: nowrap;
+  }
+
   .active {
-    color: var(--color-foreground);
     background-color: var(--color-foreground-level-1);
+    color: var(--color-foreground);
     font-family: var(--typeface-medium);
   }
 
@@ -42,7 +39,7 @@
   }
 </style>
 
-<div class="file" class:active on:click>
+<div class="file" class:active on:click data-cy={dataCy}>
   <Icon.File />
-  <span class="file-name">{name}</span>
+  <span class="name">{name}</span>
 </div>

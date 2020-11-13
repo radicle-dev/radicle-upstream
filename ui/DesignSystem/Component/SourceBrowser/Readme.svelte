@@ -7,7 +7,7 @@
 </script>
 
 <style>
-  .file-source {
+  .readme {
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 3px;
     min-width: var(--content-min-width);
@@ -36,7 +36,7 @@
   }
 </style>
 
-<div class="file-source" data-cy="file-source">
+<div class="readme">
   <header>
     <div class="file-header typo-text-bold">
       <Icon.File />
