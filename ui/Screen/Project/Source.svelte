@@ -96,7 +96,7 @@
   };
 
   push(path.projectSourceCode(project.urn));
-  fetch(project, selectedPeer);
+  $: fetch(project, selectedPeer);
 </script>
 
 <style>
