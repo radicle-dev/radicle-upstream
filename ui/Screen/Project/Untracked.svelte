@@ -33,7 +33,8 @@
       style="max-width: 24rem; color: var(--color-foreground-level-6);
       margin-bottom: 1.5rem;"
       align="center">
-      This hasn't been found in your network yet<br /> or doesn't exist.
+      This hasn't been found in your network yet<br />
+      or doesn't exist.
     </p>
   </div>
 </SidebarLayout>

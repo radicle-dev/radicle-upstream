@@ -128,8 +128,8 @@
 
     <p>
       This decrypts your key so you can access and publish to the Radicle
-      network. Be sure to store this in a safe place — <span
-        class="typo-text-bold">
+      network. Be sure to store this in a safe place —
+      <span class="typo-text-bold">
         there is no way to recover lost keys yet!
       </span>
     </p>
