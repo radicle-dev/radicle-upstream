@@ -189,14 +189,14 @@
         {/if}
       </div>
       <div>
-        {#each commit.diff.created as path}
+        {#each commit.diff.created as path (path)}
           <header class="file-header">
             <Icon.File style="margin-right: 8px;" />
             <p class="typo-text-bold">{path}</p>
             <span class="diff-type created">created</span>
           </header>
         {/each}
-        {#each commit.diff.deleted as path}
+        {#each commit.diff.deleted as path (path)}
           <header class="file-header">
             <Icon.File style="margin-right: 8px;" />
             <p class="typo-text-bold">{path}</p>

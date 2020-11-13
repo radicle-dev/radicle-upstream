@@ -6,8 +6,8 @@
 
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
-  export let style = "";
   export let items: HorizontalItem[];
+  export let style: string = "";
 </script>
 
 <style>

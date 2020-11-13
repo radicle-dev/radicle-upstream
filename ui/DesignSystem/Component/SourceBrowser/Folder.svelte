@@ -3,8 +3,9 @@
   import type { Readable } from "svelte/store";
 
   import type { PeerId } from "../../../src/identity";
+  import type * as remote from "../../../src/remote";
   import { tree, objectPath, ObjectType } from "../../../src/source";
-  import type { Revision } from "../../../src/source";
+  import type { Revision, Tree } from "../../../src/source";
   import type { Urn } from "../../../src/urn";
 
   import { Icon } from "../../Primitive";
@@ -28,6 +29,8 @@
   const toggle = () => {
     expanded = !expanded;
   };
+
+  let store: Readable<remote.Data<Tree>>;
 
   $: store = tree(projectUrn, peerId, revision, prefix);
   $: active = prefix === $objectPath;
