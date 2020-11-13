@@ -441,11 +441,6 @@
     slash "^3.0.0"
     strip-ansi "^6.0.0"
 
-"@jest/create-cache-key-function@^26.5.0":
-  version "26.5.0"
-  resolved "https://registry.yarnpkg.com/@jest/create-cache-key-function/-/create-cache-key-function-26.5.0.tgz#1d07947adc51ea17766d9f0ccf5a8d6ea94c47dc"
-  integrity sha512-DJ+pEBUIqarrbv1W/C39f9YH0rJ4wsXZ/VC6JafJPlHW2HOucKceeaqTOQj9MEDQZjySxMLkOq5mfXZXNZcmWw==
-
 "@jest/environment@^26.6.2":
   version "26.6.2"
   resolved "https://registry.yarnpkg.com/@jest/environment/-/environment-26.6.2.tgz#ba364cc72e221e79cc8f0a99555bf5d7577cf92c"
@@ -878,10 +873,10 @@
   resolved "https://registry.yarnpkg.com/@types/pug/-/pug-2.0.4.tgz#8772fcd0418e3cd2cc171555d73007415051f4b2"
   integrity sha1-h3L80EGOPNLMFxVV1zAHQVBR9LI=
 
-"@types/qs@^6.9.2":
-  version "6.9.3"
-  resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.3.tgz#b755a0934564a200d3efdf88546ec93c369abd03"
-  integrity sha512-7s9EQWupR1fTc2pSMtXRQ9w9gLOcrJn+h7HOXw4evxyvVqMi4f+q7d2tnFe3ng3SNHjtK+0EzGMGFUQX4/AQRA==
+"@types/qs@^6.9.5":
+  version "6.9.5"
+  resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.5.tgz#434711bdd49eb5ee69d90c1d67c354a9a8ecb18b"
+  integrity sha512-/JHkVHtx/REVG0VVToGRGH2+23hsYLHdyG+GrvoUGlGAd0ErauXDyvHtRI/7H7mzLm+tBCKA7pfcpkQ1lf58iQ==
 
 "@types/resolve@1.17.1":
   version "1.17.1"
@@ -1715,6 +1710,21 @@ chokidar@^3.3.0, chokidar@^3.4.1:
     is-glob "~4.0.1"
     normalize-path "~3.0.0"
     readdirp "~3.4.0"
+  optionalDependencies:
+    fsevents "~2.1.2"
+
+chokidar@^3.4.3:
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.4.3.tgz#c1df38231448e45ca4ac588e6c79573ba6a57d5b"
+  integrity sha512-DtM3g7juCXQxFVSNPNByEC2+NImtBuxQQvWlHunpJIS5Ocr0lG306cC7FCi7cEA0fzmybPUIl4txBIobk1gGOQ==
+  dependencies:
+    anymatch "~3.1.1"
+    braces "~3.0.2"
+    glob-parent "~5.1.0"
+    is-binary-path "~2.1.0"
+    is-glob "~4.0.1"
+    normalize-path "~3.0.0"
+    readdirp "~3.5.0"
   optionalDependencies:
     fsevents "~2.1.2"
 
@@ -2748,10 +2758,10 @@ escodegen@^1.14.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-cypress@^2.10.3:
-  version "2.11.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-cypress/-/eslint-plugin-cypress-2.11.1.tgz#a945e2774b88211e2c706a059d431e262b5c2862"
-  integrity sha512-MxMYoReSO5+IZMGgpBZHHSx64zYPSPTpXDwsgW7ChlJTF/sA+obqRbHplxD6sBStE+g4Mi0LCLkG4t9liu//mQ==
+eslint-plugin-cypress@^2.11.2:
+  version "2.11.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-cypress/-/eslint-plugin-cypress-2.11.2.tgz#a8f3fe7ec840f55e4cea37671f93293e6c3e76a0"
+  integrity sha512-1SergF1sGbVhsf7MYfOLiBhdOg6wqyeV9pXUAIDIffYTGMN3dTBQS9nFAzhLsHhO+Bn0GaVM1Ecm71XUidQ7VA==
   dependencies:
     globals "^11.12.0"
 
@@ -5923,10 +5933,10 @@ prettier-plugin-svelte@^1.4.1:
   resolved "https://registry.yarnpkg.com/prettier-plugin-svelte/-/prettier-plugin-svelte-1.4.1.tgz#2f0f7a149190f476dc9b4ba9da8d482bd196f1e2"
   integrity sha512-6y0m37Xw01GRf/WIHau+Kp3uXj2JB1agtEmNVKb9opMy34A6OMOYhfneVpNIlrghQSw/jIV+t3e5Ngt4up2CMA==
 
-prettier@^2.0.5:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.1.1.tgz#d9485dd5e499daa6cb547023b87a6cf51bee37d6"
-  integrity sha512-9bY+5ZWCfqj3ghYBLxApy2zf6m+NJo5GzmLTpr9FsApsfjriNnS2dahWReHMi7qNPhhHl9SYHJs2cHZLgexNIw==
+prettier@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.1.2.tgz#3050700dae2e4c8b67c4c3f666cdb8af405e1ce5"
+  integrity sha512-16c7K+x4qVlJg9rEbXl7HEGmQyZlG4R9AgP+oHKRMsMsuk8s+ATStlf1NpDqyBI1HpVyfjLOeMhH2LvuNvV5Vg==
 
 pretty-bytes@^5.4.1:
   version "5.4.1"
@@ -6153,6 +6163,13 @@ readdirp@~3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-3.4.0.tgz#9fdccdf9e9155805449221ac645e8303ab5b9ada"
   integrity sha512-0xe001vZBnJEK+uKcj8qOhyAKPzIT+gStxWr3LCB0DwcXR5NZJ3IaC+yGnHCYzB/S7ov3m3EEbZI2zeNvX+hGQ==
+  dependencies:
+    picomatch "^2.2.1"
+
+readdirp@~3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-3.5.0.tgz#9ba74c019b15d365278d2e91bb8c48d7b4d42c9e"
+  integrity sha512-cMhu7c/8rdhkHXWsY+osBhfSy0JikwpHK/5+imo+LpeasTF8ouErHrlYkwT0++njiyuDvc7OFY5T3ukvZ8qmFQ==
   dependencies:
     picomatch "^2.2.1"
 
@@ -6688,10 +6705,10 @@ sinon@^9.2.1:
     nise "^4.0.4"
     supports-color "^7.1.0"
 
-sirv-cli@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/sirv-cli/-/sirv-cli-1.0.3.tgz#33789a8f9d6dcee2aca2e35c3c97051b462ca00f"
-  integrity sha512-pLWMreVMKvK/7Zwdi/8AMjVPaOhkW24a6GRsXtLbvgvbZNHjAb0J8vs3x86ES5radO06AxGRVp8oMWbuf+ExTw==
+sirv-cli@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/sirv-cli/-/sirv-cli-1.0.8.tgz#150c3f62694203a86cf5d71ec60e6ff4c34064a9"
+  integrity sha512-bJI+kkzQvMKfAOfgLzv09kWsdymLm39LgKmGjacB19GHIAQLCvXXg8e8HzcofTjDZlA8zVv4dQjU9SWkNzkJhw==
   dependencies:
     console-clear "^1.1.0"
     get-port "^3.2.0"
@@ -6699,13 +6716,13 @@ sirv-cli@^1.0.3:
     local-access "^1.0.1"
     sade "^1.6.0"
     semiver "^1.0.0"
-    sirv "^1.0.1"
+    sirv "^1.0.7"
     tinydate "^1.0.0"
 
-sirv@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/sirv/-/sirv-1.0.1.tgz#db8272c8940289c594e1371925b3a2da95872113"
-  integrity sha512-5prQxJFybxXkI6fGffgiJgnbMmcdGWd2K5NH+yw4zF5GIZCb2PdCb9+1qr1Y+ntNJsIRvJ6hnR+NlI9vdrRL2Q==
+sirv@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/sirv/-/sirv-1.0.7.tgz#ad8ca1f84430777a59162592626c2b8e9b9f1384"
+  integrity sha512-QMT2OTD3CTr8de9VByPmvSEeyt6k8/Cxg0J2kQJ5HNhIWfhFg9ypcIWWzez9rPWnGj+WtJ7AZD/MdT/vdilV/A==
   dependencies:
     "@polka/url" "^1.0.0-next.9"
     mime "^2.3.1"
@@ -7216,10 +7233,10 @@ svelte-spa-router@^3.0.5:
   dependencies:
     regexparam "1.3.0"
 
-svelte@^3.29.6:
-  version "3.29.6"
-  resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.29.6.tgz#0a9e378c7896cdb0cbd617e793e60543ffc26354"
-  integrity sha512-VIQMHPPEg/d4BQTy+WX1hHi/0EzjwjgjBK+DF0kLFy5hBsDKHQemd7xrCO1Spz57sT0xUb/YgRwFoozQrK0cmQ==
+svelte@^3.29.7:
+  version "3.29.7"
+  resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.29.7.tgz#e254eb2d0d609ce0fd60f052d444ac4a66d90f7d"
+  integrity sha512-rx0g311kBODvEWUU01DFBUl3MJuJven04bvTVFUG/w0On/wuj0PajQY/QlXcJndFxG+W1s8iXKaB418tdHWc3A==
 
 symbol-observable@^1.1.0:
   version "1.2.0"
@@ -7455,12 +7472,11 @@ truncate-utf8-bytes@^1.0.0:
   dependencies:
     utf8-byte-length "^1.0.1"
 
-ts-jest@^26.4.3:
-  version "26.4.3"
-  resolved "https://registry.yarnpkg.com/ts-jest/-/ts-jest-26.4.3.tgz#d153a616033e7ec8544b97ddbe2638cbe38d53db"
-  integrity sha512-pFDkOKFGY+nL9v5pkhm+BIFpoAuno96ff7GMnIYr/3L6slFOS365SI0fGEVYx2RKGji5M2elxhWjDMPVcOCdSw==
+ts-jest@^26.4.4:
+  version "26.4.4"
+  resolved "https://registry.yarnpkg.com/ts-jest/-/ts-jest-26.4.4.tgz#61f13fb21ab400853c532270e52cc0ed7e502c49"
+  integrity sha512-3lFWKbLxJm34QxyVNNCgXX1u4o/RV0myvA2y2Bxm46iGIjKlaY0own9gIckbjZJPn+WaJEnfPPJ20HHGpoq4yg==
   dependencies:
-    "@jest/create-cache-key-function" "^26.5.0"
     "@types/jest" "26.x"
     bs-logger "0.x"
     buffer-from "1.x"
