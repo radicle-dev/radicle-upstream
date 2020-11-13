@@ -4,6 +4,9 @@ import * as ipcTypes from "../../native/ipc-types";
 
 export type { ProxyError } from "../../native/ipc-types";
 
+// `true` if we are running unit tests with jst.
+const isTestEnv = global.process && global.process.env["NODE_ENV"] === "test";
+
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
 // <input type="file"> for this. Although it lets us select directories,
@@ -45,6 +48,10 @@ export const isExperimental = (): boolean => {
 export function listenProxyError(
   f: (proxyError: ipcTypes.ProxyError) => void
 ): void {
+  if (isTestEnv) {
+    return;
+  }
+
   window.electron.ipcRenderer.on(
     "message",
     (_event: unknown, message: ipcTypes.MainMessage) => {
