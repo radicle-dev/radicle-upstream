@@ -18,7 +18,6 @@
 
   export let peer: User;
   export let projectUrn: Urn;
-  export let projectName: string;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -46,7 +45,7 @@
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
       <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
-        {peer.identity.metadata.handle} / {projectName}
+        {peer.identity.metadata.handle}
       </p>
       {#if peer.role === Role.Maintainer}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
