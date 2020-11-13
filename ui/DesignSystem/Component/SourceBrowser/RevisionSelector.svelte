@@ -101,7 +101,7 @@
   }
 </style>
 
-<Overlay {expanded} on:{hide}>
+<Overlay {expanded} on:hide={hide}>
   <div
     class="revision-selector"
     data-cy="revision-selector"
