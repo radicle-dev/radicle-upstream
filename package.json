@@ -143,8 +143,8 @@
     "marked": "^1.1.1",
     "pure-svg-code": "^1.0.6",
     "timeago.js": "^4.0.2",
-    "twemoji": "^12.1.6",
-    "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6",
+    "twemoji": "13.0.1",
+    "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1",
     "validate.js": "^0.13.1"
   },
   "husky": {
