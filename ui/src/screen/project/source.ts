@@ -3,10 +3,14 @@ import type { Readable, Writable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
 import type * as error from "../../error";
+import type { HorizontalItem } from "../../menu";
 import * as path from "../../path";
 import type { Project, User } from "../../project";
 import * as remote from "../../remote";
 import * as source from "../../source";
+
+import IconCommit from "../../../DesignSystem/Primitive/Icon/Commit.svelte";
+import IconHouse from "../../../DesignSystem/Primitive/Icon/House.svelte";
 
 export enum ViewKind {
   Blob = "BLOB",
@@ -40,6 +44,7 @@ export interface Code {
 interface Screen {
   code: Writable<Code>;
   history: source.CommitsHistory;
+  menuItems: HorizontalItem[];
   path: Readable<string>;
   peer: User;
   project: Project;
@@ -71,6 +76,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       code: writable<Code>(root),
       path: derived(pathStore, store => store),
       history,
+      menuItems: menuItems(project, history),
       peer,
       project,
       revisions,
@@ -119,7 +125,14 @@ export const selectRevision = (revision: source.Revision): void => {
 
   if (current.status === remote.Status.Success) {
     const { data } = current;
-    const { code, peer, project } = data;
+    const { code, peer, project, selectedRevision } = data;
+
+    if (
+      selectedRevision.type === revision.type &&
+      selectedRevision.name === revision.name
+    ) {
+      return;
+    }
 
     Promise.all([
       source.fetchCommits(project.urn, peer.peerId, revision),
@@ -130,6 +143,7 @@ export const selectRevision = (revision: source.Revision): void => {
         screenStore.success({
           ...data,
           history,
+          menuItems: menuItems(project, history),
           selectedRevision: revision as source.Branch | source.Tag,
           tree,
         });
@@ -219,4 +233,25 @@ const fetchRoot = async (
       ),
     },
   };
+};
+
+const menuItems = (
+  project: Project,
+  history: source.CommitsHistory
+): HorizontalItem[] => {
+  return [
+    {
+      icon: IconHouse,
+      title: "Code",
+      href: path.projectSourceCode(project.urn),
+      looseActiveStateMatching: true,
+    },
+    {
+      icon: IconCommit,
+      title: "Commits",
+      counter: history.stats.commits,
+      href: path.projectSourceCommits(project.urn),
+      looseActiveStateMatching: true,
+    },
+  ];
 };

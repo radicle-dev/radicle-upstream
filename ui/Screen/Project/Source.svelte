@@ -2,7 +2,6 @@
   import Router, { push } from "svelte-spa-router";
 
   import { openPath } from "../../src/ipc";
-  import type { HorizontalItem } from "../../src/menu";
   import * as notification from "../../src/notification";
   import * as path from "../../src/path";
   import { checkout } from "../../src/project";
@@ -14,9 +13,6 @@
   } from "../../src/screen/project/source";
   import type { Revision } from "../../src/source";
   import * as screen from "../../src/screen";
-
-  import IconCommit from "../../DesignSystem/Primitive/Icon/Commit.svelte";
-  import IconHouse from "../../DesignSystem/Primitive/Icon/House.svelte";
 
   import ActionBar from "../../DesignSystem/Component/ActionBar.svelte";
   import HorizontalMenu from "../../DesignSystem/Component/HorizontalMenu.svelte";
@@ -73,27 +69,6 @@
   const onSelectRevision = ({ detail: revision }: { detail: Revision }) => {
     selectRevision(revision);
   };
-  const topbarMenuItems = (
-    project: Project,
-    commitCounter?: number
-  ): HorizontalItem[] => {
-    const items = [
-      {
-        icon: IconHouse,
-        title: "Source",
-        href: path.projectSourceCode(project.urn),
-        looseActiveStateMatching: true,
-      },
-      {
-        icon: IconCommit,
-        title: "Commits",
-        counter: commitCounter,
-        href: path.projectSourceCommits(project.urn),
-        looseActiveStateMatching: true,
-      },
-    ];
-    return items;
-  };
 
   push(path.projectSourceCode(project.urn));
   $: fetch(project, selectedPeer);
@@ -107,7 +82,7 @@
   }
 </style>
 
-<Remote {store} let:data={{ history, revisions, selectedRevision }}>
+<Remote {store} let:data={{ menuItems, revisions, selectedRevision }}>
   <ActionBar>
     <div slot="left">
       <div style="display: flex">
@@ -118,8 +93,7 @@
             {revisions} />
         </div>
 
-        <HorizontalMenu
-          items={topbarMenuItems(project, history.stats.commits)} />
+        <HorizontalMenu items={menuItems} />
       </div>
     </div>
     <div slot="right">

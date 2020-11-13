@@ -328,7 +328,7 @@ context("project source browsing", () => {
 
       it("doesn't interfere with the horizontal menu item active state", () => {
         commands
-          .pick("horizontal-menu", "Source")
+          .pick("horizontal-menu", "Code")
           .get("p")
           .should("have.class", "active");
 
@@ -339,7 +339,7 @@ context("project source browsing", () => {
         });
 
         commands
-          .pick("horizontal-menu", "Source")
+          .pick("horizontal-menu", "Code")
           .get("p")
           .should("have.class", "active");
 
@@ -349,7 +349,7 @@ context("project source browsing", () => {
           .click();
 
         commands
-          .pick("horizontal-menu", "Source")
+          .pick("horizontal-menu", "Code")
           .get("p")
           .should("have.class", "active");
       });
