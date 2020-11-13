@@ -1,40 +1,15 @@
 <script lang="typescript">
+  import {
+    lineNumberL,
+    lineNumberR,
+    lineSign,
+    FileDiffType,
+  } from "../../../src/source/diff";
+  import type { ModifiedFile } from "../../../src/source/diff";
+
   import { Icon } from "../../Primitive";
 
-  export let file;
-
-  const lineNumberL = line => {
-    switch (line.type) {
-      case "addition":
-        return " ";
-      case "deletion":
-        return line.lineNum;
-      case "context":
-        return line.lineNumOld;
-    }
-  };
-
-  const lineNumberR = line => {
-    switch (line.type) {
-      case "addition":
-        return line.lineNum;
-      case "deletion":
-        return " ";
-      case "context":
-        return line.lineNumNew;
-    }
-  };
-
-  const lineType = line => {
-    switch (line.type) {
-      case "addition":
-        return "+";
-      case "deletion":
-        return "-";
-      case "context":
-        return " ";
-    }
-  };
+  export let file: ModifiedFile;
 </script>
 
 <style>
@@ -131,29 +106,29 @@
     <p class="typo-text-bold">{file.path}</p>
   </header>
   <main>
-    {#if file.diff.type == 'plain' && file.diff.hunks.length > 0}
+    {#if file.diff.type === FileDiffType.Plain && file.diff.hunks.length > 0}
       <table class="diff">
         {#each file.diff.hunks as hunk}
           <tr class="diff-line">
-            <td colspan="2" class="diff-expand-action typo-mono" />
-            <td colspan="2" class="diff-expand-header typo-mono">
+            <td colspan={2} class="diff-expand-action typo-mono" />
+            <td colspan={2} class="diff-expand-header typo-mono">
               {hunk.header}
             </td>
           </tr>
           {#each hunk.lines as line}
-            <tr class="diff-line" data-expanded data-type={lineType(line)}>
+            <tr class="diff-line" data-expanded data-type={lineSign(line)}>
               <td
                 class="diff-line-number typo-mono left"
-                data-type={lineType(line)}>
+                data-type={lineSign(line)}>
                 {lineNumberL(line)}
               </td>
               <td
                 class="diff-line-number typo-mono right"
-                data-type={lineType(line)}>
+                data-type={lineSign(line)}>
                 {lineNumberR(line)}
               </td>
               <td class="diff-line-type typo-mono" data-type={line.type}>
-                {lineType(line)}
+                {lineSign(line)}
               </td>
               <td class="diff-line-content typo-mono">{line.line}</td>
             </tr>

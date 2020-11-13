@@ -161,7 +161,7 @@ export const fetchCommit = (sha1: string): void => {
   }
 };
 
-export const selectCommit = (commit: source.Commit): void => {
+export const selectCommit = (commit: source.CommitHeader): void => {
   const screen = get(screenStore);
 
   if (screen.status === remote.Status.Success) {

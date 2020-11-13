@@ -5,6 +5,8 @@ import type { PeerId } from "./identity";
 import * as remote from "./remote";
 import type { Urn } from "./urn";
 
+import type * as diff from "./source/diff";
+
 // TYPES
 export interface Person {
   avatar: string;
@@ -12,14 +14,25 @@ export interface Person {
   name: string;
 }
 
-export interface Commit {
-  sha1: string;
-  branch: string;
+export interface CommitHeader {
   author: Person;
   committer: Person;
   committerTime: number;
   description: string;
+  sha1: string;
   summary: string;
+}
+
+export interface CommitStats {
+  additions: number;
+  deletions: number;
+}
+
+export interface Commit {
+  branch: string;
+  diff: diff.Diff;
+  header: CommitHeader;
+  stats: CommitStats;
   changeset: Record<string, unknown>;
 }
 
@@ -37,7 +50,7 @@ interface Stats {
 }
 
 interface Commits {
-  headers: CommitSummary[];
+  headers: CommitHeader[];
   stats: Stats;
 }
 
@@ -46,18 +59,9 @@ export interface CommitsHistory {
   stats: Stats;
 }
 
-interface CommitSummary {
-  sha1: string;
-  author: Person;
-  committer: Person;
-  committerTime: number;
-  summary: string;
-  description: string;
-}
-
 interface CommitGroup {
   time: number;
-  commits: CommitSummary[];
+  commits: CommitHeader[];
 }
 
 type CommitHistory = CommitGroup[];
