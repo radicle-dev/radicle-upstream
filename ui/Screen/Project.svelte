@@ -5,11 +5,7 @@
   import * as path from "../src/path";
   import { isMaintainer } from "../src/project";
   import type { User } from "../src/project";
-  import {
-    fetch,
-    selectPeer,
-    store,
-  } from "../src/screen/project";
+  import { fetch, selectPeer, store } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
