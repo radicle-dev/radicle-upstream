@@ -39,6 +39,6 @@
   </div>
 
   <div slot="error" let:error>
-    <Error message={error && error.message} />
+    <Error message={error.message} />
   </div>
 </Remote>
