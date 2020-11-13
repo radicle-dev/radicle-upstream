@@ -170,7 +170,7 @@ export const fetchObject = (
         query: {
           path: encodeURIComponent(path),
           peerId,
-          revision,
+          revision: { peerId, ...revision },
           highlight: !isMarkdown(path),
         },
       });
