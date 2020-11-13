@@ -1,16 +1,18 @@
 <script lang="typescript">
   import { Illustration, Copyable } from "../../DesignSystem/Component";
-  import { Icon, Button } from "../../DesignSystem/Primitive";
+  import { Avatar, Icon, Button } from "../../DesignSystem/Primitive";
 
   import { wallet } from "../../src/wallet";
   import { session } from "../../src/session";
+  import * as identity from "../../src/identity";
 
   import { Variant as IllustrationVariant } from "../../src/illustration";
   import * as modal from "../../src/modal";
 
   async function onConfirmed(): Promise<void> {
-    console.log("TODO(nuno)");
-    return Promise.resolve();
+    return identity
+      .linkEthereumAddress($wallet.connected.account.address)
+      .then(() => modal.hide());
   }
 </script>
 
@@ -48,6 +50,11 @@
     padding: calc(var(--content-padding) / 2);
     border-radius: 16px;
   }
+
+  .radicle-user {
+    display: flex;
+    align-items: center;
+  }
   .submit {
     display: flex;
     justify-content: flex-end;
@@ -78,10 +85,15 @@
       </Copyable>
     </p>
     <Icon.Link />
-    <p class="radicle-user typo-text-bold">session.identity.metadata.handle</p>
+    <p class="radicle-user typo-text-bold">
+      <Avatar
+        size="small"
+        avatarFallback={$session.data.identity.avatarFallback}
+        variant="circle"
+        style="margin-right: 10px" />
+      {$session.data.identity.metadata.handle}
+    </p>
   </div>
-
-  {JSON.stringify(session)}
 
   <div class="submit">
     <Button

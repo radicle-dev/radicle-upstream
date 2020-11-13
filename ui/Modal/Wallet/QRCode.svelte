@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
 
-  import { Illustration, QR } from "../../DesignSystem/Component";
+  import { Copyable, Illustration, QR } from "../../DesignSystem/Component";
 
   import { uriStore } from "../../src/wallet";
   import { Variant as IllustrationVariant } from "../../src/illustration";
@@ -43,7 +43,9 @@
   </p>
 
   <div class="qrcode-wrapper">
-    <QR size={225} key={uri} />
+    <Copyable showIcon={false} styleContent={false} copyContent={uri}>
+      <QR size={225} key={uri} />
+    </Copyable>
   </div>
 
   <p>

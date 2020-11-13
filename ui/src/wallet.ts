@@ -14,7 +14,7 @@ import type {
 
 import * as modal from "../src/modal";
 import * as path from "../src/path";
-
+import * as identity from "../src/identity";
 import * as notification from "../src/notification";
 
 export enum Status {
@@ -61,6 +61,22 @@ export function build(): Wallet {
       // N.B: this is actually called when the connection is established,
       // not when the modal is closed per se.
       modal.hide();
+      stateStore.subscribe(async state => {
+        if (state.status === Status.Connected) {
+          if (identity.linkedAddress === undefined) {
+            modal.toggle(path.linkAddress());
+          } else if (
+            state.connected.account.address === identity.linkedAddress
+          ) {
+            modal.hide();
+          } else {
+            await disconnect();
+            notification.error(
+              "This wallet doesn’t match the Ethereum address that is linked to your Radicle ID."
+            );
+          }
+        }
+      });
     },
   };
 

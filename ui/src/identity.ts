@@ -41,6 +41,14 @@ export const fetch = (urn: string): Promise<Identity> => {
   return api.get<Identity>(`identities/${urn}`);
 };
 
+// TODO(nuno): Make this stub a real thing that will be set/read from the identity itself.
+export let linkedAddress: string | undefined = undefined;
+
+export function linkEthereumAddress(address: string): Promise<void> {
+  linkedAddress = address;
+  return Promise.resolve();
+}
+
 // MOCK
 export const fallback: Identity = {
   avatarFallback: {
