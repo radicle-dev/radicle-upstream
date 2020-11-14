@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Icon } from "../../Primitive";
+  import { Icon } from "../../../Primitive";
 
   export let active: boolean;
   export let dataCy: string = "";

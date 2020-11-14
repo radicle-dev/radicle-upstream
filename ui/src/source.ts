@@ -1,8 +1,5 @@
-import { Readable, writable } from "svelte/store";
-
 import * as api from "./api";
 import type { PeerId } from "./identity";
-import * as remote from "./remote";
 import type { Urn } from "./urn";
 
 import type * as diff from "./source/diff";
@@ -128,11 +125,6 @@ export interface Sha {
 export type Revision = Branch | Tag | Sha;
 
 // STATE
-export const objectType = writable(ObjectType.Tree);
-export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
-export const objectPath = writable(null);
-export const resetObjectPath = (): void => objectPath.set(null);
-
 export const fetchCommit = (projectUrn: Urn, sha1: Sha1): Promise<Commit> => {
   return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
@@ -161,7 +153,8 @@ export const fetchObject = (
   projectUrn: Urn,
   peerId: PeerId,
   path: string,
-  revision: Revision
+  revision: Revision,
+  highlight?: boolean
 ): Promise<SourceObject> => {
   switch (type) {
     case ObjectType.Blob: {
@@ -170,7 +163,7 @@ export const fetchObject = (
           path: encodeURIComponent(path),
           peerId,
           revision: { peerId, ...revision },
-          highlight: !isMarkdown(path),
+          highlight: highlight ? highlight : !isMarkdown(path),
         },
       });
     }
@@ -245,31 +238,22 @@ export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);
 };
 
-export const tree = (
+const fetchBlob = async (
   projectUrn: Urn,
-  peerId: PeerId,
-  revision: Revision,
-  prefix: string
-): Readable<remote.Data<Tree>> => {
-  const treeStore = remote.createStore<Tree>();
-
-  fetchTree(projectUrn, peerId, revision, prefix)
-    .then(treeStore.success)
-    .catch(treeStore.error);
-
-  return treeStore.readable;
-};
-
-const blob = (
-  projectId: string,
   peerId: string,
-  revision: Revision,
   path: string,
+  revision: Revision,
   highlight: boolean
-): Promise<Blob> =>
-  api.get<Blob>(`source/blob/${projectId}`, {
-    query: { highlight, peerId, path, revision: { peerId, ...revision } },
-  });
+): Promise<Blob> => {
+  return (await fetchObject(
+    ObjectType.Blob,
+    projectUrn,
+    peerId,
+    path,
+    revision,
+    highlight
+  )) as Blob;
+};
 
 const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
@@ -333,7 +317,7 @@ export const fetchReadme = (
       return resolve(null);
     }
 
-    blob(projectUrn, peerId, revision, path, false)
+    fetchBlob(projectUrn, peerId, path, revision, false)
       .then(blob => (blob && !blob.binary ? blob : null))
       .then(resolve)
       .catch(() => resolve(null));

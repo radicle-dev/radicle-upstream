@@ -2,23 +2,17 @@
   import { createEventDispatcher } from "svelte";
   import type { Readable } from "svelte/store";
 
-  import type { PeerId } from "../../../src/identity";
-  import type * as remote from "../../../src/remote";
-  import { tree, objectPath, ObjectType } from "../../../src/source";
-  import type { Revision, Tree } from "../../../src/source";
-  import type { Urn } from "../../../src/urn";
+  import { ObjectType } from "../../../../src/source";
+  import type { Tree } from "../../../../src/source";
 
-  import { Icon } from "../../Primitive";
-  import { Remote } from "../../Component";
+  import { Icon } from "../../../Primitive";
 
   import File from "./File.svelte";
 
   export let currentPath: Readable<string>;
-  export let name: string = "";
-  export let peerId: PeerId;
+  export let fetchTree: (path: string) => Promise<Tree>;
+  export let name: string;
   export let prefix: string;
-  export let projectUrn: Urn;
-  export let revision: Revision;
 
   let expanded = false;
 
@@ -29,11 +23,6 @@
   const toggle = () => {
     expanded = !expanded;
   };
-
-  let store: Readable<remote.Data<Tree>>;
-
-  $: store = tree(projectUrn, peerId, revision, prefix);
-  $: active = prefix === $objectPath;
 </script>
 
 <style>
@@ -63,7 +52,7 @@
 </style>
 
 <div class="folder" on:click={toggle}>
-  <span class:active style="height: 1.5rem">
+  <span style="height: 1.5rem">
     <svelte:component
       this={expanded ? Icon.ChevronDown : Icon.ChevronRight}
       dataCy={`expand-${name}`} />
@@ -72,17 +61,15 @@
 </div>
 
 <div class="container">
-  <Remote {store} let:data={tree}>
+  {#await fetchTree(prefix) then tree}
     {#if expanded}
       {#each tree.entries as entry (entry.path)}
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
             {currentPath}
+            {fetchTree}
             name={entry.info.name}
-            {peerId}
             prefix={`${entry.path}/`}
-            {projectUrn}
-            {revision}
             on:select={onSelectPath} />
         {:else}
           <File
@@ -95,5 +82,5 @@
         {/if}
       {/each}
     {/if}
-  </Remote>
+  {/await}
 </div>

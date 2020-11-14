@@ -3,13 +3,14 @@
 
   import * as path from "../../../src/path";
   import { selectPath, store } from "../../../src/screen/project/source";
+  import { fetchTree } from "../../../src/source";
   import type { Sha1 } from "../../../src/source";
   import type { Urn } from "../../../src/urn";
 
   import Remote from "../../../DesignSystem/Component/Remote.svelte";
 
   import FileView from "../../../DesignSystem/Component/SourceBrowser/FileView.svelte";
-  import TreeRoot from "../../../DesignSystem/Component/SourceBrowser/TreeRoot.svelte";
+  import Tree from "../../../DesignSystem/Component/SourceBrowser/Tree.svelte";
 
   const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {
     push(path.projectSourceCommit(projectUrn, sha1));
@@ -61,12 +62,10 @@
       let:data={{ code, path, peer, project, selectedRevision, tree }}>
       <div class="column-left">
         <div class="source-tree" data-cy="source-tree">
-          <TreeRoot
+          <Tree
             currentPath={path}
+            fetchTree={path => fetchTree(project.urn, peer.peerId, selectedRevision, path)}
             on:select={onSelectPath}
-            peerId={peer.peerId}
-            projectUrn={project.urn}
-            revision={selectedRevision}
             {tree} />
         </div>
       </div>
