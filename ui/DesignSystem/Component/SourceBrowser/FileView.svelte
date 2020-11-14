@@ -39,8 +39,7 @@
   {#if $code.view.kind === ViewKind.Blob}
     <FileSource
       blob={$code.view.blob}
-      path={$code.path}
-      projectName={project.metadata.name}
+      rootName={project.metadata.name}
       on:root={() => onSelectRoot()} />
   {:else if $code.view.kind === ViewKind.Root}
     {#if $code.view.readme}

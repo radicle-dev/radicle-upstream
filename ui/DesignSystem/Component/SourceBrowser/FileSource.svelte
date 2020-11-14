@@ -8,8 +8,7 @@
   import EmptyState from "../EmptyState.svelte";
 
   export let blob: Blob;
-  export let path: string;
-  export let projectName: string;
+  export let rootName: string;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -85,8 +84,8 @@
         <span
           class="typo-link root-link"
           data-cy="root-link"
-          on:click={() => dispatch('root')}>{projectName}</span>
-        <span>/ {path.split('/').join(' / ')}</span>
+          on:click={() => dispatch('root')}>{rootName}</span>
+        <span>/ {blob.path.split('/').join(' / ')}</span>
       </span>
     </div>
   </header>
@@ -96,7 +95,7 @@
         emoji="👀"
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
-    {:else if isMarkdown(path)}
+    {:else if isMarkdown(blob.path)}
       <div class="markdown-wrapper">
         <Markdown content={blob.content} />
       </div>

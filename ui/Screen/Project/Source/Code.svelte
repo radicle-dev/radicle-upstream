@@ -3,7 +3,7 @@
 
   import * as path from "../../../src/path";
   import { selectPath, store } from "../../../src/screen/project/source";
-  import type { Sha1 } from "../../../src/screen/project/source";
+  import type { Sha1 } from "../../../src/source";
   import type { Urn } from "../../../src/urn";
 
   import Remote from "../../../DesignSystem/Component/Remote.svelte";
