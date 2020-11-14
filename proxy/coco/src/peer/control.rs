@@ -22,7 +22,7 @@ pub enum Request {
     CancelSearch(
         RadUrn,
         Instant,
-        oneshot::Sender<Result<request::SomeRequest<Instant>, waiting_room::Error>>,
+        oneshot::Sender<Result<Option<request::SomeRequest<Instant>>, waiting_room::Error>>,
     ),
     /// Get a project search.
     GetSearch(
@@ -47,8 +47,8 @@ pub enum Response {
 
     /// Response to a cancel project search request.
     CancelSearch(
-        oneshot::Sender<Result<request::SomeRequest<Instant>, waiting_room::Error>>,
-        Result<request::SomeRequest<Instant>, waiting_room::Error>,
+        oneshot::Sender<Result<Option<request::SomeRequest<Instant>>, waiting_room::Error>>,
+        Result<Option<request::SomeRequest<Instant>>, waiting_room::Error>,
     ),
     /// Response to get project search request.
     GetSearch(
@@ -102,9 +102,8 @@ impl Control {
         &mut self,
         urn: &RadUrn,
         timestamp: Instant,
-    ) -> Result<request::SomeRequest<Instant>, waiting_room::Error> {
-        let (sender, receiver) =
-            oneshot::channel::<Result<request::SomeRequest<Instant>, waiting_room::Error>>();
+    ) -> Result<Option<request::SomeRequest<Instant>>, waiting_room::Error> {
+        let (sender, receiver) = oneshot::channel();
 
         self.sender
             .send(Request::CancelSearch(urn.clone(), timestamp, sender))
