@@ -8,6 +8,8 @@ import type { Urn } from "./urn";
 import type * as diff from "./source/diff";
 
 // TYPES
+export type Sha1 = string;
+
 export interface Person {
   avatar: string;
   email: string;
@@ -345,7 +347,7 @@ export const fetchReadme = (
   });
 };
 
-const groupCommits = (history: CommitSummary[]): CommitHistory => {
+const groupCommits = (history: CommitHeader[]): CommitHistory => {
   const days: CommitHistory = [];
   let groupDate: Date | undefined = undefined;
 

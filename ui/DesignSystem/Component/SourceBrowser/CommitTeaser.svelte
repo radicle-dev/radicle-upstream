@@ -7,14 +7,14 @@
 
   export let message: string;
   // FIXME(xla): Should be a proper type `Sha`.
-  export let sha: string;
+  export let sha1: string;
   export let style: string = "";
   export let timestamp: string;
   export let user: Person;
 
   const dispatch = createEventDispatcher();
   const onSelect = () => {
-    dispatch("select", sha);
+    dispatch("select", sha1);
   };
 </script>
 
@@ -60,7 +60,7 @@
     <Icon.Commit style="fill: var(--color-secondary)" />
     <!-- svelte-ignore a11y-missing-attribute -->
     <a class="commit-sha typo-text-small-mono" on:click={onSelect}>
-      {sha.substring(0, 7)}
+      {sha1.substring(0, 7)}
     </a>
     <p class="commit-message typo-text-small">{message}</p>
   </div>

@@ -1,15 +1,23 @@
 <script lang="typescript">
+  import { push } from "svelte-spa-router";
+
+  import * as path from "../../../src/path";
   import { selectPath, store } from "../../../src/screen/project/source";
+  import type { Sha1 } from "../../../src/screen/project/source";
+  import type { Urn } from "../../../src/urn";
 
   import Remote from "../../../DesignSystem/Component/Remote.svelte";
 
+  import FileView from "../../../DesignSystem/Component/SourceBrowser/FileView.svelte";
   import TreeRoot from "../../../DesignSystem/Component/SourceBrowser/TreeRoot.svelte";
 
-  import FileView from "./FileView.svelte";
-
+  const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {
+    push(path.projectSourceCommit(projectUrn, sha1));
+  };
   const onSelectPath = ({ detail: path }: { detail: string }) => {
     selectPath(path);
   };
+  const onSelectRoot = () => selectPath("");
 </script>
 
 <style>
@@ -62,9 +70,12 @@
             {tree} />
         </div>
       </div>
-
       <div class="column-right">
-        <FileView {code} filePath={path} {project} />
+        <FileView
+          {code}
+          {project}
+          on:commit={({ detail: sha1 }) => onSelectCommit(project.urn, sha1)}
+          on:root={onSelectRoot} />
       </div>
     </Remote>
   </div>

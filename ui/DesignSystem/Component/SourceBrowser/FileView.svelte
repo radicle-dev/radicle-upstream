@@ -1,11 +1,10 @@
 <script lang="typescript">
+  import { createEventDispatcher } from "svelte";
   import type { Readable } from "svelte/store";
-  import { push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as path from "../../../src/path";
   import type { Project } from "../../../src/project";
-  import { selectPath, ViewKind } from "../../../src/screen/project/source";
+  import { ViewKind } from "../../../src/screen/project/source";
   import type { Code } from "../../../src/screen/project/source";
 
   import EmptyState from "../../../DesignSystem/Component/EmptyState.svelte";
@@ -15,13 +14,12 @@
   import Readme from "../../../DesignSystem/Component/SourceBrowser/Readme.svelte";
 
   export let code: Readable<Code>;
-  export let filePath: Readable<string>;
   export let project: Project;
 
-  const onSelectCommit = ({ detail: sha }: { detail: string }) => {
-    push(path.projectSourceCommit(project.urn, sha));
-  };
-  const onRoot = () => selectPath("");
+  const dispatch = createEventDispatcher();
+  const onSelectCommit = ({ detail: sha1 }: { detail: string }) =>
+    dispatch("commit", sha1);
+  const onSelectRoot = dispatch("root");
 </script>
 
 <style>
@@ -36,7 +34,7 @@
     <CommitTeaser
       message={$code.lastCommit.summary}
       on:select={onSelectCommit}
-      sha={$code.lastCommit.sha1}
+      sha1={$code.lastCommit.sha1}
       style="height: 100%"
       timestamp={format($code.lastCommit.committerTime * 1000)}
       user={$code.lastCommit.author} />
@@ -45,9 +43,9 @@
   {#if $code.view.kind === ViewKind.Blob}
     <FileSource
       blob={$code.view.blob}
-      path={$filePath}
+      path={$code.path}
       projectName={project.metadata.name}
-      on:root={onRoot} />
+      on:root={onSelectRoot} />
   {:else if $code.view.kind === ViewKind.Root}
     {#if $code.view.readme}
       <Readme
@@ -63,7 +61,7 @@
     <EmptyState
       emoji="👀"
       headerText={$code.view.error}
-      on:primaryAction={onRoot}
+      on:primaryAction={onSelectRoot}
       primaryActionText="Back to source"
       style="height: 320px;"
       text="This file doesn't exist on this branch." />
