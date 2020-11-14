@@ -36,7 +36,7 @@ interface Root {
 type View = Blob | Error | Root;
 
 export interface Code {
-  lastCommit: source.LastCommit;
+  lastCommit: source.CommitHeader;
   path: string;
   view: View;
 }

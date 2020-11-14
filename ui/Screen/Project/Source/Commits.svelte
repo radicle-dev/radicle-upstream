@@ -1,14 +1,12 @@
 <script lang="typescript">
-  import { format } from "timeago.js";
-
   import { selectCommit, store } from "../../../src/screen/project/source";
   import { formatTime } from "../../../src/source";
-  import type { Commit } from "../../../src/source";
+  import type { CommitHeader } from "../../../src/source";
 
   import { Remote } from "../../../DesignSystem/Component";
   import CommitTeaser from "../../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
 
-  const onSelect = (commit: Commit) => {
+  const onSelect = (commit: CommitHeader) => {
     selectCommit(commit);
   };
 </script>
@@ -62,13 +60,10 @@
           {#each group.commits as commit (commit.sha1)}
             <li class="commit" on:click={() => onSelect(commit)}>
               <CommitTeaser
-                message={commit.summary}
-                sha={commit.sha1}
+                {commit}
                 style="background: none; --commit-message-color:
                 var(--color-foreground-level-6); --commit-sha-color:
-                var(--color-foreground)"
-                timestamp={format(commit.committerTime * 1000)}
-                user={commit.author} />
+                var(--color-foreground)" />
             </li>
           {/each}
         </ul>

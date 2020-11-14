@@ -1,7 +1,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
   import type { Readable } from "svelte/store";
-  import { format } from "timeago.js";
 
   import type { Project } from "../../../src/project";
   import { ViewKind } from "../../../src/screen/project/source";
@@ -19,7 +18,7 @@
   const dispatch = createEventDispatcher();
   const onSelectCommit = ({ detail: sha1 }: { detail: string }) =>
     dispatch("commit", sha1);
-  const onSelectRoot = dispatch("root");
+  const onSelectRoot = () => dispatch("root");
 </script>
 
 <style>
@@ -32,12 +31,9 @@
 <div data-cy="file-view">
   <div class="commit-header">
     <CommitTeaser
-      message={$code.lastCommit.summary}
+      commit={$code.lastCommit}
       on:select={onSelectCommit}
-      sha1={$code.lastCommit.sha1}
-      style="height: 100%"
-      timestamp={format($code.lastCommit.committerTime * 1000)}
-      user={$code.lastCommit.author} />
+      style="height: 100%" />
   </div>
 
   {#if $code.view.kind === ViewKind.Blob}
@@ -45,7 +41,7 @@
       blob={$code.view.blob}
       path={$code.path}
       projectName={project.metadata.name}
-      on:root={onSelectRoot} />
+      on:root={() => onSelectRoot()} />
   {:else if $code.view.kind === ViewKind.Root}
     {#if $code.view.readme}
       <Readme

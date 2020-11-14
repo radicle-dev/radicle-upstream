@@ -1,20 +1,17 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
+  import { format } from "timeago.js";
 
-  import type { Person } from "../../../src/source";
+  import type { CommitHeader } from "../../../src/source";
 
   import { Icon } from "../../Primitive";
 
-  export let message: string;
-  // FIXME(xla): Should be a proper type `Sha`.
-  export let sha1: string;
+  export let commit: CommitHeader;
   export let style: string = "";
-  export let timestamp: string;
-  export let user: Person;
 
   const dispatch = createEventDispatcher();
   const onSelect = () => {
-    dispatch("select", sha1);
+    dispatch("select", commit.sha1);
   };
 </script>
 
@@ -60,19 +57,19 @@
     <Icon.Commit style="fill: var(--color-secondary)" />
     <!-- svelte-ignore a11y-missing-attribute -->
     <a class="commit-sha typo-text-small-mono" on:click={onSelect}>
-      {sha1.substring(0, 7)}
+      {commit.sha1.substring(0, 7)}
     </a>
-    <p class="commit-message typo-text-small">{message}</p>
+    <p class="commit-message typo-text-small">{commit.summary}</p>
   </div>
 
   <div class="align-right">
     <p
       class="typo-text-small-bold"
       style="margin-right: 8px; color: var(--color-foreground-level-6)">
-      {user.name}
+      {commit.author.name}
     </p>
     <p class="typo-text-small" style="color: var(--color-foreground-level-6)">
-      {timestamp}
+      {format(commit.committerTime * 1000)}
     </p>
   </div>
 </div>

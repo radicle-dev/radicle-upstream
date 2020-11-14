@@ -21,7 +21,7 @@ export interface CommitHeader {
   committer: Person;
   committerTime: number;
   description: string;
-  sha1: string;
+  sha1: Sha1;
   summary: string;
 }
 
@@ -36,13 +36,6 @@ export interface Commit {
   header: CommitHeader;
   stats: CommitStats;
   changeset: Record<string, unknown>;
-}
-
-export interface LastCommit {
-  author: Person;
-  summary: string;
-  sha1: string;
-  committerTime: number;
 }
 
 interface Stats {
@@ -76,7 +69,7 @@ export enum ObjectType {
 interface Info {
   name: string;
   objectType: ObjectType;
-  lastCommit: LastCommit;
+  lastCommit: CommitHeader;
 }
 
 export interface LocalState {
@@ -140,7 +133,7 @@ export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
 export const objectPath = writable(null);
 export const resetObjectPath = (): void => objectPath.set(null);
 
-export const fetchCommit = (projectUrn: Urn, sha1: string): Promise<Commit> => {
+export const fetchCommit = (projectUrn: Urn, sha1: Sha1): Promise<Commit> => {
   return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
 
