@@ -2,23 +2,26 @@
   import { createEventDispatcher } from "svelte";
   import type { Readable } from "svelte/store";
 
-  import type { Project } from "../../../src/project";
   import { ViewKind } from "../../../src/screen/project/source";
-  import type { Code } from "../../../src/screen/project/source";
+  import type { Code, View } from "../../../src/screen/project/source";
 
   import EmptyState from "../../../DesignSystem/Component/EmptyState.svelte";
 
-  import CommitTeaser from "../../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
-  import FileSource from "../../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
-  import Readme from "../../../DesignSystem/Component/SourceBrowser/Readme.svelte";
+  import CommitTeaser from "./CommitTeaser.svelte";
+
+  import Blob from "./FileView/Blob.svelte";
+  import Root from "./FileView/Root.svelte";
 
   export let code: Readable<Code>;
-  export let project: Project;
+  export let rootName: string;
 
   const dispatch = createEventDispatcher();
   const onSelectCommit = ({ detail: sha1 }: { detail: string }) =>
     dispatch("commit", sha1);
   const onSelectRoot = () => dispatch("root");
+
+  let view: View;
+  $: view = $code.view;
 </script>
 
 <style>
@@ -36,26 +39,14 @@
       style="height: 100%" />
   </div>
 
-  {#if $code.view.kind === ViewKind.Blob}
-    <FileSource
-      blob={$code.view.blob}
-      rootName={project.metadata.name}
-      on:root={() => onSelectRoot()} />
-  {:else if $code.view.kind === ViewKind.Root}
-    {#if $code.view.readme}
-      <Readme
-        content={$code.view.readme.content}
-        path={$code.view.readme.path} />
-    {:else}
-      <EmptyState
-        text="This project doesn't have a README yet."
-        emoji="👀"
-        style="height: 320px;" />
-    {/if}
-  {:else if $code.view.kind === ViewKind.Error}
+  {#if view.kind === ViewKind.Blob}
+    <Blob {rootName} {view} on:root={onSelectRoot} />
+  {:else if view.kind === ViewKind.Root}
+    <Root {view} />
+  {:else if view.kind === ViewKind.Error}
     <EmptyState
       emoji="👀"
-      headerText={$code.view.error}
+      headerText={view.error.message}
       on:primaryAction={onSelectRoot}
       primaryActionText="Back to source"
       style="height: 320px;"

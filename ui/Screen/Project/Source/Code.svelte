@@ -72,7 +72,7 @@
       <div class="column-right">
         <FileView
           {code}
-          {project}
+          rootName={project.metadata.name}
           on:commit={({ detail: sha1 }) => onSelectCommit(project.urn, sha1)}
           on:root={onSelectRoot} />
       </div>

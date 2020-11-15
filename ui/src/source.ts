@@ -93,7 +93,7 @@ export interface Tree extends SourceObject {
 
 export interface Readme {
   content: string;
-  path?: string;
+  path: string;
 }
 
 export interface Revisions {

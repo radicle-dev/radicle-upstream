@@ -1,9 +1,10 @@
-<script>
-  import { Icon, Markdown } from "../../Primitive";
-  import { isMarkdown } from "../../../src/source.ts";
+<script lang="typescript">
+  import { isMarkdown } from "../../../src/source";
 
-  export let content = null;
-  export let path = null;
+  import { Icon, Markdown } from "../../Primitive";
+
+  export let content: string;
+  export let path: string;
 </script>
 
 <style>

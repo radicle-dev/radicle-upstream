@@ -18,7 +18,7 @@ export enum ViewKind {
   Root = "ROOT",
 }
 
-interface Blob {
+export interface Blob {
   kind: ViewKind.Blob;
   blob: source.Blob;
 }
@@ -28,12 +28,12 @@ interface Error {
   error: error.Error;
 }
 
-interface Root {
+export interface Root {
   kind: ViewKind.Root;
   readme: source.Readme | null;
 }
 
-type View = Blob | Error | Root;
+export type View = Blob | Error | Root;
 
 export interface Code {
   lastCommit: source.CommitHeader;
