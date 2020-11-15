@@ -4,6 +4,7 @@ import { push } from "svelte-spa-router";
 
 import type * as error from "../../error";
 import type { HorizontalItem } from "../../menu";
+import * as notification from "../../notification";
 import * as path from "../../path";
 import type { Project, User } from "../../project";
 import * as remote from "../../remote";
@@ -157,7 +158,12 @@ export const fetchCommit = (sha1: string): void => {
     source
       .fetchCommit(project.urn, sha1)
       .then(commitStore.success)
-      .catch(commitStore.error);
+      .catch(err => {
+        commitStore.error(err);
+
+        console.log(err.message);
+        notification.error("Could not fetch commit");
+      });
   }
 };
 

@@ -2,12 +2,10 @@
   import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as notification from "../../../src/notification";
   import {
     commit as store,
     fetchCommit,
   } from "../../../src/screen/project/source";
-  import * as remote from "../../../src/remote";
   import type { Urn } from "../../../src/urn";
 
   import { Icon } from "../../../DesignSystem/Primitive";
@@ -17,11 +15,6 @@
 
   export let params: { hash: string; urn: Urn };
   const { hash } = params;
-
-  $: if ($store.status === remote.Status.Error) {
-    console.log($store.error);
-    notification.error("Could not fetch commit");
-  }
 
   fetchCommit(hash);
 </script>
@@ -112,18 +105,12 @@
       <div class="context">
         <div>
           <p class="field">
-            Authored by
-            <span class="author typo-semi-bold">
-              {commit.header.author.name}
-            </span>
+            Authored by <span class="author typo-semi-bold"> {commit.header.author.name} </span>
             <span class="typo-mono">&lt;{commit.header.author.email}&gt;</span>
           </p>
           {#if commit.header.committer.email != commit.header.author.email}
             <p class="field">
-              Committed by
-              <span class="author typo-semi-bold">
-                {commit.header.committer.name}
-              </span>
+              Committed by <span class="author typo-semi-bold"> {commit.header.committer.name} </span>
               <span class="typo-mono">
                 &lt;{commit.header.committer.email}&gt;
               </span>
@@ -132,8 +119,7 @@
         </div>
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
-          Commit
-          <span class="hash">{commit.header.sha1}</span>
+          Commit <span class="hash">{commit.header.sha1}</span>
         </p>
       </div>
     </div>
