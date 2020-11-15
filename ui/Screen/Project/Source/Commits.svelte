@@ -22,6 +22,6 @@
 
 <div class="commits-page" data-cy="commits-page">
   <Remote {store} let:data={{ history }}>
-    <History {history} on:seelct={onSelect} />
+    <History {history} on:select={onSelect} />
   </Remote>
 </div>
