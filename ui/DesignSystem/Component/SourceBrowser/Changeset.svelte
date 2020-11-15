@@ -60,10 +60,11 @@
 <div class="changeset-summary">
   {#if diff.modified.length > 0}
     <span class="typo-semi-bold"> {diff.modified.length} file(s) changed </span>
-    with
-    <span class="additions typo-semi-bold"> {stats.additions} additions </span>
-    and
-    <span class="deletions typo-semi-bold"> {stats.deletions} deletions </span>
+    with <span class="additions typo-semi-bold">
+      {stats.additions} additions
+    </span> and <span class="deletions typo-semi-bold">
+      {stats.deletions} deletions
+    </span>
   {/if}
 </div>
 <div>

@@ -61,9 +61,7 @@
       </div>
     {/if}
     <p style="color: var(--color-foreground-level-5);">
-      Updated
-      {issue.updated_at}
-      ago
+      Updated {issue.updated_at} ago
     </p>
   </div>
 </div>
