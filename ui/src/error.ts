@@ -18,11 +18,13 @@ export interface Error {
 export enum Code {
   LocalStateFetchFailure = "LocalStateFetchFailure",
   ProjectCheckoutFailure = "ProjectCheckoutFailure",
-  ProjectRequestFailure = "ProjectRequestFailure",
   ProjectCreationFailure = "ProjectCreationFailure",
+  ProjectRequestFailure = "ProjectRequestFailure",
   RemoteStoreError = "RemoteStoreError",
   SessionFetchFailure = "SessionFetchFailure",
   UnexpectedProxyExit = "UnexpectedProxyExit",
+  UnhandledError = "UnhandledError",
+  UnhandledRejection = "UnhandledRejection",
   UnknownException = "UnknownException",
 }
 
@@ -85,5 +87,41 @@ ipc.listenProxyError(proxyError => {
   setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if (!(window as any).Cypress) {
+  window.addEventListener("unhandledrejection", ev => {
+    const code = Code.UnhandledRejection;
+    const message = "An unexpected error occured";
+    if (ev.reason instanceof globalThis.Error) {
+      show({
+        code,
+        message,
+        source: fromException(ev.reason),
+      });
+    } else {
+      show({
+        code,
+        message,
+        details: ev.reason,
+      });
+    }
+  });
+
+  window.onerror = (
+    _event: unknown,
+    _source?: string,
+    _lineno?: number,
+    _colno?: number,
+    error?: globalThis.Error
+  ): void => {
+    if (error) {
+      show({
+        code: Code.UnhandledError,
+        message: "An unexpected error occured",
+        source: fromException(error),
+      });
+    }
+  };
+}
 // Value is `true` if there was a fatal error
 export const fatalError: svelteStore.Readable<FatalError | null> = fatalErrorWritable;
