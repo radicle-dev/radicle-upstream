@@ -4,9 +4,18 @@ import * as ipcTypes from "../../native/ipc-types";
 
 export type { ProxyError } from "../../native/ipc-types";
 
-// `true` if we are running unit tests with jst.
-const isTestEnv =
-  globalThis.process && globalThis.process.env["NODE_ENV"] === "test";
+// `true` if we are running unit tests with Jest.
+const isNodeTestEnv = Boolean(
+  globalThis.process && globalThis.process.env["NODE_ENV"] === "test"
+);
+
+// `true` if the app is run by Cypress or if the code is used by
+// Cypress.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isCypressTestEnv = Boolean((globalThis as any).Cypress);
+
+// `true` if we are running the app in test mode
+const isTestEnv = isNodeTestEnv || isCypressTestEnv;
 
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
