@@ -175,7 +175,7 @@ export const selectRevision = async (
 const commitStore = remote.createStore<source.Commit>();
 export const commit = commitStore.readable;
 
-export const fetchCommit = (sha1: string): void => {
+export const fetchCommit = async (sha1: string): Promise<void> => {
   const screen = get(screenStore);
 
   if (screen.status === remote.Status.Success) {
@@ -183,15 +183,14 @@ export const fetchCommit = (sha1: string): void => {
       data: { project },
     } = screen;
 
-    source
-      .fetchCommit(project.urn, sha1)
-      .then(commitStore.success)
-      .catch(err => {
-        commitStore.error(err);
+    try {
+      commitStore.success(await source.fetchCommit(project.urn, sha1));
+    } catch (err) {
+      commitStore.error(err);
 
-        console.log(err.message);
-        notification.error("Could not fetch commit");
-      });
+      console.log(err.message);
+      notification.error("Could not fetch commit");
+    }
   }
 };
 
