@@ -1,13 +1,13 @@
 <script lang="typescript">
   import { Button } from "../../../../Primitive";
-  import { Illustration } from "../../../../Component";
+  import { Illustration, TxButton } from "../../../../Component";
 
   import Receivers from "../Receivers.svelte";
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
 
   export let onBack: () => void;
-  export let onConfirmed: () => void;
+  export let onConfirmed: () => Promise<void>;
 
   export let budget = 0;
   export let topUp = 0;
@@ -48,7 +48,9 @@
     Back
   </Button>
 
-  <Button dataCy="confirm-button" disabled={budget <= 0} on:click={onConfirmed}>
-    Confirm in your wallet
-  </Button>
+  <TxButton
+    dataCy="confirm-button"
+    onClick={onConfirmed}
+    errorMessage={e => `Failed to onboard your pool: ${e.message}`}
+    title={'Confirm in your wallet'} />
 </div>

@@ -59,8 +59,8 @@
     }
   }
 
-  function onConfirmed(): void {
-    $pool.onboard(budget, receivers, topUp);
+  function onConfirmed(): Promise<void> {
+    return $pool.onboard(budget, receivers, topUp);
   }
 
   /* Themz values */
