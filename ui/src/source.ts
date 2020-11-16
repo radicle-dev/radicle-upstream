@@ -315,7 +315,7 @@ export const tree = (
       query: { peerId: peerId, revision, prefix },
     })
     .then(treeStore.success)
-    .catch(treeStore.error);
+    .catch((err: Error) => treeStore.error(error.fromException(err)));
 
   return treeStore.readable;
 };
@@ -402,7 +402,7 @@ export const readme = (
     })
     .then(blob => (blob && !blob.binary ? blob : null))
     .then(readme.success)
-    .catch(readme.error);
+    .catch((err: Error) => readme.error(error.fromException(err)));
 
   return readme.readable;
 };
