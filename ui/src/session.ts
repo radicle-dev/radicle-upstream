@@ -4,7 +4,6 @@ import * as api from "./api";
 import * as error from "./error";
 import * as event from "./event";
 import type * as identity from "./identity";
-import * as notification from "./notification";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 
@@ -127,11 +126,20 @@ export const createKeystore = (passphrase: string): Promise<null> => {
   return api.set<unknown>(`keystore`, { passphrase });
 };
 
-const updateSettings = (settings: Settings): Promise<void> =>
-  api
-    .set<Settings>(`session/settings`, settings)
-    .then(fetchSession)
-    .catch((err: error.Error) => notification.error(err.message));
+const updateSettings = async (settings: Settings): Promise<void> => {
+  try {
+    api.set<Settings>(`session/settings`, settings);
+  } catch (err) {
+    error.show({
+      code: error.Code.SessionSettingsUpdateFailure,
+      message: `Failed to update settings: ${err.message}`,
+      source: error.fromException(err),
+    });
+    return;
+  }
+
+  await fetchSession();
+};
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {

@@ -24,6 +24,7 @@ export enum Code {
   ProjectRequestFailure = "ProjectRequestFailure",
   RemoteStoreError = "RemoteStoreError",
   SessionFetchFailure = "SessionFetchFailure",
+  SessionSettingsUpdateFailure = "SessionSettingsUpdateFailure",
   UnexpectedProxyExit = "UnexpectedProxyExit",
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
