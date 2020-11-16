@@ -1,4 +1,4 @@
-//! Configuration types for configuring the [`super::RunState`].
+//! Configuration types for configuring the `RunState`.
 
 use std::time::Duration;
 
