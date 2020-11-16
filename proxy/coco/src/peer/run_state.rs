@@ -418,6 +418,7 @@ impl RunState {
                 }
                 if let Some(url) = self.waiting_room.next_clone() {
                     cmds.push(Command::Request(command::Request::Clone(url)));
+                    cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
                 cmds
             }
@@ -427,18 +428,18 @@ impl RunState {
                 .cloning(url.clone(), Instant::now())
                 .map_or_else(
                     |error| Self::handle_waiting_room_timeout(url.urn, &error),
-                    |_| vec![],
+                    |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 ),
             (_, input::Request::Cloned(url)) => {
                 self.waiting_room.cloned(&url, Instant::now()).map_or_else(
                     |error| Self::handle_waiting_room_timeout(url.urn, &error),
-                    |_| vec![],
+                    |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 )
             }
             (_, input::Request::Queried(urn)) => {
                 self.waiting_room.queried(&urn, Instant::now()).map_or_else(
                     |error| Self::handle_waiting_room_timeout(urn, &error),
-                    |_| vec![],
+                    |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 )
             }
             (_, input::Request::Failed { url, reason }) => {
@@ -448,7 +449,7 @@ impl RunState {
                     .cloning_failed(url, Instant::now())
                     .map_or_else(
                         |error| Self::handle_waiting_room_timeout(urn, &error),
-                        |_| vec![],
+                        |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                     )
             }
             _ => vec![],
@@ -795,9 +796,12 @@ mod test {
                 None
             )))
             .is_empty());
-        assert!(state
-            .transition(Input::Request(input::Request::Queried(urn.clone())))
-            .is_empty());
+        assert_matches!(
+            state
+                .transition(Input::Request(input::Request::Queried(urn.clone())))
+                .first(),
+            Some(Command::PersistWaitingRoom(_))
+        );
         assert!(state
             .transition(Input::Protocol(ProtocolEvent::Gossip(gossip::Info::Has(
                 gossip::Has {
