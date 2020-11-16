@@ -600,7 +600,7 @@ mod test {
         let res = request()
             .method("GET")
             .path(&format!(
-                "/commits/{}?branch={}",
+                "/commits/{}?{}",
                 urn.clone(),
                 serde_qs::to_string(&query).unwrap(),
             ))
