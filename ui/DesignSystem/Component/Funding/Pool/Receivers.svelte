@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { Button, Icon, Input } from "../../../Primitive";
-  import { TxButton } from "../../../Component";
 
   import Receiver from "./Receiver.svelte";
 
@@ -9,15 +8,12 @@
 
   // The current list of receivers
   export let receivers: Address[] = [];
-  export let onSave: (
-    changeset: pool.Changeset
-  ) => Promise<void> | undefined = undefined;
   export let updating = false;
+  export let editing = false;
 
   let changeset: Changeset = new Map();
 
   $: updating, refreshChangeset();
-  $: editingMode = onSave !== undefined;
 
   function refreshChangeset(): Changeset {
     // Refresh the changeset only when something changed
@@ -61,18 +57,6 @@
     changeset = changeset;
   }
 
-  // Check whether there are changes in the current changeset comparatively
-  // to the currently saved list of receivers.
-  function thereAreChanges(current: Address[], changeset: Changeset): boolean {
-    return (
-      current.length !== changeset.size ||
-      current.some(address => {
-        const maybeStatus = changeset.get(address);
-        return maybeStatus ? maybeStatus !== AddressStatus.Present : false;
-      })
-    );
-  }
-
   // The input field value
   let newValue: string = "";
 </script>
@@ -95,7 +79,7 @@
   <div class="row">
     {#each [...changeset.entries()] as [address, status]}
       <Receiver
-        onClick={editingMode ? x => toggleReceiver(x) : undefined}
+        onClick={editing ? x => toggleReceiver(x) : undefined}
         {address}
         {status}
         disabled={updating} />
@@ -103,7 +87,7 @@
   </div>
 
   <div class="row">
-    {#if editingMode}
+    {#if editing}
       <Input.Text
         disabled={updating}
         bind:value={newValue}
@@ -117,12 +101,6 @@
         style="margin-left: 8px; border-color: var(--color-foreground-level-3)">
         <Icon.Plus />
       </Button>
-      <TxButton
-        disabled={updating || !thereAreChanges(receivers, changeset)}
-        onClick={() => onSave(changeset)}
-        variant="secondary"
-        title="Save"
-        errorMessage={e => `Failed to update list of receivers: ${e.message}`} />
     {/if}
   </div>
 </div>
