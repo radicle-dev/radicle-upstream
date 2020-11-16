@@ -194,19 +194,13 @@ const fetchBlob = async (
   revision: source.Revision,
   path: string
 ): Promise<Code> => {
-  const blob = await source.fetchObject(
-    source.ObjectType.Blob,
-    project.urn,
-    peer.peerId,
-    path,
-    revision
-  );
+  const blob = await source.fetchBlob(project.urn, peer.peerId, path, revision);
   return {
     lastCommit: blob.info.lastCommit,
     path,
     view: {
       kind: ViewKind.Blob,
-      blob: blob as source.Blob,
+      blob,
     },
   };
 };

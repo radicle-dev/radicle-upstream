@@ -126,7 +126,23 @@ export interface Sha {
 
 export type Revision = Branch | Tag | Sha;
 
-// STATE
+export const fetchBlob = async (
+  projectUrn: Urn,
+  peerId: string,
+  path: string,
+  revision: Revision,
+  highlight?: boolean
+): Promise<Blob> => {
+  return api.get<Blob>(`source/blob/${projectUrn}`, {
+    query: {
+      path: encodeURIComponent(path),
+      peerId,
+      revision: { peerId, ...revision },
+      highlight: highlight ? highlight : !isMarkdown(path),
+    },
+  });
+};
+
 export const fetchCommit = (projectUrn: Urn, sha1: Sha1): Promise<Commit> => {
   return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
@@ -148,38 +164,6 @@ export const fetchCommits = (
         history: groupCommits(response.headers),
       };
     });
-};
-
-export const fetchObject = (
-  type: ObjectType,
-  projectUrn: Urn,
-  peerId: PeerId,
-  path: string,
-  revision: Revision,
-  highlight?: boolean
-): Promise<SourceObject> => {
-  switch (type) {
-    case ObjectType.Blob: {
-      return api.get<SourceObject>(`source/blob/${projectUrn}`, {
-        query: {
-          path: encodeURIComponent(path),
-          peerId,
-          revision: { peerId, ...revision },
-          highlight: highlight ? highlight : !isMarkdown(path),
-        },
-      });
-    }
-
-    case ObjectType.Tree: {
-      return api.get<SourceObject>(`source/tree/${projectUrn}`, {
-        query: {
-          peerId,
-          revision,
-          prefix: path,
-        },
-      });
-    }
-  }
 };
 
 export const fetchBranches = (
@@ -238,23 +222,6 @@ export const fetchTree = (
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);
-};
-
-const fetchBlob = async (
-  projectUrn: Urn,
-  peerId: string,
-  path: string,
-  revision: Revision,
-  highlight: boolean
-): Promise<Blob> => {
-  return (await fetchObject(
-    ObjectType.Blob,
-    projectUrn,
-    peerId,
-    path,
-    revision,
-    highlight
-  )) as Blob;
 };
 
 const findReadme = (tree: Tree): string | null => {
