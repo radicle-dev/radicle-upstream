@@ -14,9 +14,14 @@ import IconCommit from "../../../DesignSystem/Primitive/Icon/Commit.svelte";
 import IconHouse from "../../../DesignSystem/Primitive/Icon/House.svelte";
 
 export enum ViewKind {
+  Aborted = "ABORTED",
   Blob = "BLOB",
   Error = "ERROR",
   Root = "ROOT",
+}
+
+export interface Aborted {
+  kind: ViewKind.Aborted;
 }
 
 export interface Blob {
@@ -34,7 +39,7 @@ export interface Root {
   readme: source.Readme | null;
 }
 
-export type View = Blob | Error | Root;
+export type View = Aborted | Blob | Error | Root;
 
 export interface Code {
   lastCommit: source.CommitHeader;
@@ -106,14 +111,17 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
 
 export const selectPath = async (path: string): Promise<void> => {
   const screen = get(screenStore);
+  const current = get(pathStore);
 
-  if (screen.status === remote.Status.Success) {
+  if (current.selected !== path && screen.status === remote.Status.Success) {
     const {
       data: { peer, project, selectedRevision, tree },
     } = screen;
 
     const code = await fetchCode(project, peer, selectedRevision, tree, path);
-    screen.data.code.set(code);
+    if (code.view.kind !== ViewKind.Aborted) {
+      screen.data.code.set(code);
+    }
   }
 };
 
@@ -201,6 +209,7 @@ export const selectCommit = (commit: source.CommitHeader): void => {
     const {
       data: { project },
     } = screen;
+
     push(path.projectSourceCommit(project.urn, commit.sha1));
   }
 };
@@ -263,17 +272,31 @@ const fetchCode = async (
       code = await fetchBlob(project, peer, revision, path, request.signal);
     }
   } catch (err) {
-    code = {
-      lastCommit: tree.info.lastCommit,
-      path,
-      view: {
-        kind: ViewKind.Error,
-        error: err,
-      },
-    };
+    console.log(err.name);
+    // An in-flight request was aborted, we wait for the next one to arrive.
+    if (err.name === "AbortError") {
+      code = {
+        lastCommit: tree.info.lastCommit,
+        path,
+        view: {
+          kind: ViewKind.Aborted,
+        },
+      };
+    } else {
+      code = {
+        lastCommit: tree.info.lastCommit,
+        path,
+        view: {
+          kind: ViewKind.Error,
+          error: err,
+        },
+      };
+    }
   }
 
-  pathStore.set({ request: null, selected: path });
+  if (code.view.kind !== ViewKind.Aborted) {
+    pathStore.set({ request: null, selected: path });
+  }
 
   return code;
 };

@@ -139,11 +139,6 @@ export const fetchBlob = async (
   highlight?: boolean,
   signal?: AbortSignal
 ): Promise<Blob> => {
-  console.log(
-    "highlight",
-    highlight,
-    highlight && highlight && !isMarkdown(path)
-  );
   return api.get<Blob>(`source/blob/${projectUrn}`, {
     query: {
       path: encodeURIComponent(path),

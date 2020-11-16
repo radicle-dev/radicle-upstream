@@ -1,8 +1,10 @@
 <script lang="typescript">
   import { Icon } from "../../../Primitive";
+  import Spinner from "../../../Component/Spinner.svelte";
 
   export let active: boolean;
   export let dataCy: string = "";
+  export let loading: boolean;
   export let name: string;
 </script>
 
@@ -25,6 +27,7 @@
 
   .name {
     margin-left: 0.25rem;
+    user-select: none;
     white-space: nowrap;
   }
 
@@ -40,6 +43,10 @@
 </style>
 
 <div class="file" class:active on:click data-cy={dataCy}>
-  <Icon.File />
+  {#if loading}
+    <Spinner />
+  {:else}
+    <Icon.File />
+  {/if}
   <span class="name">{name}</span>
 </div>

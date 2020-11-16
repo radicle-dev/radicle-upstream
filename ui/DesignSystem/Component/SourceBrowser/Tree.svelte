@@ -3,7 +3,7 @@
   import type { Readable } from "svelte/store";
 
   import { ObjectType } from "../../../src/source";
-  import type { Tree } from "../../../src/source";
+  import type { SelectedPath, Tree } from "../../../src/source";
 
   import File from "./Tree/File.svelte";
   import Folder from "./Tree/Folder.svelte";
@@ -30,6 +30,7 @@
     <File
       active={entry.path === $selectedPath.selected}
       dataCy={`file-${entry.path}`}
+      loading={entry.path === $selectedPath.selected && $selectedPath.request !== null}
       name={entry.info.name}
       on:click={() => {
         onSelectPath({ detail: entry.path });

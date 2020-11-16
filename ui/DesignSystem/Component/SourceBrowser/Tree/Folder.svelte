@@ -75,6 +75,7 @@
           <File
             active={entry.path === $selectedPath.selected}
             dataCy={`file-${entry.path}`}
+            loading={entry.path === $selectedPath.selected && $selectedPath.request !== null}
             name={entry.info.name}
             on:click={() => {
               onSelectPath({ detail: entry.path });

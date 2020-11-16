@@ -1,6 +1,6 @@
-<script lang="ts">
-  export let dataCy = "";
-  export let style = "";
+<script lang="typescript">
+  export let dataCy: string = "";
+  export let style: string = "";
 </script>
 
 <style>
