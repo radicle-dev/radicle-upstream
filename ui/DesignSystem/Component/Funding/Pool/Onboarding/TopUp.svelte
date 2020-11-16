@@ -1,55 +1,52 @@
 <script lang="typescript">
-  import { Box, Button, Icon } from "../../../../Primitive";
+  import { Button, Input } from "../../../../Primitive";
+  import { Dai, Illustration } from "../../../../Component";
 
-  import * as modal from "../../../../../src/modal";
-  import * as path from "../../../../../src/path";
+  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
 
-  export let style = "";
-
-  // The balance of this pool.
-  export let balance = "";
-  // Flag whether there is already an ongoing TopUp transaction.
-  export let ongoing = false;
-
-  $: done = balance > 0;
-
-  const openSendModal = () => {
-    modal.toggle(path.poolTopUp());
-  };
+  export let topUp = 0;
+  export let onBack: () => void;
+  export let onContinue: () => void;
 </script>
 
 <style>
-  h2,
+  h1,
   p {
-    margin-top: 1rem;
+    padding: 0 var(--content-padding);
   }
 
-  p {
-    color: var(--color-foreground-level-6);
-  }
-
-  strong {
-    font-weight: bold;
+  .submit {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: calc(var(--content-padding) / 2);
   }
 </style>
 
-<Box {style} {done}>
-  <h2>Top up</h2>
-  <p>Fill up your outgoing balance.</p>
-  <p style="display: flex; align-items: center;">
-    Balance <strong style="display: flex; margin-left: 10px;">
-      <Icon.CurrencyDAI
-        style="fill: var(--color-foreground-level-6); padding-top: 3px;" />
-      {balance}</strong>
-  </p>
-  {#if !done}
-    <Button
-      disabled={ongoing}
-      dataCy="top-up-pool-button"
-      variant="primary"
-      on:click={openSendModal}
-      style="margin-top: 12px">
-      Top up
-    </Button>
-  {/if}
-</Box>
+<Illustration variant={IllustrationVariant.Money} />
+<h1>Top up your account</h1>
+<p>
+  You can top up a couple of months worth of support or just enough for this
+  month.
+</p>
+<Input.Text
+  dataCy="modal-amount-input"
+  bind:value={topUp}
+  showLeftItem
+  autofocus
+  style={'width: 125px'}>
+  <div slot="left" style="position: absolute; top: 1px; left: 12px;">
+    <Dai />
+  </div>
+</Input.Text>
+<div class="submit">
+  <Button
+    variant="transparent"
+    dataCy="cancel"
+    on:click={onBack}
+    style="margin-right: 1rem">
+    Back
+  </Button>
+
+  <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
+</div>

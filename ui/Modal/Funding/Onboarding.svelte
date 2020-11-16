@@ -1,7 +1,7 @@
 <script lang="typescript">
   import Intro from "../../DesignSystem/Component/Funding/Pool/Onboarding/Intro.svelte";
   import SetBudget from "../../DesignSystem/Component/Funding/Pool/Onboarding/SetBudget.svelte";
-  import TopUpz from "../../DesignSystem/Component/Funding/Pool/Onboarding/TopUpz.svelte";
+  import TopUp from "../../DesignSystem/Component/Funding/Pool/Onboarding/TopUp.svelte";
   import AddReceivers from "../../DesignSystem/Component/Funding/Pool/Onboarding/AddReceivers.svelte";
   import Review from "../../DesignSystem/Component/Funding/Pool/Onboarding/Review.svelte";
 
@@ -88,7 +88,7 @@
   {:else if currentStep === Step.AddReceivers}
     <AddReceivers bind:receivers {onBack} {onContinue} />
   {:else if currentStep === Step.TopUp}
-    <TopUpz bind:topUp {onBack} {onContinue} />
+    <TopUp bind:topUp {onBack} {onContinue} />
   {:else}
     <Review
       {budget}
