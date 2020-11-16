@@ -5,7 +5,8 @@ import * as ipcTypes from "../../native/ipc-types";
 export type { ProxyError } from "../../native/ipc-types";
 
 // `true` if we are running unit tests with jst.
-const isTestEnv = global.process && global.process.env["NODE_ENV"] === "test";
+const isTestEnv =
+  globalThis.process && globalThis.process.env["NODE_ENV"] === "test";
 
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
