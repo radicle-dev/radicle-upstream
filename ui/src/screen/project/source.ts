@@ -104,7 +104,9 @@ export const selectPath = async (path: string): Promise<void> => {
   }
 };
 
-export const selectRevision = (revision: source.Revision): void => {
+export const selectRevision = async (
+  revision: source.Revision
+): Promise<void> => {
   const current = get(screenStore);
 
   if (current.status === remote.Status.Success) {
@@ -118,29 +120,30 @@ export const selectRevision = (revision: source.Revision): void => {
       return;
     }
 
-    Promise.all([
-      source.fetchCommits(project.urn, peer.peerId, revision),
-      source.fetchTree(project.urn, peer.peerId, revision, ""),
-    ])
-      .then(async ([history, tree]) => {
-        const newCode = await fetchCode(
-          project,
-          peer,
-          revision,
-          tree,
-          get(pathStore)
-        );
-        code.set(newCode);
+    try {
+      const [history, tree] = await Promise.all([
+        source.fetchCommits(project.urn, peer.peerId, revision),
+        source.fetchTree(project.urn, peer.peerId, revision, ""),
+      ]);
+      const newCode = await fetchCode(
+        project,
+        peer,
+        revision,
+        tree,
+        get(pathStore)
+      );
+      code.set(newCode);
 
-        screenStore.success({
-          ...data,
-          history,
-          menuItems: menuItems(project, history),
-          selectedRevision: revision as source.Branch | source.Tag,
-          tree,
-        });
-      })
-      .catch(screenStore.error);
+      screenStore.success({
+        ...data,
+        history,
+        menuItems: menuItems(project, history),
+        selectedRevision: revision as source.Branch | source.Tag,
+        tree,
+      });
+    } catch (err) {
+      screenStore.error(err);
+    }
   }
 };
 
