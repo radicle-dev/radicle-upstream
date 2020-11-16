@@ -3,10 +3,22 @@
   import { Dai, Illustration } from "../../../../Component";
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
+  import {
+    budgetStore,
+    monthlyContributionValidationStore,
+  } from "../../../../../src/funding/pool";
 
   export let budget = 0;
   export let onCancel: () => void;
   export let onContinue: () => void;
+
+  let validating = false;
+  $: validation = monthlyContributionValidationStore();
+  $: budgetStore.set(budget ? budget.toString() : "");
+  $: {
+    if ($budgetStore && $budgetStore.length > 0) validating = true;
+    if (validating) validation.validate($budgetStore);
+  }
 </script>
 
 <style>
@@ -32,6 +44,7 @@
 <Input.Text
   dataCy="modal-amount-input"
   bind:value={budget}
+  validation={$validation}
   showLeftItem
   autofocus
   style={'width: 125px'}>

@@ -170,6 +170,7 @@ export function make(wallet: Wallet): Pool {
  */
 export const membersStore = svelteStore.writable("");
 export const amountStore = svelteStore.writable("");
+export const budgetStore = svelteStore.writable("");
 
 /**
  *
