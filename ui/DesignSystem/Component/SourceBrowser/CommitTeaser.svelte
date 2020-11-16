@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
-  import { format } from "timeago.js";
 
+  import { formatCommitTime } from "../../../src/source";
   import type { CommitHeader } from "../../../src/source";
 
   import { Icon } from "../../Primitive";
@@ -69,7 +69,7 @@
       {commit.author.name}
     </p>
     <p class="typo-text-small" style="color: var(--color-foreground-level-6)">
-      {format(commit.committerTime * 1000)}
+      {formatCommitTime(commit.committerTime)}
     </p>
   </div>
 </div>

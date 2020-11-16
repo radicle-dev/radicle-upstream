@@ -1,7 +1,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { formatTime } from "../../../src/source";
   import type { CommitHeader, CommitsHistory } from "../../../src/source";
 
   import CommitTeaser from "./CommitTeaser.svelte";
@@ -49,7 +48,7 @@
 {#each history.history as group (group.time)}
   <div class="commit-group">
     <header>
-      <p>{formatTime(group.time * 1000)}</p>
+      <p>{group.time}</p>
     </header>
     <ul>
       {#each group.commits as commit (commit.sha1)}

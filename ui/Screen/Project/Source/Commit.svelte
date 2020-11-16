@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
-  import { format } from "timeago.js";
 
+  import { formatCommitTime } from "../../../src/source";
   import {
     commit as store,
     fetchCommit,
@@ -85,7 +85,7 @@
             <span style="margin-left: -0.5ch">{commit.branch}</span>
           </span>
           <span style="margin-left: -0.5ch">
-            {format(commit.header.committerTime * 1000)}
+            {formatCommitTime(commit.header.committerTime)}
           </span>
         </span>
       </div>

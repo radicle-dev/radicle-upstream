@@ -1,3 +1,5 @@
+import { format } from "timeago.js";
+
 import * as api from "./api";
 import type { PeerId } from "./identity";
 import type { Urn } from "./urn";
@@ -52,7 +54,7 @@ export interface CommitsHistory {
 }
 
 interface CommitGroup {
-  time: number;
+  time: string;
   commits: CommitHeader[];
 }
 
@@ -271,15 +273,6 @@ export const isMarkdown = (path: string): boolean => {
   return /\.(md|mkd|markdown)$/i.test(path);
 };
 
-export const formatTime = (t: number): string => {
-  return new Date(t).toLocaleDateString("en-US", {
-    month: "long",
-    weekday: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
 export const revisionQueryEq = (
   query1: Revision,
   query2: Revision
@@ -324,13 +317,36 @@ export const fetchReadme = (
   });
 };
 
+export const formatCommitTime = (t: number): string => {
+  return format(t * 1000);
+};
+
+const formatGroupTime = (t: number): string => {
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "long",
+    weekday: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 const groupCommits = (history: CommitHeader[]): CommitHistory => {
   const days: CommitHistory = [];
   let groupDate: Date | undefined = undefined;
 
+  history = history.sort((a, b) => {
+    if (a.committerTime > b.committerTime) {
+      return -1;
+    } else if (a.committerTime < b.committerTime) {
+      return 1;
+    }
+
+    return 0;
+  });
+
   for (const commit of history) {
-    const time = commit.committerTime;
-    const date = new Date(time * 1000);
+    const time = commit.committerTime * 1000;
+    const date = new Date(time);
     const isNewDay =
       !days.length ||
       !groupDate ||
@@ -340,7 +356,7 @@ const groupCommits = (history: CommitHeader[]): CommitHistory => {
 
     if (isNewDay) {
       days.push({
-        time: time,
+        time: formatGroupTime(time),
         commits: [],
       });
       groupDate = date;
