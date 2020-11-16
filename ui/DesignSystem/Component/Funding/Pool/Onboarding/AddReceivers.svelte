@@ -3,13 +3,11 @@
   import { Illustration } from "../../../../Component";
 
   import Receivers from "../Receivers.svelte";
-
-  import type { Changeset } from "../../../../../src/funding/pool";
-
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
 
+  export let receivers: string[];
   export let onBack: () => void;
-  export let onContinue: (receivers: Changeset) => void;
+  export let onContinue: () => void;
 </script>
 
 <style>
@@ -46,8 +44,9 @@
     their profile.
   </p>
   <Receivers
-    onSave={changeset => {
-      onContinue(changeset);
+    bind:receivers
+    onSave={_ => {
+      onContinue();
       return Promise.resolve();
     }} />
   <div class="submit">
@@ -59,8 +58,6 @@
       Back
     </Button>
 
-    <Button dataCy="confirm-button" on:click={() => onContinue(new Map([]))}>
-      Continue
-    </Button>
+    <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
   </div>
 </div>

@@ -3,8 +3,7 @@
   import SetBudget from "../../DesignSystem/Component/Funding/Pool/Onboarding/SetBudget.svelte";
   import TopUpz from "../../DesignSystem/Component/Funding/Pool/Onboarding/TopUpz.svelte";
   import AddReceivers from "../../DesignSystem/Component/Funding/Pool/Onboarding/AddReceivers.svelte";
-
-  import type { Changeset } from "../../src/funding/pool";
+  import Review from "../../DesignSystem/Component/Funding/Pool/Onboarding/Review.svelte";
 
   import * as modal from "../../src/modal";
 
@@ -13,6 +12,7 @@
     SetBudget = "budget",
     AddReceivers = "receivers",
     TopUp = "topup",
+    Review = "review",
   }
 
   let currentStep = Step.Intro;
@@ -21,25 +21,47 @@
     modal.hide();
   }
 
-  function onBudgetSet(amount: number) {
-    budget = amount;
-    currentStep = Step.AddReceivers;
+  function onContinue() {
+    currentStep = nextStep();
   }
 
-  function onAddReceivers(receivers: Changeset) {
-    receivers = receivers;
-    currentStep = Step.TopUp;
+  function nextStep(): Step {
+    switch (currentStep) {
+      case Step.Intro:
+        return Step.SetBudget;
+      case Step.SetBudget:
+        return Step.AddReceivers;
+      case Step.AddReceivers:
+        return Step.TopUp;
+      case Step.TopUp:
+        return Step.Review;
+      case Step.Review:
+        // Should not happen but required by the "type system".
+        return Step.Review;
+    }
   }
 
-  function onTopUp(amount: number) {
-    balance = amount;
-    currentStep = Step.Intro;
+  function onBack() {
+    currentStep = prevStep();
+  }
+
+  function prevStep(): Step {
+    switch (currentStep) {
+      case Step.AddReceivers:
+        return Step.SetBudget;
+      case Step.TopUp:
+        return Step.AddReceivers;
+      case Step.Review:
+        return Step.TopUp;
+      default:
+        return Step.Intro;
+    }
   }
 
   /* Themz values */
   let budget = 0;
-  let balance = 0;
-  let receivers = {};
+  let topUp = 0;
+  let receivers: string[] = [];
 </script>
 
 <style>
@@ -60,18 +82,19 @@
 
 <div class="wrapper">
   {#if currentStep === Step.Intro}
-    <Intro
-      onSkip={onCancel}
-      onContinue={() => (currentStep = Step.SetBudget)} />
+    <Intro onSkip={onCancel} {onContinue} />
   {:else if currentStep === Step.SetBudget}
-    <SetBudget {onCancel} onContinue={onBudgetSet} />
+    <SetBudget bind:budget {onCancel} {onContinue} />
   {:else if currentStep === Step.AddReceivers}
-    <AddReceivers
-      onBack={() => (currentStep = Step.SetBudget)}
-      onSave={onAddReceivers} />
+    <AddReceivers bind:receivers {onBack} {onContinue} />
   {:else if currentStep === Step.TopUp}
-    <TopUpz
-      onBack={() => (currentStep = Step.AddReceivers)}
-      onContinue={amount => console.log('TODO')} />
+    <TopUpz bind:topUp {onBack} {onContinue} />
+  {:else}
+    <Review
+      {budget}
+      {receivers}
+      {topUp}
+      {onBack}
+      onConfirmed={() => console.log('Confirm in wallet')} />
   {/if}
 </div>

@@ -4,10 +4,9 @@
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
 
+  export let topUp = 0;
   export let onBack: () => void;
-  export let onContinue: (amount: number) => void;
-
-  let amount = 0;
+  export let onContinue: () => void;
 </script>
 
 <style>
@@ -32,7 +31,7 @@
 </p>
 <Input.Text
   dataCy="modal-amount-input"
-  bind:value={amount}
+  bind:value={topUp}
   showLeftItem
   autofocus
   style={'width: 125px'}>
@@ -49,7 +48,5 @@
     Back
   </Button>
 
-  <Button dataCy="confirm-button" on:click={() => onContinue(amount)}>
-    Continue
-  </Button>
+  <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
 </div>

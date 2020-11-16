@@ -4,10 +4,9 @@
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
 
+  export let budget = 0;
   export let onCancel: () => void;
-  export let onContinue: (budget: number) => void;
-
-  let budget = 0;
+  export let onContinue: () => void;
 </script>
 
 <style>
@@ -49,7 +48,7 @@
     Cancel
   </Button>
 
-  <Button dataCy="confirm-button" on:click={() => onContinue(budget)}>
+  <Button dataCy="confirm-button" disabled={budget <= 0} on:click={onContinue}>
     Continue
   </Button>
 </div>

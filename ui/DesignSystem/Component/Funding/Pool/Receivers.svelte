@@ -52,6 +52,7 @@
   function addNew(x: Address) {
     if (changeset.has(x)) return;
     changeset.set(x, AddressStatus.Added);
+    receivers.push(x);
     newValue = "";
     refresh();
   }
