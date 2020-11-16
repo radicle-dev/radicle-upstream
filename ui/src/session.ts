@@ -74,29 +74,31 @@ interface UpdateSettings extends event.Event<Kind> {
 
 type Msg = ClearCache | Fetch | UpdateSettings;
 
-const fetchSessionRetry = async () => {
-  return api
-    .withRetry(() => api.get<SessionData>(`session`), 100, 50)
-    .then(ses =>
-      sessionStore.success({ status: Status.UnsealedSession, ...ses })
-    )
-    .catch(async error => {
-      if (error instanceof api.ResponseError) {
-        if (error.response.status === 404) {
-          sessionStore.success({ status: Status.NoSession });
-        } else if (error.response.status === 403) {
-          sessionStore.success({ status: Status.SealedSession });
-        } else {
-          throw error;
-        }
-      } else {
-        throw error;
+const fetchSession = async (): Promise<void> => {
+  try {
+    const ses = await api.withRetry(
+      () => api.get<SessionData>(`session`),
+      100,
+      50
+    );
+    sessionStore.success({ status: Status.UnsealedSession, ...ses });
+  } catch (err) {
+    if (err instanceof api.ResponseError) {
+      if (err.response.status === 404) {
+        sessionStore.success({ status: Status.NoSession });
+        return;
+      } else if (err.response.status === 403) {
+        sessionStore.success({ status: Status.SealedSession });
+        return;
       }
-    });
-};
+    }
 
-const fetchSession = (): Promise<void> => {
-  return fetchSessionRetry().catch(sessionStore.error);
+    sessionStore.error({
+      code: error.Code.SessionFetchFailure,
+      message: "Failed to load the session",
+      source: error.fromException(err),
+    });
+  }
 };
 
 /**
