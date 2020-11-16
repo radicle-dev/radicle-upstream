@@ -309,8 +309,8 @@ const menuItems = (
   return [
     {
       icon: IconHouse,
-      title: "Code",
-      href: path.projectSourceCode(project.urn),
+      title: "Files",
+      href: path.projectSourceFiles(project.urn),
       looseActiveStateMatching: true,
     },
     {
