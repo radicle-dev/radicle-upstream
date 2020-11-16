@@ -11,7 +11,8 @@
   export let updating = false;
   export let editing = false;
 
-  let changeset: Changeset = new Map();
+  // Read-only for foreginers
+  export let changeset: Changeset = new Map();
 
   $: updating, refreshChangeset();
 
@@ -32,6 +33,7 @@
         changeset.delete(x);
         break;
       case AddressStatus.Present:
+        receivers = receivers.filter(r => r !== x);
         changeset.set(x, AddressStatus.Removed);
         break;
       case AddressStatus.Removed:
@@ -49,11 +51,13 @@
     if (changeset.has(x)) return;
     changeset.set(x, AddressStatus.Added);
     receivers.push(x);
+    receivers = receivers;
     newValue = "";
     refresh();
   }
 
   function refresh() {
+    receivers = receivers;
     changeset = changeset;
   }
 

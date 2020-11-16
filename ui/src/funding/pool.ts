@@ -24,13 +24,8 @@ export interface Pool {
     initialBalance: BigNumberish
   ): Promise<void>;
 
-  // Update the contribution amount per block. Returns once the
-  // transaction has been included in the chain.
-  updateAmountPerBlock(amountPerBlock: string): Promise<void>;
-
-  // Update the list of receiver addresses. Returns once the
-  // transaction has been included in the chain.
-  updateReceiverAddresses(changeset: Changeset): Promise<void>;
+  // Update the contribution per block and the list of receivers.
+  updateSettings(amountPerBlock: string, receivers: Changeset): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
@@ -118,13 +113,19 @@ export function make(wallet: Wallet): Pool {
     receivers: Address[],
     initialBalance: number
   ): Promise<void> {
-    console.log(
-      `onboarding ${amountPerBlock}, ${receivers}, ${initialBalance}`
-    );
     const changeset = new Map(receivers.map(r => [r, AddressStatus.Added]));
     return updateAmountPerBlock(amountPerBlock)
       .then(_ => updateReceiverAddresses(changeset))
       .then(_ => topUp(initialBalance))
+      .finally(loadPoolData);
+  }
+
+  async function updateSettings(
+    amountPerBlock: string,
+    receivers: Changeset
+  ): Promise<void> {
+    return updateAmountPerBlock(amountPerBlock)
+      .then(_ => updateReceiverAddresses(receivers))
       .finally(loadPoolData);
   }
 
@@ -180,8 +181,7 @@ export function make(wallet: Wallet): Pool {
     data,
     getAccount,
     onboard,
-    updateAmountPerBlock,
-    updateReceiverAddresses,
+    updateSettings,
     topUp,
     withdraw,
     collect,

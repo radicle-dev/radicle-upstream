@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Button } from "../../../../Primitive";
-  import { Dai, Remote } from "../../../../Component";
+  import { Button, Input } from "../../../../Primitive";
+  import { Dai, Remote, TxButton } from "../../../../Component";
 
   import Receivers from "../Receivers.svelte";
 
@@ -14,14 +14,11 @@
     amountStore,
     monthlyContributionValidationStore,
   } from "../../../../../src/funding/pool";
+  import { ValidationStatus } from "../../../../../src/validation";
 
   export let pool: _pool.Pool;
 
   $: _pool.store.set(pool);
-
-  // Flags whether the view is in editing mode.
-  // Triggered by the user.
-  let editing = false;
 
   let ongoingTopUp = false;
   let ongoingWithdraw = false;
@@ -39,37 +36,66 @@
     );
   });
 
-  let monthlyContribution = "";
-  let validatingAmount = false;
-  $: amountValidation = monthlyContributionValidationStore();
-  $: amountStore.set(monthlyContribution ? monthlyContribution.toString() : "");
+  // Editing values
+  let budget = "";
+  let receivers: string[] = [];
+  let changeset: _pool.Changeset;
+
+  let validatingBudget = false;
+  $: budgetValidation = monthlyContributionValidationStore();
+  $: amountStore.set(budget ? budget.toString() : "");
   $: {
-    if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) amountValidation.validate($amountStore);
+    if ($amountStore && $amountStore.length > 0) validatingBudget = true;
+    if (validatingBudget) budgetValidation.validate($amountStore);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let data: _pool.PoolData;
+  pool.data.subscribe(store => {
+    if (store.status === remote.Status.Success) {
+      budget = store.data.amountPerBlock;
+      receivers = store.data.receiverAddresses;
+      data = store.data;
+    }
+  });
+
+  // Flags whether the view is in editing mode.
+  // Triggered by the user.
+  let editing = false;
+
+  function enterEditMode(): void {
+    editing = true;
+  }
+
+  $: thereAreChanges =
+    budget !== data.amountPerBlock ||
+    receivers.sort() !== data.receiverAddresses.sort();
+
+  function leaveEditMode(): void {
+    editing = false;
+    budget = data.amountPerBlock;
+    receivers = data.receiverAddresses;
+  }
+
+  function onConfirmInWallet(): Promise<void> {
+    console.log("onConfirmInWallet");
+    console.log(`Receivers: ${receivers}`);
+    console.log(`changeset: ${JSON.stringify(changeset)}`);
+    const changesetz = new Map(
+      receivers.map(r => [r, _pool.AddressStatus.Added])
+    );
+
+    return pool.updateSettings(budget, changesetz).then(_ => leaveEditMode());
+  }
+
   const openTopUp = () => {
     _pool.store.set(pool);
     modal.toggle(path.poolTopUp());
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const openWithdrawModal = () => {
     _pool.store.set(pool);
     modal.toggle(path.poolWithdraw());
   };
-
-  pool.data.subscribe(store => {
-    if (store.status === remote.Status.Success) {
-      const newData = store.data;
-      monthlyContribution = newData.amountPerBlock;
-    }
-  });
-
-  function enterEditMode(): void {
-    editing = true;
-  }
 </script>
 
 <style>
@@ -133,10 +159,28 @@
       <div class="row">
         <h3>Support</h3>
         <span class="row" style="margin-left: 14px">
-          <Dai>{poolData.amountPerBlock} per month</Dai>
+          {#if editing}
+            <Input.Text
+              dataCy="budget-input"
+              bind:value={budget}
+              validation={$budgetValidation}
+              showLeftItem
+              autofocus
+              style={'width: 125px'}>
+              <div
+                slot="left"
+                style="position: absolute; top: 1px; left: 12px;">
+                <Dai />
+              </div>
+            </Input.Text>
+          {:else}
+            <Dai>{poolData.amountPerBlock}</Dai>
+          {/if}
+          <span style="margin-left: 7px;"> per month</span>
         </span>
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
+          hidden={editing}
           class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
           style="margin-left: 12px;"
@@ -179,6 +223,7 @@
         </strong> receivers you're supporting.
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
+          hidden={editing}
           class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
           style="margin-left: 12px;"
@@ -189,7 +234,8 @@
 
       <Receivers
         {editing}
-        receivers={poolData.receiverAddresses}
+        bind:receivers
+        bind:changeset
         updating={ongoingBeneficiariesUpdate} />
 
       <div class="tip">
@@ -203,16 +249,17 @@
       <Button
         variant="transparent"
         dataCy="cancel"
-        on:click={() => (editing = false)}
+        on:click={leaveEditMode}
         style="margin-right: 1rem">
-        Discard changes
+        {thereAreChanges ? 'Discard changes' : 'Cancel'}
       </Button>
 
-      <Button
+      <TxButton
+        title={'Confirm in your wallet'}
+        disabled={!thereAreChanges || $budgetValidation.status !== ValidationStatus.Success}
         dataCy="confirm-button"
-        on:click={() => console.log('TODO(nuno)')}>
-        Confirm in your wallet
-      </Button>
+        onClick={onConfirmInWallet}
+        errorMessage={e => `Failed to save support settings: ${e.message}`} />
     </div>
   {/if}
 </Remote>
