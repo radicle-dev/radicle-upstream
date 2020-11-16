@@ -122,11 +122,10 @@ export function make(wallet: Wallet): Pool {
       `onboarding ${amountPerBlock}, ${receivers}, ${initialBalance}`
     );
     const changeset = new Map(receivers.map(r => [r, AddressStatus.Added]));
-    await Promise.all([
-      updateAmountPerBlock(amountPerBlock),
-      updateReceiverAddresses(changeset),
-      topUp(initialBalance),
-    ]).finally(loadPoolData);
+    return updateAmountPerBlock(amountPerBlock)
+      .then(_ => updateReceiverAddresses(changeset))
+      .then(_ => topUp(initialBalance))
+      .finally(loadPoolData);
   }
 
   async function updateReceiverAddresses(changeset: Changeset): Promise<void> {

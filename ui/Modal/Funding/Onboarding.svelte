@@ -60,7 +60,7 @@
   }
 
   function onConfirmed(): Promise<void> {
-    return $pool.onboard(budget, receivers, topUp);
+    return $pool.onboard(budget, receivers, topUp).then(_ => modal.hide());
   }
 
   /* Themz values */
