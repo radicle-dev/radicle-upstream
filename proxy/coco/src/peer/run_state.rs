@@ -209,9 +209,12 @@ impl RunState {
                     .waiting_room
                     .canceled(&urn, timestamp)
                     .map(|()| self.waiting_room.remove(&urn));
-                vec![Command::Control(command::Control::Respond(
-                    control::Response::CancelSearch(sender, request),
-                ))]
+                vec![
+                    Command::Control(command::Control::Respond(control::Response::CancelSearch(
+                        sender, request,
+                    ))),
+                    Command::PersistWaitingRoom(self.waiting_room.clone()),
+                ]
             }
             input::Control::CreateRequest(urn, time, maybe_sender) => {
                 let request = self.waiting_room.request(&urn, time);
