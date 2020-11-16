@@ -60,7 +60,7 @@ pub enum Control {
     CancelRequest(
         RadUrn,
         Instant,
-        oneshot::Sender<Result<(), waiting_room::Error>>,
+        oneshot::Sender<Result<Option<SomeRequest<Instant>>, waiting_room::Error>>,
     ),
     /// Initiate a new project search on the network.
     CreateRequest(

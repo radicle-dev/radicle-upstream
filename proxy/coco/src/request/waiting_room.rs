@@ -4,7 +4,11 @@
 // much.
 #![allow(clippy::wildcard_enum_match_arm)]
 
-use std::{collections::HashMap, ops::Sub};
+use std::{
+    collections::HashMap,
+    convert::TryFrom,
+    ops::{Mul, Sub},
+};
 
 use either::Either;
 use serde::{Deserialize, Serialize};
@@ -17,10 +21,10 @@ use librad::{
 use crate::request::{Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut};
 
 /// The maximum number of query attempts that can be made for a single request.
-const MAX_QUERIES: Queries = Queries::new(5);
+const MAX_QUERIES: Queries = Queries::Infinite;
 
 /// The maximum number of clone attempts that can be made for a single request.
-const MAX_CLONES: Clones = Clones::new(5);
+const MAX_CLONES: Clones = Clones::Infinite;
 
 /// An error that can occur when interacting with the [`WaitingRoom`] API.
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
@@ -39,12 +43,12 @@ pub enum Error {
 
     /// The [`Request`] timed out when performing an operation on it by exceeding the number of
     /// attempts it was allowed to make.
-    #[error("encountered {timeout} time out after {attempts} attempts")]
+    #[error("encountered {timeout} time out after {attempts:?} attempts")]
     TimeOut {
         /// What kind of the time out that occurred.
         timeout: TimedOut,
         /// The number of attempts that were made when we timed out.
-        attempts: usize,
+        attempts: Option<usize>,
     },
 }
 
@@ -86,7 +90,8 @@ pub struct WaitingRoom<T, D> {
 /// attempts that can be made for a single request.
 ///
 /// The recommended approach to initialising the `Config` is to use its `Default` implementation,
-/// i.e. `Config::default()`.
+/// i.e. `Config::default()`, followed by setting the `delta`, since the usual default values for
+/// number values are `0`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Config<D> {
@@ -137,6 +142,14 @@ impl<T, D> WaitingRoom<T, D> {
     #[must_use]
     pub fn get(&self, urn: &RadUrn) -> Option<&SomeRequest<T>> {
         self.requests.get(&urn.id)
+    }
+
+    /// Permanently remove a request from the `WaitingRoom`. If the `urn` did exist in the
+    /// `WaitingRoom` then the request will be returned.
+    ///
+    /// Otherwise, it will return `None` if no such request existed.
+    pub fn remove(&mut self, urn: &RadUrn) -> Option<SomeRequest<T>> {
+        self.requests.remove(&urn.id)
     }
 
     /// Get the [`Request::elapsed`] time between the `timestamp` provided and the current timestamp
@@ -402,13 +415,17 @@ impl<T, D> WaitingRoom<T, D> {
     pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
     where
         T: Sub<T, Output = D> + Clone,
-        D: Ord + Clone,
+        D: Mul<u32, Output = D> + Ord + Clone,
     {
+        let backoff = |tries: Queries| match tries {
+            Queries::Max(i) => self.config.delta.clone() * u32::try_from(i).unwrap_or(u32::MAX),
+            Queries::Infinite => self.config.delta.clone(),
+        };
         let created = self.find_by_state(RequestState::Created);
         let requested = self
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
-                request.elapsed(timestamp.clone()) >= self.config.delta.clone()
+                request.elapsed(timestamp.clone()) >= backoff(request.attempts().queries)
             });
 
         created.or(requested).map(|(urn, _request)| urn)
@@ -540,7 +557,7 @@ mod test {
 
     #[test]
     fn timeout_on_delta() -> Result<(), Box<dyn std::error::Error>> {
-        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<u32, u32> = WaitingRoom::new(Config {
             delta: 5,
             ..Config::default()
         });
@@ -587,7 +604,7 @@ mod test {
             waiting_room.queried(&urn, ()),
             Err(Error::TimeOut {
                 timeout: TimedOut::Query,
-                attempts: 17,
+                attempts: Some(17),
             })
         );
 
@@ -639,7 +656,7 @@ mod test {
             ),
             Err(Error::TimeOut {
                 timeout: TimedOut::Clone,
-                attempts: 17,
+                attempts: Some(17),
             })
         );
 
@@ -651,7 +668,7 @@ mod test {
     #[test]
     fn cloning_fails_back_to_requested() -> Result<(), Box<dyn error::Error + 'static>> {
         const NUM_CLONES: usize = 5;
-        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config {
+        let mut waiting_room: WaitingRoom<u32, u32> = WaitingRoom::new(Config {
             max_queries: Queries::new(1),
             max_clones: Clones::new(NUM_CLONES),
             delta: 5,
@@ -792,6 +809,56 @@ mod test {
                 .cloned(url.clone(), 0),
         );
         assert_eq!(ready, Some((url.urn, &expected)));
+
+        Ok(())
+    }
+
+    #[test]
+    fn can_remove_requests() {
+        let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let peer = PeerId::from(SecretKey::new());
+        let url = RadUrl {
+            urn,
+            authority: peer,
+        };
+        assert_eq!(waiting_room.remove(&url.urn), None);
+
+        let expected = {
+            waiting_room.request(&url.urn, 0);
+            waiting_room.get(&url.urn).cloned()
+        };
+        let removed = waiting_room.remove(&url.urn);
+        assert_eq!(removed, expected);
+    }
+
+    #[test]
+    fn can_backoff_requests() -> Result<(), Box<dyn std::error::Error>> {
+        let mut waiting_room: WaitingRoom<u32, u32> = WaitingRoom::new(Config {
+            delta: 5,
+            ..Config::default()
+        });
+        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+            .parse()
+            .expect("failed to parse the urn");
+        let _ = waiting_room.request(&urn, 0);
+
+        // Initial schedule to be querying after it has been requested.
+        let request = waiting_room.next_query(1);
+        assert_eq!(request, Some(urn.clone()));
+
+        waiting_room.queried(&urn, 5)?;
+
+        // Should not return the urn again before delta + backoff has elapsed, i.e. 5 + (5 * 1) =
+        // 10.
+        let request = waiting_room.next_query(8);
+        assert_eq!(request, None);
+
+        // The delta + backoff has elapsed.
+        let request = waiting_room.next_query(10);
+        assert_eq!(request, Some(urn));
 
         Ok(())
     }

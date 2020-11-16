@@ -204,12 +204,15 @@ impl RunState {
     /// Handle [`input::Control`]s.
     fn handle_control(&mut self, input: input::Control) -> Vec<Command> {
         match input {
-            input::Control::CancelRequest(urn, timestamp, sender) => vec![Command::Control(
-                command::Control::Respond(control::Response::CancelSearch(
-                    sender,
-                    self.waiting_room.canceled(&urn, timestamp),
-                )),
-            )],
+            input::Control::CancelRequest(urn, timestamp, sender) => {
+                let request = self
+                    .waiting_room
+                    .canceled(&urn, timestamp)
+                    .map(|()| self.waiting_room.remove(&urn));
+                vec![Command::Control(command::Control::Respond(
+                    control::Response::CancelSearch(sender, request),
+                ))]
+            }
             input::Control::CreateRequest(urn, time, maybe_sender) => {
                 let request = self.waiting_room.request(&urn, time);
                 if let Some(sender) = maybe_sender {
