@@ -166,19 +166,27 @@ impl fmt::Display for TimedOut {
 
 /// `Queries` is a wrapper around `usize` so that we can differentiate it from [`Clones`].
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct Queries(usize);
+pub enum Queries {
+    /// The max number of queries allowed per request.
+    Max(usize),
+    /// The max number is infinite, and so we allow the request to never time out.
+    Infinite,
+}
 
 impl Queries {
     /// Create a new `Queries` wrapping around `n`.
     #[must_use]
     pub const fn new(n: usize) -> Self {
-        Self(n)
+        Self::Max(n)
     }
 }
 
-impl From<Queries> for usize {
+impl From<Queries> for Option<usize> {
     fn from(other: Queries) -> Self {
-        other.0
+        match other {
+            Queries::Max(i) => Some(i),
+            Queries::Infinite => None,
+        }
     }
 }
 
@@ -186,31 +194,45 @@ impl Add<usize> for Queries {
     type Output = Self;
 
     fn add(self, other: usize) -> Self::Output {
-        Self(self.0 + other)
+        match self {
+            Self::Max(i) => Self::Max(i + other),
+            Self::Infinite => Self::Infinite,
+        }
     }
 }
 
 impl AddAssign<usize> for Queries {
     fn add_assign(&mut self, other: usize) {
-        *self = Self(self.0 + other)
+        match self {
+            Self::Max(i) => *i += other,
+            Self::Infinite => {},
+        }
     }
 }
 
 /// `Clones` is a wrapper around `usize` so that we can differentiate it from [`Queries`].
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct Clones(usize);
+pub enum Clones {
+    /// The max number of clones allowed per request.
+    Max(usize),
+    /// The max number is infinite, and so we allow the request to never time out.
+    Infinite,
+}
 
 impl Clones {
     /// Create a new `Clones` wrapping around `n`.
     #[must_use]
     pub const fn new(n: usize) -> Self {
-        Self(n)
+        Self::Max(n)
     }
 }
 
-impl From<Clones> for usize {
+impl From<Clones> for Option<usize> {
     fn from(other: Clones) -> Self {
-        other.0
+        match other {
+            Clones::Max(i) => Some(i),
+            Clones::Infinite => None,
+        }
     }
 }
 
@@ -218,13 +240,19 @@ impl Add<usize> for Clones {
     type Output = Self;
 
     fn add(self, other: usize) -> Self::Output {
-        Self(self.0 + other)
+        match self {
+            Self::Max(i) => Self::Max(i + other),
+            Self::Infinite => Self::Infinite,
+        }
     }
 }
 
 impl AddAssign<usize> for Clones {
     fn add_assign(&mut self, other: usize) {
-        *self = Self(self.0 + other)
+        match self {
+            Self::Max(i) => *i += other,
+            Self::Infinite => {},
+        }
     }
 }
 
@@ -243,8 +271,17 @@ impl Attempts {
     #[must_use]
     pub const fn new() -> Self {
         Attempts {
-            queries: Queries(0),
-            clones: Clones(0),
+            queries: Queries::Max(0),
+            clones: Clones::Max(0),
+        }
+    }
+
+    /// Construct an `Attempts` where the number of queries and clones is `Infinite`.
+    #[must_use]
+    pub const fn infinite() -> Self {
+        Attempts {
+            queries: Queries::Infinite,
+            clones: Clones::Infinite,
         }
     }
 }
