@@ -19,6 +19,10 @@
 
   $: _pool.store.set(pool);
 
+  // Flags whether the view is in editing mode.
+  // Triggered by the user.
+  let editing = false;
+
   let ongoingTopUp = false;
   let ongoingWithdraw = false;
   let ongoingMonthlyContributionUpdate = false;
@@ -62,6 +66,10 @@
       monthlyContribution = newData.amountPerBlock;
     }
   });
+
+  function enterEditMode(): void {
+    editing = true;
+  }
 </script>
 
 <style>
@@ -110,6 +118,13 @@
     display: flex;
     align-items: center;
   }
+
+  .submit {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: calc(var(--content-padding) / 2);
+  }
 </style>
 
 <Remote store={pool.data} let:data={poolData}>
@@ -125,7 +140,7 @@
           class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
           style="margin-left: 12px;"
-          on:click={() => console.log('TODO(nuno)')}>
+          on:click={enterEditMode}>
           Edit
         </a>
       </div>
@@ -167,12 +182,13 @@
           class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
           style="margin-left: 12px;"
-          on:click={() => console.log('TODO(nuno)')}>
+          on:click={enterEditMode}>
           Edit
         </a>
       </p>
 
       <Receivers
+        {editing}
         receivers={poolData.receiverAddresses}
         updating={ongoingBeneficiariesUpdate} />
 
@@ -181,4 +197,22 @@
       </div>
     </div>
   </div>
+
+  {#if editing}
+    <div class="submit">
+      <Button
+        variant="transparent"
+        dataCy="cancel"
+        on:click={() => (editing = false)}
+        style="margin-right: 1rem">
+        Discard changes
+      </Button>
+
+      <Button
+        dataCy="confirm-button"
+        on:click={() => console.log('TODO(nuno)')}>
+        Confirm in your wallet
+      </Button>
+    </div>
+  {/if}
 </Remote>
