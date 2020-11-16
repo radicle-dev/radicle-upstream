@@ -90,7 +90,7 @@ pub enum Request {
     },
     /// Query the network for the `RadUrn`.
     Queried(RadUrn),
-    /// [`WaitingRoom`] query interval.
+    /// [`crate::request::waiting_room::WaitingRoom`] query interval.
     Tick,
     /// The request for [`RadUrn`] timed out.
     TimedOut(RadUrn),
