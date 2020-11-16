@@ -53,7 +53,7 @@ fn commit_filter(
         .and_then(handler::commit)
 }
 
-/// `GET /commits/<project_urn>?branch=<branch>&peerId=<peer_id>`
+/// `GET /commits/<project_urn>?revision=<revision>`
 fn commits_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -589,7 +589,7 @@ mod test {
 
         let urn = replicate_platinum(&ctx).await?;
 
-        let branch_name = "master";
+        let branch_name = "dev";
         let revision = coco::Revision::Branch {
             name: branch_name.to_string(),
             peer_id: None,

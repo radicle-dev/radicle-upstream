@@ -663,7 +663,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
     })
 }
 
-/// Retrieves the [`Commit`] history for the given `branch`.
+/// Retrieves the [`Commit`] history for the given `revision`.
 ///
 /// # Errors
 ///

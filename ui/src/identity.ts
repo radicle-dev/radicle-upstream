@@ -22,7 +22,6 @@ export interface Identity {
   };
   peerId: PeerId;
   shareableEntityIdentifier: string;
-  // FIXME(xla): Properly type urns.
   urn: Urn;
 }
 
