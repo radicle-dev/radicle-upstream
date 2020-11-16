@@ -7,6 +7,7 @@
     budgetStore,
     monthlyContributionValidationStore,
   } from "../../../../../src/funding/pool";
+  import { ValidationStatus } from "../../../../../src/validation";
 
   export let budget = 0;
   export let onCancel: () => void;
@@ -19,6 +20,8 @@
     if ($budgetStore && $budgetStore.length > 0) validating = true;
     if (validating) validation.validate($budgetStore);
   }
+
+  $: disabled = $validation.status !== ValidationStatus.Success;
 </script>
 
 <style>
@@ -61,7 +64,7 @@
     Cancel
   </Button>
 
-  <Button dataCy="confirm-button" disabled={budget <= 0} on:click={onContinue}>
+  <Button dataCy="confirm-button" {disabled} on:click={onContinue}>
     Continue
   </Button>
 </div>
