@@ -10,7 +10,7 @@
     selectRevision,
     store,
   } from "../../src/screen/project/source";
-  import type { Revision } from "../../src/source";
+  import type { Branch, Tag } from "../../src/source";
   import * as screen from "../../src/screen";
 
   import ActionBar from "../../DesignSystem/Component/ActionBar.svelte";
@@ -60,7 +60,7 @@
       screen.unlock();
     }
   };
-  const onSelectRevision = ({ detail: revision }: { detail: Revision }) => {
+  const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
     selectRevision(revision);
   };
 
