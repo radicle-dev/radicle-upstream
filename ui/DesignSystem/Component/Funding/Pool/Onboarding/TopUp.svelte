@@ -2,11 +2,29 @@
   import { Button, Input } from "../../../../Primitive";
   import { Dai, Illustration } from "../../../../Component";
 
+  import { wallet } from "../../../../../src/wallet";
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
+  import {
+    amountStore,
+    topUpAmountValidationStore,
+  } from "../../../../../src/funding/pool";
+  import { ValidationStatus } from "../../../../../src/validation";
 
   export let topUp = 0;
   export let onBack: () => void;
   export let onContinue: () => void;
+
+  $: accountBalance = $wallet.connected.account.balance * 1 + 3;
+
+  let validating = false;
+  $: validation = topUpAmountValidationStore(accountBalance);
+  $: amountStore.set(topUp ? topUp.toString() : "");
+  $: {
+    if ($amountStore && $amountStore.length > 0) validating = true;
+    if (validating) validation.validate($amountStore);
+  }
+
+  $: disabled = $validation.status !== ValidationStatus.Success;
 </script>
 
 <style>
@@ -32,6 +50,7 @@
 <Input.Text
   dataCy="modal-amount-input"
   bind:value={topUp}
+  validation={$validation}
   showLeftItem
   autofocus
   style={'width: 125px'}>
@@ -48,5 +67,7 @@
     Back
   </Button>
 
-  <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
+  <Button dataCy="confirm-button" {disabled} on:click={onContinue}>
+    Continue
+  </Button>
 </div>
