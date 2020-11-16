@@ -33,8 +33,9 @@ use crate::{
 use super::{
     announcement, control, gossip, include,
     run_state::{
-        AnnounceInput, Command, Config as RunConfig, ControlCommand, ControlInput, Event, Input,
-        RequestCommand, RequestInput, RunState, SyncInput, TimeoutInput,
+        input, command,
+        Command, Config as RunConfig, Event, Input,
+        RunState
     },
     sync, waiting_room, RECEIVER_CAPACITY,
 };
@@ -97,32 +98,32 @@ impl Subroutines {
             if let Some(timer) = announce_timer {
                 coalesced.push(
                     timer
-                        .map(|_tick| Input::Announce(AnnounceInput::Tick))
+                        .map(|_tick| Input::Announce(input::Announce::Tick))
                         .boxed(),
                 );
             }
             coalesced.push(
                 waiting_room_timer
-                    .map(|_tick| Input::Request(RequestInput::Tick))
+                    .map(|_tick| Input::Request(input::Request::Tick))
                     .boxed(),
             );
             coalesced.push(
                 control_receiver
                     .map(|request| match request {
                         control::Request::CurrentStatus(sender) => {
-                            Input::Control(ControlInput::Status(sender))
+                            Input::Control(input::Control::Status(sender))
                         },
                         control::Request::CancelSearch(urn, time, sender) => {
-                            Input::Control(ControlInput::CancelRequest(urn, time, sender))
+                            Input::Control(input::Control::CancelRequest(urn, time, sender))
                         },
                         control::Request::GetSearch(urn, sender) => {
-                            Input::Control(ControlInput::GetRequest(urn, sender))
+                            Input::Control(input::Control::GetRequest(urn, sender))
                         },
                         control::Request::ListSearches(sender) => {
-                            Input::Control(ControlInput::ListRequests(sender))
+                            Input::Control(input::Control::ListRequests(sender))
                         },
                         control::Request::StartSearch(urn, time, sender) => {
-                            Input::Control(ControlInput::CreateRequest(urn, time, Some(sender)))
+                            Input::Control(input::Control::CreateRequest(urn, time, Some(sender)))
                         },
                     })
                     .boxed(),
@@ -154,7 +155,7 @@ impl Subroutines {
                 self.input_sender.clone(),
             )),
             Command::Control(control_command) => match control_command {
-                ControlCommand::Respond(respond_command) => {
+                command::Control::Respond(respond_command) => {
                     SpawnAbortable::new(control_respond(respond_command))
                 },
             },
@@ -162,17 +163,17 @@ impl Subroutines {
             Command::PersistWaitingRoom(waiting_room) => {
                 SpawnAbortable::new(persist_waiting_room(waiting_room, self.store.clone()))
             },
-            Command::Request(RequestCommand::Query(urn)) => {
+            Command::Request(command::Request::Query(urn)) => {
                 SpawnAbortable::new(query(urn, self.state.clone(), self.input_sender.clone()))
             },
-            Command::Request(RequestCommand::Clone(url)) => {
+            Command::Request(command::Request::Clone(url)) => {
                 SpawnAbortable::new(clone(url, self.state.clone(), self.input_sender.clone()))
             },
-            Command::Request(RequestCommand::TimedOut(urn)) => {
+            Command::Request(command::Request::TimedOut(urn)) => {
                 let mut sender = self.input_sender.clone();
                 SpawnAbortable::new(async move {
                     sender
-                        .send(Input::Request(RequestInput::TimedOut(urn)))
+                        .send(Input::Request(input::Request::TimedOut(urn)))
                         .await
                         .ok();
                 })
@@ -266,14 +267,14 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
     match announcement::run(&state, &store).await {
         Ok(updates) => {
             sender
-                .send(Input::Announce(AnnounceInput::Succeeded(updates)))
+                .send(Input::Announce(input::Announce::Succeeded(updates)))
                 .await
                 .ok();
         },
         Err(err) => {
             log::error!("announce error: {:?}", err);
             sender
-                .send(Input::Announce(AnnounceInput::Failed))
+                .send(Input::Announce(input::Announce::Failed))
                 .await
                 .ok();
         },
@@ -302,21 +303,21 @@ async fn persist_waiting_room(waiting_room: WaitingRoom<Instant, Duration>, stor
 /// completion report back with the success or failure.
 async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<Input>) {
     sender
-        .send(Input::PeerSync(SyncInput::Started(peer_id)))
+        .send(Input::PeerSync(input::Sync::Started(peer_id)))
         .await
         .ok();
 
     match sync::sync(&state, peer_id).await {
         Ok(_) => {
             sender
-                .send(Input::PeerSync(SyncInput::Succeeded(peer_id)))
+                .send(Input::PeerSync(input::Sync::Succeeded(peer_id)))
                 .await
                 .ok();
         },
         Err(err) => {
             log::error!("sync error for {}: {:?}", peer_id, err);
             sender
-                .send(Input::PeerSync(SyncInput::Failed(peer_id)))
+                .send(Input::PeerSync(input::Sync::Failed(peer_id)))
                 .await
                 .ok();
         },
@@ -327,7 +328,7 @@ async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<Input>) {
 async fn start_sync_timeout(sync_period: Duration, mut sender: mpsc::Sender<Input>) {
     tokio::time::delay_for(sync_period).await;
     sender
-        .send(Input::Timeout(TimeoutInput::SyncPeriod))
+        .send(Input::Timeout(input::Timeout::SyncPeriod))
         .await
         .ok();
 }
@@ -336,7 +337,7 @@ async fn start_sync_timeout(sync_period: Duration, mut sender: mpsc::Sender<Inpu
 async fn query(urn: RadUrn, state: State, mut sender: mpsc::Sender<Input>) {
     gossip::query(&state, urn.clone()).await;
     sender
-        .send(Input::Request(RequestInput::Queried(urn)))
+        .send(Input::Request(input::Request::Queried(urn)))
         .await
         .ok();
 }
@@ -344,14 +345,14 @@ async fn query(urn: RadUrn, state: State, mut sender: mpsc::Sender<Input>) {
 /// Run a clone for the given `url`. On completion report back with the success or failure.
 async fn clone(url: RadUrl, state: State, mut sender: mpsc::Sender<Input>) {
     sender
-        .send(Input::Request(RequestInput::Cloning(url.clone())))
+        .send(Input::Request(input::Request::Cloning(url.clone())))
         .await
         .ok();
 
     match state.clone_project(url.clone(), None).await {
         Ok(_urn) => {
             sender
-                .send(Input::Request(RequestInput::Cloned(url)))
+                .send(Input::Request(input::Request::Cloned(url)))
                 .await
                 .ok();
         },
@@ -362,7 +363,7 @@ async fn clone(url: RadUrl, state: State, mut sender: mpsc::Sender<Input>) {
                 err
             );
             sender
-                .send(Input::Request(RequestInput::Failed {
+                .send(Input::Request(input::Request::Failed {
                     url,
                     reason: err.to_string(),
                 }))
