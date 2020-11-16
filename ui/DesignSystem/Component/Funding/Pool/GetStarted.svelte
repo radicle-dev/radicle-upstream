@@ -5,8 +5,12 @@
   import { Variant as IllustrationVariant } from "../../../../src/illustration";
   import * as modal from "../../../../src/modal";
   import * as path from "../../../../src/path";
+  import * as _pool from "../../../../src/funding/pool";
+
+  export let pool: _pool.Pool;
 
   function getStarted() {
+    _pool.store.set(pool);
     modal.toggle(path.poolOnboarding());
   }
 </script>

@@ -6,6 +6,7 @@
   import Review from "../../DesignSystem/Component/Funding/Pool/Onboarding/Review.svelte";
 
   import * as modal from "../../src/modal";
+  import { store as pool } from "../../src/funding/pool";
 
   enum Step {
     Intro = "intro",
@@ -58,6 +59,10 @@
     }
   }
 
+  function onConfirmed(): void {
+    $pool.onboard(budget, receivers, topUp);
+  }
+
   /* Themz values */
   let budget = 0;
   let topUp = 0;
@@ -90,11 +95,6 @@
   {:else if currentStep === Step.TopUp}
     <TopUp bind:topUp {onBack} {onContinue} />
   {:else}
-    <Review
-      {budget}
-      {receivers}
-      {topUp}
-      {onBack}
-      onConfirmed={() => console.log('Confirm in wallet')} />
+    <Review {budget} {receivers} {topUp} {onBack} {onConfirmed} />
   {/if}
 </div>

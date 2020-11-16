@@ -17,6 +17,13 @@ export interface Pool {
   // Get the account that owns this pool. Should be the connected wallet account.
   getAccount: () => Account | undefined;
 
+  // Onboard the user's pool with the intial values
+  onboard(
+    amountPerBlock: BigNumberish,
+    receivers: Address[],
+    initialBalance: BigNumberish
+  ): Promise<void>;
+
   // Update the contribution amount per block. Returns once the
   // transaction has been included in the chain.
   updateAmountPerBlock(amountPerBlock: string): Promise<void>;
@@ -106,6 +113,22 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
+  async function onboard(
+    amountPerBlock: string,
+    receivers: Address[],
+    initialBalance: number
+  ): Promise<void> {
+    console.log(
+      `onboarding ${amountPerBlock}, ${receivers}, ${initialBalance}`
+    );
+    const changeset = new Map(receivers.map(r => [r, AddressStatus.Added]));
+    await Promise.all([
+      updateAmountPerBlock(amountPerBlock),
+      updateReceiverAddresses(changeset),
+      topUp(initialBalance),
+    ]).finally(loadPoolData);
+  }
+
   async function updateReceiverAddresses(changeset: Changeset): Promise<void> {
     const txs = [...changeset.entries()]
       .filter(([_, status]) => status !== AddressStatus.Present)
@@ -121,7 +144,7 @@ export function make(wallet: Wallet): Pool {
     await Promise.all(txs).finally(loadPoolData);
   }
 
-  async function topUp(value: number): Promise<void> {
+  async function topUp(value: BigNumberish): Promise<void> {
     const tx = await poolContract.topUp({
       gasLimit: 200 * 1000,
       value,
@@ -157,6 +180,7 @@ export function make(wallet: Wallet): Pool {
   return {
     data,
     getAccount,
+    onboard,
     updateAmountPerBlock,
     updateReceiverAddresses,
     topUp,

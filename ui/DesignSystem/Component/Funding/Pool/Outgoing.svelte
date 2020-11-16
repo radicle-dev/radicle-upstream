@@ -68,7 +68,7 @@
 
 <Remote store={pool.data} let:data={poolData}>
   {#if !onboardingStatus.isComplete()}
-    <GetStarted />
+    <GetStarted {pool} />
   {:else}
     <h2>You are now setup :)</h2>
   {/if}
