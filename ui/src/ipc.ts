@@ -9,7 +9,7 @@ const isNodeTestEnv = Boolean(
   globalThis.process && globalThis.process.env["NODE_ENV"] === "test"
 );
 
-// `true` if the if this code is run by the Cypress test driver.
+// `true` if this code is run by the Cypress test driver.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isCypressTestEnv = Boolean((globalThis as any).cy);
 
