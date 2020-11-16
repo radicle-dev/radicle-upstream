@@ -16,6 +16,8 @@ export interface Error {
 }
 
 export enum Code {
+  CommitFetchFailure = "CommitFetchFailure",
+  KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
   LocalStateFetchFailure = "LocalStateFetchFailure",
   ProjectCheckoutFailure = "ProjectCheckoutFailure",
   ProjectCreationFailure = "ProjectCreationFailure",

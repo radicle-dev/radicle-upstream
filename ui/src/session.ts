@@ -109,8 +109,13 @@ const fetchSession = async (): Promise<void> => {
 export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await api.set<unknown>(`keystore/unseal`, { passphrase });
-  } catch (error) {
-    notification.error(`Could not unlock the session: ${error.message}`);
+  } catch (err) {
+    error.show({
+      code: error.Code.KeyStoreUnsealFailure,
+      message: `Could not unlock the session: ${err.message}`,
+      source: err,
+    });
+
     return false;
   }
   sessionStore.loading();
@@ -132,17 +137,11 @@ const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Fetch:
       sessionStore.loading();
-      fetchSession().catch(reason => {
-        console.error("fetchSession() failed: ", reason);
-      });
-
+      fetchSession();
       break;
 
     case Kind.UpdateSettings:
-      updateSettings(msg.settings).catch(reason => {
-        console.error("updateSettings() failed: ", reason);
-      });
-
+      updateSettings(msg.settings);
       break;
   }
 };
