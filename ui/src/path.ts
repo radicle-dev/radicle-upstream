@@ -18,13 +18,13 @@ export const userProfile = (urn: Urn): string => `/user/${urn}`;
 export const userProfileProjects = (urn: Urn): string =>
   `/user/${urn}/projects`;
 
-export const project = (urn: Urn): string => `/projects/${urn}`;
 export const projectSourceCode = (urn: Urn): string =>
   `/projects/${urn}/source/code`;
 export const projectSourceCommit = (urn: Urn, hash: string): string =>
   `/projects/${urn}/source/commit/${hash}`;
 export const projectSourceCommits = (urn: Urn): string =>
   `/projects/${urn}/source/commits`;
+export const project = projectSourceCode;
 
 export const parseQueryString = (querystring: string): ParsedQs => {
   return parse(querystring);
