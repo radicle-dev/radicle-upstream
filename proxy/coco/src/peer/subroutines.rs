@@ -77,8 +77,7 @@ impl Subroutines {
         } else {
             Some(interval(run_config.announce.interval))
         };
-        let waiting_room_config =
-            waiting_room::config::load(&store).unwrap_or_else(|_| run_config.waiting_room.clone());
+        let waiting_room_config = run_config.waiting_room.clone();
         let waiting_room_timer = interval(waiting_room_config.interval);
         let (input_sender, inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
         let mut run_state = RunState::from(run_config);

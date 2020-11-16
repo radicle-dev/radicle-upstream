@@ -29,7 +29,7 @@ pub mod gossip;
 pub mod include;
 
 mod run_state;
-pub use run_state::{AnnounceConfig, Config as RunConfig, Event, Status, SyncConfig};
+pub use run_state::{config as run_config, Config as RunConfig, Event, Status};
 
 mod subroutines;
 use subroutines::Subroutines;

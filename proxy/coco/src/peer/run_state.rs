@@ -20,24 +20,15 @@ use librad::{
 
 use crate::{
     convert::MaybeFrom,
-    peer::{self, announcement, control},
+    peer::{announcement, control},
     request::{
         waiting_room::{self, WaitingRoom},
         SomeRequest,
     },
 };
 
-/// Default time to wait between announcement subroutine runs.
-const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(1);
-
-/// Default number of peers a full sync is attempting with up on startup.
-/// TODO(xla): Revise number.
-const DEFAULT_SYNC_MAX_PEERS: usize = 5;
-
-/// Default Duration until the local peer goes online regardless if and how many syncs have
-/// succeeded.
-// TODO(xla): Review duration.
-const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
+pub mod config;
+pub use config::Config;
 
 /// Instructions to issue side-effectful operations which are the results from state transitions.
 #[allow(clippy::large_enum_variant)]
@@ -249,51 +240,6 @@ pub enum Status {
         /// Number of connected peers.
         connected: usize,
     },
-}
-
-/// Set of knobs to change the behaviour of the `RunState`.
-#[derive(Default)]
-pub struct Config {
-    /// Set of knobs to alter announce behaviour.
-    pub announce: AnnounceConfig,
-    /// Set of knobs to alter sync behaviour.
-    pub sync: SyncConfig,
-    /// Set of knobs to alter [`WaitingRoom`] behaviour.
-    pub waiting_room: peer::waiting_room::Config,
-}
-
-/// Set of knobs to alter announce behaviour.
-pub struct AnnounceConfig {
-    /// Determines how often the announcement subroutine should be run.
-    pub interval: Duration,
-}
-
-impl Default for AnnounceConfig {
-    fn default() -> Self {
-        Self {
-            interval: DEFAULT_ANNOUNCE_INTERVAL,
-        }
-    }
-}
-
-/// Set of knobs to alter sync behaviour.
-pub struct SyncConfig {
-    /// Number of peers that a full sync is attempted with upon startup.
-    pub max_peers: usize,
-    /// Enables the syncing stage when coming online.
-    pub on_startup: bool,
-    /// Duration until the local peer goes online regardless if and how many syncs have succeeded.
-    pub period: Duration,
-}
-
-impl Default for SyncConfig {
-    fn default() -> Self {
-        Self {
-            max_peers: DEFAULT_SYNC_MAX_PEERS,
-            on_startup: false,
-            period: DEFAULT_SYNC_PERIOD,
-        }
-    }
 }
 
 /// State kept for a running local peer.
@@ -694,8 +640,8 @@ mod test {
     };
 
     use super::{
-        AnnounceInput, Command, Config, ControlInput, Input, RequestCommand, RequestInput,
-        RunState, Status, SyncConfig, SyncInput, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
+        config, AnnounceInput, Command, Config, ControlInput, Input, RequestCommand, RequestInput,
+        RunState, Status, SyncInput, TimeoutInput,
     };
 
     #[test]
@@ -719,9 +665,9 @@ mod test {
         let status_since = Instant::now();
         let mut state = RunState::new(
             Config {
-                sync: SyncConfig {
+                sync: config::Sync {
                     on_startup: false,
-                    ..SyncConfig::default()
+                    ..config::Sync::default()
                 },
                 ..Config::default()
             },
@@ -742,7 +688,7 @@ mod test {
     #[test]
     fn transition_to_online_after_sync_max_peers() {
         let status = Status::Syncing {
-            synced: DEFAULT_SYNC_MAX_PEERS - 1,
+            synced: config::DEFAULT_SYNC_MAX_PEERS - 1,
             syncs: 1,
         };
         let status_since = Instant::now();
@@ -792,10 +738,10 @@ mod test {
         let status_since = Instant::now();
         let mut state = RunState::new(
             Config {
-                sync: SyncConfig {
+                sync: config::Sync {
                     max_peers,
                     on_startup: true,
-                    ..SyncConfig::default()
+                    ..config::Sync::default()
                 },
                 ..Config::default()
             },
@@ -853,10 +799,10 @@ mod test {
         let status_since = Instant::now();
         let mut state = RunState::new(
             Config {
-                sync: SyncConfig {
+                sync: config::Sync {
                     on_startup: true,
                     period: sync_period,
-                    ..SyncConfig::default()
+                    ..config::Sync::default()
                 },
                 ..Config::default()
             },
