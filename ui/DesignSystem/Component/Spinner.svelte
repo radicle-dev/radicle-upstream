@@ -1,6 +1,8 @@
 <script lang="typescript">
   export let dataCy: string = "";
+  export let height: number = 24;
   export let style: string = "";
+  export let width: number = 24;
 </script>
 
 <style>
@@ -22,8 +24,8 @@
   data-cy={dataCy}
   on:click
   style={`flex-shrink: 0; ${style}`}
-  width="24"
-  height="24"
+  {width}
+  {height}
   fill="var(--color-foreground-level-5)"
   viewBox="0 0 24 24"
   xmlns="http://www.w3.org/2000/svg">

@@ -320,7 +320,7 @@ context("project source browsing", () => {
 
       it("doesn't interfere with the horizontal menu item active state", () => {
         commands
-          .pick("horizontal-menu", "Code")
+          .pick("horizontal-menu", "Files")
           .get("p")
           .should("have.class", "active");
 
@@ -332,14 +332,14 @@ context("project source browsing", () => {
         });
 
         commands
-          .pick("horizontal-menu", "Code")
+          .pick("horizontal-menu", "Files")
           .get("p")
           .should("have.class", "active");
 
         commands.pick("file-view", "file-header").contains("platinum").click();
 
         commands
-          .pick("horizontal-menu", "Code")
+          .pick("horizontal-menu", "Files")
           .get("p")
           .should("have.class", "active");
       });

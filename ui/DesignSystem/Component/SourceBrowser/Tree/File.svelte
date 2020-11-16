@@ -25,6 +25,14 @@
     background-color: var(--color-foreground-level-1);
   }
 
+  .spinner {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    height: 24px;
+    width: 24px;
+  }
+
   .name {
     margin-left: 0.25rem;
     user-select: none;
@@ -44,7 +52,9 @@
 
 <div class="file" class:active on:click data-cy={dataCy}>
   {#if loading}
-    <Spinner />
+    <div class="spinner">
+      <Spinner height={20} width={20} />
+    </div>
   {:else}
     <Icon.File />
   {/if}
