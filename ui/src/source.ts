@@ -126,21 +126,50 @@ export interface Sha {
 
 export type Revision = Branch | Tag | Sha;
 
+export interface SelectedPath {
+  request: AbortController | null;
+  selected: string;
+}
+
 export const fetchBlob = async (
   projectUrn: Urn,
   peerId: string,
   path: string,
   revision: Revision,
-  highlight?: boolean
+  highlight?: boolean,
+  signal?: AbortSignal
 ): Promise<Blob> => {
+  console.log(
+    "highlight",
+    highlight,
+    highlight && highlight && !isMarkdown(path)
+  );
   return api.get<Blob>(`source/blob/${projectUrn}`, {
     query: {
       path: encodeURIComponent(path),
       peerId,
       revision: { peerId, ...revision },
-      highlight: highlight ? highlight : !isMarkdown(path),
+      highlight: highlight && highlight && !isMarkdown(path),
     },
+    signal,
   });
+};
+
+export const fetchBranches = (
+  projectUrn: Urn,
+  peerId?: PeerId
+): Promise<Branch[]> => {
+  return api
+    .get<string[]>(`source/branches/${projectUrn}`, {
+      query: {
+        peerId,
+      },
+    })
+    .then(names =>
+      names.map(name => {
+        return { type: RevisionType.Branch, name };
+      })
+    );
 };
 
 export const fetchCommit = (projectUrn: Urn, sha1: Sha1): Promise<Commit> => {
@@ -166,21 +195,37 @@ export const fetchCommits = (
     });
 };
 
-export const fetchBranches = (
+export const fetchReadme = (
+  projectUrn: Urn,
+  peerId: PeerId,
+  revision: Revision,
+  tree: Tree,
+  signal?: AbortSignal
+): Promise<Readme | null> => {
+  const path = findReadme(tree);
+
+  return new Promise((resolve, _reject) => {
+    if (!path) {
+      return resolve(null);
+    }
+
+    fetchBlob(projectUrn, peerId, path, revision, false, signal)
+      .then(blob => (blob && !blob.binary ? blob : null))
+      .then(resolve)
+      .catch(() => resolve(null));
+  });
+};
+
+export const fetchRevisions = (
   projectUrn: Urn,
   peerId?: PeerId
-): Promise<Branch[]> => {
-  return api
-    .get<string[]>(`source/branches/${projectUrn}`, {
-      query: {
-        peerId,
-      },
-    })
-    .then(names =>
-      names.map(name => {
-        return { type: RevisionType.Branch, name };
-      })
-    );
+): Promise<Revisions> => {
+  return Promise.all([
+    fetchBranches(projectUrn, peerId),
+    fetchTags(projectUrn, peerId),
+  ]).then(([branches, tags]) => {
+    return { branches, tags };
+  });
 };
 
 export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
@@ -195,18 +240,6 @@ export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
         return { type: RevisionType.Tag, name };
       })
     );
-};
-
-export const fetchRevisions = (
-  projectUrn: Urn,
-  peerId?: PeerId
-): Promise<Revisions> => {
-  return Promise.all([
-    fetchBranches(projectUrn, peerId),
-    fetchTags(projectUrn, peerId),
-  ]).then(([branches, tags]) => {
-    return { branches, tags };
-  });
 };
 
 export const fetchTree = (
@@ -262,26 +295,6 @@ export const revisionQueryEq = (
   } else {
     return false;
   }
-};
-
-export const fetchReadme = (
-  projectUrn: Urn,
-  peerId: PeerId,
-  revision: Revision,
-  tree: Tree
-): Promise<Readme | null> => {
-  const path = findReadme(tree);
-
-  return new Promise((resolve, _reject) => {
-    if (!path) {
-      return resolve(null);
-    }
-
-    fetchBlob(projectUrn, peerId, path, revision, false)
-      .then(blob => (blob && !blob.binary ? blob : null))
-      .then(resolve)
-      .catch(() => resolve(null));
-  });
 };
 
 export const formatCommitTime = (t: number): string => {

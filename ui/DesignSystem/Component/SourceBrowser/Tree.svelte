@@ -8,8 +8,8 @@
   import File from "./Tree/File.svelte";
   import Folder from "./Tree/Folder.svelte";
 
-  export let currentPath: Readable<string>;
   export let fetchTree: (path: string) => Promise<Tree>;
+  export let selectedPath: Readable<SelectedPath>;
   export let tree: Tree;
 
   const dispatch = createEventDispatcher();
@@ -21,14 +21,14 @@
 {#each tree.entries as entry (entry.path)}
   {#if entry.info.objectType === ObjectType.Tree}
     <Folder
-      {currentPath}
       {fetchTree}
       name={entry.info.name}
       prefix={`${entry.path}/`}
-      on:select={onSelectPath} />
+      on:select={onSelectPath}
+      {selectedPath} />
   {:else}
     <File
-      active={entry.path === $currentPath}
+      active={entry.path === $selectedPath.selected}
       dataCy={`file-${entry.path}`}
       name={entry.info.name}
       on:click={() => {

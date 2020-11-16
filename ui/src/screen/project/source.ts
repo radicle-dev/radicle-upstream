@@ -46,15 +46,18 @@ interface Screen {
   code: Writable<Code>;
   history: source.CommitsHistory;
   menuItems: HorizontalItem[];
-  path: Readable<string>;
   peer: User;
   project: Project;
   revisions: source.Revisions;
+  selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.Branch | source.Tag;
   tree: source.Tree;
 }
 
-const pathStore = writable<string>("");
+const pathStore = writable<source.SelectedPath>({
+  request: null,
+  selected: "",
+});
 
 const screenStore = remote.createStore<Screen>();
 export const store = screenStore.readable;
@@ -64,23 +67,35 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.loading();
   }
 
+  const fethTreeRoot = async (
+    selectedRevision: source.Revision
+  ): Promise<[source.Tree, Code]> => {
+    const tree = await source.fetchTree(
+      project.urn,
+      peer.peerId,
+      selectedRevision,
+      ""
+    );
+    const root = await fetchCode(project, peer, selectedRevision, tree, "");
+    return [tree, root];
+  };
+
   try {
     const revisions = await source.fetchRevisions(project.urn, peer.peerId);
     const selectedRevision = defaultRevision(project, revisions);
-    const [history, tree] = await Promise.all([
+    const [history, [tree, root]] = await Promise.all([
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
-      source.fetchTree(project.urn, peer.peerId, selectedRevision, ""),
+      fethTreeRoot(selectedRevision),
     ]);
-    const root = await fetchRoot(project, peer, selectedRevision, tree);
 
     screenStore.success({
       code: writable<Code>(root),
-      path: derived(pathStore, store => store),
       history,
       menuItems: menuItems(project, history),
       peer,
       project,
       revisions,
+      selectedPath: derived(pathStore, store => store),
       selectedRevision,
       tree,
     });
@@ -96,8 +111,6 @@ export const selectPath = async (path: string): Promise<void> => {
     const {
       data: { peer, project, selectedRevision, tree },
     } = screen;
-
-    pathStore.set(path);
 
     const code = await fetchCode(project, peer, selectedRevision, tree, path);
     screen.data.code.set(code);
@@ -120,18 +133,30 @@ export const selectRevision = async (
       return;
     }
 
-    try {
-      const [history, tree] = await Promise.all([
-        source.fetchCommits(project.urn, peer.peerId, revision),
-        source.fetchTree(project.urn, peer.peerId, revision, ""),
-      ]);
+    const fetchTreeCode = async (): Promise<[source.Tree, Code]> => {
+      const tree = await source.fetchTree(
+        project.urn,
+        peer.peerId,
+        revision,
+        ""
+      );
+
       const newCode = await fetchCode(
         project,
         peer,
         revision,
         tree,
-        get(pathStore)
+        get(pathStore).selected
       );
+
+      return [tree, newCode];
+    };
+
+    try {
+      const [history, [tree, newCode]] = await Promise.all([
+        source.fetchCommits(project.urn, peer.peerId, revision),
+        fetchTreeCode(),
+      ]);
       code.set(newCode);
 
       screenStore.success({
@@ -195,9 +220,17 @@ const fetchBlob = async (
   project: Project,
   peer: User,
   revision: source.Revision,
-  path: string
+  path: string,
+  signal: AbortSignal
 ): Promise<Code> => {
-  const blob = await source.fetchBlob(project.urn, peer.peerId, path, revision);
+  const blob = await source.fetchBlob(
+    project.urn,
+    peer.peerId,
+    path,
+    revision,
+    true,
+    signal
+  );
   return {
     lastCommit: blob.info.lastCommit,
     path,
@@ -215,12 +248,20 @@ const fetchCode = async (
   tree: source.Tree,
   path: string
 ): Promise<Code> => {
+  const currentPath = get(pathStore);
+  if (currentPath.request) {
+    currentPath.request.abort();
+  }
+
+  const request = new AbortController();
+  pathStore.set({ request, selected: path });
+
   let code: Code;
   try {
     if (path === "") {
-      code = await fetchRoot(project, peer, revision, tree);
+      code = await fetchRoot(project, peer, revision, tree, request.signal);
     } else {
-      code = await fetchBlob(project, peer, revision, path);
+      code = await fetchBlob(project, peer, revision, path, request.signal);
     }
   } catch (err) {
     code = {
@@ -232,6 +273,9 @@ const fetchCode = async (
       },
     };
   }
+
+  pathStore.set({ request: null, selected: path });
+
   return code;
 };
 
@@ -239,7 +283,8 @@ const fetchRoot = async (
   project: Project,
   peer: User,
   revision: source.Revision,
-  tree: source.Tree
+  tree: source.Tree,
+  signal: AbortSignal
 ): Promise<Code> => {
   return {
     lastCommit: tree.info.lastCommit,
@@ -250,7 +295,8 @@ const fetchRoot = async (
         project.urn,
         peer.peerId,
         revision,
-        tree
+        tree,
+        signal
       ),
     },
   };

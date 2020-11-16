@@ -59,13 +59,13 @@
   <div class="container center-content">
     <Remote
       {store}
-      let:data={{ code, path, peer, project, selectedRevision, tree }}>
+      let:data={{ code, peer, project, selectedPath, selectedRevision, tree }}>
       <div class="column-left">
         <div class="source-tree" data-cy="source-tree">
           <Tree
-            currentPath={path}
             fetchTree={path => fetchTree(project.urn, peer.peerId, selectedRevision, path)}
             on:select={onSelectPath}
+            {selectedPath}
             {tree} />
         </div>
       </div>

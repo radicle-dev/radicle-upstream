@@ -3,16 +3,16 @@
   import type { Readable } from "svelte/store";
 
   import { ObjectType } from "../../../../src/source";
-  import type { Tree } from "../../../../src/source";
+  import type { SelectedPath, Tree } from "../../../../src/source";
 
   import { Icon } from "../../../Primitive";
 
   import File from "./File.svelte";
 
-  export let currentPath: Readable<string>;
   export let fetchTree: (path: string) => Promise<Tree>;
   export let name: string;
   export let prefix: string;
+  export let selectedPath: Readable<SelectedPath>;
 
   let expanded = false;
 
@@ -66,14 +66,14 @@
       {#each tree.entries as entry (entry.path)}
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
-            {currentPath}
             {fetchTree}
             name={entry.info.name}
             prefix={`${entry.path}/`}
-            on:select={onSelectPath} />
+            on:select={onSelectPath}
+            {selectedPath} />
         {:else}
           <File
-            active={entry.path === $currentPath}
+            active={entry.path === $selectedPath.selected}
             dataCy={`file-${entry.path}`}
             name={entry.info.name}
             on:click={() => {
