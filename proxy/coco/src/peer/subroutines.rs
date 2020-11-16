@@ -32,11 +32,7 @@ use crate::{
 
 use super::{
     announcement, control, gossip, include,
-    run_state::{
-        input, command,
-        Command, Config as RunConfig, Event, Input,
-        RunState
-    },
+    run_state::{command, input, Command, Config as RunConfig, Event, Input, RunState},
     sync, waiting_room, RECEIVER_CAPACITY,
 };
 
@@ -79,7 +75,7 @@ impl Subroutines {
             Some(interval(run_config.announce.interval))
         };
         let waiting_room_config = run_config.waiting_room.clone();
-        let waiting_room_timer = interval(waiting_room_config.interval.clone());
+        let waiting_room_timer = interval(waiting_room_config.interval);
         let (input_sender, inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
         let mut run_state = RunState::from(run_config);
         {

@@ -64,7 +64,7 @@ impl MaybeFrom<&Input> for Event {
         match input {
             Input::Announce(input::Announce::Succeeded(updates)) => {
                 Some(Self::Announced(updates.clone()))
-            }
+            },
             Input::Peer(event) => Some(Self::Peer(event.clone())),
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(event) => Some(Self::Protocol(event.clone())),
@@ -74,7 +74,7 @@ impl MaybeFrom<&Input> for Event {
             Input::Request(input::Request::Tick) => Some(Self::RequestTick),
             Input::Request(input::Request::TimedOut(urn)) => {
                 Some(Self::RequestTimedOut(urn.clone()))
-            }
+            },
             _ => None,
         }
     }
@@ -215,7 +215,7 @@ impl RunState {
                     ))),
                     Command::PersistWaitingRoom(self.waiting_room.clone()),
                 ]
-            }
+            },
             input::Control::CreateRequest(urn, time, maybe_sender) => {
                 let request = self.waiting_room.request(&urn, time);
                 if let Some(sender) = maybe_sender {
@@ -225,12 +225,12 @@ impl RunState {
                 } else {
                     vec![]
                 }
-            }
+            },
             input::Control::GetRequest(urn, sender) => {
                 vec![Command::Control(command::Control::Respond(
                     control::Response::GetSearch(sender, self.waiting_room.get(&urn).cloned()),
                 ))]
-            }
+            },
             input::Control::ListRequests(sender) => vec![Command::Control(
                 command::Control::Respond(control::Response::ListSearches(
                     sender,
@@ -265,7 +265,7 @@ impl RunState {
                         synced,
                         syncs: syncs + 1,
                     };
-                }
+                },
                 input::Sync::Failed(_peer_id) | input::Sync::Succeeded(_peer_id) => {
                     self.status = if synced + 1 >= self.config.sync.max_peers {
                         Status::Online {
@@ -277,7 +277,7 @@ impl RunState {
                             syncs: syncs - 1,
                         }
                     };
-                }
+                },
             }
         }
 
@@ -294,7 +294,7 @@ impl RunState {
                 self.status_since = Instant::now();
 
                 vec![]
-            }
+            },
             (state, ProtocolEvent::Connected(peer_id)) => {
                 if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
                     *counter += 1;
@@ -309,7 +309,7 @@ impl RunState {
                         };
 
                         vec![]
-                    }
+                    },
                     Status::Started => {
                         // Sync with first incoming peer.
                         //
@@ -336,22 +336,22 @@ impl RunState {
 
                             vec![]
                         }
-                    }
+                    },
                     // Issue syncs until we reach maximum amount of peers to sync with.
                     Status::Syncing { syncs, .. } if *syncs < self.config.sync.max_peers => {
                         vec![Command::SyncPeer(peer_id)]
-                    }
+                    },
                     // Update status with its connected peers.
                     Status::Online { .. } => {
                         self.status = Status::Online {
                             connected: self.connected_peers.len(),
                         };
                         vec![]
-                    }
+                    },
                     // Noop
                     Status::Stopped | Status::Syncing { .. } => vec![],
                 }
-            }
+            },
             // Remove peer that just disconnected.
             (_, ProtocolEvent::Disconnecting(peer_id)) => {
                 if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
@@ -372,7 +372,7 @@ impl RunState {
                 }
 
                 vec![]
-            }
+            },
             // Found URN.
             (
                 _,
@@ -399,13 +399,13 @@ impl RunState {
                         match err {
                             waiting_room::Error::TimeOut { .. } => {
                                 vec![Command::Request(command::Request::TimedOut(urn))]
-                            }
+                            },
                             _ => vec![],
                         }
-                    }
+                    },
                     Ok(_) => vec![],
                 }
-            }
+            },
             _ => vec![],
         }
     }
@@ -427,7 +427,7 @@ impl RunState {
                     cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
                 cmds
-            }
+            },
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
             (_, input::Request::Cloning(url)) => self
                 .waiting_room
@@ -441,13 +441,13 @@ impl RunState {
                     |error| Self::handle_waiting_room_timeout(url.urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 )
-            }
+            },
             (_, input::Request::Queried(urn)) => {
                 self.waiting_room.queried(&urn, Instant::now()).map_or_else(
                     |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 )
-            }
+            },
             (_, input::Request::Failed { url, reason }) => {
                 log::warn!("Cloning failed with: {}", reason);
                 let urn = url.urn.clone();
@@ -457,7 +457,7 @@ impl RunState {
                         |error| Self::handle_waiting_room_timeout(urn, &error),
                         |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                     )
-            }
+            },
             _ => vec![],
         }
     }
@@ -468,7 +468,7 @@ impl RunState {
         match error {
             waiting_room::Error::TimeOut { .. } => {
                 vec![Command::Request(command::Request::TimedOut(urn))]
-            }
+            },
             _ => vec![],
         }
     }
@@ -484,7 +484,7 @@ impl RunState {
                 self.status_since = Instant::now();
 
                 vec![]
-            }
+            },
             _ => vec![],
         }
     }
