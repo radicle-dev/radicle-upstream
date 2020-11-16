@@ -22,7 +22,7 @@
     modal.toggle(path.newProject());
   };
   const select = ({ detail: project }: { detail: Project }) =>
-    push(path.project(project.urn));
+    push(path.projectSourceCode(project.urn));
 
   fetchList();
   showNotificationsForFailedProjects();

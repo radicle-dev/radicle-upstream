@@ -1,9 +1,8 @@
 <script lang="typescript">
-  import Router, { push } from "svelte-spa-router";
+  import Router from "svelte-spa-router";
 
   import { openPath } from "../../src/ipc";
   import * as notification from "../../src/notification";
-  import * as path from "../../src/path";
   import { checkout } from "../../src/project";
   import type { Project, User } from "../../src/project";
   import {
@@ -65,7 +64,6 @@
     selectRevision(revision);
   };
 
-  push(path.projectSourceCode(project.urn));
   $: fetch(project, selectedPeer);
 </script>
 
