@@ -63,7 +63,7 @@
       <div class="column-left">
         <div class="source-tree" data-cy="source-tree">
           <Tree
-            fetchTree={path => fetchTree(project.urn, peer.peerId, selectedRevision, path)}
+            fetchTree={path => fetchTree(project.urn, peer.peerId, selectedRevision.selected, path)}
             on:select={onSelectPath}
             {selectedPath}
             {tree} />

@@ -39,6 +39,7 @@
     display: flex;
     cursor: pointer;
     justify-content: space-between;
+    user-select: none;
   }
   .revision-selector:hover {
     color: var(--color-foreground);

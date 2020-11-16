@@ -55,7 +55,7 @@ interface Screen {
   project: Project;
   revisions: source.Revisions;
   selectedPath: Readable<source.SelectedPath>;
-  selectedRevision: source.Branch | source.Tag;
+  selectedRevision: source.SelectedRevision;
   tree: source.Tree;
 }
 
@@ -101,7 +101,10 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       project,
       revisions,
       selectedPath: derived(pathStore, store => store),
-      selectedRevision,
+      selectedRevision: {
+        request: null,
+        selected: selectedRevision,
+      },
       tree,
     });
   } catch (err) {
@@ -115,10 +118,15 @@ export const selectPath = async (path: string): Promise<void> => {
 
   if (current.selected !== path && screen.status === remote.Status.Success) {
     const {
-      data: { peer, project, selectedRevision, tree },
+      data: {
+        peer,
+        project,
+        selectedRevision: { selected: revision },
+        tree,
+      },
     } = screen;
 
-    const code = await fetchCode(project, peer, selectedRevision, tree, path);
+    const code = await fetchCode(project, peer, revision, tree, path);
     if (code.view.kind !== ViewKind.Aborted) {
       screen.data.code.set(code);
     }
@@ -126,17 +134,18 @@ export const selectPath = async (path: string): Promise<void> => {
 };
 
 export const selectRevision = async (
-  revision: source.Revision
+  revision: source.Branch | source.Tag
 ): Promise<void> => {
-  const current = get(screenStore);
+  const screen = get(screenStore);
 
-  if (current.status === remote.Status.Success) {
-    const { data } = current;
-    const { code, peer, project, selectedRevision } = data;
+  if (screen.status === remote.Status.Success) {
+    const {
+      data: { code, peer, project, selectedRevision: current },
+    } = screen;
 
     if (
-      selectedRevision.type === revision.type &&
-      selectedRevision.name === revision.name
+      current.selected.type === revision.type &&
+      current.selected.name === revision.name
     ) {
       return;
     }
@@ -168,10 +177,13 @@ export const selectRevision = async (
       code.set(newCode);
 
       screenStore.success({
-        ...data,
+        ...screen.data,
         history,
         menuItems: menuItems(project, history),
-        selectedRevision: revision as source.Branch | source.Tag,
+        selectedRevision: {
+          request: null,
+          selected: revision,
+        },
         tree,
       });
     } catch (err) {
@@ -272,7 +284,6 @@ const fetchCode = async (
       code = await fetchBlob(project, peer, revision, path, request.signal);
     }
   } catch (err) {
-    console.log(err.name);
     // An in-flight request was aborted, we wait for the next one to arrive.
     if (err.name === "AbortError") {
       code = {

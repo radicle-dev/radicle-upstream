@@ -131,6 +131,11 @@ export interface SelectedPath {
   selected: string;
 }
 
+export interface SelectedRevision {
+  request: AbortController | null;
+  selected: Branch | Tag;
+}
+
 export const fetchBlob = async (
   projectUrn: Urn,
   peerId: string,

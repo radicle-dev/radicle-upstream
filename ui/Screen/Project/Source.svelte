@@ -82,7 +82,7 @@
         <div class="revision-selector-wrapper">
           <RevisionSelector
             on:select={onSelectRevision}
-            selected={selectedRevision}
+            selected={selectedRevision.selected}
             {revisions} />
         </div>
 
