@@ -1,11 +1,11 @@
 <script lang="typescript">
-  import { Illustration } from "../../../Component";
-  import { Button } from "../../../Primitive";
+  import { Illustration } from "../../../../Component";
+  import { Button } from "../../../../Primitive";
 
-  import { Variant as IllustrationVariant } from "../../../../src/illustration";
-  import * as modal from "../../../../src/modal";
-  import * as path from "../../../../src/path";
-  import * as _pool from "../../../../src/funding/pool";
+  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
+  import * as modal from "../../../../../src/modal";
+  import * as path from "../../../../../src/path";
+  import * as _pool from "../../../../../src/funding/pool";
 
   export let pool: _pool.Pool;
 
