@@ -9,13 +9,9 @@ const isNodeTestEnv = Boolean(
   globalThis.process && globalThis.process.env["NODE_ENV"] === "test"
 );
 
-// `true` if the app is run by Cypress or if the code is used by
-// Cypress.
+// `true` if the if this code is run by the Cypress test driver.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isCypressTestEnv = Boolean((globalThis as any).Cypress);
-
-// `true` if we are running the app in test mode
-const isTestEnv = isNodeTestEnv || isCypressTestEnv;
+const isCypressTestEnv = Boolean((globalThis as any).cy);
 
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
@@ -58,7 +54,7 @@ export const isExperimental = (): boolean => {
 export function listenProxyError(
   f: (proxyError: ipcTypes.ProxyError) => void
 ): void {
-  if (isTestEnv) {
+  if (isNodeTestEnv || isCypressTestEnv) {
     return;
   }
 
