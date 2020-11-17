@@ -36,7 +36,7 @@ use subroutines::Subroutines;
 
 mod sync;
 
-pub mod waiting_room;
+mod waiting_room;
 
 /// Upper bound of messages stored in receiver channels.
 pub const RECEIVER_CAPACITY: usize = 128;
