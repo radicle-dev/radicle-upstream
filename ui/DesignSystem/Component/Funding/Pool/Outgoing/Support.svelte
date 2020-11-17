@@ -83,7 +83,15 @@
     console.log("onConfirmInWallet");
     console.log(`onConfirmInWallet, receivers ${[...receivers.entries()]}`);
 
-    return pool.updateSettings(budget, receivers).then(_ => leaveEditMode());
+    const changedReceivers = new Map(
+      [...receivers].filter(
+        ([address, weight]) => data.receivers.get(address) !== weight
+      )
+    );
+
+    return pool
+      .updateSettings(budget, changedReceivers)
+      .then(_ => leaveEditMode());
   }
 
   const openTopUp = () => {
