@@ -353,13 +353,12 @@ const fetchRoot = async (
 const mapRevisions = (
   revisions: source.Revisions
 ): [source.Branch | source.Tag] => {
-  const revs: [source.Branch | source.Tag] = revisions.branches as [
-    source.Branch | source.Tag
-  ];
+  const branches = revisions.branches as [source.Branch | source.Tag];
+  const tags = revisions.tags as [source.Branch | source.Tag];
   if (isExperimental()) {
-    revs.concat(revisions.tags);
+    return branches.concat(tags) as [source.Branch | source.Tag];
   }
-  return revs;
+  return branches;
 };
 
 const menuItems = (

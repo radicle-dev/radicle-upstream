@@ -40,7 +40,11 @@
   }
 </style>
 
-<div class="revision-entry" class:selected on:click|stopPropagation>
+<div
+  class="revision-entry"
+  class:selected
+  data-cy={`revision-${revision.type}-${revision.name}`}
+  on:click|stopPropagation>
   {#if loading}
     <Spinner />
   {:else if revision.type === RevisionType.Branch}

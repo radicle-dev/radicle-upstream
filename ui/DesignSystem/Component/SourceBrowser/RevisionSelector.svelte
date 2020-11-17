@@ -87,7 +87,10 @@
       style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
   </div>
   <div class="revision-dropdown-container">
-    <div class="revision-dropdown" hidden={!expanded}>
+    <div
+      class="revision-dropdown"
+      data-cy="revision-dropdown"
+      hidden={!expanded}>
       <ul>
         {#each revisions as revision}
           <li>
