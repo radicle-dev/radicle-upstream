@@ -86,7 +86,7 @@ fn tags_filter(
         .and_then(handler::tags)
 }
 
-/// `GET /tree/<project_id>?peerId=<peer_id>&prefix=<prefix>*revision=<revision>`
+/// `GET /tree/<project_urn>?peerId=<peer_id>&prefix=<prefix>*revision=<revision>`
 fn tree_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
