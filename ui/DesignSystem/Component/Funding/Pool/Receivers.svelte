@@ -4,42 +4,49 @@
   import Receiver from "./Receiver.svelte";
 
   import { AddressStatus } from "../../../../src/funding/pool";
-  import type { Changeset, Address } from "../../../../src/funding/pool";
+  import * as pool from "../../../../src/funding/pool";
 
   // The current list of receivers
-  export let receivers: Address[] = [];
+  export let receivers: pool.Receivers;
   export let updating = false;
   export let editing = false;
 
-  // Read-only for foreginers
-  export let changeset: Changeset = new Map();
+  let changeset: pool.Changeset = new Map();
 
   $: updating, refreshChangeset();
 
-  function refreshChangeset(): Changeset {
+  function refreshChangeset() {
     // Refresh the changeset only when something changed
     // **after** updating, not during. By doing so we keep
     // displaying the changes that are being awaiting inclusion.
     if (!updating) {
-      changeset = new Map(receivers.map(r => [r, AddressStatus.Present]));
+      changeset = new Map(
+        [...receivers].map(([address, weight]) => [
+          address,
+          weight === 0 ? AddressStatus.Removed : AddressStatus.Present,
+        ])
+      );
     }
   }
 
-  function toggleReceiver(x: Address) {
+  function toggleReceiver(x: pool.Address) {
     const status = changeset.get(x);
 
     switch (status) {
       case AddressStatus.Added:
         changeset.delete(x);
+        receivers.delete(x);
         break;
       case AddressStatus.Present:
-        receivers = receivers.filter(r => r !== x);
+        receivers.set(x, 0);
         changeset.set(x, AddressStatus.Removed);
         break;
       case AddressStatus.Removed:
-        if (receivers.includes(x)) {
+        if (receivers.has(x)) {
+          receivers.set(x, 1);
           changeset.set(x, AddressStatus.Present);
         } else {
+          receivers.delete(x);
           changeset.delete(x);
         }
         break;
@@ -47,10 +54,10 @@
     refresh();
   }
 
-  function addNew(x: Address) {
-    if (changeset.has(x)) return;
-    changeset.set(x, AddressStatus.Added);
-    receivers.push(x);
+  function addNew(address: pool.Address) {
+    if (changeset.has(address)) return;
+    changeset.set(address, AddressStatus.Added);
+    receivers.set(address, 1);
     receivers = receivers;
     newValue = "";
     refresh();

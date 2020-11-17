@@ -20,12 +20,12 @@ export interface Pool {
   // Onboard the user's pool with the intial values
   onboard(
     amountPerBlock: BigNumberish,
-    receivers: Address[],
+    receivers: Receivers,
     initialBalance: BigNumberish
   ): Promise<void>;
 
   // Update the contribution per block and the list of receivers.
-  updateSettings(amountPerBlock: string, receivers: Changeset): Promise<void>;
+  updateSettings(amountPerBlock: string, receivers: Receivers): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
@@ -45,7 +45,7 @@ export interface PoolSettings {
   // The total amount to be disbursed to all receivers with each block.
   amountPerBlock: string;
   // The list of addresses that receive funds from the pool.
-  receiverAddresses: string[];
+  receivers: string[];
 }
 
 // All the data representing a pool.
@@ -55,10 +55,13 @@ export interface PoolData {
   // The total amount to be disbursed to all receivers with each block.
   amountPerBlock: string;
   // The list of addresses that receive funds from the pool.
-  receiverAddresses: string[];
+  receivers: Receivers;
   // Funds that the user can collect from their givers.
   collectableFunds: number;
 }
+
+export type Weight = number;
+export type Receivers = Map<Address, Weight>;
 
 export const CONTRACT_ADDRESS: string =
   "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
@@ -77,14 +80,16 @@ export function make(wallet: Wallet): Pool {
       const balance = await poolContract.withdrawable();
       const collectableFunds = await poolContract.collectable();
       const amountPerBlock = await poolContract.getAmountPerBlock();
-      const receivers = await poolContract.getAllReceivers();
-      const receiverAddresses = receivers.map(r => r.receiver);
+      const contract_receivers = await poolContract.getAllReceivers();
+      const receivers = new Map(
+        contract_receivers.map(e => [e.receiver, e.weight])
+      );
 
       data.success({
         // Handle potential overflow using BN.js
         balance: Number(balance),
         amountPerBlock: amountPerBlock.toString(),
-        receiverAddresses,
+        receivers,
         // Handle potential overflow using BN.js
         collectableFunds: Number(collectableFunds),
       });
@@ -110,36 +115,31 @@ export function make(wallet: Wallet): Pool {
 
   async function onboard(
     amountPerBlock: string,
-    receivers: Address[],
+    receivers: Receivers,
     initialBalance: number
   ): Promise<void> {
-    const changeset = new Map(receivers.map(r => [r, AddressStatus.Added]));
     return updateAmountPerBlock(amountPerBlock)
-      .then(_ => updateReceiverAddresses(changeset))
+      .then(_ => updateReceiverAddresses(receivers))
       .then(_ => topUp(initialBalance))
       .finally(loadPoolData);
   }
 
   async function updateSettings(
     amountPerBlock: string,
-    receivers: Changeset
+    receivers: Receivers
   ): Promise<void> {
     return updateAmountPerBlock(amountPerBlock)
       .then(_ => updateReceiverAddresses(receivers))
       .finally(loadPoolData);
   }
 
-  async function updateReceiverAddresses(changeset: Changeset): Promise<void> {
-    const txs = [...changeset.entries()]
-      .filter(([_, status]) => status !== AddressStatus.Present)
-      .map(([address, status]) =>
-        poolContract
-          .setReceiver(address, status === AddressStatus.Added ? 1 : 0)
-          .then(tx => {
-            transaction.add(transaction.beneficiaries(tx));
-            tx.wait();
-          })
-      );
+  async function updateReceiverAddresses(receivers: Receivers): Promise<void> {
+    const txs = [...receivers.entries()].map(([address, weight]) =>
+      poolContract.setReceiver(address, weight).then(tx => {
+        transaction.add(transaction.beneficiaries(tx));
+        tx.wait();
+      })
+    );
 
     await Promise.all(txs).finally(loadPoolData);
   }
@@ -263,7 +263,7 @@ export class OnboardingStatus {
   topUp: boolean;
 
   constructor(data?: PoolData) {
-    this.receivers = (data && data.receiverAddresses.length > 0) || false;
+    this.receivers = (data && data.receivers.size > 0) || false;
     this.budget =
       (data && data.amountPerBlock.length > 0 && data.amountPerBlock !== "0") ||
       false;

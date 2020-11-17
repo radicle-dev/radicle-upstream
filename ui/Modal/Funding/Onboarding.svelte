@@ -6,7 +6,8 @@
   import Review from "../../DesignSystem/Component/Funding/Pool/Onboarding/Review.svelte";
 
   import * as modal from "../../src/modal";
-  import { store as pool } from "../../src/funding/pool";
+  import { store } from "../../src/funding/pool";
+  import * as pool from "../../src/funding/pool";
 
   enum Step {
     Intro = "intro",
@@ -60,13 +61,13 @@
   }
 
   function onConfirmed(): Promise<void> {
-    return $pool.onboard(budget, receivers, topUp).then(_ => modal.hide());
+    return $store.onboard(budget, receivers, topUp).then(_ => modal.hide());
   }
 
   /* Themz values */
   let budget = 0;
   let topUp = 0;
-  let receivers: string[] = [];
+  let receivers: pool.Receivers = new Map();
 </script>
 
 <style>

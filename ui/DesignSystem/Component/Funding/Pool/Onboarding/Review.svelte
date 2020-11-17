@@ -5,13 +5,14 @@
   import Receivers from "../Receivers.svelte";
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
+  import * as pool from "../../../../../src/funding/pool";
 
   export let onBack: () => void;
   export let onConfirmed: () => Promise<void>;
 
   export let budget = 0;
   export let topUp = 0;
-  export let receivers: string[];
+  export let receivers: pool.Receivers;
 </script>
 
 <style>

@@ -38,8 +38,7 @@
 
   // Editing values
   let budget = "";
-  let receivers: string[] = [];
-  let changeset: _pool.Changeset;
+  let receivers: _pool.Receivers = new Map();
 
   let validatingBudget = false;
   $: budgetValidation = monthlyContributionValidationStore();
@@ -53,7 +52,7 @@
   pool.data.subscribe(store => {
     if (store.status === remote.Status.Success) {
       budget = store.data.amountPerBlock;
-      receivers = store.data.receiverAddresses;
+      receivers = store.data.receivers;
       data = store.data;
     }
   });
@@ -67,24 +66,19 @@
   }
 
   $: thereAreChanges =
-    budget !== data.amountPerBlock ||
-    receivers.sort() !== data.receiverAddresses.sort();
+    budget !== data.amountPerBlock || receivers !== data.receivers;
 
   function leaveEditMode(): void {
     editing = false;
     budget = data.amountPerBlock;
-    receivers = data.receiverAddresses;
+    receivers = data.receivers;
   }
 
   function onConfirmInWallet(): Promise<void> {
     console.log("onConfirmInWallet");
-    console.log(`Receivers: ${receivers}`);
-    console.log(`changeset: ${JSON.stringify(changeset)}`);
-    const changesetz = new Map(
-      receivers.map(r => [r, _pool.AddressStatus.Added])
-    );
+    console.log(`Receivers: ${JSON.stringify(receivers)}`);
 
-    return pool.updateSettings(budget, changesetz).then(_ => leaveEditMode());
+    return pool.updateSettings(budget, receivers).then(_ => leaveEditMode());
   }
 
   const openTopUp = () => {
@@ -219,7 +213,7 @@
       <p class="description">
         <strong style="margin-left: 0px"><Dai>
             {poolData.amountPerBlock}
-          </Dai></strong> per month will go to each of the <strong>{poolData.receiverAddresses.length}
+          </Dai></strong> per month will go to each of the <strong>{poolData.receivers.size}
         </strong> receivers you're supporting.
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
@@ -235,7 +229,6 @@
       <Receivers
         {editing}
         bind:receivers
-        bind:changeset
         updating={ongoingBeneficiariesUpdate} />
 
       <div class="tip">
