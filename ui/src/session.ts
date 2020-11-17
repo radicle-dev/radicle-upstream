@@ -128,7 +128,7 @@ export const createKeystore = (passphrase: string): Promise<null> => {
 
 const updateSettings = async (settings: Settings): Promise<void> => {
   try {
-    api.set<Settings>(`session/settings`, settings);
+    await api.set<Settings>(`session/settings`, settings);
   } catch (err) {
     error.show({
       code: error.Code.SessionSettingsUpdateFailure,
