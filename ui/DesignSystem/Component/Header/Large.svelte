@@ -104,6 +104,11 @@
     display: flex;
     align-items: center;
   }
+
+  .peer-id {
+    display: flex;
+    margin-top: 0.5rem;
+  }
 </style>
 
 <svelte:window bind:scrollY />
@@ -126,7 +131,10 @@
         {#if urn}
           <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {:else if peerId}
-          <StyledCopyable value={peerId} />
+          <div class="peer-id">
+            <Icon.Computer style="margin-right: 0.25rem;" />
+            <StyledCopyable value={peerId} />
+          </div>
         {/if}
         {#if description.length > 0}
           <p class="description typo-overflow-ellipsis" title={description}>
