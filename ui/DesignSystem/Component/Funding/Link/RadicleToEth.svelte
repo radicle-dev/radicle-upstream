@@ -10,7 +10,7 @@
   export let identity: Identity;
 
   export let onCancel: () => void;
-  export let onConfirm: () => void;
+  export let onSendTransaction: () => void;
 </script>
 
 <style>
@@ -63,12 +63,20 @@
     <p
       style="margin-top: 1.5rem; padding: 0 var(--content-padding)"
       class="typo-text">
-      Are you sure you want to add your ethereum address to your Radicle
-      account?
+      Are you sure you want to add your Radicle Identity to Ethereum?
     </p>
   </header>
 
   <div class="data">
+    <p class="radicle-user typo-text-bold">
+      <Avatar
+        size="small"
+        avatarFallback={identity.avatarFallback}
+        variant="circle"
+        style="margin-right: 10px" />
+      {identity.metadata.handle}
+    </p>
+    <Icon.ArrowDown />
     <p class="address typo-text">
       <Copyable
         showIcon={false}
@@ -77,15 +85,6 @@
         notificationText="Address copied to the clipboard">
         {address}
       </Copyable>
-    </p>
-    <Icon.ArrowDown />
-    <p class="radicle-user typo-text-bold">
-      <Avatar
-        size="small"
-        avatarFallback={identity.avatarFallback}
-        variant="circle"
-        style="margin-right: 10px" />
-      {identity.metadata.handle}
     </p>
   </div>
 
@@ -96,9 +95,9 @@
 
     <Button
       dataCy="confirm-button"
-      on:click={onConfirm}
+      on:click={onSendTransaction}
       style="margin-left: 14px;">
-      Confirm
+      Send transaction
     </Button>
   </div>
 </div>

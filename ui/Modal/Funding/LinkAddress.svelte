@@ -1,5 +1,8 @@
 <script lang="typescript">
   import EthToRadicle from "../../DesignSystem/Component/Funding/Link/EthToRadicle.svelte";
+  import EnterPassphrase from "../../DesignSystem/Component/Funding/Link/EnterPassphrase.svelte";
+  import SavedToRadicle from "../../DesignSystem/Component/Funding/Link/SavedToRadicle.svelte";
+  import RadicleToEth from "../../DesignSystem/Component/Funding/Link/RadicleToEth.svelte";
 
   import { wallet } from "../../src/wallet";
   import { session } from "../../src/session";
@@ -10,14 +13,36 @@
   function onCancel(): void {
     modal.hide();
   }
-  async function onConfirm(): Promise<void> {
-    console.log("onConfirmed: ", $wallet.connected.account.address);
-    const p = identity
-      .linkEthereumAddress($wallet.connected.account.address)
-      .then(() => modal.hide());
-    console.log("onConfirmed, linked: ", identity.linkedAddress);
-    return p;
+
+  enum Step {
+    EthToRadicle = "EthToRadicle",
+    EnterPassphrase = "EnterPassphrase",
+    SavedToRadicle = "SavedToRadicle",
+    RadicleToEth = "RadicleToEth",
   }
+
+  let currentStep = Step.EthToRadicle;
+
+  function onContinue() {
+    switch (currentStep) {
+      case Step.EthToRadicle:
+        currentStep = Step.EnterPassphrase;
+        break;
+      case Step.EnterPassphrase:
+        identity.linkEthereumAddress($wallet.connected.account.address);
+        currentStep = Step.SavedToRadicle;
+        break;
+      case Step.SavedToRadicle:
+        currentStep = Step.RadicleToEth;
+        break;
+      case Step.RadicleToEth:
+        modal.hide();
+        break;
+    }
+  }
+
+  // Values
+  let passphrase: string = "";
 </script>
 
 <style>
@@ -37,9 +62,21 @@
 </style>
 
 <div class="wrapper">
-  <EthToRadicle
-    address={$wallet.connected.account.address}
-    identity={$session.data.identity}
-    {onCancel}
-    {onConfirm} />
+  {#if currentStep === Step.EthToRadicle}
+    <EthToRadicle
+      address={$wallet.connected.account.address}
+      identity={$session.data.identity}
+      {onCancel}
+      onConfirm={onContinue} />
+  {:else if currentStep === Step.EnterPassphrase}
+    <EnterPassphrase bind:passphrase {onCancel} onConfirm={onContinue} />
+  {:else if currentStep === Step.SavedToRadicle}
+    <SavedToRadicle {onCancel} {onContinue} />
+  {:else if currentStep === Step.RadicleToEth}
+    <RadicleToEth
+      address={$wallet.connected.account.address}
+      identity={$session.data.identity}
+      {onCancel}
+      onSendTransaction={onContinue} />
+  {/if}
 </div>
