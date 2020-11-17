@@ -246,10 +246,12 @@ export const fetchTree = (
   projectUrn: Urn,
   peerId: PeerId,
   revision: Revision,
-  prefix: string
+  prefix: string,
+  signal?: AbortSignal
 ): Promise<Tree> => {
   return api.get<Tree>(`source/tree/${projectUrn}`, {
     query: { peerId, revision: { ...revision, peerId }, prefix },
+    signal,
   });
 };
 

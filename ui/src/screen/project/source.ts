@@ -3,6 +3,7 @@ import type { Readable, Writable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
 import type * as error from "../../error";
+import { isExperimental } from "../../ipc";
 import type { HorizontalItem } from "../../menu";
 import * as notification from "../../notification";
 import * as path from "../../path";
@@ -53,7 +54,7 @@ interface Screen {
   menuItems: HorizontalItem[];
   peer: User;
   project: Project;
-  revisions: source.Revisions;
+  revisions: [source.Branch | source.Tag];
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
   tree: source.Tree;
@@ -72,7 +73,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.loading();
   }
 
-  const fethTreeRoot = async (
+  const fetchTreeRoot = async (
     selectedRevision: source.Revision
   ): Promise<[source.Tree, Code]> => {
     const tree = await source.fetchTree(
@@ -90,7 +91,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     const selectedRevision = defaultRevision(project, revisions);
     const [history, [tree, root]] = await Promise.all([
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
-      fethTreeRoot(selectedRevision),
+      fetchTreeRoot(selectedRevision),
     ]);
 
     screenStore.success({
@@ -99,7 +100,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       menuItems: menuItems(project, history),
       peer,
       project,
-      revisions,
+      revisions: mapRevisions(revisions),
       selectedPath: derived(pathStore, store => store),
       selectedRevision: {
         request: null,
@@ -150,12 +151,18 @@ export const selectRevision = async (
       return;
     }
 
+    if (current.request) {
+      current.request.abort();
+    }
+
+    const request = new AbortController();
     const fetchTreeCode = async (): Promise<[source.Tree, Code]> => {
       const tree = await source.fetchTree(
         project.urn,
         peer.peerId,
         revision,
-        ""
+        "",
+        request.signal
       );
 
       const newCode = await fetchCode(
@@ -168,6 +175,14 @@ export const selectRevision = async (
 
       return [tree, newCode];
     };
+
+    screenStore.success({
+      ...screen.data,
+      selectedRevision: {
+        request,
+        selected: revision,
+      },
+    });
 
     try {
       const [history, [tree, newCode]] = await Promise.all([
@@ -333,6 +348,18 @@ const fetchRoot = async (
       ),
     },
   };
+};
+
+const mapRevisions = (
+  revisions: source.Revisions
+): [source.Branch | source.Tag] => {
+  const revs: [source.Branch | source.Tag] = revisions.branches as [
+    source.Branch | source.Tag
+  ];
+  if (isExperimental()) {
+    revs.concat(revisions.tags);
+  }
+  return revs;
 };
 
 const menuItems = (

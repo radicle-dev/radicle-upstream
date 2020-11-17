@@ -81,6 +81,7 @@
       <div style="display: flex">
         <div class="revision-selector-wrapper">
           <RevisionSelector
+            loading={selectedRevision.request !== null}
             on:select={onSelectRevision}
             selected={selectedRevision.selected}
             {revisions} />
