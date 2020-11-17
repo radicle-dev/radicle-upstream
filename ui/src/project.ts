@@ -182,7 +182,7 @@ const update = (msg: Msg): void => {
       api
         .get<Projects>("projects/contributed")
         .then(projectsStore.success)
-        .catch((err: Error) => projectStore.error(error.fromException(err)));
+        .catch((err: Error) => projectsStore.error(error.fromException(err)));
 
       break;
 
@@ -299,7 +299,7 @@ const fetchBranches = async (path: string) => {
 
   let state;
   try {
-    state = await getLocalState(path);
+    state = await source.getLocalState(path);
   } catch (err) {
     error.log({
       code: error.Code.LocalStateFetchFailure,
