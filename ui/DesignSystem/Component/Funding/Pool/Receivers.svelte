@@ -13,7 +13,7 @@
 
   let changeset: pool.Changeset = new Map();
 
-  $: updating, refreshChangeset();
+  $: updating || editing, refreshChangeset();
 
   function refreshChangeset() {
     // Refresh the changeset only when something changed
