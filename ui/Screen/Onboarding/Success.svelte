@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { StyledCopyable } from "../../DesignSystem/Component";
+  import { PeerId } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
 
   export let peerId = null;
@@ -40,7 +40,7 @@
   <div class="content">
     <h1 style="text-align: center; margin-bottom: 1.5rem;">All set!</h1>
 
-    <StyledCopyable value={peerId} dataCy="peerId" />
+    <PeerId {peerId} dataCy="peerId" />
 
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;

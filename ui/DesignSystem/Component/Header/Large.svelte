@@ -4,7 +4,7 @@
 
   import { Avatar, Icon } from "../../Primitive";
   import ShareableIdentifier from "../ShareableIdentifier.svelte";
-  import StyledCopyable from "../StyledCopyable.svelte";
+  import PeerId from "../PeerId.svelte";
 
   export let name: string;
   export let urn: string | null = null;
@@ -126,7 +126,7 @@
         {#if urn}
           <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {:else if peerId}
-          <StyledCopyable value={peerId} />
+          <PeerId {peerId} style="margin-top: 0.5rem;" />
         {/if}
         {#if description.length > 0}
           <p class="description typo-overflow-ellipsis" title={description}>
