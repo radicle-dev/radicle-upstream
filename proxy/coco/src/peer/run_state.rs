@@ -130,27 +130,10 @@ pub struct RunState {
     waiting_room: WaitingRoom<Instant, Duration>,
 }
 
-impl From<Config> for RunState {
-    fn from(config: Config) -> Self {
-        let waiting_room_config = waiting_room::Config {
-            delta: config.waiting_room.timeout_period,
-            ..waiting_room::Config::default()
-        };
-
-        Self {
-            config,
-            connected_peers: HashMap::new(),
-            status: Status::Stopped,
-            status_since: Instant::now(),
-            waiting_room: WaitingRoom::new(waiting_room_config),
-        }
-    }
-}
-
 impl RunState {
     /// Constructs a new state.
     #[cfg(test)]
-    fn new(
+    fn construct(
         config: Config,
         connected_peers: HashMap<PeerId, usize>,
         status: Status,
@@ -165,8 +148,15 @@ impl RunState {
         }
     }
 
-    pub fn set_waiting_room(&mut self, waiting_room: WaitingRoom<Instant, Duration>) {
-        self.waiting_room = waiting_room;
+    /// Creates a new `RunState` initialising it with the provided `config` and `waiting_room`.
+    pub fn new(config: Config, waiting_room: WaitingRoom<Instant, Duration>) -> Self {
+        Self {
+            config,
+            connected_peers: HashMap::new(),
+            status: Status::Stopped,
+            status_since: Instant::now(),
+            waiting_room,
+        }
     }
 
     /// Applies the `input` and based on the current state, transforms to the new state and in some
@@ -518,7 +508,8 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         let cmds = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert!(cmds.is_empty());
@@ -531,7 +522,7 @@ mod test {
     fn transition_to_online_if_sync_is_disabled() {
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config {
                 sync: config::Sync {
                     on_startup: false,
@@ -560,7 +551,8 @@ mod test {
             syncs: 1,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = {
             let key = SecretKey::new();
@@ -577,7 +569,8 @@ mod test {
             syncs: 3,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = state.transition(Input::Timeout(input::Timeout::SyncPeriod));
         assert_matches!(state.status, Status::Online {..});
@@ -588,7 +581,7 @@ mod test {
         let peer_id = PeerId::from(SecretKey::new());
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config::default(),
             HashMap::from_iter(vec![(peer_id, 1)]),
             status,
@@ -604,7 +597,7 @@ mod test {
         let max_peers = 13;
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config {
                 sync: config::Sync {
                     max_peers,
@@ -665,7 +658,7 @@ mod test {
         let sync_period = Duration::from_secs(60 * 10);
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config {
                 sync: config::Sync {
                     on_startup: true,
@@ -693,7 +686,8 @@ mod test {
     fn issue_announce_while_online() {
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
@@ -701,7 +695,8 @@ mod test {
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
@@ -713,7 +708,8 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
@@ -723,7 +719,8 @@ mod test {
 
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
@@ -733,7 +730,8 @@ mod test {
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
@@ -746,7 +744,8 @@ mod test {
             syncs: 1,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
@@ -762,7 +761,8 @@ mod test {
 
         let status = Status::Online { connected: 1 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
@@ -793,7 +793,8 @@ mod test {
 
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         assert!(state
             .transition(Input::Control(input::Control::CreateRequest(

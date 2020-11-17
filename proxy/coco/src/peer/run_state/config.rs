@@ -2,8 +2,6 @@
 
 use std::time::Duration;
 
-use crate::request::waiting_room;
-
 /// Default time to wait between announcement subroutine runs.
 pub(super) const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(1);
 
@@ -20,7 +18,7 @@ pub(super) const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
 pub(super) const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis(500);
 
 /// Default period to consider until a query has timed out.
-pub(super) const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10);
+pub(crate) const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Set of knobs to change the behaviour of the `RunState`.
 #[derive(Default)]
@@ -67,29 +65,18 @@ impl Default for Sync {
     }
 }
 
-/// Set of knobs to alter the [`waiting_room::WaitingRoom`] behvaviour.
+/// Set of knobs to alter the [`crate::request::waiting_room::WaitingRoom`] behvaviour.
 #[derive(Clone, Debug)]
 pub struct WaitingRoom {
-    /// Interval at which to query the [`waiting_room::WaitingRoom`] for ready requests.
+    /// Interval at which to query the [`crate::request::waiting_room::WaitingRoom`] for ready
+    /// requests.
     pub interval: Duration,
-    /// Period to consider until a query has timed out.
-    pub timeout_period: Duration,
 }
 
 impl Default for WaitingRoom {
     fn default() -> Self {
         Self {
-            timeout_period: DEFAULT_WAITING_ROOM_TIMEOUT,
             interval: DEFAULT_WAITING_ROOM_INTERVAL,
-        }
-    }
-}
-
-impl From<WaitingRoom> for waiting_room::Config<Duration> {
-    fn from(config: WaitingRoom) -> Self {
-        Self {
-            delta: config.timeout_period,
-            ..Self::default()
         }
     }
 }
