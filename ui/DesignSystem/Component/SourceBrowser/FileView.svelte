@@ -48,7 +48,7 @@
       emoji="👀"
       headerText={view.error.message}
       on:primaryAction={onSelectRoot}
-      primaryActionText="Back to source"
+      primaryActionText="Back to files"
       style="height: 320px;"
       text="This file doesn't exist on this branch." />
   {/if}
