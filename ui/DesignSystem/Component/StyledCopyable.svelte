@@ -1,11 +1,11 @@
-<script lang="ts">
+<script lang="typescript">
   import Copyable from "./Copyable.svelte";
   import Hoverable from "./Hoverable.svelte";
 
-  export let style = "";
+  export let style: string = "";
   export let dataCy: string | null = null;
   export let value: string;
-  export let notificationText = "Copied to your clipboard";
+  export let notificationText: string = "Copied to your clipboard";
   export let truncate: boolean = false;
   export let expandable: boolean = true;
 

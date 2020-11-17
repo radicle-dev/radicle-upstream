@@ -128,20 +128,21 @@
             These remotes haven’t been found yet.
           </p>
         </div>
-        <List
-          dataCy="pending-peers"
-          items={data.peers}
-          let:item={peer}
-          styleHoverState={false}
-          style="width: 100%; margin: 1rem 0 0; padding: 0;">
-          <PeerFollowRequest
-            {peer}
-            on:cancel={event => {
-              cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
-            }}
-            projectUrn={project.urn} />
-        </List>
       {/if}
+
+      <List
+        dataCy="pending-peers"
+        items={data.peers}
+        let:item={peer}
+        styleHoverState={false}
+        style="width: 100%; margin: 1rem 0 0; padding: 0;">
+        <PeerFollowRequest
+          {peer}
+          on:cancel={event => {
+            cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
+          }}
+          projectUrn={project.urn} />
+      </List>
     </Remote>
   </div>
 </Remote>
