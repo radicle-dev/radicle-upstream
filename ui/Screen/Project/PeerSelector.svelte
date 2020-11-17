@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import { BadgeType } from "../../src/badge";
+  import { isExperimental } from "../../src/ipc";
   import { Role } from "../../src/project";
   import type { User } from "../../src/project";
   import { CSSPosition } from "../../src/style";
@@ -188,16 +189,21 @@
               {/if}
             </p>
           </div>
-          <Tooltip value="Go to profile" position={CSSPosition.Top}>
-            <div
-              data-cy={peer.identity.metadata.handle}
-              class="open-profile"
-              on:click|stopPropagation={() => {
-                onOpen(peer);
-              }}>
-              <Icon.ArrowBoxUpRight />
-            </div>
-          </Tooltip>
+          {#if isExperimental()}
+            <Tooltip value="Go to profile" position={CSSPosition.Top}>
+              <div
+                data-cy={peer.identity.metadata.handle}
+                class="open-profile"
+                on:click|stopPropagation={() => {
+                  onOpen(peer);
+                }}>
+                <Icon.ArrowBoxUpRight />
+              </div>
+            </Tooltip>
+          {:else}
+            <Icon.ChevronUpDown
+              style="margin-left: 0.5rem; vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+          {/if}
         </div>
       {/each}
       <div class="peer remotes" data-cy="manage-remotes" on:click={onModal}>
