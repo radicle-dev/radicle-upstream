@@ -15,13 +15,10 @@
   };
 
   const show = (_event: MouseEvent) => {
-    if (!container) {
-      console.error("container element not present");
-      return;
-    }
-    if (!message) {
-      console.error("message element not present");
-      return;
+    if (!container || !message) {
+      // This can never happen: `show` can only be triggered if
+      // `container` and `message` have been bound.
+      throw new Error("Unreachable: Component DOM nodes not properly bound");
     }
 
     const containerRect = container.getBoundingClientRect();

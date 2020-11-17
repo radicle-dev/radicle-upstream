@@ -4,6 +4,15 @@ import * as ipcTypes from "../../native/ipc-types";
 
 export type { ProxyError } from "../../native/ipc-types";
 
+// `true` if we are running unit tests with Jest.
+const isNodeTestEnv = Boolean(
+  globalThis.process && globalThis.process.env["NODE_ENV"] === "test"
+);
+
+// `true` if this code is run by the Cypress test driver.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isCypressTestEnv = Boolean((globalThis as any).cy);
+
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
 // <input type="file"> for this. Although it lets us select directories,
@@ -45,6 +54,10 @@ export const isExperimental = (): boolean => {
 export function listenProxyError(
   f: (proxyError: ipcTypes.ProxyError) => void
 ): void {
+  if (isNodeTestEnv || isCypressTestEnv) {
+    return;
+  }
+
   window.electron.ipcRenderer.on(
     "message",
     (_event: unknown, message: ipcTypes.MainMessage) => {
