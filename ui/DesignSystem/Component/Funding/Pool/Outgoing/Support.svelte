@@ -51,9 +51,10 @@
   let data: _pool.PoolData;
   pool.data.subscribe(store => {
     if (store.status === remote.Status.Success) {
-      budget = store.data.amountPerBlock;
-      receivers = store.data.receivers;
       data = store.data;
+      budget = data.amountPerBlock;
+      receivers = new Map(data.receivers);
+      console.log(`pool.data.subscribe, receivers ${[...receivers.entries()]}`);
     }
   });
 
@@ -66,17 +67,21 @@
   }
 
   $: thereAreChanges =
-    budget !== data.amountPerBlock || receivers !== data.receivers;
+    budget !== data.amountPerBlock ||
+    receivers.size !== data.receivers.size ||
+    [...receivers.entries()].find(
+      ([address, weight]) => data.receivers.get(address) !== weight
+    );
 
   function leaveEditMode(): void {
     editing = false;
     budget = data.amountPerBlock;
-    receivers = data.receivers;
+    receivers = new Map(data.receivers);
   }
 
   function onConfirmInWallet(): Promise<void> {
     console.log("onConfirmInWallet");
-    console.log(`Receivers: ${JSON.stringify(receivers)}`);
+    console.log(`onConfirmInWallet, receivers ${[...receivers.entries()]}`);
 
     return pool.updateSettings(budget, receivers).then(_ => leaveEditMode());
   }
