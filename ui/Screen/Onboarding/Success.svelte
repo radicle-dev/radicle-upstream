@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import { StyledCopyable } from "../../DesignSystem/Component";
-  import { Button } from "../../DesignSystem/Primitive";
+  import { Button, Icon } from "../../DesignSystem/Primitive";
 
   export let peerId = null;
 
@@ -32,6 +32,10 @@
     flex-direction: column;
     align-items: center;
   }
+
+  .peer-id {
+    display: flex;
+  }
 </style>
 
 <svelte:window on:keydown={onKeydown} />
@@ -40,7 +44,10 @@
   <div class="content">
     <h1 style="text-align: center; margin-bottom: 1.5rem;">All set!</h1>
 
-    <StyledCopyable value={peerId} dataCy="peerId" />
+    <div class="peer-id">
+      <Icon.Computer style="margin-right: 0.25rem;" />
+      <StyledCopyable value={peerId} dataCy="peerId" />
+    </div>
 
     <p
       style="text-align: center; width: 23.13rem; margin: 1.75rem 0 1.75rem 0;
