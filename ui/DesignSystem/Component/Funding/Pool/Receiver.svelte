@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
-
   import { Copyable } from "../../../Component";
   import { Button, Icon } from "../../../Primitive";
   import { displayAddress, AddressStatus } from "../../../../src/funding/pool";
@@ -10,16 +8,6 @@
   export let disabled = false;
   export let status: AddressStatus;
   export let onClick: (title: string) => void | undefined;
-
-  function iconForStatus(s: AddressStatus): SvelteComponent {
-    switch (s) {
-      case AddressStatus.Added:
-      case AddressStatus.Present:
-        return Icon.Cross;
-      case AddressStatus.Removed:
-        return Icon.ChevronLeft;
-    }
-  }
 </script>
 
 <style>
@@ -35,29 +23,8 @@
     margin-right: 12px;
   }
 
-  .receiver:after {
-    top: -10px;
-    right: -10px;
-    position: relative;
-  }
-
   .receiver.removed {
-    border-color: var(--color-negative);
-    text-decoration: line-through;
-  }
-
-  .receiver.removed,
-  .receiver.removed .content {
-    color: var(--color-negative);
-  }
-
-  .receiver.added {
-    border-color: var(--color-positive);
-    color: var(--color-positive);
-  }
-  .receiver.added,
-  .receiver.added .content {
-    color: var(--color-positive);
+    opacity: 0.35;
   }
 
   .content {
@@ -76,7 +43,7 @@
       on:click={() => onClick(address)}
       {disabled}
       variant="embedded"
-      icon={iconForStatus(status)} />
+      icon={Icon.Cross} />
   {/if}
   <p class="content typo-text-bold">
     <Copyable
