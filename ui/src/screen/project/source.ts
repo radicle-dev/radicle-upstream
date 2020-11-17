@@ -108,7 +108,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       tree,
     });
   } catch (err) {
-    screenStore.error(err);
+    screenStore.error(error.fromException(err));
   }
 };
 
@@ -201,7 +201,7 @@ export const selectRevision = async (
         tree,
       });
     } catch (err) {
-      screenStore.error(err);
+      screenStore.error(error.fromException(err));
     }
   }
 };
@@ -220,7 +220,7 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
     try {
       commitStore.success(await source.fetchCommit(project.urn, sha1));
     } catch (err) {
-      commitStore.error(err);
+      commitStore.error(error.fromException(err));
       error.show({
         code: error.Code.CommitFetchFailure,
         message: "Could not fetch commit",

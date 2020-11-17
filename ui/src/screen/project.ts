@@ -1,5 +1,6 @@
 import { get, derived, Readable } from "svelte/store";
 
+import * as error from "../error";
 import type { PeerId } from "../identity";
 import * as project from "../project";
 import * as remote from "../remote";
@@ -37,7 +38,7 @@ export const fetch = (projectUrn: Urn): void => {
         selectedPeer: peerSelection[0],
       });
     })
-    .catch(screenStore.error);
+    .catch(err => screenStore.error(error.fromException(err)));
 };
 
 export const fetchPeers = (): void => {
@@ -55,7 +56,7 @@ export const fetchPeers = (): void => {
           peerSelection: filterPeers(peers),
         })
       )
-      .catch(screenStore.error);
+      .catch(err => screenStore.error(error.fromException(err)));
   }
 };
 
@@ -92,14 +93,14 @@ export const trackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   project
     .trackPeer(projectUrn, peerId)
     .then(() => fetchPeers())
-    .catch(screenStore.error);
+    .catch(err => screenStore.error(error.fromException(err)));
 };
 
 export const untrackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   project
     .untrackPeer(projectUrn, peerId)
     .then(() => fetchPeers())
-    .catch(screenStore.error);
+    .catch(err => screenStore.error(error.fromException(err)));
 };
 
 export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
