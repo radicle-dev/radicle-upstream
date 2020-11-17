@@ -70,6 +70,11 @@
 
   // The input field value
   let newValue: string = "";
+
+  $: sortedEntries = [...changeset].sort(([_a, statusA], [_b, statusB]) => {
+    const s = [AddressStatus.Removed, AddressStatus.Present, AddressStatus.Added];
+    return s.indexOf(statusA) > s.indexOf(statusB) ? -1 : 1;
+  });
 </script>
 
 <style>
@@ -88,7 +93,7 @@
 
 <div class="receivers">
   <div class="row">
-    {#each [...changeset.entries()] as [address, status]}
+    {#each sortedEntries as [address, status]}
       <Receiver
         onClick={editing ? x => toggleReceiver(x) : undefined}
         {address}
