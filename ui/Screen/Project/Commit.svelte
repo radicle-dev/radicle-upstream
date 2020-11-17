@@ -2,7 +2,7 @@
   import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as notification from "../../src/notification.ts";
+  import * as error from "../../src/error.ts";
   import { commit as store, fetchCommit } from "../../src/source.ts";
   import * as remote from "../../src/remote.ts";
 
@@ -17,8 +17,11 @@
   const commitHash = params.hash;
 
   $: if ($store.status === remote.Status.Error) {
-    console.log($store.error);
-    notification.error("Could not fetch commit");
+    error.show({
+      code: error.Code.CommitFetchFailure,
+      message: "Could not fetch commit",
+      source: $store.error,
+    });
   }
 
   fetchCommit({ projectId, peerId, sha1: commitHash });
