@@ -8,7 +8,7 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, project::peer, seed::Seed, RunConfig, SyncConfig};
+use coco::{config, peer::run_config, project::peer, seed::Seed, RunConfig};
 
 #[macro_use]
 mod common;
@@ -237,9 +237,9 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state) = build_peer(
         &alice_tmp_dir,
         RunConfig {
-            sync: SyncConfig {
+            sync: run_config::Sync {
                 on_startup: true,
-                ..SyncConfig::default()
+                ..run_config::Sync::default()
             },
             ..RunConfig::default()
         },
