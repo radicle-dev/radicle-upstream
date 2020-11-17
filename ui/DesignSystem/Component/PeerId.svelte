@@ -13,7 +13,7 @@
   }
 </style>
 
-<div class="peer-id" {style} {dataCy}>
+<div class="peer-id" {style} data-cy={dataCy}>
   <Icon.Computer style="margin-right: 0.25rem;" />
   <StyledCopyable value={peerId} />
 </div>
