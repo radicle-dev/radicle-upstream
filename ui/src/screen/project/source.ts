@@ -12,7 +12,7 @@ import * as remote from "../../remote";
 import * as source from "../../source";
 
 import IconCommit from "../../../DesignSystem/Primitive/Icon/Commit.svelte";
-import IconHouse from "../../../DesignSystem/Primitive/Icon/House.svelte";
+import IconFile from "../../../DesignSystem/Primitive/Icon/File.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -368,7 +368,7 @@ const menuItems = (
 ): HorizontalItem[] => {
   return [
     {
-      icon: IconHouse,
+      icon: IconFile,
       title: "Files",
       href: path.projectSourceFiles(project.urn),
       looseActiveStateMatching: true,
