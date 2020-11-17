@@ -1,3 +1,5 @@
+import * as svelteStore from "svelte/store";
+
 import * as api from "./api";
 import * as remote from "./remote";
 
@@ -42,10 +44,10 @@ export const fetch = (urn: string): Promise<Identity> => {
 };
 
 // TODO(nuno): Make this stub a real thing that will be set/read from the identity itself.
-export let linkedAddress: string | undefined = undefined;
+export const linkedAddress = svelteStore.writable<string | null>(null);
 
 export function linkEthereumAddress(address: string): Promise<void> {
-  linkedAddress = address;
+  linkedAddress.set(address);
   return Promise.resolve();
 }
 

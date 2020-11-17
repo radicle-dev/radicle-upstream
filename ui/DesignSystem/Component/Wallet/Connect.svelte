@@ -3,21 +3,19 @@
   import { Button } from "../../Primitive";
 
   import { Variant as IllustrationVariant } from "../../../src/illustration";
-  import * as identity from "../../../src/identity";
+  import { linkedAddress } from "../../../src/identity";
   import { displayAddress } from "../../../src/funding/pool";
 
   export let onConnect: () => void;
   export let connecting = false;
 
-  const text = identity.linkedAddress
+  const text = $linkedAddress
     ? `You’ve linked your Radicle ID to Ethereum account ${displayAddress(
-        identity.linkedAddress
+        $linkedAddress
       )}, but your wallet is not connected.`
     : "In order to give and receive funds, you need to link your Radicle Identity to Ethereum.";
 
-  const button = identity.linkedAddress
-    ? "Connect your wallet"
-    : "Link your ID";
+  const button = $linkedAddress ? "Connect your wallet" : "Link your ID";
 </script>
 
 <style>

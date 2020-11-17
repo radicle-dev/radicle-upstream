@@ -1,7 +1,7 @@
 <script lang="ts">
   import { wallet, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
-  import * as identity from "../../src/identity";
+  import { linkedAddress } from "../../src/identity";
 
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
   import LinkAddress from "../../DesignSystem/Component/Funding/LinkAddress.svelte";
@@ -31,7 +31,7 @@
         onDisconnect={wallet.disconnect}
         account={$wallet.connected.account}
         style={'margin-right: var(--content-padding)'} />
-      {#if identity.linkedAddress}
+      {#if $linkedAddress}
         <Pool pool={pool.make(wallet)} />
       {:else}
         <LinkAddress />

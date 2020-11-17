@@ -10,9 +10,12 @@
   import * as modal from "../../src/modal";
 
   async function onConfirmed(): Promise<void> {
-    return identity
+    console.log("onConfirmed: ", $wallet.connected.account.address);
+    const p = identity
       .linkEthereumAddress($wallet.connected.account.address)
       .then(() => modal.hide());
+    console.log("onConfirmed, linked: ", identity.linkedAddress);
+    return p;
   }
 </script>
 
