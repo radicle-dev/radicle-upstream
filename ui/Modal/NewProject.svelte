@@ -4,6 +4,7 @@
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config";
   import * as notification from "../src/notification";
+  import * as error from "../src/error";
   import * as path from "../src/path";
   import * as remote from "../src/remote";
   import * as urn from "../src/urn";
@@ -60,13 +61,11 @@
   };
 
   const createProject = async () => {
-    let response;
-
     try {
       loading = true;
       screen.lock();
 
-      response = await create({
+      const response = await create({
         description,
         defaultBranch: $defaultBranch,
         repo: isNew
@@ -78,11 +77,13 @@
       notification.info(
         `Project ${response.metadata.name} successfully created`
       );
-    } catch (error) {
+    } catch (err) {
       push(path.profileProjects());
-      notification.error(
-        `Could not create project: ${urn.shorten(error.message)}`
-      );
+      error.show({
+        code: error.Code.ProjectCreationFailure,
+        message: `Could not create project: ${urn.shorten(err.message)}`,
+        source: err,
+      });
     } finally {
       dispatch("hide");
       loading = false;

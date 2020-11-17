@@ -2,10 +2,9 @@ import { derived, get, writable } from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
-import type * as error from "../../error";
+import * as error from "../../error";
 import { isExperimental } from "../../ipc";
 import type { HorizontalItem } from "../../menu";
-import * as notification from "../../notification";
 import * as path from "../../path";
 import type { Project, User } from "../../project";
 import * as remote from "../../remote";
@@ -222,9 +221,11 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
       commitStore.success(await source.fetchCommit(project.urn, sha1));
     } catch (err) {
       commitStore.error(err);
-
-      console.log(err.message);
-      notification.error("Could not fetch commit");
+      error.show({
+        code: error.Code.CommitFetchFailure,
+        message: "Could not fetch commit",
+        source: err,
+      });
     }
   }
 };

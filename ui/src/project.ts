@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
 
+import * as error from "./error";
 import * as api from "./api";
 import * as config from "./config";
 import * as event from "./event";
@@ -171,7 +172,7 @@ const update = (msg: Msg): void => {
       api
         .post<CreateInput, Project>(`projects`, msg.input)
         .then(creationStore.success)
-        .catch(creationStore.error);
+        .catch((err: Error) => creationStore.error(error.fromException(err)));
 
       break;
 
@@ -181,7 +182,7 @@ const update = (msg: Msg): void => {
       api
         .get<Projects>("projects/contributed")
         .then(projectsStore.success)
-        .catch(projectsStore.error);
+        .catch((err: Error) => projectStore.error(error.fromException(err)));
 
       break;
 
@@ -190,7 +191,7 @@ const update = (msg: Msg): void => {
       source
         .getLocalState(msg.path)
         .then(localStateStore.success)
-        .catch(localStateStore.error);
+        .catch((err: Error) => localStateStore.error(error.fromException(err)));
       break;
   }
 };
@@ -296,13 +297,21 @@ const fetchBranches = async (path: string) => {
     return;
   }
 
+  let state;
   try {
-    const state = await source.getLocalState(path);
-    if (!state.branches.includes(get(defaultBranch))) {
-      defaultBranch.set(state.branches[0]);
-    }
-  } catch (error) {
-    localStateError.set(error.message);
+    state = await getLocalState(path);
+  } catch (err) {
+    error.log({
+      code: error.Code.LocalStateFetchFailure,
+      message: err.message,
+      source: err,
+    });
+    localStateError.set(err.message);
+    return;
+  }
+
+  if (!state.branches.includes(get(defaultBranch))) {
+    defaultBranch.set(state.branches[0]);
   }
 };
 

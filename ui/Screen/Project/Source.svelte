@@ -1,6 +1,7 @@
 <script lang="typescript">
   import Router from "svelte-spa-router";
 
+  import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
   import * as notification from "../../src/notification";
   import { checkout } from "../../src/project";
@@ -54,8 +55,12 @@
           openPath(path);
         }
       );
-    } catch (error) {
-      notification.error(`Checkout failed: ${error.message}`, true);
+    } catch (err) {
+      error.show({
+        code: error.Code.ProjectCheckoutFailure,
+        message: `Checkout failed: ${err.message}`,
+        source: err,
+      });
     } finally {
       screen.unlock();
     }

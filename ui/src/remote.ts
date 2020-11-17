@@ -1,6 +1,6 @@
 import { derived, get, writable, Readable } from "svelte/store";
 
-import type { Error } from "./error";
+import { Error, fromException as errorFromException } from "./error";
 
 export enum Status {
   NotAsked = "NOT_ASKED",
@@ -142,5 +142,5 @@ export const fetch = <T>(
       return filter ? filter(val) : val;
     })
     .then(store.success)
-    .catch(store.error);
+    .catch((err: globalThis.Error) => store.error(errorFromException(err)));
 };

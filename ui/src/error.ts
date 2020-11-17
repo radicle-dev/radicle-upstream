@@ -16,8 +16,15 @@ export interface Error {
 }
 
 export enum Code {
+  CommitFetchFailure = "CommitFetchFailure",
+  KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
+  LocalStateFetchFailure = "LocalStateFetchFailure",
+  ProjectCheckoutFailure = "ProjectCheckoutFailure",
+  ProjectCreationFailure = "ProjectCreationFailure",
   ProjectRequestFailure = "ProjectRequestFailure",
+  RemoteStoreError = "RemoteStoreError",
   SessionFetchFailure = "SessionFetchFailure",
+  SessionSettingsUpdateFailure = "SessionSettingsUpdateFailure",
   UnexpectedProxyExit = "UnexpectedProxyExit",
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
