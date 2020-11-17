@@ -344,7 +344,6 @@ context("project creation", () => {
               /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
             )
             .should("exist");
-          commands.pick("notification").contains("Close").click();
         });
       });
     });
