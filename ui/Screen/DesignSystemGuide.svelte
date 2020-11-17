@@ -109,13 +109,12 @@
   ];
 
   const dropdownOptions1 = [
-    { variant: "text", value: "1", title: "Option 1" },
+    { value: "1", title: "Option 1" },
     {
-      variant: "text",
       value: "2",
       title: "Longer option keeps going",
     },
-    { variant: "text", value: "3", title: "Option 3" },
+    { value: "3", title: "Option 3" },
   ];
 
   const segmentedControlOptions = [
@@ -449,6 +448,7 @@
         <Input.Text
           placeholder="Enter user name"
           style="width: 100%"
+          showLeftItem={true}
           validation={{ status: ValidationStatus.Loading }}
           value="user123">
           <div slot="left">
@@ -459,10 +459,9 @@
 
       <Swatch>
         <Input.Text
-          avatarFallback={avatarFallback2}
           placeholder="Enter user name."
           style="width: 100%"
-          valid={false}
+          showLeftItem={true}
           validation={{ status: ValidationStatus.Error, message: 'Id already taken' }}
           value="myUser">
           <div slot="left">
