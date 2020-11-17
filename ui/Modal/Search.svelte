@@ -48,7 +48,7 @@
     }
   };
   const follow = () => {
-    requestProject({ urn: value });
+    requestProject(value);
   };
 
   // Validate input entered, at the moment valid RadUrns are the only acceptable input.
@@ -60,7 +60,7 @@
   }
   // To support quick pasting, request the urn once valid to get tracking information.
   $: if ($urnValidation.status === ValidationStatus.Success) {
-    searchProject({ urn: value });
+    searchProject(value);
   }
   // Reset searches if the input became invalid.
   $: if ($urnValidation.status !== ValidationStatus.Success) {
