@@ -52,6 +52,7 @@ const update = (msg: Msg): void => {
           `projects/requests/${msg.urn}`,
           null
         )
+        .then(projectRequestStore.success)
         .catch((err: Error) =>
           projectRequestStore.error(error.fromException(err))
         );
