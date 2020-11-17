@@ -64,7 +64,7 @@ const update = (msg: Msg): void => {
         .get<project.Project>(`projects/${msg.urn}`)
         .then(projectSearchStore.success)
         .catch((err: Error) =>
-          projectRequestStore.error(error.fromException(err))
+          projectSearchStore.error(error.fromException(err))
         );
 
       break;
