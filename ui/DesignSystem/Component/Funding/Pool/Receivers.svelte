@@ -106,7 +106,7 @@
         style="min-width: 380px" />
 
       <Button
-        disabled={updating}
+        disabled={newValue.trim().length === 0 || updating}
         on:click={() => addNew(newValue)}
         variant="outline"
         style="margin-left: 8px; border-color: var(--color-foreground-level-3)">
