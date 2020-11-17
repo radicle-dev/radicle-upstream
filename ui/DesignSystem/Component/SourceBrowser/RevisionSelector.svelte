@@ -29,19 +29,20 @@
 
 <style>
   .revision-selector {
+    align-items: center;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    align-items: center;
-    height: 2.5rem;
-    display: flex;
     cursor: pointer;
+    display: flex;
+    height: 2.5rem;
     justify-content: space-between;
+    overflow: hidden;
     user-select: none;
   }
   .revision-selector:hover {
     color: var(--color-foreground);
-    border: 1px solid var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-1);
+    border: 1px solid var(--color-foreground-level-3);
   }
   .revision-selector[hidden] {
     visibility: hidden;
@@ -52,15 +53,16 @@
     min-width: 100%;
   }
   .revision-dropdown {
-    position: relative;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 0.25rem;
     box-shadow: var(--elevation-medium);
-    z-index: 8;
-    max-width: 30rem;
     height: 100%;
+    max-width: 30rem;
     min-width: 100%;
+    overflow: hidden;
+    position: relative;
+    z-index: 8;
   }
   .revision-dropdown li:only-child {
     border-radius: 0.1875rem;
