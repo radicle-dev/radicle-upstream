@@ -13,6 +13,14 @@
   export let revisions: [Branch | Tag];
   export let selected: Branch | Tag;
 
+  const orderRevisions = (revisions: [Branch | Tag]): [Branch | Tag] => {
+    return [selected].concat(
+      revisions.filter(
+        rev => rev.name !== selected.name || rev.type !== selected.type
+      )
+    ) as [Branch | Tag];
+  };
+
   const dispatch = createEventDispatcher();
   const hide = () => {
     expanded = false;
@@ -94,7 +102,7 @@
       data-cy="revision-dropdown"
       hidden={!expanded}>
       <ul>
-        {#each revisions as revision}
+        {#each orderRevisions(revisions) as revision}
           <li>
             <Entry
               {loading}
