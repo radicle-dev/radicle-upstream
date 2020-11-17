@@ -205,7 +205,6 @@
                 <StyledCopyable value={seed} />
                 <Icon.Cross
                   on:click={() => removeSeed(seed)}
-                  variant="medium"
                   style="margin-left: 1.5rem; cursor:pointer;" />
               </div>
             {/each}
