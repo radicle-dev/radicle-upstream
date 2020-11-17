@@ -2,8 +2,6 @@
   import { createEventDispatcher } from "svelte";
 
   import { BadgeType } from "../../src/badge";
-  import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
   import { Role } from "../../src/project";
   import type { User } from "../../src/project";
   import { CSSPosition } from "../../src/style";
@@ -24,11 +22,15 @@
   };
 
   const dispatch = createEventDispatcher();
-  const open = (peer: User) => {
+  const onModal = () => {
+    hide();
+    dispatch("modal");
+  };
+  const onOpen = (peer: User) => {
     hide();
     dispatch("open", peer);
   };
-  const select = (peer: User) => {
+  const onSelect = (peer: User) => {
     hide();
     dispatch("select", peer);
   };
@@ -167,7 +169,7 @@
           class="peer"
           class:selected={peer.identity.peerId == selected.identity.peerId}
           data-peer-handle={peer.identity.metadata.handle}
-          on:click|stopPropagation={() => select(peer)}>
+          on:click|stopPropagation={() => onSelect(peer)}>
           <div style="display: flex;">
             <Avatar
               avatarFallback={peer.identity.avatarFallback}
@@ -191,17 +193,14 @@
               data-cy={peer.identity.metadata.handle}
               class="open-profile"
               on:click|stopPropagation={() => {
-                open(peer);
+                onOpen(peer);
               }}>
               <Icon.ArrowBoxUpRight />
             </div>
           </Tooltip>
         </div>
       {/each}
-      <div
-        class="peer remotes"
-        data-cy="manage-remotes"
-        on:click={() => modal.toggle(path.managePeers())}>
+      <div class="peer remotes" data-cy="manage-remotes" on:click={onModal}>
         <Icon.Pen style="margin-right: .5rem;" />
         <p>Manage remotes</p>
       </div>

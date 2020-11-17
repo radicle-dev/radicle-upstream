@@ -2,6 +2,7 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
+  import * as modal from "../src/modal";
   import * as path from "../src/path";
   import { isMaintainer } from "../src/project";
   import type { User } from "../src/project";
@@ -35,6 +36,9 @@
       push(path.userProfileProjects(peer.identity.urn));
     }
   };
+  const onPeerModal = () => {
+    modal.toggle(path.managePeers());
+  };
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {
     selectPeer(peer);
   };
@@ -54,6 +58,7 @@
         <div style="display: flex">
           <PeerSelector
             peers={peerSelection}
+            on:modal={onPeerModal}
             on:open={onOpenPeer}
             on:select={onSelectPeer}
             selected={selectedPeer} />
