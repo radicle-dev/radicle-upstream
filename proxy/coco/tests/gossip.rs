@@ -5,7 +5,7 @@ use tokio::time::timeout;
 
 use librad::net::protocol::ProtocolEvent;
 
-use coco::{seed::Seed, AnnounceConfig, RunConfig};
+use coco::{peer::run_config, seed::Seed, RunConfig};
 
 #[macro_use]
 mod common;
@@ -23,7 +23,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state) = build_peer(
         &alice_tmp_dir,
         RunConfig {
-            announce: AnnounceConfig {
+            announce: run_config::Announce {
                 interval: Duration::from_millis(100),
             },
             ..RunConfig::default()
@@ -62,7 +62,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let (alice_peer, alice_state) = build_peer(
         &alice_tmp_dir,
         RunConfig {
-            announce: AnnounceConfig {
+            announce: run_config::Announce {
                 interval: Duration::from_millis(100),
             },
             ..RunConfig::default()

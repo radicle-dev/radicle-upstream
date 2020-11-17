@@ -7,7 +7,7 @@ use tokio::{
     sync::{watch, RwLock},
 };
 
-use coco::{convert::MaybeFrom as _, seed, signer, Peer, RunConfig, SyncConfig};
+use coco::{convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, RunConfig};
 
 use crate::{config, context, http, notification, service, session};
 
@@ -286,7 +286,7 @@ async fn session_seeds(
 /// [`RunConfig`] for the coco peer.
 fn coco_run_config() -> RunConfig {
     RunConfig {
-        sync: SyncConfig {
+        sync: run_config::Sync {
             max_peers: 1,
             on_startup: true,
             period: Duration::from_secs(5),
