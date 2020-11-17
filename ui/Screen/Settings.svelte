@@ -15,6 +15,7 @@
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
+    PeerId,
     SidebarLayout,
     SegmentedControl,
     StyledCopyable,
@@ -128,10 +129,6 @@
     align-items: flex-end;
     padding: 0 0.75rem;
   }
-
-  .peer-id {
-    display: flex;
-  }
 </style>
 
 <SidebarLayout dataCy="page">
@@ -162,10 +159,7 @@
           </p>
         </div>
         <div class="action">
-          <div class="peer-id">
-            <Icon.Computer style="margin-right: 0.25rem;" />
-            <StyledCopyable value={session.identity.peerId} />
-          </div>
+          <PeerId peerId={session.identity.peerId} />
         </div>
       </div>
     </section>

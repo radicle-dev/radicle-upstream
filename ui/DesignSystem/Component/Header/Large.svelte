@@ -4,7 +4,7 @@
 
   import { Avatar, Icon } from "../../Primitive";
   import ShareableIdentifier from "../ShareableIdentifier.svelte";
-  import StyledCopyable from "../StyledCopyable.svelte";
+  import PeerId from "../PeerId.svelte";
 
   export let name: string;
   export let urn: string | null = null;
@@ -104,11 +104,6 @@
     display: flex;
     align-items: center;
   }
-
-  .peer-id {
-    display: flex;
-    margin-top: 0.5rem;
-  }
 </style>
 
 <svelte:window bind:scrollY />
@@ -131,10 +126,7 @@
         {#if urn}
           <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
         {:else if peerId}
-          <div class="peer-id">
-            <Icon.Computer style="margin-right: 0.25rem;" />
-            <StyledCopyable value={peerId} />
-          </div>
+          <PeerId {peerId} style="margin-top: 0.5rem;" />
         {/if}
         {#if description.length > 0}
           <p class="description typo-overflow-ellipsis" title={description}>
