@@ -27,7 +27,6 @@ export interface Aborted {
 export interface Blob {
   kind: ViewKind.Blob;
   blob: source.Blob;
-  commit: source.CommitHeader;
 }
 
 interface Error {
@@ -57,7 +56,7 @@ interface Screen {
   revisions: [source.Branch | source.Tag];
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
-  tree: source.Tree;
+  tree: Writable<source.Tree>;
 }
 
 const pathStore = writable<source.SelectedPath>({
@@ -106,7 +105,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
         request: null,
         selected: selectedRevision,
       },
-      tree,
+      tree: writable<source.Tree>(tree),
     });
   } catch (err) {
     screenStore.error(error.fromException(err));
@@ -127,7 +126,7 @@ export const selectPath = async (path: string): Promise<void> => {
       },
     } = screen;
 
-    const code = await fetchCode(project, peer, revision, tree, path);
+    const code = await fetchCode(project, peer, revision, get(tree), path);
     if (code.view.kind !== ViewKind.Aborted) {
       screen.data.code.set(code);
     }
@@ -141,7 +140,7 @@ export const selectRevision = async (
 
   if (screen.status === remote.Status.Success) {
     const {
-      data: { code, peer, project, selectedRevision: current },
+      data: { code, peer, project, selectedRevision: current, tree },
     } = screen;
 
     if (
@@ -185,11 +184,12 @@ export const selectRevision = async (
     });
 
     try {
-      const [history, [tree, newCode]] = await Promise.all([
+      const [history, [newTree, newCode]] = await Promise.all([
         source.fetchCommits(project.urn, peer.peerId, revision),
         fetchTreeCode(),
       ]);
       code.set(newCode);
+      tree.set(newTree);
 
       screenStore.success({
         ...screen.data,
@@ -199,7 +199,6 @@ export const selectRevision = async (
           request: null,
           selected: revision,
         },
-        tree,
       });
     } catch (err) {
       screenStore.error(error.fromException(err));

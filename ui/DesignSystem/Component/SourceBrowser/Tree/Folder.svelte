@@ -3,7 +3,11 @@
   import type { Readable } from "svelte/store";
 
   import { ObjectType } from "../../../../src/source";
-  import type { SelectedPath, Tree } from "../../../../src/source";
+  import type {
+    SelectedPath,
+    SelectedRevision,
+    Tree,
+  } from "../../../../src/source";
 
   import { Icon } from "../../../Primitive";
 
@@ -13,6 +17,7 @@
   export let name: string;
   export let prefix: string;
   export let selectedPath: Readable<SelectedPath>;
+  export let selectedRevision: SelectedRevision;
 
   let expanded = false;
 
@@ -23,6 +28,15 @@
   const toggle = () => {
     expanded = !expanded;
   };
+
+  let tree: Tree;
+
+  $: console.log(prefix);
+  $: if (selectedRevision.request === null) {
+    fetchTree(prefix).then(newTree => {
+      tree = newTree;
+    });
+  }
 </script>
 
 <style>
@@ -61,27 +75,26 @@
 </div>
 
 <div class="container">
-  {#await fetchTree(prefix) then tree}
-    {#if expanded}
-      {#each tree.entries as entry (entry.path)}
-        {#if entry.info.objectType === ObjectType.Tree}
-          <svelte:self
-            {fetchTree}
-            name={entry.info.name}
-            prefix={`${entry.path}/`}
-            on:select={onSelectPath}
-            {selectedPath} />
-        {:else}
-          <File
-            active={entry.path === $selectedPath.selected}
-            dataCy={`file-${entry.path}`}
-            loading={entry.path === $selectedPath.selected && $selectedPath.request !== null}
-            name={entry.info.name}
-            on:click={() => {
-              onSelectPath({ detail: entry.path });
-            }} />
-        {/if}
-      {/each}
-    {/if}
-  {/await}
+  {#if expanded}
+    {#each tree.entries as entry (entry.path)}
+      {#if entry.info.objectType === ObjectType.Tree}
+        <svelte:self
+          {fetchTree}
+          name={entry.info.name}
+          prefix={`${entry.path}/`}
+          on:select={onSelectPath}
+          {selectedPath}
+          {selectedRevision} />
+      {:else}
+        <File
+          active={entry.path === $selectedPath.selected}
+          dataCy={`file-${entry.path}`}
+          loading={entry.path === $selectedPath.selected && $selectedPath.request !== null}
+          name={entry.info.name}
+          on:click={() => {
+            onSelectPath({ detail: entry.path });
+          }} />
+      {/if}
+    {/each}
+  {/if}
 </div>

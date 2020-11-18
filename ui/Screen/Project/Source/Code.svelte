@@ -66,6 +66,7 @@
             fetchTree={path => fetchTree(project.urn, peer.peerId, selectedRevision.selected, path)}
             on:select={onSelectPath}
             {selectedPath}
+            {selectedRevision}
             {tree} />
         </div>
       </div>
