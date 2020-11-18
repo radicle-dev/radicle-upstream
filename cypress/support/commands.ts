@@ -9,6 +9,15 @@ export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
   return cy.get(selectorString);
 };
 
+// Selects one or more elements with the given `data-cy` ID that
+// contain the given content.
+export const pickWithContent = (
+  id: string,
+  content: string
+): Cypress.Chainable<JQuery> => {
+  return cy.contains(`[data-cy="${id}"]`, content);
+};
+
 export const createProjectWithFixture = (
   name = "platinum",
   description = "Best project ever.",
