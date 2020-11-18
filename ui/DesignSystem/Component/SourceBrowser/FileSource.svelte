@@ -2,12 +2,15 @@
   import { createEventDispatcher } from "svelte";
 
   import { isMarkdown } from "../../../src/source";
-  import type { Blob } from "../../../src/source";
+  import type { Blob, CommitHeader } from "../../../src/source";
 
   import { Icon, Markdown } from "../../Primitive";
   import EmptyState from "../EmptyState.svelte";
 
+  import CommitTeaser from "./CommitTeaser.svelte";
+
   export let blob: Blob;
+  export let commit: CommitHeader;
   export let rootName: string;
 
   const dispatch = createEventDispatcher();
@@ -40,6 +43,11 @@
 
   header .root-link:hover {
     text-decoration: underline;
+  }
+
+  header .commit-header {
+    height: 2.5rem;
+    margin: 0.5rem;
   }
 
   .line-numbers {
@@ -87,6 +95,9 @@
           on:click={() => dispatch('root')}>{rootName}</span>
         <span>/ {blob.path.split('/').join(' / ')}</span>
       </span>
+    </div>
+    <div class="commit-header">
+      <CommitTeaser {commit} on:select style="height: 100%" />
     </div>
   </header>
   <div class="container">

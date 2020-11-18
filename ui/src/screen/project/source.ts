@@ -27,6 +27,7 @@ export interface Aborted {
 export interface Blob {
   kind: ViewKind.Blob;
   blob: source.Blob;
+  commit: source.CommitHeader;
 }
 
 interface Error {

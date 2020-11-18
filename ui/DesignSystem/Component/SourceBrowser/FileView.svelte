@@ -7,8 +7,6 @@
 
   import EmptyState from "../../../DesignSystem/Component/EmptyState.svelte";
 
-  import CommitTeaser from "./CommitTeaser.svelte";
-
   import Blob from "./FileView/Blob.svelte";
   import Root from "./FileView/Root.svelte";
 
@@ -24,25 +22,11 @@
   $: view = $code.view;
 </script>
 
-<style>
-  .commit-header {
-    height: 2.5rem;
-    margin-bottom: 1rem;
-  }
-</style>
-
 <div data-cy="file-view">
-  <div class="commit-header">
-    <CommitTeaser
-      commit={$code.lastCommit}
-      on:select={onSelectCommit}
-      style="height: 100%" />
-  </div>
-
   {#if view.kind === ViewKind.Blob}
-    <Blob {rootName} {view} on:root={onSelectRoot} />
+    <Blob {rootName} {view} on:root={onSelectRoot} on:select={onSelectCommit} />
   {:else if view.kind === ViewKind.Root}
-    <Root {view} />
+    <Root commit={$code.lastCommit} {view} on:select={onSelectCommit} />
   {:else if view.kind === ViewKind.Error}
     <EmptyState
       emoji="👀"
