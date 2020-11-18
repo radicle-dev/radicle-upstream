@@ -29,13 +29,10 @@
     expanded = !expanded;
   };
 
-  let tree: Tree;
+  let current: Promise<Tree>;
 
-  $: console.log(prefix);
   $: if (selectedRevision.request === null) {
-    fetchTree(prefix).then(newTree => {
-      tree = newTree;
-    });
+    current = fetchTree(prefix);
   }
 </script>
 
@@ -75,26 +72,28 @@
 </div>
 
 <div class="container">
-  {#if expanded}
-    {#each tree.entries as entry (entry.path)}
-      {#if entry.info.objectType === ObjectType.Tree}
-        <svelte:self
-          {fetchTree}
-          name={entry.info.name}
-          prefix={`${entry.path}/`}
-          on:select={onSelectPath}
-          {selectedPath}
-          {selectedRevision} />
-      {:else}
-        <File
-          active={entry.path === $selectedPath.selected}
-          dataCy={`file-${entry.path}`}
-          loading={entry.path === $selectedPath.selected && $selectedPath.request !== null}
-          name={entry.info.name}
-          on:click={() => {
-            onSelectPath({ detail: entry.path });
-          }} />
-      {/if}
-    {/each}
-  {/if}
+  {#await current then tree}
+    {#if expanded}
+      {#each tree.entries as entry (entry.path)}
+        {#if entry.info.objectType === ObjectType.Tree}
+          <svelte:self
+            {fetchTree}
+            name={entry.info.name}
+            prefix={`${entry.path}/`}
+            on:select={onSelectPath}
+            {selectedPath}
+            {selectedRevision} />
+        {:else}
+          <File
+            active={entry.path === $selectedPath.selected}
+            dataCy={`file-${entry.path}`}
+            loading={entry.path === $selectedPath.selected && $selectedPath.request !== null}
+            name={entry.info.name}
+            on:click={() => {
+              onSelectPath({ detail: entry.path });
+            }} />
+        {/if}
+      {/each}
+    {/if}
+  {/await}
 </div>
