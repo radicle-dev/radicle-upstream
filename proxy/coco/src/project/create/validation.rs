@@ -8,7 +8,7 @@ use librad::{
     git_ext::{self, OneLevel},
     std_ext::result::ResultExt as _,
 };
-use radicle_surf::vcs::git::{self, git2};
+use radicle_surf::vcs::git::git2;
 
 use crate::config;
 
@@ -28,11 +28,7 @@ pub enum Error {
 
     /// An error occurred in `git2` that we could not handle.
     #[error(transparent)]
-    Git2(#[from] git2::Error),
-
-    /// An error occurred during a [`radicle_surf::git`] operation.
-    #[error(transparent)]
-    Git(#[from] git::error::Error),
+    Git(#[from] git2::Error),
 
     /// When trying to inspect a path, an I/O error occurred.
     #[error(transparent)]
