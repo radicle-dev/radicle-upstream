@@ -507,7 +507,7 @@ mod test {
             },
             "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
-                "branches": 1,
+                "branches": 2,
                 "commits": 15,
                 "contributors": 4,
             },
