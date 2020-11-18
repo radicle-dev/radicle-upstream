@@ -106,6 +106,7 @@
 
     <List
       dataCy="followed-peers"
+      key="peerId"
       items={filteredPeers(peerSelection)}
       let:item={peer}
       styleHoverState={false}
@@ -132,6 +133,7 @@
 
       <List
         dataCy="pending-peers"
+        key="peerId"
         items={data.peers}
         let:item={peer}
         styleHoverState={false}
