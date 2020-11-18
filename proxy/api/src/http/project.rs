@@ -481,7 +481,23 @@ mod test {
         };
 
         // Create the repository for which we'll create a project for
-        coco::control::clone_platinum(repo_path)?;
+        coco::control::clone_platinum(repo_path.clone())?;
+
+        let repo = git2::Repository::open(repo_path)?;
+
+        let branches = repo
+            .branches(None)?
+            .filter_map(|branch_result| {
+                let (branch, _) = branch_result.ok()?;
+                let name = branch.name().ok()?;
+                name.map(String::from)
+            })
+            .collect::<Vec<String>>();
+
+        assert_eq!(
+            branches,
+            vec!["dev", "master", "origin/dev", "origin/master"]
+        );
 
         let res = request()
             .method("POST")
@@ -507,7 +523,7 @@ mod test {
             },
             "shareableEntityIdentifier": format!("%{}", meta.urn.to_string()),
             "stats": {
-                "branches": 1,
+                "branches": 2,
                 "commits": 15,
                 "contributors": 4,
             },
@@ -515,6 +531,18 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, want);
+
+        let api2 = http::source::filters(ctx.clone().into());
+        let res2 = request()
+            .method("GET")
+            .path(&format!("/revisions/{}", meta.id))
+            .reply(&api2)
+            .await;
+
+        let have2: Value = serde_json::from_slice(res2.body()).unwrap();
+
+        assert_eq!(res2.status(), StatusCode::OK);
+        assert_eq!(have2[0]["branches"], json!(["dev", "master"]));
 
         Ok(())
     }
