@@ -6,7 +6,6 @@ use std::{
 };
 
 use serde::Serialize;
-use tokio::sync::oneshot;
 
 use librad::{
     net::{
@@ -21,71 +20,17 @@ use librad::{
 use crate::{
     convert::MaybeFrom,
     peer::{announcement, control},
-    request::{
-        waiting_room::{self, WaitingRoom},
-        SomeRequest,
-    },
+    request::waiting_room::{self, WaitingRoom},
 };
 
-/// Default time to wait between announcement subroutine runs.
-const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(1);
+pub mod command;
+pub use command::Command;
 
-/// Default number of peers a full sync is attempting with up on startup.
-/// TODO(xla): Revise number.
-const DEFAULT_SYNC_MAX_PEERS: usize = 5;
+pub mod config;
+pub use config::Config;
 
-/// Default Duration until the local peer goes online regardless if and how many syncs have
-/// succeeded.
-// TODO(xla): Review duration.
-const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
-
-/// Default period at which we query the waiting room.
-const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis(500);
-
-/// Default period to consider until a query has timed out.
-const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10);
-
-/// Instructions to issue side-effectful operations which are the results from state transitions.
-#[allow(clippy::large_enum_variant)]
-#[derive(Debug)]
-pub enum Command {
-    /// Start the announcement subroutine.
-    Announce,
-    /// Answer control requests.
-    Control(ControlCommand),
-    /// Update the include file for the provided `RadUrn`.
-    Include(RadUrn),
-    /// Fulfill request commands.
-    Request(RequestCommand),
-    /// Initiate a full sync with `PeerId`.
-    SyncPeer(PeerId),
-    /// Start sync timeout.
-    StartSyncTimeout(Duration),
-}
-
-/// Reactions for incoming control requests.
-#[derive(Debug)]
-pub enum ControlCommand {
-    /// Send a response corresponding to a control request.
-    Respond(control::Response),
-}
-
-/// Commands issued when requesting an identity from the network.
-#[derive(Debug, PartialEq)]
-pub enum RequestCommand {
-    /// Tell the subroutine to attempt a clone from the given `RadUrl`.
-    Clone(RadUrl),
-    /// Tell the subroutine that we should query for the given `RadUrn` on the network.
-    Query(RadUrn),
-    /// The request for [`RadUrn`] timed out.
-    TimedOut(RadUrn),
-}
-
-impl From<RequestCommand> for Command {
-    fn from(other: RequestCommand) -> Self {
-        Self::Request(other)
-    }
-}
+pub mod input;
+pub use input::Input;
 
 /// Events external subscribers can observe for internal peer operations.
 #[allow(clippy::large_enum_variant)]
@@ -117,116 +62,22 @@ pub enum Event {
 impl MaybeFrom<&Input> for Event {
     fn maybe_from(input: &Input) -> Option<Self> {
         match input {
-            Input::Announce(AnnounceInput::Succeeded(updates)) => {
+            Input::Announce(input::Announce::Succeeded(updates)) => {
                 Some(Self::Announced(updates.clone()))
             },
             Input::Peer(event) => Some(Self::Peer(event.clone())),
-            Input::PeerSync(SyncInput::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
+            Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(event) => Some(Self::Protocol(event.clone())),
-            Input::Request(RequestInput::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
-            Input::Request(RequestInput::Cloning(url)) => Some(Self::RequestCloning(url.clone())),
-            Input::Request(RequestInput::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
-            Input::Request(RequestInput::Tick) => Some(Self::RequestTick),
-            Input::Request(RequestInput::TimedOut(urn)) => Some(Self::RequestTimedOut(urn.clone())),
+            Input::Request(input::Request::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
+            Input::Request(input::Request::Cloning(url)) => Some(Self::RequestCloning(url.clone())),
+            Input::Request(input::Request::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
+            Input::Request(input::Request::Tick) => Some(Self::RequestTick),
+            Input::Request(input::Request::TimedOut(urn)) => {
+                Some(Self::RequestTimedOut(urn.clone()))
+            },
             _ => None,
         }
     }
-}
-
-/// Significant events that occur during peer’s lifetime.
-#[allow(clippy::large_enum_variant)]
-#[derive(Debug)]
-pub enum Input {
-    /// Announcement subroutine lifecycle events.
-    Announce(AnnounceInput),
-    /// Peer state change events.
-    Control(ControlInput),
-    /// Inputs from the underlying peer API.
-    Peer(PeerEvent),
-    /// Inputs from the underlying coco protocol.
-    Protocol(ProtocolEvent<Gossip>),
-    /// Lifecycle events during peer sync operations.
-    PeerSync(SyncInput),
-    /// Request subroutine events that wish to attempt to fetch an identity from the network.
-    Request(RequestInput),
-    /// Scheduled timeouts which can occur.
-    Timeout(TimeoutInput),
-}
-
-/// Announcement subroutine lifecycle events.
-#[derive(Clone, Debug)]
-pub enum AnnounceInput {
-    /// Operation failed.
-    Failed,
-    /// Operation succeeded and emitted the enclosed list of updates.
-    Succeeded(announcement::Updates),
-    /// The ticker duration has elapsed.
-    Tick,
-}
-
-/// Requests from the peer control.
-#[derive(Debug)]
-pub enum ControlInput {
-    /// New status.
-    Status(oneshot::Sender<Status>),
-
-    /// Cancel an ongoing project search.
-    CancelRequest(
-        RadUrn,
-        Instant,
-        oneshot::Sender<Result<Option<SomeRequest<Instant>>, waiting_room::Error>>,
-    ),
-    /// Initiate a new project search on the network.
-    CreateRequest(
-        RadUrn,
-        Instant,
-        Option<oneshot::Sender<waiting_room::Created<Instant>>>,
-    ),
-    /// Request a project search.
-    GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),
-    /// Request the list of project searches.
-    ListRequests(oneshot::Sender<Vec<SomeRequest<Instant>>>),
-}
-
-/// Request event for projects requested from the network.
-#[derive(Debug)]
-pub enum RequestInput {
-    /// Started cloning the requested urn from a peer.
-    Cloning(RadUrl),
-    /// Succeeded cloning from the `RadUrl`.
-    Cloned(RadUrl),
-    /// Failed to clone from the `RadUrl`.
-    Failed {
-        /// The URL that we were attempting the clone from.
-        url: RadUrl,
-        /// The reason the clone failed.
-        reason: String,
-    },
-    /// Query the network for the `RadUrn`.
-    Queried(RadUrn),
-    /// [`WaitingRoom`] query interval.
-    Tick,
-    /// The request for [`RadUrn`] timed out.
-    TimedOut(RadUrn),
-}
-
-/// Lifecycle events during peer sync operations.
-#[derive(Debug)]
-pub enum SyncInput {
-    /// A sync has been initiated for `PeerId`.
-    Started(PeerId),
-    /// A sync has failed for `PeerId`.
-    Failed(PeerId),
-    /// A sync has succeeded for `PeerId`.
-    Succeeded(PeerId),
-}
-
-/// Scheduled timeouts which can occur.
-#[derive(Debug)]
-pub enum TimeoutInput {
-    /// Grace period is over signaling that we should go offline, no matter how many syncs have
-    /// succeeded.
-    SyncPeriod,
 }
 
 /// The current status of the local peer and its relation to the network.
@@ -255,68 +106,6 @@ pub enum Status {
     },
 }
 
-/// Set of knobs to change the behaviour of the `RunState`.
-#[derive(Default)]
-pub struct Config {
-    /// Set of knobs to alter announce behaviour.
-    pub announce: AnnounceConfig,
-    /// Set of knobs to alter sync behaviour.
-    pub sync: SyncConfig,
-    /// Set of knobs to alter [`WaitingRoom`] behaviour.
-    pub waiting_room: WaitingRoomConfig,
-}
-
-/// Set of knobs to alter announce behaviour.
-pub struct AnnounceConfig {
-    /// Determines how often the announcement subroutine should be run.
-    pub interval: Duration,
-}
-
-impl Default for AnnounceConfig {
-    fn default() -> Self {
-        Self {
-            interval: DEFAULT_ANNOUNCE_INTERVAL,
-        }
-    }
-}
-
-/// Set of knobs to alter sync behaviour.
-pub struct SyncConfig {
-    /// Number of peers that a full sync is attempted with upon startup.
-    pub max_peers: usize,
-    /// Enables the syncing stage when coming online.
-    pub on_startup: bool,
-    /// Duration until the local peer goes online regardless if and how many syncs have succeeded.
-    pub period: Duration,
-}
-
-impl Default for SyncConfig {
-    fn default() -> Self {
-        Self {
-            max_peers: DEFAULT_SYNC_MAX_PEERS,
-            on_startup: false,
-            period: DEFAULT_SYNC_PERIOD,
-        }
-    }
-}
-
-/// Set of knobs to alter the [`WaitingRoom`] behvaviour.
-pub struct WaitingRoomConfig {
-    /// Interval at which to query the [`WaitingRoom`] for ready requests.
-    pub interval: Duration,
-    /// Period to consider until a query has timed out.
-    pub timeout_period: Duration,
-}
-
-impl Default for WaitingRoomConfig {
-    fn default() -> Self {
-        Self {
-            timeout_period: DEFAULT_WAITING_ROOM_TIMEOUT,
-            interval: DEFAULT_WAITING_ROOM_INTERVAL,
-        }
-    }
-}
-
 /// State kept for a running local peer.
 pub struct RunState {
     /// Confiugration to change how input [`Input`]s are interpreted.
@@ -341,27 +130,10 @@ pub struct RunState {
     waiting_room: WaitingRoom<Instant, Duration>,
 }
 
-impl From<Config> for RunState {
-    fn from(config: Config) -> Self {
-        let waiting_room_config = waiting_room::Config {
-            delta: config.waiting_room.timeout_period,
-            ..waiting_room::Config::default()
-        };
-
-        Self {
-            config,
-            connected_peers: HashMap::new(),
-            status: Status::Stopped,
-            status_since: Instant::now(),
-            waiting_room: WaitingRoom::new(waiting_room_config),
-        }
-    }
-}
-
 impl RunState {
     /// Constructs a new state.
     #[cfg(test)]
-    fn new(
+    fn construct(
         config: Config,
         connected_peers: HashMap<PeerId, usize>,
         status: Status,
@@ -373,6 +145,17 @@ impl RunState {
             status,
             status_since,
             waiting_room: WaitingRoom::new(waiting_room::Config::default()),
+        }
+    }
+
+    /// Creates a new `RunState` initialising it with the provided `config` and `waiting_room`.
+    pub fn new(config: Config, waiting_room: WaitingRoom<Instant, Duration>) -> Self {
+        Self {
+            config,
+            connected_peers: HashMap::new(),
+            status: Status::Stopped,
+            status_since: Instant::now(),
+            waiting_room,
         }
     }
 
@@ -396,55 +179,58 @@ impl RunState {
         cmds
     }
 
-    /// Handle [`AnnounceInput`]s.
-    fn handle_announce(&mut self, input: AnnounceInput) -> Vec<Command> {
+    /// Handle [`input::Announce`]s.
+    fn handle_announce(&mut self, input: input::Announce) -> Vec<Command> {
         match (&self.status, input) {
             // Announce new updates while the peer is online.
             (
                 Status::Online { .. } | Status::Started { .. } | Status::Syncing { .. },
-                AnnounceInput::Tick,
+                input::Announce::Tick,
             ) => vec![Command::Announce],
             _ => vec![],
         }
     }
 
-    /// Handle [`ControlInput`]s.
-    fn handle_control(&mut self, input: ControlInput) -> Vec<Command> {
+    /// Handle [`input::Control`]s.
+    fn handle_control(&mut self, input: input::Control) -> Vec<Command> {
         match input {
-            ControlInput::CancelRequest(urn, timestamp, sender) => {
+            input::Control::CancelRequest(urn, timestamp, sender) => {
                 let request = self
                     .waiting_room
                     .canceled(&urn, timestamp)
                     .map(|()| self.waiting_room.remove(&urn));
-                vec![Command::Control(ControlCommand::Respond(
-                    control::Response::CancelSearch(sender, request),
-                ))]
+                vec![
+                    Command::Control(command::Control::Respond(control::Response::CancelSearch(
+                        sender, request,
+                    ))),
+                    Command::PersistWaitingRoom(self.waiting_room.clone()),
+                ]
             },
-            ControlInput::CreateRequest(urn, time, maybe_sender) => {
+            input::Control::CreateRequest(urn, time, maybe_sender) => {
                 let request = self.waiting_room.request(&urn, time);
                 if let Some(sender) = maybe_sender {
-                    vec![Command::Control(ControlCommand::Respond(
+                    vec![Command::Control(command::Control::Respond(
                         control::Response::StartSearch(sender, request),
                     ))]
                 } else {
                     vec![]
                 }
             },
-            ControlInput::GetRequest(urn, sender) => {
-                vec![Command::Control(ControlCommand::Respond(
+            input::Control::GetRequest(urn, sender) => {
+                vec![Command::Control(command::Control::Respond(
                     control::Response::GetSearch(sender, self.waiting_room.get(&urn).cloned()),
                 ))]
             },
-            ControlInput::ListRequests(sender) => vec![Command::Control(ControlCommand::Respond(
-                control::Response::ListSearches(
+            input::Control::ListRequests(sender) => vec![Command::Control(
+                command::Control::Respond(control::Response::ListSearches(
                     sender,
                     self.waiting_room
                         .iter()
                         .map(|pair| pair.1.clone())
                         .collect::<Vec<_>>(),
-                ),
-            ))],
-            ControlInput::Status(sender) => vec![Command::Control(ControlCommand::Respond(
+                )),
+            )],
+            input::Control::Status(sender) => vec![Command::Control(command::Control::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
         }
@@ -460,17 +246,17 @@ impl RunState {
         }
     }
 
-    /// Handle [`SyncInput`]s.
-    fn handle_peer_sync(&mut self, input: &SyncInput) -> Vec<Command> {
+    /// Handle [`input::Sync`]s.
+    fn handle_peer_sync(&mut self, input: &input::Sync) -> Vec<Command> {
         if let Status::Syncing { synced, syncs } = self.status {
             match input {
-                SyncInput::Started(_peer_id) => {
+                input::Sync::Started(_peer_id) => {
                     self.status = Status::Syncing {
                         synced,
                         syncs: syncs + 1,
                     };
                 },
-                SyncInput::Failed(_peer_id) | SyncInput::Succeeded(_peer_id) => {
+                input::Sync::Failed(_peer_id) | input::Sync::Succeeded(_peer_id) => {
                     self.status = if synced + 1 >= self.config.sync.max_peers {
                         Status::Online {
                             connected: self.connected_peers.len(),
@@ -602,7 +388,7 @@ impl RunState {
 
                         match err {
                             waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(RequestCommand::TimedOut(urn))]
+                                vec![Command::Request(command::Request::TimedOut(urn))]
                             },
                             _ => vec![],
                         }
@@ -614,50 +400,52 @@ impl RunState {
         }
     }
 
-    /// Handle [`RequestInput`]s.
+    /// Handle [`input::Request`]s.
     #[allow(clippy::wildcard_enum_match_arm)]
-    fn handle_request(&mut self, input: RequestInput) -> Vec<Command> {
+    fn handle_request(&mut self, input: input::Request) -> Vec<Command> {
         match (&self.status, input) {
-            // Check for new querie and clone requests.
-            (Status::Online { .. } | Status::Syncing { .. }, RequestInput::Tick) => {
+            // Check for new query and clone requests.
+            (Status::Online { .. } | Status::Syncing { .. }, input::Request::Tick) => {
                 let mut cmds = Vec::with_capacity(2);
 
                 if let Some(urn) = self.waiting_room.next_query(Instant::now()) {
-                    cmds.push(Command::Request(RequestCommand::Query(urn)));
+                    cmds.push(Command::Request(command::Request::Query(urn)));
+                    cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
                 if let Some(url) = self.waiting_room.next_clone() {
-                    cmds.push(Command::Request(RequestCommand::Clone(url)));
+                    cmds.push(Command::Request(command::Request::Clone(url)));
+                    cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
                 cmds
             },
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
-            (_, RequestInput::Cloning(url)) => self
+            (_, input::Request::Cloning(url)) => self
                 .waiting_room
                 .cloning(url.clone(), Instant::now())
                 .map_or_else(
                     |error| Self::handle_waiting_room_timeout(url.urn, &error),
-                    |_| vec![],
+                    |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 ),
-            (_, RequestInput::Cloned(url)) => {
+            (_, input::Request::Cloned(url)) => {
                 self.waiting_room.cloned(&url, Instant::now()).map_or_else(
                     |error| Self::handle_waiting_room_timeout(url.urn, &error),
-                    |_| vec![],
+                    |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 )
             },
-            (_, RequestInput::Queried(urn)) => {
+            (_, input::Request::Queried(urn)) => {
                 self.waiting_room.queried(&urn, Instant::now()).map_or_else(
                     |error| Self::handle_waiting_room_timeout(urn, &error),
-                    |_| vec![],
+                    |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 )
             },
-            (_, RequestInput::Failed { url, reason }) => {
+            (_, input::Request::Failed { url, reason }) => {
                 log::warn!("Cloning failed with: {}", reason);
                 let urn = url.urn.clone();
                 self.waiting_room
                     .cloning_failed(url, Instant::now())
                     .map_or_else(
                         |error| Self::handle_waiting_room_timeout(urn, &error),
-                        |_| vec![],
+                        |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                     )
             },
             _ => vec![],
@@ -669,17 +457,17 @@ impl RunState {
         log::warn!("WaitingRoom::Error : {}", error);
         match error {
             waiting_room::Error::TimeOut { .. } => {
-                vec![Command::Request(RequestCommand::TimedOut(urn))]
+                vec![Command::Request(command::Request::TimedOut(urn))]
             },
             _ => vec![],
         }
     }
 
-    /// Handle [`TimeoutInput`]s.
-    fn handle_timeout(&mut self, input: TimeoutInput) -> Vec<Command> {
+    /// Handle [`input::Timeout`]s.
+    fn handle_timeout(&mut self, input: input::Timeout) -> Vec<Command> {
         match (&self.status, input) {
             // Go online if we exceed the sync period.
-            (Status::Syncing { .. }, TimeoutInput::SyncPeriod) => {
+            (Status::Syncing { .. }, input::Timeout::SyncPeriod) => {
                 self.status = Status::Online {
                     connected: self.connected_peers.len(),
                 };
@@ -712,10 +500,7 @@ mod test {
         uri::{RadUrl, RadUrn},
     };
 
-    use super::{
-        AnnounceInput, Command, Config, ControlInput, Input, RequestCommand, RequestInput,
-        RunState, Status, SyncConfig, SyncInput, TimeoutInput, DEFAULT_SYNC_MAX_PEERS,
-    };
+    use super::{command, config, input, Command, Config, Input, RunState, Status};
 
     #[test]
     fn transition_to_started_on_listen() -> Result<(), Box<dyn std::error::Error>> {
@@ -723,7 +508,8 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         let cmds = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert!(cmds.is_empty());
@@ -736,11 +522,11 @@ mod test {
     fn transition_to_online_if_sync_is_disabled() {
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config {
-                sync: SyncConfig {
+                sync: config::Sync {
                     on_startup: false,
-                    ..SyncConfig::default()
+                    ..config::Sync::default()
                 },
                 ..Config::default()
             },
@@ -761,16 +547,17 @@ mod test {
     #[test]
     fn transition_to_online_after_sync_max_peers() {
         let status = Status::Syncing {
-            synced: DEFAULT_SYNC_MAX_PEERS - 1,
+            synced: config::DEFAULT_SYNC_MAX_PEERS - 1,
             syncs: 1,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)))
+            state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)))
         };
         assert_matches!(state.status, Status::Online {..});
     }
@@ -782,9 +569,10 @@ mod test {
             syncs: 3,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
-        let _cmds = state.transition(Input::Timeout(TimeoutInput::SyncPeriod));
+        let _cmds = state.transition(Input::Timeout(input::Timeout::SyncPeriod));
         assert_matches!(state.status, Status::Online {..});
     }
 
@@ -793,7 +581,7 @@ mod test {
         let peer_id = PeerId::from(SecretKey::new());
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config::default(),
             HashMap::from_iter(vec![(peer_id, 1)]),
             status,
@@ -809,12 +597,12 @@ mod test {
         let max_peers = 13;
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config {
-                sync: SyncConfig {
+                sync: config::Sync {
                     max_peers,
                     on_startup: true,
-                    ..SyncConfig::default()
+                    ..config::Sync::default()
                 },
                 ..Config::default()
             },
@@ -833,11 +621,11 @@ mod test {
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
                 assert_eq!(*sync_id, peer_id);
             });
-            let _cmds = state.transition(Input::PeerSync(SyncInput::Started(peer_id)));
+            let _cmds = state.transition(Input::PeerSync(input::Sync::Started(peer_id)));
             assert_matches!(state.status, Status::Syncing{ syncs: syncing_peers, .. } => {
                 assert_eq!(syncing_peers, 1);
             });
-            let _cmds = state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)));
+            let _cmds = state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)));
         }
 
         // Issue last sync.
@@ -849,8 +637,8 @@ mod test {
             assert!(!cmds.is_empty(), "expected command");
             assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
 
-            let _cmds = state.transition(Input::PeerSync(SyncInput::Started(peer_id)));
-            let _cmds = state.transition(Input::PeerSync(SyncInput::Succeeded(peer_id)));
+            let _cmds = state.transition(Input::PeerSync(input::Sync::Started(peer_id)));
+            let _cmds = state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)));
         };
 
         // Expect to be online at this point.
@@ -870,12 +658,12 @@ mod test {
         let sync_period = Duration::from_secs(60 * 10);
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(
+        let mut state = RunState::construct(
             Config {
-                sync: SyncConfig {
+                sync: config::Sync {
                     on_startup: true,
                     period: sync_period,
-                    ..SyncConfig::default()
+                    ..config::Sync::default()
                 },
                 ..Config::default()
             },
@@ -898,16 +686,18 @@ mod test {
     fn issue_announce_while_online() {
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Announce(AnnounceInput::Tick));
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
         assert_matches!(cmds.first().unwrap(), Command::Announce);
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Announce(AnnounceInput::Tick));
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
     }
@@ -918,8 +708,9 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -928,8 +719,9 @@ mod test {
 
         let status = Status::Started;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -938,8 +730,9 @@ mod test {
 
         let status = Status::Offline;
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
@@ -951,34 +744,36 @@ mod test {
             syncs: 1,
         };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
         )));
         assert!(cmds.is_empty());
 
-        let cmds = state.transition(Input::Request(RequestInput::Tick));
+        let cmds = state.transition(Input::Request(input::Request::Tick));
         let cmd = cmds.first().unwrap();
-        assert_matches!(cmd, Command::Request(RequestCommand::Query(have)) => {
+        assert_matches!(cmd, Command::Request(command::Request::Query(have)) => {
             assert_eq!(*have, urn);
         });
 
         let status = Status::Online { connected: 1 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(ControlInput::CreateRequest(
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
             None,
         )));
         assert!(cmds.is_empty());
 
-        let cmds = state.transition(Input::Request(RequestInput::Tick));
+        let cmds = state.transition(Input::Request(input::Request::Tick));
         assert_matches!(
             cmds.first().unwrap(),
-            Command::Request(RequestCommand::Query(have)) => {
+            Command::Request(command::Request::Query(have)) => {
                 assert_eq!(*have, urn);
             }
         );
@@ -998,18 +793,22 @@ mod test {
 
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
-        let mut state = RunState::new(Config::default(), HashMap::new(), status, status_since);
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         assert!(state
-            .transition(Input::Control(ControlInput::CreateRequest(
+            .transition(Input::Control(input::Control::CreateRequest(
                 urn.clone(),
                 Instant::now(),
                 None
             )))
             .is_empty());
-        assert!(state
-            .transition(Input::Request(RequestInput::Queried(urn.clone())))
-            .is_empty());
+        assert_matches!(
+            state
+                .transition(Input::Request(input::Request::Queried(urn.clone())))
+                .first(),
+            Some(Command::PersistWaitingRoom(_))
+        );
         assert!(state
             .transition(Input::Protocol(ProtocolEvent::Gossip(gossip::Info::Has(
                 gossip::Has {
@@ -1031,10 +830,10 @@ mod test {
             ))))
             .is_empty());
 
-        let cmds = state.transition(Input::Request(RequestInput::Tick));
+        let cmds = state.transition(Input::Request(input::Request::Tick));
         assert_matches!(
             cmds.first().unwrap(),
-            Command::Request(RequestCommand::Clone(have)) => {
+            Command::Request(command::Request::Clone(have)) => {
                 assert_eq!(*have, url);
             }
         );

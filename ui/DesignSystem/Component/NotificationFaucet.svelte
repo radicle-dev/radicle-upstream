@@ -16,8 +16,8 @@
     position: fixed;
     bottom: 1.5rem;
     z-index: 1001;
-    left: 50%;
-    transform: translateX(-50%);
+    left: var(--sidebar-width);
+    width: calc(100vw - var(--sidebar-width));
   }
 </style>
 
@@ -25,6 +25,7 @@
   {#each $store as notification (notification.id)}
     <div
       data-cy="notification"
+      style="max-width: 95%;"
       animate:flip
       transition:blur={{ duration: 300 }}>
       <Notification
