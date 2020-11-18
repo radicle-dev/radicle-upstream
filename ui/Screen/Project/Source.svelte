@@ -3,11 +3,13 @@
 
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
+  import type { HorizontalItem } from "../../src/menu";
   import * as notification from "../../src/notification";
   import { checkout } from "../../src/project";
   import type { Project, User } from "../../src/project";
   import {
     fetch,
+    selectPath,
     selectRevision,
     store,
   } from "../../src/screen/project/source";
@@ -65,6 +67,11 @@
       screen.unlock();
     }
   };
+  const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
+    if (item.title === "Files") {
+      selectPath("");
+    }
+  };
   const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
     selectRevision(revision);
   };
@@ -92,7 +99,7 @@
             {revisions} />
         </div>
 
-        <HorizontalMenu items={menuItems} />
+        <HorizontalMenu items={menuItems} on:select={onMenuSelect} />
       </div>
     </div>
     <div slot="right">

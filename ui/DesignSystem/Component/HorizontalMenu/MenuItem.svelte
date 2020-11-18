@@ -39,7 +39,7 @@
   }
 </style>
 
-<a data-cy={title} {href} use:link>
+<a data-cy={title} {href} use:link on:click>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-secondary)" />

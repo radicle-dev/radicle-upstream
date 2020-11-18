@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import { createEventDispatcher } from "svelte";
   import { location } from "svelte-spa-router";
 
   import type { HorizontalItem } from "../../src/menu";
@@ -8,6 +9,8 @@
 
   export let items: HorizontalItem[];
   export let style: string = "";
+
+  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -42,6 +45,7 @@
     {#each items as item}
       <li class="menu-list-item">
         <MenuItem
+          on:click={() => dispatch('select', item)}
           icon={item.icon}
           title={item.title}
           counter={item.counter}
