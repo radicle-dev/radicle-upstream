@@ -272,14 +272,13 @@ impl Repository {
     }
 
     fn push_branches(repo: &git2::Repository, remote: &mut git2::Remote) -> Result<(), Error> {
-        let local_branches = repo
-            .branches(Some(git2::BranchType::Local))
-            .map_err(git::error::Error::from)?
-            .filter_map(|branch_result| {
-                let (branch, _) = branch_result.ok()?;
-                let name = branch.name().ok()?;
-                name.map(String::from)
-            });
+        let local_branches =
+            repo.branches(Some(git2::BranchType::Local))?
+                .filter_map(|branch_result| {
+                    let (branch, _) = branch_result.ok()?;
+                    let name = branch.name().ok()?;
+                    name.map(String::from)
+                });
 
         let local_prefixed_branches = local_branches
             .map(|branch| format!("refs/heads/{}", branch))
