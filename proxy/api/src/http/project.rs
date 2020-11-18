@@ -535,7 +535,7 @@ mod test {
         let api2 = http::source::filters(ctx.clone().into());
         let res2 = request()
             .method("GET")
-            .path(&format!("/revisions/{}", meta.id))
+            .path(&format!("/revisions/{}", meta.urn))
             .reply(&api2)
             .await;
 
