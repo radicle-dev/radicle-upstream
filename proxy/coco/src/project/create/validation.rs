@@ -267,7 +267,6 @@ impl Repository {
         log::debug!("Creating rad remote");
         let mut git_remote = Self::existing_remote(repo, &url)?
             .map_or_else(|| Remote::rad_remote(url, None).create(repo), Ok)?;
-        // Self::push_default(&mut git_remote, default_branch)?;
         Self::push_branches(repo, &mut git_remote)?;
         Ok(())
     }
