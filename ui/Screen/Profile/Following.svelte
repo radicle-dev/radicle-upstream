@@ -76,9 +76,10 @@
             exist.
           </p>
         </div>
-        <List items={data.requests} let:item={request}>
+        <List items={data.requests} let:item={request} key="urn">
           <Hoverable let:hovering={hover} style="flex: 1;">
             <div
+              data-cy="undiscovered-project"
               class="undiscovered-project"
               out:fade|local={{ duration: FADE_DURATION }}>
               <div>
