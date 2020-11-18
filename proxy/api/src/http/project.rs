@@ -485,11 +485,6 @@ mod test {
 
         let repo = git2::Repository::open(repo_path)?;
 
-        let _ = repo.remote(
-            "remote",
-            "https://github.com/radicle-dev/radicle-upstream.git",
-        );
-
         let branches = repo
             .branches(None)?
             .filter_map(|branch_result| {
