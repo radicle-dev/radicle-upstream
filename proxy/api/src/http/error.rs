@@ -111,6 +111,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         create::validation::Error::EmptyExistingPath(_) => {
                             (StatusCode::BAD_REQUEST, "EMPTY_PATH", err.to_string())
                         },
+                        create::validation::Error::Git2(_) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "GIT2_ERROR",
+                            err.to_string(),
+                        ),
                         create::validation::Error::Git(_) => (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             "GIT_ERROR",

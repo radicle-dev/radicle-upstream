@@ -1,17 +1,14 @@
 //! Validation logic for safely checking that a [`super::Repo`] is valid before setting up the
 //! working copy.
 
-use std::{io, marker::PhantomData, path::PathBuf};
+use std::{io, path::PathBuf};
 
 use librad::{
-    git::{
-        local::url::LocalUrl,
-        types::{remote::Remote, FlatRef},
-    },
-    git_ext::{self, OneLevel, RefLike},
+    git::{local::url::LocalUrl, types::remote::Remote},
+    git_ext::{self, OneLevel},
     std_ext::result::ResultExt as _,
 };
-use radicle_surf::vcs::git::git2;
+use radicle_surf::vcs::git::{self, git2};
 
 use crate::config;
 
@@ -31,7 +28,11 @@ pub enum Error {
 
     /// An error occurred in `git2` that we could not handle.
     #[error(transparent)]
-    Git(#[from] git2::Error),
+    Git2(#[from] git2::Error),
+
+    /// An error occurred during a [`radicle_surf::git`] operation.
+    #[error(transparent)]
+    Git(#[from] git::error::Error),
 
     /// When trying to inspect a path, an I/O error occurred.
     #[error(transparent)]
@@ -266,16 +267,38 @@ impl Repository {
         log::debug!("Creating rad remote");
         let mut git_remote = Self::existing_remote(repo, &url)?
             .map_or_else(|| Remote::rad_remote(url, None).create(repo), Ok)?;
-        Self::push_default(&mut git_remote, default_branch)?;
+        // Self::push_default(&mut git_remote, default_branch)?;
+        Self::push_branches(repo, &mut git_remote)?;
         Ok(())
     }
 
-    /// Push the default branch to the provided remote.
-    fn push_default(remote: &mut git2::Remote, default_branch: &OneLevel) -> Result<(), Error> {
-        let default: FlatRef<RefLike, _> =
-            FlatRef::head(PhantomData, None, default_branch.clone().into());
-        log::debug!("Pushing default branch '{}'", default);
-        remote.push(&[default.to_string()], None)?;
+    fn push_branches(repo: &git2::Repository, remote: &mut git2::Remote) -> Result<(), Error> {
+        let local_branches = repo
+            .branches(Some(git2::BranchType::Local))
+            .map_err(git::error::Error::from)?
+            .filter_map(|branch_result| {
+                let (branch, _) = branch_result.ok()?;
+                let name = branch.name().ok()?;
+                name.map(String::from)
+            })
+            .collect::<Vec<String>>();
+
+        let local_prefixed_branches = local_branches
+            .into_iter()
+            .map(|branch| format!("refs/heads/{}", branch))
+            .collect::<Vec<String>>();
+
+        log::debug!(
+            "Pushing branches {}",
+            local_prefixed_branches
+                .clone()
+                .into_iter()
+                .map(|branch| { format!("'{}'", branch) })
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+
+        remote.push(&local_prefixed_branches, None)?;
         Ok(())
     }
 
