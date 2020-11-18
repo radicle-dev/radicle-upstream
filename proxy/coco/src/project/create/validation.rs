@@ -280,11 +280,9 @@ impl Repository {
                 let (branch, _) = branch_result.ok()?;
                 let name = branch.name().ok()?;
                 name.map(String::from)
-            })
-            .collect::<Vec<String>>();
+            });
 
         let local_prefixed_branches = local_branches
-            .into_iter()
             .map(|branch| format!("refs/heads/{}", branch))
             .collect::<Vec<String>>();
 
