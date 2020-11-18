@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { Branch, Revision, Tag } from "../../../src/source";
+  import type { Branch, Tag } from "../../../src/source";
 
   import { Icon } from "../../Primitive";
   import Overlay from "../Overlay.svelte";
@@ -25,7 +25,7 @@
   const hide = () => {
     expanded = false;
   };
-  const select = (revision: Revision) => {
+  const select = (revision: Branch | Tag) => {
     dispatch("select", revision);
     selected = revision as Branch | Tag;
     hide();
@@ -33,18 +33,22 @@
   const toggle = () => {
     expanded = !expanded;
   };
+  const revisionKey = (revision: Branch | Tag): string => {
+    return `${revision.type}-${revision.name}`;
+  };
 </script>
 
 <style>
   .revision-selector {
     align-items: center;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     cursor: pointer;
     display: flex;
     height: 2.5rem;
     justify-content: space-between;
     overflow: hidden;
+    padding: 0 0.5rem;
     user-select: none;
   }
   .revision-selector:hover {
@@ -66,9 +70,10 @@
     border-radius: 0.25rem;
     box-shadow: var(--elevation-medium);
     height: 100%;
+    max-height: 60vh;
     max-width: 30rem;
     min-width: 100%;
-    overflow: hidden;
+    overflow: scroll;
     position: relative;
     z-index: 8;
   }
@@ -102,13 +107,14 @@
       data-cy="revision-dropdown"
       hidden={!expanded}>
       <ul>
-        {#each orderRevisions(revisions) as revision}
+        {#each orderRevisions(revisions) as revision (revisionKey(revision))}
           <li>
             <Entry
               {loading}
               on:click={() => select(revision)}
               {revision}
-              selected={selected.type === revision.type && selected.name === revision.name} />
+              selected={selected.type === revision.type && selected.name === revision.name}
+              style="padding: 0 0.5rem;" />
           </li>
         {/each}
       </ul>

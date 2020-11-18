@@ -9,6 +9,7 @@
   export let loading: boolean = false;
   export let revision: Branch | Tag;
   export let selected: boolean = false;
+  export let style: string | undefined = undefined;
 </script>
 
 <style>
@@ -20,7 +21,6 @@
     height: 2.5rem;
     overflow: hidden;
     overflow-wrap: anywhere;
-    padding: 0 0.5rem;
     user-select: none;
   }
 
@@ -44,7 +44,8 @@
   class="revision-entry"
   class:selected
   data-cy={`revision-${revision.type}-${revision.name}`}
-  on:click|stopPropagation>
+  on:click|stopPropagation
+  {style}>
   {#if loading}
     <Spinner />
   {:else if revision.type === RevisionType.Branch}
