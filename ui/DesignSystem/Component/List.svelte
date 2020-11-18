@@ -10,7 +10,7 @@
 
   export let dataCy = "";
   export let style = "";
-  export let key = "";
+  export let key: string | null = null;
 </script>
 
 <style>
@@ -51,7 +51,7 @@
 <div class="list-container" {style}>
   {#if items.length > 0}
     <ul data-cy={dataCy}>
-      {#each items as item (key.length > 0 ? item[key] : item)}
+      {#each items as item, index (key ? item[key] : index)}
         <li
           class:hover={styleHoverState}
           on:click={() => dispatch('select', item)}>
