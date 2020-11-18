@@ -16,9 +16,16 @@ export interface Error {
 }
 
 export enum Code {
+  BackendTerminated = "BackendTerminated",
+  CommitFetchFailure = "CommitFetchFailure",
+  KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
+  LocalStateFetchFailure = "LocalStateFetchFailure",
+  ProjectCheckoutFailure = "ProjectCheckoutFailure",
+  ProjectCreationFailure = "ProjectCreationFailure",
   ProjectRequestFailure = "ProjectRequestFailure",
+  RemoteStoreError = "RemoteStoreError",
   SessionFetchFailure = "SessionFetchFailure",
-  UnexpectedProxyExit = "UnexpectedProxyExit",
+  SessionSettingsUpdateFailure = "SessionSettingsUpdateFailure",
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
   UnknownException = "UnknownException",
@@ -76,7 +83,7 @@ export const setFatal = (fatalError: FatalError): void => {
 
 ipc.listenProxyError(proxyError => {
   log({
-    code: Code.UnexpectedProxyExit,
+    code: Code.BackendTerminated,
     message: "Proxy process exited unexpectedly",
     details: { proxyError },
   });

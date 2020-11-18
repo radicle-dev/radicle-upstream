@@ -4,7 +4,6 @@ import * as api from "./api";
 import * as error from "./error";
 import * as event from "./event";
 import type * as identity from "./identity";
-import * as notification from "./notification";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 
@@ -109,8 +108,13 @@ const fetchSession = async (): Promise<void> => {
 export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await api.set<unknown>(`keystore/unseal`, { passphrase });
-  } catch (error) {
-    notification.error(`Could not unlock the session: ${error.message}`);
+  } catch (err) {
+    error.show({
+      code: error.Code.KeyStoreUnsealFailure,
+      message: `Could not unlock the session: ${err.message}`,
+      source: err,
+    });
+
     return false;
   }
   sessionStore.loading();
@@ -122,27 +126,30 @@ export const createKeystore = (passphrase: string): Promise<null> => {
   return api.set<unknown>(`keystore`, { passphrase });
 };
 
-const updateSettings = (settings: Settings): Promise<void> =>
-  api
-    .set<Settings>(`session/settings`, settings)
-    .then(fetchSession)
-    .catch((err: error.Error) => notification.error(err.message));
+const updateSettings = async (settings: Settings): Promise<void> => {
+  try {
+    await api.set<Settings>(`session/settings`, settings);
+  } catch (err) {
+    error.show({
+      code: error.Code.SessionSettingsUpdateFailure,
+      message: `Failed to update settings: ${err.message}`,
+      source: error.fromException(err),
+    });
+    return;
+  }
+
+  await fetchSession();
+};
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Fetch:
       sessionStore.loading();
-      fetchSession().catch(reason => {
-        console.error("fetchSession() failed: ", reason);
-      });
-
+      fetchSession();
       break;
 
     case Kind.UpdateSettings:
-      updateSettings(msg.settings).catch(reason => {
-        console.error("updateSettings() failed: ", reason);
-      });
-
+      updateSettings(msg.settings);
       break;
   }
 };

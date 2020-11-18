@@ -15,6 +15,7 @@
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
+    PeerId,
     SidebarLayout,
     SegmentedControl,
     StyledCopyable,
@@ -158,7 +159,7 @@
           </p>
         </div>
         <div class="action">
-          <StyledCopyable value={session.identity.peerId} />
+          <PeerId peerId={session.identity.peerId} />
         </div>
       </div>
     </section>
@@ -205,7 +206,6 @@
                 <StyledCopyable value={seed} />
                 <Icon.Cross
                   on:click={() => removeSeed(seed)}
-                  variant="medium"
                   style="margin-left: 1.5rem; cursor:pointer;" />
               </div>
             {/each}

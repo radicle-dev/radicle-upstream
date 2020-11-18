@@ -2,6 +2,7 @@
   import { createEventDispatcher, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
+  import { isExperimental } from "../../src/ipc";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { BadgeType } from "../../src/badge.ts";
@@ -205,16 +206,21 @@
               {/if}
             </p>
           </div>
-          <Tooltip value="Go to profile" position="top">
-            <div
-              data-cy={repo.identity.metadata.handle}
-              class="open-profile"
-              on:click={() => {
-                handleOpenProfile(repo.identity.urn);
-              }}>
-              <Icon.ArrowBoxUpRight />
-            </div>
-          </Tooltip>
+          {#if isExperimental()}
+            <Tooltip value="Go to profile" position="top">
+              <div
+                data-cy={repo.identity.metadata.handle}
+                class="open-profile"
+                on:click={() => {
+                  handleOpenProfile(repo.identity.urn);
+                }}>
+                <Icon.ArrowBoxUpRight />
+              </div>
+            </Tooltip>
+          {:else}
+            <Icon.ChevronUpDown
+              style="margin-left: 0.5rem; vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+          {/if}
         </div>
       {/each}
       <div

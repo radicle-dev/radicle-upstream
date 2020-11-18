@@ -2,6 +2,7 @@ import { Readable, writable } from "svelte/store";
 
 import * as api from "./api";
 import * as event from "./event";
+import * as error from "./error";
 import type * as identity from "./identity";
 import * as remote from "./remote";
 
@@ -223,7 +224,7 @@ const update = (msg: Msg): void => {
       api
         .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
         .then(commitStore.success)
-        .catch(commitStore.error);
+        .catch((err: Error) => commitStore.error(error.fromException(err)));
       break;
 
     case Kind.FetchCommits:
@@ -242,7 +243,7 @@ const update = (msg: Msg): void => {
             history: groupCommits(response.headers),
           });
         })
-        .catch(commitsStore.error);
+        .catch((err: Error) => commitsStore.error(error.fromException(err)));
       break;
 
     case Kind.FetchRevisions:
@@ -251,7 +252,7 @@ const update = (msg: Msg): void => {
       api
         .get<Revisions>(`source/revisions/${msg.projectId}`)
         .then(revisions => revisionsStore.success(revisions))
-        .catch(revisionsStore.error);
+        .catch((err: Error) => revisionsStore.error(error.fromException(err)));
       break;
 
     case Kind.FetchObject:
@@ -269,7 +270,7 @@ const update = (msg: Msg): void => {
               },
             })
             .then(objectStore.success)
-            .catch(objectStore.error);
+            .catch((err: Error) => objectStore.error(error.fromException(err)));
           break;
 
         case ObjectType.Tree:
@@ -282,7 +283,7 @@ const update = (msg: Msg): void => {
               },
             })
             .then(objectStore.success)
-            .catch(objectStore.error);
+            .catch((err: Error) => objectStore.error(error.fromException(err)));
           break;
       }
       break;
@@ -314,7 +315,7 @@ export const tree = (
       query: { peerId: peerId, revision, prefix },
     })
     .then(treeStore.success)
-    .catch(treeStore.error);
+    .catch((err: Error) => treeStore.error(error.fromException(err)));
 
   return treeStore.readable;
 };
@@ -401,7 +402,7 @@ export const readme = (
     })
     .then(blob => (blob && !blob.binary ? blob : null))
     .then(readme.success)
-    .catch(readme.error);
+    .catch((err: Error) => readme.error(error.fromException(err)));
 
   return readme.readable;
 };

@@ -1,7 +1,7 @@
 <script lang="typescript">
   import type { Readable } from "svelte/store";
 
-  import * as notification from "../../src/notification";
+  import * as error from "../../src/error";
   import * as remote from "../../src/remote";
 
   import WithContext from "./WithContext.svelte";
@@ -27,8 +27,11 @@
     !!noErrorSlotProvided &&
     !disableErrorLogging
   ) {
-    console.error("Remote error", storeValue.error);
-    notification.error(storeValue.error.message);
+    error.show({
+      code: error.Code.RemoteStoreError,
+      message: storeValue.error.message,
+      source: storeValue.error,
+    });
   }
 
   $: data =
