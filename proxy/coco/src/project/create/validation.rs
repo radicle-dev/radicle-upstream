@@ -272,29 +272,18 @@ impl Repository {
     }
 
     fn push_branches(repo: &git2::Repository, remote: &mut git2::Remote) -> Result<(), Error> {
-        let local_branches =
-            repo.branches(Some(git2::BranchType::Local))?
-                .filter_map(|branch_result| {
-                    let (branch, _) = branch_result.ok()?;
-                    let name = branch.name().ok()?;
-                    name.map(String::from)
-                });
-
-        let local_prefixed_branches = local_branches
-            .map(|branch| format!("refs/heads/{}", branch))
+        let local_branches = repo
+            .branches(Some(git2::BranchType::Local))?
+            .filter_map(|branch_result| {
+                let (branch, _) = branch_result.ok()?;
+                let name = branch.name().ok()?;
+                name.map(|branch| format!("refs/heads/{}", branch))
+            })
             .collect::<Vec<String>>();
 
-        log::debug!(
-            "Pushing branches {}",
-            local_prefixed_branches
-                .clone()
-                .into_iter()
-                .map(|branch| { format!("'{}'", branch) })
-                .collect::<Vec<String>>()
-                .join(", ")
-        );
+        log::debug!("Pushing branches {:?}", local_branches);
 
-        remote.push(&local_prefixed_branches, None)?;
+        remote.push(&local_branches, None)?;
         Ok(())
     }
 
