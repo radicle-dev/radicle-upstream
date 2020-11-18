@@ -532,18 +532,6 @@ mod test {
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, want);
 
-        let api2 = http::source::filters(ctx.clone().into());
-        let res2 = request()
-            .method("GET")
-            .path(&format!("/revisions/{}", meta.urn))
-            .reply(&api2)
-            .await;
-
-        let have2: Value = serde_json::from_slice(res2.body()).unwrap();
-
-        assert_eq!(res2.status(), StatusCode::OK);
-        assert_eq!(have2[0]["branches"], json!(["dev", "master"]));
-
         Ok(())
     }
 
