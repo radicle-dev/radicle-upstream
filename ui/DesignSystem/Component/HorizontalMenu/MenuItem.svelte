@@ -11,7 +11,7 @@
 
 <style>
   .icon {
-    margin-right: 12px;
+    margin-right: 0.5rem;
     align-items: center;
     padding-top: 1px;
   }
