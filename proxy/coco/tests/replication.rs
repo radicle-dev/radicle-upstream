@@ -8,7 +8,13 @@ use tokio::time::timeout;
 use librad::uri;
 use radicle_surf::vcs::git::git2;
 
-use coco::{config, peer::run_config, project::peer, seed::Seed, RunConfig};
+use coco::{
+    config,
+    peer::run_config,
+    project::{peer, Peer},
+    seed::Seed,
+    RunConfig,
+};
 
 #[macro_use]
 mod common;
@@ -383,6 +389,52 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let repo = git2::Repository::open(path)?;
     assert_matches!(repo.find_commit(commit_id), Err(_));
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
+    let alice_tmp_dir = tempfile::tempdir()?;
+    let alice_repo_path = alice_tmp_dir.path().join("radicle");
+    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = alice_state.init_owner("alice").await?;
+    let alice_events = alice_peer.subscribe();
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let _bob = bob_state.init_owner("bob").await?;
+
+    tokio::task::spawn(alice_peer.into_running());
+    tokio::task::spawn(bob_peer.into_running());
+
+    let project = alice_state
+        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
+        .await?;
+
+    bob_state
+        .clone_project(
+            project.urn().into_rad_url(alice_state.peer_id()),
+            Some(alice_state.listen_addr()),
+        )
+        .await?;
+
+    alice_state
+        .track(project.urn(), bob_state.peer_id())
+        .await?;
+
+    assert_event!(
+        alice_events,
+        coco::PeerEvent::Peer(librad::net::peer::PeerEvent::GossipFetch(_))
+    )?;
+
+    let tracked = alice_state.tracked(project.urn()).await?;
+    assert!(tracked.iter().any(|peer| match peer {
+        Peer::Remote { peer_id, status } =>
+            *peer_id == bob_state.peer_id() && matches!(status, peer::Status::Replicated(_)),
+        _ => false,
+    }));
 
     Ok(())
 }
