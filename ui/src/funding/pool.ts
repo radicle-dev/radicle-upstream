@@ -268,22 +268,11 @@ export const topUpAmountValidationStore = (
   ]);
 };
 
-export class OnboardingStatus {
-  receivers: boolean;
-  budget: boolean;
-  topUp: boolean;
-
-  constructor(data?: PoolData) {
-    this.receivers = (data && data.receivers.size > 0) || false;
-    this.budget =
-      (data && data.amountPerBlock.length > 0 && data.amountPerBlock !== "0") ||
-      false;
-    this.topUp = (data && data.balance > 0) || false;
-  }
-
-  isComplete(): boolean {
-    return this.receivers && this.budget && this.topUp;
-  }
+// Check whether this pool is onboarded.
+export function isOnboarded(data: PoolData): boolean {
+  return (
+    data.receivers.size > 0 || data.amountPerBlock !== "0" || data.balance > 0
+  );
 }
 
 export function displayAddress(x: Address): string {
