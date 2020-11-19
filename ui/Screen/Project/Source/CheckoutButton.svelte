@@ -7,8 +7,11 @@
 
   import { dismissRemoteHelperHint, settings } from "../../../src/session.ts";
 
+  export let isContributor = false;
+
   let checkoutPath;
   let expanded = false;
+  const caption = isContributor ? "Checkout" : "Fork";
 
   const dispatch = createEventDispatcher();
   const hide = () => (expanded = false);
@@ -39,7 +42,9 @@
 <Overlay {expanded} on:hide={hide}>
   <div class="clone-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">
-      Checkout a working copy to your local disk
+      {#if isContributor}
+        Checkout a working copy to your local disk.
+      {:else}Fork this project and checkout a working copy.{/if}
     </p>
 
     <Input.Directory
@@ -47,6 +52,13 @@
       placeholder="~/path/to/folder"
       buttonVariant="outline"
       bind:path={checkoutPath} />
+
+    {#if !isContributor}
+      <p>
+        Your fork will be published under your identity, and visible to the
+        network.
+      </p>
+    {/if}
 
     {#if $settings.appearance.hints.showRemoteHelper}
       <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
@@ -64,16 +76,16 @@
         disabled={!checkoutPath}
         variant="secondary"
         style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
-        Checkout
+        {caption}
       </Button>
     </Tooltip>
   </div>
 
   <Button
     variant="transparent"
-    icon={Icon.ArrowBoxUpRight}
+    icon={isContributor ? Icon.ArrowBoxUpRight : Icon.Fork}
     on:click={toggleDropdown}
     dataCy="checkout-modal-toggle">
-    Checkout
+    {caption}
   </Button>
 </Overlay>

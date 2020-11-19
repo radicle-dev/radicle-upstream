@@ -43,6 +43,10 @@
     selectPeer(peer);
   };
 
+  const isContributor = (userUrn: Urn, users: User[]): boolean => {
+    return users.map(u => u.identity.urn).includes(userUrn);
+  };
+
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
 </script>
@@ -70,6 +74,9 @@
         </div>
       </div>
     </Header.Large>
-    <Source {project} {selectedPeer} />
+    <Source
+      {project}
+      {selectedPeer}
+      isContributor={isContributor(session.identity.urn, peerSelection)} />
   </Remote>
 </SidebarLayout>

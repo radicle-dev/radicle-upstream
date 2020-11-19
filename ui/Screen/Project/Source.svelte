@@ -31,6 +31,7 @@
 
   export let project: Project;
   export let selectedPeer: User;
+  export let isContributor: boolean;
 
   const routes = {
     "/projects/:urn/source/code": Code,
@@ -109,6 +110,7 @@
     </div>
     <div slot="right">
       <CheckoutButton
+        {isContributor}
         on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
     </div>
   </ActionBar>
