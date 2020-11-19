@@ -17,19 +17,17 @@
     justify-content: space-around;
     align-items: center;
     flex-direction: column;
-    min-height: 500px;
   }
 
   h1,
   p {
-    padding: 0 var(--content-padding);
+    padding: 0.5rem var(--content-padding);
   }
 
   .submit {
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
   }
 </style>
 

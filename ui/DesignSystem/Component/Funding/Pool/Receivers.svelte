@@ -10,6 +10,7 @@
   export let receivers: pool.Receivers;
   export let updating = false;
   export let editing = false;
+  export let style = "";
 
   let changeset: pool.Changeset = new Map();
 
@@ -72,18 +73,26 @@
   let newValue: string = "";
 
   $: sortedEntries = [...changeset].sort(([_a, statusA], [_b, statusB]) => {
-    const s = [AddressStatus.Removed, AddressStatus.Present, AddressStatus.Added];
+    const s = [
+      AddressStatus.Removed,
+      AddressStatus.Present,
+      AddressStatus.Added,
+    ];
     return s.indexOf(statusA) > s.indexOf(statusB) ? -1 : 1;
   });
 </script>
 
 <style>
   .receivers {
-    margin: 1.5rem 0;
+    padding: var(--content-padding);
   }
   .row {
     display: flex;
     align-items: center;
+  }
+
+  .list {
+    flex-wrap: wrap;
   }
 
   .row + .row {
@@ -91,8 +100,8 @@
   }
 </style>
 
-<div class="receivers">
-  <div class="row">
+<div class="receivers" {style}>
+  <div class="row list">
     {#each sortedEntries as [address, status]}
       <Receiver
         onClick={editing ? x => toggleReceiver(x) : undefined}
