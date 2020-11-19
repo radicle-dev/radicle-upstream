@@ -20,6 +20,7 @@ import ChevronRight from "./ChevronRight.svelte";
 import ChevronUp from "./ChevronUp.svelte";
 import ChevronUpDown from "./ChevronUpDown.svelte";
 import Commit from "./Commit.svelte";
+import Computer from "./Computer.svelte";
 import Copy from "./Copy.svelte";
 import CopySmall from "./CopySmall.svelte";
 import CrossCircle from "./CrossCircle.svelte";
@@ -89,6 +90,7 @@ export default {
   ChevronUp,
   ChevronUpDown,
   Commit,
+  Computer,
   Copy,
   CopySmall,
   CrossCircle,

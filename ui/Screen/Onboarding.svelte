@@ -2,12 +2,11 @@
   import { fade, fly } from "svelte/transition";
 
   import { withRetry } from "../src/api.ts";
-  import * as notification from "../src/notification.ts";
   import { State } from "../src/onboarding.ts";
   import { createIdentity } from "../src/identity.ts";
   import * as screen from "../src/screen.ts";
   import * as session from "../src/session.ts";
-  import * as urn from "../src/urn.ts";
+  import * as error from "../src/error";
 
   import Welcome from "./Onboarding/Welcome.svelte";
   import EnterName from "./Onboarding/EnterName.svelte";
@@ -46,12 +45,17 @@
       // Retry until the API is up
       identity = await withRetry(() => createIdentity({ handle }), 100, 50);
       state = State.SuccessView;
-    } catch (error) {
+    } catch (err) {
       animateBackward();
       state = State.EnterName;
-      notification.error(
-        `Could not create identity: ${urn.shorten(error.message)}`
-      );
+      error.show({
+        code: "create-identity-failed",
+        message: `Could not create identity`,
+        details: {
+          handle,
+        },
+        source: error.fromException(err),
+      });
     } finally {
       screen.unlock();
       createIdentityInProgress = false;

@@ -1,14 +1,11 @@
 //! Validation logic for safely checking that a [`super::Repo`] is valid before setting up the
 //! working copy.
 
-use std::{io, marker::PhantomData, path::PathBuf};
+use std::{io, path::PathBuf};
 
 use librad::{
-    git::{
-        local::url::LocalUrl,
-        types::{remote::Remote, FlatRef},
-    },
-    git_ext::{self, OneLevel, RefLike},
+    git::{local::url::LocalUrl, types::remote::Remote},
+    git_ext::{self, OneLevel},
     std_ext::result::ResultExt as _,
 };
 use radicle_surf::vcs::git::git2;
@@ -266,16 +263,23 @@ impl Repository {
         log::debug!("Creating rad remote");
         let mut git_remote = Self::existing_remote(repo, &url)?
             .map_or_else(|| Remote::rad_remote(url, None).create(repo), Ok)?;
-        Self::push_default(&mut git_remote, default_branch)?;
+        Self::push_branches(repo, &mut git_remote)?;
         Ok(())
     }
 
-    /// Push the default branch to the provided remote.
-    fn push_default(remote: &mut git2::Remote, default_branch: &OneLevel) -> Result<(), Error> {
-        let default: FlatRef<RefLike, _> =
-            FlatRef::head(PhantomData, None, default_branch.clone().into());
-        log::debug!("Pushing default branch '{}'", default);
-        remote.push(&[default.to_string()], None)?;
+    fn push_branches(repo: &git2::Repository, remote: &mut git2::Remote) -> Result<(), Error> {
+        let local_branches = repo
+            .branches(Some(git2::BranchType::Local))?
+            .filter_map(|branch_result| {
+                let (branch, _) = branch_result.ok()?;
+                let name = branch.name().ok()?;
+                name.map(|branch| format!("refs/heads/{}", branch))
+            })
+            .collect::<Vec<String>>();
+
+        log::debug!("Pushing branches {:?}", local_branches);
+
+        remote.push(&local_branches, None)?;
         Ok(())
     }
 

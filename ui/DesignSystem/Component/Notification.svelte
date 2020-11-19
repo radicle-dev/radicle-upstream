@@ -95,7 +95,7 @@
     </IconWrapper>
   {/if}
 
-  <p class="message">{message}</p>
+  <p class="message typo-overflow-ellipsis">{message}</p>
 
   {#if actionText}
     <div

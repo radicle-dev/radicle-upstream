@@ -160,7 +160,9 @@ Part of #277
       </div>
       <p style="color: var(--color-foreground-level-5)">
         {issue.open ? 'Opened' : 'Closed'}
-        {issue.created_at} by <span
+        {issue.created_at}
+        by
+        <span
           class="typo-semi-bold"
           style="color: var(--color-foreground-level-6);">
           {issue.author.handle}

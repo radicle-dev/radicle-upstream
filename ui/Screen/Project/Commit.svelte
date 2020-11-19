@@ -2,7 +2,7 @@
   import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as notification from "../../src/notification.ts";
+  import * as error from "../../src/error.ts";
   import { commit as store, fetchCommit } from "../../src/source.ts";
   import * as remote from "../../src/remote.ts";
 
@@ -17,8 +17,11 @@
   const commitHash = params.hash;
 
   $: if ($store.status === remote.Status.Error) {
-    console.log($store.error);
-    notification.error("Could not fetch commit");
+    error.show({
+      code: error.Code.CommitFetchFailure,
+      message: "Could not fetch commit",
+      source: $store.error,
+    });
   }
 
   fetchCommit({ projectId, peerId, sha1: commitHash });
@@ -155,12 +158,18 @@
       <div class="context">
         <div>
           <p class="field">
-            Authored by <span class="author typo-semi-bold"> {commit.header.author.name} </span>
+            Authored by
+            <span class="author typo-semi-bold">
+              {commit.header.author.name}
+            </span>
             <span class="typo-mono">&lt;{commit.header.author.email}&gt;</span>
           </p>
           {#if commit.header.committer.email != commit.header.author.email}
             <p class="field">
-              Committed by <span class="author typo-semi-bold"> {commit.header.committer.name} </span>
+              Committed by
+              <span class="author typo-semi-bold">
+                {commit.header.committer.name}
+              </span>
               <span class="typo-mono">
                 &lt;{commit.header.committer.email}&gt;
               </span>
@@ -169,7 +178,8 @@
         </div>
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
-          Commit <span class="hash">{commit.header.sha1}</span>
+          Commit
+          <span class="hash">{commit.header.sha1}</span>
         </p>
       </div>
     </div>
@@ -178,11 +188,18 @@
       <div class="changeset-summary">
         {#if commit.diff.modified.length > 0}
           <span class="typo-semi-bold">
-            {commit.diff.modified.length} file(s) changed
-          </span> with <span class="additions typo-semi-bold">
-            {commit.stats.additions} additions
-          </span> and <span class="deletions typo-semi-bold">
-            {commit.stats.deletions} deletions
+            {commit.diff.modified.length}
+            file(s) changed
+          </span>
+          with
+          <span class="additions typo-semi-bold">
+            {commit.stats.additions}
+            additions
+          </span>
+          and
+          <span class="deletions typo-semi-bold">
+            {commit.stats.deletions}
+            deletions
           </span>
         {/if}
       </div>

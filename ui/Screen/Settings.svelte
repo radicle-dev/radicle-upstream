@@ -15,6 +15,7 @@
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
+    PeerId,
     SidebarLayout,
     SegmentedControl,
     StyledCopyable,
@@ -149,7 +150,8 @@
         <div class="info">
           <!-- TODO(abbey): link to actual docs abt multi-device support -->
           <p>
-            Share your Device ID with others to be added as a remote. <br /><a
+            Share your Device ID with others to be added as a remote.
+            <br /><a
               style="color: var(--color-foreground-level-5);"
               class="typo-link"
               href="https://radicle.xyz/#upstream-faq">Learn more about managing
@@ -157,7 +159,7 @@
           </p>
         </div>
         <div class="action">
-          <StyledCopyable value={session.identity.peerId} />
+          <PeerId peerId={session.identity.peerId} />
         </div>
       </div>
     </section>
@@ -174,8 +176,11 @@
           <!-- TODO(julien): link to actual docs abt seeds -->
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
-            Enter seed addresses that you’d like to subscribe to here. <a style="color: var(--color-foreground-level-5);" class="typo-link" href="https://radicle.xyz/#upstream-faq">Learn
-              more about seeds</a>
+            Enter seed addresses that you’d like to subscribe to here.
+            <a
+              style="color: var(--color-foreground-level-5);"
+              class="typo-link"
+              href="https://radicle.xyz/#upstream-faq">Learn more about seeds</a>
           </p>
         </div>
         <form class="seed-entry-form" on:submit|preventDefault>
@@ -201,7 +206,6 @@
                 <StyledCopyable value={seed} />
                 <Icon.Cross
                   on:click={() => removeSeed(seed)}
-                  variant="medium"
                   style="margin-left: 1.5rem; cursor:pointer;" />
               </div>
             {/each}
@@ -262,7 +266,8 @@
       <div class="section-item">
         <div class="info">
           <p style="color: var(--color-foreground-level-6);">
-            Version {version}
+            Version
+            {version}
           </p>
         </div>
       </div>

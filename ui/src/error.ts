@@ -2,22 +2,62 @@ import * as notification from "./notification";
 import * as ipc from "./ipc";
 import * as svelteStore from "svelte/store";
 
-export enum Variant {
-  EntityExists = "ENTITY_EXISTS",
-  GitError = "GIT_ERROR",
-  NotFound = "NOT_FOUND",
-}
-
 export interface Error {
+  // A unique code for easy identification of the error.
+  code: Code;
+  // Message that is displayed to the user if the error is shown.
   message: string;
-  variant: Variant;
+  // An optional stack trace
+  stack?: string;
+  // Arbitrary additional information associated with the error
+  details?: unknown;
+  // The error that caused this error
+  source?: Error;
 }
 
-export const show = (message: string, context: unknown): void => {
-  console.error({ message, context });
+export enum Code {
+  BackendTerminated = "BackendTerminated",
+  CommitFetchFailure = "CommitFetchFailure",
+  KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
+  LocalStateFetchFailure = "LocalStateFetchFailure",
+  ProjectCheckoutFailure = "ProjectCheckoutFailure",
+  ProjectCreationFailure = "ProjectCreationFailure",
+  ProjectRequestFailure = "ProjectRequestFailure",
+  RemoteStoreError = "RemoteStoreError",
+  SessionFetchFailure = "SessionFetchFailure",
+  SessionSettingsUpdateFailure = "SessionSettingsUpdateFailure",
+  UnhandledError = "UnhandledError",
+  UnhandledRejection = "UnhandledRejection",
+  UnknownException = "UnknownException",
+}
 
-  notification.error(message, true, "Copy error", () => {
-    ipc.copyToClipboard(JSON.stringify({ message, context }, null, 2));
+// Turn a Javascript `Error` into our `Error`.
+//
+// Uses the code `unknown-exception`.
+export const fromException = (exception: globalThis.Error): Error => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const details = Object.assign({}, exception) as any;
+  details.name = exception.name;
+  return {
+    code: Code.UnknownException,
+    message: exception.message,
+    stack: exception.stack,
+    details,
+  };
+};
+
+// Log an error to the console.
+export const log = (error: Error): void => {
+  const { message, ...rest } = error;
+  console.error(message, rest);
+};
+
+// Show an error notification and log the error to the console
+export const show = (error: Error): void => {
+  log(error);
+
+  notification.error(error.message, true, "Copy error", () => {
+    ipc.copyToClipboard(JSON.stringify(error, null, 2));
   });
 };
 
@@ -42,9 +82,49 @@ export const setFatal = (fatalError: FatalError): void => {
 };
 
 ipc.listenProxyError(proxyError => {
-  console.error("Proxy process exited", { proxyError });
+  log({
+    code: Code.BackendTerminated,
+    message: "Proxy process exited unexpectedly",
+    details: { proxyError },
+  });
   setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if (!(window as any).Cypress) {
+  window.addEventListener("unhandledrejection", ev => {
+    const code = Code.UnhandledRejection;
+    const message = "An unexpected error occured";
+    if (ev.reason instanceof globalThis.Error) {
+      show({
+        code,
+        message,
+        source: fromException(ev.reason),
+      });
+    } else {
+      show({
+        code,
+        message,
+        details: ev.reason,
+      });
+    }
+  });
+
+  window.onerror = (
+    _event: unknown,
+    _source?: string,
+    _lineno?: number,
+    _colno?: number,
+    error?: globalThis.Error
+  ): void => {
+    if (error) {
+      show({
+        code: Code.UnhandledError,
+        message: "An unexpected error occured",
+        source: fromException(error),
+      });
+    }
+  };
+}
 // Value is `true` if there was a fatal error
 export const fatalError: svelteStore.Readable<FatalError | null> = fatalErrorWritable;

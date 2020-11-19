@@ -22,6 +22,7 @@ import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Fullscreen from "./Fullscreen.svelte";
 import Overlay from "./Overlay.svelte";
+import PeerId from "./PeerId.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
@@ -68,6 +69,7 @@ export {
   NotificationFaucet,
   Fullscreen,
   Overlay,
+  PeerId,
   ProjectCard,
   ProjectList,
   RadicleLogo,

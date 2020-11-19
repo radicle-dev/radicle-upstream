@@ -3,9 +3,9 @@
 
   import * as hotkeys from "./src/hotkeys.ts";
   import "./src/localPeer.ts";
-  import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
+  import * as error from "./src/error.ts";
   import { fetch, session as store, Status } from "./src/session.ts";
 
   import {
@@ -96,8 +96,7 @@
       break;
 
     case remote.Status.Error:
-      console.error($store.error);
-      notification.error("Session could not be fetched");
+      error.show($store.error);
       break;
   }
 </script>
@@ -121,7 +120,7 @@
 
 <TransactionCenter />
 
-<Remote {store} context="session">
+<Remote {store} context="session" disableErrorLogging={true}>
   <Router {routes} />
 
   <div slot="loading" class="error">

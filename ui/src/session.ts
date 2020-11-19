@@ -4,7 +4,6 @@ import * as api from "./api";
 import * as error from "./error";
 import * as event from "./event";
 import type * as identity from "./identity";
-import * as notification from "./notification";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 
@@ -74,29 +73,31 @@ interface UpdateSettings extends event.Event<Kind> {
 
 type Msg = ClearCache | Fetch | UpdateSettings;
 
-const fetchSessionRetry = async () => {
-  return api
-    .withRetry(() => api.get<SessionData>(`session`), 100, 50)
-    .then(ses =>
-      sessionStore.success({ status: Status.UnsealedSession, ...ses })
-    )
-    .catch(async error => {
-      if (error instanceof api.ResponseError) {
-        if (error.response.status === 404) {
-          sessionStore.success({ status: Status.NoSession });
-        } else if (error.response.status === 403) {
-          sessionStore.success({ status: Status.SealedSession });
-        } else {
-          throw error;
-        }
-      } else {
-        throw error;
+const fetchSession = async (): Promise<void> => {
+  try {
+    const ses = await api.withRetry(
+      () => api.get<SessionData>(`session`),
+      100,
+      50
+    );
+    sessionStore.success({ status: Status.UnsealedSession, ...ses });
+  } catch (err) {
+    if (err instanceof api.ResponseError) {
+      if (err.response.status === 404) {
+        sessionStore.success({ status: Status.NoSession });
+        return;
+      } else if (err.response.status === 403) {
+        sessionStore.success({ status: Status.SealedSession });
+        return;
       }
-    });
-};
+    }
 
-const fetchSession = (): Promise<void> => {
-  return fetchSessionRetry().catch(sessionStore.error);
+    sessionStore.error({
+      code: error.Code.SessionFetchFailure,
+      message: "Failed to load the session",
+      source: error.fromException(err),
+    });
+  }
 };
 
 /**
@@ -107,8 +108,13 @@ const fetchSession = (): Promise<void> => {
 export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await api.set<unknown>(`keystore/unseal`, { passphrase });
-  } catch (error) {
-    notification.error(`Could not unlock the session: ${error.message}`);
+  } catch (err) {
+    error.show({
+      code: error.Code.KeyStoreUnsealFailure,
+      message: `Could not unlock the session: ${err.message}`,
+      source: err,
+    });
+
     return false;
   }
   sessionStore.loading();
@@ -120,27 +126,30 @@ export const createKeystore = (passphrase: string): Promise<null> => {
   return api.set<unknown>(`keystore`, { passphrase });
 };
 
-const updateSettings = (settings: Settings): Promise<void> =>
-  api
-    .set<Settings>(`session/settings`, settings)
-    .then(fetchSession)
-    .catch((err: error.Error) => notification.error(err.message));
+const updateSettings = async (settings: Settings): Promise<void> => {
+  try {
+    await api.set<Settings>(`session/settings`, settings);
+  } catch (err) {
+    error.show({
+      code: error.Code.SessionSettingsUpdateFailure,
+      message: `Failed to update settings: ${err.message}`,
+      source: error.fromException(err),
+    });
+    return;
+  }
+
+  await fetchSession();
+};
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Fetch:
       sessionStore.loading();
-      fetchSession().catch(reason => {
-        console.error("fetchSession() failed: ", reason);
-      });
-
+      fetchSession();
       break;
 
     case Kind.UpdateSettings:
-      updateSettings(msg.settings).catch(reason => {
-        console.error("updateSettings() failed: ", reason);
-      });
-
+      updateSettings(msg.settings);
       break;
   }
 };

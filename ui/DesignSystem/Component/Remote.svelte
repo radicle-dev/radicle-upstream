@@ -1,7 +1,7 @@
 <script lang="typescript">
   import type { Readable } from "svelte/store";
 
-  import * as notification from "../../src/notification";
+  import * as error from "../../src/error";
   import * as remote from "../../src/remote";
 
   import WithContext from "./WithContext.svelte";
@@ -10,22 +10,30 @@
   export let store: Readable<remote.Data<any>>;
   export let context: string | undefined = undefined;
 
+  export let disableErrorLogging: boolean = false;
+
   // If no error slot was provided, svelte will instantiate the fallback div
   let noErrorSlotProvided: HTMLDivElement;
 
-  $: if ($store.status === remote.Status.Error && !!noErrorSlotProvided) {
-    console.error("Remote error", ($store as remote.ErrorState).error);
-    notification.error(($store as remote.ErrorState).error.message);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let storeValue: remote.Data<any>;
+  $: storeValue = $store;
+
+  $: if (
+    storeValue.status === remote.Status.Error &&
+    !!noErrorSlotProvided &&
+    !disableErrorLogging
+  ) {
+    error.show({
+      code: error.Code.RemoteStoreError,
+      message: storeValue.error.message,
+      source: storeValue.error,
+    });
   }
 
   $: data =
     $store.status === remote.Status.Success
       ? ($store as remote.SuccessState).data
-      : undefined;
-
-  $: remoteError =
-    $store.status === remote.Status.Error
-      ? ($store as remote.ErrorState).error
       : undefined;
 </script>
 
@@ -43,8 +51,8 @@
   {:else}
     <slot {data} />
   {/if}
-{:else if $store.status === remote.Status.Error}
-  <slot name="error" error={remoteError}>
+{:else if storeValue.status === remote.Status.Error}
+  <slot name="error" error={storeValue.error}>
     <div bind:this={noErrorSlotProvided} />
   </slot>
 {/if}
