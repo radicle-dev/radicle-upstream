@@ -42,7 +42,10 @@
     Tip: You can also add new receivers later on by clicking on “Support” on
     their profile.
   </p>
-  <Receivers bind:receivers editing={true} />
+  <Receivers
+    bind:receivers
+    editing={true}
+    style="padding: var(--content-padding)" />
   <div class="submit">
     <Button
       variant="transparent"

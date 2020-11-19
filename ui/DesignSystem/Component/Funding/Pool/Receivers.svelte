@@ -62,7 +62,7 @@
 
 <style>
   .receivers {
-    padding: var(--content-padding);
+    padding: var(--content-padding) 0;
   }
   .row {
     display: flex;
