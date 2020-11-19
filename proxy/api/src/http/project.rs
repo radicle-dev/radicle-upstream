@@ -30,9 +30,11 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn checkout_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
+    path::param::<coco::Urn>()
+        .and(path("checkout"))
+        .and(path::end())
         .and(warp::post())
-        .and(path::param::<coco::Urn>())
+        .and(http::with_context_unsealed(ctx))
         .and(warp::body::json())
         .and_then(handler::checkout)
 }
@@ -41,8 +43,8 @@ fn checkout_filter(
 fn create_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::post()
-        .and(path::end())
+    path::end()
+        .and(warp::post())
         .and(http::with_context_unsealed(ctx.clone()))
         .and(http::with_owner_guard(ctx))
         .and(warp::body::json())
@@ -54,9 +56,9 @@ fn failed_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("failed")
+        .and(path::end())
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
-        .and(path::end())
         .and_then(handler::list_failed)
 }
 
@@ -64,10 +66,10 @@ fn failed_filter(
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
-        .and(warp::get())
-        .and(path::param::<coco::Urn>())
+    path::param::<coco::Urn>()
         .and(path::end())
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::get)
 }
 
@@ -109,12 +111,12 @@ fn peers_filter(
 fn track_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
-        .and(warp::put())
-        .and(path::param::<coco::Urn>())
+    path::param::<coco::Urn>()
         .and(path("track"))
         .and(path::param::<coco::PeerId>())
         .and(path::end())
+        .and(warp::put())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::track)
 }
 
@@ -122,12 +124,12 @@ fn track_filter(
 fn untrack_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
-        .and(warp::put())
-        .and(path::param::<coco::Urn>())
+    path::param::<coco::Urn>()
         .and(path("untrack"))
         .and(path::param::<coco::PeerId>())
         .and(path::end())
+        .and(http::with_context_unsealed(ctx))
+        .and(warp::put())
         .and_then(handler::untrack)
 }
 
@@ -136,10 +138,10 @@ fn user_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("user")
-        .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::end())
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::list_user)
 }
 
@@ -152,8 +154,8 @@ mod handler {
 
     /// Checkout a [`project::Project`]'s source code.
     pub async fn checkout(
-        ctx: context::Unsealed,
         urn: coco::Urn,
+        ctx: context::Unsealed,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = http::guard_self_peer_id(&ctx.state, peer_id);
@@ -199,7 +201,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(ctx: context::Unsealed, urn: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn get(urn: coco::Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.state, urn).await?))
     }
 
@@ -229,8 +231,8 @@ mod handler {
     ///
     /// See [`project::list_for_user`] for more information.
     pub async fn list_user(
-        ctx: context::Unsealed,
         user_id: coco::Urn,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let projects = project::list_for_user(&ctx.state, &user_id).await?;
 
@@ -253,9 +255,9 @@ mod handler {
 
     /// Track the peer for the provided project.
     pub async fn track(
-        ctx: context::Unsealed,
         urn: coco::Urn,
         peer_id: coco::PeerId,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         ctx.state.track(urn, peer_id).await.map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -263,9 +265,9 @@ mod handler {
 
     /// Untrack the peer for the provided project.
     pub async fn untrack(
-        ctx: context::Unsealed,
         urn: coco::Urn,
         peer_id: coco::PeerId,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         ctx.state.untrack(urn, peer_id).await.map_err(Error::from)?;
         Ok(reply::json(&true))
