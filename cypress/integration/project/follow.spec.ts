@@ -20,9 +20,6 @@ context("project following", () => {
       .pick("notification")
       .should("contain", "You’ll be notified when this project has been found");
 
-    // The “following” list doesn’t update automatically
-    cy.reload();
-
     commands
       .pickWithContent("undiscovered-project", projectId)
       .trigger("mouseenter")
