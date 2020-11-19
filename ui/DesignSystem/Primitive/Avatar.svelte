@@ -3,14 +3,14 @@
 
   import Emoji from "./Emoji.svelte";
 
-  export let style = "";
-  export let dataCy = "";
+  export let dataCy: string = "";
+  export let style: string = "";
 
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
-  export let imageUrl = "";
+  export let imageUrl: string = "";
   export let avatarFallback: EmojiAvatar | undefined = undefined;
-  export let title = "";
+  export let title: string = "";
 
   export let variant: "circle" | "square" = "circle";
 
@@ -20,6 +20,7 @@
   const fmt = (background: RGBValue) =>
     `rgb(${background.r}, ${background.g}, ${background.b})`;
 
+  let avatarClass: string;
   $: avatarClass = [variant, size].join(" ");
 </script>
 

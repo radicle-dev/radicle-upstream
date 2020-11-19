@@ -2,6 +2,7 @@ import * as svelteStore from "svelte/store";
 
 import * as api from "./api";
 import * as remote from "./remote";
+import type { Urn } from "./urn";
 
 // TYPES
 // FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
@@ -21,9 +22,9 @@ export interface Identity {
   metadata: {
     handle: string;
   };
-  peerId: string;
+  peerId: PeerId;
   shareableEntityIdentifier: string;
-  urn: string;
+  urn: Urn;
 }
 
 // STATE

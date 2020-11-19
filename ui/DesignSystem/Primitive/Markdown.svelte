@@ -1,7 +1,7 @@
-<script>
+<script lang="typescript">
   import marked from "marked";
 
-  export let content = null;
+  export let content: string;
 </script>
 
 <style>

@@ -55,6 +55,7 @@
   },
   "main": "./native/main.comp.js",
   "devDependencies": {
+    "@types/jest": "^26.0.15",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-inject": "^4.0.2",
     "@rollup/plugin-json": "^4.1.0",
@@ -144,15 +145,6 @@
     "reset:state": "scripts/reset-state.sh"
   },
   "dependencies": {
-    "@babel/runtime": "^7.10.5",
-    "@ethersproject/cli": "^5.0.5",
-    "@walletconnect/client": "^1.2.2",
-    "@walletconnect/qrcode-modal": "^1.2.2",
-    "babel-register": "^6.26.0",
-    "browserify": "^16.5.2",
-    "buffer": "^5.6.0",
-    "ethers": "^5.0.12",
-    "@types/jest": "^26.0.15",
     "@types/qs": "^6.9.5",
     "marked": "^1.2.3",
     "pure-svg-code": "^1.0.6",

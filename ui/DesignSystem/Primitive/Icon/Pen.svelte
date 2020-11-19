@@ -1,8 +1,8 @@
 <script lang="ts">
   import IconWrapper from "./IconWrapper.svelte";
 
-  export let dataCy = "";
-  export let style = "";
+  export let dataCy: string = "";
+  export let style: string = "";
 </script>
 
 <IconWrapper on:click {dataCy} {style}>

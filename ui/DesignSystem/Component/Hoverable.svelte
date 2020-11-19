@@ -1,7 +1,6 @@
-<script lang="ts">
-  export let style = "";
-
+<script lang="typescript">
   export let hovering: boolean = false;
+  export let style: string = "";
 
   const enter = () => (hovering = true);
   const leave = () => (hovering = false);

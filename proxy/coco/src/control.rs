@@ -115,9 +115,6 @@ pub async fn replicate_platinum(
             .map(|t| format!("+refs/tags/{}", t))
             .collect::<Vec<_>>();
         rad_remote.push(&tags, None)?;
-
-        // Push branches.
-        rad_remote.push(&["refs/heads/dev", "refs/heads/master"], None)?;
     }
 
     // Init as rad project.

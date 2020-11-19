@@ -1,19 +1,19 @@
-<script>
-  import { format } from "timeago.js";
-  import {
-    isMarkdown,
-    resetObjectPath,
-    resetObjectType,
-  } from "../../../src/source.ts";
+<script lang="typescript">
+  import { createEventDispatcher } from "svelte";
+
+  import { isMarkdown } from "../../../src/source";
+  import type { Blob, CommitHeader } from "../../../src/source";
 
   import { Icon, Markdown } from "../../Primitive";
-  import CommitTeaser from "./CommitTeaser.svelte";
   import EmptyState from "../EmptyState.svelte";
 
-  export let blob = null;
-  export let path = null;
-  export let projectId = null;
-  export let projectName = null;
+  import CommitTeaser from "./CommitTeaser.svelte";
+
+  export let blob: Blob;
+  export let commit: CommitHeader;
+  export let rootName: string;
+
+  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -84,7 +84,7 @@
   }
 </style>
 
-<div class="file-source" data-cy="file-source">
+<div class="file-source">
   <header>
     <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />
@@ -92,21 +92,12 @@
         <span
           class="typo-link root-link"
           data-cy="root-link"
-          on:click={() => {
-            resetObjectPath();
-            resetObjectType();
-          }}>{projectName}</span>
-        <span>/ {path.split('/').join(' / ')}</span>
+          on:click={() => dispatch('root')}>{rootName}</span>
+        <span>/ {blob.path.split('/').join(' / ')}</span>
       </span>
     </div>
     <div class="commit-header">
-      <CommitTeaser
-        {projectId}
-        user={{ username: blob.info.lastCommit.author.name, avatar: blob.info.lastCommit.author.avatar }}
-        commitMessage={blob.info.lastCommit.summary}
-        commitSha={blob.info.lastCommit.sha1}
-        timestamp={format(blob.info.lastCommit.committerTime * 1000)}
-        style="height: 100%" />
+      <CommitTeaser {commit} on:select style="height: 100%" />
     </div>
   </header>
   <div class="container">
@@ -115,7 +106,7 @@
         emoji="👀"
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
-    {:else if isMarkdown(path)}
+    {:else if isMarkdown(blob.path)}
       <div class="markdown-wrapper">
         <Markdown content={blob.content} />
       </div>

@@ -1,16 +1,14 @@
-<script lang="ts">
+<script lang="typescript">
   import type { PeerId } from "../src/identity";
+  import { PeerType, Role } from "../src/project";
+  import type { User } from "../src/project";
   import {
     addPeer,
     pendingPeers,
-    peerSelection,
-    PeerType,
     peerValidation,
-    project as store,
     removePeer,
-    Role,
-  } from "../src/project";
-  import type { User } from "../src/project";
+    store,
+  } from "../src/screen/project";
   import type { Urn } from "../src/urn";
 
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
@@ -80,7 +78,7 @@
   }
 </style>
 
-<Remote {store} let:data={project}>
+<Remote {store} let:data={{ peerSelection, project }}>
   <div data-cy="remotes-modal" class="container">
     <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
 
@@ -100,29 +98,26 @@
           style="display: flex; align-self: flex-start;"
           variant="secondary"
           disabled={!newPeer}
-          on:click={() => submitPeer(project.id)}>
+          on:click={() => submitPeer(project.urn)}>
           Add
         </Button>
       </div>
     </form>
 
-    <Remote store={peerSelection} let:data>
-      {#if data.peers.length > 0}
-        <List
-          dataCy="followed-peers"
-          items={filteredPeers(data.peers)}
-          let:item={peer}
-          styleHoverState={false}
-          style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
-          <Peer
-            {peer}
-            on:unfollow={event => {
-              unfollowPeer(event.detail.projectUrn, event.detail.peerId);
-            }}
-            projectUrn={project.id} />
-        </List>
-      {/if}
-    </Remote>
+    <List
+      dataCy="followed-peers"
+      key="peerId"
+      items={filteredPeers(peerSelection)}
+      let:item={peer}
+      styleHoverState={false}
+      style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
+      <Peer
+        {peer}
+        on:unfollow={event => {
+          unfollowPeer(event.detail.projectUrn, event.detail.peerId);
+        }}
+        projectUrn={project.urn} />
+    </List>
 
     <Remote store={pendingPeers} let:data>
       {#if data.peers.length > 0}
@@ -134,20 +129,22 @@
             These remotes haven’t been found yet.
           </p>
         </div>
-        <List
-          dataCy="pending-peers"
-          items={data.peers}
-          let:item={peer}
-          styleHoverState={false}
-          style="width: 100%; margin: 1rem 0 0; padding: 0;">
-          <PeerFollowRequest
-            {peer}
-            on:cancel={event => {
-              cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
-            }}
-            projectUrn={project.id} />
-        </List>
       {/if}
+
+      <List
+        dataCy="pending-peers"
+        key="peerId"
+        items={data.peers}
+        let:item={peer}
+        styleHoverState={false}
+        style="width: 100%; margin: 1rem 0 0; padding: 0;">
+        <PeerFollowRequest
+          {peer}
+          on:cancel={event => {
+            cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
+          }}
+          projectUrn={project.urn} />
+      </List>
     </Remote>
   </div>
 </Remote>

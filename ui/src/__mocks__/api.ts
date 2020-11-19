@@ -12,7 +12,7 @@ type MockedResponse =
   | null;
 
 export const upstreamProjectMock: project.Project = {
-  id: "%rad:git:hwd1yregn1xe4krjs5h7ag5ceut9rwmjssr8e8t4pw6nrwdxgc761o3x4sa",
+  urn: "rad:git:hwd1yregn1xe4krjs5h7ag5ceut9rwmjssr8e8t4pw6nrwdxgc761o3x4sa",
   shareableEntityIdentifier: "sos@{}",
   metadata: {
     name: "radicle-upstream",
@@ -29,8 +29,9 @@ export const upstreamProjectMock: project.Project = {
 };
 
 const surfProjectMock: project.Project = {
-  id: "%rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
-  shareableEntityIdentifier: "sos@{}",
+  urn: "rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
+  shareableEntityIdentifier:
+    "%rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
   metadata: {
     name: "radicle-surf",
     defaultBranch: "schildkroete",

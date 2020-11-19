@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import type { EmojiAvatar } from "../../../src/avatar";
   import type { Stats } from "../../../src/project";
 
@@ -15,9 +15,6 @@
   export let avatarShape: "circle" | "square" = "circle";
 
   export let stats: Stats | undefined = undefined;
-
-  let scrollY = 0;
-  let headerHeight;
 </script>
 
 <style>
@@ -78,37 +75,13 @@
     margin-right: 1rem;
   }
 
-  .action-bar-wrapper {
-    background-color: var(--color-background);
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
-
-  .elevation {
-    box-shadow: var(--elevation-low);
-  }
-
-  .action-bar {
-    display: flex;
-    justify-content: space-between;
-    height: var(--topbar-height);
-    width: 100%;
-    max-width: var(--content-max-width);
-    padding: 0 var(--content-padding);
-    margin: 0 auto;
-    align-items: center;
-  }
-
   .banner-action {
     display: flex;
     align-items: center;
   }
 </style>
 
-<svelte:window bind:scrollY />
-
-<div data-cy="header" class="banner" bind:clientHeight={headerHeight}>
+<div data-cy="header" class="banner">
   <div class="banner-content">
     <div class="left">
       {#if avatarFallback}
@@ -155,11 +128,5 @@
     <div class="banner-action">
       <slot name="top" />
     </div>
-  </div>
-</div>
-<div class="action-bar-wrapper" class:elevation={scrollY > headerHeight}>
-  <div class="action-bar">
-    <slot name="left" />
-    <slot name="right" />
   </div>
 </div>

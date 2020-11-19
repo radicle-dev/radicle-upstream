@@ -663,13 +663,23 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
     })
 }
 
-/// Retrieves the [`Commit`] history for the given `branch`.
+/// Retrieves the [`Commit`] history for the given `revision`.
 ///
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'repo>(browser: &mut Browser<'repo>, branch: git::Branch) -> Result<Commits, Error> {
-    browser.branch(branch)?;
+pub fn commits<'repo, P>(
+    browser: &mut Browser<'repo>,
+    maybe_revision: Option<Revision<P>>,
+) -> Result<Commits, Error>
+where
+    P: ToString,
+{
+    let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
+
+    if let Some(revision) = maybe_revision {
+        browser.rev(revision)?;
+    }
 
     let headers = browser.get().iter().map(CommitHeader::from).collect();
     let stats = browser.get_stats()?;

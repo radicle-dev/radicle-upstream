@@ -4,13 +4,13 @@
   import * as path from "../src/path";
   import { fetchUser, user as store } from "../src/userProfile";
 
-  import {
-    Header,
-    HorizontalMenu,
-    Remote,
-    SidebarLayout,
-  } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
+
+  import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
+  import Header from "../DesignSystem/Component/Header/Large.svelte";
+  import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
+  import Remote from "../DesignSystem/Component/Remote.svelte";
+  import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
 
   import Projects from "./UserProfile/Projects.svelte";
   import NotFound from "./NotFound.svelte";
@@ -35,14 +35,16 @@
 
 <SidebarLayout>
   <Remote {store} let:data={identity}>
-    <Header.Large
+    <Header
       name={identity.metadata.handle}
       peerId={identity.peerId}
-      avatarFallback={identity.avatarFallback}>
+      avatarFallback={identity.avatarFallback} />
+
+    <ActionBar>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems} />
       </div>
-    </Header.Large>
+    </ActionBar>
 
     <Router routes={screenRoutes} />
   </Remote>
