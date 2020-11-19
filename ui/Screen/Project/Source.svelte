@@ -1,10 +1,12 @@
 <script lang="typescript">
-  import Router from "svelte-spa-router";
+  import { get } from "svelte/store";
+  import Router, { location } from "svelte-spa-router";
 
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
   import type { HorizontalItem } from "../../src/menu";
   import * as notification from "../../src/notification";
+  import * as path from "../../src/path";
   import { checkout } from "../../src/project";
   import type { Project, User } from "../../src/project";
   import {
@@ -68,7 +70,10 @@
     }
   };
   const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
-    if (item.title === "Files") {
+    if (
+      item.title === "Files" &&
+      path.active(path.projectSourceFiles(project.urn), get(location), true)
+    ) {
       selectPath("");
     }
   };
