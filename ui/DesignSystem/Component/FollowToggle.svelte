@@ -4,16 +4,15 @@
 
   import { Button, Icon } from "../Primitive";
 
-  export let style: string | undefined = undefined;
   export let disabled: boolean = false;
   export let following: boolean = false;
-
-  const dispatch = createEventDispatcher();
+  export let style: string | undefined = undefined;
 
   let hovering: boolean = false;
   let variant: ButtonVariant;
   let title: string;
 
+  const dispatch = createEventDispatcher();
   const click = () => {
     if (disabled) return;
 
@@ -31,11 +30,11 @@
 
   $: {
     if (following) {
-      title = hovering ? "Unfollow" : "Following";
       variant = "outline";
+      title = hovering ? "Unfollow" : "Following";
     } else {
-      title = "Follow";
       variant = "primary";
+      title = "Follow";
     }
   }
 </script>

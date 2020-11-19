@@ -1,26 +1,39 @@
-import { Readable, writable } from "svelte/store";
+import { format } from "timeago.js";
 
 import * as api from "./api";
-import * as event from "./event";
-import * as error from "./error";
-import type * as identity from "./identity";
-import * as remote from "./remote";
+import type { PeerId } from "./identity";
+import type { Urn } from "./urn";
+
+import type * as diff from "./source/diff";
 
 // TYPES
-interface Person {
+export type Sha1 = string;
+
+export interface Person {
   avatar: string;
   email: string;
   name: string;
 }
 
-interface Commit {
-  sha1: string;
-  branch: string;
+export interface CommitHeader {
   author: Person;
   committer: Person;
   committerTime: number;
   description: string;
+  sha1: Sha1;
   summary: string;
+}
+
+export interface CommitStats {
+  additions: number;
+  deletions: number;
+}
+
+export interface Commit {
+  branch: string;
+  diff: diff.Diff;
+  header: CommitHeader;
+  stats: CommitStats;
   changeset: Record<string, unknown>;
 }
 
@@ -31,27 +44,18 @@ interface Stats {
 }
 
 interface Commits {
-  headers: CommitSummary[];
+  headers: CommitHeader[];
   stats: Stats;
 }
 
-interface CommitsStore {
+export interface CommitsHistory {
   history: CommitHistory;
   stats: Stats;
 }
 
-interface CommitSummary {
-  sha1: string;
-  author: Person;
-  committer: Person;
-  committerTime: number;
-  summary: string;
-  description: string;
-}
-
 interface CommitGroup {
-  time: number;
-  commits: CommitSummary[];
+  time: string;
+  commits: CommitHeader[];
 }
 
 type CommitHistory = CommitGroup[];
@@ -64,12 +68,7 @@ export enum ObjectType {
 interface Info {
   name: string;
   objectType: ObjectType;
-  lastCommit: {
-    author: Person;
-    summary: string;
-    sha1: string;
-    committerTime: number;
-  };
+  lastCommit: CommitHeader;
 }
 
 export interface LocalState {
@@ -77,34 +76,31 @@ export interface LocalState {
   managed: boolean;
 }
 
-interface SourceObject {
+export interface SourceObject {
   path: string;
   info: Info;
 }
 
-interface Blob extends SourceObject {
+export interface Blob extends SourceObject {
   binary?: boolean;
   html?: boolean;
   content: string;
 }
 
-interface Tree extends SourceObject {
+export interface Tree extends SourceObject {
   entries: SourceObject[];
   info: Info;
   path: string;
 }
 
-interface Revision {
-  user: identity.Identity;
-  branches: Branch[];
-  tags: Tag[];
+export interface Readme {
+  content: string;
+  path: string;
 }
 
-type Revisions = Revision[];
-
-interface Readme {
-  content: string;
-  path?: string;
+export interface Revisions {
+  branches: Branch[];
+  tags: Tag[];
 }
 
 export enum RevisionType {
@@ -116,7 +112,6 @@ export enum RevisionType {
 export interface Branch {
   type: RevisionType.Branch;
   name: string;
-  peerId?: string;
 }
 
 export interface Tag {
@@ -129,207 +124,140 @@ export interface Sha {
   sha: string;
 }
 
-export type RevisionQuery = Branch | Tag | Sha;
+export type Revision = Branch | Tag | Sha;
 
-// STATE
-const commitStore = remote.createStore<Commit>();
-export const commit = commitStore.readable;
-
-const commitsStore = remote.createStore<CommitsStore>();
-export const commits = commitsStore.readable;
-
-const objectStore = remote.createStore<SourceObject>();
-export const object = objectStore.readable;
-
-const revisionsStore = remote.createStore<Revisions>();
-export const revisions = revisionsStore.readable;
-
-export const objectType = writable(ObjectType.Tree);
-export const resetObjectType = (): void => objectType.set(ObjectType.Tree);
-export const objectPath = writable(null);
-export const resetObjectPath = (): void => objectPath.set(null);
-export const currentRevision = writable(null);
-export const resetCurrentRevision = (): void => currentRevision.set(null);
-export const currentPeerId = writable(null);
-export const resetCurrentPeerId = (): void => currentPeerId.set(null);
-
-// EVENTS
-enum Kind {
-  FetchCommit = "FETCH_COMMIT",
-  FetchCommits = "FETCH_COMMITS",
-  FetchRevisions = "FETCH_REVISIONS",
-  FetchObject = "FETCH_OBJECT",
+export interface SelectedPath {
+  request: AbortController | null;
+  selected: string;
 }
 
-interface FetchCommit extends event.Event<Kind> {
-  kind: Kind.FetchCommit;
-  projectId: string;
-  peerId: string;
-  sha1: string;
+export interface SelectedRevision {
+  request: AbortController | null;
+  selected: Branch | Tag;
 }
 
-interface FetchCommits extends event.Event<Kind> {
-  kind: Kind.FetchCommits;
-  projectId: string;
-  revision: Branch;
-}
+export const fetchBlob = async (
+  projectUrn: Urn,
+  peerId: string,
+  path: string,
+  revision: Revision,
+  highlight?: boolean,
+  signal?: AbortSignal
+): Promise<Blob> => {
+  return api.get<Blob>(`source/blob/${projectUrn}`, {
+    query: {
+      path: encodeURIComponent(path),
+      peerId,
+      revision: { peerId, ...revision },
+      highlight: highlight && highlight && !isMarkdown(path),
+    },
+    signal,
+  });
+};
 
-interface FetchRevisions extends event.Event<Kind> {
-  kind: Kind.FetchRevisions;
-  projectId: string;
-}
+export const fetchBranches = (
+  projectUrn: Urn,
+  peerId?: PeerId
+): Promise<Branch[]> => {
+  return api
+    .get<string[]>(`source/branches/${projectUrn}`, {
+      query: {
+        peerId,
+      },
+    })
+    .then(names =>
+      names.map(name => {
+        return { type: RevisionType.Branch, name };
+      })
+    );
+};
 
-interface FetchObject extends event.Event<Kind> {
-  kind: Kind.FetchObject;
-  path: string;
-  peerId: string;
-  projectId: string;
-  revision: RevisionQuery;
-  type: ObjectType;
-}
+export const fetchCommit = (projectUrn: Urn, sha1: Sha1): Promise<Commit> => {
+  return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
+};
 
-const groupCommits = (history: CommitSummary[]): CommitHistory => {
-  const days: CommitHistory = [];
-  let groupDate: Date | undefined = undefined;
+export const fetchCommits = (
+  projectUrn: Urn,
+  peerId: PeerId,
+  revision: Revision
+): Promise<CommitsHistory> => {
+  return api
+    .get<Commits>(`source/commits/${projectUrn}/`, {
+      query: {
+        revision: { ...revision, peerId },
+      },
+    })
+    .then(response => {
+      return {
+        stats: response.stats,
+        history: groupCommits(response.headers),
+      };
+    });
+};
 
-  for (const commit of history) {
-    const time = commit.committerTime;
-    const date = new Date(time * 1000);
-    const isNewDay =
-      !days.length ||
-      !groupDate ||
-      date.getDate() < groupDate.getDate() ||
-      date.getMonth() < groupDate.getMonth() ||
-      date.getFullYear() < groupDate.getFullYear();
+export const fetchReadme = (
+  projectUrn: Urn,
+  peerId: PeerId,
+  revision: Revision,
+  tree: Tree,
+  signal?: AbortSignal
+): Promise<Readme | null> => {
+  const path = findReadme(tree);
 
-    if (isNewDay) {
-      days.push({
-        time: time,
-        commits: [],
-      });
-      groupDate = date;
+  return new Promise((resolve, _reject) => {
+    if (!path) {
+      return resolve(null);
     }
-    days[days.length - 1].commits.push(commit);
-  }
-  return days;
+
+    fetchBlob(projectUrn, peerId, path, revision, false, signal)
+      .then(blob => (blob && !blob.binary ? blob : null))
+      .then(resolve)
+      .catch(() => resolve(null));
+  });
 };
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchObject;
-
-const update = (msg: Msg): void => {
-  switch (msg.kind) {
-    case Kind.FetchCommit:
-      commitStore.loading();
-
-      api
-        .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
-        .then(commitStore.success)
-        .catch((err: Error) => commitStore.error(error.fromException(err)));
-      break;
-
-    case Kind.FetchCommits:
-      commitsStore.loading();
-
-      api
-        .get<Commits>(`source/commits/${msg.projectId}/`, {
-          query: {
-            peerId: msg.revision.peerId,
-            branch: msg.revision.name,
-          },
-        })
-        .then(response => {
-          commitsStore.success({
-            stats: response.stats,
-            history: groupCommits(response.headers),
-          });
-        })
-        .catch((err: Error) => commitsStore.error(error.fromException(err)));
-      break;
-
-    case Kind.FetchRevisions:
-      revisionsStore.loading();
-
-      api
-        .get<Revisions>(`source/revisions/${msg.projectId}`)
-        .then(revisions => revisionsStore.success(revisions))
-        .catch((err: Error) => revisionsStore.error(error.fromException(err)));
-      break;
-
-    case Kind.FetchObject:
-      objectStore.loading();
-
-      switch (msg.type) {
-        case ObjectType.Blob:
-          api
-            .get<SourceObject>(`source/blob/${msg.projectId}`, {
-              query: {
-                peerId: msg.peerId,
-                revision: msg.revision,
-                path: encodeURIComponent(msg.path),
-                highlight: !isMarkdown(msg.path),
-              },
-            })
-            .then(objectStore.success)
-            .catch((err: Error) => objectStore.error(error.fromException(err)));
-          break;
-
-        case ObjectType.Tree:
-          api
-            .get<SourceObject>(`source/tree/${msg.projectId}`, {
-              query: {
-                peerId: msg.peerId,
-                revision: msg.revision,
-                prefix: msg.path,
-              },
-            })
-            .then(objectStore.success)
-            .catch((err: Error) => objectStore.error(error.fromException(err)));
-          break;
-      }
-      break;
-  }
+export const fetchRevisions = (
+  projectUrn: Urn,
+  peerId?: PeerId
+): Promise<Revisions> => {
+  return Promise.all([
+    fetchBranches(projectUrn, peerId),
+    fetchTags(projectUrn, peerId),
+  ]).then(([branches, tags]) => {
+    return { branches, tags };
+  });
 };
 
-export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
-export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
-export const fetchRevisions = event.create<Kind, Msg>(
-  Kind.FetchRevisions,
-  update
-);
-export const fetchObject = event.create<Kind, Msg>(Kind.FetchObject, update);
+export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
+  return api
+    .get<string[]>(`source/tags/${projectUrn}`, {
+      query: {
+        peerId,
+      },
+    })
+    .then(names =>
+      names.map(name => {
+        return { type: RevisionType.Tag, name };
+      })
+    );
+};
+
+export const fetchTree = (
+  projectUrn: Urn,
+  peerId: PeerId,
+  revision: Revision,
+  prefix: string,
+  signal?: AbortSignal
+): Promise<Tree> => {
+  return api.get<Tree>(`source/tree/${projectUrn}`, {
+    query: { peerId, revision: { ...revision, peerId }, prefix },
+    signal,
+  });
+};
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);
 };
-
-export const tree = (
-  projectId: string,
-  peerId: string,
-  revision: RevisionQuery,
-  prefix: string
-): Readable<remote.Data<Tree>> => {
-  const treeStore = remote.createStore<Tree>();
-
-  api
-    .get<Tree>(`source/tree/${projectId}`, {
-      query: { peerId: peerId, revision, prefix },
-    })
-    .then(treeStore.success)
-    .catch((err: Error) => treeStore.error(error.fromException(err)));
-
-  return treeStore.readable;
-};
-
-const blob = (
-  projectId: string,
-  peerId: string,
-  revision: RevisionQuery,
-  path: string,
-  highlight: boolean
-): Promise<Blob> =>
-  api.get<Blob>(`source/blob/${projectId}`, {
-    query: { revision, peerId, path, highlight },
-  });
 
 const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
@@ -347,24 +275,15 @@ export const isMarkdown = (path: string): boolean => {
   return /\.(md|mkd|markdown)$/i.test(path);
 };
 
-export const formatTime = (t: number): string => {
-  return new Date(t).toLocaleDateString("en-US", {
-    month: "long",
-    weekday: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
 export const revisionQueryEq = (
-  query1: RevisionQuery,
-  query2: RevisionQuery
+  query1: Revision,
+  query2: Revision
 ): boolean => {
   if (
     query1.type === RevisionType.Branch &&
     query2.type === RevisionType.Branch
   ) {
-    return query1.name === query2.name && query1.peerId === query2.peerId;
+    return query1.name === query2.name;
   } else if (
     query1.type === RevisionType.Tag &&
     query2.type === RevisionType.Tag
@@ -380,29 +299,51 @@ export const revisionQueryEq = (
   }
 };
 
-export const readme = (
-  projectId: string,
-  peerId: string,
-  revision: RevisionQuery
-): Readable<remote.Data<Readme | null>> => {
-  const readme = remote.createStore<Readme | null>();
+export const formatCommitTime = (t: number): string => {
+  return format(t * 1000);
+};
 
-  remote
-    .chain(objectStore.readable, readme)
-    .then((object: SourceObject) => {
-      if (object.info.objectType === ObjectType.Tree) {
-        const path = findReadme(object as Tree);
+const formatGroupTime = (t: number): string => {
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "long",
+    weekday: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
-        if (path) {
-          return blob(projectId, peerId, revision, path, false);
-        }
-      }
+const groupCommits = (history: CommitHeader[]): CommitHistory => {
+  const days: CommitHistory = [];
+  let groupDate: Date | undefined = undefined;
 
-      return null;
-    })
-    .then(blob => (blob && !blob.binary ? blob : null))
-    .then(readme.success)
-    .catch((err: Error) => readme.error(error.fromException(err)));
+  history = history.sort((a, b) => {
+    if (a.committerTime > b.committerTime) {
+      return -1;
+    } else if (a.committerTime < b.committerTime) {
+      return 1;
+    }
 
-  return readme.readable;
+    return 0;
+  });
+
+  for (const commit of history) {
+    const time = commit.committerTime * 1000;
+    const date = new Date(time);
+    const isNewDay =
+      !days.length ||
+      !groupDate ||
+      date.getDate() < groupDate.getDate() ||
+      date.getMonth() < groupDate.getMonth() ||
+      date.getFullYear() < groupDate.getFullYear();
+
+    if (isNewDay) {
+      days.push({
+        time: formatGroupTime(time),
+        commits: [],
+      });
+      groupDate = date;
+    }
+    days[days.length - 1].commits.push(commit);
+  }
+  return days;
 };

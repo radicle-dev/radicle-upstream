@@ -1,5 +1,5 @@
 import * as commands from "../support/commands";
-import { VALID_PEER_MATCH } from "../../ui/src/project";
+import { VALID_PEER_MATCH } from "../../ui/src/screen/project";
 
 context("onboarding", () => {
   const validUser = {

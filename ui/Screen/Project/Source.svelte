@@ -1,148 +1,117 @@
-<script>
-  import { getContext } from "svelte";
-  import { format } from "timeago.js";
+<script lang="typescript">
+  import { get } from "svelte/store";
+  import Router, { location } from "svelte-spa-router";
 
+  import * as error from "../../src/error";
+  import { openPath } from "../../src/ipc";
+  import type { HorizontalItem } from "../../src/menu";
+  import * as notification from "../../src/notification";
+  import * as path from "../../src/path";
+  import { checkout } from "../../src/project";
+  import type { Project, User } from "../../src/project";
   import {
-    currentPeerId,
-    currentRevision,
-    object as objectStore,
-    ObjectType,
-    objectPath,
-    objectType,
-    readme,
-    resetObjectPath,
-    resetObjectType,
-    fetchObject,
-  } from "../../src/source.ts";
+    fetch,
+    selectPath,
+    selectRevision,
+    store,
+  } from "../../src/screen/project/source";
+  import type { Branch, Tag } from "../../src/source";
+  import * as screen from "../../src/screen";
 
-  import { EmptyState, Remote } from "../../DesignSystem/Component";
+  import ActionBar from "../../DesignSystem/Component/ActionBar.svelte";
+  import HorizontalMenu from "../../DesignSystem/Component/HorizontalMenu.svelte";
+  import Remote from "../../DesignSystem/Component/Remote.svelte";
+  import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
-  import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
-  import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
-  import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
-  import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
+  import CheckoutButton from "./Source/CheckoutButton.svelte";
 
-  const project = getContext("project");
+  import Code from "./Source/Code.svelte";
+  import Commit from "./Source/Commit.svelte";
+  import Commits from "./Source/Commits.svelte";
 
-  const reset = () => {
-    resetObjectPath();
-    resetObjectType();
+  export let project: Project;
+  export let selectedPeer: User;
+
+  const routes = {
+    "/projects/:urn/source/code": Code,
+    "/projects/:urn/source/commit/:hash": Commit,
+    "/projects/:urn/source/commits": Commits,
   };
 
-  // Reset some stores on first load
-  reset();
+  const onCheckout = async (
+    { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
+    project: Project,
+    peer: User
+  ) => {
+    try {
+      screen.lock();
+      const path = await checkout(
+        project.urn,
+        checkoutPath,
+        peer.identity.peerId
+      );
 
-  $: if ($currentPeerId) {
-    fetchObject({
-      path: $objectPath,
-      peerId: $currentPeerId,
-      projectId: project.id,
-      revision: $currentRevision,
-      type: $objectType,
-    });
-  }
+      notification.info(
+        `${project.metadata.name} checked out to ${path}`,
+        true,
+        "Open folder",
+        () => {
+          openPath(path);
+        }
+      );
+    } catch (err) {
+      error.show({
+        code: error.Code.ProjectCheckoutFailure,
+        message: `Checkout failed: ${err.message}`,
+        source: err,
+      });
+    } finally {
+      screen.unlock();
+    }
+  };
+  const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
+    if (
+      item.title === "Files" &&
+      path.active(path.projectSourceFiles(project.urn), get(location), true)
+    ) {
+      selectPath("");
+    }
+  };
+  const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
+    selectRevision(revision);
+  };
+
+  $: fetch(project, selectedPeer);
 </script>
 
 <style>
-  .center-content {
-    margin: 0 auto;
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-  }
-
-  .container {
-    display: flex;
-    width: inherit;
-    margin-bottom: 4rem;
-    padding: 0 var(--content-padding);
-  }
-
-  .column-left {
-    display: flex;
-    flex-direction: column;
-    padding-right: 0.75rem;
-  }
-
-  .column-right {
-    display: flex;
-    flex-direction: column;
-    padding-left: 0.75rem;
-    min-width: var(--content-min-width);
-    width: 100%;
-  }
-
-  .commit-header {
-    height: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .source-tree {
-    overflow-x: auto;
+  .revision-selector-wrapper {
     width: 18rem;
+    position: relative;
+    margin-right: 2rem;
   }
 </style>
 
-<div class="wrapper">
-  <div class="container center-content">
-    <div class="column-left">
-      {#if $currentPeerId}
-        <!-- Tree -->
-        <div class="source-tree" data-cy="source-tree">
-          <Folder
-            currentRevision={$currentRevision}
-            currentPeerId={$currentPeerId}
-            projectId={project.id}
-            toplevel
-            name={project.metadata.name} />
+<Remote {store} let:data={{ menuItems, revisions, selectedRevision }}>
+  <ActionBar>
+    <div slot="left">
+      <div style="display: flex">
+        <div class="revision-selector-wrapper">
+          <RevisionSelector
+            loading={selectedRevision.request !== null}
+            on:select={onSelectRevision}
+            selected={selectedRevision.selected}
+            {revisions} />
         </div>
-      {/if}
-    </div>
 
-    <div class="column-right">
-      <!-- Object -->
-      <Remote store={objectStore} let:data={object}>
-        {#if object.info.objectType === ObjectType.Blob}
-          <FileSource
-            blob={object}
-            path={$objectPath}
-            projectName={project.metadata.name}
-            projectId={project.id} />
-        {:else if object.path === ''}
-          <!-- Repository root -->
-          <div class="commit-header">
-            <CommitTeaser
-              projectId={project.id}
-              user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
-              commitMessage={object.info.lastCommit.summary}
-              commitSha={object.info.lastCommit.sha1}
-              timestamp={format(object.info.lastCommit.committerTime * 1000)}
-              style="height: 100%" />
-          </div>
-
-          <!-- Readme -->
-          <Remote
-            store={readme(project.id, $currentPeerId, $currentRevision)}
-            let:data={readme}>
-            {#if readme}
-              <Readme content={readme.content} path={readme.path} />
-            {:else}
-              <EmptyState
-                text="This project doesn't have a README yet."
-                emoji="👀"
-                style="height: 320px;" />
-            {/if}
-          </Remote>
-        {/if}
-        <div slot="error" let:error>
-          <EmptyState
-            headerText={error.message}
-            text="This file doesn't exist on this branch."
-            primaryActionText="Back to source"
-            emoji="👀"
-            on:primaryAction={reset}
-            style="height: 320px;" />
-        </div>
-      </Remote>
+        <HorizontalMenu items={menuItems} on:select={onMenuSelect} />
+      </div>
     </div>
-  </div>
-</div>
+    <div slot="right">
+      <CheckoutButton
+        on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
+    </div>
+  </ActionBar>
+
+  <Router {routes} />
+</Remote>

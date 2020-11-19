@@ -1,17 +1,18 @@
-<script>
-  import { link } from "svelte-spa-router";
+<script lang="typescript">
+  import { createEventDispatcher } from "svelte";
 
-  import * as path from "../../../src/path.ts";
+  import { formatCommitTime } from "../../../src/source";
+  import type { CommitHeader } from "../../../src/source";
 
   import { Icon } from "../../Primitive";
 
-  export let projectId = null;
-  export let commitMessage = null;
-  export let timestamp = null;
-  export let commitSha = null;
-  export let user = null;
+  export let commit: CommitHeader;
+  export let style: string = "";
 
-  export let style = null;
+  const dispatch = createEventDispatcher();
+  const onSelect = () => {
+    dispatch("select", commit.sha1);
+  };
 </script>
 
 <style>
@@ -54,23 +55,21 @@
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <Icon.Commit style="fill: var(--color-secondary)" />
-    <a
-      class="commit-sha typo-text-small-mono"
-      href={path.projectCommit(projectId, commitSha)}
-      use:link>
-      {commitSha.substring(0, 7)}
+    <!-- svelte-ignore a11y-missing-attribute -->
+    <a class="commit-sha typo-text-small-mono" on:click={onSelect}>
+      {commit.sha1.substring(0, 7)}
     </a>
-    <p class="commit-message typo-text-small">{commitMessage}</p>
+    <p class="commit-message typo-text-small">{commit.summary}</p>
   </div>
 
   <div class="align-right">
     <p
       class="typo-text-small-bold"
       style="margin-right: 8px; color: var(--color-foreground-level-6)">
-      {user.username}
+      {commit.author.name}
     </p>
     <p class="typo-text-small" style="color: var(--color-foreground-level-6)">
-      {timestamp}
+      {formatCommitTime(commit.committerTime)}
     </p>
   </div>
 </div>

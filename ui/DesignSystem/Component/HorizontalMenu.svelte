@@ -1,19 +1,16 @@
-<script lang="ts">
-  import type { SvelteComponent } from "svelte";
+<script lang="typescript">
+  import { createEventDispatcher } from "svelte";
   import { location } from "svelte-spa-router";
 
+  import type { HorizontalItem } from "../../src/menu";
   import * as path from "../../src/path";
 
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
-  export let style = "";
-  export let items: {
-    icon: typeof SvelteComponent;
-    title: string;
-    href: string;
-    looseActiveStateMatching: boolean;
-    counter?: string;
-  }[];
+  export let items: HorizontalItem[];
+  export let style: string = "";
+
+  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -48,6 +45,7 @@
     {#each items as item}
       <li class="menu-list-item">
         <MenuItem
+          on:click={() => dispatch('select', item)}
           icon={item.icon}
           title={item.title}
           counter={item.counter}

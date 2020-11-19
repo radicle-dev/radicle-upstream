@@ -1,15 +1,14 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  const dispatch = createEventDispatcher();
+  import { Icon } from "../../Primitive";
 
+  const dispatch = createEventDispatcher();
   const onArrowClick = () => {
     dispatch("arrowClick");
   };
 
-  import { Icon } from "../../Primitive";
-
-  export let style = null;
+  export let style: string = "";
 </script>
 
 <style>

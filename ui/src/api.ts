@@ -1,7 +1,8 @@
-import * as qs from "qs";
+import qs from "qs";
 
 interface Options {
   query?: Record<string, unknown>;
+  signal?: AbortSignal;
 }
 
 interface Init extends Options {
@@ -9,6 +10,7 @@ interface Init extends Options {
   method: string;
   headers?: Record<string, string>;
   query?: Record<string, unknown>;
+  signal?: AbortSignal;
 }
 
 export class ResponseError extends Error {

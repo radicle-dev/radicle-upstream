@@ -1,56 +1,39 @@
-<script>
-  import { createEventDispatcher, getContext } from "svelte";
-  import { push } from "svelte-spa-router";
+<script lang="typescript">
+  import { createEventDispatcher } from "svelte";
 
+  import { BadgeType } from "../../src/badge";
   import { isExperimental } from "../../src/ipc";
-  import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
-  import { BadgeType } from "../../src/badge.ts";
+  import { Role } from "../../src/project";
+  import type { User } from "../../src/project";
+  import { CSSPosition } from "../../src/style";
 
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
 
-  export let currentPeerId = null;
-  export let expanded = false;
-  export let revisions = null;
+  export let expanded: boolean = false;
+  export let peers: User[];
+  export let selected: User;
 
-  let currentSelectedPeer;
-
-  const session = getContext("session");
-  const { metadata } = getContext("project");
-
-  $: if (currentPeerId) {
-    currentSelectedPeer = revisions.find(rev => {
-      return rev.identity.peerId === currentPeerId;
-    });
-  } else {
-    // The API returns a revision list where the first entry is the default
-    // peer.
-    currentSelectedPeer = revisions[0];
-    currentPeerId = currentSelectedPeer.identity.peerId;
-  }
-
-  const showDropdown = () => {
-    expanded = true;
-  };
-
-  const hideDropdown = () => {
+  const hide = () => {
     expanded = false;
   };
 
-  const handleOpenProfile = urn => {
-    if (urn === session.identity.urn) {
-      push(path.profileProjects());
-    } else {
-      push(path.userProfileProjects(urn));
-    }
+  const show = () => {
+    expanded = true;
   };
 
   const dispatch = createEventDispatcher();
-  const selectPeer = peerId => {
-    hideDropdown();
-    currentPeerId = peerId;
-    dispatch("select", { peerId });
+  const onModal = () => {
+    hide();
+    dispatch("modal");
+  };
+  const onOpen = (peer: User) => {
+    hide();
+    dispatch("open", peer);
+  };
+  const onSelect = (peer: User) => {
+    hide();
+    dispatch("select", peer);
   };
 </script>
 
@@ -150,27 +133,27 @@
 
 <Overlay
   {expanded}
-  on:hide={hideDropdown}
+  on:hide={hide}
   style="margin-right: 1rem; position: relative; user-select: none;">
   <div
     class="peer-selector"
     data-cy="peer-selector"
-    on:click|stopPropagation={showDropdown}
+    on:click|stopPropagation={show}
     hidden={expanded}>
     <div class="selector-avatar typo-overflow-ellipsis">
       <Avatar
-        avatarFallback={currentSelectedPeer.identity.avatarFallback}
+        avatarFallback={selected.identity.avatarFallback}
         size="small"
         style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
         variant="circle" />
       <p
         class="typo-text-bold typo-overflow-ellipsis"
         style="max-width: 7.5rem;"
-        title={currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}>
-        {currentSelectedPeer.identity.metadata.handle || currentSelectedPeer.identity.shareableEntityIdentifier}
+        title={selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}>
+        {selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}
       </p>
       <p>
-        {#if metadata.maintainers.includes(currentSelectedPeer.identity.urn)}
+        {#if selected.role === Role.Maintainer}
           <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
         {/if}
       </p>
@@ -182,24 +165,24 @@
   </div>
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
-      {#each revisions as repo}
+      {#each peers as peer}
         <div
           class="peer"
-          on:click={() => selectPeer(repo.identity.peerId)}
-          class:selected={repo.identity.peerId == currentSelectedPeer.identity.peerId}
-          data-peer-handle={repo.identity.metadata.handle}>
+          class:selected={peer.identity.peerId == selected.identity.peerId}
+          data-peer-handle={peer.identity.metadata.handle}
+          on:click|stopPropagation={() => onSelect(peer)}>
           <div style="display: flex;">
             <Avatar
-              avatarFallback={repo.identity.avatarFallback}
+              avatarFallback={peer.identity.avatarFallback}
               style="display: flex; justify-content: flex-start; margin-right:
             8px;"
               size="small"
               variant="circle" />
             <p class="typo-text-bold typo-overflow-ellipsis">
-              {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
+              {peer.identity.metadata.handle || peer.identity.shareableEntityIdentifier}
             </p>
             <p>
-              {#if metadata.maintainers.includes(repo.identity.urn)}
+              {#if peer.role === Role.Maintainer}
                 <Badge
                   style="margin-left: 0.5rem"
                   variant={BadgeType.Maintainer} />
@@ -207,12 +190,12 @@
             </p>
           </div>
           {#if isExperimental()}
-            <Tooltip value="Go to profile" position="top">
+            <Tooltip value="Go to profile" position={CSSPosition.Top}>
               <div
-                data-cy={repo.identity.metadata.handle}
+                data-cy={peer.identity.metadata.handle}
                 class="open-profile"
-                on:click={() => {
-                  handleOpenProfile(repo.identity.urn);
+                on:click|stopPropagation={() => {
+                  onOpen(peer);
                 }}>
                 <Icon.ArrowBoxUpRight />
               </div>
@@ -223,13 +206,7 @@
           {/if}
         </div>
       {/each}
-      <div
-        class="peer remotes"
-        data-cy="manage-remotes"
-        on:click={() => modal.toggle(path.managePeers(), [
-            { name: 'metadata', data: metadata },
-            { name: 'revisions', data: revisions },
-          ])}>
+      <div class="peer remotes" data-cy="manage-remotes" on:click={onModal}>
         <Icon.Pen style="margin-right: .5rem;" />
         <p>Manage remotes</p>
       </div>

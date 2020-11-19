@@ -5,12 +5,12 @@
   import * as path from "../src/path";
   import type { UnsealedSession } from "../src/session";
 
-  import {
-    Header,
-    HorizontalMenu,
-    SidebarLayout,
-  } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
+
+  import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
+  import Header from "../DesignSystem/Component/Header/Large.svelte";
+  import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
+  import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
 
   import Following from "./Profile/Following.svelte";
   import Projects from "./Profile/Projects.svelte";
@@ -49,17 +49,20 @@
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-  <Header.Large
+  <Header
     avatarFallback={session.identity.avatarFallback}
     name={session.identity.metadata.handle}
     peerId={session.identity.peerId}>
-    <div slot="left">
-      <HorizontalMenu items={topbarMenuItems} />
-    </div>
     <div slot="top">
       <Router routes={menuRoutes} />
     </div>
-  </Header.Large>
+  </Header>
+
+  <ActionBar>
+    <div slot="left">
+      <HorizontalMenu items={topbarMenuItems} />
+    </div>
+  </ActionBar>
 
   <Router routes={screenRoutes} />
 </SidebarLayout>

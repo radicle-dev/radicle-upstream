@@ -1,30 +1,22 @@
-<script>
+<script lang="typescript">
   import { pop } from "svelte-spa-router";
-  import { format } from "timeago.js";
 
-  import * as error from "../../src/error.ts";
-  import { commit as store, fetchCommit } from "../../src/source.ts";
-  import * as remote from "../../src/remote.ts";
+  import { formatCommitTime } from "../../../src/source";
+  import {
+    commit as store,
+    fetchCommit,
+  } from "../../../src/screen/project/source";
+  import type { Urn } from "../../../src/urn";
 
-  import { Icon } from "../../DesignSystem/Primitive";
-  import { Header, Remote } from "../../DesignSystem/Component";
+  import { Icon } from "../../../DesignSystem/Primitive";
+  import { Header, Remote } from "../../../DesignSystem/Component";
 
-  import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
+  import Changeset from "../../../DesignSystem/Component/SourceBrowser/Changeset.svelte";
 
-  export let params = null;
-  const projectId = params.id;
-  const peerId = params.peerId;
-  const commitHash = params.hash;
+  export let params: { hash: string; urn: Urn };
+  const { hash } = params;
 
-  $: if ($store.status === remote.Status.Error) {
-    error.show({
-      code: error.Code.CommitFetchFailure,
-      message: "Could not fetch commit",
-      source: $store.error,
-    });
-  }
-
-  fetchCommit({ projectId, peerId, sha1: commitHash });
+  fetchCommit(hash);
 </script>
 
 <style>
@@ -65,51 +57,6 @@
     color: var(--color-foreground);
   }
 
-  .changeset-summary {
-    margin-top: 2rem;
-    margin-bottom: 1.5rem;
-    margin-left: 1.5rem;
-  }
-
-  .changeset-summary .additions {
-    color: var(--color-positive);
-  }
-
-  .changeset-summary .deletions {
-    color: var(--color-negative);
-  }
-
-  .file-header {
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    background: none;
-    border-bottom: 1px solid var(--color-foreground-level-3);
-    border-radius: 0;
-    padding: 0.75rem;
-  }
-
-  .file-header:last-child {
-    border-bottom: none;
-    margin-bottom: 1rem;
-  }
-
-  .file-header .diff-type {
-    margin-left: 1rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-  }
-
-  .file-header .diff-type.created {
-    color: var(--color-positive);
-    background-color: var(--color-positive-level-1);
-  }
-
-  .file-header .diff-type.deleted {
-    color: var(--color-negative);
-    background-color: var(--color-negative-level-1);
-  }
-
   /* TODO(cloudhead): These should be global */
   hr {
     border: 0;
@@ -138,7 +85,7 @@
             <span style="margin-left: -0.5ch">{commit.branch}</span>
           </span>
           <span style="margin-left: -0.5ch">
-            {format(commit.header.committerTime * 1000)}
+            {formatCommitTime(commit.header.committerTime)}
           </span>
         </span>
       </div>
@@ -185,43 +132,7 @@
     </div>
 
     <main>
-      <div class="changeset-summary">
-        {#if commit.diff.modified.length > 0}
-          <span class="typo-semi-bold">
-            {commit.diff.modified.length}
-            file(s) changed
-          </span>
-          with
-          <span class="additions typo-semi-bold">
-            {commit.stats.additions}
-            additions
-          </span>
-          and
-          <span class="deletions typo-semi-bold">
-            {commit.stats.deletions}
-            deletions
-          </span>
-        {/if}
-      </div>
-      <div>
-        {#each commit.diff.created as path}
-          <header class="file-header">
-            <Icon.File style="margin-right: 8px;" />
-            <p class="typo-text-bold">{path}</p>
-            <span class="diff-type created">created</span>
-          </header>
-        {/each}
-        {#each commit.diff.deleted as path}
-          <header class="file-header">
-            <Icon.File style="margin-right: 8px;" />
-            <p class="typo-text-bold">{path}</p>
-            <span class="diff-type deleted">deleted</span>
-          </header>
-        {/each}
-      </div>
-      {#each commit.diff.modified as file}
-        <FileDiff {file} />
-      {/each}
+      <Changeset diff={commit.diff} stats={commit.stats} />
     </main>
   </Remote>
 </div>
