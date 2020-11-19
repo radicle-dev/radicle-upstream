@@ -3,52 +3,32 @@
 
   import Receiver from "./Receiver.svelte";
 
-  import { AddressStatus } from "../../../../src/funding/pool";
+  import { ReceiverStatus } from "../../../../src/funding/pool";
   import * as pool from "../../../../src/funding/pool";
 
   // The current list of receivers
-  export let receivers: pool.Receivers;
+  export let receivers: pool.Receivers = new Map();
   export let updating = false;
   export let editing = false;
   export let style = "";
 
-  let changeset: pool.Changeset = new Map();
-
-  $: updating || editing, refreshChangeset();
-
-  function refreshChangeset() {
-    // Refresh the changeset only when something changed
-    // **after** updating, not during. By doing so we keep
-    // displaying the changes that are being awaiting inclusion.
-    if (!updating) {
-      changeset = new Map(
-        [...receivers].map(([address, weight]) => [
-          address,
-          weight === 0 ? AddressStatus.Removed : AddressStatus.Present,
-        ])
-      );
-    }
-  }
-
   function toggleReceiver(x: pool.Address) {
-    const status = changeset.get(x);
+    const status = receivers.get(x);
+    console.log("toggleReceiver", x);
+    if (!status) return;
 
     switch (status) {
-      case AddressStatus.Added:
-        changeset.delete(x);
+      case ReceiverStatus.Added:
         receivers.delete(x);
         break;
-      case AddressStatus.Present:
-        receivers.set(x, 0);
-        changeset.set(x, AddressStatus.Removed);
+      case ReceiverStatus.Present:
+        receivers.set(x, ReceiverStatus.Removed);
         break;
-      case AddressStatus.Removed:
+      case ReceiverStatus.Removed:
         if (receivers.has(x)) {
-          receivers.set(x, 1);
-          changeset.set(x, AddressStatus.Present);
+          receivers.set(x, ReceiverStatus.Present);
         } else {
           receivers.delete(x);
-          changeset.delete(x);
         }
         break;
     }
@@ -56,9 +36,8 @@
   }
 
   function addNew(address: pool.Address) {
-    if (changeset.has(address)) return;
-    changeset.set(address, AddressStatus.Added);
-    receivers.set(address, 1);
+    if (receivers.has(address)) return;
+    receivers.set(address, ReceiverStatus.Added);
     receivers = receivers;
     newValue = "";
     refresh();
@@ -66,17 +45,16 @@
 
   function refresh() {
     receivers = receivers;
-    changeset = changeset;
   }
 
   // The input field value
   let newValue: string = "";
 
-  $: sortedEntries = [...changeset].sort(([_a, statusA], [_b, statusB]) => {
+  $: sortedEntries = [...receivers].sort(([_a, statusA], [_b, statusB]) => {
     const s = [
-      AddressStatus.Removed,
-      AddressStatus.Present,
-      AddressStatus.Added,
+      ReceiverStatus.Removed,
+      ReceiverStatus.Present,
+      ReceiverStatus.Added,
     ];
     return s.indexOf(statusA) > s.indexOf(statusB) ? -1 : 1;
   });

@@ -60,8 +60,19 @@ export interface PoolData {
   collectableFunds: number;
 }
 
-export type Weight = number;
-export type Receivers = Map<Address, Weight>;
+/* Receivers */
+export type Receivers = Map<Address, ReceiverStatus>;
+
+export type Address = string;
+
+export enum ReceiverStatus {
+  // The receiver is being added
+  Added = "Added",
+  // The receiver is being removed
+  Removed = "Removed",
+  // The receiver is present already
+  Present = "Present",
+}
 
 export const CONTRACT_ADDRESS: string =
   "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
@@ -82,7 +93,7 @@ export function make(wallet: Wallet): Pool {
       const amountPerBlock = await poolContract.getAmountPerBlock();
       const contract_receivers = await poolContract.getAllReceivers();
       const receivers = new Map(
-        contract_receivers.map(e => [e.receiver, e.weight])
+        contract_receivers.map(e => [e.receiver, ReceiverStatus.Present])
       );
 
       data.success({
@@ -134,8 +145,8 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function updateReceiverAddresses(receivers: Receivers): Promise<void> {
-    const txs = [...receivers.entries()].map(([address, weight]) =>
-      poolContract.setReceiver(address, weight).then(tx => {
+    const txs = [...receivers.entries()].map(([address, status]) =>
+      poolContract.setReceiver(address, weightForStatus(status)).then(tx => {
         transaction.add(transaction.beneficiaries(tx));
         tx.wait();
       })
@@ -275,23 +286,10 @@ export class OnboardingStatus {
   }
 }
 
-/* Receivers */
-
-export type Address = string;
-
-export enum AddressStatus {
-  // The address is being added
-  Added = "Added",
-  // The address is being removed
-  Removed = "Removed",
-  // The address is present already
-  Present = "Present",
-}
-
-// Describes a changeset regarding the list of addresses of a pool, i.e.,
-// which addresses are being added, removed, or that already exist already.
-export type Changeset = Map<string, AddressStatus>;
-
 export function displayAddress(x: Address): string {
   return `${x.slice(0, 8)}...${x.slice(-8)}`;
+}
+
+function weightForStatus(status: ReceiverStatus): number {
+  return status === ReceiverStatus.Removed ? 0 : 1;
 }

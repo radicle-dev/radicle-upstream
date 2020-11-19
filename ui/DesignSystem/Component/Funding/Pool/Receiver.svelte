@@ -1,12 +1,12 @@
 <script lang="typescript">
   import { Copyable } from "../../../Component";
   import { Button, Icon } from "../../../Primitive";
-  import { displayAddress, AddressStatus } from "../../../../src/funding/pool";
+  import { displayAddress, ReceiverStatus } from "../../../../src/funding/pool";
   import type { Address } from "../../../../src/funding/pool";
 
   export let address: Address = "";
   export let disabled = false;
-  export let status: AddressStatus;
+  export let status: ReceiverStatus;
   export let onClick: (title: string) => void | undefined;
 </script>
 
