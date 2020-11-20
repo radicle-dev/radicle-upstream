@@ -1,5 +1,6 @@
 {
   "name": "radicle-upstream",
+  "productName": "Radicle Upstream",
   "version": "0.0.17",
   "author": {
     "name": "radicle team",
@@ -14,6 +15,7 @@
   },
   "build": {
     "appId": "radicle-upstream.monadic.xyz",
+    "artifactName": "${name}-${version}.${ext}",
     "files": [
       "public/**/*",
       "native/**/*"
