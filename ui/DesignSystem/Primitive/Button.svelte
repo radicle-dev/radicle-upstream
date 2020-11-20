@@ -323,11 +323,16 @@
   .embedded {
     background: none;
     border: none;
+    color: var(--color-foreground-level-6);
   }
 
   .embedded :global(svg) {
     fill: var(--color-foreground-level-5);
     margin: 0px;
+  }
+
+  .embedded:hover {
+    color: var(--color-foreground-level-3);
   }
 
   .embedded:hover :global(svg) {

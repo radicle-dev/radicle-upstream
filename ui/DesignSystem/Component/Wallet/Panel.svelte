@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { Button } from "../../Primitive";
-  import { Dai, Copyable } from "../../Component";
+  import { Button, Icon } from "../../Primitive";
+  import { Dai, Copyable, Overlay } from "../../Component";
 
   import * as wallet from "../../../src/wallet";
   import { displayAddress } from "../../../src/funding/pool";
@@ -13,6 +13,8 @@
     account.balance.length,
     1
   )})`;
+
+  let expanded = false;
 </script>
 
 <style>
@@ -20,8 +22,7 @@
     display: flex;
     flex-direction: column;
 
-    width: 35vw;
-    max-width: 400px;
+    width: 400px;
 
     border: 1px solid #ebeff3;
     box-sizing: border-box;
@@ -33,7 +34,7 @@
 
   h3,
   h1 {
-    padding: 0 var(--content-padding);
+    padding: 0 1rem;
   }
 
   h1 {
@@ -41,14 +42,27 @@
     color: var(--color-secondary);
   }
 
-  .address {
+  .address-box {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
     border-top: 1px solid var(--color-foreground-level-2);
-    padding: calc(var(--content-padding) / 2) var(--content-padding);
+    padding: 1rem;
     color: var(--color-foreground-level-6);
+  }
+
+  .menu {
+    position: relative;
+    right: 145px;
+    width: 180px;
+    box-shadow: var(--elevation-medium);
+    border: 1px solid var(--color-foreground-level-3);
+    border-radius: 4px;
+    user-select: none;
+    background-color: var(--color-background);
+    overflow: hidden; /* hack to make inner option corners rounded */
+    z-index: 1;
   }
 </style>
 
@@ -63,7 +77,7 @@
     </Dai>
   </h1>
 
-  <div class="address typo-text">
+  <div class="address-box typo-text">
     <Copyable
       showIcon={false}
       styleContent={false}
@@ -72,11 +86,21 @@
       {displayAddress(account.address)}
     </Copyable>
 
-    <Button
-      variant="transparent"
-      on:click={onDisconnect}
-      style="color: var(--color-foreground-level-3)">
-      ↩
-    </Button>
+    <Overlay
+      {expanded}
+      on:hide={() => (expanded = false)}
+      style="overflow: visible; width: 32px; height: 40px;">
+      <Button
+        variant="embedded"
+        on:click={() => (expanded = !expanded)}
+        style="color: var(--color-foreground-level-3);">
+        <Icon.ChevronDown />
+      </Button>
+      <div class="menu" hidden={!expanded}>
+        <Button icon={Icon.Cross} variant="embedded" on:click={onDisconnect}>
+          <p class="typo-text">Disconnect</p>
+        </Button>
+      </div>
+    </Overlay>
   </div>
 </div>
