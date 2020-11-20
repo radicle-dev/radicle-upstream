@@ -251,7 +251,7 @@
           <p class="typo-text-bold">Join the community chat</p>
         </div>
         <div class="action">
-          <a class="typo-link" href="https://matrix.radicle.community/">
+          <a class="typo-link" href="https://matrix.radicle.community">
             matrix.radicle.community
           </a>
         </div>
