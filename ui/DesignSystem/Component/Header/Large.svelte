@@ -108,19 +108,25 @@
         {/if}
         {#if stats}
           <div class="project-stats" data-cy="project-stats">
-            <div class="project-stat-item">
-              <Icon.Branch />
-              <p>
-                {stats.branches === 1 ? `1 Branch` : `${stats.branches} Branches`}
-              </p>
-            </div>
-            <span class="typo-mono-bold project-stat-separator">•</span>
-            <div class="project-stat-item">
-              <Icon.User />
-              <p>
-                {stats.contributors === 1 ? `1 Contributor` : `${stats.contributors} Contributors`}
-              </p>
-            </div>
+            {#if stats.branches > 0}
+              <div class="project-stat-item">
+                <Icon.Branch />
+                <p>
+                  {stats.branches === 1 ? `1 Branch` : `${stats.branches} Branches`}
+                </p>
+              </div>
+            {/if}
+            {#if stats.branches > 0 && stats.contributors > 0}
+              <span class="typo-mono-bold project-stat-separator">•</span>
+            {/if}
+            {#if stats.contributors > 0}
+              <div class="project-stat-item">
+                <Icon.User />
+                <p>
+                  {stats.contributors === 1 ? `1 Contributor` : `${stats.contributors} Contributors`}
+                </p>
+              </div>
+            {/if}
           </div>
         {/if}
       </div>
