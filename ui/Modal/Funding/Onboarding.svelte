@@ -94,7 +94,7 @@
   {:else if currentStep === Step.AddReceivers}
     <AddReceivers bind:receivers {onBack} {onContinue} />
   {:else if currentStep === Step.TopUp}
-    <TopUp bind:topUp {onBack} {onContinue} />
+    <TopUp bind:amount={topUp} {onBack} {onContinue} />
   {:else}
     <Review {budget} {receivers} {topUp} {onBack} {onConfirmed} />
   {/if}
