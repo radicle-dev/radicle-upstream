@@ -90,7 +90,7 @@
   .peer {
     display: flex;
     color: var(--color-foreground-level-6);
-    padding: 0 0.5rem;
+    padding: 0 2.5rem 0 0.5rem;
     height: 2.5rem;
     user-select: none;
     align-items: center;
