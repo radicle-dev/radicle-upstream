@@ -32,6 +32,11 @@
 
     box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 16px;
   }
+
+  .connector {
+    padding-top: 10px;
+    color: var(--color-foreground-level-5);
+  }
 </style>
 
 <div class="qrcode-modal">
@@ -39,19 +44,18 @@
 
   <h1 style="margin-top: 1.5rem;">Connect your wallet</h1>
   <p style="margin-top: 1.5rem;">
-    Scan this QR code with your mobile wallet and follow the instructions.
+    Scan this code with your wallet. Not working?
+    <a href="https://walletconnect.org/wallets" class="typo-link">
+      View compatible wallets.
+    </a>
   </p>
 
   <div class="qrcode-wrapper">
-    <Copyable showIcon={false} styleContent={false} copyContent={uri}>
-      <QR size={225} key={uri} />
-    </Copyable>
+    <QR size={225} key={uri} />
+    <p class="typo-text-bold connector">via WalletConnect</p>
   </div>
 
-  <p>
-    Not working? <a
-      href="https://walletconnect.org/wallets"
-      class="typo-link typo-text-small-bold">Check if your mobile wallet
-      supports WalletConnect</a>.
-  </p>
+  <Copyable showIcon={true} styleContent={false} copyContent={uri}>
+    <p class="typo-text-bold">Copy code</p>
+  </Copyable>
 </div>
