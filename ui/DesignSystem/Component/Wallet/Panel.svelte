@@ -8,6 +8,11 @@
   export let account: wallet.Account;
   export let onDisconnect: () => void;
   export let style = "";
+
+  $: balanceFontSize = `min(36px, calc(20rem / ${Math.max(
+    account.balance.length,
+    1
+  )})`;
 </script>
 
 <style>
@@ -50,8 +55,11 @@
 <div class="wrapper" {style}>
   <h3>Balance</h3>
   <h1>
-    <Dai color={'var(--color-secondary)'} size={'h1'}>
-      {wallet.abbreviateNumber(account.balance)}
+    <Dai
+      color={'var(--color-secondary)'}
+      size={'h1'}
+      style={`font-size: ${balanceFontSize}`}>
+      {wallet.formattedBalance(parseInt(account.balance))}
     </Dai>
   </h1>
 
