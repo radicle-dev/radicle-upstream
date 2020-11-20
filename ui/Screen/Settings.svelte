@@ -178,7 +178,7 @@
             <a
               style="color: var(--color-foreground-level-5);"
               class="typo-link"
-              href="https://docs.radicle.xyz/docs/using-radicle/running-a-seed-node">Learn
+              href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed">Learn
               more about seeds</a>
           </p>
         </div>
