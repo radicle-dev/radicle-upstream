@@ -200,9 +200,6 @@
                 <Icon.ArrowBoxUpRight />
               </div>
             </Tooltip>
-          {:else}
-            <Icon.ChevronUpDown
-              style="margin-left: 0.5rem; vertical-align: bottom; fill: var(--color-foreground-level-4)" />
           {/if}
         </div>
       {/each}
