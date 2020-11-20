@@ -142,7 +142,7 @@
       class="item indicator"
       data-cy="settings"
       class:active={path.active(path.settings(), $location)}>
-      <Tooltip value="Settings">
+      <Tooltip value="Settings" style="width: 100%; height: 100%">
         <a href={path.settings()} use:link>
           <Icon.Settings />
         </a>

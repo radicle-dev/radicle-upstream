@@ -3,7 +3,7 @@
   import { calculatePosition, Visibility } from "../../src/tooltip";
 
   export let value = "";
-
+  export let style = "";
   export let position: CSSPosition = CSSPosition.Right;
 
   let container: Element | null = null;
@@ -93,6 +93,7 @@
   <div
     bind:this={container}
     data-cy="tooltip"
+    {style}
     on:mouseenter={show}
     on:mouseleave={hide}>
     <slot />
