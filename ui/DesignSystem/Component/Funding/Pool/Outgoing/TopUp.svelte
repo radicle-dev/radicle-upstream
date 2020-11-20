@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { Button, Input } from "../../../../Primitive";
-  import { Dai, Illustration } from "../../../../Component";
+  import { Dai, Illustration, TxButton } from "../../../../Component";
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
   import {
@@ -11,7 +11,7 @@
 
   export let amount = 0;
   export let onBack: [string, () => void];
-  export let onContinue: [string, () => void];
+  export let onContinue: [string, () => Promise<void>];
   export let balance = 0;
 
   let validating = false;
@@ -65,7 +65,10 @@
     {onBack[0]}
   </Button>
 
-  <Button dataCy="confirm-button" {disabled} on:click={onContinue[1]}>
-    {onContinue[0]}
-  </Button>
+  <TxButton
+    dataCy="confirm-button"
+    {disabled}
+    onClick={onContinue[1]}
+    title={onContinue[0]}
+    showNotification={false} />
 </div>

@@ -14,4 +14,7 @@
   bind:amount
   balance={accountBalance}
   onBack={['Back', onBack]}
-  onContinue={['Continue', onContinue]} />
+  onContinue={['Continue', () => {
+      onContinue();
+      return Promise.resolve();
+    }]} />
