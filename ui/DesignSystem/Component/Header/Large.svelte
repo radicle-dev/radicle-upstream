@@ -108,7 +108,7 @@
         {/if}
         {#if stats}
           <div class="project-stats" data-cy="project-stats">
-            {#if stats.branches > 0}
+            {#if stats && stats.branches > 0}
               <div class="project-stat-item">
                 <Icon.Branch />
                 <p>
@@ -116,10 +116,10 @@
                 </p>
               </div>
             {/if}
-            {#if stats.branches > 0 && stats.contributors > 0}
+            {#if stats && stats.branches > 0 && stats.contributors > 0}
               <span class="typo-mono-bold project-stat-separator">•</span>
             {/if}
-            {#if stats.contributors > 0}
+            {#if stats && stats.contributors > 0}
               <div class="project-stat-item">
                 <Icon.User />
                 <p>
