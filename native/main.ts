@@ -136,7 +136,6 @@ function setupWatcher() {
 
 const openExternalLink = (url: string): void => {
   if (
-    url.toLowerCase().startsWith("irc://") ||
     url.toLowerCase().startsWith("http://") ||
     url.toLowerCase().startsWith("https://")
   ) {
