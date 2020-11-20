@@ -1,29 +1,21 @@
 <script lang="ts">
+  import StyledCopyable from "./StyledCopyable.svelte";
   import { Icon } from "../Primitive";
-  import Copyable from "./Copyable.svelte";
 
-  export let style: string = "";
-  export let urn: string = "";
+  export let style = "";
+  export let urn = "";
+  export let truncate: boolean = false;
 
   const hash = urn.replace("rad:git:", "");
 </script>
 
 <style>
-  .shareable-identifier {
-    cursor: pointer;
-    color: var(--color-foreground-level-6);
-    user-select: none;
+  .peer-id {
     display: flex;
   }
 </style>
 
-<div data-cy="urn" class="shareable-identifier typo-text" {style} title={hash}>
-  <Copyable
-    showIcon={false}
-    styleContent={false}
-    copyContent={urn}
-    notificationText="Radicle ID copied to clipboard">
-    <Icon.At style="margin-right: 0.5rem;" />
-    <p class="typo-overflow-ellipsis">{hash}</p>
-  </Copyable>
+<div class="peer-id" {style} data-cy="urn" title={urn}>
+  <Icon.At style="margin-right: 0.25rem;" />
+  <StyledCopyable {truncate} value={hash} copyContent={urn} />
 </div>

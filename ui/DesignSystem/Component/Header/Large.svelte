@@ -97,9 +97,9 @@
           {name}
         </h1>
         {#if urn}
-          <ShareableIdentifier {urn} style="margin-top: 0.5rem;" />
+          <ShareableIdentifier truncate {urn} style="margin-top: 0.5rem;" />
         {:else if peerId}
-          <PeerId {peerId} style="margin-top: 0.5rem;" />
+          <PeerId truncate {peerId} style="margin-top: 0.5rem;" />
         {/if}
         {#if description.length > 0}
           <p class="description typo-overflow-ellipsis" title={description}>
