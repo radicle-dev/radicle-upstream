@@ -3,7 +3,7 @@
   import type { Stats } from "../../../src/project";
 
   import { Avatar, Icon } from "../../Primitive";
-  import ShareableIdentifier from "../ShareableIdentifier.svelte";
+  import RadicleId from "../RadicleId.svelte";
   import PeerId from "../PeerId.svelte";
 
   export let name: string;
@@ -97,7 +97,7 @@
           {name}
         </h1>
         {#if urn}
-          <ShareableIdentifier truncate {urn} style="margin-top: 0.5rem;" />
+          <RadicleId truncate {urn} style="margin-top: 0.5rem;" />
         {:else if peerId}
           <PeerId truncate {peerId} style="margin-top: 0.5rem;" />
         {/if}

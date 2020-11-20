@@ -18,7 +18,7 @@
     List,
     ProjectList,
     Remote,
-    ShareableIdentifier,
+    RadicleId,
     FollowToggle,
   } from "../../DesignSystem/Component";
 
@@ -83,7 +83,7 @@
               class="undiscovered-project"
               out:fade|local={{ duration: FADE_DURATION }}>
               <div>
-                <ShareableIdentifier urn={request.urn} />
+                <RadicleId urn={request.urn} />
               </div>
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
