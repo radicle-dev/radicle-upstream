@@ -96,7 +96,7 @@
   }
 </style>
 
-<div class="wrapper" data-cy="send-funds-modal">
+<div class="wrapper" data-cy="pool-withdraw-modal">
   <Illustration variant={IllustrationVariant.Money} />
   <h1>Cash out</h1>
 
@@ -133,7 +133,8 @@
       <TxButton
         onClick={onConfirmed}
         title={'Confirm in your wallet'}
-        disabled={disableAmountConfirmation} />
+        disabled={disableAmountConfirmation}
+        errorMessage={e => `Failed to withdraw funds: ${e.message}`} />
     </div>
   {:else}
     <p>Stop support and transfer the entire remaining balance out.</p>

@@ -28,10 +28,6 @@
     align-items: center;
     color: var(--color-secondary);
   }
-
-  .item > * + * {
-    margin-left: 7px;
-  }
 </style>
 
 <div class="incoming-container" {style}>
