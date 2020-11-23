@@ -24,9 +24,9 @@ async function main() {
   const contracts = await deployAll(signer);
   console.log(`Rad token deployed at ${contracts.rad.address.toLowerCase()}`);
   console.log(`ENS deployed at ${contracts.ens.address.toLowerCase()}`);
-  console.log(`Pool deployed at ${contracts.pool.address.toLowerCase()}`);
+  console.log(`Pool deployed at ${contracts.ethPool.address.toLowerCase()}`);
 
-  await (await contracts.pool.topUp({ value: 1000 })).wait();
-  await (await contracts.pool.setAmountPerBlock(1)).wait();
-  await (await contracts.pool.setReceiver(signerAddress, 1)).wait();
+  await (await contracts.ethPool.topUp({ value: 1000 })).wait();
+  await (await contracts.ethPool.setAmountPerBlock(1)).wait();
+  await (await contracts.ethPool.setReceiver(signerAddress, 1)).wait();
 }
