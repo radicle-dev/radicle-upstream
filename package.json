@@ -152,7 +152,7 @@
     "browserify": "^17.0.0",
     "marked": "^1.2.3",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts#9e4c085fe9bb0f7762a87fd48a4d1aedda70d933",
+    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts#c827309c723068d459371d9691d10bd60d702c6e",
     "svelte-persistent-store": "^0.1.3",
     "timeago.js": "^4.0.2",
     "twemoji": "13.0.1",
