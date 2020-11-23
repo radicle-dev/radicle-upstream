@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import { Button } from "../../../../Primitive";
   import TopUp from "../Outgoing/TopUp.svelte";
 
   import { wallet } from "../../../../../src/wallet";
@@ -7,6 +8,8 @@
   export let onBack: () => void;
   export let onContinue: () => void;
 
+  let disabled = true;
+
   $: accountBalance = $wallet.connected.account.balance * 1;
 </script>
 
@@ -14,7 +17,6 @@
   bind:amount
   balance={accountBalance}
   onBack={['Back', onBack]}
-  onContinue={['Continue', () => {
-      onContinue();
-      return Promise.resolve();
-    }]} />
+  bind:disabled>
+  <Button on:click={onContinue} {disabled}>Continue</Button>
+</TopUp>

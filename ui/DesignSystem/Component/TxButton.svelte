@@ -12,21 +12,16 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let errorMessage: (error: any) => string;
   export let disabled = false;
-  export let showNotification = true;
 
   let running = false;
 
   async function userDidClick(): Promise<void> {
     try {
       running = true;
-      if (showNotification) {
-        notification.info("Approve the transaction on your wallet app 📲");
-      }
+      notification.info("Approve the transaction on your wallet app 📲");
       await onClick();
     } catch (error) {
-      if (showNotification) {
-        notification.error(errorMessage(error), true);
-      }
+      notification.error(errorMessage(error), true);
     } finally {
       running = false;
     }

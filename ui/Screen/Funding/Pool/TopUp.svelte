@@ -2,6 +2,7 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
+  import { TxButton } from "../../../DesignSystem/Component";
   import TopUp from "../../../DesignSystem/Component/Funding/Pool/Outgoing/TopUp.svelte";
 
   import { resolve } from "path";
@@ -20,6 +21,8 @@
   async function onCancel(): Promise<void> {
     modal.hide();
   }
+
+  let disabled = true;
 </script>
 
 <style>
@@ -45,5 +48,10 @@
     bind:amount
     balance={$store.getAccount().balance * 1}
     onBack={['Cancel', onCancel]}
-    onContinue={['Confirm in your wallet', onConfirmed]} />
+    bind:disabled>
+    <TxButton
+      onClick={onConfirmed}
+      title={'Confirm in your wallet'}
+      {disabled} />
+  </TopUp>
 </div>

@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { Button, Input } from "../../../../Primitive";
-  import { Dai, Illustration, TxButton } from "../../../../Component";
+  import { Dai, Illustration } from "../../../../Component";
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
   import {
@@ -11,8 +11,8 @@
 
   export let amount = 0;
   export let onBack: [string, () => void];
-  export let onContinue: [string, () => Promise<void>];
   export let balance = 0;
+  export let disabled = true;
 
   let validating = false;
   $: validation = topUpAmountValidationStore(balance);
@@ -65,10 +65,6 @@
     {onBack[0]}
   </Button>
 
-  <TxButton
-    dataCy="confirm-button"
-    {disabled}
-    onClick={onContinue[1]}
-    title={onContinue[0]}
-    showNotification={false} />
+  <!-- Continue button provided by the parent view !-->
+  <slot />
 </div>
