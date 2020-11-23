@@ -408,3 +408,12 @@ export const repositoryPathValidationStore = (
 export const isMaintainer = (userUrn: Urn, project: Project): boolean => {
   return project.metadata.maintainers.includes(userUrn);
 };
+
+// Checks if any of the contributors in the list is the current user.
+export const isContributor = (users: User[]): boolean => {
+  return !!users.find(
+    u =>
+      u.type === PeerType.Local &&
+      (u.role === Role.Maintainer || u.role == Role.Contributor)
+  );
+};
