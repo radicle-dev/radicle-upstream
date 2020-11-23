@@ -148,14 +148,13 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <!-- TODO(abbey): link to actual docs abt multi-device support -->
           <p>
             Share your Device ID with others to be added as a remote.
             <br /><a
               style="color: var(--color-foreground-level-5);"
               class="typo-link"
-              href="https://radicle.xyz/#upstream-faq">Learn more about managing
-              devices</a>
+              href="https://docs.radicle.xyz/docs/understanding-radicle/faq">Learn
+              more about managing devices</a>
           </p>
         </div>
         <div class="action">
@@ -173,14 +172,14 @@
           <p class="typo-text-bold">
             Seeds help you find more projects and people on the network.
           </p>
-          <!-- TODO(julien): link to actual docs abt seeds -->
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
             Enter seed addresses that you’d like to subscribe to here.
             <a
               style="color: var(--color-foreground-level-5);"
               class="typo-link"
-              href="https://radicle.xyz/#upstream-faq">Learn more about seeds</a>
+              href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed">Learn
+              more about seeds</a>
           </p>
         </div>
         <form class="seed-entry-form" on:submit|preventDefault>
@@ -249,11 +248,11 @@
       </div>
       <div class="section-item">
         <div class="info">
-          <p class="typo-text-bold">Join the developer chat</p>
+          <p class="typo-text-bold">Join the community chat</p>
         </div>
         <div class="action">
-          <a class="typo-link" href="irc://freenode:1/radicle">
-            #radicle on freenode
+          <a class="typo-link" href="https://matrix.radicle.community">
+            matrix.radicle.community
           </a>
         </div>
       </div>

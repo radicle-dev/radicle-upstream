@@ -66,7 +66,7 @@ pub enum Control {
     CreateRequest(
         RadUrn,
         Instant,
-        Option<oneshot::Sender<waiting_room::Created<Instant>>>,
+        oneshot::Sender<waiting_room::Created<Instant>>,
     ),
     /// Request a project search.
     GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),

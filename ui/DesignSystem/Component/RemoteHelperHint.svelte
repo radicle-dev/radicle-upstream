@@ -47,7 +47,7 @@
     <a
       style="color: var(--color-foreground-level-5);"
       class="typo-link"
-      href="https://radicle.xyz/#upstream-faq">
+      href="https://docs.radicle.xyz/docs/getting-started/getting-started#configuring-your-system">
       Read more
     </a>
   </p>
