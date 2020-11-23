@@ -37,10 +37,12 @@
 
 <div class="stats" {style}>
   {#each formattedStats as stat}
-    <span class="stat">
-      <svelte:component this={stat.icon} style="margin-right: 4px;" />
-      <p class="typo-text-mono-bold">{stat.count}</p>
-      <slot />
-    </span>
+    {#if stat.count > 0}
+      <span class="stat">
+        <svelte:component this={stat.icon} style="margin-right: 4px;" />
+        <p class="typo-text-mono-bold">{stat.count}</p>
+        <slot />
+      </span>
+    {/if}
   {/each}
 </div>
