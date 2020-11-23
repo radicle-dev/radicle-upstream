@@ -15,7 +15,7 @@
   }
 </style>
 
-<div class="peer-id" {style} data-cy="urn" title={urn}>
+<div class="radicle-id" {style} data-cy="urn" title={urn}>
   <Icon.At style="margin-right: 0.25rem;" />
   <StyledCopyable {truncate} value={hash} copyContent={urn} />
 </div>
