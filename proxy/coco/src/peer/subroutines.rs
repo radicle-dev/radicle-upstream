@@ -125,7 +125,7 @@ impl Subroutines {
                             Input::Control(input::Control::ListRequests(sender))
                         },
                         control::Request::StartSearch(urn, time, sender) => {
-                            Input::Control(input::Control::CreateRequest(urn, time, Some(sender)))
+                            Input::Control(input::Control::CreateRequest(urn, time, sender))
                         },
                     })
                     .boxed(),
