@@ -70,12 +70,13 @@
     border-radius: 0.5rem;
 
     width: 600px;
-    height: 400px;
   }
 
   h1,
-  p {
-    padding: 0 var(--content-padding);
+  p,
+  .note,
+  .input {
+    margin-top: 1.5rem;
   }
 
   .note {
@@ -84,7 +85,6 @@
     display: flex;
     align-items: center;
     text-align: center;
-    margin-top: calc(1.5 * var(--content-padding));
     color: var(--color-foreground-level-5);
   }
 
@@ -92,7 +92,7 @@
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
+    margin-top: var(--content-padding);
   }
 </style>
 
@@ -106,19 +106,21 @@
       below.
       <!-- svelte-ignore a11y-missing-attribute -->
       <a class="typo-link" on:click={() => (mode = Mode.CashoutAll)}>Want to
-        stop support completely?</a>
+        stop support completely</a>?
     </p>
-    <Input.Text
-      dataCy="modal-amount-input"
-      bind:value={amount}
-      validation={$validation}
-      showLeftItem
-      autofocus
-      style={'width: 125px'}>
-      <div slot="left" style="position: absolute; top: 1px; left: 12px;">
-        <Dai />
-      </div>
-    </Input.Text>
+    <div class="input">
+      <Input.Text
+        dataCy="modal-amount-input"
+        bind:value={amount}
+        validation={$validation}
+        showLeftItem
+        autofocus
+        style={'width: 125px'}>
+        <div slot="left" style="position: absolute; top: 1px; left: 12px;">
+          <Dai />
+        </div>
+      </Input.Text>
+    </div>
     <div class="submit">
       <Button
         variant="transparent"
