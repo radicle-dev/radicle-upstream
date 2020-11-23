@@ -150,7 +150,7 @@
     "@types/qs": "^6.9.5",
     "marked": "^1.2.3",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts#55ca1a03ea7a54767674b53f576d149b4a7c4d49",
+    "radicle-contracts": "https://github.com/radicle-dev/radicle-contracts#9e4c085fe9bb0f7762a87fd48a4d1aedda70d933",
     "svelte-persistent-store": "^0.1.3",
     "timeago.js": "^4.0.2",
     "twemoji": "13.0.1",
