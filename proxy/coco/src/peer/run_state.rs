@@ -206,15 +206,11 @@ impl RunState {
                     Command::PersistWaitingRoom(self.waiting_room.clone()),
                 ]
             },
-            input::Control::CreateRequest(urn, time, maybe_sender) => {
+            input::Control::CreateRequest(urn, time, sender) => {
                 let request = self.waiting_room.request(&urn, time);
-                if let Some(sender) = maybe_sender {
-                    vec![Command::Control(command::Control::Respond(
-                        control::Response::StartSearch(sender, request),
-                    ))]
-                } else {
-                    vec![]
-                }
+                vec![Command::Control(command::Control::Respond(
+                    control::Response::StartSearch(sender, request),
+                ))]
             },
             input::Control::GetRequest(urn, sender) => {
                 vec![Command::Control(command::Control::Respond(
@@ -492,6 +488,7 @@ mod test {
 
     use assert_matches::assert_matches;
     use pretty_assertions::assert_eq;
+    use tokio::sync::oneshot;
 
     use librad::{
         keys::SecretKey,
@@ -701,74 +698,22 @@ mod test {
 
         assert!(cmds.is_empty(), "expected no command");
     }
+
     #[test]
-    fn issue_query_when_requested() -> Result<(), Box<dyn std::error::Error + 'static>> {
+    fn issue_query_when_requested_and_online() -> Result<(), Box<dyn std::error::Error + 'static>> {
         let urn: RadUrn =
             "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
 
-        let status = Status::Stopped;
-        let status_since = Instant::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
-            urn.clone(),
-            Instant::now(),
-            None,
-        )));
-        assert_matches!(cmds.first(), None);
-
-        let status = Status::Started;
-        let status_since = Instant::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
-            urn.clone(),
-            Instant::now(),
-            None,
-        )));
-        assert_matches!(cmds.first(), None);
-
-        let status = Status::Offline;
-        let status_since = Instant::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
-            urn.clone(),
-            Instant::now(),
-            None,
-        )));
-        assert_matches!(cmds.first(), None);
-
-        let status = Status::Syncing {
-            synced: 0,
-            syncs: 1,
-        };
-        let status_since = Instant::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
-            urn.clone(),
-            Instant::now(),
-            None,
-        )));
-        assert!(cmds.is_empty());
-
-        let cmds = state.transition(Input::Request(input::Request::Tick));
-        let cmd = cmds.first().unwrap();
-        assert_matches!(cmd, Command::Request(command::Request::Query(have)) => {
-            assert_eq!(*have, urn);
-        });
-
         let status = Status::Online { connected: 1 };
         let status_since = Instant::now();
+        let (response_sender, _) = oneshot::channel();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
-        let cmds = state.transition(Input::Control(input::Control::CreateRequest(
+        state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             Instant::now(),
-            None,
+            response_sender,
         )));
-        assert!(cmds.is_empty());
 
         let cmds = state.transition(Input::Request(input::Request::Tick));
         assert_matches!(
@@ -777,6 +722,35 @@ mod test {
                 assert_eq!(*have, urn);
             }
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn issue_query_when_requested_and_syncing() -> Result<(), Box<dyn std::error::Error + 'static>>
+    {
+        let urn: RadUrn =
+            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+
+        let status = Status::Syncing {
+            synced: 0,
+            syncs: 1,
+        };
+        let status_since = Instant::now();
+        let (response_sender, _) = oneshot::channel();
+        let mut state =
+            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        state.transition(Input::Control(input::Control::CreateRequest(
+            urn.clone(),
+            Instant::now(),
+            response_sender,
+        )));
+
+        let cmds = state.transition(Input::Request(input::Request::Tick));
+        let cmd = cmds.first().unwrap();
+        assert_matches!(cmd, Command::Request(command::Request::Query(have)) => {
+            assert_eq!(*have, urn);
+        });
 
         Ok(())
     }
@@ -793,16 +767,15 @@ mod test {
 
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
+        let (response_sender, _) = oneshot::channel();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
-        assert!(state
-            .transition(Input::Control(input::Control::CreateRequest(
-                urn.clone(),
-                Instant::now(),
-                None
-            )))
-            .is_empty());
+        state.transition(Input::Control(input::Control::CreateRequest(
+            urn.clone(),
+            Instant::now(),
+            response_sender,
+        )));
         assert_matches!(
             state
                 .transition(Input::Request(input::Request::Queried(urn.clone())))
