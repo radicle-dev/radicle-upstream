@@ -1,4 +1,4 @@
-import * as svelteStore from "svelte/store";
+import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
 import * as api from "./api";
 import * as remote from "./remote";
@@ -45,7 +45,10 @@ export const fetch = (urn: string): Promise<Identity> => {
 };
 
 // TODO(nuno): Make this stub a real thing that will be set/read from the identity itself.
-export const linkedAddress = svelteStore.writable<string | null>(null);
+export const linkedAddress = persistentStore<string | null>(
+  "radicle-eth",
+  null
+);
 
 export function linkEthereumAddress(address: string): Promise<void> {
   linkedAddress.set(address);
