@@ -1,7 +1,6 @@
 import * as api from "./api";
 import * as error from "./error";
 import type * as project from "./project";
-import * as profile from "./profile";
 import * as remote from "./remote";
 import * as validation from "./validation";
 import type * as waitingRoom from "./waitingRoom";
@@ -28,7 +27,6 @@ export const requestProject = async (urn: string): Promise<void> => {
       null
     );
     projectRequestStore.success(projectRequest);
-    profile.fetchFollowing();
   } catch (err) {
     projectRequestStore.error(error.fromException(err));
   }
