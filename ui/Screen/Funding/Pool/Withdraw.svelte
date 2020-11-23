@@ -2,21 +2,15 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import {
-    Copyable,
-    Dai,
-    Remote,
-    TxButton,
-  } from "../../../DesignSystem/Component";
-  import { Button, Input, Icon } from "../../../DesignSystem/Primitive";
+  import { Dai, TxButton, Illustration } from "../../../DesignSystem/Component";
+  import { Button, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
+  import { Variant as IllustrationVariant } from "../../../src/illustration";
   import * as modal from "../../../src/modal";
   import {
-    CONTRACT_ADDRESS,
     amountStore,
-    displayAddress,
-    topUpAmountValidationStore,
+    balanceValidationStore,
     store,
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
@@ -26,18 +20,16 @@
   let validatingAmount = false;
   let amount: number;
 
-  const amountValidation = topUpAmountValidationStore(
-    get(store).getAccount().balance
-  );
+  const validation = balanceValidationStore(get(store).getAccount().balance);
   $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) amountValidation.validate($amountStore);
+    if (validatingAmount) validation.validate($amountStore);
   }
-  $: disableConfirmation =
-    $amountValidation && $amountValidation.status !== ValidationStatus.Success;
+  $: disableAmountConfirmation =
+    $validation && $validation.status !== ValidationStatus.Success;
 
-  async function onConfirmed(): Promise<void> {
+  async function onConfirmed(amount: number = 42): Promise<void> {
     await get(store).withdraw(amount);
     modal.hide();
     resolve();
@@ -46,144 +38,115 @@
   async function onCancel(): Promise<void> {
     modal.hide();
   }
+
+  enum Mode {
+    // The user is specifying the specific amount they want to cashout.
+    SpecifyAmount,
+    // The user is opting to cashout everything and stop their support.
+    CashoutAll,
+  }
+
+  let mode = Mode.SpecifyAmount;
 </script>
 
 <style>
   .wrapper {
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
     flex-direction: column;
+
+    text-align: center;
+
     padding: var(--content-padding);
-    width: 650px;
     background: var(--color-background);
     border-radius: 0.5rem;
+
+    width: 600px;
+    height: 400px;
   }
 
-  header {
+  h1,
+  p {
+    padding: 0 var(--content-padding);
+  }
+
+  .note {
+    font-size: 14px;
+    line-height: 18px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    width: 100%;
-    padding: var(--content-padding);
-    margin-bottom: 1.5rem;
-    background-color: var(--color-foreground-level-1);
-    border: 1px solid var(--color-foreground-level-2);
-    border-radius: 0.25rem;
-  }
-
-  .from-to {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1rem;
-  }
-
-  .sub-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    margin-top: 1.7rem;
-  }
-
-  .sub-section p {
-    color: var(--color-foreground-level-6);
-  }
-
-  .subheading {
-    color: var(--color-foreground-level-6);
-    padding: 0.5rem;
+    text-align: center;
+    margin-top: calc(1.5 * var(--content-padding));
+    color: var(--color-foreground-level-5);
   }
 
   .submit {
     display: flex;
     justify-content: flex-end;
-    margin-top: 2rem;
-  }
-
-  header .from-to .address,
-  header .from-to .balance {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--color-foreground-level-5);
-    font-size: 14px;
-    text-align: center;
+    width: 100%;
+    margin-top: calc(var(--content-padding) / 2);
   }
 </style>
 
 <div class="wrapper" data-cy="send-funds-modal">
-  <div data-cy="preparation-step">
-    <header>
-      <h2>Withdraw</h2>
+  <Illustration variant={IllustrationVariant.Money} />
+  <h1>Cash out</h1>
 
-      <div class="from-to">
-        <div class="from typo-text-bold subheading">
-          <p class="typo-text-bold">Outgoing support</p>
-          <div class="address">
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={CONTRACT_ADDRESS}
-              notificationText="Address copied to the clipboard">
-              {displayAddress(CONTRACT_ADDRESS)}
-            </Copyable>
-          </div>
-          <div class="balance">
-            <Remote store={get(store).data} let:data={poolData}>
-              <Dai color={'var(--color-foreground-level-5'}>
-                {poolData.balance}
-              </Dai>
-            </Remote>
-          </div>
-        </div>
-        <div class="typo-text-bold subheading arrow">-&gt;</div>
-        <div class="typo-text-bold subheading">
-          <p class="typo-text-bold">Your connected wallet</p>
-          <div class="address">
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={get(store).getAccount().address}
-              notificationText="Address copied to the clipboard">
-              {displayAddress(get(store).getAccount().address)}
-            </Copyable>
-          </div>
-          <div class="balance">
-            <Dai color={'var(--color-foreground-level-5'}>
-              {get(store).getAccount().balance}
-            </Dai>
-          </div>
-        </div>
+  {#if mode === Mode.SpecifyAmount}
+    <p>
+      Enter the amount you’d like to transfer to your linked Ethereum account
+      below.
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <a class="typo-link" on:click={() => (mode = Mode.CashoutAll)}>Want to
+        stop support completely?</a>
+    </p>
+    <Input.Text
+      dataCy="modal-amount-input"
+      bind:value={amount}
+      validation={$validation}
+      showLeftItem
+      autofocus
+      style={'width: 125px'}>
+      <div slot="left" style="position: absolute; top: 1px; left: 12px;">
+        <Dai />
       </div>
-    </header>
-
-    <div class="sub-section">
-      <p class="typo-text-bold subheading">Amount</p>
-      <Input.Text
-        dataCy="modal-amount-input"
-        placeholder="Enter the amount"
-        bind:value={amount}
-        showLeftItem
-        autofocus
-        validation={$amountValidation}>
-        <div slot="left" style="position: absolute; top: 1px; left: 12px;">
-          <Dai />
-        </div>
-      </Input.Text>
-    </div>
-
+    </Input.Text>
     <div class="submit">
-      <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>
+      <Button
+        variant="transparent"
+        dataCy="cancel"
+        on:click={onCancel}
+        style="margin-right: 1rem">
         Cancel
       </Button>
 
       <TxButton
-        title="Confirm"
-        disabled={disableConfirmation}
-        dataCy="review-transfer-button"
-        onClick={onConfirmed}
-        errorMessage={e => `Could not withdraw pool funds: ${e.message}`} />
+        onClick={() => onConfirmed(amount)}
+        title={'Confirm in your wallet'}
+        disabled={disableAmountConfirmation} />
     </div>
-  </div>
+  {:else}
+    <p>Stop support and transfer the entire remaining balance out.</p>
+
+    <div class="note">
+      Note: due to the nature of streaming digital money, the amount transferred
+      to your linked account will be a bit less than your current balance.
+    </div>
+
+    <div class="submit">
+      <Button
+        variant="transparent"
+        dataCy="back"
+        on:click={() => (mode = Mode.SpecifyAmount)}
+        style="margin-right: 1rem">
+        Back
+      </Button>
+
+      <TxButton
+        variant="destructive"
+        onClick={() => onConfirmed()}
+        title={'Stop support and cash out everything'} />
+    </div>
+  {/if}
 </div>

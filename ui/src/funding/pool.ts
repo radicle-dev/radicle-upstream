@@ -257,7 +257,10 @@ export const monthlyContributionValidationStore = (): validation.ValidationStore
   return validation.createValidationStore(contraints.monthlyContribution);
 };
 
-export const topUpAmountValidationStore = (
+// Validate a balance operation, either a 'Top Up' or a 'Cash out'.
+// The provided `balance` represents the account balance upon which
+// the value being validated will be compared for sufficiency.
+export const balanceValidationStore = (
   balance: BigNumberish
 ): validation.ValidationStore => {
   return validation.createValidationStore(contraints.topUpAmount, [

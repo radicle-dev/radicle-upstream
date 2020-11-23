@@ -5,7 +5,7 @@
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
   import {
     amountStore,
-    topUpAmountValidationStore,
+    balanceValidationStore,
   } from "../../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../../src/validation";
 
@@ -15,7 +15,7 @@
   export let disabled = true;
 
   let validating = false;
-  $: validation = topUpAmountValidationStore(balance);
+  $: validation = balanceValidationStore(balance);
   $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validating = true;
