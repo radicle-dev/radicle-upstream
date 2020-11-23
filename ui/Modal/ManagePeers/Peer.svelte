@@ -12,7 +12,7 @@
   import {
     Badge,
     FollowToggle,
-    StyledCopyable,
+    PeerId,
     Tooltip,
   } from "../../DesignSystem/Component";
 
@@ -51,11 +51,11 @@
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {/if}
     </div>
-    <StyledCopyable
+    <PeerId
       style="margin: 0.5rem 0 0 -0.25rem;"
       truncate
       expandable={false}
-      value={peer.peerId} />
+      peerId={peer.peerId} />
   </div>
   {#if peer.type !== PeerType.Local}
     {#if peer.role === Role.Maintainer}

@@ -24,6 +24,12 @@ pub enum Notification {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {
+    /// A request for a project was created and is pending submission to the network
+    #[serde(rename_all = "camelCase")]
+    RequestCreated {
+        /// Urn of the project.
+        urn: coco::Urn,
+    },
     /// A request for a project was cloned successfully.
     #[serde(rename_all = "camelCase")]
     RequestCloned {
@@ -62,6 +68,9 @@ impl MaybeFrom<PeerEvent> for Notification {
                 peer: url.authority,
                 urn: url.urn,
             })),
+            PeerEvent::RequestCreated(urn) => {
+                Some(Self::LocalPeer(LocalPeer::RequestCreated { urn }))
+            },
             PeerEvent::RequestQueried(urn) => {
                 Some(Self::LocalPeer(LocalPeer::RequestQueried { urn }))
             },

@@ -2,7 +2,7 @@
   import { Avatar } from "../../DesignSystem/Primitive";
   import {
     FollowToggle,
-    ShareableIdentifier,
+    RadicleId,
     Stats,
     Tooltip,
   } from "../../DesignSystem/Component";
@@ -70,7 +70,7 @@
     {/if}
   </div>
 
-  <ShareableIdentifier urn={project.id} style="margin-bottom: 1rem;" />
+  <RadicleId urn={project.id} style="margin-bottom: 1rem;" />
 
   <div class="description">
     <p>{project.metadata.description}</p>

@@ -186,6 +186,10 @@ impl Subroutines {
             Command::SyncPeer(peer_id) => {
                 SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
             },
+            Command::EmitEvent(event) => {
+                self.subscriber.send(event).ok();
+                SpawnAbortable::new(async move {})
+            },
         }
     }
 }

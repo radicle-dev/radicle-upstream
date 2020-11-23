@@ -49,7 +49,9 @@ pub enum Event {
     RequestCloned(RadUrl),
     /// Request is being cloned from a peer.
     RequestCloning(RadUrl),
-    /// Requested urn was queried on the network.
+    /// Request for the URN was created and is pending submission to the network.
+    RequestCreated(RadUrn),
+    /// Request for the URN was submitted to the network.
     RequestQueried(RadUrn),
     /// Waiting room interval ticked.
     RequestTick,
@@ -208,9 +210,12 @@ impl RunState {
             },
             input::Control::CreateRequest(urn, time, sender) => {
                 let request = self.waiting_room.request(&urn, time);
-                vec![Command::Control(command::Control::Respond(
-                    control::Response::StartSearch(sender, request),
-                ))]
+                vec![
+                    Command::Control(command::Control::Respond(control::Response::StartSearch(
+                        sender, request,
+                    ))),
+                    Command::EmitEvent(Event::RequestCreated(urn)),
+                ]
             },
             input::Control::GetRequest(urn, sender) => {
                 vec![Command::Control(command::Control::Respond(

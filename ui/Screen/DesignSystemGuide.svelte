@@ -17,7 +17,7 @@
     Notification,
     ProjectCard,
     SegmentedControl,
-    ShareableIdentifier,
+    RadicleId,
     Spinner,
     Stats,
     SupportButton,
@@ -802,7 +802,7 @@
       </Swatch>
 
       <Swatch>
-        <ShareableIdentifier
+        <RadicleId
           urn="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
       </Swatch>
 

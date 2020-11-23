@@ -25,6 +25,8 @@ pub enum Command {
     SyncPeer(PeerId),
     /// Start sync timeout.
     StartSyncTimeout(Duration),
+    /// Emit an external event to all subscribers
+    EmitEvent(super::Event),
 }
 
 /// Reactions for incoming control requests.
