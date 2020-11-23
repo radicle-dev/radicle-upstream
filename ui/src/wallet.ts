@@ -260,7 +260,9 @@ export function formattedBalance(balance: number): string {
 }
 
 export function ethToDai(eth: string): string {
-  return (eth / (10 ^ 18)).toString();
+  return ethers.BigNumber.from(eth)
+    .div(10 ^ 18)
+    .toString();
 }
 
 // The wallet singleton
