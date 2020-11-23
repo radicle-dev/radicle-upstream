@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { get } from "svelte/store";
-  import { Copyable, Dai, Gwei } from "../DesignSystem/Component";
+  import { Copyable, Dai } from "../DesignSystem/Component";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
 
   import { displayAddress } from "../src/funding/pool";
@@ -134,30 +134,16 @@
   </header>
 
   <div class="content">
-    <div class="section">
-      {#if !!tx.meta.amount}
+    {#if !!tx.meta.amount}
+      <div class="section">
         <div class="row">
           <p>Amount</p>
           <p class="typo-semi-bold">
             <Dai variant={'negative'}>{tx.meta.amount}</Dai>
           </p>
         </div>
-      {/if}
-      {#if !!tx.gas.used}
-        <div class="row">
-          <p>Gas used</p>
-          <Gwei>{tx.gas.used}</Gwei>
-        </div>
-      {/if}
-      <div class="row">
-        <p>Gas limit</p>
-        <Gwei>{tx.gas.limit}</Gwei>
       </div>
-      <div class="row">
-        <p>Gas price</p>
-        <Gwei>{tx.gas.price}</Gwei>
-      </div>
-    </div>
+    {/if}
 
     <div class="section">
       <div class="row">

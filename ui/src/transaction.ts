@@ -26,9 +26,6 @@ export interface Tx {
   // In milliseconds since epoch.
   date: number;
 
-  // The gas info for this transaction
-  gas: Gas;
-
   // The kind of transaction. The `meta` variant must depend upon it.
   kind: TxKind;
 
@@ -49,12 +46,6 @@ export enum TxStatus {
   Included = "Included",
   // The transaction as been rejected.
   Rejected = "Rejected",
-}
-
-export interface Gas {
-  used: BigNumberish | undefined;
-  limit: BigNumberish;
-  price: BigNumberish;
 }
 
 type PoolTx =
@@ -114,17 +105,16 @@ export function beneficiaries(txc: ContractTransaction): Tx {
   return buildTx(TxKind.UpdateBeneficiaries, txc);
 }
 
-function buildTx(kind: TxKind, txc: ContractTransaction): Tx {
+function buildTx(
+  kind: TxKind,
+  txc: ContractTransaction,
+  date: number = Date.now()
+): Tx {
   return {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
     meta: txMetadata(kind, txc),
-    date: Date.now(),
-    gas: {
-      used: undefined,
-      limit: txc.gasLimit.toString(),
-      price: txc.gasPrice.toString(),
-    },
+    date,
     kind,
     from: txc.from,
     to: txc.to,
@@ -178,7 +168,6 @@ async function updateStatuses() {
         const receipt = await provider.getTransactionReceipt(tx.hash);
         const newStatus = await status(receipt);
         if (newStatus) tx.status = newStatus;
-        tx.gas.used = receipt.gasUsed.toString();
       });
     return txs;
   });
