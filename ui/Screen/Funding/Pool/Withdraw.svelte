@@ -29,14 +29,21 @@
   $: disableAmountConfirmation =
     $validation && $validation.status !== ValidationStatus.Success;
 
-  async function onConfirmed(amount: number = 42): Promise<void> {
-    await get(store).withdraw(amount);
-    modal.hide();
-    resolve();
-  }
-
   async function onCancel(): Promise<void> {
     modal.hide();
+  }
+
+  async function onConfirmed(): Promise<void> {
+    const pool = get(store);
+    if (pool) {
+      if (mode === Mode.SpecifyAmount) {
+        await pool.withdraw(amount);
+      } else {
+        await pool.withdrawAll();
+      }
+      modal.hide();
+      resolve();
+    }
   }
 
   enum Mode {
@@ -122,7 +129,7 @@
       </Button>
 
       <TxButton
-        onClick={() => onConfirmed(amount)}
+        onClick={onConfirmed}
         title={'Confirm in your wallet'}
         disabled={disableAmountConfirmation} />
     </div>
@@ -145,7 +152,7 @@
 
       <TxButton
         variant="destructive"
-        onClick={() => onConfirmed()}
+        onClick={onConfirmed}
         title={'Stop support and cash out everything'} />
     </div>
   {/if}

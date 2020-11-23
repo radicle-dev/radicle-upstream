@@ -35,6 +35,9 @@ export interface Pool {
   // Returns once the transaction has been included in the chain.
   withdraw(value: number): Promise<void>;
 
+  // Withdraw all the outgoing balance funds to the connected wallet.
+  withdrawAll(): Promise<void>;
+
   // Collect funds the user has received up to now from givers and
   // transfer them to the users account.
   collect(): Promise<void>;
@@ -168,7 +171,7 @@ export function make(wallet: Wallet): Pool {
     loadPoolData();
   }
 
-  async function withdraw(amount: number): Promise<void> {
+  async function withdraw(amount: BigNumberish): Promise<void> {
     const tx = await poolContract.withdraw(amount);
     transaction.add(transaction.withdraw(tx));
     const receipt = await tx.wait();
@@ -176,6 +179,11 @@ export function make(wallet: Wallet): Pool {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
     }
     loadPoolData();
+  }
+
+  async function withdrawAll(): Promise<void> {
+    const all = await poolContract.WITHDRAW_ALL();
+    return withdraw(all);
   }
 
   async function collect(): Promise<void> {
@@ -195,6 +203,7 @@ export function make(wallet: Wallet): Pool {
     updateSettings,
     topUp,
     withdraw,
+    withdrawAll,
     collect,
   };
 }
