@@ -4,9 +4,11 @@ use std::{
     convert::TryFrom,
     io,
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
+    sync::Arc,
+    time::Duration,
 };
 
-use tokio::sync::{mpsc, watch};
+use tokio::sync::{mpsc, watch, Mutex};
 
 use librad::{keys, net, net::discovery, paths, peer::PeerId};
 
@@ -133,22 +135,39 @@ impl discovery::Discovery for StreamDiscovery {
     type Stream = mpsc::Receiver<(PeerId, Vec<SocketAddr>)>;
 
     fn discover(mut self) -> Self::Stream {
+        let last_seeds: Arc<Mutex<Vec<seed::Seed>>> = Arc::new(Mutex::new(vec![]));
         let (mut sender, receiver) = mpsc::channel(1024);
 
-        tokio::spawn(async move {
-            let mut last_seeds: Vec<seed::Seed> = vec![];
+        {
+            let last_seeds = last_seeds.clone();
+            let mut sender = sender.clone();
+            tokio::spawn(async move {
+                while let Some(seeds) = self.seeds_receiver.recv().await {
+                    let mut last_seeds = last_seeds.lock().await;
+                    if *last_seeds == seeds {
+                        continue;
+                    }
 
-            while let Some(seeds) = self.seeds_receiver.recv().await {
-                if last_seeds == seeds {
-                    continue;
+                    for seed in &seeds {
+                        let pair = (seed.peer_id, vec![seed.addr]);
+                        sender.send(pair).await.ok();
+                    }
+
+                    *last_seeds = seeds;
                 }
+            });
+        }
 
-                for seed in &seeds {
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(Duration::from_secs(5));
+
+            loop {
+                let _instant = interval.tick().await;
+
+                for seed in &(*last_seeds.lock().await) {
                     let pair = (seed.peer_id, vec![seed.addr]);
                     sender.send(pair).await.ok();
                 }
-
-                last_seeds = seeds;
             }
         });
 
