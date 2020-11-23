@@ -1,6 +1,6 @@
 import * as svelteStore from "svelte/store";
-import { PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/PoolFactory";
-import type { Pool as PoolContract } from "radicle-contracts/contract-bindings/ethers/Pool";
+import { EthPoolFactory as PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/EthPoolFactory";
+import type { EthPool as PoolContract } from "radicle-contracts/contract-bindings/ethers/EthPool";
 
 import * as transaction from "../transaction";
 import * as validation from "../validation";
@@ -86,7 +86,6 @@ export function make(wallet: Wallet): Pool {
     CONTRACT_ADDRESS,
     wallet.signer
   );
-
   loadPoolData();
 
   async function loadPoolData() {
