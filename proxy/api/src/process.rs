@@ -135,6 +135,36 @@ async fn run_rigging(
 
     if let Some(peer) = peer {
         let mut tasks = vec![server.boxed()];
+
+        if let Some(seeds_sender) = seeds_sender {
+            let mut peer_control = peer.control();
+            let seeds_store = ctx.store().clone();
+            let seeds_event_task = coco::SpawnAbortable::new(async move {
+                let mut last_seeds: Vec<seed::Seed> = vec![];
+                let mut timer = tokio::time::interval(Duration::from_secs(1));
+
+                loop {
+                    let _timestamp = timer.tick().await;
+
+                    let seeds = session_seeds(&seeds_store)
+                        .await
+                        .expect("Failed to read session store");
+
+                    let current_status = peer_control.current_status().await;
+
+                    if seeds == last_seeds && current_status != coco::PeerStatus::Started {
+                        continue;
+                    }
+
+                    if seeds_sender.broadcast(seeds.clone()).is_err() {
+                        break;
+                    }
+
+                    last_seeds = seeds;
+                }
+            });
+            tasks.push(seeds_event_task.map_err(RunError::from).boxed());
+        }
         let peer_event_task = coco::SpawnAbortable::new({
             let mut peer_events = peer.subscribe();
 
@@ -152,38 +182,12 @@ async fn run_rigging(
             }
         });
         tasks.push(peer_event_task.map_err(RunError::from).boxed());
+
         let peer = async move {
             log::info!("starting peer");
             peer.into_running().await
         };
         tasks.push(peer.map_err(RunError::from).boxed());
-
-        if let Some(seeds_sender) = seeds_sender {
-            let seeds_store = ctx.store().clone();
-            let seeds_event_task = coco::SpawnAbortable::new(async move {
-                let mut last_seeds: Vec<seed::Seed> = vec![];
-                let mut timer = tokio::time::interval(Duration::from_secs(1));
-
-                loop {
-                    let _timestamp = timer.tick().await;
-
-                    let seeds = session_seeds(&seeds_store)
-                        .await
-                        .expect("Failed to read session store");
-
-                    if seeds == last_seeds {
-                        continue;
-                    }
-
-                    if seeds_sender.broadcast(seeds.clone()).is_err() {
-                        break;
-                    }
-
-                    last_seeds = seeds;
-                }
-            });
-            tasks.push(seeds_event_task.map_err(RunError::from).boxed());
-        }
 
         let (result, _, _) = futures::future::select_all(tasks).await;
         result
