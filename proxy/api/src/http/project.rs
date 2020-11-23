@@ -20,9 +20,9 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(peers_filter(ctx.clone()))
         .or(path("requests").and(request::filters(ctx.clone())))
         .or(track_filter(ctx.clone()))
-        .or(user_filter(ctx.clone()))
         .or(track_filter(ctx.clone()))
-        .or(untrack_filter(ctx))
+        .or(untrack_filter(ctx.clone()))
+        .or(user_filter(ctx))
         .boxed()
 }
 
@@ -434,7 +434,7 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "id": meta.id,
+            "urn": meta.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -443,7 +443,7 @@ mod test {
                 ],
                 "name": "Upstream",
             },
-            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
+            "shareableEntityIdentifier": format!("%{}", meta.urn.to_string()),
             "stats": {
                 "branches": 1,
                 "commits": 1,
@@ -512,7 +512,7 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "id": meta.id,
+            "urn": meta.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -521,7 +521,7 @@ mod test {
                     maintainer
                 ],
             },
-            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
+            "shareableEntityIdentifier": format!("%{}", meta.urn.to_string()),
             "stats": {
                 "branches": 2,
                 "commits": 15,
@@ -531,18 +531,6 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, want);
-
-        let api2 = http::source::filters(ctx.clone().into());
-        let res2 = request()
-            .method("GET")
-            .path(&format!("/revisions/{}", meta.id))
-            .reply(&api2)
-            .await;
-
-        let have2: Value = serde_json::from_slice(res2.body()).unwrap();
-
-        assert_eq!(res2.status(), StatusCode::OK);
-        assert_eq!(have2[0]["branches"], json!(["dev", "master"]));
 
         Ok(())
     }
@@ -592,7 +580,7 @@ mod test {
 
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.into_iter().next().unwrap();
-        let coco_project = ctx.state.get_project(project.id.clone(), None).await?;
+        let coco_project = ctx.state.get_project(project.urn.clone(), None).await?;
 
         let user: identity::Identity =
             coco::control::track_fake_peer(&ctx.state, &coco_project, "rafalca")
@@ -651,7 +639,7 @@ mod test {
             .method("PUT")
             .path(&format!(
                 "/{}/track/{}",
-                project.id,
+                project.urn,
                 coco::control::generate_peer_id()
             ))
             .reply(&api)
@@ -679,7 +667,7 @@ mod test {
             .method("PUT")
             .path(&format!(
                 "/{}/untrack/{}",
-                project.id,
+                project.urn,
                 coco::control::generate_peer_id()
             ))
             .reply(&api)
@@ -707,7 +695,7 @@ mod test {
             .method("PUT")
             .path(&format!(
                 "/{}/track/{}",
-                project.id,
+                project.urn,
                 coco::control::generate_peer_id()
             ))
             .reply(&api)
@@ -721,7 +709,7 @@ mod test {
             .method("PUT")
             .path(&format!(
                 "/{}/untrack/{}",
-                project.id,
+                project.urn,
                 coco::control::generate_peer_id()
             ))
             .reply(&api)

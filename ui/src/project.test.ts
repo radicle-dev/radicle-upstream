@@ -5,7 +5,7 @@ import * as project from "./project";
 import * as remote from "./remote";
 import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
 
-import { localStateMock, upstreamProjectMock } from "./__mocks__/api";
+import { localStateMock } from "./__mocks__/api";
 
 jest.mock("./api");
 
@@ -91,22 +91,6 @@ describe("creating a project", () => {
         name: "radicle-surf",
         path: "somewhere/in/the/machine",
       },
-    });
-  });
-});
-
-describe("fetching a project", () => {
-  it("creates and updates a store", () => {
-    const store = project.project;
-    project.fetch({ id: "radicle" });
-
-    expect(get(store)).toEqual({ status: remote.Status.Loading });
-
-    process.nextTick(() => {
-      expect(get(store)).toEqual({
-        status: remote.Status.Success,
-        data: upstreamProjectMock,
-      });
     });
   });
 });

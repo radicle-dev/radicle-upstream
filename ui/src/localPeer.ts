@@ -106,7 +106,7 @@ eventStore.subscribe((event: Event | null): void => {
         `Project for "${event.urn}" found and cloned.`,
         false,
         "Show Project",
-        () => push(path.projectSource(event.urn))
+        () => push(path.project(event.urn))
       );
 
       break;

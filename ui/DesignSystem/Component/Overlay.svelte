@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   // Wrapper for expanding/dismissing overlays
 
   import { createEventDispatcher } from "svelte";
@@ -6,7 +6,7 @@
   import { close, current, open } from "../../src/overlay";
 
   export let expanded: boolean;
-  export let style = "";
+  export let style: string = "";
 
   let container: HTMLDivElement;
 

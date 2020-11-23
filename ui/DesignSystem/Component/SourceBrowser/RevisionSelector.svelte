@@ -1,80 +1,63 @@
-<script>
-  import { getContext } from "svelte";
+<script lang="typescript">
+  import { createEventDispatcher } from "svelte";
 
-  import { isExperimental } from "../../../src/ipc";
-  import { RevisionType } from "../../../src/source.ts";
+  import type { Branch, Tag } from "../../../src/source";
 
-  import Overlay from "../Overlay.svelte";
   import { Icon } from "../../Primitive";
+  import Overlay from "../Overlay.svelte";
 
-  export let currentRevision = null;
-  export let currentPeerId = null;
-  export let expanded = false;
-  export let revisions = null;
+  import Entry from "./RevisionSelector/Entry.svelte";
 
-  let currentSelectedPeer;
+  export let expanded: boolean = false;
+  export let loading: boolean = false;
+  export let revisions: [Branch | Tag];
+  export let selected: Branch | Tag;
 
-  const { metadata } = getContext("project");
-
-  $: if (currentPeerId) {
-    currentSelectedPeer = revisions.find(rev => {
-      return rev.identity.peerId === currentPeerId;
-    });
-  } else {
-    // The API returns a revision list where the first entry is the default
-    // peer.
-    currentSelectedPeer = revisions[0];
-  }
-
-  // initialize currentRevision
-  $: if (!currentRevision) {
-    currentRevision = {
-      type: RevisionType.Branch,
-      name: metadata.defaultBranch,
-      peerId: currentSelectedPeer ? currentSelectedPeer.identity.peerId : "",
-    };
-  }
-
-  const toggle = () => (expanded = !expanded);
-
-  const hideDropdown = () => {
-    expanded = false;
+  const orderRevisions = (revisions: [Branch | Tag]): [Branch | Tag] => {
+    return [selected].concat(
+      revisions.filter(
+        rev => rev.name !== selected.name || rev.type !== selected.type
+      )
+    ) as [Branch | Tag];
   };
 
-  const selectRevision = revision => {
-    currentRevision = revision;
-    hideDropdown();
+  const dispatch = createEventDispatcher();
+  const hide = () => {
+    expanded = false;
+  };
+  const select = (revision: Branch | Tag) => {
+    dispatch("select", revision);
+    selected = revision as Branch | Tag;
+    hide();
+  };
+  const toggle = () => {
+    expanded = !expanded;
+  };
+  const revisionKey = (revision: Branch | Tag): string => {
+    return `${revision.type}-${revision.name}`;
   };
 </script>
 
 <style>
-  .revision-name {
-    color: var(--color-foreground-level-6);
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
-  }
   .revision-selector {
-    border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
-    padding: 0 0.5rem;
     align-items: center;
-    height: 2.5rem;
-    display: flex;
+    border: 1px solid var(--color-foreground-level-3);
+    border-radius: 0.25rem;
     cursor: pointer;
+    display: flex;
+    height: 2.5rem;
     justify-content: space-between;
+    overflow: hidden;
+    padding: 0 0.5rem;
+    user-select: none;
   }
   .revision-selector:hover {
     color: var(--color-foreground);
-    border: 1px solid var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-1);
+    border: 1px solid var(--color-foreground-level-3);
   }
   .revision-selector[hidden] {
     visibility: hidden;
-  }
-  .selector-avatar {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
   }
   .revision-dropdown-container {
     position: absolute;
@@ -82,36 +65,17 @@
     min-width: 100%;
   }
   .revision-dropdown {
-    position: relative;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 0.25rem;
     box-shadow: var(--elevation-medium);
-    z-index: 8;
-    max-width: 30rem;
     height: 100%;
+    max-height: 60vh;
+    max-width: 30rem;
     min-width: 100%;
-  }
-  .branch,
-  .tag {
-    color: var(--color-foreground-level-6);
-    padding: 0 0.5rem;
-    align-items: center;
-    height: 2.5rem;
-    cursor: pointer;
-    overflow-wrap: anywhere;
-    user-select: none;
-    display: flex;
-  }
-  .branch:hover,
-  .tag:hover {
-    background: var(--color-foreground-level-1);
-  }
-  .branch.selected,
-  .branch.selected:hover,
-  .tag.selected,
-  .tag.selected:hover {
-    background-color: var(--color-foreground-level-2);
+    overflow: scroll;
+    position: relative;
+    z-index: 8;
   }
   .revision-dropdown li:only-child {
     border-radius: 0.1875rem;
@@ -124,72 +88,35 @@
   }
 </style>
 
-<Overlay {expanded} on:hide={hideDropdown}>
+<Overlay {expanded} on:hide={hide}>
   <div
     class="revision-selector"
     data-cy="revision-selector"
-    data-revision={currentRevision.name}
-    on:click={toggle}
-    hidden={expanded}>
+    data-revision={selected.name}
+    hidden={expanded}
+    on:click={toggle}>
     <div class="selector-avatar typo-overflow-ellipsis">
-      <div style="display: flex; overflow: hidden;">
-        {#if currentRevision.type === RevisionType.Branch}
-          <Icon.Branch
-            dataCy="branch-icon"
-            style="vertical-align: bottom; fill: var(--color-foreground-level-4);
-          flex-shrink: 0;" />
-        {:else}
-          <Icon.Label
-            dataCy="tag-icon"
-            style="vertical-align: bottom; fill: var(--color-foreground-level-4);
-          flex-shrink: 0;" />
-        {/if}
-        <p class="revision-name typo-overflow-ellipsis">
-          {currentRevision.name}
-        </p>
-      </div>
+      <Entry {loading} on:click={toggle} revision={selected} />
     </div>
     <Icon.ChevronUpDown
       style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
   </div>
   <div class="revision-dropdown-container">
-    <div class="revision-dropdown" hidden={!expanded}>
+    <div
+      class="revision-dropdown"
+      data-cy="revision-dropdown"
+      hidden={!expanded}>
       <ul>
-        {#each currentSelectedPeer.branches as branch}
-          <li
-            class="branch"
-            class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-            data-branch={branch}
-            on:click|stopPropagation={() => selectRevision({
-                type: RevisionType.Branch,
-                peerId: currentSelectedPeer.identity.peerId,
-                name: branch,
-              })}>
-            <Icon.Branch
-              dataCy="branch-icon"
-              style="vertical-align: bottom; fill:
-            var(--color-foreground-level-4)" />
-            <span class="revision-name typo-text">{branch}</span>
+        {#each orderRevisions(revisions) as revision (revisionKey(revision))}
+          <li>
+            <Entry
+              {loading}
+              on:click={() => select(revision)}
+              {revision}
+              selected={selected.type === revision.type && selected.name === revision.name}
+              style="padding: 0 0.5rem;" />
           </li>
         {/each}
-        {#if isExperimental()}
-          {#each currentSelectedPeer.tags as tag}
-            <li
-              class="tag"
-              class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === currentSelectedPeer.identity.peerId}
-              data-tag={tag}
-              on:click|stopPropagation={() => selectRevision({
-                  type: RevisionType.Tag,
-                  name: tag,
-                })}>
-              <Icon.Label
-                dataCy="tag-icon"
-                style="vertical-align: bottom; fill:
-              var(--color-foreground-level-4)" />
-              <span class="revision-name typo-text">{tag}</span>
-            </li>
-          {/each}
-        {/if}
       </ul>
     </div>
   </div>

@@ -120,7 +120,7 @@ pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
     announce(state, updates.iter()).await;
 
     if !updates.is_empty() {
-        save(store, updates.clone()).map_err(Error::from)?;
+        save(store, new.clone()).map_err(Error::from)?;
     }
 
     Ok(updates)

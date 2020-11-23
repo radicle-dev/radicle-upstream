@@ -1,18 +1,17 @@
-<script lang="ts">
+<script lang="typescript">
   import type { SvelteComponent } from "svelte";
-
   import { link } from "svelte-spa-router";
 
   export let href: string;
   export let icon: typeof SvelteComponent;
   export let title: string;
   export let active: boolean;
-  export let counter: string | undefined;
+  export let counter: number | undefined;
 </script>
 
 <style>
   .icon {
-    margin-right: 12px;
+    margin-right: 0.5rem;
     align-items: center;
     padding-top: 1px;
   }
@@ -40,7 +39,7 @@
   }
 </style>
 
-<a data-cy={title} {href} use:link>
+<a data-cy={title} {href} use:link on:click>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-secondary)" />

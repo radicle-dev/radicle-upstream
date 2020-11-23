@@ -46,7 +46,7 @@ context("project source browsing", () => {
 
       it("shows the commit history for another branch", () => {
         commands.pick("revision-selector").click();
-        cy.get('[data-branch="dev"]').click();
+        commands.pick("revision-dropdown", "revision-branch-dev").click();
         // Wait for the commit tab to be updated
         commands.pick("horizontal-menu", "Commits", "counter").contains("8");
         commands.pick("horizontal-menu", "Commits").click();
@@ -74,7 +74,7 @@ context("project source browsing", () => {
         it("shows timeframe in hours", () => {
           cy.clock(Date.parse("5 dec 2019"));
           commands.pick("revision-selector").click();
-          cy.get('[data-tag="v0.5.0"]').click();
+          commands.pick("revision-tag-v0.5.0").click();
           cy.contains("9 hours ago").should("exist");
         });
       });
@@ -83,7 +83,7 @@ context("project source browsing", () => {
         it("shows timeframe in days", () => {
           cy.clock(Date.parse("6 dec 2019"));
           commands.pick("revision-selector").click();
-          cy.get('[data-tag="v0.5.0"]').click();
+          commands.pick("revision-tag-v0.5.0").click();
           cy.contains("1 day ago").should("exist");
         });
       });
@@ -92,7 +92,7 @@ context("project source browsing", () => {
         it("shows timeframe in days", () => {
           cy.clock(Date.parse("10 dec 2019"));
           commands.pick("revision-selector").click();
-          cy.get('[data-tag="v0.5.0"]').click();
+          commands.pick("revision-tag-v0.5.0").click();
           cy.contains("5 days ago").should("exist");
         });
       });
@@ -101,7 +101,7 @@ context("project source browsing", () => {
         it("shows timeframe in weeks", () => {
           cy.clock(Date.parse("15 dec 2019"));
           commands.pick("revision-selector").click();
-          cy.get('[data-tag="v0.5.0"]').click();
+          commands.pick("revision-tag-v0.5.0").click();
           cy.contains("1 week ago").should("exist");
         });
       });
@@ -110,7 +110,7 @@ context("project source browsing", () => {
         it("shows timeframe in weeks", () => {
           cy.clock(Date.parse("21 dec 2019"));
           commands.pick("revision-selector").click();
-          cy.get('[data-tag="v0.5.0"]').click();
+          commands.pick("revision-tag-v0.5.0").click();
           cy.contains("2 weeks ago").should("exist");
         });
       });
@@ -142,7 +142,7 @@ context("project source browsing", () => {
         commands.pick("commit-teaser").contains("a0dd912").should("exist");
 
         // the readme is shown
-        commands.pick("file-source").within(() => {
+        commands.pick("file-view").within(() => {
           cy.contains("README.md").should("exist");
         });
       });
@@ -165,11 +165,9 @@ context("project source browsing", () => {
               .pick("project-screen", "commit-teaser")
               .contains("Rūdolfs Ošiņš");
 
+            commands.pick("project-screen", "file-view").contains("README.md");
             commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
-            commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains(
                 "This repository is a data source for the Upstream front-end tests and the radicle-surf unit tests."
               );
@@ -180,35 +178,29 @@ context("project source browsing", () => {
               cy.contains(".i-am-well-hidden").click();
             });
             commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains("platinum / .i-am-well-hidden");
             commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains("platinum")
               .click();
-            commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
+            commands.pick("project-screen", "file-view").contains("README.md");
 
             commands.pick("source-tree").within(() => {
               cy.contains(".i-too-am-hidden").click();
             });
             commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains("platinum / .i-too-am-hidden");
-            commands.pick("project-screen", "file-source", "root-link").click();
-            commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
+            commands.pick("project-screen", "file-view", "root-link").click();
+            commands.pick("project-screen", "file-view").contains("README.md");
 
             // Switching between different revisions shows the correct README
             commands.pick("revision-selector").click();
-            cy.get('.revision-dropdown [data-branch="dev"]').click();
+            commands.pick("revision-dropdown", "revision-branch-dev").click();
+            commands.pick("project-screen", "file-view").contains("README.md");
             commands
-              .pick("project-screen", "file-source")
-              .contains("README.md");
-            commands
-              .pick("project-screen", "file-source")
+              .pick("project-screen", "file-view")
               .contains(
                 "This repository is a data source for the Upstream front-end tests."
               );
@@ -219,27 +211,27 @@ context("project source browsing", () => {
       context("revision selector", () => {
         it("allows switching to a different branch", () => {
           commands.pick("revision-selector").click();
-          cy.get('.revision-dropdown [data-branch="dev"]').click();
+          commands.pick("revision-dropdown", "revision-branch-dev").click();
           cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
 
           commands.pick("revision-selector").click();
-          cy.get('.revision-dropdown [data-branch="master"]').click();
+          commands.pick("revision-dropdown", "revision-branch-master").click();
           cy.contains("here-we-are-on-a-dev-branch.lol").should("not.exist");
         });
 
         it("allows switching to a different tag", () => {
           commands.pick("revision-selector").click();
-          cy.get('.revision-dropdown [data-tag="v0.4.0"]').click();
+          commands.pick("revision-dropdown", "revision-tag-v0.4.0").click();
           cy.contains("test-file-deletion.txt").should("exist");
 
           commands.pick("revision-selector").click();
-          cy.get('.revision-dropdown [data-tag="v0.5.0"]').click();
+          commands.pick("revision-dropdown", "revision-tag-v0.5.0").click();
           cy.contains("test-file-deletion.txt").should("not.exist");
         });
 
         it("does not crash on a page reload", () => {
           commands.pick("revision-selector").click();
-          cy.get('.revision-dropdown [data-branch="dev"]').click();
+          commands.pick("revision-dropdown", "revision-branch-dev").click();
 
           cy.reload();
 
@@ -271,11 +263,10 @@ context("project source browsing", () => {
         it.skip("updates the revision selector", () => {
           commands.pick("revision-selector").click();
           // Default revision is highlighted.
-          cy.get('.revision-dropdown [data-branch="master"]').should(
-            "have.class",
-            "selected"
-          );
-          cy.get('.revision-dropdown [data-branch="dev"]').click();
+          commands
+            .pick("revision-dropdown", "revision-branch-master")
+            .should("have.class", "selected");
+          commands.pick("revision-dropdown", "revision-branch-dev").click();
           // Switch to another peer
           commands.pick("peer-selector").click();
           cy.get('.peer-dropdown [data-peer-handle="abbey"]').click();
@@ -286,17 +277,16 @@ context("project source browsing", () => {
           commands.pick("peer-selector").click();
           cy.get('.peer-dropdown [data-peer-handle="cloudhead"]').click();
           commands.pick("revision-selector").click();
-          cy.get('.revision-dropdown [data-tag="v0.1.0"]').click();
+          commands.pick("revision-dropdown", "revision-tag-v0.1.0").click();
 
           commands.pick("revision-selector").contains("v0.1.0");
           commands.pick("revision-selector", "tag-icon").should("exist");
 
           commands.pick("revision-selector").click();
           // Previous selection is highlighted.
-          cy.get('.revision-dropdown [data-tag="v0.1.0"]').should(
-            "have.class",
-            "selected"
-          );
+          commands
+            .pick("revision-dropdown", "revision-tag-v0.1.0")
+            .should("have.class", "selected");
         });
       });
 
@@ -304,7 +294,7 @@ context("project source browsing", () => {
         it("opens the selected project on the default repository and branch", () => {
           commands.createProjectWithFixture("gold");
           commands.pick("revision-selector").click();
-          cy.get('[data-branch="dev"]').click();
+          commands.pick("revision-dropdown", "revision-branch-dev").click();
           commands.pick("sidebar", "profile").click();
           commands.pick("project-list", "project-list-entry-gold").click();
           commands.pick("revision-selector").contains("master");
@@ -328,28 +318,26 @@ context("project source browsing", () => {
 
       it("doesn't interfere with the horizontal menu item active state", () => {
         commands
-          .pick("horizontal-menu", "Source")
+          .pick("horizontal-menu", "Files")
           .get("p")
           .should("have.class", "active");
 
         commands.pick("source-tree").within(() => {
           commands.pick("expand-text").click();
-          cy.contains("arrows.txt").click();
-          cy.contains("arrows.txt").should("have.class", "active");
+          commands.pick("file-text/arrows.txt").contains("arrows.txt").click();
+
+          commands.pick("file-text/arrows.txt").should("have.class", "active");
         });
 
         commands
-          .pick("horizontal-menu", "Source")
+          .pick("horizontal-menu", "Files")
           .get("p")
           .should("have.class", "active");
 
-        commands
-          .pick("file-source", "file-header")
-          .contains("platinum")
-          .click();
+        commands.pick("file-view", "file-header").contains("platinum").click();
 
         commands
-          .pick("horizontal-menu", "Source")
+          .pick("horizontal-menu", "Files")
           .get("p")
           .should("have.class", "active");
       });
@@ -367,23 +355,33 @@ context("project source browsing", () => {
           commands.pick("expand-tree").click();
 
           // Open a file within nested folders.
-          cy.contains(".gitkeep").click();
-          cy.contains(".gitkeep").should("have.class", "active");
+          commands
+            .pick("file-this/is/a/really/deeply/nested/directory/tree/.gitkeep")
+            .click();
+          commands
+            .pick("file-this/is/a/really/deeply/nested/directory/tree/.gitkeep")
+            .should("have.class", "active");
 
           // Preserve expanded folder state when selecting a different file.
           cy.scrollTo("top");
           commands.pick("expand-text").click();
-          cy.contains("arrows.txt").click();
-          cy.contains("arrows.txt").should("have.class", "active");
-          cy.contains(".gitkeep").should("not.have.class", "active");
+          commands.pick("file-text/arrows.txt").click();
+          commands.pick("file-text/arrows.txt").should("have.class", "active");
+          commands
+            .pick("file-this/is/a/really/deeply/nested/directory/tree/.gitkeep")
+            .should("not.have.class", "active");
         });
       });
 
       it("highlights the selected file", () => {
         commands.pick("source-tree").within(() => {
-          cy.contains(".i-am-well-hidden").should("not.have.class", "active");
-          cy.contains(".i-am-well-hidden").click();
-          cy.contains(".i-am-well-hidden").should("have.class", "active");
+          commands
+            .pick("file-.i-am-well-hidden")
+            .should("not.have.class", "active");
+          commands.pick("file-.i-am-well-hidden").click();
+          commands
+            .pick("file-.i-am-well-hidden")
+            .should("have.class", "active");
         });
       });
 

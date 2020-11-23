@@ -47,7 +47,7 @@ where
 #[serde(rename_all = "camelCase")]
 pub struct Project<S> {
     /// Unique identifier of the project in the network.
-    pub id: coco::Urn,
+    pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
@@ -67,7 +67,7 @@ impl Partial {
     #[allow(clippy::missing_const_for_fn)]
     pub fn fulfill(self, stats: coco::Stats) -> Full {
         Project {
-            id: self.id,
+            urn: self.urn,
             shareable_entity_identifier: self.shareable_entity_identifier,
             metadata: self.metadata,
             stats,
@@ -83,11 +83,11 @@ where
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from(project: coco::Project<ST>) -> Self {
-        let id = project.urn();
+        let urn = project.urn();
 
         Self {
-            id: id.clone(),
-            shareable_entity_identifier: format!("%{}", id),
+            urn: urn.clone(),
+            shareable_entity_identifier: format!("%{}", urn),
             metadata: project.into(),
             stats: (),
         }
@@ -102,11 +102,11 @@ where
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
-        let id = project.urn();
+        let urn = project.urn();
 
         Self {
-            id: id.clone(),
-            shareable_entity_identifier: format!("%{}", id),
+            urn: urn.clone(),
+            shareable_entity_identifier: format!("%{}", urn),
             metadata: project.into(),
             stats,
         }
@@ -201,9 +201,9 @@ impl Projects {
 
         for project in state.list_projects().await? {
             let project = Project::from(project);
-            let default_branch = match state.find_default_branch(project.id.clone()).await {
+            let default_branch = match state.find_default_branch(project.urn.clone()).await {
                 Err(err) => {
-                    log::warn!("Failure for '{}': {}", project.id, err);
+                    log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::DefaultBranch(project));
                     continue;
                 },
@@ -215,7 +215,7 @@ impl Projects {
                 .await
             {
                 Err(err) => {
-                    log::warn!("Failure for '{}': {}", project.id, err);
+                    log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::Stats(project));
                     continue;
                 },
@@ -224,9 +224,9 @@ impl Projects {
 
             let project = project.fulfill(stats);
 
-            let refs = match state.list_owner_project_refs(project.id.clone()).await {
+            let refs = match state.list_owner_project_refs(project.urn.clone()).await {
                 Err(err) => {
-                    log::warn!("Failure for '{}': {}", project.id, err);
+                    log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::SignedRefs(project));
                     continue;
                 },

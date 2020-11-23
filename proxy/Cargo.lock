@@ -86,7 +86,7 @@ dependencies = [
  "pretty_assertions",
  "pretty_env_logger",
  "radicle-avatar",
- "radicle-surf",
+ "radicle-surf 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand",
  "secstr",
  "serde",
@@ -376,7 +376,7 @@ dependencies = [
  "radicle-git-ext",
  "radicle-git-helpers",
  "radicle-keystore",
- "radicle-surf",
+ "radicle-surf 0.5.1 (git+https://github.com/radicle-dev/radicle-surf.git?rev=3ff23e63eafd8c54fa6ebca4b91531567d20bf97)",
  "serde",
  "serde_millis",
  "syntect",
@@ -2064,6 +2064,20 @@ name = "radicle-surf"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3657903d7f7f0680079bdcf7c965b930017f6428aee55eff0dade6510e04a40c"
+dependencies = [
+ "either",
+ "git2",
+ "nom 6.0.0",
+ "nonempty 0.5.0",
+ "regex",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "radicle-surf"
+version = "0.5.1"
+source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=3ff23e63eafd8c54fa6ebca4b91531567d20bf97#3ff23e63eafd8c54fa6ebca4b91531567d20bf97"
 dependencies = [
  "either",
  "git2",

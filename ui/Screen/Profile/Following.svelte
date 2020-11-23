@@ -27,7 +27,7 @@
     cancelRequest(urn).then(fetchFollowing);
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
-    push(path.projectSource(project.id));
+    push(path.project(project.urn));
   };
 
   fetchFollowing();
