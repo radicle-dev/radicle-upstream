@@ -82,9 +82,7 @@
               data-cy="undiscovered-project"
               class="undiscovered-project"
               out:fade|local={{ duration: FADE_DURATION }}>
-              <div>
-                <RadicleId urn={request.urn} />
-              </div>
+              <RadicleId urn={request.urn} />
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
                   <FollowToggle
