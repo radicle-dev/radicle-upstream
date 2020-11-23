@@ -72,9 +72,11 @@ export const selectPeer = (peer: project.User): void => {
   }
 };
 
-export const pendingPeers: Readable<remote.Data<{
-  peers: project.Peer[];
-}>> = derived(screenStore, store => {
+export const pendingPeers: Readable<
+  remote.Data<{
+    peers: project.Peer[];
+  }>
+> = derived(screenStore, store => {
   if (store.status === remote.Status.Success) {
     const peers = store.data.peers.filter(
       peer => peer.status.type === project.ReplicationStatusType.NotReplicated
