@@ -52,6 +52,7 @@
     <TxButton
       onClick={onConfirmed}
       title={'Confirm in your wallet'}
+      errorMessage={e => `Failed top up: ${e.message}`}
       {disabled} />
   </TopUp>
 </div>
