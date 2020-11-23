@@ -10,7 +10,7 @@
 </script>
 
 <style>
-  .peer-id {
+  .radicle-id {
     display: flex;
   }
 </style>
