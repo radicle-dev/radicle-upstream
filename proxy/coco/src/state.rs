@@ -622,7 +622,7 @@ impl State {
                         if project.maintainers().contains(&user.urn()) {
                             peer::Status::replicated(peer::Role::Maintainer, user)
                         } else {
-                            peer::Status::replicated(peer::Role::Tracker, user)
+                            peer::Status::replicated(peer::Role::Contributor, user)
                         }
                     } else {
                         peer::Status::NotReplicated
