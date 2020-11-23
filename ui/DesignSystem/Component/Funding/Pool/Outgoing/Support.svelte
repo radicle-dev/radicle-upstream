@@ -138,6 +138,10 @@
     padding: var(--content-padding);
   }
 
+  .description {
+    display: inline-flex;
+  }
+
   .tip {
     font-size: 14px;
     line-height: 18px;
@@ -146,10 +150,6 @@
     text-align: center;
     margin-top: calc(1.5 * var(--content-padding));
     color: var(--color-foreground-level-5);
-  }
-  .description {
-    display: flex;
-    align-items: center;
   }
 
   .submit {
@@ -190,7 +190,6 @@
           hidden={editing}
           class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
-          style="margin-left: 12px;"
           on:click={enterEditMode}>
           Edit
         </a>
@@ -223,11 +222,22 @@
     </header>
 
     <div class="content">
-      <p class="description">
-        <strong style="margin-left: 0px"><Dai>
-            {poolData.amountPerBlock}
-          </Dai></strong> per month will go to each of the <strong>{poolData.receivers.size}
-        </strong> receivers you're supporting.
+      <div class="description">
+        {#if poolData.receivers.size === 0}
+          <div style="display:contents">
+            Add receivers to your outgoing support by clicking the “Support”
+            button on user profiles. You can also add any Ethereum address to
+            your Stream.
+          </div>
+        {:else}
+          <div style="display: flex; align-items: center">
+            <strong style="margin-left: 0px">
+              <Dai>{poolData.amountPerBlock}</Dai></strong>
+            per month will go to each of the
+            <strong>{poolData.receivers.size} </strong>
+            receivers you're supporting.
+          </div>
+        {/if}
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
           hidden={editing}
@@ -237,7 +247,7 @@
           on:click={enterEditMode}>
           Edit
         </a>
-      </p>
+      </div>
 
       <Receivers
         {editing}

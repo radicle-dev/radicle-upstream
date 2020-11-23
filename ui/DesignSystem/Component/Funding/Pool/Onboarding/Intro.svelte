@@ -22,11 +22,10 @@
 </style>
 
 <Illustration variant={IllustrationVariant.Money} />
-<h1>Stream digital money to your favorite people</h1>
+<h1>Stream digital money to all your favorites</h1>
 <p>
-  Supporting others let’s you set up an <a href="#TODO">ethereum smart contract</a>
-  where you can top up a certain amount to be trickled out at a user defined rate
-  to a group of people of your choosing.
+  Streaming sets up an ethereum smart contract that sends money out certain
+  speed, defined by you, to a group of people or projects.
 </p>
 <div class="submit">
   <Button
