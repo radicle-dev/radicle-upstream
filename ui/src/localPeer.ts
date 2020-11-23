@@ -42,10 +42,16 @@ interface Online {
 type Status = Stopped | Offline | Started | Syncing | Online;
 
 enum EventType {
-  RequestCloned = "requestCloned",
+  RequestCreated = "requestCreated",
   RequestQueried = "requestQueried",
+  RequestCloned = "requestCloned",
   RequestTimedOut = "requestTimedOut",
   StatusChanged = "statusChanged",
+}
+
+interface RequestCreated {
+  type: EventType.RequestCreated;
+  urn: urn.Urn;
 }
 
 interface RequestCloned {
@@ -64,10 +70,14 @@ interface RequestTimedOut {
   urn: urn.Urn;
 }
 
-export type Event =
+type RequestEvent =
+  | RequestCreated
   | RequestCloned
   | RequestQueried
-  | RequestTimedOut
+  | RequestTimedOut;
+
+export type Event =
+  | RequestEvent
   | { type: EventType.StatusChanged; old: Status; new: Status };
 
 let eventSource: EventSource | null = null;
@@ -118,27 +128,26 @@ eventStore.subscribe((event: Event | null): void => {
   }
 });
 
-export const requestEvents: Readable<
-  RequestCloned | RequestQueried | RequestTimedOut | null
-> = derived(eventStore, (event: Event | null):
-  | RequestCloned
-  | RequestTimedOut
-  | RequestQueried
-  | null => {
-  if (!event) {
-    return null;
-  }
-
-  switch (event.type) {
-    case EventType.RequestCloned:
-    case EventType.RequestQueried:
-    case EventType.RequestTimedOut:
-      return event;
-
-    default:
+export const requestEvents: Readable<RequestEvent | null> = derived(
+  eventStore,
+  (event: Event | null): RequestEvent | null => {
+    if (!event) {
       return null;
+    }
+
+    switch (event.type) {
+      case EventType.RequestCloned:
+      case EventType.RequestQueried:
+      case EventType.RequestTimedOut:
+      case EventType.RequestCreated:
+        console.log({ event });
+        return event;
+
+      default:
+        return null;
+    }
   }
-});
+);
 
 export const status: Readable<remote.Data<Status>> = derived(
   eventStore,
