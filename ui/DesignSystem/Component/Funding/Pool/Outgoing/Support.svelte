@@ -190,7 +190,8 @@
           hidden={editing}
           class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
-          on:click={enterEditMode}>
+          on:click={enterEditMode}
+          style="margin-left: 12px;">
           Edit
         </a>
       </div>
@@ -243,7 +244,7 @@
           hidden={editing}
           class="typo-link"
           disabled={ongoingMonthlyContributionUpdate}
-          style="margin-left: 12px;"
+          style="margin-left: 3px;"
           on:click={enterEditMode}>
           Edit
         </a>
