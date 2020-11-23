@@ -25,13 +25,13 @@ import Overlay from "./Overlay.svelte";
 import PeerId from "./PeerId.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
+import RadicleId from "./RadicleId.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
-import ShareableIdentifier from "./ShareableIdentifier.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
@@ -72,6 +72,7 @@ export {
   PeerId,
   ProjectCard,
   ProjectList,
+  RadicleId,
   RadicleLogo,
   RadioOption,
   TxButton,
@@ -80,7 +81,6 @@ export {
   RemoteHelperHint,
   RevisionSelector,
   SegmentedControl,
-  ShareableIdentifier,
   Sidebar,
   SidebarLayout,
   Spinner,

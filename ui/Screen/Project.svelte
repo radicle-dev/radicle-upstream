@@ -4,7 +4,7 @@
 
   import * as modal from "../src/modal";
   import * as path from "../src/path";
-  import { isMaintainer } from "../src/project";
+  import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
   import { fetch, selectPeer, store } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
@@ -70,6 +70,9 @@
         </div>
       </div>
     </Header.Large>
-    <Source {project} {selectedPeer} />
+    <Source
+      {project}
+      {selectedPeer}
+      isContributor={isContributor(peerSelection)} />
   </Remote>
 </SidebarLayout>
