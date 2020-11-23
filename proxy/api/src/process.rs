@@ -152,7 +152,7 @@ async fn run_rigging(
 
                     let current_status = peer_control.current_status().await;
 
-                    if seeds == last_seeds && current_status != coco::PeerStatus::Started {
+                    if seeds == last_seeds && current_status != coco::PeerStatus::Offline {
                         continue;
                     }
 
