@@ -110,7 +110,7 @@
     </div>
     <div slot="right">
       <CheckoutButton
-        {isContributor}
+        fork={!isContributor}
         on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
     </div>
   </ActionBar>
