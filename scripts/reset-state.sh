@@ -6,7 +6,7 @@ declare -a dirs;
 if [ "$platform" == "Darwin" ]; then
     dirs=(
         "$HOME/.radicle"
-        "$HOME/Library/Application Support/radicle-upstream"
+        "$HOME/Library/Application Support/Radicle Upstream"
         "$HOME/Library/Application Support/xyz.radicle.radicle"
         "$HOME/Library/Application Support/xyz.radicle.radicle-upstream"
         "$HOME/Library/Preferences/radicle-upstream.monadic.xyz.plist"
@@ -18,6 +18,7 @@ elif [ "$platform" == "Linux" ]; then
 
     dirs=(
         "$HOME/.radicle"
+        "$HOME/.config/Radicle Upstream"
         "$config_home/radicle"
         "$config_home/radicle-upstream"
         "$data_home/radicle"
