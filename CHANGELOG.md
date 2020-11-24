@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.17...v0.1.0) (2020-11-24)
+
+
+### Features
+
+* **proxy:** persist WaitingRoom ([#1247](https://github.com/radicle-dev/radicle-upstream/issues/1247)) ([64d402e](https://github.com/radicle-dev/radicle-upstream/commit/64d402e836d61c60ea613aaeb3e08b7cf71d7f5f))
+* **proxy:** push all branches when creating a project ([#1278](https://github.com/radicle-dev/radicle-upstream/issues/1278)) ([930d3d2](https://github.com/radicle-dev/radicle-upstream/commit/930d3d24b2b4ad9a04437f05101bcced152deca1))
+* **ui:** use error logging for all `catch` statements ([#1251](https://github.com/radicle-dev/radicle-upstream/issues/1251)) ([015965d](https://github.com/radicle-dev/radicle-upstream/commit/015965da9f64b2050574633a4967da26e6bb6469)), closes [#1187](https://github.com/radicle-dev/radicle-upstream/issues/1187)
+
+
+### Bug Fixes
+
+* **proxy:** fix announcemnets ([#1305](https://github.com/radicle-dev/radicle-upstream/issues/1305)) ([d1bd4b7](https://github.com/radicle-dev/radicle-upstream/commit/d1bd4b7266489b7ebb68e0357022dbf428c8c8f7)), closes [#1299](https://github.com/radicle-dev/radicle-upstream/issues/1299)
+* **proxy:** return tracking remotes as contributor ([#1304](https://github.com/radicle-dev/radicle-upstream/issues/1304)) ([3339678](https://github.com/radicle-dev/radicle-upstream/commit/3339678a0ef52dec740ed268daff97c5b677e61c)), closes [#1297](https://github.com/radicle-dev/radicle-upstream/issues/1297)
+* **ui:** don't show stats that equal zero ([#1291](https://github.com/radicle-dev/radicle-upstream/issues/1291)) ([9f10048](https://github.com/radicle-dev/radicle-upstream/commit/9f100482f87a554ba4adaa9e5d4f7e25684fd651))
+* **ui:** fetch list of requested projects after search ([#1281](https://github.com/radicle-dev/radicle-upstream/issues/1281)) ([170edd9](https://github.com/radicle-dev/radicle-upstream/commit/170edd9fa756b5c4ea9b4d1b58d335656771eacf)), closes [#1279](https://github.com/radicle-dev/radicle-upstream/issues/1279)
+* **ui:** improve error code for backend termination ([#1265](https://github.com/radicle-dev/radicle-upstream/issues/1265)) ([a0477fa](https://github.com/radicle-dev/radicle-upstream/commit/a0477fa170653095f5c857629fdd849d42908cac)), closes [radicle-dev/radicle-docs/pull/21](https://github.com/radicle-dev/radicle-docs/pull/21#discussion_r522785330)
+* **ui:** move `go to profile` to isExperimental ([#1261](https://github.com/radicle-dev/radicle-upstream/issues/1261)) ([37966ed](https://github.com/radicle-dev/radicle-upstream/commit/37966eda899c396e20344c2cdee7fd6e31292754))
+* **ui:** only allow scripts from origin ([#1256](https://github.com/radicle-dev/radicle-upstream/issues/1256)) ([cb37499](https://github.com/radicle-dev/radicle-upstream/commit/cb374993fd6897c855e2574f81f8a36a83cdbaab))
+* **ui:** remove unused props ([#1257](https://github.com/radicle-dev/radicle-upstream/issues/1257)) ([2442d16](https://github.com/radicle-dev/radicle-upstream/commit/2442d16c16babd6e2c4cf714b9c1b7c4c51b897b))
+* **ui:** specify List keys ([#1280](https://github.com/radicle-dev/radicle-upstream/issues/1280)) ([b1a2a5f](https://github.com/radicle-dev/radicle-upstream/commit/b1a2a5f561d4efb4918809ad58375ea1150fc912))
+* **ui:** truncate notification messages to fit into view ([#1267](https://github.com/radicle-dev/radicle-upstream/issues/1267)) ([c0f4086](https://github.com/radicle-dev/radicle-upstream/commit/c0f40867324b6671c396fb9348e8076b46c5abae))
+
 ### [0.0.17](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.16...v0.0.17) (2020-11-13)
 
 
