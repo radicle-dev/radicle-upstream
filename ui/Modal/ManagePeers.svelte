@@ -88,7 +88,6 @@
       <div class="peer-entry-field">
         <Input.Text
           dataCy="peer-input"
-          hint="v"
           bind:value={newPeer}
           placeholder="Paste a Device ID here…"
           validation={$peerValidation}

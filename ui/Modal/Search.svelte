@@ -125,7 +125,6 @@
     <Input.Text
       autofocus
       bind:value
-      hint="v"
       dataCy="search-input"
       inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
       on:keydown={onKeydown}
