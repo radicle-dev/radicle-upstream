@@ -1296,7 +1296,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c07d3f7c6ecd4ca4780421eaedf6af40d796e15c#c07d3f7c6ecd4ca4780421eaedf6af40d796e15c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d358297d45609a634b716900af194bd11cc708a7#d358297d45609a634b716900af194bd11cc708a7"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -2020,7 +2020,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c07d3f7c6ecd4ca4780421eaedf6af40d796e15c#c07d3f7c6ecd4ca4780421eaedf6af40d796e15c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d358297d45609a634b716900af194bd11cc708a7#d358297d45609a634b716900af194bd11cc708a7"
 dependencies = [
  "git2",
  "multibase",
@@ -2034,7 +2034,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c07d3f7c6ecd4ca4780421eaedf6af40d796e15c#c07d3f7c6ecd4ca4780421eaedf6af40d796e15c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d358297d45609a634b716900af194bd11cc708a7#d358297d45609a634b716900af194bd11cc708a7"
 dependencies = [
  "anyhow",
  "git2",
@@ -2067,7 +2067,7 @@ dependencies = [
 [[package]]
 name = "radicle-macros"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c07d3f7c6ecd4ca4780421eaedf6af40d796e15c#c07d3f7c6ecd4ca4780421eaedf6af40d796e15c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d358297d45609a634b716900af194bd11cc708a7#d358297d45609a634b716900af194bd11cc708a7"
 dependencies = [
  "quote",
  "radicle-git-ext",
@@ -2077,7 +2077,7 @@ dependencies = [
 [[package]]
 name = "radicle-std-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c07d3f7c6ecd4ca4780421eaedf6af40d796e15c#c07d3f7c6ecd4ca4780421eaedf6af40d796e15c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d358297d45609a634b716900af194bd11cc708a7#d358297d45609a634b716900af194bd11cc708a7"
 
 [[package]]
 name = "radicle-surf"
