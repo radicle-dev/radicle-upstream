@@ -8,12 +8,12 @@
   const onSelect = (event: { detail: string }) => {
     const hash = event.detail;
     transaction.selectedStore.set(hash);
+    modal.hide();
     modal.toggle(path.transaction());
   };
 
   let txs: transaction.Tx[] = [];
   $: transaction.store.subscribe(xs => {
-    console.log("Received update to transactions");
     txs = xs;
   });
 </script>
