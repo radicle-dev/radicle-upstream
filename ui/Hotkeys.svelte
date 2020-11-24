@@ -1,12 +1,13 @@
 <script lang="typescript">
   import { location, pop, push } from "svelte-spa-router";
 
+  import * as hotkeys from "./src/hotkeys";
+  import { isDev } from "./src/ipc";
   import * as modal from "./src/modal";
   import * as path from "./src/path";
   import * as screen from "./src/screen";
-  import { isMac } from "./src/settings";
-  import * as hotkeys from "./src/hotkeys";
-  import { isDev } from "./src/ipc";
+  import { settings, updateAppearance } from "./src/session";
+  import { isMac, toggleTheme } from "./src/settings";
 
   const toggle = (destination: string) => {
     if (path.active(destination, $location)) {
@@ -63,6 +64,12 @@
         break;
       case hotkeys.ShortcutKey.NewProjects:
         toggleModal(path.newProject());
+        break;
+      case hotkeys.ShortcutKey.ToggleTheme:
+        updateAppearance({
+          ...$settings.appearance,
+          theme: toggleTheme($settings.appearance.theme),
+        });
         break;
     }
   };

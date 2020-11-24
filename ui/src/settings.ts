@@ -50,3 +50,12 @@ export const defaultSetttings = (): Settings => ({
 
 // gives back the OS you're using in hotkeys.svelte & shortcuts.svelte
 export const isMac: boolean = navigator.platform.includes("Mac");
+
+export const toggleTheme = (current: Theme): Theme => {
+  switch (current) {
+    case Theme.Light:
+      return Theme.Dark;
+    case Theme.Dark:
+      return Theme.Light;
+  }
+};
