@@ -83,6 +83,9 @@
     <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
 
     <h1>Manage remotes</h1>
+    <p style="margin-top: 0.5rem; color: var(--color-foreground-level-6);">
+      Add a user's Device ID to collaborate with them on this project.
+    </p>
 
     <form class="peer-entry-form" on:submit|preventDefault>
       <div class="peer-entry-field">
@@ -90,7 +93,7 @@
           dataCy="peer-input"
           hint="v"
           bind:value={newPeer}
-          placeholder="Paste a Device ID here…"
+          placeholder="Enter a Device ID here"
           validation={$peerValidation}
           style="width: 100%; margin-right: .5rem;" />
         <Button
