@@ -20,7 +20,8 @@
       : element === ev.target || element.contains(ev.target);
   };
 
-  $: expand = transactions.some(tx => tx.status === TxStatus.AwaitingInclusion);
+  $: expand =
+    expand || transactions.some(tx => tx.status === TxStatus.AwaitingInclusion);
   $: negative = transactions.some(tx => tx.status === TxStatus.Rejected);
 </script>
 
