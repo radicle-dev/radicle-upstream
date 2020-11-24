@@ -127,10 +127,11 @@
     <h1>Next, you'll need a passphrase.</h1>
 
     <p>
-      This decrypts your key so you can access and publish to the Radicle
-      network. Be sure to store this in a safe place —
+      This protects your Radicle keypair in case your device is compromised.
+      It's used to sign and publish to the Radicle network. Be sure to store
+      this in a safe place —
       <span class="typo-text-bold">
-        there is no way to recover lost keys yet!
+        there is no way to access your keys without it!
       </span>
     </p>
 
