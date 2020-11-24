@@ -4,7 +4,8 @@
 
   export let style: string = "";
   export let dataCy: string | null = null;
-  export let value: string;
+  export let value: string = "";
+  export let copyContent: string = value;
   export let notificationText: string = "Copied to your clipboard";
   export let truncate: boolean = false;
   export let expandable: boolean = true;
@@ -25,14 +26,14 @@
   <div class="wrapper" {style} data-cy={dataCy}>
     <Copyable
       style="align-items: center; color: var(--color-foreground-level-6)"
-      copyContent={value}
+      {copyContent}
       {notificationText}
       styleContent={hover}
       showIcon={true}>
       {#if !truncate || (expandable && hover)}
-        <p class="typo-text-small-mono">{value}</p>
+        <p class="typo-text-mono">{value}</p>
       {:else}
-        <p class="typo-text-small-mono">{head}…{tail}</p>
+        <p class="typo-text-mono">{head}…{tail}</p>
       {/if}
     </Copyable>
   </div>
