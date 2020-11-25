@@ -570,7 +570,7 @@ impl State {
                 .with_storage(move |storage| storage.track(&urn, &remote))
                 .await??;
         }
-        gossip::query_with_origin(self, urn.clone(), remote).await;
+        gossip::query(self, urn.clone(), Some(remote)).await;
         let path = self.update_include(urn).await?;
         log::debug!("Updated include path @ `{}`", path.display());
         Ok(())

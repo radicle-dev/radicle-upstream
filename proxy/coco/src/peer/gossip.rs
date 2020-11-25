@@ -21,25 +21,14 @@ pub async fn announce(state: &State, urn: &RadUrn, rev: Option<Oid>) {
 }
 
 /// Emit a [`Gossip`] request for the given `urn`.
-pub async fn query(state: &State, urn: RadUrn) {
-    let protocol = state.api.protocol().clone();
-    protocol
+pub async fn query(state: &State, urn: RadUrn, origin: Option<PeerId>) {
+    state
+        .api
+        .protocol()
         .query(Gossip {
             urn,
             rev: None,
-            origin: None,
-        })
-        .await;
-}
-
-/// Emit a [`Gossip`] request for the given `urn` from the given `peer_id`.
-pub async fn query_with_origin(state: &State, urn: RadUrn, peer_id: PeerId) {
-    let protocol = state.api.protocol().clone();
-    protocol
-        .query(Gossip {
-            urn,
-            rev: None,
-            origin: Some(peer_id),
+            origin,
         })
         .await;
 }

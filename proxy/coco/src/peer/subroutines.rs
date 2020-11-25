@@ -341,7 +341,7 @@ async fn start_sync_timeout(sync_period: Duration, mut sender: mpsc::Sender<Inpu
 
 /// Send a query on the network for the given urn.
 async fn query(urn: RadUrn, state: State, mut sender: mpsc::Sender<Input>) {
-    gossip::query(&state, urn.clone()).await;
+    gossip::query(&state, urn.clone(), None).await;
     sender
         .send(Input::Request(input::Request::Queried(urn)))
         .await
