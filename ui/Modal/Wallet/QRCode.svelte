@@ -1,6 +1,7 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
 
+  import { Icon } from "../../DesignSystem/Primitive";
   import { Copyable, Illustration, QR } from "../../DesignSystem/Component";
 
   import { uriStore } from "../../src/wallet";
@@ -34,6 +35,10 @@
   }
 
   .connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     padding-top: 10px;
     color: var(--color-foreground-level-5);
   }
@@ -52,7 +57,11 @@
 
   <div class="qrcode-wrapper">
     <QR size={225} key={uri} />
-    <p class="typo-text-bold connector">via WalletConnect</p>
+    <p class="typo-text-bold connector">
+      Via
+      <Icon.WalletConnect style="margin: 0 4px;" />
+      WalletConnect
+    </p>
   </div>
 
   <Copyable showIcon={true} styleContent={false} copyContent={uri}>
