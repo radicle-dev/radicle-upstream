@@ -26,15 +26,20 @@
 
 <style>
   h1,
+  p,
+  .submit {
+    margin-top: 1.5rem;
+  }
+
+  h1,
   p {
-    padding: 0 var(--content-padding);
+    padding: 0 2.5rem;
   }
 
   .submit {
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
   }
 </style>
 
@@ -50,7 +55,7 @@
   validation={$validation}
   showLeftItem
   autofocus
-  style={'width: 125px'}>
+  style={'width: 125px; padding: 0; margin-top: 1.5rem;'}>
   <div slot="left" style="position: absolute; top: 1px; left: 12px;">
     <Dai />
   </div>

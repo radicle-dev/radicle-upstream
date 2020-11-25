@@ -12,16 +12,15 @@
 </script>
 
 <style>
-  .wrapper {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-direction: column;
+  h1,
+  p,
+  .submit {
+    margin-top: 1.5rem;
   }
 
   h1,
   p {
-    padding: 0.5rem var(--content-padding);
+    padding: 0 2.5rem;
   }
 
   .submit {
@@ -31,30 +30,25 @@
   }
 </style>
 
-<div class="wrapper">
-  <Illustration variant={IllustrationVariant.Money} />
-  <h1>Add receivers</h1>
-  <p>
-    Add receivers to your outgoing support by clicking the “Support” button on
-    profiles or project pages.
-  </p>
-  <p class="typo-text-small" style="color: var(--color-foreground-level-5)">
-    Tip: You can also add new receivers later on by clicking on “Support” on
-    their profile.
-  </p>
-  <Receivers
-    bind:receivers
-    editing={true}
-    style="padding: var(--content-padding)" />
-  <div class="submit">
-    <Button
-      variant="transparent"
-      dataCy="cancel"
-      on:click={onBack}
-      style="margin-right: 1rem">
-      Back
-    </Button>
+<Illustration variant={IllustrationVariant.Money} />
+<h1>Add receivers</h1>
+<p>
+  Add receivers to your outgoing support by clicking the “Support” button on
+  profiles or project pages.
+</p>
+<p class="typo-text-small" style="color: var(--color-foreground-level-5)">
+  Tip: You can also add new receivers later on by clicking on “Support” on their
+  profile.
+</p>
+<Receivers bind:receivers editing={true} style="margin-top: 1.5rem" />
+<div class="submit">
+  <Button
+    variant="transparent"
+    dataCy="cancel"
+    on:click={onBack}
+    style="margin-right: 1rem">
+    Back
+  </Button>
 
-    <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
-  </div>
+  <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
 </div>

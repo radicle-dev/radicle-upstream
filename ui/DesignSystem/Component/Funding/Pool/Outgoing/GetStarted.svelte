@@ -33,6 +33,8 @@
   p {
     margin-top: 1rem;
     margin-bottom: 1.25rem;
+
+    width: 300px;
   }
 </style>
 

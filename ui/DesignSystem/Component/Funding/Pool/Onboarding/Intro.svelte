@@ -13,11 +13,21 @@
     padding: 0 var(--content-padding);
   }
 
+  h1,
+  p,
+  .submit {
+    margin-top: 1.5rem;
+  }
+
+  h1,
+  p {
+    padding: 0 2.5rem;
+  }
+
   .submit {
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
   }
 </style>
 

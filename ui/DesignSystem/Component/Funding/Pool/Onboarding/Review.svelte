@@ -17,15 +17,20 @@
 
 <style>
   h1,
+  p,
+  .submit {
+    margin-top: 1.5rem;
+  }
+
+  h1,
   p {
-    padding: 0.75rem var(--content-padding);
+    padding: 0 2.5rem;
   }
 
   .submit {
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
   }
 
   strong {
@@ -36,8 +41,11 @@
 <Illustration variant={IllustrationVariant.Money} />
 <h1>Stream digital money</h1>
 <p>
-  Top up <strong>{topUp} DAI</strong> and stream <strong>{budget} DAI</strong> per
-  month to these users:
+  Top up
+  <strong>{topUp} DAI</strong>
+  and stream
+  <strong>{budget} DAI</strong>
+  per month to these users:
 </p>
 <Receivers {receivers} />
 <div class="submit">

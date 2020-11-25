@@ -100,11 +100,7 @@
         <Icon.ChevronDown />
       </Button>
       <div class="menu" hidden={!expanded}>
-        <Button
-          icon={Icon.Cross}
-          variant="embedded"
-          on:click={onDisconnect}
-          style="margin-right: 20px;">
+        <Button icon={Icon.Cross} variant="embedded" on:click={onDisconnect}>
           <p class="typo-text">Disconnect</p>
         </Button>
         <Button

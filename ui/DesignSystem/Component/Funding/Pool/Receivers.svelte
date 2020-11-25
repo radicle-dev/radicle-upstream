@@ -61,9 +61,6 @@
 </script>
 
 <style>
-  .receivers {
-    padding: var(--content-padding) 0;
-  }
   .row {
     display: flex;
     align-items: center;
@@ -94,8 +91,8 @@
       <Input.Text
         disabled={updating}
         bind:value={newValue}
-        placeholder="Enter an Ethereum address or a Radicle handle"
-        style="min-width: 380px" />
+        placeholder="Enter a Radicle ID or Ethereum address"
+        style="min-width: 360px" />
 
       <Button
         disabled={newValue.trim().length === 0 || updating}
