@@ -41,7 +41,10 @@
        measures which disallow running unsigned binaries, repeat the previous
        step, now you should see three buttons: `Move to Bin`, `Open` and
        `Cancel`, click `Open`
-  - on Linux: just run `/<PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
+  - on Linux (AppImage)
+    1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
+    2. Run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by executing it
+       from the terminal or clicking on it.
 
 ### Packaging and distribution
 
