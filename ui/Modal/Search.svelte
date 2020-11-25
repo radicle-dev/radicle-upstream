@@ -125,11 +125,10 @@
     <Input.Text
       autofocus
       bind:value
-      hint="v"
       dataCy="search-input"
       inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
       on:keydown={onKeydown}
-      placeholder="Paste a project's Radicle ID here…"
+      placeholder="Enter a project's Radicle ID here…"
       showLeftItem
       validation={$urnValidation}>
       <div slot="left">

@@ -43,7 +43,11 @@
 
 <div class="lock">
   <Emoji emoji={'🚪'} size="huge" style="margin-bottom: 0.75rem;" />
-  <h3>Unlock the app</h3>
+  <h3>Knock, knock</h3>
+  <p style="margin-top: 0.5rem; color: var(--color-foreground-level-6);">
+    Unlock the app by granting access to your Radicle secret key.
+  </p>
+
   <div class="form">
     <Input.Password
       autofocus

@@ -50,7 +50,7 @@
     max-width: var(--content-max-width);
     margin: 64px auto;
     min-width: var(--content-min-width);
-    padding: 0 var(--content-padding);
+    padding: 0 var(--content-padding) 4rem var(--content-padding);
   }
 
   section header {
@@ -170,11 +170,11 @@
       <div class="section-item-single">
         <div class="info">
           <p class="typo-text-bold">
-            Seeds help you find more projects and people on the network.
+            Seeds help you find more projects and users on the network.
           </p>
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
-            Enter seed addresses that you’d like to subscribe to here.
+            Enter seed addresses that you’d like to connect to here.
             <a
               style="color: var(--color-foreground-level-5);"
               class="typo-link"
@@ -185,9 +185,8 @@
         <form class="seed-entry-form" on:submit|preventDefault>
           <div class="seed-entry-field">
             <Input.Text
-              hint="v"
               bind:value={seedInputValue}
-              placeholder="Paste seed address here…"
+              placeholder="Enter a seed address here"
               style="margin-right: 8px; min-width: 224px; width: 100%;"
               validation={$seedValidation} />
             <Button
