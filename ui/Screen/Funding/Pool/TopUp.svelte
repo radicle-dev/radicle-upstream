@@ -39,7 +39,6 @@
     border-radius: 0.5rem;
 
     width: 600px;
-    height: 400px;
   }
 </style>
 
