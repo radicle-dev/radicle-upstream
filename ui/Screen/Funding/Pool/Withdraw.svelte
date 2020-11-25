@@ -13,6 +13,7 @@
     balanceValidationStore,
     store,
   } from "../../../src/funding/pool";
+  import * as remote from "../../../src/remote";
   import { ValidationStatus } from "../../../src/validation";
 
   if ($store === null) pop();
@@ -20,7 +21,13 @@
   let validatingAmount = false;
   let amount: number;
 
-  const validation = balanceValidationStore(get(store).getAccount().balance);
+  let validation = balanceValidationStore(0);
+  get(store).data.subscribe(store => {
+    if (store.status === remote.Status.Success) {
+      validation = balanceValidationStore(store.data.balance);
+    }
+  });
+
   $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;

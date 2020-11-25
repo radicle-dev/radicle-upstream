@@ -51,7 +51,7 @@
       styleContent={false}
       copyContent={address}
       notificationText="Address copied to the clipboard">
-      {displayAddress(address)}
+      {displayAddress(address, 4)}
     </Copyable>
   </p>
 </span>

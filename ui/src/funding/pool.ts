@@ -286,9 +286,8 @@ export function isOnboarded(data: PoolData): boolean {
   );
 }
 
-export function displayAddress(x: Address): string {
-  const length = 10;
-  return `${x.slice(0, length)}...${x.slice(-length)}`;
+export function displayAddress(x: Address, length: number = 10): string {
+  return `${x.slice(0, length + 2)}...${x.slice(-length)}`;
 }
 
 function weightForStatus(status: ReceiverStatus): number {

@@ -11,7 +11,7 @@
   import * as transaction from "../../../../../src/transaction";
 
   import {
-    amountStore,
+    budgetStore,
     monthlyContributionValidationStore,
   } from "../../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../../src/validation";
@@ -42,10 +42,10 @@
 
   let validatingBudget = false;
   $: budgetValidation = monthlyContributionValidationStore();
-  $: amountStore.set(budget ? budget.toString() : "");
+  $: budgetStore.set(budget ? budget.toString() : "");
   $: {
-    if ($amountStore && $amountStore.length > 0) validatingBudget = true;
-    if (validatingBudget) budgetValidation.validate($amountStore);
+    if ($budgetStore && $budgetStore.length > 0) validatingBudget = true;
+    if (validatingBudget) budgetValidation.validate($budgetStore);
   }
 
   let data: _pool.PoolData;
@@ -148,7 +148,7 @@
     display: flex;
     align-items: center;
     text-align: center;
-    margin-top: calc(1.5 * var(--content-padding));
+    margin-top: var(--content-padding);
     color: var(--color-foreground-level-5);
   }
 
@@ -253,10 +253,12 @@
       <Receivers
         {editing}
         bind:receivers
-        updating={ongoingBeneficiariesUpdate} />
+        updating={ongoingBeneficiariesUpdate}
+        style="margin-top: 1rem" />
 
       <div class="tip">
-        ⓘ To stop or pause your generosity, set the monthly contribution to 0.
+        ⓘ To stop or pause your support, set the monthly contribution to 0 or
+        withdraw all the remaining balance.
       </div>
     </div>
   </div>
