@@ -28,7 +28,7 @@
   };
 
   const tweet = () => {
-    window.location.href = "https://radicle.community/c/support/13";
+    window.location.href = "https://radicle.community/c/help";
   };
 </script>
 

@@ -153,7 +153,7 @@
             <br /><a
               style="color: var(--color-foreground-level-5);"
               class="typo-link"
-              href="https://docs.radicle.xyz/docs/understanding-radicle/faq">Learn
+              href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices">Learn
               more about managing devices</a>
           </p>
         </div>
