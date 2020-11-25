@@ -16,10 +16,10 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn cancel_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
-        .and(warp::delete())
-        .and(path::param::<coco::Urn>())
+    path::param::<coco::Urn>()
         .and(path::end())
+        .and(http::with_context_unsealed(ctx))
+        .and(warp::delete())
         .and_then(handler::cancel)
 }
 
@@ -27,10 +27,10 @@ fn cancel_filter(
 fn create_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
-        .and(warp::put())
-        .and(path::param::<coco::Urn>())
+    path::param::<coco::Urn>()
         .and(path::end())
+        .and(warp::put())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::create)
 }
 
@@ -38,9 +38,9 @@ fn create_filter(
 fn list_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
+    path::end()
         .and(warp::get())
-        .and(path::end())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::list)
 }
 
@@ -54,8 +54,8 @@ mod handler {
 
     /// Abort search for an ongoing request.
     pub async fn cancel(
-        mut ctx: context::Unsealed,
         urn: coco::Urn,
+        mut ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         ctx.peer_control
             .cancel_project_request(&urn, Instant::now())
@@ -70,8 +70,8 @@ mod handler {
     /// FIXME(xla): Endpoint ought to return `201` if the request was newly created, otherwise
     /// `200` if there was a request present for the urn.
     pub async fn create(
-        mut ctx: context::Unsealed,
         urn: coco::Urn,
+        mut ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let request = ctx.peer_control.request_project(&urn, Instant::now()).await;
 

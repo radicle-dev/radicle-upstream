@@ -15,8 +15,8 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::get()
-        .and(path::end())
+    path::end()
+        .and(warp::get())
         .and(http::with_context(ctx))
         .and_then(handler::get)
 }
@@ -26,8 +26,8 @@ fn update_settings_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("settings")
-        .and(warp::post())
         .and(path::end())
+        .and(warp::post())
         .and(http::with_context_unsealed(ctx))
         .and(warp::body::json())
         .and_then(handler::update_settings)

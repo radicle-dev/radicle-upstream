@@ -17,8 +17,9 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn create_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
+    path::end()
         .and(warp::post())
+        .and(http::with_context_unsealed(ctx))
         .and(warp::body::json())
         .and_then(handler::create)
 }
@@ -27,9 +28,10 @@ fn create_filter(
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
+    path::param::<coco::Urn>()
+        .and(warp::path::end())
         .and(warp::get())
-        .and(path::param::<coco::Urn>())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::get)
 }
 
@@ -37,9 +39,9 @@ fn get_filter(
 fn list_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_context_unsealed(ctx)
+    path::end()
+        .and(http::with_context_unsealed(ctx))
         .and(warp::get())
-        .and(path::end())
         .and_then(handler::list)
 }
 
@@ -68,7 +70,7 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(ctx: context::Unsealed, id: coco::Urn) -> Result<impl Reply, Rejection> {
+    pub async fn get(id: coco::Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let id = identity::get(&ctx.state, id.clone()).await?;
         Ok(reply::json(&id))
     }

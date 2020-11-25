@@ -20,6 +20,7 @@ fn create_project_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
+        .and(warp::post())
         .and(super::with_context_unsealed(ctx.clone()))
         .and(super::with_owner_guard(ctx))
         .and(warp::body::json())
@@ -31,6 +32,7 @@ fn reset_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("reset")
+        .and(warp::get())
         .and(super::with_context(ctx))
         .and_then(handler::reset)
 }
@@ -40,6 +42,7 @@ fn seal_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("seal")
+        .and(warp::get())
         .and(super::with_context(ctx))
         .and_then(handler::seal)
 }
