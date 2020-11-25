@@ -36,7 +36,7 @@
     margin-right: 5px;
   }
 
-  .negative .symbol {
+  .negative .symbol:before {
     content: "-";
     color: var(--color-negative);
   }
