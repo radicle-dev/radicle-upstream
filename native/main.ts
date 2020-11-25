@@ -139,7 +139,6 @@ const openExternalLink = (url: string): void => {
     url.toLowerCase().startsWith("http://") ||
     url.toLowerCase().startsWith("https://")
   ) {
-    console.log(`Opening external URL: ${url}`);
     shell.openExternal(url);
   } else {
     console.warn(`User tried opening URL with invalid URI scheme: ${url}`);

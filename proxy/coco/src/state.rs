@@ -22,6 +22,7 @@ use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
 
 use crate::{
+    peer::gossip,
     project::{self, peer},
     seed::Seed,
     signer, source,
@@ -569,6 +570,7 @@ impl State {
                 .with_storage(move |storage| storage.track(&urn, &remote))
                 .await??;
         }
+        gossip::query(self, urn.clone(), Some(remote)).await;
         let path = self.update_include(urn).await?;
         log::debug!("Updated include path @ `{}`", path.display());
         Ok(())
