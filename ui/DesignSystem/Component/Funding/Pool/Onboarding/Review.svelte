@@ -41,11 +41,19 @@
 <Illustration variant={IllustrationVariant.Money} />
 <h1>Stream digital money</h1>
 <p>
-  Top up
-  <strong>{topUp} DAI</strong>
-  and stream
-  <strong>{budget} DAI</strong>
-  per month to these users:
+  {#if receivers.size === 0}
+    Top up
+    <strong>{topUp} DAI</strong>. You haven’t added any receivers yet, but as
+    soon as you do, money will begin streaming to them at a rate of
+    <strong>{budget} DAI</strong>
+    per month.
+  {:else}
+    Top up
+    <strong>{topUp} DAI</strong>
+    and stream
+    <strong>{budget} DAI</strong>
+    per month to these users:
+  {/if}
 </p>
 <Receivers {receivers} />
 <div class="submit">
