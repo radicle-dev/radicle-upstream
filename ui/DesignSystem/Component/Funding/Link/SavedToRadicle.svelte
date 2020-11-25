@@ -14,7 +14,6 @@
     justify-content: space-around;
     align-items: center;
     flex-direction: column;
-    min-height: 400px;
   }
 
   header {
@@ -25,7 +24,7 @@
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
+    margin-top: 1.5rem;
   }
 </style>
 
@@ -36,9 +35,7 @@
     <h1 style="margin-top: 1.5rem;">
       Your Ethereum address was saved to Radicle
     </h1>
-    <p
-      style="margin-top: 1.5rem; padding: 0 var(--content-padding)"
-      class="typo-text">
+    <p style="padding: 2rem 4rem 0.5rem 4rem" class="typo-text">
       Continue to add your Radicle Identity to Ethereum?
     </p>
   </header>

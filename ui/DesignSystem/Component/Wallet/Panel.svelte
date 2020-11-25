@@ -2,6 +2,7 @@
   import { Button, Icon } from "../../Primitive";
   import { Dai, Copyable, Overlay } from "../../Component";
 
+  import * as identity from "../../../src/identity";
   import * as wallet from "../../../src/wallet";
   import { displayAddress } from "../../../src/funding/pool";
 
@@ -55,7 +56,9 @@
   .menu {
     position: relative;
     right: 145px;
-    width: 180px;
+    width: fit-content;
+    padding-right: 1rem;
+
     box-shadow: var(--elevation-medium);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
@@ -97,8 +100,21 @@
         <Icon.ChevronDown />
       </Button>
       <div class="menu" hidden={!expanded}>
-        <Button icon={Icon.Cross} variant="embedded" on:click={onDisconnect}>
+        <Button
+          icon={Icon.Cross}
+          variant="embedded"
+          on:click={onDisconnect}
+          style="margin-right: 20px;">
           <p class="typo-text">Disconnect</p>
+        </Button>
+        <Button
+          icon={Icon.Cross}
+          variant="embedded"
+          on:click={() => {
+            identity.linkedAddress.set(null);
+            expanded = false;
+          }}>
+          <p class="typo-text">Unlink (DEV ONLY)</p>
         </Button>
       </div>
     </Overlay>

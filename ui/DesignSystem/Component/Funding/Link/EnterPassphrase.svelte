@@ -15,7 +15,6 @@
     justify-content: space-around;
     align-items: center;
     flex-direction: column;
-    min-height: 400px;
   }
 
   header {
@@ -26,7 +25,7 @@
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
+    margin-top: 1.5rem;
   }
 </style>
 
@@ -44,12 +43,12 @@
   </header>
 
   <Input.Password
-    dataCy="modal-amount-input"
+    dataCy="passphrase-input"
     bind:value={passphrase}
     placeholder="Enter your passphrase"
     on:enter={() => (passphrase.length > 0 ? onConfirm() : {})}
     autofocus
-    style={'width: 60%'} />
+    style={'width: 60%; margin-top: 1.5rem;'} />
 
   <div class="submit">
     <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>

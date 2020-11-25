@@ -51,7 +51,7 @@
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
+    margin-top: 1.5rem;
   }
 </style>
 
@@ -59,10 +59,8 @@
   <Illustration variant={IllustrationVariant.Socks} />
 
   <header>
-    <h1 style="margin-top: 1.5rem;">Add your Ethereum account to Radicle</h1>
-    <p
-      style="margin-top: 1.5rem; padding: 0 var(--content-padding)"
-      class="typo-text">
+    <h1 style="margin-top: 1.5rem;">Add your Radicle Identity to Ethereum</h1>
+    <p style="margin-top: 1.5rem; padding: 0 4rem" class="typo-text">
       Are you sure you want to add your Radicle Identity to Ethereum?
     </p>
   </header>

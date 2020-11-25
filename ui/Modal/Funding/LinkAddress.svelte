@@ -53,7 +53,6 @@
     flex-direction: column;
     padding: var(--content-padding);
     width: 600px;
-    min-height: 400px;
     background: var(--color-background);
     border-radius: 0.5rem;
 

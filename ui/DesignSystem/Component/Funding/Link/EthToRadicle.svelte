@@ -19,7 +19,6 @@
     justify-content: space-around;
     align-items: center;
     flex-direction: column;
-    min-height: 500px;
   }
 
   header {
@@ -51,7 +50,7 @@
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    margin-top: calc(var(--content-padding) / 2);
+    margin-top: 1.5rem;
   }
 </style>
 
