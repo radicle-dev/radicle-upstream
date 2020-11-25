@@ -111,6 +111,7 @@
 
   .markdown :global(img) {
     border-style: none;
+    max-width: 100%;
   }
 
   .markdown :global(code) {
