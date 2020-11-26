@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { location, link } from "svelte-spa-router";
+  import { location, push } from "svelte-spa-router";
 
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
@@ -89,64 +89,48 @@
     border-bottom-right-radius: 4px;
   }
 
-  .indicator :global(li:hover svg) {
+  .indicator :global(div:hover svg) {
     fill: var(--color-secondary);
   }
 
   .indicator.active :global(svg) {
     fill: var(--color-secondary);
   }
-
-  a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-  }
 </style>
 
 <div class="wrapper" data-cy="sidebar">
-  <ul class="top">
-    <li
-      class="item indicator"
-      data-cy="profile"
-      class:active={path.active(path.profile(), $location, true)}>
-      <Tooltip value={identity.metadata.handle}>
-        <a href={path.profileProjects()} use:link>
-          <Avatar
-            size="regular"
-            avatarFallback={identity.avatarFallback}
-            variant="circle" />
-        </a>
-      </Tooltip>
-    </li>
-  </ul>
-  <ul class="bottom">
-    <li
-      class="item indicator"
-      data-cy="search"
-      on:click|stopPropagation={() => modal.toggle(path.search())}>
-      <Tooltip value="Navigate to a project">
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
-          <Icon.MagnifyingGlass />
-        </a>
-      </Tooltip>
-    </li>
-    <li class="item indicator" data-cy="search">
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <ConnectionStatusIndicator />
-    </li>
-    <li
-      class="item indicator"
-      data-cy="settings"
-      class:active={path.active(path.settings(), $location)}>
-      <Tooltip value="Settings">
-        <a href={path.settings()} use:link>
-          <Icon.Settings />
-        </a>
-      </Tooltip>
-    </li>
-  </ul>
+  <div class="top">
+    <Tooltip value={identity.metadata.handle}>
+      <div
+        class="item indicator"
+        data-cy="profile"
+        class:active={path.active(path.profile(), $location, true)}
+        on:click|stopPropagation={() => push(path.profileProjects())}>
+        <Avatar
+          size="regular"
+          avatarFallback={identity.avatarFallback}
+          variant="circle" />
+      </div>
+    </Tooltip>
+  </div>
+  <div class="bottom">
+    <Tooltip value="Navigate to a project">
+      <div
+        class="item indicator"
+        data-cy="search"
+        on:click|stopPropagation={() => modal.toggle(path.search())}>
+        <Icon.MagnifyingGlass />
+      </div>
+    </Tooltip>
+    <ConnectionStatusIndicator />
+    <Tooltip value="Settings">
+      <div
+        class="item indicator"
+        data-cy="settings"
+        class:active={path.active(path.settings(), $location)}
+        on:click|stopPropagation={() => push(path.settings())}>
+        <Icon.Settings />
+      </div>
+    </Tooltip>
+  </div>
 </div>

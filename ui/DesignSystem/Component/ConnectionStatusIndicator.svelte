@@ -18,12 +18,31 @@
 </script>
 
 <style>
-  a {
+  .item {
+    width: var(--sidebar-width);
+    height: 32px;
+    margin-bottom: 16px;
+    position: relative;
     display: flex;
-    align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .indicator:hover:before {
+    position: absolute;
+    content: "";
+    width: 4px;
+    height: 32px;
+    background-color: var(--color-foreground-level-5);
+    top: 0px;
+    left: 0px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+  .indicator :global(div:hover svg) {
+    fill: var(--color-secondary);
   }
 </style>
 
@@ -31,32 +50,28 @@
   <div>
     {#if status.type === StatusType.Online}
       <Tooltip value={`You’re connected to ${peerCount(status.connected)}`}>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
+        <div class="item indicator" data-cy="connection-status">
           <Icon.Network />
-        </a>
+        </div>
       </Tooltip>
     {:else if status.type === StatusType.Syncing}
       <Tooltip
         value={`Syncing with ${peerCount(status.syncs)} to get new content from your network`}>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
+        <div class="item indicator" data-cy="connection-status">
           <Syncing />
-        </a>
+        </div>
       </Tooltip>
     {:else if status.type === StatusType.Offline || status.type === StatusType.Started}
       <Tooltip value="You’re not connected to any peers">
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
+        <div class="item indicator" data-cy="connection-status">
           <Offline />
-        </a>
+        </div>
       </Tooltip>
     {:else if status.type === StatusType.Stopped}
       <Tooltip value="The app couldn't start your peer">
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
+        <div class="item indicator" data-cy="connection-status">
           <Offline style="fill: var(--color-negative);" />
-        </a>
+        </div>
       </Tooltip>
     {/if}
   </div>
