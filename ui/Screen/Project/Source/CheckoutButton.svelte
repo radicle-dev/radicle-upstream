@@ -28,7 +28,7 @@
 <style>
   .clone-dropdown {
     margin-top: 3rem;
-    right: 2rem;
+    right: 0;
     position: absolute;
     border-radius: 8px;
     background: var(--color-background);
@@ -44,7 +44,7 @@
   }
 </style>
 
-<Overlay {expanded} on:hide={hide}>
+<Overlay {expanded} on:hide={hide} style="position: relative;">
   <div class="clone-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">{helpText}</p>
 
