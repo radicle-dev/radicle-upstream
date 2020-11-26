@@ -1,13 +1,13 @@
-<script>
+<script lang="typescript">
   import { Icon } from "../Primitive";
 
-  export let contributors = null;
-  export let branches = null;
-  export let commits = null;
+  export let contributors: number;
+  export let branches: number;
+  export let commits: number;
 
-  export let style = null;
+  export let style = "";
 
-  const formattedStats = [
+  $: formattedStats = [
     { icon: Icon.Branch, count: branches },
     { icon: Icon.Commit, count: commits },
     { icon: Icon.User, count: contributors },
