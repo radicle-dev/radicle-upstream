@@ -1,7 +1,7 @@
 //! Validation logic for safely checking that a [`super::Repo`] is valid before setting up the
 //! working copy.
 
-use std::{io, path::PathBuf};
+use std::{convert::TryFrom, io, path::PathBuf};
 
 use librad::{
     git::{local::url::LocalUrl, types::remote::Remote},
@@ -11,6 +11,9 @@ use librad::{
 use radicle_surf::vcs::git::git2;
 
 use crate::config;
+
+const USER_NAME: &str = "user.name";
+const USER_EMAIL: &str = "user.email";
 
 /// Errors that occur when validating a [`super::Repo`]'s path.
 #[derive(Debug, thiserror::Error)]
@@ -34,6 +37,14 @@ pub enum Error {
     #[error(transparent)]
     Io(#[from] io::Error),
 
+    /// When checking the default git config for `user.email` we could not find it.
+    #[error("the author email for creating the project could not be found - have you configured your git config?")]
+    MissingAuthorEmail,
+
+    /// When checking the default git config for `user.name` we could not find it.
+    #[error("the author name for creating the project could not be found - have you configured your git config?")]
+    MissingAuthorName,
+
     /// Configured default branch for the project is missing.
     #[error(
         "the default branch '{branch}' supplied was not found for the repository at '{repo_path}'"
@@ -44,6 +55,12 @@ pub enum Error {
         /// The default branch that was expected to be found.
         branch: String,
     },
+
+    /// When checking for default git config we could not find it.
+    #[error(
+        "the git config for creating the project could not be found - have you configured it?"
+    )]
+    MissingGitConfig,
 
     /// The `rad` remote was found but it did not have a URL.
     #[error("the `rad` remote exists but is missing its url field")]
@@ -65,6 +82,22 @@ pub enum Error {
         /// The URL that was found for the `rad` remote.
         found: String,
     },
+}
+
+/// The signature of a git author. Used internally to convert into a `git2::Signature`, which
+/// _cannot_ be shared between threads.
+#[derive(Debug)]
+pub struct Signature {
+    name: String,
+    email: String,
+}
+
+impl TryFrom<Signature> for git2::Signature<'static> {
+    type Error = git2::Error;
+
+    fn try_from(signature: Signature) -> Result<Self, Self::Error> {
+        Self::now(&signature.name, &signature.email)
+    }
 }
 
 /// A `Repository` represents the validated information for setting up a working copy.
@@ -90,6 +123,8 @@ pub enum Repository {
         url: LocalUrl,
         /// The default branch the repository should be set up with.
         default_branch: OneLevel,
+        /// The signature to be used for creating the first commit.
+        signature: Signature,
     },
 }
 
@@ -160,11 +195,14 @@ impl Repository {
                     return Err(Error::AlreadExists(repo_path));
                 }
 
+                let signature = Self::existing_author()?;
+
                 Ok(Self::New {
                     name,
                     path,
                     url,
                     default_branch,
+                    signature,
                 })
             },
         }
@@ -194,11 +232,16 @@ impl Repository {
                 name,
                 url,
                 default_branch,
+                signature,
             } => {
                 let path = path.join(name);
                 log::debug!("Setting up new repository @ '{}'", path.display());
                 let repo = Self::initialise(path, description, &default_branch)?;
-                Self::initial_commit(&repo, &default_branch)?;
+                Self::initial_commit(
+                    &repo,
+                    &default_branch,
+                    &git2::Signature::try_from(signature)?,
+                )?;
                 Self::setup_remote(&repo, url, &default_branch)?;
                 crate::project::set_rad_upstream(&repo, &default_branch)?;
                 Ok(repo)
@@ -224,9 +267,8 @@ impl Repository {
     fn initial_commit(
         repo: &git2::Repository,
         default_branch: &OneLevel,
+        signature: &git2::Signature<'static>,
     ) -> Result<(), git2::Error> {
-        // First use the config to initialize a commit signature for the user.
-        let sig = repo.signature()?;
         // Now let's create an empty tree for this commit
         let tree_id = {
             let mut index = repo.index()?;
@@ -241,8 +283,8 @@ impl Repository {
             // is the first commit so there will be no parent.
             repo.commit(
                 Some(&format!("refs/heads/{}", default_branch.as_str())),
-                &sig,
-                &sig,
+                signature,
+                signature,
                 "Initial commit",
                 &tree,
                 &[],
@@ -312,5 +354,17 @@ impl Repository {
                 Some(_) => Ok(Some(remote)),
             },
         }
+    }
+
+    fn existing_author() -> Result<Signature, Error> {
+        let config = git2::Config::open_default()
+            .or_matches(git_ext::is_not_found_err, || Err(Error::MissingGitConfig))?;
+        let name = config
+            .get_string(USER_NAME)
+            .or_matches(git_ext::is_not_found_err, || Err(Error::MissingAuthorName))?;
+        let email = config
+            .get_string(USER_EMAIL)
+            .or_matches(git_ext::is_not_found_err, || Err(Error::MissingAuthorEmail))?;
+        Ok(Signature { name, email })
     }
 }

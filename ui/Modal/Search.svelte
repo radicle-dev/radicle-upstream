@@ -20,7 +20,10 @@
   import { FollowToggle, Remote } from "../DesignSystem/Component";
 
   let id: string;
+  let input: string = "";
+
   let value: string;
+  $: value = input.trim();
 
   const dispatch = createEventDispatcher();
   const urnValidation = urnValidationStore();
@@ -124,7 +127,7 @@
   <div class="search-bar">
     <Input.Text
       autofocus
-      bind:value
+      bind:value={input}
       dataCy="search-input"
       inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
       on:keydown={onKeydown}
