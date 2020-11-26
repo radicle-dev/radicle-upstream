@@ -43,7 +43,10 @@ echo "--- Run proxy fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy lints"
-(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings)
+(
+  cd proxy
+  time timeout 4m cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
+)
 
 echo "--- Run app eslint checks"
 time yarn lint
@@ -55,7 +58,12 @@ echo "--- Check TypeScript"
 time yarn typescript:check
 
 echo "--- Run proxy tests"
-(cd proxy && time cargo test --all --all-features --all-targets)
+(
+  cd proxy
+  export RUST_TEST_TIME_UNIT=2000,4000
+  export RUST_TEST_TIME_INTEGRATION=2000,8000
+  time cargo test --all --all-features --all-targets -- -Z unstable-options --ensure-time
+)
 
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
