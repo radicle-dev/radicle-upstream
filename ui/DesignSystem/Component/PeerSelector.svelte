@@ -1,13 +1,13 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { BadgeType } from "../../src/badge";
   import { isExperimental } from "../../src/ipc";
   import { Role } from "../../src/project";
   import type { User } from "../../src/project";
+  import { CSSPosition } from "../../src/style";
 
-  import { Avatar, Icon } from "../Primitive";
-  import { Badge, Overlay } from "../Component";
+  import { Icon } from "../Primitive";
+  import { Overlay, Tooltip } from "../Component";
 
   import Entry from "./PeerSelector/Entry.svelte";
   import Peer from "./PeerSelector/Peer.svelte";
@@ -40,13 +40,7 @@
     hide();
     dispatch("select", peer);
   };
-  const showProfile = isExperimental();
-  const tooltip = (peer: User): string | null => {
-    if (peer.role === Role.Tracker) {
-      return "Remote has no changes";
-    }
-    return null;
-  };
+  const showProfile = !isExperimental();
 </script>
 
 <style>
@@ -73,12 +67,6 @@
     visibility: hidden;
   }
 
-  .selector-avatar {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-  }
-
   .selector-expand {
     margin-left: 0.5rem;
   }
@@ -100,6 +88,22 @@
     height: 100%;
     min-width: 100%;
   }
+
+  .action {
+    height: 1.5rem;
+    margin-left: 0.5rem;
+    width: 1.5rem;
+  }
+
+  .open-profile {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+  }
+
+  p.remotes {
+    white-space: nowrap;
+  }
 </style>
 
 <Overlay
@@ -107,28 +111,11 @@
   on:hide={hide}
   style="margin-right: 1rem; position: relative; user-select: none;">
   <div
-    class="peer-selector"
+    class="peer-selector typo-overflow-ellipsis"
     data-cy="peer-selector"
-    on:click|stopPropagation={show}
-    hidden={expanded}>
-    <div class="selector-avatar typo-overflow-ellipsis">
-      <Avatar
-        avatarFallback={selected.identity.avatarFallback}
-        size="small"
-        style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
-        variant="circle" />
-      <p
-        class="typo-text-bold typo-overflow-ellipsis"
-        style="max-width: 7.5rem;"
-        title={selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}>
-        {selected.identity.metadata.handle || selected.identity.shareableEntityIdentifier}
-      </p>
-      <p>
-        {#if selected.role === Role.Maintainer}
-          <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
-        {/if}
-      </p>
-    </div>
+    hidden={expanded}
+    on:click|stopPropagation={show}>
+    <Peer peer={selected} />
     <div class="selector-expand">
       <Icon.ChevronUpDown
         style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
@@ -140,9 +127,27 @@
         <Entry
           active={peer.role !== Role.Tracker}
           on:click={() => onSelect(peer)}
-          selected={peer.identity.peerId == selected.identity.peerId}
-          tooltip={tooltip(peer)}>
-          <Peer {peer} {showProfile} on:open={() => onOpen(peer)} />
+          selected={peer.identity.peerId == selected.identity.peerId}>
+          {#if peer.role === Role.Tracker}
+            <Tooltip position={CSSPosition.Left} value="Remote has no changes">
+              <Peer {peer} />
+            </Tooltip>
+          {:else}
+            <Peer {peer} />
+          {/if}
+
+          <div class="action">
+            {#if showProfile}
+              <Tooltip value="Go to profile" position={CSSPosition.Top}>
+                <div
+                  class="open-profile"
+                  data-cy={peer.identity.metadata.handle}
+                  on:click|stopPropagation={() => onOpen(peer)}>
+                  <Icon.ArrowBoxUpRight />
+                </div>
+              </Tooltip>
+            {/if}
+          </div>
         </Entry>
       {/each}
 
@@ -151,7 +156,7 @@
         on:click={onModal}
         style="justify-content: flex-start;">
         <Icon.Pen style="margin-right: .5rem;" />
-        <p>Manage remotes</p>
+        <p class="remotes">Manage remotes</p>
       </Entry>
     </div>
   </div>
