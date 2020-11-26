@@ -7,7 +7,7 @@ import {
   shell,
 } from "electron";
 import path from "path";
-import { execFile, ChildProcess } from "child_process";
+import { ProxyProcessManager } from "./proxy-process-manager";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -91,7 +91,12 @@ class WindowManager {
 }
 
 const windowManager = new WindowManager();
-let proxyProcess: ChildProcess | undefined;
+const proxyProcessManager = new ProxyProcessManager({
+  proxyPath,
+  proxyArgs: [],
+  enabled: !isDev,
+  lineLimit: 500,
+});
 
 ipcMain.handle(RendererMessage.DIALOG_SHOWOPENDIALOG, async () => {
   const window = windowManager.window;
@@ -145,50 +150,24 @@ const openExternalLink = (url: string): void => {
   }
 };
 
-const startProxy = () => {
-  if (isDev) {
-    return;
-  }
-
-  proxyProcess = execFile(proxyPath, [], (error, stdout, stderr) => {
-    let status = null;
-    let signal = null;
-    if (error) {
-      status = error.code === undefined ? null : error.code;
-      signal = error.signal === undefined ? null : error.signal;
-    } else {
-      status = 0;
-    }
-
-    console.error(
-      "Proxy process exited with status code %s and signal %s",
-      status,
-      signal
-    );
-
-    windowManager.sendMessage({
-      kind: MainMessageKind.PROXY_ERROR,
-      data: {
-        status,
-        signal,
-        stdout,
-        stderr,
-      },
-    });
-  });
-};
-
 app.on("will-quit", () => {
-  if (proxyProcess) {
-    proxyProcess.kill();
-  }
+  proxyProcessManager.kill();
 });
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  startProxy();
+  proxyProcessManager.run().then(({ status, signal, output }) => {
+    windowManager.sendMessage({
+      kind: MainMessageKind.PROXY_ERROR,
+      data: {
+        status,
+        signal,
+        output,
+      },
+    });
+  });
 
   if (isDev) {
     setupWatcher();

@@ -62,6 +62,7 @@
     "@rollup/plugin-typescript": "^6.1.0",
     "@tsconfig/svelte": "^1.0.10",
     "@types/jest": "^26.0.15",
+    "@types/lodash": "^4.14.165",
     "@types/marked": "^1.2.0",
     "@types/node": "^14.14.8",
     "@types/sinon": "^9.0.8",
@@ -80,6 +81,7 @@
     "husky": ">=4.3.0",
     "jest": "^26.6.3",
     "lint-staged": "^10.5.1",
+    "lodash": "^4.17.20",
     "npm-run-all": "^4.1.5",
     "patch-package": "^6.2.2",
     "prettier": "^2.1.2",
@@ -146,6 +148,7 @@
   "dependencies": {
     "@types/qs": "^6.9.5",
     "marked": "^1.2.4",
+    "mnemonist": "^0.38.0",
     "pure-svg-code": "^1.0.6",
     "timeago.js": "^4.0.2",
     "twemoji": "13.0.1",

@@ -47,8 +47,8 @@
       color: var(--color-foreground-level-6);">
       This is your
       <span class="typo-text-bold">Device ID</span>! It's unique to this device.
-      You can find it at any time in your Settings page. You'll need to share it
-      with others to collaborate.
+      You can find it at any time on your Profile or Settings page. You'll need
+      to share it with others to collaborate.
     </p>
 
     <Button dataCy="go-to-profile-button" on:click={next}>

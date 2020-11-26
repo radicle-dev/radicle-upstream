@@ -12,8 +12,7 @@ export enum MainMessageKind {
 export interface ProxyError {
   status: number | null;
   signal: NodeJS.Signals | null;
-  stdout: string;
-  stderr: string;
+  output: string;
 }
 
 // Message kinds sent from the renderer to the main process.
