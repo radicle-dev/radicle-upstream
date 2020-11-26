@@ -3,7 +3,6 @@
   import type * as svelteStore from "svelte/store";
 
   import { Button, Emoji, Icon } from "../DesignSystem/Primitive";
-  import { Fullscreen } from "../DesignSystem/Component";
 
   import * as notification from "../src/notification";
   import * as ipc from "../src/ipc";
@@ -28,7 +27,7 @@
   };
 
   const tweet = () => {
-    window.location.href = "https://radicle.community/c/support/13";
+    window.location.href = "https://radicle.community/c/help";
   };
 </script>
 
@@ -38,6 +37,18 @@
   }
 
   .container {
+    background-color: var(--color-secondary);
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: scroll;
+  }
+
+  .content {
     height: 100%;
     padding: 5rem;
 
@@ -47,6 +58,7 @@
     flex-direction: column;
     color: #fff; /* I know... but this design doesn't work in dark mode. */
   }
+
   .proxy-log-container {
     background: #e3e3ff;
 
@@ -72,10 +84,8 @@
 </style>
 
 {#if $fatalError !== null}
-  <Fullscreen
-    escapable={false}
-    style="background-color: var(--color-secondary); z-index: 200;">
-    <div class="container" data-cy="blue-screen-of-death">
+  <div class="container">
+    <div class="content" data-cy="blue-screen-of-death">
       <Emoji emoji="🧻" size="huge" style="margin-bottom: 1.5rem;" />
       <p style="width: 321px; text-align: center">
         {#if $fatalError.kind === 'SESSION'}
@@ -104,5 +114,5 @@
         </div>
       {/if}
     </div>
-  </Fullscreen>
+  </div>
 {/if}

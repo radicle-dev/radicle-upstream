@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.0...v0.1.1) (2020-11-25)
+
+
+### Bug Fixes
+
+* **docs:** document that AppImage needs to be made executable ([#1355](https://github.com/radicle-dev/radicle-upstream/issues/1355)) ([abbf5a2](https://github.com/radicle-dev/radicle-upstream/commit/abbf5a22251ab6fe11466b014fe8fb4c292d6eab)), closes [#1339](https://github.com/radicle-dev/radicle-upstream/issues/1339)
+* **proxy:** filter log lines from `quinn` create ([#1354](https://github.com/radicle-dev/radicle-upstream/issues/1354)) ([c08317b](https://github.com/radicle-dev/radicle-upstream/commit/c08317b1aac14336041026aede86a23a23ec4fa0))
+* **proxy:** query peer refs after tracking ([#1332](https://github.com/radicle-dev/radicle-upstream/issues/1332)) ([0a216f8](https://github.com/radicle-dev/radicle-upstream/commit/0a216f8c1591dab8c706640b1ff065a01556d58d)), closes [#1242](https://github.com/radicle-dev/radicle-upstream/issues/1242)
+* **ui:** fix BSOD overflow scroll bug ([#1353](https://github.com/radicle-dev/radicle-upstream/issues/1353)) ([8250317](https://github.com/radicle-dev/radicle-upstream/commit/82503179515528a24e080cd740589e19443f71a8))
+* **ui:** remove logging on opening external links ([#1357](https://github.com/radicle-dev/radicle-upstream/issues/1357)) ([3e3285b](https://github.com/radicle-dev/radicle-upstream/commit/3e3285bdbf6f3a94859e273df22570102fd31edf))
+
 ## [0.1.0](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.17...v0.1.0) (2020-11-24)
 
 

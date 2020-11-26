@@ -2,6 +2,7 @@
 
 use librad::{
     net::peer::{Gossip, Rev},
+    peer::PeerId,
     uri::RadUrn,
 };
 
@@ -20,13 +21,14 @@ pub async fn announce(state: &State, urn: &RadUrn, rev: Option<Oid>) {
 }
 
 /// Emit a [`Gossip`] request for the given `urn`.
-pub async fn query(state: &State, urn: RadUrn) {
-    let protocol = state.api.protocol().clone();
-    protocol
+pub async fn query(state: &State, urn: RadUrn, origin: Option<PeerId>) {
+    state
+        .api
+        .protocol()
         .query(Gossip {
             urn,
             rev: None,
-            origin: None,
+            origin,
         })
         .await;
 }

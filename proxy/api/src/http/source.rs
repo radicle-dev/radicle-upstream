@@ -22,10 +22,10 @@ fn blob_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
-        .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
+        .and(path::end())
         .and(http::with_qs::<BlobQuery>())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::blob)
 }
 
@@ -34,10 +34,11 @@ fn branches_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and(warp::query::<BranchQuery>())
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
-        .and(path::param::<coco::Urn>())
-        .and(warp::query::<BranchQuery>())
         .and_then(handler::branches)
 }
 
@@ -46,10 +47,11 @@ fn commit_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
-        .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(path::param::<coco::oid::Oid>())
+        .and(path::end())
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::commit)
 }
 
@@ -68,8 +70,8 @@ fn commits_filter(
 /// `GET /local-state/<path>`
 fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("local-state")
-        .and(warp::get())
         .and(path::tail())
+        .and(warp::get())
         .and_then(handler::local_state)
 }
 
@@ -78,11 +80,11 @@ fn tags_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
-        .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
         .and(warp::query::<TagQuery>())
         .and(path::end())
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::tags)
 }
 
@@ -91,10 +93,11 @@ fn tree_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
-        .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
         .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and(warp::get())
         .and(http::with_qs::<TreeQuery>())
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::tree)
 }
 
@@ -108,7 +111,6 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        ctx: context::Unsealed,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -116,6 +118,7 @@ mod handler {
             revision,
             highlight,
         }: super::BlobQuery,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let settings = session::get_current(&ctx.store)?
             .map(|session| session.settings)
@@ -150,9 +153,9 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
-        ctx: context::Unsealed,
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
         let default_branch = ctx
@@ -173,9 +176,9 @@ mod handler {
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        ctx: context::Unsealed,
         project_urn: coco::Urn,
         sha1: oid::Oid,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let default_branch = ctx
             .state
@@ -228,9 +231,9 @@ mod handler {
 
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
-        ctx: context::Unsealed,
         project_urn: coco::Urn,
         _query: super::TagQuery,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let branch = ctx
             .state
@@ -248,13 +251,13 @@ mod handler {
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        ctx: context::Unsealed,
         project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
             peer_id,
             revision,
         }: super::TreeQuery,
+        ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.state, peer_id);
         let revision = super::http::guard_self_revision(&ctx.state, revision);
