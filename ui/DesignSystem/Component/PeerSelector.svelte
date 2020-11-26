@@ -41,6 +41,12 @@
     dispatch("select", peer);
   };
   const showProfile = isExperimental();
+  const tooltip = (peer: User): string | null => {
+    if (peer.role === Role.Tracker) {
+      return "Remote has no changes";
+    }
+    return null;
+  };
 </script>
 
 <style>
@@ -135,7 +141,7 @@
           active={peer.role !== Role.Tracker}
           on:click={() => onSelect(peer)}
           selected={peer.identity.peerId == selected.identity.peerId}
-          tooltip={peer.role === Role.Tracker && 'Remote has no changes'}>
+          tooltip={tooltip(peer)}>
           <Peer {peer} {showProfile} on:open={() => onOpen(peer)} />
         </Entry>
       {/each}
