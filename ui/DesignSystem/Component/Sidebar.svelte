@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { location, link } from "svelte-spa-router";
+  import { location, push } from "svelte-spa-router";
 
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
@@ -111,9 +111,11 @@
     <li
       class="item indicator"
       data-cy="profile"
-      class:active={path.active(path.profile(), $location, true)}>
+      class:active={path.active(path.profile(), $location, true)}
+      on:click|stopPropagation={() => push(path.profileProjects())}>
       <Tooltip value={identity.metadata.handle}>
-        <a href={path.profileProjects()} use:link>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
           <Avatar
             size="regular"
             avatarFallback={identity.avatarFallback}
@@ -129,7 +131,7 @@
       on:click|stopPropagation={() => modal.toggle(path.search())}>
       <Tooltip value="Navigate to a project">
         <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
+        <a style="cursor: default;">
           <Icon.MagnifyingGlass />
         </a>
       </Tooltip>
@@ -141,9 +143,11 @@
     <li
       class="item indicator"
       data-cy="settings"
-      class:active={path.active(path.settings(), $location)}>
+      class:active={path.active(path.settings(), $location)}
+      on:click|stopPropagation={() => push(path.settings())}>
       <Tooltip value="Settings">
-        <a href={path.settings()} use:link>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
           <Icon.Settings />
         </a>
       </Tooltip>
