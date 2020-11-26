@@ -1,8 +1,8 @@
 <script lang="typescript">
-  import * as transaction from "../../../src/transaction.ts";
+  import * as transaction from "../../../../src/transaction.ts";
 
-  import { Icon } from "../../Primitive";
-  import TransactionSpinner from "./Spinner.svelte";
+  import { Icon } from "../../../Primitive";
+  import TransactionSpinner from "../Spinner.svelte";
 
   import ItemDescription from "./ItemDescription.svelte";
 

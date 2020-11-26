@@ -1,8 +1,8 @@
 <script lang="typescript">
-  import { Icon } from "../../Primitive";
-  import TransactionSpinner from "./Spinner.svelte";
+  import { Icon } from "../../../Primitive";
+  import TransactionSpinner from "../Spinner.svelte";
 
-  import * as transaction from "../../../src/transaction.ts";
+  import * as transaction from "../../../../src/transaction";
 
   export let counts: transaction.SummaryCounts;
 

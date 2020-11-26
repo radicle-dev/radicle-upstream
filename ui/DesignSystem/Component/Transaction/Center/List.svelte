@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import * as transaction from "../../../src/transaction";
+  import * as transaction from "../../../../src/transaction";
 
   import Item from "./Item.svelte";
 

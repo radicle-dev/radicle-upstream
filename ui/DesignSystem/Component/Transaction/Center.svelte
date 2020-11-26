@@ -4,8 +4,8 @@
   import type { Tx } from "../../../src/transaction";
   import { TxStatus, summaryCounts } from "../../../src/transaction";
 
-  import List from "./List.svelte";
-  import Summary from "./Summary.svelte";
+  import List from "./Center/List.svelte";
+  import Summary from "./Center/Summary.svelte";
 
   export let transactions: Tx[] = [];
 
