@@ -8,7 +8,7 @@ import { ProxyProcessManager } from "./proxy-process-manager";
       "sh",
       [
         "-c",
-        `x=0; while [ $x -lt 300 ]; do echo "$x" ${redirection}; : $(( x++ )); done`,
+        `x=0; while [ $x -lt 300 ]; do echo "$x" ${redirection}; x=$(( x + 1 )); done`,
       ],
       true
     );
