@@ -33,6 +33,11 @@
   .entry.selected {
     background-color: var(--color-foreground-level-2);
   }
+
+  :global(p) {
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
 </style>
 
 {#if tooltip}
