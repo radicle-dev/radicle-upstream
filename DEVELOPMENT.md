@@ -421,6 +421,8 @@ instructions.
 Once the release PR branch is merged into master a build will be triggered on
 Buildkite, this will build Upstream for both Linux and macOS. When the build
 has completed you can download binaries for your platform [here][ar].
+Make sure to update the links to those binaries on the [radicle.xyz download page](https://github.com/radicle-dev/radicle.xyz/blob/julien/master/pages/downloads.html.mustache)
+and rebuild/deploy the website.
 
 This is what a typical release looks like:
 
