@@ -32,7 +32,7 @@
       transaction.TxKind.UpdateMonthlyContribution
     );
     ongoingBeneficiariesUpdate = transaction.ongoing(
-      transaction.TxKind.UpdateBeneficiaries
+      transaction.TxKind.UpdateReceivers
     );
   });
 

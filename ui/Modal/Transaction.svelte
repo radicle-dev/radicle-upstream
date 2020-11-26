@@ -1,16 +1,23 @@
 <script lang="typescript">
   import { get } from "svelte/store";
-  import { Copyable, Dai } from "../DesignSystem/Component";
+  import {
+    Copyable,
+    Dai,
+    Identity,
+    Illustration,
+  } from "../DesignSystem/Component";
+  import { Icon } from "../DesignSystem/Primitive";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
+  import Summary from "../DesignSystem/Component/Transaction/Summary.svelte";
 
-  import { displayAddress } from "../src/funding/pool";
   import {
     selectedStore,
     store as transactionsStore,
     colorForStatus,
-    TxKind,
+    isIncoming,
   } from "../src/transaction";
   import type { Tx } from "../src/transaction";
+  import { Variant as IllustrationVariant } from "../src/illustration";
 
   let tx: Tx = undefined;
 
@@ -39,36 +46,39 @@
     justify-content: space-around;
     flex-basis: 100%;
 
-    background: var(--color-foreground-level-1);
-    border: 1px solid #ebeff3;
     box-sizing: border-box;
-    border-radius: 8px;
-
-    padding: var(--content-padding);
     text-align: center;
 
     color: var(--color-foreground-level-6);
   }
 
-  header .from-to {
+  h1 {
+    margin-top: 1.5rem;
+  }
+
+  .from-to {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    margin: 2rem auto;
+    justify-content: space-around;
+
+    width: 100%;
+    padding: 1.5rem 0;
+
+    border: 1px solid var(--color-foreground-level-2);
+    background-color: var(--color-foreground-level-1);
+
+    margin-top: 1.5rem;
+    border-radius: 4px;
   }
 
-  header .from-to .arrow {
-    color: var(--color-foreground-level-5);
-    padding: 0 1rem;
+  .from-to .arrow {
+    padding: 0.7rem 0;
   }
 
-  header .from-to .address {
+  .from-to .address {
     color: var(--color-foreground-level-5);
     font-size: 14px;
-  }
-
-  header .date {
-    color: var(--color-foreground-level-4);
   }
 
   .content .section {
@@ -100,37 +110,45 @@
 
 <div class="wrapper">
   <header>
-    <h2>{tx.kind}</h2>
+    <Illustration variant={IllustrationVariant.Purse} />
+    <h1>{tx.kind}</h1>
+    <Summary {tx} style="margin: 1.5rem 0" />
     <div class="from-to">
       <p class="typo-text-bold subheading">
-        {tx.kind === TxKind.CollectFunds ? 'Incoming support' : 'Your connected wallet'}
-        <br />
-        <span class="address">
-          <Copyable
-            showIcon={false}
-            styleContent={false}
-            copyContent={tx.from}
-            notificationText="Address copied to the clipboard">
-            {displayAddress(tx.from)}
-          </Copyable>
-        </span>
+        <!-- TODO(nuno): DRY this -->
+        {#if isIncoming(tx)}
+          <span class="address">
+            <Copyable
+              showIcon={false}
+              styleContent={false}
+              copyContent={tx.to}
+              notificationText="Address copied to the clipboard">
+              {tx.to || 'n/a'}
+            </Copyable>
+          </span>
+        {:else}
+          <Identity />
+        {/if}
       </p>
-      <p class="typo-text-bold subheading arrow">-&gt;</p>
+      <div class="arrow">
+        <Icon.ArrowDown />
+      </div>
       <p class="typo-text-bold subheading">
-        {tx.kind === TxKind.CollectFunds ? 'Your connected wallet' : 'Outgoing support'}
-        <br />
-        <span class="address">
-          <Copyable
-            showIcon={false}
-            styleContent={false}
-            copyContent={tx.to}
-            notificationText="Address copied to the clipboard">
-            {tx.to ? displayAddress(tx.to) : 'n/a'}
-          </Copyable>
-        </span>
+        {#if isIncoming(tx)}
+          <Identity />
+        {:else}
+          <span class="address">
+            <Copyable
+              showIcon={false}
+              styleContent={false}
+              copyContent={tx.to}
+              notificationText="Address copied to the clipboard">
+              {tx.to || 'n/a'}
+            </Copyable>
+          </span>
+        {/if}
       </p>
     </div>
-    <p class="typo-text date">{new Date(tx.date).toUTCString()}</p>
   </header>
 
   <div class="content">
@@ -156,6 +174,10 @@
           <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
           <p style="margin-left: 7px; color: {statusColor}">{tx.status}</p>
         </div>
+      </div>
+      <div class="row">
+        <p>Timestamp</p>
+        <p>{new Date(tx.date).toUTCString()}</p>
       </div>
     </div>
   </div>

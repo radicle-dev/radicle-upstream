@@ -12,6 +12,7 @@ import Gwei from "./Gwei.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
+import Identity from "./Identity.svelte";
 import Illustration from "./Illustration.svelte";
 import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
@@ -59,6 +60,7 @@ export {
   Header,
   HorizontalMenu,
   Hoverable,
+  Identity,
   Illustration,
   KeyHint,
   Label,

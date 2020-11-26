@@ -25,7 +25,7 @@
     padding: 0px var(--content-padding);
   }
 
-  .data {
+  .from-to {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -67,7 +67,7 @@
     </p>
   </header>
 
-  <div class="data">
+  <div class="from-to">
     <p class="address typo-text">
       <Copyable
         showIcon={false}

@@ -53,7 +53,7 @@ type PoolTx =
   | TopUp
   | CollectFunds
   | UpdateMonthlyContribution
-  | UpdateBeneficiaries;
+  | UpdateReceivers;
 
 interface TopUp {
   amount: BigNumberish;
@@ -73,14 +73,14 @@ interface UpdateMonthlyContribution {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface UpdateBeneficiaries {}
+interface UpdateReceivers {}
 
 export enum TxKind {
   Withdraw = "Withdraw",
   TopUp = "Top Up",
   CollectFunds = "Collect Funds",
   UpdateMonthlyContribution = "Update Monthly Contribution",
-  UpdateBeneficiaries = "Update beneficiaries",
+  UpdateReceivers = "Update receivers",
 }
 
 /* Smart constructors for `Tx` values */
@@ -102,7 +102,7 @@ export function withdraw(txc: ContractTransaction): Tx {
 }
 
 export function beneficiaries(txc: ContractTransaction): Tx {
-  return buildTx(TxKind.UpdateBeneficiaries, txc);
+  return buildTx(TxKind.UpdateReceivers, txc);
 }
 
 function buildTx(
@@ -130,7 +130,7 @@ function txMetadata(kind: TxKind, txc: ContractTransaction): PoolTx {
       return {
         amount: txc.value.toString(),
       };
-    case TxKind.UpdateBeneficiaries:
+    case TxKind.UpdateReceivers:
       return {};
   }
 }
@@ -279,3 +279,29 @@ export const summaryText = (counts: SummaryCounts): string => {
 // A store containing the hash of a transaction selected by the
 // user in the TransactionCenter.
 export const selectedStore = svelteStore.writable<string>("");
+
+// The direction of a transaction in respect to the local user,
+// assuming that they are involved either as the sender or as the
+// recipient.
+export enum Direction {
+  // The local user's linked account is the recipient of the transaction.
+  Incoming = "Incoming",
+  // The local user's linked account is the sender of the transaction.
+  Outgoing = "Outgoing",
+}
+
+function direction(tx: Tx): Direction {
+  switch (tx.kind) {
+    case TxKind.CollectFunds:
+    case TxKind.Withdraw:
+      return Direction.Incoming;
+    case TxKind.TopUp:
+    case TxKind.UpdateReceivers:
+    case TxKind.UpdateMonthlyContribution:
+      return Direction.Outgoing;
+  }
+}
+
+export function isIncoming(tx: Tx): boolean {
+  return direction(tx) === Direction.Incoming;
+}
