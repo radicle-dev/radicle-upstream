@@ -4,8 +4,19 @@ import { CircularBuffer } from "mnemonist";
 export interface ProcessResult {
   status: number | null;
   signal: NodeJS.Signals | null;
-  // The last 200 lines of stdout and stderr combined.
+  // The last lines of stdout and stderr combined.
   output: string;
+}
+
+interface Options {
+  // Path to the executables
+  proxyPath: string;
+  // Arguments passed to the executable
+  proxyArgs: string[];
+  // If `false` then no proxy is started and `run()` never finishes.
+  enabled: boolean;
+  // Maximum number of log lines we store
+  lineLimit: number;
 }
 
 // The `ProxyProcessManager` runs and kills the proxy process and allows us to
@@ -13,40 +24,32 @@ export interface ProcessResult {
 //
 // Stdout and stderr of the child process are forwarded to stdout and
 // stderr of this process. The lines of both these streams are also
-// written to a circular buffer with a capacity of 200 lines.
+// written to a circular buffer with a configurable line capacity.
 export class ProxyProcessManager {
   private childProcess: ChildProcess | undefined;
-  private proxyPath: string;
-  private proxyArgs: string[];
-  private enabled: boolean;
+  private readonly options: Options;
 
-  // Create a new ProxyProcessManager.
-  //
-  // `proxyPath` is the path to the executable and `proxyArgs` are the command
-  // line arguments.
-  //
-  // If `enabled` is set to false no proxy, is started and `run()` never
-  // finishes.
-  constructor(proxyPath: string, proxyArgs: string[], enabled: boolean) {
-    this.proxyPath = proxyPath;
-    this.proxyArgs = proxyArgs;
-    this.enabled = enabled;
+  constructor(options: Options) {
+    this.options = options;
   }
 
   // Run the proxy process and return `ProcessResult` when it exits.
   //
   // Throws an error if a process is already running.
   async run(): Promise<ProcessResult> {
-    if (!this.enabled) {
+    if (!this.options.enabled) {
       return new Promise(() => undefined);
     }
 
     if (this.childProcess !== undefined) {
       throw new Error("Proxy process already started");
     }
-    const outputBuffer = new CircularBuffer<string>(Array, 200);
+    const outputBuffer = new CircularBuffer<string>(
+      Array,
+      this.options.lineLimit
+    );
 
-    const childProcess = spawn(this.proxyPath, this.proxyArgs, {
+    const childProcess = spawn(this.options.proxyPath, this.options.proxyArgs, {
       stdio: ["ignore", "pipe", "pipe"],
     });
 

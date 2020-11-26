@@ -91,7 +91,12 @@ class WindowManager {
 }
 
 const windowManager = new WindowManager();
-const proxyProcessManager = new ProxyProcessManager(proxyPath, [], !isDev);
+const proxyProcessManager = new ProxyProcessManager({
+  proxyPath,
+  proxyArgs: [],
+  enabled: !isDev,
+  lineLimit: 500,
+});
 
 ipcMain.handle(RendererMessage.DIALOG_SHOWOPENDIALOG, async () => {
   const window = windowManager.window;
