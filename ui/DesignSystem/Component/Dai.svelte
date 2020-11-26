@@ -33,7 +33,7 @@
   }
 
   .symbol {
-    margin-right: 5px;
+    margin: 0 3px;
   }
 
   .negative .symbol:before {
@@ -43,8 +43,8 @@
 </style>
 
 <div class="dai" class:negative={variant === 'negative'} {style}>
-  <div class="symbol" />
   <Icon.CurrencyDAI
     style="fill: {color}; padding-top: 3px; width: {getSize()}px; height: {getSize()}px;" />
+  <div class="symbol" />
   <slot />
 </div>
