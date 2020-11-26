@@ -164,9 +164,7 @@ export const removePeer = (projectId: Urn, remote: PeerId): void => {
 const filterPeers = (peers: project.Peer[]): project.User[] => {
   return peers
     .filter(
-      peer =>
-        peer.status.type === project.ReplicationStatusType.Replicated &&
-        peer.status.role !== project.Role.Tracker
+      peer => peer.status.type === project.ReplicationStatusType.Replicated
     )
     .map(peer => {
       const { role, user } = peer.status as project.Replicated;

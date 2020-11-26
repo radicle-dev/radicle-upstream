@@ -18,9 +18,9 @@
     SidebarLayout,
     Tooltip,
   } from "../DesignSystem/Component";
+  import PeerSelector from "../DesignSystem/Component/PeerSelector.svelte";
 
   import Source from "./Project/Source.svelte";
-  import PeerSelector from "./Project/PeerSelector.svelte";
 
   export let params: { urn: Urn };
 

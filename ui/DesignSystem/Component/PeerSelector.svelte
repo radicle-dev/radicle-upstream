@@ -5,10 +5,12 @@
   import { isExperimental } from "../../src/ipc";
   import { Role } from "../../src/project";
   import type { User } from "../../src/project";
-  import { CSSPosition } from "../../src/style";
 
-  import { Avatar, Icon } from "../../DesignSystem/Primitive";
-  import { Badge, Overlay, Tooltip } from "../../DesignSystem/Component";
+  import { Avatar, Icon } from "../Primitive";
+  import { Badge, Overlay } from "../Component";
+
+  import Entry from "./PeerSelector/Entry.svelte";
+  import Peer from "./PeerSelector/Peer.svelte";
 
   export let expanded: boolean = false;
   export let peers: User[];
@@ -32,9 +34,13 @@
     dispatch("open", peer);
   };
   const onSelect = (peer: User) => {
+    if (peer.role === Role.Tracker) {
+      return;
+    }
     hide();
     dispatch("select", peer);
   };
+  const showProfile = isExperimental();
 </script>
 
 <style>
@@ -48,6 +54,7 @@
     cursor: pointer;
     justify-content: space-between;
     background-color: var(--color-foreground-level-1);
+    user-select: none;
   }
 
   .peer-selector:hover {
@@ -75,6 +82,7 @@
     position: absolute;
     right: 0;
     top: -1px;
+    user-select: none;
   }
 
   .peer-dropdown {
@@ -85,49 +93,6 @@
     max-width: 30rem;
     height: 100%;
     min-width: 100%;
-  }
-
-  .peer {
-    display: flex;
-    color: var(--color-foreground-level-6);
-    padding: 0 2.5rem 0 0.5rem;
-    height: 2.5rem;
-    user-select: none;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--color-background);
-  }
-
-  .peer:first-child {
-    border-radius: 0.1875rem 0.1875rem 0 0;
-  }
-  .peer:last-child {
-    border-radius: 0 0 0.1875rem 0.1875rem;
-  }
-
-  .peer.selected {
-    background-color: var(--color-foreground-level-2);
-  }
-
-  .peer:hover {
-    cursor: pointer;
-    background-color: var(--color-foreground-level-2);
-  }
-
-  .open-profile {
-    display: flex;
-    justify-content: center;
-    cursor: pointer;
-    margin-left: 0.5rem;
-  }
-
-  .remotes {
-    justify-content: flex-start;
-  }
-
-  .remotes p {
-    white-space: nowrap;
-    margin-right: 0.5rem;
   }
 </style>
 
@@ -166,47 +131,22 @@
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
       {#each peers as peer}
-        <div
-          class="peer"
-          class:selected={peer.identity.peerId == selected.identity.peerId}
-          data-peer-handle={peer.identity.metadata.handle}
-          on:click|stopPropagation={() => onSelect(peer)}>
-          <div style="display: flex;">
-            <Avatar
-              avatarFallback={peer.identity.avatarFallback}
-              style="display: flex; justify-content: flex-start; margin-right:
-            8px;"
-              size="small"
-              variant="circle" />
-            <p class="typo-text-bold typo-overflow-ellipsis">
-              {peer.identity.metadata.handle || peer.identity.shareableEntityIdentifier}
-            </p>
-            <p>
-              {#if peer.role === Role.Maintainer}
-                <Badge
-                  style="margin-left: 0.5rem"
-                  variant={BadgeType.Maintainer} />
-              {/if}
-            </p>
-          </div>
-          {#if isExperimental()}
-            <Tooltip value="Go to profile" position={CSSPosition.Top}>
-              <div
-                data-cy={peer.identity.metadata.handle}
-                class="open-profile"
-                on:click|stopPropagation={() => {
-                  onOpen(peer);
-                }}>
-                <Icon.ArrowBoxUpRight />
-              </div>
-            </Tooltip>
-          {/if}
-        </div>
+        <Entry
+          active={peer.role !== Role.Tracker}
+          on:click={() => onSelect(peer)}
+          selected={peer.identity.peerId == selected.identity.peerId}
+          tooltip={peer.role === Role.Tracker && 'Remote has no changes'}>
+          <Peer {peer} {showProfile} on:open={() => onOpen(peer)} />
+        </Entry>
       {/each}
-      <div class="peer remotes" data-cy="manage-remotes" on:click={onModal}>
+
+      <Entry
+        dataCy="manage-remotes"
+        on:click={onModal}
+        style="justify-content: flex-start;">
         <Icon.Pen style="margin-right: .5rem;" />
         <p>Manage remotes</p>
-      </div>
+      </Entry>
     </div>
   </div>
 </Overlay>
