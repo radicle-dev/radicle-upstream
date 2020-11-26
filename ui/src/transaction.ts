@@ -5,6 +5,7 @@ import type { BigNumberish, ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import { provider } from "./wallet";
+import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("radicle-transactions-store", []);
@@ -73,7 +74,9 @@ interface UpdateMonthlyContribution {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface UpdateReceivers {}
+interface UpdateReceivers {
+  receivers: [Address, ReceiverStatus][];
+}
 
 export enum TxKind {
   Withdraw = "Withdraw",
@@ -101,19 +104,20 @@ export function withdraw(txc: ContractTransaction): Tx {
   return buildTx(TxKind.Withdraw, txc);
 }
 
-export function beneficiaries(txc: ContractTransaction): Tx {
-  return buildTx(TxKind.UpdateReceivers, txc);
+export function receivers(txc: ContractTransaction, receivers: Receivers): Tx {
+  return buildTx(TxKind.UpdateReceivers, txc, receivers);
 }
 
 function buildTx(
   kind: TxKind,
   txc: ContractTransaction,
+  receivers?: Receivers,
   date: number = Date.now()
 ): Tx {
   return {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-    meta: txMetadata(kind, txc),
+    meta: txMetadata(kind, txc, receivers),
     date,
     kind,
     from: txc.from,
@@ -121,7 +125,11 @@ function buildTx(
   };
 }
 
-function txMetadata(kind: TxKind, txc: ContractTransaction): PoolTx {
+function txMetadata(
+  kind: TxKind,
+  txc: ContractTransaction,
+  receivers?: Receivers
+): PoolTx {
   switch (kind) {
     case TxKind.Withdraw:
     case TxKind.CollectFunds:
@@ -131,7 +139,7 @@ function txMetadata(kind: TxKind, txc: ContractTransaction): PoolTx {
         amount: txc.value.toString(),
       };
     case TxKind.UpdateReceivers:
-      return {};
+      return { receivers: receivers ? [...receivers.entries()] : [] };
   }
 }
 

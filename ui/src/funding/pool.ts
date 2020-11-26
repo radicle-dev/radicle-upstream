@@ -149,7 +149,7 @@ export function make(wallet: Wallet): Pool {
   async function updateReceiverAddresses(receivers: Receivers): Promise<void> {
     const txs = [...receivers.entries()].map(([address, status]) =>
       poolContract.setReceiver(address, weightForStatus(status)).then(tx => {
-        transaction.add(transaction.beneficiaries(tx));
+        transaction.add(transaction.receivers(tx, receivers));
         tx.wait();
       })
     );
