@@ -18,21 +18,23 @@
 
   if ($store === null) pop();
 
+  // Validate the amount beign withdrawn
   let validatingAmount = false;
   let amount: number;
-
   let validation = balanceValidationStore(0);
-  get(store).data.subscribe(store => {
-    if (store.status === remote.Status.Success) {
-      validation = balanceValidationStore(store.data.balance);
-    }
-  });
+  const poolDataStore = get(store).data;
+
+  $: if ($poolDataStore.status === remote.Status.Success) {
+    const it = $poolDataStore as remote.SuccessState;
+    validation = balanceValidationStore(it.data.balance);
+  }
 
   $: amountStore.set(amount ? amount.toString() : "");
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
     if (validatingAmount) validation.validate($amountStore);
   }
+
   $: disableAmountConfirmation =
     $validation && $validation.status !== ValidationStatus.Success;
 
