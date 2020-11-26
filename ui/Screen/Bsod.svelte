@@ -107,7 +107,7 @@
             dataCy="proxy-log-copy-clipboard"
             style="position: sticky; bottom: 0; margin-left: auto;"
             variant="secondary"
-            on:click={() => copyToClipboard($fatalError.data.stderr)}
+            on:click={() => copyToClipboard($fatalError.data.output)}
             icon={copyIcon}>
             Copy to clipboard
           </Button>
