@@ -63,17 +63,16 @@ context("routing", () => {
           data: {
             status: 1,
             signal: null,
-            stdout: "STDOUT",
-            stderr: "STDERR",
+            output: "OUTPUT",
           },
         });
       });
       commands.pick("blue-screen-of-death").should("exist");
-      commands.pick("proxy-log").should("contain", "STDERR");
+      commands.pick("proxy-log").should("contain", "OUTPUT");
       commands.pick("proxy-log-copy-clipboard").click();
 
       ipcStub.getStubs().then(stubs => {
-        expect(stubs.getClipboard()).to.eq("STDERR");
+        expect(stubs.getClipboard()).to.eq("OUTPUT");
       });
     });
 
@@ -85,17 +84,16 @@ context("routing", () => {
           data: {
             status: 1,
             signal: null,
-            stdout: "STDOUT",
-            stderr: "STDERR",
+            output: "OUTPUT",
           },
         });
       });
       commands.pick("blue-screen-of-death").should("exist");
-      commands.pick("proxy-log").should("contain", "STDERR");
+      commands.pick("proxy-log").should("contain", "OUTPUT");
       commands.pick("proxy-log-copy-clipboard").click();
 
       ipcStub.getStubs().then(stubs => {
-        expect(stubs.getClipboard()).to.eq("STDERR");
+        expect(stubs.getClipboard()).to.eq("OUTPUT");
       });
     });
   });
