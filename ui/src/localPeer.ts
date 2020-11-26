@@ -140,7 +140,6 @@ export const requestEvents: Readable<RequestEvent | null> = derived(
       case EventType.RequestQueried:
       case EventType.RequestTimedOut:
       case EventType.RequestCreated:
-        console.log({ event });
         return event;
 
       default:

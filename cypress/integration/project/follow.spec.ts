@@ -13,7 +13,9 @@ context("project following", () => {
   it("follows and unfollows", () => {
     commands.pick("Following").click();
     commands.pick("primary-action").contains("Look for a project").click();
-    commands.pick("search-input").type(`rad:git:${projectId}`);
+    // The extra whitespace is intentional to check that the input is
+    // trimmed.
+    commands.pick("search-input").type(`  rad:git:${projectId}  `);
     commands.pick("follow-toggle").should("contain", "Follow");
     commands.pick("follow-toggle").click();
     commands

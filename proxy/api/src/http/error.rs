@@ -116,6 +116,21 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "GIT_ERROR",
                             err.to_string(),
                         ),
+                        create::validation::Error::MissingAuthorEmail => (
+                            StatusCode::BAD_REQUEST,
+                            "MISSING_AUTHOR_EMAIL",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::MissingGitConfig => (
+                            StatusCode::BAD_REQUEST,
+                            "MISSING_GIT_CONFIG",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::MissingAuthorName => (
+                            StatusCode::BAD_REQUEST,
+                            "MISSING_AUTHOR_NAME",
+                            err.to_string(),
+                        ),
                         create::validation::Error::MissingDefaultBranch { .. } => (
                             StatusCode::BAD_REQUEST,
                             "MISSING_DEFAULT_BRANCH",
