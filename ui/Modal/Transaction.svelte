@@ -168,7 +168,7 @@
     <div class="section">
       <div class="row">
         <p>Transaction ID</p>
-        <p class="typo-semi-bold">{tx.hash.slice(0, 20)}</p>
+        <p class="typo-text-small-mono">{tx.hash.slice(0, 20)}</p>
       </div>
       <div class="row">
         <p>Status</p>
