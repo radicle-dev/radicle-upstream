@@ -38,11 +38,11 @@ pub enum Error {
     Io(#[from] io::Error),
 
     /// When checking the default git config for `user.email` we could not find it.
-    #[error("the author email for creating the project could not be found — have you configured your git config?")]
+    #[error("the author email for creating the project could not be found - have you configured your git config?")]
     MissingAuthorEmail,
 
     /// When checking the default git config for `user.name` we could not find it.
-    #[error("the author name for creating the project could not be found — have you configured your git config?")]
+    #[error("the author name for creating the project could not be found - have you configured your git config?")]
     MissingAuthorName,
 
     /// Configured default branch for the project is missing.
@@ -58,7 +58,7 @@ pub enum Error {
 
     /// When checking for default git config we could not find it.
     #[error(
-        "the git config for creating the project could not be found — have you configured it?"
+        "the git config for creating the project could not be found - have you configured it?"
     )]
     MissingGitConfig,
 
@@ -240,7 +240,7 @@ impl Repository {
                 Self::initial_commit(
                     &repo,
                     &default_branch,
-                    git2::Signature::try_from(signature)?,
+                    &git2::Signature::try_from(signature)?,
                 )?;
                 Self::setup_remote(&repo, url, &default_branch)?;
                 crate::project::set_rad_upstream(&repo, &default_branch)?;
@@ -267,7 +267,7 @@ impl Repository {
     fn initial_commit(
         repo: &git2::Repository,
         default_branch: &OneLevel,
-        signature: git2::Signature<'static>,
+        signature: &git2::Signature<'static>,
     ) -> Result<(), git2::Error> {
         // Now let's create an empty tree for this commit
         let tree_id = {
@@ -283,8 +283,8 @@ impl Repository {
             // is the first commit so there will be no parent.
             repo.commit(
                 Some(&format!("refs/heads/{}", default_branch.as_str())),
-                &signature,
-                &signature,
+                signature,
+                signature,
                 "Initial commit",
                 &tree,
                 &[],
@@ -356,7 +356,7 @@ impl Repository {
         }
     }
 
-    fn existing_author<'a>() -> Result<Signature, Error> {
+    fn existing_author() -> Result<Signature, Error> {
         let config = git2::Config::open_default()
             .or_matches(git_ext::is_not_found_err, || Err(Error::MissingGitConfig))?;
         let name = config
