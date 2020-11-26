@@ -2061,9 +2061,9 @@ source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d358297d45609a
 
 [[package]]
 name = "radicle-surf"
-version = "0.5.1"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3657903d7f7f0680079bdcf7c965b930017f6428aee55eff0dade6510e04a40c"
+checksum = "2c92c20edc7b85e69572ee2a23d9f07ec85bee12d456584a1f0b3af872feb3f3"
 dependencies = [
  "either",
  "git2",
