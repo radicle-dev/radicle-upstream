@@ -157,8 +157,8 @@
         <div class="row">
           <p>Amount</p>
           <p class="typo-semi-bold">
-            <Dai variant={isIncoming(tx) ? 'positive' : 'regular'}>
-              {tx.meta.amount}
+            <Dai variant={isIncoming(tx) ? 'regular' : 'negative'}>
+              <span style="color(--color-negative)">{tx.meta.amount}</span>
             </Dai>
           </p>
         </div>

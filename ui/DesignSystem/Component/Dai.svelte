@@ -3,7 +3,7 @@
 
   export let style = "";
   export let variant = "regular"; // negative
-  export let color =
+  $: color =
     variant === "regular"
       ? "var(--color-foreground-level-6)"
       : "var(--color-negative)";
@@ -28,17 +28,18 @@
     padding: 3px 8px;
     border-radius: 3px;
 
-    color: var(--color-negative);
     background-color: var(--color-negative-level-1);
   }
 
-  .symbol {
-    margin: 0 3px;
+  .negative,
+  .negative * {
+    color: var(--color-negative);
   }
 
   .negative .symbol:before {
     content: "-";
     color: var(--color-negative);
+    margin: 0 3px;
   }
 </style>
 
