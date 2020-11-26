@@ -16,10 +16,15 @@
   export let peers: User[];
   export let selected: User;
 
+  const orderPeers = (peers: User[]): User[] => {
+    return [selected].concat(
+      peers.filter(peer => peer.peerId !== selected.peerId)
+    );
+  };
+
   const hide = () => {
     expanded = false;
   };
-
   const show = () => {
     expanded = true;
   };
@@ -123,7 +128,7 @@
   </div>
   <div class="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
-      {#each peers as peer}
+      {#each orderPeers(peers) as peer (peer.peerId)}
         <Entry
           active={peer.role !== Role.Tracker}
           on:click={() => onSelect(peer)}
