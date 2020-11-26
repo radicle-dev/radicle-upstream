@@ -131,7 +131,7 @@
       on:click|stopPropagation={() => modal.toggle(path.search())}>
       <Tooltip value="Navigate to a project">
         <!-- svelte-ignore a11y-missing-attribute -->
-        <a style="cursor: default;">
+        <a>
           <Icon.MagnifyingGlass />
         </a>
       </Tooltip>
