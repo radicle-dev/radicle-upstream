@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.1...v0.1.2) (2020-11-26)
+
+
+### Features
+
+* **proxy:** update to radicle-surf v0.5.3 ([#1374](https://github.com/radicle-dev/radicle-upstream/pull/1374)) ([20f2b9b](https://github.com/radicle-dev/radicle-upstream/commit/20f2b9bb93feb1f34ee843561344701ea5db9ebc))
+
+### Bug Fixes
+
+* **ui:** align checkout modal with button ([#1370](https://github.com/radicle-dev/radicle-upstream/issues/1370)) ([4598283](https://github.com/radicle-dev/radicle-upstream/commit/4598283a02bbcc3f2a0edc6c7b688d3136efa4bd))
+
+
 ### [0.1.1](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.0...v0.1.1) (2020-11-25)
 
 
