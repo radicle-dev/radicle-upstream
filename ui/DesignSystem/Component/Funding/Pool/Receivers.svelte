@@ -11,6 +11,7 @@
   export let updating = false;
   export let editing = false;
   export let style = "";
+  export let alignment = "left"; // "center";
 
   function toggleReceiver(x: pool.Address) {
     const status = receivers.get(x);
@@ -66,6 +67,10 @@
     align-items: center;
   }
 
+  .receivers.centered .row {
+    justify-content: center;
+  }
+
   .list {
     flex-wrap: wrap;
   }
@@ -75,7 +80,7 @@
   }
 </style>
 
-<div class="receivers" {style}>
+<div class="receivers" {style} class:centered={alignment === 'center'}>
   <div class="row list">
     {#each sortedEntries as [address, status]}
       <Receiver
@@ -86,8 +91,8 @@
     {/each}
   </div>
 
-  <div class="row">
-    {#if editing}
+  {#if editing}
+    <div class="row">
       <Input.Text
         disabled={updating}
         bind:value={newValue}
@@ -101,6 +106,6 @@
         style="margin-left: 8px; border-color: var(--color-foreground-level-3)">
         <Icon.Plus />
       </Button>
-    {/if}
-  </div>
+    </div>
+  {/if}
 </div>

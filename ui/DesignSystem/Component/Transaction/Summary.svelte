@@ -18,6 +18,10 @@
   strong {
     font-weight: bold;
   }
+
+  p {
+    padding: 0 4rem;
+  }
 </style>
 
 <div class="wrapper" {style}>
@@ -40,9 +44,10 @@
       <strong>{tx.meta.amount} DAI</strong>.
     </p>
   {:else if tx.kind === TxKind.UpdateReceivers}
-    <p>
-      Update the list of receivers of your support to:
-      <Receivers receivers={tx.meta.receivers} style="margin: 1rem 0" />
-    </p>
+    <p>Update the list of receivers by adding or removing the following:</p>
+    <Receivers
+      receivers={new Map(tx.meta.receivers)}
+      style="margin-top: 1.2rem"
+      alignment="center" />
   {/if}
 </div>

@@ -77,8 +77,7 @@
   }
 
   .from-to .address {
-    color: var(--color-foreground-level-5);
-    font-size: 14px;
+    color: var(--color-foreground-level-6);
   }
 
   .content .section {
@@ -112,12 +111,12 @@
   <header>
     <Illustration variant={IllustrationVariant.Purse} />
     <h1>{tx.kind}</h1>
-    <Summary {tx} style="margin: 1.5rem 0" />
+    <Summary {tx} style="margin-top: 1.5rem" />
     <div class="from-to">
       <p class="typo-text-bold subheading">
         <!-- TODO(nuno): DRY this -->
         {#if isIncoming(tx)}
-          <span class="address">
+          <span class="address typo-text">
             <Copyable
               showIcon={false}
               styleContent={false}
@@ -137,7 +136,7 @@
         {#if isIncoming(tx)}
           <Identity />
         {:else}
-          <span class="address">
+          <span class="address typo-text">
             <Copyable
               showIcon={false}
               styleContent={false}
@@ -157,7 +156,9 @@
         <div class="row">
           <p>Amount</p>
           <p class="typo-semi-bold">
-            <Dai variant={'negative'}>{tx.meta.amount}</Dai>
+            <Dai variant={isIncoming(tx) ? 'positive' : 'regular'}>
+              {tx.meta.amount}
+            </Dai>
           </p>
         </div>
       </div>

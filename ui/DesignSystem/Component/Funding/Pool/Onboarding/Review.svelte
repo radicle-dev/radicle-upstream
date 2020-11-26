@@ -55,7 +55,7 @@
     per month to these users:
   {/if}
 </p>
-<Receivers {receivers} />
+<Receivers {receivers} style="margin-top: 1.5rem" />
 <div class="submit">
   <Button
     variant="transparent"
