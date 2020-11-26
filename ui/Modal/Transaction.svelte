@@ -15,6 +15,7 @@
     store as transactionsStore,
     colorForStatus,
     isIncoming,
+    formatDate,
   } from "../src/transaction";
   import type { Tx } from "../src/transaction";
   import { Variant as IllustrationVariant } from "../src/illustration";
@@ -178,7 +179,7 @@
       </div>
       <div class="row">
         <p>Timestamp</p>
-        <p>{new Date(tx.date).toUTCString()}</p>
+        <p>{formatDate(new Date(tx.date))}</p>
       </div>
     </div>
   </div>

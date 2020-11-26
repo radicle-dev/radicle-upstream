@@ -313,3 +313,24 @@ function direction(tx: Tx): Direction {
 export function isIncoming(tx: Tx): boolean {
   return direction(tx) === Direction.Incoming;
 }
+
+export function formatDate(date: Date): string {
+  return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} on ${date.getUTCDate()} ${
+    monthNames[date.getMonth()]
+  } ${date.getFullYear()}`;
+}
+
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
