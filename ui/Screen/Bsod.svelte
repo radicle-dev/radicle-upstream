@@ -98,10 +98,10 @@
       <Button style="display: flex; color: #fff;" on:click={tweet}>
         Reach out for support
       </Button>
-      {#if $fatalError.kind === 'PROXY_EXIT' && $fatalError.data.stderr}
+      {#if $fatalError.kind === 'PROXY_EXIT' && $fatalError.data.output}
         <div class="proxy-log-container">
           <code data-cy="proxy-log" class="proxy-log typo-mono-semi-bold">
-            {$fatalError.data.stderr}
+            {$fatalError.data.output}
           </code>
           <Button
             dataCy="proxy-log-copy-clipboard"

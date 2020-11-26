@@ -153,14 +153,13 @@ app.on("will-quit", () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  proxyProcessManager.run().then(({ status, signal, output: stdout }) => {
+  proxyProcessManager.run().then(({ status, signal, output }) => {
     windowManager.sendMessage({
       kind: MainMessageKind.PROXY_ERROR,
       data: {
         status,
         signal,
-        stdout,
-        stderr: "",
+        output,
       },
     });
   });
