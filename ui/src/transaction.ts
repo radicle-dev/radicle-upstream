@@ -8,15 +8,19 @@ import { provider } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
 // The store where all managed transactions are stored.
-export const store = persistentStore<Tx[]>("radicle-transactions-store", []);
+export const store = persistentStore<Tx[]>("radicle-transactions", []);
 
-// Periodically refresh the status of all stored transactions.
+// Periodically refresh the status of all ongoing transactions.
 const POLL_INTERVAL_MILLIS = 3000;
 setInterval(() => {
   updateStatuses();
 }, POLL_INTERVAL_MILLIS);
 
-export interface Tx {
+export type Tx = TxData & MetaTx;
+
+// The data shared across all types of transactions
+// that we are to deal with.
+export interface TxData {
   // The hash of the transaction
   hash: string;
 
@@ -27,12 +31,6 @@ export interface Tx {
   // In milliseconds since epoch.
   date: number;
 
-  // The kind of transaction. The `meta` variant must depend upon it.
-  kind: TxKind;
-
-  // The underlying transaction data
-  meta: PoolTx;
-
   // The sender of this transaction
   from: string;
 
@@ -40,41 +38,38 @@ export interface Tx {
   to?: string;
 }
 
-export enum TxStatus {
-  // The transaction as been approved and is awaiting to be included in a block.
-  AwaitingInclusion = "Awaiting inclusion",
-  // The transaction as been included in the block. End of its life cycle.
-  Included = "Included",
-  // The transaction as been rejected.
-  Rejected = "Rejected",
-}
-
-type PoolTx =
-  | Withdraw
+// The meta transactions that we provide to the user.
+type MetaTx =
   | TopUp
   | CollectFunds
   | UpdateMonthlyContribution
-  | UpdateReceivers;
+  | UpdateReceivers
+  | Withdraw;
 
 interface TopUp {
+  kind: TxKind.TopUp;
   amount: BigNumberish;
 }
 
 interface Withdraw {
+  kind: TxKind.Withdraw;
   amount: BigNumberish;
 }
 
 interface CollectFunds {
+  kind: TxKind.CollectFunds;
   amount: BigNumberish;
 }
 
 interface UpdateMonthlyContribution {
+  kind: TxKind.UpdateMonthlyContribution;
   // The value the monthly contribution is being set to.
   amount: BigNumberish;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface UpdateReceivers {
+  kind: TxKind.UpdateReceivers;
   receivers: [Address, ReceiverStatus][];
 }
 
@@ -86,61 +81,62 @@ export enum TxKind {
   UpdateReceivers = "Update receivers",
 }
 
-/* Smart constructors for `Tx` values */
-
-export function amountPerBlock(txc: ContractTransaction): Tx {
-  return buildTx(TxKind.UpdateMonthlyContribution, txc);
+export enum TxStatus {
+  // The transaction as been approved and is awaiting to be included in a block.
+  AwaitingInclusion = "Awaiting inclusion",
+  // The transaction as been included in the block. End of its life cycle.
+  Included = "Included",
+  // The transaction as been rejected.
+  Rejected = "Rejected",
 }
 
+/* Smart constructors for `Tx` values */
+
 export function collect(txc: ContractTransaction): Tx {
-  return buildTx(TxKind.CollectFunds, txc);
+  const meta: CollectFunds = {
+    kind: TxKind.CollectFunds,
+    amount: txc.value.toString(),
+  };
+  return { ...txData(txc), ...meta };
 }
 
 export function topUp(txc: ContractTransaction): Tx {
-  return buildTx(TxKind.TopUp, txc);
+  const meta: TopUp = { kind: TxKind.TopUp, amount: txc.value.toString() };
+  return { ...txData(txc), ...meta };
 }
 
-export function withdraw(txc: ContractTransaction): Tx {
-  return buildTx(TxKind.Withdraw, txc);
+export function withdraw(txc: ContractTransaction, amount: BigNumberish): Tx {
+  const meta: Withdraw = { kind: TxKind.Withdraw, amount };
+  return { ...txData(txc), ...meta };
 }
 
 export function receivers(txc: ContractTransaction, receivers: Receivers): Tx {
-  return buildTx(TxKind.UpdateReceivers, txc, receivers);
+  const meta: UpdateReceivers = {
+    kind: TxKind.UpdateReceivers,
+    receivers: [...receivers.entries()],
+  };
+  return { ...txData(txc), ...meta };
 }
 
-function buildTx(
-  kind: TxKind,
+export function monthlyContribution(
   txc: ContractTransaction,
-  receivers?: Receivers,
-  date: number = Date.now()
+  amount: BigNumberish
 ): Tx {
+  const meta: UpdateMonthlyContribution = {
+    kind: TxKind.UpdateMonthlyContribution,
+    amount,
+  };
+  return { ...txData(txc), ...meta };
+}
+
+function txData(txc: ContractTransaction, date: number = Date.now()): TxData {
   return {
     hash: txc.hash,
     status: txc.blockNumber ? TxStatus.Included : TxStatus.AwaitingInclusion,
-    meta: txMetadata(kind, txc, receivers),
     date,
-    kind,
     from: txc.from,
     to: txc.to,
   };
-}
-
-function txMetadata(
-  kind: TxKind,
-  txc: ContractTransaction,
-  receivers?: Receivers
-): PoolTx {
-  switch (kind) {
-    case TxKind.Withdraw:
-    case TxKind.CollectFunds:
-    case TxKind.TopUp:
-    case TxKind.UpdateMonthlyContribution:
-      return {
-        amount: txc.value.toString(),
-      };
-    case TxKind.UpdateReceivers:
-      return { receivers: receivers ? [...receivers.entries()] : [] };
-  }
 }
 
 export function add(tx: Tx): void {

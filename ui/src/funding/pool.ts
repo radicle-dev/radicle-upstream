@@ -120,7 +120,7 @@ export function make(wallet: Wallet): Pool {
     await poolContract
       .setAmountPerBlock(amount)
       .then(tx => {
-        transaction.add(transaction.amountPerBlock(tx));
+        transaction.add(transaction.monthlyContribution(tx, amount));
         tx.wait();
       })
       .finally(loadPoolData);
@@ -172,7 +172,7 @@ export function make(wallet: Wallet): Pool {
 
   async function withdraw(amount: BigNumberish): Promise<void> {
     const tx = await poolContract.withdraw(amount);
-    transaction.add(transaction.withdraw(tx));
+    transaction.add(transaction.withdraw(tx, amount));
     const receipt = await tx.wait();
     if (receipt.status === 0) {
       throw new Error(`Transaction reverted: ${receipt.transactionHash}`);

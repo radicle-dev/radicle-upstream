@@ -16,6 +16,7 @@
     colorForStatus,
     isIncoming,
     formatDate,
+    TxKind,
   } from "../src/transaction";
   import type { Tx } from "../src/transaction";
   import { Variant as IllustrationVariant } from "../src/illustration";
@@ -152,13 +153,13 @@
   </header>
 
   <div class="content">
-    {#if !!tx.meta.amount}
+    {#if tx.kind !== TxKind.UpdateReceivers}
       <div class="section">
         <div class="row">
           <p>Amount</p>
           <p class="typo-semi-bold">
             <Dai variant={isIncoming(tx) ? 'regular' : 'negative'}>
-              <span style="color(--color-negative)">{tx.meta.amount}</span>
+              <span style="color(--color-negative)">{tx.amount}</span>
             </Dai>
           </p>
         </div>

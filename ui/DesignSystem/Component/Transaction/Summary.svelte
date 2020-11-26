@@ -28,25 +28,22 @@
   {#if tx.kind === TxKind.Withdraw}
     <p>
       Withdraw
-      <strong>{tx.meta.amount} DAI</strong>
+      <strong>{tx.amount} DAI</strong>
       from your support balance to your external wallet.
     </p>
   {:else if tx.kind === TxKind.TopUp}
-    <p>
-      Top up your support balance with
-      <strong>{tx.meta.amount} DAI</strong>.
-    </p>
+    <p>Top up your support balance with <strong>{tx.amount} DAI</strong>.</p>
   {:else if tx.kind === TxKind.CollectFunds}
-    <p>Collect <strong>{tx.meta.amount} DAI</strong> from your supporters.</p>
+    <p>Collect <strong>{tx.amount} DAI</strong> from your supporters.</p>
   {:else if tx.kind === TxKind.UpdateMonthlyContribution}
     <p>
       Update your support's monthly contribution to
-      <strong>{tx.meta.amount} DAI</strong>.
+      <strong>{tx.amount} DAI</strong>.
     </p>
   {:else if tx.kind === TxKind.UpdateReceivers}
     <p>Update the list of receivers by adding or removing the following:</p>
     <Receivers
-      receivers={new Map(tx.meta.receivers)}
+      receivers={new Map(tx.receivers)}
       style="margin-top: 1.2rem"
       alignment="center" />
   {/if}
