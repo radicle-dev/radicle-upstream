@@ -42,11 +42,18 @@ interface Online {
 type Status = Stopped | Offline | Started | Syncing | Online;
 
 enum EventType {
+  ProjectUpdated = "projectUpdated",
   RequestCreated = "requestCreated",
   RequestQueried = "requestQueried",
   RequestCloned = "requestCloned",
   RequestTimedOut = "requestTimedOut",
   StatusChanged = "statusChanged",
+}
+
+interface ProjectUpdated {
+  type: EventType.ProjectUpdated;
+  peer: identity.PeerId;
+  urn: urn.Urn;
 }
 
 interface RequestCreated {
@@ -77,6 +84,7 @@ type RequestEvent =
   | RequestTimedOut;
 
 export type Event =
+  | ProjectUpdated
   | RequestEvent
   | { type: EventType.StatusChanged; old: Status; new: Status };
 

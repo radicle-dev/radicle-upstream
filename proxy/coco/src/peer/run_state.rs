@@ -40,6 +40,7 @@ pub enum Event {
     Announced(announcement::Updates),
     /// An event from the underlying peer API.
     Peer(PeerEvent),
+    ProjectUpdated(PeerId, RadUrn),
     /// An event from the underlying coco network stack.
     /// FIXME(xla): Align variant naming to indicate observed occurrences.
     Protocol(ProtocolEvent<Gossip>),
@@ -69,7 +70,13 @@ impl MaybeFrom<&Input> for Event {
             },
             Input::Peer(event) => Some(Self::Peer(event.clone())),
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
-            Input::Protocol(event) => Some(Self::Protocol(event.clone())),
+            Input::Protocol(event) => match event {
+                ProtocolEvent::Gossip(Info::Has(Has {
+                    provider,
+                    val: Gossip { urn, .. },
+                })) => Some(Self::ProjectUpdated(provider.peer_id, urn.clone())),
+                _ => None,
+            },
             Input::Request(input::Request::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
             Input::Request(input::Request::Cloning(url)) => Some(Self::RequestCloning(url.clone())),
             Input::Request(input::Request::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
