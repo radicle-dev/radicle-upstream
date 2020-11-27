@@ -196,7 +196,7 @@ const filterPeers = (peers: project.Peer[]): project.User[] => {
         return -1;
       }
       if (
-        a.role == project.Role.Tracker &&
+        a.role === project.Role.Tracker &&
         b.role === project.Role.Contributor
       ) {
         return 1;

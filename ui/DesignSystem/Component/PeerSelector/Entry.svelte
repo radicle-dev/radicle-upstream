@@ -1,5 +1,5 @@
 <script lang="typescript">
-  export let active: boolean = true;
+  export let disabled: boolean = false;
   export let dataCy: string = "";
   export let selected: boolean = false;
   export let style: string = "";
@@ -32,7 +32,7 @@
 
 <div
   class="entry"
-  class:active
+  class:active={!disabled}
   class:selected
   data-cy={dataCy}
   on:click|stopPropagation

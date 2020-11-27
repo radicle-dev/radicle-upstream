@@ -130,9 +130,9 @@
     <div class="peer-dropdown" hidden={!expanded}>
       {#each orderPeers(peers) as peer (peer.peerId)}
         <Entry
-          active={peer.role !== Role.Tracker}
+          disabled={peer.role === Role.Tracker}
           on:click={() => onSelect(peer)}
-          selected={peer.identity.peerId == selected.identity.peerId}>
+          selected={peer.identity.peerId === selected.identity.peerId}>
           {#if peer.role === Role.Tracker}
             <Tooltip position={CSSPosition.Left} value="Remote has no changes">
               <Peer {peer} />
