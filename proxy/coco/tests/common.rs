@@ -10,7 +10,6 @@ use tracing_subscriber::{EnvFilter, FmtSubscriber};
 use librad::{
     git_ext::OneLevel,
     keys::SecretKey,
-    net::protocol::ProtocolEvent,
     peer::PeerId,
     reflike, signer,
     uri::{RadUrl, RadUrn},
@@ -58,7 +57,7 @@ pub async fn connected(
 ) -> Result<(), Elapsed> {
     assert_event!(
         receiver,
-        PeerEvent::Protocol(ProtocolEvent::Connected(remote_id)) if remote_id == *expected_id
+        PeerEvent::PeerConnected(remote_id) if remote_id == *expected_id
     )
 }
 

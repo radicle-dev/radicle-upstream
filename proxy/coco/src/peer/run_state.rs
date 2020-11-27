@@ -38,8 +38,17 @@ pub use input::Input;
 pub enum Event {
     /// Announcement subroutine completed and emitted the enclosed updates.
     Announced(announcement::Updates),
-    /// An event from the underlying peer API.
-    Peer(PeerEvent),
+    /// A fetch originated by a gossip message succeeded
+    GossipFetched {
+        /// Provider of the fetched update.
+        provider: PeerId,
+        /// Cooresponding gossip message.
+        gossip: Gossip,
+        /// Result of the storage fetch.
+        result: PutResult<Gossip>,
+    },
+    /// A connection with a remote peer was successfully established.
+    PeerConnected(PeerId),
     /// An event representing a gossip update for a project.
     ProjectUpdated(PeerId, RadUrn),
     /// An event from the underlying coco network stack.
@@ -69,9 +78,20 @@ impl MaybeFrom<&Input> for Event {
             Input::Announce(input::Announce::Succeeded(updates)) => {
                 Some(Self::Announced(updates.clone()))
             },
-            Input::Peer(event) => Some(Self::Peer(event.clone())),
+            Input::Peer(event) => match event {
+                PeerEvent::GossipFetch(FetchInfo {
+                    provider,
+                    gossip,
+                    result,
+                }) => Some(Self::GossipFetched {
+                    provider: *provider,
+                    gossip: gossip.clone(),
+                    result: result.clone(),
+                }),
+            },
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(event) => match event {
+                ProtocolEvent::Connected(remote_id) => Some(Self::PeerConnected(*remote_id)),
                 ProtocolEvent::Gossip(Info::Has(Has {
                     provider,
                     val: Gossip { urn, .. },
