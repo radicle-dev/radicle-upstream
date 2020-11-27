@@ -1,0 +1,947 @@
+# Copyright (c) 2015+ uniqpath
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+%YAML 1.2
+---
+name: Solidity
+file_extensions: [sol]
+scope: source.solidity
+
+variables:
+  identifier: '(?:[A-Za-z_]\w*)'
+  number: '(?:[+-]?\.?\d[\d_e]*(?:\.[\de]+)?)?'
+  hex_number: '(?:[+-]?(0[Xx])[0-9a-fA-F_]*)'
+  math_operator: '(?:\+|\+\+|\-|\-\-|\*|\*\*|\/|\^|\%)'
+  logical_operator: '(?:\!|\&\&|\|\|)'
+  ternary_operator: '(?:\:|\?)'
+  comparison_operator: '(?:\>(?:\=)?|\<(?:\=)?|\=\=|\!\=)' # todo
+
+  contract: contract
+  abstract_keyword: abstract
+  contract_like: '(?:(?:{{abstract_keyword}}\s+)?{{contract}})|(?:interface|library)'
+
+  func_modifier: '(?:public|private|internal|external|pure|view|payable|virtual)'
+  func_modifier_override: override
+
+  type: '(?:address\s*payable|address|string|bytes?\d*|int\d*|uint\d*|bool|u?fixed\d+x\d+)'
+  type_modifier: '(?:private|public|internal|external|constant|immutable|memory|storage)'
+  custom_type: '(?:[A-Za-z_][\w\.]*)' # ex.: A.MyStruct
+  attribute: '(?:indexed|memory|storage|calldata|payable)'
+
+  expression_keyword_main: '\b(new|this|selfdestruct|delegatecall|selector)\b'
+  expression_keyword_error_handling: '\b(revert|require|assert)\b'
+  expression_keyword_binary_logic: '\b(true|false|null)\b'
+  expression_keyword_other: '\b(now|delete|addmod|mulmod|sha256|keccak256|ripemd160|ecrecover)\b'
+
+  super_keyword: super
+  special_members_keywords: '\b(length|timestamp)\b'
+  special_functions: '\b(?:blockhash|gasleft|abi\.decode|abi\.encode|abi\.encodePacked|abi\.encodeWithSelector|abi\.encodeWithSignature)\b'
+  special_properties: '\b(?:block\.coinbase|block\.difficulty|block\.gaslimit|block\.number|block\.timestamp|msg\.data|msg\.sender|msg\.sig|msg\.value|msg\.gas|tx\.gasprice|tx\.origin)\b'
+
+  reserved_keywords: \b(alias|apply|auto|copyof|define|immutable|implements|macro|mutable|partial|promise|reference|sealed|sizeof|supports|typedef|unchecked)\b
+
+  ether_units: '(?:wei|finney|szabo|ether)'
+  time_units: '(?:seconds|minutes|hours|days|weeks|years)'
+
+  # https://solidity.readthedocs.io/en/v0.5.6/assembly.html
+  opcode: stop|add|mul|sub|div|sdiv|mod|smod|addmod|mulmod|exp|signextend|lt|gt|slt|sgt|eq|iszero|and|or|xor|not|byte|sha3|address|balance|origin|caller|callvalue|calldataload|calldatasize|calldatacopy|codesize|codecopy|gasprice|extcodesize|extcodecopy|blockhash|coinbase|timestamp|number|difficulty|gaslimit|pop|mload|mstore|mstore8|sload|sstore|jump|jumpi|pc|msize|gas|jumpdest|push1|push2|push32|dup1|dup2|dup16|swap1|swap2|swap16|log0|log1|log4|create|call|callcode|return|revert|suicide|staticcall|delegatecall|returndatacopy|returndatasize
+
+contexts:
+  main:
+    - match: (?=\S)
+      push: program
+
+  # helpers
+
+  else-pop:
+    - match: (?=\S)
+      pop: true
+
+  eol-pop:
+    - match: \n
+      pop: true
+
+  # number
+
+  number:
+    - match: '{{number}}'
+      scope: constant.numeric
+
+  hex_number:
+    - match: '{{hex_number}}'
+      scope: constant.numeric
+
+  # string
+
+  # string:
+  #   - match: ([\"\'].*?[\"\'])
+  #     scope: string.quoted
+
+  string:
+    - match: \"
+      push: string-contents-double-quote
+      scope: string.quoted
+    - match: \'
+      push: string-contents-single-quote
+      scope: string.quoted
+
+  string-contents-double-quote:
+    - meta_include_prototype: false # don't start a comment inside string
+    - match: \"
+      scope: string.quoted
+      pop: true
+    - match: \S
+      scope: string.quoted
+    - include: eol-pop
+
+  string-contents-single-quote:
+    - meta_include_prototype: false # don't start a comment inside string
+    - match: \'
+      scope: string.quoted
+      pop: true
+    - match: \S
+      scope: string.quoted
+    - include: eol-pop
+
+  # program structure
+
+  program:
+    - include: statement
+
+  statement:
+    - include: pragma
+    - include: import
+    - include: contract
+
+  # comments
+
+  prototype:
+    - include: comments
+
+  comments:
+    - match: /\*\*(?!/)
+      scope: punctuation.definition.comment.begin
+      push:
+        - meta_include_prototype: false
+        - meta_scope: comment.block.documentation
+        - match: \*/
+          scope: punctuation.definition.comment.end
+          pop: true
+    - match: /\*
+      scope: punctuation.definition.comment.begin
+      push:
+        - meta_include_prototype: false
+        - meta_scope: comment.block
+        - match: \*/
+          scope: punctuation.definition.comment.end
+          pop: true
+    - match: //
+      scope: punctuation.definition.comment
+      push:
+        - meta_include_prototype: false
+        - meta_scope: comment.line.double-slash
+        - match: \n
+          pop: true
+
+  # pragma
+
+  pragma:
+    - include: version_pragma
+    - include: experimental_pragma
+
+  version_pragma:
+    - match: (\bpragma\b)\s+(\bsolidity\b)
+      captures:
+        1: keyword.sol
+        2: keyword.sol
+      push: version_specification
+    - include: version_specification
+
+  version_specification:
+    - match: ([\^><]\=?)(\d+)(\.\d+(\.\d+)?)?
+      captures:
+        1: keyword.sol
+        2: constant.numeric.integer.sol
+        3: constant.numeric.integer.sol
+    - match: \;
+      pop: true
+    - include: else-pop
+
+  experimental_pragma:
+    - match: (\bpragma\b)\s+(\bexperimental\b)
+      captures:
+        1: keyword.other.sol
+        2: keyword.other.sol
+
+  # import
+
+  import:
+    - match: (\bimport\b)
+      scope: keyword
+      push: import-declaration
+
+  import-declaration:
+    - match: \bas\b
+      scope: keyword
+    - match: \bfrom\b
+      scope: keyword
+    - match: \;
+      pop: true
+    - include: string
+    - match: .*?
+      scope: scope
+    - include: else-pop
+
+  # contract
+
+  contract:
+    - match: \b({{contract_like}})(\s+{{identifier}})\s+(is)\b
+      captures:
+        1: keyword
+        2: entity.name.class
+        3: keyword
+      push: contract-parents
+    - match: \b({{contract_like}})(\s+{{identifier}})\b
+      captures:
+        1: keyword
+        2: entity.name.class
+      push: contract-body
+
+  contract-parents:
+    - match: '\{'
+      scope: punctuation.section.block.begin.sol
+      set: contract-body-contents
+    - match: '{{identifier}}'
+      scope: support.type
+    - match: \,
+      scope: scope
+    - match: \S+
+      scope: support.type
+
+  contract-body:
+    - match: '\{'
+      scope: punctuation.section.block.begin.sol
+      set: contract-body-contents
+    - include: else-pop
+
+  contract-body-contents:
+    - match: '\}'
+      scope: punctuation.section.block.end
+      pop: true
+    - include: using
+    - include: variables
+    - include: event
+    - include: constructor
+    - include: function
+    - include: modifier
+    - include: struct
+    - include: enum
+
+  # struct
+
+  struct:
+    - match: \b(struct)\s+({{identifier}})
+      captures:
+        1: keyword
+        2: entity.name.function
+      push:
+        - struct-body
+    - match: \b(struct)\s*
+      captures:
+        1: keyword
+      push:
+        - struct-body
+
+  struct-body:
+    - match: '\{'
+      scope: punctuation.section.block.begin.sol
+      set: struct-body-contents
+    - include: else-pop
+
+  struct-body-contents:
+    - include: variables
+    - match: '\}'
+      scope: punctuation.section.block.end
+      pop: true
+
+  # enum
+
+  enum:
+    - match: \b(enum)\s+({{identifier}})
+      captures:
+        1: keyword
+        2: entity.name.function
+      push:
+        - enum-body
+    - match: \b(struct)\s*
+      captures:
+        1: keyword
+      push:
+        - enum-body
+
+  enum-body:
+    - match: '\{'
+      scope: punctuation.section.block.begin.sol
+      set: enum-body-contents
+    - include: else-pop
+
+  enum-body-contents:
+    - include: variables
+    - match: '\}'
+      scope: punctuation.section.block.end
+      pop: true
+
+  # using
+
+  using:
+    - match: \busing\b
+      scope: keyword
+      push:
+        - match: \;
+          pop: true
+        - match: \b(for)\s+({{type}})
+          captures:
+            1: keyword
+            2: constant.language
+        - match: \b(for)\s+({{math_operator}}) # using SomeOtherLibrary for *;
+          captures:
+            1: keyword
+            2: keyword.operator.arithmetic
+        - match: \b(for)\s+(\w+)
+          captures:
+            1: keyword
+        - match: '{{identifier}}'
+        - include: else-pop
+
+  # variables
+
+  variables:
+    - include: variable-declaration-with-assignment
+    - include: variable-declaration
+    - include: variable-assignment
+
+  # variable-assignment
+
+  variable-assignment:
+    - match: \b({{identifier}})\s*(\-?\+?\*?\/?\=)
+      captures:
+        1: scope
+        2: keyword.operator.assignment
+      push: expression
+    - match: \(
+      scope: punctuation.definition.start.sol
+      push: tuple-content
+
+  # mapping
+
+  mapping:
+    - match: \bmapping\b
+      scope: storage.type
+      push: mapping-declaration
+
+  mapping-declaration:
+    - match: \(
+      scope: punctuation.section.block.begin.sol
+      push:
+        - include: mapping-contents
+        - match: \=\>
+          scope: keyword
+          push:
+            - match: \bmapping\b # mapping of a mapping
+              scope: storage.type
+              push: mapping-declaration
+            - include: mapping-contents
+            - include: else-pop
+        - match: \)
+          scope: punctuation.section.block.end.sol
+          pop: true
+    - include: function-modifiers
+    - include: '{{identifier}}'
+    - match: \;
+      pop: true
+    - include: else-pop
+
+  # extracted out to be used for nested mappings definitions:
+  # mapping (address => mapping(uint256 => uint256)) internal my_mapping;
+  mapping-contents:
+    - match: '(?:({{type}})|({{custom_type}}))'
+      captures:
+        1: constant.language
+        2: scope
+    - match: '{{identifier}}'
+      scope: constant.language
+
+  # variable declaration
+
+  # var keyword was deprecated in solidity 0.4.20 but we still highlight it for older contracts!
+  variable-declaration:
+    - include: mapping
+    - match: \b(var\s+)?({{type}})(?:\[\])?\s+((?:{{type_modifier}}\s+)*)({{identifier}})
+      captures:
+        1: keyword
+        2: constant.language
+        3: storage.modifier
+        4: scope
+    - match: \b(var\s+)?\s+({{type_modifier}})+\s+({{identifier}}) # ex: BigInt.bigint memory x = BigInt.fromUint(7);
+      captures:
+        1: keyword
+        2: storage.modifier
+        3: scope
+    - match: \b(var\s+)?({{type}})(?:\[\])?\s+({{identifier}})
+      captures:
+        1: keyword
+        2: constant.language
+        3: scope
+    - match: \b(var\s+)?({{type}})\b # not valid to have just type in a specific line for example but it's nice to color it immediately, not after identifier is specified as well
+      captures:
+        1: keyword
+        2: constant.language
+    - match: \b(var)\s+({{identifier}})\b # not valid to have just type in a specific line for example but it's nice to color it immediately, not after identifier is specified as well
+      captures:
+        1: keyword
+        2: scope
+
+  # variable declaration with assignment
+
+  variable-declaration-with-assignment:
+    - include: variable-declaration
+    - include: try-assignment
+
+  try-assignment:
+    - match: \=
+      scope: keyword.operator.assignment
+      push: expression
+
+  # tuple
+
+  tuple:
+    - match: '\('
+      scope: punctuation.definition.start.sol
+      push: tuple-content
+    - include: else-pop
+
+  tuple-content:
+    - match: '\)'
+      scope: punctuation.definition.end.sol
+      pop: true
+    - match: ','
+    - include: variable-declaration
+    - include: expression-include
+    - include: else-pop
+
+  # control-structure
+
+  control-structure:
+    - include: if-statement
+    - include: while-loop
+    - include: for-loop
+    - include: try-catch
+
+  # while loop
+
+  while-loop:
+    - match: \bwhile\b
+      scope: keyword.control
+      push:
+        - control-structure-body
+        - expression-in-brackets
+    - match: \bdo\b
+      scope: keyword.control
+      push:
+        - expression-in-brackets
+        - while-keyword
+        - control-structure-body
+
+  while-keyword:
+    - match: \bwhile\b
+      scope: keyword.control
+      pop: true
+
+  # if statement
+
+  if-statement:
+    - include: else-if-statement
+    - include: else-statement
+    - match: \bif\b
+      scope: keyword.control
+      push:
+        - control-structure-body
+        - expression-in-brackets
+
+  # Parentheses can *not* be omitted for conditionals, but curly brances can be omitted around single-statement bodies.
+  expression-in-brackets:
+    - match: \(
+      scope: punctuation.definition.start.sol
+      push: expression
+    - match: \)
+      scope: punctuation.section.block.end.sol
+      pop: true
+
+  control-structure-body:
+    - include: curly-brackets-body-contents # statement without curl brackets: ex.: if () return;
+    - match: '\{'
+      scope: punctuation.section.block.begin.sol
+      push:
+        - include: curly-brackets-body-contents # ex.: if () { return };
+        - match: '\}'
+          scope: punctuation.section.block.end
+          pop: true
+    - match: \;
+      pop: true
+    - include: else-pop
+
+  else-if-statement:
+    - match: \b(else)\s+(if)\b
+      captures:
+        1: keyword.control
+        2: keyword.control
+      push:
+        - control-structure-body
+        - expression-in-brackets
+
+  else-statement:
+    - match: \b(else)\b
+      scope: keyword.control
+      push:
+        - control-structure-body
+
+  # for loop
+
+  for-loop:
+    - match: \bfor\b
+      scope: keyword.control
+      push:
+        - control-structure-body
+        - for-loop-arguments
+
+  for-loop-arguments:
+    - match: '\('
+      scope: punctuation.section.block.begin.sol
+      push:
+        - variables-or-expression
+        - expression
+        - variables-push
+    - match: '[^\)]' # this is to contain any problems between for loop arguments (...) ... we match any unmatched thing until closing bracket!
+                    # this way the issues (example: for (strinfg i = 0; i < n; i++) { ) don't spread outside of these brackets
+    - match: '\)'
+      scope: punctuation.section.block.end.sol
+      pop: true
+    - include: else-pop
+
+  variables-push:
+    - include: variables
+    - match: ';'
+    - include: else-pop
+
+  variables-or-expression:
+    - include: variables
+    - include: expression
+
+  # control structure: try-catch
+
+  try-catch: # Example: https://solidity.readthedocs.io/en/latest/control-structures.html#try-catch
+    - match: \btry\b
+      scope: keyword
+      push:
+        - include: function-returns-declaration-include # try feed.getData(token) returns (uint v) {
+        - include: function-call
+        - include: expression-include # new ContractName()
+        - include: else-pop
+      # curly braces body after try statement is handled outside of our try-catch parser
+    - match: \bcatch\b
+      scope: keyword
+      push:
+        - match: \bError\b # } catch Error(string memory /*reason*/) {
+        - include: function-arguments # } catch (bytes memory /*lowLevelData*/) {
+        - include: else-pop
+        # curly braces body after catch statement is handled outside of our try-catch parser
+
+  # expression
+
+  expression-keyword:
+    - match: '{{expression_keyword_main}}'
+      scope: keyword
+    - match: '{{expression_keyword_other}}'
+      scope: keyword
+    - match: '{{expression_keyword_error_handling}}'
+      scope: keyword
+    - match: '{{expression_keyword_binary_logic}}'
+      scope: constant.language
+    - match: '{{reserved_keywords}}'
+      scope: keyword.sol.reserved
+    - match: '\.({{special_members_keywords}})'
+      captures:
+        1: support.type
+    - match: '{{special_properties}}'
+      scope: constant.character
+
+  expression-include:
+    - match: \[
+      scope: punctuation.section.block.begin.expr
+      push:
+        - match: \]
+          scope: punctuation.section.block.end.expr
+          pop: true
+        - match: \, # ... = [0,1,2]
+        - include: expression
+    - include: function-call
+    - include: expression-keyword
+    - include: '{{expression_keyword_main}}'
+      scope: variable.parameter
+    - match: \b({{number}})\s+({{ether_units}}|{{time_units}})\b
+      captures:
+        1: constant.numeric
+        2: keyword.control
+    - match: \(
+      scope: punctuation.section.block.begin.sol
+      push: tuple-content
+    - match: '{{math_operator}}'
+      scope: keyword.operator.arithmetic
+    - include: hex_number
+    - include: number
+    - include: string
+    - match: '{{identifier}}'
+    - match: '{{expression_keyword_main}}'
+      scope: keyword
+    - match: '\.'
+    - match: '{{comparison_operator}}'
+      scope: keyword.operator.logical
+    - match: '{{logical_operator}}'
+      scope: keyword.operator.logical
+    - match: '{{ternary_operator}}'
+      scope: keyword
+
+  expression:
+    - include: expression-include
+    - match: \;
+      pop: true
+    - include: else-pop
+
+  # function call
+
+  function-call:
+    - match: '({{type}})\s*(\()' # type conversion, ex: uint(-1)
+      captures:
+        1: constant.language
+        2: punctuation.section.block.begin.sol
+      push: function-call-arguments
+    - match: '({{special_functions}})\s*\('
+      captures:
+        1: support.function
+      push: function-call-arguments
+    - match: '({{expression_keyword_error_handling}})\s*(\()'
+      captures:
+        1: keyword
+        2: punctuation.section.block.begin.sol
+      push: function-call-arguments
+    - match: '({{super_keyword}})\.({{identifier}})\s*(\()'
+      captures:
+        1: keyword
+        2: support.function
+        3: punctuation.section.block.end.sol
+      push: function-call-arguments
+    - match: '({{identifier}})\.({{identifier}})\s*(\()'
+      captures:
+        1: scope
+        2: support.function
+        3: punctuation.section.block.end.sol
+      push: function-call-arguments
+    - match: '({{identifier}})\s*(\()'
+      captures:
+        1: support.function
+        2: punctuation.section.block.begin.sol
+      push: function-call-arguments
+
+  function-call-arguments:
+    - include: expression-include
+    - match: ','
+    - match: '\)'
+      scope: punctuation.section.block.end.sol
+      pop: true
+    - match: \;
+      pop: true
+
+  function-call-argument:
+    - include: expression
+
+  # function, constructor, modifier
+
+  function:
+    - match: \b(function)\s+({{identifier}})
+      captures:
+        1: storage.type.function
+        2: entity.name.function
+      push:
+        - curly-brackets-body
+        - function-returns-declaration
+        - function-modifiers
+        - function-arguments
+    - match: \b(function)\s*
+      captures:
+        1: storage.type.function
+      push:
+        - curly-brackets-body
+        - function-returns-declaration
+        - function-modifiers
+        - function-arguments
+
+  constructor:
+    - match: \b(constructor|receive|fallback)\b
+      scope: entity.name.function.sol
+      push:
+        - curly-brackets-body
+        - function-modifiers
+        - function-arguments
+
+  modifier: # modifier as in "keyword", not as various function modifiers like: public, private etc.
+    - match: \b(modifier)\s+({{identifier}})
+      captures:
+        1: storage.type.function
+        2: entity.name.function
+      push:
+        - curly-brackets-body
+        - function-returns-declaration
+        - function-modifiers
+        - function-arguments-try
+
+  function-arguments-try:
+    - include: function-arguments
+    - include: else-pop
+
+  ## function-arguments
+
+  function-arguments:
+    - match: '\('
+      scope: punctuation.section.block.begin.sol
+      push: function-argument
+    - match: ','
+      push:
+        - include: function-argument
+        - include: function-arguments
+    - match: '\)'
+      scope: punctuation.section.block.end.sol
+      pop: true
+
+  function-argument:
+    - include: function
+    - include: mapping
+    # identifier is optional for cases like this: function bar(bytes memory, ...
+    - match: '\b(?:({{type}})|({{custom_type}}))(?:\[(\d*)\])?\s+({{attribute}})(\s+{{identifier}}\b)?'
+      captures:
+        1: constant.language
+        2: scope
+        3: constant.numeric
+        4: storage.modifier
+        5: variable.parameter.function
+      pop: true
+    - match: '\b(?:({{type}})|({{custom_type}}))(?:\[(\d*)\])?\s+({{identifier}})'
+      captures:
+        1: constant.language
+        2: scope
+        3: constant.numeric
+        4: variable.parameter.function
+      pop: true
+    - match: '\b(?:({{type}})|({{custom_type}}))(?:\[(\d*)\])?\b'
+      captures:
+        1: constant.language
+        2: scope
+        3: constant.numeric
+        4: constant.language
+      pop: true
+    - match: '(\b{{identifier}})\s+({{attribute}}\s+)?({{identifier}})'
+      captures:
+        1: source
+        2: storage.modifier
+        3: variable.parameter.function
+      pop: true
+    - include: else-pop
+
+    ## function-modifiers
+
+  function-modifiers:
+    - match: '\b{{func_modifier}}\b'
+      scope: storage.modifier
+    - match: '\b({{func_modifier_override}}\b)(?:\((?:{{identifier}}(?:,\s*)?)+\))?' # https://github.com/davidhq/SublimeEthereum/issues/50#issuecomment-611749874, 1) internal override(ERC20, ERC20Pausable) 2) internal override
+      captures:
+        1: storage.modifier
+    - match: \breturns\b
+      scope: keyword
+      push: function-returns-arguments
+    - include: function-call
+    - match: '\b{{identifier}}\b'
+    - include: else-pop
+
+  function-modifiers-recursive:
+    - include: function-modifier
+    - include: function-modifiers
+
+    ## function-returns
+
+  function-returns-declaration:
+    - include: function-returns-declaration-include
+    - include: else-pop
+
+  function-returns-declaration-include:
+    - match: \breturns\b
+      scope: keyword
+      push: tuple
+
+  function-returns-arguments:
+    - match: '\('
+      scope: punctuation.section.block.begin.sol
+      push: function-returns-argument
+    - match: ','
+      push: function-returns-arguments-recursive
+    - match: '\)'
+      scope: punctuation.section.block.end.sol
+      pop: true
+
+  function-returns-arguments-recursive:
+    - include: function-returns-argument
+    - include: function-returns-arguments
+
+  function-returns-argument:
+    - match: '(?:({{type}})|({{custom_type}}))(?:\[\])?\s*((?:{{type_modifier}})+\s*)?({{identifier}})?'
+      captures:
+        1: constant.language
+        2: scope
+        3: keyword
+        4: variable.parameter
+      pop: true
+    - match: '({{identifier}})(?:\[\])?\s*((?:{{type_modifier}})+\s*)?({{identifier}})?'
+      captures:
+        1: constant.language
+        2: keyword
+        3: variable.parameter
+      pop: true
+    - include: mapping
+    - include: else-pop
+
+    ## curly-brackets-body
+
+  curly-brackets-body:
+    - include: curly-brackets-body-include
+    - include: else-pop
+
+  curly-brackets-body-include:
+    - match: '\{'
+      scope: punctuation.section.block.begin.sol
+      push:
+        - include: curly-brackets-body-contents
+        - match: '\}'
+          scope: punctuation.section.block.end
+          pop: true
+
+  curly-brackets-body-contents:
+    - match: \b_; # _; is used inside modifiers and is replaced by actual function
+      scope: keyword
+    - include: curly-brackets-body-include # block inside a block inside a ...
+    - include: return-statement
+    - include: lvalue-statement
+    - include: control-structure
+    - include: function-call
+    - include: variables
+    - include: emit-event
+    - include: assembly
+    - match: \bcontinue|break\b # only actually applies inside control structures (which use this syntax context as well)
+      scope: keyword
+    - include: expression-include
+
+  return-statement:
+    - match: \breturn\b
+      scope: keyword
+      push:
+        - expression
+        - tuple
+
+  lvalue-statement:
+    - match: \bdelete\b
+      scope: keyword
+      push: expression
+
+  # event
+
+  event:
+    - match: (event)\s+({{identifier}})
+      captures:
+        1: storage.type
+      push: function-arguments
+
+  emit-event:
+    - match: (emit)
+      scope: keyword
+      push:
+        - include: function-call
+        - include: else-pop
+
+  # assembly
+
+  assembly:
+    - match: \b(assembly)\s*
+      captures:
+        1: storage.type.function
+      push: assembly-body
+
+  assembly-body:
+    - include: assembly-body-include
+    - include: else-pop
+
+  assembly-body-include:
+    - match: '\{'
+      scope: punctuation.section.block.begin.sol
+      push:
+        - include: assembly-end-bracket
+        - include: assembly-body-contents
+
+  assembly-end-bracket:
+    - match: '\}'
+      scope: punctuation.section.block.end
+      pop: true
+
+  assembly-body-contents:
+    - include: assembly-statements
+    - include: assembly-body-include
+    - include: assembly-end-bracket
+
+  assembly-statements:
+    - match: '\:\='
+      scope: keyword
+    - match: 'self'
+      scope: keyword
+    - match: '[\(\)\,\.]' # ignore there, but try to list all that are relevant
+    - match: \b(let|for|case|switch|default)\b
+      scope: keyword
+    - match: '\b({{opcode}})\b'
+      scope: support.function
+    - match: '{{math_operator}}'
+      scope: keyword.operator.arithmetic
+    - include: hex_number
+    - include: number
+    - include: string
+    - match: '{{identifier}}'
+    - match: '{{expression_keyword_main}}'
+      scope: keyword
+    - match: '\.'
+    - match: '{{comparison_operator}}'
+      scope: keyword.operator.logical
+    - match: '{{logical_operator}}'
+      scope: keyword.operator.logical
+    - match: '{{ternary_operator}}'
+      scope: keyword

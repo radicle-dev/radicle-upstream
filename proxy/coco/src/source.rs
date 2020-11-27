@@ -50,7 +50,13 @@ lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
     // It _will_ affect the latency of the first request that uses syntax highlighting,
     // but this is acceptable for now.
-    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
+    static ref SYNTAX_SET: SyntaxSet = {
+        let default_set = SyntaxSet::load_defaults_newlines();
+        let mut builder = default_set.into_builder();
+
+        builder.add_from_folder("./assets", true).unwrap();
+        builder.build()
+    };
 }
 
 /// Branch name representation.
