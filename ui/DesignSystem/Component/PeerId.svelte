@@ -1,10 +1,10 @@
-<script lang="ts">
+<script lang="typescript">
   import StyledCopyable from "./StyledCopyable.svelte";
   import { Icon } from "../Primitive";
 
-  export let style = "";
-  export let dataCy = "";
-  export let peerId = "";
+  export let style: string = "";
+  export let dataCy: string = "";
+  export let peerId: string = "";
   export let truncate: boolean = false;
   export let expandable: boolean = true;
 </script>
