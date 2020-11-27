@@ -45,7 +45,7 @@
     hide();
     dispatch("select", peer);
   };
-  const showProfile = !isExperimental();
+  const showProfile = isExperimental();
 </script>
 
 <style>
