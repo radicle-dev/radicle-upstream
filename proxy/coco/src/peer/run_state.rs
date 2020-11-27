@@ -40,6 +40,7 @@ pub enum Event {
     Announced(announcement::Updates),
     /// An event from the underlying peer API.
     Peer(PeerEvent),
+    /// An event representing a gossip update for a project.
     ProjectUpdated(PeerId, RadUrn),
     /// An event from the underlying coco network stack.
     /// FIXME(xla): Align variant naming to indicate observed occurrences.
