@@ -92,6 +92,7 @@
     max-width: 30rem;
     height: 100%;
     min-width: 100%;
+    overflow: hidden;
   }
 
   .action {
