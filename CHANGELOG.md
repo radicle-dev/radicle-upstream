@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.2...v0.1.3) (2020-11-27)
+
+
+### Bug Fixes
+
+* **ci:** timeout for proxy tests ([#1379](https://github.com/radicle-dev/radicle-upstream/issues/1379)) ([fcf45d1](https://github.com/radicle-dev/radicle-upstream/commit/fcf45d128d355c6c229e74fc30f7e930e7eaf3a3))
+* **proxy:** avoid double seed emission ([#1400](https://github.com/radicle-dev/radicle-upstream/issues/1400)) ([12214b7](https://github.com/radicle-dev/radicle-upstream/commit/12214b7a567f3eac8ab53f1d59579325ca3bd107))
+* **proxy:** only save most recent logs from proxy ([#1377](https://github.com/radicle-dev/radicle-upstream/issues/1377)) ([adb105e](https://github.com/radicle-dev/radicle-upstream/commit/adb105ee04be17a109d99fe8ea41968c5f64cb6b)), closes [#1359](https://github.com/radicle-dev/radicle-upstream/issues/1359)
+* **proxy:** quit app when render process crashes ([#1398](https://github.com/radicle-dev/radicle-upstream/issues/1398)) ([2765554](https://github.com/radicle-dev/radicle-upstream/commit/27655544bee7db72a70dcd7d7e3c9cfe52c8ec65)), closes [#1352](https://github.com/radicle-dev/radicle-upstream/issues/1352)
+* **proxy:** remote tracking semantics ([#1371](https://github.com/radicle-dev/radicle-upstream/issues/1371)) ([6c115a8](https://github.com/radicle-dev/radicle-upstream/commit/6c115a8557d568cfa816ecd954c0df6ce7e976ae)), closes [#1243](https://github.com/radicle-dev/radicle-upstream/issues/1243) [#1243](https://github.com/radicle-dev/radicle-upstream/issues/1243)
+* **proxy:** remove seeds guard to enable reconnect ([#1392](https://github.com/radicle-dev/radicle-upstream/issues/1392)) ([ea1202c](https://github.com/radicle-dev/radicle-upstream/commit/ea1202c40cb2541da0334e6609b67d13dee59203)), closes [#1316](https://github.com/radicle-dev/radicle-upstream/issues/1316)
+* **proxy:** validate default git config ([#1385](https://github.com/radicle-dev/radicle-upstream/issues/1385)) ([08f232a](https://github.com/radicle-dev/radicle-upstream/commit/08f232a086f0fd02b71b5fae422a79b5f671d5e7))
+* **ui:** increase hit area for sidebar buttons ([#1387](https://github.com/radicle-dev/radicle-upstream/issues/1387)) ([2fd7326](https://github.com/radicle-dev/radicle-upstream/commit/2fd73261a07c2af73ea2c769ebd255b780562d91))
+* **ui:** make stats component reactive ([#1382](https://github.com/radicle-dev/radicle-upstream/issues/1382)) ([29d87ec](https://github.com/radicle-dev/radicle-upstream/commit/29d87ecc2024f02ba1079aa4a0434d8f71e66dac))
+* **ui:** trim whitespace from search input ([#1386](https://github.com/radicle-dev/radicle-upstream/issues/1386)) ([8a6f546](https://github.com/radicle-dev/radicle-upstream/commit/8a6f546729abf5cd93c42fcbca3dc770678c0e2d)), closes [#1367](https://github.com/radicle-dev/radicle-upstream/issues/1367)
+* **ui:** update doc link ([#1381](https://github.com/radicle-dev/radicle-upstream/issues/1381)) ([9d97cc3](https://github.com/radicle-dev/radicle-upstream/commit/9d97cc3727468058fcaab58a4243bb510f0783d9))
+
 ### [0.1.2](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.1...v0.1.2) (2020-11-26)
 
 
