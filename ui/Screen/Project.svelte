@@ -52,7 +52,7 @@
     if (event.urn === urn) {
       refresh(urn);
     }
-  })
+  });
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);

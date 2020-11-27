@@ -140,7 +140,7 @@ export const projectEvents: Readable<ProjectUpdated | null> = derived(
   eventStore,
   (event: Event | null): ProjectUpdated | null => {
     if (!event) {
-      return null
+      return null;
     }
 
     switch (event.type) {
@@ -151,7 +151,7 @@ export const projectEvents: Readable<ProjectUpdated | null> = derived(
         return null;
     }
   }
-)
+);
 
 export const requestEvents: Readable<RequestEvent | null> = derived(
   eventStore,
