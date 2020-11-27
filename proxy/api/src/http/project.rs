@@ -571,6 +571,9 @@ mod test {
         Ok(())
     }
 
+    // TODO(xla): Reintroduce when tracking is properly supported at the level of state
+    // manipulation.
+    #[ignore]
     #[tokio::test]
     async fn list_for_user() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
