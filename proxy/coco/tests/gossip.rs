@@ -101,7 +101,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
                 if provider == alice_peer_id && urn.id == project.urn().id =>
             {
                 future::ready(Some(()))
-            }
+            },
             _ => future::ready(None),
         })
         .map(|_| ());
