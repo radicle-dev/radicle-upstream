@@ -54,7 +54,8 @@ lazy_static::lazy_static! {
         let default_set = SyntaxSet::load_defaults_newlines();
         let mut builder = default_set.into_builder();
 
-        builder.add_from_folder("./assets", true).unwrap();
+        // Don't crash if we aren't able to load additional syntaxes for some reason.
+        builder.add_from_folder("./assets", true).ok();
         builder.build()
     };
 }
