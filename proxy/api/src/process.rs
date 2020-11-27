@@ -140,8 +140,10 @@ async fn run_rigging(
             let mut peer_control = peer.control();
             let seeds_store = ctx.store().clone();
             let seeds_event_task = coco::SpawnAbortable::new(async move {
-                let mut last_seeds: Vec<seed::Seed> = vec![];
-                let mut timer = tokio::time::interval(Duration::from_secs(1));
+                let mut last_seeds = session_seeds(&seeds_store)
+                    .await
+                    .expect("Failed to read session store");
+                let mut timer = tokio::time::interval(Duration::from_secs(5));
 
                 loop {
                     let _timestamp = timer.tick().await;
