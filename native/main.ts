@@ -150,6 +150,13 @@ const openExternalLink = (url: string): void => {
   }
 };
 
+app.on("render-process-gone", (_event, _webContents, details) => {
+  if (details.reason !== "clean-exit") {
+    console.error(`Electron render process is gone. Reason: ${details.reason}`);
+    app.quit();
+  }
+});
+
 app.on("will-quit", () => {
   proxyProcessManager.kill();
 });
