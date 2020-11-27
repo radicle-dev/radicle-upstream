@@ -73,6 +73,7 @@
     "cypress": "^5.6.0",
     "electron": "^11.0.1",
     "electron-builder": "^22.9.1",
+    "electron-notarize": "^1.0.0",
     "eslint": "^7.13.0",
     "eslint-plugin-cypress": "^2.11.2",
     "eslint-plugin-no-only-tests": "^2.4.0",
