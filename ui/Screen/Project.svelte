@@ -50,7 +50,7 @@
     }
 
     if (event.urn === urn) {
-      refresh(urn);
+      refresh();
     }
   });
 
