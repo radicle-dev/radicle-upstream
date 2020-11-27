@@ -67,13 +67,32 @@ export const refresh = (): void => {
 
   if (screen.status === remote.Status.Success) {
     const { data: current } = screen;
-    if (current.refresh) {
+    const {
+      project: { urn },
+      refresh,
+    } = current;
+
+    if (refresh) {
       refresh.abort();
     }
 
-    project.fetchPeers(urn)
-    .then(peers =>
-      screenStore
+    const request = new AbortController();
+    screenStore.success({
+      ...current,
+      refresh: request,
+    });
+
+    project
+      .fetchPeers(urn, request.signal)
+      .then(peers =>
+        screenStore.success({
+          ...current,
+          peers,
+          peerSelection: filterPeers(peers),
+          refresh: null,
+        })
+      )
+      .catch(err => screenStore.error(error.fromException(err)));
   }
 };
 
