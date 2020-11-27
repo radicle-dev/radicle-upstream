@@ -68,9 +68,12 @@ pub enum LocalPeer {
 impl MaybeFrom<PeerEvent> for Notification {
     fn maybe_from(event: PeerEvent) -> Option<Self> {
         match event {
-            PeerEvent::ProjectUpdated(provider, urn) => {
-                Some(Self::LocalPeer(LocalPeer::ProjectUpdated { provider, urn }))
-            },
+            PeerEvent::GossipFetched {
+                provider, gossip, ..
+            } => Some(Self::LocalPeer(LocalPeer::ProjectUpdated {
+                provider,
+                urn: gossip.urn,
+            })),
             PeerEvent::RequestCloned(url) => Some(Self::LocalPeer(LocalPeer::RequestCloned {
                 peer: url.authority,
                 urn: url.urn,
