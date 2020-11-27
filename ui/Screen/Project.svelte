@@ -2,11 +2,12 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
+  import * as localPeer from "../src/localPeer";
   import * as modal from "../src/modal";
   import * as path from "../src/path";
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
-  import { fetch, selectPeer, store } from "../src/screen/project";
+  import { fetch, selectPeer, refresh, store } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
@@ -42,6 +43,16 @@
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {
     selectPeer(peer);
   };
+
+  localPeer.projectEvents.subscribe(event => {
+    if (!event) {
+      return;
+    }
+
+    if (event.urn === urn) {
+      refresh(urn);
+    }
+  })
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);

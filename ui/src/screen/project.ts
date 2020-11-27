@@ -11,6 +11,7 @@ interface Screen {
   peers: project.Peer[];
   peerSelection: project.User[];
   project: project.Project;
+  refresh: AbortController | null;
   selectedPeer: project.User;
 }
 
@@ -35,6 +36,7 @@ export const fetch = (projectUrn: Urn): void => {
         peers,
         peerSelection,
         project: current,
+        refresh: null,
         selectedPeer: peerSelection[0],
       });
     })
@@ -57,6 +59,21 @@ export const fetchPeers = (): void => {
         })
       )
       .catch(err => screenStore.error(error.fromException(err)));
+  }
+};
+
+export const refresh = (): void => {
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const { data: current } = screen;
+    if (current.refresh) {
+      refresh.abort();
+    }
+
+    project.fetchPeers(urn)
+    .then(peers =>
+      screenStore
   }
 };
 

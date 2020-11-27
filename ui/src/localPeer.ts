@@ -136,6 +136,23 @@ eventStore.subscribe((event: Event | null): void => {
   }
 });
 
+export const projectEvents: Readable<ProjectUpdated | null> = derived(
+  eventStore,
+  (event: Event | null): ProjectUpdated | null => {
+    if (!event) {
+      return null
+    }
+
+    switch (event.type) {
+      case EventType.ProjectUpdated:
+        return event;
+
+      default:
+        return null;
+    }
+  }
+)
+
 export const requestEvents: Readable<RequestEvent | null> = derived(
   eventStore,
   (event: Event | null): RequestEvent | null => {
