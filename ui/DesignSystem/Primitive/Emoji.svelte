@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import twemoji from "twemoji";
 
   export let emoji: string;
@@ -6,7 +6,7 @@
   type EmojiSize = "small" | "regular" | "medium" | "big" | "huge";
   export let size: EmojiSize = "regular";
 
-  export let style = "";
+  export let style: string = "";
 </script>
 
 <style>
