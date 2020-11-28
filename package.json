@@ -14,8 +14,9 @@
     "url": "https://github.com/radicle-dev/radicle-upstream.git"
   },
   "build": {
-    "appId": "radicle-upstream.monadic.xyz",
+    "appId": "xyz.radicle.radicle-upstream",
     "artifactName": "${name}-${version}.${ext}",
+    "afterSign": "builder/notarize.js",
     "files": [
       "public/**/*",
       "native/**/*"
@@ -52,7 +53,11 @@
     "mac": {
       "target": [
         "dmg"
-      ]
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "builder/entitlements.mac.plist",
+      "entitlementsInherit": "builder/entitlements.mac.plist"
     }
   },
   "main": "./native/main.comp.js",
@@ -121,6 +126,7 @@
     "wait:test": "wait-on tcp:17246 && yarn rollup:build && yarn cypress:run; status=$?; [ \"$CI\" = true ] && kill `pidof api`; exit $status",
     "wait:debug": "wait-on tcp:17246 && yarn cypress:open",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn rollup:clean && yarn rollup:build && yarn proxy:build:release && cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && electron-builder --publish never",
+    "dist:notarize": "NOTARIZE=true yarn dist",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:17246 && NODE_ENV=development electron .",
     "svelte:check": "svelte-check",
     "svelte:check:watch": "svelte-check --watch",
