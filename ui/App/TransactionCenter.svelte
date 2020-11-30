@@ -1,21 +1,16 @@
 <script lang="typescript">
   import * as modal from "../src/modal";
   import * as path from "../src/path";
-  import * as transaction from "../src/transaction";
+  import { store as transactions, selectedStore } from "../src/transaction";
 
   import Center from "../DesignSystem/Component/Transaction/Center.svelte";
 
   const onSelect = (event: { detail: string }) => {
     const hash = event.detail;
-    transaction.selectedStore.set(hash);
+    selectedStore.set(hash);
     modal.hide();
     modal.toggle(path.transaction());
   };
-
-  let txs: transaction.Tx[] = [];
-  $: transaction.store.subscribe(xs => {
-    txs = xs;
-  });
 </script>
 
 <style>
@@ -27,8 +22,8 @@
   }
 </style>
 
-{#if txs.length > 0}
+{#if $transactions.length > 0}
   <div class="transaction-center">
-    <Center on:select={onSelect} transactions={txs} />
+    <Center on:select={onSelect} transactions={$transactions} />
   </div>
 {/if}
