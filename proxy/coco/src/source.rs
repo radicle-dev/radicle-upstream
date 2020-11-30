@@ -69,7 +69,10 @@ lazy_static::lazy_static! {
             let asset_path = tmp.to_str().expect("Couldn't convert pathbuf to str");
 
             // Don't crash if we aren't able to load additional syntaxes for some reason.
-            builder.add_from_folder(asset_path, true).ok();
+            match builder.add_from_folder(asset_path, true) {
+                Ok(_) => (),
+                Err(err) => log::warn!("Syntax builder error : {}", err),
+            };
         }
         builder.build()
     };
