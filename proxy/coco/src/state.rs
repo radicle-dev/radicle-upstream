@@ -624,7 +624,12 @@ impl State {
                         if project.maintainers().contains(&user.urn()) {
                             peer::Status::replicated(peer::Role::Maintainer, user)
                         } else {
-                            peer::Status::replicated(peer::Role::Contributor, user)
+                            let signed_refs = storage.rad_signed_refs_of(&repo.urn, peer_id)?;
+                            if signed_refs.heads.is_empty() {
+                                peer::Status::replicated(peer::Role::Tracker, user)
+                            } else {
+                                peer::Status::replicated(peer::Role::Contributor, user)
+                            }
                         }
                     } else {
                         peer::Status::NotReplicated

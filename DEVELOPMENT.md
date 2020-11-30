@@ -425,6 +425,9 @@ Once the release PR branch is merged into master a build will be triggered on
 Buildkite, this will build Upstream for both Linux and macOS. When the build
 has completed you can download binaries for your platform [here][ar].
 
+Make sure to update the links to those binaries on the
+[radicle.xyz download page][rd] and rebuild/deploy the website.
+
 This is what a typical release looks like:
 
 ```sh
@@ -501,6 +504,7 @@ afterwards the team can evaluate whether the release is up to our standards.
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
 [qa]: QA.md
+[rd]: https://radicle.xyz/downloads.html
 [rl]: https://github.com/radicle-dev/radicle-link
 [rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html

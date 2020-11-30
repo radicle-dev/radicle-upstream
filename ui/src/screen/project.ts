@@ -166,10 +166,58 @@ const filterPeers = (peers: project.Peer[]): project.User[] => {
     .filter(
       peer =>
         peer.status.type === project.ReplicationStatusType.Replicated &&
-        peer.status.role !== project.Role.Tracker
+        !(
+          peer.type === project.PeerType.Local &&
+          peer.status.role === project.Role.Tracker
+        )
     )
     .map(peer => {
       const { role, user } = peer.status as project.Replicated;
       return { type: peer.type, peerId: peer.peerId, identity: user, role };
+    })
+    .sort((a, b) => {
+      if (
+        a.role === project.Role.Maintainer &&
+        b.role !== project.Role.Maintainer
+      ) {
+        return -1;
+      }
+      if (
+        a.role !== project.Role.Maintainer &&
+        b.role === project.Role.Maintainer
+      ) {
+        return 1;
+      }
+
+      if (
+        a.role === project.Role.Contributor &&
+        b.role === project.Role.Tracker
+      ) {
+        return -1;
+      }
+      if (
+        a.role === project.Role.Tracker &&
+        b.role === project.Role.Contributor
+      ) {
+        return 1;
+      }
+
+      return 0;
+    })
+    .sort((a, b) => {
+      if (
+        a.type === project.PeerType.Local &&
+        b.type === project.PeerType.Remote
+      ) {
+        return -1;
+      }
+      if (
+        a.type === project.PeerType.Remote &&
+        b.type === project.PeerType.Local
+      ) {
+        return 1;
+      }
+
+      return 0;
     });
 };
