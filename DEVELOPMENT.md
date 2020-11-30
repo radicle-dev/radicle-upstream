@@ -527,12 +527,25 @@ Where:
 step, because it has to upload the final package to the Apple notarization
 server. Make sure you're on a stable internet connection.
 
-Once the package is built, signed and notarized you should upload it to our
-Google Cloud Platform under
-[`builds.radicle.xyz/releases/radicle-upstream/v0.0.11`][gp].
+Once the package is built, signed and notarized you can upload it to the web
+using [`gsutil`][gs]:
+
+```bash
+gsutil cp dist/radicle-upstream-0.1.2.dmg gs://releases.radicle.xyz
+```
+
+To be able to upload packages to the GCS bucket you will need the appropriate
+permissions. Reach out to a co-worker if you don’t have them.
 
 You should also copy the Linux `.AppImage` and `.snap` packages to the same
-location. You can get them from the [CI build][ar] on Buildkite.
+location. You can get them from the [CI build][ar] on Buildkite. Then run
+
+```bash
+gsutil cp \
+  radicle-upstream-0.1.2.AppImage \
+  radicle-upstream-0.1.2.snap \
+  gs://releases.radicle.xyz
+```
 
 After all the packages are uploaded, update the links to those binaries on the
 [radicle.xyz download][rd] and [docs.radicle.xyz/docs/getting-started][gs]
@@ -552,10 +565,10 @@ All the changes that went into this release, you'll find here:
 
 And here are packages for all our supported platforms:
   - macOS:
-    https://storage.googleapis.com/builds.radicle.xyz/releases/radicle-upstream/0.1.4/radicle-upstream-0.1.3.dmg
+    https://releases.radicle.xyz/radicle-upstream-0.1.3.dmg
   - Linux:
-    https://storage.googleapis.com/builds.radicle.xyz/releases/radicle-upstream/0.1.4/radicle-upstream-0.1.3.AppImage
-    https://storage.googleapis.com/builds.radicle.xyz/releases/radicle-upstream/0.1.4/radicle-upstream-0.1.3.snap
+    https://releases.radicle.xyz/radicle-upstream-0.1.3.AppImage
+    https://releases.radicle.xyz/radicle-upstream-0.1.3.Snap
 
 For support you can reach us here:
   https://radicle.community/c/help
@@ -581,6 +594,7 @@ If you encounter a bug, please open an issue here:
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
 [gs]: https://docs.radicle.xyz/docs/getting-started
+[gg]: https://cloud.google.com/storage/docs/gsutil_install
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
 [ls]: https://github.com/okonet/lint-staged
