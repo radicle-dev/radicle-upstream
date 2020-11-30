@@ -10,7 +10,6 @@
     SHARED_MASTER_CACHE: true
   artifact_paths:
     - "dist/*.AppImage"
-    - "dist/*.snap"
     - "cypress/screenshots/**/*.png"
 
 steps:
