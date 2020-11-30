@@ -421,7 +421,7 @@ Prerequisites:
       **Note:** this can only be created via the company account holder
 
 
-## Creating a release
+## Preparing a release
 
 Before you begin: install the [`hub`][hb] cli tool. We use `hub` in our release
 automation script to create a pull-request off of a release branch and later
