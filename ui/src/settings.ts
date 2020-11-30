@@ -38,7 +38,7 @@ export const themeOptions: Option[] = [
 
 export const defaultSetttings = (): Settings => ({
   appearance: {
-    theme: Theme.Light,
+    theme: Theme.Dark,
     hints: {
       showRemoteHelper: true,
     },
