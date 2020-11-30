@@ -405,8 +405,23 @@ build times. If you need to update this image, proceed as follows:
 7. Commit changes to `Dockerfile` and `pipeline.yaml`. Pushing the changes will
    create a new branch and build the updated image.
 
+## Setting up Apple notarization
 
-## Releases
+To [allow macOS Gatekeeper recognise our Upstream packages as genuine][so],
+which allows the user to install and open Upstream without unnecessary
+[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
+
+Prerequisites:
+  - a paid Apple developer account registered to our company
+  - an Apple ID token for allowing the notarization script to run in behalf of
+    our developer acocunt
+    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
+  - a valid "Developer ID Application" certificate
+    - [Certificates Add][ca] -> Developer ID Application
+      **Note:** this can only be created via the company account holder account
+
+
+## Creating a release
 
 Before you begin: install the [`hub`][hb] cli tool. We use `hub` in our release
 automation script to create a pull-request off of a release branch and later
@@ -553,6 +568,7 @@ If you encounter a bug, please open an issue here:
 [an]: #setting-up-apple-notarization
 [ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
 [bk]: https://buildkite.com/monadic/radicle-upstream
+[ca]: https://developer.apple.com/account/resources/certificates/add
 [cb]: https://doc.rust-lang.org/cargo/
 [cc]: https://www.conventionalcommits.org/en/v1.0.0
 [cg]: https://radicle.community/t/color-system/166
@@ -568,6 +584,7 @@ If you encounter a bug, please open an issue here:
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
 [ls]: https://github.com/okonet/lint-staged
+[ma]: https://appleid.apple.com/account/manage
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
 [qa]: QA.md
@@ -576,6 +593,9 @@ If you encounter a bug, please open an issue here:
 [rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev
+[sn]: https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution
+[so]: https://support.apple.com/en-us/HT202491
 [sv]: https://github.com/conventional-changelog/standard-version
+[sw]: https://support.apple.com/en-gb/guide/mac-help/mh40616/mac
 [tp]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [wa]: https://github.com/seanmonstar/warp
