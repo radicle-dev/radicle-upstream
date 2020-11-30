@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import type { SvelteComponent } from "svelte";
   import type * as svelteStore from "svelte/store";
 
@@ -26,8 +26,8 @@
     }, 2000);
   };
 
-  const tweet = () => {
-    window.location.href = "https://radicle.community/c/help";
+  const support = () => {
+    window.location.href = "https://matrix.to/#/#support:radicle.community";
   };
 </script>
 
@@ -95,7 +95,7 @@
           has crashed or it isn’t starting.
         {/if}
       </p>
-      <Button style="display: flex; color: #fff;" on:click={tweet}>
+      <Button style="display: flex; color: #fff;" on:click={support}>
         Reach out for support
       </Button>
       {#if $fatalError.kind === 'PROXY_EXIT' && $fatalError.data.output}
