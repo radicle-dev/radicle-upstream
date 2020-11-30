@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.3...v0.1.4) (2020-11-30)
+
+
+### Features
+
+* reactive remote management ([#1393](https://github.com/radicle-dev/radicle-upstream/issues/1393)) ([3f5c25b](https://github.com/radicle-dev/radicle-upstream/commit/3f5c25b127574705fd63bc2a24a52cc3cfe916f9)), closes [#1365](https://github.com/radicle-dev/radicle-upstream/issues/1365)
+
 ### [0.1.3](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.2...v0.1.3) (2020-11-27)
 
 
