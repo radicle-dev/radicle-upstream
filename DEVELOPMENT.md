@@ -520,7 +520,8 @@ You should also copy the Linux `.AppImage` and `.snap` packages to the same
 location. You can get them from the [CI build][ar] on Buildkite.
 
 After all the packages are uploaded, update the links to those binaries on the
-[radicle.xyz download page][rd] and rebuild/deploy the website.
+[radicle.xyz download][rd] and [docs.radicle.xyz/docs/getting-started][gs]
+pages and rebuild/deploy the websites.
 
 The final step is to announce the new release on our public channels:
   - https://twitter.com/radicle
@@ -563,6 +564,7 @@ If you encounter a bug, please open an issue here:
 [el]: https://www.electronjs.org
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
+[gs]: https://docs.radicle.xyz/docs/getting-started
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
 [ls]: https://github.com/okonet/lint-staged
