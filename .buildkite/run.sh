@@ -68,7 +68,7 @@ echo "--- Run proxy tests"
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
 
-if [[ "${BUILDKITE_BRANCH:-}" == "master" ]]; then
+if [[ "${BUILDKITE_BRANCH:-}" == "master" || -n "${BUILDKITE_TAG:-}" ]]; then
   echo "--- Packaging and uploading app binaries"
   time yarn dist
 fi
