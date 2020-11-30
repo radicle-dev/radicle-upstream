@@ -3,7 +3,11 @@ use std::time::{Duration, Instant};
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
-use librad::net::protocol::ProtocolEvent;
+use librad::net::{
+    gossip::{Has, Info},
+    peer::Gossip,
+    protocol::ProtocolEvent,
+};
 
 use coco::{peer::run_config, seed::Seed, RunConfig};
 
@@ -100,9 +104,9 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         .into_stream()
         .filter_map(|res| match res.unwrap() {
             coco::PeerEvent::Protocol(ProtocolEvent::Gossip(info)) => match info {
-                librad::net::gossip::Info::Has(librad::net::gossip::Has {
+                Info::Has(Has {
                     provider,
-                    val: librad::net::peer::Gossip { urn, .. },
+                    val: Gossip { urn, .. },
                 }) if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
                     future::ready(Some(()))
                 },
