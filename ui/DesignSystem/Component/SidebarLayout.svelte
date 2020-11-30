@@ -5,8 +5,8 @@
 
   import Sidebar from "./Sidebar.svelte";
 
-  export let dataCy = "";
-  export let style = "";
+  export let dataCy: string = "";
+  export let style: string = "";
 
   const session: UnsealedSession = getContext("session");
 </script>

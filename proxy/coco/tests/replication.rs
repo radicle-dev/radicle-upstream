@@ -424,10 +424,7 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
         .track(project.urn(), bob_state.peer_id())
         .await?;
 
-    assert_event!(
-        alice_events,
-        coco::PeerEvent::Peer(librad::net::peer::PeerEvent::GossipFetch(_))
-    )?;
+    assert_event!(alice_events, coco::PeerEvent::GossipFetched { .. })?;
 
     let tracked = alice_state.tracked(project.urn()).await?;
     assert!(tracked.iter().any(|peer| match peer {

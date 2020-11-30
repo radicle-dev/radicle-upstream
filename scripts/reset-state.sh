@@ -9,8 +9,8 @@ if [ "$platform" == "Darwin" ]; then
         "$HOME/Library/Application Support/Radicle Upstream"
         "$HOME/Library/Application Support/xyz.radicle.radicle"
         "$HOME/Library/Application Support/xyz.radicle.radicle-upstream"
-        "$HOME/Library/Preferences/radicle-upstream.monadic.xyz.plist"
-        "$HOME/Library/Saved Application State/radicle-upstream.monadic.xyz.savedState"
+        "$HOME/Library/Preferences/xyz.radicle.radicle-upstream.plist"
+        "$HOME/Library/Saved Application State/xyz.radicle.radicle-upstream.savedState"
     );
 elif [ "$platform" == "Linux" ]; then
     config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
