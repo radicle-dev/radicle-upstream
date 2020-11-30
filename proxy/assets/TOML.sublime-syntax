@@ -1,0 +1,248 @@
+# Copyright (c) 2020 Sourcegraph
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+%YAML 1.2
+---
+name: TOML
+file_extensions:
+  - toml
+scope: source.toml
+
+variables:
+  digits: (?:(?:-?)\d+(?:_\d+)*)
+  identifier: ([[:alpha:]_][[:alnum:]_]*)
+
+contexts:
+  prototype:
+    - include : comment
+
+  main:
+    - include: statement
+    - include: header
+
+  string:
+    - include: raw-string-double-quote
+    - include: raw-string-single-quote
+    - include: string-single-quote
+    - include: string-double-quote
+
+  value:
+    - include: string
+    - include: number
+    - include: boolean
+    - include: array
+    - include: object
+
+  statement:
+    - match: '{{identifier}}(\s+)?'
+      scope: entity.name.variable.toml
+      push:
+        - match: '=(\s+)?'
+          scope: keyword.operator.assignment.toml
+        - include: value
+        - match: '\s+'
+          pop: true
+
+  header:
+    - match: '\['
+      scope: entity.name.section.toml
+      push:
+        - match: '\]'
+          scope: entity.name.section.toml
+          pop: true
+        - include: key-segment
+        - include: string
+
+  key-segment:
+    - match: '[^\s\]]+'
+      scope: entity.name.tag.toml
+
+  number:
+    # floating point
+    - match: |-
+        (?x:
+          \b{{digits}} (?: (\.) {{digits}}?) # slightly inaccurate: will match -10-10
+          | (\.) {{digits}}
+        )
+      scope: meta.number.float.decimal.toml constant.numeric.value.toml
+      captures:
+        1: punctuation.separator.decimal.toml
+        2: punctuation.separator.decimal.toml
+    # integer
+    - match: ({{digits}})
+      scope: meta.number.integer.decimal.toml
+      captures:
+        1: constant.numeric.value.toml
+        2: constant.numeric.suffix.toml
+
+  boolean:
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.toml
+
+  array:
+    # Based on https://github.com/sublimehq/Packages/blob/master/JSON/JSON.sublime-syntax#L31
+    - match: '\['
+      scope: punctuation.section.sequence.begin.toml
+      push:
+        - meta_scope: meta.sequence.toml
+        - match: '\]'
+          scope: puctuation.section.sequence.end.toml
+          pop: true
+        - include: value
+        - match: ","
+          scope: punctuation.separator.sequence.toml
+        - match: '[^\s\]]'
+          scope: invalid.illegal.expected-sequence-separator.toml
+
+  identifier:
+    - match: '{{identifier}}'
+
+  object-key:
+    - include: identifier
+    - include: string-double-quote
+    - include: string-single-quote
+
+  object:
+    # Based on https://github.com/sublimehq/Packages/blob/master/JSON/JSON.sublime-syntax#L82
+    - match: '\{'
+      scope: punctuation.section.mapping.begin.toml
+      push:
+        - meta_scope: meta.mapping.toml
+        - match: '\}'
+          scope: punctuation.section.mapping.end.toml
+          pop: true
+        - include: object-key
+        - match: "="
+          scope: punctuation.separator.mapping.key-value.toml
+          push:
+            - match: ',|\s?(?=\})'
+              scope: invalid.illegal.expected-mapping-value.toml
+              pop: true
+            - match: (?=\S)
+              set:
+                - clear_scopes: 1
+                - meta_scope: meta.mapping.value.toml
+                - include: value
+                - match: ''
+                  set:
+                    - match: ','
+                      scope: punctuation.separator.mapping.pair.toml
+                      pop: true
+                    - match: \s*(?=\})
+                      pop: true
+                    - match: \s(?!/[/*])(?=[^\s,])|[^\s,]
+                      scope: invalid.illegal.expected-mapping-separator.toml
+                      pop: true
+        - match: '[^\s\}]'
+          scope: invalid.illegal.expected-mapping-key.toml
+
+  comment:
+    # Line comment based on https://github.com/sublimehq/Packages/blob/master/Go/Go.sublime-syntax#L154
+    - match: '#'
+      scope: punctuation.definition.comment.toml
+      push: pop-line-comment
+  pop-line-comment:
+    - meta_scope: comment.line.toml
+    # Including the newline allows the scope to visually stretch to the right,
+    # and ensures that functionality that relies on comment scoping, such as
+    # contextual hotkeys, works properly at EOL while typing a comment. This
+    # should also match \r\n due to Sublime's internal normalization.
+    - match: $\n?
+      pop: true
+
+  # Strings based on https://github.com/sublimehq/Packages/blob/master/JSON/JSON.sublime-syntax#L121
+
+  # """foo"""
+  raw-string-double-quote:
+    - match: '"""'
+      scope: punctuation.definition.string.raw.being.toml
+      push: inside-raw-string-double-quote
+  inside-raw-string-double-quote:
+      - meta_scope: string.quoted.double.raw.toml
+      - meta_include_prototype: false
+      - match: '"""'
+        scope: puncutation.definition.string.raw.end.toml
+        pop: true
+
+  # '''foo'''
+  raw-string-single-quote:
+    - match: "'''"
+      scope: punctuation.definition.string.raw.being.toml
+      push: inside-raw-string-single-quote
+  inside-raw-string-single-quote:
+      - meta_scope: string.quoted.double.raw.toml
+      - meta_include_prototype: false
+      - match: "'''"
+        scope: puncutation.definition.string.raw.end.toml
+        pop: true
+
+  # "foo\""
+  string-double-quote:
+    - match: '"'
+      scope: punctuation.definition.string.begin.toml
+      push: inside-string-double-quote
+  inside-string-double-quote:
+    - meta_scope: string.quoted.double.toml
+    - meta_include_prototype: false
+    - match: '"'
+      scope: punctuation.definition.string.end.toml
+      pop: true
+    - include: string-escape-double-quote
+    - match: $\n?
+      scope: invalid.illegal.unclosed-string.toml
+      pop: true
+  string-escape-double-quote:
+    - match: |-
+        (?x:                # turn on extended mode
+          \\                # a literal backslash
+          (?:               # ...followed by...
+            ["\\/bfnrt]     # one of these characters
+          )
+        )
+      scope: constant.character.escape.toml
+    - match: \\.
+      scope: invalid.illegal.unrecognized-string-escape.toml
+
+  # 'foo\''
+  string-single-quote:
+    - match: "'"
+      scope: punctuation.definition.string.begin.toml
+      push: inside-string-single-quote
+  inside-string-single-quote:
+    - meta_scope: string.quoted.single.toml
+    - meta_include_prototype: false
+    - match: "'"
+      scope: punctuation.definition.string.end.toml
+      pop: true
+    - include: string-escape-single-quote
+    - match: $\n?
+      scope: invalid.illegal.unclosed-string.toml
+      pop: true
+  string-escape-single-quote:
+    - match: |-
+        (?x:                # turn on extended mode
+          \\                # a literal backslash
+          (?:               # ...followed by...
+            ['\\/bfnrt]     # one of these characters
+          )
+        )
+      scope: constant.character.escape.toml
+    - match: \\.
+      scope: invalid.illegal.unrecognized-string-escape.toml

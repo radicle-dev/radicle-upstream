@@ -155,7 +155,7 @@
   - [ ] Links to external resources open in external browser
   - [ ] Links to internal resources don't do anything
   - [ ] If the project doesn't have a `README.md`, a placeholder is shown
-- [ ] Syntax highlighting works for source files
+- [ ] Syntax highlighting works for source files (.toml, .sol, .ts, .svelte)
 - [ ] Binary files show a placeholder
 - [ ] It's possible to navigate to deeper hierarchies via the tree browser
 - [ ] It's possible to select different branches
