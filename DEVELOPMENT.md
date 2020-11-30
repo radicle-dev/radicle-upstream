@@ -407,18 +407,18 @@ build times. If you need to update this image, proceed as follows:
 
 ## Setting up Apple notarization
 
-To [allow macOS Gatekeeper recognise our Upstream packages as genuine][so],
+To [allow macOS Gatekeeper to recognise our Upstream packages as genuine][so],
 which allows the user to install and open Upstream without unnecessary
 [security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
 
 Prerequisites:
-  - a paid Apple developer account registered to our company
-  - an Apple ID token for allowing the notarization script to run in behalf of
-    our developer acocunt
+  - a paid Apple developer account registered to Monadic
+  - an Apple ID token for allowing the notarization script to run on behalf of
+    our developer account
     - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
   - a valid "Developer ID Application" certificate
     - [Certificates Add][ca] -> Developer ID Application
-      **Note:** this can only be created via the company account holder account
+      **Note:** this can only be created via the company account holder
 
 
 ## Creating a release
@@ -433,11 +433,11 @@ does a request to GitHub, like so: `hub api`.
 To perform a release run: `git checkout master && yarn release` and follow the
 instructions.
 
-Once the release PR branch is merged into master a build will be triggered on
+Once the release PR branch is merged into master, a build will be triggered on
 Buildkite, this will build Upstream for both Linux and macOS (unsigned).
 
 <details>
-<summary>This is what a typical release looks like</summary>
+<summary>Commands to prepare a release</summary>
 
 ```sh
 $ git checkout master
