@@ -48,7 +48,7 @@ const surfProjectMock: project.Project = {
 export const sessionMock: session.SessionData = {
   settings: {
     appearance: {
-      theme: settings.Theme.Light,
+      theme: settings.Theme.Dark,
       hints: {
         showRemoteHelper: true,
       },
