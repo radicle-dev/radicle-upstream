@@ -419,13 +419,10 @@ To perform a release run: `git checkout master && yarn release` and follow the
 instructions.
 
 Once the release PR branch is merged into master a build will be triggered on
-Buildkite, this will build Upstream for both Linux and macOS. When the build
-has completed you can download binaries for your platform [here][ar].
+Buildkite, this will build Upstream for both Linux and macOS (unsigned).
 
-Make sure to update the links to those binaries on the
-[radicle.xyz download page][rd] and rebuild/deploy the website.
-
-This is what a typical release looks like:
+<details>
+<summary>This is what a typical release looks like</summary>
 
 ```sh
 $ git checkout master
@@ -463,6 +460,7 @@ Finalizing release v0.0.11:
 
 Release v0.0.11 successfully completed! 👏 🎉 🚀
 ```
+</details>
 
 ## Quality assurance
 
@@ -476,13 +474,82 @@ which contains a QA checklist. Before publishing packages for a wider audience
 someone from the team goes through the checklist and manually tests the app,
 afterwards the team can evaluate whether the release is up to our standards.
 
-**Title:** `QA: v0.0.14 macOS`\
+**Title:** `QA: v0.0.11 macOS`\
 **Body** [QA.md][qa]
 
-**Title:** `QA: v0.0.14 Linux`\
+**Title:** `QA: v0.0.11 Linux`\
 **Body:** [QA.md][qa]
 
+## Publishing a release
 
+Once a release has passed QA, it is ready to be published. This involves a
+couple of manual steps since the macOS release has to be signed and notarized
+on a developer's macOS machine.
+
+If you haven't already, please set up an Apple developer account and signing
+certificates, see [Setting up Apple notarization][an] for more details.
+
+To build, sign and notarize a macOS dmg package of the latest version run the
+following commands:
+
+```
+cd radicle-upstream
+git checkout v0.0.11
+
+CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
+APPLE_ID="XXXXXXX@monadic.xyz" \
+APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
+yarn dist
+```
+
+Where:
+  - `CSC_NAME` is the name of the signing certificate
+  - `APPLE_ID` is the developer's Apple developer ID
+  - `APPLE_ID_PASSWORD` is an app specific token generated from your Apple ID
+    in the developer portal
+
+**Note**: building a release might take a while, especially the notarization
+step, because it has to upload the final package to the Apple notarization
+server. Make sure you're on a stable internet connection.
+
+Once the package is built, signed and notarized you should upload it to our
+Google Cloud Platform under
+[`builds.radicle.xyz/releases/radicle-upstream/v0.1.4`][gp].
+
+You should also copy the Linux `.AppImage` and `.snap` packages to the same
+location. You can get them from the [CI build][ar] on Buildkite.
+
+After all the packages are uploaded, update the links to those binaries on the
+[radicle.xyz download page][rd] and rebuild/deploy the website.
+
+The final step is to announce the new release on our public channels:
+  - https://twitter.com/radicle
+  - https://radicle.community/c/announcements
+
+Here's a template for the annoucement:
+
+```
+Radicle Upstream v0.0.11 is out! 🎉
+
+All the changes that went into this release, you'll find here:
+  https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md#0011-2020-05-25
+
+And here are packages for all our supported platforms:
+  - macOS:
+    https://storage.googleapis.com/builds.radicle.xyz/releases/radicle-upstream/0.1.4/radicle-upstream-0.1.3.dmg
+  - Linux:
+    https://storage.googleapis.com/builds.radicle.xyz/releases/radicle-upstream/0.1.4/radicle-upstream-0.1.3.AppImage
+    https://storage.googleapis.com/builds.radicle.xyz/releases/radicle-upstream/0.1.4/radicle-upstream-0.1.3.snap
+
+For support you can reach us here:
+  https://radicle.community/c/help
+  https://matrix.radicle.community/#/room/#support:radicle.community
+
+If you encounter a bug, please open an issue here:
+  https://github.com/radicle-dev/radicle-upstream/issues
+```
+
+[an]: #setting-up-apple-notarization
 [ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
 [bk]: https://buildkite.com/monadic/radicle-upstream
 [cb]: https://doc.rust-lang.org/cargo/
@@ -495,6 +562,7 @@ afterwards the team can evaluate whether the release is up to our standards.
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
+[gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
 [ls]: https://github.com/okonet/lint-staged
