@@ -529,7 +529,7 @@ server. Make sure you're on a stable internet connection.
 
 Once the package is built, signed and notarized you should upload it to our
 Google Cloud Platform under
-[`builds.radicle.xyz/releases/radicle-upstream/v0.1.4`][gp].
+[`builds.radicle.xyz/releases/radicle-upstream/v0.0.11`][gp].
 
 You should also copy the Linux `.AppImage` and `.snap` packages to the same
 location. You can get them from the [CI build][ar] on Buildkite.
