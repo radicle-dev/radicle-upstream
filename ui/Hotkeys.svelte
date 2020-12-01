@@ -13,9 +13,15 @@
       pop();
     }
     push(destination);
+    modal.hide();
   };
 
-  const toggleModal = (destination: string) => modal.toggle(destination);
+  const toggleModal = (destination: string) => {
+    if (path.active(path.designSystemGuide(), $location)) {
+      pop();
+    }
+    modal.toggle(destination);
+  };
 
   const onKeydown = (event: KeyboardEvent) => {
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;

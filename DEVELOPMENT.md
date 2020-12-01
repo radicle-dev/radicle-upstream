@@ -540,13 +540,11 @@ gsutil cp dist/radicle-upstream-0.1.2.dmg gs://releases.radicle.xyz
 To be able to upload packages to the GCS bucket you will need the appropriate
 permissions. Reach out to a co-worker if you don’t have them.
 
-You should also copy the Linux `.AppImage` package to the same location. You can
-get them from the [CI build][ar] on Buildkite. Then run
+After this you also need to obtain and upload the Linux package.
 
 ```bash
-gsutil cp \
-  radicle-upstream-0.1.2.AppImage \
-  gs://releases.radicle.xyz
+curl -sSLO https://builds.radicle.xyz/radicle-upstream/v0.1.2/radicle-upstream-0.1.2.AppImage
+gsutil cp radicle-upstream-0.1.2.AppImage gs://releases.radicle.xyz
 ```
 
 After all the packages are uploaded, update the links to those binaries on the
@@ -580,7 +578,6 @@ If you encounter a bug, please open an issue here:
 ```
 
 [an]: #setting-up-apple-notarization
-[ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
 [bk]: https://buildkite.com/monadic/radicle-upstream
 [ca]: https://developer.apple.com/account/resources/certificates/add
 [cb]: https://doc.rust-lang.org/cargo/
