@@ -13,6 +13,9 @@
 <style>
   .summary {
     height: 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   .text {
     display: flex;
