@@ -41,7 +41,7 @@
       <strong>{tx.amount} DAI</strong>.
     </p>
   {:else if tx.kind === TxKind.UpdateReceivers}
-    <p>Update the list of receivers by adding or removing the following:</p>
+    <p>Updated the list of receivers by adding or removing the following:</p>
     <Receivers
       receivers={new Map(tx.receivers)}
       style="margin-top: 1.2rem"

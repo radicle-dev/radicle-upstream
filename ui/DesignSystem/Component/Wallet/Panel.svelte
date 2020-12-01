@@ -110,7 +110,7 @@
             identity.linkedAddress.set(null);
             expanded = false;
           }}>
-          <p class="typo-text">Unlink (DEV ONLY)</p>
+          <p class="typo-text">Unlink</p>
         </Button>
       </div>
     </Overlay>

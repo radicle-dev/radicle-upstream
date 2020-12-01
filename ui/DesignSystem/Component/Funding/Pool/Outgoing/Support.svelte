@@ -171,6 +171,7 @@
               dataCy="budget-input"
               bind:value={budget}
               validation={$budgetValidation}
+              validationStyle={'position: absolute; top: 30px;'}
               showLeftItem
               autofocus
               style={'width: 125px'}>
