@@ -112,7 +112,7 @@ We use [Cypress](https://www.cypress.io/) for integration tests and
 ### Building an Upstream package for your platform
 
 You can build and package Upstream with: `yarn dist`. The generated package
-will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|snap}`.
+will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
 
 
 ### Scripts
@@ -537,16 +537,11 @@ gsutil cp dist/radicle-upstream-0.1.2.dmg gs://releases.radicle.xyz
 To be able to upload packages to the GCS bucket you will need the appropriate
 permissions. Reach out to a co-worker if you don’t have them.
 
-After this you also need to obtain and upload the Linux packages.
+After this you also need to obtain and upload the Linux package.
 
 ```bash
 curl -sSLO https://builds.radicle.xyz/radicle-upstream/v0.1.2/radicle-upstream-0.1.2.AppImage
-curl -sSLO https://builds.radicle.xyz/radicle-upstream/v0.1.2/radicle-upstream-0.1.2.snap
-
-gsutil cp \
-  radicle-upstream-0.1.2.AppImage \
-  radicle-upstream-0.1.2.snap \
-  gs://releases.radicle.xyz
+gsutil cp radicle-upstream-0.1.2.AppImage gs://releases.radicle.xyz
 ```
 
 After all the packages are uploaded, update the links to those binaries on the
@@ -570,7 +565,6 @@ And here are packages for all our supported platforms:
     https://releases.radicle.xyz/radicle-upstream-0.1.3.dmg
   - Linux:
     https://releases.radicle.xyz/radicle-upstream-0.1.3.AppImage
-    https://releases.radicle.xyz/radicle-upstream-0.1.3.Snap
 
 For support you can reach us here:
   https://radicle.community/c/help

@@ -10,12 +10,12 @@ context("settings", () => {
 
   context("theme", () => {
     it("is set to the default", () => {
-      cy.get("[data-theme='light']").should("exist");
+      cy.get("[data-theme='dark']").should("exist");
     });
 
-    it("can be switched to dark", () => {
-      cy.get("button[value='dark']").click();
-      cy.get("[data-theme='dark']").should("exist");
+    it("can be switched to light", () => {
+      cy.get("button[value='light']").click();
+      cy.get("[data-theme='light']").should("exist");
     });
   });
 });
