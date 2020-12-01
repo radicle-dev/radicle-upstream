@@ -10,6 +10,7 @@
 
   export let handle = "";
 
+  let nameInput: HTMLInputElement;
   let beginValidation = false;
 
   const validationStore = onboarding.createHandleValidationStore();
@@ -36,12 +37,18 @@
   }
 
   const next = () => {
-    if (!allowNext) return;
+    if (!allowNext) {
+      nameInput.focus();
+      return;
+    }
 
     beginValidation = true;
     validationStore.validate(handle);
 
-    if (!validationPasses()) return;
+    if (!validationPasses()) {
+      nameInput.focus();
+      return;
+    }
 
     dispatch("next", handle);
   };
@@ -79,6 +86,8 @@
   }
 </style>
 
+<svelte:window on:keydown={onKeydown} />
+
 <div class="container" data-cy="enter-name-screen">
   <div>
     <h1>
@@ -93,6 +102,7 @@
     <Input.Text
       autofocus
       placeholder="Enter a display name (e.g. coolprogrammer3000)"
+      bind:inputElement={nameInput}
       bind:value={handle}
       on:keydown={onKeydown}
       dataCy="handle-input"
