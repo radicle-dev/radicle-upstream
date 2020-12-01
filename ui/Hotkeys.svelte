@@ -13,9 +13,15 @@
       pop();
     }
     push(destination);
+    modal.hide();
   };
 
-  const toggleModal = (destination: string) => modal.toggle(destination);
+  const toggleModal = (destination: string) => {
+    if (path.active(path.designSystemGuide(), $location)) {
+      pop();
+    }
+    modal.toggle(destination);
+  };
 
   const onKeydown = (event: KeyboardEvent) => {
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
@@ -47,13 +53,6 @@
     });
 
     if (!shortcut) return;
-
-    // Close any opened modal, before openening the next one.
-    modal.hide();
-    // Close the design system guide if opnened
-    if (path.active(path.designSystemGuide(), $location)) {
-      pop();
-    }
 
     switch (shortcut.key) {
       case hotkeys.ShortcutKey.Help:
