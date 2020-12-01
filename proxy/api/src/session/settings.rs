@@ -33,7 +33,7 @@ pub enum Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        Self::Light
+        Self::Dark
     }
 }
 

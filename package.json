@@ -1,7 +1,7 @@
 {
   "name": "radicle-upstream",
   "productName": "Radicle Upstream",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": {
     "name": "radicle team",
     "email": "dev@radicle.xyz",
@@ -14,8 +14,9 @@
     "url": "https://github.com/radicle-dev/radicle-upstream.git"
   },
   "build": {
-    "appId": "radicle-upstream.monadic.xyz",
+    "appId": "xyz.radicle.radicle-upstream",
     "artifactName": "${name}-${version}.${ext}",
+    "afterSign": "builder/notarize.js",
     "files": [
       "public/**/*",
       "native/**/*"
@@ -31,12 +32,15 @@
       {
         "from": "dist/git-remote-rad",
         "to": "git-remote-rad"
+      },
+      {
+        "from": "dist/assets",
+        "to": "assets"
       }
     ],
     "linux": {
       "target": [
-        "Appimage",
-        "snap"
+        "Appimage"
       ],
       "extraFiles": [
         {
@@ -52,7 +56,11 @@
     "mac": {
       "target": [
         "dmg"
-      ]
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "builder/entitlements.mac.plist",
+      "entitlementsInherit": "builder/entitlements.mac.plist"
     }
   },
   "main": "./native/main.comp.js",
@@ -75,6 +83,7 @@
     "cypress": "^5.6.0",
     "electron": "^11.0.1",
     "electron-builder": "^22.9.1",
+    "electron-notarize": "^1.0.0",
     "eslint": "^7.13.0",
     "eslint-plugin-cypress": "^2.11.2",
     "eslint-plugin-no-only-tests": "^2.4.0",
@@ -124,7 +133,10 @@
     "test:unit:watch": "jest --watchAll",
     "wait:test": "wait-on tcp:17246 && yarn rollup:build && yarn cypress:run; status=$?; [ \"$CI\" = true ] && kill `pidof api`; exit $status",
     "wait:debug": "wait-on tcp:17246 && yarn cypress:open",
-    "dist": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn rollup:clean && yarn rollup:build && yarn proxy:build:release && cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && electron-builder --publish never",
+    "dist": "yarn dist:clean && yarn rollup:build && yarn proxy:build:release && yarn dist:copy:assets && electron-builder --publish never",
+    "dist:clean": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn rollup:clean",
+    "dist:copy:assets": "cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && cp -R proxy/assets dist/assets",
+    "dist:notarize": "NOTARIZE=true yarn dist",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:17246 && NODE_ENV=development electron .",
     "svelte:check": "svelte-check",
     "svelte:check:watch": "svelte-check --watch",

@@ -3,7 +3,7 @@
   import { Theme } from "./src/settings.ts";
 
   $: {
-    const theme = $settings ? $settings.appearance.theme : Theme.Light;
+    const theme = $settings ? $settings.appearance.theme : Theme.Dark;
     document.documentElement.setAttribute("data-theme", theme);
   }
 </script>

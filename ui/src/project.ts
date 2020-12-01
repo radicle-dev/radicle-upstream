@@ -239,8 +239,11 @@ export const fetchFailed = (): Promise<Project[]> => {
   return api.get<Project[]>("projects/failed");
 };
 
-export const fetchPeers = (projectUrn: Urn): Promise<Peer[]> => {
-  return api.get<Peer[]>(`projects/${projectUrn}/peers`);
+export const fetchPeers = (
+  projectUrn: Urn,
+  signal?: AbortSignal
+): Promise<Peer[]> => {
+  return api.get<Peer[]>(`projects/${projectUrn}/peers`, { signal });
 };
 
 export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {

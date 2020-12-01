@@ -13,10 +13,7 @@ use librad::{
 
 use crate::{
     peer::announcement,
-    request::{
-        waiting_room::{self},
-        SomeRequest,
-    },
+    request::{waiting_room, SomeRequest},
 };
 
 /// Significant events that occur during peer’s lifetime.

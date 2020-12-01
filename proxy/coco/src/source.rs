@@ -50,7 +50,32 @@ lazy_static::lazy_static! {
     // The syntax set is slow to load (~30ms), so we make sure to only load it once.
     // It _will_ affect the latency of the first request that uses syntax highlighting,
     // but this is acceptable for now.
-    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
+    static ref SYNTAX_SET: SyntaxSet = {
+        let default_set = SyntaxSet::load_defaults_newlines();
+        let mut builder = default_set.into_builder();
+
+        if cfg!(debug_assertions) {
+            // In development assets are relative to the proxy source.
+            // Don't crash if we aren't able to load additional syntaxes for some reason.
+            builder.add_from_folder("./assets", true).ok();
+        } else {
+            // In production assets are relative to the proxy executable.
+            let exe_path = std::env::current_exe().expect("Can't get current exe path");
+            let root_path = exe_path
+                .parent()
+                .expect("Could not get parent path of current executable");
+            let mut tmp = root_path.to_path_buf();
+            tmp.push("assets");
+            let asset_path = tmp.to_str().expect("Couldn't convert pathbuf to str");
+
+            // Don't crash if we aren't able to load additional syntaxes for some reason.
+            match builder.add_from_folder(asset_path, true) {
+                Ok(_) => (),
+                Err(err) => log::warn!("Syntax builder error : {}", err),
+            };
+        }
+        builder.build()
+    };
 }
 
 /// Branch name representation.

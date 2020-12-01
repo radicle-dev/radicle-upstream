@@ -24,6 +24,10 @@ pub enum Notification {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {
+    ProjectUpdated {
+        provider: coco::PeerId,
+        urn: coco::Urn,
+    },
     /// A request for a project was created and is pending submission to the network
     #[serde(rename_all = "camelCase")]
     RequestCreated {
@@ -64,6 +68,12 @@ pub enum LocalPeer {
 impl MaybeFrom<PeerEvent> for Notification {
     fn maybe_from(event: PeerEvent) -> Option<Self> {
         match event {
+            PeerEvent::GossipFetched {
+                provider, gossip, ..
+            } => Some(Self::LocalPeer(LocalPeer::ProjectUpdated {
+                provider,
+                urn: gossip.urn,
+            })),
             PeerEvent::RequestCloned(url) => Some(Self::LocalPeer(LocalPeer::RequestCloned {
                 peer: url.authority,
                 urn: url.urn,
