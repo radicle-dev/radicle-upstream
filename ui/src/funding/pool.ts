@@ -1,5 +1,5 @@
 import * as svelteStore from "svelte/store";
-import { EthPoolFactory as PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/EthPoolFactory";
+import { EthPool__factory as PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/factories/EthPool__factory";
 import type { EthPool as PoolContract } from "radicle-contracts/contract-bindings/ethers/EthPool";
 
 import * as transaction from "../transaction";
