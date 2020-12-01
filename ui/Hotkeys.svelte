@@ -48,6 +48,13 @@
 
     if (!shortcut) return;
 
+    // Close any opened modal, before openening the next one.
+    modal.hide();
+    // Close the design system guide if opnened
+    if (path.active(path.designSystemGuide(), $location)) {
+      pop();
+    }
+
     switch (shortcut.key) {
       case hotkeys.ShortcutKey.Help:
         toggleModal(path.shortcuts());
