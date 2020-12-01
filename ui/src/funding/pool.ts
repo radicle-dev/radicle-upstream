@@ -155,6 +155,8 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function updateReceiverAddresses(receivers: Receivers): Promise<void> {
+    if (receivers.size === 0) return;
+
     const receiverWeights: ReceiverWeight[] = [...receivers.entries()].map(
       ([address, status]) => {
         return { receiver: address, weight: weightForStatus(status) };
