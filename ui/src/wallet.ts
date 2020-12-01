@@ -64,17 +64,14 @@ export function build(): Wallet {
       stateStore.subscribe(async state => {
         if (state.status === Status.Connected) {
           identity.linkedAddress.subscribe(async linkedAddress => {
-            if (linkedAddress) {
-              if (state.connected.account.address === linkedAddress) {
-                modal.hide();
-              } else {
-                await disconnect();
-                notification.error(
-                  "This wallet doesn’t match the Ethereum address that is linked to your Radicle ID."
-                );
-              }
-            } else {
-              modal.toggle(path.linkAddress());
+            if (
+              linkedAddress &&
+              state.connected.account.address !== linkedAddress
+            ) {
+              await disconnect();
+              notification.error(
+                "This wallet doesn’t match the Ethereum address that is linked to your Radicle ID."
+              );
             }
           });
         }
