@@ -35,7 +35,7 @@
     <div class="text">
       There’s
       <div class="typo-text-bold">
-        <Dai color={'var(--color-secondary)'} style="margin-right: 5px">
+        <Dai color={'var(--color-secondary)'} style="margin: 0 7px">
           {amount}
         </Dai>
       </div>
@@ -47,7 +47,7 @@
       disabled={ongoingCollect}
       on:click={onCollect}
       variant={'secondary'}>
-      Cash out
+      Collect
     </Button>
   </div>
 </div>
