@@ -67,6 +67,7 @@ export interface PoolData {
 export type Receivers = Map<Address, ReceiverStatus>;
 
 export type Address = string;
+export type Weight = BigNumberish;
 
 export enum ReceiverStatus {
   // The receiver is being added
@@ -75,6 +76,13 @@ export enum ReceiverStatus {
   Removed = "Removed",
   // The receiver is present already
   Present = "Present",
+}
+
+// The type used by the Radicle-Contracts library to express a
+// Receiver, i.e., a Address <> Weight Pair.
+interface ReceiverWeight {
+  receiver: string;
+  weight: Weight;
 }
 
 export const CONTRACT_ADDRESS: string =
@@ -147,14 +155,19 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function updateReceiverAddresses(receivers: Receivers): Promise<void> {
-    const txs = [...receivers.entries()].map(([address, status]) =>
-      poolContract.setReceiver(address, weightForStatus(status)).then(tx => {
+    const receiverWeights: ReceiverWeight[] = [...receivers.entries()].map(
+      ([address, status]) => {
+        return { receiver: address, weight: weightForStatus(status) };
+      }
+    );
+
+    poolContract
+      .setReceivers(receiverWeights, [])
+      .then(tx => {
         transaction.add(transaction.receivers(tx, receivers));
         tx.wait();
       })
-    );
-
-    await Promise.all(txs).finally(loadPoolData);
+      .finally(loadPoolData);
   }
 
   async function topUp(value: BigNumberish): Promise<void> {
