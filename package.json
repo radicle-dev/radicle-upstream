@@ -129,6 +129,7 @@
     "wait:test": "wait-on tcp:17246 && yarn rollup:build && yarn cypress:run; status=$?; [ \"$CI\" = true ] && kill `pidof radicle-proxy`; exit $status",
     "wait:debug": "wait-on tcp:17246 && yarn cypress:open",
     "dist": "yarn dist:clean && yarn rollup:build && yarn proxy:build:release && electron-builder --publish never",
+    "dist:clean": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn rollup:clean",
     "dist:notarize": "NOTARIZE=true yarn dist",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:17246 && NODE_ENV=development electron .",
     "svelte:check": "svelte-check",
