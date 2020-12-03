@@ -153,7 +153,7 @@
   </header>
 
   <div class="content">
-    {#if tx.kind !== TxKind.UpdateReceivers}
+    {#if ![TxKind.UpdateReceivers, TxKind.UpdateMonthlyContribution].includes(tx.kind)}
       <div class="section">
         <div class="row">
           <p>Amount</p>
