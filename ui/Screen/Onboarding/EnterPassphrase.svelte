@@ -12,6 +12,7 @@
 
   const dispatch = createEventDispatcher();
 
+  let passphraseInput;
   let repeatedPassphraseInput;
   let passphrase;
   let repeatedPassphrase;
@@ -89,6 +90,24 @@
     if (!ran && allowNext) {
       ran = true;
       dispatch("next", passphrase);
+    } else {
+      repeatedPassphraseInput.focus();
+    }
+  };
+
+  const onKeydown = event => {
+    switch (event.code) {
+      case "Enter":
+        if (passphrase.length === 0) {
+          passphraseInput.focus();
+          break;
+        } else if (repeatedPassphrase.length === 0) {
+          repeatedPassphraseInput.focus();
+          break;
+        } else {
+          next();
+          break;
+        }
     }
   };
 </script>
@@ -122,6 +141,8 @@
   }
 </style>
 
+<svelte:window on:keydown={onKeydown} />
+
 <div class="container" data-cy="enter-passphrase-screen">
   <div>
     <h1>Next, you'll need a passphrase.</h1>
@@ -136,6 +157,7 @@
     </p>
 
     <Input.Password
+      bind:inputElement={passphraseInput}
       on:enter={() => {
         repeatedPassphraseInput.focus();
       }}
