@@ -26,15 +26,15 @@
     },
     "extraResources": [
       {
-        "from": "dist/proxy",
-        "to": "proxy"
+        "from": "proxy/target/release/radicle-proxy",
+        "to": "./"
       },
       {
-        "from": "dist/git-remote-rad",
-        "to": "git-remote-rad"
+        "from": "proxy/target/release/git-remote-rad",
+        "to": "./"
       },
       {
-        "from": "dist/assets",
+        "from": "proxy/assets",
         "to": "assets"
       }
     ],
@@ -126,11 +126,10 @@
     "test:integration:debug": "TZ='UTC' run-p --race rollup:watch proxy:start:test-watch wait:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
-    "wait:test": "wait-on tcp:17246 && yarn rollup:build && yarn cypress:run; status=$?; [ \"$CI\" = true ] && kill `pidof api`; exit $status",
+    "wait:test": "wait-on tcp:17246 && yarn rollup:build && yarn cypress:run; status=$?; [ \"$CI\" = true ] && kill `pidof radicle-proxy`; exit $status",
     "wait:debug": "wait-on tcp:17246 && yarn cypress:open",
-    "dist": "yarn dist:clean && yarn rollup:build && yarn proxy:build:release && yarn dist:copy:assets && electron-builder --publish never",
+    "dist": "yarn dist:clean && yarn rollup:build && yarn proxy:build:release && electron-builder --publish never",
     "dist:clean": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn rollup:clean",
-    "dist:copy:assets": "cp proxy/target/release/api dist/proxy && cp proxy/target/release/git-remote-rad dist && cp -R proxy/assets dist/assets",
     "dist:notarize": "NOTARIZE=true yarn dist",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:17246 && NODE_ENV=development electron .",
     "svelte:check": "svelte-check",
