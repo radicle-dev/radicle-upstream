@@ -588,7 +588,7 @@ If you encounter a bug, please open an issue here:
 [el]: https://www.electronjs.org
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
-[gs]: https://docs.radicle.xyz/docs/getting-started
+[gs]: https://github.com/radicle-dev/radicle-docs/blob/master/docs/getting-started.md
 [gg]: https://cloud.google.com/storage/docs/gsutil_install
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
@@ -597,7 +597,7 @@ If you encounter a bug, please open an issue here:
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
 [qa]: QA.md
-[rd]: https://radicle.xyz/downloads.html
+[rd]: https://github.com/radicle-dev/radicle.xyz/blob/master/pages/downloads.html.mustache
 [rl]: https://github.com/radicle-dev/radicle-link
 [rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
