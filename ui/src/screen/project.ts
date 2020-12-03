@@ -193,8 +193,21 @@ export const addPeer = async (
   return true;
 };
 
-export const removePeer = (projectId: Urn, remote: PeerId): void => {
-  untrackPeer(projectId, remote);
+export const removePeer = (projectId: Urn, peerId: PeerId): void => {
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const { peerSelection, selectedPeer } = screen.data;
+
+    untrackPeer(projectId, peerId);
+
+    if (selectedPeer.peerId === peerId) {
+      screenStore.success({
+        ...screen.data,
+        selectedPeer: peerSelection[0],
+      });
+    }
+  }
 };
 
 const filterPeers = (peers: project.Peer[]): project.User[] => {
