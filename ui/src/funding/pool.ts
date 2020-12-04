@@ -125,7 +125,7 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function updateAmountPerBlock(amount: BigNumberish): Promise<void> {
-    await poolContract
+    return poolContract
       .setAmountPerBlock(amount)
       .then(tx => {
         transaction.add(transaction.monthlyContribution(tx, amount));
@@ -163,7 +163,7 @@ export function make(wallet: Wallet): Pool {
       }
     );
 
-    poolContract
+    return poolContract
       .setReceivers(receiverWeights, [])
       .then(tx => {
         transaction.add(transaction.receivers(tx, receivers));
@@ -173,26 +173,26 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function topUp(value: BigNumberish): Promise<void> {
-    const tx = await poolContract.topUp({
-      gasLimit: 200 * 1000,
-      value,
-    });
-    transaction.add(transaction.topUp(tx));
-    const receipt = await tx.wait();
-    if (receipt.status === 0) {
-      throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
-    }
-    loadPoolData();
+    return poolContract
+      .topUp({
+        gasLimit: 200 * 1000,
+        value,
+      })
+      .then(tx => {
+        transaction.add(transaction.topUp(tx));
+        tx.wait();
+      })
+      .finally(loadPoolData);
   }
 
   async function withdraw(amount: BigNumberish): Promise<void> {
-    const tx = await poolContract.withdraw(amount);
-    transaction.add(transaction.withdraw(tx, amount));
-    const receipt = await tx.wait();
-    if (receipt.status === 0) {
-      throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
-    }
-    loadPoolData();
+    return poolContract
+      .withdraw(amount)
+      .then(tx => {
+        transaction.add(transaction.withdraw(tx, amount));
+        tx.wait();
+      })
+      .finally(loadPoolData);
   }
 
   async function withdrawAll(): Promise<void> {
@@ -201,13 +201,13 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function collect(): Promise<void> {
-    const tx = await poolContract.collect();
-    transaction.add(transaction.collect(tx));
-    const receipt = await tx.wait();
-    if (receipt.status === 0) {
-      throw new Error(`Transaction reverted: ${receipt.transactionHash}`);
-    }
-    loadPoolData();
+    return poolContract
+      .collect()
+      .then(tx => {
+        transaction.add(transaction.collect(tx));
+        tx.wait();
+      })
+      .finally(loadPoolData);
   }
 
   return {
