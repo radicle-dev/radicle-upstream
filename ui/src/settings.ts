@@ -2,6 +2,7 @@
 export interface Settings {
   appearance: Appearance;
   coco: CoCo;
+  featureFlags: FeatureFlags;
 }
 
 export const defaultSetttings = (): Settings => ({
@@ -13,6 +14,9 @@ export const defaultSetttings = (): Settings => ({
   },
   coco: {
     seeds: [],
+  },
+  featureFlags: {
+    funding: false,
   },
 });
 
@@ -32,12 +36,12 @@ export interface CoCo {
   seeds: string[];
 }
 
-interface Option {
-  value: string;
+interface Option<T> {
+  value: T;
   title: string;
 }
 
-export const themeOptions: Option[] = [
+export const themeOptions: Option<string>[] = [
   {
     title: "Light",
     value: Theme.Light,
@@ -45,6 +49,21 @@ export const themeOptions: Option[] = [
   {
     title: "Dark",
     value: Theme.Dark,
+  },
+];
+
+export interface FeatureFlags {
+  funding: boolean;
+}
+
+export const featureFlagOptions: Option<boolean>[] = [
+  {
+    title: "Enabled",
+    value: true,
+  },
+  {
+    title: "Disabled",
+    value: false,
   },
 ];
 

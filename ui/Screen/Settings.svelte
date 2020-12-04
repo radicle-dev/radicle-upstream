@@ -8,7 +8,7 @@
     removeSeed,
     updateAppearance,
   } from "../src/session.ts";
-  import { themeOptions } from "../src/settings.ts";
+  import { themeOptions, featureFlagOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
   import * as modal from "../src/modal.ts";
   import { getVersion } from "../src/ipc";
@@ -23,6 +23,11 @@
 
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
+
+  const updateFundingFeatureFlag = event => {
+    console.log("Update funding ff: ", event.detail);
+    // TODO(nuno): implement this
+  };
 
   let seedInputValue;
 
@@ -225,6 +230,23 @@
             active={$settings.appearance.theme}
             options={themeOptions}
             on:select={updateTheme} />
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <h3>Features</h3>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <p class="typo-text-bold">Funding</p>
+        </div>
+        <div class="action">
+          <SegmentedControl
+            active={$settings.featureFlags.funding}
+            options={featureFlagOptions}
+            on:select={updateFundingFeatureFlag} />
         </div>
       </div>
     </section>

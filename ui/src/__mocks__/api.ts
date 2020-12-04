@@ -56,6 +56,9 @@ export const sessionMock: session.SessionData = {
     coco: {
       seeds: ["seed.radicle.xyz"],
     },
+    featureFlags: {
+      funding: false,
+    },
   },
   identity: identity.fallback,
 };
