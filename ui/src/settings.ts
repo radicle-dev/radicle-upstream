@@ -1,8 +1,20 @@
 // TYPES
-export enum Theme {
-  Dark = "dark",
-  Light = "light",
+export interface Settings {
+  appearance: Appearance;
+  coco: CoCo;
 }
+
+export const defaultSetttings = (): Settings => ({
+  appearance: {
+    theme: Theme.Dark,
+    hints: {
+      showRemoteHelper: true,
+    },
+  },
+  coco: {
+    seeds: [],
+  },
+});
 
 export interface Appearance {
   theme: Theme;
@@ -11,13 +23,13 @@ export interface Appearance {
   };
 }
 
-export interface CoCo {
-  seeds: string[];
+export enum Theme {
+  Dark = "dark",
+  Light = "light",
 }
 
-export interface Settings {
-  appearance: Appearance;
-  coco: CoCo;
+export interface CoCo {
+  seeds: string[];
 }
 
 interface Option {
@@ -35,18 +47,6 @@ export const themeOptions: Option[] = [
     value: Theme.Dark,
   },
 ];
-
-export const defaultSetttings = (): Settings => ({
-  appearance: {
-    theme: Theme.Dark,
-    hints: {
-      showRemoteHelper: true,
-    },
-  },
-  coco: {
-    seeds: [],
-  },
-});
 
 // gives back the OS you're using in hotkeys.svelte & shortcuts.svelte
 export const isMac: boolean = navigator.platform.includes("Mac");
