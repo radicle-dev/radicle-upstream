@@ -24,6 +24,7 @@ export enum Code {
   ProjectCreationFailure = "ProjectCreationFailure",
   ProjectRequestFailure = "ProjectRequestFailure",
   RemoteStoreError = "RemoteStoreError",
+  RequestAbortError = "RequestAbortError",
   SessionFetchFailure = "SessionFetchFailure",
   SessionSettingsUpdateFailure = "SessionSettingsUpdateFailure",
   UnhandledError = "UnhandledError",
@@ -38,8 +39,14 @@ export const fromException = (exception: globalThis.Error): Error => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const details = Object.assign({}, exception) as any;
   details.name = exception.name;
+
+  let code = Code.UnknownException;
+  if (details.name === "AbortError") {
+    code = Code.RequestAbortError;
+  }
+
   return {
-    code: Code.UnknownException,
+    code: code,
     message: exception.message,
     stack: exception.stack,
     details,

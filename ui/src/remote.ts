@@ -1,6 +1,6 @@
 import { derived, get, writable, Readable } from "svelte/store";
 
-import { Error, fromException as errorFromException } from "./error";
+import * as error from "./error";
 
 export enum Status {
   NotAsked = "NOT_ASKED",
@@ -13,7 +13,7 @@ export type Data<T> =
   | { status: Status.NotAsked }
   | { status: Status.Loading }
   | { status: Status.Success; data: T }
-  | { status: Status.Error; error: Error };
+  | { status: Status.Error; error: error.Error };
 
 // Shorthand for casting these states
 export type ErrorState = { status: Status.Error; error: Error };
@@ -33,7 +33,7 @@ export interface Store<T> extends Readable<Data<T>> {
   is: (status: Status) => boolean;
   loading: () => void;
   success: (response: T) => void;
-  error: (error: Error) => void;
+  error: (error: error.Error) => void;
   readable: Readable<Data<T>>;
   start: (start: StartStopNotifier<Data<T>>) => void;
   reset: () => void;
@@ -45,7 +45,7 @@ type UpdateableStatus = Status.Loading | Status.Success | Status.Error;
 interface Update<T> {
   (status: Status.Loading): void;
   (status: Status.Success, payload: T): void;
-  (status: Status.Error, payload: Error): void;
+  (status: Status.Error, payload: error.Error): void;
 }
 
 declare type Subscriber<T> = (value: T) => void;
@@ -70,7 +70,7 @@ export const createStore = <T>(): Store<T> => {
 
   const updateInternalStore: Update<T> = (
     status: UpdateableStatus,
-    payload?: T | Error
+    payload?: T | error.Error
   ) => {
     let val: Data<T>;
     switch (status) {
@@ -80,9 +80,10 @@ export const createStore = <T>(): Store<T> => {
       case Status.Success:
         val = { status: Status.Success, data: payload as T };
         break;
-      case Status.Error:
-        val = { status: Status.Error, error: payload as Error };
+      case Status.Error: {
+        val = { status: Status.Error, error: payload as error.Error };
         break;
+      }
     }
 
     update(() => {
@@ -100,7 +101,11 @@ export const createStore = <T>(): Store<T> => {
     success: (response: T): void =>
       updateInternalStore(Status.Success, response),
     loading: (): void => updateInternalStore(Status.Loading),
-    error: (error: Error): void => updateInternalStore(Status.Error, error),
+    error: (err: error.Error): void => {
+      if (err.code !== error.Code.RequestAbortError) {
+        updateInternalStore(Status.Error, err);
+      }
+    },
     readable: derived(internalStore, $store => $store),
     start: (start: StartStopNotifier<Data<T>>): void => {
       starter = start;
@@ -147,5 +152,5 @@ export const fetch = <T>(
       return filter ? filter(val) : val;
     })
     .then(store.success)
-    .catch((err: globalThis.Error) => store.error(errorFromException(err)));
+    .catch((err: globalThis.Error) => store.error(error.fromException(err)));
 };
