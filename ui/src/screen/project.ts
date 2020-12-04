@@ -108,11 +108,9 @@ export const selectPeer = (peer: project.User): void => {
   }
 };
 
-export const pendingPeers: Readable<
-  remote.Data<{
-    peers: project.Peer[];
-  }>
-> = derived(screenStore, store => {
+export const pendingPeers: Readable<remote.Data<{
+  peers: project.Peer[];
+}>> = derived(screenStore, store => {
   if (store.status === remote.Status.Success) {
     const peers = store.data.peers.filter(
       peer => peer.status.type === project.ReplicationStatusType.NotReplicated
@@ -186,8 +184,9 @@ export const addPeer = async (
   // async then the seed input form will have to be submitted twice to take any
   // effect.
   await peerValidation.validate(newRemote);
-  if (get(peerValidation).status !== validation.ValidationStatus.Success)
+  if (get(peerValidation).status !== validation.ValidationStatus.Success) {
     return false;
+  }
 
   trackPeer(projectId, newRemote);
   return true;
