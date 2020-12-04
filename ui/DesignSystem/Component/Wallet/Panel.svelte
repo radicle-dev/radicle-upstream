@@ -2,7 +2,6 @@
   import { Button, Icon } from "../../Primitive";
   import { Dai, Copyable, Overlay } from "../../Component";
 
-  import * as identity from "../../../src/identity";
   import * as wallet from "../../../src/wallet";
   import { displayAddress } from "../../../src/funding/pool";
 
@@ -102,15 +101,6 @@
       <div class="menu" hidden={!expanded}>
         <Button icon={Icon.Cross} variant="embedded" on:click={onDisconnect}>
           <p class="typo-text">Disconnect</p>
-        </Button>
-        <Button
-          icon={Icon.Cross}
-          variant="embedded"
-          on:click={() => {
-            identity.linkedAddress.set(null);
-            expanded = false;
-          }}>
-          <p class="typo-text">Unlink</p>
         </Button>
       </div>
     </Overlay>

@@ -6,7 +6,6 @@
 
   import { wallet } from "../../src/wallet";
   import { session } from "../../src/session";
-  import * as identity from "../../src/identity";
 
   import * as modal from "../../src/modal";
 
@@ -29,7 +28,7 @@
         currentStep = Step.EnterPassphrase;
         break;
       case Step.EnterPassphrase:
-        identity.linkEthereumAddress($wallet.connected.account.address);
+        // TODO(nuno): Add the eth address to the radicle identity
         currentStep = Step.SavedToRadicle;
         break;
       case Step.SavedToRadicle:
