@@ -115,6 +115,7 @@
     "wait-on": "^5.2.0"
   },
   "scripts": {
+    "sirv": "sirv public",
     "start": "RADICLE_UPSTREAM_EXPERIMENTAL=false yarn start:app",
     "start:experimental": "RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start:app",
     "start:app": "run-p --race rollup:watch proxy:start electron:start",
@@ -161,6 +162,7 @@
     "marked": "^1.2.4",
     "mnemonist": "^0.38.0",
     "pure-svg-code": "^1.0.6",
+    "sirv": "^1.0.7",
     "tauri": "^0.13.0",
     "timeago.js": "^4.0.2",
     "twemoji": "13.0.1",
