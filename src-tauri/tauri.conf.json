@@ -43,8 +43,8 @@
     },
     "window": {
       "title": "Radicle Upstream",
-      "width": 800,
-      "height": 600,
+      "width": 1200,
+      "height": 680,
       "resizable": true,
       "fullscreen": false
     },
