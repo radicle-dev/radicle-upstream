@@ -44,7 +44,6 @@
     border-radius: 0.25rem;
     width: 100%;
     height: 2.5rem;
-    line-height: 3rem;
     padding: 0 0.75rem;
     background-color: var(--color-background);
   }
