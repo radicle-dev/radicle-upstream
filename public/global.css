@@ -1,4 +1,8 @@
-html,
+html {
+  position: fixed;
+  overflow: hidden;
+}
+
 body {
   font-family: var(--typeface-regular);
   font-size: 16px;
@@ -11,6 +15,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   scrollbar-width: none;
   font-feature-settings: "ss01", "ss02", "cv01";
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100vw;
+  height: 100vh;
 }
 
 ::-webkit-scrollbar {
