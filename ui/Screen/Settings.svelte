@@ -7,6 +7,7 @@
     addSeed,
     removeSeed,
     updateAppearance,
+    updateFeatureFlags,
   } from "../src/session.ts";
   import { themeOptions, featureFlagOptions } from "../src/settings.ts";
   import * as path from "../src/path.ts";
@@ -24,10 +25,8 @@
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 
-  const updateFundingFeatureFlag = event => {
-    console.log("Update funding ff: ", event.detail);
-    // TODO(nuno): implement this
-  };
+  const updateFundingFeatureFlag = event =>
+    updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
 
   let seedInputValue;
 
