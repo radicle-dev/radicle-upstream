@@ -43,7 +43,7 @@
     padding: 0.25rem 0.25rem 0.25rem 0.25rem;
     margin: 0.25rem 0;
     color: var(--color-foreground-level-6);
-    user-select: none;
+    -webkit-user-select: none;
     line-height: 1.5rem;
     white-space: nowrap;
   }

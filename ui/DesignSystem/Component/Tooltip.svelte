@@ -34,7 +34,7 @@
 <style>
   .tooltip {
     white-space: nowrap;
-    user-select: none;
+    -webkit-user-select: none;
     background-color: var(--color-foreground);
     color: var(--color-background);
     text-align: center;

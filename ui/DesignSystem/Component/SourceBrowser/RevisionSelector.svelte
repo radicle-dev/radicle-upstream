@@ -49,7 +49,7 @@
     justify-content: space-between;
     overflow: hidden;
     padding: 0 0.5rem;
-    user-select: none;
+    -webkit-user-select: none;
   }
   .revision-selector:hover {
     color: var(--color-foreground);

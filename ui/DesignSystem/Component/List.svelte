@@ -30,7 +30,7 @@
     width: 100%;
     flex: 1;
     border-bottom: 1px solid var(--color-foreground-level-2);
-    user-select: none;
+    -webkit-user-select: none;
   }
 
   .hover:hover {

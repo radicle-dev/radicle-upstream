@@ -6,7 +6,7 @@
   .wrapper {
     display: inline-flex;
     position: relative;
-    user-select: none;
+    -webkit-user-select: none;
     cursor: pointer;
   }
 

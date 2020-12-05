@@ -59,7 +59,7 @@
     cursor: pointer;
     justify-content: space-between;
     background-color: var(--color-foreground-level-1);
-    user-select: none;
+    -webkit-user-select: none;
   }
 
   .peer-selector:hover {
@@ -81,7 +81,7 @@
     position: absolute;
     right: 0;
     top: -1px;
-    user-select: none;
+    -webkit-user-select: none;
   }
 
   .peer-dropdown {
@@ -115,7 +115,7 @@
 <Overlay
   {expanded}
   on:hide={hide}
-  style="margin-right: 1rem; position: relative; user-select: none;">
+  style="margin-right: 1rem; position: relative; -webkit-user-select: none;">
   <div
     class="peer-selector typo-overflow-ellipsis"
     data-cy="peer-selector"

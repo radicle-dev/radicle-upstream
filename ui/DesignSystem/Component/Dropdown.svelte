@@ -74,7 +74,7 @@
     border-radius: 4px;
     display: flex;
     align-items: center;
-    user-select: none;
+    -webkit-user-select: none;
     display: flex;
     justify-content: space-between;
     overflow: hidden; /* hack to make inner option corners rounded */
@@ -98,7 +98,7 @@
     box-shadow: var(--elevation-medium);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    user-select: none;
+    -webkit-user-select: none;
     background-color: var(--color-background);
     overflow: hidden; /* hack to make inner option corners rounded */
     z-index: 1;

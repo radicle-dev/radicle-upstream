@@ -14,7 +14,7 @@
     height: 40px;
     outline-style: none;
     padding: 0 12px;
-    user-select: none;
+    -webkit-user-select: none;
     position: relative;
     border-radius: 4px;
     border: 1px solid transparent;

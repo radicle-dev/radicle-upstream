@@ -28,7 +28,7 @@
     justify-content: center;
     height: 4.5rem;
     cursor: pointer;
-    user-select: none;
+    -webkit-user-select: none;
   }
 
   .body {

@@ -21,7 +21,7 @@
     height: 2.5rem;
     overflow: hidden;
     overflow-wrap: anywhere;
-    user-select: none;
+    -webkit-user-select: none;
   }
 
   .revision-entry:hover {

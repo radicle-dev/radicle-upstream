@@ -22,7 +22,7 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 8px;
-    user-select: none;
+    -webkit-user-select: none;
     white-space: nowrap;
   }
 
@@ -52,7 +52,7 @@
     cursor: pointer;
     margin-right: 8px;
     padding-left: 8px;
-    user-select: none;
+    -webkit-user-select: none;
     border-left: 1px solid;
   }
 

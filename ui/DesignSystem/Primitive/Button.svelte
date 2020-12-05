@@ -27,7 +27,7 @@
     min-height: 40px;
     outline-style: none;
     padding: 0 12px;
-    user-select: none;
+    -webkit-user-select: none;
     line-height: 22px;
   }
 

@@ -40,7 +40,7 @@
 
   p {
     color: var(--color-foreground-level-6);
-    user-select: none;
+    -webkit-user-select: none;
   }
 </style>
 

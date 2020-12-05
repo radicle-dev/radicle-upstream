@@ -53,7 +53,7 @@
   .line-numbers {
     color: var(--color-foreground-level-4);
     text-align: right;
-    user-select: none;
+    -webkit-user-select: none;
     padding: 0 1rem 0.5rem 1rem;
   }
 

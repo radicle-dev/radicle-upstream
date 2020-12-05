@@ -55,7 +55,7 @@
   }
   td.diff-line-number {
     text-align: right;
-    user-select: none;
+    -webkit-user-select: none;
     line-height: 150%;
   }
   td.diff-line-number[data-type="+"],
@@ -78,19 +78,19 @@
     padding-right: 0.5rem;
   }
   td.diff-line-type {
-    user-select: none;
+    -webkit-user-select: none;
     padding-right: 1rem;
     text-align: center;
   }
 
   td.diff-expand-action {
     text-align: center;
-    user-select: none;
+    -webkit-user-select: none;
     background: var(--color-background);
     color: var(--color-foreground-level-4);
   }
   td.diff-expand-header {
-    user-select: none;
+    -webkit-user-select: none;
     background: var(--color-background);
     color: var(--color-foreground-level-4);
   }
