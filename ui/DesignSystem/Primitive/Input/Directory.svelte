@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { getDirectoryPath } from "../../../src/ipc";
+  import { open } from "tauri/api/dialog";
 
   import type { ButtonVariant } from "../../../src/style";
   import type { ValidationState } from "../../../src/validation";
@@ -17,7 +17,7 @@
   const dispatch = createEventDispatcher();
 
   const openFileDialog = async () => {
-    path = await getDirectoryPath();
+    path = (await open({ multiple: false, directory: true })) as string;
     if (path) dispatch("selected");
   };
 </script>

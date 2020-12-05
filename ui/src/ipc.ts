@@ -15,18 +15,6 @@ export type { ProxyError } from "../../native/ipc-types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // const isCypressTestEnv = Boolean((globalThis as any).cy);
 
-// We have to be able to select empty directories when we create new
-// projects. Unfortunately we can't use the HTML5 open dialog via
-// <input type="file"> for this. Although it lets us select directories,
-// it doesn't fire an event when an empty directory is selected.
-//
-// The workaround is to use the electron native open dialog. As a bonus we
-// can configure it to allow users to create new directories.
-export const getDirectoryPath = (): Promise<string> =>
-  window.electron.ipcRenderer.invoke(
-    ipcTypes.RendererMessage.DIALOG_SHOWOPENDIALOG
-  );
-
 export const getVersion = (): Promise<string> =>
   window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.GET_VERSION);
 

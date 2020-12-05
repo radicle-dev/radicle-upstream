@@ -1,11 +1,4 @@
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  dialog,
-  clipboard,
-  shell,
-} from "electron";
+import { app, BrowserWindow, ipcMain, clipboard, shell } from "electron";
 import path from "path";
 import { ProxyProcessManager } from "./proxy-process-manager";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
@@ -96,23 +89,6 @@ const proxyProcessManager = new ProxyProcessManager({
   proxyArgs: [],
   enabled: !isDev,
   lineLimit: 500,
-});
-
-ipcMain.handle(RendererMessage.DIALOG_SHOWOPENDIALOG, async () => {
-  const window = windowManager.window;
-  if (window === null) {
-    return;
-  }
-
-  const result = await dialog.showOpenDialog(window, {
-    properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
-  });
-
-  if (result.filePaths.length === 1) {
-    return result.filePaths[0];
-  } else {
-    return "";
-  }
 });
 
 ipcMain.handle(RendererMessage.CLIPBOARD_WRITETEXT, async (_event, text) => {

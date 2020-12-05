@@ -18,7 +18,6 @@ export interface ProxyError {
 // Message kinds sent from the renderer to the main process.
 export enum RendererMessage {
   CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT",
-  DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG",
   GET_VERSION = "GET_VERSION",
   OPEN_PATH = "IPC_OPEN_PATH",
 }
