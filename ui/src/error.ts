@@ -63,9 +63,11 @@ export const log = (error: Error): void => {
 export const show = (error: Error): void => {
   log(error);
 
-  notification.error(error.message, true, "Copy error", () => {
-    ipc.copyToClipboard(JSON.stringify(error, null, 2));
-  });
+  // FIXME(rudolfs): make the textarea hack global.
+  // notification.error(error.message, true, "Copy error", () => {
+  //   ipc.copyToClipboard(JSON.stringify(error, null, 2));
+  // });
+  notification.error(error.message, true);
 };
 
 // Fatal application errors that trigger a blue screen

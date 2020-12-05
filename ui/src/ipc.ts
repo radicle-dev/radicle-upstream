@@ -18,12 +18,6 @@ export type { ProxyError } from "../../native/ipc-types";
 export const getVersion = (): Promise<string> =>
   window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.GET_VERSION);
 
-export const copyToClipboard = (text: string): Promise<void> =>
-  window.electron.ipcRenderer.invoke(
-    ipcTypes.RendererMessage.CLIPBOARD_WRITETEXT,
-    text
-  );
-
 export const openPath = (path: string): Promise<void> =>
   window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.OPEN_PATH, path);
 

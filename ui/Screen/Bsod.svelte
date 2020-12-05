@@ -5,7 +5,6 @@
   import { Button, Emoji, Icon } from "../DesignSystem/Primitive";
 
   import * as notification from "../src/notification";
-  import * as ipc from "../src/ipc";
   import * as error from "../src/error";
 
   // We have to circumvent the type checker because svelte cannot
@@ -18,7 +17,9 @@
   $: copyIcon = copied ? Icon.Check : Icon.Copy;
 
   const copyToClipboard = (text: string) => {
-    ipc.copyToClipboard(text);
+    // FIXME(rudolfs)
+    // ipc.copyToClipboard(text);
+    console.log(text);
     notification.info("Copied to your clipboard");
     copied = true;
     setTimeout(() => {

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, clipboard, shell } from "electron";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "path";
 import { ProxyProcessManager } from "./proxy-process-manager";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
@@ -89,10 +89,6 @@ const proxyProcessManager = new ProxyProcessManager({
   proxyArgs: [],
   enabled: !isDev,
   lineLimit: 500,
-});
-
-ipcMain.handle(RendererMessage.CLIPBOARD_WRITETEXT, async (_event, text) => {
-  clipboard.writeText(text);
 });
 
 ipcMain.handle(RendererMessage.OPEN_PATH, async (_event, path) => {

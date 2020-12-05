@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { SvelteComponent } from "svelte";
 
-  import { copyToClipboard } from "../../src/ipc";
   import * as notification from "../../src/notification";
   import Icon from "../Primitive/Icon";
 
@@ -16,7 +15,9 @@
   export let styleContent: boolean = true;
   export let showIcon: boolean = true;
 
-  let slotContent: HTMLElement;
+  let slotContent: Element | null = null;
+  let textareaElement: HTMLTextAreaElement | null = null;
+
   let copyIcon = iconBeforeCopy;
 
   let copied = false;
@@ -36,6 +37,19 @@
       copyIcon = Icon.CopySmall;
       copied = false;
     }, 1000);
+  };
+
+  const copyToClipboard = (text: string) => {
+    if (!textareaElement) return;
+
+    textareaElement.value = text;
+    textareaElement.select();
+
+    try {
+      document.execCommand("copy");
+    } catch (error) {
+      console.error(error);
+    }
   };
 </script>
 
@@ -59,7 +73,14 @@
     border-radius: 4px;
     color: var(--color-foreground-level-6);
   }
+
+  textarea {
+    position: absolute;
+    left: -99999rem;
+  }
 </style>
+
+<textarea readonly bind:this={textareaElement} />
 
 <div class="wrapper" on:click|stopPropagation={copy}>
   <span
