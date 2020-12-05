@@ -46,7 +46,7 @@
   {@html twemoji.parse(emoji, {
     className: `emoji ${size}`,
     base: '',
-    folder: 'twemoji/',
+    folder: 'twemoji',
     ext: '.svg',
   })}
 </div>
