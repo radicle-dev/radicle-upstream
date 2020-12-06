@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
-
   import { isMarkdown } from "../../../src/source";
   import type { Blob, CommitHeader } from "../../../src/source";
 
@@ -11,9 +9,6 @@
 
   export let blob: Blob;
   export let commit: CommitHeader;
-  export let rootName: string;
-
-  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -34,15 +29,6 @@
 
   header .file-name {
     margin-left: 0.5rem;
-  }
-
-  header .root-link {
-    color: var(--color-foreground-level-5);
-    text-decoration: none;
-  }
-
-  header .root-link:hover {
-    text-decoration: underline;
   }
 
   header .commit-header {
@@ -89,11 +75,7 @@
     <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />
       <span class="file-name">
-        <span
-          class="typo-link root-link"
-          data-cy="root-link"
-          on:click={() => dispatch('root')}>{rootName}</span>
-        <span>/ {blob.path.split('/').join(' / ')}</span>
+        <span>{blob.path.split('/').join(' / ')}</span>
       </span>
     </div>
     <div class="commit-header">
