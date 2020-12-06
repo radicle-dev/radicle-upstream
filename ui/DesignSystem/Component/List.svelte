@@ -19,10 +19,12 @@
     max-width: var(--content-max-width);
     padding: 0 var(--content-padding);
   }
+
   ul {
     width: 100%;
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 8px;
+    overflow: hidden;
   }
 
   li {
@@ -40,11 +42,6 @@
 
   li:last-child {
     border-bottom: 0;
-    border-radius: 0 0 8px 8px;
-  }
-
-  li:first-child {
-    border-radius: 8px 8px 0 0;
   }
 </style>
 
