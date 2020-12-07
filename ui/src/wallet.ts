@@ -103,12 +103,17 @@ export function build(): Wallet {
   }
 
   async function initialize() {
+    stateStore.set({ status: Status.Connecting });
+    loadAccountData();
+  }
+
+  // Load the connected account's data.
+  async function loadAccountData() {
     if (!walletConnect.connected) {
       return;
     }
 
     try {
-      stateStore.set({ status: Status.Connecting });
       const accountAddress = await signer.getAddress();
       const balance = await signer.getBalance();
       const connected = {
@@ -124,7 +129,15 @@ export function build(): Wallet {
     }
   }
 
-  initialize();
+  if (walletConnect.connected) {
+    initialize();
+  }
+
+  // Periodically refresh the wallet data
+  const REFRESH_INTERVAL_MILLIS = 3000;
+  setInterval(() => {
+    loadAccountData();
+  }, REFRESH_INTERVAL_MILLIS);
 
   return {
     subscribe: stateStore.subscribe,
