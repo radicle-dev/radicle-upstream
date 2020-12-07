@@ -4,7 +4,8 @@ use std::{collections::HashSet, ops::Deref as _};
 
 use kv::Codec as _;
 
-use librad::uri::{path::ParseError, Path, RadUrn};
+use librad::identities::urn::{ParseError, Urn};
+use radicle_git_ext::RefLike;
 
 use crate::{
     oid::Oid,
@@ -19,21 +20,22 @@ const KEY_NAME: &str = "latest";
 
 /// Announcement errors.
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
+pub enum Error<E> {
     /// Failures from [`kv`].
     #[error(transparent)]
     Kv(#[from] kv::Error),
 
     /// Failures parsing.
     #[error(transparent)]
-    Parse(#[from] ParseError),
+    Parse(#[from] ParseError<E>),
+
     /// Error occurred when interacting with [`State`].
     #[error(transparent)]
     State(#[from] state::Error),
 }
 
 /// An update and all the required information that can be announced on the network.
-pub type Announcement = (RadUrn, Oid);
+pub type Announcement = (Urn, Oid);
 
 /// Unique list of [`Announcement`]s.
 pub type Updates = HashSet<Announcement>;
@@ -69,8 +71,8 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
 
                 for (head, hash) in &refs.heads {
                     list.insert((
-                        RadUrn {
-                            path: head.as_str().parse::<Path>()?,
+                        Urn {
+                            path: head.as_str().parse::<RefLike>()?,
                             ..project.urn()
                         },
                         Oid::from(*hash.deref()),
@@ -79,7 +81,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        },
+        }
     }
 }
 
@@ -145,7 +147,9 @@ mod test {
 
     use pretty_assertions::assert_eq;
 
-    use librad::{hash::Hash, keys::SecretKey, uri};
+    use librad::identities::Urn;
+    use librad::keys::SecretKey;
+    use radicle_git_ext::RefLike;
 
     use crate::{config, oid, signer, state::State};
 
@@ -222,37 +226,15 @@ mod test {
     fn save_and_load() -> Result<(), Box<dyn std::error::Error>> {
         let updates: HashSet<_> = vec![
             (
-                uri::RadUrn {
-                    id: Hash::hash(b"project0"),
-                    proto: uri::Protocol::Git,
-                    path: "cloudhead/new-language".parse::<uri::Path>()?,
-                },
+                project0("cloudead/new-language"),
                 "7dec3269".parse::<oid::Oid>()?,
             ),
             (
-                uri::RadUrn {
-                    id: Hash::hash(b"project0"),
-                    proto: uri::Protocol::Git,
-                    path: "fintohaps/notations".parse::<uri::Path>()?,
-                },
+                project0("fintohaps/notations"),
                 "b4d3276d".parse::<oid::Oid>()?,
             ),
-            (
-                uri::RadUrn {
-                    id: Hash::hash(b"project0"),
-                    proto: uri::Protocol::Git,
-                    path: "kalt/loops".parse::<uri::Path>()?,
-                },
-                "2206e5dc".parse::<oid::Oid>()?,
-            ),
-            (
-                uri::RadUrn {
-                    id: Hash::hash(b"project1"),
-                    proto: uri::Protocol::Git,
-                    path: "backport".parse::<uri::Path>()?,
-                },
-                "869e5740".parse::<oid::Oid>()?,
-            ),
+            (project0("kalt/loops"), "2206e5dc".parse::<oid::Oid>()?),
+            (project1("backport"), "869e5740".parse::<oid::Oid>()?),
         ]
         .iter()
         .cloned()
@@ -267,18 +249,16 @@ mod test {
         Ok(())
     }
 
-    fn project0(head: &str) -> uri::RadUrn {
-        uri::RadUrn {
-            id: Hash::hash(b"project0"),
-            proto: uri::Protocol::Git,
-            path: head.parse::<uri::Path>().expect("unable to parse head"),
+    fn project0(head: &str) -> Urn {
+        Urn {
+            id: "project0",
+            path: RefLike::try_from(head).unwrap(),
         }
     }
-    fn project1(head: &str) -> uri::RadUrn {
-        uri::RadUrn {
-            id: Hash::hash(b"project1"),
-            proto: uri::Protocol::Git,
-            path: head.parse::<uri::Path>().expect("unable to parse head"),
+    fn project1(head: &str) -> Urn {
+        Urn {
+            id: "project1",
+            path: RefLike::try_from(head).unwrap(),
         }
     }
 }

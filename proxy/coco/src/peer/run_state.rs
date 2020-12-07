@@ -8,13 +8,13 @@ use std::{
 use serde::Serialize;
 
 use librad::{
+    identities::Urn,
     net::{
         gossip::{Has, Info, PutResult},
         peer::{FetchInfo, Gossip, PeerEvent},
         protocol::ProtocolEvent,
     },
     peer::PeerId,
-    uri::{RadUrl, RadUrn},
 };
 
 use crate::{
@@ -53,17 +53,17 @@ pub enum Event {
     /// Sync with a peer completed.
     PeerSynced(PeerId),
     /// Request fullfilled with a successful clone.
-    RequestCloned(RadUrl),
+    RequestCloned(Urn, PeerId),
     /// Request is being cloned from a peer.
-    RequestCloning(RadUrl),
+    RequestCloning(Urn, PeerId),
     /// Request for the URN was created and is pending submission to the network.
-    RequestCreated(RadUrn),
+    RequestCreated(Urn),
     /// Request for the URN was submitted to the network.
-    RequestQueried(RadUrn),
+    RequestQueried(Urn),
     /// Waiting room interval ticked.
     RequestTick,
-    /// The request for [`RadUrn`] timed out.
-    RequestTimedOut(RadUrn),
+    /// The request for [`Urn`] timed out.
+    RequestTimedOut(Urn),
     /// The [`Status`] of the peer changed.
     StatusChanged(Status, Status),
 }
@@ -87,8 +87,12 @@ impl MaybeFrom<&Input> for Event {
             },
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(protocol_event) => Some(Self::Protocol(protocol_event.clone())),
-            Input::Request(input::Request::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
-            Input::Request(input::Request::Cloning(url)) => Some(Self::RequestCloning(url.clone())),
+            Input::Request(input::Request::Cloned(urn, remote_peer)) => {
+                Some(Self::RequestCloned(urn.clone(), remote_peer))
+            },
+            Input::Request(input::Request::Cloning(urn, remote_peer)) => {
+                Some(Self::RequestCloning(urn.clone(), remote_peer))
+            },
             Input::Request(input::Request::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
             Input::Request(input::Request::Tick) => Some(Self::RequestTick),
             Input::Request(input::Request::TimedOut(urn)) => {
@@ -394,13 +398,10 @@ impl RunState {
                     return vec![];
                 }
 
-                match self.waiting_room.found(
-                    RadUrl {
-                        urn: urn.clone(),
-                        authority: provider.peer_id,
-                    },
-                    Instant::now(),
-                ) {
+                match self
+                    .waiting_room
+                    .found(urn.clone(), provider.peer_id, Instant::now())
+                {
                     Err(err) => {
                         log::warn!("waiting room error: {:?}", err);
 
@@ -471,7 +472,7 @@ impl RunState {
     }
 
     /// Handle [`waiting_room::Error`]s.
-    fn handle_waiting_room_timeout(urn: RadUrn, error: &waiting_room::Error) -> Vec<Command> {
+    fn handle_waiting_room_timeout(urn: Urn, error: &waiting_room::Error) -> Vec<Command> {
         log::warn!("WaitingRoom::Error : {}", error);
         match error {
             waiting_room::Error::TimeOut { .. } => {
@@ -513,10 +514,10 @@ mod test {
     use tokio::sync::oneshot;
 
     use librad::{
+        identities::Urn,
         keys::SecretKey,
         net::{gossip, peer::Gossip, protocol::ProtocolEvent},
         peer::PeerId,
-        uri::{RadUrl, RadUrn},
     };
 
     use super::{command, config, input, Command, Config, Input, RunState, Status};
@@ -723,7 +724,7 @@ mod test {
 
     #[test]
     fn issue_query_when_requested_and_online() -> Result<(), Box<dyn std::error::Error + 'static>> {
-        let urn: RadUrn =
+        let urn: Urn =
             "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
 
         let status = Status::Online { connected: 1 };
@@ -751,7 +752,7 @@ mod test {
     #[test]
     fn issue_query_when_requested_and_syncing() -> Result<(), Box<dyn std::error::Error + 'static>>
     {
-        let urn: RadUrn =
+        let urn: Urn =
             "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
 
         let status = Status::Syncing {
@@ -779,13 +780,9 @@ mod test {
 
     #[test]
     fn issue_clone_when_found() -> Result<(), Box<dyn std::error::Error + 'static>> {
-        let urn: RadUrn =
+        let urn: Urn =
             "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
         let peer_id = PeerId::from(SecretKey::new());
-        let url = RadUrl {
-            urn: urn.clone(),
-            authority: peer_id,
-        };
 
         let status = Status::Online { connected: 0 };
         let status_since = Instant::now();
@@ -828,8 +825,9 @@ mod test {
         let cmds = state.transition(Input::Request(input::Request::Tick));
         assert_matches!(
             cmds.first().unwrap(),
-            Command::Request(command::Request::Clone(have)) => {
-                assert_eq!(*have, url);
+            Command::Request(command::Request::Clone(remote_urn, remote_peer)) => {
+                assert_eq!(remote_urn, urn);
+                assert_eq!(remote_peer, peer_id);
             }
         );
 

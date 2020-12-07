@@ -10,8 +10,8 @@ use std::ops::Sub;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Attempts, Cancelled, Cloned, Clones, Cloning, Created, Either, Found, Queries, RadUrn, Request,
-    RequestState, Requested, TimedOut,
+    Attempts, Cancelled, Cloned, Clones, Cloning, Created, Either, Found, Queries, Request,
+    RequestState, Requested, TimedOut, Urn,
 };
 
 /// Since a `Request` is parameterised over its state, it makes it difficult to talk about a
@@ -116,8 +116,8 @@ impl<T, L: Into<SomeRequest<T>>, R: Into<SomeRequest<T>>> From<Either<L, R>> for
 }
 
 impl<T> SomeRequest<T> {
-    /// Get the `RadUrn` of whatever kind of [`Request`] is below.
-    pub const fn urn(&self) -> &RadUrn {
+    /// Get the `Urn` of whatever kind of [`Request`] is below.
+    pub const fn urn(&self) -> &Urn {
         match self {
             SomeRequest::Created(request) => request.urn(),
             SomeRequest::Requested(request) => request.urn(),

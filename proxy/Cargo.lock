@@ -666,7 +666,7 @@ dependencies = [
 [[package]]
 name = "ed25519-zebra"
 version = "2.2.0"
-source = "git+https://github.com/kim/ed25519-zebra?branch=zeroize#d21613642f908ff81da99459ac6deec08cc006b6"
+source = "git+https://github.com/ZcashFoundation/ed25519-zebra?rev=0e7a96a267a756e642e102a28a44dd79b9c7df69#0e7a96a267a756e642e102a28a44dd79b9c7df69"
 dependencies = [
  "curve25519-dalek",
  "hex",
@@ -1326,7 +1326,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=900a4491e890a87348f01c27998df86ee4a4a1c7#900a4491e890a87348f01c27998df86ee4a4a1c7"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=154a410f07e2c2160f71081ede7bace02715f5ba#154a410f07e2c2160f71081ede7bace02715f5ba"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1335,7 +1335,7 @@ dependencies = [
  "deadpool",
  "directories 3.0.1",
  "dyn-clone",
- "ed25519-zebra 2.2.0 (git+https://github.com/kim/ed25519-zebra?branch=zeroize)",
+ "ed25519-zebra 2.2.0 (git+https://github.com/ZcashFoundation/ed25519-zebra?rev=0e7a96a267a756e642e102a28a44dd79b9c7df69)",
  "either",
  "futures 0.3.8",
  "futures-timer",
@@ -2109,7 +2109,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=900a4491e890a87348f01c27998df86ee4a4a1c7#900a4491e890a87348f01c27998df86ee4a4a1c7"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=154a410f07e2c2160f71081ede7bace02715f5ba#154a410f07e2c2160f71081ede7bace02715f5ba"
 dependencies = [
  "git2",
  "multibase",
@@ -2123,7 +2123,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=900a4491e890a87348f01c27998df86ee4a4a1c7#900a4491e890a87348f01c27998df86ee4a4a1c7"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=154a410f07e2c2160f71081ede7bace02715f5ba#154a410f07e2c2160f71081ede7bace02715f5ba"
 dependencies = [
  "anyhow",
  "git2",
@@ -2156,7 +2156,7 @@ dependencies = [
 [[package]]
 name = "radicle-macros"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=900a4491e890a87348f01c27998df86ee4a4a1c7#900a4491e890a87348f01c27998df86ee4a4a1c7"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=154a410f07e2c2160f71081ede7bace02715f5ba#154a410f07e2c2160f71081ede7bace02715f5ba"
 dependencies = [
  "quote",
  "radicle-git-ext",
@@ -2166,7 +2166,7 @@ dependencies = [
 [[package]]
 name = "radicle-std-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=900a4491e890a87348f01c27998df86ee4a4a1c7#900a4491e890a87348f01c27998df86ee4a4a1c7"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=154a410f07e2c2160f71081ede7bace02715f5ba#154a410f07e2c2160f71081ede7bace02715f5ba"
 
 [[package]]
 name = "radicle-surf"

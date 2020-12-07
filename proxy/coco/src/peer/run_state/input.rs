@@ -3,12 +3,12 @@ use std::time::Instant;
 use tokio::sync::oneshot;
 
 use librad::{
+    identities::Urn,
     net::{
         peer::{Gossip, PeerEvent},
         protocol::ProtocolEvent,
     },
     peer::PeerId,
-    uri::{RadUrl, RadUrn},
 };
 
 use crate::{
@@ -55,18 +55,18 @@ pub enum Control {
 
     /// Cancel an ongoing project search.
     CancelRequest(
-        RadUrn,
+        Urn,
         Instant,
         oneshot::Sender<Result<Option<SomeRequest<Instant>>, waiting_room::Error>>,
     ),
     /// Initiate a new project search on the network.
     CreateRequest(
-        RadUrn,
+        Urn,
         Instant,
         oneshot::Sender<waiting_room::Created<Instant>>,
     ),
     /// Request a project search.
-    GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),
+    GetRequest(Urn, oneshot::Sender<Option<SomeRequest<Instant>>>),
     /// Request the list of project searches.
     ListRequests(oneshot::Sender<Vec<SomeRequest<Instant>>>),
 }
@@ -75,22 +75,24 @@ pub enum Control {
 #[derive(Debug)]
 pub enum Request {
     /// Started cloning the requested urn from a peer.
-    Cloning(RadUrl),
+    Cloning(Urn, PeerId),
     /// Succeeded cloning from the `RadUrl`.
-    Cloned(RadUrl),
+    Cloned(Urn, PeerId),
     /// Failed to clone from the `RadUrl`.
     Failed {
-        /// The URL that we were attempting the clone from.
-        url: RadUrl,
+        /// The URN we attempted to clone.
+        urn: Urn,
+        // The id of the remote peer we attempted to clone from.
+        remote_peer: PeerId,
         /// The reason the clone failed.
         reason: String,
     },
-    /// Query the network for the `RadUrn`.
-    Queried(RadUrn),
+    /// Query the network for the `Urn`.
+    Queried(Urn),
     /// [`crate::request::waiting_room::WaitingRoom`] query interval.
     Tick,
-    /// The request for [`RadUrn`] timed out.
-    TimedOut(RadUrn),
+    /// The request for [`Urn`] timed out.
+    TimedOut(Urn),
 }
 
 /// Lifecycle events during peer sync operations.

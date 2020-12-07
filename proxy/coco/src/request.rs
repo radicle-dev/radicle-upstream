@@ -15,11 +15,7 @@ use std::{
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{
-    net::peer::types::Gossip,
-    peer::PeerId,
-    uri::{self, RadUrl, RadUrn},
-};
+use librad::{identities::Urn, net::peer::types::Gossip, peer::PeerId};
 
 pub mod existential;
 pub use existential::SomeRequest;
@@ -31,7 +27,7 @@ pub mod waiting_room;
 mod sealed;
 
 /// A `Request` represents the lifetime of requesting an identity in the network via its
-/// [`RadUrn`].
+/// [`Urn`].
 ///
 /// The `Request`'s state is represented by the `S` type parameter. This parameter makes sure that
 /// a `Request` transitions through specific states in a type safe manner.
@@ -62,7 +58,7 @@ mod sealed;
 #[serde(rename_all = "camelCase")]
 pub struct Request<S, T> {
     /// The identifier of the identity on the network.
-    urn: RadUrn,
+    urn: Urn,
     /// The number of attempts this request has made to complete its job.
     attempts: Attempts,
     /// The timestamp of the latest action to be taken on this request.
@@ -91,8 +87,8 @@ impl<S, T> From<Request<S, T>> for Gossip {
 }
 
 impl<S, T> Request<S, T> {
-    /// Get the [`RadUrn`] that this `Request` is searching for.
-    pub const fn urn(&self) -> &RadUrn {
+    /// Get the [`Urn`] that this `Request` is searching for.
+    pub const fn urn(&self) -> &Urn {
         &self.urn
     }
 
@@ -191,11 +187,8 @@ impl<T> Request<Created, T> {
     ///
     /// Once this request has been made, we can transition this `Request` to the `Requested`
     /// state by calling [`Request::request`].
-    pub fn new(urn: RadUrn, timestamp: T) -> Self {
-        let urn = RadUrn {
-            path: uri::Path::empty(),
-            ..urn
-        };
+    pub fn new(urn: Urn, timestamp: T) -> Self {
+        let urn = Urn { path: None, ..urn };
         Self {
             urn,
             attempts: Attempts::new(),
@@ -325,12 +318,12 @@ impl<T> Request<Cloning, T> {
     /// This signifies that the clone was successful and that the whole request was successful,
     /// congratulations.
     #[allow(clippy::use_self, clippy::missing_const_for_fn)]
-    pub fn cloned(self, url: RadUrl, timestamp: T) -> Request<Cloned, T> {
+    pub fn cloned(self, remote_peer: PeerId, timestamp: T) -> Request<Cloned, T> {
         Request {
             urn: self.urn.clone(),
             attempts: self.attempts,
             timestamp,
-            state: Cloned { url },
+            state: Cloned { remote_peer },
         }
     }
 }

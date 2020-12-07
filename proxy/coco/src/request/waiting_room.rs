@@ -13,10 +13,7 @@ use std::{
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{
-    hash::Hash,
-    uri::{self, RadUrl, RadUrn},
-};
+use librad::{identities::Urn, peer::PeerId};
 
 use crate::request::{Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut};
 
@@ -31,7 +28,7 @@ const MAX_CLONES: Clones = Clones::Infinite;
 pub enum Error {
     /// When looking up a `RadUrn` in the [`WaitingRoom`] it was missing.
     #[error("the URN '{0}' was not found in the waiting room")]
-    MissingUrn(RadUrn),
+    MissingUrn(Urn),
 
     /// When performing an operation on the a [`Request`] in the [`WaitingRoom`] it was found to be
     /// in the wrong state for the desired operation.
@@ -132,7 +129,7 @@ impl<T, D> WaitingRoom<T, D> {
     }
 
     /// Check that the `WaitingRoom` has the given `urn`.
-    pub fn has(&self, urn: &RadUrn) -> bool {
+    pub fn has(&self, urn: &Urn) -> bool {
         self.requests.contains_key(&urn.id)
     }
 
@@ -140,7 +137,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     /// Returns `None` if there is no such request.
     #[must_use]
-    pub fn get(&self, urn: &RadUrn) -> Option<&SomeRequest<T>> {
+    pub fn get(&self, urn: &Urn) -> Option<&SomeRequest<T>> {
         self.requests.get(&urn.id)
     }
 
@@ -148,7 +145,7 @@ impl<T, D> WaitingRoom<T, D> {
     /// `WaitingRoom` then the request will be returned.
     ///
     /// Otherwise, it will return `None` if no such request existed.
-    pub fn remove(&mut self, urn: &RadUrn) -> Option<SomeRequest<T>> {
+    pub fn remove(&mut self, urn: &Urn) -> Option<SomeRequest<T>> {
         self.requests.remove(&urn.id)
     }
 
@@ -156,7 +153,7 @@ impl<T, D> WaitingRoom<T, D> {
     /// of the underlying `Request`.
     ///
     /// If the `urn` could not be found then `None` is returned.
-    pub fn elapsed(&self, urn: &RadUrn, timestamp: T) -> Option<D>
+    pub fn elapsed(&self, urn: &Urn, timestamp: T) -> Option<D>
     where
         T: Sub<T, Output = D> + Clone,
     {
@@ -167,7 +164,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     /// If there is no such `urn` then it create a fresh `Request` using the `urn` and `timestamp`
     /// and it will return `None`.
-    pub fn request(&mut self, urn: &RadUrn, timestamp: T) -> Either<SomeRequest<T>, SomeRequest<T>>
+    pub fn request(&mut self, urn: &Urn, timestamp: T) -> Either<SomeRequest<T>, SomeRequest<T>>
     where
         T: Clone,
     {
@@ -193,7 +190,7 @@ impl<T, D> WaitingRoom<T, D> {
         &mut self,
         matcher: impl FnOnce(SomeRequest<T>) -> Option<Prev>,
         transition: impl FnOnce(Prev) -> Either<Request<TimedOut, T>, Next>,
-        urn: &RadUrn,
+        urn: &Urn,
     ) -> Result<(), Error>
     where
         T: Clone,
@@ -229,7 +226,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
     ///   * If the underlying `Request` timed out.
-    pub fn queried(&mut self, urn: &RadUrn, timestamp: T) -> Result<(), Error>
+    pub fn queried(&mut self, urn: &Urn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -260,21 +257,21 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn found(&mut self, RadUrl { urn, authority }: RadUrl, timestamp: T) -> Result<(), Error>
+    pub fn found(&mut self, urn: &Urn, remote_peer: PeerId, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
         self.transition(
             |request| match request {
                 SomeRequest::Requested(request) => {
-                    Some(request.into_found(authority, timestamp).into())
+                    Some(request.into_found(remote_peer, timestamp).into())
                 },
                 SomeRequest::Found(request) => {
-                    let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
+                    let some_request: SomeRequest<T> = request.found(remote_peer, timestamp).into();
                     Some(some_request)
                 },
                 SomeRequest::Cloning(request) => {
-                    let some_request: SomeRequest<T> = request.found(authority, timestamp).into();
+                    let some_request: SomeRequest<T> = request.found(remote_peer, timestamp).into();
                     Some(some_request)
                 },
                 _ => None,
@@ -294,7 +291,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
     ///   * If the underlying `Request` timed out.
-    pub fn cloning(&mut self, RadUrl { urn, authority }: RadUrl, timestamp: T) -> Result<(), Error>
+    pub fn cloning(&mut self, urn: &Urn, remote_peer: PeerId, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -305,7 +302,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Found(request) => Some(request),
                 _ => None,
             },
-            |previous| previous.cloning(max_queries, max_clones, authority, timestamp),
+            |previous| previous.cloning(max_queries, max_clones, remote_peer, timestamp),
             &urn,
         )
     }
@@ -322,7 +319,8 @@ impl<T, D> WaitingRoom<T, D> {
     ///   * If the underlying `Request` was not in the expected state.
     pub fn cloning_failed(
         &mut self,
-        RadUrl { urn, authority }: RadUrl,
+        urn: &Urn,
+        remote_peer: PeerId,
         timestamp: T,
     ) -> Result<(), Error>
     where
@@ -333,7 +331,7 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Either::Right(previous.failed(authority, timestamp)),
+            |previous| Either::Right(previous.failed(remote_peer, timestamp)),
             &urn,
         )
     }
@@ -347,7 +345,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn cloned(&mut self, url: &RadUrl, timestamp: T) -> Result<(), Error>
+    pub fn cloned(&mut self, urn: &Urn, remote_peer: PeerId, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -356,8 +354,8 @@ impl<T, D> WaitingRoom<T, D> {
                 SomeRequest::Cloning(request) => Some(request),
                 _ => None,
             },
-            |previous| Either::Right(previous.cloned(url.clone(), timestamp)),
-            &url.urn,
+            |previous| Either::Right(previous.cloned(remote_peer, timestamp)),
+            urn,
         )
     }
 
@@ -370,7 +368,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///
     ///   * If the `urn` was not in the `WaitingRoom`.
     ///   * If the underlying `Request` was not in the expected state.
-    pub fn canceled(&mut self, urn: &RadUrn, timestamp: T) -> Result<(), Error>
+    pub fn canceled(&mut self, urn: &Urn, timestamp: T) -> Result<(), Error>
     where
         T: Clone,
     {
@@ -382,13 +380,10 @@ impl<T, D> WaitingRoom<T, D> {
     }
 
     /// Return the list of all `RadUrn`/`SomeRequest` pairs in the `WaitingRoom`.
-    pub fn iter(&self) -> impl Iterator<Item = (RadUrn, &SomeRequest<T>)> {
-        self.requests.iter().map(|(hash, request)| {
-            (
-                RadUrn::new(hash.clone(), uri::Protocol::Git, uri::Path::empty()),
-                request,
-            )
-        })
+    pub fn iter(&self) -> impl Iterator<Item = (Urn, &SomeRequest<T>)> {
+        self.requests
+            .iter()
+            .map(|(id, request)| (Urn::new(id), request))
     }
 
     /// Filter the `WaitingRoom` by:
@@ -396,13 +391,13 @@ impl<T, D> WaitingRoom<T, D> {
     pub fn filter_by_state(
         &self,
         request_state: RequestState,
-    ) -> impl Iterator<Item = (RadUrn, &SomeRequest<T>)> {
+    ) -> impl Iterator<Item = (Urn, &SomeRequest<T>)> {
         self.iter()
             .filter(move |(_, request)| RequestState::from(*request) == request_state.clone())
     }
 
     /// Find the first occurring request based on the call to [`WaitingRoom::filter_by_state`].
-    pub fn find_by_state(&self, request_state: RequestState) -> Option<(RadUrn, &SomeRequest<T>)> {
+    pub fn find_by_state(&self, request_state: RequestState) -> Option<(Urn, &SomeRequest<T>)> {
         self.filter_by_state(request_state).next()
     }
 
@@ -412,7 +407,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///   * The request is a fresh request that hasn't had an attempt to clone yet
     ///   * Or the elapsed time between the `timestamp` and the `Request`'s timestamp is greater
     ///     than the `delta` provided in the [`Config`].
-    pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
+    pub fn next_query(&self, timestamp: T) -> Option<Urn>
     where
         T: Sub<T, Output = D> + Clone,
         D: Mul<u32, Output = D> + Ord + Clone,
@@ -433,7 +428,7 @@ impl<T, D> WaitingRoom<T, D> {
 
     /// Get the next `Request` that is in the the `Found` state and the status of the peer is
     /// `Available`.
-    pub fn next_clone(&self) -> Option<RadUrl> {
+    pub fn next_clone(&self) -> Option<(Urn, PeerId)> {
         self.find_by_state(RequestState::Found)
             .and_then(|(urn, request)| match request {
                 SomeRequest::Found(request) => {
@@ -447,7 +442,7 @@ impl<T, D> WaitingRoom<T, D> {
     }
 
     #[cfg(test)]
-    pub fn insert<R>(&mut self, urn: RadUrn, request: R)
+    pub fn insert<R>(&mut self, urn: Urn, request: R)
     where
         R: Into<SomeRequest<T>>,
     {
@@ -460,11 +455,7 @@ mod test {
     use std::error;
 
     use assert_matches::assert_matches;
-    use librad::{
-        keys::SecretKey,
-        peer::PeerId,
-        uri::{RadUrl, RadUrn},
-    };
+    use librad::{identities::Urn, keys::SecretKey, peer::PeerId};
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -472,14 +463,11 @@ mod test {
     #[test]
     fn happy_path_of_full_request() -> Result<(), Box<dyn error::Error + 'static>> {
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
-        let peer = PeerId::from(SecretKey::new());
-        let url = RadUrl {
-            urn,
-            authority: peer,
-        };
+        let remote_peer = PeerId::from(SecretKey::new());
+        let url = (urn, remote_peer);
         let have = waiting_room.request(&url.urn, 0);
         let want = waiting_room.get(&url.urn).unwrap();
 
@@ -533,7 +521,7 @@ mod test {
     #[test]
     fn cannot_create_twice() -> Result<(), Box<dyn error::Error>> {
         let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config::default());
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         waiting_room.request(&urn, ());
@@ -561,7 +549,7 @@ mod test {
             delta: 5,
             ..Config::default()
         });
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         let _ = waiting_room.request(&urn, 0);
@@ -591,7 +579,7 @@ mod test {
             max_clones: Clones::new(0),
             delta: (),
         });
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
 
@@ -622,16 +610,13 @@ mod test {
             max_clones: Clones::new(NUM_CLONES),
             delta: (),
         });
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
 
         let mut peers = vec![];
         for _ in 0..=NUM_CLONES {
-            peers.push(RadUrl {
-                urn: urn.clone(),
-                authority: PeerId::from(SecretKey::new()),
-            });
+            peers.push((urn.clone(), PeerId::from(SecretKey::new())));
         }
 
         let _ = waiting_room.request(&urn, ());
@@ -641,9 +626,9 @@ mod test {
             waiting_room.found(url.clone(), ())?;
         }
 
-        for url in &peers[0..NUM_CLONES] {
-            waiting_room.cloning(url.clone(), ())?;
-            waiting_room.cloning_failed(url.clone(), ())?;
+        for (urn, remote_peer) in &peers[0..NUM_CLONES] {
+            waiting_room.cloning(urn, remote_peer, ())?;
+            waiting_room.cloning_failed(urn, remote_peer, ())?;
         }
 
         assert_eq!(
@@ -673,16 +658,13 @@ mod test {
             max_clones: Clones::new(NUM_CLONES),
             delta: 5,
         });
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
 
         let mut peers = vec![];
         for _ in 0..NUM_CLONES {
-            peers.push(RadUrl {
-                urn: urn.clone(),
-                authority: PeerId::from(SecretKey::new()),
-            });
+            peers.push((urn.clone(), PeerId::from(SecretKey::new())));
         }
 
         let _ = waiting_room.request(&urn, 0);
@@ -709,7 +691,7 @@ mod test {
     fn cancel_transitions() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
         let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(config);
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
@@ -754,13 +736,7 @@ mod test {
         );
 
         // cloned
-        let cloned = cloning.cloned(
-            RadUrl {
-                urn: urn.clone(),
-                authority: peer,
-            },
-            (),
-        );
+        let cloned = cloning.cloned(urn.clone(), peer, ());
         waiting_room.insert(urn.clone(), cloned);
         assert_eq!(
             waiting_room.canceled(&urn, ()),
@@ -783,32 +759,29 @@ mod test {
     fn can_get_request_that_is_ready() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(config);
-        let url = RadUrl {
-            urn: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-                .parse()
-                .expect("failed to parse the urn"),
-            authority: PeerId::from(SecretKey::new()),
-        };
+
+        let urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe";
+        let remote_peer = PeerId::from(SecretKey::new());
 
         let ready = waiting_room.find_by_state(RequestState::Cloned);
         assert_eq!(ready, None);
 
-        let _ = waiting_room.request(&url.urn, 0);
-        waiting_room.queried(&url.urn, 0)?;
-        waiting_room.found(url.clone(), 0)?;
-        waiting_room.cloning(url.clone(), 0)?;
-        waiting_room.cloned(&url, 0)?;
+        let _ = waiting_room.request(&urn, 0);
+        waiting_room.queried(&urn, 0)?;
+        waiting_room.found(&urn, remote_peer, 0)?;
+        waiting_room.cloning(&urn, remote_peer, 0)?;
+        waiting_room.cloned(&urn, remote_peer, 0)?;
 
         let ready = waiting_room.find_by_state(RequestState::Cloned);
         let expected = SomeRequest::Cloned(
-            Request::new(url.urn.clone(), 0)
+            Request::new(urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority, 0)
-                .cloning(config.max_queries, config.max_clones, url.authority, 0)
+                .into_found(remote_peer, 0)
+                .cloning(config.max_queries, config.max_clones, remote_peer, 0)
                 .unwrap_right()
-                .cloned(url.clone(), 0),
+                .cloned(&urn, 0),
         );
-        assert_eq!(ready, Some((url.urn, &expected)));
+        assert_eq!(ready, Some((urn, &expected)));
 
         Ok(())
     }
@@ -816,21 +789,17 @@ mod test {
     #[test]
     fn can_remove_requests() {
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         let peer = PeerId::from(SecretKey::new());
-        let url = RadUrl {
-            urn,
-            authority: peer,
-        };
-        assert_eq!(waiting_room.remove(&url.urn), None);
+        assert_eq!(waiting_room.remove(&urn), None);
 
         let expected = {
-            waiting_room.request(&url.urn, 0);
-            waiting_room.get(&url.urn).cloned()
+            waiting_room.request(&urn, 0);
+            waiting_room.get(&urn).cloned()
         };
-        let removed = waiting_room.remove(&url.urn);
+        let removed = waiting_room.remove(&urn);
         assert_eq!(removed, expected);
     }
 
@@ -840,7 +809,7 @@ mod test {
             delta: 5,
             ..Config::default()
         });
-        let urn: RadUrn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
         let _ = waiting_room.request(&urn, 0);

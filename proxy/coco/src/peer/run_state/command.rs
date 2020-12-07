@@ -1,9 +1,6 @@
 use std::time::{Duration, Instant};
 
-use librad::{
-    peer::PeerId,
-    uri::{RadUrl, RadUrn},
-};
+use librad::{identities::Urn, peer::PeerId};
 
 use crate::{peer::control, request::waiting_room::WaitingRoom};
 
@@ -16,7 +13,7 @@ pub enum Command {
     /// Answer control requests.
     Control(Control),
     /// Update the include file for the provided `RadUrn`.
-    Include(RadUrn),
+    Include(Urn),
     /// Tell the subroutine to persist the `WaitingRoom`.
     PersistWaitingRoom(WaitingRoom<Instant, Duration>),
     /// Fulfill request commands.
@@ -40,11 +37,11 @@ pub enum Control {
 #[derive(Debug, PartialEq)]
 pub enum Request {
     /// Tell the subroutine to attempt a clone from the given `RadUrl`.
-    Clone(RadUrl),
+    Clone(Urn, PeerId),
     /// Tell the subroutine that we should query for the given `RadUrn` on the network.
-    Query(RadUrn),
+    Query(Urn),
     /// The request for [`RadUrn`] timed out.
-    TimedOut(RadUrn),
+    TimedOut(Urn),
 }
 
 impl From<Request> for Command {

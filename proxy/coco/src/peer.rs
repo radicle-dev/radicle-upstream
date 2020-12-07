@@ -43,10 +43,10 @@ pub const RECEIVER_CAPACITY: usize = 128;
 
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
+pub enum Error<E> {
     /// Failed to build and announce state updates.
     #[error(transparent)]
-    Announcement(#[from] announcement::Error),
+    Announcement(#[from] announcement::Error<E>),
 
     /// There was an error in a spawned task.
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
@@ -203,7 +203,7 @@ impl Future for Running {
                     Ok(Ok(())) => Ok(()),
                 };
                 Poll::Ready(val)
-            },
+            }
             Poll::Pending => Poll::Pending,
         }
     }

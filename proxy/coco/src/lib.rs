@@ -27,13 +27,11 @@ use std::net::SocketAddr;
 
 pub use librad::{
     git::{self, include, local::url::LocalUrl},
-    hash::Hash,
+    identities::{Person, Project, Urn},
     keys,
-    meta::{project::Project, user::User as MetaUser},
     net::{self, discovery},
     paths::Paths,
     peer::PeerId,
-    uri::{self, RadUrn as Urn},
 };
 
 pub use radicle_git_ext as git_ext;
@@ -64,11 +62,6 @@ pub mod seed;
 pub mod signer;
 
 pub mod source;
-pub use source::{
-    blob, branches, commit, commit_header, commits, into_branch_type, local_state, revisions, tags,
-    tree, Blob, BlobContent, Branch, Commit, CommitHeader, Info, ObjectType, Person, Revision,
-    Revisions, Tag, Tree, TreeEntry,
-};
 
 mod spawn_abortable;
 pub use spawn_abortable::{Error as SpawnAbortableError, SpawnAbortable};

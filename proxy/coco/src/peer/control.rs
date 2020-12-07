@@ -5,7 +5,7 @@ use std::time::Instant;
 use either::Either;
 use tokio::sync::{mpsc, oneshot};
 
-use librad::uri::RadUrn;
+use librad::identities::Urn;
 
 use crate::{request, request::waiting_room};
 
@@ -20,20 +20,17 @@ pub enum Request {
 
     /// Cancel an ongoing project search.
     CancelSearch(
-        RadUrn,
+        Urn,
         Instant,
         oneshot::Sender<Result<Option<request::SomeRequest<Instant>>, waiting_room::Error>>,
     ),
     /// Get a project search.
-    GetSearch(
-        RadUrn,
-        oneshot::Sender<Option<request::SomeRequest<Instant>>>,
-    ),
+    GetSearch(Urn, oneshot::Sender<Option<request::SomeRequest<Instant>>>),
     /// List all project searches.
     ListSearches(oneshot::Sender<Vec<request::SomeRequest<Instant>>>),
     /// Initiate a search for a project on the network.
     StartSearch(
-        RadUrn,
+        Urn,
         Instant,
         oneshot::Sender<waiting_room::Created<Instant>>,
     ),
@@ -100,7 +97,7 @@ impl Control {
     /// * if the waiting room returns an error
     pub async fn cancel_project_request(
         &mut self,
-        urn: &RadUrn,
+        urn: &Urn,
         timestamp: Instant,
     ) -> Result<Option<request::SomeRequest<Instant>>, waiting_room::Error> {
         let (sender, receiver) = oneshot::channel();
@@ -116,7 +113,7 @@ impl Control {
     /// Initiate a new request to fetch a project from the network.
     pub async fn get_project_request(
         &mut self,
-        urn: &RadUrn,
+        urn: &Urn,
     ) -> Option<request::SomeRequest<Instant>> {
         let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<Instant>>>();
 
@@ -143,7 +140,7 @@ impl Control {
     /// Initiate a new request for the `urn`.
     pub async fn request_project(
         &mut self,
-        urn: &RadUrn,
+        urn: &Urn,
         timestamp: Instant,
     ) -> request::SomeRequest<Instant> {
         let (sender, receiver) = oneshot::channel::<waiting_room::Created<Instant>>();

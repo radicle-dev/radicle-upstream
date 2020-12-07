@@ -1,15 +1,15 @@
 //! Emit `Have`s and `Want`s on the network.
 
 use librad::{
+    identities::Urn,
     net::peer::{Gossip, Rev},
     peer::PeerId,
-    uri::RadUrn,
 };
 
 use crate::{oid::Oid, State};
 
 /// Announce a new rev for the `urn`.
-pub async fn announce(state: &State, urn: &RadUrn, rev: Option<Oid>) {
+pub async fn announce(state: &State, urn: &Urn, rev: Option<Oid>) {
     let protocol = state.api.protocol();
     protocol
         .announce(Gossip {
@@ -21,7 +21,7 @@ pub async fn announce(state: &State, urn: &RadUrn, rev: Option<Oid>) {
 }
 
 /// Emit a [`Gossip`] request for the given `urn`.
-pub async fn query(state: &State, urn: RadUrn, origin: Option<PeerId>) {
+pub async fn query(state: &State, urn: Urn, origin: Option<PeerId>) {
     state
         .api
         .protocol()

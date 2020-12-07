@@ -5,16 +5,15 @@ use std::{
     path::{self, PathBuf},
 };
 
-pub use librad::meta::project::Project;
 use librad::{
     git::{
         include,
         local::url::LocalUrl,
-        types::{remote::Remote, FlatRef, Force},
+        types::{remote::Remote, Flat, Force},
     },
     git_ext::{OneLevel, RefLike, RefspecPattern},
+    identities::Urn,
     peer::PeerId,
-    uri::RadUrn,
 };
 use radicle_surf::vcs::git::git2;
 
@@ -38,7 +37,7 @@ where
     P: AsRef<path::Path>,
 {
     /// The URN identifier for the project we are checking out.
-    pub urn: RadUrn,
+    pub urn: Urn,
     /// The name of the project.
     pub name: String,
     /// The default branch of the project.
@@ -74,7 +73,7 @@ impl Ownership {
     ///   * In the case of a remote clone, if the pushing of the default branch fails.
     pub fn clone(
         self,
-        urn: RadUrn,
+        urn: Urn,
         default_branch: &OneLevel,
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
@@ -119,6 +118,7 @@ impl Ownership {
         {
             builder.remote_create(move |repo, _remote_name, url| {
                 let mut remote = Remote::new(url, name.as_str().to_string());
+                let heads = remote.remote_heads(&repo);
                 let heads: FlatRef<PeerId, _> = FlatRef::heads(PhantomData, peer).with_name(
                     RefspecPattern::try_from("heads/*").expect("'heads/*' failed to parse"),
                 );

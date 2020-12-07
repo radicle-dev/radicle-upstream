@@ -2,13 +2,9 @@
 
 use std::{convert::TryFrom, env, io, path};
 
-use librad::{
-    git_ext::OneLevel,
-    keys,
-    meta::{entity, project as librad_project},
-    peer::PeerId,
-    reflike,
-};
+use librad::identities::{Person, Project};
+use librad::{keys, peer::PeerId, reflike};
+use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
 use crate::{
@@ -84,7 +80,7 @@ pub async fn replicate_platinum(
     name: &str,
     description: &str,
     default_branch: OneLevel,
-) -> Result<librad_project::Project<entity::Draft>, Error> {
+) -> Result<Project, Error> {
     // Construct path for fixtures to clone into.
     let monorepo = api.monorepo();
     let workspace = monorepo.join("../workspace");
@@ -145,12 +141,9 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 /// Create and track a fake peer.
 pub async fn track_fake_peer(
     state: &State,
-    project: &librad_project::Project<entity::Draft>,
+    project: &Project,
     fake_user_handle: &str,
-) -> (
-    PeerId,
-    librad::meta::entity::Entity<librad::meta::user::UserInfo, librad::meta::entity::Draft>,
-) {
+) -> (PeerId, Person) {
     // TODO(finto): We're faking a lot of the networking interaction here.
     // Create git references of the form and track the peer.
     //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/signed_refs/heads

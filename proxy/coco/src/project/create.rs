@@ -3,10 +3,10 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 use librad::{
-    git::local::url::LocalUrl,
+    git::{identities::project, local::url::LocalUrl},
     git_ext::OneLevel,
+    identities::Project,
     keys,
-    meta::{entity, project},
 };
 use radicle_surf::vcs::git::git2;
 
@@ -20,10 +20,6 @@ pub enum Error {
     /// Internal git error while trying to create the project.
     #[error(transparent)]
     Git(#[from] git2::Error),
-
-    /// Entity meta error.
-    #[error(transparent)]
-    Meta(#[from] entity::Error),
 
     /// An error occurred while validating input.
     #[error(transparent)]
@@ -108,19 +104,9 @@ impl Create {
     /// # Errors
     ///
     ///   * Failed to build the project entity.
-    pub fn build(
-        &self,
-        owner: &User,
-        key: keys::PublicKey,
-    ) -> Result<project::Project<entity::Draft>, Error> {
+    pub fn build(&self, owner: &User, key: keys::PublicKey) -> Result<Project, Error> {
         let name = self.repo.project_name()?;
-        let project = project::Project::<entity::Draft>::create(name, owner.urn())?
-            .to_builder()
-            .set_description(self.description.clone())
-            .set_default_branch(self.default_branch.as_str().to_string())
-            .add_key(key)
-            .add_certifier(owner.urn())
-            .build()?;
+        let project = project::create(name, owner.urn())?;
 
         Ok(project)
     }

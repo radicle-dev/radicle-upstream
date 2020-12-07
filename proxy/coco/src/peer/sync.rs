@@ -1,33 +1,30 @@
 //! Perform full state syncs with remote peers.
 
-use librad::{peer::PeerId, uri::RadUrl};
+use librad::peer::PeerId;
 
 use crate::state::State;
 
 use super::{include, Error};
 
 /// Initiaites a fetch for all locally tracked projects from the given [`PeerId`].
-pub async fn sync(state: &State, peer_id: PeerId) -> Result<(), Error> {
-    log::debug!("Starting sync from {}", peer_id);
+pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
+    log::debug!("Starting sync from {}", remote_peer);
 
-    let urls = state
+    let urns = state
         .list_projects()
         .await?
         .iter()
-        .map(|project| RadUrl {
-            authority: peer_id,
-            urn: project.urn(),
-        })
-        .collect::<Vec<RadUrl>>();
+        .map(|project| (project.urn(), remote_peer))
+        .collect::<Vec<_>>();
 
-    for url in urls {
-        log::debug!("Starting fetch of {} from {}", url.clone(), peer_id);
-        match state.fetch(url.clone(), vec![]).await {
+    for urn in urns {
+        log::debug!("Starting fetch of {} from {}", urn, remote_peer);
+        match state.fetch(urn.clone(), remote_peer, vec![]).await {
             Ok(()) => {
-                log::debug!("Finished fetch of {} from {}", url, peer_id);
-                include::update(state.clone(), url.urn).await;
-            },
-            Err(e) => log::debug!("Fetch of {} from {} errored: {}", url, peer_id, e),
+                log::debug!("Finished fetch of {} from {}", urn, remote_peer);
+                include::update(state.clone(), urn).await;
+            }
+            Err(e) => log::debug!("Fetch of {} from {} errored: {}", urn, remote_peer, e),
         }
     }
 

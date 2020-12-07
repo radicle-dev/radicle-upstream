@@ -1,14 +1,6 @@
 //! Capture `State` related error variants.
 
-use librad::{
-    git::{
-        repo,
-        types::{namespace, NamespacedRef, Single},
-    },
-    meta::entity,
-    net,
-    uri::{self, RadUrn},
-};
+use librad::{git::types::Reference, identities::Urn, net};
 use radicle_surf::vcs::git::git2;
 
 use crate::source;
@@ -40,10 +32,6 @@ pub enum Error {
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 
-    /// Entity meta error.
-    #[error(transparent)]
-    Meta(#[from] entity::Error),
-
     /// Peer API error
     #[error(transparent)]
     PeerApi(#[from] net::peer::ApiError),
@@ -51,10 +39,6 @@ pub enum Error {
     /// Failed to parse a reference.
     #[error(transparent)]
     ReferenceName(#[from] librad::git_ext::reference::name::Error),
-
-    /// Repo error.
-    #[error(transparent)]
-    Repo(#[from] repo::Error),
 
     /// An error occurred when interacting with the source code of a project.
     #[error(transparent)]
@@ -68,35 +52,27 @@ pub enum Error {
     #[error(transparent)]
     Transport(#[from] librad::git::local::transport::Error),
 
-    /// Emitted when the parsing of a [`librad::uri::Path`] failed.
-    #[error(transparent)]
-    UriParse(#[from] uri::path::ParseError),
-
-    /// Verifcation error.
-    #[error(transparent)]
-    Verification(#[from] entity::HistoryVerificationError),
-
     /// There were no references for a Browser to be initialised.
     #[error("we could not find a default branch for '{name}@{urn}'")]
     NoDefaultBranch {
         /// Name of the project.
         name: String,
         /// RadUrn of the project.
-        urn: RadUrn,
+        urn: Urn,
     },
 
     /// Could not find a `NamespacedRef` when searching for it in the `Storage`.
     #[error("we could not find the '{reference}'")]
     MissingRef {
         /// The reference that we looked for in the `Storage`.
-        reference: NamespacedRef<namespace::Legacy, Single>,
+        reference: Reference,
     },
 }
 
 impl Error {
     /// Easily create an [`storage::Error::AlreadyExists`] exists error.
     #[must_use = "you made it, you use it"]
-    pub const fn already_exists(urn: RadUrn) -> Self {
+    pub const fn already_exists(urn: Urn) -> Self {
         Self::Storage(storage::Error::AlreadyExists(urn))
     }
 }
