@@ -6,8 +6,4 @@
   export let view: Blob;
 </script>
 
-<FileSource
-  blob={view.blob}
-  commit={view.blob.info.lastCommit}
-  on:root
-  on:select />
+<FileSource blob={view.blob} commit={view.blob.info.lastCommit} on:select />

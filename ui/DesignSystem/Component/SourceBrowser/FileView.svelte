@@ -23,7 +23,7 @@
 
 <div data-cy="file-view">
   {#if view.kind === ViewKind.Blob}
-    <Blob {view} on:root={onSelectRoot} on:select={onSelectCommit} />
+    <Blob {view} on:select={onSelectCommit} />
   {:else if view.kind === ViewKind.Root}
     <Root commit={$code.lastCommit} {view} on:select={onSelectCommit} />
   {:else if view.kind === ViewKind.Error}
