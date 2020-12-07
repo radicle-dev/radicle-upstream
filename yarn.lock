@@ -8958,9 +8958,9 @@ twemoji-parser@13.0.0:
   resolved "https://registry.yarnpkg.com/twemoji-parser/-/twemoji-parser-13.0.0.tgz#bd9d1b98474f1651dc174696b45cabefdfa405af"
   integrity sha512-zMaGdskpH8yKjT2RSE/HwE340R4Fm+fbie4AaqjDa4H/l07YUmAvxkSfNl6awVWNRRQ0zdzLQ8SAJZuY5MgstQ==
 
-"twemoji-svg-assets@https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1":
+"twemoji-svg-assets@git+https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1":
   version "13.0.1"
-  resolved "https://github.com/radicle-dev/twemoji-svg-assets.git#d5118e43f8cf01de6db52448e2fba3d059979fc1"
+  resolved "git+https://github.com/radicle-dev/twemoji-svg-assets.git#d5118e43f8cf01de6db52448e2fba3d059979fc1"
 
 twemoji@13.0.1:
   version "13.0.1"

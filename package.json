@@ -174,7 +174,7 @@
     "svelte-persistent-store": "^0.1.3",
     "timeago.js": "^4.0.2",
     "twemoji": "13.0.1",
-    "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1",
+    "twemoji-svg-assets": "git+https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1",
     "validate.js": "^0.13.1"
   },
   "husky": {
