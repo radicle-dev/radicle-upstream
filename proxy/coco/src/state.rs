@@ -5,6 +5,7 @@ use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
 use librad::{
     git::{
         identities,
+        identities::local::{self, LocalIdentity},
         include::{self, Include},
         local::url::LocalUrl,
         refs::Refs,
@@ -67,11 +68,11 @@ impl State {
     ///   * Checking the storage for the commit fails.
     pub async fn has_commit<Oid>(&self, urn: Urn, oid: Oid) -> Result<bool, Error>
     where
-        Oid: Into<git2::Oid> + Send + 'static,
+        Oid: AsRef<git2::Oid> + std::fmt::Debug + Send + 'static,
     {
         Ok(self
             .api
-            .with_storage(move |storage| storage.has_commit(&urn, oid.into()))
+            .with_storage(move |storage| storage.has_commit(&urn, oid))
             .await??)
     }
 
@@ -83,24 +84,20 @@ impl State {
 
     /// The [`SocketAddr`] this [`PeerApi`] is listening on.
     #[must_use]
-    pub fn listen_addr(&self) -> SocketAddr {
-        self.api.listen_addr()
+    pub fn listen_addrs(&self) -> impl Iterator<Item = SocketAddr> + '_ {
+        self.api.listen_addrs()
     }
 
     /// Get the default owner for this `PeerApi`.
-    pub async fn default_owner(&self) -> Option<Person> {
+    pub async fn default_owner(&self) -> Result<Option<LocalIdentity>, Error> {
         self.api
             .with_storage(move |storage| {
-                storage
-                    .default_rad_self()
-                    .map_err(|err| {
-                        log::warn!("an error occurred while trying to get 'rad/self': {}", err)
-                    })
-                    .ok()
+                if let maybe_urn = storage.config()?.user()? {
+                    let identity = local::load(&stoage, urn)?
+                }
             })
             .await
-            .ok()
-            .flatten()
+            .map_err(Error::from)
     }
 
     /// Set the default owner for this `PeerApi`.
@@ -350,7 +347,7 @@ impl State {
             None => {
                 let project = self.get_project(urn.clone(), None).await?;
                 project.default_branch().to_owned()
-            },
+            }
             Some(name) => name,
         }
         .parse()?;
@@ -654,7 +651,7 @@ impl State {
                     remote,
                     local: self.peer_id(),
                 }
-            },
+            }
         };
 
         let path = {

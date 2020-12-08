@@ -88,10 +88,10 @@ impl MaybeFrom<&Input> for Event {
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(protocol_event) => Some(Self::Protocol(protocol_event.clone())),
             Input::Request(input::Request::Cloned(urn, remote_peer)) => {
-                Some(Self::RequestCloned(urn.clone(), remote_peer))
+                Some(Self::RequestCloned(urn.clone(), *remote_peer))
             },
             Input::Request(input::Request::Cloning(urn, remote_peer)) => {
-                Some(Self::RequestCloning(urn.clone(), remote_peer))
+                Some(Self::RequestCloning(urn.clone(), *remote_peer))
             },
             Input::Request(input::Request::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
             Input::Request(input::Request::Tick) => Some(Self::RequestTick),
@@ -400,7 +400,7 @@ impl RunState {
 
                 match self
                     .waiting_room
-                    .found(urn.clone(), provider.peer_id, Instant::now())
+                    .found(&urn, provider.peer_id, Instant::now())
                 {
                     Err(err) => {
                         log::warn!("waiting room error: {:?}", err);
@@ -431,37 +431,44 @@ impl RunState {
                     cmds.push(Command::Request(command::Request::Query(urn)));
                     cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
-                if let Some(url) = self.waiting_room.next_clone() {
-                    cmds.push(Command::Request(command::Request::Clone(url)));
+                if let Some((urn, remote_peer)) = self.waiting_room.next_clone() {
+                    cmds.push(Command::Request(command::Request::Clone(urn, remote_peer)));
                     cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
                 cmds
             },
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
-            (_, input::Request::Cloning(url)) => self
+            (_, input::Request::Cloning(urn, remote_peer)) => self
                 .waiting_room
-                .cloning(url.clone(), Instant::now())
+                .cloning(&urn, remote_peer, Instant::now())
                 .map_or_else(
-                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+                    |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 ),
-            (_, input::Request::Cloned(url)) => {
-                self.waiting_room.cloned(&url, Instant::now()).map_or_else(
-                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+            (_, input::Request::Cloned(urn, remote_peer)) => self
+                .waiting_room
+                .cloned(&urn, remote_peer, Instant::now())
+                .map_or_else(
+                    |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
-                )
-            },
+                ),
             (_, input::Request::Queried(urn)) => {
                 self.waiting_room.queried(&urn, Instant::now()).map_or_else(
                     |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 )
             },
-            (_, input::Request::Failed { url, reason }) => {
+            (
+                _,
+                input::Request::Failed {
+                    remote_peer,
+                    reason,
+                    urn,
+                },
+            ) => {
                 log::warn!("Cloning failed with: {}", reason);
-                let urn = url.urn.clone();
                 self.waiting_room
-                    .cloning_failed(url, Instant::now())
+                    .cloning_failed(&urn, remote_peer, Instant::now())
                     .map_or_else(
                         |error| Self::handle_waiting_room_timeout(urn, &error),
                         |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],

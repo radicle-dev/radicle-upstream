@@ -13,7 +13,7 @@ use std::{
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{identities::Urn, peer::PeerId};
+use librad::{git::identities::Revision, identities::Urn, peer::PeerId};
 
 use crate::request::{Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut};
 
@@ -77,7 +77,7 @@ pub struct WaitingRoom<T, D> {
     /// The set of requests keyed by their `RadUrn`. This helps us keep only unique requests in the
     /// waiting room.
     #[serde(bound = "T: serde_millis::Milliseconds")]
-    requests: HashMap<Hash, SomeRequest<T>>,
+    requests: HashMap<Revision, SomeRequest<T>>,
 
     /// The configuration of the waiting room.
     config: Config<D>,
@@ -433,7 +433,7 @@ impl<T, D> WaitingRoom<T, D> {
             .and_then(|(urn, request)| match request {
                 SomeRequest::Found(request) => {
                     request.iter().find_map(|(peer_id, status)| match status {
-                        Status::Available => Some(urn.clone().into_rad_url(*peer_id)),
+                        Status::Available => Some((urn.clone(), *peer_id)),
                         _ => None,
                     })
                 },
@@ -468,8 +468,8 @@ mod test {
             .expect("failed to parse the urn");
         let remote_peer = PeerId::from(SecretKey::new());
         let url = (urn, remote_peer);
-        let have = waiting_room.request(&url.urn, 0);
-        let want = waiting_room.get(&url.urn).unwrap();
+        let have = waiting_room.request(&urn, 0);
+        let want = waiting_room.get(&urn).unwrap();
 
         assert_eq!(have, Either::Left(want.clone()));
 
@@ -477,43 +477,43 @@ mod test {
         assert_eq!(
             created,
             Some((
-                url.urn.clone(),
-                &SomeRequest::Created(Request::new(url.urn.clone(), 0))
+                urn.clone(),
+                &SomeRequest::Created(Request::new(urn.clone(), 0))
             )),
         );
 
-        waiting_room.queried(&url.urn, 0)?;
-        let expected = SomeRequest::Requested(Request::new(url.urn.clone(), 0).request(0));
-        assert_eq!(waiting_room.get(&url.urn), Some(&expected));
+        waiting_room.queried(&urn, 0)?;
+        let expected = SomeRequest::Requested(Request::new(urn.clone(), 0).request(0));
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
 
-        waiting_room.found(url.clone(), 0)?;
+        waiting_room.found(&urn, remote_peer, 0)?;
         let expected = SomeRequest::Found(
-            Request::new(url.urn.clone(), 0)
+            Request::new(urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority, 0),
+                .into_found(remote_peer, 0),
         );
-        assert_eq!(waiting_room.get(&url.urn), Some(&expected));
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
 
-        waiting_room.cloning(url.clone(), 0)?;
+        waiting_room.cloning(&urn, remote_peer, 0)?;
         let expected = SomeRequest::Cloning(
-            Request::new(url.urn.clone(), 0)
+            Request::new(urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority, 0)
-                .cloning(MAX_QUERIES, MAX_CLONES, url.authority, 0)
+                .into_found(remote_peer, 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, remote_peer, 0)
                 .unwrap_right(),
         );
-        assert_eq!(waiting_room.get(&url.urn), Some(&expected));
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
 
-        waiting_room.cloned(&url, 0)?;
+        waiting_room.cloned(&urn, remote_peer, 0)?;
         let expected = SomeRequest::Cloned(
-            Request::new(url.urn.clone(), 0)
+            Request::new(urn.clone(), 0)
                 .request(0)
-                .into_found(url.authority, 0)
-                .cloning(MAX_QUERIES, MAX_CLONES, url.authority, 0)
+                .into_found(remote_peer, 0)
+                .cloning(MAX_QUERIES, MAX_CLONES, remote_peer, 0)
                 .unwrap_right()
-                .cloned(url.clone(), 0),
+                .cloned(remote_peer, 0),
         );
-        assert_eq!(waiting_room.get(&url.urn), Some(&expected));
+        assert_eq!(waiting_room.get(&urn), Some(&expected));
 
         Ok(())
     }
@@ -616,23 +616,24 @@ mod test {
 
         let mut peers = vec![];
         for _ in 0..=NUM_CLONES {
-            peers.push((urn.clone(), PeerId::from(SecretKey::new())));
+            peers.push(PeerId::from(SecretKey::new()));
         }
 
         let _ = waiting_room.request(&urn, ());
         waiting_room.queried(&urn, ())?;
 
-        for url in &peers {
-            waiting_room.found(url.clone(), ())?;
+        for remote_peer in &peers {
+            waiting_room.found(&urn, *remote_peer, ())?;
         }
 
-        for (urn, remote_peer) in &peers[0..NUM_CLONES] {
-            waiting_room.cloning(urn, remote_peer, ())?;
-            waiting_room.cloning_failed(urn, remote_peer, ())?;
+        for remote_peer in &peers[0..NUM_CLONES] {
+            waiting_room.cloning(&urn, *remote_peer, ())?;
+            waiting_room.cloning_failed(&urn, *remote_peer, ())?;
         }
 
         assert_eq!(
             waiting_room.cloning(
+                &urn,
                 peers
                     .last()
                     .expect("unless you changed NUM_CLONES to < -1 we should be fine here. qed.")
@@ -664,16 +665,16 @@ mod test {
 
         let mut peers = vec![];
         for _ in 0..NUM_CLONES {
-            peers.push((urn.clone(), PeerId::from(SecretKey::new())));
+            peers.push(PeerId::from(SecretKey::new()));
         }
 
         let _ = waiting_room.request(&urn, 0);
         waiting_room.queried(&urn, 1)?;
 
-        for url in peers {
-            waiting_room.found(url.clone(), 2)?;
-            waiting_room.cloning(url.clone(), 2)?;
-            waiting_room.cloning_failed(url, 2)?;
+        for remote_peer in peers {
+            waiting_room.found(&urn, remote_peer, 2)?;
+            waiting_room.cloning(&urn, remote_peer, 2)?;
+            waiting_room.cloning_failed(&urn, remote_peer, 2)?;
         }
 
         assert_matches!(waiting_room.get(&urn), Some(SomeRequest::Requested(_)));
@@ -736,7 +737,7 @@ mod test {
         );
 
         // cloned
-        let cloned = cloning.cloned(urn.clone(), peer, ());
+        let cloned = cloning.cloned(peer, ());
         waiting_room.insert(urn.clone(), cloned);
         assert_eq!(
             waiting_room.canceled(&urn, ()),
@@ -760,7 +761,8 @@ mod test {
         let config = Config::default();
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(config);
 
-        let urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe";
+        let urn =
+            "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".parse::<Urn>()?;
         let remote_peer = PeerId::from(SecretKey::new());
 
         let ready = waiting_room.find_by_state(RequestState::Cloned);
@@ -779,7 +781,7 @@ mod test {
                 .into_found(remote_peer, 0)
                 .cloning(config.max_queries, config.max_clones, remote_peer, 0)
                 .unwrap_right()
-                .cloned(&urn, 0),
+                .cloned(remote_peer, 0),
         );
         assert_eq!(ready, Some((urn, &expected)));
 
