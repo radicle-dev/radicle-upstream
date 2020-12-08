@@ -33,7 +33,7 @@ pub struct Identifier {
     pub peer_id: peer::PeerId,
 }
 
-impl<ST> From<(peer::PeerId, Person)> for Identifier {
+impl From<(peer::PeerId, Person)> for Identifier {
     fn from((peer_id, user): (peer::PeerId, Person)) -> Self {
         Self {
             handle: user.name().to_string(),

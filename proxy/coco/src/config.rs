@@ -52,13 +52,6 @@ impl TryFrom<Paths> for paths::Paths {
     }
 }
 
-/// Short-hand type for [`discovery::Static`] over a vector of [`PeerId`]s and
-/// [`SocketAddr`].
-pub type Disco = discovery::Static<
-    std::iter::Map<std::vec::IntoIter<seed::Seed>, fn(seed::Seed) -> (PeerId, SocketAddr)>,
-    SocketAddr,
->;
-
 /// Provide the default config.
 ///
 /// Address: 127.0.0.1:0
@@ -71,7 +64,7 @@ pub type Disco = discovery::Static<
 pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, io::Error> {
+) -> Result<net::peer::PeerConfig<discovery::Static>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(
         paths,
@@ -89,7 +82,7 @@ pub fn configure<D>(
     key: keys::SecretKey,
     listen_addr: SocketAddr,
     disco: D,
-) -> net::peer::PeerConfig<D, keys::SecretKey> {
+) -> net::peer::PeerConfig<D> {
     let gossip_params = net::gossip::MembershipParams::default();
     let storage_config = net::peer::StorageConfig::default();
 
@@ -98,7 +91,6 @@ pub fn configure<D>(
         paths,
         listen_addr,
         gossip_params,
-        disco,
         storage_config,
     }
 }
@@ -106,7 +98,7 @@ pub fn configure<D>(
 /// Builds a static discovery over the list of given `seeds`.
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> Disco {
+pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> discovery::Static {
     discovery::Static::new(
         seeds
             .into_iter()

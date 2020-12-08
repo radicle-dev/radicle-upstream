@@ -43,10 +43,14 @@ pub const RECEIVER_CAPACITY: usize = 128;
 
 /// Peer operation errors.
 #[derive(Debug, thiserror::Error)]
-pub enum Error<E> {
+pub enum Error<C, E>
+where
+    C: std::fmt::Debug,
+    E: std::error::Error + std::fmt::Debug + 'static,
+{
     /// Failed to build and announce state updates.
     #[error(transparent)]
-    Announcement(#[from] announcement::Error<E>),
+    Announcement(#[from] announcement::Error<C, E>),
 
     /// There was an error in a spawned task.
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
@@ -54,7 +58,7 @@ pub enum Error<E> {
 
     /// There was an error when interacting with [`State`].
     #[error(transparent)]
-    State(#[from] state::Error),
+    State(#[from] state::Error<C>),
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
@@ -116,7 +120,11 @@ impl Peer {
     /// to get notified of errors. Unlike [`tokio::task::JoinHandle`], however, [`Running`] does
     /// not detach the tasks. That is, if and when [`Running`] is dropped, all tasks are
     /// cancelled.
-    pub fn into_running(self) -> Running {
+    pub fn into_running<C, E>(self) -> Running<C, E>
+    where
+        C: std::fmt::Debug,
+        E: std::error::Error + std::fmt::Debug + 'static,
+    {
         let Self {
             run_loop,
             state,
@@ -164,14 +172,22 @@ impl Peer {
 
 /// Future returned by [`Peer::into_running`].
 #[must_use = "to the sig hup, don't stop, just drop"]
-pub struct Running {
+pub struct Running<C, E>
+where
+    C: std::fmt::Debug,
+    E: std::error::Error + std::fmt::Debug + 'static,
+{
     /// Join and abort handles for the protocol run loop.
     protocol: SpawnAbortable<()>,
     /// The [`Subroutines`] associated with this [`Peer`] instance.
     subroutines: SpawnAbortable<Result<(), spawn_abortable::Error>>,
 }
 
-impl Drop for Running {
+impl<C, E> Drop for Running<C, E>
+where
+    C: std::fmt::Debug,
+    E: std::error::Error + std::fmt::Debug + 'static,
+{
     fn drop(&mut self) {
         log::trace!("`peer::Running` is being dropped");
         self.protocol.abort();
@@ -179,8 +195,12 @@ impl Drop for Running {
     }
 }
 
-impl Future for Running {
-    type Output = Result<(), Error>;
+impl<C, E> Future for Running<C, E>
+where
+    C: std::fmt::Debug,
+    E: std::error::Error + std::fmt::Debug + 'static,
+{
+    type Output = Result<(), Error<C, E>>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         let err = match self.protocol.poll_unpin(cx) {
@@ -203,7 +223,7 @@ impl Future for Running {
                     Ok(Ok(())) => Ok(()),
                 };
                 Poll::Ready(val)
-            }
+            },
             Poll::Pending => Poll::Pending,
         }
     }

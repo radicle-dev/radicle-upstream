@@ -4,7 +4,10 @@ use std::{collections::HashSet, ops::Deref as _};
 
 use kv::Codec as _;
 
-use librad::identities::urn::{ParseError, Urn};
+use librad::{
+    git::identities::Revision,
+    identities::urn::{ParseError, Urn},
+};
 use radicle_git_ext::RefLike;
 
 use crate::{
@@ -20,7 +23,11 @@ const KEY_NAME: &str = "latest";
 
 /// Announcement errors.
 #[derive(Debug, thiserror::Error)]
-pub enum Error<E> {
+pub enum Error<C, E>
+where
+    C: std::fmt::Debug,
+    E: std::error::Error + std::fmt::Debug + 'static,
+{
     /// Failures from [`kv`].
     #[error(transparent)]
     Kv(#[from] kv::Error),
@@ -31,11 +38,11 @@ pub enum Error<E> {
 
     /// Error occurred when interacting with [`State`].
     #[error(transparent)]
-    State(#[from] state::Error),
+    State(#[from] state::Error<C>),
 }
 
 /// An update and all the required information that can be announced on the network.
-pub type Announcement = (Urn, Oid);
+pub type Announcement = (Urn<Revision>, Oid);
 
 /// Unique list of [`Announcement`]s.
 pub type Updates = HashSet<Announcement>;
@@ -81,7 +88,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        }
+        },
     }
 }
 
@@ -99,7 +106,11 @@ pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load(store: &kv::Store) -> Result<Updates, Error> {
+pub fn load<C, E>(store: &kv::Store) -> Result<Updates, Error<C, E>>
+where
+    C: std::fmt::Debug,
+    E: std::error::Error + std::fmt::Debug + 'static,
+{
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
@@ -135,7 +146,11 @@ pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
+pub fn save<C, E>(store: &kv::Store, updates: Updates) -> Result<(), Error<C, E>>
+where
+    C: std::fmt::Debug,
+    E: std::error::Error + std::fmt::Debug + 'static,
+{
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
@@ -147,8 +162,7 @@ mod test {
 
     use pretty_assertions::assert_eq;
 
-    use librad::identities::Urn;
-    use librad::keys::SecretKey;
+    use librad::{identities::Urn, keys::SecretKey};
     use radicle_git_ext::RefLike;
 
     use crate::{config, oid, signer, state::State};

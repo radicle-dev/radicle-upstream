@@ -7,7 +7,10 @@ use crate::source;
 
 /// Errors that may occur when interacting with [`super::State`].
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
+pub enum Error<C>
+where
+    C: std::fmt::Debug,
+{
     /// Peer accept error.
     #[error(transparent)]
     Accept(#[from] net::peer::AcceptError),
@@ -65,11 +68,14 @@ pub enum Error {
     #[error("we could not find the '{reference}'")]
     MissingRef {
         /// The reference that we looked for in the `Storage`.
-        reference: Reference,
+        reference: Reference<C>,
     },
 }
 
-impl Error {
+impl<C> Error<C>
+where
+    C: std::fmt::Debug,
+{
     /// Easily create an [`storage::Error::AlreadyExists`] exists error.
     #[must_use = "you made it, you use it"]
     pub const fn already_exists(urn: Urn) -> Self {

@@ -81,7 +81,7 @@ impl Subroutines {
                     delta: config::DEFAULT_WAITING_ROOM_TIMEOUT,
                     ..request::waiting_room::Config::default()
                 })
-            }
+            },
             Ok(None) => WaitingRoom::new(request::waiting_room::Config {
                 delta: config::DEFAULT_WAITING_ROOM_TIMEOUT,
                 ..request::waiting_room::Config::default()
@@ -114,19 +114,19 @@ impl Subroutines {
                     .map(|request| match request {
                         control::Request::CurrentStatus(sender) => {
                             Input::Control(input::Control::Status(sender))
-                        }
+                        },
                         control::Request::CancelSearch(urn, time, sender) => {
                             Input::Control(input::Control::CancelRequest(urn, time, sender))
-                        }
+                        },
                         control::Request::GetSearch(urn, sender) => {
                             Input::Control(input::Control::GetRequest(urn, sender))
-                        }
+                        },
                         control::Request::ListSearches(sender) => {
                             Input::Control(input::Control::ListRequests(sender))
-                        }
+                        },
                         control::Request::StartSearch(urn, time, sender) => {
                             Input::Control(input::Control::CreateRequest(urn, time, sender))
-                        }
+                        },
                     })
                     .boxed(),
             );
@@ -159,18 +159,18 @@ impl Subroutines {
             Command::Control(control_command) => match control_command {
                 command::Control::Respond(respond_command) => {
                     SpawnAbortable::new(control_respond(respond_command))
-                }
+                },
             },
             Command::Include(urn) => SpawnAbortable::new(include::update(self.state.clone(), urn)),
             Command::PersistWaitingRoom(waiting_room) => {
                 SpawnAbortable::new(persist_waiting_room(waiting_room, self.store.clone()))
-            }
+            },
             Command::Request(command::Request::Query(urn)) => {
                 SpawnAbortable::new(query(urn, self.state.clone(), self.input_sender.clone()))
-            }
+            },
             Command::Request(command::Request::Clone(url)) => {
                 SpawnAbortable::new(clone(url, self.state.clone(), self.input_sender.clone()))
-            }
+            },
             Command::Request(command::Request::TimedOut(urn)) => {
                 let mut sender = self.input_sender.clone();
                 SpawnAbortable::new(async move {
@@ -179,17 +179,17 @@ impl Subroutines {
                         .await
                         .ok();
                 })
-            }
+            },
             Command::StartSyncTimeout(sync_period) => {
                 SpawnAbortable::new(start_sync_timeout(sync_period, self.input_sender.clone()))
-            }
+            },
             Command::SyncPeer(peer_id) => {
                 SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
-            }
+            },
             Command::EmitEvent(event) => {
                 self.subscriber.send(event).ok();
                 SpawnAbortable::new(async move {})
-            }
+            },
         }
     }
 }
@@ -214,7 +214,7 @@ impl Future for Subroutines {
                 Poll::Ready(Some(Err(e))) => {
                     log::warn!("error in spawned subroutine task: {:?}", e);
                     return Poll::Ready(Err(e));
-                }
+                },
                 Poll::Ready(Some(Ok(()))) => continue,
                 // Either pending, or FuturesUnordered thinks it's done, but
                 // we'll enqueue new tasks below
@@ -222,7 +222,7 @@ impl Future for Subroutines {
                 Poll::Pending => {
                     tasks_initial_empty = false;
                     break;
-                }
+                },
             }
         }
 
@@ -254,14 +254,14 @@ impl Future for Subroutines {
                             ))
                             .ok();
                     }
-                }
+                },
                 Poll::Ready(None) => return Poll::Ready(Ok(())),
                 Poll::Pending => {
                     if tasks_initial_empty && !self.pending_tasks.is_empty() {
                         cx.waker().wake_by_ref()
                     }
                     return Poll::Pending;
-                }
+                },
             }
         }
     }
@@ -276,14 +276,14 @@ async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input
                 .send(Input::Announce(input::Announce::Succeeded(updates)))
                 .await
                 .ok();
-        }
+        },
         Err(err) => {
             log::error!("announce error: {:?}", err);
             sender
                 .send(Input::Announce(input::Announce::Failed))
                 .await
                 .ok();
-        }
+        },
     }
 }
 
@@ -319,14 +319,14 @@ async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<Input>) {
                 .send(Input::PeerSync(input::Sync::Succeeded(peer_id)))
                 .await
                 .ok();
-        }
+        },
         Err(err) => {
             log::error!("sync error for {}: {:?}", peer_id, err);
             sender
                 .send(Input::PeerSync(input::Sync::Failed(peer_id)))
                 .await
                 .ok();
-        }
+        },
     }
 }
 
@@ -364,7 +364,7 @@ async fn clone(urn: Urn, remote_peer: PeerId, state: State, mut sender: mpsc::Se
                 .send(Input::Request(input::Request::Cloned(urn, remote_peer)))
                 .await
                 .ok();
-        }
+        },
         Err(err) => {
             log::warn!(
                 "an error occurred for the command 'Clone' for the URN '{}' from {}:\n{}",
@@ -380,6 +380,6 @@ async fn clone(urn: Urn, remote_peer: PeerId, state: State, mut sender: mpsc::Se
                 }))
                 .await
                 .ok();
-        }
+        },
     }
 }
