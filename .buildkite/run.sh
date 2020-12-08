@@ -10,9 +10,6 @@ du -hs "$YARN_TEMPDIR"
 rm -rf "$YARN_TEMPDIR"
 mkdir -p "$YARN_TEMPDIR"
 
-echo "--- Installing yarn dependencies"
-time TMPDIR="$YARN_TEMPDIR" yarn install --frozen-lockfile
-
 echo "--- Loading proxy/target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"
 
@@ -32,43 +29,10 @@ echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 
-echo "--- Run proxy docs"
 (
   cd proxy
-  export RUSTDOCFLAGS="-D intra-doc-link-resolution-failure"
-  time cargo doc --workspace --no-deps --all-features --document-private-items
-)
-
-echo "--- Run proxy fmt"
-(cd proxy && time cargo fmt --all -- --check)
-
-echo "--- Run proxy lints"
-(
-  cd proxy
-  time timeout 4m cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
-)
-
-echo "--- Run app eslint checks"
-time yarn lint
-
-echo "--- Run app prettier checks"
-time yarn prettier:check
-
-echo "--- Check TypeScript"
-time yarn typescript:check
-
-echo "--- Run proxy tests"
-(
-  cd proxy
+  export RUST_LOG=trace
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
-  time cargo test --all --all-features --all-targets -- -Z unstable-options --ensure-time
+  time cargo test -p coco --test gossip -- -Z unstable-options --ensure-time --nocapture
 )
-
-echo "--- Starting proxy daemon and runing app tests"
-time ELECTRON_ENABLE_LOGGING=1 yarn test
-
-if [[ "${BUILDKITE_BRANCH:-}" == "master" || -n "${BUILDKITE_TAG:-}" ]]; then
-  echo "--- Packaging and uploading app binaries"
-  time yarn dist
-fi
