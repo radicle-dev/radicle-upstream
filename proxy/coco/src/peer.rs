@@ -183,18 +183,13 @@ impl Future for Running {
     type Output = Result<(), Error>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        let err = match self.protocol.poll_unpin(cx) {
-            Poll::Ready(val) => match val {
-                Err(e) => Some(Error::Spawn(e)),
-                Ok(()) => None,
+        match self.protocol.poll_unpin(cx) {
+            Poll::Ready(Err(err)) => {
+                log::trace!("run loop error: {:?}", err);
+                return Poll::Ready(Err(Error::Spawn(err)));
             },
-            Poll::Pending => None,
+            _ => {},
         };
-
-        if let Some(err) = err {
-            log::trace!("run loop error: {:?}", err);
-            return Poll::Ready(Err(err));
-        }
 
         match self.subroutines.poll_unpin(cx) {
             Poll::Ready(val) => {
@@ -202,6 +197,7 @@ impl Future for Running {
                     Err(e) | Ok(Err(e)) => Err(Error::Spawn(e)),
                     Ok(Ok(())) => Ok(()),
                 };
+                log::trace!("running done");
                 Poll::Ready(val)
             },
             Poll::Pending => Poll::Pending,
