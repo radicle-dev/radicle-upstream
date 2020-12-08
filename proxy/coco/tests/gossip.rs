@@ -9,7 +9,7 @@ use librad::net::{
     protocol::ProtocolEvent,
 };
 
-use coco::{peer::run_config, seed::Seed, RunConfig};
+use coco::{peer::run_config, seed::Seed, RunConfig, SpawnAbortable};
 
 #[macro_use]
 mod common;
@@ -36,7 +36,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let alice_events = alice_peer.subscribe();
 
-    tokio::spawn(alice_peer.into_running());
+    let _alice_task = SpawnAbortable::new(alice_peer.into_running());
 
     let alice = alice_state.init_owner("alice").await?;
     alice_state
@@ -91,8 +91,8 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
-    tokio::spawn(alice_peer.into_running());
-    tokio::spawn(bob_peer.into_running());
+    let _alice_task = SpawnAbortable::new(alice_peer.into_running());
+    let _bob_task = SpawnAbortable::new(bob_peer.into_running());
 
     connected(bob_connected, &alice_peer_id).await?;
 
@@ -146,25 +146,33 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let clone_listener = bob_peer.subscribe();
     let query_listener = bob_peer.subscribe();
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    let _alice_task = SpawnAbortable::new(alice_peer.into_running());
+    let _bob_task = SpawnAbortable::new(bob_peer.into_running());
 
+    println!("wait: connect");
     connected(bob_events, &alice_peer_id).await?;
 
+    println!("wait: bob init owner");
     bob_state.init_owner("bob").await?;
 
     let urn = {
+        println!("wait: alice init owner");
         let alice = alice_state.init_owner("alice").await?;
         let project = radicle_project(alice_repo_path.clone());
+        println!("wait: alice init project");
         alice_state.init_project(&alice, project).await?.urn()
     };
 
+    println!("wait: bob request project");
     bob_control.request_project(&urn, Instant::now()).await;
 
+    println!("wait: requested");
     requested(query_listener, &urn).await?;
+    println!("wait: assert clonedd");
     assert_cloned(clone_listener, &urn.clone().into_rad_url(alice_peer_id)).await?;
 
     // TODO(finto): List projects
+    println!("wait: bob get project");
     let project = bob_state.get_project(urn, None).await;
     assert!(project.is_ok());
 
