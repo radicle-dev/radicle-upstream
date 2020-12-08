@@ -74,7 +74,7 @@
   <header>
     <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />
-      <span class="file-name"> {blob.path.split('/').join(' / ')} </span>
+      <span class="file-name">{blob.path.split('/').join(' / ')}</span>
     </div>
     <div class="commit-header">
       <CommitTeaser {commit} on:select style="height: 100%" />
