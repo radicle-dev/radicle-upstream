@@ -33,6 +33,7 @@ cat "$HOME/.gitconfig"
   cd proxy
   export RUST_LOG=trace
   export RUST_TEST_TIME_UNIT=2000,4000
+  export GIT_TRACE2=1 GIT_TRACE_PACKET=1 GIT_TRACE_SETUP=1
   export RUST_TEST_TIME_INTEGRATION=2000,8000
   timeout 8m cargo test -p coco --test gossip can_ask_and_clone_project -- -Z unstable-options --ensure-time --nocapture
 )
