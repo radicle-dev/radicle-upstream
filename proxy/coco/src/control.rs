@@ -242,10 +242,7 @@ pub async fn track_fake_peer(
 ///
 ///   * The platinum directory path was malformed
 ///   * Getting the branches fails
-pub fn clone_platinum<C>(platinum_into: impl AsRef<path::Path>) -> Result<(), Error<C>>
-where
-    C: std::fmt::Debug,
-{
+pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error> {
     let platinum_from = platinum_directory().expect("failed to get platinum directory");
     let platinum_from = platinum_from
         .to_str()

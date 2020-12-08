@@ -9,6 +9,7 @@ use librad::{
     identities::urn::{ParseError, Urn},
 };
 use radicle_git_ext::RefLike;
+use radicle_surf::git::git2;
 
 use crate::{
     oid::Oid,
@@ -23,22 +24,18 @@ const KEY_NAME: &str = "latest";
 
 /// Announcement errors.
 #[derive(Debug, thiserror::Error)]
-pub enum Error<C, E>
-where
-    C: std::fmt::Debug,
-    E: std::error::Error + std::fmt::Debug + 'static,
-{
+pub enum Error {
     /// Failures from [`kv`].
     #[error(transparent)]
     Kv(#[from] kv::Error),
 
     /// Failures parsing.
     #[error(transparent)]
-    Parse(#[from] ParseError<E>),
+    Parse(#[from] ParseError<git2::Error>),
 
     /// Error occurred when interacting with [`State`].
     #[error(transparent)]
-    State(#[from] state::Error<C>),
+    State(#[from] state::Error),
 }
 
 /// An update and all the required information that can be announced on the network.
@@ -88,7 +85,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        },
+        }
     }
 }
 
@@ -106,11 +103,7 @@ pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load<C, E>(store: &kv::Store) -> Result<Updates, Error<C, E>>
-where
-    C: std::fmt::Debug,
-    E: std::error::Error + std::fmt::Debug + 'static,
-{
+pub fn load<E>(store: &kv::Store) -> Result<Updates, Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
@@ -146,11 +139,7 @@ pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save<C, E>(store: &kv::Store, updates: Updates) -> Result<(), Error<C, E>>
-where
-    C: std::fmt::Debug,
-    E: std::error::Error + std::fmt::Debug + 'static,
-{
+pub fn save<E>(store: &kv::Store, updates: Updates) -> Result<(), Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }

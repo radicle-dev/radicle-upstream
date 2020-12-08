@@ -1,16 +1,17 @@
 //! Capture `State` related error variants.
 
-use librad::{git::types::Reference, identities::Urn, net};
+use librad::{
+    git::types::{One, Reference},
+    identities::Urn,
+    net,
+};
 use radicle_surf::vcs::git::git2;
 
 use crate::source;
 
 /// Errors that may occur when interacting with [`super::State`].
 #[derive(Debug, thiserror::Error)]
-pub enum Error<C>
-where
-    C: std::fmt::Debug,
-{
+pub enum Error {
     /// Peer accept error.
     #[error(transparent)]
     Accept(#[from] net::peer::AcceptError),
@@ -30,6 +31,9 @@ where
     /// An error occurred when performing git operations.
     #[error(transparent)]
     Git(#[from] git2::Error),
+
+    #[error(transparent)]
+    Identities(#[from] librad::git::identities::Error),
 
     /// An error occured building include files.
     #[error(transparent)]
@@ -68,14 +72,11 @@ where
     #[error("we could not find the '{reference}'")]
     MissingRef {
         /// The reference that we looked for in the `Storage`.
-        reference: Reference<C>,
+        reference: Reference<One>,
     },
 }
 
-impl<C> Error<C>
-where
-    C: std::fmt::Debug,
-{
+impl Error {
     /// Easily create an [`storage::Error::AlreadyExists`] exists error.
     #[must_use = "you made it, you use it"]
     pub const fn already_exists(urn: Urn) -> Self {

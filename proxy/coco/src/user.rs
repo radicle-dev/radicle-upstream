@@ -15,9 +15,6 @@ pub type User = VerifiedPerson;
 /// # Errors
 ///
 /// If any of the verification steps fail
-pub fn verify<C>(storage: &Storage, urn: &Urn) -> Result<Option<User>, state::Error<C>>
-where
-    C: std::fmt::Debug,
-{
+pub fn verify(storage: &Storage, urn: &Urn) -> Result<Option<User>, state::Error> {
     Ok(person::verify(storage, urn)?)
 }
