@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.4...v0.1.5) (2020-12-08)
+
+
+### Features
+
+* **ui:** extend effect of enter key in onboarding ([#1436](https://github.com/radicle-dev/radicle-upstream/issues/1436)) ([2e1964c](https://github.com/radicle-dev/radicle-upstream/commit/2e1964cffc3efb681f446e8d03988eff416d4061))
+
+
+### Bug Fixes
+
+* **ui:** avoid notify on internal request handling ([05bd5aa](https://github.com/radicle-dev/radicle-upstream/commit/05bd5aa950d5ee35903dcd6904f50d49724e20df)), closes [#1424](https://github.com/radicle-dev/radicle-upstream/issues/1424)
+* **ui:** open only one modal at a time ([#1434](https://github.com/radicle-dev/radicle-upstream/issues/1434)) ([f996315](https://github.com/radicle-dev/radicle-upstream/commit/f996315868786ef57d2f9ad9b002d46778b4f8ac))
+* **ui:** revert to default after untrack ([#1450](https://github.com/radicle-dev/radicle-upstream/issues/1450)) ([d1ce77e](https://github.com/radicle-dev/radicle-upstream/commit/d1ce77ee04a385f75edc594979da60e8d7aa8faf)), closes [#1210](https://github.com/radicle-dev/radicle-upstream/issues/1210)
+
 ### [0.1.4](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.3...v0.1.4) (2020-11-30)
 
 
