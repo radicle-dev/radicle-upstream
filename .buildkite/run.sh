@@ -45,7 +45,7 @@ echo "--- Run proxy fmt"
 echo "--- Run proxy lints"
 (
   cd proxy
-  time timeout 4m cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
+  time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
 )
 
 echo "--- Run app eslint checks"
@@ -62,7 +62,7 @@ echo "--- Run proxy tests"
   cd proxy
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
-  time cargo test --all --all-features --all-targets -- -Z unstable-options --ensure-time
+  timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
 
 echo "--- Starting proxy daemon and runing app tests"
