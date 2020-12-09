@@ -1,6 +1,7 @@
 //! Utility to work with the peer api of librad.
 
 use std::iter::FromIterator;
+use std::ops::Deref;
 use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
 
 use librad::{
@@ -131,14 +132,15 @@ impl State {
     pub async fn init_owner(&self, name: String) -> Result<Person, Error> {
         let pk = keys::PublicKey::from(self.signer.public_key());
         self.api
-            .with_storage(move |store| {
-                person::create(
+            .with_storage(move |store| match local::default(&store)? {
+                Some(owner) => Ok(owner.into_inner().into_inner()),
+                None => {person::create(
                     &store,
                     payload::Person {
                         name: Cstring::from(name),
                     },
                     Direct::from_iter(vec![pk].into_iter()),
-                )
+                ),
             })
             .await?
             .map_err(Error::from)
