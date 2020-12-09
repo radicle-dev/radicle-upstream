@@ -142,8 +142,9 @@ yarn lint                   # Check UI code for linting errors
 yarn reset:state            # Delete all local state: identity keys, monorepo
                             # and saved preferences
 
-yarn setup:evm              # Setup a local ethereum node to which we deploy
-                            # the Radicle Contracts.
+yarn start:ethereum         # Setup a local ethereum node to which we deploy
+                            # the Radicle Contracts and set the intial balance
+                            # of a stated local ethereum development account.
 ```
 
 
