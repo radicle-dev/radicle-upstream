@@ -83,4 +83,4 @@ tabs:
 [wctw]: https://github.com/radicle-dev/walletconnect-test-wallet
 [rc]: https://github.com/radicle-dev/radicle-contracts
 
-[dev-setup]: [./funding-dev-setup] "Radicle Funding Development Set up"
+[dev-setup]: ./funding-dev-setup.svg "Radicle Funding Development Set up"
