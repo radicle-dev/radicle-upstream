@@ -8,6 +8,7 @@ use librad::{
         identities,
         identities::local::{self, LocalIdentity},
         identities::person,
+        identities::project,
         include::{self, Include},
         local::url::LocalUrl,
         refs::Refs,
@@ -15,7 +16,7 @@ use librad::{
         types::{namespace, Reference, Single},
     },
     git_ext::{OneLevel, RefLike},
-    identities::delegation::Direct,
+    identities::delegation::{Direct, Indirect},
     identities::payload,
     identities::{Person, Project, SomeIdentity, Urn},
     internal::canonical::Cstring,
@@ -436,43 +437,59 @@ impl State {
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
     pub async fn init_project(
         &self,
-        owner: &User,
-        project: crate::project::Create,
+        owner: LocalIdentity,
+        crate::project::Create {
+            description,
+            default_branch,
+            name,
+            ..
+        }: crate::project::Create,
     ) -> Result<Project, Error> {
-        let mut meta = project.build(owner, self.signer.public_key().into())?;
-        meta.sign_by_user(&self.signer, owner)?;
+        let pk = keys::PublicKey::from(self.signer.public_key());
+        let project = self
+            .api
+            .with_storage(move |store| {
+                project::create(
+                    &store,
+                    owner,
+                    payload::Project {
+                        default_branch: Some(Cstring::from(default_branch.as_str())),
+                        description: Some(Cstring::from(description)),
+                        name: Cstring::from(name),
+                    },
+                    Indirect::from(pk),
+                )
+            })
+            .await??;
 
-        let local_peer_id = self.api.peer_id();
-        let url = LocalUrl::from_urn(meta.urn(), local_peer_id);
+        // TODO(xla): Not clear what the implications are for the transport changes and repo setup.
+        //            Summoning a finto!
+        // let local_peer_id = self.api.peer_id();
+        // let url = LocalUrl::from_urn(meta.urn(), local_peer_id);
+        // let repository = project
+        //     .validate(url)
+        //     .map_err(crate::project::create::Error::from)?;
+        // let meta = {
+        //     let results = self.transport_results();
+        //     let (meta, repo) = self
+        //         .api
+        //         .with_storage(move |storage| {
+        //             let _ = storage.create_repo(&meta)?;
+        //             log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
+        //             let repo = repository
+        //                 .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
+        //                 .map_err(crate::project::create::Error::from)?;
+        //             Ok::<_, Error>((meta, repo))
+        //         })
+        //         .await??;
+        //     Self::process_transport_results(&results)?;
+        //     meta
+        // };
+        // let include_path = self.update_include(project.urn()).await?;
+        // include::set_include_path(&repo, include_path)?;
+        // crate::peer::gossip::announce(self, &project.urn(), None).await;
 
-        let repository = project
-            .validate(url)
-            .map_err(crate::project::create::Error::from)?;
-
-        let meta = {
-            let results = self.transport_results();
-            let (meta, repo) = self
-                .api
-                .with_storage(move |storage| {
-                    let _ = storage.create_repo(&meta)?;
-                    log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
-
-                    let repo = repository
-                        .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
-                        .map_err(crate::project::create::Error::from)?;
-
-                    Ok::<_, Error>((meta, repo))
-                })
-                .await??;
-            Self::process_transport_results(&results)?;
-            let include_path = self.update_include(meta.urn()).await?;
-            include::set_include_path(&repo, include_path)?;
-            meta
-        };
-
-        crate::peer::gossip::announce(self, &meta.urn(), None).await;
-
-        Ok(meta)
+        Ok(project)
     }
 
     /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a

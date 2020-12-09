@@ -79,6 +79,7 @@ pub struct Create {
     pub description: String,
     /// The default branch name for the project.
     pub default_branch: OneLevel,
+    pub name: String,
     /// What kind of working copy we're working with, i.e. new or existing.
     pub repo: Repo,
 }
