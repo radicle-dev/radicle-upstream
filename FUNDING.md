@@ -50,7 +50,7 @@ In the development environment, we set up these three pieces as follows:
 
 - Run `yarn install` within `radicle-upstream`
 
-- Install [walletconnect-test-wallet](wctw)
+- Install [walletconnect-test-wallet][wctw]
 
   - `git@github.com:radicle-dev/walletconnect-test-wallet.git`
   - `cd walletconnect-test-wallet`
