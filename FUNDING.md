@@ -52,7 +52,7 @@ In the development environment, we set up these three pieces as follows:
 
 - Install [walletconnect-test-wallet][wctw]
 
-  - `git@github.com:radicle-dev/walletconnect-test-wallet.git`
+  - `git clone git@github.com:radicle-dev/walletconnect-test-wallet.git`
   - `cd walletconnect-test-wallet`
   - `npm install`
 
