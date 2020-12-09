@@ -208,11 +208,11 @@ impl State {
     /// # Errors
     ///
     /// * if opening the storage fails
-    pub async fn list_owner_project_refs(&self, urn: Urn) -> Result<Refs, Error> {
-        Ok(self
-            .api
-            .with_storage(move |storage| storage.rad_signed_refs(&urn))
-            .await??)
+    pub async fn list_owner_project_refs(&self, urn: Urn) -> Result<Option<Refs>, Error> {
+        self.api
+            .with_storage(move |store| Refs::load(&store, &urn, None))
+            .await?
+            .map_err(Error::from)
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the given project urn.
@@ -220,11 +220,15 @@ impl State {
     /// # Errors
     ///
     /// * if opening the storage fails
-    pub async fn list_peer_project_refs(&self, urn: Urn, peer_id: PeerId) -> Result<Refs, Error> {
-        Ok(self
-            .api
-            .with_storage(move |storage| storage.rad_signed_refs_of(&urn, peer_id))
-            .await??)
+    pub async fn list_peer_project_refs(
+        &self,
+        urn: Urn,
+        peer_id: PeerId,
+    ) -> Result<Option<Refs>, Error> {
+        self.api
+            .with_storage(move |store| Refs::load(&store, &urn, Some(peer_id)))
+            .await?
+            .map_err(Error::from)
     }
 
     /// Returns the list of [`user::User`]s known for your peer.

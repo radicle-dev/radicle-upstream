@@ -51,6 +51,9 @@ pub enum Error {
     ReferenceName(#[from] librad::git_ext::reference::name::Error),
 
     #[error(transparent)]
+    Refs(#[from] librad::git::refs::stored::Error),
+
+    #[error(transparent)]
     Replication(#[from] librad::git::replication::Error),
 
     /// An error occurred when interacting with the source code of a project.
