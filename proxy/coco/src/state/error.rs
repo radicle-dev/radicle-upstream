@@ -35,6 +35,9 @@ pub enum Error {
     #[error(transparent)]
     Identities(#[from] librad::git::identities::Error),
 
+    #[error(transparent)]
+    IdentitiesLocal(#[from] librad::git::identities::local::Error),
+
     /// An error occured building include files.
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
@@ -47,6 +50,9 @@ pub enum Error {
     #[error(transparent)]
     ReferenceName(#[from] librad::git_ext::reference::name::Error),
 
+    #[error(transparent)]
+    Replication(#[from] librad::git::replication::Error),
+
     /// An error occurred when interacting with the source code of a project.
     #[error(transparent)]
     Source(#[from] source::Error),
@@ -54,6 +60,9 @@ pub enum Error {
     /// Storage error.
     #[error(transparent)]
     Storage(#[from] storage::Error),
+
+    #[error(transparent)]
+    StorageConfig(#[from] librad::git::storage::config::Error),
 
     /// An error occurred on the local git transport level.
     #[error(transparent)]

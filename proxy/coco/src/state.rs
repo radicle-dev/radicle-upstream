@@ -1,11 +1,13 @@
 //! Utility to work with the peer api of librad.
 
+use std::iter::FromIterator;
 use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
 
 use librad::{
     git::{
         identities,
         identities::local::{self, LocalIdentity},
+        identities::person,
         include::{self, Include},
         local::url::LocalUrl,
         refs::Refs,
@@ -13,7 +15,10 @@ use librad::{
         types::{namespace, Reference, Single},
     },
     git_ext::{OneLevel, RefLike},
-    identities::{Person, Project, Urn},
+    identities::delegation::Direct,
+    identities::payload,
+    identities::{Person, Project, SomeIdentity, Urn},
+    internal::canonical::Cstring,
     keys,
     net::peer::PeerApi,
     paths,
@@ -92,12 +97,13 @@ impl State {
     pub async fn default_owner(&self) -> Result<Option<LocalIdentity>, Error> {
         self.api
             .with_storage(move |storage| {
-                if let maybe_urn = storage.config()?.user()? {
-                    let identity = local::load(&stoage, urn)?
+                if let Some(urn) = storage.config()?.user()? {
+                    return local::load(&storage, urn).map_err(Error::from);
                 }
+
+                Ok::<_, Error>(None)
             })
-            .await
-            .map_err(Error::from)
+            .await?
     }
 
     /// Set the default owner for this `PeerApi`.
@@ -105,9 +111,12 @@ impl State {
     /// # Errors
     ///
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub async fn set_default_owner(&self, user: User) -> Result<(), Error> {
+    pub async fn set_default_owner<U>(&self, user: U) -> Result<(), Error>
+    where
+        U: Into<Option<LocalIdentity>> + Send + Sync + 'static,
+    {
         self.api
-            .with_storage(move |storage| storage.set_default_rad_self(user).map_err(Error::from))
+            .with_storage(move |storage| storage.config()?.set_user(user).map_err(Error::from))
             .await?
     }
 
@@ -118,13 +127,20 @@ impl State {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub async fn init_owner(&self, handle: &str) -> Result<User, Error> {
-        let user = self.init_user(handle).await?;
-        let user = verify_user(user)?;
-
-        self.set_default_owner(user.clone()).await?;
-
-        Ok(user)
+    pub async fn init_owner(&self, name: String) -> Result<Person, Error> {
+        let pk = keys::PublicKey::from(self.signer.public_key());
+        self.api
+            .with_storage(move |store| {
+                person::create(
+                    &store,
+                    payload::Person {
+                        name: Cstring::from(name),
+                    },
+                    Direct::from_iter(vec![pk].into_iter()),
+                )
+            })
+            .await?
+            .map_err(Error::from)
     }
 
     /// Given some hints as to where you might find it, get the urn of the project found at `url`.
@@ -139,17 +155,16 @@ impl State {
         urn: Urn,
         remote_peer: PeerId,
         addr_hints: Addrs,
-    ) -> Result<Urn, Error>
+    ) -> Result<(), Error>
     where
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        Ok(self
-            .api
+        self.api
             .with_storage(move |store| {
-                replication::replicate(&store, None, urn.clone(), remote_peer, addr_hints)?;
-                Ok::<_, replication::Error>(urn)
+                replication::replicate(&store, None, urn.clone(), remote_peer, addr_hints)
             })
-            .await??)
+            .await?
+            .map_err(Error::from)
     }
 
     /// Get the project found at `urn`.
@@ -161,10 +176,10 @@ impl State {
     where
         P: Into<Option<PeerId>> + Send + 'static,
     {
-        Ok(self
-            .api
-            .with_storage(move |store| identities::project::get(&store, urn))
-            .await??)
+        self.api
+            .with_storage(move |store| identities::project::get(&store, &urn))
+            .await?
+            .map_err(Error::from)
     }
 
     /// Returns the list of [`librad_project::Project`]s for the local peer.
@@ -172,17 +187,20 @@ impl State {
     /// # Errors
     ///
     ///   * Retrieving the project entities from the store fails.
-    #[allow(
-        clippy::match_wildcard_for_single_variants,
-        clippy::wildcard_enum_match_arm
-    )]
     pub async fn list_projects(&self) -> Result<Vec<Project>, Error> {
-        let project_meta = self
-            .api
-            .with_storage(move |store| identities::any::list(&store))
-            .await??;
+        self.api
+            .with_storage(move |store| {
+                let projects = identities::any::list(&store)?
+                    .filter_map(Result::ok)
+                    .filter_map(|id| match id {
+                        SomeIdentity::Person(_person) => None,
+                        SomeIdentity::Project(project) => Some(project),
+                    })
+                    .collect::<Vec<_>>();
 
-        Ok(project_meta)
+                Ok::<_, Error>(projects)
+            })
+            .await?
     }
 
     /// Retrieves the [`librad::git::refs::Refs`] for the state owner.
@@ -214,17 +232,20 @@ impl State {
     /// # Errors
     ///
     ///   * Retrieval of the user entities from the store fails.
-    #[allow(
-        clippy::match_wildcard_for_single_variants,
-        clippy::wildcard_enum_match_arm
-    )]
     pub async fn list_users(&self) -> Result<Vec<Person>, Error> {
-        let entities = self
-            .api
-            .with_storage(move |store| identities::any::list(&store))
-            .await??;
+        self.api
+            .with_storage(move |store| {
+                let projects = identities::any::list(&store)?
+                    .filter_map(Result::ok)
+                    .filter_map(|id| match id {
+                        SomeIdentity::Person(person) => Some(person),
+                        SomeIdentity::Project(_project) => None,
+                    })
+                    .collect::<Vec<_>>();
 
-        Ok(entities)
+                Ok::<_, Error>(projects)
+            })
+            .await?
     }
 
     /// Given some hints as to where you might find it, get the urn of the user found at `url`.
@@ -243,12 +264,12 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        Ok(self
-            .api
+        self.api
             .with_storage(move |store| {
                 replication::replicate(&store, None, urn, remote_peer, addr_hints)
             })
-            .await??)
+            .await?
+            .map_err(Error::from)
     }
 
     /// Get the user found at `urn`.
@@ -257,11 +278,11 @@ impl State {
     ///
     ///   * Resolving the user fails.
     ///   * Could not successfully acquire a lock to the API.
-    pub async fn get_user(&self, urn: Urn) -> Result<Person, Error> {
-        Ok(self
-            .api
-            .with_storage(move |store| identities::person::get(&store, urn))
-            .await??)
+    pub async fn get_user(&self, urn: Urn) -> Result<Option<Person>, Error> {
+        self.api
+            .with_storage(move |store| identities::person::get(&store, &urn))
+            .await?
+            .map_err(Error::from)
     }
 
     /// Fetch any updates at the given `RadUrl`, providing address hints if we have them.
