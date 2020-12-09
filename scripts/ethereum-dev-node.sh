@@ -30,7 +30,7 @@ echo "Deploying the Radicle Dev Contracts..."
 echo "Done"
 
 echo "Adding funds to your account..."
-ethers --rpc http://localhost:8545 --account-rpc 0 send $(< ./sandbox/.local-eth-account) 10
+ethers --rpc http://localhost:8545 --account-rpc 0 --yes send $(< ./sandbox/.local-eth-account) 10
 echo "Done"
 
 fg %1
