@@ -13,8 +13,8 @@ use librad::{
         include::{self, Include},
         local::url::LocalUrl,
         refs::Refs,
-        replication, storage,
-        types::{namespace, Reference, Single},
+        replication, storage, tracking,
+        types::{namespace, Namespace, Reference, Single},
     },
     git_ext::{OneLevel, RefLike},
     identities::delegation::{Direct, Indirect},
@@ -541,14 +541,15 @@ impl State {
     /// # Errors
     ///
     /// * When the storage operation fails.
-    pub async fn track(&self, urn: Urn, remote: PeerId) -> Result<(), Error> {
+    pub async fn track(&self, urn: Urn, remote_peer: PeerId) -> Result<(), Error> {
         {
             let urn = urn.clone();
             self.api
-                .with_storage(move |storage| storage.track(&urn, &remote))
+                .with_storage(move |store| tracking::track(&store, &urn, remote_peer))
                 .await??;
         }
-        gossip::query(self, urn.clone(), Some(remote)).await;
+
+        gossip::query(self, urn.clone(), Some(remote_peer)).await;
         let path = self.update_include(urn).await?;
         log::debug!("Updated include path @ `{}`", path.display());
         Ok(())
@@ -559,11 +560,11 @@ impl State {
     /// # Errors
     ///
     /// * When the storage operation fails.
-    pub async fn untrack(&self, urn: Urn, remote: PeerId) -> Result<bool, Error> {
+    pub async fn untrack(&self, urn: Urn, remote_peer: PeerId) -> Result<bool, Error> {
         let res = {
             let urn = urn.clone();
             self.api
-                .with_storage(move |storage| storage.untrack(&urn, &remote))
+                .with_storage(move |store| tracking::untrack(&store, &urn, remote_peer))
                 .await??
         };
 

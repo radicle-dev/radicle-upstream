@@ -67,9 +67,8 @@ pub enum Error {
     #[error(transparent)]
     StorageConfig(#[from] librad::git::storage::config::Error),
 
-    /// An error occurred on the local git transport level.
     #[error(transparent)]
-    Transport(#[from] librad::git::local::transport::Error),
+    Tracking(#[from] librad::git::tracking::Error),
 
     /// There were no references for a Browser to be initialised.
     #[error("we could not find a default branch for '{name}@{urn}'")]
