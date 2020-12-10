@@ -1,7 +1,6 @@
 //! Utility to work with the peer api of librad.
 
 use std::iter::FromIterator;
-use std::ops::Deref;
 use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
 
 use librad::{
@@ -129,21 +128,44 @@ impl State {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub async fn init_owner(&self, name: String) -> Result<Person, Error> {
-        let pk = keys::PublicKey::from(self.signer.public_key());
-        self.api
-            .with_storage(move |store| match local::default(&store)? {
-                Some(owner) => Ok(owner.into_inner().into_inner()),
-                None => {person::create(
-                    &store,
-                    payload::Person {
-                        name: Cstring::from(name),
-                    },
-                    Direct::from_iter(vec![pk].into_iter()),
-                ),
-            })
-            .await?
-            .map_err(Error::from)
+    pub async fn init_owner(&self, name: String) -> Result<LocalIdentity, Error> {
+        match self
+            .api
+            .with_storage(move |store| local::default(&store))
+            .await??
+        {
+            Some(owner) => Ok(owner),
+            None => {
+                let pk = keys::PublicKey::from(self.signer.public_key());
+                let person = self
+                    .api
+                    .with_storage(move |store| {
+                        person::create(
+                            &store,
+                            payload::Person {
+                                name: Cstring::from(name),
+                            },
+                            Direct::from_iter(vec![pk].into_iter()),
+                        )
+                    })
+                    .await??;
+
+                let owner = self
+                    .api
+                    .with_storage(move |store| local::load(&store, person.urn()))
+                    .await??
+                    .unwrap();
+
+                {
+                    let owner = owner.clone();
+                    self.api
+                        .with_storage(move |store| store.config().unwrap().set_user(owner))
+                        .await??;
+                }
+
+                Ok(owner)
+            }
+        }
     }
 
     /// Given some hints as to where you might find it, get the urn of the project found at `url`.
