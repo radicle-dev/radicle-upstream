@@ -524,22 +524,20 @@ impl State {
     /// Will error if:
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub async fn init_user(&self, handle: &str) -> Result<user::User<entity::Draft>, Error> {
-        let mut user = user::User::<entity::Draft>::create(
-            handle.to_string(),
-            self.signer.public_key().into(),
-        )?;
-        user.sign_owned(&self.signer)?;
-
-        let user = self
-            .api
-            .with_storage(move |storage| {
-                let _ = storage.create_repo(&user)?;
-                Ok::<_, Error>(user)
+    pub async fn init_user(&self, name: String) -> Result<Person, Error> {
+        let pk = keys::PublicKey::from(self.signer.public_key());
+        self.api
+            .with_storage(move |store| {
+                person::create(
+                    &store,
+                    payload::Person {
+                        name: Cstring::from(name),
+                    },
+                    Direct::from_iter(vec![pk].into_iter()),
+                )
             })
-            .await??;
-
-        Ok(user)
+            .await?
+            .map_err(Error::from)
     }
 
     /// Wrapper around the storage track.
