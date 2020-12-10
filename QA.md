@@ -34,13 +34,6 @@
     1. open the `radicle-upstream-x.x.x.dmg` package
     2. install Upstream by dragging the `radicle-upstream` binary to
        `/Applications`
-    3. open `/Applications` in finder, locate the `radicle-upstream` app and
-       right-click it, then select `Open` from the context menu, you should see
-       a dialog with two buttons `Move to Bin` and `Cancel`
-    4. dismiss the dialog by clicking `Cancel`, to bypass macOS security
-       measures which disallow running unsigned binaries, repeat the previous
-       step, now you should see three buttons: `Move to Bin`, `Open` and
-       `Cancel`, click `Open`
   - on Linux (AppImage)
     1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
     2. Run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by executing it
