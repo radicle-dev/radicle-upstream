@@ -10,26 +10,24 @@
       How to set up a clean environemnt?
     </summary>
 
+    - **Safe method**: use a temporary user account on your computer.
+      - on macOS:
+        - if you are **not** using FileVault, switch to the "Guest User". You may
+          have to enable this in "System Preferences -> Users & Groups".  When
+          you're done, all data will be removed automatically.
+        - if you **are** using FileVault, create a new user in "System
+          Preferences -> Users & Groups". When you're done, you'll need to remove
+          this user manually.
+      - on Linux:
+        - create a new user with `sudo useradd -m qa`, and log into that account.
+          When you're done, remove the user with `sudo userdel -r qa`.  _Note:
+          "qa" is just an example user name, you can choose anything you like_
 
-    **Safe method**: use a temporary user account on your computer.
+    - **Dangerous method**: remove all directories manually.
 
-    - on macOS:
-      - if you are **not** using FileVault, switch to the "Guest User". You may
-        have to enable this in "System Preferences -> Users & Groups".  When
-        you're done, all data will be removed automatically.
-      - if you **are** using FileVault, create a new user in "System
-        Preferences -> Users & Groups". When you're done, you'll need to remove
-        this user manually.
-    - on Linux:
-      - create a new user with `sudo useradd -m qa`, and log into that account.
-        When you're done, remove the user with `sudo userdel -r qa`.  _Note:
-        "qa" is just an example user name, you can choose anything you like_
-
-    **Dangerous method**: remove all directories manually.
-
-    You can use [this script][rs]. Make sure you have a backup of your data,
-    or are using this in combination with the safe method (i.e. while logged
-    in with a temporary user account).
+      You can use [this script][rs]. Make sure you have a backup of your data,
+      or are using this in combination with the safe method (i.e. while logged
+      in with a temporary user account).
   </details>
 
 - [ ] [download the binary package][bu]
@@ -39,7 +37,6 @@
     <summary>
       How to install?
     </summary>
-
 
     - on macOS:
       1. open the `radicle-upstream-X.X.X.dmg` package
