@@ -99,7 +99,7 @@ interface ReceiverWeight {
 }
 
 export const POOL_CONTRACT_ADDRESS: string =
-  "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
+  "0x8bc07c0de95a0c1a08f6736d07a233fb8609ee95";
 
 export const ERC20_TOKEN_ADDRESS = "0xff1d4d289bf0aaaf918964c57ac30481a67728ef";
 
