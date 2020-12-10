@@ -1,9 +1,10 @@
 ### Prerequisites
 
-- [ ] make sure you are installing into an environment with no old configuration
-      and no user data [ℹ️][01]
-- [ ] [download the binary package][bu]
-- [ ] install Upstream from the downloaded package [ℹ️][02]
+- [ ] make sure you are installing into an environment with no old
+      configuration and no user data [ℹ️](#01)
+- [ ] [download][bu] the binary package
+- [ ] install Upstream from the downloaded package [ℹ️](#02)
+
 
 ### Packaging and distribution
 
@@ -13,7 +14,8 @@
     - Wallets tab on the User Profile screen
     - Design Sytem Guide is not listed in the shortcuts modal <kbd>?</kbd> and
       the respective global hotkey is disabled <kbd>⌘</kbd>+<kbd>d</kbd>
-    - Tags are not visible in the revision selector on the Project Source screen
+    - Tags are not visible in the revision selector on the Project Source
+      screen
 - [ ] App icon is shown correctly
   - [ ] macOS: dock, <kbd>⌘</kbd> + <kbd>tab</kbd> task switcher, mounted dmg,
         app icon, "About radicle-upstream" window
@@ -146,7 +148,8 @@
 
 ### How to set up a clean environemnt? <a href="#user-content-01" id="01">🔗</a>
 
-- **Safe method**: use a temporary user account on your computer.
+**Safe method**: use a temporary user account on your computer.
+
   - on macOS:
     - if you are **not** using FileVault, switch to the "Guest User". You may
       have to enable this in "System Preferences -> Users & Groups".  When
@@ -159,24 +162,27 @@
       When you're done, remove the user with `sudo userdel -r qa`.  _Note:
       "qa" is just an example user name, you can choose anything you like_
 
-- **Dangerous method**: remove all directories manually.
+**Dangerous method**: remove all directories manually.
 
-  You can use [this script][rs]. Make sure you have a backup of your data,
-  or are using this in combination with the safe method (i.e. while logged
-  in with a temporary user account).
+You can use [this script][rs]. Make sure you have a backup of your data,
+or are using this in combination with the safe method (i.e. while logged
+in with a temporary user account).
 
 
 ### How to install? <a href="#user-content-02" id="02">🔗</a>
 
-- on macOS:
+**On macOS:**
+
   1. open the `radicle-upstream-X.X.X.dmg` package
   2. install Upstream by dragging the `Radicle Upstream` binary to
      `/Applications`
   3. run `/Applications/Radicle Upstream.app` by double clicking it
-- on Linux (AppImage):
+
+**On Linux (AppImage):**
+
   1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
-  2. run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by
-     executing it from the terminal or clicking on it.
+  2. run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by executing it
+     from the terminal or clicking on it.
 
 
 
