@@ -736,12 +736,18 @@ impl State {
         P: Into<Option<PeerId>> + Send + 'static,
     {
         let peer_id = peer_id.into();
-        let proj = self.get_project(urn.clone(), peer_id).await?;
+        let proj = self.get_project(urn.clone(), peer_id).await?.unwrap();
         let include_path = self.update_include(urn.clone()).await?;
-        let default_branch: OneLevel = OneLevel::from(proj.default_branch().parse::<RefLike>()?);
+        let default_branch: OneLevel = OneLevel::from(
+            proj.subject()
+                .default_branch
+                .clone()
+                .unwrap()
+                .parse::<RefLike>()?,
+        );
         let checkout = crate::project::Checkout {
             urn: proj.urn(),
-            name: proj.name().to_string(),
+            name: proj.subject().name.to_string(),
             default_branch,
             path: destination,
             include_path,
@@ -751,13 +757,19 @@ impl State {
             None => crate::project::checkout::Ownership::Local(self.peer_id()),
             Some(remote) => {
                 let handle = {
-                    self.api
-                        .with_storage(move |storage| {
-                            let rad_self = storage.get_rad_self_of(&urn, remote)?;
-                            Ok::<_, Error>(rad_self.name().to_string())
+                    let ref_self = Reference::rad_self(Namespace::from(urn.clone()), peer_id);
+                    let person = self
+                        .api
+                        .with_storage(move |store| {
+                            let malkovich_urn = Urn::try_from(ref_self).unwrap();
+                            person::get(&store, &malkovich_urn)
                         })
                         .await??
+                        .unwrap();
+
+                    person.subject().name.to_string()
                 };
+
                 crate::project::checkout::Ownership::Remote {
                     handle,
                     remote,
@@ -766,16 +778,10 @@ impl State {
             }
         };
 
-        let path = {
-            let results = self.transport_results();
-            let path =
-                tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
-                    .await
-                    .expect("blocking checkout failed")?;
-
-            Self::process_transport_results(&results)?;
-            path
-        };
+        let path =
+            tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
+                .await
+                .expect("blocking checkout failed")?;
 
         Ok(path)
     }
