@@ -24,9 +24,9 @@
 
      **Dangerous method**: Remove all directories manually
 
-     You can use [this script](./scripts/reset-state.sh). Make sure you have a
-     backup of your data, or are using this in combination with the safe method
-     (i.e. while logged in with a temporary user account).
+     You can use [this script][rs]. Make sure you have a backup of your data,
+     or are using this in combination with the safe method (i.e. while logged
+     in with a temporary user account).
 
 - [ ] download the binary package from the location provided above
 - [ ] install the binary package
@@ -183,4 +183,5 @@
 - [ ] Killing the proxy process while the app is running shows a blue error
       screen with the proxy logs.
 
-[re]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md
+
+[rs]: https://github.com/radicle-dev/radicle-upstream/blob/master/scripts/reset-state.sh
