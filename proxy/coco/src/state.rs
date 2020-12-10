@@ -607,13 +607,10 @@ impl State {
                             .is_some()
                         {
                             peer::Status::replicated(peer::Role::Maintainer, malkovich)
-                        } else if store
-                            .reference(&Reference::rad_signed_refs(
-                                Namespace::from(urn.clone()),
-                                peer_id,
-                            ))?
-                            .is_some()
-                        {
+                        } else if store.has_ref(&Reference::rad_signed_refs(
+                            Namespace::from(urn.clone()),
+                            peer_id,
+                        ))? {
                             peer::Status::replicated(peer::Role::Contributor, malkovich)
                         } else {
                             peer::Status::replicated(peer::Role::Tracker, malkovich)
@@ -646,21 +643,40 @@ impl State {
         &self,
         urn: Urn,
     ) -> Result<Vec<crate::project::Peer<peer::Status<Person>>>, Error> {
-        let project = self.get_project(urn.clone(), None).await?;
+        let project = self.get_project(urn.clone(), None).await?.unwrap();
 
         let mut peers = vec![];
 
         let owner = self
             .default_owner()
             .await
-            .expect("unable to find state owner");
-        let refs = self.list_owner_project_refs(urn.clone()).await?;
-        let status = if refs.heads.is_empty() {
-            peer::Status::replicated(peer::Role::Tracker, owner)
-        } else if project.maintainers().contains(&owner.urn()) {
+            .expect("unable to find state owner")
+            .unwrap()
+            .into_inner()
+            .into_inner();
+
+        // CHECK IF OWNER IS MAINTAINER
+        let status = if project
+            .delegations()
+            .owner(self.peer_id().as_public_key())
+            .is_some()
+        {
             peer::Status::replicated(peer::Role::Maintainer, owner)
-        } else {
+        // CHECK IF OWNER IS CONTRIBUTOR
+        } else if self
+            .api
+            .with_storage(move |store| {
+                store.has_ref(&Reference::rad_signed_refs(
+                    Namespace::from(project.urn().clone()),
+                    None,
+                ))
+            })
+            .await??
+        {
             peer::Status::replicated(peer::Role::Contributor, owner)
+        // CHECK IF OWNER IS TRACKER
+        } else {
+            peer::Status::replicated(peer::Role::Tracker, owner)
         };
 
         peers.push(crate::project::Peer::Local {
