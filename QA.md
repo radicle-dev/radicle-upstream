@@ -184,5 +184,5 @@
       screen with the proxy logs.
 
 
-[rs]: https://github.com/radicle-dev/radicle-upstream/blob/master/scripts/reset-state.sh
+[rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/scripts/reset-state.sh
 [bu]: http://releases.radicle.xyz/radicle-upstream-0.1.5.dmg
