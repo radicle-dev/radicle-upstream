@@ -84,8 +84,8 @@
     - the repeated passphrase is equal to the first one
     - all of the following example pairs should show a validation error:
       `1`/`1`, `12`/`12`, `123`/`123`, `supersecret`/`supersceret`
-- [ ] After passphrase input the identity is created and a copyable URN is
-      provided
+- [ ] After passphrase input the identity is created and a copyable Device ID
+      is provided
 - [ ] After completion we land on our profile page which contains a placeholder
       with instructions on how to create your first project
 
@@ -94,7 +94,7 @@
 
 - [ ] Preferences are persisted across app reboots
   - [ ] Color theme selection
-  - [ ] Peer entries
+  - [ ] Network seeds
   - [ ] Remote helper hint (in the Checkout and "New project" modals) is not
         shown after app restart once it is dismissed by clicking the `x` icon
         in the top right corner
@@ -129,8 +129,7 @@
   - [ ] Follow instructions in the UI to set up the path to the git helper in
         your shell
   - [ ] It's possible to create a new working copy from an existing project
-    - [ ] Pushing new commits to Radicle via `git push rad` work (temporary
-          password until we have passphrases: `radicle-upstream`)
+    - [ ] Pushing new commits to Radicle via `git push rad` work
     - [ ] Pulling changes work: make changes in the project folder you created
           in project creation, push them to Radicle with `git push rad`, switch
           to the checkout working directory, do a `git pull`
