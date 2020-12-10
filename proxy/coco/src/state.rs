@@ -396,15 +396,20 @@ impl State {
         urn: Urn,
         remote: P,
         branch_name: B,
-    ) -> Result<Reference, Error>
+    ) -> Result<Reference<Single>, Error>
     where
         P: Into<Option<PeerId>> + Clone + Send,
         B: Into<Option<String>> + Clone + Send,
     {
         let name = match branch_name.into() {
             None => {
-                let project = self.get_project(urn.clone(), None).await?;
-                project.default_branch().to_owned()
+                let project = self.get_project(urn.clone(), None).await?.unwrap();
+                project
+                    .subject()
+                    .default_branch
+                    .clone()
+                    .unwrap()
+                    .to_string()
             }
             Some(name) => name,
         }
@@ -415,7 +420,7 @@ impl State {
             Some(peer_id) => Some(peer_id),
             None => None,
         };
-        let reference = Reference::head(urn.id, remote, name);
+        let reference = Reference::head(Namespace::from(urn), remote, name);
         let exists = {
             let reference = reference.clone();
             self.api
