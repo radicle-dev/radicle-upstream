@@ -1,53 +1,9 @@
-**OS version:** (eg. `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)
-
 ### Prerequisites
 
 - [ ] make sure you are installing into an environment with no old configuration
-      and no user data
-
-  <details>
-    <summary>
-      How to set up a clean environemnt?
-    </summary>
-
-    - **Safe method**: use a temporary user account on your computer.
-      - on macOS:
-        - if you are **not** using FileVault, switch to the "Guest User". You may
-          have to enable this in "System Preferences -> Users & Groups".  When
-          you're done, all data will be removed automatically.
-        - if you **are** using FileVault, create a new user in "System
-          Preferences -> Users & Groups". When you're done, you'll need to remove
-          this user manually.
-      - on Linux:
-        - create a new user with `sudo useradd -m qa`, and log into that account.
-          When you're done, remove the user with `sudo userdel -r qa`.  _Note:
-          "qa" is just an example user name, you can choose anything you like_
-
-    - **Dangerous method**: remove all directories manually.
-
-      You can use [this script][rs]. Make sure you have a backup of your data,
-      or are using this in combination with the safe method (i.e. while logged
-      in with a temporary user account).
-  </details>
-
+      and no user data [ℹ️][01]
 - [ ] [download the binary package][bu]
-- [ ] install Upstream from the downloaded package
-
-  <details>
-    <summary>
-      How to install?
-    </summary>
-
-    - on macOS:
-      1. open the `radicle-upstream-X.X.X.dmg` package
-      2. install Upstream by dragging the `Radicle Upstream` binary to
-         `/Applications`
-      3. run `/Applications/Radicle Upstream.app` by double clicking it
-    - on Linux (AppImage):
-      1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
-      2. run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by
-         executing it from the terminal or clicking on it.
-  </details>
+- [ ] install Upstream from the downloaded package [ℹ️][02]
 
 ### Packaging and distribution
 
@@ -186,5 +142,43 @@
       screen with the proxy logs.
 
 
+## Hints
+
+### How to set up a clean environemnt? <a href="#user-content-01" id="01">🔗</a>
+
+- **Safe method**: use a temporary user account on your computer.
+  - on macOS:
+    - if you are **not** using FileVault, switch to the "Guest User". You may
+      have to enable this in "System Preferences -> Users & Groups".  When
+      you're done, all data will be removed automatically.
+    - if you **are** using FileVault, create a new user in "System
+      Preferences -> Users & Groups". When you're done, you'll need to remove
+      this user manually.
+  - on Linux:
+    - create a new user with `sudo useradd -m qa`, and log into that account.
+      When you're done, remove the user with `sudo userdel -r qa`.  _Note:
+      "qa" is just an example user name, you can choose anything you like_
+
+- **Dangerous method**: remove all directories manually.
+
+  You can use [this script][rs]. Make sure you have a backup of your data,
+  or are using this in combination with the safe method (i.e. while logged
+  in with a temporary user account).
+
+
+### How to install? <a href="#user-content-02" id="02">🔗</a>
+
+- on macOS:
+  1. open the `radicle-upstream-X.X.X.dmg` package
+  2. install Upstream by dragging the `Radicle Upstream` binary to
+     `/Applications`
+  3. run `/Applications/Radicle Upstream.app` by double clicking it
+- on Linux (AppImage):
+  1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
+  2. run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by
+     executing it from the terminal or clicking on it.
+
+
+
 [rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/scripts/reset-state.sh
-[bu]: http://releases.radicle.xyz/radicle-upstream-0.1.5.dmg
+[bu]: https://releases.radicle.xyz/radicle-upstream-0.1.5.dmg
