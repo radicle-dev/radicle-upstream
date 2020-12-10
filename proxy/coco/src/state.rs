@@ -4,6 +4,8 @@ use std::iter::FromIterator;
 use std::ops::Deref;
 use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
 
+use either::Either;
+
 use librad::{
     git::{
         identities,
@@ -399,17 +401,12 @@ impl State {
     ) -> Result<Reference<Single>, Error>
     where
         P: Into<Option<PeerId>> + Clone + Send,
-        B: Into<Option<String>> + Clone + Send,
+        B: Into<Option<Cstring>> + Clone + Send,
     {
         let name = match branch_name.into() {
             None => {
                 let project = self.get_project(urn.clone(), None).await?.unwrap();
-                project
-                    .subject()
-                    .default_branch
-                    .clone()
-                    .unwrap()
-                    .to_string()
+                project.subject().default_branch.clone().unwrap()
             }
             Some(name) => name,
         }
@@ -445,10 +442,25 @@ impl State {
     /// # Errors
     ///   * If the storage operations fail.
     ///   * If no default branch was found for the provided [`Urn`].
-    pub async fn find_default_branch(&self, urn: Urn) -> Result<Reference, Error> {
-        let project = self.get_project(urn.clone(), None).await?;
-        let peer = project.keys().iter().next().cloned().map(PeerId::from);
-        let default_branch = project.default_branch();
+    pub async fn find_default_branch(&self, urn: Urn) -> Result<Reference<Single>, Error> {
+        let project = self.get_project(urn.clone(), None).await?.unwrap();
+
+        let owner = self.default_owner().await?.unwrap();
+
+        let default_branch = project.subject().default_branch.clone().unwrap();
+
+        // TODO(xla): Check for all delegations if there is default branch.
+        let peer = project
+            .delegations()
+            .iter()
+            .flat_map(|either| match either {
+                Either::Left(pk) => Either::Left(std::iter::once(PeerId::from(*pk))),
+                Either::Right(indirect) => {
+                    Either::Right(indirect.delegations().iter().map(|pk| PeerId::from(*pk)))
+                }
+            })
+            .next()
+            .unwrap();
 
         let (owner, peer) = tokio::join!(
             self.get_branch(urn.clone(), None, default_branch.to_owned()),
@@ -457,7 +469,7 @@ impl State {
         match owner.or(peer) {
             Ok(reference) => Ok(reference),
             Err(Error::MissingRef { .. }) => Err(Error::NoDefaultBranch {
-                name: project.name().to_string(),
+                name: project.subject().name.to_string(),
                 urn,
             }),
             Err(err) => Err(err),
