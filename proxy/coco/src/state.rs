@@ -353,14 +353,17 @@ impl State {
     ///   * If the callback provided returned an error.
     pub async fn with_browser<F, T, C>(
         &self,
-        reference: Reference<C>,
+        reference: Reference<Single>,
         callback: F,
     ) -> Result<T, Error>
     where
         F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
-        let namespace = git::Namespace::try_from(reference.namespace().to_string().as_str())
-            .map_err(source::Error::from)?;
+        // CONSTRUCT PROEJECTS NAMESPACE
+        let namespace =
+            git::namespace::Namespace::try_from(reference.namespace.unwrap().to_string()).unwrap();
+
+        // HANDLE HEADS
         let branch = match reference.remote {
             None => git::Branch::local(reference.name.as_str()),
             Some(peer) => git::Branch::remote(
@@ -368,11 +371,14 @@ impl State {
                 &peer.to_string(),
             ),
         };
+
+        // OPEN BROWSER
         let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, branch)
             .map_err(source::Error::from)?;
 
+        // CALL CALLBACK
         callback(&mut browser).map_err(Error::from)
     }
 
