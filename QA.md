@@ -1,10 +1,13 @@
-### Prerequisites
+## Prerequisites
 
 - [ ] make sure you are installing into an environment with no old
       configuration and no user data [ℹ️](#01)
 - [ ] [download][bu] the binary package
 - [ ] install Upstream from the downloaded package [ℹ️](#02)
+  - [ ] macOS Gatekeeper **does not** show the following message:
+        _macOS cannot verify that this app is free from malware_
 
+## QA checklist
 
 ### Packaging and distribution
 
