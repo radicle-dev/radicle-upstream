@@ -1,6 +1,7 @@
 //! Utility to work with the peer api of librad.
 
 use std::iter::FromIterator;
+use std::ops::Deref;
 use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
 
 use librad::{
@@ -462,14 +463,12 @@ impl State {
     pub async fn init_project(
         &self,
         owner: LocalIdentity,
-        crate::project::Create {
-            description,
-            default_branch,
-            name,
-            ..
-        }: crate::project::Create,
+        create: crate::project::Create,
     ) -> Result<Project, Error> {
         let pk = keys::PublicKey::from(self.signer.public_key());
+        let default_branch = create.default_branch.to_string();
+        let description = create.description.to_string();
+        let name = create.name.to_string();
         let project = self
             .api
             .with_storage(move |store| {
@@ -477,7 +476,7 @@ impl State {
                     &store,
                     owner,
                     payload::Project {
-                        default_branch: Some(Cstring::from(default_branch.as_str())),
+                        default_branch: Some(Cstring::from(default_branch)),
                         description: Some(Cstring::from(description)),
                         name: Cstring::from(name),
                     },
@@ -485,33 +484,30 @@ impl State {
                 )
             })
             .await??;
+        log::debug!(
+            "Created project '{}#{}'",
+            project.urn(),
+            project.subject().name
+        );
 
-        // TODO(xla): Not clear what the implications are for the transport changes and repo setup.
-        //            Summoning a finto!
-        // let local_peer_id = self.api.peer_id();
-        // let url = LocalUrl::from_urn(meta.urn(), local_peer_id);
-        // let repository = project
-        //     .validate(url)
-        //     .map_err(crate::project::create::Error::from)?;
-        // let meta = {
-        //     let results = self.transport_results();
-        //     let (meta, repo) = self
-        //         .api
-        //         .with_storage(move |storage| {
-        //             let _ = storage.create_repo(&meta)?;
-        //             log::debug!("Created project '{}#{}'", meta.urn(), meta.name());
-        //             let repo = repository
-        //                 .setup_repo(meta.description().as_ref().unwrap_or(&String::default()))
-        //                 .map_err(crate::project::create::Error::from)?;
-        //             Ok::<_, Error>((meta, repo))
-        //         })
-        //         .await??;
-        //     Self::process_transport_results(&results)?;
-        //     meta
-        // };
-        // let include_path = self.update_include(project.urn()).await?;
-        // include::set_include_path(&repo, include_path)?;
-        // crate::peer::gossip::announce(self, &project.urn(), None).await;
+        // TODO(xla): Validate project working copy before creation and don't depend on URL.
+        let url = LocalUrl::from(project.urn());
+        let repository = create
+            .validate(url)
+            .map_err(crate::project::create::Error::from)?;
+
+        let repo = repository
+            .setup_repo(
+                project
+                    .subject()
+                    .description
+                    .as_deref()
+                    .unwrap_or(&String::default()),
+            )
+            .map_err(crate::project::create::Error::from)?;
+        let include_path = self.update_include(project.urn()).await?;
+        include::set_include_path(&repo, include_path)?;
+        crate::peer::gossip::announce(self, &project.urn(), None).await;
 
         Ok(project)
     }
