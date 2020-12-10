@@ -792,15 +792,15 @@ impl State {
     ///
     /// * if getting the list of tracked peers fails
     pub async fn update_include(&self, urn: Urn) -> Result<PathBuf, Error> {
-        let local_url = LocalUrl::from_urn(urn.clone(), self.peer_id());
+        let local_url = LocalUrl::from(urn.clone());
         let tracked = self.tracked(urn).await?;
-        let include = Include::from_tracked_users(
+        let include = Include::from_tracked_persons(
             self.paths().git_includes_dir().to_path_buf(),
             local_url,
             tracked.into_iter().filter_map(|peer| {
                 crate::project::Peer::replicated_remote(peer).map(|(p, u)| (u, p))
             }),
-        )?;
+        );
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);
         include.save()?;
