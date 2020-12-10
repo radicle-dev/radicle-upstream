@@ -361,7 +361,8 @@ impl State {
     {
         // CONSTRUCT PROEJECTS NAMESPACE
         let namespace =
-            git::namespace::Namespace::try_from(reference.namespace.unwrap().to_string()).unwrap();
+            git::namespace::Namespace::try_from(reference.namespace.unwrap().to_string().as_str())
+                .unwrap();
 
         // HANDLE HEADS
         let branch = match reference.remote {
