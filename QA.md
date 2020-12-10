@@ -2,8 +2,9 @@
 
 - [ ] make sure you are installing into an environment with no old
       configuration and no user data [ℹ️](#01)
+- [ ] make sure you have configured your name and email in git [ℹ️](#02)
 - [ ] [download][bu] the binary package
-- [ ] install Upstream from the downloaded package [ℹ️](#02)
+- [ ] install Upstream from the downloaded package [ℹ️](#03)
   - [ ] macOS Gatekeeper **does not** show the following message:
         _macOS cannot verify that this app is free from malware_
 
@@ -154,7 +155,12 @@ or are using this in combination with the safe method (i.e. while logged
 in with a temporary user account).
 
 
-### How to install? <a href="#user-content-02" id="02">🔗</a>
+### How to set up git? <a href="#user-content-02" id="02">🔗</a>
+    git config --global user.name "Mona Lisa"
+    git config --global user.email "email@example.com"
+
+
+### How to install? <a href="#user-content-03" id="03">🔗</a>
 
 **On macOS:**
 
