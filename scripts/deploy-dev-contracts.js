@@ -13,7 +13,6 @@ async function main() {
     "http://localhost:8545"
   );
   const signer = provider.getSigner(0);
-  const signerAddress = await signer.getAddress();
   const txCount = await signer.getTransactionCount();
   if (txCount !== 0) {
     throw new Error(
@@ -21,12 +20,15 @@ async function main() {
     );
   }
 
+  console.log("\n### Deploying the Radicle Contracts...\n");
   const contracts = await deployAll(signer);
   console.log(`Rad token deployed at ${contracts.rad.address.toLowerCase()}`);
   console.log(`ENS deployed at ${contracts.ens.address.toLowerCase()}`);
-  console.log(`Pool deployed at ${contracts.ethPool.address.toLowerCase()}`);
-
-  await (await contracts.ethPool.topUp({ value: 1000 })).wait();
-  await (await contracts.ethPool.setAmountPerBlock(1)).wait();
-  await (await contracts.ethPool.setReceiver(signerAddress, 1)).wait();
+  console.log(
+    `Eth Pool deployed at ${contracts.ethPool.address.toLowerCase()}`
+  );
+  console.log(
+    `Erc20 Pool deployed at ${contracts.erc20Pool.address.toLowerCase()}`
+  );
+  console.log("Done.\n");
 }

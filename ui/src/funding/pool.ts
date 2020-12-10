@@ -1,13 +1,17 @@
 import * as svelteStore from "svelte/store";
-import { EthPool__factory as PoolFactory } from "radicle-contracts/build/contract-bindings/ethers/factories/EthPool__factory";
-import type { EthPool as PoolContract } from "radicle-contracts/contract-bindings/ethers/EthPool";
+import {
+  Erc20Pool as PoolContract,
+  Erc20Pool__factory as PoolFactory,
+  Rad,
+  Rad__factory as RadFactory,
+} from "radicle-contracts/build/contract-bindings/ethers";
 
 import * as transaction from "../transaction";
 import * as validation from "../validation";
 
 import { Wallet, Account, Status } from "../wallet";
 import * as remote from "../remote";
-import type { BigNumberish } from "ethers";
+import { BigNumber, BigNumberish } from "ethers";
 
 export const store = svelteStore.writable<Pool | null>(null);
 
@@ -41,6 +45,15 @@ export interface Pool {
   // Collect funds the user has received up to now from givers and
   // transfer them to the users account.
   collect(): Promise<void>;
+
+  // Get the state of user's ERC-20 token allowance.
+  // It returns the remaining amount of said token the
+  // pool is allowed to use.
+  erc20Allowance(): Promise<BigNumberish>;
+
+  // Approve the ERC-20 token allowance, which permits
+  // the pool to access said type of token from the user.
+  approveErc20(): Promise<void>;
 }
 
 // The pool settings the user can change and save.
@@ -85,13 +98,19 @@ interface ReceiverWeight {
   weight: Weight;
 }
 
-export const CONTRACT_ADDRESS: string =
+export const POOL_CONTRACT_ADDRESS: string =
   "0x0e22b57c7e69d1b62c9e4c88bb63b0357a905d1e";
+
+export const ERC20_TOKEN_ADDRESS = "0xff1d4d289bf0aaaf918964c57ac30481a67728ef";
 
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
   const poolContract: PoolContract = PoolFactory.connect(
-    CONTRACT_ADDRESS,
+    POOL_CONTRACT_ADDRESS,
+    wallet.signer
+  );
+  const erc20TokenContract: Rad = RadFactory.connect(
+    ERC20_TOKEN_ADDRESS,
     wallet.signer
   );
   loadPoolData();
@@ -174,10 +193,7 @@ export function make(wallet: Wallet): Pool {
 
   async function topUp(value: BigNumberish): Promise<void> {
     return poolContract
-      .topUp({
-        gasLimit: 200 * 1000,
-        value,
-      })
+      .topUp(value, { gasLimit: 200 * 1000 })
       .then(tx => {
         transaction.add(transaction.topUp(tx));
         tx.wait();
@@ -210,6 +226,15 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
+  async function erc20Allowance(): Promise<BigNumberish> {
+    return erc20TokenContract.allowance(getAccount(), POOL_CONTRACT_ADDRESS);
+  }
+
+  async function approveErc20(): Promise<void> {
+    const unlimited = BigNumber.from(1).shl(256).sub(1);
+    return erc20TokenContract.approve(POOL_CONTRACT_ADDRESS, unlimited);
+  }
+
   return {
     data,
     getAccount,
@@ -219,6 +244,8 @@ export function make(wallet: Wallet): Pool {
     withdraw,
     withdrawAll,
     collect,
+    erc20Allowance,
+    approveErc20,
   };
 }
 

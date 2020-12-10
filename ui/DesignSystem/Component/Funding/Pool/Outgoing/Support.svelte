@@ -103,6 +103,9 @@
     _pool.store.set(pool);
     modal.toggle(path.poolWithdraw());
   };
+
+  // TODO(nuno): delete this tmp code
+  pool.erc20Allowance();
 </script>
 
 <style>

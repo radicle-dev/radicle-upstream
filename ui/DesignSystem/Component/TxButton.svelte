@@ -21,6 +21,7 @@
       notification.info("Approve the transaction on your wallet app 📲");
       await onClick();
     } catch (error) {
+      console.log(JSON.stringify(error));
       notification.error(errorMessage(error), true);
     } finally {
       running = false;

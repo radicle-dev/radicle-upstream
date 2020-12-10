@@ -170,7 +170,7 @@
     "marked": "^1.2.4",
     "mnemonist": "^0.38.0",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "file:../radicle-contracts#ed2bca7d3d985b755de068b8bf43f51f106dc61f",
+    "radicle-contracts": "file:../radicle-contracts",
     "svelte-persistent-store": "^0.1.3",
     "timeago.js": "^4.0.2",
     "twemoji": "13.0.1",
