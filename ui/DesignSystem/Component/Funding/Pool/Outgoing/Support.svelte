@@ -163,6 +163,16 @@
   }
 </style>
 
+{#await pool.erc20Allowance()}
+  <p>...waiting</p>
+{:then allowance}
+  <p>The allowance is {allowance}</p>
+{:catch error}
+  <p style="color: red">{error.message}</p>
+{/await}
+
+<TxButton title="Give allowance" onClick={() => pool.approveErc20()} />
+
 <Remote store={pool.data} let:data={poolData}>
   <div class="container">
     <header>

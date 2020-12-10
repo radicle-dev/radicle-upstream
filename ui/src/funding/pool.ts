@@ -227,7 +227,17 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function erc20Allowance(): Promise<BigNumberish> {
-    return erc20TokenContract.allowance(getAccount(), POOL_CONTRACT_ADDRESS);
+    const account = getAccount();
+    if (account) {
+      return erc20TokenContract.allowance(
+        account.address,
+        POOL_CONTRACT_ADDRESS
+      );
+    } else {
+      return Promise.reject(
+        "There is no connected account. Please connect your wallet."
+      );
+    }
   }
 
   async function approveErc20(): Promise<void> {
