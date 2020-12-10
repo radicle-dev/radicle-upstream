@@ -2,6 +2,7 @@
 
 const { deployAll } = require("radicle-contracts");
 const ethers = require("ethers");
+const fs = require("fs");
 
 main().catch(e => {
   console.error(e);
@@ -31,4 +32,11 @@ async function main() {
     `Erc20 Pool deployed at ${contracts.erc20Pool.address.toLowerCase()}`
   );
   console.log("Done.\n");
+
+  const devEthAccount = fs
+    .readFileSync("sandbox/.local-eth-account", "utf-8")
+    .trim();
+
+  // Set the initial balance of the used erc20 token for the development account.
+  await (await contracts.rad.transfer(devEthAccount, 98765)).wait();
 }
