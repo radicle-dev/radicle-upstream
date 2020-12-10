@@ -589,34 +589,45 @@ impl State {
         &self,
         urn: Urn,
     ) -> Result<Vec<crate::project::Peer<peer::Status<Person>>>, Error> {
-        let project = self.get_project(urn.clone(), None).await?;
-        Ok(self
-            .api
-            .with_storage(move |storage| {
+        let project = self.get_project(urn.clone(), None).await?.unwrap();
+
+        self.api
+            .with_storage(move |store| {
                 let mut peers = vec![];
-                let repo = storage.open_repo(urn)?;
-                for peer_id in repo.tracked()? {
-                    let status =
-                        if storage.has_ref(&Reference::rad_self(repo.urn.id.clone(), peer_id))? {
-                            let user = repo.get_rad_self_of(peer_id)?;
-                            if project.maintainers().contains(&user.urn()) {
-                                peer::Status::replicated(peer::Role::Maintainer, user)
-                            } else {
-                                let signed_refs = storage.rad_signed_refs_of(&repo.urn, peer_id)?;
-                                if signed_refs.heads.is_empty() {
-                                    peer::Status::replicated(peer::Role::Tracker, user)
-                                } else {
-                                    peer::Status::replicated(peer::Role::Contributor, user)
-                                }
-                            }
+
+                for peer_id in tracking::tracked(&store, &urn)? {
+                    let ref_self = Reference::rad_self(Namespace::from(urn.clone()), peer_id);
+                    let status = if store.has_ref(&ref_self)? {
+                        let malkovich_urn = Urn::try_from(ref_self).unwrap();
+                        let malkovich = person::get(&store, &malkovich_urn)?.unwrap();
+
+                        if project
+                            .delegations()
+                            .owner(peer_id.as_public_key())
+                            .is_some()
+                        {
+                            peer::Status::replicated(peer::Role::Maintainer, malkovich)
+                        } else if store
+                            .reference(&Reference::rad_signed_refs(
+                                Namespace::from(urn.clone()),
+                                peer_id,
+                            ))?
+                            .is_some()
+                        {
+                            peer::Status::replicated(peer::Role::Contributor, malkovich)
                         } else {
-                            peer::Status::NotReplicated
-                        };
-                    peers.push(crate::project::Peer::Remote { peer_id, status })
+                            peer::Status::replicated(peer::Role::Tracker, malkovich)
+                        }
+                    } else {
+                        peer::Status::NotReplicated
+                    };
+
+                    peers.push(crate::project::Peer::Remote { peer_id, status });
                 }
+
                 Ok::<_, Error>(peers)
             })
-            .await??)
+            .await?
     }
 
     // TODO(xla): Account for projects not replicated but wanted.
