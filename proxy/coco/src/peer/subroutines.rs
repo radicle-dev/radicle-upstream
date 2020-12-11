@@ -5,7 +5,7 @@ use std::{
     future::Future,
     pin::Pin,
     task::{Context, Poll},
-    time::{Duration, Instant},
+    time::{Duration, SystemTime},
 };
 
 use futures::stream::{BoxStream, FuturesUnordered, SelectAll, StreamExt as _};
@@ -298,7 +298,7 @@ async fn control_respond(cmd: control::Response) {
     };
 }
 
-async fn persist_waiting_room(waiting_room: WaitingRoom<Instant, Duration>, store: kv::Store) {
+async fn persist_waiting_room(waiting_room: WaitingRoom<SystemTime, Duration>, store: kv::Store) {
     match waiting_room::save(&store, waiting_room) {
         Ok(()) => log::debug!("Successfully persisted the waiting room"),
         Err(err) => log::debug!("Error while persisting the waiting room: {}", err),
