@@ -2,6 +2,7 @@
 
 use futures::prelude::*;
 use std::sync::Arc;
+use std::{env, path};
 use tokio::sync::{mpsc, Notify};
 
 /// Persistent environment with depedencies for running the API and coco peer services.
@@ -30,6 +31,9 @@ pub enum Error {
         #[from]
         std::io::Error,
     ),
+    /// Couldn't get an environment variable's value.
+    #[error(transparent)]
+    Var(#[from] env::VarError),
 }
 
 impl Environment {
@@ -50,7 +54,11 @@ impl Environment {
                 test_mode,
             })
         } else {
-            let coco_paths = coco::Paths::new()?;
+            // TODO: Use central place for the path (see config.rs)
+            // TODO: The path/symlink might not be created yet, if the identity doesn't exists
+            let home_dir = std::env::var("HOME")?;
+            let path = path::Path::new(&home_dir).join(".radicle/identities/current");
+            let coco_paths = coco::Paths::from_root(path)?;
             let keystore = Arc::new(coco::keystore::file(coco_paths.clone()));
             Ok(Self {
                 key: None,

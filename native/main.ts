@@ -17,6 +17,10 @@ const proxyPath = path.join(__dirname, "../../radicle-proxy");
 // currently "false".  It will change to be "true" in Electron 9.  For more
 // information please check https://github.com/electron/electron/issues/18397
 app.allowRendererProcessReuse = true;
+// TODO: For this to work in production mode, the `.radicle` and `electron` dir needs to be created here
+const home = app.getPath("home");
+app.setPath("userData", `${home  }/.radicle/electron`);
+app.setPath("appData", `${home  }/.radicle/electron`);
 
 class WindowManager {
   public window: BrowserWindow | null;

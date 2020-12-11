@@ -43,6 +43,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
+    coco::git_helper::setup_directories(&config::dirs()?)?;
 
     let mut service_manager = service::Manager::new(args.test)?;
     let mut sighup = signal(SignalKind::hangup())?;
@@ -208,7 +209,7 @@ async fn rig(
         std::env::set_var("RAD_HOME", temp_dir.path());
         temp_dir.path().join("store")
     } else {
-        config::dirs().data_dir().join("store")
+        config::id_dirs()?.join("store")
     };
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
