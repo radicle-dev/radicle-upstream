@@ -40,11 +40,16 @@ export interface TxData {
 
 // The meta transactions that we provide to the user.
 type MetaTx =
+  | Erc20Allowance
   | TopUp
   | CollectFunds
   | UpdateMonthlyContribution
   | UpdateReceivers
   | Withdraw;
+
+interface Erc20Allowance {
+  kind: TxKind.Erc20Allowance;
+}
 
 interface TopUp {
   kind: TxKind.TopUp;
@@ -74,6 +79,7 @@ interface UpdateReceivers {
 }
 
 export enum TxKind {
+  Erc20Allowance = "ERC-20 Allowance",
   Withdraw = "Withdraw",
   TopUp = "Top Up",
   CollectFunds = "Collect Funds",
@@ -91,6 +97,10 @@ export enum TxStatus {
 }
 
 /* Smart constructors for `Tx` values */
+
+export function erc20Allowance(txc: ContractTransaction): Tx {
+  return { ...txData(txc), ...{ kind: TxKind.Erc20Allowance } };
+}
 
 export function collect(txc: ContractTransaction): Tx {
   const meta: CollectFunds = {
@@ -299,6 +309,7 @@ function direction(tx: Tx): Direction {
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
       return Direction.Incoming;
+    case TxKind.Erc20Allowance:
     case TxKind.TopUp:
     case TxKind.UpdateReceivers:
     case TxKind.UpdateMonthlyContribution:
