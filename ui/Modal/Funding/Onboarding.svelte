@@ -1,4 +1,7 @@
 <script lang="typescript">
+  import type { BigNumberish } from "ethers";
+
+  import Erc20Allowance from "../../DesignSystem/Component/Funding/Pool/Onboarding/Erc20Allowance.svelte";
   import Intro from "../../DesignSystem/Component/Funding/Pool/Onboarding/Intro.svelte";
   import SetBudget from "../../DesignSystem/Component/Funding/Pool/Onboarding/SetBudget.svelte";
   import TopUp from "../../DesignSystem/Component/Funding/Pool/Onboarding/TopUp.svelte";
@@ -10,6 +13,7 @@
   import * as pool from "../../src/funding/pool";
 
   enum Step {
+    Erc20Allowance = "erc20",
     Intro = "intro",
     SetBudget = "budget",
     AddReceivers = "receivers",
@@ -17,7 +21,13 @@
     Review = "review",
   }
 
-  let currentStep = Step.Intro;
+  let currentStep = Step.Erc20Allowance;
+
+  $store.erc20Allowance().then((allowance: BigNumberish) => {
+    if (allowance > 0 && currentStep === Step.Erc20Allowance) {
+      currentStep = Step.Intro;
+    }
+  });
 
   function onCancel() {
     modal.hide();
@@ -29,6 +39,8 @@
 
   function nextStep(): Step {
     switch (currentStep) {
+      case Step.Erc20Allowance:
+        return Step.Intro;
       case Step.Intro:
         return Step.SetBudget;
       case Step.SetBudget:
@@ -60,6 +72,10 @@
     }
   }
 
+  function approveErc20(): Promise<void> {
+    return $store.approveErc20().then(_ => onContinue());
+  }
+
   function onConfirmed(): Promise<void> {
     return $store.onboard(budget, receivers, topUp).then(_ => modal.hide());
   }
@@ -86,7 +102,9 @@
 </style>
 
 <div class="wrapper">
-  {#if currentStep === Step.Intro}
+  {#if currentStep === Step.Erc20Allowance}
+    <Erc20Allowance {onCancel} onConfirm={approveErc20} />
+  {:else if currentStep === Step.Intro}
     <Intro onSkip={onCancel} {onContinue} />
   {:else if currentStep === Step.SetBudget}
     <SetBudget bind:budget {onCancel} {onContinue} />
