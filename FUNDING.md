@@ -48,6 +48,10 @@ In the development environment, we set up these three pieces as follows:
 
 **Getting started**
 
+- Install `node.js` v12
+
+  Recommendation: Use `nvm` to install and use a specific `node` version.
+
 - Run `yarn install` within `radicle-upstream`
 
 - Install [walletconnect-test-wallet][wctw]
