@@ -242,7 +242,13 @@ export function make(wallet: Wallet): Pool {
 
   async function approveErc20(): Promise<void> {
     const unlimited = BigNumber.from(1).shl(256).sub(1);
-    return erc20TokenContract.approve(POOL_CONTRACT_ADDRESS, unlimited);
+    return erc20TokenContract
+      .approve(POOL_CONTRACT_ADDRESS, unlimited)
+      .then(tx => {
+        transaction.add(transaction.erc20Allowance(tx));
+        tx.wait();
+      })
+      .finally(loadPoolData);
   }
 
   return {

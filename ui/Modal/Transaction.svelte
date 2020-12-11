@@ -153,7 +153,7 @@
   </header>
 
   <div class="content">
-    {#if ![TxKind.UpdateReceivers, TxKind.UpdateMonthlyContribution].includes(tx.kind)}
+    {#if ![TxKind.UpdateReceivers, TxKind.UpdateMonthlyContribution, TxKind.Erc20Allowance].includes(tx.kind)}
       <div class="section">
         <div class="row">
           <p>Amount</p>
