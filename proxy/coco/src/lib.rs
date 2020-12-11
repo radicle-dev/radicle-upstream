@@ -74,13 +74,18 @@ pub mod user;
 ///
 /// * peer construction from config fails.
 /// * accept on the peer fails.
-pub async fn into_peer_state(
+pub async fn boostrap<D>(
     config: net::peer::PeerConfig<librad::signer::BoxedSigner>,
+    disco: D,
     signer: librad::signer::BoxedSigner,
     store: kv::Store,
     run_config: RunConfig,
-) -> Result<(Peer, State), state::Error> {
-    let peer = config.try_into_peer().await?;
+) -> Result<(Peer, State), state::Error>
+where
+    D: net::discovery::Discovery<Addr = SocketAddr>,
+    <D as net::discovery::Discovery>::Stream: 'static,
+{
+    let peer = librad::net::peer::Peer::bootstrap(config, disco).await?;
     let (api, run_loop) = peer.accept()?;
 
     let state = State::new(api, signer);

@@ -486,13 +486,17 @@ impl State {
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
     pub async fn init_project(
         &self,
-        owner: LocalIdentity,
+        owner: &LocalIdentity,
         create: crate::project::Create,
     ) -> Result<Project, Error> {
         let pk = keys::PublicKey::from(self.signer.public_key());
         let default_branch = create.default_branch.to_string();
         let description = create.description.to_string();
-        let name = create.name.to_string();
+        let name = create
+            .repo
+            .project_name()
+            .map_err(crate::project::create::Error::from)?;
+        let owner = owner.clone();
         let project = self
             .api
             .with_storage(move |store| {
@@ -544,20 +548,21 @@ impl State {
     /// Will error if:
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub async fn init_user(&self, name: String) -> Result<Person, Error> {
+    pub async fn init_user(&self, name: String) -> Result<Option<LocalIdentity>, Error> {
         let pk = keys::PublicKey::from(self.signer.public_key());
         self.api
             .with_storage(move |store| {
-                person::create(
+                let malkovich = person::create(
                     &store,
                     payload::Person {
                         name: Cstring::from(name),
                     },
                     Direct::from_iter(vec![pk].into_iter()),
-                )
+                )?;
+
+                Ok::<_, Error>(local::load(&store, malkovich.urn())?)
             })
             .await?
-            .map_err(Error::from)
     }
 
     /// Wrapper around the storage track.
@@ -814,7 +819,7 @@ impl From<&State> for Seed {
     fn from(state: &State) -> Self {
         Self {
             peer_id: state.peer_id(),
-            addrs: state.listen_addrs(),
+            addrs: state.listen_addrs().collect(),
         }
     }
 }
@@ -824,7 +829,7 @@ impl From<&State> for Seed {
 mod test {
     use std::{env, path::PathBuf};
 
-    use librad::{git::storage, git_ext::OneLevel, keys::SecretKey, reflike};
+    use librad::{git::storage, git_ext::OneLevel, keys::SecretKey, net, reflike};
 
     use crate::{config, control, project, signer};
 
@@ -858,10 +863,12 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let disco = config::static_seed_discovery(vec![]);
+        let peer = net::peer::Peer::bootstrap(config, disco).await?;
+        let (api, run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
-        let annie = state.init_user("annie_are_you_ok?").await;
+        let annie = state.init_user("annie_are_you_ok?".to_string()).await;
         assert!(annie.is_ok());
 
         Ok(())
@@ -875,10 +882,12 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let disco = config::static_seed_discovery(vec![]);
+        let peer = net::peer::Peer::bootstrap(config, disco).await?;
+        let (api, run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
-        let user = state.init_owner("cloudhead").await?;
+        let user = state.init_owner("cloudhead".to_string()).await?;
         let project = state
             .init_project(&user, radicle_project(repo_path.clone()))
             .await;
@@ -897,70 +906,18 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let disco = config::static_seed_discovery(vec![]);
+        let peer = net::peer::Peer::bootstrap(config, disco).await?;
+        let (api, run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
-        let user = state.init_owner("cloudhead").await?;
+        let user = state.init_owner("cloudhead".to_string()).await?;
         let project = state
             .init_project(&user, radicle_project(repo_path.clone()))
             .await;
 
         assert!(project.is_ok());
         assert!(repo_path.exists());
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn cannot_create_user_twice() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key);
-        let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer);
-
-        let user = state.init_owner("cloudhead").await?;
-        let err = state.init_user("cloudhead").await;
-
-        if let Err(Error::Storage(storage::Error::AlreadyExists(urn))) = err {
-            assert_eq!(urn, user.urn())
-        } else {
-            panic!(
-                "unexpected error when creating the user a second time: {:?}",
-                err
-            );
-        }
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn cannot_create_project_twice() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let repo_path = tmp_dir.path().join("radicle");
-        let key = SecretKey::new();
-        let signer = signer::BoxedSigner::from(key);
-        let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer);
-
-        let user = state.init_owner("cloudhead").await?;
-        let project_creation = radicle_project(repo_path.clone());
-        let project = state.init_project(&user, project_creation.clone()).await?;
-
-        let err = state
-            .init_project(&user, project_creation.into_existing())
-            .await;
-
-        if let Err(Error::Storage(storage::Error::AlreadyExists(urn))) = err {
-            assert_eq!(urn, project.urn())
-        } else {
-            panic!(
-                "unexpected error when creating the project a second time: {:?}",
-                err
-            );
-        }
 
         Ok(())
     }
@@ -973,23 +930,24 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let disco = config::static_seed_discovery(vec![]);
+        let peer = net::peer::Peer::bootstrap(config, disco).await?;
+        let (api, run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
-        let user = state.init_owner("cloudhead").await?;
+        let user = state.init_owner("cloudhead".to_string()).await?;
 
         control::setup_fixtures(&state, &user)
             .await
             .expect("unable to setup fixtures");
 
-        let kalt = state.init_user("kalt").await?;
-        let kalt = super::verify_user(kalt)?;
+        let kalt = state.init_user("kalt".to_string()).await?.unwrap();
         let fakie = state.init_project(&kalt, fakie_project(repo_path)).await?;
 
         let projects = state.list_projects().await?;
         let mut project_names = projects
             .into_iter()
-            .map(|project| project.name().to_string())
+            .map(|project| project.subject().name.to_string())
             .collect::<Vec<_>>();
         project_names.sort();
 
@@ -998,7 +956,7 @@ mod test {
             vec!["Monadic", "monokel", "open source coin", "radicle"]
         );
 
-        assert!(!project_names.contains(&fakie.name().to_string()));
+        assert!(!project_names.contains(&fakie.subject().name.to_string()));
 
         Ok(())
     }
@@ -1009,18 +967,18 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key);
         let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let disco = config::static_seed_discovery(vec![]);
+        let peer = net::peer::Peer::bootstrap(config, disco).await?;
+        let (api, run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
-        let cloudhead = state.init_user("cloudhead").await?;
-        let _cloudhead = super::verify_user(cloudhead)?;
-        let kalt = state.init_user("kalt").await?;
-        let _kalt = super::verify_user(kalt)?;
+        let cloudhead = state.init_user("cloudhead".to_string()).await?.unwrap();
+        let kalt = state.init_user("kalt".to_string()).await?.unwrap();
 
         let users = state.list_users().await?;
         let mut user_handles = users
             .into_iter()
-            .map(|user| user.name().to_string())
+            .map(|user| user.subject().name.to_string())
             .collect::<Vec<_>>();
         user_handles.sort();
 
