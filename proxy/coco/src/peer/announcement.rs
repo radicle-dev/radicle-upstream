@@ -146,7 +146,7 @@ pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
 #[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
-    use std::{collections::HashSet, convert::TryFrom};
+    use std::{collections::HashSet, convert::TryFrom as _};
 
     use pretty_assertions::assert_eq;
 

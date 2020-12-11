@@ -10,8 +10,6 @@ use librad::{
 };
 use radicle_surf::vcs::git::git2;
 
-use crate::user::User;
-
 pub mod validation;
 
 /// Errors that occur when attempting to create a working copy of a project.
@@ -116,16 +114,12 @@ impl Create {
 
 #[cfg(test)]
 mod test {
+    use std::convert::TryFrom as _;
+
     use assert_matches::assert_matches;
 
-    use librad::{
-        git_ext::OneLevel,
-        hash::Hash,
-        keys::SecretKey,
-        peer::PeerId,
-        reflike,
-        uri::{self, RadUrn},
-    };
+    use librad::{git_ext::OneLevel, identities::Urn, keys::SecretKey, peer::PeerId, reflike};
+    use radicle_git_ext::Oid;
 
     use super::*;
 
@@ -133,10 +127,7 @@ mod test {
     fn validation_fails_on_non_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>>
     {
         let peer_id = PeerId::from(SecretKey::new());
-        let url = LocalUrl::from_urn(
-            RadUrn::new(Hash::hash(b"geez"), uri::Protocol::Git, uri::Path::empty()),
-            peer_id,
-        );
+        let url = LocalUrl::from(Urn::new(Oid::try_from("geez").unwrap()));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
         std::fs::create_dir(exists.clone())?;
@@ -161,10 +152,7 @@ mod test {
     #[test]
     fn validation_succeeds_on_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>> {
         let peer_id = PeerId::from(SecretKey::new());
-        let url = LocalUrl::from_urn(
-            RadUrn::new(Hash::hash(b"geez"), uri::Protocol::Git, uri::Path::empty()),
-            peer_id,
-        );
+        let url = LocalUrl::from(Urn::new(Oid::try_from("geez").unwrap()));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
         std::fs::create_dir(exists)?;

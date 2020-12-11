@@ -215,8 +215,8 @@ impl State {
                 let projects = identities::any::list(&store)?
                     .filter_map(Result::ok)
                     .filter_map(|id| match id {
-                        SomeIdentity::Person(_person) => None,
                         SomeIdentity::Project(project) => Some(project),
+                        _ => None,
                     })
                     .collect::<Vec<_>>();
 
@@ -265,7 +265,7 @@ impl State {
                     .filter_map(Result::ok)
                     .filter_map(|id| match id {
                         SomeIdentity::Person(person) => Some(person),
-                        SomeIdentity::Project(_project) => None,
+                        _ => None,
                     })
                     .collect::<Vec<_>>();
 
@@ -347,7 +347,7 @@ impl State {
     ///   * If we could not open the backing storage.
     ///   * If we could not initialise the `Browser`.
     ///   * If the callback provided returned an error.
-    pub async fn with_browser<F, T, C>(
+    pub async fn with_browser<F, T>(
         &self,
         reference: Reference<Single>,
         callback: F,
