@@ -833,8 +833,8 @@ mod test {
         assert_matches!(
             cmds.first().unwrap(),
             Command::Request(command::Request::Clone(remote_urn, remote_peer)) => {
-                assert_eq!(remote_urn, urn);
-                assert_eq!(remote_peer, peer_id);
+                assert_eq!(remote_urn.clone(), urn);
+                assert_eq!(*remote_peer, peer_id);
             }
         );
 

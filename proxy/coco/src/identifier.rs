@@ -36,7 +36,7 @@ pub struct Identifier {
 impl From<(peer::PeerId, Person)> for Identifier {
     fn from((peer_id, user): (peer::PeerId, Person)) -> Self {
         Self {
-            handle: user.name().to_string(),
+            handle: user.subject().name.to_string(),
             peer_id,
         }
     }

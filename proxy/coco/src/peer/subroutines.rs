@@ -168,8 +168,13 @@ impl Subroutines {
             Command::Request(command::Request::Query(urn)) => {
                 SpawnAbortable::new(query(urn, self.state.clone(), self.input_sender.clone()))
             },
-            Command::Request(command::Request::Clone(url)) => {
-                SpawnAbortable::new(clone(url, self.state.clone(), self.input_sender.clone()))
+            Command::Request(command::Request::Clone(urn, remote_peer)) => {
+                SpawnAbortable::new(clone(
+                    urn,
+                    remote_peer,
+                    self.state.clone(),
+                    self.input_sender.clone(),
+                ))
             },
             Command::Request(command::Request::TimedOut(urn)) => {
                 let mut sender = self.input_sender.clone();

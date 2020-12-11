@@ -97,7 +97,8 @@ mod tests {
 
         assert!(!seeds.is_empty(), "seeds should not be empty");
 
-        if let Some(super::Seed { addr, .. }) = seeds.first() {
+        if let Some(super::Seed { addrs, .. }) = seeds.first() {
+            let addr = addrs.first().unwrap();
             let expected: net::SocketAddr = match *addr {
                 net::SocketAddr::V4(_addr) => ([127, 0, 0, 1], 9999).into(),
                 net::SocketAddr::V6(_addr) => "[::1]:9999".parse().expect("valid ivp6 address"),
