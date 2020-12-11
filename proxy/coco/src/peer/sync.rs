@@ -14,7 +14,7 @@ pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
         .list_projects()
         .await?
         .iter()
-        .map(|project| (project.urn(), remote_peer))
+        .map(|project| project.urn())
         .collect::<Vec<_>>();
 
     for urn in urns {
@@ -23,7 +23,7 @@ pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
             Ok(()) => {
                 log::debug!("Finished fetch of {} from {}", urn, remote_peer);
                 include::update(state.clone(), urn).await;
-            },
+            }
             Err(e) => log::debug!("Fetch of {} from {} errored: {}", urn, remote_peer, e),
         }
     }
