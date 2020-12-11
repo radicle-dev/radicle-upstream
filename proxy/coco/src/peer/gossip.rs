@@ -5,8 +5,9 @@ use librad::{
     net::peer::{Gossip, Rev},
     peer::PeerId,
 };
+use radicle_git_ext::Oid;
 
-use crate::{oid::Oid, State};
+use crate::State;
 
 /// Announce a new rev for the `urn`.
 pub async fn announce(state: &State, urn: &Urn, rev: Option<Oid>) {

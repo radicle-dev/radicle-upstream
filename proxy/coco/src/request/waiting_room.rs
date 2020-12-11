@@ -383,7 +383,7 @@ impl<T, D> WaitingRoom<T, D> {
     pub fn iter(&self) -> impl Iterator<Item = (Urn, &SomeRequest<T>)> {
         self.requests
             .iter()
-            .map(|(id, request)| (Urn::new(id), request))
+            .map(|(id, request)| (Urn::new(*id), request))
     }
 
     /// Filter the `WaitingRoom` by:

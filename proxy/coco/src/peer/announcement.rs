@@ -8,11 +8,10 @@ use librad::{
     git::identities::Revision,
     identities::urn::{ParseError, Urn},
 };
-use radicle_git_ext::RefLike;
+use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
 use crate::{
-    oid::Oid,
     peer::gossip,
     state::{self, State},
 };
@@ -71,16 +70,16 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
         Err(err) => Err(err.into()),
         Ok(projects) => {
             for project in &projects {
-                let refs = state.list_owner_project_refs(project.urn()).await?;
-
-                for (head, hash) in &refs.heads {
-                    list.insert((
-                        Urn {
-                            path: head.as_str().parse::<RefLike>()?,
-                            ..project.urn()
-                        },
-                        Oid::from(*hash.deref()),
-                    ));
+                if let Some(refs) = state.list_owner_project_refs(project.urn()).await? {
+                    for (head, hash) in &refs.heads {
+                        list.insert((
+                            Urn {
+                                path: head.as_str().parse::<RefLike>().ok(),
+                                ..project.urn()
+                            },
+                            Oid::from(*hash.deref()),
+                        ));
+                    }
                 }
             }
 
@@ -103,7 +102,7 @@ pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load<E>(store: &kv::Store) -> Result<Updates, Error> {
+pub fn load(store: &kv::Store) -> Result<Updates, Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
@@ -139,7 +138,7 @@ pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save<E>(store: &kv::Store, updates: Updates) -> Result<(), Error> {
+pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
@@ -147,14 +146,14 @@ pub fn save<E>(store: &kv::Store, updates: Updates) -> Result<(), Error> {
 #[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
-    use std::collections::HashSet;
+    use std::{collections::HashSet, convert::TryFrom};
 
     use pretty_assertions::assert_eq;
 
-    use librad::{identities::Urn, keys::SecretKey};
-    use radicle_git_ext::RefLike;
+    use librad::{identities::Urn, keys::SecretKey, net};
+    use radicle_git_ext::{oid, RefLike};
 
-    use crate::{config, oid, signer, state::State};
+    use crate::{config, signer, state::State};
 
     #[tokio::test(core_threads = 2)]
     async fn announce() -> Result<(), Box<dyn std::error::Error>> {
@@ -162,10 +161,12 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
         let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
+        let disco = config::static_seed_discovery(vec![]);
+        let peer = net::peer::Peer::bootstrap(config, disco).await?;
+        let (api, run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
-        let _owner = state.init_owner("cloudhead").await?;
+        let _owner = state.init_owner("cloudhead".to_string()).await?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
         let updates = super::build(&state).await?;
@@ -254,14 +255,14 @@ mod test {
 
     fn project0(head: &str) -> Urn {
         Urn {
-            id: "project0",
-            path: RefLike::try_from(head).unwrap(),
+            id: "project0".parse::<radicle_git_ext::Oid>().unwrap(),
+            path: Some(RefLike::try_from(head).unwrap()),
         }
     }
     fn project1(head: &str) -> Urn {
         Urn {
-            id: "project1",
-            path: RefLike::try_from(head).unwrap(),
+            id: "project1".parse::<radicle_git_ext::Oid>().unwrap(),
+            path: Some(RefLike::try_from(head).unwrap()),
         }
     }
 }
