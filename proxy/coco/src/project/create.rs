@@ -97,19 +97,6 @@ impl Create {
             self.default_branch,
         )?)
     }
-
-    /// Build a [`project::Project`], where the provided [`User`] is the owner, and the set of
-    /// keys starts with the provided [`keys::PublicKey`].
-    ///
-    /// # Errors
-    ///
-    ///   * Failed to build the project entity.
-    pub fn build(&self, owner: &User, key: keys::PublicKey) -> Result<Project, Error> {
-        let name = self.repo.project_name()?;
-        let project = project::create(name, owner.urn())?;
-
-        Ok(project)
-    }
 }
 
 // Clippy is stupid and doesn't realise the `Create`s here are different types than `Self`.

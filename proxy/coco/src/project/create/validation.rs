@@ -4,8 +4,12 @@
 use std::{convert::TryFrom, io, path::PathBuf};
 
 use librad::{
-    git::{local::url::LocalUrl, types::remote::Remote},
-    git_ext::{self, OneLevel},
+    git::{
+        local::url::LocalUrl,
+        types::{remote::Remote, Flat, Force, GenericRef, Refspec},
+    },
+    git_ext::{self, OneLevel, RefLike},
+    reflike,
     std_ext::result::ResultExt as _,
 };
 use radicle_surf::vcs::git::git2;
@@ -303,8 +307,19 @@ impl Repository {
         let _ = Self::existing_branch(repo, default_branch)?;
 
         log::debug!("Creating rad remote");
-        let mut git_remote = Self::existing_remote(repo, &url)?
-            .map_or_else(|| Remote::rad_remote(url, None).create(repo), Ok)?;
+
+        let fetchspec = Refspec {
+            src: GenericRef::<_, RefLike, _>::heads(Flat, None),
+            dst: GenericRef::heads(Flat, reflike!("rad")),
+            force: Force::True,
+        };
+        let mut git_remote = Self::existing_remote(repo, &url)?.map_or_else(
+            || {
+                Remote::rad_remote(url, fetchspec).save(repo)?;
+                repo.find_remote(config::RAD_REMOTE)
+            },
+            Ok,
+        )?;
         Self::push_branches(repo, &mut git_remote)?;
         Ok(())
     }

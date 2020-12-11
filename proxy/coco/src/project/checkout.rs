@@ -9,11 +9,12 @@ use librad::{
     git::{
         include,
         local::url::LocalUrl,
-        types::{remote::Remote, Flat, Force},
+        types::{remote::Remote, Flat, Force, GenericRef, Reference, Refspec},
     },
     git_ext::{OneLevel, RefLike, RefspecPattern},
     identities::Urn,
     peer::PeerId,
+    reflike,
 };
 use radicle_surf::vcs::git::git2;
 
@@ -80,7 +81,7 @@ impl Ownership {
     ) -> Result<git2::Repository, git2::Error> {
         match self {
             Self::Local(peer_id) => {
-                let url = LocalUrl::from_urn(urn, peer_id);
+                let url = LocalUrl::from(urn);
                 Self::local(&url, path, builder)
             },
             Self::Remote {
@@ -88,7 +89,7 @@ impl Ownership {
                 remote,
                 local,
             } => {
-                let url = LocalUrl::from_urn(urn, local);
+                let url = LocalUrl::from(urn);
                 Self::remote(&handle, remote, url, default_branch, path, builder)
             },
         }
@@ -117,14 +118,13 @@ impl Ownership {
             RefLike::try_from(format!("{}@{}", handle, peer)).expect("failed to parse remote name");
         {
             builder.remote_create(move |repo, _remote_name, url| {
-                let mut remote = Remote::new(url, name.as_str().to_string());
-                let heads = remote.remote_heads(&repo);
-                let heads: FlatRef<PeerId, _> = FlatRef::heads(PhantomData, peer).with_name(
-                    RefspecPattern::try_from("heads/*").expect("'heads/*' failed to parse"),
-                );
-                let remotes: FlatRef<RefLike, _> = FlatRef::heads(PhantomData, name.clone());
-                remote.fetch_spec = Some(remotes.refspec(heads, Force::True).boxed());
-                remote.create(repo)
+                let mut remote = Remote::new(url, name.clone()).with_fetchspecs(vec![Refspec {
+                    src: Reference::heads(Flat, peer),
+                    dst: GenericRef::heads(Flat, name.clone()),
+                    force: Force::True,
+                }]);
+                remote.save(repo)?;
+                repo.find_remote(name.as_str())
             });
         }
 
@@ -133,7 +133,14 @@ impl Ownership {
         // Create a rad remote and push the default branch so we can set it as the
         // upstream.
         {
-            let mut remote = Remote::rad_remote(url, None).create(&repo)?;
+            // Create a fetchspec `refs/heads/*:refs/remotes/rad/*`
+            let fetchspec = Refspec {
+                src: GenericRef::<_, RefLike, _>::heads(Flat, None),
+                dst: GenericRef::heads(Flat, reflike!("rad")),
+                force: Force::True,
+            };
+            let _ = Remote::rad_remote(url, fetchspec).save(&repo)?;
+            let mut remote = repo.find_remote(config::RAD_REMOTE)?;
             remote.push(&[&format!("refs/heads/{}", default_branch.as_str())], None)?;
         }
 

@@ -87,14 +87,6 @@ pub enum Error {
     },
 }
 
-impl Error {
-    /// Easily create an [`storage::Error::AlreadyExists`] exists error.
-    #[must_use = "you made it, you use it"]
-    pub const fn already_exists(urn: Urn) -> Self {
-        Self::Storage(storage::Error::AlreadyExists(urn))
-    }
-}
-
 /// Re-export the underlying [`storage::Error`] so that consumers don't need to add `librad` as a
 /// dependency to match on the variant. Instead, they can import `coco::state::error::storage`.
 pub mod storage {
