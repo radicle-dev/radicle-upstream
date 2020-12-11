@@ -64,25 +64,19 @@ impl TryFrom<Paths> for paths::Paths {
 pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<discovery::Static>, io::Error> {
+) -> Result<net::peer::PeerConfig<keys::SecretKey>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(
-        paths,
-        key,
-        *LOCALHOST_ANY,
-        static_seed_discovery(vec![]),
-    ))
+    Ok(configure(paths, key, *LOCALHOST_ANY))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn configure<D>(
+pub fn configure(
     paths: paths::Paths,
     key: keys::SecretKey,
     listen_addr: SocketAddr,
-    disco: D,
-) -> net::peer::PeerConfig<D> {
+) -> net::peer::PeerConfig<keys::SecretKey> {
     let gossip_params = net::gossip::MembershipParams::default();
     let storage_config = net::peer::StorageConfig::default();
 
@@ -99,11 +93,12 @@ pub fn configure<D>(
 #[allow(clippy::as_conversions)]
 #[must_use]
 pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> discovery::Static {
-    discovery::Static::new(
+    discovery::Static::resolve(
         seeds
             .into_iter()
-            .map(seed::Seed::into as fn(seed::Seed) -> (PeerId, SocketAddr)),
+            .map(|seed| (seed.peer_id, seed.addrs.as_slice())),
     )
+    .unwrap()
 }
 
 /// Stream based discovery based on a watch.
@@ -129,9 +124,8 @@ impl discovery::Discovery for StreamDiscovery {
 
         tokio::spawn(async move {
             while let Some(seeds) = self.seeds_receiver.recv().await {
-                for seed in &seeds {
-                    let pair = (seed.peer_id, vec![seed.addr]);
-                    sender.send(pair).await.ok();
+                for seed in seeds.into_iter() {
+                    sender.send(seed.into()).await.ok();
                 }
             }
         });
