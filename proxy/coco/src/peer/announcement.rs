@@ -85,7 +85,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        }
+        },
     }
 }
 

@@ -1,17 +1,16 @@
 //! Utility to work with the peer api of librad.
 
-use std::iter::FromIterator;
-use std::ops::Deref;
-use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
+use std::{convert::TryFrom as _, iter::FromIterator, net::SocketAddr, ops::Deref, path::PathBuf};
 
 use either::Either;
 
 use librad::{
     git::{
         identities,
-        identities::local::{self, LocalIdentity},
-        identities::person,
-        identities::project,
+        identities::{
+            local::{self, LocalIdentity},
+            person, project,
+        },
         include::{self, Include},
         local::url::LocalUrl,
         refs::Refs,
@@ -19,9 +18,10 @@ use librad::{
         types::{namespace, Namespace, Reference, Single},
     },
     git_ext::{OneLevel, RefLike},
-    identities::delegation::{Direct, Indirect},
-    identities::payload,
-    identities::{Person, Project, SomeIdentity, Urn},
+    identities::{
+        delegation::{Direct, Indirect},
+        payload, Person, Project, SomeIdentity, Urn,
+    },
     internal::canonical::Cstring,
     keys,
     net::peer::PeerApi,
@@ -167,7 +167,7 @@ impl State {
                 }
 
                 Ok(owner)
-            }
+            },
         }
     }
 
@@ -407,7 +407,7 @@ impl State {
             None => {
                 let project = self.get_project(urn.clone(), None).await?.unwrap();
                 project.subject().default_branch.clone().unwrap()
-            }
+            },
             Some(name) => name,
         }
         .parse()?;
@@ -457,7 +457,7 @@ impl State {
                 Either::Left(pk) => Either::Left(std::iter::once(PeerId::from(*pk))),
                 Either::Right(indirect) => {
                     Either::Right(indirect.delegations().iter().map(|pk| PeerId::from(*pk)))
-                }
+                },
             })
             .next()
             .unwrap();
@@ -775,7 +775,7 @@ impl State {
                     remote,
                     local: self.peer_id(),
                 }
-            }
+            },
         };
 
         let path =
@@ -798,7 +798,8 @@ impl State {
             self.paths().git_includes_dir().to_path_buf(),
             local_url,
             tracked.into_iter().filter_map(|peer| {
-                crate::project::Peer::replicated_remote(peer).map(|(p, u)| (u, p))
+                crate::project::Peer::replicated_remote(peer)
+                    .map(|(p, u)| (RefLike::try_from(u.subject().name.to_string()).unwrap(), p))
             }),
         );
         let include_path = include.file_path();
@@ -813,7 +814,7 @@ impl From<&State> for Seed {
     fn from(state: &State) -> Self {
         Self {
             peer_id: state.peer_id(),
-            addr: state.listen_addr(),
+            addrs: state.listen_addrs(),
         }
     }
 }

@@ -25,12 +25,12 @@ pub struct Seed {
     /// The seed peer id.
     pub peer_id: peer::PeerId,
     /// The seed address.
-    pub addr: SocketAddr,
+    pub addrs: Vec<SocketAddr>,
 }
 
-impl From<Seed> for (peer::PeerId, SocketAddr) {
-    fn from(seed: Seed) -> (peer::PeerId, SocketAddr) {
-        (seed.peer_id, seed.addr)
+impl From<Seed> for (peer::PeerId, Vec<SocketAddr>) {
+    fn from(seed: Seed) -> Self {
+        (seed.peer_id, seed.addrs)
     }
 }
 
@@ -50,7 +50,10 @@ impl Seed {
                 let peer_id = peer::PeerId::from_default_encoding(peer_id)
                     .map_err(|err| Error::InvalidSeed(seed.to_string(), Some(err)))?;
 
-                Ok(Self { peer_id, addr })
+                Ok(Self {
+                    peer_id,
+                    addrs: vec![addr],
+                })
             } else {
                 Err(Error::DnsLookupFailed(seed.to_string()))
             }

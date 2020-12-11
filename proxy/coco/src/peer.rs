@@ -203,7 +203,7 @@ impl Future for Running {
                     Ok(Ok(())) => Ok(()),
                 };
                 Poll::Ready(val)
-            }
+            },
             Poll::Pending => Poll::Pending,
         }
     }

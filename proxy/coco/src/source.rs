@@ -938,7 +938,6 @@ mod tests {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
         let config = config::default(key, tmp_dir.path()).expect("unable to get default config");
-        let peer = net::P
         let (api, _run_loop) = config.try_into_peer().await?.accept()?;
         let state = State::new(api, signer);
         let owner = state.init_owner("cloudhead").await?;
