@@ -1,7 +1,8 @@
 export enum Variant {
   Plant = "PLANT",
   Keyboard = "KEYBOARD",
-  Money = "Money",
-  Purse = "Purse",
+  Money = "MONEY",
+  Purse = "PURSE",
   Socks = "SOCKS",
+  MonocleSmiley = "MONOCLESMILEY",
 }

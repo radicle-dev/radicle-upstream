@@ -31,7 +31,7 @@
   }
 </style>
 
-<Illustration variant={IllustrationVariant.Money} />
+<Illustration variant={IllustrationVariant.MonocleSmiley} />
 <h1>One thing before you start</h1>
 <p>
   Radicle Pools use DAI, an ERC-20 token. To use it, we need you to send a
