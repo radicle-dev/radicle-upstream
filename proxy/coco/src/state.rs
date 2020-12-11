@@ -31,13 +31,7 @@ use librad::{
 use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
 
-use crate::{
-    peer::gossip,
-    project::peer,
-    seed::Seed,
-    signer, source,
-    user::{verify as verify_user, User},
-};
+use crate::{peer::gossip, project::peer, seed::Seed, signer, source};
 
 pub mod error;
 pub use error::Error;

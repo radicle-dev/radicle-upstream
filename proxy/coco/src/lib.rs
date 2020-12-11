@@ -65,8 +65,6 @@ pub mod source;
 mod spawn_abortable;
 pub use spawn_abortable::{Error as SpawnAbortableError, SpawnAbortable};
 
-pub mod user;
-
 /// Constructs a [`Peer`] and [`State`] pair from a [`net::peer::PeerConfig`].
 ///
 /// # Errors
