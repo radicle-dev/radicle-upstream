@@ -3,11 +3,7 @@
 use std::{convert::TryFrom, env, io, path};
 
 use librad::{
-    git::identities::local::LocalIdentity,
-    identities::{Person, Project},
-    keys,
-    peer::PeerId,
-    reflike,
+    git::identities::local::LocalIdentity, identities::Project, keys, peer::PeerId, reflike,
 };
 use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;

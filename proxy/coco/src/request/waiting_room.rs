@@ -467,7 +467,6 @@ mod test {
             .parse()
             .expect("failed to parse the urn");
         let remote_peer = PeerId::from(SecretKey::new());
-        let url = (urn, remote_peer);
         let have = waiting_room.request(&urn, 0);
         let want = waiting_room.get(&urn).unwrap();
 
@@ -794,7 +793,6 @@ mod test {
         let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
             .parse()
             .expect("failed to parse the urn");
-        let peer = PeerId::from(SecretKey::new());
         assert_eq!(waiting_room.remove(&urn), None);
 
         let expected = {

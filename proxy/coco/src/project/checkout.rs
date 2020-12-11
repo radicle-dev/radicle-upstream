@@ -1,7 +1,6 @@
 use std::{
     convert::TryFrom,
     ffi,
-    marker::PhantomData,
     path::{self, PathBuf},
 };
 
@@ -11,7 +10,7 @@ use librad::{
         local::url::LocalUrl,
         types::{remote::Remote, Flat, Force, GenericRef, Reference, Refspec},
     },
-    git_ext::{OneLevel, RefLike, RefspecPattern},
+    git_ext::{OneLevel, RefLike},
     identities::Urn,
     peer::PeerId,
     reflike,
@@ -80,15 +79,11 @@ impl Ownership {
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
         match self {
-            Self::Local(peer_id) => {
+            Self::Local(_peer_id) => {
                 let url = LocalUrl::from(urn);
                 Self::local(&url, path, builder)
             },
-            Self::Remote {
-                handle,
-                remote,
-                local,
-            } => {
+            Self::Remote { handle, remote, .. } => {
                 let url = LocalUrl::from(urn);
                 Self::remote(&handle, remote, url, default_branch, path, builder)
             },

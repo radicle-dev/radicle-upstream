@@ -1,11 +1,11 @@
-use std::time::Duration;
+use std::{convert::TryFrom, time::Duration};
 
 use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
 use pretty_assertions::assert_eq;
 use tokio::time::timeout;
 
-use librad::uri;
+use radicle_git_ext::RefLike;
 use radicle_surf::vcs::git::git2;
 
 use coco::{
@@ -27,11 +27,11 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
+    let alice = alice_state.init_owner("alice".to_string()).await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = bob_state.init_owner("bob").await?;
+    let _bob = bob_state.init_owner("bob".to_string()).await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
@@ -40,17 +40,13 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await?;
 
-    let project_urn = {
+    {
         let alice_peer_id = alice_state.peer_id();
-        let alice_addr = alice_state.listen_addr();
+        let alice_addrs = alice_state.listen_addrs();
         bob_state
-            .clone_project(
-                project.urn().into_rad_url(alice_peer_id),
-                vec![alice_addr].into_iter(),
-            )
-            .await
-            .expect("unable to clone project")
-    };
+            .clone_project(project.urn(), alice_peer_id, alice_addrs)
+            .await?;
+    }
 
     let have = bob_state
         .list_projects()
@@ -58,7 +54,7 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         .into_iter()
         .map(|project| project.urn())
         .collect::<Vec<_>>();
-    let want = vec![project_urn];
+    let want = vec![project.urn()];
 
     assert_eq!(have, want);
 
@@ -69,7 +65,7 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
             .tracked(project.urn())
             .await?
             .into_iter()
-            .map(|peer| peer.map(|status| status.map(|user| user.name().to_string())))
+            .map(|peer| peer.map(|status| status.map(|user| user.subject().name.to_string())))
             .collect::<Vec<_>>();
         have.sort_by(|p1, p2| p1.status().cmp(p2.status()));
         let want: Vec<_> = vec![
@@ -79,7 +75,10 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
             },
             coco::project::Peer::Remote {
                 peer_id: alice_state.peer_id(),
-                status: peer::Status::replicated(peer::Role::Maintainer, alice.name().to_string()),
+                status: peer::Status::replicated(
+                    peer::Role::Maintainer,
+                    alice.subject().name.to_string(),
+                ),
             },
         ];
         assert_eq!(have, want);
@@ -94,7 +93,7 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
+    let alice = alice_state.init_owner("alice".to_string()).await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
@@ -102,16 +101,14 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
 
-    let cloned_urn = {
+    {
         let alice_peer_id = alice_state.peer_id();
-        let alice_addr = alice_state.listen_addr();
-        let url = alice.urn().into_rad_url(alice_peer_id);
+        let alice_addrs = alice_state.listen_addrs();
 
         bob_state
-            .clone_user(url, vec![alice_addr].into_iter())
-            .await
-            .expect("unable to clone project")
-    };
+            .clone_user(alice.urn(), alice_peer_id, alice_addrs)
+            .await?;
+    }
 
     let want = bob_state
         .list_users()
@@ -119,7 +116,7 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
         .into_iter()
         .map(|user| user.urn())
         .collect::<Vec<_>>();
-    let have = vec![cloned_urn];
+    let have = vec![alice.urn()];
 
     assert_eq!(want, have);
 
@@ -133,11 +130,11 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
+    let alice = alice_state.init_owner("alice".to_string()).await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = bob_state.init_owner("bob").await?;
+    let _bob = bob_state.init_owner("bob".to_string()).await?;
 
     tokio::task::spawn(alice_peer.into_running());
     tokio::task::spawn(bob_peer.into_running());
@@ -147,12 +144,11 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     let project_urn = {
-        let alice_addr = alice_state.listen_addr();
+        let alice_addrs = alice_state.listen_addrs();
         let alice_peer_id = alice_state.peer_id();
-        let clone_url = project.urn().into_rad_url(alice_peer_id);
 
         bob_state
-            .clone_project(clone_url, vec![alice_addr].into_iter())
+            .clone_project(project.urn(), alice_peer_id, alice_addrs)
             .await
             .expect("unable to clone project")
     };
@@ -164,13 +160,17 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
             .into_iter()
             .map(|project| project.urn())
             .collect::<Vec<_>>(),
-        vec![project_urn.clone()]
+        vec![project.urn().clone()]
     );
 
     let commit_id = {
-        let repo = git2::Repository::open(alice_repo_path.join(project.name()))?;
+        let repo =
+            git2::Repository::open(alice_repo_path.join(project.subject().name.to_string()))?;
         let oid = repo
-            .find_reference(&format!("refs/heads/{}", project.default_branch()))?
+            .find_reference(&format!(
+                "refs/heads/{}",
+                project.subject().default_branch.unwrap()
+            ))?
             .target()
             .expect("Missing first commit");
         let commit = repo.find_commit(oid)?;
@@ -181,9 +181,13 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
                 repo.find_tree(oid)?
             };
 
-            let author = git2::Signature::now(alice.name(), "alice@example.com")?;
+            let author =
+                git2::Signature::now(&alice.subject().name.to_string(), "alice@example.com")?;
             repo.commit(
-                Some(&format!("refs/heads/{}", project.default_branch())),
+                Some(&format!(
+                    "refs/heads/{}",
+                    project.subject().default_branch.unwrap()
+                )),
                 &author,
                 &author,
                 "Successor commit",
@@ -193,39 +197,40 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         };
 
         {
-            let results = alice_state.transport_results();
             let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
-            assert!(results.wait(Duration::from_secs(3)).is_some());
+            rad.push(
+                &[&format!(
+                    "refs/heads/{}",
+                    project.subject().default_branch.unwrap()
+                )],
+                None,
+            )?;
         }
 
         commit_id
     };
 
     {
-        let alice_addr = alice_state.listen_addr();
+        let alice_addrs = alice_state.listen_addrs();
         let alice_peer_id = alice_state.peer_id();
-        let fetch_url = project.urn().into_rad_url(alice_peer_id);
 
         bob_state
-            .fetch(fetch_url, vec![alice_addr])
-            .await
-            .expect("unable to fetch");
+            .fetch(project.urn(), alice_peer_id, alice_addrs)
+            .await?;
     };
 
     let alice_peer_id = alice_state.peer_id();
     assert!(
         bob_state
             .has_commit(
-                uri::RadUrn {
-                    path: uri::Path::parse(format!(
+                project.urn().map_path(|_path| Some(
+                    RefLike::try_from(format!(
                         "refs/remotes/{}/heads/{}",
                         alice_peer_id,
-                        project.default_branch()
+                        project.subject().default_branch.unwrap(),
                     ))
-                    .expect("failed to parse uri::Path"),
-                    ..project.urn()
-                },
+                    .unwrap()
+                )),
                 commit_id
             )
             .await?
@@ -251,7 +256,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
         },
     )
     .await?;
-    let alice_addr = alice_state.listen_addr();
+    let alice_addrs = alice_state.listen_addrs().collectOP;
     let alice_peer_id = alice_state.peer_id();
     let alice_events = alice_peer.subscribe();
 
@@ -259,7 +264,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     let (bob_peer, bob_state) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
-            addr: alice_addr,
+            addrs: alice_addr,
             peer_id: alice_peer_id,
         }],
         RunConfig::default(),

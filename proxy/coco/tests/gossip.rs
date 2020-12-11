@@ -38,7 +38,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::spawn(alice_peer.into_running());
 
-    let alice = alice_state.init_owner("alice").await?;
+    let alice = alice_state.init_owner("alice".to_string()).await?;
     alice_state
         .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await
@@ -73,21 +73,21 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         },
     )
     .await?;
-    let alice_addr = alice_state.listen_addr();
+    let alice_addrs = alice_state.listen_addrs().collect();
     let alice_peer_id = alice_state.peer_id();
-    let alice = alice_state.init_owner("alice").await?;
+    let alice = alice_state.init_owner("alice".to_string()).await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
-            addr: alice_addr,
+            addrs: alice_addrs,
             peer_id: alice_peer_id,
         }],
         RunConfig::default(),
     )
     .await?;
-    let _bob = bob_state.init_owner("bob").await?;
+    let _bob = bob_state.init_owner("bob".to_string()).await?;
     let bob_connected = bob_peer.subscribe();
     let bob_events = bob_peer.subscribe();
 
@@ -128,14 +128,14 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice_addr = alice_state.listen_addr();
+    let alice_addrs = alice_state.listen_addrs().collect();
     let alice_peer_id = alice_state.peer_id();
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer_with_seeds(
         &bob_tmp_dir,
         vec![Seed {
-            addr: alice_addr,
+            addrs: alice_addrs,
             peer_id: alice_peer_id,
         }],
         RunConfig::default(),

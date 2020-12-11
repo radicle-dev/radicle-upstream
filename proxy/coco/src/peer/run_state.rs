@@ -821,7 +821,7 @@ mod test {
                         seen_addrs: HashSet::new(),
                     },
                     val: Gossip {
-                        urn,
+                        urn: urn.clone(),
                         origin: None,
                         rev: None
                     },

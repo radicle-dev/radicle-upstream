@@ -2,12 +2,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use librad::{
-    git::{identities::project, local::url::LocalUrl},
-    git_ext::OneLevel,
-    identities::Project,
-    keys,
-};
+use librad::{git::local::url::LocalUrl, git_ext::OneLevel};
 use radicle_surf::vcs::git::git2;
 
 pub mod validation;
@@ -118,7 +113,7 @@ mod test {
 
     use assert_matches::assert_matches;
 
-    use librad::{git_ext::OneLevel, identities::Urn, keys::SecretKey, peer::PeerId, reflike};
+    use librad::{git_ext::OneLevel, identities::Urn, reflike};
     use radicle_git_ext::Oid;
 
     use super::*;
@@ -126,7 +121,6 @@ mod test {
     #[test]
     fn validation_fails_on_non_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>>
     {
-        let peer_id = PeerId::from(SecretKey::new());
         let url = LocalUrl::from(Urn::new(Oid::try_from("geez").unwrap()));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
@@ -151,7 +145,6 @@ mod test {
 
     #[test]
     fn validation_succeeds_on_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>> {
-        let peer_id = PeerId::from(SecretKey::new());
         let url = LocalUrl::from(Urn::new(Oid::try_from("geez").unwrap()));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");

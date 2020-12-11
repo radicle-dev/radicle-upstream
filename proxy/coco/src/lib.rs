@@ -32,6 +32,7 @@ pub use librad::{
     net::{self, discovery},
     paths::Paths,
     peer::PeerId,
+    signer,
 };
 
 pub use radicle_git_ext as git_ext;
@@ -58,7 +59,6 @@ pub mod project;
 pub mod request;
 
 pub mod seed;
-pub mod signer;
 
 pub mod source;
 
@@ -72,14 +72,14 @@ pub use spawn_abortable::{Error as SpawnAbortableError, SpawnAbortable};
 /// * peer construction from config fails.
 /// * accept on the peer fails.
 pub async fn boostrap<D>(
-    config: net::peer::PeerConfig<librad::signer::BoxedSigner>,
+    config: net::peer::PeerConfig<signer::BoxedSigner>,
     disco: D,
-    signer: librad::signer::BoxedSigner,
+    signer: signer::BoxedSigner,
     store: kv::Store,
     run_config: RunConfig,
 ) -> Result<(Peer, State), state::Error>
 where
-    D: net::discovery::Discovery<Addr = SocketAddr>,
+    D: net::discovery::Discovery<Addr = SocketAddr> + Send,
     <D as net::discovery::Discovery>::Stream: 'static,
 {
     let peer = librad::net::peer::Peer::bootstrap(config, disco).await?;

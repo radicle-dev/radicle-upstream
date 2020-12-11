@@ -8,12 +8,8 @@ use tokio::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
-    git_ext::OneLevel,
-    keys::SecretKey,
-    net::protocol::ProtocolEvent,
-    peer::PeerId,
-    reflike, signer,
-    uri::{RadUrl, RadUrn},
+    git_ext::OneLevel, identities::Urn, keys::SecretKey, net::protocol::ProtocolEvent,
+    peer::PeerId, reflike, signer,
 };
 
 use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, RunConfig, State};
@@ -66,11 +62,12 @@ pub async fn connected(
 #[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn assert_cloned(
     receiver: broadcast::Receiver<PeerEvent>,
-    expected: &RadUrl,
+    expected_urn: &Urn,
+    expected_remote: PeerId,
 ) -> Result<(), Elapsed> {
     assert_event!(
         receiver,
-        PeerEvent::RequestCloned(url) if url == *expected
+        PeerEvent::RequestCloned(urn, remote_peer) if urn == *expected_urn && remote_peer == expected_remote
     )
 }
 
@@ -78,7 +75,7 @@ pub async fn assert_cloned(
 #[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn requested(
     receiver: broadcast::Receiver<PeerEvent>,
-    expected: &RadUrn,
+    expected: &Urn,
 ) -> Result<(), Elapsed> {
     assert_event!(
         receiver,
@@ -91,10 +88,11 @@ pub async fn build_peer(
     run_config: RunConfig,
 ) -> Result<(Peer, State), Box<dyn std::error::Error>> {
     let key = SecretKey::new();
-    let signer = signer::BoxedSigner::from(key);
+    let signer = signer::BoxedSigner::from(key.clone());
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-    let conf = config::default(key, tmp_dir.path())?;
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
+    let conf = config::default(signer.clone(), tmp_dir.path())?;
+    let disco = config::static_seed_discovery(vec![]);
+    let (peer, state) = coco::boostrap(conf, disco, signer, store, run_config).await?;
 
     Ok((peer, state))
 }
@@ -108,16 +106,10 @@ pub async fn build_peer_with_seeds(
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-
     let paths = Paths::from_root(tmp_dir.path())?;
-    let conf = config::configure(
-        paths,
-        key,
-        *config::LOCALHOST_ANY,
-        config::static_seed_discovery(seeds),
-    );
-
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
+    let conf = config::configure(paths, signer.clone(), *config::LOCALHOST_ANY);
+    let disco = config::static_seed_discovery(seeds);
+    let (peer, state) = coco::boostrap(conf, disco, signer, store, run_config).await?;
 
     Ok((peer, state))
 }

@@ -8,7 +8,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use librad::{identities::Urn, peer::PeerId};
+use librad::peer::PeerId;
 
 use super::sealed;
 

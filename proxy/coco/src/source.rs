@@ -938,10 +938,10 @@ mod tests {
         let signer = signer::BoxedSigner::new(signer::SomeSigner {
             signer: key.clone(),
         });
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(vec![]);
         let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, run_loop) = peer.accept()?;
+        let (api, _run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
         let owner = state.init_owner("cloudhead".to_string()).await?;

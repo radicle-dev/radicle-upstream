@@ -8,7 +8,13 @@ use std::{
 
 use tokio::sync::{mpsc, watch};
 
-use librad::{keys, net, net::discovery, paths, peer::PeerId};
+use librad::{
+    keys, net,
+    net::discovery,
+    paths,
+    peer::PeerId,
+    signer::{BoxedSigner, Signer},
+};
 
 use crate::seed;
 
@@ -62,26 +68,30 @@ impl TryFrom<Paths> for paths::Paths {
 ///
 /// Results in an error if the [`paths::Paths`] could not be created.
 pub fn default(
-    key: keys::SecretKey,
+    signer: BoxedSigner,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<keys::SecretKey>, io::Error> {
+) -> Result<net::peer::PeerConfig<BoxedSigner>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, key, *LOCALHOST_ANY))
+    Ok(configure(paths, signer, *LOCALHOST_ANY))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn configure(
+pub fn configure<S>(
     paths: paths::Paths,
-    key: keys::SecretKey,
+    signer: S,
     listen_addr: SocketAddr,
-) -> net::peer::PeerConfig<keys::SecretKey> {
+) -> net::peer::PeerConfig<S>
+where
+    S: Signer + Clone + Send + Sync + 'static,
+    S::Error: std::error::Error + Send + Sync + 'static,
+{
     let gossip_params = net::gossip::MembershipParams::default();
     let storage_config = net::peer::StorageConfig::default();
 
     net::peer::PeerConfig {
-        signer: key,
+        signer,
         paths,
         listen_addr,
         gossip_params,
@@ -95,7 +105,7 @@ pub fn configure(
 pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> discovery::Static {
     discovery::Static::resolve(
         seeds
-            .into_iter()
+            .iter()
             .map(|seed| (seed.peer_id, seed.addrs.as_slice())),
     )
     .unwrap()
