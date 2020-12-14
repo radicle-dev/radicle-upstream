@@ -41,11 +41,6 @@ export interface Pool {
   // transfer them to the users account.
   collect(): Promise<void>;
 
-  // Get the state of user's ERC-20 token allowance.
-  // It returns the remaining amount of said token the
-  // pool is allowed to use.
-  erc20Allowance(): Promise<BigNumberish>;
-
   // Approve the ERC-20 token allowance, which permits
   // the pool to access said type of token from the user.
   approveErc20(): Promise<void>;
@@ -69,6 +64,9 @@ export interface PoolData {
   receivers: Receivers;
   // Funds that the user can collect from their givers.
   collectableFunds: number;
+  // The ERC-20 token allowance. 0 means that the allowance was not
+  // granted or that it was fully spent.
+  erc20Allowance: BigNumberish;
 }
 
 /* Receivers */
@@ -107,6 +105,7 @@ export function make(wallet: Wallet): Pool {
       const receivers = new Map(
         contract_receivers.map(e => [e.receiver, ReceiverStatus.Present])
       );
+      const erc20Allowance = await getErc20Allowance();
 
       data.success({
         // Handle potential overflow using BN.js
@@ -115,6 +114,7 @@ export function make(wallet: Wallet): Pool {
         receivers,
         // Handle potential overflow using BN.js
         collectableFunds: Number(collectableFunds),
+        erc20Allowance,
       });
     } catch (error) {
       data.error(error);
@@ -209,7 +209,7 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
-  async function erc20Allowance(): Promise<BigNumberish> {
+  async function getErc20Allowance(): Promise<BigNumberish> {
     const account = getAccount();
     if (account) {
       return erc20TokenContract.allowance(
@@ -217,9 +217,7 @@ export function make(wallet: Wallet): Pool {
         contract.POOL_ADDRESS
       );
     } else {
-      return Promise.reject(
-        "There is no connected account. Please connect your wallet."
-      );
+      return Promise.resolve(0);
     }
   }
 
@@ -243,7 +241,6 @@ export function make(wallet: Wallet): Pool {
     withdraw,
     withdrawAll,
     collect,
-    erc20Allowance,
     approveErc20,
   };
 }
