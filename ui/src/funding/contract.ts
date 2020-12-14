@@ -2,8 +2,8 @@ import type { Signer } from "ethers";
 import {
   Erc20Pool as PoolContract,
   Erc20Pool__factory as PoolFactory,
-  Rad,
-  Rad__factory as RadFactory,
+  Erc20,
+  Erc20__factory as Erc20Factory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 // TODO(nuno): make the contract addresses configurable/env-dependant
@@ -17,6 +17,6 @@ export function pool(signer: Signer): PoolContract {
 
 export const ERC20_TOKEN_ADDRESS = "0xff1d4d289bf0aaaf918964c57ac30481a67728ef";
 
-export function erc20Token(signer: Signer): Rad {
-  return RadFactory.connect(ERC20_TOKEN_ADDRESS, signer);
+export function erc20Token(signer: Signer): Erc20 {
+  return Erc20Factory.connect(ERC20_TOKEN_ADDRESS, signer);
 }
