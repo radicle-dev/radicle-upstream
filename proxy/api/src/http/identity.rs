@@ -57,9 +57,7 @@ mod handler {
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         if let Some(session) = session::get_current(&ctx.store)? {
-            return Err(Rejection::from(error::Error::from(
-                coco::state::Error::already_exists(session.identity.urn),
-            )));
+            return Err(Rejection::from(error::Error::SessionInUse(session.identity.urn)));
         }
 
         let id = identity::create(&ctx.state, &input.handle).await?;
@@ -128,8 +126,8 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                ctx.state.default_owner().await,
-                Some(ctx.state.get_user(urn.clone()).await?)
+                ctx.state.default_owner().await?.unwrap().into_inner().into_inner(),
+                ctx.state.get_user(urn.clone()).await?.unwrap().into_inner().into_inner()
             );
         }
 
@@ -159,7 +157,7 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let user = ctx.state.init_user("cloudhead").await?;
+        let user = ctx.state.init_user("cloudhead".to_string()).await?.unwrap();
 
         let res = request()
             .method("GET")
@@ -167,10 +165,10 @@ mod test {
             .reply(&api)
             .await;
 
-        let handle = user.name().to_string();
+        let handle = user.subject().name.to_string();
         let peer_id = ctx.state.peer_id();
         let urn = user.urn();
-        let shareable_entity_identifier = (peer_id, user).into();
+        let shareable_entity_identifier = (peer_id, user.into_inner().into_inner()).into();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         assert_eq!(res.status(), StatusCode::OK);
@@ -200,10 +198,7 @@ mod test {
         let fintohaps: identity::Identity = {
             let id = identity::create(&ctx.state, "cloudhead").await?;
 
-            let owner = {
-                let user = ctx.state.get_user(id.urn.clone()).await?;
-                coco::user::verify(user)?
-            };
+            let owner = ctx.state.get_user(id.urn.clone()).await?.unwrap();
 
             session::initialize(&ctx.store, id)?;
 
@@ -216,9 +211,8 @@ mod test {
             )
             .await?;
 
-            coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps")
-                .await
-                .into()
+            let (peer_id, local_identity) = coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
+            (peer_id, local_identity.into_inner().into_inner()).into()
         };
 
         let res = request().method("GET").path("/").reply(&api).await;

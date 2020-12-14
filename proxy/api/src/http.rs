@@ -101,7 +101,7 @@ pub fn api(
 /// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
+fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::LocalIdentity,)> {
     warp::any()
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {
@@ -112,8 +112,8 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
                 .state
                 .get_user(session.identity.urn)
                 .await
-                .expect("unable to get coco user");
-            let user = coco::user::verify(user).expect("unable to verify user");
+                .expect("failed to get local identity")
+                .expect("the local identity is missing");
 
             Ok::<_, Rejection>(user)
         })
@@ -226,11 +226,11 @@ pub fn guard_self_peer_id(
 #[must_use]
 pub fn guard_self_revision(
     state: &coco::State,
-    revision: Option<coco::Revision<coco::PeerId>>,
-) -> Option<coco::Revision<coco::PeerId>> {
+    revision: Option<coco::source::Revision<coco::PeerId>>,
+) -> Option<coco::source::Revision<coco::PeerId>> {
     revision.map(|r| {
-        if let coco::Revision::Branch { name, peer_id } = r {
-            coco::Revision::Branch {
+        if let coco::source::Revision::Branch { name, peer_id } = r {
+            coco::source::Revision::Branch {
                 name,
                 peer_id: guard_self_peer_id(state, peer_id),
             }

@@ -302,9 +302,14 @@ impl State {
     ///
     ///   * Resolving the user fails.
     ///   * Could not successfully acquire a lock to the API.
-    pub async fn get_user(&self, urn: Urn) -> Result<Option<Person>, Error> {
+    pub async fn get_user(&self, urn: Urn) -> Result<Option<LocalIdentity>, Error> {
         self.api
-            .with_storage(move |store| identities::person::get(&store, &urn))
+            .with_storage(move |store| {
+                match identities::person::get(&store, &urn)? {
+                    None => Ok(None),
+                    Some(person) => local::load(&store, person.urn())
+                }
+            })
             .await?
             .map_err(Error::from)
     }

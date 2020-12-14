@@ -36,7 +36,7 @@ impl From<coco::Project> for Metadata
                 .description
                 .clone()
                 .map_or_else(|| "".into(), |desc| desc.to_string()),
-            default_branch: subject.default_branch.unwrap().to_string(),
+            default_branch: subject.default_branch.clone().unwrap().to_string(),
             maintainers,
         }
     }

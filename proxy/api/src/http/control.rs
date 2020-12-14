@@ -51,15 +51,13 @@ fn seal_filter(
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use coco::user;
-
     use crate::{context, error, project};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Unsealed,
-        owner: user::User,
+        owner: coco::LocalIdentity,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let meta = coco::control::replicate_platinum(

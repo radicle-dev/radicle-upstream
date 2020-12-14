@@ -88,6 +88,7 @@ mod handler {
 
 #[cfg(test)]
 mod test {
+    use std::convert::TryFrom;
     use std::time::Instant;
 
     use pretty_assertions::assert_eq;
@@ -103,9 +104,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
+            coco::git_ext::Oid::try_from("kissesofthesun").unwrap(),
         );
 
         let _request = ctx.peer_control.request_project(&urn, Instant::now()).await;
@@ -127,9 +126,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
+            coco::git_ext::Oid::try_from("kissesofthesun").unwrap(),
         );
 
         let res = request()
@@ -153,9 +150,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
+            coco::git_ext::Oid::try_from("kissesofthesun").unwrap(),
         );
 
         let want = ctx.peer_control.request_project(&urn, Instant::now()).await;

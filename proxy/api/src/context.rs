@@ -181,9 +181,10 @@ impl Unsealed {
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
         let (peer_control, state) = {
-            let config = coco::config::default(key, tmp_dir.path())?;
+            let config = coco::config::default(signer.clone(), tmp_dir.path())?;
+            let disco = coco::config::static_seed_discovery(vec![]);
             let (peer, state) =
-                coco::into_peer_state(config, signer.clone(), store.clone(), RunConfig::default())
+                coco::boostrap(config, disco, signer.clone(), store.clone(), RunConfig::default())
                     .await?;
 
             let peer_control = peer.control();

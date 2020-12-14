@@ -64,7 +64,7 @@ pub async fn create(state: &coco::State, handle: &str) -> Result<Identity, error
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Identity, error::Error> {
     let user = state.get_user(id).await?.unwrap();
-    Ok((state.peer_id(), user).into())
+    Ok((state.peer_id(), user.into_inner().into_inner()).into())
 }
 
 // TODO(finto): Check if this is used and if so, express more elegantly after

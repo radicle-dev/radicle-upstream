@@ -17,6 +17,9 @@ pub enum Error {
     #[error(transparent)]
     Io(#[from] io::Error),
 
+    #[error("the current session is in use by `{0}`")]
+    SessionInUse(coco::Urn),
+
     /// Issues when access persistent storage.
     #[error(transparent)]
     Store(#[from] kv::Error),

@@ -151,10 +151,10 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     connected(bob_events, &alice_peer_id).await?;
 
-    bob_state.init_owner("bob").await?;
+    bob_state.init_owner("bob".to_string()).await?;
 
     let urn = {
-        let alice = alice_state.init_owner("alice").await?;
+        let alice = alice_state.init_owner("alice".to_string()).await?;
         let project = radicle_project(alice_repo_path.clone());
         alice_state.init_project(&alice, project).await?.urn()
     };
@@ -162,10 +162,10 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     bob_control.request_project(&urn, Instant::now()).await;
 
     requested(query_listener, &urn).await?;
-    assert_cloned(clone_listener, &urn.clone().into_rad_url(alice_peer_id)).await?;
+    assert_cloned(clone_listener, &urn.clone(), alice_peer_id).await?;
 
     // TODO(finto): List projects
-    let project = bob_state.get_project(urn, None).await;
+    let project = bob_state.get_project(urn).await;
     assert!(project.is_ok());
 
     Ok(())

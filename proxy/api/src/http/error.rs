@@ -259,10 +259,7 @@ mod tests {
             .parse()
             .expect("failed to parse URN");
         let message = format!("the identity '{}' already exists", urn);
-        let have: Value = response(warp::reject::custom(crate::error::Error::from(
-            coco::state::Error::already_exists(urn),
-        )))
-        .await;
+        let have: Value = response(warp::reject::custom(crate::error::Error::SessionInUse(urn))).await;
         let want = json!({
             "message": message,
             "variant": "ENTITY_EXISTS"

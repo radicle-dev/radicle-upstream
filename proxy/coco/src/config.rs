@@ -9,7 +9,7 @@ use std::{
 use tokio::sync::{mpsc, watch};
 
 use librad::{
-    keys, net,
+    net,
     net::discovery,
     paths,
     peer::PeerId,

@@ -13,6 +13,7 @@ repository = "git@github.com:radicle-dev/radicle-upstream.git"
 [dependencies]
 either = "1.6"
 futures = { version = "0.3", features = [ "compat" ] }
+# git2 = "0.13"
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.6"
