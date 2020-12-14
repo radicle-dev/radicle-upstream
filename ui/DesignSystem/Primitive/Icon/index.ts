@@ -66,7 +66,6 @@ import Settings from "./Settings.svelte";
 import Trash from "./Trash.svelte";
 import User from "./User.svelte";
 import Wallet from "./Wallet.svelte";
-import WalletConnect from "./WalletConnect.svelte";
 
 export default {
   ArrowBoxUpRight,
@@ -137,5 +136,4 @@ export default {
   Trash,
   User,
   Wallet,
-  WalletConnect,
 };
