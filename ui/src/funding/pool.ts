@@ -1,11 +1,6 @@
 import * as svelteStore from "svelte/store";
-import {
-  Erc20Pool as PoolContract,
-  Erc20Pool__factory as PoolFactory,
-  Rad,
-  Rad__factory as RadFactory,
-} from "radicle-contracts/build/contract-bindings/ethers";
 
+import * as contract from "./contract";
 import * as transaction from "../transaction";
 import * as validation from "../validation";
 
@@ -97,22 +92,10 @@ interface ReceiverWeight {
   receiver: string;
   weight: Weight;
 }
-
-export const POOL_CONTRACT_ADDRESS: string =
-  "0x8bc07c0de95a0c1a08f6736d07a233fb8609ee95";
-
-export const ERC20_TOKEN_ADDRESS = "0xff1d4d289bf0aaaf918964c57ac30481a67728ef";
-
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
-  const poolContract: PoolContract = PoolFactory.connect(
-    POOL_CONTRACT_ADDRESS,
-    wallet.signer
-  );
-  const erc20TokenContract: Rad = RadFactory.connect(
-    ERC20_TOKEN_ADDRESS,
-    wallet.signer
-  );
+  const poolContract = contract.pool(wallet.signer);
+  const erc20TokenContract = contract.erc20Token(wallet.signer);
   loadPoolData();
 
   async function loadPoolData() {
@@ -231,7 +214,7 @@ export function make(wallet: Wallet): Pool {
     if (account) {
       return erc20TokenContract.allowance(
         account.address,
-        POOL_CONTRACT_ADDRESS
+        contract.POOL_ADDRESS
       );
     } else {
       return Promise.reject(
@@ -243,7 +226,7 @@ export function make(wallet: Wallet): Pool {
   async function approveErc20(): Promise<void> {
     const unlimited = BigNumber.from(1).shl(256).sub(1);
     return erc20TokenContract
-      .approve(POOL_CONTRACT_ADDRESS, unlimited)
+      .approve(contract.POOL_ADDRESS, unlimited)
       .then(tx => {
         transaction.add(transaction.erc20Allowance(tx));
         tx.wait();

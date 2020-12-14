@@ -77,7 +77,7 @@ interface UpdateReceivers {
   kind: TxKind.UpdateReceivers;
   receivers: [Address, ReceiverStatus][];
 }
-
+cap(0);
 export enum TxKind {
   Erc20Allowance = "ERC-20 Allowance",
   Withdraw = "Withdraw",

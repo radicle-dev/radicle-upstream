@@ -12,6 +12,7 @@ import type {
   TransactionRequest,
 } from "@ethersproject/abstract-provider";
 
+import * as contract from "../src/funding/contract";
 import * as modal from "../src/modal";
 import * as path from "../src/path";
 import * as notification from "../src/notification";
@@ -69,6 +70,7 @@ export function build(): Wallet {
   });
 
   const signer = new WalletConnectSigner(walletConnect, provider);
+  const erc20TokenContract = contract.erc20Token(signer);
 
   window.ethereumDebug = new EthereumDebug(provider);
 
@@ -115,11 +117,11 @@ export function build(): Wallet {
 
     try {
       const accountAddress = await signer.getAddress();
-      const balance = await signer.getBalance();
+      const balance = await erc20TokenContract.balanceOf(accountAddress);
       const connected = {
         account: {
           address: accountAddress,
-          balance: ethToDai(balance.toString()),
+          balance: balance.toString(),
         },
       };
       stateStore.set({ status: Status.Connected, connected });
@@ -251,12 +253,6 @@ export const uriStore = svelteStore.writable<string | undefined>(undefined);
 
 export function formattedBalance(balance: number): string {
   return balance.toLocaleString("de-DE");
-}
-
-export function ethToDai(eth: string): string {
-  return ethers.BigNumber.from(eth)
-    .div(10 ^ 18)
-    .toString();
 }
 
 // The wallet singleton
