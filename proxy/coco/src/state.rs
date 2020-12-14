@@ -521,6 +521,7 @@ impl State {
 
         let repo = repository
             .setup_repo(
+                self.api,
                 project
                     .subject()
                     .description

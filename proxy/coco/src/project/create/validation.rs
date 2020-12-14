@@ -1,12 +1,19 @@
 //! Validation logic for safely checking that a [`super::Repo`] is valid before setting up the
 //! working copy.
 
-use std::{convert::TryFrom, io, path::PathBuf};
+use std::{convert::TryFrom, io, path::PathBuf, str::FromStr};
+
+use nonempty::NonEmpty;
 
 use librad::{
     git::{
+        local::transport::CanOpenStorage,
         local::url::LocalUrl,
-        types::{remote::Remote, Flat, Force, GenericRef, Refspec},
+        types::{
+            refspec::Pushspec,
+            remote::{self, LocalPushspec, Remote},
+            Flat, Force, GenericRef, Refspec,
+        },
     },
     git_ext::{self, OneLevel, RefLike},
     reflike,
@@ -86,6 +93,13 @@ pub enum Error {
         /// The URL that was found for the `rad` remote.
         found: String,
     },
+
+    /// TODO(finto): This is pretty nasty
+    #[error(transparent)]
+    Transport(#[from] librad::git::local::transport::Error),
+
+    #[error(transparent)]
+    Remote(#[from] remote::FindError),
 }
 
 /// The signature of a git author. Used internally to convert into a `git2::Signature`, which
@@ -184,7 +198,7 @@ impl Repository {
                     url,
                     default_branch,
                 })
-            },
+            }
             super::Repo::New { name, path } => {
                 let repo_path = path.join(name.clone());
 
@@ -208,7 +222,7 @@ impl Repository {
                     default_branch,
                     signature,
                 })
-            },
+            }
         }
     }
 
@@ -217,7 +231,14 @@ impl Repository {
     /// # Errors
     ///
     ///   * Failed to setup the repository
-    pub fn setup_repo(self, description: &str) -> Result<git2::Repository, super::Error> {
+    pub fn setup_repo<F>(
+        self,
+        open_storage: F,
+        description: &str,
+    ) -> Result<git2::Repository, super::Error>
+    where
+        F: CanOpenStorage + 'static,
+    {
         match self {
             Self::Existing {
                 repo,
@@ -228,9 +249,9 @@ impl Repository {
                     "Setting up existing repository @ '{}'",
                     repo.path().display()
                 );
-                Self::setup_remote(&repo, url, &default_branch)?;
+                Self::setup_remote(&repo, open_storage, url, &default_branch)?;
                 Ok(repo)
-            },
+            }
             Self::New {
                 path,
                 name,
@@ -246,10 +267,10 @@ impl Repository {
                     &default_branch,
                     &git2::Signature::try_from(signature)?,
                 )?;
-                Self::setup_remote(&repo, url, &default_branch)?;
+                Self::setup_remote(&repo, open_storage, url, &default_branch)?;
                 crate::project::set_rad_upstream(&repo, &default_branch)?;
                 Ok(repo)
-            },
+            }
         }
     }
 
@@ -299,11 +320,15 @@ impl Repository {
 
     /// Equips a repository with a rad remote for the given id. If the directory at the given path
     /// is not managed by git yet we initialise it first.
-    fn setup_remote(
+    fn setup_remote<F>(
         repo: &git2::Repository,
+        open_storage: F,
         url: LocalUrl,
         default_branch: &OneLevel,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error>
+    where
+        F: CanOpenStorage + 'static,
+    {
         let _ = Self::existing_branch(repo, default_branch)?;
 
         log::debug!("Creating rad remote");
@@ -315,28 +340,38 @@ impl Repository {
         };
         let mut git_remote = Self::existing_remote(repo, &url)?.map_or_else(
             || {
-                Remote::rad_remote(url, fetchspec).save(repo)?;
-                repo.find_remote(config::RAD_REMOTE)
+                let rad = Remote::rad_remote(url, fetchspec);
+                rad.save(repo)?;
+                Ok::<_, Error>(rad)
             },
             Ok,
         )?;
-        Self::push_branches(repo, &mut git_remote)?;
+        Self::push_branches(repo, open_storage, &mut git_remote)?;
         Ok(())
     }
 
-    fn push_branches(repo: &git2::Repository, remote: &mut git2::Remote) -> Result<(), Error> {
+    fn push_branches<F>(
+        repo: &git2::Repository,
+        open_storage: &F,
+        remote: &mut Remote<LocalUrl>,
+    ) -> Result<(), Error>
+    where
+        F: CanOpenStorage + 'static,
+    {
         let local_branches = repo
             .branches(Some(git2::BranchType::Local))?
             .filter_map(|branch_result| {
                 let (branch, _) = branch_result.ok()?;
                 let name = branch.name().ok()?;
-                name.map(|branch| format!("refs/heads/{}", branch))
+                name.and_then(|branch| Pushspec::from_str(&format!("refs/heads/{}", branch)).ok())
             })
-            .collect::<Vec<String>>();
+            .collect::<Vec<_>>();
 
         log::debug!("Pushing branches {:?}", local_branches);
 
-        remote.push(&local_branches, None)?;
+        if let Some(branches) = NonEmpty::from_vec(local_branches) {
+            remote.push(open_storage, repo, LocalPushspec::Specs(branches))?;
+        }
         Ok(())
     }
 
@@ -356,18 +391,14 @@ impl Repository {
     fn existing_remote<'a>(
         repo: &'a git2::Repository,
         url: &LocalUrl,
-    ) -> Result<Option<git2::Remote<'a>>, Error> {
-        match repo.find_remote(config::RAD_REMOTE) {
-            Err(err) if git_ext::is_not_found_err(&err) => Ok(None),
+    ) -> Result<Option<Remote<LocalUrl>>, Error> {
+        match Remote::<LocalUrl>::find(repo, reflike!("rad")) {
             Err(err) => Err(err.into()),
-            Ok(remote) => match remote.url() {
-                None => Err(Error::MissingUrl),
-                Some(remote_url) if remote_url != url.to_string() => Err(Error::UrlMismatch {
-                    expected: url.to_string(),
-                    found: remote_url.to_string(),
-                }),
-                Some(_) => Ok(Some(remote)),
-            },
+            Ok(Some(remote)) if remote.url != *url => Err(Error::UrlMismatch {
+                expected: url.to_string(),
+                found: remote.url.to_string(),
+            }),
+            Ok(remote) => Ok(remote),
         }
     }
 
