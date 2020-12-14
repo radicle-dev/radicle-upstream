@@ -37,7 +37,7 @@ In the development environment, we set up these three pieces as follows:
     - The transactions triggered in the app will be prompted here for the user
       to approve or reject.
 
-- A local ganachi instance
+- A local ganache instance
 
   Ganachi provides an Ethereum RPC client for testing and development. We have
   the Radicle Contracts deployed to and running on this instance. Here, we also
