@@ -82,6 +82,7 @@ tabs:
 - `yarn start:ethereum` within `radicle-upstream`
 - `yarn start` within `radicle-upstream`
 
+Remember to enable the funding feature in upstream configuration!
 
 [wcw]: https://walletconnect.org/wallets/
 [wctw]: https://github.com/radicle-dev/walletconnect-test-wallet
