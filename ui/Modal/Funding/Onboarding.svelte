@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import type { BigNumberish } from "ethers";
+  import { pop } from "svelte-spa-router";
 
   import Erc20Allowance from "../../DesignSystem/Component/Funding/Pool/Onboarding/Erc20Allowance.svelte";
   import Intro from "../../DesignSystem/Component/Funding/Pool/Onboarding/Intro.svelte";
@@ -21,13 +21,10 @@
     Review = "review",
   }
 
-  let currentStep = Step.Erc20Allowance;
+  if ($store === null) pop();
 
-  $store.erc20Allowance().then((allowance: BigNumberish) => {
-    if (allowance > 0 && currentStep === Step.Erc20Allowance) {
-      currentStep = Step.Intro;
-    }
-  });
+  let currentStep =
+    $store.data.unwrap()?.erc20Allowance > 0 ? Step.Intro : Step.Erc20Allowance;
 
   function onCancel() {
     modal.hide();
