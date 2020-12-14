@@ -3,10 +3,11 @@
 
   export let style = "";
   export let variant = "regular"; // negative
-  $: color =
+  export let color =
     variant === "regular"
       ? "var(--color-foreground-level-6)"
       : "var(--color-negative)";
+
   export let size = "p"; // h1
 
   function getSize(): number {
