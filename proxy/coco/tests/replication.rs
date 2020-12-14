@@ -43,7 +43,7 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     {
         let alice_peer_id = alice_state.peer_id();
-        let alice_addrs = alice_state.listen_addrs();
+        let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
         bob_state
             .clone_project(project.urn(), alice_peer_id, alice_addrs)
             .await?;
@@ -104,7 +104,7 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
 
     {
         let alice_peer_id = alice_state.peer_id();
-        let alice_addrs = alice_state.listen_addrs();
+        let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
 
         bob_state
             .clone_user(alice.urn(), alice_peer_id, alice_addrs)
@@ -144,8 +144,8 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
         .await?;
 
-    let project_urn = {
-        let alice_addrs = alice_state.listen_addrs();
+    {
+        let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
         let alice_peer_id = alice_state.peer_id();
 
         bob_state
@@ -170,7 +170,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         let oid = repo
             .find_reference(&format!(
                 "refs/heads/{}",
-                project.subject().default_branch.unwrap()
+                project.subject().default_branch.clone().unwrap()
             ))?
             .target()
             .expect("Missing first commit");
@@ -187,7 +187,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
             repo.commit(
                 Some(&format!(
                     "refs/heads/{}",
-                    project.subject().default_branch.unwrap()
+                    project.subject().default_branch.clone().unwrap()
                 )),
                 &author,
                 &author,
@@ -202,7 +202,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
             rad.push(
                 &[&format!(
                     "refs/heads/{}",
-                    project.subject().default_branch.unwrap()
+                    project.subject().default_branch.clone().unwrap()
                 )],
                 None,
             )?;
@@ -212,7 +212,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     {
-        let alice_addrs = alice_state.listen_addrs();
+        let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
         let alice_peer_id = alice_state.peer_id();
 
         bob_state
@@ -228,11 +228,11 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
                     RefLike::try_from(format!(
                         "refs/remotes/{}/heads/{}",
                         alice_peer_id,
-                        project.subject().default_branch.unwrap(),
+                        project.subject().default_branch.clone().unwrap(),
                     ))
                     .unwrap()
                 )),
-                commit_id
+                coco::git_ext::Oid::from(commit_id)
             )
             .await?
     );
@@ -321,9 +321,9 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let project = {
         let alice_peer_id = alice_state.peer_id();
-        let alice_addrs = alice_state.listen_addrs();
+        let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
         let bob_peer_id = bob_state.peer_id();
-        let bob_addrs = bob_state.listen_addrs();
+        let bob_addrs = bob_state.listen_addrs().collect::<Vec<_>>();
         bob_state
             .clone_project(
                 project.urn(),
@@ -347,7 +347,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
         let repo = git2::Repository::open(path)?;
         let oid = repo
-            .find_reference(&format!("refs/heads/{}", project.subject().default_branch.unwrap()))?
+            .find_reference(&format!("refs/heads/{}", project.subject().default_branch.clone().unwrap()))?
             .target()
             .expect("Missing first commit");
         let commit = repo.find_commit(oid)?;
@@ -360,7 +360,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
             let author = git2::Signature::now(bob.subject().name.as_str(), &format!("{}@example.com", bob.subject().name))?;
             repo.commit(
-                Some(&format!("refs/heads/{}", project.subject().default_branch.unwrap())),
+                Some(&format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())),
                 &author,
                 &author,
                 "Successor commit",
@@ -371,14 +371,14 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
         {
             let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-            rad.push(&[&format!("refs/heads/{}", project.subject().default_branch.unwrap())], None)?;
+            rad.push(&[&format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())], None)?;
         }
 
         commit_id
     };
 
     {
-        let bob_addrs = bob_state.listen_addrs();
+        let bob_addrs = bob_state.listen_addrs().collect::<Vec<_>>();
         let bob_peer_id = bob_state.peer_id();
         eve_state.fetch(project.urn(), bob_peer_id, bob_addrs).await?;
     }
@@ -403,6 +403,7 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice = alice_state.init_owner("alice".to_string()).await?;
+    let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
     let alice_events = alice_peer.subscribe();
 
     let bob_tmp_dir = tempfile::tempdir()?;
@@ -420,7 +421,7 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
         .clone_project(
             project.urn(),
             alice_state.peer_id(),
-            alice_state.listen_addrs(),
+            alice_addrs.into_iter(),
         )
         .await?;
 
