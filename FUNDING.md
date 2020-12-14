@@ -39,7 +39,7 @@ In the development environment, we set up these three pieces as follows:
 
 - A local ganache instance
 
-  Ganachi provides a local Ethereum RPC client for testing and development. The
+  Ganache provides a local Ethereum RPC client for testing and development. The
   Radicle Contracts are deployed to this instance. Here, we also set an initial
   balance of the account we choose for development purposes.
 
