@@ -83,7 +83,7 @@ tabs:
 - `yarn start` within `radicle-upstream`
 
 
-[wcw]: https://walletconnect.org/apps/
+[wcw]: https://walletconnect.org/wallets/
 [wctw]: https://github.com/radicle-dev/walletconnect-test-wallet
 [rc]: https://github.com/radicle-dev/radicle-contracts
 
