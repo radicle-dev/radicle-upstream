@@ -13,7 +13,6 @@
     balanceValidationStore,
     store,
   } from "../../../src/funding/pool";
-  import * as remote from "../../../src/remote";
   import { ValidationStatus } from "../../../src/validation";
 
   if ($store === null) pop();
@@ -22,11 +21,10 @@
   let validatingAmount = false;
   let amount: number;
   let validation = balanceValidationStore(0);
-  const poolDataStore = get(store).data;
 
-  $: if ($poolDataStore.status === remote.Status.Success) {
-    const it = $poolDataStore as remote.SuccessState;
-    validation = balanceValidationStore(it.data.balance);
+  $: {
+    const balance = $store.data.unwrap()?.balance || 0;
+    validation = balanceValidationStore(balance);
   }
 
   $: amountStore.set(amount ? amount.toString() : "");
