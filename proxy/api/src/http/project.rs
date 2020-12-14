@@ -170,19 +170,19 @@ mod handler {
     /// Create a new [`project::Project`].
     pub async fn create(
         ctx: context::Unsealed,
-        owner: coco::user::User,
+        owner: coco::LocalIdentity,
         input: coco::project::Create,
     ) -> Result<impl Reply, Rejection> {
-        let meta = ctx
+        let project = ctx
             .state
             .init_project(&owner, input)
             .await
             .map_err(Error::from)?;
-        let urn = meta.urn();
+        let urn = project.urn();
 
         let branch = ctx
             .state
-            .get_branch(urn, None, meta.default_branch().to_owned())
+            .get_branch(urn, None, project.subject().default_branch.clone())
             .await
             .map_err(Error::from)?;
         let stats = ctx
@@ -192,7 +192,7 @@ mod handler {
             })
             .await
             .map_err(Error::from)?;
-        let project: project::Full = (meta, stats).into();
+        let project: project::Full = (project, stats).into();
 
         Ok(reply::with_status(
             reply::json(&project),
@@ -328,8 +328,8 @@ mod test {
 
         let urn = {
             let handle = "cloudhead";
-            let owner = ctx.state.init_owner(handle).await?;
-            session::initialize(&ctx.store, (ctx.state.peer_id(), owner.clone()).into())?;
+            let owner = ctx.state.init_owner(handle.to_string()).await?;
+            session::initialize(&ctx.store, (ctx.state.peer_id(), owner.clone().into_inner().into_inner()).into())?;
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
@@ -373,7 +373,7 @@ mod test {
         assert_eq!(
             remote.url(),
             Some(
-                coco::LocalUrl::from_urn(urn.clone(), ctx.state.peer_id())
+                coco::LocalUrl::from(urn.clone())
                     .to_string()
                     .as_str()
             )
@@ -544,7 +544,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = {
-            let owner = ctx.state.init_owner("cloudhead").await?;
+            let owner = ctx.state.init_owner("cloudhead".to_string()).await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
                 &owner,
@@ -580,17 +580,16 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = ctx.state.init_owner("cloudhead").await?;
+        let owner = ctx.state.init_owner("cloudhead".to_string()).await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
 
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.into_iter().next().unwrap();
-        let coco_project = ctx.state.get_project(project.urn.clone(), None).await?;
+        let coco_project = ctx.state.get_project(project.urn.clone()).await?.unwrap();
 
-        let user: identity::Identity =
-            coco::control::track_fake_peer(&ctx.state, &coco_project, "rafalca")
-                .await
-                .into();
+        let (peer_id, local_identity) = coco::control::track_fake_peer(&ctx.state, &coco_project, "rafalca")
+                .await;
+        let user: identity::Identity = (peer_id, local_identity.into_inner().into_inner()).into();
 
         let res = request()
             .method("GET")
@@ -610,7 +609,7 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = ctx.state.init_owner("cloudhead").await?;
+        let owner = ctx.state.init_owner("cloudhead".to_string()).await?;
 
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
 
@@ -635,7 +634,7 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = ctx.state.init_owner("cloudhead").await?;
+        let owner = ctx.state.init_owner("cloudhead".to_string()).await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.contributed.first().expect("no projects setup");
@@ -663,7 +662,7 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = ctx.state.init_owner("cloudhead").await?;
+        let owner = ctx.state.init_owner("cloudhead".to_string()).await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.contributed.first().expect("no projects setup");
@@ -691,7 +690,7 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = ctx.state.init_owner("cloudhead").await?;
+        let owner = ctx.state.init_owner("cloudhead".to_string()).await?;
         coco::control::setup_fixtures(&ctx.state, &owner).await?;
         let projects = project::Projects::list(&ctx.state).await?;
         let project = projects.contributed.first().expect("no projects setup");
