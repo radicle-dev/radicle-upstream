@@ -3,7 +3,7 @@
   import { Dai, Copyable, Overlay } from "../../Component";
 
   import * as wallet from "../../../src/wallet";
-  import { displayAddress } from "../../../src/funding/pool";
+  import { ellipsed } from "../../../src/style";
 
   export let account: wallet.Account;
   export let onDisconnect: () => void;
@@ -85,7 +85,7 @@
       styleContent={false}
       copyContent={account.address}
       notificationText="Address copied to the clipboard">
-      {displayAddress(account.address)}
+      {ellipsed(account.address)}
     </Copyable>
 
     <Overlay

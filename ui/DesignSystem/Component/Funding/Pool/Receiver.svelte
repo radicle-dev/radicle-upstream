@@ -1,8 +1,9 @@
 <script lang="typescript">
   import { Copyable } from "../../../Component";
   import { Button, Icon } from "../../../Primitive";
-  import { displayAddress, ReceiverStatus } from "../../../../src/funding/pool";
+  import { ReceiverStatus } from "../../../../src/funding/pool";
   import type { Address } from "../../../../src/funding/pool";
+  import { ellipsed } from "../../../../src/style";
 
   export let address: Address = "";
   export let disabled = false;
@@ -50,7 +51,7 @@
       styleContent={false}
       copyContent={address}
       notificationText="Address copied to the clipboard">
-      {displayAddress(address, 4)}
+      {ellipsed(address, 4)}
     </Copyable>
   </p>
 </span>

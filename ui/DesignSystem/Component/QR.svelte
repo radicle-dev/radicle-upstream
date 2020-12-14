@@ -1,7 +1,7 @@
 <script>
   import { qrcode } from "pure-svg-code";
-  export let key = null;
-  export let size = null;
+  export let key = "";
+  export let size = 225;
   export let color = "var(--color-secundary)";
 
   const svgString = qrcode({

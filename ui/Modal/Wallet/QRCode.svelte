@@ -1,13 +1,14 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
 
-  import { Icon } from "../../DesignSystem/Primitive";
   import { Copyable, Illustration, QR } from "../../DesignSystem/Component";
 
   import { uriStore } from "../../src/wallet";
   import { Variant as IllustrationVariant } from "../../src/illustration";
+  import { ellipsed } from "../../src/style";
 
-  $: uri = $uriStore || pop();
+  $: $uriStore || pop();
+  $: uri = $uriStore || "";
 </script>
 
 <style>
@@ -56,15 +57,15 @@
   </p>
 
   <div class="qrcode-wrapper">
-    <QR size={225} key={uri} />
+    <QR key={uri} />
     <p class="typo-text-bold connector">
-      Via
-      <Icon.WalletConnect style="margin: 0 4px;" />
-      WalletConnect
+      <Copyable showIcon={true} styleContent={false} copyContent={uri}>
+        <p
+          class="typo-text-small-mono"
+          style="color: var(--color-foreground-level-6)">
+          {ellipsed(uri, 5)}
+        </p>
+      </Copyable>
     </p>
   </div>
-
-  <Copyable showIcon={true} styleContent={false} copyContent={uri}>
-    <p class="typo-text-bold">Copy code</p>
-  </Copyable>
 </div>
