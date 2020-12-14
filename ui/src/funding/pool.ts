@@ -6,7 +6,7 @@ import * as validation from "../validation";
 
 import { Wallet, Account, Status } from "../wallet";
 import * as remote from "../remote";
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumber, BigNumberish, ContractTransaction } from "ethers";
 
 export const store = svelteStore.writable<Pool | null>(null);
 
@@ -102,8 +102,11 @@ export function make(wallet: Wallet): Pool {
       const collectableFunds = await poolContract.collectable();
       const amountPerBlock = await poolContract.getAmountPerBlock();
       const contract_receivers = await poolContract.getAllReceivers();
-      const receivers = new Map(
-        contract_receivers.map(e => [e.receiver, ReceiverStatus.Present])
+      const receivers = new Map<Address, ReceiverStatus>(
+        contract_receivers.map((e: ReceiverWeight) => [
+          e.receiver,
+          ReceiverStatus.Present,
+        ])
       );
       const erc20Allowance = await getErc20Allowance();
 
@@ -129,7 +132,7 @@ export function make(wallet: Wallet): Pool {
   async function updateAmountPerBlock(amount: BigNumberish): Promise<void> {
     return poolContract
       .setAmountPerBlock(amount)
-      .then(tx => {
+      .then((tx: ContractTransaction) => {
         transaction.add(transaction.monthlyContribution(tx, amount));
         tx.wait();
       })
@@ -167,7 +170,7 @@ export function make(wallet: Wallet): Pool {
 
     return poolContract
       .setReceivers(receiverWeights, [])
-      .then(tx => {
+      .then((tx: ContractTransaction) => {
         transaction.add(transaction.receivers(tx, receivers));
         tx.wait();
       })
@@ -177,7 +180,7 @@ export function make(wallet: Wallet): Pool {
   async function topUp(value: BigNumberish): Promise<void> {
     return poolContract
       .topUp(value, { gasLimit: 200 * 1000 })
-      .then(tx => {
+      .then((tx: ContractTransaction) => {
         transaction.add(transaction.topUp(tx));
         tx.wait();
       })
@@ -187,7 +190,7 @@ export function make(wallet: Wallet): Pool {
   async function withdraw(amount: BigNumberish): Promise<void> {
     return poolContract
       .withdraw(amount)
-      .then(tx => {
+      .then((tx: ContractTransaction) => {
         transaction.add(transaction.withdraw(tx, amount));
         tx.wait();
       })
@@ -202,7 +205,7 @@ export function make(wallet: Wallet): Pool {
   async function collect(): Promise<void> {
     return poolContract
       .collect()
-      .then(tx => {
+      .then((tx: ContractTransaction) => {
         transaction.add(transaction.collect(tx));
         tx.wait();
       })
@@ -225,7 +228,7 @@ export function make(wallet: Wallet): Pool {
     const unlimited = BigNumber.from(1).shl(256).sub(1);
     return erc20TokenContract
       .approve(contract.POOL_ADDRESS, unlimited)
-      .then(tx => {
+      .then((tx: ContractTransaction) => {
         transaction.add(transaction.erc20Allowance(tx));
         tx.wait();
       })
