@@ -22,18 +22,19 @@ pub struct Identity {
     pub avatar_fallback: avatar::Avatar,
 }
 
-impl<S> From<(coco::PeerId, coco::MetaUser<S>)> for Identity {
-    fn from((peer_id, user): (coco::PeerId, coco::MetaUser<S>)) -> Self {
+impl From<(coco::PeerId, coco::Person)> for Identity {
+    fn from((peer_id, user): (coco::PeerId, coco::Person)) -> Self {
         let urn = user.urn();
+        let handle = user.subject().name.to_string();
         Self {
             peer_id,
             urn: urn.clone(),
             shareable_entity_identifier: coco::Identifier {
-                handle: user.name().to_string(),
+                handle: handle.clone(),
                 peer_id,
             },
             metadata: Metadata {
-                handle: user.name().to_string(),
+                handle,
             },
             avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
         }
@@ -52,8 +53,8 @@ pub struct Metadata {
 ///
 /// # Errors
 pub async fn create(state: &coco::State, handle: &str) -> Result<Identity, error::Error> {
-    let user = state.init_owner(handle).await?;
-    Ok((state.peer_id(), user).into())
+    let user = state.init_owner(handle.to_string()).await?;
+    Ok((state.peer_id(), user.into_inner().into_inner()).into())
 }
 
 /// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
@@ -62,7 +63,7 @@ pub async fn create(state: &coco::State, handle: &str) -> Result<Identity, error
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Identity, error::Error> {
-    let user = state.get_user(id).await?;
+    let user = state.get_user(id).await?.unwrap();
     Ok((state.peer_id(), user).into())
 }
 

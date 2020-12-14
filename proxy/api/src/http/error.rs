@@ -154,13 +154,6 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             (StatusCode::BAD_REQUEST, "URL_MISMATCH", err.to_string())
                         },
                     },
-                    coco::state::Error::Storage(state::error::storage::Error::AlreadyExists(
-                        urn,
-                    )) => (
-                        StatusCode::CONFLICT,
-                        "ENTITY_EXISTS",
-                        format!("the identity '{}' already exists", urn),
-                    ),
                     coco::state::Error::Storage(state::error::storage::Error::Blob(
                         state::error::blob::Error::NotFound(_),
                     )) => (

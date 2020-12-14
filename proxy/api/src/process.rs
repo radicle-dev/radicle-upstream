@@ -213,18 +213,18 @@ async fn rig(
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
 
-    if let Some(key) = environment.key {
+    if let Some(key) = environment.key.clone() {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
         let (peer, state, seeds_sender) = if environment.test_mode {
             let config = coco::config::configure(
                 environment.coco_paths.clone(),
-                key,
+                signer.clone(),
                 *coco::config::INADDR_ANY,
-                coco::config::static_seed_discovery(vec![]),
             );
+            let disco = coco::config::static_seed_discovery(vec![]);
             let (peer, state) =
-                coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config())
+                coco::boostrap(config, disco, signer.clone(), store.clone(), coco_run_config())
                     .await?;
 
             (peer, state, None)
@@ -234,13 +234,13 @@ async fn rig(
 
             let config = coco::config::configure(
                 environment.coco_paths.clone(),
-                key,
+                signer.clone(),
                 *coco::config::INADDR_ANY,
-                coco::config::StreamDiscovery::new(seeds_receiver),
             );
+            let disco = coco::config::StreamDiscovery::new(seeds_receiver);
 
             let (peer, state) =
-                coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config())
+                coco::boostrap(config, disco, signer.clone(), store.clone(), coco_run_config())
                     .await?;
 
             (peer, state, Some(seeds_sender))

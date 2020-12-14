@@ -23,19 +23,21 @@ pub struct Metadata {
     pub maintainers: HashSet<coco::Urn>,
 }
 
-impl<ST> From<coco::Project<ST>> for Metadata
-where
-    ST: Clone,
+impl From<coco::Project> for Metadata
 {
-    fn from(project_meta: coco::Project<ST>) -> Self {
+    fn from(project: coco::Project) -> Self {
+        let subject = project.subject();
+        // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their PublicKey. Should we
+        // display these?
+        let maintainers = project.delegations().iter().indirect().map(|indirect| indirect.urn()).collect();
         Self {
-            name: project_meta.name().to_string(),
-            description: project_meta
-                .description()
+            name: subject.name.to_string(),
+            description: subject
+                .description
                 .clone()
-                .unwrap_or_else(|| "".into()),
-            default_branch: project_meta.default_branch().to_string(),
-            maintainers: project_meta.maintainers().clone(),
+                .map_or_else(|| "".into(), |desc| desc.to_string()),
+            default_branch: subject.default_branch.unwrap().to_string(),
+            maintainers,
         }
     }
 }
@@ -76,13 +78,11 @@ impl Partial {
 }
 
 /// Construct a Project from its metadata and stats
-impl<ST> From<coco::Project<ST>> for Partial
-where
-    ST: Clone,
+impl From<coco::Project> for Partial
 {
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
-    fn from(project: coco::Project<ST>) -> Self {
+    fn from(project: coco::Project) -> Self {
         let urn = project.urn();
 
         Self {
@@ -95,13 +95,11 @@ where
 }
 
 /// Construct a Project from its metadata and stats
-impl<ST> From<(coco::Project<ST>, coco::Stats)> for Full
-where
-    ST: Clone,
+impl From<(coco::Project, coco::Stats)> for Full
 {
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
-    fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
+    fn from((project, stats): (coco::Project, coco::Stats)) -> Self {
         let urn = project.urn();
 
         Self {
@@ -125,8 +123,8 @@ impl Deref for Peer {
     }
 }
 
-impl<S> From<peer::Peer<peer::Status<coco::MetaUser<S>>>> for Peer {
-    fn from(peer: peer::Peer<peer::Status<coco::MetaUser<S>>>) -> Self {
+impl From<peer::Peer<peer::Status<coco::Person>>> for Peer {
+    fn from(peer: peer::Peer<peer::Status<coco::Person>>) -> Self {
         let peer_id = peer.peer_id();
         Self(peer.map(|status| status.map(|user| (peer_id, user).into())))
     }
@@ -233,10 +231,15 @@ impl Projects {
                 Ok(refs) => refs,
             };
 
-            if refs.heads.is_empty() {
-                projects.tracked.push(Tracked(project))
-            } else {
-                projects.contributed.push(project)
+            match refs {
+                None => projects.tracked.push(Tracked(project)),
+                Some(refs) => {
+                    if refs.heads.is_empty() {
+                        projects.tracked.push(Tracked(project))
+                    } else {
+                        projects.contributed.push(project)
+                    }
+                },
             }
         }
 
@@ -310,7 +313,7 @@ impl Iterator for IntoIter {
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
 pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Full, error::Error> {
-    let project = state.get_project(project_urn.clone(), None).await?;
+    let project = state.get_project(project_urn.clone()).await?.unwrap();
     let branch = state.find_default_branch(project_urn.clone()).await?;
     let project_stats = state
         .with_browser(branch, |browser| Ok(browser.get_stats()?))
@@ -348,8 +351,9 @@ pub async fn list_for_user(
             .filter_map(coco::project::Peer::replicated_remote)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer, _)) = tracked {
+            let subject = project.subject();
             let branch = state
-                .get_branch(project.urn(), peer, project.default_branch().to_owned())
+                .get_branch(project.urn(), peer, subject.default_branch.to_owned())
                 .await?;
             let proj = state
                 .with_browser(branch, |browser| {
