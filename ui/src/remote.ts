@@ -1,4 +1,4 @@
-import { derived, get, writable, Readable } from "svelte/store";
+import { derived, get as getStore, writable, Readable } from "svelte/store";
 
 import * as error from "./error";
 
@@ -35,6 +35,7 @@ export interface Store<T> extends Readable<Data<T>> {
   success: (response: T) => void;
   error: (error: error.Error) => void;
   readable: Readable<Data<T>>;
+  get: () => SuccessState | null;
   start: (start: StartStopNotifier<Data<T>>) => void;
   reset: () => void;
 }
@@ -93,10 +94,18 @@ export const createStore = <T>(): Store<T> => {
 
   const resetInternalStore = () => update(() => ({ status: Status.NotAsked }));
 
+  const is = (status: Status): boolean => {
+    return getStore(internalStore).status === status;
+  };
+
+  const get = (): SuccessState | null => {
+    return is(Status.Success)
+      ? (getStore(internalStore) as SuccessState)
+      : null;
+  };
+
   return {
-    is: (status: Status): boolean => {
-      return get(internalStore).status === status;
-    },
+    is,
     subscribe,
     success: (response: T): void =>
       updateInternalStore(Status.Success, response),
@@ -107,6 +116,7 @@ export const createStore = <T>(): Store<T> => {
       }
     },
     readable: derived(internalStore, $store => $store),
+    get,
     start: (start: StartStopNotifier<Data<T>>): void => {
       starter = start;
     },
@@ -143,7 +153,7 @@ export const fetch = <T>(
   req: Promise<T>,
   filter?: (val: T) => T
 ): void => {
-  if (get(store).status === Status.NotAsked) {
+  if (getStore(store).status === Status.NotAsked) {
     store.loading();
   }
 
