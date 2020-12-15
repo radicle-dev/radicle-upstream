@@ -55,9 +55,8 @@
   - [ ] Binary files show a placeholder
   - [ ] It's possible to navigate to deeper hierarchies via the tree browser
   - [ ] It's possible to select different branches
-  - [ ] Metadata and stats in UI reflect what is in the actual repository; here
-        are a couple commands that will help you get the numbers from
-        a repository [ℹ️](#04)
+  - [ ] Metadata and stats in UI reflect what is in the actual repository
+        [ℹ️](#04)
   - [ ] Commit tab shows a list of all the commits in the branch that was
         selected
   - [ ] Clicking on a commit shows the commit metadata as well as the diff
