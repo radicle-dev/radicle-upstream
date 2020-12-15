@@ -78,4 +78,24 @@ export default {
   watch: {
     clearScreen: false,
   },
+
+  // Skip certain warnings originated by third-party libraries
+  onwarn: function (warning) {
+    if (
+      warning.code === "THIS_IS_UNDEFINED" &&
+      warning.id.includes("node_modules/@ethersproject/")
+    ) {
+      return;
+    }
+
+    if (
+      warning.code === "CIRCULAR_DEPENDENCY" &&
+      warning.importer.includes("node_modules/readable-stream/")
+    ) {
+      return;
+    }
+
+    // // Pass on any other warnings
+    console.warn(warning);
+  },
 };
