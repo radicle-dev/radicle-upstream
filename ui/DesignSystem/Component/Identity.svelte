@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { Avatar } from "../Primitive";
-  import { Remote } from "./";
+  import Remote from "./Remote.svelte";
 
   import { session } from "../../src/session";
 </script>
