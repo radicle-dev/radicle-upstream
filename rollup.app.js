@@ -20,6 +20,7 @@ export default {
     file: "public/bundle.js",
   },
   plugins: [
+    json(),
     svelte({
       // enable run-time checks when not in production
       dev: !production,
@@ -65,8 +66,6 @@ export default {
       // See https://github.com/rollup/plugins/issues/272
       noEmitOnError: production,
     }),
-
-    json(),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
