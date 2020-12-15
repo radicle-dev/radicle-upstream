@@ -502,10 +502,10 @@ which contains a QA checklist. Before publishing packages for a wider audience
 someone from the team goes through the checklist and manually tests the app,
 afterwards the team can evaluate whether the release is up to our standards.
 
-**Title:** `QA: v0.0.11 macOS`\
+**Title:** `QA: vX.X.X macOS`\
 **Body** [QA.md][qa]
 
-**Title:** `QA: v0.0.11 Linux`\
+**Title:** `QA: vX.X.X Linux`\
 **Body:** [QA.md][qa]
 
 ## Publishing a release
@@ -522,7 +522,7 @@ following commands:
 
 ```
 cd radicle-upstream
-git checkout v0.0.11
+git checkout vX.X.X
 
 CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
 APPLE_ID="XXXXXXX@monadic.xyz" \
@@ -543,7 +543,7 @@ Once the package is notarized you can upload it to the web using
 [`gsutil`][gs]:
 
 ```bash
-gsutil cp dist/radicle-upstream-0.0.11.dmg gs://releases.radicle.xyz
+gsutil cp dist/radicle-upstream-X.X.X.dmg gs://releases.radicle.xyz
 ```
 
 To be able to upload packages to the GCS bucket you will need the appropriate
@@ -554,8 +554,8 @@ After this you also need to obtain and upload the Linux package.
 FIXME(rudolfs): this doesn't work, we don't build images off of tags.
 
 ```bash
-curl -sSLO https://builds.radicle.xyz/radicle-upstream/v0.1.2/radicle-upstream-0.1.2.AppImage
-gsutil cp radicle-upstream-0.1.2.AppImage gs://releases.radicle.xyz
+curl -sSLO https://builds.radicle.xyz/radicle-upstream/vX.X.X/radicle-upstream-X.X.X.AppImage
+gsutil cp radicle-upstream-X.X.X.AppImage gs://releases.radicle.xyz
 ```
 
 After all the packages are uploaded, update the links to those binaries on the
