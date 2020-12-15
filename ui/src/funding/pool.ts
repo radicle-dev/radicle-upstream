@@ -129,16 +129,6 @@ export function make(wallet: Wallet): Pool {
     return w.status === Status.Connected ? w.connected.account : undefined;
   }
 
-  async function updateAmountPerBlock(amount: BigNumberish): Promise<void> {
-    return poolContract
-      .setAmountPerBlock(amount)
-      .then((tx: ContractTransaction) => {
-        transaction.add(transaction.monthlyContribution(tx, amount));
-        tx.wait();
-      })
-      .finally(loadPoolData);
-  }
-
   async function onboard(
     amountPerBlock: BigNumberish,
     receivers: Receivers,
@@ -159,24 +149,12 @@ export function make(wallet: Wallet): Pool {
     amountPerBlock: string,
     receivers: Receivers
   ): Promise<void> {
-    return updateAmountPerBlock(amountPerBlock)
-      .then(_ => updateReceiverAddresses(receivers))
-      .finally(loadPoolData);
-  }
-
-  async function updateReceiverAddresses(receivers: Receivers): Promise<void> {
-    if (receivers.size === 0) return;
-
-    const receiverWeights: ReceiverWeight[] = [...receivers.entries()].map(
-      ([address, status]) => {
-        return { receiver: address, weight: weightForStatus(status) };
-      }
-    );
-
     return poolContract
-      .setReceivers(receiverWeights, [])
+      .updateSender(0, 0, amountPerBlock, toReceiverWeights(receivers), [])
       .then((tx: ContractTransaction) => {
-        transaction.add(transaction.receivers(tx, receivers));
+        transaction.add(
+          transaction.updateSupport(tx, amountPerBlock, receivers)
+        );
         tx.wait();
       })
       .finally(loadPoolData);

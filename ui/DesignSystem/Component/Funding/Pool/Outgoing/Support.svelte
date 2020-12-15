@@ -22,17 +22,13 @@
 
   let ongoingTopUp = false;
   let ongoingWithdraw = false;
-  let ongoingMonthlyContributionUpdate = false;
-  let ongoingBeneficiariesUpdate = false;
+  let ongoingSupportUpdate = false;
 
   transaction.store.subscribe(_ => {
     ongoingTopUp = transaction.ongoing(transaction.TxKind.TopUp);
     ongoingWithdraw = transaction.ongoing(transaction.TxKind.Withdraw);
-    ongoingMonthlyContributionUpdate = transaction.ongoing(
-      transaction.TxKind.UpdateMonthlyContribution
-    );
-    ongoingBeneficiariesUpdate = transaction.ongoing(
-      transaction.TxKind.UpdateReceivers
+    ongoingSupportUpdate = transaction.ongoing(
+      transaction.TxKind.UpdateSupport
     );
   });
 
@@ -54,7 +50,6 @@
       data = store.data;
       budget = data.amountPerBlock;
       receivers = new Map(data.receivers);
-      console.log(`pool.data.subscribe, receivers ${[...receivers.entries()]}`);
     }
   });
 
@@ -190,7 +185,7 @@
         <a
           hidden={editing}
           class="typo-link"
-          disabled={ongoingMonthlyContributionUpdate}
+          disabled={ongoingSupportUpdate}
           on:click={enterEditMode}
           style="margin-left: 12px;">
           Edit
@@ -244,7 +239,7 @@
         <a
           hidden={editing}
           class="typo-link"
-          disabled={ongoingMonthlyContributionUpdate}
+          disabled={ongoingSupportUpdate}
           style="margin-left: 3px;"
           on:click={enterEditMode}>
           Edit
@@ -254,7 +249,7 @@
       <Receivers
         {editing}
         bind:receivers
-        updating={ongoingBeneficiariesUpdate}
+        updating={ongoingSupportUpdate}
         style="margin-top: 1rem" />
 
       <div class="tip">

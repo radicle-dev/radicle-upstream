@@ -39,7 +39,6 @@
   import ModalWalletQRCode from "./Modal/Wallet/QRCode.svelte";
   import ModalTopUp from "./Screen/Funding/Pool/TopUp.svelte";
   import ModalWithdraw from "./Screen/Funding/Pool/Withdraw.svelte";
-  import ModalUpdateMonthlyContribution from "./Screen/Funding/Pool/UpdateMonthlyContribution.svelte";
   import ModalCollect from "./Screen/Funding/Pool/Collect.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
@@ -68,7 +67,6 @@
     "/pool/withdraw": ModalWithdraw,
     "/pool/top-up": ModalTopUp,
     "/pool/collect": ModalCollect,
-    "/pool/update-monthly-contribution": ModalUpdateMonthlyContribution,
     "/transaction": ModalTransaction,
   };
 

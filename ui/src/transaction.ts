@@ -44,8 +44,7 @@ type MetaTx =
   | SupportOnboarding
   | TopUp
   | CollectFunds
-  | UpdateMonthlyContribution
-  | UpdateReceivers
+  | UpdateSupport
   | Withdraw;
 
 interface Erc20Allowance {
@@ -77,15 +76,11 @@ interface CollectFunds {
   amount: BigNumberish;
 }
 
-interface UpdateMonthlyContribution {
-  kind: TxKind.UpdateMonthlyContribution;
-  // The value the monthly contribution is being set to.
+interface UpdateSupport {
+  kind: TxKind.UpdateSupport;
+  // The amount to be disbursed monthly to the `receivers`.
   amount: BigNumberish;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface UpdateReceivers {
-  kind: TxKind.UpdateReceivers;
+  // The changes made to the list of receivers.
   receivers: [Address, ReceiverStatus][];
 }
 
@@ -95,8 +90,7 @@ export enum TxKind {
   Withdraw = "Withdraw",
   TopUp = "Top Up",
   CollectFunds = "Collect Funds",
-  UpdateMonthlyContribution = "Update Monthly Contribution",
-  UpdateReceivers = "Update receivers",
+  UpdateSupport = "Update Support",
 }
 
 export enum TxStatus {
@@ -147,21 +141,15 @@ export function withdraw(txc: ContractTransaction, amount: BigNumberish): Tx {
   return { ...txData(txc), ...meta };
 }
 
-export function receivers(txc: ContractTransaction, receivers: Receivers): Tx {
-  const meta: UpdateReceivers = {
-    kind: TxKind.UpdateReceivers,
-    receivers: [...receivers.entries()],
-  };
-  return { ...txData(txc), ...meta };
-}
-
-export function monthlyContribution(
+export function updateSupport(
   txc: ContractTransaction,
-  amount: BigNumberish
+  amount: BigNumberish,
+  receivers: Receivers
 ): Tx {
-  const meta: UpdateMonthlyContribution = {
-    kind: TxKind.UpdateMonthlyContribution,
+  const meta: UpdateSupport = {
+    kind: TxKind.UpdateSupport,
     amount,
+    receivers: [...receivers.entries()],
   };
   return { ...txData(txc), ...meta };
 }
@@ -339,13 +327,10 @@ function direction(tx: Tx): Direction {
     case TxKind.Erc20Allowance:
     case TxKind.SupportOnboarding:
     case TxKind.TopUp:
-    case TxKind.UpdateReceivers:
-    case TxKind.UpdateMonthlyContribution:
+    case TxKind.UpdateSupport:
       return Direction.Outgoing;
   }
 }
-
-cap(0);
 
 export function isIncoming(tx: Tx): boolean {
   return direction(tx) === Direction.Incoming;

@@ -44,8 +44,6 @@ export const poolOnboarding = (): string => "/pool/onboarding";
 export const poolTopUp = (): string => "/pool/top-up";
 export const poolWithdraw = (): string => "/pool/withdraw";
 export const collectFunds = (): string => "/pool/collect";
-export const updateMonthlyContribution = (): string =>
-  "/pool/update-monthly-contribution";
 export const transaction = (): string => "/transaction";
 
 export const active = (

@@ -36,17 +36,21 @@
     <p>Top up your support balance with <strong>{tx.amount} DAI</strong>.</p>
   {:else if tx.kind === TxKind.CollectFunds}
     <p>Collect <strong>{tx.amount} DAI</strong> from your supporters.</p>
-  {:else if tx.kind === TxKind.UpdateMonthlyContribution}
-    <p>
-      Update your support's monthly contribution to
-      <strong>{tx.amount} DAI</strong>.
-    </p>
-  {:else if tx.kind === TxKind.UpdateReceivers}
-    <p>Updated the list of receivers by adding or removing the following:</p>
-    <Receivers
-      receivers={new Map(tx.receivers)}
-      style="margin-top: 1.2rem"
-      alignment="center" />
+  {:else if tx.kind === TxKind.UpdateSupport}
+    {#if tx.receivers.length === 0}
+      <p>
+        Stream
+        <strong>{tx.amount} DAI</strong>
+        per month. You haven’t set any receivers. As soon as you do, money will
+        begin streaming to them at this rate.
+      </p>
+    {:else}
+      <p>Stream <strong>{tx.amount} DAI</strong> per month to these users.</p>
+      <Receivers
+        receivers={new Map(tx.receivers)}
+        style="margin-top: 1.2rem"
+        alignment="center" />
+    {/if}
   {:else if tx.kind === TxKind.SupportOnboarding}
     {#if tx.receivers.length === 0}
       <p>
