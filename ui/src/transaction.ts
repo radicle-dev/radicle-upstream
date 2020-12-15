@@ -41,6 +41,7 @@ export interface TxData {
 // The meta transactions that we provide to the user.
 type MetaTx =
   | Erc20Allowance
+  | SupportOnboarding
   | TopUp
   | CollectFunds
   | UpdateMonthlyContribution
@@ -49,6 +50,16 @@ type MetaTx =
 
 interface Erc20Allowance {
   kind: TxKind.Erc20Allowance;
+}
+
+interface SupportOnboarding {
+  kind: TxKind.SupportOnboarding;
+  // The amount defined as the initial balance
+  topUp: BigNumberish;
+  // The amount to be disbursed monthly to the `receivers`.
+  budget: BigNumberish;
+  // The receivers of this support.
+  receivers: [Address, ReceiverStatus][];
 }
 
 interface TopUp {
@@ -80,6 +91,7 @@ interface UpdateReceivers {
 
 export enum TxKind {
   Erc20Allowance = "ERC-20 Allowance",
+  SupportOnboarding = "Support Onboarding",
   Withdraw = "Withdraw",
   TopUp = "Top Up",
   CollectFunds = "Collect Funds",
@@ -100,6 +112,21 @@ export enum TxStatus {
 
 export function erc20Allowance(txc: ContractTransaction): Tx {
   return { ...txData(txc), ...{ kind: TxKind.Erc20Allowance } };
+}
+
+export function supportOnboarding(
+  txc: ContractTransaction,
+  topUp: BigNumberish,
+  budget: BigNumberish,
+  receivers: Receivers
+): Tx {
+  const meta: SupportOnboarding = {
+    kind: TxKind.SupportOnboarding,
+    topUp,
+    budget,
+    receivers: [...receivers.entries()],
+  };
+  return { ...txData(txc), ...meta };
 }
 
 export function collect(txc: ContractTransaction): Tx {
@@ -310,6 +337,7 @@ function direction(tx: Tx): Direction {
     case TxKind.Withdraw:
       return Direction.Incoming;
     case TxKind.Erc20Allowance:
+    case TxKind.SupportOnboarding:
     case TxKind.TopUp:
     case TxKind.UpdateReceivers:
     case TxKind.UpdateMonthlyContribution:
@@ -317,8 +345,24 @@ function direction(tx: Tx): Direction {
   }
 }
 
+cap(0);
+
 export function isIncoming(tx: Tx): boolean {
   return direction(tx) === Direction.Incoming;
+}
+
+// The amount the `tx` transfers. `undefined` when not applicable.
+export function transferAmount(tx: Tx): BigNumberish | undefined {
+  switch (tx.kind) {
+    case TxKind.CollectFunds:
+    case TxKind.Withdraw:
+    case TxKind.TopUp:
+      return tx.amount;
+    case TxKind.SupportOnboarding:
+      return tx.topUp;
+    default:
+      return undefined;
+  }
 }
 
 export function formatDate(date: Date): string {

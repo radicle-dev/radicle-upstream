@@ -140,13 +140,18 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function onboard(
-    amountPerBlock: string,
+    amountPerBlock: BigNumberish,
     receivers: Receivers,
-    initialBalance: number
+    topUp: BigNumberish
   ): Promise<void> {
-    return updateAmountPerBlock(amountPerBlock)
-      .then(_ => updateReceiverAddresses(receivers))
-      .then(_ => topUp(initialBalance))
+    return poolContract
+      .updateSender(topUp, 0, amountPerBlock, toReceiverWeights(receivers), [])
+      .then((tx: ContractTransaction) => {
+        transaction.add(
+          transaction.supportOnboarding(tx, topUp, amountPerBlock, receivers)
+        );
+        tx.wait();
+      })
       .finally(loadPoolData);
   }
 
@@ -177,9 +182,9 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
-  async function topUp(value: BigNumberish): Promise<void> {
+  async function topUp(amount: BigNumberish): Promise<void> {
     return poolContract
-      .topUp(value, { gasLimit: 200 * 1000 })
+      .topUp(amount, { gasLimit: 200 * 1000 })
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.topUp(tx));
         tx.wait();
@@ -325,6 +330,14 @@ export function isOnboarded(data: PoolData): boolean {
   return (
     data.receivers.size > 0 || data.amountPerBlock !== "0" || data.balance > 0
   );
+}
+
+// Convert `Receivers` to `ReceiverWeight[]`, the latter being the
+// representation receivers have in the Radicle Contracts.
+function toReceiverWeights(receivers: Receivers): ReceiverWeight[] {
+  return [...receivers.entries()].map(([address, status]) => {
+    return { receiver: address, weight: weightForStatus(status) };
+  });
 }
 
 function weightForStatus(status: ReceiverStatus): number {

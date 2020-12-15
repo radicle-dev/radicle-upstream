@@ -16,7 +16,7 @@
     colorForStatus,
     isIncoming,
     formatDate,
-    TxKind,
+    transferAmount,
   } from "../src/transaction";
   import type { Tx } from "../src/transaction";
   import { Variant as IllustrationVariant } from "../src/illustration";
@@ -28,6 +28,7 @@
   );
 
   $: statusColor = colorForStatus(tx.status);
+  $: transferedAmount = transferAmount(tx);
 </script>
 
 <style>
@@ -153,13 +154,13 @@
   </header>
 
   <div class="content">
-    {#if ![TxKind.UpdateReceivers, TxKind.UpdateMonthlyContribution, TxKind.Erc20Allowance].includes(tx.kind)}
+    {#if transferedAmount}
       <div class="section">
         <div class="row">
           <p>Amount</p>
           <p class="typo-semi-bold">
             <Dai variant={isIncoming(tx) ? 'regular' : 'negative'}>
-              <span style="color(--color-negative)">{tx.amount}</span>
+              <span style="color(--color-negative)">{transferedAmount}</span>
             </Dai>
           </p>
         </div>

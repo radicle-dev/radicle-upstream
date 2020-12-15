@@ -13,6 +13,7 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
+    padding: 0 2rem;
   }
 
   strong {
@@ -46,5 +47,27 @@
       receivers={new Map(tx.receivers)}
       style="margin-top: 1.2rem"
       alignment="center" />
+  {:else if tx.kind === TxKind.SupportOnboarding}
+    {#if tx.receivers.length === 0}
+      <p>
+        Top up
+        <strong>{tx.topUp} DAI</strong>. You haven’t set any receivers. As soon
+        as you do, money will begin streaming to them at a rate of
+        <strong>{tx.budget} DAI</strong>
+        per month.
+      </p>
+    {:else}
+      <p>
+        Top up
+        <strong>{tx.topUp} DAI</strong>
+        and stream
+        <strong>{tx.budget} DAI</strong>
+        per month to these users:
+      </p>
+      <Receivers
+        receivers={new Map(tx.receivers)}
+        style="margin-top: 1.2rem"
+        alignment="center" />
+    {/if}
   {/if}
 </div>
