@@ -121,7 +121,9 @@ mod test {
     #[test]
     fn validation_fails_on_non_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>>
     {
-        let url = LocalUrl::from(Urn::new(Oid::try_from("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?));
+        let url = LocalUrl::from(Urn::new(Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
         std::fs::create_dir(exists.clone())?;
@@ -145,7 +147,9 @@ mod test {
 
     #[test]
     fn validation_succeeds_on_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>> {
-        let url = LocalUrl::from(Urn::new(Oid::try_from("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?));
+        let url = LocalUrl::from(Urn::new(Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
         std::fs::create_dir(exists)?;

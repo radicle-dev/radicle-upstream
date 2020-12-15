@@ -49,7 +49,7 @@ pub fn reset_monorepo() -> Result<(), std::io::Error> {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub async fn setup_fixtures(api: &State, owner: &LocalIdentity) -> Result<(), Error> {
+pub async fn setup_fixtures(api: &State, owner: &LocalIdentity) -> Result<Vec<Project>, Error> {
     let infos = vec![
         (
             "monokel",
@@ -73,11 +73,11 @@ pub async fn setup_fixtures(api: &State, owner: &LocalIdentity) -> Result<(), Er
         ),
     ];
 
+    let mut projects = Vec::with_capacity(infos.len());
     for info in infos {
-        replicate_platinum(api, owner, info.0, info.1, info.2).await?;
+        projects.push(replicate_platinum(api, owner, info.0, info.1, info.2).await?);
     }
-
-    Ok(())
+    Ok(projects)
 }
 
 /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev

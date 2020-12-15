@@ -5,8 +5,10 @@ use futures::{future, StreamExt as _};
 use pretty_assertions::assert_eq;
 use tokio::time::timeout;
 
-use librad::git::types::{Remote, Force, remote::LocalPushspec, Fetchspec};
-use librad::git::local::url::LocalUrl;
+use librad::git::{
+    local::url::LocalUrl,
+    types::{remote::LocalPushspec, Fetchspec, Force, Remote},
+};
 use radicle_git_ext::RefLike;
 // use radicle_surf::vcs::git::git2;
 use git2;
@@ -200,11 +202,21 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         };
 
         {
-            let mut rad = Remote::<LocalUrl>::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
-            let _ = rad.push(alice_state.settings(), &repo, LocalPushspec::Matching {
-                pattern: RefLike::try_from(format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())).unwrap().into(),
-                force: Force::False,
-            })?;
+            let mut rad =
+                Remote::<LocalUrl>::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
+            let _ = rad.push(
+                alice_state.settings(),
+                &repo,
+                LocalPushspec::Matching {
+                    pattern: RefLike::try_from(format!(
+                        "refs/heads/{}",
+                        project.subject().default_branch.clone().unwrap()
+                    ))
+                    .unwrap()
+                    .into(),
+                    force: Force::False,
+                },
+            )?;
         }
 
         commit_id
@@ -220,20 +232,19 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let alice_peer_id = alice_state.peer_id();
-    let has_commit =
-        bob_state
-            .has_commit(
-                project.urn().with_path(Some(
-                    RefLike::try_from(format!(
-                        "refs/remotes/{}/heads/{}",
-                        alice_peer_id,
-                        project.subject().default_branch.clone().unwrap(),
-                    ))
-                    .unwrap()
-                )),
-                coco::git_ext::Oid::from(commit_id)
-            )
-            .await?;
+    let has_commit = bob_state
+        .has_commit(
+            project.urn().with_path(Some(
+                RefLike::try_from(format!(
+                    "refs/remotes/{}/heads/{}",
+                    alice_peer_id,
+                    project.subject().default_branch.clone().unwrap(),
+                ))
+                .unwrap(),
+            )),
+            coco::git_ext::Oid::from(commit_id),
+        )
+        .await?;
     assert!(has_commit);
 
     Ok(())
@@ -377,10 +388,19 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
         {
             let mut rad = Remote::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
-            let _ = rad.push(bob_state.settings(), &repo, LocalPushspec::Matching {
-                pattern: RefLike::try_from(format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())).unwrap().into(),
-                force: Force::False,
-            })?;
+            let _ = rad.push(
+                bob_state.settings(),
+                &repo,
+                LocalPushspec::Matching {
+                    pattern: RefLike::try_from(format!(
+                        "refs/heads/{}",
+                        project.subject().default_branch.clone().unwrap()
+                    ))
+                    .unwrap()
+                    .into(),
+                    force: Force::False,
+                },
+            )?;
         }
 
         commit_id

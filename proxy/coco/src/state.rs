@@ -217,7 +217,12 @@ impl State {
     ///
     ///   * Retrieving the project entities from the store fails.
     pub async fn list_projects(&self) -> Result<Vec<Project>, Error> {
-        let owner = self.default_owner().await?.unwrap().into_inner().into_inner();
+        let owner = self
+            .default_owner()
+            .await?
+            .unwrap()
+            .into_inner()
+            .into_inner();
         /*
         let owner = match owner {
             None => return Ok(vec![]), // TODO(finto): Raise an error
@@ -228,13 +233,14 @@ impl State {
             .with_storage(move |store| {
                 let projects = identities::any::list(&store)?
                     .filter_map(Result::ok)
-                    .filter_map(|id|
-                        match id {
+                    .filter_map(|id| match id {
                         SomeIdentity::Project(project) => {
-                            let rad_self = Reference::rad_self(Namespace::from(project.urn()), None);
+                            let rad_self =
+                                Reference::rad_self(Namespace::from(project.urn()), None);
                             let urn = Urn::try_from(rad_self).ok()?;
                             let project_self = person::get(&store, &urn).ok()??;
-                            // Filter projects that have a rad/self pointing to current default owner
+                            // Filter projects that have a rad/self pointing to current default
+                            // owner
                             if project_self == owner {
                                 Some(project)
                             } else {
@@ -966,7 +972,7 @@ mod test {
 
         let user = state.init_owner("cloudhead".to_string()).await?;
 
-        control::setup_fixtures(&state, &user)
+        let _ = control::setup_fixtures(&state, &user)
             .await
             .expect("unable to setup fixtures");
 

@@ -346,10 +346,14 @@ impl Repository {
             },
             Ok,
         )?;
-        for pushed in git_remote.push(open_storage, repo, LocalPushspec::Matching {
-            pattern: refspec_pattern!("refs/heads/*"),
-            force: Force::True,
-        })? {
+        for pushed in git_remote.push(
+            open_storage,
+            repo,
+            LocalPushspec::Matching {
+                pattern: refspec_pattern!("refs/heads/*"),
+                force: Force::True,
+            },
+        )? {
             log::debug!("Pushed local branch `{}`", pushed);
         }
         Ok(())

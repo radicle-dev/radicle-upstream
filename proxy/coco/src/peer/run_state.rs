@@ -522,11 +522,11 @@ mod test {
     use tokio::sync::oneshot;
 
     use librad::{
+        git_ext::Oid,
         identities::Urn,
         keys::SecretKey,
         net::{gossip, peer::Gossip, protocol::ProtocolEvent},
         peer::PeerId,
-        git_ext::Oid,
     };
 
     use super::{command, config, input, Command, Config, Input, RunState, Status};

@@ -455,7 +455,7 @@ mod test {
     use std::{error, str::FromStr};
 
     use assert_matches::assert_matches;
-    use librad::{identities::Urn, keys::SecretKey, peer::PeerId, git_ext::Oid};
+    use librad::{git_ext::Oid, identities::Urn, keys::SecretKey, peer::PeerId};
     use pretty_assertions::assert_eq;
 
     use super::*;
