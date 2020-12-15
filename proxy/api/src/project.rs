@@ -23,13 +23,17 @@ pub struct Metadata {
     pub maintainers: HashSet<coco::Urn>,
 }
 
-impl From<coco::Project> for Metadata
-{
+impl From<coco::Project> for Metadata {
     fn from(project: coco::Project) -> Self {
         let subject = project.subject();
-        // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their PublicKey. Should we
-        // display these?
-        let maintainers = project.delegations().iter().indirect().map(|indirect| indirect.urn()).collect();
+        // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their
+        // PublicKey. Should we display these?
+        let maintainers = project
+            .delegations()
+            .iter()
+            .indirect()
+            .map(|indirect| indirect.urn())
+            .collect();
         Self {
             name: subject.name.to_string(),
             description: subject
@@ -78,8 +82,7 @@ impl Partial {
 }
 
 /// Construct a Project from its metadata and stats
-impl From<coco::Project> for Partial
-{
+impl From<coco::Project> for Partial {
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from(project: coco::Project) -> Self {
@@ -95,8 +98,7 @@ impl From<coco::Project> for Partial
 }
 
 /// Construct a Project from its metadata and stats
-impl From<(coco::Project, coco::Stats)> for Full
-{
+impl From<(coco::Project, coco::Stats)> for Full {
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from((project, stats): (coco::Project, coco::Stats)) -> Self {

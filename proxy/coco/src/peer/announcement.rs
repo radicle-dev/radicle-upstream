@@ -257,13 +257,13 @@ mod test {
 
     fn project0(head: &str) -> Urn {
         Urn {
-            id: "project0".parse::<radicle_git_ext::Oid>().unwrap(),
+            id: "7ab8629dd6da14dcacde7f65b3d58cd291d7e235".parse::<radicle_git_ext::Oid>().unwrap(),
             path: Some(RefLike::try_from(head).unwrap()),
         }
     }
     fn project1(head: &str) -> Urn {
         Urn {
-            id: "project1".parse::<radicle_git_ext::Oid>().unwrap(),
+            id: "7ab8629dd6da14dcacde7f65b3d58cd291d7e234".parse::<radicle_git_ext::Oid>().unwrap(),
             path: Some(RefLike::try_from(head).unwrap()),
         }
     }

@@ -103,6 +103,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "INTERNAL_ERROR",
                             include_error.to_string(),
                         ),
+                        coco::project::checkout::Error::Transport(err) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "TRANSPORT_ERROR",
+                            err.to_string(),
+                        ),
                     },
                     coco::state::Error::Create(create::Error::Validation(err)) => match err {
                         create::validation::Error::AlreadExists(_) => {
@@ -153,6 +158,17 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         create::validation::Error::UrlMismatch { .. } => {
                             (StatusCode::BAD_REQUEST, "URL_MISMATCH", err.to_string())
                         },
+
+                        create::validation::Error::Transport(_) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "TRANSPORT_ERROR",
+                            err.to_string(),
+                        ),
+                        create::validation::Error::Remote(_) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "NO_REMOTE",
+                            err.to_string(),
+                        ),
                     },
                     coco::state::Error::Storage(state::error::storage::Error::Blob(
                         state::error::blob::Error::NotFound(_),
@@ -259,7 +275,8 @@ mod tests {
             .parse()
             .expect("failed to parse URN");
         let message = format!("the identity '{}' already exists", urn);
-        let have: Value = response(warp::reject::custom(crate::error::Error::SessionInUse(urn))).await;
+        let have: Value =
+            response(warp::reject::custom(crate::error::Error::SessionInUse(urn))).await;
         let want = json!({
             "message": message,
             "variant": "ENTITY_EXISTS"

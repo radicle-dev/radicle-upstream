@@ -525,7 +525,9 @@ mod test {
         let default_branch = ctx.state.find_default_branch(urn).await?;
         let want = ctx
             .state
-            .with_browser(default_branch, |browser| coco::source::branches(browser, None))
+            .with_browser(default_branch, |browser| {
+                coco::source::branches(browser, None)
+            })
             .await?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {

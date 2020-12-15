@@ -130,6 +130,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice_addrs = alice_state.listen_addrs().collect();
     let alice_peer_id = alice_state.peer_id();
+    let alice = alice_state.init_owner("alice".to_string()).await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer_with_seeds(
@@ -141,6 +142,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         RunConfig::default(),
     )
     .await?;
+    bob_state.init_owner("bob".to_string()).await?;
     let bob_events = bob_peer.subscribe();
     let mut bob_control = bob_peer.control();
     let clone_listener = bob_peer.subscribe();
@@ -151,19 +153,13 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     connected(bob_events, &alice_peer_id).await?;
 
-    bob_state.init_owner("bob".to_string()).await?;
-
     let urn = {
-        let alice = alice_state.init_owner("alice".to_string()).await?;
         let project = radicle_project(alice_repo_path.clone());
         alice_state.init_project(&alice, project).await?.urn()
     };
-
     bob_control.request_project(&urn, Instant::now()).await;
-
     requested(query_listener, &urn).await?;
     assert_cloned(clone_listener, &urn.clone(), alice_peer_id).await?;
-
     // TODO(finto): List projects
     let project = bob_state.get_project(urn).await;
     assert!(project.is_ok());

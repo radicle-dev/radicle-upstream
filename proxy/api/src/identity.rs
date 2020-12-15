@@ -33,9 +33,7 @@ impl From<(coco::PeerId, coco::Person)> for Identity {
                 handle: handle.clone(),
                 peer_id,
             },
-            metadata: Metadata {
-                handle,
-            },
+            metadata: Metadata { handle },
             avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
         }
     }

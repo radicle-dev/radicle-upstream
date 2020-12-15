@@ -88,8 +88,7 @@ mod handler {
 
 #[cfg(test)]
 mod test {
-    use std::convert::TryFrom;
-    use std::time::Instant;
+    use std::{convert::TryFrom, time::Instant};
 
     use pretty_assertions::assert_eq;
     use serde_json::json;
@@ -103,9 +102,7 @@ mod test {
         let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(
-            coco::git_ext::Oid::try_from("kissesofthesun").unwrap(),
-        );
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from("kissesofthesun").unwrap());
 
         let _request = ctx.peer_control.request_project(&urn, Instant::now()).await;
         let res = request()
@@ -125,9 +122,7 @@ mod test {
         let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(
-            coco::git_ext::Oid::try_from("kissesofthesun").unwrap(),
-        );
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from("kissesofthesun").unwrap());
 
         let res = request()
             .method("PUT")
@@ -149,9 +144,7 @@ mod test {
         let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(
-            coco::git_ext::Oid::try_from("kissesofthesun").unwrap(),
-        );
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from("kissesofthesun").unwrap());
 
         let want = ctx.peer_control.request_project(&urn, Instant::now()).await;
         let res = request().method("GET").path("/").reply(&api).await;

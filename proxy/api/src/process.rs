@@ -223,9 +223,14 @@ async fn rig(
                 *coco::config::INADDR_ANY,
             );
             let disco = coco::config::static_seed_discovery(vec![]);
-            let (peer, state) =
-                coco::boostrap(config, disco, signer.clone(), store.clone(), coco_run_config())
-                    .await?;
+            let (peer, state) = coco::boostrap(
+                config,
+                disco,
+                signer.clone(),
+                store.clone(),
+                coco_run_config(),
+            )
+            .await?;
 
             (peer, state, None)
         } else {
@@ -239,9 +244,14 @@ async fn rig(
             );
             let disco = coco::config::StreamDiscovery::new(seeds_receiver);
 
-            let (peer, state) =
-                coco::boostrap(config, disco, signer.clone(), store.clone(), coco_run_config())
-                    .await?;
+            let (peer, state) = coco::boostrap(
+                config,
+                disco,
+                signer.clone(),
+                store.clone(),
+                coco_run_config(),
+            )
+            .await?;
 
             (peer, state, Some(seeds_sender))
         };

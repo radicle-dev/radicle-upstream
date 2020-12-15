@@ -513,6 +513,7 @@ mod test {
         collections::{HashMap, HashSet},
         iter::FromIterator,
         net::{IpAddr, SocketAddr},
+        str::FromStr,
         time::{Duration, Instant},
     };
 
@@ -525,6 +526,7 @@ mod test {
         keys::SecretKey,
         net::{gossip, peer::Gossip, protocol::ProtocolEvent},
         peer::PeerId,
+        git_ext::Oid,
     };
 
     use super::{command, config, input, Command, Config, Input, RunState, Status};
@@ -731,8 +733,7 @@ mod test {
 
     #[test]
     fn issue_query_when_requested_and_online() -> Result<(), Box<dyn std::error::Error + 'static>> {
-        let urn: Urn =
-            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
 
         let status = Status::Online { connected: 1 };
         let status_since = Instant::now();
@@ -759,8 +760,7 @@ mod test {
     #[test]
     fn issue_query_when_requested_and_syncing() -> Result<(), Box<dyn std::error::Error + 'static>>
     {
-        let urn: Urn =
-            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
 
         let status = Status::Syncing {
             synced: 0,
@@ -787,8 +787,7 @@ mod test {
 
     #[test]
     fn issue_clone_when_found() -> Result<(), Box<dyn std::error::Error + 'static>> {
-        let urn: Urn =
-            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         let peer_id = PeerId::from(SecretKey::new());
 
         let status = Status::Online { connected: 0 };

@@ -452,10 +452,10 @@ impl<T, D> WaitingRoom<T, D> {
 
 #[cfg(test)]
 mod test {
-    use std::error;
+    use std::{error, str::FromStr};
 
     use assert_matches::assert_matches;
-    use librad::{identities::Urn, keys::SecretKey, peer::PeerId};
+    use librad::{identities::Urn, keys::SecretKey, peer::PeerId, git_ext::Oid};
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -463,9 +463,7 @@ mod test {
     #[test]
     fn happy_path_of_full_request() -> Result<(), Box<dyn error::Error + 'static>> {
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         let remote_peer = PeerId::from(SecretKey::new());
         let have = waiting_room.request(&urn, 0);
         let want = waiting_room.get(&urn).unwrap();
@@ -520,9 +518,7 @@ mod test {
     #[test]
     fn cannot_create_twice() -> Result<(), Box<dyn error::Error>> {
         let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(Config::default());
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         waiting_room.request(&urn, ());
         let request = waiting_room.request(&urn, ());
 
@@ -548,9 +544,7 @@ mod test {
             delta: 5,
             ..Config::default()
         });
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         let _ = waiting_room.request(&urn, 0);
 
         // Initial schedule to be querying after it has been requested.
@@ -578,9 +572,7 @@ mod test {
             max_clones: Clones::new(0),
             delta: (),
         });
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
 
         let _ = waiting_room.request(&urn, ());
         for _ in 0..NUM_QUERIES {
@@ -609,9 +601,7 @@ mod test {
             max_clones: Clones::new(NUM_CLONES),
             delta: (),
         });
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
 
         let mut peers = vec![];
         for _ in 0..=NUM_CLONES {
@@ -658,9 +648,7 @@ mod test {
             max_clones: Clones::new(NUM_CLONES),
             delta: 5,
         });
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
 
         let mut peers = vec![];
         for _ in 0..NUM_CLONES {
@@ -691,9 +679,7 @@ mod test {
     fn cancel_transitions() -> Result<(), Box<dyn error::Error + 'static>> {
         let config = Config::default();
         let mut waiting_room: WaitingRoom<(), ()> = WaitingRoom::new(config);
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         let peer = PeerId::from(SecretKey::new());
 
         // created
@@ -760,8 +746,7 @@ mod test {
         let config = Config::default();
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(config);
 
-        let urn =
-            "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".parse::<Urn>()?;
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         let remote_peer = PeerId::from(SecretKey::new());
 
         let ready = waiting_room.find_by_state(RequestState::Cloned);
@@ -788,11 +773,9 @@ mod test {
     }
 
     #[test]
-    fn can_remove_requests() {
+    fn can_remove_requests() -> Result<(), Box<dyn error::Error + 'static>> {
         let mut waiting_room: WaitingRoom<usize, usize> = WaitingRoom::new(Config::default());
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         assert_eq!(waiting_room.remove(&urn), None);
 
         let expected = {
@@ -801,6 +784,7 @@ mod test {
         };
         let removed = waiting_room.remove(&urn);
         assert_eq!(removed, expected);
+        Ok(())
     }
 
     #[test]
@@ -809,9 +793,7 @@ mod test {
             delta: 5,
             ..Config::default()
         });
-        let urn: Urn = "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-            .parse()
-            .expect("failed to parse the urn");
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         let _ = waiting_room.request(&urn, 0);
 
         // Initial schedule to be querying after it has been requested.

@@ -7,13 +7,16 @@ use std::{
 use librad::{
     git::{
         include,
-        local::url::LocalUrl,
-        types::{remote::Remote, Flat, Force, GenericRef, Reference, Refspec},
+        local::{transport::CanOpenStorage, url::LocalUrl},
+        types::{
+            remote::{LocalPushspec, Remote},
+            Flat, Force, GenericRef, Reference, Refspec,
+        },
     },
     git_ext::{OneLevel, RefLike},
     identities::Urn,
     peer::PeerId,
-    reflike,
+    reflike, refspec_pattern,
 };
 use radicle_surf::vcs::git::git2;
 
@@ -29,6 +32,9 @@ pub enum Error {
     /// An error occured building include files.
     #[error(transparent)]
     Include(#[from] include::Error),
+
+    #[error(transparent)]
+    Transport(#[from] librad::git::local::transport::Error),
 }
 
 /// The data necessary for checking out a project.
@@ -71,21 +77,33 @@ impl Ownership {
     /// # Errors
     ///   * If the cloning of the working copy fails.
     ///   * In the case of a remote clone, if the pushing of the default branch fails.
-    pub fn clone(
+    pub fn clone<F>(
         self,
+        open_storage: F,
         urn: Urn,
         default_branch: &OneLevel,
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
-    ) -> Result<git2::Repository, git2::Error> {
+    ) -> Result<git2::Repository, Error>
+    where
+        F: CanOpenStorage + 'static,
+    {
         match self {
             Self::Local(_peer_id) => {
                 let url = LocalUrl::from(urn);
-                Self::local(&url, path, builder)
+                Self::local(&url, path, builder).map_err(Error::from)
             },
             Self::Remote { handle, remote, .. } => {
                 let url = LocalUrl::from(urn);
-                Self::remote(&handle, remote, url, default_branch, path, builder)
+                Self::remote(
+                    open_storage,
+                    &handle,
+                    remote,
+                    url,
+                    default_branch,
+                    path,
+                    builder,
+                )
             },
         }
     }
@@ -96,19 +114,34 @@ impl Ownership {
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
     ) -> Result<git2::Repository, git2::Error> {
-        builder.remote_create(|repo, _remote_name, url| repo.remote(config::RAD_REMOTE, url));
+        builder.remote_create(|repo, _remote_name, url| {
+            let mut rad = Remote::rad_remote(
+                url,
+                Refspec {
+                    src: refspec_pattern!("refs/heads/*"),
+                    dst: refspec_pattern!("refs/remotes/rad/*"),
+                    force: Force::True,
+                },
+            );
+            rad.save(repo)?;
+            repo.find_remote(config::RAD_REMOTE)
+        });
         git2::build::RepoBuilder::clone(builder, &url.to_string(), path)
     }
 
     /// See [`Checkout::run`].
-    fn remote(
+    fn remote<F>(
+        open_storage: F,
         handle: &str,
         peer: PeerId,
         url: LocalUrl,
         default_branch: &OneLevel,
         path: &path::Path,
         builder: &mut git2::build::RepoBuilder,
-    ) -> Result<git2::Repository, git2::Error> {
+    ) -> Result<git2::Repository, Error>
+    where
+        F: CanOpenStorage + 'static,
+    {
         let name =
             RefLike::try_from(format!("{}@{}", handle, peer)).expect("failed to parse remote name");
         {
@@ -134,9 +167,16 @@ impl Ownership {
                 dst: GenericRef::heads(Flat, reflike!("rad")),
                 force: Force::True,
             };
-            let _ = Remote::rad_remote(url, fetchspec).save(&repo)?;
-            let mut remote = repo.find_remote(config::RAD_REMOTE)?;
-            remote.push(&[&format!("refs/heads/{}", default_branch.as_str())], None)?;
+            let mut rad = Remote::rad_remote(url, fetchspec);
+            rad.save(&repo)?;
+            let _ = rad.push(
+                open_storage,
+                &repo,
+                LocalPushspec::Matching {
+                    pattern: default_branch.into(),
+                    force: Force::False,
+                },
+            )?;
         }
 
         Ok(repo)
@@ -192,7 +232,10 @@ where
     ///  * If the project cloning fails.
     ///  * If we cannot set the upstream branch for the `rad` remote.
     ///  * If we cannot set the include path for the working copy.
-    pub fn run(self, ownership: Ownership) -> Result<PathBuf, Error> {
+    pub fn run<F>(self, open_storage: F, ownership: Ownership) -> Result<PathBuf, Error>
+    where
+        F: CanOpenStorage + 'static,
+    {
         // Check if the path provided ends in the 'directory_name' provided. If not we create the
         // full path to that name.
         let path = &self.path.as_ref();
@@ -212,7 +255,13 @@ where
         // Clone the repository
         let mut builder = git2::build::RepoBuilder::new();
         builder.branch(self.default_branch.as_str());
-        let repo = ownership.clone(self.urn, &self.default_branch, &project_path, &mut builder)?;
+        let repo = ownership.clone(
+            open_storage,
+            self.urn,
+            &self.default_branch,
+            &project_path,
+            &mut builder,
+        )?;
 
         // Set configurations
         super::set_rad_upstream(&repo, &self.default_branch)?;

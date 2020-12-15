@@ -74,10 +74,9 @@ impl MaybeFrom<PeerEvent> for Notification {
                 provider,
                 urn: gossip.urn,
             })),
-            PeerEvent::RequestCloned(urn, peer) => Some(Self::LocalPeer(LocalPeer::RequestCloned {
-                peer,
-                urn,
-            })),
+            PeerEvent::RequestCloned(urn, peer) => {
+                Some(Self::LocalPeer(LocalPeer::RequestCloned { peer, urn }))
+            },
             PeerEvent::RequestCreated(urn) => {
                 Some(Self::LocalPeer(LocalPeer::RequestCreated { urn }))
             },

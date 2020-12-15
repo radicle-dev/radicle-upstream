@@ -7,8 +7,7 @@ use nonempty::NonEmpty;
 
 use librad::{
     git::{
-        local::transport::CanOpenStorage,
-        local::url::LocalUrl,
+        local::{transport::CanOpenStorage, url::LocalUrl},
         types::{
             refspec::Pushspec,
             remote::{self, LocalPushspec, Remote},
@@ -16,12 +15,10 @@ use librad::{
         },
     },
     git_ext::{self, OneLevel, RefLike},
-    reflike,
+    reflike, refspec_pattern,
     std_ext::result::ResultExt as _,
 };
 use radicle_surf::vcs::git::git2;
-
-use crate::config;
 
 const USER_NAME: &str = "user.name";
 const USER_EMAIL: &str = "user.email";
@@ -198,7 +195,7 @@ impl Repository {
                     url,
                     default_branch,
                 })
-            }
+            },
             super::Repo::New { name, path } => {
                 let repo_path = path.join(name.clone());
 
@@ -222,7 +219,7 @@ impl Repository {
                     default_branch,
                     signature,
                 })
-            }
+            },
         }
     }
 
@@ -251,7 +248,7 @@ impl Repository {
                 );
                 Self::setup_remote(&repo, open_storage, url, &default_branch)?;
                 Ok(repo)
-            }
+            },
             Self::New {
                 path,
                 name,
@@ -262,15 +259,16 @@ impl Repository {
                 let path = path.join(name);
                 log::debug!("Setting up new repository @ '{}'", path.display());
                 let repo = Self::initialise(path, description, &default_branch)?;
+                log::debug!("REPO PATH: {}", repo.path().display());
                 Self::initial_commit(
                     &repo,
                     &default_branch,
                     &git2::Signature::try_from(signature)?,
                 )?;
                 Self::setup_remote(&repo, open_storage, url, &default_branch)?;
-                crate::project::set_rad_upstream(&repo, &default_branch)?;
+                // crate::project::set_rad_upstream(&repo, &default_branch)?;
                 Ok(repo)
-            }
+            },
         }
     }
 
@@ -334,43 +332,25 @@ impl Repository {
         log::debug!("Creating rad remote");
 
         let fetchspec = Refspec {
-            src: GenericRef::<_, RefLike, _>::heads(Flat, None),
-            dst: GenericRef::heads(Flat, reflike!("rad")),
+            src: refspec_pattern!("refs/heads/*"),
+            dst: refspec_pattern!("refs/remotes/rad/*"),
+            // src: GenericRef::<_, RefLike, _>::heads(Flat, None),
+            // dst: GenericRef::heads(Flat, reflike!("rad")),
             force: Force::True,
         };
         let mut git_remote = Self::existing_remote(repo, &url)?.map_or_else(
             || {
-                let rad = Remote::rad_remote(url, fetchspec);
+                let mut rad = Remote::rad_remote(url, fetchspec);
                 rad.save(repo)?;
                 Ok::<_, Error>(rad)
             },
             Ok,
         )?;
-        Self::push_branches(repo, open_storage, &mut git_remote)?;
-        Ok(())
-    }
-
-    fn push_branches<F>(
-        repo: &git2::Repository,
-        open_storage: &F,
-        remote: &mut Remote<LocalUrl>,
-    ) -> Result<(), Error>
-    where
-        F: CanOpenStorage + 'static,
-    {
-        let local_branches = repo
-            .branches(Some(git2::BranchType::Local))?
-            .filter_map(|branch_result| {
-                let (branch, _) = branch_result.ok()?;
-                let name = branch.name().ok()?;
-                name.and_then(|branch| Pushspec::from_str(&format!("refs/heads/{}", branch)).ok())
-            })
-            .collect::<Vec<_>>();
-
-        log::debug!("Pushing branches {:?}", local_branches);
-
-        if let Some(branches) = NonEmpty::from_vec(local_branches) {
-            remote.push(open_storage, repo, LocalPushspec::Specs(branches))?;
+        for pushed in git_remote.push(open_storage, repo, LocalPushspec::Matching {
+            pattern: refspec_pattern!("refs/heads/*"),
+            force: Force::True,
+        })? {
+            log::debug!("Pushed local branch `{}`", pushed);
         }
         Ok(())
     }

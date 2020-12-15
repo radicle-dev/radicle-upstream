@@ -12,7 +12,7 @@ use librad::{
             person, project,
         },
         include::{self, Include},
-        local::url::LocalUrl,
+        local::{transport, url::LocalUrl},
         refs::Refs,
         replication, tracking,
         types::{Namespace, Reference, Single},
@@ -63,6 +63,13 @@ impl State {
     #[must_use]
     pub fn paths(&self) -> paths::Paths {
         self.api.paths().clone()
+    }
+
+    pub fn settings(&self) -> transport::Settings {
+        transport::Settings {
+            paths: self.paths(),
+            signer: self.signer.clone(),
+        }
     }
 
     /// Check the storage to see if we have the given commit for project at `urn`.
@@ -182,9 +189,11 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
+        // TODO(finto): Since the owner is returned as Some we could forego the unwrap
+        let owner = self.default_owner().await?.unwrap();
         self.api
             .with_storage(move |store| {
-                replication::replicate(&store, None, urn.clone(), remote_peer, addr_hints)
+                replication::replicate(&store, Some(owner), urn.clone(), remote_peer, addr_hints)
             })
             .await?
             .map_err(Error::from)
@@ -208,12 +217,30 @@ impl State {
     ///
     ///   * Retrieving the project entities from the store fails.
     pub async fn list_projects(&self) -> Result<Vec<Project>, Error> {
+        let owner = self.default_owner().await?.unwrap().into_inner().into_inner();
+        /*
+        let owner = match owner {
+            None => return Ok(vec![]), // TODO(finto): Raise an error
+            Some(owner) => owner.into_inner().into_inner(),
+        };
+        */
         self.api
             .with_storage(move |store| {
                 let projects = identities::any::list(&store)?
                     .filter_map(Result::ok)
-                    .filter_map(|id| match id {
-                        SomeIdentity::Project(project) => Some(project),
+                    .filter_map(|id|
+                        match id {
+                        SomeIdentity::Project(project) => {
+                            let rad_self = Reference::rad_self(Namespace::from(project.urn()), None);
+                            let urn = Urn::try_from(rad_self).ok()?;
+                            let project_self = person::get(&store, &urn).ok()??;
+                            // Filter projects that have a rad/self pointing to current default owner
+                            if project_self == owner {
+                                Some(project)
+                            } else {
+                                None
+                            }
+                        },
                         _ => None,
                     })
                     .collect::<Vec<_>>();
@@ -304,11 +331,9 @@ impl State {
     ///   * Could not successfully acquire a lock to the API.
     pub async fn get_user(&self, urn: Urn) -> Result<Option<LocalIdentity>, Error> {
         self.api
-            .with_storage(move |store| {
-                match identities::person::get(&store, &urn)? {
-                    None => Ok(None),
-                    Some(person) => local::load(&store, person.urn())
-                }
+            .with_storage(move |store| match identities::person::get(&store, &urn)? {
+                None => Ok(None),
+                Some(person) => local::load(&store, person.urn()),
             })
             .await?
             .map_err(Error::from)
@@ -497,13 +522,13 @@ impl State {
             .with_storage(move |store| {
                 project::create(
                     &store,
-                    owner,
+                    owner.clone(),
                     payload::Project {
                         default_branch: Some(Cstring::from(default_branch)),
                         description: Some(Cstring::from(description)),
                         name: Cstring::from(name),
                     },
-                    Indirect::from(pk),
+                    Indirect::from(owner.into_inner().into_inner()),
                 )
             })
             .await??;
@@ -521,7 +546,10 @@ impl State {
 
         let repo = repository
             .setup_repo(
-                self.api,
+                transport::Settings {
+                    paths: self.api.paths().clone(),
+                    signer: self.signer.clone(),
+                },
                 project
                     .subject()
                     .description
@@ -779,10 +807,15 @@ impl State {
             },
         };
 
-        let path =
-            tokio::task::spawn_blocking(move || checkout.run(ownership).map_err(Error::from))
-                .await
-                .expect("blocking checkout failed")?;
+        let settings = transport::Settings {
+            paths: self.paths(),
+            signer: self.signer.clone(),
+        };
+        let path = tokio::task::spawn_blocking(move || {
+            checkout.run(settings, ownership).map_err(Error::from)
+        })
+        .await
+        .expect("blocking checkout failed")?;
 
         Ok(path)
     }

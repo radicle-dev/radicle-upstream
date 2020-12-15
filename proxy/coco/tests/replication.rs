@@ -5,6 +5,8 @@ use futures::{future, StreamExt as _};
 use pretty_assertions::assert_eq;
 use tokio::time::timeout;
 
+use librad::git::types::{Remote, Force, remote::LocalPushspec, Fetchspec};
+use librad::git::local::url::LocalUrl;
 use radicle_git_ext::RefLike;
 // use radicle_surf::vcs::git::git2;
 use git2;
@@ -198,14 +200,11 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         };
 
         {
-            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-            rad.push(
-                &[&format!(
-                    "refs/heads/{}",
-                    project.subject().default_branch.clone().unwrap()
-                )],
-                None,
-            )?;
+            let mut rad = Remote::<LocalUrl>::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
+            let _ = rad.push(alice_state.settings(), &repo, LocalPushspec::Matching {
+                pattern: RefLike::try_from(format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())).unwrap().into(),
+                force: Force::False,
+            })?;
         }
 
         commit_id
@@ -221,10 +220,10 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let alice_peer_id = alice_state.peer_id();
-    assert!(
+    let has_commit =
         bob_state
             .has_commit(
-                project.urn().map_path(|_path| Some(
+                project.urn().with_path(Some(
                     RefLike::try_from(format!(
                         "refs/remotes/{}/heads/{}",
                         alice_peer_id,
@@ -234,8 +233,8 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
                 )),
                 coco::git_ext::Oid::from(commit_id)
             )
-            .await?
-    );
+            .await?;
+    assert!(has_commit);
 
     Ok(())
 }
@@ -325,11 +324,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         let bob_peer_id = bob_state.peer_id();
         let bob_addrs = bob_state.listen_addrs().collect::<Vec<_>>();
         bob_state
-            .clone_project(
-                project.urn(),
-                alice_peer_id,
-                alice_addrs,
-            )
+            .clone_project(project.urn(), alice_peer_id, alice_addrs)
             .await
             .expect("unable to clone project");
         eve_state
@@ -341,13 +336,18 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let commit_id = {
         let alice_peer_id = alice_state.peer_id();
+        println!("CHECKING OUT");
         let path = bob_state
             .checkout(project.urn(), alice_peer_id, bob_repo_path)
             .await?;
+        println!("CHECKED OUT");
 
         let repo = git2::Repository::open(path)?;
         let oid = repo
-            .find_reference(&format!("refs/heads/{}", project.subject().default_branch.clone().unwrap()))?
+            .find_reference(&format!(
+                "refs/heads/{}",
+                project.subject().default_branch.clone().unwrap()
+            ))?
             .target()
             .expect("Missing first commit");
         let commit = repo.find_commit(oid)?;
@@ -358,9 +358,15 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
                 repo.find_tree(oid)?
             };
 
-            let author = git2::Signature::now(bob.subject().name.as_str(), &format!("{}@example.com", bob.subject().name))?;
+            let author = git2::Signature::now(
+                bob.subject().name.as_str(),
+                &format!("{}@example.com", bob.subject().name),
+            )?;
             repo.commit(
-                Some(&format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())),
+                Some(&format!(
+                    "refs/heads/{}",
+                    project.subject().default_branch.clone().unwrap()
+                )),
                 &author,
                 &author,
                 "Successor commit",
@@ -370,8 +376,11 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         };
 
         {
-            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-            rad.push(&[&format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())], None)?;
+            let mut rad = Remote::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
+            let _ = rad.push(bob_state.settings(), &repo, LocalPushspec::Matching {
+                pattern: RefLike::try_from(format!("refs/heads/{}", project.subject().default_branch.clone().unwrap())).unwrap().into(),
+                force: Force::False,
+            })?;
         }
 
         commit_id
@@ -380,7 +389,9 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
     {
         let bob_addrs = bob_state.listen_addrs().collect::<Vec<_>>();
         let bob_peer_id = bob_state.peer_id();
-        eve_state.fetch(project.urn(), bob_peer_id, bob_addrs).await?;
+        eve_state
+            .fetch(project.urn(), bob_peer_id, bob_addrs)
+            .await?;
     }
 
     let path = {

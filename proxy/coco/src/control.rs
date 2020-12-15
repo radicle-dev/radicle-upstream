@@ -1,9 +1,22 @@
 //! Utility for fixture data in the monorepo.
 
-use std::{convert::TryFrom, env, io, path};
+use std::{convert::TryFrom, env, io, path, str::FromStr};
+
+use nonempty::NonEmpty;
 
 use librad::{
-    git::identities::local::LocalIdentity, identities::Project, keys, peer::PeerId, reflike,
+    git::{
+        identities::local::LocalIdentity,
+        local::{transport, url::LocalUrl},
+        types::{
+            remote::{LocalPushspec, Remote},
+            Force, Pushspec, Refspec,
+        },
+    },
+    identities::Project,
+    keys,
+    peer::PeerId,
+    reflike, refspec_pattern,
 };
 use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
@@ -101,20 +114,46 @@ pub async fn replicate_platinum(
     // Push branches and tags.
     {
         let repo = git2::Repository::open(platinum_into)?;
-        let mut rad_remote = repo.find_remote("rad")?;
-
+        let mut rad = Remote::rad_remote(
+            LocalUrl::from(meta.urn()),
+            Refspec {
+                src: refspec_pattern!("refs/tags/*"),
+                dst: refspec_pattern!("refs/tags/*"),
+                force: Force::False,
+            },
+        );
+        let storage = api.settings();
         // Push all tags to rad remote.
-        let tags = repo
-            .tag_names(None)?
-            .into_iter()
-            .flatten()
-            .map(|t| format!("+refs/tags/{}", t))
-            .collect::<Vec<_>>();
-        rad_remote.push(&tags, None)?;
+        push_tags(&mut rad, storage, &repo)?
     }
 
     // Init as rad project.
     Ok(meta)
+}
+
+pub fn push_tags(
+    remote: &mut Remote<LocalUrl>,
+    storage: transport::Settings,
+    repo: &git2::Repository,
+) -> Result<(), Error> {
+    let tags = repo
+        .tag_names(None)?
+        .into_iter()
+        .flatten()
+        .flat_map(|tag| Pushspec::from_str(&format!("+refs/tags/{}", tag)).ok())
+        .collect::<Vec<_>>();
+    let tags = NonEmpty::from_vec(tags);
+
+    match tags {
+        None => {
+            log::debug!("No tags to push to remote");
+            Ok(())
+        },
+        Some(tags) => {
+            let _ = remote.push(storage, repo, LocalPushspec::Specs(tags));
+            Ok(())
+        },
+    }
 }
 
 /// Craft the absolute path to git-platinum fixtures.

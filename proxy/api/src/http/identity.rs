@@ -57,7 +57,9 @@ mod handler {
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         if let Some(session) = session::get_current(&ctx.store)? {
-            return Err(Rejection::from(error::Error::SessionInUse(session.identity.urn)));
+            return Err(Rejection::from(error::Error::SessionInUse(
+                session.identity.urn,
+            )));
         }
 
         let id = identity::create(&ctx.state, &input.handle).await?;
@@ -126,8 +128,18 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                ctx.state.default_owner().await?.unwrap().into_inner().into_inner(),
-                ctx.state.get_user(urn.clone()).await?.unwrap().into_inner().into_inner()
+                ctx.state
+                    .default_owner()
+                    .await?
+                    .unwrap()
+                    .into_inner()
+                    .into_inner(),
+                ctx.state
+                    .get_user(urn.clone())
+                    .await?
+                    .unwrap()
+                    .into_inner()
+                    .into_inner()
             );
         }
 
@@ -211,7 +223,8 @@ mod test {
             )
             .await?;
 
-            let (peer_id, local_identity) = coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
+            let (peer_id, local_identity) =
+                coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
             (peer_id, local_identity.into_inner().into_inner()).into()
         };
 

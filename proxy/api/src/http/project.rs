@@ -329,7 +329,10 @@ mod test {
         let urn = {
             let handle = "cloudhead";
             let owner = ctx.state.init_owner(handle.to_string()).await?;
-            session::initialize(&ctx.store, (ctx.state.peer_id(), owner.clone().into_inner().into_inner()).into())?;
+            session::initialize(
+                &ctx.store,
+                (ctx.state.peer_id(), owner.clone().into_inner().into_inner()).into(),
+            )?;
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,
@@ -372,11 +375,7 @@ mod test {
         let remote = repo.find_remote(coco::config::RAD_REMOTE)?;
         assert_eq!(
             remote.url(),
-            Some(
-                coco::LocalUrl::from(urn.clone())
-                    .to_string()
-                    .as_str()
-            )
+            Some(coco::LocalUrl::from(urn.clone()).to_string().as_str())
         );
         assert_eq!(refs, vec!["master", "rad/dev", "rad/master"]);
 
@@ -401,7 +400,9 @@ mod test {
 
     #[tokio::test]
     async fn create_new() -> Result<(), Box<dyn std::error::Error>> {
+        pretty_env_logger::init();
         let tmp_dir = tempfile::tempdir()?;
+        log::debug!("PATH: {}", tmp_dir.path().display());
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
@@ -431,6 +432,13 @@ mod test {
             .await;
 
         let projects = project::Projects::list(&ctx.state).await?;
+        /*
+        assert!(
+            !projects.contributed.is_empty(),
+            "Local project was not created. Response from request:\n{:?}",
+            res
+        );
+        */
         let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
@@ -587,8 +595,8 @@ mod test {
         let project = projects.into_iter().next().unwrap();
         let coco_project = ctx.state.get_project(project.urn.clone()).await?.unwrap();
 
-        let (peer_id, local_identity) = coco::control::track_fake_peer(&ctx.state, &coco_project, "rafalca")
-                .await;
+        let (peer_id, local_identity) =
+            coco::control::track_fake_peer(&ctx.state, &coco_project, "rafalca").await;
         let user: identity::Identity = (peer_id, local_identity.into_inner().into_inner()).into();
 
         let res = request()

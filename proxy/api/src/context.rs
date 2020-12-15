@@ -183,9 +183,14 @@ impl Unsealed {
         let (peer_control, state) = {
             let config = coco::config::default(signer.clone(), tmp_dir.path())?;
             let disco = coco::config::static_seed_discovery(vec![]);
-            let (peer, state) =
-                coco::boostrap(config, disco, signer.clone(), store.clone(), RunConfig::default())
-                    .await?;
+            let (peer, state) = coco::boostrap(
+                config,
+                disco,
+                signer.clone(),
+                store.clone(),
+                RunConfig::default(),
+            )
+            .await?;
 
             let peer_control = peer.control();
             tokio::spawn(peer.into_running());

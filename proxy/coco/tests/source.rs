@@ -30,11 +30,7 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
     {
         let alice_peer_id = alice_state.peer_id();
         bob_state
-            .clone_project(
-                project.urn(),
-                alice_peer_id,
-                alice_addrs.into_iter(),
-            )
+            .clone_project(project.urn(), alice_peer_id, alice_addrs.into_iter())
             .await?
     };
 

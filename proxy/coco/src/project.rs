@@ -19,6 +19,10 @@ pub use peer::Peer;
 /// Set the upstream of the default branch to the rad remote branch.
 fn set_rad_upstream(repo: &git2::Repository, default_branch: &OneLevel) -> Result<(), git2::Error> {
     let mut branch = repo.find_branch(default_branch.as_str(), git2::BranchType::Local)?;
+    for b in repo.branches(None).unwrap() {
+        println!("BRANCH: {:?}", b.unwrap().0.name());
+    }
+    std::thread::sleep(std::time::Duration::from_secs(60));
     branch.set_upstream(Some(&format!(
         "{}/{}",
         config::RAD_REMOTE,
