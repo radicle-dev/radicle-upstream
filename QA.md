@@ -64,7 +64,7 @@
 - [ ] No unreleased features are visible in the UI
     - [ ] _Issues_ and _Revisions_ tabs on the Project screen
     - [ ] _Wallets_ tab on the User Profile screen
-    - Tags are not visible in the revision selector on the _Project Source_
+    - [ ] Tags are not visible in the revision selector on the _Project Source_
       screen
 
 
