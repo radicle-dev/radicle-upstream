@@ -96,6 +96,6 @@ export default {
     }
 
     // // Pass on any other warnings
-    console.warn(warning);
+    console.warn(warning.message);
   },
 };
