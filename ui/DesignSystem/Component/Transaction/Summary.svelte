@@ -26,32 +26,7 @@
 </style>
 
 <div class="wrapper" {style}>
-  {#if tx.kind === TxKind.Withdraw}
-    <p>
-      Withdraw
-      <strong>{tx.amount} DAI</strong>
-      from your support balance to your external wallet.
-    </p>
-  {:else if tx.kind === TxKind.TopUp}
-    <p>Top up your support balance with <strong>{tx.amount} DAI</strong>.</p>
-  {:else if tx.kind === TxKind.CollectFunds}
-    <p>Collect <strong>{tx.amount} DAI</strong> from your supporters.</p>
-  {:else if tx.kind === TxKind.UpdateSupport}
-    {#if tx.receivers.length === 0}
-      <p>
-        Stream
-        <strong>{tx.amount} DAI</strong>
-        per month. You haven’t set any receivers. As soon as you do, money will
-        begin streaming to them at this rate.
-      </p>
-    {:else}
-      <p>Stream <strong>{tx.amount} DAI</strong> per month to these users.</p>
-      <Receivers
-        receivers={new Map(tx.receivers)}
-        style="margin-top: 1.2rem"
-        alignment="center" />
-    {/if}
-  {:else if tx.kind === TxKind.SupportOnboarding}
+  {#if tx.kind === TxKind.SupportOnboarding}
     {#if tx.receivers.length === 0}
       <p>
         Top up
@@ -73,5 +48,31 @@
         style="margin-top: 1.2rem"
         alignment="center" />
     {/if}
+  {:else if tx.kind === TxKind.UpdateSupport}
+    {#if tx.receivers.length === 0}
+      <p>
+        Stream
+        <strong>{tx.amount} DAI</strong>
+        per month. You haven’t set any receivers. As soon as you do, money will
+        begin streaming to them at this rate.
+      </p>
+    {:else}
+      <p>Stream <strong>{tx.amount} DAI</strong> per month to these users.</p>
+      <Receivers
+        receivers={new Map(tx.receivers)}
+        style="margin-top: 1.2rem"
+        alignment="center" />
+    {/if}
+  {/if}
+  {#if tx.kind === TxKind.Withdraw}
+    <p>
+      Withdraw
+      <strong>{tx.amount} DAI</strong>
+      from your support balance to your external wallet.
+    </p>
+  {:else if tx.kind === TxKind.TopUp}
+    <p>Top up your support balance with <strong>{tx.amount} DAI</strong>.</p>
+  {:else if tx.kind === TxKind.CollectFunds}
+    <p>Collect <strong>{tx.amount} DAI</strong> from your supporters.</p>
   {/if}
 </div>

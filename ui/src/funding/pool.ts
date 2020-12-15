@@ -152,8 +152,10 @@ export function make(wallet: Wallet): Pool {
     return poolContract
       .updateSender(0, 0, amountPerBlock, toReceiverWeights(receivers), [])
       .then((tx: ContractTransaction) => {
+        const currentReceivers = data.unwrap()?.receivers || new Map();
+        const newReceivers = newSetOfReceivers(currentReceivers, receivers);
         transaction.add(
-          transaction.updateSupport(tx, amountPerBlock, receivers)
+          transaction.updateSupport(tx, amountPerBlock, newReceivers)
         );
         tx.wait();
       })
@@ -320,4 +322,11 @@ function toReceiverWeights(receivers: Receivers): ReceiverWeight[] {
 
 function weightForStatus(status: ReceiverStatus): number {
   return status === ReceiverStatus.Removed ? 0 : 1;
+}
+
+function newSetOfReceivers(current: Receivers, changes: Receivers): Receivers {
+  const merged = new Map([...current, ...changes]);
+  return new Map(
+    [...merged].filter(([_address, status]) => status != ReceiverStatus.Removed)
+  );
 }
