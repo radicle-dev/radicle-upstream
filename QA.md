@@ -77,8 +77,9 @@
   - [ ] _Design Sytem Guide_ is not listed in the shortcuts modal
         <kbd>?</kbd> and the respective global hotkey is disabled
         <kbd>⌘</kbd>+<kbd>d</kbd>
-- [ ] The version number in the _Settings_ screen matches the version number in
-      package filename and in the _About Radicle Upstream_ dialog
+- [ ] The version number in the _Settings_ screen matches:
+  - [ ] The version number in the package filename
+  - [ ] The version number in the _About Radicle Upstream_ dialog
 
 
 ### Replicating projects
