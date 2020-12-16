@@ -32,8 +32,8 @@
   - on macOS: run `/Applications/Radicle Upstream.app` by double clicking it
 - [ ] Onboarding starts on the _Get started_ screen
 - [ ] Pressing <kbd>enter</kbd> leads to the next screen
-- [ ] Handle validations work
-- [ ] Passphrase validations work
+- [ ] Using `$$` as the _Display name_ shows a validation error
+- [ ] Entering two different passphrases shows a validation error
 - [ ] On the _All set!_ screen clicking the _Device ID_ copies it to the
       clipboard
 - [ ] Clicking the _Go to my projects_ button leads to the _Profile_ screen
@@ -44,7 +44,7 @@
 ### Creating projects
 
 - [ ] Can create a new project with a new repository
-  - [ ] Validations work
+  - [ ] Using `%%` for the project name shows a validation error
   - [ ] A placeholder is shown for the missing `README.md`
 - [ ] Can create a new project from a larger existing repository
   - [ ] UI interaction is blocked while project creation is in progress
