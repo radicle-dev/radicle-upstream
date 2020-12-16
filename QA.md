@@ -104,8 +104,8 @@
     - [ ] The button is now called _Checkout_ instead of _Fork_
     - [ ] Create a commit and publish your chages via `git rad push`
       - [ ] The published commit appears in the _Commits_ tab of the project
-  - [ ] Add a random (one that doesn't track the project) remote e.g.
-        `hync6jo9q9n4rfgag3o99gann391nsjhuq3oaemoe13oyn3gruwrgh`)
+  - [ ] Add a remote that doesn't track the project, e.g.
+        `hync6jo9q9n4rfgag3o99gann391nsjhuq3oaemoe13oyn3gruwrgh`
     - [ ] Shows the remote in the _Still looking…_ section
   - [ ] Clicking the _Unfollow_ button removes the remote
 
