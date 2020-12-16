@@ -74,7 +74,6 @@ dependencies = [
  "bytes",
  "coco",
  "data-encoding",
- "directories 2.0.2",
  "futures 0.3.8",
  "http",
  "kv",
@@ -586,16 +585,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
 dependencies = [
  "generic-array 0.14.4",
-]
-
-[[package]]
-name = "directories"
-version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "551a778172a450d7fc12e629ca3b0428d00f6afa9a43da1b630d54604e97371c"
-dependencies = [
- "cfg-if 0.1.10",
- "dirs-sys",
 ]
 
 [[package]]
@@ -1289,7 +1278,7 @@ dependencies = [
  "bs58",
  "bytes",
  "deadpool",
- "directories 3.0.1",
+ "directories",
  "dyn-clone",
  "ed25519-zebra",
  "either",
