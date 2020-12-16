@@ -75,7 +75,6 @@
     "@types/node": "^14.14.8",
     "@types/sinon": "^9.0.8",
     "@types/twemoji": "^12.1.1",
-    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "chokidar": "^3.4.3",
@@ -113,7 +112,6 @@
     "ts-node": "^9.0.0",
     "tslib": "^2.0.3",
     "typescript": "^4.0.5",
-    "uuid": "^8.3.0",
     "wait-on": "^5.2.0"
   },
   "scripts": {
@@ -159,12 +157,14 @@
   },
   "dependencies": {
     "@types/qs": "^6.9.5",
+    "@types/uuid": "^8.3.0",
     "marked": "^1.2.4",
     "mnemonist": "^0.38.0",
     "pure-svg-code": "^1.0.6",
     "timeago.js": "^4.0.2",
     "twemoji": "13.0.1",
     "twemoji-svg-assets": "git+https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1",
+    "uuid": "^8.3.0",
     "validate.js": "^0.13.1"
   },
   "husky": {
