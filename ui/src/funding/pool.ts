@@ -18,9 +18,9 @@ export interface Pool {
 
   // Onboard the user's pool with the intial values
   onboard(
+    topUp: BigNumberish,
     amountPerBlock: BigNumberish,
-    receivers: Receivers,
-    initialBalance: BigNumberish
+    receivers: Receivers
   ): Promise<void>;
 
   // Update the contribution per block and the list of receivers.
@@ -44,14 +44,6 @@ export interface Pool {
   // Approve the ERC-20 token allowance, which permits
   // the pool to access said type of token from the user.
   approveErc20(): Promise<void>;
-}
-
-// The pool settings the user can change and save.
-export interface PoolSettings {
-  // The total amount to be disbursed to all receivers with each block.
-  amountPerBlock: string;
-  // The list of addresses that receive funds from the pool.
-  receivers: string[];
 }
 
 // All the data representing a pool.
@@ -84,12 +76,6 @@ export enum ReceiverStatus {
   Present = "Present",
 }
 
-// The type used by the Radicle-Contracts library to express a
-// Receiver, i.e., a Address <> Weight Pair.
-interface ReceiverWeight {
-  receiver: string;
-  weight: Weight;
-}
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
   const poolContract = contract.pool(wallet.signer);
@@ -100,10 +86,10 @@ export function make(wallet: Wallet): Pool {
     try {
       const balance = await poolContract.withdrawable();
       const collectableFunds = await poolContract.collectable();
-      const amountPerBlock = await poolContract.getAmountPerBlock();
-      const contract_receivers = await poolContract.getAllReceivers();
+      const amountPerBlock = await poolContract.amountPerBlock();
+      const contract_receivers = await poolContract.receivers();
       const receivers = new Map<Address, ReceiverStatus>(
-        contract_receivers.map((e: ReceiverWeight) => [
+        contract_receivers.map((e: contract.PoolReceiver) => [
           e.receiver,
           ReceiverStatus.Present,
         ])
@@ -130,12 +116,12 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function onboard(
+    topUp: BigNumberish,
     amountPerBlock: BigNumberish,
-    receivers: Receivers,
-    topUp: BigNumberish
+    receivers: Receivers
   ): Promise<void> {
     return poolContract
-      .updateSender(topUp, 0, amountPerBlock, toReceiverWeights(receivers), [])
+      .onboard(topUp, amountPerBlock, toReceiverWeights(receivers))
       .then((tx: ContractTransaction) => {
         transaction.add(
           transaction.supportOnboarding(tx, topUp, amountPerBlock, receivers)
@@ -150,7 +136,7 @@ export function make(wallet: Wallet): Pool {
     receivers: Receivers
   ): Promise<void> {
     return poolContract
-      .updateSender(0, 0, amountPerBlock, toReceiverWeights(receivers), [])
+      .updatePlan(amountPerBlock, toReceiverWeights(receivers))
       .then((tx: ContractTransaction) => {
         const currentReceivers = data.unwrap()?.receivers || new Map();
         const newReceivers = newSetOfReceivers(currentReceivers, receivers);
@@ -164,7 +150,7 @@ export function make(wallet: Wallet): Pool {
 
   async function topUp(amount: BigNumberish): Promise<void> {
     return poolContract
-      .topUp(amount, { gasLimit: 200 * 1000 })
+      .topUp(amount)
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.topUp(tx));
         tx.wait();
@@ -175,23 +161,28 @@ export function make(wallet: Wallet): Pool {
   async function withdraw(amount: BigNumberish): Promise<void> {
     return poolContract
       .withdraw(amount)
-      .then((tx: ContractTransaction) => {
-        transaction.add(transaction.withdraw(tx, amount));
+      .then(async (tx: ContractTransaction) => {
+        const infoAmount =
+          amount === (await poolContract.withdrawAllFlag())
+            ? data.unwrap()?.balance || 0
+            : amount;
+        transaction.add(transaction.withdraw(tx, infoAmount));
         tx.wait();
       })
       .finally(loadPoolData);
   }
 
   async function withdrawAll(): Promise<void> {
-    const all = await poolContract.WITHDRAW_ALL();
-    return withdraw(all);
+    const ALL = await poolContract.withdrawAllFlag();
+    return withdraw(ALL);
   }
 
   async function collect(): Promise<void> {
     return poolContract
       .collect()
       .then((tx: ContractTransaction) => {
-        transaction.add(transaction.collect(tx));
+        const infoAmount = data.unwrap()?.collectableFunds || 0;
+        transaction.add(transaction.collect(tx, infoAmount));
         tx.wait();
       })
       .finally(loadPoolData);
@@ -314,7 +305,7 @@ export function isOnboarded(data: PoolData): boolean {
 
 // Convert `Receivers` to `ReceiverWeight[]`, the latter being the
 // representation receivers have in the Radicle Contracts.
-function toReceiverWeights(receivers: Receivers): ReceiverWeight[] {
+function toReceiverWeights(receivers: Receivers): contract.PoolReceiver[] {
   return [...receivers.entries()].map(([address, status]) => {
     return { receiver: address, weight: weightForStatus(status) };
   });

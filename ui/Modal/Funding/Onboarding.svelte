@@ -70,11 +70,11 @@
   }
 
   function approveErc20(): Promise<void> {
-    return $store.approveErc20().then(_ => onContinue());
+    return $store.approveErc20().then(onContinue);
   }
 
   function onConfirmed(): Promise<void> {
-    return $store.onboard(budget, receivers, topUp).then(_ => modal.hide());
+    return $store.onboard(topUp, budget, receivers).then(_ => modal.hide());
   }
 
   /* Themz values */

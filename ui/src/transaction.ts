@@ -123,10 +123,10 @@ export function supportOnboarding(
   return { ...txData(txc), ...meta };
 }
 
-export function collect(txc: ContractTransaction): Tx {
+export function collect(txc: ContractTransaction, amount: BigNumberish): Tx {
   const meta: CollectFunds = {
     kind: TxKind.CollectFunds,
-    amount: txc.value.toString(),
+    amount,
   };
   return { ...txData(txc), ...meta };
 }

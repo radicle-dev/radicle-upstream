@@ -160,7 +160,7 @@
           <p>Amount</p>
           <p class="typo-semi-bold">
             <Dai variant={isIncoming(tx) ? 'regular' : 'negative'}>
-              <span style="color(--color-negative)">{transferedAmount}</span>
+              {transferedAmount}
             </Dai>
           </p>
         </div>
