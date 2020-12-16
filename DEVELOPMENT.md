@@ -567,8 +567,11 @@ sure to update all the versions and links**):
 
   - https://radicle.community/c/announcements
     - subject:
-        Radicle Upstream vX.X.X is out! 🎉`
+
+        Radicle Upstream vX.X.X is out! 🎉
+
     - body text:
+
         # Radicle Upstream vX.X.X is out! 🎉
 
         You can find all the changelog for this release [here][1].
