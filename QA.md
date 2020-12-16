@@ -188,4 +188,4 @@ in with a temporary user account).
 
 
 [rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/scripts/reset-state.sh
-[bu]: https://releases.radicle.xyz/radicle-upstream-0.1.5.dmg
+[bu]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
