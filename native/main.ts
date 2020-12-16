@@ -32,8 +32,8 @@ app.allowRendererProcessReuse = true;
 
 const home = app.getPath("home");
 const identities_path = `${home}/.radicle/identities`;
-const current_identities_path = `${identities_path  }/current`;
-const electron_path = `${current_identities_path  }/electron`;
+const current_identities_path = `${identities_path}/current`;
+const electron_path = `${current_identities_path}/electron`;
 
 // Make sure "<home>/.radicle/identities" exists
 if (!fs.existsSync(identities_path))
