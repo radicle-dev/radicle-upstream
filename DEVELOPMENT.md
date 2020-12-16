@@ -568,33 +568,33 @@ sure to update all the versions and links**):
   - https://radicle.community/c/announcements
     - subject:
 
-        Radicle Upstream vX.X.X is out! 🎉
+          Radicle Upstream vX.X.X is out! 🎉
 
     - body text:
 
-        # Radicle Upstream vX.X.X is out! 🎉
+          # Radicle Upstream vX.X.X is out! 🎉
 
-        You can find all the changelog for this release [here][1].
+          You can find all the changelog for this release [here][1].
 
-        Here are packages for all our supported platforms:
+          Here are packages for all our supported platforms:
 
-        - [macOS][2]
-        - [Linux][3]
+          - [macOS][2]
+          - [Linux][3]
 
-        For more information on how to use Radicle, check out our
-        [documentation][4].
+          For more information on how to use Radicle, check out our
+          [documentation][4].
 
-        For support, you can reach us in the [#support channel][5] of our Matrix
-        chat or in the #help category of this forum.
+          For support, you can reach us in the [#support channel][5] of our Matrix
+          chat or in the #help category of this forum.
 
-        If you encounter a bug, please [open an issue][6].
+          If you encounter a bug, please [open an issue][6].
 
-        [1]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md#XXX-XXXX-XX-XX
-        [2]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
-        [3]: https://releases.radicle.xyz/radicle-upstream-X.X.X.AppImage
-        [4]: https://docs.radicle.xyz/docs/what-is-radicle.html
-        [5]: https://matrix.radicle.community/#/room/#support:radicle.community
-        [6]: https://github.com/radicle-dev/radicle-upstream/issues
+          [1]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md#XXX-XXXX-XX-XX
+          [2]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
+          [3]: https://releases.radicle.xyz/radicle-upstream-X.X.X.AppImage
+          [4]: https://docs.radicle.xyz/docs/what-is-radicle.html
+          [5]: https://matrix.radicle.community/#/room/#support:radicle.community
+          [6]: https://github.com/radicle-dev/radicle-upstream/issues
 
   - Post the following two lines on:
     https://matrix.radicle.community/#/room/#general:radicle.community
