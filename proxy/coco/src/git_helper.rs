@@ -1,6 +1,6 @@
 //! git-remote-rad git helper related functionality.
 
-use std::{fs, io, os::unix::fs::PermissionsExt as _, os::unix::fs::symlink, path};
+use std::{fs, io, os::unix::fs::PermissionsExt as _, path};
 
 /// Git helper errors.
 #[derive(Debug, thiserror::Error)]
@@ -34,24 +34,6 @@ pub fn setup(src_dir: &path::PathBuf, dst_dir: &path::PathBuf) -> Result<(), Err
 
     log::info!("Copied git remote helper to: {:?}", helper_bin_dst);
 
-    Ok(())
-}
-
-// TODO: this should live somewhere else, just here out of convinience
-/// Set up electron and identities directory and current symlink
-pub fn setup_directories(dst_dir: &path::PathBuf) -> Result<(), Error> {
-    let electron_bin_dst = dst_dir.join("electron");
-    fs::create_dir_all(electron_bin_dst.clone())?;
-    log::info!("Created electron directory: {:?}", electron_bin_dst);
-    // TODO: Obviously this should be the specific identity directory and not created here
-    let id_bin_dst = dst_dir.join("identities/bla");
-    fs::create_dir_all(id_bin_dst.clone())?;
-    let symlink_dir = dst_dir.join("identities/current");
-    // TODO: `symlink` does not work on windows, we'll need to add specific functions for it
-    if !path::Path::new(&symlink_dir.clone()).exists() {
-        symlink(id_bin_dst.clone(), symlink_dir)?;
-        log::info!("Created current identities symlink to: {:?}", id_bin_dst);
-    }
     Ok(())
 }
 

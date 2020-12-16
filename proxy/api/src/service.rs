@@ -1,8 +1,7 @@
 //! Utilities for changing the service environment used in [`crate::process`].
 
 use futures::prelude::*;
-use std::sync::Arc;
-use std::{env, path};
+use std::{env, path, sync::Arc};
 use tokio::sync::{mpsc, Notify};
 
 /// Persistent environment with depedencies for running the API and coco peer services.

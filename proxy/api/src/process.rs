@@ -1,6 +1,8 @@
 //! Provides [`run`] to run the proxy process.
+use data_encoding::HEXLOWER;
 use futures::prelude::*;
-use std::{future::Future, sync::Arc, time::Duration};
+use rand::Rng as _;
+use std::{fs, future::Future, os::unix::fs::symlink, path, sync::Arc, time::Duration};
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
@@ -43,7 +45,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
-    coco::git_helper::setup_directories(&config::dirs()?)?;
+    setup_directories(&config::dirs()?)?;
 
     let mut service_manager = service::Manager::new(args.test)?;
     let mut sighup = signal(SignalKind::hangup())?;
@@ -300,4 +302,24 @@ fn coco_run_config() -> RunConfig {
         },
         ..RunConfig::default()
     }
+}
+
+// TODO: this should live somewhere else, just here out of convinience
+/// Set up electron and identities directory and current symlink
+fn setup_directories(dst_dir: &path::PathBuf) -> Result<(), coco::git_helper::Error> {
+    let electron_bin_dst = dst_dir.join("electron");
+    fs::create_dir_all(electron_bin_dst.clone())?;
+    log::info!("Created electron directory: {:?}", electron_bin_dst);
+    let symlink_dir = dst_dir.join("identities/current");
+    // TODO: `symlink` does not work on windows, we'll need to add specific functions for it
+    if !path::Path::new(&symlink_dir.clone()).exists() {
+        // Create a new empty identity folder
+        let gen_folder = rand::thread_rng().gen::<[u8; 32]>();
+        let folder = HEXLOWER.encode(&gen_folder);
+        let id_bin_dst = dst_dir.join("identities/").join(folder);
+        fs::create_dir_all(id_bin_dst.clone())?;
+        symlink(id_bin_dst.clone(), symlink_dir)?;
+        log::info!("Created current identities symlink to: {:?}", id_bin_dst)
+    }
+    Ok(())
 }
