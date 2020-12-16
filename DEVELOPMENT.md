@@ -438,7 +438,7 @@ For this we need:
       **Note:** this can only be created via the company account holder
 
 Once you've created the _Developer ID Application_ certificate, download it
-locally and add it to your keychain by double cliking on the file.
+locally and add it to your keychain by double clicking on the file.
 
 
 ## Preparing a release
