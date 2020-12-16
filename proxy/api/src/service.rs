@@ -1,8 +1,10 @@
 //! Utilities for changing the service environment used in [`crate::process`].
 
 use futures::prelude::*;
-use std::{env, path, sync::Arc};
+use std::{path, sync::Arc};
 use tokio::sync::{mpsc, Notify};
+
+use crate::config;
 
 /// Persistent environment with depedencies for running the API and coco peer services.
 pub struct Environment {
@@ -30,9 +32,9 @@ pub enum Error {
         #[from]
         std::io::Error,
     ),
-    /// Couldn't get an environment variable's value.
+    /// Couldn't set up the configuration paths.
     #[error(transparent)]
-    Var(#[from] env::VarError),
+    Config(#[from] config::Error),
 }
 
 impl Environment {
@@ -53,10 +55,8 @@ impl Environment {
                 test_mode,
             })
         } else {
-            // TODO: Use central place for the path (see config.rs)
-            // TODO: The path/symlink might not be created yet, if the identity doesn't exists
-            let home_dir = std::env::var("HOME")?;
-            let path = path::Path::new(&home_dir).join(".radicle/identities/current");
+            let current_dir = config::id_dirs()?;
+            let path = path::Path::new(&current_dir);
             let coco_paths = coco::Paths::from_root(path)?;
             let keystore = Arc::new(coco::keystore::file(coco_paths.clone()));
             Ok(Self {

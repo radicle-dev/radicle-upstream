@@ -6,7 +6,9 @@ import {
   clipboard,
   shell,
 } from "electron";
+import fs from "fs";
 import path from "path";
+import uuid from "uuid";
 import { ProxyProcessManager } from "./proxy-process-manager";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
 
@@ -27,10 +29,28 @@ const proxyPath = isDev
 // currently "false".  It will change to be "true" in Electron 9.  For more
 // information please check https://github.com/electron/electron/issues/18397
 app.allowRendererProcessReuse = true;
-// TODO: For this to work in production mode, the `.radicle` and `electron` dir needs to be created here
+
 const home = app.getPath("home");
-app.setPath("userData", `${home}/.radicle/current/electron`);
-app.setPath("appData", `${home}/.radicle/current/electron`);
+const identities_path = `${home}/.radicle/identities`;
+const current_identities_path = `${identities_path  }/current`;
+const electron_path = `${current_identities_path  }/electron`;
+
+// Make sure "<home>/.radicle/identities" exists
+if (!fs.existsSync(identities_path))
+  fs.mkdirSync(identities_path, { recursive: true });
+// If no "current" symlink exists, create it pointing to a new empty folder under identities
+if (!fs.existsSync(current_identities_path)) {
+  const new_identity_folder = uuid.v4();
+  fs.mkdirSync(`${identities_path}/${new_identity_folder}`);
+  fs.symlinkSync(
+    `${identities_path}/${new_identity_folder}`,
+    current_identities_path
+  );
+}
+// Make sure the "electron" folder exists & overwrite the paths for the electron data
+if (!fs.existsSync(electron_path)) fs.mkdirSync(electron_path);
+app.setPath("userData", electron_path);
+app.setPath("appData", electron_path);
 
 class WindowManager {
   public window: BrowserWindow | null;
