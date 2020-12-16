@@ -10,7 +10,6 @@ import { ProxyProcessManager } from "./proxy-process-manager";
         "-c",
         `x=0; while [ $x -lt 30 ]; do echo "$x" ${redirection}; x=$(( x + 1 )); done`,
       ],
-      enabled: true,
       lineLimit: 20,
     });
 
@@ -42,7 +41,6 @@ it("returns exit code", async () => {
   const manager = new ProxyProcessManager({
     proxyPath: "sh",
     proxyArgs: ["-c", "exit 50"],
-    enabled: true,
     lineLimit: 1,
   });
   const result = await manager.run();
@@ -53,7 +51,6 @@ it("returns the signal", async () => {
   const manager = new ProxyProcessManager({
     proxyPath: "sleep",
     proxyArgs: ["1"],
-    enabled: true,
     lineLimit: 1,
   });
   const resultPromise = manager.run();

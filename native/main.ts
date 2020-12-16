@@ -11,7 +11,17 @@ import { ProxyProcessManager } from "./proxy-process-manager";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
 
 const isDev = process.env.NODE_ENV === "development";
-const proxyPath = path.join(__dirname, "../../radicle-proxy");
+
+if (isDev && !process.env.RADICLE_UPSTREAM_PROXY_PATH) {
+  throw new Error(
+    "RADICLE_UPSTREAM_PROXY_PATH must be set when running in dev mode!"
+  );
+}
+
+const proxyPath = isDev
+  ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    path.join(__dirname, process.env.RADICLE_UPSTREAM_PROXY_PATH!)
+  : path.join(__dirname, "../../radicle-proxy");
 
 // The default value of app.allowRendererProcessReuse is deprecated, it is
 // currently "false".  It will change to be "true" in Electron 9.  For more
@@ -98,7 +108,6 @@ const windowManager = new WindowManager();
 const proxyProcessManager = new ProxyProcessManager({
   proxyPath,
   proxyArgs: [],
-  enabled: !isDev,
   lineLimit: 500,
 });
 
