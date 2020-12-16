@@ -131,8 +131,8 @@ export function collect(txc: ContractTransaction, amount: BigNumberish): Tx {
   return { ...txData(txc), ...meta };
 }
 
-export function topUp(txc: ContractTransaction): Tx {
-  const meta: TopUp = { kind: TxKind.TopUp, amount: txc.value.toString() };
+export function topUp(txc: ContractTransaction, amount: BigNumberish): Tx {
+  const meta: TopUp = { kind: TxKind.TopUp, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 

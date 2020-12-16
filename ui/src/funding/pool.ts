@@ -152,7 +152,7 @@ export function make(wallet: Wallet): Pool {
     return poolContract
       .topUp(amount)
       .then((tx: ContractTransaction) => {
-        transaction.add(transaction.topUp(tx));
+        transaction.add(transaction.topUp(tx, amount));
         tx.wait();
       })
       .finally(loadPoolData);
