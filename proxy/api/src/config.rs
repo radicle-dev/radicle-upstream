@@ -20,15 +20,13 @@ pub enum Error {
 }
 
 /// Returns the directories to locate all application state.
-#[must_use]
 pub fn dirs() -> Result<path::PathBuf, Error> {
     let home_dir = std::env::var("HOME")?;
 
     Ok(path::Path::new(&home_dir).join(".radicle"))
 }
 
-/// Returns the directories to locate all application state.
-#[must_use]
+/// Returns the directories to locate all application state specific to the current identity.
 pub fn id_dirs() -> Result<path::PathBuf, Error> {
     let home_dir = std::env::var("HOME")?;
 

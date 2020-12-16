@@ -19,8 +19,8 @@ const proxyPath = path.join(__dirname, "../../radicle-proxy");
 app.allowRendererProcessReuse = true;
 // TODO: For this to work in production mode, the `.radicle` and `electron` dir needs to be created here
 const home = app.getPath("home");
-app.setPath("userData", `${home  }/.radicle/electron`);
-app.setPath("appData", `${home  }/.radicle/electron`);
+app.setPath("userData", `${home}/.radicle/current/electron`);
+app.setPath("appData", `${home}/.radicle/current/electron`);
 
 class WindowManager {
   public window: BrowserWindow | null;

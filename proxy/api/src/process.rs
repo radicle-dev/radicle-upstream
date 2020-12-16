@@ -307,12 +307,9 @@ fn coco_run_config() -> RunConfig {
 // TODO: this should live somewhere else, just here out of convinience
 /// Set up electron and identities directory and current symlink
 fn setup_directories(dst_dir: &path::PathBuf) -> Result<(), coco::git_helper::Error> {
-    let electron_bin_dst = dst_dir.join("electron");
-    fs::create_dir_all(electron_bin_dst.clone())?;
-    log::info!("Created electron directory: {:?}", electron_bin_dst);
     let symlink_dir = dst_dir.join("identities/current");
     // TODO: `symlink` does not work on windows, we'll need to add specific functions for it
-    if !path::Path::new(&symlink_dir.clone()).exists() {
+    if !path::Path::new(&symlink_dir).exists() {
         // Create a new empty identity folder
         let gen_folder = rand::thread_rng().gen::<[u8; 32]>();
         let folder = HEXLOWER.encode(&gen_folder);
@@ -321,5 +318,8 @@ fn setup_directories(dst_dir: &path::PathBuf) -> Result<(), coco::git_helper::Er
         symlink(id_bin_dst.clone(), symlink_dir)?;
         log::info!("Created current identities symlink to: {:?}", id_bin_dst)
     }
+    let electron_bin_dst = dst_dir.join("identities/current/electron");
+    fs::create_dir_all(electron_bin_dst.clone())?;
+    log::info!("Created electron directory: {:?}", electron_bin_dst);
     Ok(())
 }
