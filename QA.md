@@ -1,186 +1,191 @@
-**OS version:** (eg. `Catalina 10.15.6` or `Ubuntu Xenial Xerus 16.04.1 LTS`)\
-**Link to build:** (eg. https://buildkite.com/monadic/radicle-upstream/builds/4727)
+## Prerequisites
+
+- [ ] Make sure you are installing into an environment with no old
+      configuration and no user data [ℹ️](#01)
+- [ ] Make sure you have configured your name and email in git [ℹ️](#02)
+- [ ] [Download][bu] the binary package
+- [ ] Install Upstream from the downloaded package [ℹ️](#03)
+  - [ ] macOS Gatekeeper **does not** show the following message:
+        _macOS cannot verify that this app is free from malware_
 
 
-### Prerequisites
+## QA checklist
 
-- [ ] make sure you are installing into an environment with no old configuration
-      and user data
+### Packaging
 
-     **Safe method**: Use a temporary user account on your computer
-
-     - on macOS:
-       - If you are **not** using FileVault, switch to the "Guest User". You
-         may have to enable this in "System Preferences -> Users & Groups".
-         When you're done, all data will be removed automatically.
-       - If you **are** using FileVault, create a new user in "System
-         Preferences -> Users & Groups". When you're done, you'll need to
-         remove this user manually.
-     - on Linux:
-       - Create a new user with `sudo useradd -m qa`, and log into that
-         account. When you're done, remove the user with `sudo userdel -r qa`.
-         _Note: "qa" is just an example user name, you can choose anything you
-         like_
-
-     **Dangerous method**: Remove all directories manually
-
-     You can use [this script](./scripts/reset-state.sh). Make sure you have a
-     backup of your data, or are using this in combination with the safe method
-     (i.e. while logged in with a temporary user account).
-
-- [ ] download the binary package from the location provided above
-- [ ] install the binary package
-  - on macOS:
-    1. open the `radicle-upstream-x.x.x.dmg` package
-    2. install Upstream by dragging the `radicle-upstream` binary to
-       `/Applications`
-    3. open `/Applications` in finder, locate the `radicle-upstream` app and
-       right-click it, then select `Open` from the context menu, you should see
-       a dialog with two buttons `Move to Bin` and `Cancel`
-    4. dismiss the dialog by clicking `Cancel`, to bypass macOS security
-       measures which disallow running unsigned binaries, repeat the previous
-       step, now you should see three buttons: `Move to Bin`, `Open` and
-       `Cancel`, click `Open`
-  - on Linux (AppImage)
-    1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
-    2. Run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by executing it
-       from the terminal or clicking on it.
-
-### Packaging and distribution
-
-- [ ] Check that unreleased features are not visible in the UI
-  - [ ] Experimental features and developer helpers are not accessible
-    - Issues and Revisions tabs on the Project screen
-    - Wallets tab on the User Profile screen
-    - Design Sytem Guide is not listed in the shortcuts modal <kbd>?</kbd> and
-      the respective global hotkey is disabled <kbd>⌘</kbd>+<kbd>d</kbd>
-    - Tags are not visible in the revision selector on the Project Source screen
 - [ ] App icon is shown correctly
-  - [ ] macOS: dock, <kbd>⌘</kbd> + <kbd>tab</kbd> task switcher, mounted dmg,
-        app icon, "About radicle-upstream" window
-  - [ ] Linux: dock, menu bar
-- [ ] Version in the Settings screen matches version in package filename
+  - macOS:
+    - [ ] Dock
+    - [ ] <kbd>⌘</kbd> + <kbd>tab</kbd> task switcher
+    - [ ] Mounted dmg
+    - [ ] App icon
+  - Linux:
+    - [ ] Dock
+    - [ ] Menu bar
 
 
 ### Onboarding
 
-- [ ] Always shown when no identity is set up
-  - [ ] First app start
-  - [ ] Subsequent app starts if the identity creation was not completed
-  - [ ] Can't exit onboarding before identity is created and global keyboard
-        shortcuts are disabled
-- [ ] It's possible to go to the next screen by pressing <kbd>enter</kbd> if
-      the input field validations allow it
-- [ ] Handle and passphrase validations work
-  - handle
-    - starts with a letter or digit
-    - is at least 2 characters long
-    - can contain the letters `a`-`z`, `A`-`Z`, digits `0`-`9` and special
-      characters `-`, `_`
-    - all of the following examples should show a validation error:
-      `_john`, `x`, `linu$$$`, `-moira`
-  - passphrase
-    - is at least 4 characters long
-    - the repeated passphrase is equal to the first one
-    - all of the following example pairs should show a validation error:
-      `1`/`1`, `12`/`12`, `123`/`123`, `supersecret`/`supersceret`
-- [ ] After passphrase input the identity is created and a copyable URN is
-      provided
-- [ ] After completion we land on our profile page which contains a placeholder
-      with instructions on how to create your first project
+- [ ] Start Upstream
+  - on Linux: run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by
+    executing it from the terminal or clicking on it
+  - on macOS: run `/Applications/Radicle Upstream.app` by double clicking it
+- [ ] Onboarding starts on the _Get started_ screen
+- [ ] Pressing <kbd>enter</kbd> leads to the next screen
+- [ ] Using `$$` as the _Display name_ shows a validation error
+- [ ] Entering two different passphrases shows a validation error
+- [ ] On the _All set!_ screen clicking the _Device ID_ copies it to the
+      clipboard
+- [ ] Clicking the _Go to my projects_ button leads to the _Profile_ screen
+- [ ] Hovering the network icon in the sidebar shows
+      _You're connected to 1 peer_
+
+
+### Creating projects
+
+- [ ] Can create a new project with a new repository
+  - [ ] Using `%%` for the project name shows a validation error
+  - [ ] A placeholder is shown for the missing `README.md`
+- [ ] Can create a new project from a larger existing repository
+  - [ ] UI interaction is blocked while project creation is in progress
+  - [ ] `README.md` files are shown by default and markdown is rendered as HTML
+    - [ ] Links to external resources open in external browser
+    - [ ] Links to internal resources don't do anything
+  - [ ] Syntax highlighting works for source files (.toml, .sol, .ts, .svelte)
+  - [ ] Binary files show a placeholder
+  - [ ] It's possible to navigate to deeper hierarchies via the tree browser
+  - [ ] It's possible to select different branches
+  - [ ] Metadata and stats in UI reflect what is in the actual repository
+        [ℹ️](#04)
+  - [ ] Commit tab shows a list of all the commits in the branch that was
+        selected
+  - [ ] Clicking on a commit shows the commit metadata as well as the diff
+- [ ] No unreleased features are visible in the UI
+    - [ ] _Issues_ and _Revisions_ tabs on the Project screen
+    - [ ] _Wallets_ tab on the User Profile screen
+    - [ ] Tags are not visible in the revision selector on the _Project Source_
+      screen
 
 
 ### Settings
 
+- [ ] Links to external help resources open in an external browser
+- [ ] All documented shortcuts work. Press <kbd>?</kbd> to open the
+      _Keyboard shortcuts_ help screen.
+  - [ ] Only one modal is allowed at a time (no modal stacking possible)
+  - [ ] _Design Sytem Guide_ is not listed in the shortcuts modal
+        <kbd>?</kbd> and the respective global hotkey is disabled
+        <kbd>⌘</kbd>+<kbd>d</kbd>
+- [ ] The version number in the _Settings_ screen matches:
+  - [ ] The version number in the package filename
+  - [ ] The version number in the _About Radicle Upstream_ dialog
+
+
+### Replicating projects
+
+- [ ] Replicate a project from seedling.radicle.xyz
+  - [ ] Pick a project from seedling.radicle.xyz and search for it by pasting
+        the `Radicle ID` of the project into the search bar by pressing
+        <kbd>⌘</kbd>+<kbd>p</kbd>, then click the _Follow_ button
+    - [ ] The project shows up in the _Following_ tab of the profile screen in
+          the waiting area
+    - [ ] After a while the project is replicated and moves out of the waiting
+          area
+    - [ ] When going to the Project source screen, the maintainer is selected
+          in the peer selector
+      - [ ] Your identity does not show up in the peer selector
+  - [ ] Set up the remote helper according to the instructions in the _Fork_
+        modal hint
+  - [ ] Fork the replicated project to a local directory
+    - [ ] The forked project should now appear in the _Projects_ tab of the
+          profile screen
+    - [ ] Your identity shows up in the peer selector and is selected by
+          default instead of the maintainer's identity
+    - [ ] The button is now called _Checkout_ instead of _Fork_
+    - [ ] Create a commit and publish your chages via `git rad push`
+      - [ ] The published commit appears in the _Commits_ tab of the project
+  - [ ] Add a remote that doesn't track the project, e.g.
+        `hync6jo9q9n4rfgag3o99gann391nsjhuq3oaemoe13oyn3gruwrgh`
+    - [ ] Shows the remote in the _Still looking…_ section
+  - [ ] Clicking the _Unfollow_ button removes the remote
+
+
+### Lifecycle
+
 - [ ] Preferences are persisted across app reboots
   - [ ] Color theme selection
-  - [ ] Peer entries
+  - [ ] Network seed changes
   - [ ] Remote helper hint (in the Checkout and "New project" modals) is not
         shown after app restart once it is dismissed by clicking the `x` icon
         in the top right corner
-- [ ] Links to external help resources open in an external browser
-
-
-### Projects
-
-- [ ] Can create a new project with a new repository
-  - [ ] Name validations work
-      - starts with a letter or digit
-      - is at least 2 characters long
-      - can contain the letters `a`-`z`, `A`-`Z`, digits `0`-`9` and special
-        characters `-`, `_`, `.`
-      - all of the following examples should show a validation error:
-        `1`, `-fancy-`, `_doh_`, `rx~pixels`, `💁👌🎍😍`
-- [ ] Can create a new project from an existing repository
-  - [ ] Adding larger projects don't crash the app
-  - [ ] UI interaction is blocked while project creation is in progress
-
-
-#### Working directory (from which a new project was initialised)
-
-- [ ] When pushing changes to Radicle via `git push rad` they should appear in
-      the app (a page refresh is still needed for the changes to show up)
-- [ ] Pulling changes from Radicle work (to test this you'll need to have a
-      checked out another working copy in a different folder)
-
-
-#### Checkout (a separate working copy)
-
-  - [ ] Follow instructions in the UI to set up the path to the git helper in
-        your shell
-  - [ ] It's possible to create a new working copy from an existing project
-    - [ ] Pushing new commits to Radicle via `git push rad` work (temporary
-          password until we have passphrases: `radicle-upstream`)
-    - [ ] Pulling changes work: make changes in the project folder you created
-          in project creation, push them to Radicle with `git push rad`, switch
-          to the checkout working directory, do a `git pull`
-
-
-#### Source browsing
-
-- [ ] Metadata and stats in UI reflect what is in the actual repository; here
-      are a couple commands that will help you get the numbers from
-      a repository:
-  - local branch count
-    `git branch | wc -l`
-  - all unique contributors across all branches
-    `git shortlog --summary --numbered --email --all`
-  - all unique contributors in a specific branch
-    `git shortlog --summary --numbered --email myfunkybranch`
-  - unique commit count across all branches
-    `git rev-list --all --count`
-  - commit count in a specific branch
-    `git rev-list --count myfunkybranch`
-- [ ] `README.md` files are shown by default and markdown is rendered as HTML
-  - [ ] Links to external resources open in external browser
-  - [ ] Links to internal resources don't do anything
-  - [ ] If the project doesn't have a `README.md`, a placeholder is shown
-- [ ] Syntax highlighting works for source files (.toml, .sol, .ts, .svelte)
-- [ ] Binary files show a placeholder
-- [ ] It's possible to navigate to deeper hierarchies via the tree browser
-- [ ] It's possible to select different branches
-
-
-#### Commit browsing
-
-- [ ] Commit tab shows a list of all the commits in the branch that was
-      selected
-- [ ] Clicking on a commit shows the commit metadata as well as the diff
-
-
-### Misc UI
-
-- [ ] Clicking on an identifier copies it to the clipboard
-
-
-#### Global keyboard shortcuts
-
-- [ ] All documented shortcuts (a list is provided by pressing `?`) work
-- [ ] Only one modal is allowed at a time (no modal stacking possible)
-
-### Proxy Error
-
 - [ ] Killing the proxy process while the app is running shows a blue error
-      screen with the proxy logs.
+      screen with the proxy logs
+  - [ ] Clicking the button copies the logs to the clipboard
 
-[re]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md
+
+## Hints
+
+### How to set up a clean environemnt? <a href="#user-content-01" id="01">🔗</a>
+
+**Safe method**: use a temporary user account on your computer.
+
+  - on macOS:
+    - if you are **not** using FileVault, switch to the "Guest User". You may
+      have to enable this in "System Preferences -> Users & Groups".  When
+      you're done, all data will be removed automatically.
+    - if you **are** using FileVault, create a new user in "System
+      Preferences -> Users & Groups". When you're done, you'll need to remove
+      this user manually.
+  - on Linux:
+    - create a new user with `sudo useradd -m qa`, and log into that account.
+      When you're done, remove the user with `sudo userdel -r qa`.  _Note:
+      "qa" is just an example user name, you can choose anything you like_
+
+**Dangerous method**: remove all directories manually.
+
+You can use [this script][rs]. Make sure you have a backup of your data,
+or are using this in combination with the safe method (i.e. while logged
+in with a temporary user account).
+
+
+### How to set up git? <a href="#user-content-02" id="02">🔗</a>
+    git config --global user.name "Mona Lisa"
+    git config --global user.email "email@example.com"
+
+
+### How to install? <a href="#user-content-03" id="03">🔗</a>
+
+**On macOS:**
+
+  1. open the `radicle-upstream-X.X.X.dmg` package
+  2. install Upstream by dragging the `Radicle Upstream` binary to
+     `/Applications`
+
+**On Linux (AppImage):**
+
+  1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
+
+
+### How to query repo stats from the CLI? <a href="#user-content-04" id="04">🔗</a>
+
+```
+  # local branch count
+  git branch | wc -l
+
+  # all unique contributors across all branches
+  git shortlog --summary --numbered --email --all
+
+  # all unique contributors in a specific branch
+  git shortlog --summary --numbered --email myfunkybranch
+
+  # unique commit count across all branches
+  git rev-list --all --count
+
+  # commit count in a specific branch
+  git rev-list --count myfunkybranch
+```
+
+
+
+[rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/scripts/reset-state.sh
+[bu]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
