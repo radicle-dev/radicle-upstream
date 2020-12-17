@@ -1,6 +1,6 @@
 //! Provides [`run`] to run the proxy process.
 use futures::prelude::*;
-use std::{future::Future, sync::Arc, time::Duration};
+use std::{future::Future, net, sync::Arc, time::Duration};
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
@@ -11,14 +11,15 @@ use coco::{convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, RunCon
 
 use crate::{config, context, http, notification, service, session};
 
-/// The port the server binds to (17rad)
-const PORT: u16 = 17246;
-
 /// Flags accepted by the proxy binary.
 #[derive(Clone, Copy)]
 pub struct Args {
     /// Put proxy in test mode to use certain fixtures.
     pub test: bool,
+    /// Run HTTP API on the specified address:port.
+    pub http_listen: net::SocketAddr,
+    /// Run the peer on the specified address:port.
+    pub peer_listen: net::SocketAddr,
 }
 
 /// Data required to run the peer and the API
@@ -64,7 +65,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
         let environment = service_manager.environment()?;
-        let rigging = rig(service_handle, environment, auth_token.clone()).await?;
+        let rigging = rig(service_handle, environment, auth_token.clone(), args).await?;
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
@@ -120,9 +121,9 @@ async fn run_rigging(
 
     let server = async move {
         log::info!("starting API");
-        let api = http::api(server_ctx, subscriptions.clone());
+        let api = http::api(server_ctx.clone(), subscriptions.clone());
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
-            ([127, 0, 0, 1], PORT),
+            server_ctx.http_listen(),
             async move {
                 restart_signal.await;
                 subscriptions.clear().await;
@@ -203,6 +204,7 @@ async fn rig(
     service_handle: service::Handle,
     environment: &service::Environment,
     auth_token: Arc<RwLock<Option<String>>>,
+    args: Args,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
         std::env::set_var("RAD_HOME", temp_dir.path());
@@ -220,7 +222,7 @@ async fn rig(
             let config = coco::config::configure(
                 environment.coco_paths.clone(),
                 key,
-                *coco::config::INADDR_ANY,
+                args.peer_listen,
                 coco::config::static_seed_discovery(vec![]),
             );
             let (peer, state) =
@@ -235,7 +237,7 @@ async fn rig(
             let config = coco::config::configure(
                 environment.coco_paths.clone(),
                 key,
-                *coco::config::INADDR_ANY,
+                args.peer_listen,
                 coco::config::StreamDiscovery::new(seeds_receiver),
             );
 
@@ -252,6 +254,7 @@ async fn rig(
             state,
             store,
             test: environment.test_mode,
+            http_listen: args.http_listen,
             service_handle: service_handle.clone(),
             auth_token,
             keystore: environment.keystore.clone(),
@@ -266,6 +269,7 @@ async fn rig(
         let ctx = context::Context::Sealed(context::Sealed {
             store,
             test: environment.test_mode,
+            http_listen: args.http_listen,
             service_handle,
             auth_token,
             keystore: environment.keystore.clone(),
