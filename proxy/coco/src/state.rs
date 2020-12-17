@@ -788,15 +788,19 @@ impl State {
             include_path,
         };
 
+        log::debug!("Determing Owner");
         let ownership = match peer_id {
             None => crate::project::checkout::Ownership::Local(self.peer_id()),
             Some(remote) => {
                 let handle = {
                     let ref_self = Reference::rad_self(Namespace::from(urn.clone()), peer_id);
+                    log::debug!("rad/self -> `{}`", ref_self);
+                    log::debug!("Monorepo: {}", self.monorepo().display());
                     let person = self
                         .api
                         .with_storage(move |store| {
                             let malkovich_urn = Urn::try_from(ref_self).unwrap();
+                            log::debug!("Urn -> {}", malkovich_urn);
                             person::get(&store, &malkovich_urn)
                         })
                         .await??
@@ -817,6 +821,7 @@ impl State {
             paths: self.paths(),
             signer: self.signer.clone(),
         };
+        log::debug!("Cloning");
         let path = tokio::task::spawn_blocking(move || {
             checkout.run(settings, ownership).map_err(Error::from)
         })
