@@ -37,7 +37,11 @@
   }
 
   function addNew(address: pool.Address) {
-    if (receivers.has(address)) return;
+    if (receivers.has(address)) {
+      newValue = "";
+      return;
+    }
+
     receivers.set(address, ReceiverStatus.Added);
     receivers = receivers;
     newValue = "";

@@ -71,9 +71,7 @@
     <div class="typo-text description">
       Collect the
       <div class="typo-text-bold">
-        <Dai color={'var(--color-secondary)'} style="margin: 0 7px">
-          {poolData.collectableFunds}
-        </Dai>
+        <Dai style="margin: 0 7px">{poolData.collectableFunds}</Dai>
       </div>
       waiting on you from supporters.
     </div>

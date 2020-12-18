@@ -44,7 +44,7 @@
 </style>
 
 <Illustration variant={IllustrationVariant.Money} />
-<h1>Set a budget</h1>
+<h1>Set a monthly budget</h1>
 <p>
   Set your monthly budget for outgoing support. This amount will flow to your
   receivers in real time.

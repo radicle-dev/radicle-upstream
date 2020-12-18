@@ -252,7 +252,7 @@ class EthereumDebug {
 export const uriStore = svelteStore.writable<string | undefined>(undefined);
 
 export function formattedBalance(balance: number): string {
-  return balance.toLocaleString("de-DE");
+  return balance.toLocaleString("us-US");
 }
 
 // The wallet singleton

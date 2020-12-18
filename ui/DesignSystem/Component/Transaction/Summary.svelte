@@ -57,7 +57,7 @@
         begin streaming to them at this rate.
       </p>
     {:else}
-      <p>Stream <strong>{tx.amount} DAI</strong> per month to these users.</p>
+      <p>Stream <strong>{tx.amount} DAI</strong> per month to these users:</p>
       <Receivers
         receivers={new Map(tx.receivers)}
         style="margin-top: 1.2rem"

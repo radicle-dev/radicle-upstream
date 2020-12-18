@@ -4,7 +4,7 @@
 
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
 
-  export let onSkip: () => void;
+  export let onCancel: () => void;
   export let onContinue: () => void;
 </script>
 
@@ -40,10 +40,10 @@
 <div class="submit">
   <Button
     variant="transparent"
-    dataCy="skip"
-    on:click={onSkip}
+    dataCy="cancel"
+    on:click={onCancel}
     style="margin-right: 1rem">
-    Skip
+    Cancel
   </Button>
 
   <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>

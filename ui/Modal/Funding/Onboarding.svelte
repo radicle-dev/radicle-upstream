@@ -102,7 +102,7 @@
   {#if currentStep === Step.Erc20Allowance}
     <Erc20Allowance {onCancel} onConfirm={approveErc20} />
   {:else if currentStep === Step.Intro}
-    <Intro onSkip={onCancel} {onContinue} />
+    <Intro {onCancel} {onContinue} />
   {:else if currentStep === Step.SetBudget}
     <SetBudget bind:budget {onCancel} {onContinue} />
   {:else if currentStep === Step.AddReceivers}
