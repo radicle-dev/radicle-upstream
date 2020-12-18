@@ -139,7 +139,7 @@
     "rollup:build": "yarn rollup:clean && rollup -c",
     "rollup:watch": "yarn rollup:clean && rollup -c -w",
     "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
-    "proxy:build": "cd proxy && cargo build",
+    "proxy:build": "cd proxy && cargo build --all-features --all-targets",
     "proxy:build:release": "cd proxy && cargo build --release",
     "proxy:clean": "cd proxy && cargo clean",
     "proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
