@@ -526,6 +526,7 @@ git checkout vX.X.X
 CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
 APPLE_ID="XXXXXXX@monadic.xyz" \
 APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
+NOTARIZE=true \
 yarn dist
 ```
 

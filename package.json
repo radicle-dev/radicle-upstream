@@ -129,7 +129,6 @@
     "wait:debug": "wait-on tcp:17246 && yarn cypress:open",
     "dist": "yarn dist:clean && yarn rollup:build && yarn proxy:build:release && electron-builder --publish never",
     "dist:clean": "rm -rf ./dist && mkdir ./dist && yarn proxy:clean && yarn rollup:clean",
-    "dist:notarize": "NOTARIZE=true yarn dist",
     "electron:start": "wait-on ./public/bundle.js ./native/main.comp.js && NODE_ENV=development electron .",
     "svelte:check": "svelte-check",
     "svelte:check:watch": "svelte-check --watch",
