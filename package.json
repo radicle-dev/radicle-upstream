@@ -130,6 +130,7 @@
     "prettier:write": "yarn _private:prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
     "reset:state": "scripts/reset-state.sh",
+    "manage:id": "scripts/manage-identity.sh",
     "_private:start": "yarn _private:proxy:build:release && yarn run-p --race _private:rollup:watch _private:electron:start",
     "_private:start:dev": "yarn _private:proxy:build && yarn run-p --race _private:rollup:watch _private:electron:start",
     "_private:test:integration": "wait-on tcp:17246 && yarn _private:rollup:build && yarn run cypress run; status=$?; [ \"$CI\" = true ] && kill `pidof radicle-proxy`; exit $status",
