@@ -31,26 +31,26 @@ const proxyPath = isDev
 app.allowRendererProcessReuse = true;
 
 const home = app.getPath("home");
-const identities_path = `${home}/.radicle/identities`;
-const current_identities_path = `${identities_path}/current`;
-const electron_path = `${current_identities_path}/electron`;
+const identitiesPath = `${home}/.radicle/identities`;
+const currentIdentitiesPath = `${identitiesPath}/current`;
+const electronPath = `${currentIdentitiesPath}/electron`;
 
 // Make sure "<home>/.radicle/identities" exists
-if (!fs.existsSync(identities_path))
-  fs.mkdirSync(identities_path, { recursive: true });
+if (!fs.existsSync(identitiesPath))
+  fs.mkdirSync(identitiesPath, { recursive: true });
 // If no "current" symlink exists, create it pointing to a new empty folder under identities
-if (!fs.existsSync(current_identities_path)) {
-  const new_identity_folder = uuid.v4();
-  fs.mkdirSync(`${identities_path}/${new_identity_folder}`);
+if (!fs.existsSync(currentIdentitiesPath)) {
+  const newIdentityFolder = uuid.v4();
+  fs.mkdirSync(`${identitiesPath}/${newIdentityFolder}`);
   fs.symlinkSync(
-    `${identities_path}/${new_identity_folder}`,
-    current_identities_path
+    `${identitiesPath}/${newIdentityFolder}`,
+    currentIdentitiesPath
   );
 }
 // Make sure the "electron" folder exists & overwrite the paths for the electron data
-if (!fs.existsSync(electron_path)) fs.mkdirSync(electron_path);
-app.setPath("userData", electron_path);
-app.setPath("appData", electron_path);
+if (!fs.existsSync(electronPath)) fs.mkdirSync(electronPath);
+app.setPath("userData", electronPath);
+app.setPath("appData", electronPath);
 
 class WindowManager {
   public window: BrowserWindow | null;
