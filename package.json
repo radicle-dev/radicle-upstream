@@ -65,6 +65,7 @@
   },
   "main": "./native/main.comp.js",
   "devDependencies": {
+    "@ethersproject/cli": "^5.0.7",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-inject": "^4.0.2",
     "@rollup/plugin-json": "^4.1.0",
