@@ -9,7 +9,7 @@ import {
 // TODO(nuno): make the contract addresses configurable/env-dependant
 
 export const POOL_ADDRESS: string =
-  "0x8bc07c0de95a0c1a08f6736d07a233fb8609ee95";
+  "0x37c10d847bf9e708add451bf2f80c1297d7aa691";
 
 export function pool(
   signer: Signer,
@@ -18,7 +18,7 @@ export function pool(
   return new PoolContract(signer, address);
 }
 
-export const ERC20_TOKEN_ADDRESS = "0xff1d4d289bf0aaaf918964c57ac30481a67728ef";
+export const ERC20_TOKEN_ADDRESS = "0xf34a89802590f944e3de71b1f74d66ed1bafc9cd";
 
 export function erc20Token(signer: Signer): Erc20 {
   return Erc20Factory.connect(ERC20_TOKEN_ADDRESS, signer);
