@@ -102,7 +102,9 @@ mod test {
         let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(coco::git_ext::Oid::try_from("kissesofthesun").unwrap());
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?);
 
         let _request = ctx.peer_control.request_project(&urn, Instant::now()).await;
         let res = request()
@@ -122,7 +124,9 @@ mod test {
         let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(coco::git_ext::Oid::try_from("kissesofthesun").unwrap());
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?);
 
         let res = request()
             .method("PUT")
@@ -144,7 +148,9 @@ mod test {
         let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(coco::git_ext::Oid::try_from("kissesofthesun").unwrap());
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?);
 
         let want = ctx.peer_control.request_project(&urn, Instant::now()).await;
         let res = request().method("GET").path("/").reply(&api).await;

@@ -416,10 +416,6 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let path = {
         let alice_peer_id = alice_state.peer_id();
-        println!("EVE IS CHECKING OUT: {}", eve_state.monorepo().display());
-        println!("ALICE: {}", alice_peer_id);
-        println!("BOB: {}", bob_state.peer_id());
-        std::thread::sleep(std::time::Duration::from_secs(60));
         eve_state
             .checkout(project.urn(), alice_peer_id, eve_repo_path)
             .await?

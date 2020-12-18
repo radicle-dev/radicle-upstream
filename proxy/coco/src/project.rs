@@ -1,8 +1,10 @@
 //! Project creation data and functions.
 
-use librad::git_ext::{OneLevel, Qualified, is_not_found_err};
-use librad::std_ext::result::ResultExt;
-use librad::git::types::remote::Remote;
+use librad::{
+    git::types::remote::Remote,
+    git_ext::{is_not_found_err, OneLevel, Qualified},
+    std_ext::result::ResultExt,
+};
 use radicle_surf::vcs::git::git2;
 
 use crate::config;
@@ -33,12 +35,20 @@ fn set_rad_upstream(repo: &git2::Repository, default_branch: &OneLevel) -> Resul
 /// [branch "main"]
 /// remote = rad
 /// merge = refs/heads/main
-fn set_upstream<Url>(repo: &git2::Repository, remote: &Remote<Url>, branch: OneLevel) -> Result<(), git2::Error> {
+fn set_upstream<Url>(
+    repo: &git2::Repository,
+    remote: &Remote<Url>,
+    branch: OneLevel,
+) -> Result<(), git2::Error> {
     let mut config = repo.config()?;
     let branch_remote = format!("branch.{}.remote", branch);
     let branch_merge = format!("branch.{}.merge", branch);
-    config.remove_multivar(&branch_remote, ".*").or_matches::<git2::Error, _, _>(is_not_found_err, || Ok(()))?;
-    config.remove_multivar(&branch_merge, ".*").or_matches::<git2::Error, _, _>(is_not_found_err, || Ok(()))?;
+    config
+        .remove_multivar(&branch_remote, ".*")
+        .or_matches::<git2::Error, _, _>(is_not_found_err, || Ok(()))?;
+    config
+        .remove_multivar(&branch_merge, ".*")
+        .or_matches::<git2::Error, _, _>(is_not_found_err, || Ok(()))?;
     config.set_multivar(&branch_remote, ".*", remote.name.as_str())?;
     config.set_multivar(&branch_merge, ".*", Qualified::from(branch).as_str())?;
     Ok(())

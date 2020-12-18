@@ -108,6 +108,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             "TRANSPORT_ERROR",
                             err.to_string(),
                         ),
+                        coco::project::checkout::Error::Prefix(err) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "PREFIX_ERROR",
+                            err.to_string(),
+                        ),
                     },
                     coco::state::Error::Create(create::Error::Validation(err)) => match err {
                         create::validation::Error::AlreadExists(_) => {
@@ -231,6 +236,9 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                 | error::Error::InvalidAuthCookie => {
                     (StatusCode::FORBIDDEN, "FORBIDDEN", err.to_string())
                 },
+                error::Error::SessionInUse(_) => {
+                    (StatusCode::BAD_REQUEST, "SESSION_IN_USE", err.to_string())
+                },
                 _ => {
                     // TODO(xla): Match all variants and properly transform similar to
                     // gaphql::error.
@@ -264,6 +272,8 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
 #[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod tests {
+    use std::convert::TryFrom;
+
     use futures::stream::TryStreamExt;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
@@ -271,15 +281,16 @@ mod tests {
 
     #[tokio::test]
     async fn recover_custom() {
-        let urn = "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c"
-            .parse()
-            .expect("failed to parse URN");
-        let message = format!("the identity '{}' already exists", urn);
+        let urn = coco::Urn::new(
+            coco::git_ext::Oid::try_from("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")
+                .expect("failed to parse Oid"),
+        );
+        let message = format!("the current session is in use by `{}`", urn);
         let have: Value =
             response(warp::reject::custom(crate::error::Error::SessionInUse(urn))).await;
         let want = json!({
             "message": message,
-            "variant": "ENTITY_EXISTS"
+            "variant": "SESSION_IN_USE"
         });
 
         assert_eq!(have, want);

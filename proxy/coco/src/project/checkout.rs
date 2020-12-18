@@ -13,7 +13,7 @@ use librad::{
             Flat, Force, GenericRef, Reference, Refspec,
         },
     },
-    git_ext::{OneLevel, RefLike},
+    git_ext::{OneLevel, Qualified, RefLike},
     identities::Urn,
     peer::PeerId,
     reflike, refspec_pattern,
@@ -78,30 +78,29 @@ pub fn clone<F>(
     path: &path::Path,
     storage: F,
     mut remote: Remote<LocalUrl>,
-    remote_name: impl Into<Option<RefLike>>,
 ) -> Result<(git2::Repository, Remote<LocalUrl>), Error>
 where
     F: CanOpenStorage + 'static,
 {
-    let remote_name = remote_name.into();
     let repo = git2::Repository::init(path)?;
     remote.save(&repo)?;
     for (reference, oid) in remote.fetch(storage, &repo, LocalFetchspec::Configured)? {
         let msg = format!("Fetched `{}->{}`", reference, oid);
         log::debug!("{}", msg);
 
-        match remote_name {
-            None => {
-                /* TODO(finto): Do we just do nothing? */
-            },
-            Some(ref name) => {
-                let branch: RefLike = OneLevel::from(reference).into();
-                let branch = branch.strip_prefix(name.clone().join(reflike!("heads")))?;
-                let reference = reflike!("refs/remotes").join(name).join(branch.clone());
-                let _ = repo.reference(reference.as_str(), oid, true, &msg)?;
-                let _ = repo.reference(reflike!("refs/heads").join(branch).as_str(), oid, true, &msg)?;
-            }
-        }
+        let branch: RefLike = OneLevel::from(reference).into();
+        let branch = branch.strip_prefix(remote.name.clone())?;
+        let branch = branch.strip_prefix(reflike!("heads")).unwrap_or(branch);
+        let _remote_branch = repo.reference(
+            reflike!("refs/remotes")
+                .join(remote.name.clone())
+                .join(branch.clone())
+                .as_str(),
+            oid,
+            true,
+            &msg,
+        )?;
+        let _local_branch = repo.reference(Qualified::from(branch).as_str(), oid, true, &msg);
     }
 
     Ok((repo, remote))
@@ -152,7 +151,7 @@ impl Ownership {
                 force: Force::True,
             },
         );
-        clone(path, open_storage, rad, None)
+        clone(path, open_storage, rad)
     }
 
     /// See [`Checkout::run`].
@@ -176,7 +175,7 @@ impl Ownership {
             force: Force::True,
         }]);
 
-        let (repo, _) = clone(path, open_storage.clone(), remote, name)?;
+        let (repo, _) = clone(path, open_storage.clone(), remote)?;
 
         // Create a rad remote and push the default branch so we can set it as the
         // upstream.
@@ -274,7 +273,8 @@ where
                 });
 
         // Clone the repository
-        let (repo, rad) = ownership.clone(open_storage, self.urn, &self.default_branch, &project_path)?;
+        let (repo, rad) =
+            ownership.clone(open_storage, self.urn, &self.default_branch, &project_path)?;
 
         // Set configurations
         super::set_upstream(&repo, &rad, self.default_branch.clone())?;

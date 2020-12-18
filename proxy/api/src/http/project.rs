@@ -377,7 +377,7 @@ mod test {
             remote.url(),
             Some(coco::LocalUrl::from(urn.clone()).to_string().as_str())
         );
-        assert_eq!(refs, vec!["master", "rad/dev", "rad/master"]);
+        assert_eq!(refs, vec!["dev", "master", "rad/dev", "rad/master"]);
 
         // Verify presence of include file.
         let config = repo.config()?;
@@ -391,7 +391,7 @@ mod test {
             format!(
                 "{}/git-includes/{}.inc",
                 tmp_dir.path().display().to_string(),
-                urn.id
+                urn.encode_id()
             ),
         );
 
