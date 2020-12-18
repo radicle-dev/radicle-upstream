@@ -55,25 +55,35 @@ In the development environment, we set up these three pieces as follows:
 
   Recommendation: Use `nvm` to install and use a specific `node` version.
 
-- Run `yarn install` within `radicle-upstream`
-
 - Install [walletconnect-test-wallet][wctw]
 
   - `git clone git@github.com:radicle-dev/walletconnect-test-wallet.git`
   - `cd walletconnect-test-wallet`
   - `npm install`
 
+- Install the [Radicle Contracts][rc]
+
+  - `git clone git@github.com:radicle-dev/radicle-contracts.git`
+  - `cd radicle-contracts`
+  - `yarn`
+
+- Run `yarn install` within `radicle-upstream`
+
 - Set up the local test ethereum account
 
-  - Run `npm run start` within `walletconnect-test-wallet`.
-    It should open the test wallet in your browser at `localhost:3000`.
+  - Run `npm run start` within `walletconnect-test-wallet`. It should open the
+    test wallet in your browser at `localhost:3000`.
+
   - Copy the full address provided at the top of the page.
+
   - Now, in `radicle-upstream`, run:
     - `mkdir sandbox`
     - `touch sandbox/.local-eth-account`
+
   - Finally, paste the copied address in that file
 
 - Install `ganache-cli`:
+
   `npm install -g ganache-cli`
 
 **Running**
@@ -84,11 +94,13 @@ tabs:
 - `npm run start` within `walletconnect-test-wallet`
 - `yarn start:ethereum` within `radicle-upstream`
 - `yarn start` within `radicle-upstream`
+- Once the app is running, enable the funding feature in the Upstream settings
 
-Remember to enable the funding feature in upstream configuration!
 
-[wcw]: https://walletconnect.org/wallets/
-[wctw]: https://github.com/radicle-dev/walletconnect-test-wallet
-[rc]: https://github.com/radicle-dev/radicle-contracts
+[wcw]:https://walletconnect.org/wallets/
 
-[dev-setup]: ./funding-dev-setup.svg "Radicle Funding Development Set up"
+[wctw]:https://github.com/radicle-dev/walletconnect-test-wallet
+
+[rc]:https://github.com/radicle-dev/radicle-contracts
+
+[dev-setup]:./funding-dev-setup.svg "Radicle Funding Development Set up"
