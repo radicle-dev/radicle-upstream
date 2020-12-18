@@ -3,7 +3,6 @@
   import { Level } from "../../src/notification.ts";
 
   import { Icon } from "../Primitive";
-  import IconWrapper from "../Primitive/Icon/IconWrapper.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -12,24 +11,18 @@
   export let showIcon = false;
   export let message = null;
   export let actionText = null;
-
-  const iconStyle = "margin-left: 8px; height: 24px";
 </script>
 
 <style>
   .notification {
     display: flex;
     border-radius: 4px;
-    min-height: 32px;
+    height: 32px;
     align-items: center;
     justify-content: center;
     margin-bottom: 8px;
     user-select: none;
-    overflow-wrap: break-word;
-    max-width: 800px;
-    text-align: center;
-    padding: 10px;
-    max-height: 8rem;
+    white-space: nowrap;
   }
 
   .info {
@@ -47,15 +40,6 @@
   }
 
   .notification.error :global(svg) {
-    fill: var(--color-background);
-  }
-
-  .success {
-    color: var(--color-background);
-    background-color: var(--color-positive);
-  }
-
-  .notification.success :global(svg) {
     fill: var(--color-background);
   }
 
@@ -84,15 +68,9 @@
 
 <div class={`notification ${level.toLowerCase()}`} {style}>
   {#if showIcon}
-    <IconWrapper style={iconStyle}>
-      {#if level === Level.Info}
-        <Icon.InfoCircle />
-      {:else if level === Level.Error}
-        <Icon.ExclamationCircle />
-      {:else if level === Level.Success}
-        <Icon.CheckCircle />
-      {/if}
-    </IconWrapper>
+    <svelte:component
+      this={level === Level.Info ? Icon.InfoCircle : Icon.ExclamationCircle}
+      style="margin-left: 8px; height: 24px" />
   {/if}
 
   <p class="message typo-overflow-ellipsis">{message}</p>
