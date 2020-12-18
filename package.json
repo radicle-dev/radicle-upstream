@@ -115,11 +115,9 @@
     "wait-on": "^5.2.0"
   },
   "scripts": {
-    "start": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy yarn run:release:proxy",
-    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy yarn run:dev:proxy",
-    "run:test": "run-p --race rollup:watch proxy:start:test electron:start",
-    "run:dev:proxy": "yarn proxy:build && yarn run-p --race rollup:watch electron:start",
-    "run:release:proxy": "yarn proxy:build:release && yarn run-p --race rollup:watch electron:start",
+    "start": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy yarn internal:start",
+    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy yarn internal:start:dev",
+    "start:test": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS=--test yarn internal:start",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:integration": "TZ='UTC' run-p --race proxy:start:test wait:test",
     "test:integration:debug": "TZ='UTC' run-p --race rollup:watch proxy:start:test-watch wait:debug",
@@ -150,7 +148,9 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
-    "reset:state": "scripts/reset-state.sh"
+    "reset:state": "scripts/reset-state.sh",
+    "internal:start": "yarn proxy:build:release && yarn run-p --race rollup:watch electron:start",
+    "internal:start:dev": "yarn proxy:build && yarn run-p --race rollup:watch electron:start"
   },
   "dependencies": {
     "@types/qs": "^6.9.5",

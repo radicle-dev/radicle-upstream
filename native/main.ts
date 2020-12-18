@@ -13,6 +13,7 @@ import { ProxyProcessManager } from "./proxy-process-manager";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
 
 const isDev = process.env.NODE_ENV === "development";
+
 let proxyPath;
 if (isDev) {
   if (process.env.RADICLE_UPSTREAM_PROXY_PATH) {
@@ -24,6 +25,13 @@ if (isDev) {
   }
 } else {
   proxyPath = path.join(__dirname, "../../radicle-proxy");
+}
+
+let proxyArgs: string[] = [];
+if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
+  proxyArgs = process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(
+    Boolean
+  );
 }
 
 // The default value of app.allowRendererProcessReuse is deprecated, it is
@@ -128,7 +136,7 @@ class WindowManager {
 const windowManager = new WindowManager();
 const proxyProcessManager = new ProxyProcessManager({
   proxyPath,
-  proxyArgs: [],
+  proxyArgs,
   lineLimit: 500,
 });
 
