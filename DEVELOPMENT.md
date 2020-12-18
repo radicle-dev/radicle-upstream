@@ -121,26 +121,34 @@ will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
 To get a list of all available script commands, run: `yarn run`.
 Here is a list of the most commonly used ones:
 
-```sh
-yarn start                  # Start Upstream in development mode
+    yarn start                  # Start Upstream with hot-UI-code-reload
+    yarn start:dev              # Start Upstream with hot-UI-code-reload and
+                                # run proxy compiled with debug information
+    yarn start:test             # Start Upstream with hot-ui-code-reload and
+                                # run proxy in test mode with test fixtures
 
-yarn test                   # Run all ui tests
-yarn test:integration       # Run only integration tests
-yarn test:unit              # Run only unit tests
-yarn test:integration:debug # Show the Cypress GUI, handy for visual debugging
-yarn test:unit:watch        # Run Jest tests in watch mode
+    yarn test                   # Run all UI tests
+    yarn test:integration       # Run only Cypress integration tests
+    yarn test:integration:debug # Show the Cypress GUI, useful for
+                                # visual debugging
+    yarn test:unit              # Run only Jest unit tests
+    yarn test:unit:watch        # Run Jest tests in watch mode
 
-yarn dist                   # Bundles Upstream into an installable package
+    yarn dist                   # Build an installable Upstream package for the
+                                # current platform
 
-yarn release                # Start a two-step process to cut a new release,
-                            # for more details have a look at ../DEVELOPMENT.md
+    yarn release                # Start a two-step process to cut a new
+                                # release, see DEVELOPMENT.md for more details
 
-yarn prettier:check         # Check UI code formatting
-yarn prettier:write         # Auto-format UI code
-yarn lint                   # Check UI code for linting errors
-yarn reset:state            # Delete all local state: identity keys, monorepo
-                            # and saved preferences
-```
+    yarn typescript:check       # Type-check all UI *.ts and *.svelte files
+    yarn prettier:check         # Check UI code formatting
+    yarn prettier:write         # Auto-format UI code
+    yarn lint                   # Check UI code for linting errors
+
+    yarn reset:state            # Delete all local state:
+                                #   - identity keys
+                                #   - monorepo
+                                #   - saved preferences
 
 
 ### Design System

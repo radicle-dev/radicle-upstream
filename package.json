@@ -124,9 +124,8 @@
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "dist": "yarn _private:dist:clean && yarn rollup:build && yarn _private:proxy:build:release && electron-builder --publish never",
-    "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "release": "scripts/release.js",
-    "postinstall": "patch-package",
+    "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "prettier:check": "yarn _private:prettier --check",
     "prettier:write": "yarn _private:prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
@@ -145,7 +144,8 @@
     "_private:proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
     "_private:proxy:start:test:watch": "cd proxy && cargo build --bin git-remote-rad && cargo watch -x 'run -- --test'",
     "_private:rollup:build": "yarn _private:rollup:clean && rollup -c",
-    "_private:rollup:watch": "yarn _private:rollup:clean && rollup -c -w"
+    "_private:rollup:watch": "yarn _private:rollup:clean && rollup -c -w",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@types/qs": "^6.9.5",
