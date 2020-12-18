@@ -115,10 +115,10 @@
     "wait-on": "^5.2.0"
   },
   "scripts": {
-    "start": "RADICLE_UPSTREAM_EXPERIMENTAL=false RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy yarn run:dev:proxy",
-    "start:experimental": "RADICLE_UPSTREAM_EXPERIMENTAL=true RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy yarn run:dev:proxy",
-    "start:release": "RADICLE_UPSTREAM_EXPERIMENTAL=false RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy yarn run:release:proxy",
-    "start:experimental:release": "RADICLE_UPSTREAM_EXPERIMENTAL=true RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy yarn run:release:proxy",
+    "start": "RADICLE_UPSTREAM_EXPERIMENTAL=false RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy yarn run:release:proxy",
+    "start:dev": "RADICLE_UPSTREAM_EXPERIMENTAL=false RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy yarn run:dev:proxy",
+    "start:experimental": "RADICLE_UPSTREAM_EXPERIMENTAL=true RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy yarn run:release:proxy",
+    "start:experimental:dev": "RADICLE_UPSTREAM_EXPERIMENTAL=true RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy yarn run:dev:proxy",
     "run:test": "run-p --race rollup:watch proxy:start:test electron:start",
     "run:dev:proxy": "yarn proxy:build && yarn run-p --race rollup:watch electron:start",
     "run:release:proxy": "yarn proxy:build:release && yarn run-p --race rollup:watch electron:start",
