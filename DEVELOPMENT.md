@@ -119,7 +119,11 @@ will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
 ### Scripts
 
 To get a list of all available script commands, run: `yarn run`.
-Here is a list of the most commonly used ones:
+
+**Note:** Scripts marked with `_private` are not meant to be executed from the
+the CLI, they're only to be used by other scripts.
+
+Here's a list of all scripts that are intended for developer use:
 
     yarn start                  # Start Upstream with hot-UI-code-reload
     yarn start:dev              # Start Upstream with hot-UI-code-reload and
