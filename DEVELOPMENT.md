@@ -78,8 +78,9 @@ We do that by using `native > ipc.ts > isExperimental` as a feature flag to
 enable or disable said features accordingly to the mode in which we are running
 the app.
 
-See the [scripts](#scripts) section below to learn which commands to use to
-toggle this flag accordingly to your current workflow.
+To start the app with experimental features enabled run:
+
+    RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start
 
 The feature flag is only available in development mode. It is always disabled
 in production.
@@ -122,8 +123,6 @@ Here is a list of the most commonly used ones:
 
 ```sh
 yarn start                  # Start Upstream in development mode
-yarn start:experimental     # Start Upstream in experimental mode, showing
-                            # unfinished features
 
 yarn test                   # Run all ui tests
 yarn test:integration       # Run only integration tests
