@@ -124,8 +124,6 @@
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "dist": "yarn _private:dist:clean && yarn rollup:build && yarn _private:proxy:build:release && electron-builder --publish never",
-    "svelte:check": "svelte-check",
-    "svelte:check:watch": "svelte-check --watch",
     "rollup:build": "yarn _private:rollup:clean && rollup -c",
     "rollup:watch": "yarn _private:rollup:clean && rollup -c -w",
     "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
