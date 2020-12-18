@@ -18,7 +18,9 @@
   async function userDidClick(): Promise<void> {
     try {
       running = true;
-      notification.info("Approve the transaction on your wallet app 📲");
+      notification.info(
+        "Waiting for you to confirm the transaction in your connected wallet."
+      );
       await onClick();
     } catch (error) {
       console.log(JSON.stringify(error));

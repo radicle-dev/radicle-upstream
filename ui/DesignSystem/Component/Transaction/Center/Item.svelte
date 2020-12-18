@@ -7,8 +7,6 @@
   import ItemDescription from "./ItemDescription.svelte";
 
   export let tx: transaction.Tx = null;
-
-  //   $: iconState = transaction.iconState(tx.state);
 </script>
 
 <style>
