@@ -21,7 +21,7 @@ pub enum Error {
 
 /// Returns the directories to locate all application state specific to the current identity.
 pub fn id_dirs() -> Result<path::PathBuf, Error> {
-    let home_dir = std::env::var("HOME")?;
+    let home_dir = std::env::var("RAD_HOME").unwrap_or(std::env::var("HOME")?);
 
     Ok(path::Path::new(&home_dir).join(".radicle/identities/current"))
 }
@@ -32,7 +32,7 @@ pub fn id_dirs() -> Result<path::PathBuf, Error> {
 ///
 ///   * Could not get the user home path from the HOME env variable
 pub fn bin_dir() -> Result<path::PathBuf, Error> {
-    let home_dir = std::env::var("HOME")?;
+    let home_dir = std::env::var("RAD_HOME").unwrap_or(std::env::var("HOME")?);
 
     Ok(path::Path::new(&home_dir).join(".radicle/bin"))
 }

@@ -39,7 +39,12 @@ if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
 // information please check https://github.com/electron/electron/issues/18397
 app.allowRendererProcessReuse = true;
 
-const home = app.getPath("home");
+let home;
+if (process.env.RAD_HOME) {
+  home = process.env.RAD_HOME;
+} else {
+  home = app.getPath("home");
+}
 const identitiesPath = `${home}/.radicle/identities`;
 const currentIdentitiesPath = `${identitiesPath}/current`;
 const electronPath = `${currentIdentitiesPath}/electron`;
