@@ -3,13 +3,14 @@
   export let key = "";
   export let size = 225;
   export let color = "var(--color-secundary)";
+  export let bgColor = "white";
 
   const svgString = qrcode({
     content: key,
     width: size,
     height: size,
     color: color,
-    background: "var(--color-background)",
+    background: bgColor,
     ecl: "M",
   });
 </script>

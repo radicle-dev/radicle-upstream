@@ -32,6 +32,7 @@
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 16px;
 
+    background-color: white;
     box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 16px;
   }
 
@@ -60,11 +61,7 @@
     <QR key={uri} />
     <p class="typo-text-bold connector">
       <Copyable showIcon={true} styleContent={false} copyContent={uri}>
-        <p
-          class="typo-text-small-mono"
-          style="color: var(--color-foreground-level-6)">
-          {ellipsed(uri, 5)}
-        </p>
+        <p class="typo-text-small-mono">{ellipsed(uri, 5)}</p>
       </Copyable>
     </p>
   </div>
