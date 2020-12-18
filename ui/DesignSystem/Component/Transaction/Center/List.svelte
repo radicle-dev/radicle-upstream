@@ -19,7 +19,7 @@
 </style>
 
 <div class="list">
-  {#each transactions as tx (tx.hash)}
+  {#each transactions as tx}
     <Item on:click={() => select(tx.hash)} {tx} />
   {/each}
 </div>
