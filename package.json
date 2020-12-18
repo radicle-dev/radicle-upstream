@@ -134,7 +134,6 @@
     "proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
     "proxy:start:test-watch": "cd proxy && cargo build --bin git-remote-rad && cargo watch -x 'run -- --test'",
     "release": "scripts/release.js",
-    "release:finalize": "scripts/release.js --finalize",
     "postinstall": "patch-package",
     "prettier:check": "yarn _private:prettier --check",
     "prettier:write": "yarn _private:prettier --write",

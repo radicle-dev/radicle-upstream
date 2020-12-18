@@ -473,10 +473,10 @@ pull request, but don't merge it via the GitHub UI:
 
 Finally, complete the release by running:
 
-  👉 yarn release:finalize v0.0.11 417
+  👉 yarn release --finalize v0.0.11 417
 
 
-$ yarn release:finalize v0.0.11 417
+$ yarn release --finalize v0.0.11 417
 
 Finalizing release v0.0.11:
 
