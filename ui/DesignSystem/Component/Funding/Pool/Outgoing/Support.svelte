@@ -103,22 +103,18 @@
 <style>
   .container {
     margin: 0;
-    padding: var(--content-padding) 0px 0px 0;
-    border: 1px solid #ebeff3;
+    border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
     border-radius: 8px;
-  }
-  h3,
-  p {
-    color: var(--color-foreground-level-6);
   }
   header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--content-padding);
-    padding-top: 0px;
-    border-bottom: 1px solid #ebeff3;
+    /* We need to cut enough vertical padding to have the 'Support' heading
+    aligned with the 'Balance' heading of the `Panel` component shown at the left*/
+    padding: calc(var(--content-padding) - 6px) var(--content-padding);
+    border-bottom: 1px solid var(--color-foreground-level-2);
   }
   .row {
     display: flex;
@@ -221,11 +217,20 @@
     <div class="content">
       <div class="description">
         {#if poolData.receivers.size === 0}
-          <div style="display:contents">
+          <p>
             Add receivers to your outgoing support by clicking the “Support”
             button on user profiles. You can also add any Ethereum address to
             your Stream.
-          </div>
+            <!-- svelte-ignore a11y-missing-attribute -->
+            <a
+              hidden={editing}
+              class="typo-link"
+              disabled={ongoingSupportUpdate}
+              style="margin-left: 5px;"
+              on:click={enterEditMode}>
+              Edit
+            </a>
+          </p>
         {:else}
           <div style="display: flex; align-items: center">
             <strong style="margin-left: 0px">
@@ -233,17 +238,18 @@
             per month will go to each of the
             <strong>{poolData.receivers.size} </strong>
             receivers you're supporting.
+
+            <!-- svelte-ignore a11y-missing-attribute -->
+            <a
+              hidden={editing}
+              class="typo-link"
+              disabled={ongoingSupportUpdate}
+              style="margin-left: 5px;"
+              on:click={enterEditMode}>
+              Edit
+            </a>
           </div>
         {/if}
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a
-          hidden={editing}
-          class="typo-link"
-          disabled={ongoingSupportUpdate}
-          style="margin-left: 3px;"
-          on:click={enterEditMode}>
-          Edit
-        </a>
       </div>
 
       <Receivers

@@ -34,7 +34,7 @@
 <Illustration variant={IllustrationVariant.Money} />
 <h1>Stream digital money to all your favorites</h1>
 <p>
-  Streaming sets up an ethereum smart contract that sends money out certain
+  Streaming sets up an Ethereum smart contract that sends money out certain
   speed, defined by you, to a group of people or projects.
 </p>
 <div class="submit">

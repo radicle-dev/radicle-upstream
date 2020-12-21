@@ -62,30 +62,34 @@
     <p
       style="margin-top: 1.5rem; padding: 0 var(--content-padding)"
       class="typo-text">
-      Are you sure you want to add your ethereum address to your Radicle
+      Are you sure you want to add your Ethereum address to your Radicle
       account?
     </p>
   </header>
 
   <div class="from-to">
-    <p class="address typo-text">
-      <Copyable
-        showIcon={false}
-        styleContent={false}
-        copyContent={address}
-        notificationText="Address copied to the clipboard">
-        {address}
-      </Copyable>
-    </p>
+    <div class="entity">
+      <p class="address typo-text">
+        <Copyable
+          showIcon={false}
+          styleContent={false}
+          copyContent={address}
+          notificationText="Address copied to the clipboard">
+          {address}
+        </Copyable>
+      </p>
+    </div>
     <Icon.ArrowDown />
-    <p class="radicle-user typo-text-bold">
-      <Avatar
-        size="small"
-        avatarFallback={identity.avatarFallback}
-        variant="circle"
-        style="margin-right: 10px" />
-      {identity.metadata.handle}
-    </p>
+    <div class="entity">
+      <p class="radicle-user typo-text-bold">
+        <Avatar
+          size="small"
+          avatarFallback={identity.avatarFallback}
+          variant="circle"
+          style="margin-right: 10px" />
+        {identity.metadata.handle}
+      </p>
+    </div>
   </div>
 
   <div class="submit">

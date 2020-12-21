@@ -24,7 +24,7 @@
 
     width: 400px;
 
-    border: 1px solid #ebeff3;
+    border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
     border-radius: 8px;
 
@@ -34,22 +34,12 @@
 
   h3,
   h1 {
-    padding: 0 1rem;
+    padding: 0 2rem;
   }
 
   h1 {
-    margin: 1.35rem 0 1rem -3px;
+    margin: 1.35rem 0 1rem 0px;
     color: var(--color-secondary);
-  }
-
-  .address-box {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    border-top: 1px solid var(--color-foreground-level-2);
-    padding: 1rem;
-    color: var(--color-foreground-level-6);
   }
 
   .menu {
@@ -65,6 +55,16 @@
     background-color: var(--color-background);
     overflow: hidden; /* hack to make inner option corners rounded */
     z-index: 1;
+  }
+
+  .address-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-top: 1px solid var(--color-foreground-level-2);
+    padding: 1rem 2rem;
+    color: var(--color-foreground-level-6);
   }
 </style>
 

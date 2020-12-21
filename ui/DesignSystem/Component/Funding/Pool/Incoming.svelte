@@ -12,7 +12,7 @@
   .incoming-container {
     padding: calc(var(--content-padding) / 2);
 
-    border: 1px solid #ebeff3;
+    border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
     border-radius: 8px;
     background-color: var(--color-secondary-level-1);

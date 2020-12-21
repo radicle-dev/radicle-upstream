@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Illustration, Spinner } from "../../Component";
+  import { Illustration } from "../../Component";
   import { Button } from "../../Primitive";
 
   import { Variant as IllustrationVariant } from "../../../src/illustration";
@@ -12,29 +12,27 @@
   .wrapper {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
-
+    height: calc(100vh - var(--bigheader-height));
     text-align: center;
-    padding: var(--content-padding);
+    max-width: 30rem;
+    margin: 0 auto;
+    gap: 1.5rem;
+  }
 
-    height: 300px;
-    width: 380px;
-    margin: 20vh auto;
+  .connecting {
+    cursor: wait;
   }
 </style>
 
-<div class="wrapper">
+<div class="wrapper" class:connecting>
   <Illustration variant={IllustrationVariant.Purse} />
   <p class="typo-text">
     In order to give and receive funds, you need to connect an Ethereum wallet
     you own.
   </p>
-  {#if connecting}
-    <Spinner />
-  {:else}
-    <Button disabled={connecting} on:click={onConnect}>
-      Connect your wallet
-    </Button>
-  {/if}
+  <Button disabled={connecting} on:click={onConnect}>
+    Connect your wallet
+  </Button>
 </div>

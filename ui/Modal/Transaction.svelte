@@ -29,6 +29,7 @@
 
   $: statusColor = colorForStatus(tx.status);
   $: transferedAmount = transferAmount(tx);
+  $: incoming = isIncoming(tx);
 </script>
 
 <style>
@@ -75,6 +76,10 @@
     border-radius: 4px;
   }
 
+  .from-to:not(.incoming) {
+    flex-direction: column-reverse;
+  }
+
   .from-to .arrow {
     padding: 0.7rem 0;
   }
@@ -115,41 +120,23 @@
     <Illustration variant={IllustrationVariant.Purse} />
     <h1>{tx.kind}</h1>
     <Summary {tx} style="margin-top: 1.5rem" />
-    <div class="from-to">
-      <p class="typo-text-bold subheading">
-        <!-- TODO(nuno): DRY this -->
-        {#if isIncoming(tx)}
-          <span class="address typo-text">
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={tx.to}
-              notificationText="Address copied to the clipboard">
-              {tx.to || 'n/a'}
-            </Copyable>
-          </span>
-        {:else}
-          <Identity />
-        {/if}
-      </p>
+    <div class="from-to" class:incoming>
+      <div>
+        <p class="typo-text-bold" style="margin-bottom: 7px">Radicle Pool</p>
+        <Copyable
+          showIcon={false}
+          styleContent={false}
+          copyContent={tx.to}
+          notificationText="Address copied to the clipboard">
+          <p class="address typo-text">{tx.to || 'n/a'}</p>
+        </Copyable>
+      </div>
+
       <div class="arrow">
         <Icon.ArrowDown />
       </div>
-      <p class="typo-text-bold subheading">
-        {#if isIncoming(tx)}
-          <Identity />
-        {:else}
-          <span class="address typo-text">
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={tx.to}
-              notificationText="Address copied to the clipboard">
-              {tx.to || 'n/a'}
-            </Copyable>
-          </span>
-        {/if}
-      </p>
+
+      <Identity address={tx.from} />
     </div>
   </header>
 

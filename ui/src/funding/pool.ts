@@ -162,8 +162,9 @@ export function make(wallet: Wallet): Pool {
     return poolContract
       .withdraw(amount)
       .then(async (tx: ContractTransaction) => {
+        const ALL = await poolContract.withdrawAllFlag();
         const infoAmount =
-          amount === (await poolContract.withdrawAllFlag())
+          amount.toString() === ALL.toString()
             ? data.unwrap()?.balance || 0
             : amount;
         transaction.add(transaction.withdraw(tx, infoAmount));
@@ -296,10 +297,11 @@ export const balanceValidationStore = (
   ]);
 };
 
-// Check whether this pool is onboarded.
+// Check whether the user has onboarded their pool.
 export function isOnboarded(data: PoolData): boolean {
   return (
-    data.receivers.size > 0 || data.amountPerBlock !== "0" || data.balance > 0
+    data.erc20Allowance > 0 &&
+    (data.receivers.size > 0 || data.amountPerBlock !== "0" || data.balance > 0)
   );
 }
 

@@ -3,7 +3,6 @@
 
   import type { ButtonVariant } from "../../src/style";
   import * as notification from "../../src/notification";
-  import Spinner from "./Spinner.svelte";
 
   export let title: string = "";
   export let variant: ButtonVariant = "primary";
@@ -19,7 +18,9 @@
     try {
       running = true;
       notification.info(
-        "Waiting for you to confirm the transaction in your connected wallet."
+        "Waiting for you to confirm the transaction in your connected wallet.",
+        true,
+        false
       );
       await onClick();
     } catch (error) {
@@ -35,12 +36,14 @@
   .button-wrapper {
     margin-left: 7px;
   }
+
+  .running {
+    cursor: wait;
+  }
 </style>
 
-<span class="button-wrapper" data-cy={dataCy}>
-  {#if running}
-    <Spinner />
-  {:else}
-    <Button {disabled} {variant} on:click={userDidClick}>{title}</Button>
-  {/if}
+<span class="button-wrapper" class:running data-cy={dataCy}>
+  <Button disabled={disabled || running} {variant} on:click={userDidClick}>
+    {title}
+  </Button>
 </span>

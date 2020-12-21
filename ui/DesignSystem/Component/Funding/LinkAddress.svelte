@@ -21,7 +21,7 @@
     text-align: center;
     padding: 10vh 0;
 
-    border: 1px solid #ebeff3;
+    border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
     border-radius: 8px;
     width: 100%;

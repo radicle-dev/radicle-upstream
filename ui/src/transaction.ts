@@ -137,7 +137,7 @@ export function topUp(txc: ContractTransaction, amount: BigNumberish): Tx {
 }
 
 export function withdraw(txc: ContractTransaction, amount: BigNumberish): Tx {
-  const meta: Withdraw = { kind: TxKind.Withdraw, amount };
+  const meta: Withdraw = { kind: TxKind.Withdraw, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 

@@ -37,7 +37,7 @@
     <p
       style="margin-top: 1.5rem; padding: 0 var(--content-padding)"
       class="typo-text">
-      Are you sure you want to add your ethereum address to your Radicle
+      Are you sure you want to add your Ethereum address to your Radicle
       account?
     </p>
   </header>
