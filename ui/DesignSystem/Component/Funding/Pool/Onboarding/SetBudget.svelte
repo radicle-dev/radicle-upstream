@@ -9,7 +9,7 @@
   } from "../../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../../src/validation";
 
-  export let budget = 0;
+  export let budget: number = 0;
   export let onCancel: () => void;
   export let onContinue: () => void;
 

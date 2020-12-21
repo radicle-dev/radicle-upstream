@@ -257,7 +257,7 @@ const contraints = {
       allowEmpty: false,
     },
     numericality: {
-      strict: true,
+      strict: false,
       greaterThan: -1,
     },
   },
@@ -269,7 +269,7 @@ const contraints = {
       allowEmpty: false,
     },
     numericality: {
-      strict: true,
+      strict: false,
       greaterThan: 0,
     },
   },
