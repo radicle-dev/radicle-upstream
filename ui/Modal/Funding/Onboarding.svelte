@@ -46,8 +46,7 @@
         return Step.TopUp;
       case Step.TopUp:
         return Step.Review;
-      case Step.Review:
-        // Should not happen but required by the "type system".
+      default:
         return Step.Review;
     }
   }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Input } from "../../../../Primitive";
+  import { Button, Icon, Input } from "../../../../Primitive";
   import { Dai, Remote, TxButton } from "../../../../Component";
 
   import Receivers from "../Receivers.svelte";
@@ -23,6 +23,7 @@
   let ongoingTopUp = false;
   let ongoingWithdraw = false;
   let ongoingSupportUpdate = false;
+  let paused = false;
 
   transaction.store.subscribe(_ => {
     ongoingTopUp = transaction.ongoing(transaction.TxKind.TopUp);
@@ -48,8 +49,9 @@
   pool.data.subscribe(store => {
     if (store.status === remote.Status.Success) {
       data = store.data;
-      budget = data.amountPerBlock;
+      budget = data.amountPerBlock.toString();
       receivers = new Map(data.receivers);
+      paused = data.balance <= data.amountPerBlock || data.amountPerBlock === 0;
     }
   });
 
@@ -70,7 +72,7 @@
 
   function leaveEditMode(): void {
     editing = false;
-    budget = data.amountPerBlock;
+    budget = data.amountPerBlock.toString();
     receivers = new Map(data.receivers);
   }
 
@@ -137,8 +139,10 @@
     font-size: 14px;
     line-height: 18px;
     display: flex;
+    gap: 10px;
     align-items: center;
-    text-align: center;
+    text-align: left;
+
     margin-top: var(--content-padding);
     color: var(--color-foreground-level-5);
   }
@@ -259,8 +263,15 @@
         style="margin-top: 1rem" />
 
       <div class="tip">
-        ⓘ To stop or pause your support, set the monthly contribution to 0 or
-        withdraw all the remaining balance.
+        {#if paused}
+          <Icon.ExclamationCircle />Your support is paused. To resume, make sure
+          you have enough balance and a montly budget set to be split amongst
+          the users you support.
+        {:else}
+          <Icon.InfoCircle />
+          To stop or pause your support, set the monthly contribution to 0 or
+          withdraw all the remaining balance.
+        {/if}
       </div>
     </div>
   </div>

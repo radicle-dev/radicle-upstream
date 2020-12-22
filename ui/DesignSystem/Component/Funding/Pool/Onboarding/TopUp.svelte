@@ -11,7 +11,15 @@
   let disabled = true;
 
   $: accountBalance = $wallet.connected.account.balance * 1;
+
+  const onKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Enter" && !disabled) {
+      onContinue();
+    }
+  };
 </script>
+
+<svelte:window on:keydown={onKeydown} />
 
 <TopUp
   bind:amount

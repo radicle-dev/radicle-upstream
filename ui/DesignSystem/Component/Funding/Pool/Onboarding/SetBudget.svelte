@@ -21,7 +21,14 @@
     if (validating) validation.validate($budgetStore);
   }
 
+  let disabled = true;
   $: disabled = $validation.status !== ValidationStatus.Success;
+
+  const onKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Enter" && !disabled) {
+      onContinue();
+    }
+  };
 </script>
 
 <style>
@@ -42,6 +49,8 @@
     width: 100%;
   }
 </style>
+
+<svelte:window on:keydown={onKeydown} />
 
 <Illustration variant={IllustrationVariant.Money} />
 <h1>Set a monthly budget</h1>

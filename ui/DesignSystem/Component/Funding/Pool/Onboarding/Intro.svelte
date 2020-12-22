@@ -6,6 +6,12 @@
 
   export let onCancel: () => void;
   export let onContinue: () => void;
+
+  const onKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Enter") {
+      onContinue();
+    }
+  };
 </script>
 
 <style>
@@ -30,6 +36,8 @@
     width: 100%;
   }
 </style>
+
+<svelte:window on:keydown={onKeydown} />
 
 <Illustration variant={IllustrationVariant.Money} />
 <h1>Stream digital money to all your favorites</h1>

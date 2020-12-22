@@ -9,6 +9,12 @@
   export let receivers: pool.Receivers;
   export let onBack: () => void;
   export let onContinue: () => void;
+
+  const onKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Enter") {
+      onContinue();
+    }
+  };
 </script>
 
 <style>
@@ -29,6 +35,8 @@
     width: 100%;
   }
 </style>
+
+<svelte:window on:keydown={onKeydown} />
 
 <Illustration variant={IllustrationVariant.Money} />
 <h1>Add receivers</h1>

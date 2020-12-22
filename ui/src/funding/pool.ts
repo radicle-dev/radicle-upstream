@@ -49,9 +49,9 @@ export interface Pool {
 // All the data representing a pool.
 export interface PoolData {
   // The remaining balance of this pool.
-  balance: number;
+  balance: BigNumberish;
   // The total amount to be disbursed to all receivers with each block.
-  amountPerBlock: string;
+  amountPerBlock: BigNumberish;
   // The list of addresses that receive funds from the pool.
   receivers: Receivers;
   // Funds that the user can collect from their givers.
