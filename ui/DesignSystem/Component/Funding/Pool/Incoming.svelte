@@ -35,9 +35,7 @@
     <div class="text">
       There’s
       <div class="typo-text-bold">
-        <Dai color={'var(--color-secondary)'} style="margin: 0 7px">
-          {amount}
-        </Dai>
+        <Dai color="var(--color-secondary)" style="margin: 0 7px">{amount}</Dai>
       </div>
       waiting on you from supporters.
     </div>

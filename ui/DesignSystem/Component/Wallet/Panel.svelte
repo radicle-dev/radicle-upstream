@@ -12,7 +12,7 @@
   $: balanceFontSize = `min(36px, calc(20rem / ${Math.max(
     account.balance.length,
     1
-  )})`;
+  )}))`;
 
   let expanded = false;
 </script>
@@ -72,8 +72,8 @@
   <h3>Balance</h3>
   <h1>
     <Dai
-      color={'var(--color-secondary)'}
-      size={'h1'}
+      color="var(--color-secondary)"
+      size="h1"
       style={`font-size: ${balanceFontSize}`}>
       {wallet.formattedBalance(parseInt(account.balance))}
     </Dai>

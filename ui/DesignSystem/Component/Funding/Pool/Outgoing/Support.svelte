@@ -177,7 +177,9 @@
               </div>
             </Input.Text>
           {:else}
-            <Dai>{poolData.amountPerBlock}</Dai>
+            <p class="typo-text-bold">
+              <Dai>{poolData.amountPerBlock}</Dai>
+            </p>
           {/if}
           <span style="margin-left: 7px;"> per month</span>
         </span>

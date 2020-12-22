@@ -20,10 +20,12 @@
   .dai {
     display: flex;
     align-items: center;
+
+    color: var(--color-foreground-level-6);
   }
 </style>
 
-<div class="dai" {style}>
+<div class="dai" style="{style}; color: {color};">
   <Icon.CurrencyDAI
     style="fill: {color}; padding-top: 3px; width: {getSize()}px; height: {getSize()}px;" />
   <slot />
