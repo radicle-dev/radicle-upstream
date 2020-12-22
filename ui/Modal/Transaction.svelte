@@ -3,6 +3,7 @@
   import {
     Copyable,
     Dai,
+    NegativeDai,
     Identity,
     Illustration,
   } from "../DesignSystem/Component";
@@ -146,9 +147,11 @@
         <div class="row">
           <p>Amount</p>
           <p class="typo-semi-bold">
-            <Dai variant={incoming ? 'regular' : 'negative'}>
-              {transferedAmount}
-            </Dai>
+            {#if incoming}
+              <Dai>{transferedAmount}</Dai>
+            {:else}
+              <NegativeDai>{transferedAmount}</NegativeDai>
+            {/if}
           </p>
         </div>
       </div>

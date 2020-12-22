@@ -2,11 +2,7 @@
   import { Icon } from "../Primitive";
 
   export let style = "";
-  export let variant = "regular"; // negative
-  export let color =
-    variant === "regular"
-      ? "var(--color-foreground-level-6)"
-      : "var(--color-negative)";
+  export let color = "var(--color-foreground-level-6)";
 
   export let size = "p"; // h1
 
@@ -25,28 +21,10 @@
     display: flex;
     align-items: center;
   }
-  .negative {
-    padding: 3px 8px;
-    border-radius: 3px;
-
-    background-color: var(--color-negative-level-1);
-  }
-
-  .negative,
-  .negative * {
-    color: var(--color-negative);
-  }
-
-  .negative .symbol:before {
-    content: "-";
-    color: var(--color-negative);
-    margin: 0 3px;
-  }
 </style>
 
-<div class="dai" class:negative={variant === 'negative'} {style}>
+<div class="dai" {style}>
   <Icon.CurrencyDAI
     style="fill: {color}; padding-top: 3px; width: {getSize()}px; height: {getSize()}px;" />
-  <div class="symbol" />
   <slot />
 </div>
