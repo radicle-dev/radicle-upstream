@@ -1,13 +1,18 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
-  // Currently active option.
-  export let active = null;
-  // The available options.
-  export let options = null;
+  interface Option {
+    value: string;
+    title: string;
+  }
 
-  const onClick = option => {
+  // Currently active option.
+  export let active: string;
+  // The available options.
+  export let options: Option[];
+
+  const onClick = (option: Option) => {
     dispatch("select", option.value);
     currentlyActive = option.value;
   };
