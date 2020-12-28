@@ -6,7 +6,7 @@ import * as validation from "../validation";
 
 import { Wallet, Account, Status } from "../wallet";
 import * as remote from "../remote";
-import { BigNumber, BigNumberish, ContractTransaction } from "ethers";
+import { BigNumber, BigNumberish, ContractTransaction, ethers } from "ethers";
 
 export const store = svelteStore.writable<Pool | null>(null);
 
@@ -228,9 +228,9 @@ export function make(wallet: Wallet): Pool {
 /**
  * Stores
  */
-export const membersStore = svelteStore.writable("");
 export const amountStore = svelteStore.writable("");
 export const budgetStore = svelteStore.writable("");
+export const receiverStore = svelteStore.writable("");
 
 /**
  *
@@ -238,18 +238,7 @@ export const budgetStore = svelteStore.writable("");
  *
  */
 
-// Patterns
-const COMMA_SEPARATED_LIST = /(^[-\w\s]+(?:,[-\w\s]*)*$)?/;
-
 const contraints = {
-  // The contraints for a valid input list of members.
-  members: {
-    format: {
-      pattern: COMMA_SEPARATED_LIST,
-      message: `Should be a comma-separated list of addresses`,
-    },
-  },
-
   // The contraints for a valid monthly contribution.
   monthlyContribution: {
     presence: {
@@ -275,9 +264,18 @@ const contraints = {
   },
 };
 
-export const membersValidationStore: validation.ValidationStore = validation.createValidationStore(
-  contraints.members
-);
+export const receiverValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore({}, [
+    {
+      promise: isAddress,
+      validationMessage: "Please provide a valid Ethereum address",
+    },
+  ]);
+};
+
+function isAddress(value: string): Promise<boolean> {
+  return Promise.resolve(ethers.utils.isAddress(value));
+}
 
 export const monthlyContributionValidationStore = (): validation.ValidationStore => {
   return validation.createValidationStore(contraints.monthlyContribution);

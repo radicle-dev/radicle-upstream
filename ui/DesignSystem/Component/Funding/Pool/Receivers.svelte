@@ -3,8 +3,13 @@
 
   import Receiver from "./Receiver.svelte";
 
-  import { ReceiverStatus } from "../../../../src/funding/pool";
+  import {
+    ReceiverStatus,
+    receiverStore,
+    receiverValidationStore,
+  } from "../../../../src/funding/pool";
   import * as pool from "../../../../src/funding/pool";
+  import { ValidationStatus } from "../../../../src/validation";
 
   // The current list of receivers
   export let receivers: pool.Receivers = new Map();
@@ -63,6 +68,17 @@
     ];
     return s.indexOf(statusA) > s.indexOf(statusB) ? -1 : 1;
   });
+
+  let validating = false;
+  $: validation = receiverValidationStore();
+  $: receiverStore.set(newValue);
+  $: {
+    if ($receiverStore && $receiverStore.length > 0) validating = true;
+    if (validating) validation.validate($receiverStore);
+  }
+
+  let disabled = true;
+  $: disabled = $validation.status !== ValidationStatus.Success;
 </script>
 
 <style>
@@ -101,11 +117,11 @@
       <Input.Text
         disabled={updating}
         bind:value={newValue}
-        placeholder="Enter a Radicle ID or Ethereum address"
+        placeholder="Enter an Ethereum address"
         style="min-width: 360px" />
 
       <Button
-        disabled={newValue.trim().length === 0 || updating}
+        disabled={disabled || updating}
         on:click={() => addNew(newValue)}
         variant="outline"
         style="margin-left: 8px; border-color: var(--color-foreground-level-3)">
