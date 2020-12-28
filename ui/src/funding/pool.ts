@@ -238,8 +238,8 @@ export const receiverStore = svelteStore.writable("");
  *
  */
 
-const contraints = {
-  // The contraints for a valid monthly contribution.
+const constraints = {
+  // The constraints for a valid monthly contribution.
   monthlyContribution: {
     presence: {
       message: "The amount is required",
@@ -251,7 +251,7 @@ const contraints = {
     },
   },
 
-  // The contraints for a valid pool top up amount input.
+  // The constraints for a valid pool top up amount input.
   topUpAmount: {
     presence: {
       message: "The amount is required",
@@ -278,7 +278,7 @@ function isAddress(value: string): Promise<boolean> {
 }
 
 export const monthlyContributionValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore(contraints.monthlyContribution);
+  return validation.createValidationStore(constraints.monthlyContribution);
 };
 
 // Validate a balance operation, either a 'Top Up' or a 'Cash out'.
@@ -287,7 +287,7 @@ export const monthlyContributionValidationStore = (): validation.ValidationStore
 export const balanceValidationStore = (
   balance: BigNumberish
 ): validation.ValidationStore => {
-  return validation.createValidationStore(contraints.topUpAmount, [
+  return validation.createValidationStore(constraints.topUpAmount, [
     {
       promise: amount => Promise.resolve(balance >= amount),
       validationMessage: "Insufficient balance",
