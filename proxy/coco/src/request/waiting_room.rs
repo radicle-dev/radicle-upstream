@@ -415,7 +415,7 @@ impl<T, D> WaitingRoom<T, D> {
         let requested = self
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
-                request.timestamp().clone() + backoff(request.attempts().queries) < timestamp
+                request.timestamp().clone() + backoff(request.attempts().queries) <= timestamp
             });
 
         created.or(requested).map(|(urn, _request)| urn)
