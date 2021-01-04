@@ -99,7 +99,7 @@ context("onboarding", () => {
 
       it("starts validation after at least 2 characters are input", () => {
         commands.pick("handle-input").type("@");
-        commands.pick("validation-error-icon").should("not.be.visible");
+        commands.pick("validation-error-icon").should("not.exist");
         commands.pick("handle-input").type("@");
         commands.pick("validation-error-icon").should("be.visible");
       });
