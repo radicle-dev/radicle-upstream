@@ -135,7 +135,7 @@
     "svelte:check": "svelte-check",
     "svelte:check:watch": "svelte-check --watch",
     "rollup:clean": "rm -rf public/bundle.* && rm -f native/main.comp.js",
-    "rollup:build": "yarn rollup:clean && rollup -c",
+    "rollup:build": "yarn rollup:clean && rollup -c --failAfterWarnings",
     "rollup:watch": "yarn rollup:clean && rollup -c -w",
     "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "proxy:build": "cd proxy && cargo build --all-features --all-targets",
