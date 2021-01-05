@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **ci:** fail after rollup warnings ([#1502](https://github.com/radicle-dev/radicle-upstream/pull/1502))
 * **ui:** make logo text color work in dark/light mode ([#1491](https://github.com/radicle-dev/radicle-upstream/issues/1491)) ([34e09fe](https://github.com/radicle-dev/radicle-upstream/commit/34e09fe2721e3c329c3827c0db9a718269491edb))
-* **ci:** put timeout on proxy tests ([c111d6e](https://github.com/radicle-dev/radicle-upstream/commit/c111d6eaa7963bac9d30ad0708115103d8267d61)), closes [#1378](https://github.com/radicle-dev/radicle-upstream/issues/1378) [#1379](https://github.com/radicle-dev/radicle-upstream/issues/1379)
+* **ci:** put timeout on proxy tests ([#1474](https://github.com/radicle-dev/radicle-upstream/pull/1474)) ([c111d6e](https://github.com/radicle-dev/radicle-upstream/commit/c111d6eaa7963bac9d30ad0708115103d8267d61)), closes [#1378](https://github.com/radicle-dev/radicle-upstream/issues/1378) [#1379](https://github.com/radicle-dev/radicle-upstream/issues/1379)
 * **ui:** fix list border overflow ([#1467](https://github.com/radicle-dev/radicle-upstream/issues/1467)) ([ec227a4](https://github.com/radicle-dev/radicle-upstream/commit/ec227a4e8878cb6fa7ab9905f0ecadb43de08a17)), closes [#1447](https://github.com/radicle-dev/radicle-upstream/issues/1447)
 * **proxy:** fix proxy crash due to waitingroom bug ([#1500](https://github.com/radicle-dev/radicle-upstream/pull/1500)) ([3f0c7d9](https://github.com/radicle-dev/radicle-upstream/commit/3f0c7d9997fa58293f5ca15553ac4709ad954c1b)), closes [#1433](https://github.com/radicle-dev/radicle-upstream/issues/1433)
 
