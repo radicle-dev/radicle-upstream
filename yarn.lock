@@ -7442,8 +7442,9 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
-"radicle-contracts@file:../radicle-contracts":
+"radicle-contracts@git+https://github.com/radicle-dev/radicle-contracts.git#eba1db9aec660fa1425ef95aa828a3e6b1ba6211":
   version "0.0.0"
+  resolved "git+https://github.com/radicle-dev/radicle-contracts.git#eba1db9aec660fa1425ef95aa828a3e6b1ba6211"
 
 ramda@~0.26.1:
   version "0.26.1"
