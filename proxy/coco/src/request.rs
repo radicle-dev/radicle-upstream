@@ -7,10 +7,7 @@
 // See https://github.com/rust-lang/rust-clippy/issues/4859 for more information.
 #![allow(clippy::use_self)]
 
-use std::{
-    collections::HashMap,
-    ops::{Deref, Sub},
-};
+use std::{collections::HashMap, ops::Deref};
 
 use either::Either;
 use serde::{Deserialize, Serialize};
@@ -96,15 +93,9 @@ impl<S, T> Request<S, T> {
         &self.urn
     }
 
-    /// Get the elapsed time between the `timestamp` provided and the current timestamp of the
-    /// `Request`.
-    ///
-    /// Note that it's expected that the `timestamp` is later than the `Request`'s timestamp.
-    pub fn elapsed(&self, timestamp: T) -> T::Output
-    where
-        T: Sub<T> + Clone,
-    {
-        timestamp - self.timestamp.clone()
+    /// Get the the current timestamp of the `Request`.
+    pub const fn timestamp(&self) -> &T {
+        &self.timestamp
     }
 
     /// Transition this `Request` into an `Cancelled` state. We can only transition a particular
