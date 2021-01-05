@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.5...v0.1.6) (2021-01-05)
+
+
+### Bug Fixes
+
+* **ci:** fail after rollup warnings ([ea67e73](https://github.com/radicle-dev/radicle-upstream/commit/ea67e73344961eaf47137623e753945eeb0306ca)), closes [/buildkite.com/monadic/radicle-upstream/builds/7106#b58d91d2-5a95-4d61-90c6-811b4e88c037](https://github.com/radicle-dev//buildkite.com/monadic/radicle-upstream/builds/7106/issues/b58d91d2-5a95-4d61-90c6-811b4e88c037)
+* make logo text color work in dark/light mode ([#1491](https://github.com/radicle-dev/radicle-upstream/issues/1491)) ([34e09fe](https://github.com/radicle-dev/radicle-upstream/commit/34e09fe2721e3c329c3827c0db9a718269491edb))
+* **ci:** put timeout on proxy tests ([c111d6e](https://github.com/radicle-dev/radicle-upstream/commit/c111d6eaa7963bac9d30ad0708115103d8267d61)), closes [#1378](https://github.com/radicle-dev/radicle-upstream/issues/1378) [#1379](https://github.com/radicle-dev/radicle-upstream/issues/1379)
+* **ui:** list border overflow ([#1467](https://github.com/radicle-dev/radicle-upstream/issues/1467)) ([ec227a4](https://github.com/radicle-dev/radicle-upstream/commit/ec227a4e8878cb6fa7ab9905f0ecadb43de08a17)), closes [#1447](https://github.com/radicle-dev/radicle-upstream/issues/1447)
+
 ### [0.1.5](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.4...v0.1.5) (2020-12-08)
 
 
