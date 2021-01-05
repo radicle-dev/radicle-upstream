@@ -14,7 +14,6 @@ use radicle_git_ext::RefLike;
 use git2;
 
 use coco::{
-    config,
     peer::run_config,
     project::{peer, Peer},
     seed::Seed,

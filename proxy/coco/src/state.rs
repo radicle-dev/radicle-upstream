@@ -935,6 +935,12 @@ mod test {
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
 
+        let repo = git2::Repository::open(repo_path.join("radicalise"))
+            .map_err(radicle_surf::vcs::git::error::Error::from)?;
+        let main = repo.find_branch("main", git2::BranchType::Local)?;
+
+        dbg!(main.upstream().unwrap().name().unwrap());
+
         Ok(())
     }
 
