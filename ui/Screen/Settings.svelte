@@ -1,5 +1,5 @@
-<script>
-  import { getContext, onMount } from "svelte";
+<script lang="typescript">
+  import { getContext } from "svelte";
 
   import {
     settings,
@@ -8,10 +8,11 @@
     removeSeed,
     updateAppearance,
     updateFeatureFlags,
-  } from "../src/session.ts";
-  import { themeOptions, featureFlagOptions } from "../src/settings.ts";
-  import * as path from "../src/path.ts";
-  import * as modal from "../src/modal.ts";
+  } from "../src/session";
+  import type { UnsealedSession } from "../src/session";
+  import { themeOptions, featureFlagOptions } from "../src/settings";
+  import * as path from "../src/path";
+  import * as modal from "../src/modal";
   import { getVersion } from "../src/ipc";
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
@@ -22,13 +23,13 @@
     StyledCopyable,
   } from "../DesignSystem/Component";
 
-  const updateTheme = event =>
+  const updateTheme = (event: CustomEvent) =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 
-  const updateFundingFeatureFlag = event =>
+  const updateFundingFeatureFlag = (event: CustomEvent) =>
     updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
 
-  let seedInputValue;
+  let seedInputValue = "";
 
   const submitSeed = async () => {
     if (await addSeed(seedInputValue)) {
@@ -40,13 +41,13 @@
     seedValidation.reset();
   }
 
-  let version;
+  let version = "";
 
-  onMount(async () => {
+  (async () => {
     version = await getVersion();
-  });
+  })();
 
-  const session = getContext("session");
+  const session = getContext("session") as UnsealedSession;
 </script>
 
 <style>

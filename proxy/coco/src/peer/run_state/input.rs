@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::SystemTime;
 
 use tokio::sync::oneshot;
 
@@ -56,19 +56,19 @@ pub enum Control {
     /// Cancel an ongoing project search.
     CancelRequest(
         RadUrn,
-        Instant,
-        oneshot::Sender<Result<Option<SomeRequest<Instant>>, waiting_room::Error>>,
+        SystemTime,
+        oneshot::Sender<Result<Option<SomeRequest<SystemTime>>, waiting_room::Error>>,
     ),
     /// Initiate a new project search on the network.
     CreateRequest(
         RadUrn,
-        Instant,
-        oneshot::Sender<waiting_room::Created<Instant>>,
+        SystemTime,
+        oneshot::Sender<waiting_room::Created<SystemTime>>,
     ),
     /// Request a project search.
-    GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<Instant>>>),
+    GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<SystemTime>>>),
     /// Request the list of project searches.
-    ListRequests(oneshot::Sender<Vec<SomeRequest<Instant>>>),
+    ListRequests(oneshot::Sender<Vec<SomeRequest<SystemTime>>>),
 }
 
 /// Request event for projects requested from the network.
