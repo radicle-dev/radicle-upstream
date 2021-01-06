@@ -14,6 +14,7 @@ import Illustration from "./Illustration.svelte";
 import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
+import Modal from "./Modal.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
@@ -58,6 +59,7 @@ export {
   KeyHint,
   Label,
   List,
+  Modal,
   ModalOverlay,
   NavigationButtons,
   Notification,
