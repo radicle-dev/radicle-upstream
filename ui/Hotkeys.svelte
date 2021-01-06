@@ -30,12 +30,7 @@
       event.target &&
       (event.target as HTMLInputElement).type === "text";
 
-    if (
-      !hotkeys.areEnabled() ||
-      screen.isLocked() ||
-      hasInputTarget ||
-      event.repeat
-    ) {
+    if (screen.isLocked() || hasInputTarget || event.repeat) {
       return false;
     }
 
