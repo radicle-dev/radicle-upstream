@@ -98,6 +98,10 @@
       error.show($store.error);
       break;
   }
+
+  $: sessionIsUnsealed =
+    $store.status === remote.Status.Success &&
+    $store.data.status === Status.UnsealedSession;
 </script>
 
 <style>
@@ -117,7 +121,9 @@
 <NotificationFaucet />
 <Theme />
 
-<TransactionCenter />
+{#if sessionIsUnsealed}
+  <TransactionCenter />
+{/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
   <Router {routes} />
