@@ -2,8 +2,8 @@ import type { BigNumberish, ContractTransaction, Signer } from "ethers";
 import {
   Erc20Pool,
   Erc20Pool__factory as PoolFactory,
-  Erc20,
-  Erc20__factory as Erc20Factory,
+  ERC20,
+  ERC20__factory as Erc20Factory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 // TODO(nuno): make the contract addresses configurable/env-dependant
@@ -20,7 +20,7 @@ export function pool(
 
 export const ERC20_TOKEN_ADDRESS = "0xf34a89802590f944e3de71b1f74d66ed1bafc9cd";
 
-export function erc20Token(signer: Signer): Erc20 {
+export function erc20Token(signer: Signer): ERC20 {
   return Erc20Factory.connect(ERC20_TOKEN_ADDRESS, signer);
 }
 

@@ -57,14 +57,6 @@ In the development environment, we set up these three pieces as follows:
   - `cd walletconnect-test-wallet`
   - `npm install`
 
-- Install the [Radicle Contracts][rc]
-
-  - `git clone git@github.com:radicle-dev/radicle-contracts.git`
-  - `cd radicle-contracts`
-  - `yarn`
-
-- Run `yarn install` within `radicle-upstream`
-
 - Set up the local test ethereum account
 
   - Run `npm run start` within `walletconnect-test-wallet`. It should open the
@@ -72,9 +64,12 @@ In the development environment, we set up these three pieces as follows:
 
   - Copy the full address provided at the top of the page.
 
-  - Now, in `radicle-upstream`, run:
-    - `mkdir sandbox`
-    - `touch sandbox/.local-eth-account`
+- Now, in `radicle-upstream`, run:
+
+  - `yarn install`
+
+  - `mkdir sandbox`
+  - `touch sandbox/.local-eth-account`
 
   - Finally, paste the copied address in that file
 
