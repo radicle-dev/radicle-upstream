@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Dai } from "../Component";
+  import Dai from "./Dai.svelte";
 
   export let style = "";
   export let size = "p"; // h1
