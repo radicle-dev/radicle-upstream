@@ -12,7 +12,7 @@
   import type { Urn } from "../src/urn";
 
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
-  import { List, Remote } from "../DesignSystem/Component";
+  import { List, Modal, Remote } from "../DesignSystem/Component";
 
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
@@ -48,20 +48,6 @@
 </script>
 
 <style>
-  .container {
-    width: 38.5rem;
-    background: var(--color-background);
-    border-radius: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-  }
-
-  .container:focus {
-    outline: none;
-  }
-
   .peer-entry-form {
     flex: 1;
     display: flex;
@@ -79,7 +65,7 @@
 </style>
 
 <Remote {store} let:data={{ peerSelection, project }}>
-  <div data-cy="remotes-modal" class="container">
+  <Modal dataCy="remotes-modal">
     <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
 
     <h1>Manage remotes</h1>
@@ -148,5 +134,5 @@
           projectUrn={project.urn} />
       </List>
     </Remote>
-  </div>
+  </Modal>
 </Remote>

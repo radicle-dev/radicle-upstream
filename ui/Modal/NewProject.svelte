@@ -28,6 +28,7 @@
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
+    Modal,
     RadioOption,
     RemoteHelperHint,
     Tooltip,
@@ -147,13 +148,6 @@
 </script>
 
 <style>
-  .container {
-    width: 37.5rem;
-    background: var(--color-background);
-    border-radius: 0.5rem;
-    padding: 3rem 2rem 2rem 2rem;
-  }
-
   .create-project {
     display: flex;
     flex-direction: column;
@@ -184,7 +178,7 @@
   }
 </style>
 
-<div class="container" data-cy="page">
+<Modal dataCy="page">
   <div class="create-project" data-cy="create-project">
     <Emoji
       emoji={'🌠'}
@@ -300,4 +294,4 @@
       </div>
     </div>
   </div>
-</div>
+</Modal>
