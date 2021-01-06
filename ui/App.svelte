@@ -1,6 +1,7 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
+  import * as hotkeys from "./src/hotkeys.ts";
   import "./src/localPeer.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
@@ -76,8 +77,10 @@
 
     case remote.Status.Success:
       if ($store.data.status === Status.NoSession) {
+        hotkeys.disable();
         push(path.onboarding());
       } else if ($store.data.status === Status.UnsealedSession) {
+        hotkeys.enable();
         if (
           $location === path.blank() ||
           $location === path.onboarding() ||
@@ -86,6 +89,7 @@
           push(path.profileProjects());
         }
       } else {
+        hotkeys.disable();
         push(path.lock());
       }
       break;
@@ -112,12 +116,12 @@
 </style>
 
 <Bsod />
+<Hotkeys />
 <ModalOverlay {modalRoutes} />
 <NotificationFaucet />
 <Theme />
 
 {#if sessionIsUnsealed}
-  <Hotkeys />
   <TransactionCenter />
 {/if}
 
