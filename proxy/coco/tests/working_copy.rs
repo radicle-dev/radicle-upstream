@@ -1,11 +1,13 @@
 use coco::RunConfig;
 
+use pretty_assertions::assert_eq;
+
 #[macro_use]
 mod common;
 use common::{build_peer, init_logging, shia_le_pathbuf};
 
 #[tokio::test]
-async fn can_create_working_copy() -> Result<(), Box<dyn std::error::Error>> {
+async fn upstream_for_default() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
@@ -15,17 +17,15 @@ async fn can_create_working_copy() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::task::spawn(alice_peer.into_running());
 
-    let project = alice_state
+    let _ = alice_state
         .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
         .await?;
 
-    println!("{:?}", alice_repo_path.join("just"));
-    // std::thread::sleep(std::time::Duration::from_secs(1000000));
     let repo = git2::Repository::open(alice_repo_path.join("just"))
         .map_err(radicle_surf::vcs::git::error::Error::from)?;
-    let main = repo.find_branch("it", git2::BranchType::Local)?;
+    let remote = repo.branch_upstream_remote("refs/heads/it")?;
 
-    dbg!(main.upstream().unwrap().name().unwrap());
+    assert_eq!(remote.as_str().unwrap(), "rad");
 
     Ok(())
 }

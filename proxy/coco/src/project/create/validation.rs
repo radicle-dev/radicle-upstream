@@ -265,8 +265,10 @@ impl Repository {
                     &default_branch,
                     &git2::Signature::try_from(signature)?,
                 )?;
-                Self::setup_remote(&repo, open_storage, url, &default_branch)?;
-                // crate::project::set_rad_upstream(&repo, &default_branch)?;
+                Self::setup_remote(&repo, open_storage, url.clone(), &default_branch)?;
+                let remote = Self::existing_remote(&repo, &url)?.unwrap();
+                crate::project::set_upstream(&repo, &remote, default_branch)?;
+
                 Ok(repo)
             },
         }
