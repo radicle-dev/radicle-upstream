@@ -1,17 +1,17 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { Level } from "../../src/notification.ts";
+  import { Level } from "../../src/notification";
 
   import { Icon } from "../Primitive";
 
   const dispatch = createEventDispatcher();
 
-  export let style = null;
+  export let style: string | undefined;
   export let level = Level.Info;
   export let showIcon = false;
-  export let message = null;
-  export let actionText = null;
+  export let message: string;
+  export let actionText: string | null = null;
 </script>
 
 <style>

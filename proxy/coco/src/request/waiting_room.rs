@@ -5,9 +5,10 @@
 #![allow(clippy::wildcard_enum_match_arm)]
 
 use std::{
+    cmp::PartialOrd,
     collections::HashMap,
     convert::TryFrom,
-    ops::{Mul, Sub},
+    ops::{Add, Mul},
 };
 
 use either::Either;
@@ -150,17 +151,6 @@ impl<T, D> WaitingRoom<T, D> {
     /// Otherwise, it will return `None` if no such request existed.
     pub fn remove(&mut self, urn: &RadUrn) -> Option<SomeRequest<T>> {
         self.requests.remove(&urn.id)
-    }
-
-    /// Get the [`Request::elapsed`] time between the `timestamp` provided and the current timestamp
-    /// of the underlying `Request`.
-    ///
-    /// If the `urn` could not be found then `None` is returned.
-    pub fn elapsed(&self, urn: &RadUrn, timestamp: T) -> Option<D>
-    where
-        T: Sub<T, Output = D> + Clone,
-    {
-        Some(self.get(urn)?.elapsed(timestamp))
     }
 
     /// This will return the request for the given `urn` if one exists in the `WaitingRoom`.
@@ -414,7 +404,7 @@ impl<T, D> WaitingRoom<T, D> {
     ///     than the `delta` provided in the [`Config`].
     pub fn next_query(&self, timestamp: T) -> Option<RadUrn>
     where
-        T: Sub<T, Output = D> + Clone,
+        T: Add<D, Output = T> + PartialOrd + Clone,
         D: Mul<u32, Output = D> + Ord + Clone,
     {
         let backoff = |tries: Queries| match tries {
@@ -425,7 +415,7 @@ impl<T, D> WaitingRoom<T, D> {
         let requested = self
             .filter_by_state(RequestState::Requested)
             .find(move |(_, request)| {
-                request.elapsed(timestamp.clone()) >= backoff(request.attempts().queries)
+                request.timestamp().clone() + backoff(request.attempts().queries) <= timestamp
             });
 
         created.or(requested).map(|(urn, _request)| urn)

@@ -2,7 +2,7 @@
 
 use std::{
     collections::HashMap,
-    time::{Duration, Instant},
+    time::{Duration, SystemTime},
 };
 
 use serde::Serialize;
@@ -144,9 +144,9 @@ pub struct RunState {
     /// Current internal status.
     pub status: Status,
     /// Timestamp of last status change.
-    status_since: Instant,
+    status_since: SystemTime,
     /// Current set of requests.
-    waiting_room: WaitingRoom<Instant, Duration>,
+    waiting_room: WaitingRoom<SystemTime, Duration>,
 }
 
 impl RunState {
@@ -156,7 +156,7 @@ impl RunState {
         config: Config,
         connected_peers: HashMap<PeerId, usize>,
         status: Status,
-        status_since: Instant,
+        status_since: SystemTime,
     ) -> Self {
         Self {
             config,
@@ -168,12 +168,12 @@ impl RunState {
     }
 
     /// Creates a new `RunState` initialising it with the provided `config` and `waiting_room`.
-    pub fn new(config: Config, waiting_room: WaitingRoom<Instant, Duration>) -> Self {
+    pub fn new(config: Config, waiting_room: WaitingRoom<SystemTime, Duration>) -> Self {
         Self {
             config,
             connected_peers: HashMap::new(),
             status: Status::Stopped,
-            status_since: Instant::now(),
+            status_since: SystemTime::now(),
             waiting_room,
         }
     }
@@ -299,7 +299,7 @@ impl RunState {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
             (Status::Stopped { .. }, ProtocolEvent::Listening(_addr)) => {
                 self.status = Status::Started;
-                self.status_since = Instant::now();
+                self.status_since = SystemTime::now();
 
                 vec![]
             },
@@ -330,7 +330,7 @@ impl RunState {
                                 synced: 0,
                                 syncs: 0,
                             };
-                            self.status_since = Instant::now();
+                            self.status_since = SystemTime::now();
 
                             vec![
                                 Command::SyncPeer(peer_id),
@@ -340,7 +340,7 @@ impl RunState {
                             self.status = Status::Online {
                                 connected: self.connected_peers.len(),
                             };
-                            self.status_since = Instant::now();
+                            self.status_since = SystemTime::now();
 
                             vec![]
                         }
@@ -376,7 +376,7 @@ impl RunState {
                 // Go offline if we have no more connected peers left.
                 if self.connected_peers.is_empty() {
                     self.status = Status::Offline;
-                    self.status_since = Instant::now();
+                    self.status_since = SystemTime::now();
                 }
 
                 vec![]
@@ -399,7 +399,7 @@ impl RunState {
                         urn: urn.clone(),
                         authority: provider.peer_id,
                     },
-                    Instant::now(),
+                    SystemTime::now(),
                 ) {
                     Err(err) => {
                         log::warn!("waiting room error: {:?}", err);
@@ -426,7 +426,7 @@ impl RunState {
             (Status::Online { .. } | Status::Syncing { .. }, input::Request::Tick) => {
                 let mut cmds = Vec::with_capacity(2);
 
-                if let Some(urn) = self.waiting_room.next_query(Instant::now()) {
+                if let Some(urn) = self.waiting_room.next_query(SystemTime::now()) {
                     cmds.push(Command::Request(command::Request::Query(urn)));
                     cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
@@ -439,28 +439,30 @@ impl RunState {
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
             (_, input::Request::Cloning(url)) => self
                 .waiting_room
-                .cloning(url.clone(), Instant::now())
+                .cloning(url.clone(), SystemTime::now())
                 .map_or_else(
                     |error| Self::handle_waiting_room_timeout(url.urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 ),
-            (_, input::Request::Cloned(url)) => {
-                self.waiting_room.cloned(&url, Instant::now()).map_or_else(
+            (_, input::Request::Cloned(url)) => self
+                .waiting_room
+                .cloned(&url, SystemTime::now())
+                .map_or_else(
                     |error| Self::handle_waiting_room_timeout(url.urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
-                )
-            },
-            (_, input::Request::Queried(urn)) => {
-                self.waiting_room.queried(&urn, Instant::now()).map_or_else(
+                ),
+            (_, input::Request::Queried(urn)) => self
+                .waiting_room
+                .queried(&urn, SystemTime::now())
+                .map_or_else(
                     |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
-                )
-            },
+                ),
             (_, input::Request::Failed { url, reason }) => {
                 log::warn!("Cloning failed with: {}", reason);
                 let urn = url.urn.clone();
                 self.waiting_room
-                    .cloning_failed(url, Instant::now())
+                    .cloning_failed(url, SystemTime::now())
                     .map_or_else(
                         |error| Self::handle_waiting_room_timeout(urn, &error),
                         |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
@@ -489,7 +491,7 @@ impl RunState {
                 self.status = Status::Online {
                     connected: self.connected_peers.len(),
                 };
-                self.status_since = Instant::now();
+                self.status_since = SystemTime::now();
 
                 vec![]
             },
@@ -505,7 +507,7 @@ mod test {
         collections::{HashMap, HashSet},
         iter::FromIterator,
         net::{IpAddr, SocketAddr},
-        time::{Duration, Instant},
+        time::{Duration, SystemTime},
     };
 
     use assert_matches::assert_matches;
@@ -526,7 +528,7 @@ mod test {
         let addr = "127.0.0.1:12345".parse::<SocketAddr>()?;
 
         let status = Status::Stopped;
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
@@ -540,7 +542,7 @@ mod test {
     #[test]
     fn transition_to_online_if_sync_is_disabled() {
         let status = Status::Started;
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state = RunState::construct(
             Config {
                 sync: config::Sync {
@@ -569,7 +571,7 @@ mod test {
             synced: config::DEFAULT_SYNC_MAX_PEERS - 1,
             syncs: 1,
         };
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
@@ -587,7 +589,7 @@ mod test {
             synced: 0,
             syncs: 3,
         };
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
@@ -599,7 +601,7 @@ mod test {
     fn transition_to_offline_when_last_peer_disconnects() {
         let peer_id = PeerId::from(SecretKey::new());
         let status = Status::Online { connected: 0 };
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state = RunState::construct(
             Config::default(),
             HashMap::from_iter(vec![(peer_id, 1)]),
@@ -615,7 +617,7 @@ mod test {
     fn issue_sync_command_until_max_peers() {
         let max_peers = 13;
         let status = Status::Started;
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state = RunState::construct(
             Config {
                 sync: config::Sync {
@@ -676,7 +678,7 @@ mod test {
     fn issue_sync_timeout_when_transitioning_to_syncing() {
         let sync_period = Duration::from_secs(60 * 10);
         let status = Status::Started;
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state = RunState::construct(
             Config {
                 sync: config::Sync {
@@ -704,7 +706,7 @@ mod test {
     #[test]
     fn issue_announce_while_online() {
         let status = Status::Online { connected: 0 };
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
@@ -713,7 +715,7 @@ mod test {
         assert_matches!(cmds.first().unwrap(), Command::Announce);
 
         let status = Status::Offline;
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
@@ -727,13 +729,13 @@ mod test {
             "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
 
         let status = Status::Online { connected: 1 };
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let (response_sender, _) = oneshot::channel();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
         state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
-            Instant::now(),
+            SystemTime::now(),
             response_sender,
         )));
 
@@ -758,13 +760,13 @@ mod test {
             synced: 0,
             syncs: 1,
         };
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let (response_sender, _) = oneshot::channel();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
         state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
-            Instant::now(),
+            SystemTime::now(),
             response_sender,
         )));
 
@@ -788,14 +790,14 @@ mod test {
         };
 
         let status = Status::Online { connected: 0 };
-        let status_since = Instant::now();
+        let status_since = SystemTime::now();
         let (response_sender, _) = oneshot::channel();
         let mut state =
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
-            Instant::now(),
+            SystemTime::now(),
             response_sender,
         )));
         assert_matches!(

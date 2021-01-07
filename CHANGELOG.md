@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.5...v0.1.6) (2021-01-05)
+
+
+### Bug Fixes
+
+* **ui:** make logo text color work in dark/light mode ([#1491](https://github.com/radicle-dev/radicle-upstream/issues/1491)) ([34e09fe](https://github.com/radicle-dev/radicle-upstream/commit/34e09fe2721e3c329c3827c0db9a718269491edb))
+* **ui:** fix list border overflow ([#1467](https://github.com/radicle-dev/radicle-upstream/issues/1467)) ([ec227a4](https://github.com/radicle-dev/radicle-upstream/commit/ec227a4e8878cb6fa7ab9905f0ecadb43de08a17)), closes [#1447](https://github.com/radicle-dev/radicle-upstream/issues/1447)
+* **proxy:** fix proxy crash due to waitingroom bug ([#1500](https://github.com/radicle-dev/radicle-upstream/pull/1500)) ([3f0c7d9](https://github.com/radicle-dev/radicle-upstream/commit/3f0c7d9997fa58293f5ca15553ac4709ad954c1b)), closes [#1433](https://github.com/radicle-dev/radicle-upstream/issues/1433)
+
 ### [0.1.5](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.4...v0.1.5) (2020-12-08)
 
 

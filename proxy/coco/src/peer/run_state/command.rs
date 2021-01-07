@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::{Duration, SystemTime};
 
 use librad::{
     peer::PeerId,
@@ -18,7 +18,7 @@ pub enum Command {
     /// Update the include file for the provided `RadUrn`.
     Include(RadUrn),
     /// Tell the subroutine to persist the `WaitingRoom`.
-    PersistWaitingRoom(WaitingRoom<Instant, Duration>),
+    PersistWaitingRoom(WaitingRoom<SystemTime, Duration>),
     /// Fulfill request commands.
     Request(Request),
     /// Initiate a full sync with `PeerId`.

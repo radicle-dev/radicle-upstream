@@ -1,6 +1,6 @@
 //! Inspect state and perform actions on a running peer.
 
-use std::time::Instant;
+use std::time::SystemTime;
 
 use either::Either;
 use tokio::sync::{mpsc, oneshot};
@@ -21,21 +21,21 @@ pub enum Request {
     /// Cancel an ongoing project search.
     CancelSearch(
         RadUrn,
-        Instant,
-        oneshot::Sender<Result<Option<request::SomeRequest<Instant>>, waiting_room::Error>>,
+        SystemTime,
+        oneshot::Sender<Result<Option<request::SomeRequest<SystemTime>>, waiting_room::Error>>,
     ),
     /// Get a project search.
     GetSearch(
         RadUrn,
-        oneshot::Sender<Option<request::SomeRequest<Instant>>>,
+        oneshot::Sender<Option<request::SomeRequest<SystemTime>>>,
     ),
     /// List all project searches.
-    ListSearches(oneshot::Sender<Vec<request::SomeRequest<Instant>>>),
+    ListSearches(oneshot::Sender<Vec<request::SomeRequest<SystemTime>>>),
     /// Initiate a search for a project on the network.
     StartSearch(
         RadUrn,
-        Instant,
-        oneshot::Sender<waiting_room::Created<Instant>>,
+        SystemTime,
+        oneshot::Sender<waiting_room::Created<SystemTime>>,
     ),
 }
 
@@ -47,23 +47,23 @@ pub enum Response {
 
     /// Response to a cancel project search request.
     CancelSearch(
-        oneshot::Sender<Result<Option<request::SomeRequest<Instant>>, waiting_room::Error>>,
-        Result<Option<request::SomeRequest<Instant>>, waiting_room::Error>,
+        oneshot::Sender<Result<Option<request::SomeRequest<SystemTime>>, waiting_room::Error>>,
+        Result<Option<request::SomeRequest<SystemTime>>, waiting_room::Error>,
     ),
     /// Response to get project search request.
     GetSearch(
-        oneshot::Sender<Option<request::SomeRequest<Instant>>>,
-        Option<request::SomeRequest<Instant>>,
+        oneshot::Sender<Option<request::SomeRequest<SystemTime>>>,
+        Option<request::SomeRequest<SystemTime>>,
     ),
     /// Response to list project searches request.
     ListSearches(
-        oneshot::Sender<Vec<request::SomeRequest<Instant>>>,
-        Vec<request::SomeRequest<Instant>>,
+        oneshot::Sender<Vec<request::SomeRequest<SystemTime>>>,
+        Vec<request::SomeRequest<SystemTime>>,
     ),
     /// Response to a start project search request.
     StartSearch(
-        oneshot::Sender<waiting_room::Created<Instant>>,
-        waiting_room::Created<Instant>,
+        oneshot::Sender<waiting_room::Created<SystemTime>>,
+        waiting_room::Created<SystemTime>,
     ),
 }
 
@@ -101,8 +101,8 @@ impl Control {
     pub async fn cancel_project_request(
         &mut self,
         urn: &RadUrn,
-        timestamp: Instant,
-    ) -> Result<Option<request::SomeRequest<Instant>>, waiting_room::Error> {
+        timestamp: SystemTime,
+    ) -> Result<Option<request::SomeRequest<SystemTime>>, waiting_room::Error> {
         let (sender, receiver) = oneshot::channel();
 
         self.sender
@@ -117,8 +117,8 @@ impl Control {
     pub async fn get_project_request(
         &mut self,
         urn: &RadUrn,
-    ) -> Option<request::SomeRequest<Instant>> {
-        let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<Instant>>>();
+    ) -> Option<request::SomeRequest<SystemTime>> {
+        let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<SystemTime>>>();
 
         self.sender
             .send(Request::GetSearch(urn.clone(), sender))
@@ -129,8 +129,8 @@ impl Control {
     }
 
     /// Initiate a new reuest for the list of existing project requests.
-    pub async fn get_project_requests(&mut self) -> Vec<request::SomeRequest<Instant>> {
-        let (sender, receiver) = oneshot::channel::<Vec<request::SomeRequest<Instant>>>();
+    pub async fn get_project_requests(&mut self) -> Vec<request::SomeRequest<SystemTime>> {
+        let (sender, receiver) = oneshot::channel::<Vec<request::SomeRequest<SystemTime>>>();
 
         self.sender
             .send(Request::ListSearches(sender))
@@ -144,9 +144,9 @@ impl Control {
     pub async fn request_project(
         &mut self,
         urn: &RadUrn,
-        timestamp: Instant,
-    ) -> request::SomeRequest<Instant> {
-        let (sender, receiver) = oneshot::channel::<waiting_room::Created<Instant>>();
+        timestamp: SystemTime,
+    ) -> request::SomeRequest<SystemTime> {
+        let (sender, receiver) = oneshot::channel::<waiting_room::Created<SystemTime>>();
 
         self.sender
             .send(Request::StartSearch(urn.clone(), timestamp, sender))
