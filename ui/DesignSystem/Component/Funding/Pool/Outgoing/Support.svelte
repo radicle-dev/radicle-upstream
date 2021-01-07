@@ -76,7 +76,7 @@
     receivers = new Map(data.receivers);
   }
 
-  function onConfirmInWallet(): Promise<void> {
+  async function onConfirmInWallet(): Promise<void> {
     console.log("onConfirmInWallet");
     console.log(`onConfirmInWallet, receivers ${[...receivers.entries()]}`);
 

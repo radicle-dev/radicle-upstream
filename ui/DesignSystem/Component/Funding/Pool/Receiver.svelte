@@ -1,14 +1,13 @@
 <script lang="typescript">
   import { Copyable } from "../../../Component";
   import { Button, Icon } from "../../../Primitive";
-  import { ReceiverStatus } from "../../../../src/funding/pool";
-  import type { Address } from "../../../../src/funding/pool";
+  import type { Address, ReceiverStatus } from "../../../../src/funding/pool";
   import { ellipsed } from "../../../../src/style";
 
   export let address: Address = "";
   export let disabled = false;
   export let status: ReceiverStatus;
-  export let onClick: (title: string) => void | undefined;
+  export let onClick: ((title: string) => void) | undefined;
 </script>
 
 <style>
@@ -40,7 +39,7 @@
 <span class="receiver {status.toLowerCase()}" class:disabled>
   {#if onClick}
     <Button
-      on:click={() => onClick(address)}
+      on:click={() => (onClick ? onClick(address) : {})}
       {disabled}
       variant="embedded"
       icon={Icon.Cross} />

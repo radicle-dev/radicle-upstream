@@ -4,9 +4,9 @@
 
   import Receivers from "../Receivers.svelte";
   import { Variant as IllustrationVariant } from "../../../../../src/illustration";
-  import * as pool from "../../../../../src/funding/pool";
+  import type { Receivers as PoolReceivers } from "../../../../../src/funding/pool";
 
-  export let receivers: pool.Receivers;
+  export let receivers: PoolReceivers;
   export let onBack: () => void;
   export let onContinue: () => void;
 

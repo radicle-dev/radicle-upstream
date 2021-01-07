@@ -9,13 +9,13 @@
   } from "../../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../../src/validation";
 
-  export let budget: number = 0;
+  export let budget = "";
   export let onCancel: () => void;
   export let onContinue: () => void;
 
   let validating = false;
   $: validation = monthlyContributionValidationStore();
-  $: budgetStore.set(budget ? budget.toString() : "");
+  $: budgetStore.set(budget);
   $: {
     if ($budgetStore && $budgetStore.length > 0) validating = true;
     if (validating) validation.validate($budgetStore);

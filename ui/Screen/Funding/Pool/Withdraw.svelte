@@ -19,11 +19,11 @@
 
   // Validate the amount beign withdrawn
   let validatingAmount = false;
-  let amount: number;
+  let amount = "";
   let validation = balanceValidationStore(0);
 
   $: {
-    const balance = $store.data.unwrap()?.balance || 0;
+    const balance = $store?.data.unwrap()?.balance || 0;
     validation = balanceValidationStore(balance);
   }
 
@@ -163,7 +163,8 @@
       <TxButton
         variant="destructive"
         onClick={onConfirmed}
-        title={'Stop support and cash out everything'} />
+        title={'Stop support and cash out everything'}
+        errorMessage={e => `Failed withdraw: ${e.message}`} />
     </div>
   {/if}
 </div>

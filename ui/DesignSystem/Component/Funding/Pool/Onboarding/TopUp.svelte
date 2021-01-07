@@ -4,13 +4,14 @@
 
   import { wallet } from "../../../../../src/wallet";
 
-  export let amount = 0;
+  export let amount = "";
   export let onBack: () => void;
   export let onContinue: () => void;
 
   let disabled = true;
 
-  $: accountBalance = $wallet.connected.account.balance * 1;
+  let accountBalance = "";
+  $: accountBalance = wallet.account()?.balance || accountBalance;
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter" && !disabled) {

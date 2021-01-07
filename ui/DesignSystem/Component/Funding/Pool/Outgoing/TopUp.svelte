@@ -9,14 +9,14 @@
   } from "../../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../../src/validation";
 
-  export let amount = 0;
+  export let amount = "";
   export let onBack: [string, () => void];
-  export let balance = 0;
+  export let balance = "0";
   export let disabled = true;
 
   let validating = false;
   $: validation = balanceValidationStore(balance);
-  $: amountStore.set(amount ? amount.toString() : "");
+  $: amountStore.set(amount);
   $: {
     if ($amountStore && $amountStore.length > 0) validating = true;
     if (validating) validation.validate($amountStore);

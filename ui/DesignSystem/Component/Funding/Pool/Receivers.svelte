@@ -8,7 +8,7 @@
     receiverStore,
     receiverValidationStore,
   } from "../../../../src/funding/pool";
-  import * as pool from "../../../../src/funding/pool";
+  import type * as pool from "../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../src/validation";
 
   // The current list of receivers

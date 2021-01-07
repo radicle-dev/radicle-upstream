@@ -2,19 +2,9 @@
   import { TxStatus, colorForStatus } from "../../../src/transaction";
 
   export let status: TxStatus = TxStatus.AwaitingInclusion;
-  export let style: string | undefined;
-  export let variant = "regular"; // small | regular | inverted
-
-  const sizes = {
-    regular: 32,
-    inverted: 24,
-    small: 16,
-  };
-  const strokeWidths = {
-    regular: 4,
-    inverted: 6,
-    small: 0,
-  };
+  export let style: string = "";
+  export let size = 32;
+  export let strokeWidth = 4;
 
   // Progress is a percentage value.
   const max_progress = 100;
@@ -23,8 +13,6 @@
   $: progress = status === TxStatus.AwaitingInclusion ? 33 : max_progress;
   $: spin = progress !== max_progress;
 
-  $: size = sizes[variant];
-  $: strokeWidth = strokeWidths[variant];
   $: center = size / 2;
   $: radius = size / 2 - strokeWidth / 2;
   $: circumference = 2 * Math.PI * radius;
@@ -64,7 +52,7 @@
     cx={center}
     cy={center}
     r={radius}
-    stroke={variant === 'inverted' ? 'var(--color-background)' : color}
+    stroke={color}
     stroke-width={strokeWidth} />
   <circle
     style="--origin: {center}px {center}px"
@@ -73,12 +61,9 @@
     cy={center}
     r={radius}
     transform="rotate(-90, {center}, {center})"
-    stroke={variant === 'inverted' ? 'var(--color-background)' : color}
+    stroke={color}
     stroke-width={strokeWidth}
     stroke-dasharray="{dashArray}, {circumference}" />
-  {#if variant === 'inverted'}
-    <circle cx={center} cy={center} r={radius} fill={color} />
-  {/if}
 
   {#if status === TxStatus.Included}
     <path

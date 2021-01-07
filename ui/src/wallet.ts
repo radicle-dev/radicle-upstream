@@ -41,6 +41,7 @@ export interface Wallet extends svelteStore.Readable<State> {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   signer: ethers.Signer;
+  account(): Account | undefined;
 }
 
 export const provider = new ethers.providers.JsonRpcProvider(
@@ -141,11 +142,21 @@ export function build(): Wallet {
     loadAccountData();
   }, REFRESH_INTERVAL_MILLIS);
 
+  function account(): Account | undefined {
+    const state = svelteStore.get(stateStore);
+    if (state.status === Status.Connected) {
+      return state.connected.account;
+    }
+
+    return undefined;
+  }
+
   return {
     subscribe: stateStore.subscribe,
     connect,
     disconnect,
     signer,
+    account,
   };
 }
 

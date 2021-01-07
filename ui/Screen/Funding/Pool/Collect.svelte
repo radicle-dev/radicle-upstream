@@ -19,7 +19,7 @@
   $: pool = get(store);
 
   async function onConfirmed(): Promise<void> {
-    await get(store).collect();
+    await $store?.collect();
     modal.hide();
     resolve();
   }
@@ -63,32 +63,34 @@
   }
 </style>
 
-<Remote store={pool.data} let:data={poolData}>
-  <div class="wrapper" data-cy="collect-incoming-support-modal">
-    <Illustration variant={IllustrationVariant.Money} />
-    <h1>Collect</h1>
+{#if pool}
+  <Remote store={pool.data} let:data={poolData}>
+    <div class="wrapper" data-cy="collect-incoming-support-modal">
+      <Illustration variant={IllustrationVariant.Money} />
+      <h1>Collect</h1>
 
-    <div class="typo-text description">
-      Collect the
-      <div class="typo-text-bold">
-        <Dai style="margin: 0 7px">{poolData.collectableFunds}</Dai>
+      <div class="typo-text description">
+        Collect the
+        <div class="typo-text-bold">
+          <Dai style="margin: 0 7px">{poolData.collectableFunds}</Dai>
+        </div>
+        waiting on you from supporters.
       </div>
-      waiting on you from supporters.
-    </div>
 
-    <div class="submit">
-      <Button
-        variant="transparent"
-        dataCy="cancel"
-        on:click={onCancel}
-        style="margin-right: 1rem">
-        Cancel
-      </Button>
+      <div class="submit">
+        <Button
+          variant="transparent"
+          dataCy="cancel"
+          on:click={onCancel}
+          style="margin-right: 1rem">
+          Cancel
+        </Button>
 
-      <TxButton
-        onClick={onConfirmed}
-        title={'Confirm in your wallet'}
-        errorMessage={e => `Failed to collect incoming support: ${e.message}`} />
+        <TxButton
+          onClick={onConfirmed}
+          title={'Confirm in your wallet'}
+          errorMessage={e => `Failed to collect incoming support: ${e.message}`} />
+      </div>
     </div>
-  </div>
-</Remote>
+  </Remote>
+{/if}

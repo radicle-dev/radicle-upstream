@@ -1,12 +1,12 @@
 <script lang="typescript">
-  import * as transaction from "../../../../src/transaction.ts";
+  import type { Tx } from "../../../../src/transaction";
 
   import { Icon } from "../../../Primitive";
-  import TransactionSpinner from "../Spinner.svelte";
+  import TxSpinner from "../Spinner.svelte";
 
   import ItemDescription from "./ItemDescription.svelte";
 
-  export let tx: transaction.Tx = null;
+  export let tx: Tx;
 </script>
 
 <style>
@@ -41,7 +41,7 @@
 <div class="item" on:click data-cy="transaction-item">
   <div class="info">
     <div class="icon">
-      <TransactionSpinner status={tx.status} />
+      <TxSpinner status={tx.status} />
     </div>
     <ItemDescription {tx} />
   </div>

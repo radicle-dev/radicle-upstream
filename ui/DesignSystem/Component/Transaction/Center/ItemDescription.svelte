@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import type { Tx } from "../../../src/transaction";
+  import type { Tx } from "../../../../src/transaction";
 
   export let tx: Tx;
 </script>

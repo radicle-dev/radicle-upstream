@@ -28,11 +28,11 @@ export interface Pool {
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
-  topUp(value: number): Promise<void>;
+  topUp(value: BigNumberish): Promise<void>;
 
   // Withdraw outgoing balance funds to the connected wallet.
   // Returns once the transaction has been included in the chain.
-  withdraw(value: number): Promise<void>;
+  withdraw(value: BigNumberish): Promise<void>;
 
   // Withdraw all the outgoing balance funds to the connected wallet.
   withdrawAll(): Promise<void>;

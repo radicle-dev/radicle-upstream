@@ -18,19 +18,23 @@
     isIncoming,
     formatDate,
     transferAmount,
+    TxStatus,
   } from "../src/transaction";
   import type { Tx } from "../src/transaction";
   import { Variant as IllustrationVariant } from "../src/illustration";
 
-  let tx: Tx = undefined;
+  // In reality, the transaction should never be undefined,
+  // but because the only way we currently have use it here
+  // is by looking it up, type-wise it can.
+  let tx: Tx | undefined = undefined;
 
   transactionsStore.subscribe(
     txs => (tx = txs.find(x => x.hash === get(selectedStore)))
   );
 
-  $: statusColor = colorForStatus(tx.status);
-  $: transferedAmount = transferAmount(tx);
-  $: incoming = isIncoming(tx);
+  $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
+  $: transferedAmount = tx ? transferAmount(tx) : undefined;
+  $: incoming = tx ? isIncoming(tx) : false;
 </script>
 
 <style>
@@ -117,62 +121,64 @@
 </style>
 
 <div class="wrapper">
-  <header>
-    <Illustration variant={IllustrationVariant.Purse} />
-    <h1>{tx.kind}</h1>
-    <Summary {tx} style="margin-top: 1.5rem" />
-    <div class="from-to" class:incoming>
-      <div>
-        <p class="typo-text-bold" style="margin-bottom: 7px">Radicle Pool</p>
-        <Copyable
-          showIcon={false}
-          styleContent={false}
-          copyContent={tx.to}
-          notificationText="Address copied to the clipboard">
-          <p class="address typo-text">{tx.to || 'n/a'}</p>
-        </Copyable>
+  {#if tx}
+    <header>
+      <Illustration variant={IllustrationVariant.Purse} />
+      <h1>{tx.kind}</h1>
+      <Summary {tx} style="margin-top: 1.5rem" />
+      <div class="from-to" class:incoming>
+        <div>
+          <p class="typo-text-bold" style="margin-bottom: 7px">Radicle Pool</p>
+          <Copyable
+            showIcon={false}
+            styleContent={false}
+            copyContent={tx.to}
+            notificationText="Address copied to the clipboard">
+            <p class="address typo-text">{tx.to || 'n/a'}</p>
+          </Copyable>
+        </div>
+
+        <div class="arrow">
+          <Icon.ArrowDown />
+        </div>
+
+        <Identity address={tx.from} />
       </div>
+    </header>
 
-      <div class="arrow">
-        <Icon.ArrowDown />
-      </div>
+    <div class="content">
+      {#if transferedAmount}
+        <div class="section">
+          <div class="row">
+            <p>Amount</p>
+            <p class="typo-semi-bold">
+              {#if incoming}
+                <Dai>{transferedAmount}</Dai>
+              {:else}
+                <NegativeDai>{transferedAmount}</NegativeDai>
+              {/if}
+            </p>
+          </div>
+        </div>
+      {/if}
 
-      <Identity address={tx.from} />
-    </div>
-  </header>
-
-  <div class="content">
-    {#if transferedAmount}
       <div class="section">
         <div class="row">
-          <p>Amount</p>
-          <p class="typo-semi-bold">
-            {#if incoming}
-              <Dai>{transferedAmount}</Dai>
-            {:else}
-              <NegativeDai>{transferedAmount}</NegativeDai>
-            {/if}
-          </p>
+          <p>Transaction ID</p>
+          <p class="typo-text-small-mono">{tx.hash.slice(0, 20)}</p>
         </div>
-      </div>
-    {/if}
-
-    <div class="section">
-      <div class="row">
-        <p>Transaction ID</p>
-        <p class="typo-text-small-mono">{tx.hash.slice(0, 20)}</p>
-      </div>
-      <div class="row">
-        <p>Status</p>
         <div class="row">
-          <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
-          <p style="margin-left: 7px; color: {statusColor}">{tx.status}</p>
+          <p>Status</p>
+          <div class="row">
+            <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
+            <p style="margin-left: 7px; color: {statusColor}">{tx.status}</p>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <p>Timestamp</p>
-        <p>{formatDate(new Date(tx.date))}</p>
+        <div class="row">
+          <p>Timestamp</p>
+          <p>{formatDate(new Date(tx.date))}</p>
+        </div>
       </div>
     </div>
-  </div>
+  {/if}
 </div>

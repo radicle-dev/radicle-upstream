@@ -4,9 +4,9 @@
 
   import { Variant as IllustrationVariant } from "../../../../src/illustration";
   import type { Identity } from "../../../../src/identity";
-  import * as pool from "../../../../src/funding/pool";
+  import type { Address } from "../../../../src/funding/pool";
 
-  export let address: pool.Address;
+  export let address: Address;
   export let identity: Identity;
 
   export let onCancel: () => void;

@@ -11,9 +11,9 @@
 
   if ($store === null) pop();
 
-  let amount = 0;
+  let amount = "";
   async function onConfirmed(): Promise<void> {
-    await get(store).topUp(amount);
+    await get(store)?.topUp(amount);
     modal.hide();
     resolve();
   }
@@ -23,6 +23,9 @@
   }
 
   let disabled = true;
+
+  let balance = "";
+  $: balance = $store?.getAccount()?.balance || balance;
 </script>
 
 <style>
@@ -43,11 +46,7 @@
 </style>
 
 <div class="wrapper" data-cy="top-up-modal">
-  <TopUp
-    bind:amount
-    balance={$store.getAccount().balance * 1}
-    onBack={['Cancel', onCancel]}
-    bind:disabled>
+  <TopUp bind:amount {balance} onBack={['Cancel', onCancel]} bind:disabled>
     <TxButton
       onClick={onConfirmed}
       title={'Confirm in your wallet'}

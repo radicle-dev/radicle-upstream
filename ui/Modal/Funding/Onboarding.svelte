@@ -10,7 +10,7 @@
 
   import * as modal from "../../src/modal";
   import { store } from "../../src/funding/pool";
-  import * as pool from "../../src/funding/pool";
+  import type { Receivers } from "../../src/funding/pool";
 
   enum Step {
     Erc20Allowance = "erc20",
@@ -23,8 +23,13 @@
 
   if ($store === null) pop();
 
-  let currentStep =
-    $store.data.unwrap()?.erc20Allowance > 0 ? Step.Intro : Step.Erc20Allowance;
+  function resolveFirstStep(): Step {
+    return ($store?.data?.unwrap()?.erc20Allowance || 0) > 0
+      ? Step.Intro
+      : Step.Erc20Allowance;
+  }
+
+  let currentStep = resolveFirstStep();
 
   function onCancel() {
     modal.hide();
@@ -68,18 +73,24 @@
     }
   }
 
-  function approveErc20(): Promise<void> {
-    return $store.approveErc20().then(onContinue);
+  async function approveErc20(): Promise<void> {
+    return (
+      $store?.approveErc20().then(onContinue) ||
+      Promise.reject("The pool is not instantiated")
+    );
   }
 
-  function onConfirmed(): Promise<void> {
-    return $store.onboard(topUp, budget, receivers).then(_ => modal.hide());
+  async function onConfirmed(): Promise<void> {
+    return (
+      $store?.onboard(topUp, budget, receivers).then(_ => modal.hide()) ||
+      Promise.reject("The pool is not instantiated")
+    );
   }
 
   /* Themz values */
-  let budget = 0;
-  let topUp = 0;
-  let receivers: pool.Receivers = new Map();
+  let budget = "";
+  let topUp = "";
+  let receivers: Receivers = new Map();
 </script>
 
 <style>

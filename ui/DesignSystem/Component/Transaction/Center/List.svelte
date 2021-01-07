@@ -1,11 +1,11 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import * as transaction from "../../../../src/transaction";
+  import type { Tx } from "../../../../src/transaction";
 
   import Item from "./Item.svelte";
 
-  export let transactions: transaction.Tx[] = [];
+  export let transactions: Tx[] = [];
 
   const dispatch = createEventDispatcher();
   const select = (id: string) => dispatch("select", id);

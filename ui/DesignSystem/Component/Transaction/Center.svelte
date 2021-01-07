@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
-
   import type { Tx } from "../../../src/transaction";
   import { TxStatus, summaryCounts } from "../../../src/transaction";
 
@@ -9,12 +7,13 @@
 
   export let transactions: Tx[] = [];
 
-  // Transaction center element. Set by the view.
-  let element: SvelteComponent;
+  // Transaction center element. Set by the view. Should be of type 'HTMLDivElement'.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let element: any;
   let expand = false;
-  const stack = null;
 
-  const toggleStack = ev => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const toggleStack = (ev: any) => {
     expand = expand
       ? false
       : element === ev.target || element.contains(ev.target);
@@ -72,8 +71,7 @@
   class="transaction-center"
   data-cy="transaction-center"
   class:expand
-  class:negative
-  style="--list-height: {stack && stack.offsetHeight}px">
+  class:negative>
   <div class="stack" class:expand>
     <List on:select {transactions} />
     <Summary counts={summaryCounts(transactions)} />

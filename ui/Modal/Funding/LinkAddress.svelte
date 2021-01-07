@@ -3,6 +3,7 @@
   import EnterPassphrase from "../../DesignSystem/Component/Funding/Link/EnterPassphrase.svelte";
   import SavedToRadicle from "../../DesignSystem/Component/Funding/Link/SavedToRadicle.svelte";
   import RadicleToEth from "../../DesignSystem/Component/Funding/Link/RadicleToEth.svelte";
+  import { Remote } from "../../DesignSystem/Component";
 
   import { wallet } from "../../src/wallet";
   import { session } from "../../src/session";
@@ -42,6 +43,8 @@
 
   // Values
   let passphrase: string = "";
+
+  $: address = wallet.account()?.address || "";
 </script>
 
 <style>
@@ -59,22 +62,24 @@
   }
 </style>
 
-<div class="wrapper">
-  {#if currentStep === Step.EthToRadicle}
-    <EthToRadicle
-      address={$wallet.connected.account.address}
-      identity={$session.data.identity}
-      {onCancel}
-      onConfirm={onContinue} />
-  {:else if currentStep === Step.EnterPassphrase}
-    <EnterPassphrase bind:passphrase {onCancel} onConfirm={onContinue} />
-  {:else if currentStep === Step.SavedToRadicle}
-    <SavedToRadicle {onCancel} {onContinue} />
-  {:else if currentStep === Step.RadicleToEth}
-    <RadicleToEth
-      address={$wallet.connected.account.address}
-      identity={$session.data.identity}
-      {onCancel}
-      onSendTransaction={onContinue} />
-  {/if}
-</div>
+<Remote store={session} let:data={it}>
+  <div class="wrapper">
+    {#if currentStep === Step.EthToRadicle}
+      <EthToRadicle
+        {address}
+        identity={it.identity}
+        {onCancel}
+        onConfirm={onContinue} />
+    {:else if currentStep === Step.EnterPassphrase}
+      <EnterPassphrase bind:passphrase {onCancel} onConfirm={onContinue} />
+    {:else if currentStep === Step.SavedToRadicle}
+      <SavedToRadicle {onCancel} {onContinue} />
+    {:else if currentStep === Step.RadicleToEth}
+      <RadicleToEth
+        {address}
+        identity={it.identity}
+        {onCancel}
+        onSendTransaction={onContinue} />
+    {/if}
+  </div>
+</Remote>
