@@ -20,21 +20,11 @@ pub use checkout::Checkout;
 pub mod peer;
 pub use peer::Peer;
 
-/// Set the upstream of the default branch to the rad remote branch.
-fn set_rad_upstream(repo: &git2::Repository, default_branch: &OneLevel) -> Result<(), git2::Error> {
-    let mut branch = repo.find_branch(default_branch.as_str(), git2::BranchType::Local)?;
-    log::debug!("SETTING UPSTREAM: {}", repo.path().display());
-    // std::thread::sleep(std::time::Duration::from_secs(60));
-    branch.set_upstream(Some(&format!(
-        "{}/{}",
-        config::RAD_REMOTE,
-        default_branch.as_str()
-    )))
-}
-
+/// Set the upstream of the given branch to the given remote.
+///
 /// [branch "main"]
-/// remote = rad
-/// merge = refs/heads/main
+///     remote = rad
+///     merge = refs/heads/main
 fn set_upstream<Url>(
     repo: &git2::Repository,
     remote: &Remote<Url>,
