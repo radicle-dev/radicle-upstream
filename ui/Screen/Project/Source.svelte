@@ -102,6 +102,7 @@
             loading={selectedRevision.request !== null}
             on:select={onSelectRevision}
             selected={selectedRevision.selected}
+            defaultBranch={project.metadata.defaultBranch}
             {revisions} />
         </div>
 
