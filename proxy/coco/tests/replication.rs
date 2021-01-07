@@ -10,8 +10,6 @@ use librad::git::{
     types::{remote::LocalPushspec, Fetchspec, Force, Remote},
 };
 use radicle_git_ext::RefLike;
-// use radicle_surf::vcs::git::git2;
-use git2;
 
 use coco::{
     peer::run_config,
@@ -164,7 +162,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
             .into_iter()
             .map(|project| project.urn())
             .collect::<Vec<_>>(),
-        vec![project.urn().clone()]
+        vec![project.urn()]
     );
 
     let commit_id = {
@@ -426,6 +424,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
     Ok(())
 }
 
+#[allow(clippy::needless_collect)]
 #[tokio::test]
 async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();

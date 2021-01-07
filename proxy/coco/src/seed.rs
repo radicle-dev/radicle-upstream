@@ -81,7 +81,7 @@ pub async fn resolve<T: AsRef<str> + Send + Sync>(seeds: &[T]) -> Result<Vec<See
     Ok(resolved)
 }
 
-#[allow(clippy::panic)]
+#[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod tests {
     use std::net;

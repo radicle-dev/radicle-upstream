@@ -74,6 +74,10 @@ pub enum Ownership {
 }
 
 /// Clone a git repository to the `path` location, based off of the `remote` provided.
+///
+/// # Errors
+///     * if initialisation of the repository fails
+///     * if branch or remote manipulation fails
 pub fn clone<F>(
     path: &path::Path,
     storage: F,
@@ -171,7 +175,7 @@ impl Ownership {
 
         let remote = Remote::new(url.clone(), name.clone()).with_fetchspecs(vec![Refspec {
             src: Reference::heads(Flat, peer),
-            dst: GenericRef::heads(Flat, name.clone()),
+            dst: GenericRef::heads(Flat, name),
             force: Force::True,
         }]);
 

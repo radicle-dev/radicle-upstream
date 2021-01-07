@@ -6,6 +6,7 @@ use coco::RunConfig;
 mod common;
 use common::{build_peer, init_logging, shia_le_pathbuf};
 
+#[allow(clippy::needless_collect)]
 #[tokio::test]
 async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'static>> {
     init_logging();

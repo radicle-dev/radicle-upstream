@@ -171,7 +171,7 @@ impl<T, D> WaitingRoom<T, D> {
         match self.get(urn) {
             None => {
                 let request = SomeRequest::Created(Request::new(urn.clone(), timestamp));
-                self.requests.insert(urn.id.clone(), request.clone());
+                self.requests.insert(urn.id, request.clone());
                 Either::Left(request)
             },
             Some(request) => Either::Right(request.clone()),
@@ -201,11 +201,11 @@ impl<T, D> WaitingRoom<T, D> {
             None => Err(Error::MissingUrn(urn.clone())),
             Some(request) => match request.clone().transition(matcher, transition) {
                 Either::Right(Either::Right(next)) => {
-                    self.requests.insert(urn.id.clone(), next.into());
+                    self.requests.insert(urn.id, next.into());
                     Ok(())
                 },
                 Either::Right(Either::Left(timeout)) => {
-                    self.requests.insert(urn.id.clone(), timeout.clone().into());
+                    self.requests.insert(urn.id, timeout.clone().into());
                     Err(timeout.into())
                 },
                 Either::Left(mismatch) => Err(Error::StateMismatch((&mismatch).into())),
@@ -277,7 +277,7 @@ impl<T, D> WaitingRoom<T, D> {
                 _ => None,
             },
             Either::Right,
-            &urn,
+            urn,
         )
     }
 
@@ -303,7 +303,7 @@ impl<T, D> WaitingRoom<T, D> {
                 _ => None,
             },
             |previous| previous.cloning(max_queries, max_clones, remote_peer, timestamp),
-            &urn,
+            urn,
         )
     }
 
@@ -332,7 +332,7 @@ impl<T, D> WaitingRoom<T, D> {
                 _ => None,
             },
             |previous| Either::Right(previous.failed(remote_peer, timestamp)),
-            &urn,
+            urn,
         )
     }
 
@@ -442,7 +442,7 @@ impl<T, D> WaitingRoom<T, D> {
     }
 
     #[cfg(test)]
-    pub fn insert<R>(&mut self, urn: Urn, request: R)
+    pub fn insert<R>(&mut self, urn: &Urn, request: R)
     where
         R: Into<SomeRequest<T>>,
     {
@@ -623,10 +623,9 @@ mod test {
         assert_eq!(
             waiting_room.cloning(
                 &urn,
-                peers
+                *peers
                     .last()
-                    .expect("unless you changed NUM_CLONES to < -1 we should be fine here. qed.")
-                    .clone(),
+                    .expect("unless you changed NUM_CLONES to < -1 we should be fine here. qed."),
                 ()
             ),
             Err(Error::TimeOut {
@@ -694,7 +693,7 @@ mod test {
 
         // requested
         let is_requested = Request::new(urn.clone(), ()).request(());
-        waiting_room.insert(urn.clone(), is_requested.clone());
+        waiting_room.insert(&urn, is_requested.clone());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
@@ -703,7 +702,7 @@ mod test {
 
         // found
         let found = is_requested.into_found(peer, ());
-        waiting_room.insert(urn.clone(), found.clone());
+        waiting_room.insert(&urn, found.clone());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
@@ -714,7 +713,7 @@ mod test {
         let cloning = found
             .cloning(config.max_queries, config.max_clones, peer, ())
             .unwrap_right();
-        waiting_room.insert(urn.clone(), cloning.clone());
+        waiting_room.insert(&urn, cloning.clone());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
@@ -723,7 +722,7 @@ mod test {
 
         // cloned
         let cloned = cloning.cloned(peer, ());
-        waiting_room.insert(urn.clone(), cloned);
+        waiting_room.insert(&urn, cloned);
         assert_eq!(
             waiting_room.canceled(&urn, ()),
             Err(Error::StateMismatch(RequestState::Cloned))
@@ -731,7 +730,7 @@ mod test {
 
         // cancel
         let cancelled = Request::new(urn.clone(), ()).cancel(());
-        waiting_room.insert(urn.clone(), cancelled.clone());
+        waiting_room.insert(&urn, cancelled.clone());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
