@@ -206,7 +206,7 @@ impl State {
     ///   * Resolving the project fails.
     pub async fn get_project(&self, urn: Urn) -> Result<Option<Project>, Error> {
         self.api
-            .with_storage(move |store| identities::project::get(&store, &urn))
+            .with_storage(move |store| identities::project::get(store, &urn))
             .await?
             .map_err(Error::from)
     }
@@ -217,28 +217,24 @@ impl State {
     ///
     ///   * Retrieving the project entities from the store fails.
     pub async fn list_projects(&self) -> Result<Vec<Project>, Error> {
-        let owner = self
-            .default_owner()
-            .await?
-            .unwrap()
-            .into_inner()
-            .into_inner();
-        /*
-        let owner = match owner {
-            None => return Ok(vec![]), // TODO(finto): Raise an error
+        // FIXME(xla): Instead of implicitely expecting a presence of a default owner, there either
+        // should be an explicit argument, or it's made impossible to call this function without an
+        // owner associated with the state.
+        let owner = match self.default_owner().await? {
+            None => return Err(Error::MissingOwner),
             Some(owner) => owner.into_inner().into_inner(),
         };
-        */
+
         self.api
             .with_storage(move |store| {
-                let projects = identities::any::list(&store)?
+                let projects = identities::any::list(store)?
                     .filter_map(Result::ok)
                     .filter_map(|id| match id {
                         SomeIdentity::Project(project) => {
                             let rad_self =
                                 Reference::rad_self(Namespace::from(project.urn()), None);
                             let urn = Urn::try_from(rad_self).ok()?;
-                            let project_self = person::get(&store, &urn).ok()??;
+                            let project_self = person::get(store, &urn).ok()??;
                             // Filter projects that have a rad/self pointing to current default
                             // owner
                             if project_self == owner {
@@ -263,7 +259,7 @@ impl State {
     /// * if opening the storage fails
     pub async fn list_owner_project_refs(&self, urn: Urn) -> Result<Option<Refs>, Error> {
         self.api
-            .with_storage(move |store| Refs::load(&store, &urn, None))
+            .with_storage(move |store| Refs::load(store, &urn, None))
             .await?
             .map_err(Error::from)
     }
@@ -279,7 +275,7 @@ impl State {
         peer_id: PeerId,
     ) -> Result<Option<Refs>, Error> {
         self.api
-            .with_storage(move |store| Refs::load(&store, &urn, Some(peer_id)))
+            .with_storage(move |store| Refs::load(store, &urn, Some(peer_id)))
             .await?
             .map_err(Error::from)
     }

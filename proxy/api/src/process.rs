@@ -1,6 +1,8 @@
 //! Provides [`run`] to run the proxy process.
-use futures::prelude::*;
+
 use std::{future::Future, sync::Arc, time::Duration};
+
+use futures::prelude::*;
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
@@ -172,13 +174,18 @@ async fn run_rigging(
 
             async move {
                 loop {
-                    if let Some(notification) = notification::Notification::maybe_from(
-                        peer_events
-                            .recv()
-                            .await
-                            .expect("Failed to receive peer event"),
-                    ) {
-                        peer_subscriptions.broadcast(notification).await
+                    match peer_events.recv().await {
+                        Ok(event) => {
+                            if let Some(notification) =
+                                notification::Notification::maybe_from(event)
+                            {
+                                peer_subscriptions.broadcast(notification).await
+                            }
+                        },
+                        Err(err) => {
+                            log::error!("Failed to receive peer event: {}", err);
+                            return;
+                        },
                     }
                 }
             }

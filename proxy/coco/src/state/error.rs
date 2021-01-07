@@ -42,6 +42,9 @@ pub enum Error {
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 
+    #[error("this operation depends on the present of a default owner")]
+    MissingOwner,
+
     /// Peer API error
     #[error(transparent)]
     PeerApi(#[from] net::peer::ApiError),
