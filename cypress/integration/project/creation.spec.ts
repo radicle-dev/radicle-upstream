@@ -322,28 +322,6 @@ context("project creation", () => {
             .contains("Project git-platinum-copy successfully created")
             .should("exist");
           commands.pick("notification").contains("Close").click();
-
-          // Make sure we can't add the same project twice.
-          commands.pick("new-project-button").click();
-
-          commands.pick("existing-project").click();
-
-          commands.pick("existing-project", "choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
-
-          commands.pick("name").should("have.value", "git-platinum-copy");
-          commands.pick("description").type("Best project");
-
-          commands.pick("create-project-button").click();
-
-          commands
-            .pick("notification")
-            .contains(
-              /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
-            )
-            .should("exist");
         });
       });
     });
