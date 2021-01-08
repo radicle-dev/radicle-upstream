@@ -105,7 +105,7 @@ export enum TxStatus {
 /* Smart constructors for `Tx` values */
 
 export function erc20Allowance(txc: ContractTransaction): Tx {
-  return { ...txData(txc), ...{ kind: TxKind.Erc20Allowance } };
+  return { ...txData(txc), kind: TxKind.Erc20Allowance };
 }
 
 export function supportOnboarding(
