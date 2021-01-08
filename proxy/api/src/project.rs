@@ -1,6 +1,7 @@
 //! Combine the domain `CoCo` domain specific understanding of a Project into a single
 //! abstraction.
 
+use std::convert::TryFrom;
 use std::{collections::HashSet, ops::Deref};
 
 use serde::{Deserialize, Serialize};
@@ -23,8 +24,10 @@ pub struct Metadata {
     pub maintainers: HashSet<coco::Urn>,
 }
 
-impl From<coco::Project> for Metadata {
-    fn from(project: coco::Project) -> Self {
+impl TryFrom<coco::Project> for Metadata {
+    type Error = error::Error;
+
+    fn try_from(project: coco::Project) -> Result<Self, Self::Error> {
         let subject = project.subject();
         // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their
         // PublicKey. Should we display these?
@@ -34,15 +37,21 @@ impl From<coco::Project> for Metadata {
             .indirect()
             .map(|indirect| indirect.urn())
             .collect();
-        Self {
+        let default_branch = subject
+            .default_branch
+            .clone()
+            .ok_or(error::Error::MissingDefaultBranch)?
+            .to_string();
+
+        Ok(Self {
             name: subject.name.to_string(),
             description: subject
                 .description
                 .clone()
                 .map_or_else(|| "".into(), |desc| desc.to_string()),
-            default_branch: subject.default_branch.clone().unwrap().to_string(),
+            default_branch,
             maintainers,
-        }
+        })
     }
 }
 
@@ -82,34 +91,40 @@ impl Partial {
 }
 
 /// Construct a Project from its metadata and stats
-impl From<coco::Project> for Partial {
+impl TryFrom<coco::Project> for Partial {
+    type Error = error::Error;
+
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
-    fn from(project: coco::Project) -> Self {
+    fn try_from(project: coco::Project) -> Result<Self, Self::Error> {
         let urn = project.urn();
+        let metadata = Metadata::try_from(project)?;
 
-        Self {
+        Ok(Self {
             urn: urn.clone(),
             shareable_entity_identifier: format!("%{}", urn),
-            metadata: project.into(),
+            metadata,
             stats: (),
-        }
+        })
     }
 }
 
 /// Construct a Project from its metadata and stats
-impl From<(coco::Project, coco::Stats)> for Full {
+impl TryFrom<(coco::Project, coco::Stats)> for Full {
+    type Error = error::Error;
+
     /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
-    fn from((project, stats): (coco::Project, coco::Stats)) -> Self {
+    fn try_from((project, stats): (coco::Project, coco::Stats)) -> Result<Self, Self::Error> {
         let urn = project.urn();
+        let metadata = Metadata::try_from(project)?;
 
-        Self {
+        Ok(Self {
             urn: urn.clone(),
             shareable_entity_identifier: format!("%{}", urn),
-            metadata: project.into(),
+            metadata,
             stats,
-        }
+        })
     }
 }
 
@@ -200,13 +215,13 @@ impl Projects {
         };
 
         for project in state.list_projects().await? {
-            let project = Project::from(project);
+            let project = Project::try_from(project)?;
             let default_branch = match state.find_default_branch(project.urn.clone()).await {
                 Err(err) => {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::DefaultBranch(project));
                     continue;
-                },
+                }
                 Ok(branch) => branch,
             };
 
@@ -218,7 +233,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::Stats(project));
                     continue;
-                },
+                }
                 Ok(stats) => stats,
             };
 
@@ -229,7 +244,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::SignedRefs(project));
                     continue;
-                },
+                }
                 Ok(refs) => refs,
             };
 
@@ -241,7 +256,7 @@ impl Projects {
                     } else {
                         projects.contributed.push(project)
                     }
-                },
+                }
             }
         }
 
@@ -325,7 +340,7 @@ pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Full, er
         .with_browser(branch, |browser| Ok(browser.get_stats()?))
         .await?;
 
-    Ok((project, project_stats).into())
+    Full::try_from((project, project_stats))
 }
 
 /// This lists all the projects for a given `user`. This `user` should not be your particular
@@ -361,14 +376,12 @@ pub async fn list_for_user(
             let branch = state
                 .get_branch(project.urn(), peer, subject.default_branch.to_owned())
                 .await?;
-            let proj = state
-                .with_browser(branch, |browser| {
-                    let project_stats = browser.get_stats()?;
-                    Ok((project, project_stats).into())
-                })
+            let stats = state
+                .with_browser(branch, |browser| Ok(browser.get_stats()?))
                 .await?;
+            let full = Full::try_from((project, stats))?;
 
-            projects.push(proj);
+            projects.push(full);
         }
     }
     Ok(projects)

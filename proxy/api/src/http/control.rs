@@ -49,6 +49,8 @@ fn seal_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
+    use std::convert::TryFrom;
+
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error, project};
@@ -85,7 +87,7 @@ mod handler {
             .with_browser(branch, |browser| Ok(browser.get_stats()?))
             .await
             .map_err(error::Error::from)?;
-        let project: project::Full = (meta, stats).into();
+        let project = project::Full::try_from((meta, stats))?;
 
         Ok(reply::with_status(
             reply::json(&project),

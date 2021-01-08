@@ -42,4 +42,7 @@ pub enum Error {
 
     #[error("project not found")]
     ProjectNotFound,
+
+    #[error("missing default branch")]
+    MissingDefaultBranch,
 }
