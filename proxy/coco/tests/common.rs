@@ -91,7 +91,7 @@ pub async fn build_peer(
     let signer = signer::BoxedSigner::from(key.clone());
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let conf = config::default(signer.clone(), tmp_dir.path())?;
-    let disco = config::static_seed_discovery(vec![]);
+    let disco = config::static_seed_discovery(&[]);
     let (peer, state) = coco::boostrap(conf, disco, signer, store, run_config).await?;
 
     Ok((peer, state))
@@ -108,7 +108,7 @@ pub async fn build_peer_with_seeds(
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let paths = Paths::from_root(tmp_dir.path())?;
     let conf = config::configure(paths, signer.clone(), *config::LOCALHOST_ANY);
-    let disco = config::static_seed_discovery(seeds);
+    let disco = config::static_seed_discovery(&seeds);
     let (peer, state) = coco::boostrap(conf, disco, signer, store, run_config).await?;
 
     Ok((peer, state))

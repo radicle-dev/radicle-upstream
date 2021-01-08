@@ -169,7 +169,7 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let user = ctx.state.init_user("cloudhead".to_string()).await?.unwrap();
+        let user = ctx.state.init_user("cloudhead".to_string()).await?;
 
         let res = request()
             .method("GET")

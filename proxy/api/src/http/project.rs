@@ -148,6 +148,8 @@ fn user_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
+    use std::convert::TryFrom;
+
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error::Error, http, project};
@@ -192,7 +194,7 @@ mod handler {
             })
             .await
             .map_err(Error::from)?;
-        let project: project::Full = (project, stats).into();
+        let project = project::Full::try_from((project, stats))?;
 
         Ok(reply::with_status(
             reply::json(&project),

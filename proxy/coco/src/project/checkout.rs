@@ -77,8 +77,8 @@ pub enum Ownership {
 /// Clone a git repository to the `path` location, based off of the `remote` provided.
 ///
 /// # Errors
-///     * if initialisation of the repository fails
-///     * if branch or remote manipulation fails
+///   * if initialisation of the repository fails
+///   * if branch or remote manipulation fails
 pub fn clone<F>(
     path: &path::Path,
     storage: F,

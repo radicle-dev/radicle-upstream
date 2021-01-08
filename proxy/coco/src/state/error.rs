@@ -32,6 +32,10 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
+    /// An attempt to create an identity failed.
+    #[error("failed to create identity")]
+    IdentityCreationFailed,
+
     /// An interaction involving an identity failed.
     #[error(transparent)]
     Identities(#[from] librad::git::identities::Error),
@@ -44,6 +48,10 @@ pub enum Error {
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 
+    /// The namespace was expected in a reference but was not found.
+    #[error("missing namespace in reference")]
+    MissingNamespace,
+
     /// An operation relied on a default owner being set, but it was not.
     #[error("this operation depends on the present of a default owner")]
     MissingOwner,
@@ -51,6 +59,14 @@ pub enum Error {
     /// Peer API error
     #[error(transparent)]
     PeerApi(#[from] net::peer::ApiError),
+
+    /// The [`librad::git::identities::Person`] was not found for the provided [`Urn`].
+    #[error("person not found for '{0}'")]
+    PersonNotFound(Urn),
+
+    /// The [`librad::git::identities::Project`] was not found for the provided [`Urn`].
+    #[error("project not found for '{0}'")]
+    ProjectNotFound(Urn),
 
     /// Failed to parse a reference.
     #[error(transparent)]
@@ -75,6 +91,10 @@ pub enum Error {
     /// An interaction with the config file for the storage failed.
     #[error(transparent)]
     StorageConfig(#[from] librad::git::storage::config::Error),
+
+    /// An error occurred interacting with the `radicle_surf` package.
+    #[error(transparent)]
+    Surf(#[from] radicle_surf::git::error::Error),
 
     /// An error occurred when attempting to track or untrack a peer.
     #[error(transparent)]

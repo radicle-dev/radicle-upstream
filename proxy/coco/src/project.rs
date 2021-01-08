@@ -7,8 +7,6 @@ use librad::{
 };
 use radicle_surf::vcs::git::git2;
 
-use crate::config;
-
 /// Module concerned with creating new projects and repositories.
 pub mod create;
 pub use create::{Create, Repo};

@@ -49,7 +49,7 @@ pub struct State {
 impl State {
     /// Create a new [`State`] given a [`PeerApi`].
     #[must_use]
-    pub fn new(api: PeerApi, signer: BoxedSigner) -> Self {
+    pub const fn new(api: PeerApi, signer: BoxedSigner) -> Self {
         Self { api, signer }
     }
 
@@ -66,6 +66,7 @@ impl State {
     }
 
     /// Construct the local [`transport::Settings`] for interacting with git related I/O.
+    #[must_use]
     pub fn settings(&self) -> transport::Settings {
         transport::Settings {
             paths: self.paths(),
@@ -95,7 +96,6 @@ impl State {
     }
 
     /// The [`SocketAddr`] this [`PeerApi`] is listening on.
-    #[must_use]
     pub fn listen_addrs(&self) -> impl Iterator<Item = SocketAddr> + '_ {
         self.api.listen_addrs()
     }
@@ -103,9 +103,9 @@ impl State {
     /// Get the default owner for this `PeerApi`.
     pub async fn default_owner(&self) -> Result<Option<LocalIdentity>, Error> {
         self.api
-            .with_storage(move |storage| {
-                if let Some(urn) = storage.config()?.user()? {
-                    return local::load(&storage, urn).map_err(Error::from);
+            .with_storage(move |store| {
+                if let Some(urn) = store.config()?.user()? {
+                    return local::load(store, urn).map_err(Error::from);
                 }
 
                 Ok::<_, Error>(None)
@@ -134,10 +134,11 @@ impl State {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
+    #[allow(clippy::single_match_else)]
     pub async fn init_owner(&self, name: String) -> Result<LocalIdentity, Error> {
         match self
             .api
-            .with_storage(move |store| local::default(&store))
+            .with_storage(move |store| local::default(store))
             .await??
         {
             Some(owner) => Ok(owner),
@@ -147,7 +148,7 @@ impl State {
                     .api
                     .with_storage(move |store| {
                         person::create(
-                            &store,
+                            store,
                             payload::Person {
                                 name: Cstring::from(name),
                             },
@@ -156,16 +157,22 @@ impl State {
                     })
                     .await??;
 
+                let urn = person.urn();
                 let owner = self
                     .api
-                    .with_storage(move |store| local::load(&store, person.urn()))
+                    .with_storage(move |store| local::load(store, urn))
                     .await??
-                    .unwrap();
+                    .ok_or_else(|| Error::PersonNotFound(person.urn()))?;
 
                 {
                     let owner = owner.clone();
                     self.api
-                        .with_storage(move |store| store.config().unwrap().set_user(owner))
+                        .with_storage(move |store| {
+                            let mut config = store.config()?;
+                            config.set_user(owner)?;
+
+                            Ok::<_, Error>(())
+                        })
                         .await??;
                 }
 
@@ -191,10 +198,10 @@ impl State {
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
         // TODO(finto): Since the owner is returned as Some we could forego the unwrap
-        let owner = self.default_owner().await?.unwrap();
+        let owner = self.default_owner().await?.ok_or(Error::MissingOwner)?;
         self.api
             .with_storage(move |store| {
-                replication::replicate(&store, Some(owner), urn.clone(), remote_peer, addr_hints)
+                replication::replicate(store, Some(owner), urn.clone(), remote_peer, addr_hints)
             })
             .await?
             .map_err(Error::from)
@@ -289,7 +296,7 @@ impl State {
     pub async fn list_users(&self) -> Result<Vec<Person>, Error> {
         self.api
             .with_storage(move |store| {
-                let projects = identities::any::list(&store)?
+                let projects = identities::any::list(store)?
                     .filter_map(Result::ok)
                     .filter_map(|id| match id {
                         SomeIdentity::Person(person) => Some(person),
@@ -320,7 +327,7 @@ impl State {
     {
         self.api
             .with_storage(move |store| {
-                replication::replicate(&store, None, urn, remote_peer, addr_hints)
+                replication::replicate(store, None, urn, remote_peer, addr_hints)
             })
             .await?
             .map_err(Error::from)
@@ -334,9 +341,9 @@ impl State {
     ///   * Could not successfully acquire a lock to the API.
     pub async fn get_user(&self, urn: Urn) -> Result<Option<LocalIdentity>, Error> {
         self.api
-            .with_storage(move |store| match identities::person::get(&store, &urn)? {
+            .with_storage(move |store| match identities::person::get(store, &urn)? {
                 None => Ok(None),
-                Some(person) => local::load(&store, person.urn()),
+                Some(person) => local::load(store, person.urn()),
             })
             .await?
             .map_err(Error::from)
@@ -362,7 +369,7 @@ impl State {
         Ok(self
             .api
             .with_storage(move |store| {
-                replication::replicate(&store, None, urn, remote_peer, addr_hints)
+                replication::replicate(store, None, urn, remote_peer, addr_hints)
             })
             .await??)
     }
@@ -387,9 +394,13 @@ impl State {
         F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
         // CONSTRUCT PROEJECTS NAMESPACE
-        let namespace =
-            git::namespace::Namespace::try_from(reference.namespace.unwrap().to_string().as_str())
-                .unwrap();
+        let namespace = git::namespace::Namespace::try_from(
+            reference
+                .namespace
+                .ok_or(Error::MissingNamespace)?
+                .to_string()
+                .as_str(),
+        )?;
 
         // HANDLE HEADS
         let branch = match reference.remote {
@@ -430,8 +441,18 @@ impl State {
     {
         let name = match branch_name.into() {
             None => {
-                let project = self.get_project(urn.clone()).await?.unwrap();
-                project.subject().default_branch.clone().unwrap()
+                let project = self
+                    .get_project(urn.clone())
+                    .await?
+                    .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
+                project
+                    .subject()
+                    .default_branch
+                    .clone()
+                    .ok_or(Error::NoDefaultBranch {
+                        name: "".to_string(),
+                        urn: urn.clone(),
+                    })?
             },
             Some(name) => name,
         }
@@ -468,9 +489,20 @@ impl State {
     ///   * If the storage operations fail.
     ///   * If no default branch was found for the provided [`Urn`].
     pub async fn find_default_branch(&self, urn: Urn) -> Result<Reference<Single>, Error> {
-        let project = self.get_project(urn.clone()).await?.unwrap();
+        let project = self
+            .get_project(urn.clone())
+            .await?
+            .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
 
-        let default_branch = project.subject().default_branch.clone().unwrap();
+        let default_branch =
+            project
+                .subject()
+                .default_branch
+                .clone()
+                .ok_or(Error::NoDefaultBranch {
+                    name: "".to_string(),
+                    urn: urn.clone(),
+                })?;
 
         // TODO(xla): Check for all delegations if there is default branch.
         let peer = project
@@ -483,7 +515,7 @@ impl State {
                 },
             })
             .next()
-            .unwrap();
+            .expect("missing delegation");
 
         let (owner, peer) = tokio::join!(
             self.get_branch(urn.clone(), None, default_branch.to_owned()),
@@ -512,7 +544,6 @@ impl State {
         owner: &LocalIdentity,
         create: crate::project::Create,
     ) -> Result<Project, Error> {
-        let pk = keys::PublicKey::from(self.signer.public_key());
         let default_branch = create.default_branch.to_string();
         let description = create.description.to_string();
         let name = create
@@ -524,7 +555,7 @@ impl State {
             .api
             .with_storage(move |store| {
                 project::create(
-                    &store,
+                    store,
                     owner.clone(),
                     payload::Project {
                         default_branch: Some(Cstring::from(default_branch)),
@@ -575,21 +606,22 @@ impl State {
     /// Will error if:
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub async fn init_user(&self, name: String) -> Result<Option<LocalIdentity>, Error> {
+    pub async fn init_user(&self, name: String) -> Result<LocalIdentity, Error> {
         let pk = keys::PublicKey::from(self.signer.public_key());
         self.api
             .with_storage(move |store| {
                 let malkovich = person::create(
-                    &store,
+                    store,
                     payload::Person {
                         name: Cstring::from(name),
                     },
                     Direct::from_iter(vec![pk].into_iter()),
                 )?;
 
-                Ok::<_, Error>(local::load(&store, malkovich.urn())?)
+                Ok::<_, Error>(local::load(store, malkovich.urn())?)
             })
-            .await?
+            .await??
+            .ok_or(Error::IdentityCreationFailed)
     }
 
     /// Wrapper around the storage track.
@@ -601,7 +633,7 @@ impl State {
         {
             let urn = urn.clone();
             self.api
-                .with_storage(move |store| tracking::track(&store, &urn, remote_peer))
+                .with_storage(move |store| tracking::track(store, &urn, remote_peer))
                 .await??;
         }
 
@@ -620,7 +652,7 @@ impl State {
         let res = {
             let urn = urn.clone();
             self.api
-                .with_storage(move |store| tracking::untrack(&store, &urn, remote_peer))
+                .with_storage(move |store| tracking::untrack(store, &urn, remote_peer))
                 .await??
         };
 
@@ -645,17 +677,21 @@ impl State {
         &self,
         urn: Urn,
     ) -> Result<Vec<crate::project::Peer<peer::Status<Person>>>, Error> {
-        let project = self.get_project(urn.clone()).await?.unwrap();
+        let project = self
+            .get_project(urn.clone())
+            .await?
+            .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
 
         self.api
             .with_storage(move |store| {
                 let mut peers = vec![];
 
-                for peer_id in tracking::tracked(&store, &urn)? {
+                for peer_id in tracking::tracked(store, &urn)? {
                     let ref_self = Reference::rad_self(Namespace::from(urn.clone()), peer_id);
                     let status = if store.has_ref(&ref_self)? {
                         let malkovich_urn = Urn::try_from(ref_self).unwrap();
-                        let malkovich = person::get(&store, &malkovich_urn)?.unwrap();
+                        let malkovich = person::get(store, &malkovich_urn)?
+                            .ok_or(Error::PersonNotFound(malkovich_urn))?;
 
                         if project
                             .delegations()
@@ -695,19 +731,22 @@ impl State {
     /// # Panics
     ///
     /// * if the default owner can't be fetched
+    #[allow(clippy::blocks_in_if_conditions)]
     pub async fn list_project_peers(
         &self,
         urn: Urn,
     ) -> Result<Vec<crate::project::Peer<peer::Status<Person>>>, Error> {
-        let project = self.get_project(urn.clone()).await?.unwrap();
+        let project = self
+            .get_project(urn.clone())
+            .await?
+            .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
 
         let mut peers = vec![];
 
         let owner = self
             .default_owner()
-            .await
-            .expect("unable to find state owner")
-            .unwrap()
+            .await?
+            .ok_or(Error::MissingOwner)?
             .into_inner()
             .into_inner();
 
@@ -723,7 +762,7 @@ impl State {
             .api
             .with_storage(move |store| {
                 store.has_ref(&Reference::rad_signed_refs(
-                    Namespace::from(project.urn().clone()),
+                    Namespace::from(project.urn()),
                     None,
                 ))
             })
@@ -768,13 +807,19 @@ impl State {
         P: Into<Option<PeerId>> + Send + 'static,
     {
         let peer_id = peer_id.into();
-        let proj = self.get_project(urn.clone()).await?.unwrap();
+        let proj = self
+            .get_project(urn.clone())
+            .await?
+            .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
         let include_path = self.update_include(urn.clone()).await?;
         let default_branch: OneLevel = OneLevel::from(
             proj.subject()
                 .default_branch
                 .clone()
-                .unwrap()
+                .ok_or(Error::NoDefaultBranch {
+                    name: "".to_string(),
+                    urn: urn.clone(),
+                })?
                 .parse::<RefLike>()?,
         );
         let checkout = crate::project::Checkout {
@@ -798,10 +843,12 @@ impl State {
                         .with_storage(move |store| {
                             let malkovich_urn = Urn::try_from(ref_self).unwrap();
                             log::debug!("Urn -> {}", malkovich_urn);
-                            person::get(&store, &malkovich_urn)
+                            let p = person::get(store, &malkovich_urn)?
+                                .ok_or(Error::PersonNotFound(malkovich_urn))?;
+
+                            Ok::<_, Error>(p)
                         })
-                        .await??
-                        .unwrap();
+                        .await??;
 
                     person.subject().name.to_string()
                 };
@@ -861,8 +908,8 @@ impl From<&State> for Seed {
     }
 }
 
+#[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
-#[allow(clippy::panic)]
 mod test {
     use std::{env, path::PathBuf};
 
@@ -900,7 +947,7 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
-        let disco = config::static_seed_discovery(vec![]);
+        let disco = config::static_seed_discovery(&[]);
         let peer = net::peer::Peer::bootstrap(config, disco).await?;
         let (api, _run_loop) = peer.accept()?;
         let state = State::new(api, signer);
@@ -919,7 +966,7 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
-        let disco = config::static_seed_discovery(vec![]);
+        let disco = config::static_seed_discovery(&[]);
         let peer = net::peer::Peer::bootstrap(config, disco).await?;
         let (api, _run_loop) = peer.accept()?;
         let state = State::new(api, signer);
@@ -943,7 +990,7 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
-        let disco = config::static_seed_discovery(vec![]);
+        let disco = config::static_seed_discovery(&[]);
         let peer = net::peer::Peer::bootstrap(config, disco).await?;
         let (api, _run_loop) = peer.accept()?;
         let state = State::new(api, signer);
@@ -967,7 +1014,7 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
-        let disco = config::static_seed_discovery(vec![]);
+        let disco = config::static_seed_discovery(&[]);
         let peer = net::peer::Peer::bootstrap(config, disco).await?;
         let (api, _run_loop) = peer.accept()?;
         let state = State::new(api, signer);
@@ -978,7 +1025,7 @@ mod test {
             .await
             .expect("unable to setup fixtures");
 
-        let kalt = state.init_user("kalt".to_string()).await?.unwrap();
+        let kalt = state.init_user("kalt".to_string()).await?;
         let fakie = state.init_project(&kalt, fakie_project(repo_path)).await?;
 
         let projects = state.list_projects().await?;
@@ -1004,13 +1051,13 @@ mod test {
         let key = SecretKey::new();
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
-        let disco = config::static_seed_discovery(vec![]);
+        let disco = config::static_seed_discovery(&[]);
         let peer = net::peer::Peer::bootstrap(config, disco).await?;
         let (api, _run_loop) = peer.accept()?;
         let state = State::new(api, signer);
 
-        let _cloudhead = state.init_user("cloudhead".to_string()).await?.unwrap();
-        let _kalt = state.init_user("kalt".to_string()).await?.unwrap();
+        let _cloudhead = state.init_user("cloudhead".to_string()).await?;
+        let _kalt = state.init_user("kalt".to_string()).await?;
 
         let users = state.list_users().await?;
         let mut user_handles = users

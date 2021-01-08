@@ -102,13 +102,13 @@ where
 /// Builds a static discovery over the list of given `seeds`.
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> discovery::Static {
+pub fn static_seed_discovery(seeds: &[seed::Seed]) -> discovery::Static {
     discovery::Static::resolve(
         seeds
             .iter()
             .map(|seed| (seed.peer_id, seed.addrs.as_slice())),
     )
-    .unwrap()
+    .expect("unable to resolve seeds")
 }
 
 /// Stream based discovery based on a watch.
@@ -134,7 +134,7 @@ impl discovery::Discovery for StreamDiscovery {
 
         tokio::spawn(async move {
             while let Some(seeds) = self.seeds_receiver.recv().await {
-                for seed in seeds.into_iter() {
+                for seed in seeds {
                     sender.send(seed.into()).await.ok();
                 }
             }
