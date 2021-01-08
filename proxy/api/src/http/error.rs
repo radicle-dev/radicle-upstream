@@ -12,7 +12,7 @@ use crate::error;
 /// HTTP layer specific rejections.
 #[derive(Debug, thiserror::Error)]
 pub enum Routing {
-    /// The currently active [`coco::user::User`] is missing.
+    /// The currently active [`coco::Person`] is missing.
     #[error("Owner is missing")]
     MissingOwner,
     /// The keystore is sealed, context does not have a signer.

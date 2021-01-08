@@ -12,13 +12,13 @@ pub enum Command {
     Announce,
     /// Answer control requests.
     Control(Control),
-    /// Update the include file for the provided `RadUrn`.
+    /// Update the include file for the provided [`Urn`].
     Include(Urn),
-    /// Tell the subroutine to persist the `WaitingRoom`.
+    /// Tell the subroutine to persist the [`WaitingRoom`].
     PersistWaitingRoom(WaitingRoom<Instant, Duration>),
     /// Fulfill request commands.
     Request(Request),
-    /// Initiate a full sync with `PeerId`.
+    /// Initiate a full sync with [`PeerId`].
     SyncPeer(PeerId),
     /// Start sync timeout.
     StartSyncTimeout(Duration),
@@ -36,11 +36,11 @@ pub enum Control {
 /// Commands issued when requesting an identity from the network.
 #[derive(Debug, PartialEq)]
 pub enum Request {
-    /// Tell the subroutine to attempt a clone from the given `RadUrl`.
+    /// Tell the subroutine to attempt a clone from the given [`Urn`] and [`PeerId`].
     Clone(Urn, PeerId),
-    /// Tell the subroutine that we should query for the given `RadUrn` on the network.
+    /// Tell the subroutine that we should query for the given [`Urn`] on the network.
     Query(Urn),
-    /// The request for [`RadUrn`] timed out.
+    /// The request for [`Urn`] timed out.
     TimedOut(Urn),
 }
 

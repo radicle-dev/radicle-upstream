@@ -109,7 +109,7 @@ mod handler {
 
     use crate::{context, error, session, session::settings};
 
-    /// Fetch a [`coco::Blob`].
+    /// Fetch a [`coco::source::Blob`].
     pub async fn blob(
         project_urn: coco::Urn,
         super::BlobQuery {
@@ -151,7 +151,7 @@ mod handler {
         Ok(reply::json(&blob))
     }
 
-    /// Fetch the list [`coco::Branch`].
+    /// Fetch the list [`coco::source::Branch`].
     pub async fn branches(
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
@@ -174,7 +174,7 @@ mod handler {
         Ok(reply::json(&branches))
     }
 
-    /// Fetch a [`coco::Commit`].
+    /// Fetch a [`coco::source::Commit`].
     pub async fn commit(
         project_urn: coco::Urn,
         sha1: Oid,
@@ -196,7 +196,7 @@ mod handler {
         Ok(reply::json(&commit))
     }
 
-    /// Fetch the list of [`coco::Commit`] from a branch.
+    /// Fetch the list of [`coco::source::Commit`] from a branch.
     pub async fn commits(
         ctx: context::Unsealed,
         project_urn: coco::Urn,
@@ -220,7 +220,7 @@ mod handler {
         Ok(reply::json(&commits))
     }
 
-    /// Fetch the list [`coco::Branch`] for a local repository.
+    /// Fetch the list [`coco::source::Branch`] for a local repository.
     pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
         let state = coco::source::local_state(path.as_str())
             .map_err(coco::state::Error::from)
@@ -229,7 +229,7 @@ mod handler {
         Ok(reply::json(&state))
     }
 
-    /// Fetch the list [`coco::Tag`].
+    /// Fetch the list [`coco::source::Tag`].
     pub async fn tags(
         project_urn: coco::Urn,
         _query: super::TagQuery,
@@ -249,7 +249,7 @@ mod handler {
         Ok(reply::json(&tags))
     }
 
-    /// Fetch a [`coco::Tree`].
+    /// Fetch a [`coco::source::Tree`].
     pub async fn tree(
         project_urn: coco::Urn,
         super::TreeQuery {
