@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import { get } from "svelte/store";
   import {
     Copyable,
     Dai,
@@ -13,7 +12,7 @@
 
   import {
     selectedStore,
-    store as transactionsStore,
+    store as txs,
     colorForStatus,
     isIncoming,
     formatDate,
@@ -28,7 +27,7 @@
   // is by looking it up, type-wise it can.
   let tx: Tx | undefined = undefined;
 
-$: tx = $txs.find((x) => x.hash === $selectedStore)
+  $: tx = $txs.find(x => x.hash === $selectedStore);
 
   $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
   $: transferedAmount = tx ? transferAmount(tx) : undefined;
