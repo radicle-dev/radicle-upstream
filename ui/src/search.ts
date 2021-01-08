@@ -43,7 +43,7 @@ export const searchProject = async (urn: string): Promise<void> => {
 };
 
 // URN validation.
-const VALID_URN_MATCH = /^rad:git:[1-9A-HJ-NP-Za-km-z]{59}/;
+const VALID_URN_MATCH = /^rad:git:[1-9A-HJ-NP-Za-km-z]{37}/;
 const urnConstraints = {
   format: {
     pattern: VALID_URN_MATCH,

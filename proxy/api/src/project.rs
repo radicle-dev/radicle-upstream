@@ -315,7 +315,11 @@ impl Iterator for IntoIter {
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
 pub async fn get(state: &coco::State, project_urn: coco::Urn) -> Result<Full, error::Error> {
-    let project = state.get_project(project_urn.clone()).await?.unwrap();
+    let project = state
+        .get_project(project_urn.clone())
+        .await?
+        .ok_or(crate::error::Error::ProjectNotFound)?;
+
     let branch = state.find_default_branch(project_urn.clone()).await?;
     let project_stats = state
         .with_browser(branch, |browser| Ok(browser.get_stats()?))

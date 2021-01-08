@@ -39,4 +39,7 @@ pub enum Error {
     /// Errors stemming from [`coco::request::waiting_room::WaitingRoom`] interactions.
     #[error(transparent)]
     WaitingRoom(#[from] coco::request::waiting_room::Error),
+
+    #[error("project not found")]
+    ProjectNotFound,
 }

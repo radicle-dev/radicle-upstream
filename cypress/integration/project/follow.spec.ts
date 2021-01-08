@@ -1,8 +1,7 @@
 import * as commands from "../../support/commands";
 
 context("project following", () => {
-  const projectId =
-    "hwd1yre8dchhkyd34h9f5h7ymbnj5tkzoezb9kuthi885ecbuu5ey69cipw";
+  const projectId = "hnrkfr9g6gxymefc3hto37bgmq3eo86sfckky";
 
   beforeEach(() => {
     commands.resetProxyState();
