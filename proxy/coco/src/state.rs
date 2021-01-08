@@ -65,6 +65,7 @@ impl State {
         self.api.paths().clone()
     }
 
+    /// Construct the local [`transport::Settings`] for interacting with git related I/O.
     pub fn settings(&self) -> transport::Settings {
         transport::Settings {
             paths: self.paths(),
@@ -126,7 +127,7 @@ impl State {
             .await?
     }
 
-    /// Initialise a [`User`] and make them the default owner of this [`PeerApi`].
+    /// Initialise a [`LocalIdentity`] and make them the default owner of this [`PeerApi`].
     ///
     /// # Errors
     ///
@@ -211,7 +212,7 @@ impl State {
             .map_err(Error::from)
     }
 
-    /// Returns the list of [`librad_project::Project`]s for the local peer.
+    /// Returns the list of [`Project`]s for the local peer.
     ///
     /// # Errors
     ///
@@ -280,7 +281,7 @@ impl State {
             .map_err(Error::from)
     }
 
-    /// Returns the list of [`user::User`]s known for your peer.
+    /// Returns the list of [`Person`]s known for your peer.
     ///
     /// # Errors
     ///
@@ -370,7 +371,7 @@ impl State {
     /// `reference`.
     ///
     /// See [`State::find_default_branch`] and [`State::get_branch`] for obtaining a
-    /// [`NamespacedRef`].
+    /// [`Reference`].
     ///
     /// # Errors
     ///   * If the namespace of the reference could not be converted to a [`git::Namespace`].
@@ -498,7 +499,7 @@ impl State {
         }
     }
 
-    /// Initialize a [`librad_project::Project`] that is owned by the `owner`.
+    /// Initialize a [`Project`] that is owned by the `owner`.
     /// This kicks off the history of the project, tracked by `librad`'s mono-repo.
     ///
     /// # Errors
@@ -566,7 +567,7 @@ impl State {
         Ok(project)
     }
 
-    /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a
+    /// Create a [`LocalIdentity`] with the provided `handle`. This assumes that you are creating a
     /// user that uses the secret key the `PeerApi` was configured with.
     ///
     /// # Errors
@@ -631,7 +632,7 @@ impl State {
         Ok(res)
     }
 
-    /// Get the [`user::User`]s that are tracking this project, including their [`PeerId`].
+    /// Get the [`crate::project::Peer`]s that are tracking this project, including their [`PeerId`].
     ///
     /// # Errors
     ///
@@ -683,7 +684,7 @@ impl State {
     }
 
     // TODO(xla): Account for projects not replicated but wanted.
-    /// Constructs the list of [`project::Peer`] for the given `urn`. The basis is the list of
+    /// Constructs the list of [`crate::project::Peer`] for the given `urn`. The basis is the list of
     /// tracking peers of the project combined with the local view.
     ///
     /// # Errors

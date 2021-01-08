@@ -32,16 +32,19 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
+    /// An interaction involving an identity failed.
     #[error(transparent)]
     Identities(#[from] librad::git::identities::Error),
 
+    /// An interaction involving [`librad::git::identities::local::LocalIdentity`] failed.
     #[error(transparent)]
     IdentitiesLocal(#[from] librad::git::identities::local::Error),
 
-    /// An error occured building include files.
+    /// An error occurred building include files.
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 
+    /// An operation relied on a default owner being set, but it was not.
     #[error("this operation depends on the present of a default owner")]
     MissingOwner,
 
@@ -53,9 +56,11 @@ pub enum Error {
     #[error(transparent)]
     ReferenceName(#[from] librad::git_ext::reference::name::Error),
 
+    /// An action involving `rad/signed_refs` resulted in an error.
     #[error(transparent)]
     Refs(#[from] librad::git::refs::stored::Error),
 
+    /// An error occurred when attempting to replicate data from another peer.
     #[error(transparent)]
     Replication(#[from] librad::git::replication::Error),
 
@@ -67,9 +72,11 @@ pub enum Error {
     #[error(transparent)]
     Storage(#[from] storage::Error),
 
+    /// An interaction with the config file for the storage failed.
     #[error(transparent)]
     StorageConfig(#[from] librad::git::storage::config::Error),
 
+    /// An error occurred when attempting to track or untrack a peer.
     #[error(transparent)]
     Tracking(#[from] librad::git::tracking::Error),
 

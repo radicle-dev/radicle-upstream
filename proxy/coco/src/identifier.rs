@@ -1,4 +1,4 @@
-//! A `Identifier` is the combination of a user handle and the [`librad::uri::RadUrn`] that
+//! An `Identifier` is the combination of a user handle and the [`librad::git::Urn`] that
 //! identifies the user.
 
 use std::{fmt, str::FromStr};

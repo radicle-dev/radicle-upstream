@@ -27,14 +27,15 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
-    /// An error occured building include files.
+    /// An error occurred building include files.
     #[error(transparent)]
     Include(#[from] include::Error),
 
+    /// An error occurred when attempting to strip a prefix from a reference.
     #[error(transparent)]
     Prefix(#[from] radicle_git_ext::name::StripPrefixError),
 
-    /// An error occured in the local transport
+    /// An error occurred in the local transport.
     #[error(transparent)]
     Transport(#[from] librad::git::local::transport::Error),
 }

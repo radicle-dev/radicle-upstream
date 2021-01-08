@@ -82,6 +82,14 @@ pub enum Error {
     #[error("the path provided '{0}' does not exist when it was expected to")]
     PathDoesNotExist(PathBuf),
 
+    /// When attempting to find a particular remote that _should_ exist, it did not.
+    #[error(transparent)]
+    Remote(#[from] remote::FindError),
+
+    /// An internal error occurred when talking to the local transport for git related I/O.
+    #[error(transparent)]
+    Transport(#[from] librad::git::local::transport::Error),
+
     /// The `rad` remote was found, but the URL did not match the URL we were expecting.
     #[error("the `rad` remote was found but the url field does not match the provided url, found: '{found}' expected: '{expected}'")]
     UrlMismatch {
@@ -90,13 +98,6 @@ pub enum Error {
         /// The URL that was found for the `rad` remote.
         found: String,
     },
-
-    /// TODO(finto): This is pretty nasty
-    #[error(transparent)]
-    Transport(#[from] librad::git::local::transport::Error),
-
-    #[error(transparent)]
-    Remote(#[from] remote::FindError),
 }
 
 /// The signature of a git author. Used internally to convert into a `git2::Signature`, which
