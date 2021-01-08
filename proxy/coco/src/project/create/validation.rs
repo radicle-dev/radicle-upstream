@@ -1,20 +1,17 @@
 //! Validation logic for safely checking that a [`super::Repo`] is valid before setting up the
 //! working copy.
 
-use std::{convert::TryFrom, io, path::PathBuf, str::FromStr};
-
-use nonempty::NonEmpty;
+use std::{convert::TryFrom, io, path::PathBuf};
 
 use librad::{
     git::{
         local::{transport::CanOpenStorage, url::LocalUrl},
         types::{
-            refspec::Pushspec,
             remote::{self, LocalPushspec, Remote},
-            Flat, Force, GenericRef, Refspec,
+            Force, Refspec,
         },
     },
-    git_ext::{self, OneLevel, RefLike},
+    git_ext::{self, OneLevel},
     reflike, refspec_pattern,
     std_ext::result::ResultExt as _,
 };
@@ -265,8 +262,7 @@ impl Repository {
                     &default_branch,
                     &git2::Signature::try_from(signature)?,
                 )?;
-                Self::setup_remote(&repo, open_storage, url.clone(), &default_branch)?;
-                let remote = Self::existing_remote(&repo, &url)?.unwrap();
+                let remote = Self::setup_remote(&repo, open_storage, url, &default_branch)?;
                 crate::project::set_upstream(&repo, &remote, default_branch)?;
 
                 Ok(repo)
@@ -325,7 +321,7 @@ impl Repository {
         open_storage: F,
         url: LocalUrl,
         default_branch: &OneLevel,
-    ) -> Result<(), Error>
+    ) -> Result<Remote<LocalUrl>, Error>
     where
         F: CanOpenStorage + 'static,
     {
@@ -358,7 +354,7 @@ impl Repository {
         )? {
             log::debug!("Pushed local branch `{}`", pushed);
         }
-        Ok(())
+        Ok(git_remote)
     }
 
     fn existing_branch<'a>(

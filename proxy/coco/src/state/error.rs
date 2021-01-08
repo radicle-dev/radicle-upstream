@@ -32,6 +32,9 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
+    #[error("failed to create identity")]
+    IdentityCreationFailed,
+
     #[error(transparent)]
     Identities(#[from] librad::git::identities::Error),
 
@@ -42,12 +45,21 @@ pub enum Error {
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 
+    #[error("missing namespace in reference")]
+    MissingNamespace,
+
     #[error("this operation depends on the present of a default owner")]
     MissingOwner,
 
     /// Peer API error
     #[error(transparent)]
     PeerApi(#[from] net::peer::ApiError),
+
+    #[error("person not found for '{0}'")]
+    PersonNotFound(Urn),
+
+    #[error("project not found for '{0}'")]
+    ProjectNotFound(Urn),
 
     /// Failed to parse a reference.
     #[error(transparent)]
@@ -69,6 +81,9 @@ pub enum Error {
 
     #[error(transparent)]
     StorageConfig(#[from] librad::git::storage::config::Error),
+
+    #[error(transparent)]
+    Surf(#[from] radicle_surf::git::error::Error),
 
     #[error(transparent)]
     Tracking(#[from] librad::git::tracking::Error),

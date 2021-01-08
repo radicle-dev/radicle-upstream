@@ -84,7 +84,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
             }
 
             Ok(list)
-        },
+        }
     }
 }
 
@@ -163,7 +163,7 @@ mod test {
             signer: key.clone(),
         });
         let config = config::default(signer.clone(), tmp_dir.path())?;
-        let disco = config::static_seed_discovery(vec![]);
+        let disco = config::static_seed_discovery(&[]);
         let peer = net::peer::Peer::bootstrap(config, disco).await?;
         let (api, _run_loop) = peer.accept()?;
         let state = State::new(api, signer);

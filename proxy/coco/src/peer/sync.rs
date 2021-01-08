@@ -1,5 +1,6 @@
 //! Perform full state syncs with remote peers.
 
+use librad::identities::generic::Identity;
 use librad::peer::PeerId;
 
 use crate::state::State;
@@ -14,7 +15,7 @@ pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
         .list_projects()
         .await?
         .iter()
-        .map(|project| project.urn())
+        .map(Identity::urn)
         .collect::<Vec<_>>();
 
     for urn in urns {
@@ -23,7 +24,7 @@ pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
             Ok(()) => {
                 log::debug!("Finished fetch of {} from {}", urn, remote_peer);
                 include::update(state.clone(), urn).await;
-            },
+            }
             Err(e) => log::debug!("Fetch of {} from {} errored: {}", urn, remote_peer, e),
         }
     }

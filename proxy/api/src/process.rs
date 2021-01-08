@@ -181,11 +181,11 @@ async fn run_rigging(
                             {
                                 peer_subscriptions.broadcast(notification).await
                             }
-                        },
+                        }
                         Err(err) => {
                             log::error!("Failed to receive peer event: {}", err);
                             return;
-                        },
+                        }
                     }
                 }
             }
@@ -229,7 +229,7 @@ async fn rig(
                 signer.clone(),
                 *coco::config::INADDR_ANY,
             );
-            let disco = coco::config::static_seed_discovery(vec![]);
+            let disco = coco::config::static_seed_discovery(&[]);
             let (peer, state) = coco::boostrap(
                 config,
                 disco,

@@ -182,7 +182,7 @@ impl Unsealed {
 
         let (peer_control, state) = {
             let config = coco::config::default(signer.clone(), tmp_dir.path())?;
-            let disco = coco::config::static_seed_discovery(vec![]);
+            let disco = coco::config::static_seed_discovery(&[]);
             let (peer, state) = coco::boostrap(
                 config,
                 disco,

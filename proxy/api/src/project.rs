@@ -27,6 +27,7 @@ pub struct Metadata {
 impl TryFrom<coco::Project> for Metadata {
     type Error = error::Error;
 
+    #[allow(clippy::redundant_closure_for_method_calls)]
     fn try_from(project: coco::Project) -> Result<Self, Self::Error> {
         let subject = project.subject();
         // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their
