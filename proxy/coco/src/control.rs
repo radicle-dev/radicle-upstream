@@ -132,6 +132,9 @@ pub async fn replicate_platinum(
 }
 
 /// Push any tags that are in the `repo` to the monorepo storage.
+///
+/// # Errors
+///   * If we could not retrive the tag names from the repository.
 pub fn push_tags(
     remote: &mut Remote<LocalUrl>,
     storage: transport::Settings,

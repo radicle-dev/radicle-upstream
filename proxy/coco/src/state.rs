@@ -101,6 +101,11 @@ impl State {
     }
 
     /// Get the default owner for this `PeerApi`.
+    ///
+    /// # Errors
+    ///   * Opening the storage config failed
+    ///   * Fetching the `Urn` from the config failed
+    ///   * Loading the `LocalIdentity` failed
     pub async fn default_owner(&self) -> Result<Option<LocalIdentity>, Error> {
         self.api
             .with_storage(move |store| {
@@ -664,7 +669,8 @@ impl State {
         Ok(res)
     }
 
-    /// Get the [`crate::project::Peer`]s that are tracking this project, including their [`PeerId`].
+    /// Get the [`crate::project::Peer`]s that are tracking this project, including their
+    /// [`PeerId`].
     ///
     /// # Errors
     ///
@@ -687,11 +693,10 @@ impl State {
                 let mut peers = vec![];
 
                 for peer_id in tracking::tracked(store, &urn)? {
-                    let ref_self = Reference::rad_self(Namespace::from(urn.clone()), peer_id);
-                    let status = if store.has_ref(&ref_self)? {
-                        let malkovich_urn = Urn::try_from(ref_self).unwrap();
-                        let malkovich = person::get(store, &malkovich_urn)?
-                            .ok_or(Error::PersonNotFound(malkovich_urn))?;
+                    let rad_self = Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id)).expect("namespace is set");
+                    let status = if store.has_urn(&rad_self)? {
+                        let malkovich = person::get(store, &rad_self)?
+                            .ok_or(Error::PersonNotFound(rad_self))?;
 
                         if project
                             .delegations()
@@ -720,8 +725,8 @@ impl State {
     }
 
     // TODO(xla): Account for projects not replicated but wanted.
-    /// Constructs the list of [`crate::project::Peer`] for the given `urn`. The basis is the list of
-    /// tracking peers of the project combined with the local view.
+    /// Constructs the list of [`crate::project::Peer`] for the given `urn`. The basis is the list
+    /// of tracking peers of the project combined with the local view.
     ///
     /// # Errors
     ///
@@ -835,18 +840,14 @@ impl State {
             None => crate::project::checkout::Ownership::Local(self.peer_id()),
             Some(remote) => {
                 let handle = {
-                    let ref_self = Reference::rad_self(Namespace::from(urn.clone()), peer_id);
-                    log::debug!("rad/self -> `{}`", ref_self);
+                    let rad_self = Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id)).expect("namespace is set");
                     log::debug!("Monorepo: {}", self.monorepo().display());
                     let person = self
                         .api
                         .with_storage(move |store| {
-                            let malkovich_urn = Urn::try_from(ref_self).unwrap();
-                            log::debug!("Urn -> {}", malkovich_urn);
-                            let p = person::get(store, &malkovich_urn)?
-                                .ok_or(Error::PersonNotFound(malkovich_urn))?;
-
-                            Ok::<_, Error>(p)
+                            log::debug!("Urn -> {}", rad_self);
+                            person::get(store, &rad_self)?
+                                .ok_or(Error::PersonNotFound(rad_self))
                         })
                         .await??;
 
@@ -886,10 +887,14 @@ impl State {
         let include = Include::from_tracked_persons(
             self.paths().git_includes_dir().to_path_buf(),
             local_url,
-            tracked.into_iter().filter_map(|peer| {
-                crate::project::Peer::replicated_remote(peer)
-                    .map(|(p, u)| (RefLike::try_from(u.subject().name.to_string()).unwrap(), p))
-            }),
+            tracked
+                .into_iter()
+                .filter_map(|peer| {
+                    crate::project::Peer::replicated_remote(peer).map(|(p, u)| {
+                        RefLike::try_from(u.subject().name.to_string()).map(|r| (r, p))
+                    })
+                })
+                .collect::<Result<Vec<_>, _>>()?,
         );
         let include_path = include.file_path();
         log::info!("creating include file @ '{:?}'", include_path);
