@@ -176,7 +176,7 @@ impl State {
                 }
 
                 Ok(owner)
-            }
+            },
         }
     }
 
@@ -249,7 +249,7 @@ impl State {
                             } else {
                                 None
                             }
-                        }
+                        },
                         _ => None,
                     })
                     .collect::<Vec<_>>();
@@ -452,7 +452,7 @@ impl State {
                         name: "".to_string(),
                         urn: urn.clone(),
                     })?
-            }
+            },
             Some(name) => name,
         }
         .parse()?;
@@ -511,7 +511,7 @@ impl State {
                 Either::Left(pk) => Either::Left(std::iter::once(PeerId::from(*pk))),
                 Either::Right(indirect) => {
                     Either::Right(indirect.delegations().iter().map(|pk| PeerId::from(*pk)))
-                }
+                },
             })
             .next()
             .expect("missing delegation");
@@ -857,7 +857,7 @@ impl State {
                     remote,
                     local: self.peer_id(),
                 }
-            }
+            },
         };
 
         let settings = transport::Settings {

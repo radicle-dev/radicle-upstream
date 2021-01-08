@@ -1,8 +1,7 @@
 //! Combine the domain `CoCo` domain specific understanding of a Project into a single
 //! abstraction.
 
-use std::convert::TryFrom;
-use std::{collections::HashSet, ops::Deref};
+use std::{collections::HashSet, convert::TryFrom, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
@@ -222,7 +221,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::DefaultBranch(project));
                     continue;
-                }
+                },
                 Ok(branch) => branch,
             };
 
@@ -234,7 +233,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::Stats(project));
                     continue;
-                }
+                },
                 Ok(stats) => stats,
             };
 
@@ -245,7 +244,7 @@ impl Projects {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::SignedRefs(project));
                     continue;
-                }
+                },
                 Ok(refs) => refs,
             };
 
@@ -257,7 +256,7 @@ impl Projects {
                     } else {
                         projects.contributed.push(project)
                     }
-                }
+                },
             }
         }
 

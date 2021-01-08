@@ -181,11 +181,11 @@ async fn run_rigging(
                             {
                                 peer_subscriptions.broadcast(notification).await
                             }
-                        }
+                        },
                         Err(err) => {
                             log::error!("Failed to receive peer event: {}", err);
                             return;
-                        }
+                        },
                     }
                 }
             }

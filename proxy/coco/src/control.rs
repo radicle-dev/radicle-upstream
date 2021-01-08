@@ -148,11 +148,11 @@ pub fn push_tags(
         None => {
             log::debug!("No tags to push to remote");
             Ok(())
-        }
+        },
         Some(tags) => {
             let _ = remote.push(storage, repo, LocalPushspec::Specs(tags));
             Ok(())
-        }
+        },
     }
 }
 
