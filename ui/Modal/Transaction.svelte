@@ -28,9 +28,7 @@
   // is by looking it up, type-wise it can.
   let tx: Tx | undefined = undefined;
 
-  transactionsStore.subscribe(
-    txs => (tx = txs.find(x => x.hash === get(selectedStore)))
-  );
+$: tx = $txs.find((x) => x.hash === $selectedStore)
 
   $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
   $: transferedAmount = tx ? transferAmount(tx) : undefined;
