@@ -693,7 +693,9 @@ impl State {
                 let mut peers = vec![];
 
                 for peer_id in tracking::tracked(store, &urn)? {
-                    let rad_self = Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id)).expect("namespace is set");
+                    let rad_self =
+                        Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id))
+                            .expect("namespace is set");
                     let status = if store.has_urn(&rad_self)? {
                         let malkovich = person::get(store, &rad_self)?
                             .ok_or(Error::PersonNotFound(rad_self))?;
@@ -840,14 +842,15 @@ impl State {
             None => crate::project::checkout::Ownership::Local(self.peer_id()),
             Some(remote) => {
                 let handle = {
-                    let rad_self = Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id)).expect("namespace is set");
+                    let rad_self =
+                        Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id))
+                            .expect("namespace is set");
                     log::debug!("Monorepo: {}", self.monorepo().display());
                     let person = self
                         .api
                         .with_storage(move |store| {
                             log::debug!("Urn -> {}", rad_self);
-                            person::get(store, &rad_self)?
-                                .ok_or(Error::PersonNotFound(rad_self))
+                            person::get(store, &rad_self)?.ok_or(Error::PersonNotFound(rad_self))
                         })
                         .await??;
 
