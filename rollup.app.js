@@ -5,6 +5,7 @@ import svelte from "rollup-plugin-svelte";
 import { terser } from "rollup-plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import autoPreprocess from "svelte-preprocess";
+import css from "rollup-plugin-css-only";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -18,15 +19,14 @@ export default {
   },
   plugins: [
     svelte({
-      // enable run-time checks when not in production
-      dev: !production,
-      // we'll extract any component CSS out into
-      // a separate file — better for performance
-      css: css => {
-        css.write("bundle.css");
+      compilerOptions: {
+        // enable run-time checks when not in production
+        dev: !production,
       },
       preprocess: autoPreprocess(),
     }),
+
+    css({ output: "bundle.css" }),
 
     resolve({
       browser: true,

@@ -45,17 +45,17 @@ context("project checkout", () => {
 
         // Dismiss the hint.
         commands.pick("close-hint-button").click();
-        commands.pick("remote-helper-hint").should("not.be.visible");
+        commands.pick("remote-helper-hint").should("not.exist");
         commands.pick("cancel-button").click();
 
         // Hint is still hidden when re-entering project creation
         commands.pick("new-project-button").click();
-        commands.pick("remote-helper-hint").should("not.be.visible");
+        commands.pick("remote-helper-hint").should("not.exist");
         commands.pick("cancel-button").click();
 
         // The hint is also hidden in the project creation modal.
         commands.pick("new-project-button").click();
-        commands.pick("remote-helper-hint").should("not.be.visible");
+        commands.pick("remote-helper-hint").should("not.exist");
       });
     });
 

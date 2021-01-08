@@ -1,12 +1,15 @@
 <script lang="typescript">
   import { RevisionType } from "../../../../src/source";
+  import { BadgeType } from "../../../../src/badge";
   import type { Branch, Tag } from "../../../../src/source";
 
   import IconBranch from "../../../Primitive/Icon/Branch.svelte";
   import IconLabel from "../../../Primitive/Icon/Label.svelte";
   import Spinner from "../../../Component/Spinner.svelte";
+  import Badge from "../../../Component/Badge.svelte";
 
   export let loading: boolean = false;
+  export let defaultBranch: boolean = false;
   export let revision: Branch | Tag;
   export let selected: boolean = false;
   export let style: string | undefined = undefined;
@@ -60,4 +63,9 @@
     flex-shrink: 0;" />
   {/if}
   <p class="revision-name typo-overflow-ellipsis">{revision.name}</p>
+  {#if defaultBranch}
+    <Badge
+      style="color: var(--color-positive); background: var(--color-positive-level-1);"
+      variant={BadgeType.DefaultBranch} />
+  {/if}
 </div>

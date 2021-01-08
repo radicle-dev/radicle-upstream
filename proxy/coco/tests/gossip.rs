@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::{Duration, SystemTime};
 
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
@@ -109,7 +109,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
                     val: Gossip { urn, .. },
                 }) if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
                     future::ready(Some(()))
-                },
+                }
                 _ => future::ready(None),
             },
             _ => future::ready(None),
@@ -157,7 +157,9 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         let project = radicle_project(alice_repo_path.clone());
         alice_state.init_project(&alice, project).await?.urn()
     };
-    bob_control.request_project(&urn, Instant::now()).await;
+
+    bob_control.request_project(&urn, SystemTime::now()).await;
+
     requested(query_listener, &urn).await?;
     assert_cloned(clone_listener, &urn.clone(), alice_peer_id).await?;
     // TODO(finto): List projects

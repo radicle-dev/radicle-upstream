@@ -5,8 +5,6 @@
 // much.
 #![allow(clippy::wildcard_enum_match_arm)]
 
-use std::ops::Sub;
-
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -142,20 +140,16 @@ impl<T> SomeRequest<T> {
         }
     }
 
-    /// Get the [`Request::elapsed`] time between the `timestamp` provided and the current timestamp
-    /// of the underlying `Request`.
-    pub fn elapsed(&self, timestamp: T) -> T::Output
-    where
-        T: Sub<T> + Clone,
-    {
+    /// Get the current timestamp of the underlying `Request`.
+    pub const fn timestamp(&self) -> &T {
         match self {
-            SomeRequest::Created(request) => request.elapsed(timestamp),
-            SomeRequest::Requested(request) => request.elapsed(timestamp),
-            SomeRequest::Found(request) => request.elapsed(timestamp),
-            SomeRequest::Cloning(request) => request.elapsed(timestamp),
-            SomeRequest::Cloned(request) => request.elapsed(timestamp),
-            SomeRequest::Cancelled(request) => request.elapsed(timestamp),
-            SomeRequest::TimedOut(request) => request.elapsed(timestamp),
+            SomeRequest::Created(request) => request.timestamp(),
+            SomeRequest::Requested(request) => request.timestamp(),
+            SomeRequest::Found(request) => request.timestamp(),
+            SomeRequest::Cloning(request) => request.timestamp(),
+            SomeRequest::Cloned(request) => request.timestamp(),
+            SomeRequest::Cancelled(request) => request.timestamp(),
+            SomeRequest::TimedOut(request) => request.timestamp(),
         }
     }
 

@@ -51,7 +51,7 @@
   .container {
     width: 38.5rem;
     background: var(--color-background);
-    border-radius: 0.5rem;
+    border-radius: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;

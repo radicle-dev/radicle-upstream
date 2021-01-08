@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.5...v0.1.6) (2021-01-05)
+
+
+### Bug Fixes
+
+* **ui:** make logo text color work in dark/light mode ([#1491](https://github.com/radicle-dev/radicle-upstream/issues/1491)) ([34e09fe](https://github.com/radicle-dev/radicle-upstream/commit/34e09fe2721e3c329c3827c0db9a718269491edb))
+* **ui:** fix list border overflow ([#1467](https://github.com/radicle-dev/radicle-upstream/issues/1467)) ([ec227a4](https://github.com/radicle-dev/radicle-upstream/commit/ec227a4e8878cb6fa7ab9905f0ecadb43de08a17)), closes [#1447](https://github.com/radicle-dev/radicle-upstream/issues/1447)
+* **proxy:** fix proxy crash due to waitingroom bug ([#1500](https://github.com/radicle-dev/radicle-upstream/pull/1500)) ([3f0c7d9](https://github.com/radicle-dev/radicle-upstream/commit/3f0c7d9997fa58293f5ca15553ac4709ad954c1b)), closes [#1433](https://github.com/radicle-dev/radicle-upstream/issues/1433)
+
+### [0.1.5](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.4...v0.1.5) (2020-12-08)
+
+
+### Features
+
+* **ui:** extend effect of enter key in onboarding ([#1436](https://github.com/radicle-dev/radicle-upstream/issues/1436)) ([2e1964c](https://github.com/radicle-dev/radicle-upstream/commit/2e1964cffc3efb681f446e8d03988eff416d4061))
+
+
+### Bug Fixes
+
+* **ui:** avoid notify on internal request handling ([05bd5aa](https://github.com/radicle-dev/radicle-upstream/commit/05bd5aa950d5ee35903dcd6904f50d49724e20df)), closes [#1424](https://github.com/radicle-dev/radicle-upstream/issues/1424)
+* **ui:** open only one modal at a time ([#1434](https://github.com/radicle-dev/radicle-upstream/issues/1434)) ([f996315](https://github.com/radicle-dev/radicle-upstream/commit/f996315868786ef57d2f9ad9b002d46778b4f8ac))
+* **ui:** revert to default after untrack ([#1450](https://github.com/radicle-dev/radicle-upstream/issues/1450)) ([d1ce77e](https://github.com/radicle-dev/radicle-upstream/commit/d1ce77ee04a385f75edc594979da60e8d7aa8faf)), closes [#1210](https://github.com/radicle-dev/radicle-upstream/issues/1210)
+
 ### [0.1.4](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.3...v0.1.4) (2020-11-30)
 
 

@@ -46,7 +46,7 @@ fn list_filter(
 
 /// Request handlers for initiating searches for projects on the network.
 mod handler {
-    use std::time::Instant;
+    use std::time::SystemTime;
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
@@ -58,7 +58,7 @@ mod handler {
         mut ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         ctx.peer_control
-            .cancel_project_request(&urn, Instant::now())
+            .cancel_project_request(&urn, SystemTime::now())
             .await
             .map_err(error::Error::from)?;
 
@@ -73,7 +73,10 @@ mod handler {
         urn: coco::Urn,
         mut ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let request = ctx.peer_control.request_project(&urn, Instant::now()).await;
+        let request = ctx
+            .peer_control
+            .request_project(&urn, SystemTime::now())
+            .await;
 
         Ok(reply::json(&request))
     }
@@ -88,7 +91,7 @@ mod handler {
 
 #[cfg(test)]
 mod test {
-    use std::{convert::TryFrom, time::Instant};
+    use std::{convert::TryFrom, time::SystemTime};
 
     use pretty_assertions::assert_eq;
     use serde_json::json;
@@ -106,7 +109,10 @@ mod test {
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 
-        let _request = ctx.peer_control.request_project(&urn, Instant::now()).await;
+        let _request = ctx
+            .peer_control
+            .request_project(&urn, SystemTime::now())
+            .await;
         let res = request()
             .method("DELETE")
             .path(&format!("/{}", urn))
@@ -152,7 +158,10 @@ mod test {
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 
-        let want = ctx.peer_control.request_project(&urn, Instant::now()).await;
+        let want = ctx
+            .peer_control
+            .request_project(&urn, SystemTime::now())
+            .await;
         let res = request().method("GET").path("/").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
