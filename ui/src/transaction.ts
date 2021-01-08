@@ -172,15 +172,6 @@ export function add(tx: Tx): void {
   cap();
 }
 
-export function updateStatus(hash: string, status: TxStatus): void {
-  store.subscribe(txs => {
-    const tx = txs.find(tx => tx.hash === hash);
-    if (tx) {
-      tx.status = status;
-    }
-  });
-}
-
 // Cap the amount of managed transactions
 function cap(length = 7) {
   store.update(txs => {
@@ -202,17 +193,13 @@ async function updateStatuses() {
   });
 }
 
-async function status(
-  receipt: TransactionReceipt
-): Promise<TxStatus | undefined> {
-  // TODO(nuno): Need to workout a way of detecting failed txs prior to the
-  // byzantium fork. Or might not be necessary at all.
-  if (receipt.byzantium && receipt.status === 0) {
-    return TxStatus.Rejected;
-  } else if (receipt.blockNumber === null || receipt.blockNumber === 0) {
+async function status(receipt: TransactionReceipt): Promise<TxStatus> {
+  if (receipt.blockNumber === null || receipt.blockNumber === 0) {
     return TxStatus.AwaitingInclusion;
-  } else {
+  } else if (receipt.status === 1) {
     return TxStatus.Included;
+  } else {
+    return TxStatus.Rejected;
   }
 }
 

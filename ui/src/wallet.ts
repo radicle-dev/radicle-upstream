@@ -127,7 +127,6 @@ export function build(): Wallet {
       };
       stateStore.set({ status: Status.Connected, connected });
     } catch (error) {
-      console.error(error);
       stateStore.set({ status: Status.NotConnected, error });
     }
   }

@@ -15,7 +15,7 @@ function stop_ganache() {
   fg %1 2>/dev/null || true
 }
 
-trap stop_ganache SIGINT EXIT
+trap stop_ganache SIGINT EXIT SIGTERM
 
 sleep 4
 
