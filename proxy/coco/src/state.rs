@@ -89,7 +89,7 @@ impl State {
             .await??)
     }
 
-    /// The local machine's [`PeerId`].WEB
+    /// The local machine's [`PeerId`].
     #[must_use]
     pub fn peer_id(&self) -> PeerId {
         self.api.peer_id()
@@ -202,7 +202,6 @@ impl State {
     where
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
-        // TODO(finto): Since the owner is returned as Some we could forego the unwrap
         let owner = self.default_owner().await?.ok_or(Error::MissingOwner)?;
         self.api
             .with_storage(move |store| {
@@ -398,7 +397,6 @@ impl State {
     where
         F: FnOnce(&mut git::Browser) -> Result<T, source::Error> + Send,
     {
-        // CONSTRUCT PROEJECTS NAMESPACE
         let namespace = git::namespace::Namespace::try_from(
             reference
                 .namespace
@@ -407,7 +405,6 @@ impl State {
                 .as_str(),
         )?;
 
-        // HANDLE HEADS
         let branch = match reference.remote {
             None => git::Branch::local(reference.name.as_str()),
             Some(peer) => git::Branch::remote(
@@ -416,13 +413,11 @@ impl State {
             ),
         };
 
-        // OPEN BROWSER
         let monorepo = self.monorepo();
         let repo = git::Repository::new(monorepo).map_err(source::Error::from)?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, branch)
             .map_err(source::Error::from)?;
 
-        // CALL CALLBACK
         callback(&mut browser).map_err(Error::from)
     }
 
@@ -455,7 +450,7 @@ impl State {
                     .default_branch
                     .clone()
                     .ok_or(Error::NoDefaultBranch {
-                        name: "".to_string(),
+                        name: project.subject().name.to_string(),
                         urn: urn.clone(),
                     })?
             },
@@ -505,7 +500,7 @@ impl State {
                 .default_branch
                 .clone()
                 .ok_or(Error::NoDefaultBranch {
-                    name: "".to_string(),
+                    name: project.subject().name.to_string(),
                     urn: urn.clone(),
                 })?;
 
@@ -757,14 +752,12 @@ impl State {
             .into_inner()
             .into_inner();
 
-        // CHECK IF OWNER IS MAINTAINER
         let status = if project
             .delegations()
             .owner(self.peer_id().as_public_key())
             .is_some()
         {
             peer::Status::replicated(peer::Role::Maintainer, owner)
-        // CHECK IF OWNER IS CONTRIBUTOR
         } else if self
             .api
             .with_storage(move |store| {
@@ -776,7 +769,6 @@ impl State {
             .await??
         {
             peer::Status::replicated(peer::Role::Contributor, owner)
-        // CHECK IF OWNER IS TRACKER
         } else {
             peer::Status::replicated(peer::Role::Tracker, owner)
         };
@@ -819,19 +811,20 @@ impl State {
             .await?
             .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
         let include_path = self.update_include(urn.clone()).await?;
+        let name = proj.subject().name.to_string();
         let default_branch: OneLevel = OneLevel::from(
             proj.subject()
                 .default_branch
                 .clone()
                 .ok_or(Error::NoDefaultBranch {
-                    name: "".to_string(),
+                    name: name.clone(),
                     urn: urn.clone(),
                 })?
                 .parse::<RefLike>()?,
         );
         let checkout = crate::project::Checkout {
             urn: proj.urn(),
-            name: proj.subject().name.to_string(),
+            name,
             default_branch,
             path: destination,
             include_path,
@@ -865,16 +858,9 @@ impl State {
             },
         };
 
-        let settings = transport::Settings {
-            paths: self.paths(),
-            signer: self.signer.clone(),
-        };
+        let settings = self.settings();
         log::debug!("Cloning");
-        let path = tokio::task::spawn_blocking(move || {
-            checkout.run(settings, ownership).map_err(Error::from)
-        })
-        .await
-        .expect("blocking checkout failed")?;
+        let path = checkout.run(settings, ownership).map_err(Error::from)?;
 
         Ok(path)
     }
