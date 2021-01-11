@@ -18,23 +18,22 @@
   export let style = "";
   export let alignment = "left"; // "center";
 
-  function toggleReceiver(x: pool.Address) {
-    const status = receivers.get(x);
-    console.log("toggleReceiver", x);
+  function toggleReceiver(address: pool.Address) {
+    const status = receivers.get(address);
     if (!status) return;
 
     switch (status) {
       case ReceiverStatus.Added:
-        receivers.delete(x);
+        receivers.delete(address);
         break;
       case ReceiverStatus.Present:
-        receivers.set(x, ReceiverStatus.Removed);
+        receivers.set(address, ReceiverStatus.Removed);
         break;
       case ReceiverStatus.Removed:
-        if (receivers.has(x)) {
-          receivers.set(x, ReceiverStatus.Present);
+        if (receivers.has(address)) {
+          receivers.set(address, ReceiverStatus.Present);
         } else {
-          receivers.delete(x);
+          receivers.delete(address);
         }
         break;
     }

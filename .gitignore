@@ -13,6 +13,3 @@ cypress/workspace
 proxy/**/target
 proxy/**/*.rs.bk
 sandbox
-schema.gql
-ui/src/*.js
-ui/**/*.js.map

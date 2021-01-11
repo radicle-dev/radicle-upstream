@@ -2,7 +2,7 @@
   import { qrcode } from "pure-svg-code";
   export let key = "";
   export let size = 225;
-  export let color = "var(--color-secundary)";
+  export let color = "black";
   export let bgColor = "white";
 
   const svgString = qrcode({

@@ -87,9 +87,9 @@ export function make(wallet: Wallet): Pool {
       const balance = await poolContract.withdrawable();
       const collectableFunds = await poolContract.collectable();
       const amountPerBlock = await poolContract.amountPerBlock();
-      const contract_receivers = await poolContract.receivers();
+      const contractReceivers = await poolContract.receivers();
       const receivers = new Map<Address, ReceiverStatus>(
-        contract_receivers.map((e: contract.PoolReceiver) => [
+        contractReceivers.map((e: contract.PoolReceiver) => [
           e.receiver,
           ReceiverStatus.Present,
         ])

@@ -87,7 +87,6 @@
     );
   }
 
-  /* Themz values */
   let budget = "";
   let topUp = "";
   let receivers: Receivers = new Map();

@@ -1,5 +1,3 @@
-
-
 ### Overview
 
 Three moving pieces back the Radicle Funding experiences:
@@ -83,7 +81,7 @@ With everything installed and set up, run the following commands in different
 tabs:
 
 - `npm run start` within `walletconnect-test-wallet`
-- `yarn start:ethereum` within `radicle-upstream`
+- `yarn ethereum:start` within `radicle-upstream`
 - `yarn start` within `radicle-upstream`
 - Once the app is running, enable the funding feature in the Upstream settings
 

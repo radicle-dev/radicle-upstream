@@ -124,7 +124,7 @@
     "start": "RADICLE_UPSTREAM_EXPERIMENTAL=false yarn start:app",
     "start:experimental": "RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start:app",
     "start:app": "run-p --race rollup:watch proxy:start electron:start",
-    "start:ethereum": "./scripts/ethereum-dev-node.sh",
+    "ethereum:start": "./scripts/ethereum-dev-node.sh",
     "start:release": "run-p --race rollup:watch proxy:start:release electron:start",
     "start:experimental:release": "RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start:release",
     "start:test": "run-p --race rollup:watch proxy:start:test electron:start",
