@@ -3,9 +3,11 @@
 
   export let dataCy = "";
   export let style = "";
+
+  $: iconStyle = `${style  }; display: flex;`;
 </script>
 
-<IconWrapper on:click {dataCy} {style}>
+<IconWrapper on:click {dataCy} style={iconStyle}>
   <path
     d="M13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44772 11 5V11L5 11C4.44772
     11 4 11.4477 4 12C4 12.5523 4.44771 13 5 13L11 13V19C11 19.5523 11.4477 20
