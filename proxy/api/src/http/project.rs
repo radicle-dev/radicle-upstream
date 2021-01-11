@@ -404,7 +404,6 @@ mod test {
     async fn create_new() -> Result<(), Box<dyn std::error::Error>> {
         pretty_env_logger::init();
         let tmp_dir = tempfile::tempdir()?;
-        log::debug!("PATH: {}", tmp_dir.path().display());
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
@@ -434,13 +433,6 @@ mod test {
             .await;
 
         let projects = project::Projects::list(&ctx.state).await?;
-        /*
-        assert!(
-            !projects.contributed.is_empty(),
-            "Local project was not created. Response from request:\n{:?}",
-            res
-        );
-        */
         let meta = projects.into_iter().next().unwrap();
         let maintainer = meta.metadata.maintainers.iter().next().unwrap();
 
