@@ -5,7 +5,7 @@
   import Incoming from "../../DesignSystem/Component/Funding/Pool/Incoming.svelte";
 
   import * as modal from "../../src/modal";
-  import * as _pool from "../../src/funding/pool";
+  import * as fundingPool from "../../src/funding/pool";
   import type { Pool } from "../../src/funding/pool";
   import * as path from "../../src/path";
   import * as transaction from "../../src/transaction";
@@ -13,7 +13,7 @@
   export let pool: Pool;
 
   function onCollect() {
-    _pool.store.set(pool);
+    fundingPool.store.set(pool);
     modal.toggle(path.collectFunds());
   }
 

@@ -7,7 +7,7 @@
   import * as modal from "../../../../../src/modal";
   import * as path from "../../../../../src/path";
   import * as remote from "../../../../../src/remote";
-  import * as _pool from "../../../../../src/funding/pool";
+  import * as fundingPool from "../../../../../src/funding/pool";
   import * as transaction from "../../../../../src/transaction";
 
   import {
@@ -16,9 +16,9 @@
   } from "../../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../../src/validation";
 
-  export let pool: _pool.Pool;
+  export let pool: fundingPool.Pool;
 
-  $: _pool.store.set(pool);
+  $: fundingPool.store.set(pool);
 
   let ongoingTopUp = false;
   let ongoingWithdraw = false;
@@ -35,7 +35,7 @@
 
   // Editing values
   let budget = "";
-  let receivers: _pool.Receivers = new Map();
+  let receivers: fundingPool.Receivers = new Map();
 
   let validatingBudget = false;
   $: budgetValidation = monthlyContributionValidationStore();
@@ -45,7 +45,7 @@
     if (validatingBudget) budgetValidation.validate($budgetStore);
   }
 
-  let data: _pool.PoolData;
+  let data: fundingPool.PoolData;
   pool.data.subscribe(store => {
     if (store.status === remote.Status.Success) {
       data = store.data;
@@ -89,12 +89,12 @@
   }
 
   const openTopUp = () => {
-    _pool.store.set(pool);
+    fundingPool.store.set(pool);
     modal.toggle(path.poolTopUp());
   };
 
   const openWithdrawModal = () => {
-    _pool.store.set(pool);
+    fundingPool.store.set(pool);
     modal.toggle(path.poolWithdraw());
   };
 </script>
