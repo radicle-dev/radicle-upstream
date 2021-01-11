@@ -77,9 +77,6 @@
   }
 
   async function onConfirmInWallet(): Promise<void> {
-    console.log("onConfirmInWallet");
-    console.log(`onConfirmInWallet, receivers ${[...receivers.entries()]}`);
-
     const changedReceivers = new Map(
       [...receivers].filter(
         ([address, weight]) => data.receivers.get(address) !== weight

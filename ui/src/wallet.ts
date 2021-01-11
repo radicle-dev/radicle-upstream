@@ -93,7 +93,6 @@ export function build(): Wallet {
   }
 
   async function disconnect() {
-    console.log("Disconnect");
     await walletConnect.killSession();
     // We need to reinitialize `WalletConnect` until this issue is fixed:
     // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
