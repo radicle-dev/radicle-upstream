@@ -289,7 +289,7 @@ export const balanceValidationStore = (
 ): validation.ValidationStore => {
   return validation.createValidationStore(constraints.topUpAmount, [
     {
-      promise: amount => Promise.resolve(balance >= amount),
+      promise: amount => Promise.resolve(BigNumber.from(balance).gte(amount)),
       validationMessage: "Insufficient balance",
     },
   ]);
