@@ -4,7 +4,7 @@
   export let dataCy = "";
   export let style = "";
 
-  $: iconStyle = `${style  }; display: flex;`;
+  $: iconStyle = `${style}; display: flex;`;
 </script>
 
 <IconWrapper on:click {dataCy} style={iconStyle}>
