@@ -244,7 +244,7 @@
         </div>
         <div class="action">
           <SegmentedControl
-            active={$settings.featureFlags.funding.toString()}
+            active={$settings.featureFlags.funding}
             options={featureFlagOptions}
             on:select={updateFundingFeatureFlag} />
         </div>
