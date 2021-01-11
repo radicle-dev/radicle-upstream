@@ -73,7 +73,8 @@
   --color-foreground-level-5: #8594a1;
   --color-foreground-level-6: #d3dee8;
   --color-background: #0e171f;
-  --color-shadows: 0px -1px 2px #5b5b5b, 0px 4px 4px rgba(0, 0, 0, 0.25),
-    -12px 12.4829px 90.82px rgba(255, 0, 0, 0.4519),
-    8px 7.14244px 79.34px #0500ff, 0px -8px 81.31px #63400d;
+  --color-shadows: 0px -1px 1px rgba(255, 255, 255, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.25), -12px 12.4829px 90.82px rgba(255, 0, 0, 0.2),
+    8px -5.39px 69.61px rgba(0, 255, 0, 0.2),
+    8px 7.14244px 79.34px rgba(0, 0, 255, 0.4);
 }
