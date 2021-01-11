@@ -8,7 +8,7 @@ import { provider } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
 // The store where all managed transactions are stored.
-export const store = persistentStore<Tx[]>("radicle-transactions", []);
+export const store = persistentStore<Tx[]>("transactions", []);
 
 // Periodically refresh the status of all ongoing transactions.
 const POLL_INTERVAL_MILLIS = 3000;
@@ -165,7 +165,7 @@ function txData(txc: ContractTransaction, date: number = Date.now()): TxData {
 }
 
 export function add(tx: Tx): void {
-  store.update(txs => {
+  store.update((txs: Tx[]) => {
     txs.unshift(tx);
     return txs;
   });
@@ -174,26 +174,30 @@ export function add(tx: Tx): void {
 
 // Cap the amount of managed transactions
 function cap(length = 7) {
-  store.update(txs => {
+  store.update((txs: Tx[]) => {
     txs.length = Math.min(txs.length, length);
     return txs;
   });
 }
 
 async function updateStatuses() {
-  store.update(txs => {
+  store.update((txs: Tx[]) => {
     txs
-      .filter(tx => tx.status === TxStatus.AwaitingInclusion)
-      .forEach(async tx => {
-        const receipt = await provider.getTransactionReceipt(tx.hash);
-        const newStatus = await status(receipt);
-        if (newStatus) tx.status = newStatus;
+      .filter((tx: Tx) => tx.status === TxStatus.AwaitingInclusion)
+      .forEach(async (tx: Tx) => {
+        try {
+          const receipt = await provider.getTransactionReceipt(tx.hash);
+          tx.status = status(receipt);
+        } catch (_error) {
+          // We ignore network failures, therefore keeping the
+          // tx status unchanged.
+        }
       });
     return txs;
   });
 }
 
-async function status(receipt: TransactionReceipt): Promise<TxStatus> {
+function status(receipt: TransactionReceipt): TxStatus {
   if (receipt.blockNumber === null || receipt.blockNumber === 0) {
     return TxStatus.AwaitingInclusion;
   } else if (receipt.status === 1) {
