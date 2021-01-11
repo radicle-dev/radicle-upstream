@@ -20,9 +20,13 @@ pub use peer::Peer;
 
 /// Set the upstream of the given branch to the given remote.
 ///
+/// This writes to the `config` directly. The entry will look like the following:
+///
+/// ```text
 /// [branch "main"]
 ///     remote = rad
 ///     merge = refs/heads/main
+/// ```
 fn set_upstream<Url>(
     repo: &git2::Repository,
     remote: &Remote<Url>,
