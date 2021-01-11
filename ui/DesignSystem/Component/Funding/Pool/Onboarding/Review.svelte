@@ -1,10 +1,9 @@
 <script lang="typescript">
-  import { Button } from "../../../../Primitive";
-  import { Illustration, TxButton } from "../../../../Component";
+  import { Button, Emoji } from "../../../../Primitive";
+  import { TxButton } from "../../../../Component";
 
   import Receivers from "../Receivers.svelte";
 
-  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
   import type { Receivers as PoolReceivers } from "../../../../../src/funding/pool";
 
   export let onBack: () => void;
@@ -38,7 +37,7 @@
   }
 </style>
 
-<Illustration variant={IllustrationVariant.Money} />
+<Emoji emoji="💸" size="huge" />
 <h1>Stream digital money</h1>
 <p>
   {#if receivers.size === 0}

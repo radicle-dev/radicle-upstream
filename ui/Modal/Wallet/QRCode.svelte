@@ -1,10 +1,10 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
 
-  import { Copyable, Illustration, QR } from "../../DesignSystem/Component";
+  import { Copyable, QR } from "../../DesignSystem/Component";
+  import { Emoji } from "../../DesignSystem/Primitive";
 
   import { uriStore } from "../../src/wallet";
-  import { Variant as IllustrationVariant } from "../../src/illustration";
   import { ellipsed } from "../../src/style";
 
   $: $uriStore || pop();
@@ -47,7 +47,7 @@
 </style>
 
 <div class="qrcode-modal">
-  <Illustration variant={IllustrationVariant.Purse} />
+  <Emoji emoji="👛" size="huge" />
 
   <h1 style="margin-top: 1.5rem;">Connect your wallet</h1>
   <p style="margin-top: 1.5rem;">

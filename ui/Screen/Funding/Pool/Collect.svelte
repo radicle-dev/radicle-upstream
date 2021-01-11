@@ -3,15 +3,9 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import {
-    Dai,
-    Illustration,
-    Remote,
-    TxButton,
-  } from "../../../DesignSystem/Component";
-  import { Button } from "../../../DesignSystem/Primitive";
+  import { Dai, Remote, TxButton } from "../../../DesignSystem/Component";
+  import { Button, Emoji } from "../../../DesignSystem/Primitive";
 
-  import { Variant as IllustrationVariant } from "../../../src/illustration";
   import * as modal from "../../../src/modal";
   import { store } from "../../../src/funding/pool";
 
@@ -66,7 +60,7 @@
 {#if pool}
   <Remote store={pool.data} let:data={poolData}>
     <div class="wrapper" data-cy="collect-incoming-support-modal">
-      <Illustration variant={IllustrationVariant.Money} />
+      <Emoji emoji="💸" size="huge" />
       <h1>Collect</h1>
 
       <div class="typo-text description">

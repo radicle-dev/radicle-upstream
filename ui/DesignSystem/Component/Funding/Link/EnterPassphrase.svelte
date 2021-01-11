@@ -1,8 +1,5 @@
 <script lang="typescript">
-  import { Button, Input } from "../../../Primitive";
-  import { Illustration } from "../../../Component";
-
-  import { Variant as IllustrationVariant } from "../../../../src/illustration";
+  import { Button, Emoji, Input } from "../../../Primitive";
 
   export let passphrase: string;
   export let onCancel: () => void;
@@ -30,7 +27,7 @@
 </style>
 
 <div class="wrapper">
-  <Illustration variant={IllustrationVariant.Socks} />
+  <Emoji emoji="🧦" size="huge" />
 
   <header>
     <h1 style="margin-top: 1.5rem;">Add your Ethereum account to Radicle</h1>

@@ -1,8 +1,5 @@
 <script lang="typescript">
-  import { Button } from "../../../../Primitive";
-  import { Illustration } from "../../../../Component";
-
-  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
+  import { Button, Emoji } from "../../../../Primitive";
 
   export let onCancel: () => void;
   export let onContinue: () => void;
@@ -39,7 +36,7 @@
 
 <svelte:window on:keydown={onKeydown} />
 
-<Illustration variant={IllustrationVariant.Money} />
+<Emoji emoji="💸" size="huge" />
 <h1>Stream digital money to all your favorites</h1>
 <p>
   Streaming sets up an Ethereum smart contract that sends money out certain

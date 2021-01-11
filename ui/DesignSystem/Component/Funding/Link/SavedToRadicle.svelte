@@ -1,8 +1,5 @@
 <script lang="typescript">
-  import { Button } from "../../../Primitive";
-  import { Illustration } from "../../../Component";
-
-  import { Variant as IllustrationVariant } from "../../../../src/illustration";
+  import { Button, Emoji } from "../../../Primitive";
 
   export let onCancel: () => void;
   export let onContinue: () => void;
@@ -29,7 +26,7 @@
 </style>
 
 <div class="wrapper">
-  <Illustration variant={IllustrationVariant.Socks} />
+  <Emoji emoji="🧦" size="huge" />
 
   <header>
     <h1 style="margin-top: 1.5rem;">

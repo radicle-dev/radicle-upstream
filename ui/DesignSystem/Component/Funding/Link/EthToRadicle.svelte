@@ -1,8 +1,7 @@
 <script lang="typescript">
-  import { Avatar, Button, Icon } from "../../../Primitive";
-  import { Copyable, Illustration } from "../../../Component";
+  import { Avatar, Button, Emoji, Icon } from "../../../Primitive";
+  import { Copyable } from "../../../Component";
 
-  import { Variant as IllustrationVariant } from "../../../../src/illustration";
   import type { Identity } from "../../../../src/identity";
   import type { Address } from "../../../../src/funding/pool";
 
@@ -55,7 +54,7 @@
 </style>
 
 <div class="wrapper">
-  <Illustration variant={IllustrationVariant.Socks} />
+  <Emoji emoji="🧦" size="huge" />
 
   <header>
     <h1 style="margin-top: 1.5rem;">Add your Ethereum account to Radicle</h1>

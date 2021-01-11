@@ -1,8 +1,6 @@
 <script lang="typescript">
-  import { Illustration } from "../../Component";
-  import { Button } from "../../Primitive";
+  import { Button, Emoji } from "../../Primitive";
 
-  import { Variant as IllustrationVariant } from "../../../src/illustration";
   import * as modal from "../../../src/modal";
   import * as path from "../../../src/path";
 
@@ -45,7 +43,7 @@
 
 <div class="wrapper">
   <div class="inner">
-    <Illustration variant={IllustrationVariant.Purse} />
+    <Emoji emoji="👛" size="huge" />
     <p class="typo-text">
       In order to give and receive funds, you need to link your Radicle Identity
       to Ethereum.

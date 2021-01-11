@@ -1,8 +1,6 @@
 <script lang="typescript">
-  import { Button } from "../../../../Primitive";
-  import { TxButton, Illustration } from "../../../../Component";
-
-  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
+  import { Button, Emoji } from "../../../../Primitive";
+  import { TxButton } from "../../../../Component";
 
   export let onCancel: () => void;
   export let onConfirm: () => Promise<void>;
@@ -31,7 +29,7 @@
   }
 </style>
 
-<Illustration variant={IllustrationVariant.MonocleSmiley} />
+<Emoji emoji="🧐" size="huge" />
 <h1>One thing before you start</h1>
 <p>
   Radicle Pools use DAI, an ERC-20 token. To use it, we need you to send a

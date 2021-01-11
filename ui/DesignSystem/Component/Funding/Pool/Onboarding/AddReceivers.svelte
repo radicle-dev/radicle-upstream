@@ -1,9 +1,7 @@
 <script lang="typescript">
-  import { Button } from "../../../../Primitive";
-  import { Illustration } from "../../../../Component";
+  import { Button, Emoji } from "../../../../Primitive";
 
   import Receivers from "../Receivers.svelte";
-  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
   import type { Receivers as PoolReceivers } from "../../../../../src/funding/pool";
 
   export let receivers: PoolReceivers;
@@ -38,7 +36,7 @@
 
 <svelte:window on:keydown={onKeydown} />
 
-<Illustration variant={IllustrationVariant.Money} />
+<Emoji emoji="💸" size="huge" />
 <h1>Add receivers</h1>
 <p>
   Add receivers to your outgoing support by clicking the “Support” button on

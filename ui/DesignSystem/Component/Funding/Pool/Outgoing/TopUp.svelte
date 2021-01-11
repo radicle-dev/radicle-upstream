@@ -1,8 +1,7 @@
 <script lang="typescript">
-  import { Button, Input } from "../../../../Primitive";
-  import { Dai, Illustration } from "../../../../Component";
+  import { Button, Emoji, Input } from "../../../../Primitive";
+  import { Dai } from "../../../../Component";
 
-  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
   import {
     amountStore,
     balanceValidationStore,
@@ -44,7 +43,7 @@
   }
 </style>
 
-<Illustration variant={IllustrationVariant.Money} />
+<Emoji emoji="💸" size="huge" />
 <h1>Top up your account</h1>
 <p>
   You can top up a couple of months worth of support or just enough for this

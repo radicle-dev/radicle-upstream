@@ -1,8 +1,5 @@
 <script lang="typescript">
-  import { Illustration } from "../../Component";
-  import { Button } from "../../Primitive";
-
-  import { Variant as IllustrationVariant } from "../../../src/illustration";
+  import { Button, Emoji } from "../../Primitive";
 
   export let onConnect: () => void;
   export let connecting = false;
@@ -27,7 +24,7 @@
 </style>
 
 <div class="wrapper" class:connecting>
-  <Illustration variant={IllustrationVariant.Purse} />
+  <Emoji emoji="👛" size="huge" />
   <p class="typo-text">
     In order to give and receive funds, you need to connect an Ethereum wallet
     you own.

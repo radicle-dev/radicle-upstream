@@ -1,8 +1,6 @@
 <script lang="typescript">
-  import { Illustration } from "../../../../Component";
-  import { Button } from "../../../../Primitive";
+  import { Button, Emoji } from "../../../../Primitive";
 
-  import { Variant as IllustrationVariant } from "../../../../../src/illustration";
   import * as modal from "../../../../../src/modal";
   import * as path from "../../../../../src/path";
   import * as fundingPool from "../../../../../src/funding/pool";
@@ -39,7 +37,7 @@
 </style>
 
 <div class="wrapper">
-  <Illustration variant={IllustrationVariant.Money} />
+  <Emoji emoji="💸" size="huge" />
   <p class="typo-text">Stream digital money your favorite people.</p>
   <Button on:click={getStarted}>Get started</Button>
 </div>

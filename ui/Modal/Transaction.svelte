@@ -4,9 +4,8 @@
     Dai,
     NegativeDai,
     Identity,
-    Illustration,
   } from "../DesignSystem/Component";
-  import { Icon } from "../DesignSystem/Primitive";
+  import { Emoji, Icon } from "../DesignSystem/Primitive";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
   import Summary from "../DesignSystem/Component/Transaction/Summary.svelte";
 
@@ -20,7 +19,6 @@
     TxStatus,
   } from "../src/transaction";
   import type { Tx } from "../src/transaction";
-  import { Variant as IllustrationVariant } from "../src/illustration";
 
   // In reality, the transaction should never be undefined,
   // but because the only way we currently have use it here
@@ -120,7 +118,7 @@
 <div class="wrapper">
   {#if tx}
     <header>
-      <Illustration variant={IllustrationVariant.Purse} />
+      <Emoji emoji="👛" size="huge" />
       <h1>{tx.kind}</h1>
       <Summary {tx} style="margin-top: 1.5rem" />
       <div class="from-to" class:incoming>

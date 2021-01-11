@@ -2,11 +2,10 @@
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
-  import { Dai, TxButton, Illustration } from "../../../DesignSystem/Component";
-  import { Button, Input } from "../../../DesignSystem/Primitive";
+  import { Dai, TxButton } from "../../../DesignSystem/Component";
+  import { Button, Emoji, Input } from "../../../DesignSystem/Primitive";
   import { resolve } from "path";
 
-  import { Variant as IllustrationVariant } from "../../../src/illustration";
   import * as modal from "../../../src/modal";
   import {
     amountStore,
@@ -104,7 +103,7 @@
 </style>
 
 <div class="wrapper" data-cy="pool-withdraw-modal">
-  <Illustration variant={IllustrationVariant.Money} />
+  <Emoji emoji="💸" size="huge" />
   <h1>Cash out</h1>
 
   {#if mode === Mode.SpecifyAmount}
