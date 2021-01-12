@@ -82,7 +82,7 @@
 
   async function onConfirmed(): Promise<void> {
     return (
-      $store?.onboard(topUp, budget, receivers).then(_ => modal.hide()) ||
+      $store?.onboard(topUp, budget, receivers).then(() => modal.hide()) ||
       Promise.reject("The pool is not instantiated")
     );
   }

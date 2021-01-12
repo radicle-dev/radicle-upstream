@@ -1,9 +1,9 @@
 <script lang="typescript">
-  import { Avatar, Button, Emoji, Icon } from "../../../Primitive";
-  import { Copyable } from "../../../Component";
+  import { Avatar, Button, Emoji, Icon } from "../../../DesignSystem/Primitive";
+  import { Copyable } from "../../../DesignSystem/Component";
 
-  import type { Identity } from "../../../../src/identity";
-  import type { Address } from "../../../../src/funding/pool";
+  import type { Identity } from "../../../src/identity";
+  import type { Address } from "../../../src/funding/pool";
 
   export let address: Address;
   export let identity: Identity;

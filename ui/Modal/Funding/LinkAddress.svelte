@@ -1,8 +1,8 @@
 <script lang="typescript">
-  import EthToRadicle from "../../DesignSystem/Component/Funding/Link/EthToRadicle.svelte";
-  import EnterPassphrase from "../../DesignSystem/Component/Funding/Link/EnterPassphrase.svelte";
-  import SavedToRadicle from "../../DesignSystem/Component/Funding/Link/SavedToRadicle.svelte";
-  import RadicleToEth from "../../DesignSystem/Component/Funding/Link/RadicleToEth.svelte";
+  import EthToRadicle from "./Link/EthToRadicle.svelte";
+  import EnterPassphrase from "./Link/EnterPassphrase.svelte";
+  import SavedToRadicle from "./Link/SavedToRadicle.svelte";
+  import RadicleToEth from "./Link/RadicleToEth.svelte";
   import { Remote } from "../../DesignSystem/Component";
 
   import { wallet } from "../../src/wallet";
