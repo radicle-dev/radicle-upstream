@@ -4,12 +4,11 @@
   import type { ButtonVariant } from "../../src/style";
   import * as notification from "../../src/notification";
 
-  export let title: string = "";
   export let variant: ButtonVariant = "primary";
   export let dataCy = "";
   export let onClick: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export let errorMessage: (error: any) => string;
+  export let errorLabel: string;
   export let disabled = false;
 
   let running = false;
@@ -24,7 +23,7 @@
       );
       await onClick();
     } catch (error) {
-      notification.error(errorMessage(error), true);
+      notification.error(`${errorLabel}: ${error.message}`, true);
     } finally {
       running = false;
     }
@@ -43,6 +42,6 @@
 
 <span class="button-wrapper" class:running data-cy={dataCy}>
   <Button disabled={disabled || running} {variant} on:click={userDidClick}>
-    {title}
+    <slot />
   </Button>
 </span>

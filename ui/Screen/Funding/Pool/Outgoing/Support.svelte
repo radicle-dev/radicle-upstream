@@ -286,11 +286,12 @@
       </Button>
 
       <TxButton
-        title={'Confirm in your wallet'}
         disabled={!thereAreChanges || $budgetValidation.status !== ValidationStatus.Success}
         dataCy="confirm-button"
         onClick={onConfirmInWallet}
-        errorMessage={e => `Failed to save support settings: ${e.message}`} />
+        errorLabel="Failed to save support settings">
+        Confirm in your wallet
+      </TxButton>
     </div>
   {/if}
 </Remote>

@@ -47,6 +47,7 @@
   <TxButton
     dataCy="confirm-button"
     onClick={onConfirm}
-    title="Confirm in your wallet"
-    errorMessage={e => `Failed to approve ERC-20 for the Radicle Pool: ${e.message}`} />
+    errorLabel="Failed to approve ERC-20 for the Radicle Pool">
+    Confirm in your wallet
+  </TxButton>
 </div>

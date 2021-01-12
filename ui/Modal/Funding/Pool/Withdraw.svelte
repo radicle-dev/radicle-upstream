@@ -138,9 +138,10 @@
 
       <TxButton
         onClick={onConfirmed}
-        title={'Confirm in your wallet'}
         disabled={disableAmountConfirmation}
-        errorMessage={e => `Failed to withdraw funds: ${e.message}`} />
+        errorLabel="Failed to withdraw funds">
+        Confirm in your wallet
+      </TxButton>
     </div>
   {:else}
     <p>Stop support and transfer the entire remaining balance out.</p>
@@ -162,8 +163,9 @@
       <TxButton
         variant="destructive"
         onClick={onConfirmed}
-        title={'Stop support and cash out everything'}
-        errorMessage={e => `Failed withdraw: ${e.message}`} />
+        errorLabel="Failed withdraw">
+        Stop support and cash out everything
+      </TxButton>
     </div>
   {/if}
 </div>

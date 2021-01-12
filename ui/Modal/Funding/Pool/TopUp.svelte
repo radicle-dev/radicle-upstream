@@ -47,10 +47,8 @@
 
 <div class="wrapper" data-cy="top-up-modal">
   <TopUp bind:amount {balance} onBack={['Cancel', onCancel]} bind:disabled>
-    <TxButton
-      onClick={onConfirmed}
-      title={'Confirm in your wallet'}
-      errorMessage={e => `Failed top up: ${e.message}`}
-      {disabled} />
+    <TxButton onClick={onConfirmed} {disabled} errorLabel="Failed top up">
+      Confirm in your wallet
+    </TxButton>
   </TopUp>
 </div>

@@ -67,6 +67,7 @@
   <TxButton
     dataCy="confirm-button"
     onClick={onConfirmed}
-    errorMessage={e => `Failed to onboard your pool: ${e.message}`}
-    title={'Confirm in your wallet'} />
+    errorLabel="Failed to onboard your pool">
+    Confirm in your wallet
+  </TxButton>
 </div>

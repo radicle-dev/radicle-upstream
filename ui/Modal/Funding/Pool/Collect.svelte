@@ -82,8 +82,9 @@
 
         <TxButton
           onClick={onConfirmed}
-          title={'Confirm in your wallet'}
-          errorMessage={e => `Failed to collect incoming support: ${e.message}`} />
+          errorLabel="Failed to collect incoming support">
+          Confirm in your wallet
+        </TxButton>
       </div>
     </div>
   </Remote>
