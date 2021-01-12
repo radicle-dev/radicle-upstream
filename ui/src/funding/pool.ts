@@ -4,7 +4,7 @@ import * as contract from "./contract";
 import * as transaction from "../transaction";
 import * as validation from "../validation";
 
-import { Wallet, Account, Status } from "../wallet";
+import { Wallet, Account, Status as WalletStatus } from "../wallet";
 import * as remote from "../remote";
 import { BigNumber, BigNumberish, ContractTransaction, ethers } from "ethers";
 
@@ -82,7 +82,17 @@ export function make(wallet: Wallet): Pool {
   const erc20TokenContract = contract.erc20Token(wallet.signer);
   loadPoolData();
 
+  // Periodically refresh the pool data. Particularly useful to
+  // reactively display incoming support made available to the user,
+  // update the displayed pool remaining balance, etc.
+  const POLL_INTERVAL_MILLIS = 10000;
+  setInterval(() => {
+    loadPoolData();
+  }, POLL_INTERVAL_MILLIS);
+
   async function loadPoolData() {
+    if (svelteStore.get(wallet).status !== WalletStatus.Connected) return;
+
     try {
       const balance = await poolContract.withdrawable();
       const collectableFunds = await poolContract.collectable();
@@ -112,7 +122,9 @@ export function make(wallet: Wallet): Pool {
 
   function getAccount(): Account | undefined {
     const w = svelteStore.get(wallet);
-    return w.status === Status.Connected ? w.connected.account : undefined;
+    return w.status === WalletStatus.Connected
+      ? w.connected.account
+      : undefined;
   }
 
   async function onboard(
