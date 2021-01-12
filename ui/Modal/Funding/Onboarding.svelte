@@ -1,12 +1,12 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
 
-  import Erc20Allowance from "../../DesignSystem/Component/Funding/Pool/Onboarding/Erc20Allowance.svelte";
-  import Intro from "../../DesignSystem/Component/Funding/Pool/Onboarding/Intro.svelte";
-  import SetBudget from "../../DesignSystem/Component/Funding/Pool/Onboarding/SetBudget.svelte";
-  import TopUp from "../../DesignSystem/Component/Funding/Pool/Onboarding/TopUp.svelte";
-  import AddReceivers from "../../DesignSystem/Component/Funding/Pool/Onboarding/AddReceivers.svelte";
-  import Review from "../../DesignSystem/Component/Funding/Pool/Onboarding/Review.svelte";
+  import Erc20Allowance from "./Onboarding/Erc20Allowance.svelte";
+  import Intro from "./Onboarding/Intro.svelte";
+  import SetBudget from "./Onboarding/SetBudget.svelte";
+  import TopUp from "./Onboarding/TopUp.svelte";
+  import AddReceivers from "./Onboarding/AddReceivers.svelte";
+  import Review from "./Onboarding/Review.svelte";
 
   import * as modal from "../../src/modal";
   import { store } from "../../src/funding/pool";

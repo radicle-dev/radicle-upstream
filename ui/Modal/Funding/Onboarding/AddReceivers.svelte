@@ -1,8 +1,8 @@
 <script lang="typescript">
-  import { Button, Emoji } from "../../../../Primitive";
+  import { Button, Emoji } from "../../../DesignSystem/Primitive";
 
-  import Receivers from "../Receivers.svelte";
-  import type { Receivers as PoolReceivers } from "../../../../../src/funding/pool";
+  import Receivers from "../../../DesignSystem/Component/Funding/Pool/Receivers.svelte";
+  import type { Receivers as PoolReceivers } from "../../../src/funding/pool";
 
   export let receivers: PoolReceivers;
   export let onBack: () => void;

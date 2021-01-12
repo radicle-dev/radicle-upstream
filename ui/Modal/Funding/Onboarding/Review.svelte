@@ -1,10 +1,10 @@
 <script lang="typescript">
-  import { Button, Emoji } from "../../../../Primitive";
-  import { TxButton } from "../../../../Component";
+  import { Button, Emoji } from "../../../DesignSystem/Primitive";
+  import { TxButton } from "../../../DesignSystem/Component";
 
-  import Receivers from "../Receivers.svelte";
+  import Receivers from "../../../DesignSystem/Component/Funding/Pool/Receivers.svelte";
 
-  import type { Receivers as PoolReceivers } from "../../../../../src/funding/pool";
+  import type { Receivers as PoolReceivers } from "../../../src/funding/pool";
 
   export let onBack: () => void;
   export let onConfirmed: () => Promise<void>;

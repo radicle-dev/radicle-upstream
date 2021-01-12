@@ -1,8 +1,8 @@
 <script lang="typescript">
-  import { Button } from "../../../../Primitive";
-  import TopUp from "../Outgoing/TopUp.svelte";
+  import { Button } from "../../../DesignSystem/Primitive";
+  import TopUp from "../../../DesignSystem/Component/Funding/Pool/TopUp.svelte";
 
-  import { wallet } from "../../../../../src/wallet";
+  import { wallet } from "../../../src/wallet";
 
   export let amount = "";
   export let onBack: () => void;

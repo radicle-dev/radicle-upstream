@@ -1,12 +1,12 @@
 <script lang="typescript">
-  import { Button, Emoji, Input } from "../../../../Primitive";
-  import { Dai } from "../../../../Component";
+  import { Button, Emoji, Input } from "../../../Primitive";
+  import { Dai } from "../../../Component";
 
   import {
     amountStore,
     balanceValidationStore,
-  } from "../../../../../src/funding/pool";
-  import { ValidationStatus } from "../../../../../src/validation";
+  } from "../../../../src/funding/pool";
+  import { ValidationStatus } from "../../../../src/validation";
 
   export let amount = "";
   export let onBack: [string, () => void];

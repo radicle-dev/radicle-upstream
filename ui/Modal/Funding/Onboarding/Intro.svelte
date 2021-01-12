@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Button, Emoji } from "../../../../Primitive";
+  import { Button, Emoji } from "../../../DesignSystem/Primitive";
 
   export let onCancel: () => void;
   export let onContinue: () => void;

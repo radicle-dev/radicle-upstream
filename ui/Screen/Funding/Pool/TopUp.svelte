@@ -3,7 +3,7 @@
   import { pop } from "svelte-spa-router";
 
   import { TxButton } from "../../../DesignSystem/Component";
-  import TopUp from "../../../DesignSystem/Component/Funding/Pool/Outgoing/TopUp.svelte";
+  import TopUp from "../../../DesignSystem/Component/Funding/Pool/TopUp.svelte";
 
   import { resolve } from "path";
   import * as modal from "../../../src/modal";
