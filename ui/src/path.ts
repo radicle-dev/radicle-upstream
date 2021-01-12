@@ -40,10 +40,10 @@ export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
 export const walletQRCode = (): string => "/wallet/qrcode";
 export const linkAddress = (): string => "/funding/link";
-export const poolOnboarding = (): string => "/pool/onboarding";
-export const poolTopUp = (): string => "/pool/top-up";
-export const poolWithdraw = (): string => "/pool/withdraw";
-export const collectFunds = (): string => "/pool/collect";
+export const poolOnboarding = (): string => "/funding/pool/onboarding";
+export const poolTopUp = (): string => "/funding/pool/top-up";
+export const poolWithdraw = (): string => "/funding/pool/withdraw";
+export const collectFunds = (): string => "/funding/pool/collect";
 export const transaction = (): string => "/transaction";
 
 export const active = (

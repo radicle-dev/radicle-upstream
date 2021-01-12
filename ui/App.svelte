@@ -37,9 +37,9 @@
   import ModalLinkAddress from "./Modal/Funding/LinkAddress.svelte";
   import ModalPoolOnboarding from "./Modal/Funding/Onboarding.svelte";
   import ModalWalletQRCode from "./Modal/Wallet/QRCode.svelte";
-  import ModalTopUp from "./Screen/Funding/Pool/TopUp.svelte";
-  import ModalWithdraw from "./Screen/Funding/Pool/Withdraw.svelte";
-  import ModalCollect from "./Screen/Funding/Pool/Collect.svelte";
+  import ModalTopUp from "./Modal/Funding/Pool/TopUp.svelte";
+  import ModalWithdraw from "./Modal/Funding/Pool/Withdraw.svelte";
+  import ModalCollect from "./Modal/Funding/Pool/Collect.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -63,10 +63,10 @@
     "/shortcuts": ModalShortcuts,
     "/wallet/qrcode": ModalWalletQRCode,
     "/funding/link": ModalLinkAddress,
-    "/pool/onboarding": ModalPoolOnboarding,
-    "/pool/withdraw": ModalWithdraw,
-    "/pool/top-up": ModalTopUp,
-    "/pool/collect": ModalCollect,
+    "/funding/pool/onboarding": ModalPoolOnboarding,
+    "/funding/pool/collect": ModalCollect,
+    "/funding/pool/withdraw": ModalWithdraw,
+    "/funding/pool/top-up": ModalTopUp,
     "/transaction": ModalTransaction,
   };
 
