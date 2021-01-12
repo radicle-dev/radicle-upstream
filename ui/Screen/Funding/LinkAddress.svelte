@@ -1,8 +1,8 @@
 <script lang="typescript">
-  import { Button, Emoji } from "../../Primitive";
+  import { Button, Emoji } from "../../DesignSystem/Primitive";
 
-  import * as modal from "../../../src/modal";
-  import * as path from "../../../src/path";
+  import * as modal from "../../src/modal";
+  import * as path from "../../src/path";
 
   function onLink() {
     modal.toggle(path.linkAddress());
