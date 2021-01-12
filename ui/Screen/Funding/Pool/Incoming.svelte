@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { Dai } from "../../../Component";
-  import { Button } from "../../../Primitive";
+  import { Dai } from "../../../DesignSystem/Component";
+  import { Button } from "../../../DesignSystem/Primitive";
 
   export let amount: string = "0";
   export let onCollect: () => void;

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Remote } from "../../../Component";
+  import { Remote } from "../../../DesignSystem/Component";
 
   import GetStarted from "./Outgoing/GetStarted.svelte";
   import Support from "./Outgoing/Support.svelte";
 
-  import * as fundingPool from "../../../../src/funding/pool";
+  import * as fundingPool from "../../../src/funding/pool";
 
   export let pool: fundingPool.Pool;
 </script>

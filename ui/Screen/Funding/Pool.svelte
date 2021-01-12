@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Remote } from "../../DesignSystem/Component";
 
-  import Outgoing from "../../DesignSystem/Component/Funding/Pool/Outgoing.svelte";
-  import Incoming from "../../DesignSystem/Component/Funding/Pool/Incoming.svelte";
+  import Outgoing from "./Pool/Outgoing.svelte";
+  import Incoming from "./Pool/Incoming.svelte";
 
   import * as modal from "../../src/modal";
   import * as fundingPool from "../../src/funding/pool";

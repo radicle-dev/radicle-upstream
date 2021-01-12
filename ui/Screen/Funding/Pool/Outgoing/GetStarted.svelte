@@ -1,9 +1,9 @@
 <script lang="typescript">
-  import { Button, Emoji } from "../../../../Primitive";
+  import { Button, Emoji } from "../../../../DesignSystem/Primitive";
 
-  import * as modal from "../../../../../src/modal";
-  import * as path from "../../../../../src/path";
-  import * as fundingPool from "../../../../../src/funding/pool";
+  import * as modal from "../../../../src/modal";
+  import * as path from "../../../../src/path";
+  import * as fundingPool from "../../../../src/funding/pool";
 
   export let pool: fundingPool.Pool;
 

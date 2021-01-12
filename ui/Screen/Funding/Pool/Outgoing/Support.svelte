@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { Button, Icon, Input } from "../../../../Primitive";
-  import { Dai, Remote, TxButton } from "../../../../Component";
+  import { Button, Icon, Input } from "../../../../DesignSystem/Primitive";
+  import { Dai, Remote, TxButton } from "../../../../DesignSystem/Component";
 
-  import Receivers from "../Receivers.svelte";
+  import Receivers from "../../../../DesignSystem/Component/Funding/Pool/Receivers.svelte";
 
-  import * as modal from "../../../../../src/modal";
-  import * as path from "../../../../../src/path";
-  import * as remote from "../../../../../src/remote";
-  import * as fundingPool from "../../../../../src/funding/pool";
-  import * as transaction from "../../../../../src/transaction";
+  import * as modal from "../../../../src/modal";
+  import * as path from "../../../../src/path";
+  import * as remote from "../../../../src/remote";
+  import * as fundingPool from "../../../../src/funding/pool";
+  import * as transaction from "../../../../src/transaction";
 
   import {
     budgetStore,
     monthlyContributionValidationStore,
-  } from "../../../../../src/funding/pool";
-  import { ValidationStatus } from "../../../../../src/validation";
+  } from "../../../../src/funding/pool";
+  import { ValidationStatus } from "../../../../src/validation";
 
   export let pool: fundingPool.Pool;
 
