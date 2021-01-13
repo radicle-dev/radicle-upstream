@@ -193,5 +193,7 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  windowManager.open();
+  if (app.isReady() && !windowManager.window) {
+    windowManager.open();
+  }
 });
