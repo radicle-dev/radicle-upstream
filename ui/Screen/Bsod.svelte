@@ -27,7 +27,8 @@
   };
 
   const support = () => {
-    window.location.href = "https://matrix.to/#/#support:radicle.community";
+    window.location.href =
+      "https://matrix.radicle.community/#/room/#support:radicle.community";
   };
 </script>
 
