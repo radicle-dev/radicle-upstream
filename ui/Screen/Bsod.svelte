@@ -19,7 +19,7 @@
 
   const copyToClipboard = (text: string) => {
     ipc.copyToClipboard(text);
-    notification.info("Copied to your clipboard");
+    notification.info({ message: "Copied to your clipboard" });
     copied = true;
     setTimeout(() => {
       copied = false;

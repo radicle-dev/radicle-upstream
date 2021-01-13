@@ -73,7 +73,9 @@
   $: if ($request.status === remote.Status.Success) {
     reset();
     push(path.profileFollowing());
-    notification.info("You’ll be notified when this project has been found.");
+    notification.info({
+      message: "You’ll be notified when this project has been found.",
+    });
     dispatch("hide");
   }
 

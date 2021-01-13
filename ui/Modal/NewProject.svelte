@@ -75,9 +75,9 @@
       });
 
       push(path.project(response.urn));
-      notification.info(
-        `Project ${response.metadata.name} successfully created`
-      );
+      notification.info({
+        message: `Project ${response.metadata.name} successfully created`,
+      });
     } catch (err) {
       push(path.profileProjects());
       error.show({
