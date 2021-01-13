@@ -121,7 +121,7 @@
 <NotificationFaucet />
 <Theme />
 
-{#if sessionIsUnsealed}
+{#if sessionIsUnsealed && $location !== path.designSystemGuide()}
   <TransactionCenter />
 {/if}
 

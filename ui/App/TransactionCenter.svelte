@@ -18,7 +18,7 @@
     bottom: 32px;
     position: fixed;
     right: 32px;
-    z-index: 900;
+    z-index: 50;
   }
 </style>
 
