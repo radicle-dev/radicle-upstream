@@ -32,6 +32,13 @@ module.exports = {
         "@typescript-eslint/no-inferrable-types": "off",
       },
     },
+    {
+      files: ["scripts/*.ts"],
+      rules: {
+        // Script files are not bundled so we can’t use module imports.
+        "@typescript-eslint/no-var-requires": "off",
+      },
+    },
   ],
   rules: {
     // Disallow Unused Variables
