@@ -94,7 +94,7 @@
   .square.huge {
     width: 120px;
     height: 120px;
-    border-radius: 8px;
+    border-radius: 0.5rem;
   }
 
   .container {

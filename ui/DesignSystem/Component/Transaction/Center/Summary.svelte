@@ -12,26 +12,32 @@
 
 <style>
   .summary {
-    height: 56px;
+    height: 3.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
+
   .text {
     display: flex;
   }
+
   .text p {
     align-self: center;
     width: max-content;
+  }
+
+  .icon {
+    margin-right: 1rem;
   }
 </style>
 
 <div class="summary" on:click>
   <div class="text">
-    <TransactionSpinner {status} style="margin: 11px 12px;" />
+    <TransactionSpinner {status} style="margin: 0.75rem;" />
     <p class="typo-text-small-bold">{text}</p>
   </div>
   <div class="icon">
-    <Icon.ChevronUpDown style="margin-right: 16px; vertical-align: middle;" />
+    <Icon.ChevronUpDown style="vertical-align: middle;" />
   </div>
 </div>

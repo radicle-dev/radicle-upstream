@@ -18,7 +18,7 @@
     align-items: center;
     flex-direction: column;
     padding: var(--content-padding);
-    width: 650px;
+    width: 40.625rem;
     background: var(--color-background);
     border-radius: 0.5rem;
 
@@ -30,10 +30,10 @@
     padding: calc(var(--content-padding) / 2);
 
     border: 1px solid var(--color-foreground-level-2);
-    border-radius: 16px;
+    border-radius: 1rem;
 
     background-color: white;
-    box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 16px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 0.5rem 1rem;
   }
 
   .connector {
@@ -41,7 +41,7 @@
     align-items: center;
     justify-content: center;
 
-    padding-top: 10px;
+    padding-top: 0.625rem;
     color: var(--color-foreground-level-5);
   }
 </style>

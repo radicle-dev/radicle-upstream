@@ -92,11 +92,11 @@
 
   .list {
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 0.625rem;
   }
 
   .row + .row {
-    margin-top: 10px;
+    margin-top: 0.625rem;
   }
 </style>
 

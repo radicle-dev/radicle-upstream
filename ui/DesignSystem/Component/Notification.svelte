@@ -21,7 +21,7 @@
     height: 32px;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px;
+    margin-top: 8px;
     user-select: none;
     white-space: nowrap;
   }

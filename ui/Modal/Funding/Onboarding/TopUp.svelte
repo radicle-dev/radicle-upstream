@@ -9,7 +9,6 @@
   export let onContinue: () => void;
 
   let disabled = true;
-
   let accountBalance = "";
   $: accountBalance = wallet.account()?.balance || accountBalance;
 

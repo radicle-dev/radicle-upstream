@@ -69,7 +69,7 @@
     overflow: scroll;
 
     margin-top: 2rem;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     padding: 0.9em;
   }
 

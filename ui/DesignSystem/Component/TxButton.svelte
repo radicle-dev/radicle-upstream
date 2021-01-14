@@ -31,8 +31,8 @@
 </script>
 
 <style>
-  .button-wrapper {
-    margin-left: 7px;
+  .tx-button {
+    margin-left: 0.4375rem;
   }
 
   .running {
@@ -40,7 +40,7 @@
   }
 </style>
 
-<span class="button-wrapper" class:running data-cy={dataCy}>
+<span class="tx-button" class:running data-cy={dataCy}>
   <Button disabled={disabled || running} {variant} on:click={userDidClick}>
     <slot />
   </Button>

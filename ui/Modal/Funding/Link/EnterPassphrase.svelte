@@ -15,7 +15,7 @@
   }
 
   header {
-    padding: 0px var(--content-padding);
+    padding: 0 var(--content-padding);
   }
 
   .submit {

@@ -18,15 +18,15 @@
 </script>
 
 <style>
-  .wrapper {
+  .panel {
     display: flex;
     flex-direction: column;
 
-    width: 400px;
+    width: 25rem;
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 8px;
+    border-radius: 0.5rem;
 
     padding-top: var(--content-padding);
     padding-bottom: 0px;
@@ -38,19 +38,19 @@
   }
 
   h1 {
-    margin: 1.35rem 0 1rem 0px;
+    margin: 1.35rem 0 1rem 0;
     color: var(--color-secondary);
   }
 
   .menu {
     position: relative;
-    right: 145px;
+    right: 9rem;
     width: fit-content;
     padding-right: 1rem;
 
     box-shadow: var(--elevation-medium);
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     user-select: none;
     background-color: var(--color-background);
     overflow: hidden; /* hack to make inner option corners rounded */
@@ -68,7 +68,7 @@
   }
 </style>
 
-<div class="wrapper" {style}>
+<div class="panel" {style}>
   <h3>Balance</h3>
   <h1>
     <Dai

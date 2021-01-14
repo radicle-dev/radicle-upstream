@@ -3,7 +3,6 @@
 
   export let style = "";
   export let color = "var(--color-foreground-level-6)";
-
   export let size = "p"; // h1
 
   function getSize(): number {

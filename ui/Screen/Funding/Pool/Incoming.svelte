@@ -14,7 +14,7 @@
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     background-color: var(--color-secondary-level-1);
   }
 
@@ -35,7 +35,9 @@
     <div class="text">
       There’s
       <div class="typo-text-bold">
-        <Dai color="var(--color-secondary)" style="margin: 0 7px">{amount}</Dai>
+        <Dai color="var(--color-secondary)" style="margin: 0 0.4375rem">
+          {amount}
+        </Dai>
       </div>
       waiting on you from supporters.
     </div>

@@ -21,7 +21,7 @@
   }
 
   header {
-    padding: 0px var(--content-padding);
+    padding: 0 var(--content-padding);
   }
 
   .from-to {
@@ -31,14 +31,14 @@
     justify-content: space-evenly;
 
     width: 100%;
-    height: 170px;
+    height: 10.625rem;
 
     border: 1px solid var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-1);
 
     margin-top: var(--content-padding);
     padding: calc(var(--content-padding) / 2);
-    border-radius: 16px;
+    border-radius: 1rem;
   }
 
   .radicle-user {

@@ -23,7 +23,6 @@
   }
 
   let disabled = true;
-
   let balance = "";
   $: balance = $store?.getAccount()?.balance || balance;
 </script>
@@ -41,7 +40,7 @@
     background: var(--color-background);
     border-radius: 0.5rem;
 
-    width: 600px;
+    width: 37.5rem;
   }
 </style>
 

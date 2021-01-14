@@ -16,7 +16,7 @@
     border-bottom: 1px solid var(--color-foreground-level-2);
     display: flex;
     justify-content: space-between;
-    height: 56px;
+    height: 3.5rem;
   }
 
   .item:hover {
@@ -28,12 +28,12 @@
   }
 
   .icon {
-    margin: 6px 12px 0;
+    margin: 0.375rem 0.75rem 0;
   }
 
   .carret {
     display: flex;
-    margin-right: 16px;
+    margin-right: 1rem;
     vertical-align: middle;
   }
 </style>

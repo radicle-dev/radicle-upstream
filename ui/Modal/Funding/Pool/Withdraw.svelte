@@ -75,7 +75,7 @@
     background: var(--color-background);
     border-radius: 0.5rem;
 
-    width: 600px;
+    width: 37.5rem;
   }
 
   h1,
@@ -86,8 +86,8 @@
   }
 
   .note {
-    font-size: 14px;
-    line-height: 18px;
+    font-size: 0.875rem;
+    line-height: 1.125rem;
     display: flex;
     align-items: center;
     text-align: center;

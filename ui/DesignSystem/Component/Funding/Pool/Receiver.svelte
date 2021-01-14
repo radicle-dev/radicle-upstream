@@ -16,10 +16,10 @@
     align-items: center;
     justify-content: space-around;
 
-    height: 42px;
-    padding: 0px 20px 0px 10px;
+    height: 2.75rem;
+    padding: 0px 1rem;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   .receiver.removed {
@@ -27,6 +27,7 @@
   }
 
   .content {
+    padding-left: 0.25rem;
     color: var(--color-foreground-level-6);
   }
 
@@ -42,14 +43,16 @@
       on:click={() => (onClick ? onClick(address) : {})}
       {disabled}
       variant="embedded"
-      icon={Icon.Cross} />
+      icon={Icon.Cross}
+      style="padding: 0" />
   {/if}
   <p class="content typo-text-bold">
     <Copyable
       showIcon={false}
       styleContent={false}
       copyContent={address}
-      notificationText="Address copied to the clipboard">
+      notificationText="Address copied to the clipboard"
+      style="padding-left: 0rem">
       {ellipsed(address, 4)}
     </Copyable>
   </p>

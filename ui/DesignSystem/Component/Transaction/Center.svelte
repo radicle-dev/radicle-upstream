@@ -28,11 +28,11 @@
   .transaction-center {
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     box-shadow: var(--elevation-medium);
     cursor: pointer;
-    height: 56px;
-    min-width: 275px;
+    height: 3.5rem;
+    min-width: 17.2rem;
     overflow: hidden;
     transition: height 360ms ease;
     user-select: none;
@@ -43,7 +43,8 @@
   }
 
   .transaction-center.expand {
-    height: calc(var(--list-height) - 56px);
+    /* The list height minus the height of the height of the .transaction-center */
+    height: calc(var(--list-height) - 3.5rem);
   }
 
   .negative {
@@ -53,7 +54,7 @@
   .stack {
     max-height: 80vh;
     overflow-y: auto;
-    transform: translateY(calc(-1 * calc(100% - 56px)));
+    transform: translateY(calc(-1 * calc(100% - 3.5rem)));
     transition: transform 360ms ease;
   }
   .stack::-webkit-scrollbar {

@@ -38,7 +38,7 @@
     justify-content: center;
     flex-direction: column;
     padding: var(--content-padding);
-    width: 650px;
+    width: 40.625rem;
     background: var(--color-background);
     border-radius: 0.5rem;
   }
@@ -73,7 +73,7 @@
     background-color: var(--color-foreground-level-1);
 
     margin-top: 1.5rem;
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   .from-to:not(.incoming) {
@@ -94,10 +94,10 @@
     justify-content: space-between;
 
     margin-top: 1.7rem;
-    padding: 16px;
+    padding: 1rem;
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   p {

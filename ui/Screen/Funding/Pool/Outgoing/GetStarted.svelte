@@ -25,14 +25,14 @@
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 8px;
+    border-radius: 0.5rem;
   }
 
   p {
     margin-top: 1rem;
     margin-bottom: 1.25rem;
 
-    width: 300px;
+    width: 18.75rem;
   }
 </style>
 

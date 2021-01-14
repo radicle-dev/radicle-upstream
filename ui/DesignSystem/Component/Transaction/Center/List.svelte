@@ -14,7 +14,7 @@
 <style>
   .list {
     background-color: var(--color-foreground-level-1);
-    border-radius: 7px 7px 0 0;
+    border-radius: 0.4375rem 0.4375rem 0 0;
   }
 </style>
 

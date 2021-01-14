@@ -21,7 +21,7 @@
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     width: 100%;
   }
 
@@ -31,7 +31,7 @@
     justify-content: space-around;
     align-items: center;
 
-    width: 380px;
+    width: 23.75rem;
     margin: 0 auto;
   }
 

@@ -36,7 +36,7 @@
     background: var(--color-background);
     border-radius: 0.5rem;
 
-    width: 600px;
+    width: 37.5rem;
   }
 
   h1,
@@ -66,7 +66,7 @@
       <div class="typo-text description">
         Collect the
         <div class="typo-text-bold">
-          <Dai style="margin: 0 7px">{poolData.collectableFunds}</Dai>
+          <Dai style="margin: 0 0.4375rem">{poolData.collectableFunds}</Dai>
         </div>
         waiting on you from supporters.
       </div>

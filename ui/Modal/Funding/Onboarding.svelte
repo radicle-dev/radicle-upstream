@@ -99,7 +99,7 @@
     align-items: center;
     flex-direction: column;
     padding: var(--content-padding);
-    width: 600px;
+    width: 37.5rem;
     background: var(--color-background);
     border-radius: 0.5rem;
 

@@ -104,26 +104,30 @@
     margin: 0;
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 8px;
+    border-radius: 0.5rem;
   }
+
   header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     /* We need to cut enough vertical padding to have the 'Support' heading
     aligned with the 'Balance' heading of the `Panel` component shown at the left*/
-    padding: calc(var(--content-padding) - 6px) var(--content-padding);
+    padding: calc(var(--content-padding) - 0.375rem) var(--content-padding);
     border-bottom: 1px solid var(--color-foreground-level-2);
   }
+
   .row {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
+
   strong {
     font-weight: bold;
-    margin: 0 5px;
+    margin: 0 0.3125rem;
   }
+
   .content {
     padding: var(--content-padding);
   }
@@ -133,13 +137,12 @@
   }
 
   .tip {
-    font-size: 14px;
-    line-height: 18px;
+    font-size: 0.875rem;
+    line-height: 1.125rem;
     display: flex;
-    gap: 10px;
+    gap: 0.625rem;
     align-items: center;
     text-align: left;
-
     margin-top: var(--content-padding);
     color: var(--color-foreground-level-5);
   }
@@ -157,19 +160,19 @@
     <header>
       <div class="row">
         <h3>Support</h3>
-        <span class="row" style="margin-left: 14px">
+        <span class="row" style="margin-left: 0.875rem">
           {#if editing}
             <Input.Text
               dataCy="budget-input"
               bind:value={budget}
               validation={$budgetValidation}
-              validationStyle={'position: absolute; top: 30px;'}
+              validationStyle={'position: absolute; top: 1.875rem;'}
               showLeftItem
               autofocus
-              style={'width: 125px'}>
+              style={'width: 7.8rem'}>
               <div
                 slot="left"
-                style="position: absolute; top: 1px; left: 12px;">
+                style="position: absolute; top: 0.0625rem; left: 0.75rem;">
                 <Dai />
               </div>
             </Input.Text>
@@ -178,7 +181,7 @@
               <Dai>{poolData.amountPerBlock}</Dai>
             </p>
           {/if}
-          <span style="margin-left: 7px;"> per month</span>
+          <span style="margin-left: 0.4375rem;"> per month</span>
         </span>
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
@@ -186,13 +189,13 @@
           class="typo-link"
           disabled={ongoingSupportUpdate}
           on:click={enterEditMode}
-          style="margin-left: 12px;">
+          style="margin-left: 0.75rem;">
           Edit
         </a>
       </div>
       <div class="row">
         <p>Remaining</p>
-        <p class="typo-text-bold row" style="margin-left: 12px">
+        <p class="typo-text-bold row" style="margin-left: 0.75rem">
           <Dai>{poolData.balance}</Dai>
         </p>
         {#if !ongoingWithdraw && !ongoingTopUp}
@@ -201,7 +204,7 @@
             dataCy="drain-pool-button"
             variant="transparent"
             on:click={openWithdrawModal}
-            style="margin-left: 12px">
+            style="margin-left: 0.75rem">
             Withdraw
           </Button>
         {/if}
@@ -210,7 +213,7 @@
             dataCy="top-up-pool-button"
             variant="vanilla"
             on:click={openTopUp}
-            style="margin-left: 12px">
+            style="margin-left: 0.75rem">
             Top up
           </Button>
         {/if}
@@ -229,14 +232,14 @@
               hidden={editing}
               class="typo-link"
               disabled={ongoingSupportUpdate}
-              style="margin-left: 5px;"
+              style="margin-left: 0.3125rem;"
               on:click={enterEditMode}>
               Edit
             </a>
           </p>
         {:else}
           <div style="display: flex; align-items: center">
-            <strong style="margin-left: 0px">
+            <strong style="margin-left: 0">
               <Dai>{poolData.amountPerBlock}</Dai></strong>
             per month will go to each of the
             <strong>{poolData.receivers.size} </strong>
@@ -247,7 +250,7 @@
               hidden={editing}
               class="typo-link"
               disabled={ongoingSupportUpdate}
-              style="margin-left: 5px;"
+              style="margin-left: 0.3125rem;"
               on:click={enterEditMode}>
               Edit
             </a>
