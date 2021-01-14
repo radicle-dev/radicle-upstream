@@ -153,7 +153,7 @@
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    width: -webkit-fill-available;
+    width: 100%;
   }
 
   .radio-selector {
