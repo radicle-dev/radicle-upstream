@@ -16,14 +16,17 @@
   async function userDidClick(): Promise<void> {
     try {
       running = true;
-      notification.info(
-        "Waiting for you to confirm the transaction in your connected wallet.",
-        true,
-        false
-      );
+      notification.info({
+        message:
+          "Waiting for you to confirm the transaction in your connected wallet.",
+        showIcon: true,
+      });
       await onClick();
     } catch (error) {
-      notification.error(`${errorLabel}: ${error.message}`, true);
+      notification.error({
+        message: `${errorLabel}: ${error.message}`,
+        showIcon: true,
+      });
     } finally {
       running = false;
     }

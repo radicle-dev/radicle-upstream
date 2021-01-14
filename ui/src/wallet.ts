@@ -85,9 +85,11 @@ export function build(): Wallet {
       await walletConnect.connect();
     } catch (error) {
       stateStore.set({ status: Status.NotConnected, error });
-      notification.error(
-        `Failed to connect wallet: ${error.toString().replace("Error: ", "")}`
-      );
+      notification.error({
+        message: `Failed to connect wallet: ${error
+          .toString()
+          .replace("Error: ", "")}`,
+      });
     }
     await initialize();
   }
