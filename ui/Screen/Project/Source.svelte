@@ -52,14 +52,18 @@
         peer.identity.peerId
       );
 
-      notification.info(
-        `${project.metadata.name} checked out to ${path}`,
-        true,
-        "Open folder",
-        () => {
-          openPath(path);
-        }
-      );
+      notification.info({
+        message: `${project.metadata.name} checked out to ${path}`,
+        showIcon: true,
+        actions: [
+          {
+            label: "Open folder",
+            handler: () => {
+              openPath(path);
+            },
+          },
+        ],
+      });
     } catch (err) {
       error.show({
         code: error.Code.ProjectCheckoutFailure,

@@ -566,8 +566,8 @@ After all the packages are uploaded, update the links to those binaries on the
 [radicle.xyz download][rd] and [docs.radicle.xyz/docs/getting-started][gs]
 pages and rebuild/deploy the websites.
 
-The final step is to announce the new release on our public channels (**make
-sure to update all the versions and links**):
+Now, announce the new release on our public channels (**make sure to update all
+the versions and links**):
 
   - https://radicle.community/c/announcements
     - subject:
@@ -606,6 +606,16 @@ sure to update all the versions and links**):
         Radicle Upstream vX.X.X is out! 🎉
         https://radicle.community/t/radicle-upstream-vX-X-X-is-out
 
+Finally, update the information about the latest release by running
+
+```bash
+npx ts-node ./scripts/set-latest-release.ts
+```
+
+This also requires the `gsutil` tool and access to the `builds.radicle.xyz`
+bucket.
+
+
 ## Checklist
 To avoid missing a step when performing a release, here's an ordered checklist
 for all of the required steps:
@@ -626,6 +636,7 @@ for all of the required steps:
   - [ ] deploy docs.radicle.xyz
 - [ ] announce new release on radicle.community
 - [ ] announce new release on the matrix #general:radicle.community channel
+- [ ] update release information
 
 
 [an]: #apple-notarization

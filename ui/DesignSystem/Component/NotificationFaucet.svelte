@@ -1,11 +1,11 @@
-<script>
+<script lang="typescript">
   import { blur } from "svelte/transition";
   import { flip } from "svelte/animate";
-  import { store } from "../../src/notification.ts";
+  import { store } from "../../src/notification";
 
   import Notification from "./Notification.svelte";
 
-  export let style = null;
+  export let style = "";
 </script>
 
 <style>
@@ -28,12 +28,7 @@
       style="max-width: 95%;"
       animate:flip
       transition:blur={{ duration: 300 }}>
-      <Notification
-        showIcon={notification.showIcon}
-        level={notification.level}
-        message={notification.message}
-        actionText={notification.actionText}
-        on:action={notification.actionHandler} />
+      <Notification {notification} />
     </div>
   {/each}
 </div>
