@@ -120,17 +120,20 @@ eventStore.subscribe((event: Event | null): void => {
 
   switch (event.type) {
     case EventType.RequestCloned:
-      notifiation.info(
-        `Project for "${event.urn}" found and cloned.`,
-        false,
-        "Show Project",
-        () => push(path.project(event.urn))
-      );
+      notifiation.info({
+        message: `Project for "${event.urn}" found and cloned.`,
+        actions: [
+          {
+            label: "Show Project",
+            handler: () => push(path.project(event.urn)),
+          },
+        ],
+      });
 
       break;
 
     case EventType.RequestTimedOut:
-      notifiation.error(`Search for "${event.urn}" failed.`);
+      notifiation.error({ message: `Search for "${event.urn}" failed.` });
 
       break;
   }

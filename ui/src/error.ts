@@ -63,8 +63,17 @@ export const log = (error: Error): void => {
 export const show = (error: Error): void => {
   log(error);
 
-  notification.error(error.message, true, "Copy error", () => {
-    ipc.copyToClipboard(JSON.stringify(error, null, 2));
+  notification.error({
+    message: error.message,
+    showIcon: true,
+    actions: [
+      {
+        label: "Copy error",
+        handler: () => {
+          ipc.copyToClipboard(JSON.stringify(error, null, 2));
+        },
+      },
+    ],
   });
 };
 

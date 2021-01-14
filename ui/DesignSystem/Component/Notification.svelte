@@ -1,17 +1,15 @@
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
-
   import { Level } from "../../src/notification";
-
+  import type { Notification } from "../../src/notification";
   import { Icon } from "../Primitive";
 
-  const dispatch = createEventDispatcher();
+  export let notification: Notification;
+  export let style = "";
 
-  export let style: string | undefined;
-  export let level = Level.Info;
-  export let showIcon = false;
-  export let message: string;
-  export let actionText: string | null = null;
+  const icon =
+    notification.level === Level.Info
+      ? Icon.InfoCircle
+      : Icon.ExclamationCircle;
 </script>
 
 <style>
@@ -31,7 +29,7 @@
     background-color: var(--color-foreground);
   }
 
-  .notification.info :global(svg) {
+  .info :global(svg) {
     fill: var(--color-background);
   }
 
@@ -40,7 +38,7 @@
     background-color: var(--color-negative);
   }
 
-  .notification.error :global(svg) {
+  .error :global(svg) {
     fill: var(--color-background);
   }
 
@@ -48,39 +46,38 @@
     padding: 0 8px 0 8px;
   }
 
-  .close {
+  .action {
     cursor: pointer;
     margin-right: 8px;
     padding-left: 8px;
     user-select: none;
-    border-left: 1px solid;
   }
 
-  .close.error {
-    border-color: var(--color-negative-level-2);
+  .action-divider {
+    align-self: stretch;
+    width: 1px;
   }
 
-  .close.info {
-    border-color: var(--color-foreground-level-6);
+  .error .action-divider {
+    background-color: var(--color-negative-level-2);
+  }
+
+  .info .action-divider {
+    background-color: var(--color-foreground-level-6);
   }
 </style>
 
-<div class={`notification ${level.toLowerCase()}`} {style}>
-  {#if showIcon}
-    <svelte:component
-      this={level === Level.Info ? Icon.InfoCircle : Icon.ExclamationCircle}
-      style="margin-left: 8px; height: 24px" />
+<div class={`notification ${notification.level.toLowerCase()}`} {style}>
+  {#if notification.showIcon}
+    <svelte:component this={icon} style="margin-left: 8px; height: 24px" />
   {/if}
 
-  <p class="message typo-overflow-ellipsis">{message}</p>
+  <p class="message typo-overflow-ellipsis">{notification.message}</p>
 
-  {#if actionText}
-    <div
-      class={`close ${level.toLowerCase()}`}
-      on:click={() => {
-        dispatch('action');
-      }}>
-      <p class="typo-text-bold">{actionText}</p>
+  {#each notification.actions as action}
+    <div class="action-divider" />
+    <div class="action typo-text-bold" on:click={action.handler}>
+      {action.label}
     </div>
-  {/if}
+  {/each}
 </div>
