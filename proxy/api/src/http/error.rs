@@ -13,7 +13,7 @@ use crate::error;
 #[derive(Debug, thiserror::Error)]
 pub enum Routing {
     /// The currently active [`coco::Person`] is missing.
-    #[error("Owner is missing")]
+    #[error("owner is missing")]
     MissingOwner,
     /// The keystore is sealed, context does not have a signer.
     #[error("No session has been created yet")]
