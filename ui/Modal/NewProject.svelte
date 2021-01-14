@@ -153,6 +153,7 @@
     flex-direction: column;
     justify-content: center;
     text-align: center;
+    width: 100%;
   }
 
   .radio-selector {
