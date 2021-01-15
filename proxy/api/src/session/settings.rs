@@ -62,8 +62,6 @@ pub struct CoCo {
 
 impl Default for CoCo {
     fn default() -> Self {
-        Self {
-            seeds: vec![],
-        }
+        Self { seeds: vec![] }
     }
 }
