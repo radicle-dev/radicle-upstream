@@ -2,7 +2,7 @@ import { ipcStub } from "../../support";
 import * as commands from "../../support/commands";
 
 context("project creation", () => {
-  const withEmptyDirectoryStub = callback => {
+  const withEmptyDirectoryStub = (callback: () => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
       const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-directory`;
@@ -21,7 +21,7 @@ context("project creation", () => {
     });
   };
 
-  const withNoCommitsRepositoryStub = callback => {
+  const withNoCommitsRepositoryStub = (callback: () => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
       const noCommitsRepoPath = `${pwd}/cypress/workspace/no-commits-repo`;
@@ -42,7 +42,7 @@ context("project creation", () => {
     });
   };
 
-  const withPlatinumStub = callback => {
+  const withPlatinumStub = (callback: () => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
       const platinumPath = `${pwd}/cypress/workspace/git-platinum-copy`;

@@ -2,7 +2,7 @@ import { ipcStub } from "../../support";
 import * as commands from "../../support/commands";
 
 context("project checkout", () => {
-  const withWorkspaceStub = callback => {
+  const withWorkspaceStub = (callback: (path: string) => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
       const checkoutPath = `${pwd}/cypress/workspace/checkout`;
