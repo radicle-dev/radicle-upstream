@@ -284,6 +284,7 @@ where
         // Set configurations
         super::set_upstream(&repo, &rad, self.default_branch.clone())?;
         include::set_include_path(&repo, self.include_path)?;
+        repo.set_head(Qualified::from(self.default_branch).as_str())?;
 
         Ok(project_path)
     }
