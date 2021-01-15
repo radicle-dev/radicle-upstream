@@ -695,20 +695,8 @@ impl State {
                         let malkovich = person::get(store, &rad_self)?
                             .ok_or(Error::PersonNotFound(rad_self))?;
 
-                        if project
-                            .delegations()
-                            .owner(peer_id.as_public_key())
-                            .is_some()
-                        {
-                            peer::Status::replicated(peer::Role::Maintainer, malkovich)
-                        } else if store.has_ref(&Reference::rad_signed_refs(
-                            Namespace::from(urn.clone()),
-                            peer_id,
-                        ))? {
-                            peer::Status::replicated(peer::Role::Contributor, malkovich)
-                        } else {
-                            peer::Status::replicated(peer::Role::Tracker, malkovich)
-                        }
+                        let role = role(store, &project, Either::Right(peer_id))?;
+                        peer::Status::replicated(role, malkovich)
                     } else {
                         peer::Status::NotReplicated
                     };
@@ -752,27 +740,14 @@ impl State {
             .into_inner()
             .into_inner();
 
-        let status = if project
-            .delegations()
-            .owner(self.peer_id().as_public_key())
-            .is_some()
-        {
-            peer::Status::replicated(peer::Role::Maintainer, owner)
-        } else if self
+        let role = self
             .api
-            .with_storage(move |store| {
-                store.has_ref(&Reference::rad_signed_refs(
-                    Namespace::from(project.urn()),
-                    None,
-                ))
+            .with_storage({
+                let local = self.peer_id();
+                move |store| role(store, &project, Either::Left(local))
             })
-            .await??
-        {
-            peer::Status::replicated(peer::Role::Contributor, owner)
-        } else {
-            peer::Status::replicated(peer::Role::Tracker, owner)
-        };
-
+            .await??;
+        let status = peer::Status::replicated(role, owner);
         peers.push(crate::project::Peer::Local {
             peer_id: self.peer_id(),
             status,
@@ -891,6 +866,35 @@ impl State {
 
         Ok(include_path)
     }
+}
+
+/// Determine the [`peer::Role`] for a given [`Project`] and [`PeerId`].
+///
+/// If `peer` is `Either::Left` then we have the local `PeerId` and we can ignore it for looking
+/// at `rad/signed_refs`.
+///
+/// If `peer` is `Either::Right` then it is a remote peer and we use it for looking at
+/// `rad/signed_refs`.
+fn role(
+    store: &librad::git::storage::Storage,
+    project: &Project,
+    peer: Either<PeerId, PeerId>,
+) -> Result<peer::Role, Error> {
+    let role = if project
+        .delegations()
+        .owner(peer.clone().into_inner().as_public_key())
+        .is_some()
+    {
+        peer::Role::Maintainer
+    } else if Refs::load(store, &project.urn(), peer.right())?
+        .map_or(false, |refs| !refs.heads.is_empty())
+    {
+        peer::Role::Contributor
+    } else {
+        peer::Role::Tracker
+    };
+
+    Ok(role)
 }
 
 impl From<&State> for Seed {
