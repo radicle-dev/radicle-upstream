@@ -1,5 +1,4 @@
-import { Readable, derived, get, writable } from "svelte/store";
-
+import { Readable, derived, writable } from "svelte/store";
 import * as config from "./config";
 
 export enum Variant {
@@ -18,6 +17,9 @@ export interface NotificationParams {
   // A list of actions to show as part of the notification. If not
   // provided a default action to close the notification will be shown.
   actions?: Action[];
+  // If `true`, the notification does not automatically disappear after
+  // a certain time. Defaults to `false`.
+  persist?: boolean;
 }
 
 export interface Notification {
@@ -100,9 +102,11 @@ const show = (variant: Variant, params: NotificationParams): void => {
   const notification = create(variant, params);
   notificationsStore.update(notifications => [notification, ...notifications]);
 
-  setTimeout(() => {
-    remove(notification.id);
-  }, config.NOTIFICATION_TIMEOUT);
+  if (params.persist !== true) {
+    setTimeout(() => {
+      remove(notification.id);
+    }, config.NOTIFICATION_TIMEOUT);
+  }
 };
 
 export const error = (params: NotificationParams): void =>
@@ -115,8 +119,7 @@ export const primary = (params: NotificationParams): void =>
   show(Variant.Primary, params);
 
 const remove = (id: number): void => {
-  const notifications = get(notificationsStore).filter(
-    (n: Notification) => n.id !== id
-  );
-  notificationsStore.set(notifications);
+  notificationsStore.update(notifications => {
+    return notifications.filter((n: Notification) => n.id !== id);
+  });
 };

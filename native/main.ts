@@ -153,6 +153,10 @@ ipcMain.handle(RendererMessage.GET_VERSION, () => {
   return app.getVersion();
 });
 
+ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
+  openExternalLink(url);
+});
+
 function setupWatcher() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const chokidar = require("chokidar");
