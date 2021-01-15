@@ -1,15 +1,25 @@
 <script lang="typescript">
-  import { Level } from "../../src/notification";
+  import type { SvelteComponent } from "svelte";
   import type { Notification } from "../../src/notification";
   import { Icon } from "../Primitive";
 
   export let notification: Notification;
   export let style = "";
 
-  const icon =
-    notification.level === Level.Info
-      ? Icon.InfoCircle
-      : Icon.ExclamationCircle;
+  const variantClass = `variant-${notification.variant.toLowerCase()}`;
+
+  let icon: typeof SvelteComponent | null;
+  switch (notification.icon) {
+    case "InfoCircle":
+      icon = Icon.InfoCircle;
+      break;
+    case "ExclamationCircle":
+      icon = Icon.ExclamationCircle;
+      break;
+    case null:
+      icon = null;
+      break;
+  }
 </script>
 
 <style>
@@ -22,24 +32,24 @@
     margin-top: 8px;
     user-select: none;
     white-space: nowrap;
+
+    color: var(--color-background);
   }
 
-  .info {
-    color: var(--color-background);
+  .notification :global(svg) {
+    fill: var(--color-background);
+  }
+
+  .variant-info {
     background-color: var(--color-foreground);
   }
 
-  .info :global(svg) {
-    fill: var(--color-background);
-  }
-
-  .error {
-    color: var(--color-background);
+  .variant-error {
     background-color: var(--color-negative);
   }
 
-  .error :global(svg) {
-    fill: var(--color-background);
+  .variant-primary {
+    background-color: var(--color-primary);
   }
 
   .message {
@@ -49,8 +59,9 @@
   }
 
   .action {
+    align-self: stretch;
     cursor: pointer;
-    margin-right: 8px;
+    padding-right: 8px;
     padding-left: 8px;
     user-select: none;
   }
@@ -60,17 +71,21 @@
     width: 1px;
   }
 
-  .error .action-divider {
+  .variant-error .action-divider {
     background-color: var(--color-negative-level-2);
   }
 
-  .info .action-divider {
+  .variant-info .action-divider {
     background-color: var(--color-foreground-level-6);
+  }
+
+  .variant-primary .action-divider {
+    background-color: var(--color-primary-level-1);
   }
 </style>
 
-<div class={`notification ${notification.level.toLowerCase()}`} {style}>
-  {#if notification.showIcon}
+<div class={`notification ${variantClass}`} {style}>
+  {#if icon}
     <svelte:component this={icon} style="margin-left: 8px; height: 24px" />
   {/if}
 
@@ -78,8 +93,8 @@
 
   {#each notification.actions as action}
     <div class="action-divider" />
-    <div class="action typo-text-bold" on:click={action.handler}>
+    <button class="action typo-text-bold" on:click={action.handler}>
       {action.label}
-    </div>
+    </button>
   {/each}
 </div>

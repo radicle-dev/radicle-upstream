@@ -134,3 +134,7 @@ q:after {
   content: "";
   content: none;
 }
+
+button {
+  outline-style: none;
+}
