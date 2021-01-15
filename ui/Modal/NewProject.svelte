@@ -28,6 +28,7 @@
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
+    Modal,
     RadioOption,
     RemoteHelperHint,
     Tooltip,
@@ -74,9 +75,9 @@
       });
 
       push(path.project(response.urn));
-      notification.info(
-        `Project ${response.metadata.name} successfully created`
-      );
+      notification.info({
+        message: `Project ${response.metadata.name} successfully created`,
+      });
     } catch (err) {
       push(path.profileProjects());
       error.show({
@@ -147,18 +148,12 @@
 </script>
 
 <style>
-  .container {
-    width: 37.5rem;
-    background: var(--color-background);
-    border-radius: 1rem;
-    padding: 3rem 2rem 2rem 2rem;
-  }
-
   .create-project {
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
+    width: 100%;
   }
 
   .radio-selector {
@@ -184,7 +179,7 @@
   }
 </style>
 
-<div class="container" data-cy="page">
+<Modal dataCy="page">
   <div class="create-project" data-cy="create-project">
     <Emoji
       emoji={'🌠'}
@@ -300,4 +295,4 @@
       </div>
     </div>
   </div>
-</div>
+</Modal>

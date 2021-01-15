@@ -22,7 +22,7 @@ export const createProjectWithFixture = (
   name = "platinum",
   description = "Best project ever.",
   defaultBranch = "master",
-  fakePeers = []
+  fakePeers: string[] = []
 ): Cypress.Chainable<void> =>
   requestOk({
     url: "http://localhost:17246/v1/control/create-project",
@@ -69,8 +69,10 @@ export const onboardUser = (
 function requestOk(
   opts: Partial<Cypress.RequestOptions> & { url: string }
 ): Cypress.Chainable<void> {
-  return cy.request(opts).then(response => {
-    expect(response.status).to.be.within(200, 299, "Failed response");
-    return undefined;
-  });
+  return cy
+    .request(opts)
+    .then(response => {
+      expect(response.status).to.be.within(200, 299, "Failed response");
+    })
+    .wrap(undefined);
 }

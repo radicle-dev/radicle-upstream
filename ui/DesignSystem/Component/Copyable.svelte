@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import type { SvelteComponent } from "svelte";
 
   import { copyToClipboard } from "../../src/ipc";
@@ -27,7 +27,7 @@
     const content = copyContent.length ? copyContent : slotContent.textContent;
     if (content) copyToClipboard(content.trim());
 
-    notification.info(notificationText);
+    notification.info({ message: notificationText });
 
     copied = true;
 

@@ -4,7 +4,7 @@
   import * as hotkeys from "../src/hotkeys";
   import { Variant as IllustrationVariant } from "../src/illustration";
 
-  import { Illustration, KeyHint } from "../DesignSystem/Component";
+  import { Illustration, KeyHint, Modal } from "../DesignSystem/Component";
 
   const shortcuts = [
     ...hotkeys.shortcuts,
@@ -14,16 +14,6 @@
 </script>
 
 <style>
-  .container {
-    width: 38.5rem;
-    background: var(--color-background);
-    border-radius: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-  }
-
   .shortcut {
     margin-bottom: 1rem;
     display: flex;
@@ -38,13 +28,9 @@
     color: var(--color-foreground-level-6);
     margin: 0rem 0.625rem;
   }
-
-  .container:focus {
-    outline: none;
-  }
 </style>
 
-<div data-cy="hotkey-modal" class="container">
+<Modal dataCy="hotkey-modal">
   <Illustration
     style="margin-bottom: 1.5rem;"
     variant={IllustrationVariant.Keyboard} />
@@ -59,4 +45,4 @@
       </div>
     {/each}
   </div>
-</div>
+</Modal>

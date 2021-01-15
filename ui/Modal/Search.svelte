@@ -73,7 +73,9 @@
   $: if ($request.status === remote.Status.Success) {
     reset();
     push(path.profileFollowing());
-    notification.info("You’ll be notified when this project has been found.");
+    notification.info({
+      message: "You’ll be notified when this project has been found.",
+    });
     dispatch("hide");
   }
 
@@ -89,6 +91,7 @@
   .search-bar {
     margin-bottom: 1rem;
     position: relative;
+    border-radius: 0.5rem;
   }
 
   .result {
@@ -97,6 +100,7 @@
     height: 0;
     overflow: hidden;
     transition: height 0.3s linear;
+    box-shadow: var(--color-shadows);
   }
 
   .tracked {
@@ -129,7 +133,7 @@
       autofocus
       bind:value={input}
       dataCy="search-input"
-      inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0"
+      inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0; box-shadow: var(--color-shadows);"
       on:keydown={onKeydown}
       placeholder="Enter a project's Radicle ID here…"
       showLeftItem

@@ -131,6 +131,24 @@
       value: 2,
     },
   ];
+
+  const infoNotification = params => {
+    return {
+      level: notification.Level.Info,
+      message: params.message,
+      showIcon: params.showIcon || false,
+      actions: params.actions || [],
+    };
+  };
+
+  const errorNotification = params => {
+    return {
+      level: notification.Level.Error,
+      message: params.message,
+      showIcon: params.showIcon || false,
+      actions: params.actions || [],
+    };
+  };
 </script>
 
 <style>
@@ -631,50 +649,48 @@
 
     <Section title="Notifications" subTitle="Info, Warnings and Errors">
       <Swatch>
-        <Notification message="Snackbar" />
-      </Swatch>
-
-      <Swatch>
-        <Notification message="Snackbar with icon" showIcon={true} />
-      </Swatch>
-
-      <Swatch>
-        <Notification message="Snackbar with" actionText="Action" />
+        <Notification
+          notification={infoNotification({ message: 'Snackbar' })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          message="Snackbar with icon and"
-          showIcon={true}
-          actionText="Action" />
+          notification={infoNotification({
+            message: 'Info with icon',
+            showIcon: true,
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          level={notification.Level.Error}
-          message="Just plain error" />
+          notification={errorNotification({ message: 'Just plain error' })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          level={notification.Level.Error}
-          message="Error with icon"
-          showIcon={true} />
+          notification={errorNotification({
+            message: 'Error with icon',
+            showIcon: true,
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          level={notification.Level.Error}
-          message="Error with"
-          actionText="Action" />
+          notification={errorNotification({
+            message: 'Error with one action',
+            actions: [{ label: 'Action', handler: () => {} }],
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          level={notification.Level.Error}
-          message="Error with icon and"
-          showIcon={true}
-          actionText="Action" />
+          notification={errorNotification({
+            message: 'Error with two actions',
+            actions: [
+              { label: 'Action 1', handler: () => {} },
+              { label: 'Action 2', handler: () => {} },
+            ],
+          })} />
       </Swatch>
     </Section>
 
