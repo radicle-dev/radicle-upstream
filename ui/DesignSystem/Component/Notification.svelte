@@ -93,7 +93,10 @@
 
   {#each notification.actions as action}
     <div class="action-divider" />
-    <button class="action typo-text-bold" on:click={action.handler}>
+    <button
+      class="action typo-text-bold"
+      data-cy="notification-action"
+      on:click={action.handler}>
       {action.label}
     </button>
   {/each}

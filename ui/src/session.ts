@@ -46,6 +46,24 @@ sessionStore.subscribe(data => {
   }
 });
 
+// Returns when the session becomes unsealed. Throws when fetching the
+// session failed.
+export const waitUnsealed = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = sessionStore.subscribe(data => {
+      if (
+        data.status === remote.Status.Success &&
+        data.data.status === Status.UnsealedSession
+      ) {
+        unsubscribe();
+        resolve();
+      } else if (data.status === remote.Status.Error) {
+        reject(data.error);
+      }
+    });
+  });
+};
+
 export const settings: Readable<Settings> = derived(sessionStore, sess => {
   if (
     sess.status === remote.Status.Success &&
