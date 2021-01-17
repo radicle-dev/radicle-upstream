@@ -1,11 +1,8 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "es2018",
     "lib": ["dom", "es6", "es7"],
-    "types": ["cypress", "node"],
-    "moduleResolution": "node",
-    "noEmit": true,
-    "allowSyntheticDefaultImports": true
+    "types": ["cypress", "node"]
   },
   "include": ["**/*.ts"]
 }
