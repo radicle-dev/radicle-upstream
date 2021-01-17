@@ -16,6 +16,8 @@
   } from "../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../src/validation";
 
+  import { BigNumber } from "ethers";
+
   export let pool: fundingPool.Pool;
 
   $: fundingPool.store.set(pool);
@@ -61,12 +63,13 @@
         budget = data.amountPerBlock.toString();
         receivers = new Map(data.receivers);
       }
-      paused = data.balance <= data.amountPerBlock || data.amountPerBlock === 0;
+      paused =
+        data.balance.lte(data.amountPerBlock) || data.amountPerBlock.isZero();
     }
   });
 
   $: thereAreChanges =
-    budget !== data.amountPerBlock ||
+    !BigNumber.from(budget).eq(data.amountPerBlock) ||
     receivers.size !== data.receivers.size ||
     [...receivers.entries()].find(
       ([address, weight]) => data.receivers.get(address) !== weight
@@ -86,7 +89,7 @@
     );
 
     return pool
-      .updateSettings(budget, changedReceivers)
+      .updateSettings(BigNumber.from(budget), changedReceivers)
       .then(_ => leaveEditMode());
   }
 

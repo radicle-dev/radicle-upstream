@@ -9,11 +9,13 @@
   import * as modal from "../../../src/modal";
   import { store } from "../../../src/funding/pool";
 
+  import { BigNumber } from "ethers";
+
   if ($store === null) pop();
 
   let amount = "";
   async function onConfirmed(): Promise<void> {
-    await get(store)?.topUp(amount);
+    await get(store)?.topUp(BigNumber.from(amount));
     modal.hide();
     resolve();
   }

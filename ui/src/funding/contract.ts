@@ -1,4 +1,4 @@
-import type { BigNumberish, ContractTransaction, Signer } from "ethers";
+import type { BigNumber, ContractTransaction, Signer } from "ethers";
 import {
   Erc20Pool,
   Erc20Pool__factory as PoolFactory,
@@ -32,26 +32,26 @@ export class PoolContract {
   }
 
   async onboard(
-    topUp: BigNumberish,
-    amountPerBlock: BigNumberish,
+    topUp: BigNumber,
+    amountPerBlock: BigNumber,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
     return this.contract.updateSender(topUp, 0, amountPerBlock, receivers, []);
   }
 
   async updatePlan(
-    amountPerBlock: BigNumberish,
+    amountPerBlock: BigNumber,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
     return this.contract.updateSender(0, 0, amountPerBlock, receivers, []);
   }
 
-  async topUp(amount: BigNumberish): Promise<ContractTransaction> {
+  async topUp(amount: BigNumber): Promise<ContractTransaction> {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
     return this.contract.updateSender(amount, 0, UNCHANGED, [], []);
   }
 
-  async withdraw(amount: BigNumberish): Promise<ContractTransaction> {
+  async withdraw(amount: BigNumber): Promise<ContractTransaction> {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
     return this.contract.updateSender(0, amount, UNCHANGED, [], []);
   }
@@ -60,19 +60,19 @@ export class PoolContract {
     return this.contract.collect();
   }
 
-  async withdrawAllFlag(): Promise<BigNumberish> {
+  async withdrawAllFlag(): Promise<BigNumber> {
     return this.contract.WITHDRAW_ALL();
   }
 
-  async withdrawable(): Promise<BigNumberish> {
+  async withdrawable(): Promise<BigNumber> {
     return this.contract.withdrawable();
   }
 
-  async collectable(): Promise<BigNumberish> {
+  async collectable(): Promise<BigNumber> {
     return this.contract.collectable();
   }
 
-  async amountPerBlock(): Promise<BigNumberish> {
+  async amountPerBlock(): Promise<BigNumber> {
     return this.contract.getAmountPerBlock();
   }
 

@@ -203,9 +203,9 @@ class WalletConnectSigner extends ethers.Signer {
     const signedTx = await this.walletConnect.signTransaction({
       from,
       to: tx.to,
-      value: bigNumberishToPrimitive(tx.value || 0),
-      gasLimit: bigNumberishToPrimitive(tx.gasLimit || 200 * 1000),
-      gasPrice: bigNumberishToPrimitive(tx.gasPrice || 0),
+      value: BigNumberToPrimitive(tx.value || 0),
+      gasLimit: BigNumberToPrimitive(tx.gasLimit || 200 * 1000),
+      gasPrice: BigNumberToPrimitive(tx.gasPrice || 0),
       nonce,
       data: bytesLikeToString(tx.data),
     });
@@ -217,7 +217,7 @@ class WalletConnectSigner extends ethers.Signer {
   }
 }
 
-function bigNumberishToPrimitive(
+function BigNumberToPrimitive(
   bn: ethers.BigNumberish | undefined
 ): string | undefined {
   if (bn === undefined) {

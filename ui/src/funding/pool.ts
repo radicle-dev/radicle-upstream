@@ -18,21 +18,24 @@ export interface Pool {
 
   // Onboard the user's pool with the intial values
   onboard(
-    topUp: BigNumberish,
-    amountPerBlock: BigNumberish,
+    topUp: BigNumber,
+    amountPerBlock: BigNumber,
     receivers: Receivers
   ): Promise<void>;
 
   // Update the contribution per block and the list of receivers.
-  updateSettings(amountPerBlock: string, receivers: Receivers): Promise<void>;
+  updateSettings(
+    amountPerBlock: BigNumber,
+    receivers: Receivers
+  ): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
-  topUp(value: BigNumberish): Promise<void>;
+  topUp(value: BigNumber): Promise<void>;
 
   // Withdraw outgoing balance funds to the connected wallet.
   // Returns once the transaction has been included in the chain.
-  withdraw(value: BigNumberish): Promise<void>;
+  withdraw(value: BigNumber): Promise<void>;
 
   // Withdraw all the outgoing balance funds to the connected wallet.
   withdrawAll(): Promise<void>;
@@ -49,23 +52,23 @@ export interface Pool {
 // All the data representing a pool.
 export interface PoolData {
   // The remaining balance of this pool.
-  balance: BigNumberish;
+  balance: BigNumber;
   // The total amount to be disbursed to all receivers with each block.
-  amountPerBlock: BigNumberish;
+  amountPerBlock: BigNumber;
   // The list of addresses that receive funds from the pool.
   receivers: Receivers;
   // Funds that the user can collect from their givers.
-  collectableFunds: number;
+  collectableFunds: BigNumber;
   // The ERC-20 token allowance. 0 means that the allowance was not
   // granted or that it was fully spent.
-  erc20Allowance: BigNumberish;
+  erc20Allowance: BigNumber;
 }
 
 /* Receivers */
 export type Receivers = Map<Address, ReceiverStatus>;
 
 export type Address = string;
-export type Weight = BigNumberish;
+export type Weight = BigNumber;
 
 export enum ReceiverStatus {
   // The receiver is being added
@@ -108,11 +111,11 @@ export function make(wallet: Wallet): Pool {
 
       data.success({
         // Handle potential overflow using BN.js
-        balance: Number(balance),
-        amountPerBlock: amountPerBlock.toString(),
+        balance,
+        amountPerBlock,
         receivers,
         // Handle potential overflow using BN.js
-        collectableFunds: Number(collectableFunds),
+        collectableFunds,
         erc20Allowance,
       });
     } catch (error) {
@@ -128,8 +131,8 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function onboard(
-    topUp: BigNumberish,
-    amountPerBlock: BigNumberish,
+    topUp: BigNumber,
+    amountPerBlock: BigNumber,
     receivers: Receivers
   ): Promise<void> {
     return poolContract
@@ -144,7 +147,7 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function updateSettings(
-    amountPerBlock: string,
+    amountPerBlock: BigNumber,
     receivers: Receivers
   ): Promise<void> {
     return poolContract
@@ -160,7 +163,7 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
-  async function topUp(amount: BigNumberish): Promise<void> {
+  async function topUp(amount: BigNumber): Promise<void> {
     return poolContract
       .topUp(amount)
       .then((tx: ContractTransaction) => {
@@ -170,15 +173,14 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
-  async function withdraw(amount: BigNumberish): Promise<void> {
+  async function withdraw(amount: BigNumber): Promise<void> {
     return poolContract
       .withdraw(amount)
       .then(async (tx: ContractTransaction) => {
         const ALL = await poolContract.withdrawAllFlag();
-        const infoAmount =
-          amount.toString() === ALL.toString()
-            ? data.unwrap()?.balance || 0
-            : amount;
+        const infoAmount = amount.eq(ALL)
+          ? data.unwrap()?.balance || BigNumber.from(0)
+          : amount;
         transaction.add(transaction.withdraw(tx, infoAmount));
         tx.wait();
       })
@@ -194,14 +196,14 @@ export function make(wallet: Wallet): Pool {
     return poolContract
       .collect()
       .then((tx: ContractTransaction) => {
-        const infoAmount = data.unwrap()?.collectableFunds || 0;
+        const infoAmount = data.unwrap()?.collectableFunds || BigNumber.from(0);
         transaction.add(transaction.collect(tx, infoAmount));
         tx.wait();
       })
       .finally(loadPoolData);
   }
 
-  async function getErc20Allowance(): Promise<BigNumberish> {
+  async function getErc20Allowance(): Promise<BigNumber> {
     const account = getAccount();
     if (account) {
       return erc20TokenContract.allowance(
@@ -209,7 +211,7 @@ export function make(wallet: Wallet): Pool {
         contract.POOL_ADDRESS
       );
     } else {
-      return 0;
+      return BigNumber.from(0);
     }
   }
 
@@ -310,8 +312,10 @@ export const balanceValidationStore = (
 // Check whether the user has onboarded their pool.
 export function isOnboarded(data: PoolData): boolean {
   return (
-    data.erc20Allowance > 0 &&
-    (data.receivers.size > 0 || data.amountPerBlock !== "0" || data.balance > 0)
+    data.erc20Allowance.gt(0) &&
+    (data.receivers.size > 0 ||
+      !data.amountPerBlock.isZero() ||
+      data.balance.gt(0))
   );
 }
 

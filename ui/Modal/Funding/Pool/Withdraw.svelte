@@ -14,6 +14,8 @@
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
+  import { BigNumber } from "ethers";
+
   if ($store === null) pop();
 
   // Validate the amount beign withdrawn
@@ -43,7 +45,7 @@
     const pool = get(store);
     if (pool) {
       if (mode === Mode.SpecifyAmount) {
-        await pool.withdraw(amount);
+        await pool.withdraw(BigNumber.from(amount));
       } else {
         await pool.withdrawAll();
       }

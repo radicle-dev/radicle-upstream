@@ -1,7 +1,8 @@
 import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
-import type { BigNumberish, ContractTransaction } from "ethers";
+import { BigNumber } from "ethers";
+import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import { provider } from "./wallet";
@@ -54,32 +55,32 @@ interface Erc20Allowance {
 interface SupportOnboarding {
   kind: TxKind.SupportOnboarding;
   // The amount defined as the initial balance
-  topUp: BigNumberish;
+  topUp: string;
   // The amount to be disbursed monthly to the `receivers`.
-  budget: BigNumberish;
+  budget: string;
   // The receivers of this support.
   receivers: [Address, ReceiverStatus][];
 }
 
 interface TopUp {
   kind: TxKind.TopUp;
-  amount: BigNumberish;
+  amount: string;
 }
 
 interface Withdraw {
   kind: TxKind.Withdraw;
-  amount: BigNumberish;
+  amount: string;
 }
 
 interface CollectFunds {
   kind: TxKind.CollectFunds;
-  amount: BigNumberish;
+  amount: string;
 }
 
 interface UpdateSupport {
   kind: TxKind.UpdateSupport;
   // The amount to be disbursed monthly to the `receivers`.
-  amount: BigNumberish;
+  amount: string;
   // The changes made to the list of receivers.
   receivers: [Address, ReceiverStatus][];
 }
@@ -110,45 +111,45 @@ export function erc20Allowance(txc: ContractTransaction): Tx {
 
 export function supportOnboarding(
   txc: ContractTransaction,
-  topUp: BigNumberish,
-  budget: BigNumberish,
+  topUp: BigNumber,
+  budget: BigNumber,
   receivers: Receivers
 ): Tx {
   const meta: SupportOnboarding = {
     kind: TxKind.SupportOnboarding,
-    topUp,
-    budget,
+    topUp: topUp.toString(),
+    budget: budget.toString(),
     receivers: [...receivers.entries()],
   };
   return { ...txData(txc), ...meta };
 }
 
-export function collect(txc: ContractTransaction, amount: BigNumberish): Tx {
+export function collect(txc: ContractTransaction, amount: BigNumber): Tx {
   const meta: CollectFunds = {
     kind: TxKind.CollectFunds,
-    amount,
+    amount: amount.toString(),
   };
   return { ...txData(txc), ...meta };
 }
 
-export function topUp(txc: ContractTransaction, amount: BigNumberish): Tx {
+export function topUp(txc: ContractTransaction, amount: BigNumber): Tx {
   const meta: TopUp = { kind: TxKind.TopUp, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 
-export function withdraw(txc: ContractTransaction, amount: BigNumberish): Tx {
+export function withdraw(txc: ContractTransaction, amount: BigNumber): Tx {
   const meta: Withdraw = { kind: TxKind.Withdraw, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 
 export function updateSupport(
   txc: ContractTransaction,
-  amount: BigNumberish,
+  amount: BigNumber,
   receivers: Receivers
 ): Tx {
   const meta: UpdateSupport = {
     kind: TxKind.UpdateSupport,
-    amount,
+    amount: amount.toString(),
     receivers: [...receivers.entries()],
   };
   return { ...txData(txc), ...meta };
@@ -328,14 +329,14 @@ export function isIncoming(tx: Tx): boolean {
 }
 
 // The amount the `tx` transfers. `undefined` when not applicable.
-export function transferAmount(tx: Tx): BigNumberish | undefined {
+export function transferAmount(tx: Tx): BigNumber | undefined {
   switch (tx.kind) {
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
     case TxKind.TopUp:
-      return tx.amount;
+      return BigNumber.from(tx.amount);
     case TxKind.SupportOnboarding:
-      return tx.topUp;
+      return BigNumber.from(tx.topUp);
     default:
       return undefined;
   }
