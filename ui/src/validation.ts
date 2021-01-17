@@ -44,7 +44,7 @@ interface FirstHandleCharOptions {
   valueName: string;
 }
 
-export interface FormatConstraints {
+interface FormatConstraints {
   presence?: {
     message: string;
     allowEmpty?: boolean;

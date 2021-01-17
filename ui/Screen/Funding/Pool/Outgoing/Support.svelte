@@ -45,16 +45,6 @@
     if (validatingBudget) budgetValidation.validate($budgetStore);
   }
 
-  let data: fundingPool.PoolData;
-  pool.data.subscribe(store => {
-    if (store.status === remote.Status.Success) {
-      data = store.data;
-      budget = data.amountPerBlock.toString();
-      receivers = new Map(data.receivers);
-      paused = data.balance <= data.amountPerBlock || data.amountPerBlock === 0;
-    }
-  });
-
   // Flags whether the view is in editing mode.
   // Triggered by the user.
   let editing = false;
@@ -62,6 +52,18 @@
   function enterEditMode(): void {
     editing = true;
   }
+
+  let data: fundingPool.PoolData;
+  pool.data.subscribe(store => {
+    if (store.status === remote.Status.Success) {
+      data = store.data;
+      if (!editing) {
+        budget = data.amountPerBlock.toString();
+        receivers = new Map(data.receivers);
+      }
+      paused = data.balance <= data.amountPerBlock || data.amountPerBlock === 0;
+    }
+  });
 
   $: thereAreChanges =
     budget !== data.amountPerBlock ||

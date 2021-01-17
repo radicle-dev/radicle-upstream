@@ -209,7 +209,7 @@ export function make(wallet: Wallet): Pool {
         contract.POOL_ADDRESS
       );
     } else {
-      return Promise.resolve(0);
+      return 0;
     }
   }
 
@@ -318,7 +318,7 @@ export function isOnboarded(data: PoolData): boolean {
 // Convert `Receivers` to `ReceiverWeight[]`, the latter being the
 // representation receivers have in the Radicle Contracts.
 function toReceiverWeights(receivers: Receivers): contract.PoolReceiver[] {
-  return [...receivers.entries()].map(([address, status]) => {
+  return [...receivers].map(([address, status]) => {
     return { receiver: address, weight: weightForStatus(status) };
   });
 }

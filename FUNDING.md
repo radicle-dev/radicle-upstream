@@ -60,20 +60,14 @@ In the development environment, we set up these three pieces as follows:
   - Run `npm run start` within `walletconnect-test-wallet`. It should open the
     test wallet in your browser at `localhost:3000`.
 
-  - Copy the full address provided at the top of the page.
+  - Copy the full Ethereum address provided at the top of the page.
 
 - Now, in `radicle-upstream`, run:
 
   - `yarn install`
-
   - `mkdir sandbox`
   - `touch sandbox/.local-eth-account`
-
-  - Finally, paste the copied address in that file
-
-- Install `ganache-cli`:
-
-  `npm install -g ganache-cli`
+  - Finally, paste the copied address in the previous step into this file.
 
 **Running**
 

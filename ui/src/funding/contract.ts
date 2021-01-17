@@ -11,17 +11,15 @@ import {
 export const POOL_ADDRESS: string =
   "0x37c10d847bf9e708add451bf2f80c1297d7aa691";
 
-export function pool(
-  signer: Signer,
-  address: string = POOL_ADDRESS
-): PoolContract {
-  return new PoolContract(signer, address);
+export function pool(signer: Signer): PoolContract {
+  return new PoolContract(signer, POOL_ADDRESS);
 }
 
-export const ERC20_TOKEN_ADDRESS = "0xf34a89802590f944e3de71b1f74d66ed1bafc9cd";
+// Address of the DAI ERC20 token contract
+export const DAI_TOKEN_ADDRESS = "0xf34a89802590f944e3de71b1f74d66ed1bafc9cd";
 
 export function erc20Token(signer: Signer): ERC20 {
-  return Erc20Factory.connect(ERC20_TOKEN_ADDRESS, signer);
+  return Erc20Factory.connect(DAI_TOKEN_ADDRESS, signer);
 }
 
 // PoolContract is a wrapper type around the actual contract, `Erc20Pool`,
@@ -29,7 +27,7 @@ export function erc20Token(signer: Signer): ERC20 {
 export class PoolContract {
   contract: Erc20Pool;
 
-  constructor(signer: Signer, address: string = POOL_ADDRESS) {
+  constructor(signer: Signer, address: string) {
     this.contract = PoolFactory.connect(address, signer);
   }
 

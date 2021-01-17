@@ -101,8 +101,6 @@
     "patch-package": "^6.2.2",
     "prettier": "^2.2.1",
     "prettier-plugin-svelte": "^1.4.2",
-    "@uniswap/v2-periphery": "^1.1.0-beta.0",
-    "@ensdomains/ens": "^0.4.5",
     "rollup": "^2.35.1",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-livereload": "^2.0.0",
@@ -163,7 +161,6 @@
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
-    "deploy:dev:contracts": "./scripts/deploy-dev-contracts.js",
     "reset:state": "scripts/reset-state.sh"
   },
   "dependencies": {
