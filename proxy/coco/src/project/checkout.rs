@@ -197,7 +197,7 @@ impl Ownership {
                 open_storage,
                 &repo,
                 LocalPushspec::Matching {
-                    pattern: default_branch.into(),
+                    pattern: Qualified::from(default_branch.clone()).into(),
                     force: Force::False,
                 },
             )?;
