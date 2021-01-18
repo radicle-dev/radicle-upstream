@@ -285,6 +285,7 @@ where
         super::set_upstream(&repo, &rad, self.default_branch.clone())?;
         include::set_include_path(&repo, self.include_path)?;
         repo.set_head(Qualified::from(self.default_branch).as_str())?;
+        repo.checkout_head(None)?;
 
         Ok(project_path)
     }
