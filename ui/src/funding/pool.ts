@@ -13,7 +13,7 @@ export const store = svelteStore.writable<Pool | null>(null);
 export interface Pool {
   data: remote.Store<PoolData>;
 
-  // Get the account that owns this pool. Should be the connected wallet account.
+  // Get the account that owns this pool.
   getAccount: () => Account | undefined;
 
   // Onboard the user's pool with the intial values
