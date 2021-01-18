@@ -188,7 +188,7 @@ impl Ownership {
             // Create a fetchspec `refs/heads/*:refs/remotes/rad/*`
             let fetchspec = Refspec {
                 src: GenericRef::<_, RefLike, _>::heads(Flat, None),
-                dst: GenericRef::heads(Flat, reflike!("rad")),
+                dst: refspec_pattern!("refs/remotes/rad/*"),
                 force: Force::True,
             };
             let mut rad = Remote::rad_remote(url, fetchspec);
