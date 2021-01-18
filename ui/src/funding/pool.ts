@@ -141,7 +141,6 @@ export function make(wallet: Wallet): Pool {
         transaction.add(
           transaction.supportOnboarding(tx, topUp, amountPerBlock, receivers)
         );
-        tx.wait();
       })
       .finally(loadPoolData);
   }
@@ -158,7 +157,6 @@ export function make(wallet: Wallet): Pool {
         transaction.add(
           transaction.updateSupport(tx, amountPerBlock, newReceivers)
         );
-        tx.wait();
       })
       .finally(loadPoolData);
   }
@@ -168,7 +166,6 @@ export function make(wallet: Wallet): Pool {
       .topUp(amount)
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.topUp(tx, amount));
-        tx.wait();
       })
       .finally(loadPoolData);
   }
@@ -182,7 +179,6 @@ export function make(wallet: Wallet): Pool {
           ? data.unwrap()?.balance || BigNumber.from(0)
           : amount;
         transaction.add(transaction.withdraw(tx, infoAmount));
-        tx.wait();
       })
       .finally(loadPoolData);
   }
@@ -198,7 +194,6 @@ export function make(wallet: Wallet): Pool {
       .then((tx: ContractTransaction) => {
         const infoAmount = data.unwrap()?.collectableFunds || BigNumber.from(0);
         transaction.add(transaction.collect(tx, infoAmount));
-        tx.wait();
       })
       .finally(loadPoolData);
   }
@@ -218,7 +213,6 @@ export function make(wallet: Wallet): Pool {
       .approve(contract.POOL_ADDRESS, unlimited)
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.erc20Allowance(tx));
-        tx.wait();
       })
       .finally(loadPoolData);
   }
