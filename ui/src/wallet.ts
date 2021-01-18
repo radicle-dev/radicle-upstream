@@ -13,9 +13,9 @@ import type {
 } from "@ethersproject/abstract-provider";
 
 import * as contract from "../src/funding/contract";
+import * as error from "../src/error";
 import * as modal from "../src/modal";
 import * as path from "../src/path";
-import * as notification from "../src/notification";
 
 export enum Status {
   Connected = "CONNECTED",
@@ -24,7 +24,7 @@ export enum Status {
 }
 
 export type State =
-  | { status: Status.NotConnected; error?: Error }
+  | { status: Status.NotConnected; error?: globalThis.Error }
   | { status: Status.Connecting }
   | { status: Status.Connected; connected: Connected };
 
@@ -83,9 +83,10 @@ export function build(): Wallet {
 
     try {
       await walletConnect.connect();
-    } catch (error) {
-      stateStore.set({ status: Status.NotConnected, error });
-      notification.error({
+    } catch (e) {
+      stateStore.set({ status: Status.NotConnected, error: e });
+      error.show({
+        code: error.Code.WalletConnectionFailure,
         message: `Failed to connect wallet: ${error
           .toString()
           .replace("Error: ", "")}`,

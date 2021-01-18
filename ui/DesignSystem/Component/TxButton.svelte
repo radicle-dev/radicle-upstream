@@ -3,6 +3,8 @@
 
   import type { ButtonVariant } from "../../src/style";
   import * as notification from "../../src/notification";
+  import * as error from "../../src/error";
+  import * as transaction from "../../src/transaction";
 
   export let variant: ButtonVariant = "primary";
   export let dataCy = "";
@@ -22,11 +24,8 @@
         showIcon: true,
       });
       await onClick();
-    } catch (error) {
-      notification.error({
-        message: `${errorLabel}: ${error.message}`,
-        showIcon: true,
-      });
+    } catch (e) {
+      error.show(transaction.convertError(e, errorLabel));
     } finally {
       running = false;
     }

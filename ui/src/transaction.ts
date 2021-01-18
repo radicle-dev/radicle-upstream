@@ -5,6 +5,7 @@ import { BigNumber } from "ethers";
 import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
+import * as error from "./error";
 import { provider } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
@@ -362,3 +363,27 @@ const monthNames = [
   "November",
   "December",
 ];
+
+// Convert a transaction-related `globalThis.Error` to `error.Error`.
+export function convertError(e: globalThis.Error, label: string): error.Error {
+  let code: error.Code;
+  let message: string;
+
+  if (e.message.includes("gas")) {
+    code = error.Code.InsufficientGas;
+    message = "you seem to have insufficient gas to cover this transaction.";
+  } else if (e.message.includes("Failed or Rejected Request")) {
+    code = error.Code.FailedOrRejectedTransaction;
+    message =
+      "you have rejected this transaction or it has failed for some unkown reason.";
+  } else {
+    code = error.Code.UnkownTransactionFailure;
+    message = "an unkown transaction error occurred";
+  }
+
+  return {
+    code,
+    message: `${label}: ${message}`,
+    stack: e.message,
+  };
+}
