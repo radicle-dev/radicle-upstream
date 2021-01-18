@@ -14,7 +14,7 @@
 <style>
   .container {
     position: relative;
-    left: var(--sidebar-width);
+    margin-left: var(--sidebar-width);
     min-width: calc(100vw - var(--sidebar-width));
     height: 100%;
   }
