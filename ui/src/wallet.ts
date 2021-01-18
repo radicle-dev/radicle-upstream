@@ -71,7 +71,7 @@ export function build(): Wallet {
   });
 
   const signer = new WalletConnectSigner(walletConnect, provider);
-  const erc20TokenContract = contract.erc20Token(signer);
+  const daiTokenContract = contract.daiToken(signer);
 
   window.ethereumDebug = new EthereumDebug(provider);
 
@@ -119,7 +119,7 @@ export function build(): Wallet {
 
     try {
       const accountAddress = await signer.getAddress();
-      const balance = await erc20TokenContract.balanceOf(accountAddress);
+      const balance = await daiTokenContract.balanceOf(accountAddress);
       const connected = {
         account: {
           address: accountAddress,

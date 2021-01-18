@@ -82,7 +82,7 @@ export enum ReceiverStatus {
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
   const poolContract = contract.pool(wallet.signer);
-  const erc20TokenContract = contract.erc20Token(wallet.signer);
+  const daiTokenContract = contract.daiToken(wallet.signer);
   loadPoolData();
 
   // Periodically refresh the pool data. Particularly useful to
@@ -206,10 +206,7 @@ export function make(wallet: Wallet): Pool {
   async function getErc20Allowance(): Promise<BigNumber> {
     const account = getAccount();
     if (account) {
-      return erc20TokenContract.allowance(
-        account.address,
-        contract.POOL_ADDRESS
-      );
+      return daiTokenContract.allowance(account.address, contract.POOL_ADDRESS);
     } else {
       return BigNumber.from(0);
     }
@@ -217,7 +214,7 @@ export function make(wallet: Wallet): Pool {
 
   async function approveErc20(): Promise<void> {
     const unlimited = BigNumber.from(1).shl(256).sub(1);
-    return erc20TokenContract
+    return daiTokenContract
       .approve(contract.POOL_ADDRESS, unlimited)
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.erc20Allowance(tx));

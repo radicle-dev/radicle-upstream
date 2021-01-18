@@ -18,7 +18,7 @@ export function pool(signer: Signer): PoolContract {
 // Address of the DAI ERC20 token contract
 export const DAI_TOKEN_ADDRESS = "0xf34a89802590f944e3de71b1f74d66ed1bafc9cd";
 
-export function erc20Token(signer: Signer): ERC20 {
+export function daiToken(signer: Signer): ERC20 {
   return Erc20Factory.connect(DAI_TOKEN_ADDRESS, signer);
 }
 
