@@ -1,6 +1,7 @@
 <script lang="typescript">
   import { getContext } from "svelte";
 
+  import { isExperimental } from "../src/ipc";
   import {
     settings,
     seedValidation,
@@ -234,22 +235,24 @@
       </div>
     </section>
 
-    <section>
-      <header>
-        <h3>Features</h3>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <p class="typo-text-bold">Funding</p>
+    {#if isExperimental()}
+      <section>
+        <header>
+          <h3>Features</h3>
+        </header>
+        <div class="section-item">
+          <div class="info">
+            <p class="typo-text-bold">Funding</p>
+          </div>
+          <div class="action">
+            <SegmentedControl
+              active={$settings.featureFlags.funding}
+              options={featureFlagOptions}
+              on:select={updateFundingFeatureFlag} />
+          </div>
         </div>
-        <div class="action">
-          <SegmentedControl
-            active={$settings.featureFlags.funding}
-            options={featureFlagOptions}
-            on:select={updateFundingFeatureFlag} />
-        </div>
-      </div>
-    </section>
+      </section>
+    {/if}
 
     <section>
       <header>

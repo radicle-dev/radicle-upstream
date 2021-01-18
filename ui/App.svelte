@@ -2,6 +2,7 @@
   import Router, { push, location } from "svelte-spa-router";
 
   import * as hotkeys from "./src/hotkeys.ts";
+  import { isExperimental } from "./src/ipc";
   import "./src/localPeer.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
@@ -121,7 +122,7 @@
 <NotificationFaucet />
 <Theme />
 
-{#if sessionIsUnsealed && $location !== path.designSystemGuide()}
+{#if isExperimental() && sessionIsUnsealed && $location !== path.designSystemGuide()}
   <TransactionCenter />
 {/if}
 
