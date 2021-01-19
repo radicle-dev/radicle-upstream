@@ -34,7 +34,7 @@ if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
 }
 
 if (process.env.RAD_HOME) {
-  const electronPath = `${process.env.RAD_HOME  }/electron`;
+  const electronPath = `${process.env.RAD_HOME}/electron`;
   if (!fs.existsSync(electronPath)) fs.mkdirSync(electronPath);
   app.setPath("userData", electronPath);
   app.setPath("appData", electronPath);
