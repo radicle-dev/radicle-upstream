@@ -6,6 +6,7 @@ import {
   clipboard,
   shell,
 } from "electron";
+import fs from "fs";
 import path from "path";
 import { ProxyProcessManager } from "./proxy-process-manager";
 import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
@@ -30,6 +31,13 @@ if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
   proxyArgs = process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(
     Boolean
   );
+}
+
+if (process.env.RAD_HOME) {
+  const electronPath = `${process.env.RAD_HOME  }/electron`;
+  if (!fs.existsSync(electronPath)) fs.mkdirSync(electronPath);
+  app.setPath("userData", electronPath);
+  app.setPath("appData", electronPath);
 }
 
 // The default value of app.allowRendererProcessReuse is deprecated, it is
