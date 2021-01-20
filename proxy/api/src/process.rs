@@ -218,35 +218,18 @@ async fn rig(
     if let Some(key) = environment.key {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
-        let (peer, state, seeds_sender) = if environment.test_mode {
-            let config = coco::config::configure(
-                environment.coco_paths.clone(),
-                key,
-                args.peer_listen,
-                coco::config::static_seed_discovery(vec![]),
-            );
-            let (peer, state) =
-                coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config())
-                    .await?;
+        let seeds = session_seeds(&store).await?;
+        let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
-            (peer, state, None)
-        } else {
-            let seeds = session_seeds(&store).await?;
-            let (seeds_sender, seeds_receiver) = watch::channel(seeds);
+        let config = coco::config::configure(
+            environment.coco_paths.clone(),
+            key,
+            args.peer_listen,
+            coco::config::StreamDiscovery::new(seeds_receiver),
+        );
 
-            let config = coco::config::configure(
-                environment.coco_paths.clone(),
-                key,
-                args.peer_listen,
-                coco::config::StreamDiscovery::new(seeds_receiver),
-            );
-
-            let (peer, state) =
-                coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config())
-                    .await?;
-
-            (peer, state, Some(seeds_sender))
-        };
+        let (peer, state) =
+            coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config()).await?;
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
@@ -263,7 +246,7 @@ async fn rig(
         Ok(Rigging {
             ctx,
             peer: Some(peer),
-            seeds_sender,
+            seeds_sender: Some(seeds_sender),
         })
     } else {
         let ctx = context::Context::Sealed(context::Sealed {
