@@ -78,7 +78,7 @@ export function build(): Wallet {
   // Connect to a wallet using walletconnect
   async function connect() {
     if (svelteStore.get(stateStore).status !== Status.NotConnected) {
-      throw new Error("A wallet already connected");
+      throw new Error("A wallet is already connected");
     }
 
     try {
