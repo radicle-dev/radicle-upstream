@@ -1,6 +1,7 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
+  import { backendAddressStore } from "./src/api.ts";
   import * as hotkeys from "./src/hotkeys.ts";
   import { isExperimental } from "./src/ipc";
   import "./src/localPeer.ts";
@@ -42,6 +43,11 @@
   import ModalWithdraw from "./Modal/Funding/Pool/Withdraw.svelte";
   import ModalCollect from "./Modal/Funding/Pool/Collect.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
+
+  // We receive the backend address from index.ts before the app loads and
+  // svelte-spa-router can mess with `window.location`.
+  export let backendAddress = "localhost:17246";
+  backendAddressStore.set(backendAddress);
 
   const routes = {
     "/": Blank,

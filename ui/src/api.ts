@@ -1,4 +1,7 @@
 import qs from "qs";
+import { get as getStore, writable } from "svelte/store";
+
+export const backendAddressStore = writable("");
 
 interface Options {
   query?: Record<string, unknown>;
@@ -36,7 +39,7 @@ const request = (endpoint: string, init?: Init): Request => {
     endpoint = `${endpoint}?${qs.stringify(init.query)}`;
   }
 
-  return new Request(`http://localhost:17246/v1/${endpoint}`, {
+  return new Request(`http://${getStore(backendAddressStore)}/v1/${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
     },
