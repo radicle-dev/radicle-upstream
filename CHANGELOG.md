@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.7](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.6...v0.1.7) (2021-01-20)
+
+
+### Features
+
+* **ui:** Funding Pool v0 ([bcfb9e0](https://github.com/radicle-dev/radicle-upstream/commit/bcfb9e012d921ddb3c53f82dab13ab258b23deec)), closes [#974](https://github.com/radicle-dev/radicle-upstream/issues/974) [#1493](https://github.com/radicle-dev/radicle-upstream/issues/1493) [#1314](https://github.com/radicle-dev/radicle-upstream/issues/1314)
+* **ui:** label default branch in RevisionSelector ([#1503](https://github.com/radicle-dev/radicle-upstream/issues/1503)) ([2224157](https://github.com/radicle-dev/radicle-upstream/commit/2224157f952ef2a5dcaf246602987eb345a6875f))
+
+
+### Bug Fixes
+
+* **ui:** fix window before ready ([8a6f07f](https://github.com/radicle-dev/radicle-upstream/commit/8a6f07fdddb203cedd2f845dcc4ca35464559488))
+* **ui:** preserve NewProject Modal layout ([f41a759](https://github.com/radicle-dev/radicle-upstream/commit/f41a7599dfe6603627120c32be3fc5f19d7228e9))
+* **ui:** use alternative support channel link [#1511](https://github.com/radicle-dev/radicle-upstream/issues/1511) ([8bbf461](https://github.com/radicle-dev/radicle-upstream/commit/8bbf4614a9a547961f99e994237d847cad07a2b3))
+
 ### [0.1.6](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.5...v0.1.6) (2021-01-05)
 
 
