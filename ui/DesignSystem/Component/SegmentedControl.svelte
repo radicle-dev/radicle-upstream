@@ -2,17 +2,21 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
-  interface Option {
-    value: string;
+  interface Option<T> {
     title: string;
+    value: T;
   }
 
-  // Currently active option.
-  export let active: string;
-  // The available options.
-  export let options: Option[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type AnyOption = Option<any>;
 
-  const onClick = (option: Option) => {
+  // Currently active option value.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export let active: any;
+  // The available options.
+  export let options: AnyOption[];
+
+  const onClick = (option: AnyOption) => {
     dispatch("select", option.value);
     currentlyActive = option.value;
   };

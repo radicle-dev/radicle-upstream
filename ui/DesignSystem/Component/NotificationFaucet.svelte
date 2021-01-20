@@ -14,7 +14,7 @@
     flex-direction: column;
     align-items: center;
     position: fixed;
-    bottom: 1.5rem;
+    bottom: 2rem;
     z-index: 1001;
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));

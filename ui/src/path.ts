@@ -10,7 +10,8 @@ export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
 export const profileFollowing = (): string => "/profile/following";
-export const profileWallet = (): string => "/profile/wallet";
+export const profileFunding = (): string => "/profile/funding";
+
 export const onboarding = (): string => "/onboarding";
 export const lock = (): string => "/lock";
 
@@ -37,6 +38,13 @@ export const managePeers = (): string => "/manage-peers";
 export const newProject = (): string => "/new-project";
 export const search = (): string => "/search";
 export const shortcuts = (): string => "/shortcuts";
+export const walletQRCode = (): string => "/wallet/qrcode";
+export const linkAddress = (): string => "/funding/link";
+export const poolOnboarding = (): string => "/funding/pool/onboarding";
+export const poolTopUp = (): string => "/funding/pool/top-up";
+export const poolWithdraw = (): string => "/funding/pool/withdraw";
+export const collectFunds = (): string => "/funding/pool/collect";
+export const transaction = (): string => "/transaction";
 
 export const active = (
   path: string,

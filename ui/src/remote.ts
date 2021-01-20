@@ -15,6 +15,11 @@ export type Data<T> =
   | { status: Status.Success; data: T }
   | { status: Status.Error; error: error.Error };
 
+// Shorthand for casting these states
+export type ErrorState = { status: Status.Error; error: Error };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SuccessState = { status: Status.Success; data: any };
+
 export const is = <T>(data: Data<T>, status: Status): boolean => {
   return data.status === status;
 };
@@ -30,6 +35,10 @@ export interface Store<T> extends Readable<Data<T>> {
   success: (response: T) => void;
   error: (error: error.Error) => void;
   readable: Readable<Data<T>>;
+  // Try and unwrap the underlying store's data value.
+  // Returns the data of type T if the store's data
+  // is in `SuccessState`, undefined otherwise.
+  unwrap: () => T | undefined;
   start: (start: StartStopNotifier<Data<T>>) => void;
   reset: () => void;
 }
@@ -88,10 +97,18 @@ export const createStore = <T>(): Store<T> => {
 
   const resetInternalStore = () => update(() => ({ status: Status.NotAsked }));
 
+  const is = (status: Status): boolean => {
+    return get(internalStore).status === status;
+  };
+
+  const unwrap = (): T | undefined => {
+    return is(Status.Success)
+      ? (get(internalStore) as SuccessState).data
+      : undefined;
+  };
+
   return {
-    is: (status: Status): boolean => {
-      return get(internalStore).status === status;
-    },
+    is,
     subscribe,
     success: (response: T): void =>
       updateInternalStore(Status.Success, response),
@@ -102,6 +119,7 @@ export const createStore = <T>(): Store<T> => {
       }
     },
     readable: derived(internalStore, $store => $store),
+    unwrap,
     start: (start: StartStopNotifier<Data<T>>): void => {
       starter = start;
     },

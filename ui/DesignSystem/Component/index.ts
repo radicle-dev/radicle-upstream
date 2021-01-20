@@ -3,6 +3,7 @@ import Badge from "./Badge.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
+import Dai from "./Dai.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
@@ -10,6 +11,7 @@ import FollowToggle from "./FollowToggle.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
+import Identity from "./Identity.svelte";
 import Illustration from "./Illustration.svelte";
 import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
@@ -17,6 +19,7 @@ import List from "./List.svelte";
 import Modal from "./Modal.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
+import NegativeDai from "./NegativeDai.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Fullscreen from "./Fullscreen.svelte";
@@ -38,6 +41,7 @@ import StyledCopyable from "./StyledCopyable.svelte";
 import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import Timeline from "./Timeline.svelte";
+import TxButton from "./TxButton.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
 import QR from "./QR.svelte";
@@ -48,6 +52,7 @@ export {
   Comment,
   Copyable,
   ConnectionStatusIndicator,
+  Dai,
   Dropdown,
   EmptyState,
   Error,
@@ -55,6 +60,7 @@ export {
   Header,
   HorizontalMenu,
   Hoverable,
+  Identity,
   Illustration,
   KeyHint,
   Label,
@@ -62,6 +68,7 @@ export {
   Modal,
   ModalOverlay,
   NavigationButtons,
+  NegativeDai,
   Notification,
   NotificationFaucet,
   Fullscreen,
@@ -72,6 +79,7 @@ export {
   RadicleId,
   RadicleLogo,
   RadioOption,
+  TxButton,
   Stats,
   Remote,
   RemoteHelperHint,

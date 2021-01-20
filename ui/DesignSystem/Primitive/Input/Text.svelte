@@ -15,6 +15,7 @@
   export let inputElement: HTMLInputElement | undefined = undefined;
 
   export let validation: ValidationState | undefined = undefined;
+  export let validationStyle = "";
   export let hint = "";
   export let showLeftItem: boolean = false;
   export let showSuccessCheck: boolean = false;
@@ -98,6 +99,10 @@
   .validation-row {
     display: flex;
     align-items: center;
+
+    left: 0;
+    width: max-content;
+
     margin: 0.75rem 0 0 0.75rem;
   }
 
@@ -166,7 +171,7 @@
         dataCy="validation-error-icon"
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
-      <div class="validation-row">
+      <div class="validation-row" style={validationStyle}>
         <p>{validation.message}</p>
       </div>
     {:else if showHint}

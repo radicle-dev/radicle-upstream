@@ -1,6 +1,9 @@
 import commonjs from "@rollup/plugin-commonjs";
 import livereload from "rollup-plugin-livereload";
 import resolve from "@rollup/plugin-node-resolve";
+import inject from "@rollup/plugin-inject";
+import json from "@rollup/plugin-json";
+import * as browserifyNodeBuiltins from "browserify/lib/builtins";
 import svelte from "rollup-plugin-svelte";
 import { terser } from "rollup-plugin-terser";
 import typescript from "@rollup/plugin-typescript";
@@ -18,6 +21,7 @@ export default {
     file: "public/bundle.js",
   },
   plugins: [
+    json(),
     svelte({
       compilerOptions: {
         // enable run-time checks when not in production
@@ -30,11 +34,33 @@ export default {
 
     resolve({
       browser: true,
+      preferBuiltins: true,
       dedupe: importee =>
         importee === "svelte" || importee.startsWith("svelte/"),
     }),
 
     commonjs(),
+
+    inject({
+      modules: {
+        process: "_process",
+        Buffer: ["buffer", "Buffer"],
+      },
+    }),
+
+    {
+      name: "node-builtins",
+      resolveId(importee) {
+        if (importee === "util") {
+          // We need a more recent version than browserify provides
+          return { id: require.resolve("util/util.js") };
+        }
+        const builtinPath = browserifyNodeBuiltins[importee];
+        if (builtinPath) {
+          return { id: builtinPath };
+        }
+      },
+    },
 
     typescript({
       // See https://github.com/rollup/plugins/issues/272
@@ -51,5 +77,25 @@ export default {
   ],
   watch: {
     clearScreen: false,
+  },
+
+  // Skip certain warnings originated by third-party libraries
+  onwarn: function (warning) {
+    if (
+      warning.code === "THIS_IS_UNDEFINED" &&
+      warning.id.includes("node_modules/@ethersproject/")
+    ) {
+      return;
+    }
+
+    if (
+      warning.code === "CIRCULAR_DEPENDENCY" &&
+      warning.importer.includes("node_modules/readable-stream/")
+    ) {
+      return;
+    }
+
+    // // Pass on any other warnings
+    console.warn(warning.message);
   },
 };
