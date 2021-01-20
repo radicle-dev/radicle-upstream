@@ -1,15 +1,17 @@
 <script lang="typescript">
   import { getContext } from "svelte";
 
+  import { isExperimental } from "../src/ipc";
   import {
     settings,
     seedValidation,
     addSeed,
     removeSeed,
     updateAppearance,
+    updateFeatureFlags,
   } from "../src/session";
   import type { UnsealedSession } from "../src/session";
-  import { themeOptions } from "../src/settings";
+  import { themeOptions, featureFlagOptions } from "../src/settings";
   import * as path from "../src/path";
   import * as modal from "../src/modal";
   import { getVersion } from "../src/ipc";
@@ -24,6 +26,9 @@
 
   const updateTheme = (event: CustomEvent) =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
+
+  const updateFundingFeatureFlag = (event: CustomEvent) =>
+    updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
 
   let seedInputValue = "";
 
@@ -229,6 +234,25 @@
         </div>
       </div>
     </section>
+
+    {#if isExperimental()}
+      <section>
+        <header>
+          <h3>Features</h3>
+        </header>
+        <div class="section-item">
+          <div class="info">
+            <p class="typo-text-bold">Funding</p>
+          </div>
+          <div class="action">
+            <SegmentedControl
+              active={$settings.featureFlags.funding}
+              options={featureFlagOptions}
+              on:select={updateFundingFeatureFlag} />
+          </div>
+        </div>
+      </section>
+    {/if}
 
     <section>
       <header>

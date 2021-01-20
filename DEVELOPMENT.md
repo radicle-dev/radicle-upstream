@@ -154,6 +154,9 @@ Here's a list of all scripts that are intended for developer use:
                                 #   - monorepo
                                 #   - saved preferences
 
+    yarn ethereum:start         # Setup a local ethereum node to which we deploy
+                                # the Radicle Contracts and set the intial balance
+                                # of a stated local ethereum development account.
 
 ### Design System
 

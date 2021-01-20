@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { Icon } from "../../DesignSystem/Primitive";
 
   export let message = "Something went wrong";
