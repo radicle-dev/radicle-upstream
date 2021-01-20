@@ -64,8 +64,8 @@ async function main() {
     console.log();
     console.log(`  👉 yarn release --finalize ${toVersion} ${pullRequestId}`);
   } else {
-    const toVersion = process.argv[4];
-    const pullRequestId = process.argv[5];
+    const toVersion = process.argv[3];
+    const pullRequestId = process.argv[4];
 
     if (toVersion === undefined || pullRequestId === undefined) {
       console.log("This command should not be run stand-alone.");
