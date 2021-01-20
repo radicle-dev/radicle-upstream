@@ -87,7 +87,7 @@ export function build(): Wallet {
       stateStore.set({ status: Status.NotConnected, error: e });
       error.show({
         code: error.Code.WalletConnectionFailure,
-        message: `Failed to connect wallet: ${error
+        message: `Failed to connect wallet: ${e
           .toString()
           .replace("Error: ", "")}`,
       });
