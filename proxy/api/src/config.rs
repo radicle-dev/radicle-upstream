@@ -32,7 +32,7 @@ pub fn store_dir() -> path::PathBuf {
     let store_root = match std::env::var_os("RAD_HOME") {
         None => {
             let dirs = dirs();
-            return dirs.data_dir().to_path_buf();
+            dirs.data_dir().to_path_buf()
         },
         Some(root) => path::Path::new(&root).to_path_buf(),
     };
