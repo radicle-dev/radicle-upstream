@@ -38,6 +38,6 @@
 
 <div class="wrapper">
   <Emoji emoji="💸" size="huge" />
-  <p class="typo-text">Stream digital money your favorite people.</p>
+  <p class="typo-text">Stream digital money to your favorite people.</p>
   <Button on:click={getStarted}>Get started</Button>
 </div>
