@@ -101,7 +101,7 @@
     align-items: center;
 
     left: 0;
-    width: max-content;
+    width: fit-content;
 
     margin: 0.75rem 0 0 0.75rem;
   }
