@@ -162,7 +162,7 @@
     "marked": "^1.2.7",
     "mnemonist": "^0.38.1",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "git+https://github.com/radicle-dev/radicle-contracts.git#e57fdeb4981208d0d5f621da3d818899131ee141",
+    "radicle-contracts": "git+https://github.com/radicle-dev/radicle-contracts.git#5dd3138d8a731cff59835961deb7295b89520608",
     "svelte-persistent-store": "^0.1.5",
     "rollup-plugin-css-only": "^3.1.0",
     "timeago.js": "^4.0.2",

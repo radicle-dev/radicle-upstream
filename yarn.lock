@@ -7636,9 +7636,9 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
-"radicle-contracts@git+https://github.com/radicle-dev/radicle-contracts.git#e57fdeb4981208d0d5f621da3d818899131ee141":
+"radicle-contracts@git+https://github.com/radicle-dev/radicle-contracts.git#5dd3138d8a731cff59835961deb7295b89520608":
   version "0.1.0"
-  resolved "git+https://github.com/radicle-dev/radicle-contracts.git#e57fdeb4981208d0d5f621da3d818899131ee141"
+  resolved "git+https://github.com/radicle-dev/radicle-contracts.git#5dd3138d8a731cff59835961deb7295b89520608"
   dependencies:
     "@ensdomains/ens" "^0.4.5"
     "@uniswap/v2-periphery" "^1.1.0-beta.0"
