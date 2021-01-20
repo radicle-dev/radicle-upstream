@@ -78,7 +78,7 @@ export function build(): Wallet {
   // Connect to a wallet using walletconnect
   async function connect() {
     if (svelteStore.get(stateStore).status !== Status.NotConnected) {
-      throw new Error("Already connected");
+      throw new Error("A wallet already connected");
     }
 
     try {
@@ -186,7 +186,9 @@ class WalletConnectSigner extends ethers.Signer {
   async getAddress(): Promise<string> {
     const accountAddress = this.walletConnect.accounts[0];
     if (!accountAddress) {
-      throw new Error("no account address");
+      throw new Error(
+        "The connected wallet has no accounts or there is a connection problem"
+      );
     }
     return accountAddress;
   }
