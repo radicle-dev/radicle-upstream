@@ -1,4 +1,7 @@
 //! Provides [`run`] to run the proxy process.
+// Otherwise clippy complains about FromArgs
+#![allow(clippy::default_trait_access)]
+use argh::FromArgs;
 use futures::prelude::*;
 use std::{future::Future, net, sync::Arc, time::Duration};
 use thiserror::Error;
@@ -12,13 +15,19 @@ use coco::{convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, RunCon
 use crate::{config, context, http, notification, service, session};
 
 /// Flags accepted by the proxy binary.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, FromArgs)]
 pub struct Args {
-    /// Put proxy in test mode to use certain fixtures.
+    /// put proxy in test mode to use certain fixtures
+    #[argh(switch)]
     pub test: bool,
-    /// Run HTTP API on the specified address:port.
+    /// run HTTP API on a specified address:port
+    #[argh(
+        option,
+        default = "std::net::SocketAddr::from(([127, 0, 0, 1], 17246))"
+    )]
     pub http_listen: net::SocketAddr,
-    /// Run the peer on the specified address:port.
+    /// run the peer on a specified address:port
+    #[argh(option, default = "std::net::SocketAddr::from(([0, 0, 0, 0], 0))")]
     pub peer_listen: net::SocketAddr,
 }
 
