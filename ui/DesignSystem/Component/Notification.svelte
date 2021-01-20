@@ -19,7 +19,7 @@
     height: 32px;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px;
+    margin-top: 8px;
     user-select: none;
     white-space: nowrap;
   }
@@ -43,7 +43,9 @@
   }
 
   .message {
-    padding: 0 8px 0 8px;
+    padding: 0px 10px;
+    max-height: 6rem;
+    overflow: auto;
   }
 
   .action {

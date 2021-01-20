@@ -12,9 +12,6 @@
 
   export let disableErrorLogging: boolean = false;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type SuccessState = { status: remote.Status.Success; data: any };
-
   // If no error slot was provided, svelte will instantiate the fallback div
   let noErrorSlotProvided: HTMLDivElement;
 
@@ -36,7 +33,7 @@
 
   $: data =
     $store.status === remote.Status.Success
-      ? ($store as SuccessState).data
+      ? ($store as remote.SuccessState).data
       : undefined;
 </script>
 

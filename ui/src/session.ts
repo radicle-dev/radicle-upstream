@@ -5,7 +5,13 @@ import * as error from "./error";
 import * as event from "./event";
 import type * as identity from "./identity";
 import * as remote from "./remote";
-import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
+import {
+  Appearance,
+  CoCo,
+  Settings,
+  defaultSetttings,
+  FeatureFlags,
+} from "./settings";
 
 import { createValidationStore, ValidationStatus } from "./validation";
 
@@ -163,6 +169,15 @@ export const updateAppearance = (appearance: Appearance): void =>
   )({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     settings: { ...get(settings), appearance },
+  });
+
+export const updateFeatureFlags = (featureFlags: FeatureFlags): void =>
+  event.create<Kind, Msg>(
+    Kind.UpdateSettings,
+    update
+  )({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    settings: { ...get(settings), featureFlags },
   });
 
 export const dismissRemoteHelperHint = (): void => {

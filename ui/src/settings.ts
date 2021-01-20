@@ -1,40 +1,9 @@
 // TYPES
-export enum Theme {
-  Dark = "dark",
-  Light = "light",
-}
-
-export interface Appearance {
-  theme: Theme;
-  hints: {
-    showRemoteHelper: boolean;
-  };
-}
-
-export interface CoCo {
-  seeds: string[];
-}
-
 export interface Settings {
   appearance: Appearance;
   coco: CoCo;
+  featureFlags: FeatureFlags;
 }
-
-interface Option {
-  value: string;
-  title: string;
-}
-
-export const themeOptions: Option[] = [
-  {
-    title: "Light",
-    value: Theme.Light,
-  },
-  {
-    title: "Dark",
-    value: Theme.Dark,
-  },
-];
 
 export const defaultSetttings = (): Settings => ({
   appearance: {
@@ -46,7 +15,57 @@ export const defaultSetttings = (): Settings => ({
   coco: {
     seeds: [],
   },
+  featureFlags: {
+    funding: false,
+  },
 });
+
+export interface Appearance {
+  theme: Theme;
+  hints: {
+    showRemoteHelper: boolean;
+  };
+}
+
+export enum Theme {
+  Dark = "dark",
+  Light = "light",
+}
+
+export interface CoCo {
+  seeds: string[];
+}
+
+interface Option<T> {
+  value: T;
+  title: string;
+}
+
+export const themeOptions: Option<string>[] = [
+  {
+    title: "Light",
+    value: Theme.Light,
+  },
+  {
+    title: "Dark",
+    value: Theme.Dark,
+  },
+];
+
+export interface FeatureFlags {
+  funding: boolean;
+}
+
+export const featureFlagOptions: Option<boolean>[] = [
+  {
+    title: "Enabled",
+    value: true,
+  },
+  {
+    title: "Disabled",
+    value: false,
+  },
+];
 
 // gives back the OS you're using in hotkeys.svelte & shortcuts.svelte
 export const isMac: boolean = navigator.platform.includes("Mac");

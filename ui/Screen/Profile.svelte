@@ -2,8 +2,10 @@
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
+  import { isExperimental } from "../src/ipc";
   import * as path from "../src/path";
   import type { UnsealedSession } from "../src/session";
+  import { settings } from "../src/session";
 
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -14,11 +16,13 @@
 
   import Following from "./Profile/Following.svelte";
   import Projects from "./Profile/Projects.svelte";
+  import Funding from "./Profile/Funding.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/following": Following,
     "/profile/projects": Projects,
+    "/profile/funding": Funding,
     "*": NotFound,
   };
 
@@ -44,6 +48,15 @@
       looseActiveStateMatching: false,
     },
   ];
+
+  if (isExperimental() && $settings.featureFlags.funding) {
+    topbarMenuItems.push({
+      icon: Icon.Wallet,
+      title: "Funding",
+      href: path.profileFunding(),
+      looseActiveStateMatching: false,
+    });
+  }
 
   const session: UnsealedSession = getContext("session");
 </script>
