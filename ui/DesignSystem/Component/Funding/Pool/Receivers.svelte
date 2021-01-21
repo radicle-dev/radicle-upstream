@@ -124,7 +124,7 @@
         on:click={() => addNew(newValue)}
         variant="outline"
         style="margin-left: 8px; border-color: var(--color-foreground-level-3)">
-        <Icon.Plus />
+        <Icon.Plus style="display: flex" />
       </Button>
     </div>
   {/if}
