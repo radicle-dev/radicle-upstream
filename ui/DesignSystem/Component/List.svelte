@@ -23,7 +23,7 @@
   ul {
     width: 100%;
     border: 1px solid var(--color-foreground-level-2);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     overflow: hidden;
   }
 

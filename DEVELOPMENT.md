@@ -78,8 +78,9 @@ We do that by using `native > ipc.ts > isExperimental` as a feature flag to
 enable or disable said features accordingly to the mode in which we are running
 the app.
 
-See the [scripts](#scripts) section below to learn which commands to use to
-toggle this flag accordingly to your current workflow.
+To start the app with experimental features enabled run:
+
+    RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start
 
 The feature flag is only available in development mode. It is always disabled
 in production.
@@ -118,31 +119,44 @@ will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
 ### Scripts
 
 To get a list of all available script commands, run: `yarn run`.
-Here is a list of the most commonly used ones:
 
-```sh
-yarn start                  # Start Upstream in development mode
-yarn start:experimental     # Start Upstream in experimental mode, showing
-                            # unfinished features
+**Note:** Scripts marked with `_private` are not meant to be executed from the
+the CLI, they're only to be used by other scripts.
 
-yarn test                   # Run all ui tests
-yarn test:integration       # Run only integration tests
-yarn test:unit              # Run only unit tests
-yarn test:integration:debug # Show the Cypress GUI, handy for visual debugging
-yarn test:unit:watch        # Run Jest tests in watch mode
+Here's a list of all scripts that are intended for developer use:
 
-yarn dist                   # Bundles Upstream into an installable package
+    yarn start                  # Start Upstream with hot-UI-code-reload
+    yarn start:dev              # Start Upstream with hot-UI-code-reload and
+                                # run proxy compiled with debug information
+    yarn start:test             # Start Upstream with hot-ui-code-reload and
+                                # run proxy in test mode with test fixtures
 
-yarn release                # Start a two-step process to cut a new release,
-                            # for more details have a look at ../DEVELOPMENT.md
+    yarn test                   # Run all UI tests
+    yarn test:integration       # Run only Cypress integration tests
+    yarn test:integration:debug # Show the Cypress GUI, useful for
+                                # visual debugging
+    yarn test:unit              # Run only Jest unit tests
+    yarn test:unit:watch        # Run Jest tests in watch mode
 
-yarn prettier:check         # Check UI code formatting
-yarn prettier:write         # Auto-format UI code
-yarn lint                   # Check UI code for linting errors
-yarn reset:state            # Delete all local state: identity keys, monorepo
-                            # and saved preferences
-```
+    yarn dist                   # Build an installable Upstream package for the
+                                # current platform
 
+    yarn release                # Start a two-step process to cut a new
+                                # release, see DEVELOPMENT.md for more details
+
+    yarn typescript:check       # Type-check all UI *.ts and *.svelte files
+    yarn prettier:check         # Check UI code formatting
+    yarn prettier:write         # Auto-format UI code
+    yarn lint                   # Check UI code for linting errors
+
+    yarn reset:state            # Delete all local state:
+                                #   - identity keys
+                                #   - monorepo
+                                #   - saved preferences
+
+    yarn ethereum:start         # Setup a local ethereum node to which we deploy
+                                # the Radicle Contracts and set the intial balance
+                                # of a stated local ethereum development account.
 
 ### Design System
 
@@ -474,10 +488,10 @@ pull request, but don't merge it via the GitHub UI:
 
 Finally, complete the release by running:
 
-  👉 yarn release:finalize v0.0.11 417
+  👉 yarn release --finalize v0.0.11 417
 
 
-$ yarn release:finalize v0.0.11 417
+$ yarn release --finalize v0.0.11 417
 
 Finalizing release v0.0.11:
 
@@ -527,6 +541,7 @@ git checkout vX.X.X
 CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
 APPLE_ID="XXXXXXX@monadic.xyz" \
 APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
+NOTARIZE=true \
 yarn dist
 ```
 

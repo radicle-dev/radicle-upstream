@@ -26,6 +26,7 @@ import CopySmall from "./CopySmall.svelte";
 import CrossCircle from "./CrossCircle.svelte";
 import Cross from "./Cross.svelte";
 import CrossSmall from "./CrossSmall.svelte";
+import CurrencyDAI from "./CurrencyDAI.svelte";
 import CurrencyUSD from "./CurrencyUSD.svelte";
 import Ellipsis from "./Ellipsis.svelte";
 import EllipsisSmall from "./EllipsisSmall.svelte";
@@ -94,6 +95,7 @@ export default {
   CrossCircle,
   Cross,
   CrossSmall,
+  CurrencyDAI,
   CurrencyUSD,
   Ellipsis,
   EllipsisSmall,

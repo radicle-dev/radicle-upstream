@@ -2,6 +2,7 @@
   import Router, { push, location } from "svelte-spa-router";
 
   import * as hotkeys from "./src/hotkeys.ts";
+  import { isExperimental } from "./src/ipc";
   import "./src/localPeer.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
@@ -18,6 +19,8 @@
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
 
+  import TransactionCenter from "./App/TransactionCenter.svelte";
+
   import Blank from "./Screen/Blank.svelte";
   import Bsod from "./Screen/Bsod.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
@@ -27,10 +30,17 @@
   import ModalNewProject from "./Modal/NewProject.svelte";
   import ModalSearch from "./Modal/Search.svelte";
   import ModalShortcuts from "./Modal/Shortcuts.svelte";
+  import ModalTransaction from "./Modal/Transaction.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
+  import ModalLinkAddress from "./Modal/Funding/LinkAddress.svelte";
+  import ModalPoolOnboarding from "./Modal/Funding/Onboarding.svelte";
+  import ModalWalletQRCode from "./Modal/Wallet/QRCode.svelte";
+  import ModalTopUp from "./Modal/Funding/Pool/TopUp.svelte";
+  import ModalWithdraw from "./Modal/Funding/Pool/Withdraw.svelte";
+  import ModalCollect from "./Modal/Funding/Pool/Collect.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -52,6 +62,13 @@
     "/new-project": ModalNewProject,
     "/search": ModalSearch,
     "/shortcuts": ModalShortcuts,
+    "/wallet/qrcode": ModalWalletQRCode,
+    "/funding/link": ModalLinkAddress,
+    "/funding/pool/onboarding": ModalPoolOnboarding,
+    "/funding/pool/collect": ModalCollect,
+    "/funding/pool/withdraw": ModalWithdraw,
+    "/funding/pool/top-up": ModalTopUp,
+    "/transaction": ModalTransaction,
   };
 
   $: switch ($store.status) {
@@ -82,6 +99,10 @@
       error.show($store.error);
       break;
   }
+
+  $: sessionIsUnsealed =
+    $store.status === remote.Status.Success &&
+    $store.data.status === Status.UnsealedSession;
 </script>
 
 <style>
@@ -100,6 +121,10 @@
 <ModalOverlay {modalRoutes} />
 <NotificationFaucet />
 <Theme />
+
+{#if isExperimental() && sessionIsUnsealed && $location !== path.designSystemGuide()}
+  <TransactionCenter />
+{/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
   <Router {routes} />

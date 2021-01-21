@@ -9,6 +9,8 @@ pub struct Settings {
     pub appearance: Appearance,
     /// User-determined p2p parameters.
     pub coco: CoCo,
+    #[serde(default)]
+    pub feature_flags: FeatureFlags,
 }
 
 /// Knobs for the look and feel.
@@ -63,5 +65,17 @@ pub struct CoCo {
 impl Default for CoCo {
     fn default() -> Self {
         Self { seeds: vec![] }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct FeatureFlags {
+    /// Whether the funding feature is enabled or disabled.
+    pub funding: bool,
+}
+
+impl Default for FeatureFlags {
+    fn default() -> Self {
+        Self { funding: false }
     }
 }

@@ -30,6 +30,12 @@ export enum Code {
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
   UnknownException = "UnknownException",
+
+  // Funding related error codes
+  WalletConnectionFailure = "WalletConnectionFailure",
+  FailedOrRejectedTransaction = "FailedOrRejectedTransaction",
+  UnkownTransactionFailure = "UnkownTransactionFailure",
+  InsufficientGas = "InsufficientGas",
 }
 
 // Turn a Javascript `Error` into our `Error`.

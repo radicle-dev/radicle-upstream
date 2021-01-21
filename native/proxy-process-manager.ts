@@ -13,8 +13,6 @@ interface Options {
   proxyPath: string;
   // Arguments passed to the executable
   proxyArgs: string[];
-  // If `false` then no proxy is started and `run()` never finishes.
-  enabled: boolean;
   // Maximum number of log lines we store
   lineLimit: number;
 }
@@ -37,10 +35,6 @@ export class ProxyProcessManager {
   //
   // Throws an error if a process is already running.
   async run(): Promise<ProcessResult> {
-    if (!this.options.enabled) {
-      return new Promise(() => undefined);
-    }
-
     if (this.childProcess !== undefined) {
       throw new Error("Proxy process already started");
     }
