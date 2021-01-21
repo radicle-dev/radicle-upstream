@@ -49,6 +49,8 @@
       </p>
       {#if peer.role === Role.Maintainer}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
+      {:else if peer.type === PeerType.Local}
+        <Badge style="margin-left: 0.5rem" variant={BadgeType.You} />
       {/if}
     </div>
     <PeerId
