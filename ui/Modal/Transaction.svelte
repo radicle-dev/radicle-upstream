@@ -9,6 +9,7 @@
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
   import Summary from "../DesignSystem/Component/Transaction/Summary.svelte";
 
+  import { ellipsed } from "../src/style";
   import {
     selectedStore,
     store as txs,
@@ -160,7 +161,15 @@
       <div class="section">
         <div class="row">
           <p>Transaction ID</p>
-          <p class="typo-text-small-mono">{tx.hash.slice(0, 20)}</p>
+          <p class="typo-text-small-mono">
+            <Copyable
+              showIcon={false}
+              styleContent={false}
+              copyContent={tx.to}
+              notificationText="Address copied to the clipboard">
+              {ellipsed(tx.hash, 12)}
+            </Copyable>
+          </p>
         </div>
         <div class="row">
           <p>Status</p>
