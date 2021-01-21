@@ -165,7 +165,7 @@
             <Copyable
               showIcon={false}
               styleContent={false}
-              copyContent={tx.to}
+              copyContent={tx.hash}
               notificationText="Address copied to the clipboard">
               {ellipsed(tx.hash, 12)}
             </Copyable>
