@@ -173,8 +173,8 @@ impl Repository {
                 let repo = git2::Repository::open(path.clone())
                     .or_matches(git_ext::is_not_found_err, || Err(Error::NotARepo(path)))?;
 
-                let _ = Self::existing_branch(&repo, &default_branch)?;
-                let _ = Self::existing_remote(&repo, &url)?;
+                Self::existing_branch(&repo, &default_branch)?;
+                Self::existing_remote(&repo, &url)?;
                 Ok(Self::Existing {
                     repo,
                     url,
@@ -300,7 +300,7 @@ impl Repository {
         url: LocalUrl,
         default_branch: &OneLevel,
     ) -> Result<(), Error> {
-        let _ = Self::existing_branch(repo, default_branch)?;
+        Self::existing_branch(repo, default_branch)?;
 
         log::debug!("Creating rad remote");
         let mut git_remote = Self::existing_remote(repo, &url)?

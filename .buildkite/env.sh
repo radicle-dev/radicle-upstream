@@ -23,22 +23,16 @@ export NPM_CONFIG_CACHE="$CACHE_FOLDER/npm"
 export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
 export YARN_TEMPDIR="$CACHE_FOLDER/yarn-tmp"
 export CARGO_HOME="$CACHE_FOLDER/cargo"
-export RUSTUP_HOME="$CACHE_FOLDER/rustup"
 
 mkdir -p "$NPM_CONFIG_CACHE"
 mkdir -p "$YARN_CACHE_FOLDER"
 mkdir -p "$YARN_TEMPDIR"
 mkdir -p "$CARGO_HOME"
-mkdir -p "$RUSTUP_HOME"
 
-
-chmod -R a+w $CARGO_HOME $RUSTUP_HOME
+chmod -R a+w $CARGO_HOME
 
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # Incremental builds use timestamps of local code. Since we always
 # check it out fresh we can never use incremental builds.
 export CARGO_BUILD_INCREMENTAL=false
-
-# Most of the caching is done through caching ./target
-export SCCACHE_CACHE_SIZE="1G"

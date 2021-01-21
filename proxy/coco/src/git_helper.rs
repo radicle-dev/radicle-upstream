@@ -22,7 +22,7 @@ pub const GIT_REMOTE_RAD: &str = "git-remote-rad";
 ///   * Could not get the current working directory.
 ///   * Could not create the path to binary directory.
 ///   * Could not copy helper executable to the binary directory.
-pub fn setup(src_dir: &path::PathBuf, dst_dir: &path::PathBuf) -> Result<(), Error> {
+pub fn setup(src_dir: &path::Path, dst_dir: &path::Path) -> Result<(), Error> {
     let helper_bin_src = src_dir.join(GIT_REMOTE_RAD);
     let helper_bin_dst = dst_dir.join(GIT_REMOTE_RAD);
 
