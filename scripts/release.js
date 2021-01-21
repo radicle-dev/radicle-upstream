@@ -26,7 +26,40 @@ async function main() {
     }
   }
 
-  if (process.argv[2] !== "--finalize") {
+  if (process.argv[2] === "--finalize") {
+    const toVersion = process.argv[3];
+    const pullRequestId = process.argv[4];
+
+    if (toVersion === undefined || pullRequestId === undefined) {
+      console.log("This command should not be run stand-alone.");
+      console.log("You should run `yarn release` and follow the instructions.");
+      console.log();
+      return;
+    }
+
+    console.log(`Finalizing release ${toVersion}:`);
+    console.log();
+
+    const mergeResult = await exec(
+      `hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge" --raw-field 'merge_method=squash'`
+    );
+    console.log(
+      `  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge"`
+    );
+    const releaseCommitSHA = JSON.parse(mergeResult.stdout).sha;
+
+    await exec("git checkout master && git pull");
+    console.log("  ✔ git checkout master && git pull");
+
+    await exec(`git tag ${toVersion} ${releaseCommitSHA}`);
+    console.log(`  ✔ git tag ${toVersion} ${releaseCommitSHA}`);
+
+    await exec(`git push --tags`);
+    console.log(`  ✔ git push --tags`);
+    console.log();
+    console.log(`Release ${toVersion} successfully completed! 👏 🎉 🚀`);
+    console.log();
+  } else {
     console.log(`Cutting release ${toVersion}:\n`);
 
     await exec("git checkout master");
@@ -63,39 +96,6 @@ async function main() {
     console.log("Finally, complete the release by running:");
     console.log();
     console.log(`  👉 yarn release --finalize ${toVersion} ${pullRequestId}`);
-  } else {
-    const toVersion = process.argv[3];
-    const pullRequestId = process.argv[4];
-
-    if (toVersion === undefined || pullRequestId === undefined) {
-      console.log("This command should not be run stand-alone.");
-      console.log("You should run `yarn release` and follow the instructions.");
-      console.log();
-      return;
-    }
-
-    console.log(`Finalizing release ${toVersion}:`);
-    console.log();
-
-    const mergeResult = await exec(
-      `hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge" --raw-field 'merge_method=squash'`
-    );
-    console.log(
-      `  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge"`
-    );
-    const releaseCommitSHA = JSON.parse(mergeResult.stdout).sha;
-
-    await exec("git checkout master && git pull");
-    console.log("  ✔ git checkout master && git pull");
-
-    await exec(`git tag ${toVersion} ${releaseCommitSHA}`);
-    console.log(`  ✔ git tag ${toVersion} ${releaseCommitSHA}`);
-
-    await exec(`git push --tags`);
-    console.log(`  ✔ git push --tags`);
-    console.log();
-    console.log(`Release ${toVersion} successfully completed! 👏 🎉 🚀`);
-    console.log();
   }
 
   console.log();
