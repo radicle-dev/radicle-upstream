@@ -208,7 +208,7 @@ async fn rig(
         std::env::set_var("RAD_HOME", temp_dir.path());
         temp_dir.path().join("store")
     } else {
-        config::dirs().data_dir().join("store")
+        config::store_dir()
     };
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
