@@ -41,7 +41,7 @@
 
   let validatingBudget = false;
   $: budgetValidation = monthlyContributionValidationStore();
-  $: budgetStore.set(budget ? budget.toString() : "");
+  $: budgetStore.set(budget);
   $: {
     if ($budgetStore && $budgetStore.length > 0) validatingBudget = true;
     if (validatingBudget) budgetValidation.validate($budgetStore);
@@ -69,11 +69,12 @@
   });
 
   $: thereAreChanges =
-    !BigNumber.from(budget).eq(data.amountPerBlock) ||
-    receivers.size !== data.receivers.size ||
-    [...receivers.entries()].find(
-      ([address, weight]) => data.receivers.get(address) !== weight
-    );
+    fundingPool.isValidBigNumber(budget) &&
+    (!BigNumber.from(budget).eq(data.amountPerBlock) ||
+      receivers.size !== data.receivers.size ||
+      [...receivers.entries()].find(
+        ([address, weight]) => data.receivers.get(address) !== weight
+      ));
 
   function leaveEditMode(): void {
     editing = false;
