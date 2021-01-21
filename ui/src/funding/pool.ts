@@ -339,7 +339,7 @@ export function isValidBigNumber(value: string): boolean {
   try {
     BigNumber.from(value);
     return true;
-  } catch (_) {
+  } catch {
     return false;
   }
 }
