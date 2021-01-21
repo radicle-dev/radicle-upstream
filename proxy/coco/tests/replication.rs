@@ -46,7 +46,7 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         let alice_peer_id = alice_state.peer_id();
         let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
         bob_state
-            .clone_project(project.urn(), alice_peer_id, alice_addrs)
+            .clone_project(project.urn(), alice_peer_id, alice_addrs, None)
             .await?;
     }
 
@@ -108,7 +108,7 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
         let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
 
         bob_state
-            .clone_user(alice.urn(), alice_peer_id, alice_addrs)
+            .clone_user(alice.urn(), alice_peer_id, alice_addrs, None)
             .await?;
     }
 
@@ -150,7 +150,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         let alice_peer_id = alice_state.peer_id();
 
         bob_state
-            .clone_project(project.urn(), alice_peer_id, alice_addrs)
+            .clone_project(project.urn(), alice_peer_id, alice_addrs, None)
             .await
             .expect("unable to clone project")
     };
@@ -224,7 +224,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         let alice_peer_id = alice_state.peer_id();
 
         bob_state
-            .fetch(project.urn(), alice_peer_id, alice_addrs)
+            .fetch(project.urn(), alice_peer_id, alice_addrs, None)
             .await?;
     };
 
@@ -332,11 +332,11 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         let bob_peer_id = bob_state.peer_id();
         let bob_addrs = bob_state.listen_addrs().collect::<Vec<_>>();
         bob_state
-            .clone_project(project.urn(), alice_peer_id, alice_addrs)
+            .clone_project(project.urn(), alice_peer_id, alice_addrs, None)
             .await
             .expect("unable to clone project");
         eve_state
-            .clone_project(project.urn(), bob_peer_id, bob_addrs)
+            .clone_project(project.urn(), bob_peer_id, bob_addrs, None)
             .await
             .expect("unable to clone project");
         eve_state.get_project(project.urn()).await?.unwrap()
@@ -407,7 +407,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         let bob_addrs = bob_state.listen_addrs().collect::<Vec<_>>();
         let bob_peer_id = bob_state.peer_id();
         eve_state
-            .fetch(project.urn(), bob_peer_id, bob_addrs)
+            .fetch(project.urn(), bob_peer_id, bob_addrs, None)
             .await?;
     }
 
@@ -451,6 +451,7 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
             project.urn(),
             alice_state.peer_id(),
             alice_addrs.into_iter(),
+            None,
         )
         .await?;
 

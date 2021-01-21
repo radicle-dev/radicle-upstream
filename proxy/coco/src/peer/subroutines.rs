@@ -363,7 +363,10 @@ async fn clone(urn: Urn, remote_peer: PeerId, state: State, mut sender: mpsc::Se
         .await
         .ok();
 
-    match state.clone_project(urn.clone(), remote_peer, None).await {
+    match state
+        .clone_project(urn.clone(), remote_peer, None, None)
+        .await
+    {
         Ok(_urn) => {
             sender
                 .send(Input::Request(input::Request::Cloned(urn, remote_peer)))

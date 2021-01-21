@@ -9,6 +9,7 @@ use std::{
 use tokio::sync::{mpsc, watch};
 
 use librad::{
+    git::fetch,
     net,
     net::discovery,
     paths,
@@ -89,6 +90,8 @@ where
 {
     let gossip_params = net::gossip::MembershipParams::default();
     let storage_config = net::peer::StorageConfig::default();
+    let fetch_limit = fetch::Limit::default();
+    let network = net::Network::default();
 
     net::peer::PeerConfig {
         signer,
@@ -96,6 +99,8 @@ where
         listen_addr,
         gossip_params,
         storage_config,
+        fetch_limit,
+        network,
     }
 }
 

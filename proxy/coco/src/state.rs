@@ -6,7 +6,7 @@ use either::Either;
 
 use librad::{
     git::{
-        identities,
+        fetch, identities,
         identities::{
             local::{self, LocalIdentity},
             person, project,
@@ -14,7 +14,8 @@ use librad::{
         include::{self, Include},
         local::{transport, url::LocalUrl},
         refs::Refs,
-        replication, tracking,
+        replication::{self, ReplicateResult},
+        tracking,
         types::{Namespace, Reference, Single},
     },
     git_ext::{OneLevel, RefLike},
@@ -98,6 +99,12 @@ impl State {
     /// The [`SocketAddr`] this [`PeerApi`] is listening on.
     pub fn listen_addrs(&self) -> impl Iterator<Item = SocketAddr> + '_ {
         self.api.listen_addrs()
+    }
+
+    /// The configured [`fetch::Limit`].
+    #[must_use]
+    pub fn fetch_limit(&self) -> fetch::Limit {
+        self.api.fetch_limit()
     }
 
     /// Get the default owner for this `PeerApi`.
@@ -193,19 +200,29 @@ impl State {
     ///   * Could not open librad storage.
     ///   * Failed to clone the project.
     ///   * Failed to set the rad/self of this project.
-    pub async fn clone_project<Addrs>(
+    pub async fn clone_project<L, Addrs>(
         &self,
         urn: Urn,
         remote_peer: PeerId,
         addr_hints: Addrs,
-    ) -> Result<(), Error>
+        limit: L,
+    ) -> Result<ReplicateResult, Error>
     where
+        L: Into<Option<fetch::Limit>> + Send,
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
+        let limit = limit.into().unwrap_or_else(|| self.fetch_limit());
         let owner = self.default_owner().await?.ok_or(Error::MissingOwner)?;
         self.api
             .with_storage(move |store| {
-                replication::replicate(store, Some(owner), urn.clone(), remote_peer, addr_hints)
+                replication::replicate(
+                    store,
+                    Some(owner),
+                    urn.clone(),
+                    remote_peer,
+                    addr_hints,
+                    limit,
+                )
             })
             .await?
             .map_err(Error::from)
@@ -320,18 +337,21 @@ impl State {
     ///   * Could not successfully acquire a lock to the API.
     ///   * Could not open librad storage.
     ///   * Failed to clone the user.
-    pub async fn clone_user<Addrs>(
+    pub async fn clone_user<L, Addrs>(
         &self,
         urn: Urn,
         remote_peer: PeerId,
         addr_hints: Addrs,
-    ) -> Result<(), Error>
+        limit: L,
+    ) -> Result<ReplicateResult, Error>
     where
+        L: Into<Option<fetch::Limit>> + Send,
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
+        let limit = limit.into().unwrap_or_else(|| self.fetch_limit());
         self.api
             .with_storage(move |store| {
-                replication::replicate(store, None, urn, remote_peer, addr_hints)
+                replication::replicate(store, None, urn, remote_peer, addr_hints, limit)
             })
             .await?
             .map_err(Error::from)
@@ -361,19 +381,22 @@ impl State {
     ///   * Could not open librad storage.
     ///   * Failed to fetch the updates.
     ///   * Failed to set the rad/self of this project.
-    pub async fn fetch<Addrs>(
+    pub async fn fetch<L, Addrs>(
         &self,
         urn: Urn,
         remote_peer: PeerId,
         addr_hints: Addrs,
-    ) -> Result<(), Error>
+        limit: L,
+    ) -> Result<ReplicateResult, Error>
     where
+        L: Into<Option<fetch::Limit>> + Send,
         Addrs: IntoIterator<Item = SocketAddr> + Send + 'static,
     {
+        let limit = limit.into().unwrap_or_else(|| self.fetch_limit());
         Ok(self
             .api
             .with_storage(move |store| {
-                replication::replicate(store, None, urn, remote_peer, addr_hints)
+                replication::replicate(store, None, urn, remote_peer, addr_hints, limit)
             })
             .await??)
     }
