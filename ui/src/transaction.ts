@@ -372,7 +372,10 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
   if (e.message.includes("gas")) {
     code = error.Code.InsufficientGas;
     message = "you seem to have insufficient gas to cover this transaction.";
-  } else if (e.message.includes("Failed or Rejected Request")) {
+  } else if (
+    e.message.includes("Failed or Rejected Request") ||
+    e.message.includes("User rejected the transaction")
+  ) {
     code = error.Code.FailedOrRejectedTransaction;
     message =
       "you have rejected this transaction or it has failed for some unkown reason.";
@@ -380,6 +383,8 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
     code = error.Code.UnkownTransactionFailure;
     message = "an unkown transaction error occurred";
   }
+
+  console.error(e);
 
   return {
     code,

@@ -10,6 +10,7 @@ import {
 import type {
   Provider,
   TransactionRequest,
+  TransactionResponse,
 } from "@ethersproject/abstract-provider";
 
 import * as contract from "../src/funding/contract";
@@ -44,9 +45,16 @@ export interface Wallet extends svelteStore.Readable<State> {
   account(): Account | undefined;
 }
 
-export const provider = new ethers.providers.JsonRpcProvider(
-  "http://localhost:8545"
+// export const provider = new ethers.providers.EtherscanProvider(
+//   "ropsten",
+// );
+
+export const provider = new ethers.providers.InfuraProvider(
+  "ropsten",
+  "66fa0f92a54e4d8c9483ffdc6840d77b"
 );
+
+// provider.on("debug", (info) => { console.log("Provider debug info", info) });
 
 export function build(): Wallet {
   const stateStore = svelteStore.writable<State>({
@@ -197,12 +205,50 @@ class WalletConnectSigner extends ethers.Signer {
     throw new Error("not implemented");
   }
 
+  async sendTransaction(
+    transaction: Deferrable<TransactionRequest>
+  ): Promise<TransactionResponse> {
+    const tx = await resolveProperties(transaction);
+    const from = tx.from || (await this.getAddress());
+    const nonce = await this._provider.getTransactionCount(from);
+
+    console.log("tx.data is ", tx.data);
+    console.log("tx.data Stringify is ", JSON.stringify(tx.data));
+    console.log(
+      "tx.data bytesLikeToString(tx.data) is ",
+      bytesLikeToString(tx.data)
+    );
+
+    console.log("transaction.data?", transaction.data);
+
+    const signedTx = await this.walletConnect.sendTransaction({
+      from,
+      to: tx.to,
+      value: BigNumberToPrimitive(tx.value || 0),
+      gasLimit: BigNumberToPrimitive(tx.gasLimit || 200 * 1000),
+      gasPrice: BigNumberToPrimitive(tx.gasPrice || 0),
+      nonce,
+      data: bytesLikeToString(tx.data),
+    });
+    return signedTx;
+  }
+
   async signTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<string> {
     const tx = await resolveProperties(transaction);
     const from = tx.from || (await this.getAddress());
     const nonce = await this._provider.getTransactionCount(from);
+
+    console.log("tx.data is ", tx.data);
+    console.log("tx.data Stringify is ", JSON.stringify(tx.data));
+    console.log(
+      "tx.data bytesLikeToString(tx.data) is ",
+      bytesLikeToString(tx.data)
+    );
+
+    console.log("transaction.data?", transaction.data);
+
     const signedTx = await this.walletConnect.signTransaction({
       from,
       to: tx.to,
