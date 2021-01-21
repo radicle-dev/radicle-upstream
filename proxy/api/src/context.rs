@@ -40,6 +40,14 @@ impl Context {
         }
     }
 
+    /// Returns the default seeds that will be written to the settings kv store.
+    pub const fn default_seeds(&self) -> &Vec<String> {
+        match self {
+            Self::Sealed(sealed) => &sealed.default_seeds,
+            Self::Unsealed(unsealed) => &unsealed.default_seeds,
+        }
+    }
+
     /// Returns the [`kv::Store`] for persistent storage.
     pub const fn store(&self) -> &kv::Store {
         match self {
@@ -152,6 +160,8 @@ pub struct Unsealed {
     pub test: bool,
     /// Flag to run the HTTP API on the specified address:port.
     pub http_listen: net::SocketAddr,
+    /// Default seeds that will be written to the settings kv store.
+    pub default_seeds: Vec<String>,
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
@@ -169,6 +179,8 @@ pub struct Sealed {
     pub test: bool,
     /// Flag to run the HTTP API on the specified address:port.
     pub http_listen: net::SocketAddr,
+    /// Default seeds that will be written to the settings kv store.
+    pub default_seeds: Vec<String>,
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
@@ -210,6 +222,7 @@ impl Unsealed {
             store,
             test: false,
             http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
+            default_seeds: vec![],
             service_handle: service::Handle::dummy(),
             auth_token: Arc::new(RwLock::new(None)),
             keystore: Arc::new(coco::keystore::memory()),

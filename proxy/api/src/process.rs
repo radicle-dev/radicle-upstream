@@ -15,7 +15,7 @@ use coco::{convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, RunCon
 use crate::{config, context, http, notification, service, session};
 
 /// Flags accepted by the proxy binary.
-#[derive(Clone, Copy, FromArgs)]
+#[derive(Clone, FromArgs)]
 pub struct Args {
     /// put proxy in test mode to use certain fixtures
     #[argh(switch)]
@@ -29,6 +29,9 @@ pub struct Args {
     /// run the peer on a specified address:port
     #[argh(option, default = "std::net::SocketAddr::from(([0, 0, 0, 0], 0))")]
     pub peer_listen: net::SocketAddr,
+    /// add one or more default seed addresses to initialise the settings store
+    #[argh(option, long = "default-seed")]
+    pub default_seeds: Vec<String>,
 }
 
 /// Data required to run the peer and the API
@@ -74,7 +77,13 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
         let environment = service_manager.environment()?;
-        let rigging = rig(service_handle, environment, auth_token.clone(), args).await?;
+        let rigging = rig(
+            service_handle,
+            environment,
+            auth_token.clone(),
+            args.clone(),
+        )
+        .await?;
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
@@ -150,7 +159,7 @@ async fn run_rigging(
             let mut peer_control = peer.control();
             let seeds_store = ctx.store().clone();
             let seeds_event_task = coco::SpawnAbortable::new(async move {
-                let mut last_seeds = session_seeds(&seeds_store)
+                let mut last_seeds = session_seeds(&seeds_store, ctx.default_seeds())
                     .await
                     .expect("Failed to read session store");
                 let mut timer = tokio::time::interval(Duration::from_secs(5));
@@ -158,7 +167,7 @@ async fn run_rigging(
                 loop {
                     let _timestamp = timer.tick().await;
 
-                    let seeds = session_seeds(&seeds_store)
+                    let seeds = session_seeds(&seeds_store, ctx.default_seeds())
                         .await
                         .expect("Failed to read session store");
 
@@ -227,7 +236,7 @@ async fn rig(
     if let Some(key) = environment.key {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
-        let seeds = session_seeds(&store).await?;
+        let seeds = session_seeds(&store, &args.default_seeds).await?;
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
         let config = coco::config::configure(
@@ -247,6 +256,7 @@ async fn rig(
             store,
             test: environment.test_mode,
             http_listen: args.http_listen,
+            default_seeds: args.default_seeds,
             service_handle: service_handle.clone(),
             auth_token,
             keystore: environment.keystore.clone(),
@@ -262,6 +272,7 @@ async fn rig(
             store,
             test: environment.test_mode,
             http_listen: args.http_listen,
+            default_seeds: args.default_seeds,
             service_handle,
             auth_token,
             keystore: environment.keystore.clone(),
@@ -277,8 +288,9 @@ async fn rig(
 /// Get and resolve seed settings from the session store.
 async fn session_seeds(
     store: &kv::Store,
+    default_seeds: &[String],
 ) -> Result<Vec<coco::seed::Seed>, Box<dyn std::error::Error>> {
-    let seeds = session::seeds(store).await?;
+    let seeds = session::seeds(store, default_seeds).await?;
     Ok(seed::resolve(&seeds).await.unwrap_or_else(|err| {
         log::error!("Error parsing seed list {:?}: {}", seeds, err);
         vec![]

@@ -318,16 +318,37 @@ Read more about the colors used in Upstream in the [Color System post][cg].
 ## Proxy
 
 All of Upstream's business logic tying together the radicle code collaboration
-is provided to the UI via an HTTP API by a rust binary called the proxy. It
-uses [warp][wa] to serve a RESTish JSON API.
+is provided to the UI via an HTTP API by a rust binary called `radicle-proxy`.
+It uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To
 get up to speed with common functionality and manifest file intricacies consult
 the exhaustive [Cargo Book][cb].
 
 The proxy binary's lifecycle is managed by the main renderer of the UI in:
-`native/main.js`. When running `yarn dist` it is bundled together into an
+`native/main.ts`. When running `yarn dist` it is bundled together into an
 application package by [electron-builder][eb].
+
+### CLI options
+
+```
+$ cd proxy && cargo run --bin radicle-proxy -- --help
+
+Usage: radicle-proxy [--test]
+                     [--http-listen <http-listen>]
+                     [--peer-listen <peer-listen>]
+                     [--default-seed <default-seed>]
+
+Flags accepted by the proxy binary.
+
+Options:
+  --test            put proxy in test mode to use certain fixtures
+  --http-listen     run HTTP API on a specified address:port
+  --peer-listen     run the peer on a specified address:port
+  --default-seed    add one or more default seed addresses to initialise the
+                    settings store
+  --help            display usage information
+```
 
 
 ### Running the proxy in stand-alone mode

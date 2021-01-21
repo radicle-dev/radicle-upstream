@@ -106,7 +106,7 @@ impl Manager {
                 Message::Reset => {
                     let test_mode = self.environment.test_mode;
                     self.environment = Environment::new(test_mode)?
-                },
+                }
                 Message::SetSecretKey(key) => self.environment.key = Some(key),
                 Message::Seal => self.environment.key = None,
             }
@@ -164,16 +164,16 @@ impl Handle {
     fn send_message(&mut self, message: Message) {
         #![allow(clippy::panic)]
         match self.message_sender.try_send(message) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(err) => match err {
                 mpsc::error::TrySendError::Full(_) => {
                     // In practice we can’t send more than one update message at a time.
                     panic!("service::Manager message queue is full")
-                },
+                }
                 mpsc::error::TrySendError::Closed(_) => {
                     // The manager must not be dropped before all handles are dropped.
                     panic!("service::Manager meesage queue is closed")
-                },
+                }
             },
         }
         self.reload_notify.notify();

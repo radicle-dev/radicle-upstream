@@ -29,11 +29,16 @@ pub struct Session {
 /// # Errors
 ///
 /// Errors if we cannot read data from the store.
-pub async fn seeds(store: &kv::Store) -> Result<Vec<String>, error::Error> {
-    let settings = get_current(store)?
-        .map(|session| session.settings)
-        .unwrap_or_default();
-    Ok(settings.coco.seeds)
+pub async fn seeds(
+    store: &kv::Store,
+    default_seeds: &[String],
+) -> Result<Vec<String>, error::Error> {
+    let settings = get_current(store)?.map(|session| session.settings);
+
+    match settings {
+        Some(settings) => Ok(settings.coco.seeds),
+        None => Ok(default_seeds.to_vec()),
+    }
 }
 
 /// Get the current session if present
@@ -48,7 +53,7 @@ pub fn get_current(store: &kv::Store) -> Result<Option<Session>, error::Error> {
         .map(kv::Codec::to_inner))
 }
 
-/// Initialize the current session with the given identity and the default settings.
+/// Initialize the current session with the given identity, default settings and default seeds.
 ///
 /// # Errors
 ///
@@ -56,11 +61,14 @@ pub fn get_current(store: &kv::Store) -> Result<Option<Session>, error::Error> {
 pub fn initialize(
     store: &kv::Store,
     identity: identity::Identity,
+    default_seeds: &[String],
 ) -> Result<Session, error::Error> {
-    let session = Session {
+    let mut session = Session {
         identity,
         settings: settings::Settings::default(),
     };
+
+    session.settings.coco.seeds = default_seeds.to_owned();
 
     set_current(store, session.clone())?;
     Ok(session)
@@ -93,7 +101,7 @@ pub async fn initialize_test(ctx: &crate::context::Unsealed, owner_handle: &str)
         .await
         .expect("cannot init owner identity");
     let identity = (ctx.state.peer_id(), owner).into();
-    initialize(&ctx.store, identity).expect("failed to initialize session")
+    initialize(&ctx.store, identity, &ctx.default_seeds).expect("failed to initialize session")
 }
 
 /// Stores the session as the current session
