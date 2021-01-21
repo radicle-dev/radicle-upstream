@@ -60,7 +60,7 @@ export default (
 
       nodes.forEach(async node => {
         try {
-          await exec(`kill -9 ${node.pid}`);
+          await exec(`kill ${node.pid}`);
         } catch (err) {
           console.log("    ERROR: ", err.message);
         }
