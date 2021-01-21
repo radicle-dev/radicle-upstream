@@ -20,16 +20,16 @@ pub struct Args {
     /// put proxy in test mode to use certain fixtures
     #[argh(switch)]
     pub test: bool,
-    /// run HTTP API on a specified address:port
+    /// run HTTP API on a specified address:port (default: 127.0.0.1:17246)
     #[argh(
         option,
         default = "std::net::SocketAddr::from(([127, 0, 0, 1], 17246))"
     )]
     pub http_listen: net::SocketAddr,
-    /// run the peer on a specified address:port
+    /// run the peer on a specified address:port (default: 0.0.0.0:0)
     #[argh(option, default = "std::net::SocketAddr::from(([0, 0, 0, 0], 0))")]
     pub peer_listen: net::SocketAddr,
-    /// add one or more default seed addresses to initialise the settings store
+    /// add one or more default seed addresses to initialise the settings store (default: none)
     #[argh(option, long = "default-seed")]
     pub default_seeds: Vec<String>,
 }

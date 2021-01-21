@@ -344,9 +344,11 @@ Flags accepted by the proxy binary.
 Options:
   --test            put proxy in test mode to use certain fixtures
   --http-listen     run HTTP API on a specified address:port
+                    (default: 127.0.0.1:17246)
   --peer-listen     run the peer on a specified address:port
+                    (default: 0.0.0.0:0)
   --default-seed    add one or more default seed addresses to initialise the
-                    settings store
+                    settings store (default: none)
   --help            display usage information
 ```
 
