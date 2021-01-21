@@ -100,9 +100,6 @@
     display: flex;
     align-items: center;
 
-    left: 0;
-    width: fit-content;
-
     margin: 0.75rem 0 0 0.75rem;
   }
 
