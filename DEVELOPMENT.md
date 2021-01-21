@@ -67,6 +67,10 @@ On Linux:
 2. Install dependencies: `cd radicle-upstream && yarn install`.
 3. Start Upstream in development mode: `yarn start`.
 
+Running upstream will create new directories in `XDG_DATA_HOME` & `XDG_CONFIG_HOME`
+(or `HOME` respectiveley). To overwrite the locations, you can set `RAD_HOME` to
+your desired directory. Note that you will also have to set it for using git remote
+helper functionality outside of upstream.
 
 ### Feature flagging
 

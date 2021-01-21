@@ -50,7 +50,7 @@ impl Environment {
                 test_mode,
             })
         } else {
-            let coco_paths = coco::Paths::new()?;
+            let coco_paths = coco::Paths::from_env()?;
             let keystore = Arc::new(coco::keystore::file(coco_paths.clone()));
             Ok(Self {
                 key: None,

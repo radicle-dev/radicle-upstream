@@ -6,7 +6,7 @@
 <svg
   data-cy={dataCy}
   on:click
-  style={`display: flex; flex-shrink: 0; ${style ? style : ''}`}
+  style={`flex-shrink: 0; ${style ? style : ''}`}
   width="24"
   height="24"
   fill="var(--color-foreground-level-5)"

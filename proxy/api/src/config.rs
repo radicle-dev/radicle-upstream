@@ -27,6 +27,18 @@ pub fn dirs() -> ProjectDirs {
     ProjectDirs::from("xyz", "radicle", "radicle-upstream").expect("couldn't build dirs")
 }
 
+/// Returns the directory for the application store
+pub fn store_dir() -> path::PathBuf {
+    let store_root = match std::env::var_os("RAD_HOME") {
+        None => {
+            let dirs = dirs();
+            dirs.data_dir().to_path_buf()
+        },
+        Some(root) => path::Path::new(&root).to_path_buf(),
+    };
+    store_root.join("store")
+}
+
 /// Returns the path to a folder containing helper binaries.
 ///
 /// # Errors
