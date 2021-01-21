@@ -35,8 +35,8 @@ type NodeId = number;
 
 interface Node {
   id: NodeId;
-  httpListen: number;
-  peerListen: number;
+  httpPort: number;
+  peerPort: number;
   workspacePath: string;
   pid?: number;
   authToken?: string;
@@ -84,8 +84,8 @@ export default (
 
       const node: Node = {
         id: id,
-        httpListen: id,
-        peerListen: id,
+        httpPort: id,
+        peerPort: id,
         workspacePath: path.join(CYPRESS_WORKSPACE_PATH, uuid.v4()),
       };
 
@@ -96,9 +96,9 @@ export default (
         [
           "--test",
           "--http-listen",
-          `${HOST}:${node.httpListen}`,
+          `${HOST}:${node.httpPort}`,
           "--peer-listen",
-          `${HOST}:${node.peerListen}`,
+          `${HOST}:${node.peerPort}`,
         ],
         {}
       );
@@ -180,7 +180,7 @@ export default (
       );
       const json = await identitiesResponse.json();
 
-      node.peerAddress = `${json.peerId}@${HOST}:${node.peerListen}`;
+      node.peerAddress = `${json.peerId}@${HOST}:${node.peerPort}`;
 
       return null;
     },
