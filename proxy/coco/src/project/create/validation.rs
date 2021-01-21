@@ -333,8 +333,6 @@ impl Repository {
         let fetchspec = Refspec {
             src: refspec_pattern!("refs/heads/*"),
             dst: refspec_pattern!("refs/remotes/rad/*"),
-            // src: GenericRef::<_, RefLike, _>::heads(Flat, None),
-            // dst: GenericRef::heads(Flat, reflike!("rad")),
             force: Force::True,
         };
         let mut git_remote = Self::existing_remote(repo, &url)?.map_or_else(
