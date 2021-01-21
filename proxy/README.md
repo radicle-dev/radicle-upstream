@@ -11,6 +11,10 @@ To start up the proxy binary you can run:
 cargo run --bin radicle-proxy
 ```
 
+To get a list of available CLI options:
+```sh
+cargo run --bin radicle-proxy -- --help
+```
 
 ### Testing
 

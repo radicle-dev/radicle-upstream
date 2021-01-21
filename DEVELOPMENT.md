@@ -329,29 +329,6 @@ The proxy binary's lifecycle is managed by the main renderer of the UI in:
 `native/main.ts`. When running `yarn dist` it is bundled together into an
 application package by [electron-builder][eb].
 
-### CLI options
-
-```
-$ cd proxy && cargo run --bin radicle-proxy -- --help
-
-Usage: radicle-proxy [--test]
-                     [--http-listen <http-listen>]
-                     [--peer-listen <peer-listen>]
-                     [--default-seed <default-seed>]
-
-Flags accepted by the proxy binary.
-
-Options:
-  --test            put proxy in test mode to use certain fixtures
-  --http-listen     run HTTP API on a specified address:port
-                    (default: 127.0.0.1:17246)
-  --peer-listen     run the peer on a specified address:port
-                    (default: 0.0.0.0:0)
-  --default-seed    add one or more default seed addresses to initialise the
-                    settings store (default: none)
-  --help            display usage information
-```
-
 
 ### Running the proxy in stand-alone mode
 
