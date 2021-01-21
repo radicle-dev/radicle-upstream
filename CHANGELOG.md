@@ -2,12 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.8](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.7...v0.1.8) (2021-01-21)
+
+
+### Features
+
+* add support to create all directories under RAD_HOME ([c04dc4b](https://github.com/radicle-dev/radicle-upstream/commit/c04dc4b24eff0da1b32addc76170e5dd56fb6bd2))
+
+
+### Bug Fixes
+
+* **ui:** improve and fix funding-related bits ([dc8b347](https://github.com/radicle-dev/radicle-upstream/commit/dc8b347b4c0656434daf029967dd4809bfef1531))
+* **ui:** resolve visual regressions ([2444e9c](https://github.com/radicle-dev/radicle-upstream/commit/2444e9c5af4c53775f0259df0c3b1d6d04b69e32))
+
 ### [0.1.7](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.6...v0.1.7) (2021-01-20)
 
 
 ### Features
 
-* **ui:** Funding Pool v0 ([bcfb9e0](https://github.com/radicle-dev/radicle-upstream/commit/bcfb9e012d921ddb3c53f82dab13ab258b23deec)), closes [#974](https://github.com/radicle-dev/radicle-upstream/issues/974) [#1493](https://github.com/radicle-dev/radicle-upstream/issues/1493) [#1314](https://github.com/radicle-dev/radicle-upstream/issues/1314)
+* **ui:** Funding Pool v0 ([5b4a327](https://github.com/radicle-dev/radicle-upstream/commit/5b4a327c9eddcb93b37c8c67cbf82c096dc74e5f)), closes [#974](https://github.com/radicle-dev/radicle-upstream/issues/974) [#1493](https://github.com/radicle-dev/radicle-upstream/issues/1493) [#1314](https://github.com/radicle-dev/radicle-upstream/issues/1314)
 * **ui:** label default branch in RevisionSelector ([#1503](https://github.com/radicle-dev/radicle-upstream/issues/1503)) ([2224157](https://github.com/radicle-dev/radicle-upstream/commit/2224157f952ef2a5dcaf246602987eb345a6875f))
 
 
