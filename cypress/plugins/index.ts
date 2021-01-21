@@ -54,7 +54,10 @@ export default (
   _config: Cypress.PluginConfigOptions
 ): void => {
   on("task", {
+    // Kill any nodes that were started by this plugin.
     async killAllNodes() {
+      console.log("  ### killAllNodes()");
+
       nodes.forEach(async node => {
         try {
           await exec(`kill -9 ${node.pid}`);
@@ -65,19 +68,19 @@ export default (
       nodes = [];
       return null;
     },
+    // Start a new `radicle-proxy` node, the `id` is used as a port number for
+    // both API TCP connections as well as UDP peer connections.
+    //
+    // This task also sets up an empty workspace directory where we can create
+    // new project and checkout directories or store any other data necessary
+    // for a testcase:
+    //
+    //   ./radicle-upstream/cypress/workspace/<RANDOM_UUID>
+    //
+    // This command waits on the proxy process to start listening on its HTTP
+    // API port before returning.
     async startNode(id: NodeId) {
-      // Start a new Upstream proxy, the `id` is used as a port number for both
-      // API TCP connections as well as UDP peer connections.
-      //
-      // This also sets up an empty workspace directory where we can create new
-      // project and checkout directories or store any other data necessary for
-      // a testcase:
-      //   ./radicle-upstream/cypress/workspace/<RANDOM_UUID>
-      //
-      // This command waits on the proxy process to start listening on its HTTP
-      // API port before returning.
-
-      console.log(`  ### node start ${id}`);
+      console.log(`  ### startNode(${id})`);
 
       const node: Node = {
         id: id,
@@ -86,13 +89,7 @@ export default (
         workspacePath: path.join(CYPRESS_WORKSPACE_PATH, uuid.v4()),
       };
 
-      try {
-        await fs.mkdirs(node.workspacePath);
-      } catch {
-        console.log(
-          `    ERROR: could not create temporary workspace for node ${node.workspacePath}`
-        );
-      }
+      await fs.mkdirs(node.workspacePath);
 
       const process = childProcess.spawn(
         PROXY_PATH,
@@ -131,17 +128,16 @@ export default (
       });
 
       await waitOn({ resources: [`tcp:${HOST}:${id}`] });
-
       console.log(`    [${id}] node started successfully`);
+
       nodes.push(node);
 
       return null;
     },
+    // Onboard a node by requesting and storing an auth token and creating
+    // an identity.
     async onboardNode(id: NodeId) {
-      // Onboard a node by requesting and storing an auth token and creating
-      // an identity.
-
-      console.log(`  ### node onboard ${id}`);
+      console.log(`  ### onboardNode(${id})`);
 
       const node = getNode(id);
 
@@ -167,8 +163,8 @@ export default (
         throw "Auth cookie does not match the expected shape";
       }
 
-      // FIXME: this needs a retry until successful, because proxy restarts
-      // its internal machinery after the keystore endpoint is queried.
+      // We have to wait here because proxy restarts its internal machinery
+      // after the keystore endpoint is queried.
       await sleep(500);
 
       const identitiesResponse = await fetch(
@@ -188,15 +184,14 @@ export default (
 
       return null;
     },
+    // Establish a network connection between multiple nodes by picking the
+    // first node and adding every other node as seed in the settings of the
+    // first node.
     async connectNodes(nodeIds: NodeId[]) {
-      // Establish a network connection between multiple nodes by picking the
-      // first node and adding every other node as seed in the settings of the
-      // first node.
+      console.log(`  ### connectNodes(${nodeIds})`);
 
-      console.log(`  ### node connect ${nodeIds}`);
       if (nodeIds.length < 2) {
-        console.log("    Supply at least 2 node IDs");
-        return null;
+        throw "Supply at least 2 node IDs";
       }
 
       const firstNode = getNode(nodeIds[0]);
@@ -220,7 +215,18 @@ export default (
 
       return null;
     },
+    // To be used within tests to execute commands in the context of a running
+    // node:
+    //
+    //   cy.task<OnboardedNode>("withNode", 17000).then(node => {
+    //     cy.setCookie("auth-token", node.authToken);
+    //      cy.visit("./public/index.html?backend=localhost:17000");
+    //
+    //      // Run any cypress command here to interact with the node.
+    //   });
     async withNode(id: NodeId): Promise<OnboardedNode> {
+      console.log(`  ### withNode(${id})`);
+
       const node = getNode(id);
       if (node.authToken && node.workspacePath && node.peerAddress) {
         return {
