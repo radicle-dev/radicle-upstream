@@ -32,6 +32,7 @@ pub use librad::{
     net::{self, discovery},
     paths::Paths,
     peer::PeerId,
+    profile::Profile,
     signer,
 };
 

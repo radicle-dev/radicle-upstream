@@ -12,8 +12,8 @@ pub struct Environment {
     pub key: Option<coco::keys::SecretKey>,
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
-    /// Paths for on-disk persistence.
-    pub coco_paths: coco::Paths,
+    /// Paths & profile id for on-disk persistence.
+    pub coco_profile: coco::Profile,
     /// A reference to the key store.
     pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
     /// If true we are running the service in test mode.
@@ -40,22 +40,23 @@ impl Environment {
     fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
-            let coco_paths = coco::Paths::from_root(temp_dir.path())?;
+            std::env::set_var("RAD_HOME", temp_dir.path());
+            let coco_profile = coco::Profile::load()?;
             let keystore = Arc::new(coco::keystore::memory());
             Ok(Self {
                 key: None,
                 temp_dir: Some(temp_dir),
-                coco_paths,
+                coco_profile,
                 keystore,
                 test_mode,
             })
         } else {
-            let coco_paths = coco::Paths::from_env()?;
-            let keystore = Arc::new(coco::keystore::file(coco_paths.clone()));
+            let coco_profile = coco::Profile::load()?;
+            let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
             Ok(Self {
                 key: None,
                 temp_dir: None,
-                coco_paths,
+                coco_profile,
                 keystore,
                 test_mode,
             })
