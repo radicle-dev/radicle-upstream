@@ -1,3 +1,5 @@
+import qs from "qs";
+
 import { backendAddressStore } from "./src/api";
 import App from "./App.svelte";
 
@@ -17,18 +19,10 @@ import App from "./App.svelte";
 //     cy.setCookie("auth-token", node.authToken);
 //     cy.visit("./public/index.html?backend=localhost:17000");
 
-const search = window.location.search;
+const queryString = qs.parse(window.location.search.replace("?", ""));
 
-if (search.includes("?backend=")) {
-  const match = search.match(/\?backend=(.*)/);
-
-  if (match) {
-    backendAddressStore.set(match[1]);
-  } else {
-    throw "could not parse backend address";
-  }
-} else {
-  backendAddressStore.set("localhost:17246");
+if (queryString.backend) {
+  backendAddressStore.set(queryString.backend as string);
 }
 
 const app = new App({

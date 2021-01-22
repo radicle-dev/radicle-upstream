@@ -1,7 +1,7 @@
 import qs from "qs";
 import { get as getStore, writable } from "svelte/store";
 
-export const backendAddressStore = writable("");
+export const backendAddressStore = writable("localhost:17246");
 
 interface Options {
   query?: Record<string, unknown>;
