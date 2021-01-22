@@ -40,8 +40,7 @@ impl Environment {
     fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
-            std::env::set_var("RAD_HOME", temp_dir.path());
-            let coco_profile = coco::Profile::load()?;
+            let coco_profile = coco::Profile::from_root(temp_dir.path())?;
             let keystore = Arc::new(coco::keystore::memory());
             Ok(Self {
                 key: None,
