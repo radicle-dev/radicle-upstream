@@ -212,7 +212,6 @@ async fn rig(
     auth_token: Arc<RwLock<Option<String>>>,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
-        std::env::set_var("RAD_HOME", temp_dir.path());
         temp_dir.path().join("store")
     } else {
         config::store_dir(environment.coco_profile.id())
