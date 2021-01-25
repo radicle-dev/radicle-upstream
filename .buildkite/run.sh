@@ -62,7 +62,7 @@ echo "--- Run proxy tests"
   cd proxy
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
-  timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
+  timeout 10m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
 
 echo "--- Starting proxy daemon and runing app tests"
