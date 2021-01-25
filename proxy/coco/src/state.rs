@@ -1,6 +1,6 @@
 //! Utility to work with the peer api of librad.
 
-use std::{convert::TryFrom as _, iter::FromIterator, net::SocketAddr, path::PathBuf};
+use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
 
 use either::Either;
 
@@ -19,10 +19,7 @@ use librad::{
         types::{Namespace, Reference, Single},
     },
     git_ext::{OneLevel, RefLike},
-    identities::{
-        delegation::{Direct, Indirect},
-        payload, Person, Project, SomeIdentity, Urn,
-    },
+    identities::{delegation::Indirect, payload, Person, Project, SomeIdentity, Urn},
     internal::canonical::Cstring,
     keys,
     net::peer::PeerApi,
@@ -164,7 +161,7 @@ impl State {
                             payload::Person {
                                 name: Cstring::from(name),
                             },
-                            Direct::from_iter(vec![pk].into_iter()),
+                            Some(pk).into_iter().collect(),
                         )
                     })
                     .await??;
@@ -638,7 +635,7 @@ impl State {
                     payload::Person {
                         name: Cstring::from(name),
                     },
-                    Direct::from_iter(vec![pk].into_iter()),
+                    Some(pk).into_iter().collect(),
                 )?;
 
                 Ok::<_, Error>(local::load(store, malkovich.urn())?)
@@ -1042,7 +1039,7 @@ mod test {
 
         let user = state.init_owner("cloudhead".to_string()).await?;
 
-        let _ = control::setup_fixtures(&state, &user)
+        let _fixtures = control::setup_fixtures(&state, &user)
             .await
             .expect("unable to setup fixtures");
 

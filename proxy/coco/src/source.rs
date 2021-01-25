@@ -955,7 +955,7 @@ mod tests {
 
         let branch = state.find_default_branch(urn).await?;
         let commit = state
-            .with_browser(branch, |browser| Ok(super::commit_header(browser, sha)?))
+            .with_browser(branch, |browser| super::commit_header(browser, sha))
             .await?;
 
         assert_eq!(commit.sha1, sha);

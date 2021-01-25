@@ -371,8 +371,8 @@ impl Repository {
             })
     }
 
-    fn existing_remote<'a>(
-        repo: &'a git2::Repository,
+    fn existing_remote(
+        repo: &git2::Repository,
         url: &LocalUrl,
     ) -> Result<Option<Remote<LocalUrl>>, Error> {
         match Remote::<LocalUrl>::find(repo, reflike!("rad")) {
