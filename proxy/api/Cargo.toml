@@ -29,8 +29,8 @@ serde_qs = "0.6"
 secstr = { version = "0.3.2", features = [ "serde" ] }
 tempfile = "3.1"
 thiserror = "1.0"
-tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
-warp = { version = "0.2", default-features = false }
+tokio = { version = "1.1", features = [ "macros", "time" ] }
+warp = { version = "0.3", default-features = false }
 
 [dependencies.kv]
 git = "https://github.com/zshipko/rust-kv.git"
