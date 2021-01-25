@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { BadgeType } from "../../../src/badge";
-  import { Role } from "../../../src/project";
+  import { Role, PeerType } from "../../../src/project";
   import type { User } from "../../../src/project";
 
   import Avatar from "../../Primitive/Avatar.svelte";
@@ -32,6 +32,10 @@
   {#if peer.role === Role.Maintainer}
     <p class="badge">
       <Badge variant={BadgeType.Maintainer} />
+    </p>
+  {:else if peer.type === PeerType.Local}
+    <p class="badge">
+      <Badge variant={BadgeType.You} />
     </p>
   {/if}
 </div>
