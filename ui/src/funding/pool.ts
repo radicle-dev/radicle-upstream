@@ -294,7 +294,10 @@ export const balanceValidationStore = (
 ): validation.ValidationStore => {
   return validation.createValidationStore(constraints.topUpAmount, [
     {
-      promise: amount => Promise.resolve(BigNumber.from(balance).gte(amount)),
+      promise: amount =>
+        Promise.resolve(
+          isValidBigNumber(amount) && BigNumber.from(balance).gte(amount)
+        ),
       validationMessage: "Insufficient balance",
     },
   ]);
@@ -327,4 +330,16 @@ function newSetOfReceivers(current: Receivers, changes: Receivers): Receivers {
   return new Map(
     [...merged].filter(([_address, status]) => status != ReceiverStatus.Removed)
   );
+}
+
+// Check whether the given value can be converted to `ethers.BigNumber`.
+// N.B: ethers.BigNumber.isBigNumber doesn't work as expected:
+// https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L285
+export function isValidBigNumber(value: string): boolean {
+  try {
+    BigNumber.from(value);
+    return true;
+  } catch {
+    return false;
+  }
 }

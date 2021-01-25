@@ -84,11 +84,7 @@ impl Create {
     ///
     /// See [`validation::Repository::validate`]
     pub fn validate(self, url: LocalUrl) -> Result<validation::Repository, validation::Error> {
-        Ok(validation::Repository::validate(
-            self.repo,
-            url,
-            self.default_branch,
-        )?)
+        validation::Repository::validate(self.repo, url, self.default_branch)
     }
 }
 

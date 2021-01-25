@@ -550,8 +550,8 @@ fn blob_content(path: &str, content: &[u8], theme_name: Option<&str>) -> BlobCon
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches<'repo>(
-    browser: &Browser<'repo>,
+pub fn branches(
+    browser: &Browser<'_>,
     branch_type: Option<BranchType>,
 ) -> Result<Vec<Branch>, Error> {
     let mut branches = browser
@@ -613,10 +613,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, Error> {
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit_header<'repo>(
-    browser: &mut Browser<'repo>,
-    sha1: Oid,
-) -> Result<CommitHeader, Error> {
+pub fn commit_header(browser: &mut Browser<'_>, sha1: Oid) -> Result<CommitHeader, Error> {
     browser.commit(sha1.into())?;
 
     let history = browser.get();
@@ -630,7 +627,7 @@ pub fn commit_header<'repo>(
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, Error> {
+pub fn commit(browser: &mut Browser<'_>, sha1: Oid) -> Result<Commit, Error> {
     browser.commit(sha1.into())?;
 
     let history = browser.get();
@@ -691,8 +688,8 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: Oid) -> Result<Commit, 
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'repo, P>(
-    browser: &mut Browser<'repo>,
+pub fn commits<P>(
+    browser: &mut Browser<'_>,
     maybe_revision: Option<Revision<P>>,
 ) -> Result<Commits, Error>
 where
@@ -715,7 +712,7 @@ where
 /// # Errors
 ///
 /// Will return [`Error`] if the project doesn't exist or the surf interaction fails.
-pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, Error> {
+pub fn tags(browser: &Browser<'_>) -> Result<Vec<Tag>, Error> {
     let tag_names = browser.list_tags()?;
     let mut tags: Vec<Tag> = tag_names
         .into_iter()
@@ -732,8 +729,8 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, Error> {
 /// # Errors
 ///
 /// Will return [`Error`] if any of the surf interactions fail.
-pub fn tree<'repo, P>(
-    browser: &mut Browser<'repo>,
+pub fn tree<P>(
+    browser: &mut Browser<'_>,
     maybe_revision: Option<Revision<P>>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, Error>
@@ -747,7 +744,7 @@ where
         browser.rev(revision)?;
     }
 
-    let path = if prefix == "/" || prefix == "" {
+    let path = if prefix == "/" || prefix.is_empty() {
         file_system::Path::root()
     } else {
         file_system::Path::from_str(&prefix)?

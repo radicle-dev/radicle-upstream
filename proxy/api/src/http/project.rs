@@ -190,7 +190,7 @@ mod handler {
         let stats = ctx
             .state
             .with_browser(branch, |browser| {
-                Ok(browser.get_stats().map_err(coco::source::Error::from)?)
+                browser.get_stats().map_err(coco::source::Error::from)
             })
             .await
             .map_err(Error::from)?;

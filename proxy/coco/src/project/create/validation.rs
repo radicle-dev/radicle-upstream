@@ -186,8 +186,10 @@ impl Repository {
                 let repo = git2::Repository::open(path.clone())
                     .or_matches(git_ext::is_not_found_err, || Err(Error::NotARepo(path)))?;
 
-                let _ = Self::existing_branch(&repo, &default_branch)?;
-                let _ = Self::existing_remote(&repo, &url)?;
+                {
+                    let _default_branch_ref = Self::existing_branch(&repo, &default_branch)?;
+                    let _remote = Self::existing_remote(&repo, &url)?;
+                }
                 Ok(Self::Existing {
                     repo,
                     url,
@@ -326,7 +328,7 @@ impl Repository {
     where
         F: CanOpenStorage + 'static,
     {
-        let _ = Self::existing_branch(repo, default_branch)?;
+        let _default_branch_ref = Self::existing_branch(repo, default_branch)?;
 
         log::debug!("Creating rad remote");
 

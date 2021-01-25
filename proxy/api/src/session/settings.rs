@@ -79,15 +79,3 @@ impl Default for FeatureFlags {
         Self { funding: false }
     }
 }
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-pub struct FeatureFlags {
-    /// Whether the funding feature is enabled or disabled.
-    pub funding: bool,
-}
-
-impl Default for FeatureFlags {
-    fn default() -> Self {
-        Self { funding: false }
-    }
-}
