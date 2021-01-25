@@ -651,7 +651,7 @@ for all of the required steps:
   - [ ] deploy docs.radicle.xyz
 - [ ] announce new release on radicle.community
 - [ ] announce new release on the matrix #general:radicle.community channel
-- [ ] update release information
+- [ ] run script for updating version in auto-update notification
 
 
 [an]: #apple-notarization
