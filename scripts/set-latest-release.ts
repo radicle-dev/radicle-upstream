@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S npx ts-node -P tsconfig.scripts.json
 
 // This script updates `builds.radicle.xyz/latest.json` with the
 // current.
@@ -6,10 +6,12 @@
 // This script runs `gsutil` so you need to be logged into an account
 // that has permissions to write to the `builds.radicle.xyz` bucket.
 
-const fetch = require("node-fetch");
-const path = require("path");
-const fs = require("fs");
-const childProcess = require("child_process");
+import * as os from "os";
+import * as path from "path";
+import * as fs from "fs";
+import * as childProcess from "child_process";
+
+import fetch from "node-fetch";
 
 const pkg = require("../package.json");
 
@@ -70,16 +72,12 @@ async function main() {
 async function withTempDir(
   cb: (tempDir: string) => Promise<void>
 ): Promise<void> {
-  const tempDir = await fs.promises.mkdtemp("radicle-dev-set-latest-release");
+  const tempDir = await fs.promises.mkdtemp(
+    path.join(os.tmpdir(), "radicle-dev-set-latest-release-")
+  );
   try {
     await cb(tempDir);
   } finally {
     await fs.promises.rm(tempDir, { recursive: true });
   }
 }
-
-// Trick TypeScript into treating this as a module so that it doesn’t
-// error.
-//
-// See https://stackoverflow.com/questions/56577201/why-is-isolatedmodules-error-fixed-by-any-import
-export {};
