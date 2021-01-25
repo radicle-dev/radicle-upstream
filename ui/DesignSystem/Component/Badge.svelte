@@ -14,6 +14,7 @@
     border-radius: 4px;
     padding: 0.125rem 0.25rem 0.25rem;
     margin-top: 0.125rem;
+    white-space: nowrap;
   }
 </style>
 
