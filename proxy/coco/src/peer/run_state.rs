@@ -534,7 +534,7 @@ mod test {
 
         let cmds = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
         assert!(cmds.is_empty());
-        assert_matches!(state.status, Status::Started {..});
+        assert_matches!(state.status, Status::Started { .. });
 
         Ok(())
     }
@@ -562,7 +562,7 @@ mod test {
             state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
         };
         assert!(cmds.is_empty());
-        assert_matches!(state.status, Status::Online {..});
+        assert_matches!(state.status, Status::Online { .. });
     }
 
     #[test]
@@ -580,7 +580,7 @@ mod test {
             let peer_id = PeerId::from(key);
             state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)))
         };
-        assert_matches!(state.status, Status::Online {..});
+        assert_matches!(state.status, Status::Online { .. });
     }
 
     #[test]
@@ -594,7 +594,7 @@ mod test {
             RunState::construct(Config::default(), HashMap::new(), status, status_since);
 
         let _cmds = state.transition(Input::Timeout(input::Timeout::SyncPeriod));
-        assert_matches!(state.status, Status::Online {..});
+        assert_matches!(state.status, Status::Online { .. });
     }
 
     #[test]
@@ -656,14 +656,14 @@ mod test {
             let cmds = state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)));
 
             assert!(!cmds.is_empty(), "expected command");
-            assert_matches!(cmds.first().unwrap(), Command::SyncPeer{..});
+            assert_matches!(cmds.first().unwrap(), Command::SyncPeer { .. });
 
             let _cmds = state.transition(Input::PeerSync(input::Sync::Started(peer_id)));
             let _cmds = state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)));
         };
 
         // Expect to be online at this point.
-        assert_matches!(state.status, Status::Online {..});
+        assert_matches!(state.status, Status::Online { .. });
 
         // No more syncs should be expected after the maximum of peers have connected.
         let cmd = {
