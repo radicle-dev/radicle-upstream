@@ -259,7 +259,6 @@ impl Repository {
                 let path = path.join(name);
                 log::debug!("Setting up new repository @ '{}'", path.display());
                 let repo = Self::initialise(path, description, &default_branch)?;
-                log::debug!("REPO PATH: {}", repo.path().display());
                 Self::initial_commit(
                     &repo,
                     &default_branch,
