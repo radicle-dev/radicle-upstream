@@ -43,8 +43,9 @@ export const withTwoConnectedNodes = (
 
 export const asNode = (node: OnboardedNode, callback: () => void): void => {
   cy.setCookie("auth-token", node.authToken);
-  // NB: it is important that we pass `localhost` here instead of `127.0.0.1`.
-  // I haven't figured out why Cypress would treat it differently, but it does.
+  // NB: it is important that we pass `localhost` instead of `127.0.0.1` here.
+  // I haven't figured out why, but when we use `127.0.0.1` instead of
+  // `localhost`, the app loads with a auth-cookie mismatch error.
   cy.visit(`./public/index.html?backend=localhost:${node.httpPort}`);
 
   callback();
