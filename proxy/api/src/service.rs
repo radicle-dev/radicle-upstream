@@ -176,7 +176,7 @@ impl Handle {
                 },
             },
         }
-        self.reload_notify.notify();
+        self.reload_notify.notify_one();
     }
 
     /// Create a handle where none of the methods have any effect.

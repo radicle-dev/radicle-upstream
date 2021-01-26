@@ -13,6 +13,7 @@ default-run = "radicle-proxy"
 
 [dependencies]
 anyhow = "1.0"
+async-stream = "0.3"
 data-encoding = "2.3"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
@@ -29,7 +30,7 @@ serde_qs = "0.6"
 secstr = { version = "0.3.2", features = [ "serde" ] }
 tempfile = "3.1"
 thiserror = "1.0"
-tokio = { version = "1.1", features = [ "macros", "time" ] }
+tokio = { version = "1.1", features = [ "macros", "process", "signal", "time" ] }
 warp = { version = "0.3", default-features = false }
 
 [dependencies.kv]
@@ -49,6 +50,6 @@ version = "0.5.0"
 features = ["serialize"]
 
 [dev-dependencies]
-bytes = "0.5"
+bytes = "1.0"
 http = "0.2"
 pretty_assertions = "0.6"

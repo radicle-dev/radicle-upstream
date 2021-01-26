@@ -51,7 +51,9 @@ mod handler {
         )]);
         let filter = |notification: Notification| async move {
             match notification.clone() {
-                Notification::LocalPeer(event) => Some(Ok::<_, Infallible>(sse::json(event))),
+                Notification::LocalPeer(event) => {
+                    Some(Ok::<_, Infallible>(sse::Event::default().json_data(event)))
+                },
             }
         };
 

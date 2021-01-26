@@ -77,7 +77,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
 
         // Give `coco::SpawnAbortable` some time to release all the resources.
         // See https://github.com/radicle-dev/radicle-upstream/issues/1163
-        tokio::time::delay_for(Duration::from_millis(50)).await
+        tokio::time::sleep(Duration::from_millis(50)).await
     }
 }
 

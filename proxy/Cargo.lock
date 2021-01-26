@@ -71,7 +71,8 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "bytes 0.5.6",
+ "async-stream",
+ "bytes 1.0.1",
  "coco",
  "data-encoding",
  "directories 2.0.2",
