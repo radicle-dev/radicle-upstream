@@ -210,27 +210,36 @@ class WalletConnectSigner extends ethers.Signer {
   ): Promise<TransactionResponse> {
     const tx = await resolveProperties(transaction);
     const from = tx.from || (await this.getAddress());
-    const nonce = await this._provider.getTransactionCount(from);
 
-    console.log("tx.data is ", tx.data);
-    console.log("tx.data Stringify is ", JSON.stringify(tx.data));
-    console.log(
-      "tx.data bytesLikeToString(tx.data) is ",
-      bytesLikeToString(tx.data)
-    );
-
-    console.log("transaction.data?", transaction.data);
-
-    const signedTx = await this.walletConnect.sendTransaction({
+    const txHash = await this.walletConnect.sendTransaction({
       from,
       to: tx.to,
-      value: BigNumberToPrimitive(tx.value || 0),
-      gasLimit: BigNumberToPrimitive(tx.gasLimit || 200 * 1000),
-      gasPrice: BigNumberToPrimitive(tx.gasPrice || 0),
-      nonce,
+      value: BigNumberToPrimitive(tx.value),
       data: bytesLikeToString(tx.data),
     });
-    return signedTx;
+
+    return {
+      from,
+      value: ethers.BigNumber.from(tx.value || 0),
+      get chainId(): number {
+        throw new Error("this should never be called");
+      },
+      get nonce(): number {
+        throw new Error("this should never be called");
+      },
+      get gasLimit(): ethers.BigNumber {
+        throw new Error("this should never be called");
+      },
+      get gasPrice(): ethers.BigNumber {
+        throw new Error("this should never be called");
+      },
+      data: bytesLikeToString(tx.data) || "",
+      hash: txHash,
+      confirmations: 1,
+      wait: () => {
+        throw new Error("this should never be called");
+      },
+    };
   }
 
   async signTransaction(
