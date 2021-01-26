@@ -6,7 +6,6 @@ use std::{
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
 };
 
-use futures::Stream;
 use tokio::sync::watch;
 
 use librad::{
@@ -133,10 +132,10 @@ impl StreamDiscovery {
 
 impl discovery::Discovery for StreamDiscovery {
     type Addr = SocketAddr;
-    type Stream = Stream<Item = (PeerId, Vec<SocketAddr>)>;
+    type Stream = futures::stream::BoxStream<'static, (PeerId, Vec<SocketAddr>)>;
 
     fn discover(mut self) -> Self::Stream {
-        async_stream::stream! {
+        let stream = async_stream::stream! {
             loop {
                 self.seeds_receiver.changed().await.unwrap();
                 let seeds = self.seeds_receiver.borrow().clone();
@@ -144,6 +143,8 @@ impl discovery::Discovery for StreamDiscovery {
                     yield seed.into();
                 }
             }
-        }
+        };
+
+        Box::pin(stream)
     }
 }

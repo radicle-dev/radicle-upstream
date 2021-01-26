@@ -195,7 +195,7 @@ impl Subroutines {
                 ))
             },
             Command::Request(command::Request::TimedOut(urn)) => {
-                let mut sender = self.input_sender.clone();
+                let sender = self.input_sender.clone();
                 SpawnAbortable::new(async move {
                     sender
                         .send(Input::Request(input::Request::TimedOut(urn)))
