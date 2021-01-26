@@ -45,16 +45,12 @@ export interface Wallet extends svelteStore.Readable<State> {
   account(): Account | undefined;
 }
 
-// export const provider = new ethers.providers.EtherscanProvider(
-//   "ropsten",
-// );
-
-export const provider = new ethers.providers.InfuraProvider(
-  "ropsten",
-  "66fa0f92a54e4d8c9483ffdc6840d77b"
-);
-
-// provider.on("debug", (info) => { console.log("Provider debug info", info) });
+export const provider = contract.ropsten
+  ? new ethers.providers.InfuraProvider(
+      "ropsten",
+      "66fa0f92a54e4d8c9483ffdc6840d77b"
+    )
+  : new ethers.providers.JsonRpcProvider("http://localhost:8545");
 
 export function build(): Wallet {
   const stateStore = svelteStore.writable<State>({
@@ -208,6 +204,10 @@ class WalletConnectSigner extends ethers.Signer {
   async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
+    if (!contract.ropsten) {
+      return super.sendTransaction(transaction);
+    }
+
     const tx = await resolveProperties(transaction);
     const from = tx.from || (await this.getAddress());
 
@@ -248,15 +248,6 @@ class WalletConnectSigner extends ethers.Signer {
     const tx = await resolveProperties(transaction);
     const from = tx.from || (await this.getAddress());
     const nonce = await this._provider.getTransactionCount(from);
-
-    console.log("tx.data is ", tx.data);
-    console.log("tx.data Stringify is ", JSON.stringify(tx.data));
-    console.log(
-      "tx.data bytesLikeToString(tx.data) is ",
-      bytesLikeToString(tx.data)
-    );
-
-    console.log("transaction.data?", transaction.data);
 
     const signedTx = await this.walletConnect.signTransaction({
       from,
