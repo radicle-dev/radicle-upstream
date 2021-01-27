@@ -201,7 +201,10 @@ export function make(wallet: Wallet): Pool {
   async function getErc20Allowance(): Promise<BigNumber> {
     const account = getAccount();
     if (account) {
-      return daiTokenContract.allowance(account.address, contract.POOL_ADDRESS);
+      return daiTokenContract.allowance(
+        account.address,
+        svelteStore.get(contract.POOL_ADDRESS)
+      );
     } else {
       return BigNumber.from(0);
     }
@@ -210,7 +213,7 @@ export function make(wallet: Wallet): Pool {
   async function approveErc20(): Promise<void> {
     const unlimited = BigNumber.from(1).shl(256).sub(1);
     return daiTokenContract
-      .approve(contract.POOL_ADDRESS, unlimited)
+      .approve(svelteStore.get(contract.POOL_ADDRESS), unlimited)
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.erc20Allowance(tx));
       })

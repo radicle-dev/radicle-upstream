@@ -13,6 +13,12 @@ import type {
   TransactionResponse,
 } from "@ethersproject/abstract-provider";
 
+import {
+  selected as ethereumEnvironment,
+  Environment as EthereumEnvironment,
+  Environment,
+} from "../src/ethereum/environment";
+
 import * as contract from "../src/funding/contract";
 import * as error from "../src/error";
 import * as modal from "../src/modal";
@@ -41,18 +47,29 @@ export interface Account {
 export interface Wallet extends svelteStore.Readable<State> {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
+  provider: ethers.providers.Provider;
   signer: ethers.Signer;
   account(): Account | undefined;
 }
 
-export const provider = contract.ropsten
-  ? new ethers.providers.InfuraProvider(
-      "ropsten",
-      "66fa0f92a54e4d8c9483ffdc6840d77b"
-    )
-  : new ethers.providers.JsonRpcProvider("http://localhost:8545");
+function getProvider(
+  environment: EthereumEnvironment
+): ethers.providers.Provider {
+  switch (environment) {
+    case EthereumEnvironment.Local:
+      return new ethers.providers.JsonRpcProvider("http://localhost:8545");
+    case EthereumEnvironment.Ropsten:
+      return new ethers.providers.InfuraProvider(
+        "ropsten",
+        "66fa0f92a54e4d8c9483ffdc6840d77b"
+      );
+  }
+}
 
-export function build(): Wallet {
+export function build(
+  environment: Environment,
+  provider: ethers.providers.Provider
+): Wallet {
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
   });
@@ -74,10 +91,10 @@ export function build(): Wallet {
     qrcodeModal: qrCodeModal,
   });
 
-  const signer = new WalletConnectSigner(walletConnect, provider);
+  const signer = new WalletConnectSigner(walletConnect, provider, environment);
   const daiTokenContract = contract.daiToken(signer);
 
-  window.ethereumDebug = new EthereumDebug(provider);
+  // window.ethereumDebug = new EthereumDebug(provider);
 
   // Connect to a wallet using walletconnect
   async function connect() {
@@ -160,6 +177,7 @@ export function build(): Wallet {
     subscribe: stateStore.subscribe,
     connect,
     disconnect,
+    provider,
     signer,
     account,
   };
@@ -174,15 +192,21 @@ declare global {
 class WalletConnectSigner extends ethers.Signer {
   public walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
+  private _environment: EthereumEnvironment;
 
   private sessionUpdateListener = () => {
     return undefined;
   };
 
-  constructor(walletConnect: WalletConnect, provider: Provider) {
+  constructor(
+    walletConnect: WalletConnect,
+    provider: Provider,
+    environment: EthereumEnvironment
+  ) {
     super();
     defineReadOnly(this, "provider", provider);
     this._provider = provider;
+    this._environment = environment;
     this.walletConnect = walletConnect;
     this.walletConnect.on("session_update", this.sessionUpdateListener);
   }
@@ -204,7 +228,7 @@ class WalletConnectSigner extends ethers.Signer {
   async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
-    if (!contract.ropsten) {
+    if (this._environment === EthereumEnvironment.Local) {
       return super.sendTransaction(transaction);
     }
 
@@ -262,7 +286,11 @@ class WalletConnectSigner extends ethers.Signer {
   }
 
   connect(provider: Provider): ethers.Signer {
-    return new WalletConnectSigner(this.walletConnect, provider);
+    return new WalletConnectSigner(
+      this.walletConnect,
+      provider,
+      svelteStore.get(ethereumEnvironment)
+    );
   }
 }
 
@@ -315,5 +343,8 @@ export function formattedBalance(balance: number): string {
   return balance.toLocaleString("us-US");
 }
 
-// The wallet singleton
-export const wallet = build();
+export let wallet: Wallet;
+
+ethereumEnvironment.subscribe((environment: EthereumEnvironment) => {
+  wallet = build(environment, getProvider(environment));
+});

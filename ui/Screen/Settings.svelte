@@ -1,6 +1,11 @@
 <script lang="typescript">
   import { getContext } from "svelte";
 
+  import {
+    selected as ethereumEnvironment,
+    Environment as EthereumEnvironment,
+  } from "../src/ethereum/environment";
+
   import { isExperimental } from "../src/ipc";
   import {
     settings,
@@ -29,6 +34,11 @@
 
   const updateFundingFeatureFlag = (event: CustomEvent) =>
     updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
+
+  const updateEthereumEnvironment = (event: CustomEvent) => {
+    const environment = event.detail as EthereumEnvironment;
+    ethereumEnvironment.set(environment);
+  };
 
   let seedInputValue = "";
 
@@ -251,6 +261,19 @@
               on:select={updateFundingFeatureFlag} />
           </div>
         </div>
+        {#if $settings.featureFlags.funding}
+          <div class="section-item">
+            <div class="info">
+              <p class="typo-text-bold">Funding environment</p>
+            </div>
+            <div class="action">
+              <SegmentedControl
+                active={$ethereumEnvironment}
+                options={[{ title: 'Local', value: EthereumEnvironment.Local }, { title: 'Ropsten', value: EthereumEnvironment.Ropsten }]}
+                on:select={updateEthereumEnvironment} />
+            </div>
+          </div>
+        {/if}
       </section>
     {/if}
 
