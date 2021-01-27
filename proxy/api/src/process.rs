@@ -160,7 +160,7 @@ async fn run_rigging(
                         continue;
                     }
 
-                    if seeds_sender.broadcast(seeds.clone()).is_err() {
+                    if seeds_sender.send(seeds.clone()).is_err() {
                         break;
                     }
 
