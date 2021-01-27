@@ -313,10 +313,9 @@ class NodeManager {
     const onboardedNodes: NodeSession[] = [];
 
     this.managedNodes.forEach(node => {
-      if (node.authToken && node.peerAddress && node.httpPort) {
+      if (node.authToken && node.httpPort) {
         onboardedNodes.push({
           authToken: node.authToken,
-          peerAddress: node.peerAddress,
           httpPort: node.httpPort,
         });
       }

@@ -5,7 +5,6 @@
 
 export interface NodeSession {
   authToken: string;
-  peerAddress: string;
   httpPort: number;
 }
 
