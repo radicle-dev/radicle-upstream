@@ -682,20 +682,6 @@ checksum = "ee2626afccd7561a06cf1367e2950c4718ea04565e20fb5029b6c7d8ad09abcf"
 [[package]]
 name = "ed25519-zebra"
 version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a128b76af6dd4b427e34a6fd43dc78dbfe73672ec41ff615a2414c1a0ad0409"
-dependencies = [
- "curve25519-dalek",
- "hex",
- "rand_core 0.5.1",
- "serde",
- "sha2",
- "thiserror",
-]
-
-[[package]]
-name = "ed25519-zebra"
-version = "2.2.0"
 source = "git+https://github.com/ZcashFoundation/ed25519-zebra?rev=0e7a96a267a756e642e102a28a44dd79b9c7df69#0e7a96a267a756e642e102a28a44dd79b9c7df69"
 dependencies = [
  "curve25519-dalek",
@@ -705,6 +691,20 @@ dependencies = [
  "sha2",
  "thiserror",
  "zeroize",
+]
+
+[[package]]
+name = "ed25519-zebra"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a128b76af6dd4b427e34a6fd43dc78dbfe73672ec41ff615a2414c1a0ad0409"
+dependencies = [
+ "curve25519-dalek",
+ "hex",
+ "rand_core 0.5.1",
+ "serde",
+ "sha2",
+ "thiserror",
 ]
 
 [[package]]
@@ -1450,11 +1450,11 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.13"
+version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcf3805d4480bb5b86070dcfeb9e2cb2ebc148adb753c5cca5f884d1d65a42b2"
+checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
 ]
 
 [[package]]
