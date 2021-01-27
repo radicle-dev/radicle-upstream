@@ -14,7 +14,7 @@ export interface OnboardNodeOptions {
 export interface OnboardedNode {
   authToken: string;
   peerAddress: string;
-  httpPort: string;
+  httpPort: number;
 }
 
 export interface ConnectNodesOptions {
