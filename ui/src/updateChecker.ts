@@ -1,5 +1,6 @@
 import * as svelteStore from "svelte/store";
 import persistentStore from "svelte-persistent-store/dist";
+import * as semver from "semver";
 import * as router from "svelte-spa-router";
 
 import * as ipc from "./ipc";
@@ -141,7 +142,7 @@ class UpdateChecker {
       [this.latestVersionInfo, this.currentVersion],
       ([latestVersionInfo, currentVersion]) => {
         if (latestVersionInfo && currentVersion) {
-          if (isVersionGreater(latestVersionInfo.version, currentVersion)) {
+          if (semver.gt(latestVersionInfo.version, currentVersion)) {
             return latestVersionInfo;
           } else {
             return undefined;
@@ -197,17 +198,3 @@ class UpdateChecker {
 }
 
 export const updateChecker = UpdateChecker.init();
-
-// Returns `true` if the version represented by `lhs` is strictly
-// greater than the version represented by `rhs`.
-function isVersionGreater(lhs: string, rhs: string) {
-  const lhsSegments = lhs.replace(/^v/, "").trim().split(".").map(Number);
-  const rhsSegments = rhs.replace(/^v/, "").trim().split(".").map(Number);
-
-  for (let i = 0; i < lhsSegments.length; i++) {
-    if (lhsSegments[i] > rhsSegments[i]) {
-      return true;
-    }
-  }
-  return false;
-}
