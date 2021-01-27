@@ -56,7 +56,7 @@ class Node {
 
   constructor({
     id,
-    proxyBinaryPath = "proxy/target/release/radicle-proxy",
+    proxyBinaryPath = "proxy/target/debug/radicle-proxy",
   }: NodeStartOptions) {
     this.id = id;
     this.httpPort = id;
