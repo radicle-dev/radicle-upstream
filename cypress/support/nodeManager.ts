@@ -1,8 +1,8 @@
-import type { OnboardedNode } from "../plugins/nodeManager/shared";
+import type { NodeSession } from "../plugins/nodeManager/shared";
 import { Commands } from "../plugins/nodeManager/shared";
 
 export const withTwoConnectedNodes = (
-  callback: (node0: OnboardedNode, node1: OnboardedNode) => void
+  callback: (node0: NodeSession, node1: NodeSession) => void
 ): void => {
   cy.task(Commands.StartNode, { id: 17000 });
   cy.task(Commands.OnboardNode, { id: 17000 });
@@ -12,14 +12,14 @@ export const withTwoConnectedNodes = (
 
   cy.task(Commands.ConnectNodes, { nodeIds: [17000, 18000] });
 
-  cy.task<OnboardedNode[]>(Commands.GetOnboardedNodes).then(nodes => {
+  cy.task<NodeSession[]>(Commands.GetOnboardedNodes).then(nodes => {
     callback(nodes[0], nodes[1]);
   });
 
   cy.task(Commands.StopAllNodes);
 };
 
-export const asNode = (node: OnboardedNode): void => {
+export const asNode = (node: NodeSession): void => {
   cy.setCookie("auth-token", node.authToken);
   // NB: it is important that we pass `localhost` instead of `127.0.0.1` here.
   // I haven't figured out why, but when we use `127.0.0.1` instead of

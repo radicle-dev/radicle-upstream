@@ -3,7 +3,7 @@
 // and can directly use Nodejs libraries, the Cypress tests don't have access
 // to those, so indlucing `plugin.ts` inside `commands.ts` leads to errors.
 
-export interface OnboardedNode {
+export interface NodeSession {
   authToken: string;
   peerAddress: string;
   httpPort: number;

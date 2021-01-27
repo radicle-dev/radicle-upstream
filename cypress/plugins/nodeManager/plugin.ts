@@ -2,12 +2,17 @@ import * as path from "path";
 import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
-import type { OnboardedNode } from "./shared";
+import type { NodeSession } from "./shared";
 import { Commands } from "./shared";
 
 type NodeId = number;
+type PeerAddress = string;
+type AuthToken = string;
 
 const ROOT_PATH = path.join(__dirname, "../../../");
+
+// IP to which all started processes will bind to.
+const HOST = "127.0.0.1";
 
 const sleep = async (ms: number) => {
   await new Promise(resolve => setTimeout(resolve, ms));
@@ -38,40 +43,103 @@ interface NodeOnboardOptions {
   passphrase: string;
 }
 
-class Node {
-  id: NodeId;
-  authToken: string | undefined = undefined;
-  peerAddress: string | undefined = undefined;
-  httpPort: number;
-  host: string = "127.0.0.1";
+// Because it's not possible to mix tagged union types and extending
+// interfaces, we have to repeat the "inherited" attributes in each state.
+interface ConfiguredNode {
+  kind: "configured";
 
-  private peerPort: number;
-  private process: childProcess.ChildProcess | undefined;
-  private proxyBinaryPath: string;
+  // ConfiguredNode
+  id: NodeId;
+  httpPort: number;
+  peerPort: number;
+  proxyBinaryPath: string;
+}
+
+interface StartedNode {
+  kind: "started";
+
+  // ConfiguredNode
+  id: NodeId;
+  httpPort: number;
+  peerPort: number;
+  proxyBinaryPath: string;
+
+  // StartedNode
+  process: childProcess.ChildProcess;
+}
+
+interface OnboardedNode {
+  kind: "onboarded";
+
+  // ConfiguredNode
+  id: NodeId;
+  httpPort: number;
+  peerPort: number;
+  proxyBinaryPath: string;
+
+  // StartedNode
+  process: childProcess.ChildProcess;
+
+  // OnboardedNode
+  authToken: AuthToken;
+  peerAddress: PeerAddress;
+}
+
+type NodeState = ConfiguredNode | StartedNode | OnboardedNode;
+
+class Node {
+  private state: NodeState;
   private logger: Logger;
+
+  get id() {
+    return this.state.id;
+  }
+
+  get httpPort() {
+    return this.state.httpPort;
+  }
+
+  get peerAddress(): PeerAddress {
+    if (this.state.kind !== "onboarded") {
+      throw "Can't get peerAddress before node is onboarded";
+    }
+
+    return this.state.peerAddress;
+  }
+
+  get authToken(): AuthToken {
+    if (this.state.kind !== "onboarded") {
+      throw "Can't get peerAddress before node is onboarded";
+    }
+
+    return this.state.authToken;
+  }
 
   constructor({
     id,
     proxyBinaryPath = "proxy/target/debug/radicle-proxy",
   }: NodeStartOptions) {
-    this.id = id;
-    this.httpPort = id;
-    this.peerPort = id;
-    this.proxyBinaryPath = path.join(ROOT_PATH, proxyBinaryPath);
     this.logger = new Logger({ prefix: `[${id}]: `, indentationLevel: 2 });
+    this.state = {
+      kind: "configured",
+      id: id,
+      httpPort: id,
+      peerPort: id,
+      proxyBinaryPath: path.join(ROOT_PATH, proxyBinaryPath),
+    };
   }
 
   async start() {
     this.logger.log("starting node");
 
     const process = childProcess.spawn(
-      this.proxyBinaryPath,
+      this.state.proxyBinaryPath,
       [
         "--test",
         "--http-listen",
-        `${this.host}:${this.httpPort}`,
+        `${HOST}:${this.state.httpPort}`,
         "--peer-listen",
-        `${this.host}:${this.peerPort}`,
+        `${HOST}:${this.state.peerPort}`,
       ],
       {}
     );
@@ -90,9 +158,9 @@ class Node {
       this.logger.log(`  STDOUT: ${data.trim()}`);
     });
 
-    this.process = process;
+    this.state = { ...this.state, kind: "started", process: process };
 
-    await waitOn({ resources: [`tcp:${this.host}:${this.httpPort}`] });
+    await waitOn({ resources: [`tcp:${HOST}:${this.state.httpPort}`] });
 
     this.logger.log("node started successfully");
   }
@@ -103,8 +171,12 @@ class Node {
   }: NodeOnboardOptions) {
     this.logger.log("onboarding node");
 
+    if (this.state.kind !== "started") {
+      throw "Tried to onboard a node that wasn't started yet";
+    }
+
     const keystoreResponse = await fetch(
-      `http://${this.host}:${this.id}/v1/keystore`,
+      `http://${HOST}:${this.state.id}/v1/keystore`,
       {
         method: "post",
         body: JSON.stringify({ passphrase }),
@@ -122,8 +194,9 @@ class Node {
     }
 
     const match = cookie.match(/auth-token=(.*);/);
-    if (match) {
-      this.authToken = match[1];
+    let authToken;
+    if (match && match[1]) {
+      authToken = match[1];
     } else {
       throw "Auth cookie does not match the expected shape";
     }
@@ -133,29 +206,34 @@ class Node {
     await sleep(500);
 
     const identitiesResponse = await fetch(
-      `http://${this.host}:${this.id}/v1/identities`,
+      `http://${HOST}:${this.id}/v1/identities`,
       {
         method: "post",
         body: JSON.stringify({ handle }),
         headers: {
-          Cookie: `auth-token=${this.authToken}`,
+          Cookie: `auth-token=${authToken}`,
           "Content-Type": "application/json",
         },
       }
     );
     const json = await identitiesResponse.json();
 
-    this.peerAddress = `${json.peerId}@${this.host}:${this.peerPort}`;
+    this.state = {
+      ...this.state,
+      kind: "onboarded",
+      authToken: authToken,
+      peerAddress: `${json.peerId}@${HOST}:${this.state.peerPort}`,
+    };
 
     this.logger.log("node onboarded successfully");
   }
 
   async stop(): Promise<void> {
-    if (!this.process) {
-      throw "Tried to stop node before it was started";
+    if (this.state.kind === "configured") {
+      throw "Tried to stop a node that wasn't started yet";
     }
 
-    this.process.kill();
+    this.state.process.kill();
   }
 }
 
@@ -223,30 +301,27 @@ class NodeManager {
       return firstNode.id !== node.id;
     });
 
-    await fetch(
-      `http://${firstNode.host}:${firstNode.httpPort}/v1/session/settings`,
-      {
-        method: "post",
-        body: JSON.stringify({
-          appearance: { theme: "dark", hints: { showRemoteHelper: true } },
-          coco: {
-            seeds: remainingNodes.map(node => node.peerAddress),
-          },
-        }),
-        headers: {
-          Cookie: `auth-token=${firstNode.authToken}`,
-          "Content-Type": "application/json",
+    await fetch(`http://${HOST}:${firstNode.httpPort}/v1/session/settings`, {
+      method: "post",
+      body: JSON.stringify({
+        appearance: { theme: "dark", hints: { showRemoteHelper: true } },
+        coco: {
+          seeds: remainingNodes.map(node => node.peerAddress),
         },
-      }
-    );
+      }),
+      headers: {
+        Cookie: `auth-token=${firstNode.authToken}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     return null;
   }
 
-  async getOnboardedNodes(): Promise<OnboardedNode[]> {
+  async getOnboardedNodes(): Promise<NodeSession[]> {
     this.logger.log("getOnboardedNodes");
 
-    const onboardedNodes: OnboardedNode[] = [];
+    const onboardedNodes: NodeSession[] = [];
 
     this.managedNodes.forEach(node => {
       if (node.authToken && node.peerAddress && node.httpPort) {
@@ -287,7 +362,7 @@ export const nodeManagerPlugin = {
 
     return null;
   },
-  [Commands.GetOnboardedNodes]: async (): Promise<OnboardedNode[]> => {
+  [Commands.GetOnboardedNodes]: async (): Promise<NodeSession[]> => {
     return nodeManager.getOnboardedNodes();
   },
   [Commands.ConnectNodes]: async (
