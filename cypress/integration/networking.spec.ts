@@ -1,13 +1,12 @@
 import * as commands from "../support/commands";
-import * as cmd from "../plugins/nodeManager/commands";
 import * as path from "path";
-import { ipcStub } from "../support";
+import { ipcStub, nodeManager } from "../support";
 
 context("networking", () => {
   it("replicates a project from one node to another", () => {
     commands.withTempDir(tempDirPath => {
-      cmd.withTwoConnectedNodes((node1, node2) => {
-        cmd.asNode(node1);
+      nodeManager.withTwoConnectedNodes((node1, node2) => {
+        nodeManager.asNode(node1);
         const newProjectPath = path.join(tempDirPath, "node1/new-project");
 
         cy.exec(`mkdir -p ${newProjectPath}`);
@@ -37,7 +36,7 @@ context("networking", () => {
             throw "Could not find URN";
           }
 
-          cmd.asNode(node2);
+          nodeManager.asNode(node2);
           commands.pick("sidebar", "search").click();
           commands.pick("search-input").type(urn || "");
           commands.pick("follow-toggle").click();
