@@ -131,24 +131,6 @@
       value: 2,
     },
   ];
-
-  const infoNotification = params => {
-    return {
-      level: notification.Level.Info,
-      message: params.message,
-      showIcon: params.showIcon || false,
-      actions: params.actions || [],
-    };
-  };
-
-  const errorNotification = params => {
-    return {
-      level: notification.Level.Error,
-      message: params.message,
-      showIcon: params.showIcon || false,
-      actions: params.actions || [],
-    };
-  };
 </script>
 
 <style>
@@ -650,12 +632,12 @@
     <Section title="Notifications" subTitle="Info, Warnings and Errors">
       <Swatch>
         <Notification
-          notification={infoNotification({ message: 'Snackbar' })} />
+          notification={notification.create('INFO', { message: 'Snackbar' })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={infoNotification({
+          notification={notification.create('INFO', {
             message: 'Info with icon',
             showIcon: true,
           })} />
@@ -663,12 +645,22 @@
 
       <Swatch>
         <Notification
-          notification={errorNotification({ message: 'Just plain error' })} />
+          notification={notification.create('INFO', {
+            message: 'Info without default action',
+            actions: [],
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={errorNotification({
+          notification={notification.create('ERROR', {
+            message: 'Just plain error',
+          })} />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          notification={notification.create('ERROR', {
             message: 'Error with icon',
             showIcon: true,
           })} />
@@ -676,7 +668,7 @@
 
       <Swatch>
         <Notification
-          notification={errorNotification({
+          notification={notification.create('ERROR', {
             message: 'Error with one action',
             actions: [{ label: 'Action', handler: () => {} }],
           })} />
@@ -684,8 +676,19 @@
 
       <Swatch>
         <Notification
-          notification={errorNotification({
+          notification={notification.create('ERROR', {
             message: 'Error with two actions',
+            actions: [
+              { label: 'Action 1', handler: () => {} },
+              { label: 'Action 2', handler: () => {} },
+            ],
+          })} />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          notification={notification.create('PRIMARY', {
+            message: 'Primary notification',
             actions: [
               { label: 'Action 1', handler: () => {} },
               { label: 'Action 2', handler: () => {} },

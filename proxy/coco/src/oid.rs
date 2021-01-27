@@ -24,9 +24,9 @@ impl From<git2::Oid> for Oid {
     }
 }
 
-impl Into<git2::Oid> for Oid {
-    fn into(self) -> git2::Oid {
-        self.0
+impl From<Oid> for git2::Oid {
+    fn from(oid: Oid) -> Self {
+        oid.0
     }
 }
 

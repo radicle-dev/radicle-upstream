@@ -570,11 +570,10 @@ permissions. Reach out to a co-worker if you don’t have them.
 
 After this you also need to obtain and upload the Linux package.
 
-FIXME(rudolfs): this doesn't work, we don't build images off of tags.
-
 ```bash
-curl -sSLO https://builds.radicle.xyz/radicle-upstream/vX.X.X/radicle-upstream-X.X.X.AppImage
-gsutil cp radicle-upstream-X.X.X.AppImage gs://releases.radicle.xyz
+version="$(jq -r .version < package.json)"
+curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage"
+gsutil cp radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
 ```
 
 After all the packages are uploaded, update the links to those binaries on the

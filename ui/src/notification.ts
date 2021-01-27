@@ -2,13 +2,18 @@ import { Readable, derived, get, writable } from "svelte/store";
 
 import * as config from "./config";
 
-export enum Level {
+export enum Variant {
   Error = "ERROR",
   Info = "INFO",
+  // Uses primary color as the notification background
+  Primary = "PRIMARY",
 }
 
 export interface NotificationParams {
   message: string;
+  // If `true`, show an appropriate icon as part of the notification.
+  // An icon is only shown for the `Error` and `Info` notification
+  // variants. Defaults to `false`.
   showIcon?: boolean;
   // A list of actions to show as part of the notification. If not
   // provided a default action to close the notification will be shown.
@@ -17,10 +22,18 @@ export interface NotificationParams {
 
 export interface Notification {
   readonly id: number;
-  readonly level: Level;
+  readonly variant: Variant;
   readonly showIcon: boolean;
   readonly message: string;
   readonly actions: readonly Action[];
+  readonly icon: Icon | null;
+}
+
+// We can’t use `DesignSystem/Primitives/Icon` directly because this
+// file is imported in the Jest tests and they do not support Svelte.
+export enum Icon {
+  InfoCircle = "InfoCircle",
+  ExclamationCircle = "ExclamationCircle",
 }
 
 export interface Action {
@@ -41,7 +54,11 @@ const closeAction: Action = {
   handler: () => {},
 };
 
-const show = (level: Level, params: NotificationParams): void => {
+// Only exported for `DesignSystemGuide`.
+export const create = (
+  variant: Variant,
+  params: NotificationParams
+): Notification => {
   const id = Math.random();
   const showIcon = params.showIcon || false;
 
@@ -54,26 +71,48 @@ const show = (level: Level, params: NotificationParams): void => {
     },
   }));
 
-  const notification = {
+  let icon = null;
+  if (params.showIcon) {
+    switch (variant) {
+      case Variant.Info:
+        icon = Icon.InfoCircle;
+        break;
+      case Variant.Error:
+        icon = Icon.ExclamationCircle;
+        break;
+      case Variant.Primary:
+        icon = null;
+        break;
+    }
+  }
+
+  return {
     id,
-    level,
+    variant,
     message: params.message,
     showIcon,
     actions,
+    icon,
   };
+};
 
+const show = (variant: Variant, params: NotificationParams): void => {
+  const notification = create(variant, params);
   notificationsStore.update(notifications => [notification, ...notifications]);
 
   setTimeout(() => {
-    remove(id);
+    remove(notification.id);
   }, config.NOTIFICATION_TIMEOUT);
 };
 
 export const error = (params: NotificationParams): void =>
-  show(Level.Error, params);
+  show(Variant.Error, params);
 
 export const info = (params: NotificationParams): void =>
-  show(Level.Info, params);
+  show(Variant.Info, params);
+
+export const primary = (params: NotificationParams): void =>
+  show(Variant.Primary, params);
 
 const remove = (id: number): void => {
   const notifications = get(notificationsStore).filter(
