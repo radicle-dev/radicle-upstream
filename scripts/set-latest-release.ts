@@ -23,13 +23,13 @@ main().catch(e => {
 async function main() {
   await withTempDir(async tempDir => {
     const versionDash = pkg.version.replace(/\./g, "-");
-    const annoucementUrl = `https://radicle.community/t/radicle-upstream-v${versionDash}-is-out`;
+    const announcementUrl = `https://radicle.community/t/radicle-upstream-v${versionDash}-is-out`;
     const response = await fetch(
       `https://radicle.community/t/radicle-upstream-v${versionDash}-is-out`
     );
     if (!response.ok) {
       throw new Error(
-        `Announcement url ${annoucementUrl} does not exist. Response status is ${response.status}`
+        `Announcement url ${announcementUrl} does not exist. Response status is ${response.status}`
       );
     }
 
@@ -39,7 +39,7 @@ async function main() {
       JSON.stringify(
         {
           version: pkg.version,
-          annoucementUrl,
+          announcementUrl,
         },
         null,
         2

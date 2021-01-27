@@ -37,6 +37,10 @@ export const copyToClipboard = (text: string): Promise<void> =>
 export const openPath = (path: string): Promise<void> =>
   window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.OPEN_PATH, path);
 
+export const openUrl = (url: string): void => {
+  window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.OPEN_URL, url);
+};
+
 // Informs whether it's running in a development environment.
 export const isDev = (): boolean => {
   return window.electron.isDev;
