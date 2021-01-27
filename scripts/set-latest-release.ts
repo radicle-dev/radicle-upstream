@@ -1,10 +1,10 @@
 #!/usr/bin/env -S npx ts-node -P tsconfig.scripts.json
 
-// This script updates `builds.radicle.xyz/latest.json` with the
+// This script updates `releases.radicle.xyz/latest.json` with the
 // current.
 //
 // This script runs `gsutil` so you need to be logged into an account
-// that has permissions to write to the `builds.radicle.xyz` bucket.
+// that has permissions to write to the `releases.radicle.xyz` bucket.
 
 import * as os from "os";
 import * as path from "path";
@@ -51,7 +51,7 @@ async function main() {
 
     const result = childProcess.spawnSync(
       "gsutil",
-      ["cp", latestPath, `gs://builds.radicle.xyz/${fileName}`],
+      ["cp", latestPath, `gs://releases.radicle.xyz/${fileName}`],
       { stdio: "inherit" }
     );
 

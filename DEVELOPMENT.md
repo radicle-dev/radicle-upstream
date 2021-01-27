@@ -627,7 +627,7 @@ Finally, update the information about the latest release by running
 ./scripts/set-latest-release.ts
 ```
 
-This also requires the `gsutil` tool and access to the `builds.radicle.xyz`
+This also requires the `gsutil` tool and access to the `releases.radicle.xyz`
 bucket.
 
 
