@@ -2,14 +2,10 @@ import * as path from "path";
 import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
-import type {
-  ConnectNodesOptions,
-  NodeId,
-  StartNodeOptions,
-  OnboardNodeOptions,
-  OnboardedNode,
-} from "./shared";
+import type { OnboardedNode } from "./shared";
 import { Commands } from "./shared";
+
+type NodeId = number;
 
 const ROOT_PATH = path.join(__dirname, "../../../");
 
@@ -161,6 +157,21 @@ class Node {
 
     this.process.kill();
   }
+}
+
+interface StartNodeOptions {
+  id: NodeId;
+  proxyBinaryPath?: string;
+}
+
+interface OnboardNodeOptions {
+  id: NodeId;
+  handle?: string;
+  passphrase?: string;
+}
+
+export interface ConnectNodesOptions {
+  nodeIds: NodeId[];
 }
 
 class NodeManager {
