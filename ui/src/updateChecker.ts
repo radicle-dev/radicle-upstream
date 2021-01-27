@@ -93,12 +93,14 @@ class UpdateChecker {
           },
           {
             label: "Dismiss",
-            handler: () => {
-              isEnabledStore.set(false);
-            },
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            handler: () => {},
           },
         ],
       });
+
+      // After the user has been notified, we set this to the default
+      isEnabledStore.set(false);
     }
   }
 
@@ -171,10 +173,15 @@ class UpdateChecker {
 
     const lastNotified = svelteStore.get(lastNotifiedStore);
     const now = Date.now();
-    if (
-      lastNotified === null ||
-      now >= lastNotified + VERSION_NOTIFY_SILENCE_INTERVAL
-    ) {
+    const hasBeenNotifiedRecently =
+      lastNotified !== null &&
+      now - lastNotified <= VERSION_NOTIFY_SILENCE_INTERVAL;
+
+    const currentVersion = svelteStore.get(this.currentVersion);
+    const isNewer =
+      currentVersion !== undefined && semver.gt(version, currentVersion);
+
+    if (!hasBeenNotifiedRecently && isNewer) {
       notification.primary({
         message: "There is a new version of Upstream available",
         persist: true,
