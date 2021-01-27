@@ -1,5 +1,5 @@
-import type { OnboardedNode } from "../../plugins/nodeManager/shared";
-import { Commands } from "../../plugins/nodeManager/shared";
+import type { OnboardedNode } from "../plugins/nodeManager/shared";
+import { Commands } from "../plugins/nodeManager/shared";
 
 export const withTwoConnectedNodes = (
   callback: (node0: OnboardedNode, node1: OnboardedNode) => void

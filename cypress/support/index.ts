@@ -1,6 +1,6 @@
 import "./assertions";
 import * as ipcStub from "./ipc-stub";
-import * as nodeManager from "./nodeManager/commands";
+import * as nodeManager from "./nodeManager";
 
 export { ipcStub, nodeManager };
 
