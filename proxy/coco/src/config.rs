@@ -1,7 +1,6 @@
 //! Crate configuration.
 
 use std::{
-    convert::TryFrom,
     io,
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
 };

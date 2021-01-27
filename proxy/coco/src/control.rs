@@ -1,6 +1,6 @@
 //! Utility for fixture data in the monorepo.
 
-use std::{convert::TryFrom, env, io, path, str::FromStr};
+use std::{env, io, path, str::FromStr};
 
 use nonempty::NonEmpty;
 
