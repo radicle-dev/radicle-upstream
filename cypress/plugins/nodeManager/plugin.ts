@@ -33,16 +33,6 @@ class Logger {
   }
 }
 
-interface NodeStartOptions {
-  id: NodeId;
-  proxyBinaryPath?: string;
-}
-
-interface NodeOnboardOptions {
-  handle: string;
-  passphrase: string;
-}
-
 // Because it's not possible to mix tagged union types and extending
 // interfaces, we have to repeat the "inherited" attributes in each state.
 interface ConfiguredNode {
@@ -115,17 +105,17 @@ class Node {
     return this.state.authToken;
   }
 
-  constructor({
-    id,
-    proxyBinaryPath = "proxy/target/debug/radicle-proxy",
-  }: NodeStartOptions) {
-    this.logger = new Logger({ prefix: `[${id}]: `, indentationLevel: 2 });
+  constructor(options: { id: NodeId; proxyBinaryPath: string }) {
+    this.logger = new Logger({
+      prefix: `[${options.id}]: `,
+      indentationLevel: 2,
+    });
     this.state = {
       kind: "configured",
-      id: id,
-      httpPort: id,
-      peerPort: id,
-      proxyBinaryPath: path.join(ROOT_PATH, proxyBinaryPath),
+      id: options.id,
+      httpPort: options.id,
+      peerPort: options.id,
+      proxyBinaryPath: path.join(ROOT_PATH, options.proxyBinaryPath),
     };
   }
 
@@ -165,10 +155,7 @@ class Node {
     this.logger.log("node started successfully");
   }
 
-  async onboard({
-    handle = `user-${this.id}`,
-    passphrase = "radicle-upstream",
-  }: NodeOnboardOptions) {
+  async onboard(options: { handle: string; passphrase: string }) {
     this.logger.log("onboarding node");
 
     if (this.state.kind !== "started") {
@@ -179,7 +166,7 @@ class Node {
       `http://${HOST}:${this.state.id}/v1/keystore`,
       {
         method: "post",
-        body: JSON.stringify({ passphrase }),
+        body: JSON.stringify({ passphrase: options.passphrase }),
         headers: { "Content-Type": "application/json" },
       }
     );
@@ -209,7 +196,7 @@ class Node {
       `http://${HOST}:${this.id}/v1/identities`,
       {
         method: "post",
-        body: JSON.stringify({ handle }),
+        body: JSON.stringify({ handle: options.handle }),
         headers: {
           Cookie: `auth-token=${authToken}`,
           "Content-Type": "application/json",
@@ -239,16 +226,16 @@ class Node {
 
 interface StartNodeOptions {
   id: NodeId;
-  proxyBinaryPath?: string;
+  proxyBinaryPath: string;
 }
 
 interface OnboardNodeOptions {
   id: NodeId;
-  handle?: string;
-  passphrase?: string;
+  handle: string;
+  passphrase: string;
 }
 
-export interface ConnectNodesOptions {
+interface ConnectNodeOptions {
   nodeIds: NodeId[];
 }
 
@@ -285,11 +272,13 @@ class NodeManager {
 
     const node = this.getNode(options.id);
 
-    // FIXME
-    await node.onboard(options as NodeOnboardOptions);
+    await node.onboard({
+      handle: options.handle,
+      passphrase: options.passphrase,
+    });
   }
 
-  async connectNodes(options: ConnectNodesOptions) {
+  async connectNodes(options: ConnectNodeOptions) {
     this.logger.log("connectNodes");
 
     if (options.nodeIds.length < 2) {
@@ -350,15 +339,20 @@ class NodeManager {
 const nodeManager = new NodeManager();
 
 export const nodeManagerPlugin = {
-  [Commands.StartNode]: async (options: StartNodeOptions): Promise<null> => {
-    await nodeManager.startNode(options);
+  [Commands.StartNode]: async ({
+    id,
+    proxyBinaryPath = "proxy/target/debug/radicle-proxy",
+  }: StartNodeOptions): Promise<null> => {
+    await nodeManager.startNode({ id, proxyBinaryPath });
 
     return null;
   },
-  [Commands.OnboardNode]: async (
-    options: OnboardNodeOptions
-  ): Promise<null> => {
-    await nodeManager.onboardNode(options);
+  [Commands.OnboardNode]: async ({
+    id,
+    handle = "secretariat",
+    passphrase = "radicle-upstream",
+  }: OnboardNodeOptions): Promise<null> => {
+    await nodeManager.onboardNode({ id, handle, passphrase });
 
     return null;
   },
@@ -366,7 +360,7 @@ export const nodeManagerPlugin = {
     return nodeManager.getOnboardedNodes();
   },
   [Commands.ConnectNodes]: async (
-    options: ConnectNodesOptions
+    options: ConnectNodeOptions
   ): Promise<null> => {
     await nodeManager.connectNodes(options);
 
