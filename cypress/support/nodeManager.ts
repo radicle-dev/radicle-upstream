@@ -7,8 +7,14 @@ const withNodeManager = (callback: () => void) => {
   cy.task(Commands.StopAllNodes, {}, { log: false });
 };
 
+interface WithTwoConnectedNodesOptions {
+  node1Handle: string;
+  node2Handle: string;
+}
+
 export const withTwoConnectedNodes = (
-  callback: (node0: NodeSession, node1: NodeSession) => void
+  callback: (node0: NodeSession, node1: NodeSession) => void,
+  options: WithTwoConnectedNodesOptions
 ): void => {
   withNodeManager(() => {
     const NODE0_ID = 17000;
@@ -17,10 +23,18 @@ export const withTwoConnectedNodes = (
     cy.log(`running node manager with two nodes: ${NODE0_ID} ${NODE1_ID}`);
 
     cy.task(Commands.StartNode, { id: NODE0_ID }, { log: false });
-    cy.task(Commands.OnboardNode, { id: NODE0_ID }, { log: false });
+    cy.task(
+      Commands.OnboardNode,
+      { id: NODE0_ID, handle: options.node1Handle },
+      { log: false }
+    );
 
     cy.task(Commands.StartNode, { id: NODE1_ID }, { log: false });
-    cy.task(Commands.OnboardNode, { id: NODE1_ID }, { log: false });
+    cy.task(
+      Commands.OnboardNode,
+      { id: NODE1_ID, handle: options.node2Handle },
+      { log: false }
+    );
 
     cy.task(
       Commands.ConnectNodes,
