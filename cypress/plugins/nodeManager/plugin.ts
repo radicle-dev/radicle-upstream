@@ -1,3 +1,4 @@
+import exitHook from "exit-hook";
 import * as path from "path";
 import * as childProcess from "child_process";
 import fetch from "node-fetch";
@@ -186,10 +187,12 @@ class Node {
     this.logger.log("node onboarded successfully");
   }
 
-  async stop(): Promise<void> {
+  stop(): void {
     if (this.state.kind !== "configured") {
       this.logger.log("stopping node");
-      this.state.process.kill();
+      if (!this.state.process.kill()) {
+        this.logger.log(`could not stop process ${this.state.process.pid}`);
+      }
     } else {
       this.logger.log("ignoring stop node command, node wasn't running");
     }
@@ -297,11 +300,11 @@ class NodeManager {
     return onboardedNodes;
   }
 
-  async stopAllNodes(): Promise<void> {
+  stopAllNodes(): void {
     this.logger.log("stopAllNodes");
 
-    this.managedNodes.forEach(async node => {
-      await node.stop();
+    this.managedNodes.forEach(node => {
+      node.stop();
     });
 
     this.managedNodes = [];
@@ -309,6 +312,11 @@ class NodeManager {
 }
 
 const nodeManager = new NodeManager();
+
+// Clean up any lingering radicle-proxy processes when closing Cypress.
+exitHook(() => {
+  nodeManager.stopAllNodes();
+});
 
 export const nodeManagerPlugin = {
   [Commands.StartNode]: async ({
@@ -338,8 +346,8 @@ export const nodeManagerPlugin = {
 
     return null;
   },
-  [Commands.StopAllNodes]: async (): Promise<null> => {
-    await nodeManager.stopAllNodes();
+  [Commands.StopAllNodes]: (): null => {
+    nodeManager.stopAllNodes();
 
     return null;
   },
