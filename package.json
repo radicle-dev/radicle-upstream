@@ -26,11 +26,11 @@
     },
     "extraResources": [
       {
-        "from": "proxy/target/release/radicle-proxy",
+        "from": "target/release/radicle-proxy",
         "to": "./"
       },
       {
-        "from": "proxy/target/release/git-remote-rad",
+        "from": "target/release/git-remote-rad",
         "to": "./"
       },
       {
@@ -127,9 +127,9 @@
     "wait-on": "^5.2.1"
   },
   "scripts": {
-    "start": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--default-seed hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345' yarn _private:start",
-    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--default-seed hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345' yarn _private:start:dev",
-    "start:test": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
+    "start": "RADICLE_UPSTREAM_PROXY_PATH=../target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--default-seed hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345' yarn _private:start",
+    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=../target/debug/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--default-seed hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345' yarn _private:start:dev",
+    "start:test": "RADICLE_UPSTREAM_PROXY_PATH=../target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
     "ethereum:start": "./scripts/ethereum-dev-node.sh",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:integration": "TZ='UTC' run-p --race _private:proxy:start:test _private:test:integration",
@@ -151,11 +151,11 @@
     "_private:dist:clean": "rm -rf ./dist && mkdir ./dist && yarn _private:proxy:clean && yarn _private:rollup:clean",
     "_private:rollup:clean": "rm -rf public/bundle.* && rm -f native/main.comp.js",
     "_private:prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
-    "_private:proxy:build": "cd proxy && cargo build --all-features --all-targets",
-    "_private:proxy:build:release": "cd proxy && cargo build --release",
-    "_private:proxy:clean": "cd proxy && cargo clean",
-    "_private:proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
-    "_private:proxy:start:test:watch": "cd proxy && cargo build --bin git-remote-rad && cargo watch -x 'run -- --test'",
+    "_private:proxy:build": "cargo build --all-features --all-targets",
+    "_private:proxy:build:release": "cargo build --release",
+    "_private:proxy:clean": "cargo clean",
+    "_private:proxy:start:test": "cargo build --bin git-remote-rad && cargo run -- --test",
+    "_private:proxy:start:test:watch": "cargo build --bin git-remote-rad && cargo watch -x 'run -- --test'",
     "_private:rollup:build": "yarn _private:rollup:clean && rollup -c --failAfterWarnings",
     "_private:rollup:watch": "yarn _private:rollup:clean && rollup -c -w",
     "postinstall": "patch-package"
