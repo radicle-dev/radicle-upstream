@@ -21,16 +21,26 @@ export enum Network {
   Other = "Other",
 }
 
-// Check whether we support the `selectedNetwork` in the `environment` in which we are running.
-export function supportedNetwork(
-  environment: Environment,
-  selectedNetwork: Network
-): boolean {
+// Inform which `Network`s we support within the given environment.
+export function supportedNetwork(environment: Environment): Network {
   switch (environment) {
     case Environment.Local:
-      return selectedNetwork === Network.Mainnet;
+      return Network.Mainnet;
     case Environment.Ropsten:
-      return selectedNetwork === Network.Ropsten;
+      return Network.Ropsten;
+  }
+}
+
+// Parse a `Network` value given a `chainId`.
+// For reference check https://chainid.network.
+export function networkFromChainId(chainId: number): Network {
+  switch (chainId) {
+    case 1:
+      return Network.Mainnet;
+    case 3:
+      return Network.Ropsten;
+    default:
+      return Network.Other;
   }
 }
 

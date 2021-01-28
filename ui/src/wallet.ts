@@ -17,6 +17,8 @@ import {
   selected as ethereumEnvironment,
   Environment as EthereumEnvironment,
   Environment,
+  Network,
+  networkFromChainId,
 } from "../src/ethereum/environment";
 
 import * as contract from "../src/funding/contract";
@@ -37,6 +39,7 @@ export type State =
 
 export interface Connected {
   account: Account;
+  network: Network;
 }
 
 export interface Account {
@@ -142,11 +145,16 @@ export function build(
     try {
       const accountAddress = await signer.getAddress();
       const balance = await daiTokenContract.balanceOf(accountAddress);
+      const chainId = await signer.getChainId();
+      console.log("chainId", chainId);
+      console.log("network", networkFromChainId(chainId));
+
       const connected = {
         account: {
           address: accountAddress,
           balance: balance.toString(),
         },
+        network: networkFromChainId(chainId),
       };
       stateStore.set({ status: Status.Connected, connected });
     } catch (error) {

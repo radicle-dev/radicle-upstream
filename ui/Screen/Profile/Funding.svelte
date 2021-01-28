@@ -1,4 +1,8 @@
 <script lang="ts">
+  import {
+    selected as ethereumEnvironment,
+    supportedNetwork,
+  } from "../../src/ethereum/environment";
   import { wallet, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 
@@ -30,7 +34,13 @@
       onDisconnect={wallet.disconnect}
       account={w.connected.account}
       style={'margin-right: var(--content-padding)'} />
-    <Pool pool={pool.make(wallet)} />
+    {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
+      <Pool pool={pool.make(wallet)} />
+    {:else}
+      Your wallet is pointing to an unexpected network. Please, switch back to
+      {supportedNetwork($ethereumEnvironment)}
+      to keep using this feature. ***TBD***
+    {/if}
   </div>
 {:else}
   <ConnectWallet
