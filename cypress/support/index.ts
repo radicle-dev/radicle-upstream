@@ -1,8 +1,5 @@
 import "./assertions";
 import * as ipcStub from "./ipc-stub";
-import * as nodeManager from "./nodeManager";
-
-export { ipcStub, nodeManager };
 
 // Prepare the application `window` instance for cypress test.
 Cypress.on("window:before:load", appWindow => {

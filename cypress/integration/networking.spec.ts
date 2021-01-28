@@ -1,6 +1,7 @@
 import * as commands from "../support/commands";
 import * as path from "path";
-import { ipcStub, nodeManager } from "../support";
+import * as ipcStub from "../support/ipc-stub";
+import * as nodeManager from "../support/nodeManager";
 
 context("networking", () => {
   it("replicates a project from one node to another", () => {
