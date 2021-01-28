@@ -145,9 +145,7 @@ export function build(
     try {
       const accountAddress = await signer.getAddress();
       const balance = await daiTokenContract.balanceOf(accountAddress);
-      const chainId = await signer.getChainId();
-      console.log("chainId", chainId);
-      console.log("network", networkFromChainId(chainId));
+      const chainId = walletConnect.chainId;
 
       const connected = {
         account: {
