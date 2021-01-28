@@ -1,6 +1,7 @@
 <script lang="typescript">
   import { getContext } from "svelte";
 
+  import { selectedEnvironment as ethereumEnvironment } from "../src/ethereum";
   import * as ethereum from "../src/ethereum";
   import { isExperimental } from "../src/ipc";
   import {
@@ -264,7 +265,7 @@
             </div>
             <div class="action">
               <SegmentedControl
-                active={ethereum.selectedEnvironment}
+                active={$ethereumEnvironment}
                 options={[{ title: 'Local', value: ethereum.Environment.Local }, { title: 'Ropsten', value: ethereum.Environment.Ropsten }]}
                 on:select={updateEthereumEnvironment} />
             </div>
