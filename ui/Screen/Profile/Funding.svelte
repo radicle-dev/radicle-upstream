@@ -8,6 +8,7 @@
 
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
   import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
+  import WrongNetwork from "../../DesignSystem/Component/Wallet/WrongNetwork.svelte";
 
   import Pool from "../Funding/Pool.svelte";
 
@@ -37,9 +38,7 @@
     {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
       <Pool pool={pool.make(wallet)} />
     {:else}
-      Your wallet is pointing to an unexpected network. Please, switch back to
-      {supportedNetwork($ethereumEnvironment)}
-      to keep using this feature. ***TBD***
+      <WrongNetwork expectedNetwork={supportedNetwork($ethereumEnvironment)} />
     {/if}
   </div>
 {:else}
