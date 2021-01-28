@@ -287,6 +287,7 @@ class NodeManager {
     this.managedNodes.forEach(node => {
       if (node.authToken && node.httpPort) {
         onboardedNodes.push({
+          id: node.id,
           authToken: node.authToken,
           httpPort: node.httpPort,
         });

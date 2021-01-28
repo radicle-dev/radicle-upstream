@@ -4,6 +4,7 @@
 // to those, so indlucing `plugin.ts` inside `commands.ts` leads to errors.
 
 export interface NodeSession {
+  id: number;
   authToken: string;
   httpPort: number;
 }
