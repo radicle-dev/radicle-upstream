@@ -110,7 +110,7 @@ export class PoolContract {
   }
 
   async collect(): Promise<ContractTransaction> {
-    return this.contract.collect().then((x: BigNumber) => ethereum.toHumans(x));
+    return this.contract.collect();
   }
 
   async withdrawAllFlag(): Promise<BigNumber> {
