@@ -64,7 +64,7 @@ class Node {
 
   get peerAddress(): PeerAddress {
     if (this.state.kind !== "onboarded") {
-      throw "Can't get peerAddress before node is onboarded";
+      throw new Error("Can't get peerAddress before node is onboarded");
     }
 
     return this.state.peerAddress;
@@ -72,7 +72,7 @@ class Node {
 
   get authToken(): AuthToken {
     if (this.state.kind !== "onboarded") {
-      throw "Can't get peerAddress before node is onboarded";
+      throw new Error("Can't get peerAddress before node is onboarded");
     }
 
     return this.state.authToken;
@@ -130,7 +130,7 @@ class Node {
     this.logger.log("onboarding node");
 
     if (this.state.kind !== "started") {
-      throw "Tried to onboard a node that wasn't started yet";
+      throw new Error("Tried to onboard a node that wasn't started yet");
     }
 
     const keystoreResponse = await fetch(
@@ -143,12 +143,12 @@ class Node {
     );
 
     if (!keystoreResponse) {
-      throw "No response from keystore request";
+      throw new Error("No response from keystore request");
     }
 
     const cookie = keystoreResponse.headers.get("set-cookie");
     if (!cookie) {
-      throw "Response did not contain an auth cookie";
+      throw new Error("Response did not contain an auth cookie");
     }
 
     const match = cookie.match(/auth-token=(.*);/);
@@ -156,7 +156,7 @@ class Node {
     if (match && match[1]) {
       authToken = match[1];
     } else {
-      throw "Auth cookie does not match the expected shape";
+      throw new Error("Auth cookie does not match the expected shape");
     }
 
     // We have to wait here because proxy restarts its internal machinery
@@ -225,7 +225,7 @@ class NodeManager {
     });
 
     if (!node) {
-      throw `Could not find node by id ${id}`;
+      throw new Error(`Could not find node by id ${id}`);
     }
 
     return node;
@@ -254,7 +254,7 @@ class NodeManager {
     this.logger.log("connectNodes");
 
     if (options.nodeIds.length < 2) {
-      throw "Supply at least 2 node IDs";
+      throw new Error("Supply at least 2 node IDs");
     }
 
     const firstNode = this.getNode(options.nodeIds[0]);
