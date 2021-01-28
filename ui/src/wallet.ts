@@ -150,7 +150,13 @@ export function build(
   async function loadAccountData() {
     try {
       const accountAddress = await signer.getAddress();
-      const balance = await daiTokenContract.balanceOf(accountAddress);
+      const preciseBalance: ethers.BigNumber = await daiTokenContract.balanceOf(
+        accountAddress
+      );
+      const tokenDecimals = await daiTokenContract.decimals();
+      const balance = preciseBalance.div(
+        ethers.BigNumber.from(10).pow(tokenDecimals)
+      );
       const chainId = walletConnect.chainId;
 
       const connected = {
@@ -174,7 +180,6 @@ export function build(
   const REFRESH_INTERVAL_MILLIS = 3000;
   setInterval(() => {
     if (svelteStore.get(stateStore).status === Status.Connected) {
-      console.log("Still connected, will load data");
       loadAccountData();
     }
   }, REFRESH_INTERVAL_MILLIS);
