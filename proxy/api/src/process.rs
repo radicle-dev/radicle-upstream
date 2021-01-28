@@ -218,7 +218,7 @@ async fn rig(
 
         let (peer, state, seeds_sender) = if environment.test_mode {
             let config = coco::config::configure(
-                ethereum.Environmentcoco_paths.clone(),
+                environment.coco_paths.clone(),
                 key,
                 *coco::config::INADDR_ANY,
                 coco::config::static_seed_discovery(vec![]),
