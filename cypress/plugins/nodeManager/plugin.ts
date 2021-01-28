@@ -180,18 +180,19 @@ class Node {
       ...this.state,
       kind: "onboarded",
       authToken: authToken,
-      peerAddress: `${json.peerId}@${HOST}:${this.state.peerPort}`,
+      peerAddress: `${json.peerId}@${HOST}:${this.peerPort}`,
     };
 
     this.logger.log("node onboarded successfully");
   }
 
   async stop(): Promise<void> {
-    if (this.state.kind === "configured") {
-      throw "Tried to stop a node that wasn't started yet";
+    if (this.state.kind !== "configured") {
+      this.logger.log("stopping node");
+      this.state.process.kill();
+    } else {
+      this.logger.log("ignoring stop node command, node wasn't running");
     }
-
-    this.state.process.kill();
   }
 }
 

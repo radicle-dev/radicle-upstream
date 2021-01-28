@@ -1,22 +1,28 @@
 import type { NodeSession } from "../plugins/nodeManager/shared";
 import { Commands } from "../plugins/nodeManager/shared";
 
+const withNodeManager = (callback: () => void) => {
+  cy.task(Commands.StopAllNodes);
+  callback();
+  cy.task(Commands.StopAllNodes);
+};
+
 export const withTwoConnectedNodes = (
   callback: (node0: NodeSession, node1: NodeSession) => void
 ): void => {
-  cy.task(Commands.StartNode, { id: 17000 });
-  cy.task(Commands.OnboardNode, { id: 17000 });
+  withNodeManager(() => {
+    cy.task(Commands.StartNode, { id: 17000 });
+    cy.task(Commands.OnboardNode, { id: 17000 });
 
-  cy.task(Commands.StartNode, { id: 18000 });
-  cy.task(Commands.OnboardNode, { id: 18000 });
+    cy.task(Commands.StartNode, { id: 18000 });
+    cy.task(Commands.OnboardNode, { id: 18000 });
 
-  cy.task(Commands.ConnectNodes, { nodeIds: [17000, 18000] });
+    cy.task(Commands.ConnectNodes, { nodeIds: [17000, 18000] });
 
-  cy.task<NodeSession[]>(Commands.GetOnboardedNodes).then(nodes => {
-    callback(nodes[0], nodes[1]);
+    cy.task<NodeSession[]>(Commands.GetOnboardedNodes).then(nodes => {
+      callback(nodes[0], nodes[1]);
+    });
   });
-
-  cy.task(Commands.StopAllNodes);
 };
 
 export const asNode = (node: NodeSession): void => {
