@@ -1,4 +1,3 @@
-import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
 // The environment in which the ethereum-based experiences may run.
@@ -13,8 +12,9 @@ export enum Environment {
   // N.B: We will support 'Mainnet' in the future
 }
 
-// The union of supported networks across all `Environment`s.
-// We may only support a subset of them within specific environments.
+// The ethereum networks we may parse from a connected wallet across
+// all`Environment`s. See `supportedNetwork` to learn which networks
+// which Environment supports.
 export enum Network {
   Ropsten = "Ropsten",
   Mainnet = "Mainnet",
@@ -45,11 +45,7 @@ export function networkFromChainId(chainId: number): Network {
 }
 
 // The store where the selected Ethereum environment is persisted.
-export const selected = persistentStore<Environment>(
+export const selectedEnvironment = persistentStore<Environment>(
   "ethereum-environment-v0",
-  Environment.Local
+  Environment.Ropsten
 );
-
-export function current(): Environment {
-  return svelteStore.get(selected);
-}

@@ -1,8 +1,8 @@
 <script lang="ts">
   import {
-    selected as ethereumEnvironment,
+    selectedEnvironment as ethereumEnvironment,
     supportedNetwork,
-  } from "../../src/ethereum/environment";
+  } from "../../src/ethereum";
   import { wallet, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 

@@ -13,16 +13,9 @@ import type {
   TransactionResponse,
 } from "@ethersproject/abstract-provider";
 
-import {
-  selected as ethereumEnvironment,
-  Environment as EthereumEnvironment,
-  Environment,
-  Network,
-  networkFromChainId,
-} from "../src/ethereum/environment";
-
 import * as contract from "../src/funding/contract";
 import * as error from "../src/error";
+import * as ethereum from "../src/ethereum";
 import * as modal from "../src/modal";
 import * as path from "../src/path";
 
@@ -39,7 +32,7 @@ export type State =
 
 export interface Connected {
   account: Account;
-  network: Network;
+  network: ethereum.Network;
 }
 
 export interface Account {
@@ -56,12 +49,12 @@ export interface Wallet extends svelteStore.Readable<State> {
 }
 
 function getProvider(
-  environment: EthereumEnvironment
+  environment: ethereum.Environment
 ): ethers.providers.Provider {
   switch (environment) {
-    case EthereumEnvironment.Local:
+    case ethereum.Environment.Local:
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");
-    case EthereumEnvironment.Ropsten:
+    case ethereum.Environment.Ropsten:
       return new ethers.providers.InfuraProvider(
         "ropsten",
         "66fa0f92a54e4d8c9483ffdc6840d77b"
@@ -89,7 +82,7 @@ function newWalletConnect(): WalletConnect {
 }
 
 export function build(
-  environment: Environment,
+  environment: ethereum.Environment,
   provider: ethers.providers.Provider
 ): Wallet {
   const stateStore = svelteStore.writable<State>({
@@ -164,7 +157,7 @@ export function build(
           address: accountAddress,
           balance: balance.toString(),
         },
-        network: networkFromChainId(chainId),
+        network: ethereum.networkFromChainId(chainId),
       };
       stateStore.set({ status: Status.Connected, connected });
     } catch (error) {
@@ -212,12 +205,12 @@ declare global {
 class WalletConnectSigner extends ethers.Signer {
   public walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
-  private _environment: EthereumEnvironment;
+  private _environment: ethereum.Environment;
 
   constructor(
     walletConnect: WalletConnect,
     provider: Provider,
-    environment: EthereumEnvironment,
+    environment: ethereum.Environment,
     onDisconnect: () => void
   ) {
     super();
@@ -245,7 +238,7 @@ class WalletConnectSigner extends ethers.Signer {
   async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
-    if (this._environment === EthereumEnvironment.Local) {
+    if (this._environment === ethereum.Environment.Local) {
       return super.sendTransaction(transaction);
     }
 
@@ -358,6 +351,6 @@ export function formattedBalance(balance: number): string {
 
 export let wallet: Wallet;
 
-ethereumEnvironment.subscribe((environment: EthereumEnvironment) => {
+ethereum.selectedEnvironment.subscribe((environment: ethereum.Environment) => {
   wallet = build(environment, getProvider(environment));
 });

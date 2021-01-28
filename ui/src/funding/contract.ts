@@ -8,7 +8,7 @@ import {
   ERC20__factory as Erc20Factory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
-import * as environment from "../ethereum/environment";
+import * as ethereum from "../ethereum";
 
 const addresses = {
   pool: {
@@ -23,12 +23,12 @@ const addresses = {
 
 // Address of the Funding Pool contract
 export const POOL_ADDRESS: svelteStore.Readable<string> = svelteStore.derived(
-  environment.selected,
+  ethereum.selectedEnvironment,
   $environment => {
     switch ($environment) {
-      case environment.Environment.Local:
+      case ethereum.Environment.Local:
         return addresses.pool.local;
-      case environment.Environment.Ropsten:
+      case ethereum.Environment.Ropsten:
         return addresses.pool.ropsten;
     }
   }
@@ -40,12 +40,12 @@ export function pool(signer: Signer): PoolContract {
 
 // Address of the DAI ERC20 token contract
 export const DAI_TOKEN_ADDRESS: svelteStore.Readable<string> = svelteStore.derived(
-  environment.selected,
+  ethereum.selectedEnvironment,
   $environment => {
     switch ($environment) {
-      case environment.Environment.Local:
+      case ethereum.Environment.Local:
         return addresses.dai.local;
-      case environment.Environment.Ropsten:
+      case ethereum.Environment.Ropsten:
         return addresses.dai.ropsten;
     }
   }
