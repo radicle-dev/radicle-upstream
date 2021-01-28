@@ -1,3 +1,4 @@
+import { BigNumber, BigNumberish } from "ethers";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
 // The environment in which the ethereum-based experiences may run.
@@ -49,3 +50,11 @@ export const selectedEnvironment = persistentStore<Environment>(
   "ethereum-environment-v0",
   Environment.Ropsten
 );
+
+export function toHumans(n: BigNumberish, exp: number = 18): BigNumber {
+  return BigNumber.from(n).div(BigNumber.from(10).pow(exp));
+}
+
+export function toDecimals(n: BigNumberish, exp: number = 18): BigNumber {
+  return BigNumber.from(n).mul(BigNumber.from(10).pow(exp));
+}

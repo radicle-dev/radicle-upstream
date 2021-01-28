@@ -147,9 +147,7 @@ export function build(
         accountAddress
       );
       const tokenDecimals = await daiTokenContract.decimals();
-      const balance = preciseBalance.div(
-        ethers.BigNumber.from(10).pow(tokenDecimals)
-      );
+      const balance = ethereum.toHumans(preciseBalance, tokenDecimals);
       const chainId = walletConnect.chainId;
 
       const connected = {
@@ -352,5 +350,10 @@ export function formattedBalance(balance: number): string {
 export let wallet: Wallet;
 
 ethereum.selectedEnvironment.subscribe((environment: ethereum.Environment) => {
-  wallet = build(environment, getProvider(environment));
+  const provider = getProvider(environment);
+  wallet = build(environment, provider);
+
+  if (provider instanceof ethers.providers.JsonRpcProvider) {
+    window.ethereumDebug = new EthereumDebug(provider);
+  }
 });

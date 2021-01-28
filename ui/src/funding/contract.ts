@@ -69,28 +69,48 @@ export class PoolContract {
     amountPerBlock: BigNumber,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
-    return this.contract.updateSender(topUp, 0, amountPerBlock, receivers, []);
+    return this.contract.updateSender(
+      ethereum.toDecimals(topUp),
+      0,
+      ethereum.toDecimals(amountPerBlock),
+      receivers,
+      []
+    );
   }
 
   async updatePlan(
     amountPerBlock: BigNumber,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
-    return this.contract.updateSender(0, 0, amountPerBlock, receivers, []);
+    return this.contract.updateSender(
+      0,
+      0,
+      ethereum.toDecimals(amountPerBlock),
+      receivers,
+      []
+    );
   }
 
   async topUp(amount: BigNumber): Promise<ContractTransaction> {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
-    return this.contract.updateSender(amount, 0, UNCHANGED, [], []);
+    return this.contract.updateSender(
+      ethereum.toDecimals(amount),
+      0,
+      UNCHANGED,
+      [],
+      []
+    );
   }
 
   async withdraw(amount: BigNumber): Promise<ContractTransaction> {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
-    return this.contract.updateSender(0, amount, UNCHANGED, [], []);
+    const ALL = await this.withdrawAllFlag();
+    const finalAmount = amount.eq(ALL) ? ALL : ethereum.toDecimals(amount);
+    return this.contract.updateSender(0, finalAmount, UNCHANGED, [], []);
   }
 
   async collect(): Promise<ContractTransaction> {
-    return this.contract.collect();
+    return this.contract.collect().then((x: BigNumber) => ethereum.toHumans(x));
   }
 
   async withdrawAllFlag(): Promise<BigNumber> {
@@ -98,15 +118,21 @@ export class PoolContract {
   }
 
   async withdrawable(): Promise<BigNumber> {
-    return this.contract.withdrawable();
+    return this.contract
+      .withdrawable()
+      .then((x: BigNumber) => ethereum.toHumans(x));
   }
 
   async collectable(): Promise<BigNumber> {
-    return this.contract.collectable();
+    return this.contract
+      .collectable()
+      .then((x: BigNumber) => ethereum.toHumans(x));
   }
 
   async amountPerBlock(): Promise<BigNumber> {
-    return this.contract.getAmountPerBlock();
+    return this.contract
+      .getAmountPerBlock()
+      .then((x: BigNumber) => ethereum.toHumans(x));
   }
 
   async receivers(): Promise<PoolReceiver[]> {

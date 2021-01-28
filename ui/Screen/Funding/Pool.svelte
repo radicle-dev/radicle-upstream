@@ -31,7 +31,7 @@
 
 <div class="pool-container">
   <Remote store={pool.data} let:data={poolData}>
-    {#if poolData.collectableFunds > 0}
+    {#if poolData.collectableFunds.gt(0)}
       <Incoming
         amount={poolData.collectableFunds}
         {onCollect}
