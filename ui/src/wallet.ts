@@ -69,6 +69,25 @@ function getProvider(
   }
 }
 
+const qrCodeModal = {
+  open: (uri: string, _cb: unknown, _opts?: unknown) => {
+    uriStore.set(uri);
+    modal.toggle(path.walletQRCode());
+  },
+  close: async () => {
+    // N.B: this is actually called when the connection is established,
+    // not when the modal is closed per se.
+    modal.hide();
+  },
+};
+
+function newWalletConnect(): WalletConnect {
+  return new WalletConnect({
+    bridge: "https://bridge.walletconnect.org",
+    qrcodeModal: qrCodeModal,
+  });
+}
+
 export function build(
   environment: Environment,
   provider: ethers.providers.Provider
@@ -77,24 +96,13 @@ export function build(
     status: Status.NotConnected,
   });
 
-  const qrCodeModal = {
-    open: (uri: string, _cb: unknown, _opts?: unknown) => {
-      uriStore.set(uri);
-      modal.toggle(path.walletQRCode());
-    },
-    close: async () => {
-      // N.B: this is actually called when the connection is established,
-      // not when the modal is closed per se.
-      modal.hide();
-    },
-  };
-
-  let walletConnect = new WalletConnect({
-    bridge: "https://bridge.walletconnect.org",
-    qrcodeModal: qrCodeModal,
-  });
-
-  const signer = new WalletConnectSigner(walletConnect, provider, environment);
+  let walletConnect = newWalletConnect();
+  const signer = new WalletConnectSigner(
+    walletConnect,
+    provider,
+    environment,
+    disconnect
+  );
   const daiTokenContract = contract.daiToken(signer);
 
   // window.ethereumDebug = new EthereumDebug(provider);
@@ -120,15 +128,17 @@ export function build(
   }
 
   async function disconnect() {
-    await walletConnect.killSession();
-    // We need to reinitialize `WalletConnect` until this issue is fixed:
-    // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
-    walletConnect = new WalletConnect({
-      bridge: "https://bridge.walletconnect.org",
-      qrcodeModal: qrCodeModal,
-    });
-    signer.walletConnect = walletConnect;
-    stateStore.set({ status: Status.NotConnected });
+    try {
+      stateStore.set({ status: Status.NotConnected });
+      await walletConnect.killSession();
+      // We need to reinitialize `WalletConnect` until this issue is fixed:
+      // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
+      walletConnect = newWalletConnect();
+      signer.walletConnect = walletConnect;
+    } catch {
+      // When the user disconnects wallet-side, calling `killSession` app-side trows an error
+      // because the wallet has already closed its socket. Therefore, we simply ignore it.
+    }
   }
 
   async function initialize() {
@@ -136,12 +146,8 @@ export function build(
     loadAccountData();
   }
 
-  // Load the connected account's data.
+  // Load the data of the connected account.
   async function loadAccountData() {
-    if (!walletConnect.connected) {
-      return;
-    }
-
     try {
       const accountAddress = await signer.getAddress();
       const balance = await daiTokenContract.balanceOf(accountAddress);
@@ -167,7 +173,10 @@ export function build(
   // Periodically refresh the wallet data
   const REFRESH_INTERVAL_MILLIS = 3000;
   setInterval(() => {
-    loadAccountData();
+    if (svelteStore.get(stateStore).status === Status.Connected) {
+      console.log("Still connected, will load data");
+      loadAccountData();
+    }
   }, REFRESH_INTERVAL_MILLIS);
 
   function account(): Account | undefined {
@@ -200,21 +209,18 @@ class WalletConnectSigner extends ethers.Signer {
   private _provider: ethers.providers.Provider;
   private _environment: EthereumEnvironment;
 
-  private sessionUpdateListener = () => {
-    return undefined;
-  };
-
   constructor(
     walletConnect: WalletConnect,
     provider: Provider,
-    environment: EthereumEnvironment
+    environment: EthereumEnvironment,
+    onDisconnect: () => void
   ) {
     super();
     defineReadOnly(this, "provider", provider);
     this._provider = provider;
     this._environment = environment;
     this.walletConnect = walletConnect;
-    this.walletConnect.on("session_update", this.sessionUpdateListener);
+    this.walletConnect.on("disconnect", onDisconnect);
   }
 
   async getAddress(): Promise<string> {
@@ -291,12 +297,8 @@ class WalletConnectSigner extends ethers.Signer {
     return signedTx;
   }
 
-  connect(provider: Provider): ethers.Signer {
-    return new WalletConnectSigner(
-      this.walletConnect,
-      provider,
-      svelteStore.get(ethereumEnvironment)
-    );
+  connect(_provider: Provider): ethers.Signer {
+    throw new Error("WalletConnectSigner should never be called");
   }
 }
 
