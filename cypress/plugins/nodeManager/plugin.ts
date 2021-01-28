@@ -34,43 +34,19 @@ class Logger {
 }
 
 // Because it's not possible to mix tagged union types and extending
-// interfaces, we have to repeat the "inherited" attributes in each state.
+// interfaces, we have to repeat the "inherited" attributes in each node state.
 interface ConfiguredNode {
   kind: "configured";
-
-  // ConfiguredNode
-  id: NodeId;
-  httpPort: number;
-  peerPort: number;
-  proxyBinaryPath: string;
 }
 
 interface StartedNode {
   kind: "started";
-
-  // ConfiguredNode
-  id: NodeId;
-  httpPort: number;
-  peerPort: number;
-  proxyBinaryPath: string;
-
-  // StartedNode
   process: childProcess.ChildProcess;
 }
 
 interface OnboardedNode {
   kind: "onboarded";
-
-  // ConfiguredNode
-  id: NodeId;
-  httpPort: number;
-  peerPort: number;
-  proxyBinaryPath: string;
-
-  // StartedNode
   process: childProcess.ChildProcess;
-
-  // OnboardedNode
   authToken: AuthToken;
   peerAddress: PeerAddress;
 }
@@ -78,16 +54,13 @@ interface OnboardedNode {
 type NodeState = ConfiguredNode | StartedNode | OnboardedNode;
 
 class Node {
-  private state: NodeState;
+  private state: NodeState = { kind: "configured" };
   private logger: Logger;
 
-  get id() {
-    return this.state.id;
-  }
-
-  get httpPort() {
-    return this.state.httpPort;
-  }
+  id: NodeId;
+  httpPort: number;
+  peerPort: number;
+  proxyBinaryPath: string;
 
   get peerAddress(): PeerAddress {
     if (this.state.kind !== "onboarded") {
@@ -110,26 +83,24 @@ class Node {
       prefix: `[${options.id}]: `,
       indentationLevel: 2,
     });
-    this.state = {
-      kind: "configured",
-      id: options.id,
-      httpPort: options.id,
-      peerPort: options.id,
-      proxyBinaryPath: path.join(ROOT_PATH, options.proxyBinaryPath),
-    };
+
+    this.id = options.id;
+    this.httpPort = options.id;
+    this.peerPort = options.id;
+    this.proxyBinaryPath = path.join(ROOT_PATH, options.proxyBinaryPath);
   }
 
   async start() {
     this.logger.log("starting node");
 
     const process = childProcess.spawn(
-      this.state.proxyBinaryPath,
+      this.proxyBinaryPath,
       [
         "--test",
         "--http-listen",
-        `${HOST}:${this.state.httpPort}`,
+        `${HOST}:${this.httpPort}`,
         "--peer-listen",
-        `${HOST}:${this.state.peerPort}`,
+        `${HOST}:${this.peerPort}`,
       ],
       {}
     );
@@ -150,7 +121,7 @@ class Node {
 
     this.state = { ...this.state, kind: "started", process: process };
 
-    await waitOn({ resources: [`tcp:${HOST}:${this.state.httpPort}`] });
+    await waitOn({ resources: [`tcp:${HOST}:${this.httpPort}`] });
 
     this.logger.log("node started successfully");
   }
@@ -163,7 +134,7 @@ class Node {
     }
 
     const keystoreResponse = await fetch(
-      `http://${HOST}:${this.state.id}/v1/keystore`,
+      `http://${HOST}:${this.id}/v1/keystore`,
       {
         method: "post",
         body: JSON.stringify({ passphrase: options.passphrase }),
