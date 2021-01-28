@@ -62,14 +62,11 @@ pub struct CoCo {
     pub seeds: Vec<String>,
 }
 
+/// Default seeds placeholder, don't use this for setting default seeds.
+/// Set the default seeds by passing a "--default-seed" CLI flag.
 impl Default for CoCo {
     fn default() -> Self {
-        Self {
-            seeds: vec![
-                "hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"
-                    .to_string(),
-            ],
-        }
+        Self { seeds: vec![] }
     }
 }
 

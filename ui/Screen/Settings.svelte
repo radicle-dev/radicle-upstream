@@ -219,11 +219,13 @@
           <form class="seed-entry-form" on:submit|preventDefault>
             <div class="seed-entry-field">
               <Input.Text
+                dataCy="seed-input"
                 bind:value={seedInputValue}
                 placeholder="Enter a seed address here"
                 style="margin-right: 8px; min-width: 224px; width: 100%;"
                 validation={$seedValidation} />
               <Button
+                dataCy="add-seed"
                 style="display: flex;"
                 on:click={submitSeed}
                 disabled={!seedInputValue}

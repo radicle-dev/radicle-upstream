@@ -64,7 +64,7 @@ mod handler {
 
         let id = identity::create(&ctx.state, &input.handle).await?;
 
-        session::initialize(&ctx.store, id.clone())?;
+        session::initialize(&ctx.store, id.clone(), &ctx.default_seeds)?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
@@ -205,7 +205,7 @@ mod test {
                 coco::user::verify(user)?
             };
 
-            session::initialize(&ctx.store, id)?;
+            session::initialize(&ctx.store, id, &ctx.default_seeds)?;
 
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.state,

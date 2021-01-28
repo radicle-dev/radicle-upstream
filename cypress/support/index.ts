@@ -1,8 +1,6 @@
 import "./assertions";
 import * as ipcStub from "./ipc-stub";
 
-export { ipcStub };
-
 // Prepare the application `window` instance for cypress test.
 Cypress.on("window:before:load", appWindow => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

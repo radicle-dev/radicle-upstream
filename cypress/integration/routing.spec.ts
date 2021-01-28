@@ -1,5 +1,5 @@
 import * as ipcTypes from "../../native/ipc-types";
-import { ipcStub } from "../support";
+import * as ipcStub from "../support/ipc-stub";
 import * as commands from "../support/commands";
 
 context("routing", () => {
