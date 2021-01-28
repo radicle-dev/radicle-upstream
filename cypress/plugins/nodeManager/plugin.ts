@@ -34,19 +34,25 @@ class Logger {
   }
 }
 
+enum StateKind {
+  Configured = "configured",
+  Started = "started",
+  Onboarded = "onboarded",
+}
+
 // Because it's not possible to mix tagged union types and extending
 // interfaces, we have to repeat the "inherited" attributes in each node state.
 interface ConfiguredNode {
-  kind: "configured";
+  kind: StateKind.Configured;
 }
 
 interface StartedNode {
-  kind: "started";
+  kind: StateKind.Started;
   process: childProcess.ChildProcess;
 }
 
 interface OnboardedNode {
-  kind: "onboarded";
+  kind: StateKind.Onboarded;
   process: childProcess.ChildProcess;
   authToken: AuthToken;
   peerAddress: PeerAddress;
@@ -55,7 +61,7 @@ interface OnboardedNode {
 type NodeState = ConfiguredNode | StartedNode | OnboardedNode;
 
 class Node {
-  private state: NodeState = { kind: "configured" };
+  private state: NodeState = { kind: StateKind.Configured };
   private logger: Logger;
 
   id: NodeId;
@@ -64,7 +70,7 @@ class Node {
   proxyBinaryPath: string;
 
   get peerAddress(): PeerAddress {
-    if (this.state.kind !== "onboarded") {
+    if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
     }
 
@@ -72,7 +78,7 @@ class Node {
   }
 
   get authToken(): AuthToken {
-    if (this.state.kind !== "onboarded") {
+    if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
     }
 
@@ -120,7 +126,7 @@ class Node {
       this.logger.log(`  STDOUT: ${data.trim()}`);
     });
 
-    this.state = { ...this.state, kind: "started", process: process };
+    this.state = { ...this.state, kind: StateKind.Started, process: process };
 
     await waitOn({ resources: [`tcp:${HOST}:${this.httpPort}`] });
 
@@ -130,7 +136,7 @@ class Node {
   async onboard(options: { handle: string; passphrase: string }) {
     this.logger.log("onboarding node");
 
-    if (this.state.kind !== "started") {
+    if (this.state.kind !== StateKind.Started) {
       throw new Error("Tried to onboard a node that wasn't started yet");
     }
 
@@ -179,7 +185,7 @@ class Node {
 
     this.state = {
       ...this.state,
-      kind: "onboarded",
+      kind: StateKind.Onboarded,
       authToken: authToken,
       peerAddress: `${json.peerId}@${HOST}:${this.peerPort}`,
     };
@@ -188,7 +194,7 @@ class Node {
   }
 
   stop(): void {
-    if (this.state.kind !== "configured") {
+    if (this.state.kind !== StateKind.Configured) {
       this.logger.log("stopping node");
       if (!this.state.process.kill()) {
         this.logger.log(`could not stop process ${this.state.process.pid}`);
