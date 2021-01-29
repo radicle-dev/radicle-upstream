@@ -1,6 +1,6 @@
 :root {
   --color-primary: #ff55ff;
-  --color-primary-level-1: #ffd4ff;
+  --color-primary-level-1: #ffeaff;
   --color-primary-level-2: #ff87ff;
   --color-primary-level-6: #663b66;
   --color-secondary: #5555ff;
@@ -44,7 +44,7 @@
   --color-primary: #ff55ff;
   --color-primary-level-1: #382847;
   --color-primary-level-2: #62326d;
-  --color-primary-level-6: #ffd4ff;
+  --color-primary-level-6: #ffeaff;
   --color-secondary: #5555ff;
   --color-secondary-level-1: #212847;
   --color-secondary-level-2: #2c326d;

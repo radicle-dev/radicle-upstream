@@ -17,6 +17,7 @@ export default {
     typescript({
       // See https://github.com/rollup/plugins/issues/272
       noEmitOnError: production,
+      module: "es6",
     }),
 
     // This avoids the following warning:

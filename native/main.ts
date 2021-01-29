@@ -14,6 +14,8 @@ import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
 const isDev = process.env.NODE_ENV === "development";
 
 let proxyPath;
+let proxyArgs: string[] = [];
+
 if (isDev) {
   if (process.env.RADICLE_UPSTREAM_PROXY_PATH) {
     proxyPath = path.join(__dirname, process.env.RADICLE_UPSTREAM_PROXY_PATH);
@@ -22,15 +24,19 @@ if (isDev) {
       "RADICLE_UPSTREAM_PROXY_PATH must be set when running in dev mode!"
     );
   }
-} else {
-  proxyPath = path.join(__dirname, "../../radicle-proxy");
-}
 
-let proxyArgs: string[] = [];
-if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
-  proxyArgs = process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(
-    Boolean
-  );
+  if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
+    proxyArgs = process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(
+      Boolean
+    );
+  }
+} else {
+  // Packaged app, i.e. production.
+  proxyPath = path.join(__dirname, "../../radicle-proxy");
+  proxyArgs = [
+    "--default-seed",
+    "hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345",
+  ];
 }
 
 if (process.env.RAD_HOME) {
@@ -151,6 +157,10 @@ ipcMain.handle(RendererMessage.OPEN_PATH, async (_event, path) => {
 
 ipcMain.handle(RendererMessage.GET_VERSION, () => {
   return app.getVersion();
+});
+
+ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
+  openExternalLink(url);
 });
 
 function setupWatcher() {

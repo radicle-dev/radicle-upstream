@@ -334,6 +334,7 @@ mod test {
             session::initialize(
                 &ctx.store,
                 (ctx.state.peer_id(), owner.clone().into_inner().into_inner()).into(),
+                &ctx.default_seeds,
             )?;
 
             let platinum_project = coco::control::replicate_platinum(
@@ -413,7 +414,7 @@ mod test {
             let handle = "cloudhead";
             let id = identity::create(&ctx.state, handle).await?;
 
-            session::initialize(&ctx.store, id)?;
+            session::initialize(&ctx.store, id, &ctx.default_seeds)?;
         };
 
         let project = coco::project::Create {
@@ -473,7 +474,7 @@ mod test {
         {
             let handle = "cloudhead";
             let id = identity::create(&ctx.state, handle).await?;
-            session::initialize(&ctx.store, id)?;
+            session::initialize(&ctx.store, id, &ctx.default_seeds)?;
         };
 
         let project = coco::project::Create {
