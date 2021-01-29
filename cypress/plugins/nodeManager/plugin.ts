@@ -7,6 +7,7 @@ import type { NodeSession } from "./shared";
 import { Commands } from "./shared";
 
 type NodeId = number;
+type PeerId = string;
 type PeerAddress = string;
 type AuthToken = string;
 
@@ -56,6 +57,7 @@ interface OnboardedNode {
   process: childProcess.ChildProcess;
   authToken: AuthToken;
   peerAddress: PeerAddress;
+  peerId: PeerId;
 }
 
 type NodeState = ConfiguredNode | StartedNode | OnboardedNode;
@@ -69,6 +71,14 @@ class Node {
   peerPort: number;
   proxyBinaryPath: string;
 
+  get authToken(): AuthToken {
+    if (this.state.kind !== StateKind.Onboarded) {
+      throw new Error("Can't get peerAddress before node is onboarded");
+    }
+
+    return this.state.authToken;
+  }
+
   get peerAddress(): PeerAddress {
     if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
@@ -77,12 +87,12 @@ class Node {
     return this.state.peerAddress;
   }
 
-  get authToken(): AuthToken {
+  get peerId(): PeerId {
     if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
     }
 
-    return this.state.authToken;
+    return this.state.peerId;
   }
 
   get currentState(): StateKind {
@@ -192,6 +202,7 @@ class Node {
       kind: StateKind.Onboarded,
       authToken: authToken,
       peerAddress: `${json.peerId}@${HOST}:${this.peerPort}`,
+      peerId: json.peerId,
     };
 
     this.logger.log("node onboarded successfully");
@@ -308,6 +319,7 @@ class NodeManager {
         onboardedNodes.push({
           id: node.id,
           authToken: node.authToken,
+          peerId: node.peerId,
           httpPort: node.httpPort,
         });
       }
