@@ -3,11 +3,27 @@ import * as path from "path";
 import * as ipcStub from "../support/ipc-stub";
 import * as nodeManager from "../support/nodeManager";
 
-context("networking", () => {
+context("p2p networking", () => {
+  context("network status indicator", () => {
+    it(
+      "reacts to network state changes",
+      { defaultCommandTimeout: 8000 },
+      () => {
+        nodeManager.withTwoOnboardedNodes((node1, node2) => {
+          nodeManager.asNode(node1);
+          commands.pick("connection-status-offline").should("exist");
+          nodeManager.connectTwoNodes(node1, node2);
+          commands.pick("connection-status-online").should("exist");
+        });
+      }
+    );
+  });
+
   it("replicates a project from one node to another", () => {
     commands.withTempDir(tempDirPath => {
-      nodeManager.withTwoConnectedNodes(
+      nodeManager.withTwoOnboardedNodes(
         (node1, node2) => {
+          nodeManager.connectTwoNodes(node1, node2);
           nodeManager.asNode(node1);
           const newProjectPath = path.join(tempDirPath, "node1/new-project");
 

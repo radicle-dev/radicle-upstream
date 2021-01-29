@@ -85,6 +85,10 @@ class Node {
     return this.state.authToken;
   }
 
+  get currentState(): StateKind {
+    return this.state.kind;
+  }
+
   constructor(options: { id: NodeId; proxyBinaryPath: string }) {
     this.logger = new Logger({
       prefix: `[${options.id}]: `,
@@ -265,6 +269,12 @@ class NodeManager {
     if (options.nodeIds.length < 2) {
       throw new Error("Supply at least 2 node IDs");
     }
+
+    this.managedNodes.forEach(node => {
+      if (node.currentState !== StateKind.Onboarded) {
+        throw new Error("Can't connect nodes that are not onboarded");
+      }
+    });
 
     const firstNode = this.getNode(options.nodeIds[0]);
     const remainingNodes = this.managedNodes.filter(node => {
