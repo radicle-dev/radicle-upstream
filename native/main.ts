@@ -30,6 +30,8 @@ if (isDev) {
       Boolean
     );
   }
+  proxyArgs.push("--default-seed");
+  proxyArgs.push("hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345");
 } else {
   // Packaged app, i.e. production.
   proxyPath = path.join(__dirname, "../../radicle-proxy");
