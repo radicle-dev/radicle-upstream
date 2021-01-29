@@ -49,8 +49,7 @@ context("p2p networking", () => {
           commands.pick("create-project-button").click();
 
           commands
-            .pick("project-screen", "header")
-            .contains("new-fancy-project")
+            .pickWithContent(["project-screen", "header"], "new-fancy-project")
             .should("exist");
 
           commands.pick("project-screen", "header", "urn").then(el => {
@@ -63,22 +62,22 @@ context("p2p networking", () => {
             cy.log("navigate to the 'Following' tab");
             commands.pick("following-tab").click();
             commands
-              .pick("following-tab-contents")
-              .contains("Still looking")
+              .pickWithContent(["following-tab-contents"], "Still looking")
               .should("not.exist");
 
             commands.pick("sidebar", "search").click();
-            commands.pick("search-input").type(urn || "");
+            commands.pick("search-input").type(urn);
             commands.pick("follow-toggle").click();
 
             cy.log("project is briefly shown in the waitingroom");
             commands
-              .pick("following-tab-contents")
-              .contains("Still looking")
+              .pickWithContent(["following-tab-contents"], "Still looking")
               .should("exist");
             commands
-              .pick("following-tab-contents")
-              .contains(urn.replace("rad:git:", ""))
+              .pickWithContent(
+                ["following-tab-contents"],
+                urn.replace("rad:git:", "")
+              )
               .should("exist");
 
             // TODO: check that notifications are shown
@@ -93,14 +92,17 @@ context("p2p networking", () => {
             .click();
 
           cy.log("the maintainer shows up in the peer selector");
-          commands.pick("peer-selector").contains("rudolfs").should("exist");
-          commands.pick("peer-selector").contains("maintainer").should("exist");
+          commands
+            .pickWithContent(["peer-selector"], "rudolfs")
+            .should("exist");
+          commands
+            .pickWithContent(["peer-selector"], "maintainer")
+            .should("exist");
           commands.pick("peer-selector").click();
 
           cy.log("the current user does not show up in the peer selector");
           commands
-            .pick("peer-dropdown-container")
-            .contains("abbey")
+            .pickWithContent(["peer-dropdown-container"], "abbey")
             .should("not.exist");
 
           cy.log("add contributor remote on maintainer's node");
@@ -121,19 +123,19 @@ context("p2p networking", () => {
           cy.contains("Still looking").should("exist");
           const shortenedPeerId = contributorNode.peerId.slice(0, 7);
           commands
-            .pick("pending-peers")
-            .contains(shortenedPeerId)
+            .pickWithContent(["pending-peers"], shortenedPeerId)
             .should("exist");
 
           cy.log("the remote moves out of the waiting area");
           commands
-            .pick("followed-peers", "peer-abbey")
-            .contains(shortenedPeerId)
+            .pickWithContent(["followed-peers", "peer-abbey"], shortenedPeerId)
             .should("exist");
           cy.contains("Still looking").should("not.exist");
           commands
-            .pick("followed-peers", "peer-abbey", "follow-toggle")
-            .contains("Following")
+            .pickWithContent(
+              ["followed-peers", "peer-abbey", "follow-toggle"],
+              "Following"
+            )
             .should("exist");
 
           cy.log("add a random non-existing remote");
@@ -149,7 +151,10 @@ context("p2p networking", () => {
           cy.log("check that remote stays in waiting area");
           cy.wait(1000);
           cy.contains("Still looking").should("exist");
-          commands.pick("pending-peers").contains(shortenedNonExistingRemote);
+          commands.pickWithContent(
+            ["pending-peers"],
+            shortenedNonExistingRemote
+          );
 
           cy.log("remove the pending remote");
           commands.pick("pending-peers", "follow-toggle").click();

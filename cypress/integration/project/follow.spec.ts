@@ -23,7 +23,7 @@ context("project following", () => {
       .should("contain", "You’ll be notified when this project has been found");
 
     commands
-      .pickWithContent("undiscovered-project", projectId)
+      .pickWithContent(["undiscovered-project"], projectId)
       .trigger("mouseenter")
       .within(() => {
         commands.pick("follow-toggle").should("contain", "Following");
