@@ -61,9 +61,9 @@ context("p2p networking", () => {
 
             nodeManager.asNode(contributorNode);
             cy.log("navigate to the 'Following' tab");
-            commands.pick("Following").click();
+            commands.pick("following-tab").click();
             commands
-              .pick("following-tab")
+              .pick("following-tab-contents")
               .contains("Still looking")
               .should("not.exist");
 
@@ -73,11 +73,11 @@ context("p2p networking", () => {
 
             cy.log("project is briefly shown in the waitingroom");
             commands
-              .pick("following-tab")
+              .pick("following-tab-contents")
               .contains("Still looking")
               .should("exist");
             commands
-              .pick("following-tab")
+              .pick("following-tab-contents")
               .contains(urn.replace("rad:git:", ""))
               .should("exist");
 
@@ -86,7 +86,10 @@ context("p2p networking", () => {
 
           cy.log("project moved out of the waiting area and is available");
           commands
-            .pick("following-tab", "project-list-entry-new-fancy-project.xyz")
+            .pick(
+              "following-tab-contents",
+              "project-list-entry-new-fancy-project.xyz"
+            )
             .click();
 
           cy.log("the maintainer shows up in the peer selector");
