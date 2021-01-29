@@ -124,8 +124,8 @@
     "wait-on": "^5.2.1"
   },
   "scripts": {
-    "start": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--default-seed hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345' yarn _private:start",
-    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--default-seed hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345' yarn _private:start:dev",
+    "start": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy yarn _private:start",
+    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/debug/radicle-proxy yarn _private:start:dev",
     "start:test": "RADICLE_UPSTREAM_PROXY_PATH=../proxy/target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
     "ethereum:start": "./scripts/ethereum-dev-node.sh",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
