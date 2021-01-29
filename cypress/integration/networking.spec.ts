@@ -61,26 +61,9 @@ context("p2p networking", () => {
             nodeManager.asNode(contributorNode);
             cy.log("navigate to the 'Following' tab");
             commands.pick("following-tab").click();
-            commands
-              .pickWithContent(["following-tab-contents"], "Still looking")
-              .should("not.exist");
-
             commands.pick("sidebar", "search").click();
             commands.pick("search-input").type(urn);
             commands.pick("follow-toggle").click();
-
-            cy.log("project is briefly shown in the waitingroom");
-            commands
-              .pickWithContent(["following-tab-contents"], "Still looking")
-              .should("exist");
-            commands
-              .pickWithContent(
-                ["following-tab-contents"],
-                urn.replace("rad:git:", "")
-              )
-              .should("exist");
-
-            // TODO: check that notifications are shown
           });
 
           cy.log("project moved out of the waiting area and is available");
@@ -106,7 +89,6 @@ context("p2p networking", () => {
             .should("not.exist");
 
           cy.log("add contributor remote on maintainer's node");
-
           nodeManager.asNode(maintainerNode);
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
@@ -114,23 +96,15 @@ context("p2p networking", () => {
           commands.pick("manage-remotes").click();
 
           commands.pick("followed-peers", "peer-abbey").should("not.exist");
-          cy.contains("Still looking").should("not.exist");
 
           commands.pick("peer-input").type(contributorNode.peerId);
           commands.pick("follow-button").click();
 
           cy.log("the remote shows up in the waiting area");
-          cy.contains("Still looking").should("exist");
           const shortenedPeerId = contributorNode.peerId.slice(0, 7);
-          commands
-            .pickWithContent(["pending-peers"], shortenedPeerId)
-            .should("exist");
-
-          cy.log("the remote moves out of the waiting area");
           commands
             .pickWithContent(["followed-peers", "peer-abbey"], shortenedPeerId)
             .should("exist");
-          cy.contains("Still looking").should("not.exist");
           commands
             .pickWithContent(
               ["followed-peers", "peer-abbey", "follow-toggle"],
@@ -143,22 +117,14 @@ context("p2p networking", () => {
             "hydysjnrpb4gwtsz66ei9xsyzta1afuhc1h6neufmfghozduo4p3ua";
           const shortenedNonExistingRemote = nonExistingRemote.substr(0, 7);
 
-          cy.contains("Still looking").should("not.exist");
-
           commands.pick("peer-input").type(nonExistingRemote);
           commands.pick("follow-button").click();
-
-          cy.log("check that remote stays in waiting area");
-          cy.wait(1000);
-          cy.contains("Still looking").should("exist");
-          commands.pickWithContent(
-            ["pending-peers"],
-            shortenedNonExistingRemote
-          );
+          commands
+            .pickWithContent(["pending-peers"], shortenedNonExistingRemote)
+            .should("exist");
 
           cy.log("remove the pending remote");
           commands.pick("pending-peers", "follow-toggle").click();
-          cy.contains("Still looking").should("not.exist");
           commands.pick("pending-peers").should("not.exist");
         },
         { node1Handle: "rudolfs", node2Handle: "abbey" }
