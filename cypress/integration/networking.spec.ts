@@ -9,7 +9,7 @@ context("p2p networking", () => {
       "reacts to network state changes",
       { defaultCommandTimeout: 8000 },
       () => {
-        nodeManager.withTwoOnboardedNodes((node1, node2) => {
+        nodeManager.withTwoOnboardedNodes({}, (node1, node2) => {
           nodeManager.asNode(node1);
           commands.pick("connection-status-offline").should("exist");
           nodeManager.connectTwoNodes(node1, node2);
@@ -24,6 +24,7 @@ context("p2p networking", () => {
   it("replicates a project from one node to another", () => {
     commands.withTempDir(tempDirPath => {
       nodeManager.withTwoOnboardedNodes(
+        { node1Handle: "rudolfs", node2Handle: "abbey" },
         (maintainerNode, contributorNode) => {
           nodeManager.connectTwoNodes(maintainerNode, contributorNode);
           nodeManager.asNode(maintainerNode);
@@ -126,8 +127,7 @@ context("p2p networking", () => {
           cy.log("remove the pending remote");
           commands.pick("pending-peers", "follow-toggle").click();
           commands.pick("pending-peers").should("not.exist");
-        },
-        { node1Handle: "rudolfs", node2Handle: "abbey" }
+        }
       );
     });
   });

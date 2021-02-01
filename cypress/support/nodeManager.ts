@@ -8,8 +8,8 @@ const withNodeManager = (callback: () => void): void => {
 };
 
 interface WithTwoOnboardedNodesOptions {
-  node1Handle: string;
-  node2Handle: string;
+  node1Handle?: string;
+  node2Handle?: string;
 }
 
 export const connectTwoNodes = (
@@ -25,11 +25,8 @@ export const connectTwoNodes = (
 };
 
 export const withTwoOnboardedNodes = (
-  callback: (node1: NodeSession, node2: NodeSession) => void,
-  options: WithTwoOnboardedNodesOptions = {
-    node1Handle: "ele",
-    node2Handle: "cloudhead",
-  }
+  options: WithTwoOnboardedNodesOptions,
+  callback: (node1: NodeSession, node2: NodeSession) => void
 ): void => {
   withNodeManager(() => {
     const NODE1_ID = 17000;
