@@ -12,6 +12,10 @@
   let element: any;
   let expand = false;
 
+  // The set of transaction hashes that have already been displayed
+  // in the expanded transaction stack.
+  const displayedTxs: Set<string> = new Set(transactions.map(tx => tx.hash));
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const toggleStack = (ev: any) => {
     expand = expand
@@ -19,8 +23,14 @@
       : element === ev.target || element.contains(ev.target);
   };
 
-  $: expand =
-    expand || transactions.some(tx => tx.status === TxStatus.AwaitingInclusion);
+  $: {
+    const newTxs = transactions.filter(tx => !displayedTxs.has(tx.hash));
+    if (newTxs.length > 0) {
+      expand = true;
+      newTxs.forEach(tx => displayedTxs.add(tx.hash));
+    }
+  }
+
   $: negative = transactions.some(tx => tx.status === TxStatus.Rejected);
 </script>
 
