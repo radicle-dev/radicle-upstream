@@ -166,7 +166,7 @@
               showIcon={false}
               styleContent={false}
               copyContent={tx.hash}
-              notificationText="Address copied to the clipboard">
+              notificationText="Transaction ID copied to the clipboard">
               {ellipsed(tx.hash, 12)}
             </Copyable>
           </p>
