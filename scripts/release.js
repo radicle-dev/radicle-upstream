@@ -3,6 +3,13 @@
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
+const verboseExec = async cmd => {
+  const result = await exec(cmd);
+  console.log(` ✔ ${cmd}`);
+
+  return result;
+};
+
 const VERSION_MATCH = /bumping version in package.json from (.*) to (.*)/;
 const PULL_REQUEST_MATCH =
   "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
@@ -40,46 +47,32 @@ async function main() {
     console.log(`Finalizing release ${toVersion}:`);
     console.log();
 
-    const mergeResult = await exec(
+    const mergeResult = await verboseExec(
       `hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge" --raw-field 'merge_method=squash'`
-    );
-    console.log(
-      `  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge"`
     );
     const releaseCommitSHA = JSON.parse(mergeResult.stdout).sha;
 
-    await exec("git checkout master && git pull");
-    console.log("  ✔ git checkout master && git pull");
+    await verboseExec("git checkout master && git pull");
 
-    await exec(`git tag ${toVersion} ${releaseCommitSHA}`);
-    console.log(`  ✔ git tag ${toVersion} ${releaseCommitSHA}`);
+    await verboseExec(`git tag ${toVersion} ${releaseCommitSHA}`);
 
-    await exec(`git push --tags`);
-    console.log(`  ✔ git push --tags`);
+    await verboseExec(`git push --tags`);
     console.log();
     console.log(`Release ${toVersion} successfully completed! 👏 🎉 🚀`);
     console.log();
   } else {
     console.log(`Cutting release ${toVersion}:\n`);
 
-    await exec("git checkout master");
-    console.log("  ✔ git checkout master");
+    await verboseExec("git checkout master");
 
-    await exec(
+    await verboseExec(
       `git branch release-${toVersion} && git checkout release-${toVersion}`
     );
-    console.log(
-      `  ✔ git branch release-${toVersion} && git checkout release-${toVersion}`
-    );
 
-    await exec(SV_COMMAND);
-    console.log(`  ✔ ${SV_COMMAND}`);
+    await verboseExec(SV_COMMAND);
+    await verboseExec(`git push origin release-${toVersion}`);
 
-    await exec(`git push origin release-${toVersion}`);
-    console.log(`  ✔ git push origin release-${toVersion}`);
-
-    const prResult = await exec("hub pull-request -p --no-edit");
-    console.log("  ✔ hub pull-request -p --no-edit");
+    const prResult = await verboseExec("hub pull-request -p --no-edit");
 
     const prUrl = prResult.stdout.split("\n").slice(-2)[0];
     const pullRequestId = prUrl.match(PULL_REQUEST_MATCH)[1];
