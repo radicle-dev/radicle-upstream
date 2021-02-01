@@ -112,21 +112,6 @@ context("p2p networking", () => {
               "Following"
             )
             .should("exist");
-
-          cy.log("add a random non-existing remote");
-          const nonExistingRemote =
-            "hydysjnrpb4gwtsz66ei9xsyzta1afuhc1h6neufmfghozduo4p3ua";
-          const shortenedNonExistingRemote = nonExistingRemote.substr(0, 7);
-
-          commands.pick("peer-input").type(nonExistingRemote);
-          commands.pick("follow-button").click();
-          commands
-            .pickWithContent(["pending-peers"], shortenedNonExistingRemote)
-            .should("exist");
-
-          cy.log("remove the pending remote");
-          commands.pick("pending-peers", "follow-toggle").click();
-          commands.pick("pending-peers").should("not.exist");
         }
       );
     });
