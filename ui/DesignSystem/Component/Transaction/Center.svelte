@@ -21,10 +21,16 @@
     expand = expand
       ? false
       : element === ev.target || element.contains(ev.target);
-    transactions.forEach(tx => displayedTxs.add(tx.hash));
   };
 
-  $: expand = expand || transactions.some(tx => !displayedTxs.has(tx.hash));
+  $: {
+    const newTxs = transactions.filter(tx => !displayedTxs.has(tx.hash));
+    if (newTxs.length > 0) {
+      expand = true;
+      newTxs.forEach(tx => displayedTxs.add(tx.hash));
+    }
+  }
+
   $: negative = transactions.some(tx => tx.status === TxStatus.Rejected);
 </script>
 
