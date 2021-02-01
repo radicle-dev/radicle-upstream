@@ -18,7 +18,7 @@ context("project source browsing", () => {
     it("shows the correct numbers", () => {
       commands.pick("header", "project-stats").contains("2 Branches");
       commands.pick("header", "project-stats").contains("4 Contributors");
-      commands.pick("horizontal-menu", "Commits", "counter").contains("15");
+      commands.pick("horizontal-menu", "commits-tab", "counter").contains("15");
     });
   });
 
@@ -26,8 +26,10 @@ context("project source browsing", () => {
     context("commit history", () => {
       it("shows the commit history for the default branch", () => {
         // Wait for the commit tab to be updated
-        commands.pick("horizontal-menu", "Commits", "counter").contains("15");
-        commands.pick("horizontal-menu", "Commits").click();
+        commands
+          .pick("horizontal-menu", "commits-tab", "counter")
+          .contains("15");
+        commands.pick("horizontal-menu", "commits-tab").click();
         commands.pick("commits-page").should("exist");
         commands
           .pick("commit-teaser")
@@ -48,8 +50,10 @@ context("project source browsing", () => {
         commands.pick("revision-selector").click();
         commands.pick("revision-dropdown", "revision-branch-dev").click();
         // Wait for the commit tab to be updated
-        commands.pick("horizontal-menu", "Commits", "counter").contains("8");
-        commands.pick("horizontal-menu", "Commits").click();
+        commands
+          .pick("horizontal-menu", "commits-tab", "counter")
+          .contains("8");
+        commands.pick("horizontal-menu", "commits-tab").click();
 
         commands.pick("commits-page").should("exist");
         commands
@@ -318,7 +322,7 @@ context("project source browsing", () => {
 
       it("doesn't interfere with the horizontal menu item active state", () => {
         commands
-          .pick("horizontal-menu", "Files")
+          .pick("horizontal-menu", "files-tab")
           .get("p")
           .should("have.class", "active");
 
@@ -330,14 +334,14 @@ context("project source browsing", () => {
         });
 
         commands
-          .pick("horizontal-menu", "Files")
+          .pick("horizontal-menu", "files-tab")
           .get("p")
           .should("have.class", "active");
 
         commands.pick("file-view", "file-header").contains("platinum").click();
 
         commands
-          .pick("horizontal-menu", "Files")
+          .pick("horizontal-menu", "files-tab")
           .get("p")
           .should("have.class", "active");
       });
