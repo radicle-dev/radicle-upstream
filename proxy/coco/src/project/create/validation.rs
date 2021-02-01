@@ -375,6 +375,12 @@ impl Repository {
         url: &LocalUrl,
     ) -> Result<Option<Remote<LocalUrl>>, Error> {
         match Remote::<LocalUrl>::find(repo, reflike!("rad")) {
+            Err(remote::FindError::ParseUrl(_)) => {
+                log::warn!("an old/invalid URL was found when trying to load the `rad` remote");
+                log::warn!("we are going to rename the remote to `temp_rad` and create a new `rad` remote");
+                repo.remote_rename("rad", "temp_rad")?;
+                Ok(None)
+            }
             Err(err) => Err(err.into()),
             Ok(Some(remote)) if remote.url != *url => Err(Error::UrlMismatch {
                 expected: url.to_string(),
