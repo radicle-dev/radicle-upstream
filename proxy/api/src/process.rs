@@ -253,8 +253,14 @@ async fn rig(
         );
         let disco = coco::config::StreamDiscovery::new(seeds_receiver);
 
-        let (peer, state) =
-            coco::boostrap(config, disco, signer.clone(), store.clone(), coco_run_config()).await?;
+        let (peer, state) = coco::boostrap(
+            config,
+            disco,
+            signer.clone(),
+            store.clone(),
+            coco_run_config(),
+        )
+        .await?;
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
