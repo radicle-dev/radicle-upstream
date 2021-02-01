@@ -3,6 +3,7 @@
   import { link } from "svelte-spa-router";
 
   export let href: string;
+  export let dataCy: string;
   export let icon: typeof SvelteComponent;
   export let title: string;
   export let active: boolean;
@@ -39,7 +40,7 @@
   }
 </style>
 
-<a data-cy={title} {href} use:link on:click>
+<a data-cy={dataCy} {href} use:link on:click>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-secondary)" />

@@ -60,7 +60,7 @@
   }
 </style>
 
-<div class="container" data-cy="following-tab">
+<div class="container" data-cy="following-tab-contents">
   <Remote {store} let:data>
     <ProjectList
       projects={data.follows}
