@@ -42,7 +42,7 @@ context("onboarding", () => {
       cy.focused().type("{enter}");
 
       // Success screen.
-      commands.pick("peerId").contains(VALID_PEER_MATCH).should("exist");
+      commands.pick("peer-id").contains(VALID_PEER_MATCH).should("exist");
 
       // Land on profile screen.
       cy.get("body").type("{enter}");
@@ -63,7 +63,7 @@ context("onboarding", () => {
       commands.pick("set-passphrase-button").click();
 
       // Success screen.
-      commands.pick("peerId").contains(VALID_PEER_MATCH).should("exist");
+      commands.pick("peer-id").contains(VALID_PEER_MATCH).should("exist");
 
       // Land on profile screen.
       commands.pick("go-to-profile-button").click();

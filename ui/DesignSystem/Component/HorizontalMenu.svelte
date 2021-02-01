@@ -48,6 +48,7 @@
           on:click={() => dispatch('select', item)}
           icon={item.icon}
           title={item.title}
+          dataCy={`${item.title.toLowerCase()}-tab`}
           counter={item.counter}
           href={item.href}
           active={path.active(item.href, $location, item.looseActiveStateMatching)} />
