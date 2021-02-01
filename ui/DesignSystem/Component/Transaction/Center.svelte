@@ -11,16 +11,10 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let element: any;
   let expand = false;
-  let initialized = false;
 
   // The set of transaction hashes that have already been displayed
   // in the expanded transaction stack.
-  let displayedTxs: Set<string> = new Set();
-
-  if (!initialized) {
-    displayedTxs = new Set(transactions.map(tx => tx.hash));
-    initialized = false;
-  }
+  const displayedTxs: Set<string> = new Set(transactions.map(tx => tx.hash));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const toggleStack = (ev: any) => {
