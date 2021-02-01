@@ -47,7 +47,7 @@ const VALID_URN_MATCH = /^rad:git:[1-9A-HJ-NP-Za-km-z]{37}/;
 const urnConstraints = {
   format: {
     pattern: VALID_URN_MATCH,
-    message: `Not a valid project URN`,
+    message: `Not a valid project URN, perhaps you're using an old URN?`,
   },
 };
 
