@@ -3,7 +3,7 @@ import * as path from "path";
 import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
-import type { NodeSession } from "./shared";
+import type { NodeSession, PeerId } from "./shared";
 import { Commands } from "./shared";
 
 type NodeId = number;
@@ -56,6 +56,7 @@ interface OnboardedNode {
   process: childProcess.ChildProcess;
   authToken: AuthToken;
   peerAddress: PeerAddress;
+  peerId: PeerId;
 }
 
 type NodeState = ConfiguredNode | StartedNode | OnboardedNode;
@@ -69,6 +70,14 @@ class Node {
   peerPort: number;
   proxyBinaryPath: string;
 
+  get authToken(): AuthToken {
+    if (this.state.kind !== StateKind.Onboarded) {
+      throw new Error("Can't get peerAddress before node is onboarded");
+    }
+
+    return this.state.authToken;
+  }
+
   get peerAddress(): PeerAddress {
     if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
@@ -77,12 +86,16 @@ class Node {
     return this.state.peerAddress;
   }
 
-  get authToken(): AuthToken {
+  get peerId(): PeerId {
     if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
     }
 
-    return this.state.authToken;
+    return this.state.peerId;
+  }
+
+  get currentState(): StateKind {
+    return this.state.kind;
   }
 
   constructor(options: { id: NodeId; proxyBinaryPath: string }) {
@@ -188,6 +201,7 @@ class Node {
       kind: StateKind.Onboarded,
       authToken: authToken,
       peerAddress: `${json.peerId}@${HOST}:${this.peerPort}`,
+      peerId: json.peerId,
     };
 
     this.logger.log("node onboarded successfully");
@@ -266,6 +280,12 @@ class NodeManager {
       throw new Error("Supply at least 2 node IDs");
     }
 
+    this.managedNodes.forEach(node => {
+      if (node.currentState !== StateKind.Onboarded) {
+        throw new Error("Can't connect nodes that are not onboarded");
+      }
+    });
+
     const firstNode = this.getNode(options.nodeIds[0]);
     const remainingNodes = this.managedNodes.filter(node => {
       return firstNode.id !== node.id;
@@ -298,6 +318,7 @@ class NodeManager {
         onboardedNodes.push({
           id: node.id,
           authToken: node.authToken,
+          peerId: node.peerId,
           httpPort: node.httpPort,
         });
       }

@@ -11,7 +11,7 @@ context("project following", () => {
   });
 
   it("follows and unfollows", () => {
-    commands.pick("Following").click();
+    commands.pick("following-tab").click();
     commands.pick("primary-action").contains("Look for a project").click();
     // The extra whitespace is intentional to check that the input is
     // trimmed.
@@ -23,7 +23,7 @@ context("project following", () => {
       .should("contain", "You’ll be notified when this project has been found");
 
     commands
-      .pickWithContent("undiscovered-project", projectId)
+      .pickWithContent(["undiscovered-project"], projectId)
       .trigger("mouseenter")
       .within(() => {
         commands.pick("follow-toggle").should("contain", "Following");

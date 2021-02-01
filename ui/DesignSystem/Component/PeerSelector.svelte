@@ -127,7 +127,7 @@
         style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
     </div>
   </div>
-  <div class="peer-dropdown-container">
+  <div class="peer-dropdown-container" data-cy="peer-dropdown-container">
     <div class="peer-dropdown" hidden={!expanded}>
       {#each orderPeers(peers) as peer (peer.peerId)}
         <Entry
