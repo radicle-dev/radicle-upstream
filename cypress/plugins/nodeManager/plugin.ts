@@ -3,11 +3,10 @@ import * as path from "path";
 import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
-import type { NodeSession } from "./shared";
+import type { NodeSession, PeerId } from "./shared";
 import { Commands } from "./shared";
 
 type NodeId = number;
-type PeerId = string;
 type PeerAddress = string;
 type AuthToken = string;
 
