@@ -646,8 +646,6 @@ for all of the required steps:
 - [ ] wait until macOS and Linux QA is performed and passes
 - [ ] update radicle.xyz download links
   - [ ] deploy radicle.xyz
-- [ ] update docs.radicle.xyz download links
-  - [ ] deploy docs.radicle.xyz
 - [ ] announce new release on radicle.community
 - [ ] announce new release on the matrix #general:radicle.community channel
 - [ ] run script for updating version in auto-update notification
