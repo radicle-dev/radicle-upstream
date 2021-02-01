@@ -97,8 +97,12 @@ export function build(): Wallet {
 
   async function disconnect() {
     try {
-      stateStore.set({ status: Status.NotConnected });
       await walletConnect.killSession();
+    } catch {
+      // When the user disconnects wallet-side, calling `killSession` app-side trows an error
+      // because the wallet has already closed its socket. Therefore, we simply ignore it.
+    } finally {
+      stateStore.set({ status: Status.NotConnected });
       // We need to reinitialize `WalletConnect` until this issue is fixed:
       // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
       walletConnect = new WalletConnect({
@@ -106,9 +110,6 @@ export function build(): Wallet {
         qrcodeModal: qrCodeModal,
       });
       signer.walletConnect = walletConnect;
-    } catch {
-      // When the user disconnects wallet-side, calling `killSession` app-side trows an error
-      // because the wallet has already closed its socket. Therefore, we simply ignore it.
     }
   }
 
