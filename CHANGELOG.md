@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.9](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.8...v0.1.9) (2021-01-27)
+
+
+### Features
+
+* **ui:** implement app updates ([52d1bcd](https://github.com/radicle-dev/radicle-upstream/commit/52d1bcdb58b6f4604c666447e55ba12663ca2ba0))
+* **ui:** improve notifications ([ec11c40](https://github.com/radicle-dev/radicle-upstream/commit/ec11c40dfc587e72ba175695532b98ce5f61d3ed))
+* **ui:** add [you] badge to Peer representations ([d787fb0](https://github.com/radicle-dev/radicle-upstream/commit/d787fb07d1512489e193fa528749cc22be938981)), closes [#1391](https://github.com/radicle-dev/radicle-upstream/issues/1391)
+
+
 ### [0.1.8](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.7...v0.1.8) (2021-01-21)
 
 

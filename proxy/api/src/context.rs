@@ -1,6 +1,6 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
-use std::sync::Arc;
+use std::{net, sync::Arc};
 
 use data_encoding::HEXLOWER;
 use rand::Rng as _;
@@ -29,6 +29,22 @@ impl Context {
         match self {
             Self::Sealed(sealed) => sealed.test,
             Self::Unsealed(unsealed) => unsealed.test,
+        }
+    }
+
+    /// Returns the [`net::SocketAddr`] where the HTTP API is bound to.
+    pub const fn http_listen(&self) -> net::SocketAddr {
+        match self {
+            Self::Sealed(sealed) => sealed.http_listen,
+            Self::Unsealed(unsealed) => unsealed.http_listen,
+        }
+    }
+
+    /// Returns the default seeds that will be written to the settings kv store.
+    pub const fn default_seeds(&self) -> &Vec<String> {
+        match self {
+            Self::Sealed(sealed) => &sealed.default_seeds,
+            Self::Unsealed(unsealed) => &unsealed.default_seeds,
         }
     }
 
@@ -142,6 +158,10 @@ pub struct Unsealed {
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
+    /// Flag to run the HTTP API on the specified address:port.
+    pub http_listen: net::SocketAddr,
+    /// Default seeds that will be written to the settings kv store.
+    pub default_seeds: Vec<String>,
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
@@ -157,6 +177,10 @@ pub struct Sealed {
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
+    /// Flag to run the HTTP API on the specified address:port.
+    pub http_listen: net::SocketAddr,
+    /// Default seeds that will be written to the settings kv store.
+    pub default_seeds: Vec<String>,
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
@@ -197,6 +221,8 @@ impl Unsealed {
             state,
             store,
             test: false,
+            http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
+            default_seeds: vec![],
             service_handle: service::Handle::dummy(),
             auth_token: Arc::new(RwLock::new(None)),
             keystore: Arc::new(coco::keystore::memory()),
