@@ -39,28 +39,29 @@ const getNewVersion = (): string => {
     stdio: "pipe",
   }).toString("utf-8");
 
+  let version;
   const VERSION_MATCH = "bumping version in package.json from (.*) to (.*)";
   const match = svResult.match(VERSION_MATCH);
-  let toVersion;
+
   if (match) {
-    toVersion = `v${match[2]}`;
+    version = match[2];
   } else {
     throw new Error("Could not get version");
   }
 
-  return toVersion;
+  return version;
 };
 
 const finalizeRelease = () => {
-  const toVersion = process.argv[3];
+  const version = process.argv[3];
   const pullRequestId = process.argv[4];
 
-  if (toVersion === undefined || pullRequestId === undefined) {
+  if (version === undefined || pullRequestId === undefined) {
     printWrongArgsMsg();
     return;
   }
 
-  console.log(`Finalizing release ${toVersion}:\n`);
+  console.log(`Finalizing release v${version}:\n`);
 
   const mergeResult = verboseExec(
     `hub api -XPUT ` +
@@ -69,10 +70,10 @@ const finalizeRelease = () => {
   );
   const releaseCommitSHA = JSON.parse(mergeResult).sha;
   verboseExec("git checkout master && git pull");
-  verboseExec(`git tag ${toVersion} ${releaseCommitSHA}`);
+  verboseExec(`git tag v${version} ${releaseCommitSHA}`);
   verboseExec(`git push --tags`);
 
-  console.log(`\nRelease ${toVersion} successfully completed! 👏 🎉 🚀\n`);
+  console.log(`\nRelease v${version} successfully completed! 👏 🎉 🚀\n`);
 };
 
 const printWrongArgsMsg = () =>
@@ -81,15 +82,16 @@ const printWrongArgsMsg = () =>
   You should run \`yarn release\` and follow the instructions.
 `);
 
-const cutRelease = (toVersion: string): void => {
-  console.log(`\nCutting release ${toVersion}:\n`);
+const cutRelease = (version: string): void => {
+  console.log(`\nCutting release v${version}:\n`);
 
   verboseExec("git checkout master");
   verboseExec(
-    `git branch release-${toVersion} && git checkout release-${toVersion}`
+    `git branch release-v${version} && git checkout release-v${version}`
   );
   verboseExec(SV_COMMAND);
-  verboseExec(`git push origin release-${toVersion}`);
+  verboseExec(`git push origin release-v${version}`);
+
   const prResult = verboseExec("hub pull-request -p --no-edit");
   const pullRequestUrl = prResult.split("\n").slice(-2)[0];
   const PULL_REQUEST_MATCH =
@@ -103,21 +105,16 @@ const cutRelease = (toVersion: string): void => {
   }
 
   const releaseDate = new Date().toISOString().substring(0, 10);
-  const changelogAnchor = `${toVersion.replace(/[v.]/, "")}-${releaseDate}`;
-  const versionWithoutPrefix = toVersion.replace(/^v/, "");
-  const communityVersion = toVersion.replace(/\./, "-");
+  const changelogAnchor = `${version.replace(/\./, "")}-${releaseDate}`;
+  const communityVersion = version.replace(/\./, "-");
 
-  printNextStepsMsg(pullRequestUrl, versionWithoutPrefix, pullRequestId);
-  printAnnouncementTemplate(
-    versionWithoutPrefix,
-    changelogAnchor,
-    communityVersion
-  );
+  printNextStepsMsg(pullRequestUrl, version, pullRequestId);
+  printAnnouncementTemplate(version, changelogAnchor, communityVersion);
 };
 
 const printNextStepsMsg = (
   pullRequestUrl: string,
-  versionWithoutPrefix: string,
+  version: string,
   pullRequestId: string
 ): void =>
   console.log(`
@@ -133,11 +130,11 @@ const printNextStepsMsg = (
 
     - [ ] finalize the release:
 
-            yarn release --finalize v${versionWithoutPrefix} ${pullRequestId}
+            yarn release --finalize v${version} ${pullRequestId}
 
   - [ ] build and notarize macOS package on your macOS machine:
 
-          git checkout v${versionWithoutPrefix}
+          git checkout v${version}
           CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
           APPLE_ID="XXXXXXX@monadic.xyz" \
           APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
@@ -147,14 +144,14 @@ const printNextStepsMsg = (
   - [ ] wait for the Linux package to be built on master for the release on CI
   - [ ] upload Linux and macOS packages to https://releases.radicle.xyz
 
-          (cd dist && curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${versionWithoutPrefix}/dist/radicle-upstream-${versionWithoutPrefix}.AppImage")
-          gsutil cp dist/radicle-upstream-${versionWithoutPrefix}.AppImage gs://releases.radicle.xyz
-          gsutil cp dist/radicle-upstream-${versionWithoutPrefix}.dmg gs://releases.radicle.xyz
+          (cd dist && curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage")
+          gsutil cp dist/radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
+          gsutil cp dist/radicle-upstream-${version}.dmg gs://releases.radicle.xyz
 
   - [ ] create macOS and Linux QA issues in the Upstream repo
 
-          (echo "QA: v${versionWithoutPrefix} macOS\n"; sed 's/X.X.X/${versionWithoutPrefix}/g' QA.md) | hub issue create --file -
-          (echo "QA: v${versionWithoutPrefix} Linux\n"; sed 's/X.X.X/${versionWithoutPrefix}/g' QA.md) | hub issue create --file -
+          (echo "QA: v${version} macOS\n"; sed 's/X.X.X/${version}/g' QA.md) | hub issue create --file -
+          (echo "QA: v${version} Linux\n"; sed 's/X.X.X/${version}/g' QA.md) | hub issue create --file -
 
   - [ ] wait until macOS and Linux QA is performed and passes
   - [ ] open a pull request to update the download links on our
@@ -169,7 +166,7 @@ const printNextStepsMsg = (
 `);
 
 const printAnnouncementTemplate = (
-  versionWithoutPrefix: string,
+  version: string,
   changelogAnchor: string,
   communityVersion: string
 ): void =>
@@ -181,12 +178,12 @@ const printAnnouncementTemplate = (
 
     Subject:
 
-       Radicle Upstream v${versionWithoutPrefix} is out! 🎉
+       Radicle Upstream v${version} is out! 🎉
 
 
     Body:
 
-      # Radicle Upstream v${versionWithoutPrefix} is out! 🎉
+      # Radicle Upstream v${version} is out! 🎉
 
       You can find all the changelog for this release [here][1].
 
@@ -204,8 +201,8 @@ const printAnnouncementTemplate = (
       If you encounter a bug, please [open an issue][6].
 
       [1]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md#${changelogAnchor}
-      [2]: https://releases.radicle.xyz/radicle-upstream-${versionWithoutPrefix}.dmg
-      [3]: https://releases.radicle.xyz/radicle-upstream-${versionWithoutPrefix}.AppImage
+      [2]: https://releases.radicle.xyz/radicle-upstream-${version}.dmg
+      [3]: https://releases.radicle.xyz/radicle-upstream-${version}.AppImage
       [4]: https://docs.radicle.xyz/docs/what-is-radicle.html
       [5]: https://matrix.radicle.community/#/room/#support:radicle.community
       [6]: https://github.com/radicle-dev/radicle-upstream/issues
@@ -217,7 +214,7 @@ const printAnnouncementTemplate = (
 
   Message:
 
-    Radicle Upstream v${versionWithoutPrefix} is out! 🎉
+    Radicle Upstream v${version} is out! 🎉
     https://radicle.community/t/radicle-upstream-${communityVersion}-is-out
 
   ----------------------------------------------------------------------------
@@ -225,12 +222,12 @@ const printAnnouncementTemplate = (
 
 const main = () => {
   checkPrerequisites();
-  const toVersion = getNewVersion();
+  const version = getNewVersion();
 
   if (process.argv[2] === "--finalize") {
     finalizeRelease();
   } else {
-    cutRelease(toVersion);
+    cutRelease(version);
   }
 };
 
