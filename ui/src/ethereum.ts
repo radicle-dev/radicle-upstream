@@ -1,5 +1,7 @@
 import { BigNumber, BigNumberish } from "ethers";
-import { writable as persistentStore } from "svelte-persistent-store/dist/local";
+import { writable } from "svelte/store";
+
+import * as ipc from "./ipc";
 
 // The environment in which the ethereum-based experiences may run.
 export enum Environment {
@@ -46,9 +48,8 @@ export function networkFromChainId(chainId: number): Network {
 }
 
 // The store where the selected Ethereum environment is persisted.
-export const selectedEnvironment = persistentStore<Environment>(
-  "ethereum-environment-v0",
-  Environment.Ropsten
+export const selectedEnvironment = writable<Environment>(
+  ipc.isExperimental() ? Environment.Ropsten : Environment.Local
 );
 
 export function toHumans(n: BigNumberish, exp: number = 18): BigNumber {
