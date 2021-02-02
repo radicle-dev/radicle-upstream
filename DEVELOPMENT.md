@@ -67,10 +67,11 @@ On Linux:
 2. Install dependencies: `cd radicle-upstream && yarn install`.
 3. Start Upstream in development mode: `yarn start`.
 
-Running upstream will create new directories in `XDG_DATA_HOME` & `XDG_CONFIG_HOME`
-(or `HOME` respectiveley). To overwrite the locations, you can set `RAD_HOME` to
-your desired directory. Note that you will also have to set it for using git remote
-helper functionality outside of upstream.
+Running upstream will create new directories in `XDG_DATA_HOME` &
+`XDG_CONFIG_HOME` (or `HOME` respectiveley). To overwrite the locations, you
+can set `RAD_HOME` to your desired directory. Note that you will also have to
+set it for using git remote helper functionality outside of upstream.
+
 
 ### Feature flagging
 
@@ -158,9 +159,10 @@ Here's a list of all scripts that are intended for developer use:
                                 #   - monorepo
                                 #   - saved preferences
 
-    yarn ethereum:start         # Setup a local ethereum node to which we deploy
-                                # the Radicle Contracts and set the intial balance
-                                # of a stated local ethereum development account.
+    yarn ethereum:start         # Setup a local ethereum node to which we
+                                # deploy the Radicle Contracts and set the
+                                # intial balance of a stated local ethereum
+                                # development account.
 
 ### Design System
 
@@ -349,8 +351,8 @@ git submodule update --init --remote
 git submodule foreach "git fetch --all"
 ```
 
-💡 *You'll have to run the submodule commands every time there are any updates
-to the test fixture repository.*
+💡 *You'll have to run the command every time there are any updates to the test
+fixture repository.*
 
 Then run tests as usual: `cargo test --all-features --all-targets`.
 
@@ -368,7 +370,8 @@ a thin layer exposing well-typed entities. The heavy lifting is done in the
 modules named after the protocols we consume - [radicle-link][rl] through it
 [radicle-surf][rs], for code collaboration. By isolating concerns this way, we
 hope to enable ease-of-contribution to downstream teams. Empowering them to
-reflect changes in their public APIs easily with code contributions to Upstream.
+reflect changes in their public APIs easily with code contributions to
+Upstream.
 
 
 ## CI setup
@@ -431,6 +434,7 @@ build times. If you need to update this image, proceed as follows:
 
 Please install the [`hub`][hb] CLI tool, we use it in our release automation
 script to:
+
   - create a pull-request off of a release branch;
   - to merge the release branch into master;
   - to close the pull-request.
