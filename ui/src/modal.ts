@@ -1,4 +1,4 @@
-import { derived, get, writable } from "svelte/store";
+import { derived, get, writable, Readable } from "svelte/store";
 
 type ModalOverlay =
   | { show: true; route: string }
@@ -21,3 +21,5 @@ export const toggle = (route: string): void => {
 
   overlayStore.set({ show: true, route });
 };
+
+export const showing: Readable<boolean> = derived(store, $store => $store.show);

@@ -15,9 +15,6 @@
 
 <style>
   .transaction-center {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
     z-index: 50;
   }
 </style>

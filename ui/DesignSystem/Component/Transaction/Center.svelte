@@ -42,7 +42,7 @@
     box-shadow: var(--elevation-medium);
     cursor: pointer;
     height: 3.5rem;
-    min-width: 17.2rem;
+    width: var(--transaction-center-width);
     overflow: hidden;
     transition: height 360ms ease;
     user-select: none;

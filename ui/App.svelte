@@ -4,6 +4,7 @@
   import * as hotkeys from "./src/hotkeys.ts";
   import { isExperimental } from "./src/ipc";
   import "./src/localPeer.ts";
+  import { showing as showingModal } from "./src/modal.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
   import * as error from "./src/error.ts";
@@ -19,6 +20,7 @@
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
 
+  import Footer from "./App/Footer.svelte";
   import TransactionCenter from "./App/TransactionCenter.svelte";
 
   import Blank from "./Screen/Blank.svelte";
@@ -119,12 +121,15 @@
 <Bsod />
 <Hotkeys />
 <ModalOverlay {modalRoutes} />
-<NotificationFaucet />
 <Theme />
 
-{#if isExperimental() && sessionIsUnsealed && $location !== path.designSystemGuide()}
-  <TransactionCenter />
-{/if}
+<Footer>
+  <NotificationFaucet />
+
+  {#if isExperimental() && sessionIsUnsealed && $location !== path.designSystemGuide() && !$showingModal}
+    <TransactionCenter />
+  {/if}
+</Footer>
 
 <Remote {store} context="session" disableErrorLogging={true}>
   <Router {routes} />

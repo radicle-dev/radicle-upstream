@@ -30,6 +30,7 @@ a {
   --content-min-width: 30rem;
   --content-padding: 2rem;
   --content-max-width: 90rem;
+  --transaction-center-width: 17.2rem;
 }
 
 .lock-screen > * {

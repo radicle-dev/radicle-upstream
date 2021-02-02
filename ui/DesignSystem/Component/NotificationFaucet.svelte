@@ -13,11 +13,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: fixed;
-    bottom: 2rem;
+    flex: 1;
+
     z-index: 1001;
-    left: var(--sidebar-width);
-    width: calc(100vw - var(--sidebar-width));
   }
 </style>
 
