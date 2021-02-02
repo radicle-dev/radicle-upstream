@@ -121,17 +121,20 @@ export function build(
   }
 
   async function disconnect() {
-    try {
-      stateStore.set({ status: Status.NotConnected });
-      await walletConnect.killSession();
-      // We need to reinitialize `WalletConnect` until this issue is fixed:
-      // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
-      walletConnect = newWalletConnect();
-      signer.walletConnect = walletConnect;
-    } catch {
-      // When the user disconnects wallet-side, calling `killSession` app-side trows an error
-      // because the wallet has already closed its socket. Therefore, we simply ignore it.
-    }
+    await walletConnect.killSession().catch(() => {
+      // When the user disconnects wallet-side, calling `killSession`
+      // app-side trows an error because the wallet has already closed
+      // its socket. Therefore, we simply ignore it.
+    });
+
+    stateStore.set({ status: Status.NotConnected });
+    // We need to reinitialize `WalletConnect` until this issue is fixed:
+    // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
+    walletConnect = new WalletConnect({
+      bridge: "https://bridge.walletconnect.org",
+      qrcodeModal: qrCodeModal,
+    });
+    signer.walletConnect = walletConnect;
   }
 
   async function initialize() {
@@ -294,7 +297,7 @@ class WalletConnectSigner extends ethers.Signer {
   }
 
   connect(_provider: Provider): ethers.Signer {
-    throw new Error("WalletConnectSigner should never be called");
+    throw new Error("WalletConnectSigner.connect should never be called");
   }
 }
 

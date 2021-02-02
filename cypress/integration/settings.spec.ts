@@ -59,7 +59,7 @@ context("settings", () => {
 
       commands
         .pickWithContent(
-          "notification",
+          ["notification"],
           "Want to check for new versions automatically?"
         )
         .contains(".action", "Go to settings")
@@ -76,7 +76,7 @@ context("settings", () => {
 
       commands
         .pickWithContent(
-          "notification-action",
+          ["notification-action"],
           `Check out Version ${NEW_VERSION}`
         )
         .click();
@@ -142,16 +142,16 @@ context("settings", () => {
 
       cy.visit("public/index.html");
 
-      commands.pickWithContent("notification-action", "Dismiss").click();
+      commands.pickWithContent(["notification-action"], "Dismiss").click();
       commands.pick("settings").click();
       commands.pick("version").find("button[value='on']").click();
-      commands.pickWithContent("notification-action", "Dismiss").click();
+      commands.pickWithContent(["notification-action"], "Dismiss").click();
 
       cy.tick(VERSION_NOTIFY_SILENCE_INTERVAL - 100);
 
       commands
         .pickWithContent(
-          "notification-action",
+          ["notification-action"],
           `Check out Version ${NEW_VERSION}`
         )
         .should("not.exist");
@@ -159,7 +159,7 @@ context("settings", () => {
       cy.tick(VERSION_CHECK_INTERVAL);
       commands
         .pickWithContent(
-          "notification-action",
+          ["notification-action"],
           `Check out Version ${NEW_VERSION}`
         )
         .should("exist");

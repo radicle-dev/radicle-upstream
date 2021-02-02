@@ -31,10 +31,11 @@ export const withTempDir = (callback: (tempDirPath: string) => void): void => {
 // Selects one or more elements with the given `data-cy` ID that
 // contain the given content.
 export const pickWithContent = (
-  id: string,
+  ids: string[],
   content: string
 ): Cypress.Chainable<JQuery> => {
-  return cy.contains(`[data-cy="${id}"]`, content);
+  const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
+  return cy.contains(selectorString, content);
 };
 
 export const createProjectWithFixture = (

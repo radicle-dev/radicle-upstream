@@ -11,26 +11,25 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let element: any;
   let expand = false;
-  let initialized = false;
 
   // The set of transaction hashes that have already been displayed
   // in the expanded transaction stack.
-  let displayedTxs: Set<string> = new Set();
-
-  if (!initialized) {
-    displayedTxs = new Set(transactions.map(tx => tx.hash));
-    initialized = false;
-  }
+  const displayedTxs: Set<string> = new Set(transactions.map(tx => tx.hash));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const toggleStack = (ev: any) => {
     expand = expand
       ? false
       : element === ev.target || element.contains(ev.target);
-    transactions.forEach(tx => displayedTxs.add(tx.hash));
   };
 
-  $: expand = expand || transactions.some(tx => !displayedTxs.has(tx.hash));
+  $: {
+    const newTxs = transactions.filter(tx => !displayedTxs.has(tx.hash));
+    if (newTxs.length > 0) {
+      expand = true;
+      newTxs.forEach(tx => displayedTxs.add(tx.hash));
+    }
+  }
   $: negative = transactions.some(tx => tx.status === TxStatus.Rejected);
 </script>
 
