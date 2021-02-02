@@ -104,18 +104,14 @@ const cutRelease = (version: string): void => {
     throw new Error("Could not parse pull request ID");
   }
 
-  const releaseDate = new Date().toISOString().substring(0, 10);
-  const changelogAnchor = `${version.replace(/\./, "")}-${releaseDate}`;
-  const communityVersion = version.replace(/\./, "-");
-
-  printNextStepsMsg(pullRequestUrl, version, pullRequestId);
-  printAnnouncementTemplate(version, changelogAnchor, communityVersion);
+  printNextStepsMsg(pullRequestUrl, pullRequestId, version);
+  printAnnouncementTemplate(version);
 };
 
 const printNextStepsMsg = (
   pullRequestUrl: string,
-  version: string,
-  pullRequestId: string
+  pullRequestId: string,
+  version: string
 ): void =>
   console.log(`
   To finish the release follow these steps one by one from top to bottom:
@@ -165,11 +161,11 @@ const printNextStepsMsg = (
           ./scripts/set-latest-release.ts
 `);
 
-const printAnnouncementTemplate = (
-  version: string,
-  changelogAnchor: string,
-  communityVersion: string
-): void =>
+const printAnnouncementTemplate = (version: string): void => {
+  const releaseDate = new Date().toISOString().substring(0, 10);
+  const changelogAnchor = `${version.replace(/\./, "")}-${releaseDate}`;
+  const communityVersion = version.replace(/\./, "-");
+
   console.log(`
   ----------------------------------------------------------------------------
 
@@ -219,6 +215,7 @@ const printAnnouncementTemplate = (
 
   ----------------------------------------------------------------------------
 `);
+};
 
 const main = () => {
   checkPrerequisites();
