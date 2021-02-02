@@ -29,9 +29,6 @@ name = "ahash"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8fd72866655d1904d6b0997d0b07ba561047d070fbe29de039031c641b61217"
-dependencies = [
- "const-random",
-]
 
 [[package]]
 name = "aho-corasick"
@@ -401,28 +398,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "const-random"
-version = "0.1.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f590d95d011aa80b063ffe3253422ed5aa462af4e9867d43ce8337562bac77c4"
-dependencies = [
- "const-random-macro",
- "proc-macro-hack",
-]
-
-[[package]]
-name = "const-random-macro"
-version = "0.1.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "615f6e27d000a2bffbc7f2f6a8669179378fa27ee4d0a509e985dfc0a7defb40"
-dependencies = [
- "getrandom 0.2.2",
- "lazy_static",
- "proc-macro-hack",
- "tiny-keccak",
-]
-
-[[package]]
 name = "const_fn"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -503,12 +478,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crunchy"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
-
-[[package]]
 name = "crypto-mac"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -543,12 +512,11 @@ dependencies = [
 
 [[package]]
 name = "dashmap"
-version = "3.11.10"
+version = "4.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f260e2fc850179ef410018660006951c1b55b79e8087e87111a2c388994b9b5"
+checksum = "e77a43b28d0668df09411cb0bc9a8c2adc40f9a048afe863e05fd43251e8e39c"
 dependencies = [
- "ahash",
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "num_cpus",
 ]
 
@@ -1010,9 +978,9 @@ dependencies = [
 
 [[package]]
 name = "governor"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36f302dc68f4035178051bff107a8181379b8baa3354654672c2f1e7134af983"
+checksum = "06c5d2f987ee8f6dff3fa1a352058dc59b990e447e4c7846aa7d804971314f7b"
 dependencies = [
  "dashmap",
  "futures 0.3.12",
@@ -1021,7 +989,8 @@ dependencies = [
  "nonzero_ext",
  "parking_lot",
  "quanta",
- "rand 0.7.3",
+ "rand 0.8.3",
+ "smallvec",
 ]
 
 [[package]]
@@ -1324,7 +1293,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d33410cc76657db918e3ae259ee00623acaf1741#d33410cc76657db918e3ae259ee00623acaf1741"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=85545a17cabd5e023d859abdc9ed4f78bccf1f5f#85545a17cabd5e023d859abdc9ed4f78bccf1f5f"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -2129,7 +2098,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d33410cc76657db918e3ae259ee00623acaf1741#d33410cc76657db918e3ae259ee00623acaf1741"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=85545a17cabd5e023d859abdc9ed4f78bccf1f5f#85545a17cabd5e023d859abdc9ed4f78bccf1f5f"
 dependencies = [
  "git2",
  "multibase",
@@ -2143,7 +2112,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d33410cc76657db918e3ae259ee00623acaf1741#d33410cc76657db918e3ae259ee00623acaf1741"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=85545a17cabd5e023d859abdc9ed4f78bccf1f5f#85545a17cabd5e023d859abdc9ed4f78bccf1f5f"
 dependencies = [
  "anyhow",
  "git2",
@@ -2176,7 +2145,7 @@ dependencies = [
 [[package]]
 name = "radicle-macros"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d33410cc76657db918e3ae259ee00623acaf1741#d33410cc76657db918e3ae259ee00623acaf1741"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=85545a17cabd5e023d859abdc9ed4f78bccf1f5f#85545a17cabd5e023d859abdc9ed4f78bccf1f5f"
 dependencies = [
  "quote",
  "radicle-git-ext",
@@ -2186,7 +2155,7 @@ dependencies = [
 [[package]]
 name = "radicle-std-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d33410cc76657db918e3ae259ee00623acaf1741#d33410cc76657db918e3ae259ee00623acaf1741"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=85545a17cabd5e023d859abdc9ed4f78bccf1f5f#85545a17cabd5e023d859abdc9ed4f78bccf1f5f"
 
 [[package]]
 name = "radicle-surf"
@@ -2949,15 +2918,6 @@ dependencies = [
  "quote",
  "standback",
  "syn",
-]
-
-[[package]]
-name = "tiny-keccak"
-version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237"
-dependencies = [
- "crunchy",
 ]
 
 [[package]]
