@@ -318,15 +318,15 @@ Read more about the colors used in Upstream in the [Color System post][cg].
 ## Proxy
 
 All of Upstream's business logic tying together the radicle code collaboration
-is provided to the UI via an HTTP API by a rust binary called the proxy. It
-uses [warp][wa] to serve a RESTish JSON API.
+is provided to the UI via an HTTP API by a rust binary called `radicle-proxy`.
+It uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To
 get up to speed with common functionality and manifest file intricacies consult
 the exhaustive [Cargo Book][cb].
 
 The proxy binary's lifecycle is managed by the main renderer of the UI in:
-`native/main.js`. When running `yarn dist` it is bundled together into an
+`native/main.ts`. When running `yarn dist` it is bundled together into an
 application package by [electron-builder][eb].
 
 
@@ -570,11 +570,10 @@ permissions. Reach out to a co-worker if you don’t have them.
 
 After this you also need to obtain and upload the Linux package.
 
-FIXME(rudolfs): this doesn't work, we don't build images off of tags.
-
 ```bash
-curl -sSLO https://builds.radicle.xyz/radicle-upstream/vX.X.X/radicle-upstream-X.X.X.AppImage
-gsutil cp radicle-upstream-X.X.X.AppImage gs://releases.radicle.xyz
+version="$(jq -r .version < package.json)"
+curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage"
+gsutil cp radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
 ```
 
 After all the packages are uploaded, update the links to those binaries on the
@@ -624,10 +623,10 @@ the versions and links**):
 Finally, update the information about the latest release by running
 
 ```bash
-npx ts-node ./scripts/set-latest-release.ts
+./scripts/set-latest-release.ts
 ```
 
-This also requires the `gsutil` tool and access to the `builds.radicle.xyz`
+This also requires the `gsutil` tool and access to the `releases.radicle.xyz`
 bucket.
 
 
@@ -647,11 +646,9 @@ for all of the required steps:
 - [ ] wait until macOS and Linux QA is performed and passes
 - [ ] update radicle.xyz download links
   - [ ] deploy radicle.xyz
-- [ ] update docs.radicle.xyz download links
-  - [ ] deploy docs.radicle.xyz
 - [ ] announce new release on radicle.community
 - [ ] announce new release on the matrix #general:radicle.community channel
-- [ ] update release information
+- [ ] run script for updating version in auto-update notification
 
 
 [an]: #apple-notarization

@@ -36,7 +36,7 @@
   }
 </style>
 
-<div class="peer" data-cy="peer">
+<div class="peer" data-cy={`peer-${peer.identity.metadata.handle}`}>
   <div class="left">
     <div style="display: flex;">
       <Avatar

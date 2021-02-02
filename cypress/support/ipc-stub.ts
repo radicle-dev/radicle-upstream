@@ -12,6 +12,7 @@ interface ElectronStubs {
   [RendererMessage.GET_VERSION]: sinon.SinonStub;
   [RendererMessage.DIALOG_SHOWOPENDIALOG]: sinon.SinonStub;
   [RendererMessage.OPEN_PATH]: sinon.SinonStub;
+  [RendererMessage.OPEN_URL]: sinon.SinonStub;
   [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => void;
   sendMessage: (message: MainMessage) => void;
   getClipboard: () => string;
@@ -40,6 +41,7 @@ export function setup(window: Window): void {
     [RendererMessage.OPEN_PATH]: sinon
       .stub()
       .throws(new Error("not implemented")),
+    [RendererMessage.OPEN_URL]: sinon.stub(),
     [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => {
       clipboard = text;
     },

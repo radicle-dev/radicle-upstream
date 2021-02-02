@@ -1,4 +1,4 @@
-import { ipcStub } from "../../support";
+import * as ipcStub from "../../support/ipc-stub";
 import * as commands from "../../support/commands";
 
 context("project creation", () => {

@@ -1,3 +1,13 @@
+import * as uuid from "uuid";
+import * as path from "path";
+
+// A directory that can be used for temporary test data.
+//
+// It is located within this repository so that there is no extra setup necessary
+// when using it locally or on CI. To avoid committing any left-over temp data
+// this directory ignored via .gitignore.
+const CYPRESS_WORKSPACE_PATH = path.join(__dirname, "../../cypress/workspace");
+
 export const resetProxyState = (): Cypress.Chainable<void> =>
   requestOk({ url: "http://localhost:17246/v1/control/reset" });
 
@@ -9,13 +19,23 @@ export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
   return cy.get(selectorString);
 };
 
+export const withTempDir = (callback: (tempDirPath: string) => void): void => {
+  const tempDirPath = path.join(CYPRESS_WORKSPACE_PATH, uuid.v4());
+  cy.exec(`mkdir -p ${tempDirPath}`);
+
+  callback(tempDirPath);
+
+  cy.exec(`rm -rf ${tempDirPath}`);
+};
+
 // Selects one or more elements with the given `data-cy` ID that
 // contain the given content.
 export const pickWithContent = (
-  id: string,
+  ids: string[],
   content: string
 ): Cypress.Chainable<JQuery> => {
-  return cy.contains(`[data-cy="${id}"]`, content);
+  const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
+  return cy.contains(selectorString, content);
 };
 
 export const createProjectWithFixture = (
