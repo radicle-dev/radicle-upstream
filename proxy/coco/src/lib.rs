@@ -32,8 +32,7 @@ pub use librad::{
     net::{self, discovery},
     paths::Paths,
     peer::PeerId,
-    profile::Profile,
-    signer,
+    profile, signer,
 };
 
 pub use radicle_git_ext as git_ext;

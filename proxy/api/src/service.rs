@@ -13,7 +13,7 @@ pub struct Environment {
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
     /// Paths & profile id for on-disk persistence.
-    pub coco_profile: coco::Profile,
+    pub coco_profile: coco::profile::Profile,
     /// A reference to the key store.
     pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
     /// If true we are running the service in test mode.
@@ -30,6 +30,8 @@ pub enum Error {
         #[from]
         std::io::Error,
     ),
+    #[error(transparent)]
+    Profile(#[from] coco::profile::Error),
 }
 
 impl Environment {
@@ -40,7 +42,7 @@ impl Environment {
     fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
-            let coco_profile = coco::Profile::from_root(temp_dir.path())?;
+            let coco_profile = coco::profile::Profile::from_root(temp_dir.path())?;
             let keystore = Arc::new(coco::keystore::memory());
             Ok(Self {
                 key: None,
@@ -50,7 +52,7 @@ impl Environment {
                 test_mode,
             })
         } else {
-            let coco_profile = coco::Profile::load()?;
+            let coco_profile = coco::profile::Profile::load()?;
             let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
             Ok(Self {
                 key: None,
