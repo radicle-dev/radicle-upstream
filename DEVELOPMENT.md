@@ -338,7 +338,6 @@ To be able to build the proxy first install all required dependencies from the
 [Running Upstream](#running-upstream) section.
 
 To start the proxy binary, run: `cd proxy && cargo run`.
-After that the API docs are served under `http://127.0.0.1:17246/docs`.
 
 
 ### Testing
@@ -347,8 +346,7 @@ The proxy and UI share the same test fixtures, if you haven't done it already,
 set up the test fixtures like so:
 
 ```sh
-git submodule update --init --remote
-git submodule foreach "git fetch --all"
+./scripts/test-setup.sh
 ```
 
 💡 *You'll have to run the command every time there are any updates to the test
@@ -463,7 +461,7 @@ Once you've created the _Developer ID Application_ certificate, download it
 locally and add it to your keychain by double clicking on the file.
 
 
-## Publishing a release
+### Publishing a release
 
 To perform a release run: `git checkout master && yarn release` and follow the
 instructions.
