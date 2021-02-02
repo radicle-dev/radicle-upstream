@@ -14,8 +14,6 @@
     flex-direction: column;
     align-items: center;
     flex: 1;
-
-    z-index: 1001;
   }
 </style>
 

@@ -13,14 +13,6 @@
   };
 </script>
 
-<style>
-  .transaction-center {
-    z-index: 50;
-  }
-</style>
-
 {#if $transactions.length > 0}
-  <div class="transaction-center">
-    <Center on:select={onSelect} transactions={$transactions} />
-  </div>
+  <Center on:select={onSelect} transactions={$transactions} />
 {/if}
