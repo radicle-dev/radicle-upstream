@@ -117,7 +117,7 @@ const printNextStepsMsg = (
   To finish the release follow these steps one by one from top to bottom:
 
   - [x] cut the release
-    - [ ] fix and commit any mistakes in \`CHANGELOG.md\`
+    - [ ] fix, commit and push any mistakes in CHANGELOG.md
     - [ ] wait for the release pull request to pass CI
     - [ ] get two approvals for the release pull request,
           but _don't_ merge it manually:
