@@ -2,10 +2,6 @@
 
 import { execSync } from "child_process";
 
-const VERSION_MATCH = "bumping version in package.json from (.*) to (.*)";
-const PULL_REQUEST_MATCH =
-  "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
-
 const SV_COMMAND = "yarn run standard-version --infile ./CHANGELOG.md";
 
 const verboseExec = (cmd: string) => {
@@ -43,6 +39,7 @@ const getNewVersion = (): string => {
     stdio: "pipe",
   }).toString("utf-8");
 
+  const VERSION_MATCH = "bumping version in package.json from (.*) to (.*)";
   const match = svResult.match(VERSION_MATCH);
   let toVersion;
   if (match) {
@@ -95,6 +92,8 @@ const cutRelease = (toVersion: string): void => {
   verboseExec(`git push origin release-${toVersion}`);
   const prResult = verboseExec("hub pull-request -p --no-edit");
   const pullRequestUrl = prResult.split("\n").slice(-2)[0];
+  const PULL_REQUEST_MATCH =
+    "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
   const match = pullRequestUrl.match(PULL_REQUEST_MATCH);
   let pullRequestId;
   if (match) {
