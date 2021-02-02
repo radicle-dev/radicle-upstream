@@ -42,7 +42,7 @@ impl Environment {
     fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
-            let coco_profile = coco::profile::Profile::from_root(temp_dir.path())?;
+            let coco_profile = coco::profile::Profile::from_root(temp_dir.path(), None)?;
             let keystore = Arc::new(coco::keystore::memory());
             Ok(Self {
                 key: None,
