@@ -378,9 +378,9 @@ impl Repository {
             Err(remote::FindError::ParseUrl(_)) => {
                 log::warn!("an old/invalid URL was found when trying to load the `rad` remote");
                 log::warn!(
-                    "we are going to rename the remote to `temp_rad` and create a new `rad` remote"
+                    "we are going to rename the remote to `rad_old` and create a new `rad` remote"
                 );
-                repo.remote_rename("rad", "temp_rad")?;
+                repo.remote_rename("rad", "rad_old")?;
                 Ok(None)
             },
             Err(err) => Err(err.into()),
