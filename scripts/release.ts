@@ -210,7 +210,7 @@ const matrixAnnouncementTemplate = (version: string): string => {
         =============================================================================
 
           Radicle Upstream v${version} is out! 🎉
-          https://radicle.community/t/radicle-upstream-${communityVersion}-is-out
+          https://radicle.community/t/radicle-upstream-v${communityVersion}-is-out
 
         =============================================================================
 `;
