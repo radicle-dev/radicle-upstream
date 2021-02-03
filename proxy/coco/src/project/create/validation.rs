@@ -8,13 +8,14 @@ use librad::{
         local::{transport::CanOpenStorage, url::LocalUrl},
         types::{
             remote::{self, LocalPushspec, Remote},
-            Force, Refspec,
+            Fetchspec, Force, Refspec,
         },
     },
     git_ext::{self, OneLevel},
     reflike, refspec_pattern,
     std_ext::result::ResultExt as _,
 };
+use nonempty::NonEmpty;
 use radicle_surf::vcs::git::git2;
 
 const USER_NAME: &str = "user.name";
@@ -234,7 +235,7 @@ impl Repository {
         description: &str,
     ) -> Result<git2::Repository, super::Error>
     where
-        F: CanOpenStorage + 'static,
+        F: CanOpenStorage + Clone + 'static,
     {
         match self {
             Self::Existing {
@@ -264,7 +265,23 @@ impl Repository {
                     &default_branch,
                     &git2::Signature::try_from(signature)?,
                 )?;
-                let remote = Self::setup_remote(&repo, open_storage, url, &default_branch)?;
+                let mut remote =
+                    Self::setup_remote(&repo, open_storage.clone(), url, &default_branch)?;
+                // Set up the default branch under the remote to allow setting the upstream
+                let _fetched = remote
+                    .fetch(
+                        open_storage,
+                        &repo,
+                        remote::LocalFetchspec::Specs(NonEmpty::new(Fetchspec::from(Refspec {
+                            src: reflike!("refs/heads").join(default_branch.clone()),
+                            dst: reflike!("refs/remotes")
+                                .join(remote.name.clone())
+                                .join(default_branch.clone()),
+                            force: Force::False,
+                        }))),
+                    )
+                    .map_err(Error::from)?;
+
                 crate::project::set_upstream(&repo, &remote, default_branch)?;
 
                 Ok(repo)

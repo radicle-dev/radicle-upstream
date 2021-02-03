@@ -27,6 +27,9 @@ async fn upstream_for_default() -> Result<(), Box<dyn std::error::Error>> {
 
     assert_eq!(remote.as_str().unwrap(), "rad");
 
+    let branch = repo.find_branch("rad/it", git2::BranchType::Remote);
+    assert!(branch.is_ok(), "could not find `rad/it`");
+
     Ok(())
 }
 
