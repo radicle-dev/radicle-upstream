@@ -1,5 +1,7 @@
 import WalletConnect from "@walletconnect/client";
 import * as svelteStore from "svelte/store";
+
+import type { Big } from "big.js";
 import * as ethers from "ethers";
 import * as ethersBytes from "@ethersproject/bytes";
 import {
@@ -37,7 +39,7 @@ export interface Connected {
 
 export interface Account {
   address: string;
-  balance: string;
+  balance: Big;
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
@@ -146,17 +148,15 @@ export function build(
   async function loadAccountData() {
     try {
       const accountAddress = await signer.getAddress();
-      const preciseBalance: ethers.BigNumber = await daiTokenContract.balanceOf(
-        accountAddress
-      );
-      const tokenDecimals = await daiTokenContract.decimals();
-      const balance = ethereum.toHumans(preciseBalance, tokenDecimals);
+      const balance = await daiTokenContract
+        .balanceOf(accountAddress)
+        .then(ethereum.toHumans);
       const chainId = walletConnect.chainId;
 
       const connected = {
         account: {
           address: accountAddress,
-          balance: balance.toString(),
+          balance: balance,
         },
         network: ethereum.networkFromChainId(chainId),
       };

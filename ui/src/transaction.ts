@@ -1,7 +1,7 @@
 import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
-import { BigNumber } from "ethers";
+import Big from "big.js";
 import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
@@ -112,8 +112,8 @@ export function erc20Allowance(txc: ContractTransaction): Tx {
 
 export function supportOnboarding(
   txc: ContractTransaction,
-  topUp: BigNumber,
-  budget: BigNumber,
+  topUp: Big,
+  budget: Big,
   receivers: Receivers
 ): Tx {
   const meta: SupportOnboarding = {
@@ -125,7 +125,7 @@ export function supportOnboarding(
   return { ...txData(txc), ...meta };
 }
 
-export function collect(txc: ContractTransaction, amount: BigNumber): Tx {
+export function collect(txc: ContractTransaction, amount: Big): Tx {
   const meta: CollectFunds = {
     kind: TxKind.CollectFunds,
     amount: amount.toString(),
@@ -133,19 +133,19 @@ export function collect(txc: ContractTransaction, amount: BigNumber): Tx {
   return { ...txData(txc), ...meta };
 }
 
-export function topUp(txc: ContractTransaction, amount: BigNumber): Tx {
+export function topUp(txc: ContractTransaction, amount: Big): Tx {
   const meta: TopUp = { kind: TxKind.TopUp, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 
-export function withdraw(txc: ContractTransaction, amount: BigNumber): Tx {
+export function withdraw(txc: ContractTransaction, amount: Big): Tx {
   const meta: Withdraw = { kind: TxKind.Withdraw, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 
 export function updateSupport(
   txc: ContractTransaction,
-  amount: BigNumber,
+  amount: Big,
   receivers: Receivers
 ): Tx {
   const meta: UpdateSupport = {
@@ -330,14 +330,14 @@ export function isIncoming(tx: Tx): boolean {
 }
 
 // The amount the `tx` transfers. `undefined` when not applicable.
-export function transferAmount(tx: Tx): BigNumber | undefined {
+export function transferAmount(tx: Tx): Big | undefined {
   switch (tx.kind) {
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
     case TxKind.TopUp:
-      return BigNumber.from(tx.amount);
+      return Big(tx.amount);
     case TxKind.SupportOnboarding:
-      return BigNumber.from(tx.topUp);
+      return Big(tx.topUp);
     default:
       return undefined;
   }

@@ -1,5 +1,6 @@
-import { BigNumber } from "ethers";
-import type { ContractTransaction, Signer } from "ethers";
+import type { ethers, BigNumber, ContractTransaction, Signer } from "ethers";
+
+import Big from "big.js";
 
 import * as svelteStore from "svelte/store";
 
@@ -67,8 +68,8 @@ export class PoolContract {
   }
 
   async onboard(
-    topUp: BigNumber,
-    weeklyBudget: BigNumber,
+    topUp: Big,
+    weeklyBudget: Big,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
     return this.contract.updateSender(
@@ -81,7 +82,7 @@ export class PoolContract {
   }
 
   async updatePlan(
-    weeklyBudget: BigNumber,
+    weeklyBudget: Big,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
     return this.contract.updateSender(
@@ -93,7 +94,7 @@ export class PoolContract {
     );
   }
 
-  async topUp(amount: BigNumber): Promise<ContractTransaction> {
+  async topUp(amount: Big): Promise<ContractTransaction> {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
     return this.contract.updateSender(
       ethereum.toDecimals(amount),
@@ -104,30 +105,40 @@ export class PoolContract {
     );
   }
 
-  async withdraw(amount: BigNumber): Promise<ContractTransaction> {
+  async withdraw(amount: Big): Promise<ContractTransaction> {
+    const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
+    return this.contract.updateSender(
+      0,
+      ethereum.toDecimals(amount),
+      UNCHANGED,
+      [],
+      []
+    );
+  }
+
+  async withdrawAll(): Promise<ContractTransaction> {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
     const ALL = await this.withdrawAllFlag();
-    const finalAmount = amount.eq(ALL) ? ALL : ethereum.toDecimals(amount);
-    return this.contract.updateSender(0, finalAmount, UNCHANGED, [], []);
+    return this.contract.updateSender(0, ALL, UNCHANGED, [], []);
   }
 
   async collect(): Promise<ContractTransaction> {
     return this.contract.collect();
   }
 
-  async withdrawAllFlag(): Promise<BigNumber> {
+  async withdrawAllFlag(): Promise<ethers.BigNumber> {
     return this.contract.WITHDRAW_ALL();
   }
 
-  async withdrawable(): Promise<BigNumber> {
+  async withdrawable(): Promise<Big> {
     return this.contract.withdrawable().then(ethereum.toHumans);
   }
 
-  async collectable(): Promise<BigNumber> {
+  async collectable(): Promise<Big> {
     return this.contract.collectable().then(ethereum.toHumans);
   }
 
-  async weeklyBudget(): Promise<BigNumber> {
+  async weeklyBudget(): Promise<Big> {
     return this.contract.getAmountPerBlock().then(amountPerBlockToWeeklyBudget);
   }
 
@@ -145,22 +156,23 @@ export interface PoolReceiver {
 }
 
 // Convert the user-inputed `weeklyBudget` into how much it means per Ethereum block.
-function weeklyBudgetToAmountPerBlock(weeklyBudget: BigNumber): BigNumber {
-  return ethereum.toDecimals(weeklyBudget).div(ESTIMATED_BLOCKS_IN_WEEK);
+function weeklyBudgetToAmountPerBlock(weeklyBudget: Big): BigNumber {
+  return ethereum.toDecimals(weeklyBudget.div(ESTIMATED_BLOCKS_IN_WEEK));
 }
 
 // The inverse operation of `weeklyBudgetToAmountPerBlock`.
-function amountPerBlockToWeeklyBudget(amountPerBlock: BigNumber): BigNumber {
-  return ethereum.toHumans(amountPerBlock.mul(ESTIMATED_BLOCKS_IN_WEEK));
+function amountPerBlockToWeeklyBudget(amountPerBlock: BigNumber): Big {
+  return ethereum.toHumans(
+    Big(amountPerBlock.toString()).mul(ESTIMATED_BLOCKS_IN_WEEK)
+  );
 }
 
 // The Ethereum network aims to mine a block at every 12.5 seconds.
-const AVG_ETHEREUM_BLOCK_TIME_SECONDS = BigNumber.from(13);
+const AVG_ETHEREUM_BLOCK_TIME_SECONDS = 12.5;
 
 // The number of seconds in a week
-const AVG_SECONDS_IN_WEEK = BigNumber.from(604800);
+const AVG_SECONDS_IN_WEEK = 604800;
 
 // The estimated number of Ethereum blocks mined in a week
-const ESTIMATED_BLOCKS_IN_WEEK = AVG_SECONDS_IN_WEEK.div(
-  AVG_ETHEREUM_BLOCK_TIME_SECONDS
-);
+const ESTIMATED_BLOCKS_IN_WEEK =
+  AVG_SECONDS_IN_WEEK / AVG_ETHEREUM_BLOCK_TIME_SECONDS;

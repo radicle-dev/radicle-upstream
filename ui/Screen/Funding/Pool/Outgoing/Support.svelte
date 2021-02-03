@@ -16,7 +16,7 @@
   } from "../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../src/validation";
 
-  import { BigNumber } from "ethers";
+  import Big from "big.js";
 
   export let pool: fundingPool.Pool;
 
@@ -63,14 +63,13 @@
         budget = data.weeklyBudget.toString();
         receivers = new Map(data.receivers);
       }
-      paused =
-        data.balance.lte(data.weeklyBudget) || data.weeklyBudget.isZero();
+      paused = data.balance.lte(data.weeklyBudget) || data.weeklyBudget.eq(0);
     }
   });
 
   $: thereAreChanges =
     fundingPool.isValidBigNumber(budget) &&
-    (!BigNumber.from(budget).eq(data.weeklyBudget) ||
+    (!Big(budget).eq(data.weeklyBudget) ||
       receivers.size !== data.receivers.size ||
       [...receivers.entries()].find(
         ([address, weight]) => data.receivers.get(address) !== weight
@@ -90,7 +89,7 @@
     );
 
     return pool
-      .updateSettings(BigNumber.from(budget), changedReceivers)
+      .updateSettings(Big(budget), changedReceivers)
       .then(_ => leaveEditMode());
   }
 
@@ -184,7 +183,7 @@
             </Input.Text>
           {:else}
             <p class="typo-text-bold">
-              <Dai>{poolData.weeklyBudget}</Dai>
+              <Dai>{poolData.weeklyBudget.toNumber()}</Dai>
             </p>
           {/if}
           <span style="margin-left: 0.4375rem;"> per week</span>
@@ -277,7 +276,7 @@
           the users you support.
         {:else}
           <Icon.InfoCircle />
-          To stop or pause your support, set the weekly contribution to 0 or
+          To stop or pause your support, set the monthly contribution to 0 or
           withdraw all the remaining balance.
         {/if}
       </div>

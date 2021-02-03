@@ -14,7 +14,7 @@
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
-  import { BigNumber } from "ethers";
+  import Big from "big.js";
 
   if ($store === null) pop();
 
@@ -45,7 +45,7 @@
     const pool = get(store);
     if (pool) {
       if (mode === Mode.SpecifyAmount) {
-        await pool.withdraw(BigNumber.from(amount));
+        await pool.withdraw(Big(amount));
       } else {
         await pool.withdrawAll();
       }

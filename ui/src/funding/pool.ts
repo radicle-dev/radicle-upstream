@@ -6,7 +6,9 @@ import * as validation from "../validation";
 
 import { Wallet, Account, Status as WalletStatus } from "../wallet";
 import * as remote from "../remote";
-import { BigNumber, BigNumberish, ContractTransaction, ethers } from "ethers";
+
+import Big from "big.js";
+import { ContractTransaction, ethers } from "ethers";
 
 export const store = svelteStore.writable<Pool | null>(null);
 
@@ -17,22 +19,18 @@ export interface Pool {
   getAccount: () => Account | undefined;
 
   // Onboard the user's pool with the intial values
-  onboard(
-    topUp: BigNumber,
-    weeklyBudget: BigNumber,
-    receivers: Receivers
-  ): Promise<void>;
+  onboard(topUp: Big, weeklyBudget: Big, receivers: Receivers): Promise<void>;
 
   // Update the contribution per block and the list of receivers.
-  updateSettings(weeklyBudget: BigNumber, receivers: Receivers): Promise<void>;
+  updateSettings(weeklyBudget: Big, receivers: Receivers): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
-  topUp(value: BigNumber): Promise<void>;
+  topUp(value: Big): Promise<void>;
 
   // Withdraw outgoing balance funds to the connected wallet.
   // Returns once the transaction has been included in the chain.
-  withdraw(value: BigNumber): Promise<void>;
+  withdraw(value: Big): Promise<void>;
 
   // Withdraw all the outgoing balance funds to the connected wallet.
   withdrawAll(): Promise<void>;
@@ -49,23 +47,23 @@ export interface Pool {
 // All the data representing a pool.
 export interface PoolData {
   // The remaining balance of this pool.
-  balance: BigNumber;
+  balance: Big;
   // The weekly amount to be split amongst all the `receivers`.
-  weeklyBudget: BigNumber;
+  weeklyBudget: Big;
   // The list of addresses that receive funds from the pool.
   receivers: Receivers;
   // Funds that the user can collect from their givers.
-  collectableFunds: BigNumber;
+  collectableFunds: Big;
   // The ERC-20 token allowance. 0 means that the allowance was not
   // granted or that it was fully spent.
-  erc20Allowance: BigNumber;
+  erc20Allowance: Big;
 }
 
 /* Receivers */
 export type Receivers = Map<Address, ReceiverStatus>;
 
 export type Address = string;
-export type Weight = BigNumber;
+export type Weight = Big;
 
 export enum ReceiverStatus {
   // The receiver is being added
@@ -128,8 +126,8 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function onboard(
-    topUp: BigNumber,
-    weeklyBudget: BigNumber,
+    topUp: Big,
+    weeklyBudget: Big,
     receivers: Receivers
   ): Promise<void> {
     return poolContract
@@ -143,7 +141,7 @@ export function make(wallet: Wallet): Pool {
   }
 
   async function updateSettings(
-    weeklyBudget: BigNumber,
+    weeklyBudget: Big,
     receivers: Receivers
   ): Promise<void> {
     return poolContract
@@ -158,7 +156,7 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
-  async function topUp(amount: BigNumber): Promise<void> {
+  async function topUp(amount: Big): Promise<void> {
     return poolContract
       .topUp(amount)
       .then((tx: ContractTransaction) => {
@@ -167,35 +165,36 @@ export function make(wallet: Wallet): Pool {
       .finally(loadPoolData);
   }
 
-  async function withdraw(amount: BigNumber): Promise<void> {
+  async function withdraw(amount: Big): Promise<void> {
     return poolContract
       .withdraw(amount)
       .then(async (tx: ContractTransaction) => {
-        const ALL = await poolContract.withdrawAllFlag();
-        const infoAmount = amount.eq(ALL)
-          ? data.unwrap()?.balance || BigNumber.from(0)
-          : amount;
-        transaction.add(transaction.withdraw(tx, infoAmount));
+        transaction.add(transaction.withdraw(tx, amount));
       })
       .finally(loadPoolData);
   }
 
   async function withdrawAll(): Promise<void> {
-    const ALL = await poolContract.withdrawAllFlag();
-    return withdraw(ALL);
+    return poolContract
+      .withdrawAll()
+      .then(async (tx: ContractTransaction) => {
+        const remainingBalance = data.unwrap()?.balance || Big(0);
+        transaction.add(transaction.withdraw(tx, remainingBalance));
+      })
+      .finally(loadPoolData);
   }
 
   async function collect(): Promise<void> {
     return poolContract
       .collect()
       .then((tx: ContractTransaction) => {
-        const infoAmount = data.unwrap()?.collectableFunds || BigNumber.from(0);
+        const infoAmount = data.unwrap()?.collectableFunds || Big(0);
         transaction.add(transaction.collect(tx, infoAmount));
       })
       .finally(loadPoolData);
   }
 
-  async function getErc20Allowance(): Promise<BigNumber> {
+  async function getErc20Allowance(): Promise<Big> {
     const account = getAccount();
     if (account) {
       return daiTokenContract.allowance(
@@ -203,12 +202,12 @@ export function make(wallet: Wallet): Pool {
         svelteStore.get(contract.POOL_ADDRESS)
       );
     } else {
-      return BigNumber.from(0);
+      return Big(0);
     }
   }
 
   async function approveErc20(): Promise<void> {
-    const unlimited = BigNumber.from(1).shl(256).sub(1);
+    const unlimited = ethers.BigNumber.from(1).shl(256).sub(1);
     return daiTokenContract
       .approve(svelteStore.get(contract.POOL_ADDRESS), unlimited)
       .then((tx: ContractTransaction) => {
@@ -290,14 +289,12 @@ export const weeklyBudgetValidationStore = (): validation.ValidationStore => {
 // The provided `balance` represents the account balance upon which
 // the value being validated will be compared for sufficiency.
 export const balanceValidationStore = (
-  balance: BigNumberish
+  balance: Big
 ): validation.ValidationStore => {
   return validation.createValidationStore(constraints.topUpAmount, [
     {
       promise: amount =>
-        Promise.resolve(
-          isValidBigNumber(amount) && BigNumber.from(balance).gte(amount)
-        ),
+        Promise.resolve(isValidBigNumber(amount) && balance.gte(Big(amount))),
       validationMessage: "Insufficient balance",
     },
   ]);
@@ -307,9 +304,7 @@ export const balanceValidationStore = (
 export function isOnboarded(data: PoolData): boolean {
   return (
     data.erc20Allowance.gt(0) &&
-    (data.receivers.size > 0 ||
-      !data.weeklyBudget.isZero() ||
-      data.balance.gt(0))
+    (data.receivers.size > 0 || !data.weeklyBudget.eq(0) || data.balance.gt(0))
   );
 }
 
@@ -332,12 +327,9 @@ function newSetOfReceivers(current: Receivers, changes: Receivers): Receivers {
   );
 }
 
-// Check whether the given value can be converted to `ethers.BigNumber`.
-// N.B: ethers.BigNumber.isBigNumber doesn't work as expected:
-// https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L285
 export function isValidBigNumber(value: string): boolean {
   try {
-    BigNumber.from(value);
+    Big(value);
     return true;
   } catch {
     return false;

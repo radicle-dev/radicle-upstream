@@ -8,7 +8,7 @@
   } from "../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../src/validation";
 
-  import { BigNumber } from "ethers";
+  import Big from "big.js";
 
   export let amount = "";
   export let onBack: [string, () => void];
@@ -16,7 +16,7 @@
   export let disabled = true;
 
   let validating = false;
-  $: validation = balanceValidationStore(BigNumber.from(balance));
+  $: validation = balanceValidationStore(Big(balance));
   $: amountStore.set(amount);
   $: {
     if ($amountStore && $amountStore.length > 0) validating = true;

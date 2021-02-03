@@ -1,4 +1,5 @@
-import { BigNumber, BigNumberish } from "ethers";
+import Big from "big.js";
+import * as ethers from "ethers";
 import { writable } from "svelte/store";
 
 import * as ipc from "./ipc";
@@ -52,10 +53,13 @@ export const selectedEnvironment = writable<Environment>(
   ipc.isExperimental() ? Environment.Ropsten : Environment.Local
 );
 
-export function toHumans(n: BigNumberish, exp: number = 18): BigNumber {
-  return BigNumber.from(n).div(BigNumber.from(10).pow(exp));
+const TOKEN_SCALE = Big(10).pow(18);
+
+export function toHumans(n: ethers.BigNumber | Big): Big {
+  return Big(n.toString()).div(TOKEN_SCALE).round(2);
 }
 
-export function toDecimals(n: BigNumberish, exp: number = 18): BigNumber {
-  return BigNumber.from(n).mul(BigNumber.from(10).pow(exp));
+export function toDecimals(n: Big): ethers.BigNumber {
+  const big = Big(n.toString()).mul(TOKEN_SCALE);
+  return ethers.BigNumber.from(big.round().toString());
 }
