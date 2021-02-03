@@ -82,7 +82,6 @@ const cutRelease = (version: string, releaseAs: string): void => {
     }
 
     printNextStepsMsg(pullRequestUrl, pullRequestId, version);
-    printAnnouncementTemplate(version);
   });
 };
 
@@ -104,15 +103,15 @@ const printNextStepsMsg = (
 
     - [ ] finalize the release:
 
-            yarn release --finalize v${version} ${pullRequestId}
+            yarn release finalize v${version} ${pullRequestId}
 
   - [ ] build and notarize macOS package on your macOS machine:
 
           git checkout v${version}
-          CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
-          APPLE_ID="XXXXXXX@monadic.xyz" \
-          APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
-          NOTARIZE=true \
+          CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \\
+          APPLE_ID="XXXXXXX@monadic.xyz" \\
+          APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \\
+          NOTARIZE=true \\
           yarn dist
 
   - [ ] wait for the Linux package to be built on master for the release on CI
@@ -124,75 +123,70 @@ const printNextStepsMsg = (
 
   - [ ] create macOS and Linux QA issues in the Upstream repo
 
-          (echo "QA: v${version} macOS\n"; sed 's/X.X.X/${version}/g' QA.md) | hub issue create --file -
-          (echo "QA: v${version} Linux\n"; sed 's/X.X.X/${version}/g' QA.md) | hub issue create --file -
+          (echo "QA: v${version} macOS\\n"; sed 's/X.X.X/${version}/g' QA.md) | hub issue create --file -
+          (echo "QA: v${version} Linux\\n"; sed 's/X.X.X/${version}/g' QA.md) | hub issue create --file -
 
   - [ ] wait until macOS and Linux QA is performed and passes
-  - [ ] open a pull request to update the download links on our
-        http://radicle.xyz website
+  - [ ] open a pull request to update the links on radicle.xyz/download.html
     - [ ] deploy the updates by merging in the pull-request
-  - [ ] announce new release on radicle.community (see template below 👇)
-  - [ ] announce new release on the matrix #general:radicle.community channel
+  - [ ] announce new release on https://radicle.community/c/announcements
+        ${communityAnnouncementTemplate(version)}
+  - [ ] announce new release on https://matrix.radicle.community/#/room/#general:radicle.community
+        ${matrixAnnouncementTemplate(version)}
   - [ ] announce the new version to all Upstream users via the in-app
         notification by running this script:
-
           ./scripts/set-latest-release.ts
 `);
 
-const printAnnouncementTemplate = (version: string): void => {
+const communityAnnouncementTemplate = (version: string): string => {
   const releaseDate = new Date().toISOString().substring(0, 10);
-  const changelogAnchor = `${version.replace(/\./, "")}-${releaseDate}`;
-  const communityVersion = version.replace(/\./, "-");
+  const changelogAnchor = `${version.replace(/\./g, "")}-${releaseDate}`;
 
-  console.log(`
-  ----------------------------------------------------------------------------
+  return `
+        Subject: Radicle Upstream v${version} is out! 🎉
+        Message:
+        =============================================================================
 
-    URL: https://radicle.community/c/announcements
+          # Radicle Upstream v${version} is out! 🎉
 
+          You can find all the changelog for this release [here][1].
 
-    Subject:
+          Here are packages for all our supported platforms:
 
-       Radicle Upstream v${version} is out! 🎉
+          - [macOS][2]
+          - [Linux][3]
 
+          For more information on how to use Radicle, check out our
+          [documentation][4].
 
-    Body:
+          For support, you can reach us in the [#support channel][5] of our Matrix
+          chat or in the #help category of this forum.
 
-      # Radicle Upstream v${version} is out! 🎉
+          If you encounter a bug, please [open an issue][6].
 
-      You can find all the changelog for this release [here][1].
+          [1]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md#${changelogAnchor}
+          [2]: https://releases.radicle.xyz/radicle-upstream-${version}.dmg
+          [3]: https://releases.radicle.xyz/radicle-upstream-${version}.AppImage
+          [4]: https://docs.radicle.xyz/docs/what-is-radicle.html
+          [5]: https://matrix.radicle.community/#/room/#support:radicle.community
+          [6]: https://github.com/radicle-dev/radicle-upstream/issues
 
-      Here are packages for all our supported platforms:
+        =============================================================================
+`;
+};
 
-      - [macOS][2]
-      - [Linux][3]
+const matrixAnnouncementTemplate = (version: string): string => {
+  const communityVersion = version.replace(/\./g, "-");
 
-      For more information on how to use Radicle, check out our
-      [documentation][4].
+  return `
+        Message:
+        =============================================================================
 
-      For support, you can reach us in the [#support channel][5] of our Matrix
-      chat or in the #help category of this forum.
+          Radicle Upstream v${version} is out! 🎉
+          https://radicle.community/t/radicle-upstream-${communityVersion}-is-out
 
-      If you encounter a bug, please [open an issue][6].
-
-      [1]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md#${changelogAnchor}
-      [2]: https://releases.radicle.xyz/radicle-upstream-${version}.dmg
-      [3]: https://releases.radicle.xyz/radicle-upstream-${version}.AppImage
-      [4]: https://docs.radicle.xyz/docs/what-is-radicle.html
-      [5]: https://matrix.radicle.community/#/room/#support:radicle.community
-      [6]: https://github.com/radicle-dev/radicle-upstream/issues
-
-  ----------------------------------------------------------------------------
-
-  URL: https://matrix.radicle.community/#/room/#general:radicle.community
-
-
-  Message:
-
-    Radicle Upstream v${version} is out! 🎉
-    https://radicle.community/t/radicle-upstream-${communityVersion}-is-out
-
-  ----------------------------------------------------------------------------
-`);
+        =============================================================================
+`;
 };
 
 const printWrongArgsMsgAndExit = () => {
