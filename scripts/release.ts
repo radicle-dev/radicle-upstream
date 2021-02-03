@@ -37,7 +37,7 @@ const checkPrerequisites = () => {
 };
 
 const finalizeRelease = (version: string, pullRequestId: string) => {
-  console.log(`Finalizing release v${version}:\n`);
+  console.log(`\nFinalizing release v${version}:\n`);
 
   const mergeResult = verboseExec(
     `hub api -XPUT ` +
