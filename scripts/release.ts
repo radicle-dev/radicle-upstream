@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 import * as semver from "semver";
 import standardVersion from "standard-version";
 
-const currentRelease: string = require("../package.json").version;
+const CURRENT_RELEASE: string = require("../package.json").version;
 
 const verboseExec = (cmd: string) => {
   let result;
@@ -196,14 +196,14 @@ const printAnnouncementTemplate = (version: string): void => {
 
 const printWrongArgsMsgAndExit = () => {
   console.log(`
-  Current Upstream version: v${currentRelease}
+  Current Upstream version: v${CURRENT_RELEASE}
 
   Please run this command with one of the following arguments and
   follow the provided instructions to complete the release:
 
-    yarn release           # to release v${semver.inc(currentRelease, "patch")}
-    yarn release minor     # to release v${semver.inc(currentRelease, "minor")}
-    yarn release major     # to release v${semver.inc(currentRelease, "major")}
+    yarn release           # to release v${semver.inc(CURRENT_RELEASE, "patch")}
+    yarn release minor     # to release v${semver.inc(CURRENT_RELEASE, "minor")}
+    yarn release major     # to release v${semver.inc(CURRENT_RELEASE, "major")}
 `);
   process.exit(1);
 };
@@ -223,7 +223,7 @@ const main = () => {
     case "patch":
     case "minor":
     case "major":
-      newVersion = semver.inc(currentRelease, command);
+      newVersion = semver.inc(CURRENT_RELEASE, command);
       if (!newVersion) {
         throw new Error("Could not increment current version");
       }
