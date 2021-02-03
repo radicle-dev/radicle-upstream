@@ -188,7 +188,7 @@ const matrixAnnouncementTemplate = (version: string): string => {
 `;
 };
 
-const printWrongArgsMsgAndExit = () => {
+const printUsageAndExit = () => {
   console.log(`
   Current Upstream version: v${CURRENT_RELEASE}
 
@@ -229,13 +229,13 @@ const main = () => {
         finalizeVersion === undefined ||
         finalizePullRequestId === undefined
       ) {
-        printWrongArgsMsgAndExit();
+        printUsageAndExit();
       }
       finalizeRelease(finalizeVersion, finalizePullRequestId);
       break;
 
     default:
-      printWrongArgsMsgAndExit();
+      printUsageAndExit();
   }
 };
 
