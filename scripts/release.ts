@@ -2,9 +2,9 @@
 
 import { execSync } from "child_process";
 import * as semver from "semver";
+import standardVersion from "standard-version";
 
 const currentRelease: string = require("../package.json").version;
-const SV_COMMAND = "yarn run standard-version --sign --infile ./CHANGELOG.md";
 
 const verboseExec = (cmd: string) => {
   let result;
@@ -59,23 +59,30 @@ const cutRelease = (version: string): void => {
   verboseExec(
     `git branch release-v${version} && git checkout release-v${version}`
   );
-  verboseExec(SV_COMMAND);
-  verboseExec(`git push origin release-v${version}`);
+  // Options are the same as command line, except camelCase
+  // standardVersion returns a Promise
+  standardVersion({
+    infile: "./CHANGELOG.md",
+    silent: true,
+    sign: true,
+  }).then(() => {
+    verboseExec(`git push origin release-v${version}`);
 
-  const prResult = verboseExec("hub pull-request -p --no-edit");
-  const pullRequestUrl = prResult.split("\n").slice(-2)[0];
-  const PULL_REQUEST_MATCH =
-    "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
-  const match = pullRequestUrl.match(PULL_REQUEST_MATCH);
-  let pullRequestId;
-  if (match) {
-    pullRequestId = match[1];
-  } else {
-    throw new Error("Could not parse pull request ID");
-  }
+    const prResult = verboseExec("hub pull-request -p --no-edit");
+    const pullRequestUrl = prResult.split("\n").slice(-2)[0];
+    const PULL_REQUEST_MATCH =
+      "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
+    const match = pullRequestUrl.match(PULL_REQUEST_MATCH);
+    let pullRequestId;
+    if (match) {
+      pullRequestId = match[1];
+    } else {
+      throw new Error("Could not parse pull request ID");
+    }
 
-  printNextStepsMsg(pullRequestUrl, pullRequestId, version);
-  printAnnouncementTemplate(version);
+    printNextStepsMsg(pullRequestUrl, pullRequestId, version);
+    printAnnouncementTemplate(version);
+  });
 };
 
 const printNextStepsMsg = (
