@@ -232,10 +232,9 @@ async fn rig(
     args: Args,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
-        std::env::set_var("RAD_HOME", temp_dir.path());
         temp_dir.path().join("store")
     } else {
-        config::store_dir()
+        config::store_dir(environment.coco_profile.id())
     };
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
@@ -247,7 +246,7 @@ async fn rig(
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
         let config = coco::config::configure(
-            environment.coco_paths.clone(),
+            environment.coco_profile.paths().clone(),
             signer.clone(),
             args.peer_listen,
         );

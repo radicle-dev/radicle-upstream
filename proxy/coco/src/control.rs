@@ -1,6 +1,6 @@
 //! Utility for fixture data in the monorepo.
 
-use std::{convert::TryFrom, env, io, path, str::FromStr};
+use std::{env, io, path, str::FromStr};
 
 use nonempty::NonEmpty;
 
@@ -22,7 +22,7 @@ use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
 use crate::{
-    config, project,
+    project,
     state::{Error, State},
 };
 
@@ -30,17 +30,6 @@ use crate::{
 #[must_use]
 pub fn generate_peer_id() -> PeerId {
     PeerId::from(keys::SecretKey::new())
-}
-
-/// Deletes the local git repsoitory coco uses for its state.
-///
-/// # Errors
-///
-/// * if the call to [`std::fs::remove_dir_all`] fails.
-pub fn reset_monorepo() -> Result<(), std::io::Error> {
-    let paths =
-        librad::paths::Paths::try_from(config::Paths::default()).expect("unable to create paths");
-    std::fs::remove_dir_all(paths.git_dir())
 }
 
 /// Creates a small set of projects in your peer.

@@ -1,7 +1,6 @@
 //! Crate configuration.
 
 use std::{
-    convert::TryFrom,
     io,
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
 };
@@ -30,30 +29,6 @@ pub const RAD_HOME: &str = "RAD_HOME";
 
 /// The default name for a user's remote, which is `"rad"`.
 pub const RAD_REMOTE: &str = "rad";
-
-/// Path configuration
-pub enum Paths {
-    /// Select the default [`paths::Paths`] for configuration.
-    Default,
-    /// Use [`paths::Paths::from_root`] for configuration.
-    FromRoot(std::path::PathBuf),
-}
-
-impl Default for Paths {
-    fn default() -> Self {
-        Self::Default
-    }
-}
-impl TryFrom<Paths> for paths::Paths {
-    type Error = io::Error;
-
-    fn try_from(config: Paths) -> Result<Self, Self::Error> {
-        match config {
-            Paths::Default => Ok(Self::new()?),
-            Paths::FromRoot(path) => Ok(Self::from_root(path)?),
-        }
-    }
-}
 
 /// Provide the default config.
 ///
