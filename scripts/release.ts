@@ -49,7 +49,7 @@ const finalizeRelease = (version: string, pullRequestId: string) => {
   verboseExec(`git tag v${version} ${releaseCommitSHA}`);
   verboseExec(`git push --tags`);
 
-  console.log(`\nRelease v${version} successfully completed! 👏 🎉 🚀\n`);
+  console.log(`\nRelease v${version} successfully finalized.\n`);
 };
 
 const cutRelease = (version: string, releaseAs: string): void => {
@@ -102,7 +102,7 @@ const printNextStepsMsg = (
 
     - [ ] finalize the release:
 
-            yarn release finalize v${version} ${pullRequestId}
+            yarn release finalize ${version} ${pullRequestId}
 
   - [ ] build and notarize macOS package on your macOS machine:
 
