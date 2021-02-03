@@ -52,15 +52,7 @@ const getNewVersion = (): string => {
   return version;
 };
 
-const finalizeRelease = () => {
-  const version = process.argv[3];
-  const pullRequestId = process.argv[4];
-
-  if (version === undefined || pullRequestId === undefined) {
-    printWrongArgsMsg();
-    return;
-  }
-
+const finalizeRelease = (version: string, pullRequestId: string) => {
   console.log(`Finalizing release v${version}:\n`);
 
   const mergeResult = verboseExec(
@@ -222,7 +214,15 @@ const main = () => {
   const version = getNewVersion();
 
   if (process.argv[2] === "--finalize") {
-    finalizeRelease();
+    const version = process.argv[3];
+    const pullRequestId = process.argv[4];
+
+    if (version === undefined || pullRequestId === undefined) {
+      printWrongArgsMsg();
+      return;
+    }
+
+    finalizeRelease(version, pullRequestId);
   } else {
     cutRelease(version);
   }
