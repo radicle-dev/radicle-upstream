@@ -59,8 +59,7 @@ const cutRelease = (version: string, releaseAs: string): void => {
   verboseExec(
     `git branch release-v${version} && git checkout release-v${version}`
   );
-  // Options are the same as command line, except camelCase
-  // standardVersion returns a Promise
+
   standardVersion({
     infile: "./CHANGELOG.md",
     silent: true,
