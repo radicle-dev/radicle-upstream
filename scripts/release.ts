@@ -87,6 +87,7 @@ const cutRelease = async (
   await standardVersion({
     infile: "./CHANGELOG.md",
     silent: true,
+    skip: { tag: true },
     sign: true,
     releaseAs,
   });

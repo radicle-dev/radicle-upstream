@@ -184,11 +184,6 @@
       "pre-commit": "lint-staged"
     }
   },
-  "standard-version": {
-    "skip": {
-      "tag": true
-    }
-  },
   "lint-staged": {
     "*.{js,css,json,html}": [
       "prettier --write"
