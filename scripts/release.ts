@@ -11,7 +11,9 @@ const verboseExec = (cmd: string) => {
   let result;
 
   try {
-    result = execSync(cmd, { stdio: "pipe" }).toString("utf-8");
+    result = execSync(cmd, { stdio: ["ignore", "pipe", "inherit"] }).toString(
+      "utf-8"
+    );
     console.log(`  ✔ ${cmd}`);
   } catch (error) {
     throw new Error(`Command \`${cmd}\` failed:\n\n${error}`);
