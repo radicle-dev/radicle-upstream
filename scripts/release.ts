@@ -1,6 +1,7 @@
 #!/usr/bin/env -S npx ts-node -P tsconfig.scripts.json
 
 import { execSync } from "child_process";
+import prompts from "prompts";
 import * as semver from "semver";
 import standardVersion from "standard-version";
 
@@ -36,6 +37,19 @@ const checkPrerequisites = () => {
   }
 };
 
+const continueOnConfirm = async () => {
+  const response = await prompts({
+    type: "confirm",
+    name: "value",
+    message: "Are you sure you want to continue?",
+    initial: false,
+  });
+
+  if (!response.value) {
+    process.exit();
+  }
+};
+
 const finalizeRelease = (version: string, pullRequestId: string) => {
   console.log(`\nFinalizing release v${version}:\n`);
 
@@ -52,7 +66,15 @@ const finalizeRelease = (version: string, pullRequestId: string) => {
   console.log(`\nRelease v${version} successfully finalized.\n`);
 };
 
-const cutRelease = (version: string, releaseAs: string): void => {
+const cutRelease = async (
+  version: string,
+  releaseAs: string
+): Promise<void> => {
+  console.log(`\nCurrent Upstream version: v${CURRENT_RELEASE}`);
+  console.log(`You're about to cut a new version: v${version}\n`);
+
+  await continueOnConfirm();
+
   console.log(`\nCutting release v${version}:\n`);
 
   verboseExec("git checkout master");
@@ -60,28 +82,31 @@ const cutRelease = (version: string, releaseAs: string): void => {
     `git branch release-v${version} && git checkout release-v${version}`
   );
 
-  standardVersion({
+  await standardVersion({
     infile: "./CHANGELOG.md",
     silent: true,
     sign: true,
     releaseAs,
-  }).then(() => {
-    verboseExec(`git push origin release-v${version}`);
-
-    const prResult = verboseExec("hub pull-request -p --no-edit");
-    const pullRequestUrl = prResult.split("\n").slice(-2)[0];
-    const PULL_REQUEST_MATCH =
-      "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
-    const match = pullRequestUrl.match(PULL_REQUEST_MATCH);
-    let pullRequestId;
-    if (match) {
-      pullRequestId = match[1];
-    } else {
-      throw new Error("Could not parse pull request ID");
-    }
-
-    printNextStepsMsg(pullRequestUrl, pullRequestId, version);
   });
+  console.log(
+    `  ✔ standard-version --infile ./CHANGELOG.md --silent --sign --release-as ${releaseAs}`
+  );
+
+  verboseExec(`git push origin release-v${version}`);
+
+  const prResult = verboseExec("hub pull-request -p --no-edit");
+  const pullRequestUrl = prResult.split("\n").slice(-2)[0];
+  const PULL_REQUEST_MATCH =
+    "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
+  const match = pullRequestUrl.match(PULL_REQUEST_MATCH);
+  let pullRequestId;
+  if (match) {
+    pullRequestId = match[1];
+  } else {
+    throw new Error("Could not parse pull request ID");
+  }
+
+  printNextStepsMsg(pullRequestUrl, pullRequestId, version);
 };
 
 const printNextStepsMsg = (
@@ -188,7 +213,7 @@ const matrixAnnouncementTemplate = (version: string): string => {
 `;
 };
 
-const printUsageAndExit = () => {
+const printUsageAndExit = (exitCode = 0) => {
   console.log(`
   Current Upstream version: v${CURRENT_RELEASE}
 
@@ -199,10 +224,10 @@ const printUsageAndExit = () => {
     yarn release minor     # to release v${semver.inc(CURRENT_RELEASE, "minor")}
     yarn release major     # to release v${semver.inc(CURRENT_RELEASE, "major")}
 `);
-  process.exit(1);
+  process.exit(exitCode);
 };
 
-const main = () => {
+const main = async () => {
   checkPrerequisites();
 
   const [
@@ -221,7 +246,8 @@ const main = () => {
       if (!newVersion) {
         throw new Error("Could not increment current version");
       }
-      cutRelease(newVersion, releaseAs);
+
+      await cutRelease(newVersion, releaseAs);
       break;
 
     case "finalize":
@@ -229,7 +255,7 @@ const main = () => {
         finalizeVersion === undefined ||
         finalizePullRequestId === undefined
       ) {
-        printUsageAndExit();
+        printUsageAndExit(1);
       }
       finalizeRelease(finalizeVersion, finalizePullRequestId);
       break;
