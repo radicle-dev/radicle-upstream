@@ -52,7 +52,7 @@ const finalizeRelease = (version: string, pullRequestId: string) => {
   console.log(`\nRelease v${version} successfully completed! 👏 🎉 🚀\n`);
 };
 
-const cutRelease = (version: string): void => {
+const cutRelease = (version: string, releaseAs: string): void => {
   console.log(`\nCutting release v${version}:\n`);
 
   verboseExec("git checkout master");
@@ -65,6 +65,7 @@ const cutRelease = (version: string): void => {
     infile: "./CHANGELOG.md",
     silent: true,
     sign: true,
+    releaseAs,
   }).then(() => {
     verboseExec(`git push origin release-v${version}`);
 
@@ -212,22 +213,22 @@ const main = () => {
   checkPrerequisites();
 
   const [
-    command = "patch",
+    releaseAs = "patch",
     finalizeVersion,
     finalizePullRequestId,
   ] = process.argv.slice(2);
 
   let newVersion;
 
-  switch (command) {
+  switch (releaseAs) {
     case "patch":
     case "minor":
     case "major":
-      newVersion = semver.inc(CURRENT_RELEASE, command);
+      newVersion = semver.inc(CURRENT_RELEASE, releaseAs);
       if (!newVersion) {
         throw new Error("Could not increment current version");
       }
-      cutRelease(newVersion);
+      cutRelease(newVersion, releaseAs);
       break;
 
     case "finalize":
