@@ -1,7 +1,9 @@
 #!/usr/bin/env -S npx ts-node -P tsconfig.scripts.json
 
 import { execSync } from "child_process";
+import * as semver from "semver";
 
+const currentRelease: string = require("../package.json").version;
 const SV_COMMAND = "yarn run standard-version --sign --infile ./CHANGELOG.md";
 
 const verboseExec = (cmd: string) => {
@@ -34,24 +36,6 @@ const checkPrerequisites = () => {
   }
 };
 
-const getNewVersion = (): string => {
-  const svResult = execSync(`${SV_COMMAND} --dry-run`, {
-    stdio: "pipe",
-  }).toString("utf-8");
-
-  let version;
-  const VERSION_MATCH = "bumping version in package.json from (.*) to (.*)";
-  const match = svResult.match(VERSION_MATCH);
-
-  if (match) {
-    version = match[2];
-  } else {
-    throw new Error("Could not get version");
-  }
-
-  return version;
-};
-
 const finalizeRelease = (version: string, pullRequestId: string) => {
   console.log(`Finalizing release v${version}:\n`);
 
@@ -67,12 +51,6 @@ const finalizeRelease = (version: string, pullRequestId: string) => {
 
   console.log(`\nRelease v${version} successfully completed! 👏 🎉 🚀\n`);
 };
-
-const printWrongArgsMsg = () =>
-  console.log(`
-  This command should not be run stand-alone.
-  You should run \`yarn release\` and follow the instructions.
-`);
 
 const cutRelease = (version: string): void => {
   console.log(`\nCutting release v${version}:\n`);
@@ -209,22 +187,54 @@ const printAnnouncementTemplate = (version: string): void => {
 `);
 };
 
+const printWrongArgsMsgAndExit = () => {
+  console.log(`
+  Current Upstream version: v${currentRelease}
+
+  Please run this command with one of the following arguments and
+  follow the provided instructions to complete the release:
+
+    yarn release           # to release v${semver.inc(currentRelease, "patch")}
+    yarn release minor     # to release v${semver.inc(currentRelease, "minor")}
+    yarn release major     # to release v${semver.inc(currentRelease, "major")}
+`);
+  process.exit(1);
+};
+
 const main = () => {
   checkPrerequisites();
-  const version = getNewVersion();
 
-  if (process.argv[2] === "--finalize") {
-    const version = process.argv[3];
-    const pullRequestId = process.argv[4];
+  const [
+    command = "patch",
+    finalizeVersion,
+    finalizePullRequestId,
+  ] = process.argv.slice(2);
 
-    if (version === undefined || pullRequestId === undefined) {
-      printWrongArgsMsg();
-      return;
-    }
+  let newVersion;
 
-    finalizeRelease(version, pullRequestId);
-  } else {
-    cutRelease(version);
+  switch (command) {
+    case "patch":
+    case "minor":
+    case "major":
+      newVersion = semver.inc(currentRelease, command);
+      if (!newVersion) {
+        throw new Error("Could not increment current version");
+      }
+      cutRelease(newVersion);
+      break;
+
+    case "finalize":
+      if (
+        finalizeVersion === undefined ||
+        finalizePullRequestId === undefined
+      ) {
+        printWrongArgsMsgAndExit();
+      }
+      finalizeRelease(finalizeVersion, finalizePullRequestId);
+      break;
+
+    default:
+      printWrongArgsMsgAndExit();
   }
 };
 
