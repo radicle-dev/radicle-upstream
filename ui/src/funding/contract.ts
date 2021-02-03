@@ -1,4 +1,6 @@
-import type { BigNumber, ContractTransaction, Signer } from "ethers";
+import { BigNumber } from "ethers";
+import type { ContractTransaction, Signer } from "ethers";
+
 import * as svelteStore from "svelte/store";
 
 import {
@@ -66,26 +68,26 @@ export class PoolContract {
 
   async onboard(
     topUp: BigNumber,
-    amountPerBlock: BigNumber,
+    weeklyBudget: BigNumber,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
     return this.contract.updateSender(
       ethereum.toDecimals(topUp),
       0,
-      ethereum.toDecimals(amountPerBlock),
+      weeklyBudgetToAmountPerBlock(weeklyBudget),
       receivers,
       []
     );
   }
 
   async updatePlan(
-    amountPerBlock: BigNumber,
+    weeklyBudget: BigNumber,
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
     return this.contract.updateSender(
       0,
       0,
-      ethereum.toDecimals(amountPerBlock),
+      weeklyBudgetToAmountPerBlock(weeklyBudget),
       receivers,
       []
     );
@@ -118,21 +120,15 @@ export class PoolContract {
   }
 
   async withdrawable(): Promise<BigNumber> {
-    return this.contract
-      .withdrawable()
-      .then((x: BigNumber) => ethereum.toHumans(x));
+    return this.contract.withdrawable().then(ethereum.toHumans);
   }
 
   async collectable(): Promise<BigNumber> {
-    return this.contract
-      .collectable()
-      .then((x: BigNumber) => ethereum.toHumans(x));
+    return this.contract.collectable().then(ethereum.toHumans);
   }
 
-  async amountPerBlock(): Promise<BigNumber> {
-    return this.contract
-      .getAmountPerBlock()
-      .then((x: BigNumber) => ethereum.toHumans(x));
+  async weeklyBudget(): Promise<BigNumber> {
+    return this.contract.getAmountPerBlock().then(amountPerBlockToWeeklyBudget);
   }
 
   async receivers(): Promise<PoolReceiver[]> {
@@ -147,3 +143,24 @@ export interface PoolReceiver {
   // The share the receiver gets within the pool they are a part of.
   weight: number;
 }
+
+// Convert the user-inputed `weeklyBudget` into how much it means per Ethereum block.
+function weeklyBudgetToAmountPerBlock(weeklyBudget: BigNumber): BigNumber {
+  return ethereum.toDecimals(weeklyBudget).div(ESTIMATED_BLOCKS_IN_WEEK);
+}
+
+// The inverse operation of `weeklyBudgetToAmountPerBlock`.
+function amountPerBlockToWeeklyBudget(amountPerBlock: BigNumber): BigNumber {
+  return ethereum.toHumans(amountPerBlock.mul(ESTIMATED_BLOCKS_IN_WEEK));
+}
+
+// The Ethereum network aims to mine a block at every 12.5 seconds.
+const AVG_ETHEREUM_BLOCK_TIME_SECONDS = BigNumber.from(13);
+
+// The number of seconds in a week
+const AVG_SECONDS_IN_WEEK = BigNumber.from(604800);
+
+// The estimated number of Ethereum blocks mined in a week
+const ESTIMATED_BLOCKS_IN_WEEK = AVG_SECONDS_IN_WEEK.div(
+  AVG_ETHEREUM_BLOCK_TIME_SECONDS
+);

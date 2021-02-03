@@ -45,13 +45,13 @@
     <strong>{topUp} DAI</strong>. You haven’t added any receivers yet, but as
     soon as you do, money will begin streaming to them at a rate of
     <strong>{budget} DAI</strong>
-    per month.
+    per week.
   {:else}
     Top up
     <strong>{topUp} DAI</strong>
     and stream
     <strong>{budget} DAI</strong>
-    per month to these users:
+    per week to these users:
   {/if}
 </p>
 <Receivers {receivers} style="margin-top: 1.5rem" />

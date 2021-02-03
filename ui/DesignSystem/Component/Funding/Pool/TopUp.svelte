@@ -48,8 +48,8 @@
 <Emoji emoji="💸" size="huge" />
 <h1>Top up your account</h1>
 <p>
-  You can top up a couple of months worth of support or just enough for this
-  month.
+  You can top up a couple of weeks worth of support or just enough for this
+  week.
 </p>
 <Input.Text
   dataCy="modal-amount-input"

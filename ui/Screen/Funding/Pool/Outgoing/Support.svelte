@@ -12,7 +12,7 @@
 
   import {
     budgetStore,
-    monthlyContributionValidationStore,
+    weeklyBudgetValidationStore,
   } from "../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../src/validation";
 
@@ -40,7 +40,7 @@
   let receivers: fundingPool.Receivers = new Map();
 
   let validatingBudget = false;
-  $: budgetValidation = monthlyContributionValidationStore();
+  $: budgetValidation = weeklyBudgetValidationStore();
   $: budgetStore.set(budget);
   $: {
     if ($budgetStore && $budgetStore.length > 0) validatingBudget = true;
@@ -60,17 +60,17 @@
     if (store.status === remote.Status.Success) {
       data = store.data;
       if (!editing) {
-        budget = data.amountPerBlock.toString();
+        budget = data.weeklyBudget.toString();
         receivers = new Map(data.receivers);
       }
       paused =
-        data.balance.lte(data.amountPerBlock) || data.amountPerBlock.isZero();
+        data.balance.lte(data.weeklyBudget) || data.weeklyBudget.isZero();
     }
   });
 
   $: thereAreChanges =
     fundingPool.isValidBigNumber(budget) &&
-    (!BigNumber.from(budget).eq(data.amountPerBlock) ||
+    (!BigNumber.from(budget).eq(data.weeklyBudget) ||
       receivers.size !== data.receivers.size ||
       [...receivers.entries()].find(
         ([address, weight]) => data.receivers.get(address) !== weight
@@ -78,7 +78,7 @@
 
   function leaveEditMode(): void {
     editing = false;
-    budget = data.amountPerBlock.toString();
+    budget = data.weeklyBudget.toString();
     receivers = new Map(data.receivers);
   }
 
@@ -184,10 +184,10 @@
             </Input.Text>
           {:else}
             <p class="typo-text-bold">
-              <Dai>{poolData.amountPerBlock}</Dai>
+              <Dai>{poolData.weeklyBudget}</Dai>
             </p>
           {/if}
-          <span style="margin-left: 0.4375rem;"> per month</span>
+          <span style="margin-left: 0.4375rem;"> per week</span>
         </span>
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
@@ -246,8 +246,8 @@
         {:else}
           <div style="display: flex; align-items: center">
             <strong style="margin-left: 0">
-              <Dai>{poolData.amountPerBlock}</Dai></strong>
-            per month will go to each of the
+              <Dai>{poolData.weeklyBudget}</Dai></strong>
+            per week will go to each of the
             <strong>{poolData.receivers.size} </strong>
             receivers you're supporting.
 
@@ -277,7 +277,7 @@
           the users you support.
         {:else}
           <Icon.InfoCircle />
-          To stop or pause your support, set the monthly contribution to 0 or
+          To stop or pause your support, set the weekly contribution to 0 or
           withdraw all the remaining balance.
         {/if}
       </div>

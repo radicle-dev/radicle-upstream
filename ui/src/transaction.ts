@@ -57,7 +57,7 @@ interface SupportOnboarding {
   kind: TxKind.SupportOnboarding;
   // The amount defined as the initial balance
   topUp: string;
-  // The amount to be disbursed monthly to the `receivers`.
+  // The amount to be disbursed weekly to the `receivers`.
   budget: string;
   // The receivers of this support.
   receivers: [Address, ReceiverStatus][];
@@ -80,7 +80,7 @@ interface CollectFunds {
 
 interface UpdateSupport {
   kind: TxKind.UpdateSupport;
-  // The amount to be disbursed monthly to the `receivers`.
+  // The amount to be disbursed weekly to the `receivers`.
   amount: string;
   // The changes made to the list of receivers.
   receivers: [Address, ReceiverStatus][];

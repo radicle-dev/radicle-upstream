@@ -19,15 +19,12 @@ export interface Pool {
   // Onboard the user's pool with the intial values
   onboard(
     topUp: BigNumber,
-    amountPerBlock: BigNumber,
+    weeklyBudget: BigNumber,
     receivers: Receivers
   ): Promise<void>;
 
   // Update the contribution per block and the list of receivers.
-  updateSettings(
-    amountPerBlock: BigNumber,
-    receivers: Receivers
-  ): Promise<void>;
+  updateSettings(weeklyBudget: BigNumber, receivers: Receivers): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
   // included in the chain.
@@ -53,8 +50,8 @@ export interface Pool {
 export interface PoolData {
   // The remaining balance of this pool.
   balance: BigNumber;
-  // The total amount to be disbursed to all receivers with each block.
-  amountPerBlock: BigNumber;
+  // The weekly amount to be split amongst all the `receivers`.
+  weeklyBudget: BigNumber;
   // The list of addresses that receive funds from the pool.
   receivers: Receivers;
   // Funds that the user can collect from their givers.
@@ -99,7 +96,7 @@ export function make(wallet: Wallet): Pool {
     try {
       const balance = await poolContract.withdrawable();
       const collectableFunds = await poolContract.collectable();
-      const amountPerBlock = await poolContract.amountPerBlock();
+      const weeklyBudget = await poolContract.weeklyBudget();
       const contractReceivers = await poolContract.receivers();
       const receivers = new Map<Address, ReceiverStatus>(
         contractReceivers.map((e: contract.PoolReceiver) => [
@@ -112,7 +109,7 @@ export function make(wallet: Wallet): Pool {
       data.success({
         // Handle potential overflow using BN.js
         balance,
-        amountPerBlock,
+        weeklyBudget,
         receivers,
         // Handle potential overflow using BN.js
         collectableFunds,
@@ -132,30 +129,30 @@ export function make(wallet: Wallet): Pool {
 
   async function onboard(
     topUp: BigNumber,
-    amountPerBlock: BigNumber,
+    weeklyBudget: BigNumber,
     receivers: Receivers
   ): Promise<void> {
     return poolContract
-      .onboard(topUp, amountPerBlock, toReceiverWeights(receivers))
+      .onboard(topUp, weeklyBudget, toReceiverWeights(receivers))
       .then((tx: ContractTransaction) => {
         transaction.add(
-          transaction.supportOnboarding(tx, topUp, amountPerBlock, receivers)
+          transaction.supportOnboarding(tx, topUp, weeklyBudget, receivers)
         );
       })
       .finally(loadPoolData);
   }
 
   async function updateSettings(
-    amountPerBlock: BigNumber,
+    weeklyBudget: BigNumber,
     receivers: Receivers
   ): Promise<void> {
     return poolContract
-      .updatePlan(amountPerBlock, toReceiverWeights(receivers))
+      .updatePlan(weeklyBudget, toReceiverWeights(receivers))
       .then((tx: ContractTransaction) => {
         const currentReceivers = data.unwrap()?.receivers || new Map();
         const newReceivers = newSetOfReceivers(currentReceivers, receivers);
         transaction.add(
-          transaction.updateSupport(tx, amountPerBlock, newReceivers)
+          transaction.updateSupport(tx, weeklyBudget, newReceivers)
         );
       })
       .finally(loadPoolData);
@@ -247,8 +244,8 @@ export const receiverStore = svelteStore.writable("");
  */
 
 const constraints = {
-  // The constraints for a valid monthly contribution.
-  monthlyContribution: {
+  // The constraints for a valid weekly contribution.
+  weeklyContribution: {
     presence: {
       message: "The amount is required",
       allowEmpty: false,
@@ -285,8 +282,8 @@ function isAddress(value: string): Promise<boolean> {
   return Promise.resolve(ethers.utils.isAddress(value));
 }
 
-export const monthlyContributionValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore(constraints.monthlyContribution);
+export const weeklyBudgetValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore(constraints.weeklyContribution);
 };
 
 // Validate a balance operation, either a 'Top Up' or a 'Cash out'.
@@ -311,7 +308,7 @@ export function isOnboarded(data: PoolData): boolean {
   return (
     data.erc20Allowance.gt(0) &&
     (data.receivers.size > 0 ||
-      !data.amountPerBlock.isZero() ||
+      !data.weeklyBudget.isZero() ||
       data.balance.gt(0))
   );
 }
