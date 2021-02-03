@@ -2,7 +2,7 @@
 
 import { execSync } from "child_process";
 
-const SV_COMMAND = "yarn run standard-version --infile ./CHANGELOG.md";
+const SV_COMMAND = "yarn run standard-version --sign --infile ./CHANGELOG.md";
 
 const verboseExec = (cmd: string) => {
   let result;
