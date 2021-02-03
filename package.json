@@ -79,6 +79,7 @@
     "@types/node-fetch": "^2.5.7",
     "@types/semver": "^7.3.4",
     "@types/sinon": "^9.0.10",
+    "@types/standard-version": "^7.0.0",
     "@types/twemoji": "^12.1.1",
     "@types/wait-on": "^5.2.0",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
