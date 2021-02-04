@@ -114,6 +114,29 @@ We use [Cypress](https://www.cypress.io/) for integration tests and
 - To develop unit tests in watch mode, run: `yarn test:unit:watch`
 
 
+### Running multiple Upstream instances on the same machine
+
+At the moment this is only possible in development mode.
+
+```
+mkdir /Users/rudolfs/work/19000
+mkdir /Users/rudolfs/work/20000
+
+# Launch the first instance.
+
+RAD_HOME="/Users/rudolfs/work/19000" \
+RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:19000 --peer-listen 0.0.0.0:19000" \
+RADICLE_UPSTREAM_UI_ARGS="backend=localhost:19000" \
+yarn start
+
+# And then in a separate shell, launch the second instance.
+
+RAD_HOME="/Users/rudolfs/work/20000" \
+RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:20000 --peer-listen 0.0.0.0:20000" \
+RADICLE_UPSTREAM_UI_ARGS="backend=localhost:20000" \
+yarn start
+```
+
 ### Building an Upstream package for your platform
 
 You can build and package Upstream with: `yarn dist`. The generated package
