@@ -1,4 +1,5 @@
 import * as commands from "../support/commands";
+const metaKey = commands.metaKey();
 
 context("documented shortcuts", () => {
   before(() => {
@@ -16,7 +17,7 @@ context("documented shortcuts", () => {
   });
 
   it("opens and closes the project creation", () => {
-    cy.get("body").type("{meta+n}");
+    cy.get("body").type(`{${metaKey}+n}`);
     commands.pick("create-project").should("exist");
     // Closing the modal
     cy.get("body").type("{esc}");
@@ -24,7 +25,7 @@ context("documented shortcuts", () => {
   });
 
   it("opens and closes the search", () => {
-    cy.get("body").type("{meta+p}");
+    cy.get("body").type(`{${metaKey}+p}`);
     commands.pick("search-modal").should("exist");
     // Closing the modal
     cy.get("body").type("{esc}");
@@ -32,7 +33,7 @@ context("documented shortcuts", () => {
   });
 
   it("opens the settings", () => {
-    cy.get("body").type("{meta+,}");
+    cy.get("body").type(`{${metaKey}+,}`);
     commands.pick("settings-page").should("exist");
     // Esc does not close the settings
     cy.get("body").type("{esc}");

@@ -165,8 +165,8 @@
   }
 </style>
 
-<SidebarLayout dataCy="page">
-  <div class="container" data-cy="settings-page">
+<SidebarLayout dataCy="settings-page">
+  <div class="container">
     <div class="title">
       <h1>Settings</h1>
       <span
