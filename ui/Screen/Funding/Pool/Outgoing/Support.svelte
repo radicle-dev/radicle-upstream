@@ -68,7 +68,7 @@
   });
 
   $: thereAreChanges =
-    fundingPool.isValidBigNumber(budget) &&
+    fundingPool.isValidBig(budget) &&
     (!Big(budget).eq(data.weeklyBudget) ||
       receivers.size !== data.receivers.size ||
       [...receivers.entries()].find(
@@ -205,7 +205,7 @@
         </p>
         {#if !ongoingWithdraw && !ongoingTopUp}
           <Button
-            disabled={poolData.balance === 0}
+            disabled={poolData.balance.eq(0)}
             dataCy="drain-pool-button"
             variant="transparent"
             on:click={openWithdrawModal}

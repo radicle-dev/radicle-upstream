@@ -294,7 +294,7 @@ export const balanceValidationStore = (
   return validation.createValidationStore(constraints.topUpAmount, [
     {
       promise: amount =>
-        Promise.resolve(isValidBigNumber(amount) && balance.gte(Big(amount))),
+        Promise.resolve(isValidBig(amount) && balance.gte(Big(amount))),
       validationMessage: "Insufficient balance",
     },
   ]);
@@ -327,7 +327,7 @@ function newSetOfReceivers(current: Receivers, changes: Receivers): Receivers {
   );
 }
 
-export function isValidBigNumber(value: string): boolean {
+export function isValidBig(value: string): boolean {
   try {
     Big(value);
     return true;

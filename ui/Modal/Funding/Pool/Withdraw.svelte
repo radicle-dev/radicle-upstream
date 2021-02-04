@@ -21,10 +21,11 @@
   // Validate the amount beign withdrawn
   let validatingAmount = false;
   let amount = "";
-  let validation = balanceValidationStore(0);
+  let balance = Big(0);
+  let validation = balanceValidationStore(balance);
 
   $: {
-    const balance = $store?.data.unwrap()?.balance || 0;
+    balance = $store?.data.unwrap()?.balance || balance;
     validation = balanceValidationStore(balance);
   }
 

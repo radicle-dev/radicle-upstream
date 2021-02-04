@@ -25,7 +25,7 @@
   }
 
   let disabled = true;
-  let balance = "";
+  let balance = Big(0);
   $: balance = $store?.getAccount()?.balance || balance;
 </script>
 

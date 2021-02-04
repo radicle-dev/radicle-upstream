@@ -12,11 +12,11 @@
 
   export let amount = "";
   export let onBack: [string, () => void];
-  export let balance = "0";
+  export let balance: Big = Big(0);
   export let disabled = true;
 
   let validating = false;
-  $: validation = balanceValidationStore(Big(balance));
+  $: validation = balanceValidationStore(balance);
   $: amountStore.set(amount);
   $: {
     if ($amountStore && $amountStore.length > 0) validating = true;
