@@ -1,8 +1,6 @@
 import Big from "big.js";
 import * as ethers from "ethers";
-import { writable } from "svelte/store";
-
-import * as ipc from "./ipc";
+import persistentStore from "svelte-persistent-store/dist";
 
 // The environment in which the ethereum-based experiences may run.
 export enum Environment {
@@ -49,8 +47,9 @@ export function networkFromChainId(chainId: number): Network {
 }
 
 // The store where the selected Ethereum environment is persisted.
-export const selectedEnvironment = writable<Environment>(
-  ipc.isExperimental() ? Environment.Ropsten : Environment.Local
+export const selectedEnvironment = persistentStore.local.writable<Environment>(
+  "ethereum-environment-v0",
+  Environment.Ropsten
 );
 
 const TOKEN_SCALE = Big(10).pow(18);
