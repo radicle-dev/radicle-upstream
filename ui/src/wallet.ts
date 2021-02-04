@@ -100,7 +100,6 @@ export function build(
   );
   const daiTokenContract = contract.daiToken(signer);
 
-
   // Connect to a wallet using walletconnect
   async function connect() {
     if (svelteStore.get(stateStore).status !== Status.NotConnected) {
