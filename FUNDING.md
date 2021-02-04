@@ -34,15 +34,22 @@ The funding experiences can take place in three different environments:
 1. `Local`
 
   In this environment, the Radicle Contracts are deployed to a local ganache node
-  and we use a local test wallet that can communicate with it. See the
+  and we use a local test wallet that can communicate with it. The "DAI" token used
+  in this Environment is our custom Radicle Token. See the
   [local environment](#local-environment) section to learn how to get set up.
+
 
 2. `Ropsten`
 
   In this environment, the app will plug itself with the Radicle Contracts deployed
   in the Ropsten network and will use Infura as a service provider. A real wallet
-  is recommended. You will need fake Ropsten Eth (aka `rEth`) to pay the incurring
-  transactions fees. No real money will be charged.
+  is recommended to ensure we are testing using real-world conditions. You will
+  need fake Ropsten Eth (aka `rEth`) to pay the incurring transactions fees.
+  No real money will be charged.
+
+  As in the `Local` environment, here the "DAI" token used is also our custom Radicle
+  Token, deployed in the Ropsten network. To get some tokens into our account to play
+  around, reach out to the team and we will send you some.
 
 3. `Mainnet`
 
