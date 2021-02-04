@@ -4,12 +4,14 @@
 
   import { wallet } from "../../../src/wallet";
 
+  import Big from "big.js";
+
   export let amount = "";
   export let onBack: () => void;
   export let onContinue: () => void;
 
   let disabled = true;
-  let accountBalance = "";
+  let accountBalance = Big(0);
   $: accountBalance = wallet.account()?.balance || accountBalance;
 
   const onKeydown = (event: KeyboardEvent) => {
