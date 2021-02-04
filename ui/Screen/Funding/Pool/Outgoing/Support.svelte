@@ -203,25 +203,22 @@
         <p class="typo-text-bold row" style="margin-left: 0.75rem">
           <Dai>{poolData.balance}</Dai>
         </p>
-        {#if !ongoingWithdraw && !ongoingTopUp}
-          <Button
-            disabled={poolData.balance.eq(0)}
-            dataCy="drain-pool-button"
-            variant="transparent"
-            on:click={openWithdrawModal}
-            style="margin-left: 0.75rem">
-            Withdraw
-          </Button>
-        {/if}
-        {#if !ongoingTopUp}
-          <Button
-            dataCy="top-up-pool-button"
-            variant="vanilla"
-            on:click={openTopUp}
-            style="margin-left: 0.75rem">
-            Top up
-          </Button>
-        {/if}
+        <Button
+          disabled={poolData.balance.eq(0) || ongoingWithdraw || ongoingTopUp}
+          dataCy="drain-pool-button"
+          variant="transparent"
+          on:click={openWithdrawModal}
+          style="margin-left: 0.75rem">
+          Withdraw
+        </Button>
+        <Button
+          disabled={ongoingTopUp}
+          dataCy="top-up-pool-button"
+          variant="vanilla"
+          on:click={openTopUp}
+          style="margin-left: 0.75rem">
+          Top up
+        </Button>
       </div>
     </header>
 
