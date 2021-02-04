@@ -18,9 +18,9 @@ elif [ "$platform" == "Linux" ]; then
 
     dirs=(
         "$HOME/.radicle"
-        "$config_home/radicle"
+        "$config_home/radicle-link"
         "$config_home/Radicle Upstream"
-        "$data_home/radicle"
+        "$data_home/radicle-link"
         "$data_home/radicle-upstream"
     );
 else
