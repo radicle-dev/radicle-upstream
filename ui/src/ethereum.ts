@@ -59,6 +59,5 @@ export function toHumans(n: ethers.BigNumber | Big): Big {
 }
 
 export function toDecimals(n: Big): ethers.BigNumber {
-  const big = Big(n.toString()).mul(TOKEN_SCALE);
-  return ethers.BigNumber.from(big.round().toString());
+  return ethers.BigNumber.from(big.mul(TOKEN_SCALE).round().toString());
 }
