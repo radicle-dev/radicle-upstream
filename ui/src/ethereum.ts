@@ -2,7 +2,7 @@ import Big from "big.js";
 import * as ethers from "ethers";
 import persistentStore from "svelte-persistent-store/dist";
 
-// The environment in which the ethereum-based experiences may run.
+// The Ethereum environments we support and may connect to.
 export enum Environment {
   // A local node for testing and development. The test wallet we use
   // for this environment may be in the 'Ropsten', 'Mainnet', or other
