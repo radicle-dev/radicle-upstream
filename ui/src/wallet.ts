@@ -156,7 +156,7 @@ export function build(
       const connected = {
         account: {
           address: accountAddress,
-          balance: balance,
+          balance,
         },
         network: ethereum.networkFromChainId(chainId),
       };
