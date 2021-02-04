@@ -7,7 +7,7 @@ if [ "$platform" == "Darwin" ]; then
     dirs=(
         "$HOME/.radicle"
         "$HOME/Library/Application Support/Radicle Upstream"
-        "$HOME/Library/Application Support/xyz.radicle.radicle"
+        "$HOME/Library/Application Support/xyz.radicle.radicle-link"
         "$HOME/Library/Application Support/xyz.radicle.radicle-upstream"
         "$HOME/Library/Preferences/xyz.radicle.radicle-upstream.plist"
         "$HOME/Library/Saved Application State/xyz.radicle.radicle-upstream.savedState"
