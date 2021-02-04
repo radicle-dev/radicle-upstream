@@ -83,6 +83,10 @@ export const onboardUser = (
   });
 };
 
+export const metaKey = (): string => {
+  return navigator.platform.includes("Mac") ? "meta" : "ctrl";
+};
+
 /**
  * Invokes `cy.request` and assert that the response status code is 2xx.
  */
