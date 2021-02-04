@@ -100,7 +100,6 @@ export function build(
   );
   const daiTokenContract = contract.daiToken(signer);
 
-  // window.ethereumDebug = new EthereumDebug(provider);
 
   // Connect to a wallet using walletconnect
   async function connect() {
