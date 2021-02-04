@@ -15,7 +15,7 @@ export enum Environment {
 }
 
 // The ethereum networks we may parse from a connected wallet across
-// all`Environment`s. See `supportedNetwork` to learn which networks
+// all `Environment`s. See `supportedNetwork` to learn which networks
 // which Environment supports.
 export enum Network {
   Ropsten = "Ropsten",
