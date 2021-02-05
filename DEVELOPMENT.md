@@ -139,7 +139,8 @@ yarn start
 ```
 
 It is possible to let the OS choose the peer port by setting it to:
-`--peer-listen 0.0.0.0:0`.
+`--peer-listen 0.0.0.0:0`. And if you don't need completely isolated state,
+then you can use `RAD_PROFILE` instead of `RAD_HOME`.
 
 
 ### Building an Upstream package for your platform
