@@ -7,9 +7,14 @@ const withNodeManager = (callback: () => void): void => {
   cy.task(Commands.StopAllNodes, {}, { log: false });
 };
 
+interface OnboardedUser {
+  handle?: string;
+  passphrase?: string;
+}
+
 interface WithTwoOnboardedNodesOptions {
-  node1Handle?: string;
-  node2Handle?: string;
+  node1User: OnboardedUser;
+  node2User: OnboardedUser;
 }
 
 export const connectTwoNodes = (
@@ -37,7 +42,11 @@ export const withTwoOnboardedNodes = (
     cy.task(Commands.StartNode, { id: NODE1_ID }, { log: false });
     cy.task(
       Commands.OnboardNode,
-      { id: NODE1_ID, handle: options.node1Handle },
+      {
+        id: NODE1_ID,
+        handle: options.node1User.handle,
+        passphrase: options.node1User.passphrase,
+      },
       { log: false }
     );
 
@@ -46,7 +55,11 @@ export const withTwoOnboardedNodes = (
     cy.task(Commands.StartNode, { id: NODE2_ID }, { log: false });
     cy.task(
       Commands.OnboardNode,
-      { id: NODE2_ID, handle: options.node2Handle },
+      {
+        id: NODE2_ID,
+        handle: options.node2User.handle,
+        passphrase: options.node2User.passphrase,
+      },
       { log: false }
     );
 

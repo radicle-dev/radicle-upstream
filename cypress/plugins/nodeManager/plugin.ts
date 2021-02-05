@@ -4,7 +4,9 @@ import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
 import type { NodeSession, PeerId } from "./shared";
-import { Commands } from "./shared";
+import { Commands, CYPRESS_WORKSPACE_PATH } from "./shared";
+import * as uuid from "uuid";
+import * as fs from "fs-extra";
 
 type NodeId = number;
 type PeerAddress = string;
@@ -69,6 +71,7 @@ class Node {
   httpPort: number;
   peerPort: number;
   proxyBinaryPath: string;
+  storagePath: string;
 
   get authToken(): AuthToken {
     if (this.state.kind !== StateKind.Onboarded) {
@@ -108,25 +111,34 @@ class Node {
     this.httpPort = options.id;
     this.peerPort = options.id;
     this.proxyBinaryPath = path.join(ROOT_PATH, options.proxyBinaryPath);
+    this.storagePath = path.join(CYPRESS_WORKSPACE_PATH, uuid.v4());
   }
 
   async start() {
     this.logger.log("starting node");
 
+    fs.mkdirsSync(this.storagePath);
+
+    const envCopy: NodeJS.ProcessEnv = {};
+    Object.assign(envCopy, global.process.env);
+    envCopy["RAD_HOME"] = this.storagePath;
+
     const process = childProcess.spawn(
       this.proxyBinaryPath,
       [
         "--test",
+        "--test-use-rad-home",
         "--http-listen",
         `${HOST}:${this.httpPort}`,
         "--peer-listen",
         `${HOST}:${this.peerPort}`,
       ],
-      {}
+      { env: envCopy }
     );
 
     process.on("exit", async () => {
       this.logger.log(`node terminated`);
+      this.cleanup();
     });
 
     process.stderr.setEncoding("utf8");
@@ -216,6 +228,11 @@ class Node {
     } else {
       this.logger.log("ignoring stop node command, node wasn't running");
     }
+  }
+
+  private cleanup(): void {
+    this.logger.log("cleaning up state");
+    fs.removeSync(this.storagePath);
   }
 }
 
@@ -320,6 +337,7 @@ class NodeManager {
           authToken: node.authToken,
           peerId: node.peerId,
           httpPort: node.httpPort,
+          storagePath: node.storagePath,
         });
       }
     });

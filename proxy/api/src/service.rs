@@ -63,7 +63,7 @@ impl Environment {
                     coco::profile::Profile::from_root(temp_dir.path(), None)?,
                 )
             };
-            let keystore = Arc::new(coco::keystore::memory());
+            let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
             Ok(Self {
                 key: None,
                 coco_profile,

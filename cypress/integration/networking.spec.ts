@@ -9,37 +9,47 @@ context("p2p networking", () => {
       "reacts to network state changes",
       { defaultCommandTimeout: 8000 },
       () => {
-        nodeManager.withTwoOnboardedNodes({}, (node1, node2) => {
-          nodeManager.asNode(node1);
-          commands.pick("connection-status-offline").should("exist");
-          nodeManager.connectTwoNodes(node1, node2);
-          commands.pick("connection-status-online").should("exist");
-          nodeManager.asNode(node2);
-          commands.pick("connection-status-online").should("exist");
-        });
+        nodeManager.withTwoOnboardedNodes(
+          { node1User: {}, node2User: {} },
+          (node1, node2) => {
+            nodeManager.asNode(node1);
+            commands.pick("connection-status-offline").should("exist");
+            nodeManager.connectTwoNodes(node1, node2);
+            commands.pick("connection-status-online").should("exist");
+            nodeManager.asNode(node2);
+            commands.pick("connection-status-online").should("exist");
+          }
+        );
       }
     );
   });
 
   it("replicates a project from one node to another", () => {
+    const node1User = { handle: "rudolfs", passphrase: "1111" };
+    const node2User = { handle: "abbey", passphrase: "2222" };
+
     commands.withTempDir(tempDirPath => {
       nodeManager.withTwoOnboardedNodes(
-        { node1Handle: "rudolfs", node2Handle: "abbey" },
+        {
+          node1User,
+          node2User,
+        },
         (maintainerNode, contributorNode) => {
           nodeManager.connectTwoNodes(maintainerNode, contributorNode);
           nodeManager.asNode(maintainerNode);
-          const newProjectPath = path.join(
+          const maintainerNodeWorkingDir = path.join(
             tempDirPath,
-            "maintainerNode/new-project"
+            "maintainerNode"
           );
 
-          cy.exec(`mkdir -p ${newProjectPath}`);
+          cy.exec(`mkdir -p ${maintainerNodeWorkingDir}`);
 
           ipcStub.getStubs().then(stubs => {
-            stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(newProjectPath);
+            stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(maintainerNodeWorkingDir);
           });
+          const projectName = "new-fancy-project.xyz";
           commands.pick("new-project-button").click();
-          commands.pick("name").type("new-fancy-project.xyz");
+          commands.pick("name").type(projectName);
 
           commands.pick("new-project").click();
           commands.pick("new-project", "choose-path-button").click();
@@ -91,6 +101,7 @@ context("p2p networking", () => {
 
           cy.log("add contributor remote on maintainer's node");
           nodeManager.asNode(maintainerNode);
+
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
           commands.pick("peer-selector").click();
@@ -111,6 +122,41 @@ context("p2p networking", () => {
               ["followed-peers", "peer-abbey", "follow-toggle"],
               "Following"
             )
+            .should("exist");
+
+          cy.log("add a new commit to the project from maintainer's node");
+
+          const projctPath = path.join(maintainerNodeWorkingDir, projectName);
+          const credentialHelper = `'!f() { test "$1" = get && echo "password=${node1User.passphrase}"; }; f'`;
+          const commitSubject = "Commit replication FTW!";
+
+          cy.exec(
+            `cd ${projctPath} && ` +
+              `touch README.md && ` +
+              `git add . && ` +
+              `git commit -m "${commitSubject}" && ` +
+              `git -c credential.helper=${credentialHelper} push rad`,
+            { env: { RAD_HOME: maintainerNode.storagePath } }
+          );
+
+          cy.log("refresh the UI, because new commits don't show up otherwise");
+          cy.get("body").type("{esc}");
+          commands.pick("sidebar", "profile").click();
+
+          cy.log("make sure new commit shows up in the UI of the maintainer");
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          commands.pick("commits-tab").click();
+          commands
+            .pickWithContent(["commits-page"], commitSubject)
+            .should("exist");
+
+          cy.log("check that the commit shows up in the contributor's node");
+          nodeManager.asNode(contributorNode);
+          commands.pick("following-tab").click();
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          commands.pick("commits-tab").click();
+          commands
+            .pickWithContent(["commits-page"], commitSubject)
             .should("exist");
         }
       );
