@@ -14,6 +14,13 @@ export const resetProxyState = (): Cypress.Chainable<void> =>
 export const sealKeystore = (): Cypress.Chainable<void> =>
   requestOk({ url: "http://localhost:17246/v1/control/seal" });
 
+export const restartAndUnlock = (): void => {
+  sealKeystore();
+  cy.visit("./public/index.html");
+  pick("passphrase-input").type("radicle-upstream");
+  pick("unlock-button").click();
+};
+
 export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
   const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
   return cy.get(selectorString);

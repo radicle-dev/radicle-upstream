@@ -239,6 +239,7 @@
                 <div class="seed">
                   <StyledCopyable value={seed} />
                   <Icon.Cross
+                    dataCy="remove-seed"
                     on:click={() => removeSeed(seed)}
                     style="margin-left: 1.5rem; cursor:pointer;" />
                 </div>
