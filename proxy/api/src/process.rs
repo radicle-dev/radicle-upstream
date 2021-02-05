@@ -22,6 +22,9 @@ pub struct Args {
     /// put proxy in test mode to use certain fixtures
     #[argh(switch)]
     pub test: bool,
+    /// use RAD_HOME as root path for test data
+    #[argh(switch)]
+    pub test_use_rad_home: bool,
     /// run HTTP API on a specified address:port (default: 127.0.0.1:17246)
     #[argh(
         option,
@@ -59,7 +62,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
-    let mut service_manager = service::Manager::new(args.test)?;
+    let mut service_manager = service::Manager::new(args.test, args.test_use_rad_home)?;
     let mut sighup = signal(SignalKind::hangup())?;
 
     let mut handle = service_manager.handle();
@@ -231,13 +234,8 @@ async fn rig(
     auth_token: Arc<RwLock<Option<String>>>,
     args: Args,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
-    let store_path = if let Some(temp_dir) = &environment.temp_dir {
-        temp_dir.path().join("store")
-    } else {
-        config::store_dir(environment.coco_profile.id())
-    };
-
-    let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
+    let store = kv::Store::new(kv::Config::new(&environment.store_path).flush_every_ms(100))?;
+    println!("STORE PATH: {:?}", &environment.store_path);
 
     if let Some(key) = environment.key.clone() {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
