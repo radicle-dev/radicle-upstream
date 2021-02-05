@@ -116,7 +116,8 @@ We use [Cypress](https://www.cypress.io/) for integration tests and
 
 ### Running multiple Upstream instances on the same machine
 
-At the moment this is only possible in development mode.
+It is possible to launch multiple Upstream instances at the same time for
+testing purposes. At the moment this is only possible in development mode.
 
 ```
 mkdir /Users/rudolfs/work/19000
@@ -136,6 +137,10 @@ RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:20000 --peer-listen 0.0.0.0
 RADICLE_UPSTREAM_UI_ARGS="backend=localhost:20000" \
 yarn start
 ```
+
+It is possible to let the OS choose the peer port by setting it to:
+`--peer-listen 0.0.0.0:0`.
+
 
 ### Building an Upstream package for your platform
 
