@@ -33,7 +33,7 @@ context("settings", () => {
 
   context("network", () => {
     it("validates the seed input", () => {
-      commands.pick("seed-input").type("invalid-seed@seed.my.org:123");
+      commands.pasteInto(["seed-input"], "invalid-seed@seed.my.org:123");
       commands.pick("add-seed").click();
       cy.get(".seed-entry-form").contains("This is not a valid seed address");
       cy.get(".seeds").find(".seed").should("have.length", 0);
@@ -41,21 +41,21 @@ context("settings", () => {
 
     it("can add a seed via button", () => {
       cy.get(".seeds").find(".seed").should("have.length", 0);
-      commands.pick("seed-input").type(validSeedAddress);
+      commands.pasteInto(["seed-input"], validSeedAddress);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 1);
     });
 
     it("can add a seed via enter", () => {
       cy.get(".seeds").find(".seed").should("have.length", 0);
-      commands.pick("seed-input").type(validSeedAddress);
+      commands.pasteInto(["seed-input"], validSeedAddress);
       commands.pick("seed-input").type("{enter}");
       cy.get(".seeds").find(".seed").should("have.length", 1);
     });
 
     it("persists adding a seed across app start", () => {
       cy.get(".seeds").find(".seed").should("have.length", 0);
-      commands.pick("seed-input").type(validSeedAddress);
+      commands.pasteInto(["seed-input"], validSeedAddress);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 1);
       commands.restartAndUnlock();
@@ -65,45 +65,39 @@ context("settings", () => {
 
     it("prevents adding the same seed", () => {
       // add a seed
-      commands.pick("seed-input").type(validSeedAddress);
+      commands.pasteInto(["seed-input"], validSeedAddress);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 1);
 
       // add the same seed again
-      commands.pick("seed-input").type(validSeedAddress);
+      commands.pasteInto(["seed-input"], validSeedAddress);
       commands.pick("add-seed").click();
       cy.get(".seed-entry-form").contains("This seed already exists");
       cy.get(".seeds").find(".seed").should("have.length", 1);
     });
 
     it("adds new seeds to the end of the list", () => {
-      commands.pick("seed-input").type(`${validSeedAddress  }1`);
+      commands.pasteInto(["seed-input"], `${validSeedAddress}1`);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 1);
 
       // add a second seed
-      commands.pick("seed-input").type(`${validSeedAddress  }2`);
+      commands.pasteInto(["seed-input"], `${validSeedAddress}2`);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 2);
-      cy.get(".seeds")
-        .find(".seed")
-        .last()
-        .contains(`${validSeedAddress  }2`);
+      cy.get(".seeds").find(".seed").last().contains(`${validSeedAddress}2`);
 
       // add a third seed
-      commands.pick("seed-input").type(`${validSeedAddress  }3`);
+      commands.pasteInto(["seed-input"], `${validSeedAddress}3`);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 3);
-      cy.get(".seeds")
-        .find(".seed")
-        .last()
-        .contains(`${validSeedAddress  }3`);
+      cy.get(".seeds").find(".seed").last().contains(`${validSeedAddress}3`);
     });
 
     it("can delete a seed and persists the change across app start", () => {
       // add a seed
       cy.get(".seeds").find(".seed").should("have.length", 0);
-      commands.pick("seed-input").type(validSeedAddress);
+      commands.pasteInto(["seed-input"], validSeedAddress);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 1);
 
@@ -119,11 +113,11 @@ context("settings", () => {
 
     it("persists the order of the seed list when removing one", () => {
       // add 3 seeds
-      commands.pick("seed-input").type(`${validSeedAddress  }1`);
+      commands.pasteInto(["seed-input"], `${validSeedAddress}1`);
       commands.pick("add-seed").click();
-      commands.pick("seed-input").type(`${validSeedAddress  }2`);
+      commands.pasteInto(["seed-input"], `${validSeedAddress}2`);
       commands.pick("add-seed").click();
-      commands.pick("seed-input").type(`${validSeedAddress  }3`);
+      commands.pasteInto(["seed-input"], `${validSeedAddress}3`);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 3);
 
@@ -135,14 +129,8 @@ context("settings", () => {
           commands.pick("remove-seed").click();
         });
       cy.get(".seeds").find(".seed").should("have.length", 2);
-      cy.get(".seeds")
-        .find(".seed")
-        .first()
-        .contains(`${validSeedAddress  }1`);
-      cy.get(".seeds")
-        .find(".seed")
-        .last()
-        .contains(`${validSeedAddress  }3`);
+      cy.get(".seeds").find(".seed").first().contains(`${validSeedAddress}1`);
+      cy.get(".seeds").find(".seed").last().contains(`${validSeedAddress}3`);
     });
   });
 
