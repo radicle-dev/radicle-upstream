@@ -16,9 +16,15 @@ context("project source browsing", () => {
 
   context("repository stats", () => {
     it("shows the correct numbers", () => {
-      commands.pick("header", "project-stats").contains("2 Branches");
-      commands.pick("header", "project-stats").contains("4 Contributors");
-      commands.pick("horizontal-menu", "commits-tab", "counter").contains("15");
+      commands
+        .pickWithContent(["header", "project-stats"], "2 Branches")
+        .should("exist");
+      commands
+        .pickWithContent(["header", "project-stats"], "4 Contributors")
+        .should("exist");
+      commands
+        .pickWithContent(["horizontal-menu", "commits-tab", "counter"], "15")
+        .should("exist");
     });
   });
 
@@ -27,13 +33,12 @@ context("project source browsing", () => {
       it("shows the commit history for the default branch", () => {
         // Wait for the commit tab to be updated
         commands
-          .pick("horizontal-menu", "commits-tab", "counter")
-          .contains("15");
+          .pickWithContent(["horizontal-menu", "commits-tab", "counter"], "15")
+          .should("exist");
         commands.pick("horizontal-menu", "commits-tab").click();
         commands.pick("commits-page").should("exist");
         commands
-          .pick("commit-teaser")
-          .contains("Commit on the dev branch")
+          .pickWithContent(["commit-teaser"], "Commit on the dev branch")
           .should("not.exist");
         commands
           .pick("commit-teaser")
@@ -51,22 +56,25 @@ context("project source browsing", () => {
         commands.pick("revision-dropdown", "revision-branch-dev").click();
         // Wait for the commit tab to be updated
         commands
-          .pick("horizontal-menu", "commits-tab", "counter")
-          .contains("8");
+          .pickWithContent(["horizontal-menu", "commits-tab", "counter"], "8")
+          .should("exist");
         commands.pick("horizontal-menu", "commits-tab").click();
 
         commands.pick("commits-page").should("exist");
         commands
-          .pick("commit-teaser")
-          .contains("Merge pull request #4 from FintanH/fintan")
+          .pickWithContent(
+            ["commit-teaser"],
+            "Merge pull request #4 from FintanH/fintan"
+          )
           .should("not.exist");
         commands
-          .pick("commit-teaser")
-          .contains("Commit on the dev branch")
+          .pickWithContent(["commit-teaser"], "Commit on the dev branch")
           .click();
         commands
-          .pick("commit-header")
-          .contains("Commit 27acd68c7504755aa11023300890bb85bbd69d45")
+          .pickWithContent(
+            ["commit-header"],
+            "Commit 27acd68c7504755aa11023300890bb85bbd69d45"
+          )
           .should("exist");
       });
     });
@@ -158,23 +166,30 @@ context("project source browsing", () => {
           it("shows the README file", () => {
             // It contains the commit teaser for the latest commit.
             commands
-              .pick("project-screen", "commit-teaser")
-              .contains("a0dd912");
+              .pickWithContent(["project-screen", "commit-teaser"], "a0dd912")
+              .should("exist");
             commands
-              .pick("project-screen", "commit-teaser")
-              .contains(
+              .pickWithContent(
+                ["project-screen", "commit-teaser"],
                 "Add files with special characters in their filenames (#5)"
-              );
+              )
+              .should("exist");
             commands
-              .pick("project-screen", "commit-teaser")
-              .contains("Rūdolfs Ošiņš");
+              .pickWithContent(
+                ["project-screen", "commit-teaser"],
+                "Rūdolfs Ošiņš"
+              )
+              .should("exist");
 
-            commands.pick("project-screen", "file-view").contains("README.md");
             commands
-              .pick("project-screen", "file-view")
-              .contains(
+              .pickWithContent(["project-screen", "file-view"], "README.md")
+              .should("exist");
+            commands
+              .pickWithContent(
+                ["project-screen", "file-view"],
                 "This repository is a data source for the Upstream front-end tests and the radicle-surf unit tests."
-              );
+              )
+              .should("exist");
 
             // Going to a different path and then switching back to the root path
             // shows the README again.
@@ -183,31 +198,38 @@ context("project source browsing", () => {
             });
             commands
               .pick("project-screen", "file-view")
-              .contains("platinum / .i-am-well-hidden");
-            commands
-              .pick("project-screen", "file-view")
               .contains("platinum")
               .click();
-            commands.pick("project-screen", "file-view").contains("README.md");
+            commands
+              .pickWithContent(["project-screen", "file-view"], "README.md")
+              .should("exist");
 
             commands.pick("source-tree").within(() => {
               cy.contains(".i-too-am-hidden").click();
             });
             commands
-              .pick("project-screen", "file-view")
-              .contains("platinum / .i-too-am-hidden");
+              .pickWithContent(
+                ["project-screen", "file-view"],
+                "platinum / .i-too-am-hidden"
+              )
+              .should("exist");
             commands.pick("project-screen", "file-view", "root-link").click();
-            commands.pick("project-screen", "file-view").contains("README.md");
+            commands
+              .pickWithContent(["project-screen", "file-view"], "README.md")
+              .should("exist");
 
             // Switching between different revisions shows the correct README
             commands.pick("revision-selector").click();
             commands.pick("revision-dropdown", "revision-branch-dev").click();
-            commands.pick("project-screen", "file-view").contains("README.md");
             commands
-              .pick("project-screen", "file-view")
-              .contains(
+              .pickWithContent(["project-screen", "file-view"], "README.md")
+              .should("exist");
+            commands
+              .pickWithContent(
+                ["project-screen", "file-view"],
                 "This repository is a data source for the Upstream front-end tests."
-              );
+              )
+              .should("exist");
           });
         });
       });
@@ -275,7 +297,9 @@ context("project source browsing", () => {
           commands.pick("peer-selector").click();
           cy.get('.peer-dropdown [data-peer-handle="abbey"]').click();
 
-          commands.pick("revision-selector").contains("master");
+          commands
+            .pickWithContent(["revision-selector"], "master")
+            .should("exist");
           commands.pick("revision-selector", "branch-icon").should("exist");
 
           commands.pick("peer-selector").click();
@@ -283,7 +307,9 @@ context("project source browsing", () => {
           commands.pick("revision-selector").click();
           commands.pick("revision-dropdown", "revision-tag-v0.1.0").click();
 
-          commands.pick("revision-selector").contains("v0.1.0");
+          commands
+            .pickWithContent(["revision-selector"], "v0.1.0")
+            .should("exist");
           commands.pick("revision-selector", "tag-icon").should("exist");
 
           commands.pick("revision-selector").click();
@@ -301,7 +327,9 @@ context("project source browsing", () => {
           commands.pick("revision-dropdown", "revision-branch-dev").click();
           commands.pick("sidebar", "profile").click();
           commands.pick("project-list", "project-list-entry-gold").click();
-          commands.pick("revision-selector").contains("master");
+          commands
+            .pickWithContent(["revision-selector"], "master")
+            .should("exist");
         });
       });
     });
