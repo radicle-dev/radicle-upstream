@@ -135,8 +135,12 @@ context("p2p networking", () => {
               `touch README.md && ` +
               `git add . && ` +
               `git commit -m "${commitSubject}" && ` +
-              `git -c credential.helper=${credentialHelper} push rad`,
-            { env: { RAD_HOME: maintainerNode.storagePath } }
+              `PATH=$PWD/proxy/target/debug:$PATH git -c credential.helper=${credentialHelper} push rad`,
+            {
+              env: {
+                RAD_HOME: maintainerNode.storagePath,
+              },
+            }
           );
 
           cy.log("refresh the UI, because new commits don't show up otherwise");
