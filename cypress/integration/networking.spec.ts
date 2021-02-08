@@ -130,6 +130,15 @@ context("p2p networking", () => {
           const credentialHelper = `'!f() { test "$1" = get && echo "password=${node1User.passphrase}"; }; f'`;
           const commitSubject = "Commit replication FTW!";
 
+          cy.exec("echo $PATH").then(result => {
+            console.log(result.stdout);
+          });
+          cy.exec("echo $PWD").then(result => {
+            console.log(result.stdout);
+          });
+          cy.exec("ls $PWD/proxy/target/debug").then(result => {
+            console.log(result.stdout);
+          });
           cy.exec(
             `cd ${projctPath} && ` +
               `touch README.md && ` +
