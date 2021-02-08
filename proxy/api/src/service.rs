@@ -44,7 +44,7 @@ impl Environment {
     /// persistence.
     fn new(test_mode: bool, test_use_rad_home: bool) -> Result<Self, Error> {
         if test_mode {
-            let (store_path, coco_profile) = if test_use_rad_home {
+            if test_use_rad_home {
                 let root_path = match std::env::var_os("RAD_HOME") {
                     None => {
                         println!("RAD_HOME must be set when running with --test-use-rad-home");
@@ -52,26 +52,32 @@ impl Environment {
                     },
                     Some(root) => path::Path::new(&root).to_path_buf(),
                 };
-                (
-                    root_path.join("store"),
-                    coco::profile::Profile::from_root(path::Path::new(&root_path), None)?,
-                )
+                let store_path = root_path.join("store");
+                let coco_profile =
+                    coco::profile::Profile::from_root(path::Path::new(&root_path), None)?;
+                let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
+                Ok(Self {
+                    key: None,
+                    coco_profile,
+                    keystore,
+                    test_mode,
+                    test_use_rad_home,
+                    store_path,
+                })
             } else {
                 let temp_dir = tempfile::tempdir()?;
-                (
-                    temp_dir.path().join("store"),
-                    coco::profile::Profile::from_root(temp_dir.path(), None)?,
-                )
-            };
-            let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
-            Ok(Self {
-                key: None,
-                coco_profile,
-                keystore,
-                test_mode,
-                test_use_rad_home,
-                store_path,
-            })
+                let store_path = temp_dir.path().join("store");
+                let coco_profile = coco::profile::Profile::from_root(temp_dir.path(), None)?;
+                let keystore = Arc::new(coco::keystore::memory());
+                Ok(Self {
+                    key: None,
+                    coco_profile,
+                    keystore,
+                    test_mode,
+                    test_use_rad_home,
+                    store_path,
+                })
+            }
         } else {
             let coco_profile = coco::profile::Profile::load()?;
             let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
