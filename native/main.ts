@@ -118,7 +118,15 @@ class WindowManager {
       this.messages = [];
     });
 
-    window.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
+    let uiUrl;
+
+    if (isDev && process.env.RADICLE_UPSTREAM_UI_ARGS) {
+      uiUrl = `../public/index.html?${process.env.RADICLE_UPSTREAM_UI_ARGS}`;
+    } else {
+      uiUrl = "../public/index.html";
+    }
+
+    window.loadURL(`file://${path.join(__dirname, uiUrl)}`);
 
     this.window = window;
   }
