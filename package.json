@@ -77,8 +77,10 @@
     "@types/marked": "^1.2.1",
     "@types/node": "^14.14.19",
     "@types/node-fetch": "^2.5.7",
+    "@types/prompts": "^2.0.9",
     "@types/semver": "^7.3.4",
     "@types/sinon": "^9.0.10",
+    "@types/standard-version": "^7.0.0",
     "@types/twemoji": "^12.1.1",
     "@types/wait-on": "^5.2.0",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
@@ -104,6 +106,7 @@
     "patch-package": "^6.2.2",
     "prettier": "^2.2.1",
     "prettier-plugin-svelte": "^1.4.2",
+    "prompts": "^2.4.0",
     "rollup": "^2.35.1",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-livereload": "^2.0.0",
@@ -134,7 +137,7 @@
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "dist": "yarn _private:dist:clean && yarn _private:rollup:build && yarn _private:proxy:build:release && electron-builder --publish never",
-    "release": "scripts/release.js",
+    "release": "scripts/release.ts",
     "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "prettier:check": "yarn _private:prettier --check",
     "prettier:write": "yarn _private:prettier --write",
@@ -179,11 +182,6 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
-    }
-  },
-  "standard-version": {
-    "skip": {
-      "tag": true
     }
   },
   "lint-staged": {

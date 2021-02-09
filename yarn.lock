@@ -1165,6 +1165,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/conventional-changelog-config-spec@*":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@types/conventional-changelog-config-spec/-/conventional-changelog-config-spec-2.1.0.tgz#9b4c3121feb619f801017e78a6e1c258ccff1ceb"
+  integrity sha512-JQLPvCqa8byksGs6ccQZ5VmawYEUJbZqAfn3PK+cUFdY4X6UYYiGDpc2YjnnZpP/xL5kldMgyphyux9n17kq1A==
+  dependencies:
+    "@types/json-schema" "*"
+
 "@types/debug@^4.1.5":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.5.tgz#b14efa8852b7768d898906613c23f688713e02cd"
@@ -1220,6 +1227,11 @@
   dependencies:
     jest-diff "^26.0.0"
     pretty-format "^26.0.0"
+
+"@types/json-schema@*":
+  version "7.0.7"
+  resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.7.tgz#98a993516c859eb0d5c4c8f098317a9ea68db9ad"
+  integrity sha512-cxWFQVseBm6O9Gbw1IWb8r6OS4OhSt3hPZLkFApLjM8TEXROBuQGLAH2i2gZpcXdLBIrpXuTDhH7Vbm1iXmNGA==
 
 "@types/json-schema@^7.0.3":
   version "7.0.6"
@@ -1281,6 +1293,13 @@
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.1.6.tgz#f4b1efa784e8db479cdb8b14403e2144b1e9ff03"
   integrity sha512-6gOkRe7OIioWAXfnO/2lFiv+SJichKVSys1mSsgyrYHSEjk8Ctv4tSR/Odvnu+HWlH2C8j53dahU03XmQdd5fA==
 
+"@types/prompts@^2.0.9":
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/@types/prompts/-/prompts-2.0.9.tgz#19f419310eaa224a520476b19d4183f6a2b3bd8f"
+  integrity sha512-TORZP+FSjTYMWwKadftmqEn6bziN5RnfygehByGsjxoK5ydnClddtv6GikGWPvCm24oI+YBwck5WDxIIyNxUrA==
+  dependencies:
+    "@types/node" "*"
+
 "@types/pug@^2.0.4":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@types/pug/-/pug-2.0.4.tgz#8772fcd0418e3cd2cc171555d73007415051f4b2"
@@ -1338,6 +1357,14 @@
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
   integrity sha512-RJJrrySY7A8havqpGObOB4W92QXKJo63/jFLLgpvOtsGUqbQZ9Sbgl35KMm1DjC6j7AvmmU2bIno+3IyEaemaw==
+
+"@types/standard-version@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@types/standard-version/-/standard-version-7.0.0.tgz#7611bdf648e0833100a54828a84353e5922862fc"
+  integrity sha512-0UYi01LCFytj+15S0dEGzSAAITVW9gJg8EGEU5brWhT2C1BMWuMt19YGVSTYBF9EoP0Ni+PFvQPpjmOU33tSMg==
+  dependencies:
+    "@types/conventional-changelog-config-spec" "*"
+    "@types/node" "*"
 
 "@types/twemoji@^12.1.1":
   version "12.1.1"
@@ -7538,7 +7565,7 @@ progress@^2.0.0, progress@^2.0.3:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
-prompts@^2.0.1:
+prompts@^2.0.1, prompts@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/prompts/-/prompts-2.4.0.tgz#4aa5de0723a231d1ee9121c40fdf663df73f61d7"
   integrity sha512-awZAKrk3vN6CroQukBL+R9051a4R3zCZBlJm/HBfrSZ8iTpYix3VX1vU4mveiLpiwmOJT4wokTF9m6HUk4KqWQ==

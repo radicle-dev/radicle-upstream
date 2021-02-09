@@ -3,7 +3,7 @@
 - [ ] Make sure you are installing into an environment with no old
       configuration and no user data [ℹ️](#01)
 - [ ] Make sure you have configured your name and email in git [ℹ️](#02)
-- [ ] [Download][bu] the binary package
+- [ ] Download [Linux][ln] or [macOS][mc] binary package
 - [ ] Install Upstream from the downloaded package [ℹ️](#03)
   - [ ] macOS Gatekeeper **does not** show the following message:
         _macOS cannot verify that this app is free from malware_
@@ -187,5 +187,6 @@ in with a temporary user account).
 
 
 
+[ln]: https://releases.radicle.xyz/radicle-upstream-X.X.X.AppImage
+[mc]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
 [rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/scripts/reset-state.sh
-[bu]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
