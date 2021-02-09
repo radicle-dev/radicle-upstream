@@ -216,7 +216,10 @@
                 more about seeds</a>
             </p>
           </div>
-          <form class="seed-entry-form" on:submit|preventDefault>
+          <form
+            class="seed-entry-form"
+            on:submit|preventDefault
+            data-cy="seed-entry-form">
             <div class="seed-entry-field">
               <Input.Text
                 dataCy="seed-input"

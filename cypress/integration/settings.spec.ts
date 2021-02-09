@@ -35,7 +35,9 @@ context("settings", () => {
     it("validates the seed input", () => {
       commands.pasteInto(["seed-input"], "invalid-seed@seed.my.org:123");
       commands.pick("add-seed").click();
-      cy.get(".seed-entry-form").contains("This is not a valid seed address");
+      commands
+        .pick("seed-entry-form")
+        .should("contain", "This is not a valid seed address");
       cy.get(".seeds").find(".seed").should("have.length", 0);
     });
 
@@ -72,7 +74,9 @@ context("settings", () => {
       // add the same seed again
       commands.pasteInto(["seed-input"], validSeedAddress);
       commands.pick("add-seed").click();
-      cy.get(".seed-entry-form").contains("This seed already exists");
+      commands
+        .pick("seed-entry-form")
+        .should("contain", "This seed already exists");
       cy.get(".seeds").find(".seed").should("have.length", 1);
     });
 
@@ -85,13 +89,19 @@ context("settings", () => {
       commands.pasteInto(["seed-input"], `${validSeedAddress}2`);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 2);
-      cy.get(".seeds").find(".seed").last().contains(`${validSeedAddress}2`);
+      cy.get(".seeds")
+        .find(".seed")
+        .last()
+        .should("contain", `${validSeedAddress}2`);
 
       // add a third seed
       commands.pasteInto(["seed-input"], `${validSeedAddress}3`);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 3);
-      cy.get(".seeds").find(".seed").last().contains(`${validSeedAddress}3`);
+      cy.get(".seeds")
+        .find(".seed")
+        .last()
+        .should("contain", `${validSeedAddress}3`);
     });
 
     it("can delete a seed and persists the change across app start", () => {
@@ -129,8 +139,14 @@ context("settings", () => {
           commands.pick("remove-seed").click();
         });
       cy.get(".seeds").find(".seed").should("have.length", 2);
-      cy.get(".seeds").find(".seed").first().contains(`${validSeedAddress}1`);
-      cy.get(".seeds").find(".seed").last().contains(`${validSeedAddress}3`);
+      cy.get(".seeds")
+        .find(".seed")
+        .first()
+        .should("contain", `${validSeedAddress}1`);
+      cy.get(".seeds")
+        .find(".seed")
+        .last()
+        .should("contain", `${validSeedAddress}3`);
     });
   });
 
