@@ -116,8 +116,8 @@ We use [Cypress](https://www.cypress.io/) for integration tests and
 
 ### Running multiple Upstream instances on the same machine
 
-It is possible to launch multiple Upstream instances at the same time for
-testing purposes. At the moment this is only possible in development mode.
+For testing purposes it is possible to launch multiple Upstream instances at
+the same time. At the moment this is only possible in development mode.
 
 ```
 mkdir /Users/rudolfs/work/19000
@@ -138,9 +138,10 @@ RADICLE_UPSTREAM_UI_ARGS="backend=localhost:20000" \
 yarn start
 ```
 
-It is possible to let the OS choose the peer port by setting it to:
+You can also let the the OS choose a free peer port by setting it to:
 `--peer-listen 0.0.0.0:0`. And if you don't need completely isolated state,
-then you can use `RAD_PROFILE` instead of `RAD_HOME`.
+then you can use `RAD_PROFILE` instead of `RAD_HOME`, but be aware that
+Electron state will be shared by all instances.
 
 
 ### Building an Upstream package for your platform
