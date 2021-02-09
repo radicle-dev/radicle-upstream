@@ -2,9 +2,6 @@
 set -Eeou pipefail
 
 if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" == "macos" ]]; then
-  echo "--- Cleaning up macOS environment"
-  killall radicle-proxy
-
   echo "--- Setting up macOS environment"
 
   export HOME=/Users/buildkite
