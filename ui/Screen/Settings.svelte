@@ -216,7 +216,10 @@
                 more about seeds</a>
             </p>
           </div>
-          <form class="seed-entry-form" on:submit|preventDefault>
+          <form
+            class="seed-entry-form"
+            on:submit|preventDefault
+            data-cy="seed-entry-form">
             <div class="seed-entry-field">
               <Input.Text
                 dataCy="seed-input"
@@ -239,6 +242,7 @@
                 <div class="seed">
                   <StyledCopyable value={seed} />
                   <Icon.Cross
+                    dataCy="remove-seed"
                     on:click={() => removeSeed(seed)}
                     style="margin-left: 1.5rem; cursor:pointer;" />
                 </div>
