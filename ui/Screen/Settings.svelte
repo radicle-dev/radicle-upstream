@@ -84,7 +84,7 @@
     max-width: var(--content-max-width);
     margin: 64px auto;
     min-width: var(--content-min-width);
-    padding: 0 var(--content-padding) 4rem var(--content-padding);
+    padding: 0 var(--content-padding);
   }
 
   .sections {

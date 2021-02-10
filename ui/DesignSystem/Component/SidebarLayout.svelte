@@ -19,6 +19,10 @@
     min-width: 60rem;
     height: 100%;
   }
+
+  .content {
+    padding-bottom: 1rem;
+  }
 </style>
 
 <div data-cy={dataCy}>
