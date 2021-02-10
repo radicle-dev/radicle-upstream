@@ -25,10 +25,10 @@ context("project peer management", () => {
     // The follow button is disabled when the input field is empty.
     commands.pick("follow-button").should("have.class", "disabled");
 
-    commands
-      .pick("peer-input")
-      .invoke("val", "hynsejpdsftse6f9bczzf69c1im9ewanb5ajnqruq3cq19keiuzk4c")
-      .trigger("input");
+    commands.pasteInto(
+      ["peer-input"],
+      "hynsejpdsftse6f9bczzf69c1im9ewanb5ajnqruq3cq19keiuzk4c"
+    );
 
     commands.pick("follow-button").should("not.have.class", "disabled");
 
@@ -45,10 +45,10 @@ context("project peer management", () => {
       });
 
     // Disallows adding the same peer again
-    commands
-      .pick("peer-input")
-      .invoke("val", "hynsejpdsftse6f9bczzf69c1im9ewanb5ajnqruq3cq19keiuzk4c")
-      .trigger("input");
+    commands.pasteInto(
+      ["peer-input"],
+      "hynsejpdsftse6f9bczzf69c1im9ewanb5ajnqruq3cq19keiuzk4c"
+    );
 
     commands.pick("follow-button").click();
     cy.contains("This remote is already being followed").should("exist");
