@@ -438,7 +438,7 @@ script to:
   - to close the pull-request.
 
 Then you'll have to create a _Personal access token_ for it in the
-[GitHub Developer settings][gs] page and authenticate the CLI tool once
+[GitHub Developer settings][gt] page and authenticate the CLI tool once
 by running any command that does a request to GitHub, like so: `hub api`.
 You'll be asked to provide your GitHub login and the access token.
 
@@ -480,6 +480,7 @@ instructions.
 [cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
+[es]: https://eslint.org
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gg]: https://cloud.google.com/storage/docs/gsutil_install
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
