@@ -425,8 +425,13 @@ build times. If you need to update this image, proceed as follows:
    create a new branch and build the updated image.
 
 ## Releases
-
 ### Prerequisites
+#### Google Cloud CLI
+
+For uploading artifacts to releases.radicle.xyz, you'll need a working `gcloud`
+environment. To do so, follow points 1 and 2 from the
+[Docker image updates][do] section.
+
 
 #### GitHub `hub` CLI tool
 
@@ -441,6 +446,7 @@ Then you'll have to create a _Personal access token_ for it in the
 [GitHub Developer settings][gt] page and authenticate the CLI tool once
 by running any command that does a request to GitHub, like so: `hub api`.
 You'll be asked to provide your GitHub login and the access token.
+
 
 #### Apple notarization
 
@@ -478,6 +484,7 @@ instructions.
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
 [co]: https://github.com/rust-lang/cargo
 [cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits
+[do]: #docker-image-updates
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
 [es]: https://eslint.org
