@@ -49,7 +49,7 @@ context("p2p networking", () => {
           });
           const projectName = "new-fancy-project.xyz";
           commands.pick("new-project-button").click();
-          commands.pick("name").type(projectName);
+          commands.pasteInto(["name"], projectName);
 
           commands.pick("new-project").click();
           commands.pick("new-project", "choose-path-button").click();
@@ -70,10 +70,11 @@ context("p2p networking", () => {
             }
 
             nodeManager.asNode(contributorNode);
+
             cy.log("navigate to the 'Following' tab");
             commands.pick("following-tab").click();
             commands.pick("sidebar", "search").click();
-            commands.pick("search-input").type(urn);
+            commands.pasteInto(["search-input"], urn);
             commands.pick("follow-toggle").click();
           });
 
@@ -109,7 +110,7 @@ context("p2p networking", () => {
 
           commands.pick("followed-peers", "peer-abbey").should("not.exist");
 
-          commands.pick("peer-input").type(contributorNode.peerId);
+          commands.pasteInto(["peer-input"], contributorNode.peerId);
           commands.pick("follow-button").click();
 
           cy.log("the remote shows up in the waiting area");
