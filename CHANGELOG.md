@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.10](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.9...v0.1.10) (2021-02-10)
+
+
+### Bug Fixes
+
+* **test:** properly assert in tests ([bdf8322](https://github.com/radicle-dev/radicle-upstream/commit/bdf83223e1e5281dec173d6479308f25dd29dfd1))
+* handle disconnecting wallet-side ([1747a8e](https://github.com/radicle-dev/radicle-upstream/commit/1747a8e124f9638688dc484fe92e6fb48f744235))
+* **ui:** correct msg on copying Transaction hash ([9562130](https://github.com/radicle-dev/radicle-upstream/commit/95621304854c4094cc7121764fd47546535d0385))
+* **ui:** let the transaction center be closed ([08051ef](https://github.com/radicle-dev/radicle-upstream/commit/08051efc75fb25cf0100177cf61ed52e181f5276))
+
 ### [0.1.9](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.8...v0.1.9) (2021-01-27)
 
 
