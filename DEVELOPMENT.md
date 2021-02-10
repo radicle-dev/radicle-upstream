@@ -435,8 +435,8 @@ environment. To do so, follow points 1 and 2 from the
 
 #### GitHub `hub` CLI tool
 
-Please install the [`hub`][hb] CLI tool, we use it in our release automation
-script to:
+Please install the [`hub`][hb] CLI tool (version >= **2.14**), we use it in our
+release automation script to:
 
   - create a pull-request off of a release branch;
   - to merge the release branch into master;
