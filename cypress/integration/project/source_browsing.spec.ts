@@ -191,6 +191,29 @@ context("project source browsing", () => {
               )
               .should("exist");
 
+            // Going to a different path and then switching back to the root path
+            // shows the README again.
+            commands.pick("source-tree").within(() => {
+              cy.contains(".i-am-well-hidden").click();
+            });
+            commands.pick("project-screen", "files-tab").click();
+            commands
+              .pickWithContent(["project-screen", "file-view"], "README.md")
+              .should("exist");
+            commands.pick("source-tree").within(() => {
+              cy.contains(".i-too-am-hidden").click();
+            });
+            commands
+              .pickWithContent(
+                ["project-screen", "file-view"],
+                ".i-too-am-hidden"
+              )
+              .should("exist");
+            commands.pick("project-screen", "files-tab").click();
+            commands
+              .pickWithContent(["project-screen", "file-view"], "README.md")
+              .should("exist");
+
             // Switching between different revisions shows the correct README
             commands.pick("revision-selector").click();
             commands.pick("revision-dropdown", "revision-branch-dev").click();
