@@ -235,7 +235,6 @@ async fn rig(
     args: Args,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
     let store = kv::Store::new(kv::Config::new(&environment.store_path).flush_every_ms(100))?;
-    println!("STORE PATH: {:?}", &environment.store_path);
 
     if let Some(key) = environment.key.clone() {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });

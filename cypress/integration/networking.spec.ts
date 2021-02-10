@@ -125,11 +125,13 @@ context("p2p networking", () => {
             )
             .should("exist");
 
-          cy.log("add a new commit to the project from maintainer's node");
+          cy.log("test commit replication from maintainer to contributor");
 
+          cy.log("add a new commit to the project from maintainer's node");
           const projctPath = path.join(maintainerNodeWorkingDir, projectName);
           const credentialHelper = `'!f() { test "$1" = get && echo "password=${node1User.passphrase}"; }; f'`;
-          const commitSubject = "Commit replication FTW!";
+          const maintainerCommitSubject =
+            "Commit replication from maintainer to contributor";
 
           cy.exec("echo $PATH").then(result => {
             console.log(result.stdout);
@@ -137,15 +139,15 @@ context("p2p networking", () => {
           cy.exec("echo $PWD").then(result => {
             console.log(result.stdout);
           });
-          cy.exec("ls $PWD/proxy/target/debug").then(result => {
+          cy.exec("ls $PWD/proxy/target/release").then(result => {
             console.log(result.stdout);
           });
           cy.exec(
             `cd ${projctPath} && ` +
               `touch README.md && ` +
               `git add . && ` +
-              `git commit -m "${commitSubject}" && ` +
-              `PATH=$PWD/proxy/target/debug:$PATH git -c credential.helper=${credentialHelper} push rad`,
+              `git commit -m "${maintainerCommitSubject}" && ` +
+              `PATH=$PWD/proxy/target/release:$PATH git -c credential.helper=${credentialHelper} push rad`,
             {
               env: {
                 RAD_HOME: maintainerNode.storagePath,
@@ -161,7 +163,7 @@ context("p2p networking", () => {
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
           commands.pick("commits-tab").click();
           commands
-            .pickWithContent(["commits-page"], commitSubject)
+            .pickWithContent(["commits-page"], maintainerCommitSubject)
             .should("exist");
 
           cy.log("check that the commit shows up in the contributor's node");
@@ -170,7 +172,83 @@ context("p2p networking", () => {
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
           commands.pick("commits-tab").click();
           commands
-            .pickWithContent(["commits-page"], commitSubject)
+            .pickWithContent(["commits-page"], maintainerCommitSubject)
+            .should("exist");
+
+          cy.log("test commit replication from contributor to maintainer");
+
+          const contributorNodeWorkingDir = path.join(
+            tempDirPath,
+            "contributorNode"
+          );
+
+          cy.exec(`mkdir -p ${contributorNodeWorkingDir}`);
+
+          ipcStub.getStubs().then(stubs => {
+            stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(contributorNodeWorkingDir);
+          });
+          commands.pick("checkout-modal-toggle").click();
+          commands.pick("choose-path-button").click();
+          // Make sure UI has time to update path value from stub,
+          // this prevents this spec from failing on CI.
+          cy.wait(500);
+          commands.pick("checkout-button").click();
+
+          // Wait for checkout to write the files to disk.
+          cy.wait(1000);
+
+          cy.log("add a new commit to the project from contributor's node");
+          const contributorCredentialHelper = `'!f() { test "$1" = get && echo "password=${node2User.passphrase}"; }; f'`;
+          const contributorCommitSubject =
+            "Commit replication from contributor to maintainer";
+
+          const forkedProjectPath = path.join(
+            contributorNodeWorkingDir,
+            projectName
+          );
+          cy.exec(
+            `cd ${forkedProjectPath} && ` +
+              `touch CONTRIBUTOR.md && ` +
+              `git add . && ` +
+              `git commit -m "${contributorCommitSubject}" && ` +
+              `PATH=$PWD/proxy/target/release:$PATH git -c credential.helper=${contributorCredentialHelper} push rad`,
+            {
+              env: {
+                RAD_HOME: contributorNode.storagePath,
+              },
+            }
+          );
+
+          cy.log("refresh the UI, because new commits don't show up otherwise");
+          cy.get("body").type("{esc}");
+          commands.pick("sidebar", "profile").click();
+
+          cy.log('the project moved to the "Projects"');
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+
+          cy.log('the "Fork" button is now called "Checkout"');
+          commands
+            .pickWithContent(["checkout-modal-toggle"], "Checkout")
+            .should("exist");
+
+          cy.log("the contributor is pre-selected in the peer selector");
+          commands.pickWithContent(["peer-selector"], "abbey").should("exist");
+          commands.pickWithContent(["peer-selector"], "you").should("exist");
+          commands.pick("commits-tab").click();
+          commands
+            .pickWithContent(["commits-page"], contributorCommitSubject)
+            .should("exist");
+
+          cy.log("test that the maintainer received the contributor's commit");
+          nodeManager.asNode(maintainerNode);
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          commands.pick("peer-selector").click();
+          commands
+            .pickWithContent(["peer-dropdown-container"], "abbey")
+            .click();
+          commands.pick("commits-tab").click();
+          commands
+            .pickWithContent(["commits-page"], contributorCommitSubject)
             .should("exist");
         }
       );
