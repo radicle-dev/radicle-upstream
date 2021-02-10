@@ -11,6 +11,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as childProcess from "child_process";
 
+import * as semver from "semver";
 import fetch from "node-fetch";
 
 const pkg = require("../package.json");
@@ -23,6 +24,12 @@ main().catch(e => {
 });
 
 async function main() {
+  if (!semver.gte(process.version, "14.14.0")) {
+    throw new Error(
+      "You’re using an outdated version of Node. This script requires at least v14.14.0"
+    );
+  }
+
   await withTempDir(async tempDir => {
     const versionDash = pkg.version.replace(/\./g, "-");
     const announcementUrl = `https://radicle.community/t/radicle-upstream-v${versionDash}-is-out`;
