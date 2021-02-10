@@ -210,7 +210,7 @@ context("project source browsing", () => {
             commands
               .pickWithContent(
                 ["project-screen", "file-view"],
-                "platinum / .i-too-am-hidden"
+                ".i-too-am-hidden"
               )
               .should("exist");
             commands.pick("project-screen", "file-view", "root-link").click();
@@ -460,47 +460,45 @@ context("project source browsing", () => {
             commands.pick("expand-special").click();
 
             commands.pick("source-tree").contains("-dash-").click();
-            cy.contains("platinum / special / -dash-").should("exist");
+            cy.contains("special / -dash-").should("exist");
 
             commands.pick("source-tree").contains("...").click();
-            cy.contains("platinum / special / ...").should("exist");
+            cy.contains("special / ...").should("exist");
 
             commands.pick("source-tree").contains(":colon:").click();
-            cy.contains("platinum / special / :colon:").should("exist");
+            cy.contains("special / :colon:").should("exist");
 
             commands.pick("source-tree").contains(";semicolon;").click();
-            cy.contains("platinum / special / ;semicolon;").should("exist");
+            cy.contains("special / ;semicolon;").should("exist");
 
             commands.pick("source-tree").contains("@at@").click();
-            cy.contains("platinum / special / @at@").should("exist");
+            cy.contains("special / @at@").should("exist");
 
             commands.pick("source-tree").contains("_underscore_").click();
-            cy.contains("platinum / special / _underscore_").should("exist");
+            cy.contains("special / _underscore_").should("exist");
 
             commands.pick("source-tree").contains("c++").click();
-            cy.contains("platinum / special / c++").should("exist");
+            cy.contains("special / c++").should("exist");
 
             commands.pick("source-tree").contains("faux\\path").click();
-            cy.contains("platinum / special / faux\\path").should("exist");
+            cy.contains("special / faux\\path").should("exist");
 
             commands.pick("source-tree").contains("i need some space").click();
-            cy.contains("platinum / special / i need some space").should(
-              "exist"
-            );
+            cy.contains("special / i need some space").should("exist");
 
             commands
               .pick("source-tree")
               .contains("qs?param1=value?param2=value2#hash")
               .click();
-            cy.contains(
-              "platinum / special / qs?param1=value?param2=value2#hash"
-            ).should("exist");
+            cy.contains("special / qs?param1=value?param2=value2#hash").should(
+              "exist"
+            );
 
             commands.pick("source-tree").contains("~tilde~").click();
-            cy.contains("platinum / special / ~tilde~").should("exist");
+            cy.contains("special / ~tilde~").should("exist");
 
             commands.pick("source-tree").contains("👹👹👹").click();
-            cy.contains("platinum / special / 👹👹👹").should("exist");
+            cy.contains("special / 👹👹👹").should("exist");
           });
         });
       });
