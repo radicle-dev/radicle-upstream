@@ -366,7 +366,7 @@ exitHook(() => {
 export const nodeManagerPlugin = {
   [Commands.StartNode]: async ({
     id,
-    proxyBinaryPath = "proxy/target/debug/radicle-proxy",
+    proxyBinaryPath = "proxy/target/release/radicle-proxy",
   }: StartNodeOptions): Promise<null> => {
     await nodeManager.startNode({ id, proxyBinaryPath });
 

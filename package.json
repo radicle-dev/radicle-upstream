@@ -151,8 +151,8 @@
     "_private:proxy:build": "cd proxy && cargo build --all-features --all-targets",
     "_private:proxy:build:release": "cd proxy && cargo build --release",
     "_private:proxy:clean": "cd proxy && cargo clean",
-    "_private:proxy:start:test": "cd proxy && cargo build --bin git-remote-rad && cargo run -- --test",
-    "_private:proxy:start:test:watch": "cd proxy && cargo build --bin git-remote-rad && cargo watch -x 'run -- --test'",
+    "_private:proxy:start:test": "cd proxy && cargo build --release --bin git-remote-rad && cargo run --release -- --test",
+    "_private:proxy:start:test:watch": "cd proxy && cargo build --release --bin git-remote-rad && cargo watch -x 'run --release -- --test'",
     "_private:rollup:build": "yarn _private:rollup:clean && rollup -c --failAfterWarnings",
     "_private:rollup:watch": "yarn _private:rollup:clean && rollup -c -w",
     "postinstall": "patch-package"
