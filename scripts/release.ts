@@ -130,21 +130,14 @@ const printNextStepsMsg = (
 
             yarn release finalize ${version} ${pullRequestId}
 
-  - [ ] build and notarize macOS package on your macOS machine:
+  - [ ] wait for the macOS and Linux packages to be built on master for the
+        release on our build servers
+  - [ ] upload macOS and Linux packages to https://releases.radicle.xyz
 
-          git checkout v${version}
-          CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \\
-          APPLE_ID="XXXXXXX@monadic.xyz" \\
-          APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \\
-          NOTARIZE=true \\
-          yarn dist
-
-  - [ ] wait for the Linux package to be built on master for the release on CI
-  - [ ] upload Linux and macOS packages to https://releases.radicle.xyz
-
-          (cd dist && curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage")
-          gsutil cp dist/radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
-          gsutil cp dist/radicle-upstream-${version}.dmg gs://releases.radicle.xyz
+          curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage"
+          curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.dmg"
+          gsutil cp radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
+          gsutil cp radicle-upstream-${version}.dmg gs://releases.radicle.xyz
 
   - [ ] create macOS and Linux QA issues in the Upstream repo
 

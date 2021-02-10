@@ -454,6 +454,12 @@ To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
 which allows the user to install and open Upstream without unnecessary
 [security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
 
+NB: from now on this is done by our buildkite macOS build host and no local
+setup is necessary.
+
+If the build host is not available, it is possible to set up and perform
+notarization locally on Apple hardware.
+
 For this we need:
   - a paid Apple developer account registered to Monadic
   - an Apple ID token for allowing the notarization script to run on behalf of
@@ -465,6 +471,18 @@ For this we need:
 
 Once you've created the _Developer ID Application_ certificate, download it
 locally and add it to your keychain by double clicking on the file.
+
+Before building a notarized DMG, make sure you're connected to the internet
+and then run:
+
+```sh
+    git checkout vX.X.X
+    CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \\
+    APPLE_ID="XXXXXXX@monadic.xyz" \\
+    APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \\
+    NOTARIZE=true \\
+    yarn dist
+```
 
 
 ### Publishing a release
