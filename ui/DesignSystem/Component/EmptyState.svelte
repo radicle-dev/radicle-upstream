@@ -63,7 +63,7 @@
 
 <div class="empty-state" data-cy="empty-state" {style}>
   {#if emoji.length}
-    <Emoji {emoji} size="huge" {style} />
+    <Emoji {emoji} size="huge" />
   {:else}
     <Illustration variant={illustration} />
   {/if}

@@ -26,23 +26,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
-  }
-
-  .indicator:hover:before {
-    position: absolute;
-    content: "";
-    width: 4px;
-    height: 32px;
-    background-color: var(--color-foreground-level-5);
-    top: 0px;
-    left: 0px;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
-
-  .indicator :global(div:hover svg) {
-    fill: var(--color-secondary);
+    cursor: help;
   }
 </style>
 

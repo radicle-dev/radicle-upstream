@@ -95,7 +95,7 @@
     max-width: var(--content-max-width);
     margin: 64px auto;
     min-width: var(--content-min-width);
-    padding: 0 var(--content-padding) 4rem var(--content-padding);
+    padding: 0 var(--content-padding);
   }
 
   .sections {
@@ -227,7 +227,10 @@
                 more about seeds</a>
             </p>
           </div>
-          <form class="seed-entry-form" on:submit|preventDefault>
+          <form
+            class="seed-entry-form"
+            on:submit|preventDefault
+            data-cy="seed-entry-form">
             <div class="seed-entry-field">
               <Input.Text
                 dataCy="seed-input"
@@ -250,6 +253,7 @@
                 <div class="seed">
                   <StyledCopyable value={seed} />
                   <Icon.Cross
+                    dataCy="remove-seed"
                     on:click={() => removeSeed(seed)}
                     style="margin-left: 1.5rem; cursor:pointer;" />
                 </div>
