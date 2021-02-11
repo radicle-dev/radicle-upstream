@@ -353,13 +353,14 @@ export function formattedBalance(balance: number): string {
   return balance.toLocaleString("us-US");
 }
 
-export let wallet: Wallet;
+export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
+  ethereum.selectedEnvironment,
+  environment => {
+    const provider = getProvider(environment);
+    if (provider instanceof ethers.providers.JsonRpcProvider) {
+      window.ethereumDebug = new EthereumDebug(provider);
+    }
 
-ethereum.selectedEnvironment.subscribe((environment: ethereum.Environment) => {
-  const provider = getProvider(environment);
-  wallet = build(environment, provider);
-
-  if (provider instanceof ethers.providers.JsonRpcProvider) {
-    window.ethereumDebug = new EthereumDebug(provider);
+    return build(environment, provider);
   }
-});
+);

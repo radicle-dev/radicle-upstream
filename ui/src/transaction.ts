@@ -6,7 +6,7 @@ import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
-import { wallet } from "./wallet";
+import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
 // The store where all managed transactions are stored.
@@ -188,7 +188,9 @@ async function updateStatuses() {
       .filter((tx: Tx) => tx.status === TxStatus.AwaitingInclusion)
       .forEach(async (tx: Tx) => {
         try {
-          const receipt = await wallet.provider.getTransactionReceipt(tx.hash);
+          const receipt = await svelteStore
+            .get(walletStore)
+            .provider.getTransactionReceipt(tx.hash);
           tx.status = status(receipt);
         } catch (_error) {
           // We ignore network failures, therefore keeping the
