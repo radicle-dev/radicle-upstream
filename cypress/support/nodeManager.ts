@@ -34,6 +34,8 @@ interface createCommitOptions {
   monorepoPath: string;
   subject: string;
   passphrase: string;
+  name?: string;
+  email?: string;
 }
 
 const credentialsHelper = (passphrase: string) =>
@@ -42,6 +44,10 @@ const credentialsHelper = (passphrase: string) =>
 export const createCommit = (options: createCommitOptions): void => {
   cy.exec(
     `set -euo pipefail
+export GIT_AUTHOR_NAME="${options.name || "John McPipefail"}"
+export GIT_AUTHOR_EMAIL="${options.email || "john@pipefail.com"}"
+export GIT_COMMITTER_NAME=$GIT_AUTHOR_NAME
+export GIT_COMMITTER_EMAIL=$GIT_AUTHOR_EMAIL
 export PATH=$PWD/proxy/target/release:$PATH
 cd ${options.repositoryPath}
 git commit --allow-empty -m "${options.subject}"

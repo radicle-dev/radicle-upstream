@@ -25,8 +25,16 @@ context("p2p networking", () => {
   });
 
   it("replicates a project from one node to another", () => {
-    const node1User = { handle: "rudolfs", passphrase: "1111" };
-    const node2User = { handle: "abbey", passphrase: "2222" };
+    const node1User = {
+      handle: "rudolfs",
+      fullName: "Rūdolfs Ošiņš",
+      passphrase: "1111",
+    };
+    const node2User = {
+      handle: "abbey",
+      fullName: "Abbey Titcomb",
+      passphrase: "2222",
+    };
 
     commands.withTempDir(tempDirPath => {
       nodeManager.withTwoOnboardedNodes(
@@ -137,6 +145,7 @@ context("p2p networking", () => {
             monorepoPath: maintainerNode.storagePath,
             subject: maintainerCommitSubject,
             passphrase: node1User.passphrase,
+            name: node1User.fullName,
           });
 
           cy.log("refresh the UI, because new commits don't show up otherwise");
@@ -193,6 +202,7 @@ context("p2p networking", () => {
             monorepoPath: contributorNode.storagePath,
             subject: contributorCommitSubject,
             passphrase: node2User.passphrase,
+            name: node2User.fullName,
           });
 
           cy.log("refresh the UI, because new commits don't show up otherwise");
