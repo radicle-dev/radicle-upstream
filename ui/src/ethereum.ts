@@ -64,6 +64,6 @@ export function toHumans(n: ethers.BigNumber | Big): Big {
   return Big(n.toString()).div(TOKEN_DECIMALS).round(2);
 }
 
-export function toDecimals(n: Big): ethers.BigNumber {
+export function fromHumans(n: Big): ethers.BigNumber {
   return ethers.BigNumber.from(n.mul(TOKEN_DECIMALS).round().toString());
 }

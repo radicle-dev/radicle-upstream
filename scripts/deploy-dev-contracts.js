@@ -43,11 +43,11 @@ async function main() {
   await (
     await contracts.rad.transfer(
       devEthAccount,
-      toDecimals(98765, tokenDecimals)
+      fromHumans(98765, tokenDecimals)
     )
   ).wait();
 }
 
-function toDecimals(n, exp) {
+function fromHumans(n, exp) {
   return ethers.BigNumber.from(n).mul(ethers.BigNumber.from(10).pow(exp));
 }
