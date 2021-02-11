@@ -30,7 +30,7 @@ const checkPrerequisites = () => {
     }).toString("utf-8");
   } catch {
     console.log(
-      `\nCould not find the GitHub CLI tool >= ${minHubVersion}.\n` +
+      `\nCould not find the hub CLI tool >= ${minHubVersion}.\n` +
         "You can get it here:\n\n" +
         "  https://github.com/github/hub\n"
     );
