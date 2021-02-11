@@ -134,12 +134,11 @@ context("p2p networking", () => {
             "Commit replication from maintainer to contributor";
 
           cy.exec(
-            `function commands() {cd ${projctPath} && ` +
-              `touch README.md && ` +
-              `git add . && ` +
-              `git commit -m "${maintainerCommitSubject}" && ` +
-              `git -c credential.helper=${credentialHelper} push rad; }; ` +
-              `PATH=$PWD/proxy/target/release:$PATH commands`,
+            `set -euo pipefail
+             export PATH=$PWD/proxy/target/release:$PATH
+             cd ${projctPath} &&
+             git commit --allow-empty -m "${maintainerCommitSubject}" &&
+             git -c credential.helper=${credentialHelper} push rad`,
             {
               env: {
                 RAD_HOME: maintainerNode.storagePath,
@@ -197,13 +196,13 @@ context("p2p networking", () => {
             contributorNodeWorkingDir,
             projectName
           );
+
           cy.exec(
-            `function commands () {cd ${forkedProjectPath} && ` +
-              `touch CONTRIBUTOR.md && ` +
-              `git add . && ` +
-              `git commit -m "${contributorCommitSubject}" && ` +
-              `git -c credential.helper=${contributorCredentialHelper} push rad;}; ` +
-              `PATH=$PWD/proxy/target/release:$PATH commands`,
+            `set -euo pipefail
+             export PATH=$PWD/proxy/target/release:$PATH
+              cd ${forkedProjectPath} &&
+              git commit --allow-empty -m "${contributorCommitSubject}" &&
+              git -c credential.helper=${contributorCredentialHelper} push rad`,
             {
               env: {
                 RAD_HOME: contributorNode.storagePath,
