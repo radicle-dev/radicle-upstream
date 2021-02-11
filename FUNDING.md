@@ -33,9 +33,9 @@ The funding experiences can take place in three different environments:
 
 1. `Local`
 
-  In this environment, the Radicle Contracts are deployed to a local ganache node
-  and we use a local test wallet that can communicate with it. The "DAI" token used
-  in this Environment is our custom Radicle Token. See the
+  In this environment, the Radicle Contracts are deployed to development Ethereum
+  node running locally and we use a local test wallet that can communicate with it.
+  The "DAI" token used in this Environment is our custom Radicle Token. See the
   [local environment](#local-environment) section to learn how to get set up.
 
 
@@ -57,18 +57,6 @@ The funding experiences can take place in three different environments:
   the wallet will plug itself to the Radicle Contracts (to be) deployed in the Ethereum
   Mainnet. This environment is not currently supported.
 
-#### Funding and app environments
-
-The Upstream can be run in production mode (no flags passed) or in development mode.
-On top of that, the app can also be run in experimental mode.
-
-In these different app modes, we will want to run in different Ethereum environments.
-
-Once this feature becomes public, the only environment option for released versions
-will be `Ropsten` during the validation and learning phases and `Mainnet` later on.
-
-In development mode, we can choose between `Local` and `Ropsten` in the Settings.
-Such option becomes available when the Funding Feature flag is enabled.
 
 #### Local environment
 
