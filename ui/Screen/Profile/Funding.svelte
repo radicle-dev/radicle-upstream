@@ -23,6 +23,7 @@
     min-width: var(--content-min-width);
     max-width: var(--content-max-width);
     padding: var(--content-padding);
+    padding-bottom: 9.375rem;
     margin: 0 auto;
 
     display: flex;
