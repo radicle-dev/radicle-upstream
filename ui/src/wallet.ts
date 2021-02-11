@@ -69,7 +69,7 @@ const qrCodeModal = {
     uriStore.set(uri);
     modal.toggle(path.walletQRCode());
   },
-  close: async () => {
+  close: () => {
     // N.B: this is actually called when the connection is established,
     // not when the modal is closed per se.
     modal.hide();
