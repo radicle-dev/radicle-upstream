@@ -1,6 +1,4 @@
 <script lang="ts">
-  import * as svelteStore from "svelte/store";
-
   import {
     selectedEnvironment as ethereumEnvironment,
     supportedNetwork,
@@ -14,7 +12,10 @@
 
   import Pool from "../Funding/Pool.svelte";
 
-  $: wallet = svelteStore.get(store);
+  $: wallet = $store;
+  // Hack to have Svelte working with checking the $wallet variant
+  // and thus be able to access its appropriate fields.
+  $: w = $wallet;
 </script>
 
 <style>
@@ -29,13 +30,13 @@
   }
 </style>
 
-{#if $wallet.status === Status.Connected}
+{#if w.status === Status.Connected}
   <div class="container">
     <WalletPanel
       onDisconnect={wallet.disconnect}
-      account={$wallet.connected.account}
+      account={w.connected.account}
       style={'margin-right: var(--content-padding)'} />
-    {#if supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
+    {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
       <Pool pool={pool.make(wallet)} />
     {:else}
       <WrongNetwork expectedNetwork={supportedNetwork($ethereumEnvironment)} />
