@@ -134,7 +134,7 @@ context("p2p networking", () => {
             "Commit replication from maintainer to contributor";
 
           cy.exec(
-            `commands() {cd ${projctPath} && ` +
+            `function commands() {cd ${projctPath} && ` +
               `touch README.md && ` +
               `git add . && ` +
               `git commit -m "${maintainerCommitSubject}" && ` +
@@ -201,7 +201,7 @@ context("p2p networking", () => {
             projectName
           );
           cy.exec(
-            `commands () {cd ${forkedProjectPath} && ` +
+            `function commands () {cd ${forkedProjectPath} && ` +
               `touch CONTRIBUTOR.md && ` +
               `git add . && ` +
               `git commit -m "${contributorCommitSubject}" && ` +
