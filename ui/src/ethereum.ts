@@ -52,12 +52,18 @@ export const selectedEnvironment = persistentStore.local.writable<Environment>(
   Environment.Ropsten
 );
 
-const TOKEN_SCALE = Big(10).pow(18);
+// EIP-20 token decimals for the tokens we operate with across
+// the diferent environments. We hardcode this value since it
+// is well-settled and since we would need to request it from
+// the token contract for each number conversion otherwise.
+// We have, however, to keep in mind that new versions of the
+// token might change it.
+const TOKEN_DECIMALS = Big(10).pow(18);
 
 export function toHumans(n: ethers.BigNumber | Big): Big {
-  return Big(n.toString()).div(TOKEN_SCALE).round(2);
+  return Big(n.toString()).div(TOKEN_DECIMALS).round(2);
 }
 
 export function toDecimals(n: Big): ethers.BigNumber {
-  return ethers.BigNumber.from(n.mul(TOKEN_SCALE).round().toString());
+  return ethers.BigNumber.from(n.mul(TOKEN_DECIMALS).round().toString());
 }
