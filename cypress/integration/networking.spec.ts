@@ -136,8 +136,8 @@ context("p2p networking", () => {
           cy.exec(
             `set -euo pipefail
              export PATH=$PWD/proxy/target/release:$PATH
-             cd ${projctPath} &&
-             git commit --allow-empty -m "${maintainerCommitSubject}" &&
+             cd ${projctPath}
+             git commit --allow-empty -m "${maintainerCommitSubject}"
              git -c credential.helper=${credentialHelper} push rad`,
             {
               env: {
@@ -200,9 +200,9 @@ context("p2p networking", () => {
           cy.exec(
             `set -euo pipefail
              export PATH=$PWD/proxy/target/release:$PATH
-              cd ${forkedProjectPath} &&
-              git commit --allow-empty -m "${contributorCommitSubject}" &&
-              git -c credential.helper=${contributorCredentialHelper} push rad`,
+             cd ${forkedProjectPath}
+             git commit --allow-empty -m "${contributorCommitSubject}"
+             git -c credential.helper=${contributorCredentialHelper} push rad`,
             {
               env: {
                 RAD_HOME: contributorNode.storagePath,
