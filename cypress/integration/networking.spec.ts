@@ -181,9 +181,6 @@ context("p2p networking", () => {
           });
           commands.pick("checkout-modal-toggle").click();
           commands.pick("choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
           commands.pick("checkout-button").click();
 
           // Wait for checkout to write the files to disk.
