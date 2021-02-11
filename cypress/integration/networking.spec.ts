@@ -133,33 +133,13 @@ context("p2p networking", () => {
           const maintainerCommitSubject =
             "Commit replication from maintainer to contributor";
 
-          cy.exec("echo $PATH").then(result => {
-            console.log("$PATH: ", result.stdout);
-          });
-          cy.exec("echo $PWD").then(result => {
-            console.log("$PWD: ", result.stdout);
-          });
-          cy.exec("ls $PWD/proxy/target/release").then(result => {
-            console.log("ls $PWD/proxy/target/release: ", result.stdout);
-          });
           cy.exec(
-            "PATH=$PWD/proxy/target/release:$PATH which git-remote-rad"
-          ).then(result => {
-            console.log(
-              "STDOUT: PATH=$PWD/proxy/target/release:$PATH which git-remote-rad: ",
-              result.stdout
-            );
-            console.log(
-              "STDERR: PATH=$PWD/proxy/target/release:$PATH which git-remote-rad: ",
-              result.stderr
-            );
-          });
-          cy.exec(
-            `PATH=$PWD/proxy/target/release:$PATH cd ${projctPath} && ` +
+            `commands() {cd ${projctPath} && ` +
               `touch README.md && ` +
               `git add . && ` +
               `git commit -m "${maintainerCommitSubject}" && ` +
-              `git -c credential.helper=${credentialHelper} push rad`,
+              `git -c credential.helper=${credentialHelper} push rad; }; ` +
+              `PATH=$PWD/proxy/target/release:$PATH commands`,
             {
               env: {
                 RAD_HOME: maintainerNode.storagePath,
@@ -221,11 +201,12 @@ context("p2p networking", () => {
             projectName
           );
           cy.exec(
-            `PATH=$PWD/proxy/target/release:$PATH cd ${forkedProjectPath} && ` +
+            `commands () {cd ${forkedProjectPath} && ` +
               `touch CONTRIBUTOR.md && ` +
               `git add . && ` +
               `git commit -m "${contributorCommitSubject}" && ` +
-              `git -c credential.helper=${contributorCredentialHelper} push rad`,
+              `git -c credential.helper=${contributorCredentialHelper} push rad;}; ` +
+              `PATH=$PWD/proxy/target/release:$PATH commands`,
             {
               env: {
                 RAD_HOME: contributorNode.storagePath,
