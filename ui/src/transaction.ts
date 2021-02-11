@@ -213,16 +213,8 @@ function status(receipt: TransactionReceipt): TxStatus {
 
 /* UI helper functions */
 
-// Check if there is an ongoing transaction of a given kind.
-export function ongoing(txKind: TxKind): boolean {
-  const txs: Tx[] = svelteStore.get(store);
-  return txs.some(
-    tx => tx.status === TxStatus.AwaitingInclusion && tx.kind === txKind
-  );
-}
-
 // Middleware criterion to check for an ongoing transaction of a given TxKind.
-export function ongoingB(txKind: TxKind): (tx: Tx) => boolean {
+export function ongoing(txKind: TxKind): (tx: Tx) => boolean {
   return (tx: Tx) =>
     tx.status === TxStatus.AwaitingInclusion && tx.kind === txKind;
 }

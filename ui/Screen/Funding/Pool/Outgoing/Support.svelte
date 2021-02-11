@@ -8,7 +8,7 @@
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as fundingPool from "../../../../src/funding/pool";
-  import { TxKind, ongoingB } from "../../../../src/transaction";
+  import { TxKind, ongoing } from "../../../../src/transaction";
   import { store as txs } from "../../../../src/transaction";
 
   import {
@@ -24,13 +24,13 @@
   $: fundingPool.store.set(pool);
 
   let ongoingTopUp = false;
-  $: ongoingTopUp = $txs.some(ongoingB(TxKind.TopUp));
+  $: ongoingTopUp = $txs.some(ongoing(TxKind.TopUp));
 
   let ongoingWithdraw = false;
-  $: ongoingWithdraw = $txs.some(ongoingB(TxKind.Withdraw));
+  $: ongoingWithdraw = $txs.some(ongoing(TxKind.Withdraw));
 
   let ongoingSupportUpdate = false;
-  $: ongoingSupportUpdate = $txs.some(ongoingB(TxKind.UpdateSupport));
+  $: ongoingSupportUpdate = $txs.some(ongoing(TxKind.UpdateSupport));
 
   let paused = false;
 
