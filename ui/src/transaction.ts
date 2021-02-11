@@ -381,8 +381,6 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
     message = "an unkown transaction error occurred";
   }
 
-  console.error(e);
-
   return {
     code,
     message: `${label}: ${message}`,
