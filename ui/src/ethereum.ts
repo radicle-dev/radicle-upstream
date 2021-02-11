@@ -60,6 +60,10 @@ export const selectedEnvironment = persistentStore.local.writable<Environment>(
 // token might change it.
 const TOKEN_DECIMALS = Big(10).pow(18);
 
+// Big.PE determines the exponent at which its `toString()` representation
+// starts being displayed in exponential notiation. We never want to do that.
+Big.PE = Number.MAX_SAFE_INTEGER;
+
 export function toHumans(n: ethers.BigNumber | Big): Big {
   return Big(n.toString()).div(TOKEN_DECIMALS).round(2);
 }
