@@ -244,7 +244,7 @@ export const receiverStore = svelteStore.writable("");
 
 const constraints = {
   // The constraints for a valid weekly contribution.
-  weeklyContribution: {
+  weeklyBudget: {
     presence: {
       message: "The amount is required",
       allowEmpty: false,
@@ -282,7 +282,7 @@ function isAddress(value: string): Promise<boolean> {
 }
 
 export const weeklyBudgetValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore(constraints.weeklyContribution);
+  return validation.createValidationStore(constraints.weeklyBudget);
 };
 
 // Validate a balance operation, either a 'Top Up' or a 'Cash out'.
