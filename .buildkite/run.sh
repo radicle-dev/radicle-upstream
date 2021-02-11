@@ -32,39 +32,39 @@ echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 
-echo "--- Run proxy docs"
-(
-  cd proxy
-  export RUSTDOCFLAGS="-D intra-doc-link-resolution-failure"
-  time cargo doc --workspace --no-deps --all-features --document-private-items
-)
+# echo "--- Run proxy docs"
+# (
+#   cd proxy
+#   export RUSTDOCFLAGS="-D intra-doc-link-resolution-failure"
+#   time cargo doc --workspace --no-deps --all-features --document-private-items
+# )
 
-echo "--- Run proxy fmt"
-(cd proxy && time cargo fmt --all -- --check)
+# echo "--- Run proxy fmt"
+# (cd proxy && time cargo fmt --all -- --check)
 
-echo "--- Run proxy lints"
-(
-  cd proxy
-  time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
-)
+# echo "--- Run proxy lints"
+# (
+#   cd proxy
+#   time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
+# )
 
-echo "--- Run app eslint checks"
-time yarn lint
+# echo "--- Run app eslint checks"
+# time yarn lint
 
-echo "--- Run app prettier checks"
-time yarn prettier:check
+# echo "--- Run app prettier checks"
+# time yarn prettier:check
 
-echo "--- Check TypeScript"
-time yarn typescript:check
+# echo "--- Check TypeScript"
+# time yarn typescript:check
 
-echo "--- Run proxy tests"
-(
-  cd proxy
-  export RUST_TEST_TIME_UNIT=2000,4000
-  export RUST_TEST_TIME_INTEGRATION=2000,8000
-  cargo build --tests --all --all-features --all-targets
-  timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
-)
+# echo "--- Run proxy tests"
+# (
+#   cd proxy
+#   export RUST_TEST_TIME_UNIT=2000,4000
+#   export RUST_TEST_TIME_INTEGRATION=2000,8000
+#   cargo build --tests --all --all-features --all-targets
+#   timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
+# )
 
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test

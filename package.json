@@ -142,7 +142,7 @@
     "reset:state": "scripts/reset-state.sh",
     "_private:start": "yarn _private:proxy:build:release && yarn run-p --race _private:rollup:watch _private:electron:start",
     "_private:start:dev": "yarn _private:proxy:build && yarn run-p --race _private:rollup:watch _private:electron:start",
-    "_private:test:integration": "wait-on tcp:17246 && yarn _private:rollup:build && yarn run cypress run; status=$?; [ \"$CI\" = true ] && kill `pidof radicle-proxy`; exit $status",
+    "_private:test:integration": "wait-on tcp:17246 && yarn _private:rollup:build && yarn run cypress run --spec 'cypress/integration/networking.spec.ts'; status=$?; [ \"$CI\" = true ] && kill `pidof radicle-proxy`; exit $status",
     "_private:test:integration:debug": "wait-on tcp:17246 && yarn run cypress open",
     "_private:electron:start": "wait-on ./public/bundle.js ./native/main.comp.js && NODE_ENV=development electron .",
     "_private:dist:clean": "rm -rf ./dist && mkdir ./dist && yarn _private:proxy:clean && yarn _private:rollup:clean",
