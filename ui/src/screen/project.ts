@@ -11,7 +11,7 @@ interface Screen {
   peers: project.Peer[];
   peerSelection: project.User[];
   project: project.Project;
-  refresh: AbortController | null;
+  requestInProgress: AbortController | null;
   selectedPeer: project.User;
 }
 
@@ -36,7 +36,7 @@ export const fetch = (projectUrn: Urn): void => {
         peers,
         peerSelection,
         project: current,
-        refresh: null,
+        requestInProgress: null,
         selectedPeer: peerSelection[0],
       });
     })
@@ -48,16 +48,28 @@ export const fetchPeers = (): void => {
 
   if (screen.status === remote.Status.Success) {
     const { data: current } = screen;
+    const { requestInProgress } = current;
+
+    if (requestInProgress) {
+      requestInProgress.abort();
+    }
+
+    const request = new AbortController();
+    screenStore.success({
+      ...current,
+      requestInProgress: request,
+    });
 
     project
-      .fetchPeers(current.project.urn)
-      .then(peers =>
+      .fetchPeers(current.project.urn, request.signal)
+      .then(peers => {
         screenStore.success({
           ...current,
           peers,
           peerSelection: filterPeers(peers),
-        })
-      )
+          requestInProgress: null,
+        });
+      })
       .catch(err => screenStore.error(error.fromException(err)));
   }
 };
@@ -69,17 +81,17 @@ export const refresh = (): void => {
     const { data: current } = screen;
     const {
       project: { urn },
-      refresh,
+      requestInProgress,
     } = current;
 
-    if (refresh) {
-      refresh.abort();
+    if (requestInProgress) {
+      requestInProgress.abort();
     }
 
     const request = new AbortController();
     screenStore.success({
       ...current,
-      refresh: request,
+      requestInProgress: request,
     });
 
     project
@@ -89,7 +101,7 @@ export const refresh = (): void => {
           ...current,
           peers,
           peerSelection: filterPeers(peers),
-          refresh: null,
+          requestInProgress: null,
         })
       )
       .catch(err => screenStore.error(error.fromException(err)));
