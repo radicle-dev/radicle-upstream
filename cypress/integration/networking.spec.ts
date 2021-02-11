@@ -195,7 +195,9 @@ context("p2p networking", () => {
           commands.pick("checkout-button").click();
 
           // Wait for checkout to write the files to disk.
-          cy.wait(1000);
+          commands
+            .pickWithContent(["notification"], `${projectName} checked out to`)
+            .should("exist");
 
           cy.log("add a new commit to the project from contributor's node");
           const contributorCredentialHelper = `'!f() { test "$1" = get && echo "password=${node2User.passphrase}"; }; f'`;
