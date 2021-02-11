@@ -2,8 +2,6 @@ import type { ethers, BigNumber, ContractTransaction, Signer } from "ethers";
 
 import Big from "big.js";
 
-import * as svelteStore from "svelte/store";
-
 import {
   Erc20Pool,
   Erc20Pool__factory as PoolFactory,
@@ -24,38 +22,32 @@ const addresses = {
   },
 };
 
-// Address of the Funding Pool contract
-export const POOL_ADDRESS: svelteStore.Readable<string> = svelteStore.derived(
-  ethereum.selectedEnvironment,
-  $environment => {
-    switch ($environment) {
-      case ethereum.Environment.Local:
-        return addresses.pool.local;
-      case ethereum.Environment.Ropsten:
-        return addresses.pool.ropsten;
-    }
+// Get the address of the Pool Contract for the given environment
+export function poolAddress(environment: ethereum.Environment): string {
+  switch (environment) {
+    case ethereum.Environment.Local:
+      return addresses.pool.local;
+    case ethereum.Environment.Ropsten:
+      return addresses.pool.ropsten;
   }
-);
-
-export function pool(signer: Signer): PoolContract {
-  return new PoolContract(signer, svelteStore.get(POOL_ADDRESS));
 }
 
-// Address of the DAI ERC20 token contract
-export const DAI_TOKEN_ADDRESS: svelteStore.Readable<string> = svelteStore.derived(
-  ethereum.selectedEnvironment,
-  $environment => {
-    switch ($environment) {
-      case ethereum.Environment.Local:
-        return addresses.dai.local;
-      case ethereum.Environment.Ropsten:
-        return addresses.dai.ropsten;
-    }
-  }
-);
+export function pool(signer: Signer, address: string): PoolContract {
+  return new PoolContract(signer, address);
+}
 
-export function daiToken(signer: Signer): ERC20 {
-  return Erc20Factory.connect(svelteStore.get(DAI_TOKEN_ADDRESS), signer);
+// Get the address of the Pool Contract for the given environment
+export function daiTokenAddress(environment: ethereum.Environment): string {
+  switch (environment) {
+    case ethereum.Environment.Local:
+      return addresses.dai.local;
+    case ethereum.Environment.Ropsten:
+      return addresses.dai.ropsten;
+  }
+}
+
+export function daiToken(signer: Signer, address: string): ERC20 {
+  return Erc20Factory.connect(address, signer);
 }
 
 // PoolContract is a wrapper type around the actual contract, `Erc20Pool`,

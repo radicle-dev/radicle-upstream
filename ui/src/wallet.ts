@@ -43,6 +43,7 @@ export interface Account {
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
+  environment: ethereum.Environment;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   provider: ethers.providers.Provider;
@@ -98,7 +99,10 @@ export function build(
     environment,
     disconnect
   );
-  const daiTokenContract = contract.daiToken(signer);
+  const daiTokenContract = contract.daiToken(
+    signer,
+    contract.daiTokenAddress(environment)
+  );
 
   // Connect to a wallet using walletconnect
   async function connect() {
@@ -186,6 +190,7 @@ export function build(
   }
 
   return {
+    environment,
     subscribe: stateStore.subscribe,
     connect,
     disconnect,
