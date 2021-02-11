@@ -21,7 +21,7 @@ const verboseExec = (cmd: string) => {
 };
 
 const checkPrerequisites = () => {
-  const minHubVersion = "2.14.1";
+  const minHubVersion = "2.14.0";
   let result;
 
   try {
