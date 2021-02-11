@@ -134,13 +134,25 @@ context("p2p networking", () => {
             "Commit replication from maintainer to contributor";
 
           cy.exec("echo $PATH").then(result => {
-            console.log(result.stdout);
+            console.log("$PATH: ", result.stdout);
           });
           cy.exec("echo $PWD").then(result => {
-            console.log(result.stdout);
+            console.log("$PWD: ", result.stdout);
           });
           cy.exec("ls $PWD/proxy/target/release").then(result => {
-            console.log(result.stdout);
+            console.log("ls $PWD/proxy/target/release: ", result.stdout);
+          });
+          cy.exec(
+            "PATH=$PWD/proxy/target/release:$PATH which git-remote-rad"
+          ).then(result => {
+            console.log(
+              "STDOUT: PATH=$PWD/proxy/target/release:$PATH which git-remote-rad: ",
+              result.stdout
+            );
+            console.log(
+              "STDERR: PATH=$PWD/proxy/target/release:$PATH which git-remote-rad: ",
+              result.stderr
+            );
           });
           cy.exec(
             `cd ${projctPath} && ` +
