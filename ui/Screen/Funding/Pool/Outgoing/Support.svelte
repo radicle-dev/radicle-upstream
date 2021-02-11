@@ -8,7 +8,8 @@
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as fundingPool from "../../../../src/funding/pool";
-  import * as transaction from "../../../../src/transaction";
+  import { TxKind, ongoingB } from "../../../../src/transaction";
+  import { store as txs } from "../../../../src/transaction";
 
   import {
     budgetStore,
@@ -23,17 +24,15 @@
   $: fundingPool.store.set(pool);
 
   let ongoingTopUp = false;
-  let ongoingWithdraw = false;
-  let ongoingSupportUpdate = false;
-  let paused = false;
+  $: ongoingTopUp = $txs.some(ongoingB(TxKind.TopUp));
 
-  transaction.store.subscribe(_ => {
-    ongoingTopUp = transaction.ongoing(transaction.TxKind.TopUp);
-    ongoingWithdraw = transaction.ongoing(transaction.TxKind.Withdraw);
-    ongoingSupportUpdate = transaction.ongoing(
-      transaction.TxKind.UpdateSupport
-    );
-  });
+  let ongoingWithdraw = false;
+  $: ongoingWithdraw = $txs.some(ongoingB(TxKind.Withdraw));
+
+  let ongoingSupportUpdate = false;
+  $: ongoingSupportUpdate = $txs.some(ongoingB(TxKind.UpdateSupport));
+
+  let paused = false;
 
   // Editing values
   let budget = "";

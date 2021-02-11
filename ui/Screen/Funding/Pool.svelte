@@ -8,7 +8,8 @@
   import * as fundingPool from "../../src/funding/pool";
   import type { Pool } from "../../src/funding/pool";
   import * as path from "../../src/path";
-  import * as transaction from "../../src/transaction";
+  import { TxKind, ongoingB } from "../../src/transaction";
+  import { store as txs } from "../../src/transaction";
 
   export let pool: Pool;
 
@@ -18,9 +19,7 @@
   }
 
   let ongoingCollect = false;
-  transaction.store.subscribe(_ => {
-    ongoingCollect = transaction.ongoing(transaction.TxKind.CollectFunds);
-  });
+  $: ongoingCollect = $txs.some(ongoingB(TxKind.CollectFunds));
 </script>
 
 <style>

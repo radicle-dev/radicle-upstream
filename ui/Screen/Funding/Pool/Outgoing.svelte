@@ -5,16 +5,13 @@
   import Support from "./Outgoing/Support.svelte";
 
   import * as fundingPool from "../../../src/funding/pool";
-  import * as transaction from "../../../src/transaction";
+  import { TxKind, ongoingB } from "../../../src/transaction";
+  import { store as txs } from "../../../src/transaction";
 
   export let pool: fundingPool.Pool;
 
   let ongoingOnboardingTx = false;
-  transaction.store.subscribe(_ => {
-    ongoingOnboardingTx = transaction.ongoing(
-      transaction.TxKind.SupportOnboarding
-    );
-  });
+  $: ongoingOnboardingTx = $txs.some(ongoingB(TxKind.SupportOnboarding));
 </script>
 
 <Remote store={pool.data} let:data={poolData}>

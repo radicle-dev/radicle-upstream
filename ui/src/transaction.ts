@@ -221,6 +221,12 @@ export function ongoing(txKind: TxKind): boolean {
   );
 }
 
+// Middleware criterion to check for an ongoing transaction of a given TxKind.
+export function ongoingB(txKind: TxKind): (tx: Tx) => boolean {
+  return (tx: Tx) =>
+    tx.status === TxStatus.AwaitingInclusion && tx.kind === txKind;
+}
+
 export const colorForStatus = (status: TxStatus): string => {
   switch (status) {
     case TxStatus.AwaitingInclusion:

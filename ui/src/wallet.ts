@@ -242,6 +242,10 @@ class WalletConnectSigner extends ethers.Signer {
   async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
+    // When using a local Ethereum environment, we want our app to send
+    // the transaction to the local Ethereum node and have the external
+    // wallet just sign the transaction. In all other environments, we
+    // want the external wallet to submit the transaction to the network.
     if (this._environment === ethereum.Environment.Local) {
       return super.sendTransaction(transaction);
     }
