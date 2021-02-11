@@ -155,11 +155,11 @@ context("p2p networking", () => {
             );
           });
           cy.exec(
-            `cd ${projctPath} && ` +
+            `PATH=$PWD/proxy/target/release:$PATH cd ${projctPath} && ` +
               `touch README.md && ` +
               `git add . && ` +
               `git commit -m "${maintainerCommitSubject}" && ` +
-              `PATH=$PWD/proxy/target/release:$PATH git -c credential.helper=${credentialHelper} push rad`,
+              `git -c credential.helper=${credentialHelper} push rad`,
             {
               env: {
                 RAD_HOME: maintainerNode.storagePath,
@@ -221,11 +221,11 @@ context("p2p networking", () => {
             projectName
           );
           cy.exec(
-            `cd ${forkedProjectPath} && ` +
+            `PATH=$PWD/proxy/target/release:$PATH cd ${forkedProjectPath} && ` +
               `touch CONTRIBUTOR.md && ` +
               `git add . && ` +
               `git commit -m "${contributorCommitSubject}" && ` +
-              `PATH=$PWD/proxy/target/release:$PATH git -c credential.helper=${contributorCredentialHelper} push rad`,
+              `git -c credential.helper=${contributorCredentialHelper} push rad`,
             {
               env: {
                 RAD_HOME: contributorNode.storagePath,
