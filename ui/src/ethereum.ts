@@ -64,10 +64,10 @@ const TOKEN_DECIMALS = Big(10).pow(18);
 // starts being displayed in exponential notation. We never want to do that.
 Big.PE = Number.MAX_SAFE_INTEGER;
 
-export function toHumans(n: ethers.BigNumber | Big): Big {
+export function toBaseUnit(n: ethers.BigNumber | Big): Big {
   return Big(n.toString()).div(TOKEN_DECIMALS).round(2);
 }
 
-export function fromHumans(n: Big): ethers.BigNumber {
+export function fromBaseUnit(n: Big): ethers.BigNumber {
   return ethers.BigNumber.from(n.mul(TOKEN_DECIMALS).round().toString());
 }

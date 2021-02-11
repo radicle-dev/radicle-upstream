@@ -65,7 +65,7 @@ export class PoolContract {
     receivers: PoolReceiver[]
   ): Promise<ContractTransaction> {
     return this.contract.updateSender(
-      ethereum.fromHumans(topUp),
+      ethereum.fromBaseUnit(topUp),
       0,
       weeklyBudgetToAmountPerBlock(weeklyBudget),
       receivers,
@@ -89,7 +89,7 @@ export class PoolContract {
   async topUp(amount: Big): Promise<ContractTransaction> {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
     return this.contract.updateSender(
-      ethereum.fromHumans(amount),
+      ethereum.fromBaseUnit(amount),
       0,
       UNCHANGED,
       [],
@@ -101,7 +101,7 @@ export class PoolContract {
     const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
     return this.contract.updateSender(
       0,
-      ethereum.fromHumans(amount),
+      ethereum.fromBaseUnit(amount),
       UNCHANGED,
       [],
       []
@@ -123,11 +123,11 @@ export class PoolContract {
   }
 
   async withdrawable(): Promise<Big> {
-    return this.contract.withdrawable().then(ethereum.toHumans);
+    return this.contract.withdrawable().then(ethereum.toBaseUnit);
   }
 
   async collectable(): Promise<Big> {
-    return this.contract.collectable().then(ethereum.toHumans);
+    return this.contract.collectable().then(ethereum.toBaseUnit);
   }
 
   async weeklyBudget(): Promise<Big> {
@@ -149,12 +149,12 @@ export interface PoolReceiver {
 
 // Convert the user-inputed `weeklyBudget` into how much it means per Ethereum block.
 function weeklyBudgetToAmountPerBlock(weeklyBudget: Big): BigNumber {
-  return ethereum.fromHumans(weeklyBudget.div(ESTIMATED_BLOCKS_IN_WEEK));
+  return ethereum.fromBaseUnit(weeklyBudget.div(ESTIMATED_BLOCKS_IN_WEEK));
 }
 
 // The inverse operation of `weeklyBudgetToAmountPerBlock`.
 function amountPerBlockToWeeklyBudget(amountPerBlock: BigNumber): Big {
-  return ethereum.toHumans(
+  return ethereum.toBaseUnit(
     Big(amountPerBlock.toString()).mul(ESTIMATED_BLOCKS_IN_WEEK)
   );
 }

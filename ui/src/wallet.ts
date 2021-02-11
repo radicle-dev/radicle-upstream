@@ -152,7 +152,7 @@ export function build(
       const accountAddress = await signer.getAddress();
       const balance = await daiTokenContract
         .balanceOf(accountAddress)
-        .then(ethereum.toHumans);
+        .then(ethereum.toBaseUnit);
       const chainId = walletConnect.chainId;
 
       const connected = {
