@@ -29,6 +29,31 @@ export const connectTwoNodes = (
   );
 };
 
+interface createCommitOptions {
+  repositoryPath: string;
+  monorepoPath: string;
+  subject: string;
+  passphrase: string;
+}
+
+const credentialsHelper = (passphrase: string) =>
+  `'!f() { test "$1" = get && echo "password=${passphrase}"; }; f'`;
+
+export const createCommit = (options: createCommitOptions): void => {
+  cy.exec(
+    `set -euo pipefail
+export PATH=$PWD/proxy/target/release:$PATH
+cd ${options.repositoryPath}
+git commit --allow-empty -m "${options.subject}"
+git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
+    {
+      env: {
+        RAD_HOME: options.monorepoPath,
+      },
+    }
+  );
+};
+
 export const withTwoOnboardedNodes = (
   options: WithTwoOnboardedNodesOptions,
   callback: (node1: NodeSession, node2: NodeSession) => void

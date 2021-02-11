@@ -129,22 +129,15 @@ context("p2p networking", () => {
 
           cy.log("add a new commit to the project from maintainer's node");
           const projctPath = path.join(maintainerNodeWorkingDir, projectName);
-          const credentialHelper = `'!f() { test "$1" = get && echo "password=${node1User.passphrase}"; }; f'`;
           const maintainerCommitSubject =
             "Commit replication from maintainer to contributor";
 
-          cy.exec(
-            `set -euo pipefail
-             export PATH=$PWD/proxy/target/release:$PATH
-             cd ${projctPath}
-             git commit --allow-empty -m "${maintainerCommitSubject}"
-             git -c credential.helper=${credentialHelper} push rad`,
-            {
-              env: {
-                RAD_HOME: maintainerNode.storagePath,
-              },
-            }
-          );
+          nodeManager.createCommit({
+            repositoryPath: projctPath,
+            monorepoPath: maintainerNode.storagePath,
+            subject: maintainerCommitSubject,
+            passphrase: node1User.passphrase,
+          });
 
           cy.log("refresh the UI, because new commits don't show up otherwise");
           cy.get("body").type("{esc}");
@@ -188,27 +181,19 @@ context("p2p networking", () => {
             .should("exist");
 
           cy.log("add a new commit to the project from contributor's node");
-          const contributorCredentialHelper = `'!f() { test "$1" = get && echo "password=${node2User.passphrase}"; }; f'`;
           const contributorCommitSubject =
             "Commit replication from contributor to maintainer";
-
           const forkedProjectPath = path.join(
             contributorNodeWorkingDir,
             projectName
           );
 
-          cy.exec(
-            `set -euo pipefail
-             export PATH=$PWD/proxy/target/release:$PATH
-             cd ${forkedProjectPath}
-             git commit --allow-empty -m "${contributorCommitSubject}"
-             git -c credential.helper=${contributorCredentialHelper} push rad`,
-            {
-              env: {
-                RAD_HOME: contributorNode.storagePath,
-              },
-            }
-          );
+          nodeManager.createCommit({
+            repositoryPath: forkedProjectPath,
+            monorepoPath: contributorNode.storagePath,
+            subject: contributorCommitSubject,
+            passphrase: node2User.passphrase,
+          });
 
           cy.log("refresh the UI, because new commits don't show up otherwise");
           cy.get("body").type("{esc}");
