@@ -21,19 +21,32 @@ const verboseExec = (cmd: string) => {
 };
 
 const checkPrerequisites = () => {
+  const minHubVersion = "2.14.1";
+  let result;
+
   try {
-    execSync("git --version", {
-      stdio: "ignore",
-    });
-    execSync("hub --version", {
-      stdio: "ignore",
-    });
+    result = execSync("hub --version", {
+      stdio: "pipe",
+    }).toString("utf-8");
   } catch {
-    throw new Error(`
-  Please install missing dependencies:
-    - https://git-scm.com
-    - https://github.com/github/hub
-`);
+    console.log(
+      `\nCould not find the GitHub CLI tool >= ${minHubVersion}.\n` +
+        "You can get it here:\n\n" +
+        "  https://github.com/github/hub\n"
+    );
+    process.exit(1);
+  }
+
+  const match = result.match("hub version (.*)");
+
+  if (match) {
+    const version = semver.parse(match[1]) || "0.0.0";
+    if (semver.lt(version, minHubVersion)) {
+      console.log(
+        `\nPlease upgrade your hub CLI tool to the minimum required version of ${minHubVersion}.\n`
+      );
+      process.exit(1);
+    }
   }
 };
 
