@@ -21,6 +21,10 @@ pub struct Environment {
     pub test_mode: bool,
     /// If true RAD_HOME will be used to store test data.
     pub test_use_rad_home: bool,
+    #[allow(dead_code)]
+    /// We need to keep the temp_dir handle alive throughout the lifetime of Environment, otherwise
+    /// once it goes out of scope, the underlying directory gets deleted
+    temp_dir: Option<tempfile::TempDir>,
 }
 
 /// Error returned when creating a new [`Environment`].
@@ -63,6 +67,7 @@ impl Environment {
                     test_mode,
                     test_use_rad_home,
                     store_path,
+                    temp_dir: None,
                 })
             } else {
                 let temp_dir = tempfile::tempdir()?;
@@ -76,6 +81,7 @@ impl Environment {
                     test_mode,
                     test_use_rad_home,
                     store_path,
+                    temp_dir: Some(temp_dir),
                 })
             }
         } else {
@@ -89,6 +95,7 @@ impl Environment {
                 test_mode,
                 test_use_rad_home,
                 store_path,
+                temp_dir: None,
             })
         }
     }
