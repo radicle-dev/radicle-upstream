@@ -117,7 +117,7 @@ class Node {
   async start() {
     this.logger.log("starting node");
 
-    fs.mkdirsSync(this.radHome);
+    await fs.mkdirs(this.radHome);
 
     const process = childProcess.spawn(
       this.proxyBinaryPath,
@@ -132,7 +132,7 @@ class Node {
 
     process.on("exit", async () => {
       this.logger.log(`node terminated`);
-      this.cleanup();
+      await this.cleanup();
     });
 
     process.stderr.setEncoding("utf8");
@@ -224,9 +224,9 @@ class Node {
     }
   }
 
-  private cleanup(): void {
+  private async cleanup(): Promise<void> {
     this.logger.log("cleaning up state");
-    fs.removeSync(this.radHome);
+    await fs.remove(this.radHome);
   }
 }
 
