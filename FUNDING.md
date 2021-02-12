@@ -1,6 +1,6 @@
 ## Radicle Funding
 
-Welcome to the developers documentation on the Radicle Funding.
+Welcome to the developer's documentation on the Radicle Funding.
 
 ### Overview
 
@@ -35,21 +35,22 @@ The funding experiences can take place in three different environments:
 
   In this environment, the Radicle Contracts are deployed to development Ethereum
   node running locally and we use a local test wallet that can communicate with it.
-  The "DAI" token used in this Environment is our custom Radicle Token. See the
+  The "DAI" token used in this environment is our custom Radicle Token. See the
   [local environment](#local-environment) section to learn how to get set up.
 
 
 2. `Ropsten`
 
   In this environment, the app will plug itself with the Radicle Contracts deployed
-  in the Ropsten network and will use Infura as a service provider. A real wallet
-  is recommended to ensure we are testing using real-world conditions. You will
-  need fake Ropsten Eth (aka `rEth`) to pay the incurring transactions fees.
+  in the Ropsten network and Infura is used as a service provider. We recommend that
+  you use a real wallet to ensure that we are testing using real-world conditions.
+
+  You will need fake Ropsten Eth (aka `rEth`) to pay the incurring transactions fees.
   No real money will be charged.
 
   As in the `Local` environment, here the "DAI" token used is also our custom Radicle
-  Token, deployed in the Ropsten network. To get some tokens into our account to play
-  around, reach out to the team and we will send you some.
+  Token, deployed in the Ropsten network. Reach out to the team to get some Radicle
+  Tokens into your account.
 
 3. `Mainnet`
 
@@ -71,12 +72,12 @@ In the local environment, we set up these three pieces as follows:
 
 - A local ganache instance
 
-  Ganache provides a local Ethereum RPC client for testing and development. The
-  Radicle Contracts are deployed to this instance. Here, we also set an initial
+  Ganache provides a local Ethereum RPC client for testing and development. We deploy the
+  Radicle Contracts to this instance. Here, we also set an initial
   balance of the account we choose for development purposes.
 
   For peace of mind, note that this instance has no connection to other networks
-  such as mainnet or testnet. Therefore, no real assets are ever used. Feel free
+  such as mainnet or testnet. Therefore, no real assets used ever. Feel free
   to play around!
 
 ![Radicle Funding Development Set up][dev-setup]
