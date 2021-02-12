@@ -40,13 +40,22 @@ const checkPrerequisites = () => {
   const match = result.match("hub version (.*)");
 
   if (match) {
-    const version = semver.parse(match[1]) || "0.0.0";
+    const version = semver.parse(match[1]);
+
+    if (!version) {
+      throw new Error("Couldn't parse the version number");
+    }
+
     if (semver.lt(version, minHubVersion)) {
       console.log(
         `\nPlease upgrade your hub CLI tool to the minimum required version of ${minHubVersion}.\n`
       );
       process.exit(1);
     }
+  } else {
+    throw new Error(
+      "Couldn't find version number in the `hub --version` output"
+    );
   }
 };
 
