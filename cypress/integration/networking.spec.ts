@@ -209,15 +209,15 @@ context("p2p networking", () => {
           cy.get("body").type("{esc}");
           commands.pick("sidebar", "profile").click();
 
-          cy.log('the project moved to the "Projects"');
+          cy.log('project moved to the "Projects" tab');
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
-          cy.log('the "Fork" button is now called "Checkout"');
+          cy.log('"Fork" button is now called "Checkout"');
           commands
             .pickWithContent(["checkout-modal-toggle"], "Checkout")
             .should("exist");
 
-          cy.log("the contributor is pre-selected in the peer selector");
+          cy.log("contributor is pre-selected in the peer selector");
           commands.pickWithContent(["peer-selector"], "abbey").should("exist");
           commands.pickWithContent(["peer-selector"], "you").should("exist");
           commands.pick("commits-tab").click();
@@ -225,7 +225,7 @@ context("p2p networking", () => {
             .pickWithContent(["commits-page"], contributorCommitSubject)
             .should("exist");
 
-          cy.log("test that the maintainer received the contributor's commit");
+          cy.log("maintainer received the contributor's commit");
           nodeManager.asNode(maintainerNode);
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
           commands.pick("peer-selector").click();
