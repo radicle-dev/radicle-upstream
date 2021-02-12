@@ -1,4 +1,4 @@
-import * as commands from "../support/commands";
+import * as cmd from "../support/commands";
 import * as path from "path";
 import * as ipcStub from "../support/ipc-stub";
 import * as nodeManager from "../support/nodeManager";
@@ -13,11 +13,11 @@ context("p2p networking", () => {
           { node1User: {}, node2User: {} },
           (node1, node2) => {
             nodeManager.asNode(node1);
-            commands.pick("connection-status-offline").should("exist");
+            cmd.pick("connection-status-offline").should("exist");
             nodeManager.connectTwoNodes(node1, node2);
-            commands.pick("connection-status-online").should("exist");
+            cmd.pick("connection-status-online").should("exist");
             nodeManager.asNode(node2);
-            commands.pick("connection-status-online").should("exist");
+            cmd.pick("connection-status-online").should("exist");
           }
         );
       }
@@ -36,7 +36,7 @@ context("p2p networking", () => {
       passphrase: "2222",
     };
 
-    commands.withTempDir(tempDirPath => {
+    cmd.withTempDir(tempDirPath => {
       nodeManager.withTwoOnboardedNodes(
         {
           maintainer,
@@ -57,22 +57,22 @@ context("p2p networking", () => {
           });
           const projectName = "new-fancy-project.xyz";
 
-          commands.pick("new-project-button").click();
-          commands.pasteInto(["name"], projectName);
+          cmd.pick("new-project-button").click();
+          cmd.pasteInto(["name"], projectName);
 
-          commands.pick("new-project").click();
-          commands.pick("new-project", "choose-path-button").click();
+          cmd.pick("new-project").click();
+          cmd.pick("new-project", "choose-path-button").click();
           // Make sure UI has time to update path value from stub,
           // this prevents this spec from failing on CI.
           cy.wait(500);
 
-          commands.pick("create-project-button").click();
+          cmd.pick("create-project-button").click();
 
-          commands
+          cmd
             .pickWithContent(["project-screen", "header"], "new-fancy-project")
             .should("exist");
 
-          commands.pick("project-screen", "header", "urn").then(el => {
+          cmd.pick("project-screen", "header", "urn").then(el => {
             const urn = el.attr("title");
             if (!urn) {
               throw new Error("Could not find URN");
@@ -81,14 +81,14 @@ context("p2p networking", () => {
             nodeManager.asNode(contributorNode);
 
             cy.log("navigate to the 'Following' tab");
-            commands.pick("following-tab").click();
-            commands.pick("sidebar", "search").click();
-            commands.pasteInto(["search-input"], urn);
-            commands.pick("follow-toggle").click();
+            cmd.pick("following-tab").click();
+            cmd.pick("sidebar", "search").click();
+            cmd.pasteInto(["search-input"], urn);
+            cmd.pick("follow-toggle").click();
           });
 
           cy.log("project moved out of the waiting area and is available");
-          commands
+          cmd
             .pick(
               "following-tab-contents",
               "project-list-entry-new-fancy-project.xyz"
@@ -96,37 +96,33 @@ context("p2p networking", () => {
             .click();
 
           cy.log("maintainer shows up in the peer selector");
-          commands
-            .pickWithContent(["peer-selector"], "rudolfs")
-            .should("exist");
-          commands
-            .pickWithContent(["peer-selector"], "maintainer")
-            .should("exist");
-          commands.pick("peer-selector").click();
+          cmd.pickWithContent(["peer-selector"], "rudolfs").should("exist");
+          cmd.pickWithContent(["peer-selector"], "maintainer").should("exist");
+          cmd.pick("peer-selector").click();
 
           cy.log("current user does not show up in the peer selector");
-          commands
+          cmd
             .pickWithContent(["peer-dropdown-container"], "abbey")
             .should("not.exist");
 
           cy.log("add contributor remote on maintainer's node");
           nodeManager.asNode(maintainerNode);
 
-          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          cmd.pick("project-list-entry-new-fancy-project.xyz").click();
 
-          commands.pick("peer-selector").click();
-          commands.pick("manage-remotes").click();
-          commands.pick("followed-peers", "peer-abbey").should("not.exist");
+          cmd.pick("peer-selector").click();
+          cmd.pick("manage-remotes").click();
+          cmd.pick("followed-peers", "peer-abbey").should("not.exist");
 
-          commands.pasteInto(["peer-input"], contributorNode.peerId);
-          commands.pick("follow-button").click();
+          cmd.pasteInto(["peer-input"], contributorNode.peerId);
+          cmd.pick("follow-button").click();
 
           cy.log("remote shows up in the waiting area");
           const shortenedPeerId = contributorNode.peerId.slice(0, 7);
-          commands
+          cmd
             .pickWithContent(["followed-peers", "peer-abbey"], shortenedPeerId)
             .should("exist");
-          commands
+          cmd
             .pickWithContent(
               ["followed-peers", "peer-abbey", "follow-toggle"],
               "Following"
@@ -150,22 +146,22 @@ context("p2p networking", () => {
 
           cy.log("refresh the UI for the new commit to show up");
           cy.get("body").type("{esc}");
-          commands.pick("sidebar", "profile").click();
+          cmd.pick("sidebar", "profile").click();
 
           cy.log("make sure new commit shows up in the maintainer's UI");
-          commands.pick("project-list-entry-new-fancy-project.xyz").click();
-          commands.pick("commits-tab").click();
-          commands
+          cmd.pick("project-list-entry-new-fancy-project.xyz").click();
+          cmd.pick("commits-tab").click();
+          cmd
             .pickWithContent(["commits-page"], maintainerCommitSubject)
             .should("exist");
 
           cy.log("check that the commit shows up in the contributor's UI");
           nodeManager.asNode(contributorNode);
 
-          commands.pick("following-tab").click();
-          commands.pick("project-list-entry-new-fancy-project.xyz").click();
-          commands.pick("commits-tab").click();
-          commands
+          cmd.pick("following-tab").click();
+          cmd.pick("project-list-entry-new-fancy-project.xyz").click();
+          cmd.pick("commits-tab").click();
+          cmd
             .pickWithContent(["commits-page"], maintainerCommitSubject)
             .should("exist");
 
@@ -181,12 +177,12 @@ context("p2p networking", () => {
           ipcStub.getStubs().then(stubs => {
             stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(contributorNodeWorkingDir);
           });
-          commands.pick("checkout-modal-toggle").click();
-          commands.pick("choose-path-button").click();
-          commands.pick("checkout-button").click();
+          cmd.pick("checkout-modal-toggle").click();
+          cmd.pick("choose-path-button").click();
+          cmd.pick("checkout-button").click();
 
           cy.log("make sure checkout finishes writing to disk");
-          commands
+          cmd
             .pickWithContent(["notification"], `${projectName} checked out to`)
             .should("exist");
 
@@ -208,33 +204,31 @@ context("p2p networking", () => {
 
           cy.log("refresh the UI for the new commit to show up");
           cy.get("body").type("{esc}");
-          commands.pick("sidebar", "profile").click();
+          cmd.pick("sidebar", "profile").click();
 
           cy.log('project moved to the "Projects" tab');
-          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          cmd.pick("project-list-entry-new-fancy-project.xyz").click();
 
           cy.log('"Fork" button now is called "Checkout"');
-          commands
+          cmd
             .pickWithContent(["checkout-modal-toggle"], "Checkout")
             .should("exist");
 
           cy.log("contributor is pre-selected in the peer selector");
-          commands.pickWithContent(["peer-selector"], "abbey").should("exist");
-          commands.pickWithContent(["peer-selector"], "you").should("exist");
-          commands.pick("commits-tab").click();
-          commands
+          cmd.pickWithContent(["peer-selector"], "abbey").should("exist");
+          cmd.pickWithContent(["peer-selector"], "you").should("exist");
+          cmd.pick("commits-tab").click();
+          cmd
             .pickWithContent(["commits-page"], contributorCommitSubject)
             .should("exist");
 
           cy.log("maintainer received the contributor's commit");
           nodeManager.asNode(maintainerNode);
-          commands.pick("project-list-entry-new-fancy-project.xyz").click();
-          commands.pick("peer-selector").click();
-          commands
-            .pickWithContent(["peer-dropdown-container"], "abbey")
-            .click();
-          commands.pick("commits-tab").click();
-          commands
+          cmd.pick("project-list-entry-new-fancy-project.xyz").click();
+          cmd.pick("peer-selector").click();
+          cmd.pickWithContent(["peer-dropdown-container"], "abbey").click();
+          cmd.pick("commits-tab").click();
+          cmd
             .pickWithContent(["commits-page"], contributorCommitSubject)
             .should("exist");
         }
