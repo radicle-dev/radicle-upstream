@@ -145,17 +145,24 @@ For this we need:
 Once you've created the _Developer ID Application_ certificate, download it
 locally and add it to your keychain by double clicking on the file.
 
-Before building a notarized DMG, make sure you're connected to the internet
-and then run:
+Before building a notarized DMG, make sure you're connected to the internet and
+then run:
 
 ```sh
 git checkout vX.X.X
-CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \\
-APPLE_ID="XXXXXXX@monadic.xyz" \\
-APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \\
-NOTARIZE=true \\
+CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
+APPLE_ID="XXXXXXX@monadic.xyz" \
+APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
+NOTARIZE=true \
 yarn dist
 ```
+
+Don't forget to replace the `X` in the template with the real values:
+  - `vX.X.X` is the version you'd like to build and notarize
+  - `CSC_NAME` is the "Developer ID Application" certificate ID
+  - `APPLE_ID` your Apple account ID
+  - `APPLE_ID_PASSWORD` your Apple account token that you generated in the
+    steps above
 
 
 ### Scripts
