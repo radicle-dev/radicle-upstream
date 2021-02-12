@@ -119,10 +119,6 @@ class Node {
 
     fs.mkdirsSync(this.storagePath);
 
-    const envCopy: NodeJS.ProcessEnv = {};
-    Object.assign(envCopy, global.process.env);
-    envCopy["RAD_HOME"] = this.storagePath;
-
     const process = childProcess.spawn(
       this.proxyBinaryPath,
       [
@@ -131,7 +127,7 @@ class Node {
         "--peer-listen",
         `${HOST}:${this.peerPort}`,
       ],
-      { env: envCopy }
+      { env: { ...global.process.env, RAD_HOME: this.storagePath } }
     );
 
     process.on("exit", async () => {
