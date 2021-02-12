@@ -39,8 +39,8 @@ context("p2p networking", () => {
     cmd.withTempDir(tempDirPath => {
       nodeManager.withTwoOnboardedNodes(
         {
-          maintainer,
-          contributor,
+          node1User: maintainer,
+          node2User: contributor,
         },
         (maintainerNode, contributorNode) => {
           nodeManager.connectTwoNodes(maintainerNode, contributorNode);
