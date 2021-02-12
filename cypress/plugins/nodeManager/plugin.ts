@@ -4,7 +4,9 @@ import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
 import type { NodeSession, PeerId } from "./shared";
-import { Commands } from "./shared";
+import { Commands, CYPRESS_WORKSPACE_PATH } from "./shared";
+import * as uuid from "uuid";
+import * as fs from "fs-extra";
 
 type NodeId = number;
 type PeerAddress = string;
@@ -69,6 +71,7 @@ class Node {
   httpPort: number;
   peerPort: number;
   proxyBinaryPath: string;
+  radHome: string;
 
   get authToken(): AuthToken {
     if (this.state.kind !== StateKind.Onboarded) {
@@ -108,25 +111,28 @@ class Node {
     this.httpPort = options.id;
     this.peerPort = options.id;
     this.proxyBinaryPath = path.join(ROOT_PATH, options.proxyBinaryPath);
+    this.radHome = path.join(CYPRESS_WORKSPACE_PATH, uuid.v4());
   }
 
   async start() {
     this.logger.log("starting node");
 
+    await fs.mkdirs(this.radHome);
+
     const process = childProcess.spawn(
       this.proxyBinaryPath,
       [
-        "--test",
         "--http-listen",
         `${HOST}:${this.httpPort}`,
         "--peer-listen",
         `${HOST}:${this.peerPort}`,
       ],
-      {}
+      { env: { ...global.process.env, RAD_HOME: this.radHome } }
     );
 
     process.on("exit", async () => {
       this.logger.log(`node terminated`);
+      await this.cleanup();
     });
 
     process.stderr.setEncoding("utf8");
@@ -216,6 +222,11 @@ class Node {
     } else {
       this.logger.log("ignoring stop node command, node wasn't running");
     }
+  }
+
+  private async cleanup(): Promise<void> {
+    this.logger.log("cleaning up state");
+    await fs.remove(this.radHome);
   }
 }
 
@@ -320,6 +331,7 @@ class NodeManager {
           authToken: node.authToken,
           peerId: node.peerId,
           httpPort: node.httpPort,
+          radHome: node.radHome,
         });
       }
     });
@@ -348,7 +360,7 @@ exitHook(() => {
 export const nodeManagerPlugin = {
   [Commands.StartNode]: async ({
     id,
-    proxyBinaryPath = "target/debug/radicle-proxy",
+    proxyBinaryPath = "target/release/radicle-proxy",
   }: StartNodeOptions): Promise<null> => {
     await nodeManager.startNode({ id, proxyBinaryPath });
 
