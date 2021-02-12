@@ -121,6 +121,43 @@ You can build and package Upstream with: `yarn dist`. The generated package
 will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
 
 
+#### Apple notarization
+
+To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
+which allows users to install and open Upstream without unnecessary
+[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
+
+This notarization step is automated using our custom macOS build host for
+releases.
+
+However, if the build host is not available, it is possible to set up and
+perform notarization locally on Apple hardware.
+
+For this we need:
+  - a paid Apple developer account registered to Monadic
+  - an Apple ID token for allowing the notarization script to run on behalf of
+    our developer account
+    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
+  - a valid "Developer ID Application" certificate
+    - [Certificates Add][ca] -> Developer ID Application
+      **Note:** this can only be created via the company account holder
+
+Once you've created the _Developer ID Application_ certificate, download it
+locally and add it to your keychain by double clicking on the file.
+
+Before building a notarized DMG, make sure you're connected to the internet
+and then run:
+
+```sh
+git checkout vX.X.X
+CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \\
+APPLE_ID="XXXXXXX@monadic.xyz" \\
+APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \\
+NOTARIZE=true \\
+yarn dist
+```
+
+
 ### Scripts
 
 To get a list of all available script commands, run: `yarn run`.
@@ -446,43 +483,6 @@ Then you'll have to create a _Personal access token_ for it in the
 [GitHub Developer settings][gt] page and authenticate the CLI tool once
 by running any command that does a request to GitHub, like so: `hub api`.
 You'll be asked to provide your GitHub login and the access token.
-
-
-#### Apple notarization
-
-To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
-which allows the user to install and open Upstream without unnecessary
-[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
-
-This notarization step is automated using our custom macOS build host, no local
-setup is necessary.
-
-If the build host is not available, it is possible to set up and perform
-notarization locally on Apple hardware.
-
-For this we need:
-  - a paid Apple developer account registered to Monadic
-  - an Apple ID token for allowing the notarization script to run on behalf of
-    our developer account
-    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
-  - a valid "Developer ID Application" certificate
-    - [Certificates Add][ca] -> Developer ID Application
-      **Note:** this can only be created via the company account holder
-
-Once you've created the _Developer ID Application_ certificate, download it
-locally and add it to your keychain by double clicking on the file.
-
-Before building a notarized DMG, make sure you're connected to the internet
-and then run:
-
-```sh
-git checkout vX.X.X
-CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \\
-APPLE_ID="XXXXXXX@monadic.xyz" \\
-APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \\
-NOTARIZE=true \\
-yarn dist
-```
 
 
 ### Publishing a release
