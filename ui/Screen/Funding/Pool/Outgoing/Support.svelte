@@ -272,8 +272,8 @@
           the users you support.
         {:else}
           <Icon.InfoCircle />
-          To stop or pause your support, set the monthly contribution to 0 or
-          withdraw all the remaining balance.
+          To stop or pause your support, set the weekly budget to 0 or withdraw
+          all the remaining balance.
         {/if}
       </div>
     </div>

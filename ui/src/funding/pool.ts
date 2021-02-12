@@ -21,7 +21,7 @@ export interface Pool {
   // Onboard the user's pool with the intial values
   onboard(topUp: Big, weeklyBudget: Big, receivers: Receivers): Promise<void>;
 
-  // Update the contribution per block and the list of receivers.
+  // Update the weekly budget and the list of receivers.
   updateSettings(weeklyBudget: Big, receivers: Receivers): Promise<void>;
 
   // Adds funds to the pool. Returns once the transaction has been
@@ -243,7 +243,7 @@ export const receiverStore = svelteStore.writable("");
  */
 
 const constraints = {
-  // The constraints for a valid weekly contribution.
+  // The constraints for a valid weekly budget.
   weeklyBudget: {
     presence: {
       message: "The amount is required",
