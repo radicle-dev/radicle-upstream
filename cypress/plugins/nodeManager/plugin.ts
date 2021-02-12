@@ -216,9 +216,7 @@ class Node {
   stop(): void {
     if (this.state.kind !== StateKind.Configured) {
       this.logger.log("stopping node");
-      if (!this.state.process.kill()) {
-        this.logger.log(`could not stop process ${this.state.process.pid}`);
-      }
+      this.state.process.send("shutdown");
     } else {
       this.logger.log("ignoring stop node command, node wasn't running");
     }
