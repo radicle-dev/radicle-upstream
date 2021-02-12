@@ -31,7 +31,7 @@ export const connectTwoNodes = (
 
 interface createCommitOptions {
   repositoryPath: string;
-  monorepoPath: string;
+  radHome: string;
   subject: string;
   passphrase: string;
   name?: string;
@@ -54,7 +54,7 @@ git commit --allow-empty -m "${options.subject}"
 git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
     {
       env: {
-        RAD_HOME: options.monorepoPath,
+        RAD_HOME: options.radHome,
       },
     }
   );

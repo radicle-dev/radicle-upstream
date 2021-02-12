@@ -13,7 +13,7 @@ export interface NodeSession {
   peerId: PeerId;
   authToken: string;
   httpPort: number;
-  storagePath: string;
+  radHome: string;
 }
 
 export enum Commands {

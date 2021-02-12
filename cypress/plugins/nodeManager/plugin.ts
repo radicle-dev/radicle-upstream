@@ -71,7 +71,7 @@ class Node {
   httpPort: number;
   peerPort: number;
   proxyBinaryPath: string;
-  storagePath: string;
+  radHome: string;
 
   get authToken(): AuthToken {
     if (this.state.kind !== StateKind.Onboarded) {
@@ -111,13 +111,13 @@ class Node {
     this.httpPort = options.id;
     this.peerPort = options.id;
     this.proxyBinaryPath = path.join(ROOT_PATH, options.proxyBinaryPath);
-    this.storagePath = path.join(CYPRESS_WORKSPACE_PATH, uuid.v4());
+    this.radHome = path.join(CYPRESS_WORKSPACE_PATH, uuid.v4());
   }
 
   async start() {
     this.logger.log("starting node");
 
-    fs.mkdirsSync(this.storagePath);
+    fs.mkdirsSync(this.radHome);
 
     const process = childProcess.spawn(
       this.proxyBinaryPath,
@@ -127,7 +127,7 @@ class Node {
         "--peer-listen",
         `${HOST}:${this.peerPort}`,
       ],
-      { env: { ...global.process.env, RAD_HOME: this.storagePath } }
+      { env: { ...global.process.env, RAD_HOME: this.radHome } }
     );
 
     process.on("exit", async () => {
@@ -226,7 +226,7 @@ class Node {
 
   private cleanup(): void {
     this.logger.log("cleaning up state");
-    fs.removeSync(this.storagePath);
+    fs.removeSync(this.radHome);
   }
 }
 
@@ -331,7 +331,7 @@ class NodeManager {
           authToken: node.authToken,
           peerId: node.peerId,
           httpPort: node.httpPort,
-          storagePath: node.storagePath,
+          radHome: node.radHome,
         });
       }
     });

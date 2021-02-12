@@ -142,7 +142,7 @@ context("p2p networking", () => {
 
           nodeManager.createCommit({
             repositoryPath: projctPath,
-            monorepoPath: maintainerNode.storagePath,
+            radHome: maintainerNode.radHome,
             subject: maintainerCommitSubject,
             passphrase: maintainer.passphrase,
             name: maintainer.fullName,
@@ -200,7 +200,7 @@ context("p2p networking", () => {
 
           nodeManager.createCommit({
             repositoryPath: forkedProjectPath,
-            monorepoPath: contributorNode.storagePath,
+            radHome: contributorNode.radHome,
             subject: contributorCommitSubject,
             passphrase: contributor.passphrase,
             name: contributor.fullName,
