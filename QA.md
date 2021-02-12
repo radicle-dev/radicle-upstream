@@ -81,35 +81,6 @@
   - [ ] The version number in the _About Radicle Upstream_ dialog
 
 
-### Replicating projects
-
-- [ ] Replicate a project from seedling.radicle.xyz
-  - [ ] Pick a project from seedling.radicle.xyz and search for it by pasting
-        the `Radicle ID` of the project into the search bar by pressing
-        <kbd>⌘</kbd>+<kbd>p</kbd>, then click the _Follow_ button
-    - [ ] The project shows up in the _Following_ tab of the profile screen in
-          the waiting area
-    - [ ] After a while the project is replicated and moves out of the waiting
-          area
-    - [ ] When going to the Project source screen, the maintainer is selected
-          in the peer selector
-      - [ ] Your identity does not show up in the peer selector
-  - [ ] Set up the remote helper according to the instructions in the _Fork_
-        modal hint
-  - [ ] Fork the replicated project to a local directory
-    - [ ] The forked project should now appear in the _Projects_ tab of the
-          profile screen
-    - [ ] Your identity shows up in the peer selector and is selected by
-          default instead of the maintainer's identity
-    - [ ] The button is now called _Checkout_ instead of _Fork_
-    - [ ] Create a commit and publish your chages via `git rad push`
-      - [ ] The published commit appears in the _Commits_ tab of the project
-  - [ ] Add a remote that doesn't track the project, e.g.
-        `hync6jo9q9n4rfgag3o99gann391nsjhuq3oaemoe13oyn3gruwrgh`
-    - [ ] Shows the remote in the _Still looking…_ section
-  - [ ] Clicking the _Unfollow_ button removes the remote
-
-
 ### Lifecycle
 
 - [ ] Preferences are persisted across app reboots

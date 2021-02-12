@@ -1,12 +1,6 @@
 import * as uuid from "uuid";
 import * as path from "path";
-
-// A directory that can be used for temporary test data.
-//
-// It is located within this repository so that there is no extra setup necessary
-// when using it locally or on CI. To avoid committing any left-over temp data
-// this directory ignored via .gitignore.
-const CYPRESS_WORKSPACE_PATH = path.join(__dirname, "../../cypress/workspace");
+import { CYPRESS_WORKSPACE_PATH } from "../plugins/nodeManager/shared";
 
 export const resetProxyState = (): Cypress.Chainable<void> =>
   requestOk({ url: "http://localhost:17246/v1/control/reset" });
@@ -17,6 +11,14 @@ export const sealKeystore = (): Cypress.Chainable<void> =>
 export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
   const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
   return cy.get(selectorString);
+};
+
+// Selects the input element with the given `data-cy` ID and pastes
+// the value inside
+export const pasteInto = (ids: string[], value: string): void => {
+  pick(...ids)
+    .invoke("val", value)
+    .trigger("input");
 };
 
 export const withTempDir = (callback: (tempDirPath: string) => void): void => {

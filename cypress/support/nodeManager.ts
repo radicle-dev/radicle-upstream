@@ -7,9 +7,14 @@ const withNodeManager = (callback: () => void): void => {
   cy.task(Commands.StopAllNodes, {}, { log: false });
 };
 
+interface OnboardedUser {
+  handle?: string;
+  passphrase?: string;
+}
+
 interface WithTwoOnboardedNodesOptions {
-  node1Handle?: string;
-  node2Handle?: string;
+  node1User: OnboardedUser;
+  node2User: OnboardedUser;
 }
 
 export const connectTwoNodes = (
@@ -21,6 +26,37 @@ export const connectTwoNodes = (
     Commands.ConnectNodes,
     { nodeIds: [node1.id, node2.id] },
     { log: false }
+  );
+};
+
+interface createCommitOptions {
+  repositoryPath: string;
+  radHome: string;
+  subject: string;
+  passphrase: string;
+  name?: string;
+  email?: string;
+}
+
+const credentialsHelper = (passphrase: string) =>
+  `'!f() { test "$1" = get && echo "password=${passphrase}"; }; f'`;
+
+export const createCommit = (options: createCommitOptions): void => {
+  cy.exec(
+    `set -euo pipefail
+export PATH=$PWD/proxy/target/release:$PATH
+cd ${options.repositoryPath}
+git commit --allow-empty -m "${options.subject}"
+git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
+    {
+      env: {
+        RAD_HOME: options.radHome,
+        GIT_AUTHOR_NAME: options.name || "John McPipefail",
+        GIT_AUTHOR_EMAIL: options.email || "john@mcpipefail.com",
+        GIT_COMMITTER_NAME: options.name || "John McPipefail",
+        GIT_COMMITTER_EMAIL: options.email || "john@mcpipefail.com",
+      },
+    }
   );
 };
 
@@ -37,7 +73,11 @@ export const withTwoOnboardedNodes = (
     cy.task(Commands.StartNode, { id: NODE1_ID }, { log: false });
     cy.task(
       Commands.OnboardNode,
-      { id: NODE1_ID, handle: options.node1Handle },
+      {
+        id: NODE1_ID,
+        handle: options.node1User.handle,
+        passphrase: options.node1User.passphrase,
+      },
       { log: false }
     );
 
@@ -46,7 +86,11 @@ export const withTwoOnboardedNodes = (
     cy.task(Commands.StartNode, { id: NODE2_ID }, { log: false });
     cy.task(
       Commands.OnboardNode,
-      { id: NODE2_ID, handle: options.node2Handle },
+      {
+        id: NODE2_ID,
+        handle: options.node2User.handle,
+        passphrase: options.node2User.passphrase,
+      },
       { log: false }
     );
 
