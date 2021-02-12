@@ -22,7 +22,7 @@ pub struct Args {
     /// put proxy in test mode to use certain fixtures
     #[argh(switch)]
     pub test: bool,
-    /// use RAD_HOME as root path for test data
+    /// run HTTP API on a specified address:port (default: 127.0.0.1:17246)
     #[argh(
         option,
         default = "std::net::SocketAddr::from(([127, 0, 0, 1], 17246))"
