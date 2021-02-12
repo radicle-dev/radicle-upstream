@@ -21,19 +21,41 @@ const verboseExec = (cmd: string) => {
 };
 
 const checkPrerequisites = () => {
+  const minHubVersion = "2.14.0";
+  let result;
+
   try {
-    execSync("git --version", {
-      stdio: "ignore",
-    });
-    execSync("hub --version", {
-      stdio: "ignore",
-    });
+    result = execSync("hub --version", {
+      stdio: "pipe",
+    }).toString("utf-8");
   } catch {
-    throw new Error(`
-  Please install missing dependencies:
-    - https://git-scm.com
-    - https://github.com/github/hub
-`);
+    console.log(
+      `\nCould not find the hub CLI tool >= ${minHubVersion}.\n` +
+        "You can get it here:\n\n" +
+        "  https://github.com/github/hub\n"
+    );
+    process.exit(1);
+  }
+
+  const match = result.match("hub version (.*)");
+
+  if (match) {
+    const version = semver.parse(match[1]);
+
+    if (!version) {
+      throw new Error("Couldn't parse the version number of the hub CLI tool");
+    }
+
+    if (semver.lt(version, minHubVersion)) {
+      console.log(
+        `\nPlease upgrade your hub CLI tool to the minimum required version of ${minHubVersion}.\n`
+      );
+      process.exit(1);
+    }
+  } else {
+    throw new Error(
+      "Couldn't find version number in the `hub --version` output"
+    );
   }
 };
 
@@ -130,21 +152,17 @@ const printNextStepsMsg = (
 
             yarn release finalize ${version} ${pullRequestId}
 
-  - [ ] build and notarize macOS package on your macOS machine:
+  - [ ] wait for our build servers to build the macOS and Linux release
+        packages
+  - [ ] upload the macOS and Linux packages to https://releases.radicle.xyz
 
-          git checkout v${version}
-          CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \\
-          APPLE_ID="XXXXXXX@monadic.xyz" \\
-          APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \\
-          NOTARIZE=true \\
-          yarn dist
+          gsutil cp \
+            gs://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage \
+            gs://releases.radicle.xyz
 
-  - [ ] wait for the Linux package to be built on master for the release on CI
-  - [ ] upload Linux and macOS packages to https://releases.radicle.xyz
-
-          (cd dist && curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage")
-          gsutil cp dist/radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
-          gsutil cp dist/radicle-upstream-${version}.dmg gs://releases.radicle.xyz
+          gsutil cp \
+            gs://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.dmg \
+            gs://releases.radicle.xyz
 
   - [ ] create macOS and Linux QA issues in the Upstream repo
 
