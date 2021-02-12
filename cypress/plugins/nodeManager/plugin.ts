@@ -126,8 +126,6 @@ class Node {
     const process = childProcess.spawn(
       this.proxyBinaryPath,
       [
-        "--test",
-        "--test-use-rad-home",
         "--http-listen",
         `${HOST}:${this.httpPort}`,
         "--peer-listen",

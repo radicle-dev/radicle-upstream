@@ -23,9 +23,6 @@ pub struct Args {
     #[argh(switch)]
     pub test: bool,
     /// use RAD_HOME as root path for test data
-    #[argh(switch)]
-    pub test_use_rad_home: bool,
-    /// run HTTP API on a specified address:port (default: 127.0.0.1:17246)
     #[argh(
         option,
         default = "std::net::SocketAddr::from(([127, 0, 0, 1], 17246))"
@@ -62,7 +59,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
 
-    let mut service_manager = service::Manager::new(args.test, args.test_use_rad_home)?;
+    let mut service_manager = service::Manager::new(args.test)?;
     let mut sighup = signal(SignalKind::hangup())?;
 
     let mut handle = service_manager.handle();

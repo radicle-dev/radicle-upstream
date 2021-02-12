@@ -19,8 +19,6 @@ pub struct Environment {
     pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
     /// If true we are running the service in test mode.
     pub test_mode: bool,
-    /// If true RAD_HOME will be used to store test data.
-    pub test_use_rad_home: bool,
     #[allow(dead_code)]
     /// We need to keep the temp_dir handle alive throughout the lifetime of Environment, otherwise
     /// once it goes out of scope, the underlying directory gets deleted
@@ -46,44 +44,20 @@ impl Environment {
     ///
     /// If `test_mode` is `true` then `Environment::temp_dir` is set for temporary on-disk
     /// persistence.
-    fn new(test_mode: bool, test_use_rad_home: bool) -> Result<Self, Error> {
+    fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
-            if test_use_rad_home {
-                let root_path = match std::env::var_os("RAD_HOME") {
-                    None => {
-                        println!("RAD_HOME must be set when running with --test-use-rad-home");
-                        std::process::exit(1);
-                    },
-                    Some(root) => path::Path::new(&root).to_path_buf(),
-                };
-                let store_path = root_path.join("store");
-                let coco_profile =
-                    coco::profile::Profile::from_root(path::Path::new(&root_path), None)?;
-                let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
-                Ok(Self {
-                    key: None,
-                    coco_profile,
-                    keystore,
-                    test_mode,
-                    test_use_rad_home,
-                    store_path,
-                    temp_dir: None,
-                })
-            } else {
-                let temp_dir = tempfile::tempdir()?;
-                let store_path = temp_dir.path().join("store");
-                let coco_profile = coco::profile::Profile::from_root(temp_dir.path(), None)?;
-                let keystore = Arc::new(coco::keystore::memory());
-                Ok(Self {
-                    key: None,
-                    coco_profile,
-                    keystore,
-                    test_mode,
-                    test_use_rad_home,
-                    store_path,
-                    temp_dir: Some(temp_dir),
-                })
-            }
+            let temp_dir = tempfile::tempdir()?;
+            let store_path = temp_dir.path().join("store");
+            let coco_profile = coco::profile::Profile::from_root(temp_dir.path(), None)?;
+            let keystore = Arc::new(coco::keystore::memory());
+            Ok(Self {
+                key: None,
+                coco_profile,
+                keystore,
+                test_mode,
+                store_path,
+                temp_dir: Some(temp_dir),
+            })
         } else {
             let coco_profile = coco::profile::Profile::load()?;
             let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
@@ -93,7 +67,6 @@ impl Environment {
                 coco_profile,
                 keystore,
                 test_mode,
-                test_use_rad_home,
                 store_path,
                 temp_dir: None,
             })
@@ -118,8 +91,8 @@ impl Manager {
     ///
     /// If `test_mode` is `true` then `Environment::temp_dir` is set for temporary on-disk
     /// persistence.
-    pub fn new(test_mode: bool, test_use_rad_home: bool) -> Result<Self, Error> {
-        let environment = Environment::new(test_mode, test_use_rad_home)?;
+    pub fn new(test_mode: bool) -> Result<Self, Error> {
+        let environment = Environment::new(test_mode)?;
         let (message_sender, message_receiver) = mpsc::channel(10);
         Ok(Self {
             reload_notify: Arc::new(Notify::new()),
@@ -143,8 +116,7 @@ impl Manager {
             match message {
                 Message::Reset => {
                     let test_mode = self.environment.test_mode;
-                    let test_use_rad_home = self.environment.test_use_rad_home;
-                    self.environment = Environment::new(test_mode, test_use_rad_home)?
+                    self.environment = Environment::new(test_mode)?
                 },
                 Message::SetSecretKey(key) => self.environment.key = Some(key),
                 Message::Seal => self.environment.key = None,
