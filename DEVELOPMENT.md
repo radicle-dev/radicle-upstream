@@ -454,7 +454,7 @@ To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
 which allows the user to install and open Upstream without unnecessary
 [security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
 
-NB: from now on this is done by our buildkite macOS build host and no local
+This notarization step is automated using our custom macOS build host, no local
 setup is necessary.
 
 If the build host is not available, it is possible to set up and perform
