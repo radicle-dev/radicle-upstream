@@ -43,7 +43,7 @@ const checkPrerequisites = () => {
     const version = semver.parse(match[1]);
 
     if (!version) {
-      throw new Error("Couldn't parse the version number");
+      throw new Error("Couldn't parse the version number of the hub CLI tool");
     }
 
     if (semver.lt(version, minHubVersion)) {
