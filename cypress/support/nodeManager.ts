@@ -44,10 +44,6 @@ const credentialsHelper = (passphrase: string) =>
 export const createCommit = (options: createCommitOptions): void => {
   cy.exec(
     `set -euo pipefail
-export GIT_AUTHOR_NAME="${options.name || "John McPipefail"}"
-export GIT_AUTHOR_EMAIL="${options.email || "john@pipefail.com"}"
-export GIT_COMMITTER_NAME=$GIT_AUTHOR_NAME
-export GIT_COMMITTER_EMAIL=$GIT_AUTHOR_EMAIL
 export PATH=$PWD/proxy/target/release:$PATH
 cd ${options.repositoryPath}
 git commit --allow-empty -m "${options.subject}"
@@ -55,6 +51,10 @@ git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
     {
       env: {
         RAD_HOME: options.radHome,
+        GIT_AUTHOR_NAME: options.name || "John McPipefail",
+        GIT_AUTHOR_EMAIL: options.email || "john@mcpipefail.com",
+        GIT_COMMITTER_NAME: options.name || "John McPipefail",
+        GIT_COMMITTER_EMAIL: options.email || "john@mcpipefail.com",
       },
     }
   );
