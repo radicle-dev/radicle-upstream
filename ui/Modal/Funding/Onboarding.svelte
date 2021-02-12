@@ -12,7 +12,7 @@
   import { store } from "../../src/funding/pool";
   import type { Receivers } from "../../src/funding/pool";
 
-  import { BigNumber } from "ethers";
+  import Big from "big.js";
 
   enum Step {
     Erc20Allowance = "erc20",
@@ -85,7 +85,7 @@
   async function onConfirmed(): Promise<void> {
     return (
       $store
-        ?.onboard(BigNumber.from(topUp), BigNumber.from(budget), receivers)
+        ?.onboard(Big(topUp), Big(budget), receivers)
         .then(() => modal.hide()) ||
       Promise.reject("The pool is not instantiated")
     );

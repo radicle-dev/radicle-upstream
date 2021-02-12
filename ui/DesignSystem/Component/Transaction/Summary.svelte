@@ -33,7 +33,7 @@
         <strong>{tx.topUp} DAI</strong>. You haven’t set any receivers. As soon
         as you do, money will begin streaming to them at a rate of
         <strong>{tx.budget} DAI</strong>
-        per month.
+        per week.
       </p>
     {:else}
       <p>
@@ -41,7 +41,7 @@
         <strong>{tx.topUp} DAI</strong>
         and stream
         <strong>{tx.budget} DAI</strong>
-        per month to these users:
+        per week to these users:
       </p>
       <Receivers
         receivers={new Map(tx.receivers)}
@@ -53,11 +53,11 @@
       <p>
         Stream
         <strong>{tx.amount} DAI</strong>
-        per month. You haven’t set any receivers. As soon as you do, money will
+        per week. You haven’t set any receivers. As soon as you do, money will
         begin streaming to them at this rate.
       </p>
     {:else}
-      <p>Stream <strong>{tx.amount} DAI</strong> per month to these users:</p>
+      <p>Stream <strong>{tx.amount} DAI</strong> per week to these users:</p>
       <Receivers
         receivers={new Map(tx.receivers)}
         style="margin-top: 1.2rem"
