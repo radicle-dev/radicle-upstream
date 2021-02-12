@@ -152,9 +152,9 @@ const printNextStepsMsg = (
 
             yarn release finalize ${version} ${pullRequestId}
 
-  - [ ] wait for the macOS and Linux packages to be built on master for the
-        release on our build servers
-  - [ ] upload macOS and Linux packages to https://releases.radicle.xyz
+  - [ ] wait for our build servers to build the macOS and Linux release
+        packages
+  - [ ] upload the macOS and Linux packages to https://releases.radicle.xyz
 
           gsutil cp \
             gs://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage \
