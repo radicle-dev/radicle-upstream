@@ -1,11 +1,13 @@
 <script lang="typescript">
+  import * as svelteStore from "svelte/store";
+
   import EthToRadicle from "./Link/EthToRadicle.svelte";
   import EnterPassphrase from "./Link/EnterPassphrase.svelte";
   import SavedToRadicle from "./Link/SavedToRadicle.svelte";
   import RadicleToEth from "./Link/RadicleToEth.svelte";
   import { Remote } from "../../DesignSystem/Component";
 
-  import { wallet } from "../../src/wallet";
+  import { store as walletStore } from "../../src/wallet";
   import { session } from "../../src/session";
 
   import * as modal from "../../src/modal";
@@ -45,7 +47,7 @@
   // Values
   let passphrase: string = "";
 
-  $: address = wallet.account()?.address || "";
+  $: address = svelteStore.get(walletStore).account()?.address || "";
 </script>
 
 <style>

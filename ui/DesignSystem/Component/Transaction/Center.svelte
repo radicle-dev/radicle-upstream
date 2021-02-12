@@ -30,7 +30,6 @@
       newTxs.forEach(tx => displayedTxs.add(tx.hash));
     }
   }
-
   $: negative = transactions.some(tx => tx.status === TxStatus.Rejected);
 </script>
 
