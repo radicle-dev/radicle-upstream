@@ -65,25 +65,6 @@ function getProvider(
   }
 }
 
-const qrCodeModal = {
-  open: (uri: string, _cb: unknown, _opts?: unknown) => {
-    uriStore.set(uri);
-    modal.toggle(path.walletQRCode());
-  },
-  close: () => {
-    // N.B: this is actually called when the connection is established,
-    // not when the modal is closed per se.
-    modal.hide();
-  },
-};
-
-function newWalletConnect(): WalletConnect {
-  return new WalletConnect({
-    bridge: "https://bridge.walletconnect.org",
-    qrcodeModal: qrCodeModal,
-  });
-}
-
 export function build(
   environment: ethereum.Environment,
   provider: ethers.providers.Provider
@@ -91,6 +72,40 @@ export function build(
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
   });
+
+  function onModalHide(): void {
+    const store = svelteStore.get(stateStore);
+    if (store.status === Status.NotConnected) {
+      reinitWalletConnect();
+    }
+  }
+
+  function newWalletConnect(): WalletConnect {
+    return new WalletConnect({
+      bridge: "https://bridge.walletconnect.org",
+      qrcodeModal: qrCodeModal,
+    });
+  }
+
+  // We need to reinitialize `WalletConnect` until this issue is fixed:
+  // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
+  function reinitWalletConnect() {
+    walletConnect = newWalletConnect();
+    signer.walletConnect = walletConnect;
+  }
+
+  const qrCodeModal = {
+    open: (uri: string, _cb: unknown, _opts?: unknown) => {
+      uriStore.set(uri);
+      modal.toggle(path.walletQRCode(), onModalHide);
+    },
+    close: () => {
+      // N.B: this is actually called when the connection is established,
+      // not when the modal is closed per se.
+      stateStore.set({ status: Status.Connecting });
+      modal.hide();
+    },
+  };
 
   let walletConnect = newWalletConnect();
   const signer = new WalletConnectSigner(
@@ -132,13 +147,7 @@ export function build(
     });
 
     stateStore.set({ status: Status.NotConnected });
-    // We need to reinitialize `WalletConnect` until this issue is fixed:
-    // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
-    walletConnect = new WalletConnect({
-      bridge: "https://bridge.walletconnect.org",
-      qrcodeModal: qrCodeModal,
-    });
-    signer.walletConnect = walletConnect;
+    reinitWalletConnect();
   }
 
   async function initialize() {
