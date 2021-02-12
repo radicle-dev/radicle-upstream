@@ -231,7 +231,13 @@ async fn rig(
     auth_token: Arc<RwLock<Option<String>>>,
     args: Args,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
-    let store = kv::Store::new(kv::Config::new(&environment.store_path).flush_every_ms(100))?;
+    let store_path = if let Some(temp_dir) = &environment.temp_dir {
+        temp_dir.path().join("store")
+    } else {
+        config::store_dir(environment.coco_profile.id())
+    };
+
+    let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
 
     if let Some(key) = environment.key.clone() {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });

@@ -1,8 +1,7 @@
 //! Utilities for changing the service environment used in [`crate::process`].
 
-use crate::config;
 use futures::prelude::*;
-use std::{path, sync::Arc};
+use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
 
 /// Persistent environment with depedencies for running the API and coco peer services.
@@ -11,18 +10,14 @@ pub struct Environment {
     ///
     /// If this is `None` coco is not started.
     pub key: Option<coco::keys::SecretKey>,
-    /// Path where the kv store should be located.
-    pub store_path: path::PathBuf,
+    /// If set, we use a temporary directory for on-disk persistence.
+    pub temp_dir: Option<tempfile::TempDir>,
     /// Paths & profile id for on-disk persistence.
     pub coco_profile: coco::profile::Profile,
     /// A reference to the key store.
     pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
     /// If true we are running the service in test mode.
     pub test_mode: bool,
-    #[allow(dead_code)]
-    /// We need to keep the temp_dir handle alive throughout the lifetime of Environment, otherwise
-    /// once it goes out of scope, the underlying directory gets deleted
-    temp_dir: Option<tempfile::TempDir>,
 }
 
 /// Error returned when creating a new [`Environment`].
@@ -47,7 +42,6 @@ impl Environment {
     fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
-            let store_path = temp_dir.path().join("store");
             let coco_profile = coco::profile::Profile::from_root(temp_dir.path(), None)?;
             let keystore = Arc::new(coco::keystore::memory());
             Ok(Self {
@@ -55,19 +49,16 @@ impl Environment {
                 coco_profile,
                 keystore,
                 test_mode,
-                store_path,
                 temp_dir: Some(temp_dir),
             })
         } else {
             let coco_profile = coco::profile::Profile::load()?;
             let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
-            let store_path = config::store_dir(coco_profile.id());
             Ok(Self {
                 key: None,
                 coco_profile,
                 keystore,
                 test_mode,
-                store_path,
                 temp_dir: None,
             })
         }
