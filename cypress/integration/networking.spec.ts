@@ -45,17 +45,18 @@ context("p2p networking", () => {
         (maintainerNode, contributorNode) => {
           nodeManager.connectTwoNodes(maintainerNode, contributorNode);
           nodeManager.asNode(maintainerNode);
+
           const maintainerNodeWorkingDir = path.join(
             tempDirPath,
             "maintainerNode"
           );
-
           cy.exec(`mkdir -p ${maintainerNodeWorkingDir}`);
 
           ipcStub.getStubs().then(stubs => {
             stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(maintainerNodeWorkingDir);
           });
           const projectName = "new-fancy-project.xyz";
+
           commands.pick("new-project-button").click();
           commands.pasteInto(["name"], projectName);
 
@@ -94,7 +95,7 @@ context("p2p networking", () => {
             )
             .click();
 
-          cy.log("the maintainer shows up in the peer selector");
+          cy.log("maintainer shows up in the peer selector");
           commands
             .pickWithContent(["peer-selector"], "rudolfs")
             .should("exist");
@@ -103,7 +104,7 @@ context("p2p networking", () => {
             .should("exist");
           commands.pick("peer-selector").click();
 
-          cy.log("the current user does not show up in the peer selector");
+          cy.log("current user does not show up in the peer selector");
           commands
             .pickWithContent(["peer-dropdown-container"], "abbey")
             .should("not.exist");
@@ -115,13 +116,12 @@ context("p2p networking", () => {
 
           commands.pick("peer-selector").click();
           commands.pick("manage-remotes").click();
-
           commands.pick("followed-peers", "peer-abbey").should("not.exist");
 
           commands.pasteInto(["peer-input"], contributorNode.peerId);
           commands.pick("follow-button").click();
 
-          cy.log("the remote shows up in the waiting area");
+          cy.log("remote shows up in the waiting area");
           const shortenedPeerId = contributorNode.peerId.slice(0, 7);
           commands
             .pickWithContent(["followed-peers", "peer-abbey"], shortenedPeerId)
@@ -135,7 +135,7 @@ context("p2p networking", () => {
 
           cy.log("test commit replication from maintainer to contributor");
 
-          cy.log("add a new commit to the project from maintainer's node");
+          cy.log("add a new commit to the maintainer's project working dir");
           const projctPath = path.join(maintainerNodeWorkingDir, projectName);
           const maintainerCommitSubject =
             "Commit replication from maintainer to contributor";
@@ -148,19 +148,20 @@ context("p2p networking", () => {
             name: maintainer.fullName,
           });
 
-          cy.log("refresh the UI, because new commits don't show up otherwise");
+          cy.log("refresh the UI for the new commit to show up");
           cy.get("body").type("{esc}");
           commands.pick("sidebar", "profile").click();
 
-          cy.log("make sure new commit shows up in the UI of the maintainer");
+          cy.log("make sure new commit shows up in the maintainer's UI");
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
           commands.pick("commits-tab").click();
           commands
             .pickWithContent(["commits-page"], maintainerCommitSubject)
             .should("exist");
 
-          cy.log("check that the commit shows up in the contributor's node");
+          cy.log("check that the commit shows up in the contributor's UI");
           nodeManager.asNode(contributorNode);
+
           commands.pick("following-tab").click();
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
           commands.pick("commits-tab").click();
@@ -184,7 +185,7 @@ context("p2p networking", () => {
           commands.pick("choose-path-button").click();
           commands.pick("checkout-button").click();
 
-          // Wait for checkout to write the files to disk.
+          cy.log("make sure checkout finishes writing to disk");
           commands
             .pickWithContent(["notification"], `${projectName} checked out to`)
             .should("exist");
@@ -205,14 +206,14 @@ context("p2p networking", () => {
             name: contributor.fullName,
           });
 
-          cy.log("refresh the UI, because new commits don't show up otherwise");
+          cy.log("refresh the UI for the new commit to show up");
           cy.get("body").type("{esc}");
           commands.pick("sidebar", "profile").click();
 
           cy.log('project moved to the "Projects" tab');
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
-          cy.log('"Fork" button is now called "Checkout"');
+          cy.log('"Fork" button now is called "Checkout"');
           commands
             .pickWithContent(["checkout-modal-toggle"], "Checkout")
             .should("exist");
