@@ -18,7 +18,7 @@ use common::{
     requested, shia_le_pathbuf,
 };
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
@@ -34,7 +34,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
         },
     )
     .await?;
-    let alice_events = alice_peer.subscribe();
+    let mut alice_events = alice_peer.subscribe();
 
     tokio::spawn(alice_peer.into_running());
 
@@ -44,8 +44,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .expect("unable to init project");
 
-    let announced = alice_events
-        .into_stream()
+    let announced = async_stream::stream! { loop { yield alice_events.recv().await } }
         .filter_map(|res| match res.unwrap() {
             coco::PeerEvent::Announced(updates) if updates.len() == 1 => future::ready(Some(())),
             _ => future::ready(None),
@@ -57,7 +56,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
@@ -89,7 +88,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     .await?;
     let _bob = bob_state.init_owner("bob".to_string()).await?;
     let bob_connected = bob_peer.subscribe();
-    let bob_events = bob_peer.subscribe();
+    let mut bob_events = bob_peer.subscribe();
 
     tokio::spawn(alice_peer.into_running());
     tokio::spawn(bob_peer.into_running());
@@ -100,8 +99,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         .init_project(&alice, shia_le_pathbuf(alice_repo_path))
         .await?;
 
-    let announced = bob_events
-        .into_stream()
+    let announced = async_stream::stream! { loop { yield bob_events.recv().await } }
         .filter_map(|res| match res.unwrap() {
             coco::PeerEvent::Protocol(ProtocolEvent::Gossip(info)) => match info {
                 Info::Has(Has {
@@ -121,7 +119,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     Ok(())
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 

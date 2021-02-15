@@ -11,6 +11,7 @@ keywords = [ "radicle", "upstream", "proxy", "git", "quic" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
+async-stream = "0.3"
 either = "1.6"
 futures = { version = "0.3", features = [ "compat" ] }
 git2 = "0.13"
@@ -22,7 +23,7 @@ serde = { version = "1.0", features = [ "derive" ] }
 serde_millis = "0.1"
 syntect = "4.2"
 thiserror = "1.0"
-tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
+tokio = { version = "1.2", features = [ "macros", "net", "rt-multi-thread", "sync", "time" ] }
 
 [dependencies.kv]
 git = "https://github.com/zshipko/rust-kv.git"

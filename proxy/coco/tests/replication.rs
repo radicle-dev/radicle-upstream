@@ -266,7 +266,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let alice_addrs = alice_state.listen_addrs().collect();
     let alice_peer_id = alice_state.peer_id();
-    let alice_events = alice_peer.subscribe();
+    let mut alice_events = alice_peer.subscribe();
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer_with_seeds(
@@ -433,7 +433,7 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice = alice_state.init_owner("alice".to_string()).await?;
     let alice_addrs = alice_state.listen_addrs().collect::<Vec<_>>();
-    let alice_events = alice_peer.subscribe();
+    let mut alice_events = alice_peer.subscribe();
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;

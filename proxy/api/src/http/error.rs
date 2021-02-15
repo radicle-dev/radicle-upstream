@@ -39,19 +39,7 @@ pub enum Routing {
 
 impl reject::Reject for Routing {}
 
-impl From<Routing> for Rejection {
-    fn from(err: Routing) -> Self {
-        reject::custom(err)
-    }
-}
-
 impl reject::Reject for error::Error {}
-
-impl From<error::Error> for Rejection {
-    fn from(err: error::Error) -> Self {
-        reject::custom(err)
-    }
-}
 
 /// Error type to carry context for failed requests.
 #[derive(Serialize)]

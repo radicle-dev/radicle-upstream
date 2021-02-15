@@ -103,7 +103,7 @@ impl Manager {
 
     /// Get the current environment
     pub fn environment(&mut self) -> Result<&Environment, Error> {
-        while let Ok(message) = self.message_receiver.try_recv() {
+        while let Some(Some(message)) = self.message_receiver.recv().now_or_never() {
             match message {
                 Message::Reset => {
                     let test_mode = self.environment.test_mode;
@@ -178,7 +178,7 @@ impl Handle {
                 },
             },
         }
-        self.reload_notify.notify();
+        self.reload_notify.notify_one();
     }
 
     /// Create a handle where none of the methods have any effect.

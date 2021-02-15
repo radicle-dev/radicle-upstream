@@ -3,7 +3,7 @@ use std::{path::PathBuf, time::Duration};
 use futures::{future, StreamExt as _};
 use tokio::{
     sync::broadcast,
-    time::{timeout, Elapsed},
+    time::{error::Elapsed, timeout},
 };
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
@@ -18,7 +18,9 @@ use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, RunConfig, State
 #[macro_export]
 macro_rules! await_event {
     ( $receiver:expr , $filter:expr ) => {{
-        let filtered = $receiver.into_stream().filter_map($filter).map(|_| ());
+        let filtered = async_stream::stream! { loop { yield $receiver.recv().await } }
+            .filter_map($filter)
+            .map(|_| ());
         tokio::pin!(filtered);
         timeout(Duration::from_secs(1), filtered.next())
             .await
@@ -49,7 +51,7 @@ macro_rules! assert_event {
 /// * if the timeout waiting for the [`ProtocolEvent::Connected`] has been reached.
 #[allow(dead_code)]
 pub async fn connected(
-    receiver: broadcast::Receiver<PeerEvent>,
+    mut receiver: broadcast::Receiver<PeerEvent>,
     expected_id: &PeerId,
 ) -> Result<(), Elapsed> {
     assert_event!(
@@ -61,7 +63,7 @@ pub async fn connected(
 /// Assert that we received a cloned event for the expected `RadUrl`.
 #[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn assert_cloned(
-    receiver: broadcast::Receiver<PeerEvent>,
+    mut receiver: broadcast::Receiver<PeerEvent>,
     expected_urn: &Urn,
     expected_remote: PeerId,
 ) -> Result<(), Elapsed> {
@@ -74,7 +76,7 @@ pub async fn assert_cloned(
 /// Assert that we received a query event for the expected `RadUrn`.
 #[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn requested(
-    receiver: broadcast::Receiver<PeerEvent>,
+    mut receiver: broadcast::Receiver<PeerEvent>,
     expected: &Urn,
 ) -> Result<(), Elapsed> {
     assert_event!(

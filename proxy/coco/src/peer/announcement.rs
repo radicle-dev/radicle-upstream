@@ -155,7 +155,7 @@ mod test {
 
     use crate::{config, signer, state::State};
 
-    #[tokio::test(core_threads = 2)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn announce() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();

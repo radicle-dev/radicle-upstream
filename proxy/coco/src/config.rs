@@ -5,7 +5,9 @@ use std::{
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
 };
 
-use tokio::sync::{mpsc, watch};
+use async_stream::stream;
+use futures::stream::BoxStream;
+use tokio::sync::watch;
 
 use librad::{
     git::fetch,
@@ -103,19 +105,19 @@ impl StreamDiscovery {
 
 impl discovery::Discovery for StreamDiscovery {
     type Addr = SocketAddr;
-    type Stream = mpsc::Receiver<(PeerId, Vec<SocketAddr>)>;
+    type Stream = BoxStream<'static, (PeerId, Vec<SocketAddr>)>;
 
     fn discover(mut self) -> Self::Stream {
-        let (mut sender, receiver) = mpsc::channel(1024);
-
-        tokio::spawn(async move {
-            while let Some(seeds) = self.seeds_receiver.recv().await {
+        let updates = stream! {
+            loop {
+                self.seeds_receiver.changed().await.unwrap();
+                let seeds = self.seeds_receiver.borrow().clone();
                 for seed in seeds {
-                    sender.send(seed.into()).await.ok();
+                    yield seed.into();
                 }
             }
-        });
+        };
 
-        receiver
+        Box::pin(updates)
     }
 }
