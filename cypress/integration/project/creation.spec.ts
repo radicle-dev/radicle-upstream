@@ -48,7 +48,7 @@ context("project creation", () => {
   ) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
-      const repoName = "repo-with-master-branch";
+      const repoName = "repo-with-branches";
       const repoPath = `${pwd}/cypress/workspace/${repoName}`;
 
       cy.exec(`rm -rf ${repoPath}`);
