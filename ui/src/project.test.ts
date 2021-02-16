@@ -57,11 +57,8 @@ describe("creating a project", () => {
       const validation = project.repositoryPathValidationStore(false);
       validation.validate("/repository/path");
 
-      // resetting the default branch on validation start
-      expect(get(project.defaultBranch)).toEqual(UPSTREAM_DEFAULT_BRANCH);
-
       process.nextTick(() => {
-        expect(get(project.defaultBranch)).toEqual("main");
+        expect(get(project.defaultBranch)).toEqual(UPSTREAM_DEFAULT_BRANCH);
       });
     });
   });
