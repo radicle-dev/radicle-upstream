@@ -381,7 +381,7 @@ application package by [electron-builder][eb].
 To be able to build the proxy first install all required dependencies from the
 [Running Upstream](#running-upstream) section.
 
-To start the proxy binary, run: `cd proxy && cargo run`.
+To start the proxy binary, run `cargo run`.
 
 
 ### Testing
