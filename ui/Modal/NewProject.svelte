@@ -231,6 +231,7 @@
             </p>
             {#if localBranches.length > 0}
               <Dropdown
+                dataCy="default-branch"
                 style="max-width: 22.9rem;"
                 options={localBranches.map(branch => ({
                   variant: 'text',
@@ -240,6 +241,7 @@
                 bind:value={$defaultBranch} />
             {:else}
               <Dropdown
+                dataCy="default-branch"
                 style="max-width: 22.9rem;"
                 placeholder={UPSTREAM_DEFAULT_BRANCH}
                 options={[]}

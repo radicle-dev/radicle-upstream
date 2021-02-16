@@ -290,6 +290,7 @@ context("project creation", () => {
           cy.wait(500);
 
           commands.pick("name").should("have.value", "git-platinum-copy");
+          commands.pick("default-branch").contains("main");
           commands.pick("description").type("Best project");
 
           commands.pick("create-project-button").click();
