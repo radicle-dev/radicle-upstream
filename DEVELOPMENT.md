@@ -121,6 +121,50 @@ You can build and package Upstream with: `yarn dist`. The generated package
 will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
 
 
+#### Apple notarization
+
+To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
+which allows users to install and open Upstream without unnecessary
+[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
+
+This notarization step is automated using our custom macOS build host for
+releases.
+
+However, if the build host is not available, it is possible to set up and
+perform notarization locally on Apple hardware.
+
+For this we need:
+  - a paid Apple developer account registered to Monadic
+  - an Apple ID token for allowing the notarization script to run on behalf of
+    our developer account
+    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
+  - a valid "Developer ID Application" certificate
+    - [Certificates Add][ca] -> Developer ID Application
+      **Note:** this can only be created via the company account holder
+
+Once you've created the _Developer ID Application_ certificate, download it
+locally and add it to your keychain by double clicking on the file.
+
+Before building a notarized DMG, make sure you're connected to the internet and
+then run:
+
+```sh
+git checkout vX.X.X
+CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
+APPLE_ID="XXXXXXX@monadic.xyz" \
+APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
+NOTARIZE=true \
+yarn dist
+```
+
+Don't forget to replace the `X` in the template with the real values:
+  - `vX.X.X` is the version you'd like to build and notarize
+  - `CSC_NAME` is the "Developer ID Application" certificate ID
+  - `APPLE_ID` your Apple account ID
+  - `APPLE_ID_PASSWORD` your Apple account token that you generated in the
+    steps above
+
+
 ### Scripts
 
 To get a list of all available script commands, run: `yarn run`.
@@ -425,40 +469,27 @@ build times. If you need to update this image, proceed as follows:
    create a new branch and build the updated image.
 
 ## Releases
-
 ### Prerequisites
+#### Google Cloud CLI
+
+For uploading artifacts to releases.radicle.xyz, you'll need a working `gcloud`
+environment. To do so, follow points 1 and 2 from the
+[Docker image updates][do] section.
+
 
 #### GitHub `hub` CLI tool
 
-Please install the [`hub`][hb] CLI tool, we use it in our release automation
-script to:
+Please install the [`hub`][hb] CLI tool (version >= **2.14**), we use it in our
+release automation script to:
 
   - create a pull-request off of a release branch;
   - to merge the release branch into master;
   - to close the pull-request.
 
 Then you'll have to create a _Personal access token_ for it in the
-[GitHub Developer settings][gs] page and authenticate the CLI tool once
+[GitHub Developer settings][gt] page and authenticate the CLI tool once
 by running any command that does a request to GitHub, like so: `hub api`.
 You'll be asked to provide your GitHub login and the access token.
-
-#### Apple notarization
-
-To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
-which allows the user to install and open Upstream without unnecessary
-[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
-
-For this we need:
-  - a paid Apple developer account registered to Monadic
-  - an Apple ID token for allowing the notarization script to run on behalf of
-    our developer account
-    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
-  - a valid "Developer ID Application" certificate
-    - [Certificates Add][ca] -> Developer ID Application
-      **Note:** this can only be created via the company account holder
-
-Once you've created the _Developer ID Application_ certificate, download it
-locally and add it to your keychain by double clicking on the file.
 
 
 ### Publishing a release
@@ -478,8 +509,10 @@ instructions.
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
 [co]: https://github.com/rust-lang/cargo
 [cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits
+[do]: #docker-image-updates
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
+[es]: https://eslint.org
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gg]: https://cloud.google.com/storage/docs/gsutil_install
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream

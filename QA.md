@@ -30,33 +30,17 @@
   - on Linux: run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by
     executing it from the terminal or clicking on it
   - on macOS: run `/Applications/Radicle Upstream.app` by double clicking it
-- [ ] Onboarding starts on the _Get started_ screen
-- [ ] Pressing <kbd>enter</kbd> leads to the next screen
-- [ ] Using `$$` as the _Display name_ shows a validation error
-- [ ] Entering two different passphrases shows a validation error
-- [ ] On the _All set!_ screen clicking the _Device ID_ copies it to the
-      clipboard
-- [ ] Clicking the _Go to my projects_ button leads to the _Profile_ screen
-- [ ] Hovering the network icon in the sidebar shows
-      _You're connected to 1 peer_
+- [ ] Complete all the onboarding steps until you land on the Profile screen
 
 
 ### Creating projects
 
-- [ ] Can create a new project with a new repository
-  - [ ] Using `%%` for the project name shows a validation error
-  - [ ] A placeholder is shown for the missing `README.md`
-- [ ] Can create a new project from a larger existing repository
+- [ ] Can create a new project from a larger existing repository (e.g. radicle-upstream)
   - [ ] UI interaction is blocked while project creation is in progress
   - [ ] `README.md` files are shown by default and markdown is rendered as HTML
     - [ ] Links to external resources open in external browser
     - [ ] Links to internal resources don't do anything
-  - [ ] Syntax highlighting works for source files (.toml, .sol, .ts, .svelte)
-  - [ ] Binary files show a placeholder
-  - [ ] It's possible to navigate to deeper hierarchies via the tree browser
-  - [ ] It's possible to select different branches
-  - [ ] Metadata and stats in UI reflect what is in the actual repository
-        [ℹ️](#04)
+  - [ ] Syntax highlighting works for source files (.toml, .ts, .svelte, etc.)
   - [ ] Commit tab shows a list of all the commits in the branch that was
         selected
   - [ ] Clicking on a commit shows the commit metadata as well as the diff
@@ -65,20 +49,18 @@
     - [ ] _Wallets_ tab on the User Profile screen
     - [ ] Tags are not visible in the revision selector on the _Project Source_
       screen
+    - [ ] _Design Sytem Guide_ is not listed in the shortcuts modal
+          <kbd>?</kbd> and the respective global hotkey is disabled
+          <kbd>⌘</kbd>+<kbd>d</kbd>
 
 
-### Settings
+### Settings & Misc
 
 - [ ] Links to external help resources open in an external browser
-- [ ] All documented shortcuts work. Press <kbd>?</kbd> to open the
-      _Keyboard shortcuts_ help screen.
-  - [ ] Only one modal is allowed at a time (no modal stacking possible)
-  - [ ] _Design Sytem Guide_ is not listed in the shortcuts modal
-        <kbd>?</kbd> and the respective global hotkey is disabled
-        <kbd>⌘</kbd>+<kbd>d</kbd>
 - [ ] The version number in the _Settings_ screen matches:
   - [ ] The version number in the package filename
   - [ ] The version number in the _About Radicle Upstream_ dialog
+- [ ] Only one modal is allowed at a time (no modal stacking possible)
 
 
 ### Replicating projects
@@ -104,23 +86,14 @@
     - [ ] The button is now called _Checkout_ instead of _Fork_
     - [ ] Create a commit and publish your chages via `git rad push`
       - [ ] The published commit appears in the _Commits_ tab of the project
-  - [ ] Add a remote that doesn't track the project, e.g.
-        `hync6jo9q9n4rfgag3o99gann391nsjhuq3oaemoe13oyn3gruwrgh`
-    - [ ] Shows the remote in the _Still looking…_ section
-  - [ ] Clicking the _Unfollow_ button removes the remote
 
 
 ### Lifecycle
 
 - [ ] Preferences are persisted across app reboots
-  - [ ] Color theme selection
-  - [ ] Network seed changes
   - [ ] Remote helper hint (in the Checkout and "New project" modals) is not
         shown after app restart once it is dismissed by clicking the `x` icon
         in the top right corner
-- [ ] Killing the proxy process while the app is running shows a blue error
-      screen with the proxy logs
-  - [ ] Clicking the button copies the logs to the clipboard
 
 
 ## Hints
@@ -164,26 +137,6 @@ in with a temporary user account).
 **On Linux (AppImage):**
 
   1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
-
-
-### How to query repo stats from the CLI? <a href="#user-content-04" id="04">🔗</a>
-
-```
-  # local branch count
-  git branch | wc -l
-
-  # all unique contributors across all branches
-  git shortlog --summary --numbered --email --all
-
-  # all unique contributors in a specific branch
-  git shortlog --summary --numbered --email myfunkybranch
-
-  # unique commit count across all branches
-  git rev-list --all --count
-
-  # commit count in a specific branch
-  git rev-list --count myfunkybranch
-```
 
 
 
