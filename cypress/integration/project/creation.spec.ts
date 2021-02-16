@@ -239,7 +239,7 @@ context("project creation", () => {
     });
 
     context("importing existing repositories", () => {
-      it("preselects master when importing a repository with a master branch", () => {
+      it("preselects master as the default branch", () => {
         withRepoWithBranches(["master", "dev"], repoName => {
           commands.pick("new-project-button").click();
           commands.pick("name").should("not.be.disabled");
@@ -254,7 +254,7 @@ context("project creation", () => {
         });
       });
 
-      it("preselects main when importing a repository with a main and a master branch", () => {
+      it("preselects main as the default branch", () => {
         withRepoWithBranches(["main", "master"], repoName => {
           commands.pick("new-project-button").click();
           commands.pick("name").should("not.be.disabled");
