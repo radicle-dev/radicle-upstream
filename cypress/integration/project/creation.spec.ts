@@ -42,19 +42,15 @@ context("project creation", () => {
     });
   };
 
-  const withRepoWithBranches = (
-    branches: string[],
-    callback: (repoName: string) => void
-  ) => {
-    withPlatinumStub(repoName => {
-      cy.exec("pwd").then(result => {
-        const pwd = result.stdout;
-        const repoPath = `${pwd}/cypress/workspace/${repoName}`;
-        branches.forEach(branch =>
-          cy.exec(`cd ${repoPath}; git checkout -b ${branch};`)
-        );
-        callback(repoName);
-      });
+  // Create the given `branches` in the repo with name `repoName`,
+  // expected to be found within cypress/workspace.
+  const createBranches = (repoName: string, branches: string[]) => {
+    cy.exec("pwd").then(result => {
+      const pwd = result.stdout;
+      const repoPath = `${pwd}/cypress/workspace/${repoName}`;
+      branches.forEach(branch =>
+        cy.exec(`cd ${repoPath}; git checkout -b ${branch};`)
+      );
     });
   };
 
@@ -240,7 +236,7 @@ context("project creation", () => {
 
     context("importing existing repositories", () => {
       it("preselects master as the default branch", () => {
-        withRepoWithBranches(["master", "dev"], repoName => {
+        withPlatinumStub(repoName => {
           commands.pick("new-project-button").click();
           commands.pick("name").should("not.be.disabled");
           commands.pick("existing-project").click();
@@ -255,7 +251,9 @@ context("project creation", () => {
       });
 
       it("preselects main as the default branch", () => {
-        withRepoWithBranches(["main", "master"], repoName => {
+        withPlatinumStub(repoName => {
+          createBranches(repoName, ["main"]);
+
           commands.pick("new-project-button").click();
           commands.pick("name").should("not.be.disabled");
           commands.pick("existing-project").click();
@@ -339,7 +337,7 @@ context("project creation", () => {
           cy.wait(500);
 
           commands.pick("name").should("have.value", repoName);
-          commands.pick("default-branch").contains("main");
+          commands.pick("default-branch").contains("master");
           commands.pick("description").type("Best project");
 
           commands.pick("create-project-button").click();
