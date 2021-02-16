@@ -277,9 +277,7 @@ export const untrackPeer = (
 
 // NEW PROJECT
 export const localStateError = writable<string>("");
-export const defaultBranch = writable<string>(
-  config.DEFAULT_BRANCH_FOR_NEW_PROJECTS
-);
+export const defaultBranch = writable<string>(config.UPSTREAM_DEFAULT_BRANCH);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
@@ -288,11 +286,17 @@ export const formatNameInput = (input: string): string =>
 export const extractName = (repoPath: string): string =>
   repoPath.split("/").slice(-1)[0];
 
+// The default branches supported for preselection when importing
+// a new project. Sorted by preference of preselection.
+const DEFAULT_BRANCHES = [
+  config.UPSTREAM_DEFAULT_BRANCH,
+  config.GIT_DEFAULT_BRANCH,
+];
+
 const fetchBranches = async (path: string) => {
   fetchLocalState({ path });
 
   localStateError.set("");
-  defaultBranch.set(config.DEFAULT_BRANCH_FOR_NEW_PROJECTS);
 
   // This is just a safe guard. Since the validations on the constraints are
   // executed first, an empty path should not make it this far.
@@ -300,7 +304,7 @@ const fetchBranches = async (path: string) => {
     return;
   }
 
-  let state;
+  let state: source.LocalState;
   try {
     state = await source.getLocalState(path);
   } catch (err) {
@@ -313,9 +317,11 @@ const fetchBranches = async (path: string) => {
     return;
   }
 
-  if (!state.branches.includes(get(defaultBranch))) {
-    defaultBranch.set(state.branches[0]);
-  }
+  const foundDefaultBranch = DEFAULT_BRANCHES.find(defaultBranch =>
+    state.branches.includes(defaultBranch)
+  );
+
+  defaultBranch.set(foundDefaultBranch || state.branches[0]);
 };
 
 const validateExistingRepository = (path: string): Promise<boolean> => {

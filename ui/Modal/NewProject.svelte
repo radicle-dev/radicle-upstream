@@ -2,7 +2,7 @@
   import { createEventDispatcher, onDestroy } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config";
+  import { UPSTREAM_DEFAULT_BRANCH } from "../src/config";
   import * as notification from "../src/notification";
   import * as error from "../src/error";
   import * as path from "../src/path";
@@ -241,7 +241,7 @@
             {:else}
               <Dropdown
                 style="max-width: 22.9rem;"
-                placeholder={DEFAULT_BRANCH_FOR_NEW_PROJECTS}
+                placeholder={UPSTREAM_DEFAULT_BRANCH}
                 options={[]}
                 disabled />
             {/if}
