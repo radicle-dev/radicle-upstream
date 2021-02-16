@@ -42,6 +42,33 @@ context("project creation", () => {
     });
   };
 
+  const withRepoWithBranchesStub = (
+    branches: string[],
+    callback: (repoName: string) => void
+  ) => {
+    cy.exec("pwd").then(result => {
+      const pwd = result.stdout;
+      const repoName = "repo-with-master-branch";
+      const repoPath = `${pwd}/cypress/workspace/${repoName}`;
+
+      cy.exec(`rm -rf ${repoPath}`);
+      cy.exec(`mkdir -p ${repoPath}`);
+      cy.exec(`git init ${repoPath}`);
+      cy.exec(`cd ${repoPath}`);
+      branches.forEach(b => cy.exec(`cd ${repoPath}; git checkout -b ${b}`));
+
+      // stub native call and return the directory path to the UI
+      ipcStub.getStubs().then(stubs => {
+        stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(repoPath);
+      });
+
+      callback(repoName);
+
+      // clean up the fixture
+      cy.exec(`rm -rf ${repoPath}`);
+    });
+  };
+
   const withPlatinumStub = (callback: () => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
@@ -217,6 +244,38 @@ context("project creation", () => {
             .pick("page", "new-project")
             .contains("Pick a directory for the new project")
             .should("exist");
+        });
+      });
+    });
+
+    context("importing existing repositories", () => {
+      it("preselects master when importing a repository with a master branch", () => {
+        withRepoWithBranchesStub(["feat/12367890", "master"], repoName => {
+          commands.pick("new-project-button").click();
+          commands.pick("name").should("not.be.disabled");
+          commands.pick("existing-project").click();
+          commands.pick("name").should("be.disabled");
+          commands.pick("existing-project", "choose-path-button").click();
+          // Make sure the UI has time to update path value from stub,
+          // this prevents this spec from failing on CI.
+          cy.wait(500);
+          commands.pick("name").should("have.value", repoName);
+          commands.pick("default-branch").contains("master");
+        });
+      });
+
+      it("preselects main when importing a repository with a main and a master branch", () => {
+        withRepoWithBranchesStub(["master", "main"], repoName => {
+          commands.pick("new-project-button").click();
+          commands.pick("name").should("not.be.disabled");
+          commands.pick("existing-project").click();
+          commands.pick("name").should("be.disabled");
+          commands.pick("existing-project", "choose-path-button").click();
+          // Make sure the UI has time to update path value from stub,
+          // this prevents this spec from failing on CI.
+          cy.wait(500);
+          commands.pick("name").should("have.value", repoName);
+          commands.pick("default-branch").contains("main");
         });
       });
     });
