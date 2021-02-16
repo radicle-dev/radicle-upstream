@@ -42,37 +42,27 @@ context("project creation", () => {
     });
   };
 
-  const withRepoWithBranchesStub = (
+  const withRepoWithBranches = (
     branches: string[],
     callback: (repoName: string) => void
   ) => {
-    cy.exec("pwd").then(result => {
-      const pwd = result.stdout;
-      const repoName = "repo-with-branches";
-      const repoPath = `${pwd}/cypress/workspace/${repoName}`;
-
-      cy.exec(`rm -rf ${repoPath}`);
-      cy.exec(`mkdir -p ${repoPath}`);
-      cy.exec(`git init ${repoPath}`);
-      cy.exec(`cd ${repoPath}`);
-      branches.forEach(b => cy.exec(`cd ${repoPath}; git checkout -b ${b}`));
-
-      // stub native call and return the directory path to the UI
-      ipcStub.getStubs().then(stubs => {
-        stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(repoPath);
+    withPlatinumStub(repoName => {
+      cy.exec("pwd").then(result => {
+        const pwd = result.stdout;
+        const repoPath = `${pwd}/cypress/workspace/${repoName}`;
+        branches.forEach(branch =>
+          cy.exec(`cd ${repoPath}; git checkout -b ${branch};`)
+        );
+        callback(repoName);
       });
-
-      callback(repoName);
-
-      // clean up the fixture
-      cy.exec(`rm -rf ${repoPath}`);
     });
   };
 
-  const withPlatinumStub = (callback: () => void) => {
+  const withPlatinumStub = (callback: (repoName: string) => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
-      const platinumPath = `${pwd}/cypress/workspace/git-platinum-copy`;
+      const repoName = "git-platinum-copy";
+      const platinumPath = `${pwd}/cypress/workspace/${repoName}`;
 
       cy.exec(`rm -rf ${platinumPath}`);
       cy.exec(
@@ -84,7 +74,7 @@ context("project creation", () => {
         stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(platinumPath);
       });
 
-      callback();
+      callback(repoName);
 
       cy.exec(`rm -rf ${platinumPath}`);
     });
@@ -213,7 +203,7 @@ context("project creation", () => {
             .contains("Pick a directory for the new project")
             .should("exist");
 
-          withPlatinumStub(() => {
+          withPlatinumStub(_ => {
             commands.pick("new-project", "choose-path-button").click();
 
             commands
@@ -250,7 +240,7 @@ context("project creation", () => {
 
     context("importing existing repositories", () => {
       it("preselects master when importing a repository with a master branch", () => {
-        withRepoWithBranchesStub(["feat/12367890", "master"], repoName => {
+        withRepoWithBranches(["master", "dev"], repoName => {
           commands.pick("new-project-button").click();
           commands.pick("name").should("not.be.disabled");
           commands.pick("existing-project").click();
@@ -265,7 +255,7 @@ context("project creation", () => {
       });
 
       it("preselects main when importing a repository with a main and a master branch", () => {
-        withRepoWithBranchesStub(["master", "main"], repoName => {
+        withRepoWithBranches(["main", "master"], repoName => {
           commands.pick("new-project-button").click();
           commands.pick("name").should("not.be.disabled");
           commands.pick("existing-project").click();
@@ -335,7 +325,7 @@ context("project creation", () => {
       });
 
       it("creates a new project from an existing repository", () => {
-        withPlatinumStub(() => {
+        withPlatinumStub(repoName => {
           commands.pick("new-project-button").click();
 
           commands.pick("name").should("not.be.disabled");
@@ -348,32 +338,28 @@ context("project creation", () => {
           // this prevents this spec from failing on CI.
           cy.wait(500);
 
-          commands.pick("name").should("have.value", "git-platinum-copy");
+          commands.pick("name").should("have.value", repoName);
           commands.pick("default-branch").contains("main");
           commands.pick("description").type("Best project");
 
           commands.pick("create-project-button").click();
-          commands
-            .pick("project-screen", "header")
-            .contains("git-platinum-copy");
+          commands.pick("project-screen", "header").contains(repoName);
 
           commands.pick("project-screen", "header").contains("Best project");
 
           commands
             .pick("notification")
-            .contains("Project git-platinum-copy successfully created");
+            .contains(`Project ${repoName} successfully created`);
 
           commands.pick("profile").click();
-          commands
-            .pick("profile-screen", "project-list")
-            .contains("git-platinum-copy");
+          commands.pick("profile-screen", "project-list").contains(repoName);
           commands
             .pick("profile-screen", "project-list")
             .contains("Best project");
 
           commands
             .pick("notification")
-            .contains("Project git-platinum-copy successfully created")
+            .contains(`Project ${repoName} successfully created`)
             .should("exist");
           commands.pick("notification").contains("Close").click();
 
@@ -387,7 +373,7 @@ context("project creation", () => {
           // this prevents this spec from failing on CI.
           cy.wait(500);
 
-          commands.pick("name").should("have.value", "git-platinum-copy");
+          commands.pick("name").should("have.value", repoName);
           commands.pick("description").type("Best project");
 
           commands.pick("create-project-button").click();
