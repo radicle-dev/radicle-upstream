@@ -13,13 +13,13 @@ mkdir -p "$YARN_TEMPDIR"
 echo "--- Installing yarn dependencies"
 time TMPDIR="$YARN_TEMPDIR" yarn install --frozen-lockfile
 
-echo "--- Loading proxy/target cache"
+echo "--- Loading proxy target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"
 
 mkdir -p "$target_cache"
 
 if [[ -d "$target_cache" ]]; then
-	ln -s "$target_cache" proxy/target
+	ln -s "$target_cache" ./target
   echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 else
   echo "Cache $target_cache not available"
@@ -34,19 +34,15 @@ cat "$HOME/.gitconfig"
 
 echo "--- Run proxy docs"
 (
-  cd proxy
   export RUSTDOCFLAGS="-D intra-doc-link-resolution-failure"
   time cargo doc --workspace --no-deps --all-features --document-private-items
 )
 
 echo "--- Run proxy fmt"
-(cd proxy && time cargo fmt --all -- --check)
+time cargo fmt --all -- --check
 
 echo "--- Run proxy lints"
-(
-  cd proxy
-  time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
-)
+time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
 
 echo "--- Run app eslint checks"
 time yarn lint
@@ -59,7 +55,6 @@ time yarn typescript:check
 
 echo "--- Run proxy tests"
 (
-  cd proxy
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
   cargo build --tests --all --all-features --all-targets

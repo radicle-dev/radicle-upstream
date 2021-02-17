@@ -37,6 +37,17 @@ async function main() {
     .readFileSync("sandbox/.local-eth-account", "utf-8")
     .trim();
 
+  const tokenDecimals = await contracts.rad.decimals();
+
   // Set the initial balance of the used erc20 token for the development account.
-  await (await contracts.rad.transfer(devEthAccount, 98765)).wait();
+  await (
+    await contracts.rad.transfer(
+      devEthAccount,
+      fromBaseUnit(98765, tokenDecimals)
+    )
+  ).wait();
+}
+
+function fromBaseUnit(n, exp) {
+  return ethers.BigNumber.from(n).mul(ethers.BigNumber.from(10).pow(exp));
 }

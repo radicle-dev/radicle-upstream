@@ -1,12 +1,12 @@
 import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
-import { BigNumber } from "ethers";
+import Big from "big.js";
 import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
-import { provider } from "./wallet";
+import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
 // The store where all managed transactions are stored.
@@ -57,7 +57,7 @@ interface SupportOnboarding {
   kind: TxKind.SupportOnboarding;
   // The amount defined as the initial balance
   topUp: string;
-  // The amount to be disbursed monthly to the `receivers`.
+  // The amount to be disbursed weekly to the `receivers`.
   budget: string;
   // The receivers of this support.
   receivers: [Address, ReceiverStatus][];
@@ -80,7 +80,7 @@ interface CollectFunds {
 
 interface UpdateSupport {
   kind: TxKind.UpdateSupport;
-  // The amount to be disbursed monthly to the `receivers`.
+  // The amount to be disbursed weekly to the `receivers`.
   amount: string;
   // The changes made to the list of receivers.
   receivers: [Address, ReceiverStatus][];
@@ -112,8 +112,8 @@ export function erc20Allowance(txc: ContractTransaction): Tx {
 
 export function supportOnboarding(
   txc: ContractTransaction,
-  topUp: BigNumber,
-  budget: BigNumber,
+  topUp: Big,
+  budget: Big,
   receivers: Receivers
 ): Tx {
   const meta: SupportOnboarding = {
@@ -125,7 +125,7 @@ export function supportOnboarding(
   return { ...txData(txc), ...meta };
 }
 
-export function collect(txc: ContractTransaction, amount: BigNumber): Tx {
+export function collect(txc: ContractTransaction, amount: Big): Tx {
   const meta: CollectFunds = {
     kind: TxKind.CollectFunds,
     amount: amount.toString(),
@@ -133,19 +133,19 @@ export function collect(txc: ContractTransaction, amount: BigNumber): Tx {
   return { ...txData(txc), ...meta };
 }
 
-export function topUp(txc: ContractTransaction, amount: BigNumber): Tx {
+export function topUp(txc: ContractTransaction, amount: Big): Tx {
   const meta: TopUp = { kind: TxKind.TopUp, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 
-export function withdraw(txc: ContractTransaction, amount: BigNumber): Tx {
+export function withdraw(txc: ContractTransaction, amount: Big): Tx {
   const meta: Withdraw = { kind: TxKind.Withdraw, amount: amount.toString() };
   return { ...txData(txc), ...meta };
 }
 
 export function updateSupport(
   txc: ContractTransaction,
-  amount: BigNumber,
+  amount: Big,
   receivers: Receivers
 ): Tx {
   const meta: UpdateSupport = {
@@ -188,7 +188,9 @@ async function updateStatuses() {
       .filter((tx: Tx) => tx.status === TxStatus.AwaitingInclusion)
       .forEach(async (tx: Tx) => {
         try {
-          const receipt = await provider.getTransactionReceipt(tx.hash);
+          const receipt = await svelteStore
+            .get(walletStore)
+            .provider.getTransactionReceipt(tx.hash);
           tx.status = status(receipt);
         } catch (_error) {
           // We ignore network failures, therefore keeping the
@@ -211,12 +213,10 @@ function status(receipt: TransactionReceipt): TxStatus {
 
 /* UI helper functions */
 
-// Check if there is an ongoing transaction of a given kind.
-export function ongoing(txKind: TxKind): boolean {
-  const txs: Tx[] = svelteStore.get(store);
-  return txs.some(
-    tx => tx.status === TxStatus.AwaitingInclusion && tx.kind === txKind
-  );
+// Middleware criterion to check for an ongoing transaction of a given TxKind.
+export function ongoing(txKind: TxKind): (tx: Tx) => boolean {
+  return (tx: Tx) =>
+    tx.status === TxStatus.AwaitingInclusion && tx.kind === txKind;
 }
 
 export const colorForStatus = (status: TxStatus): string => {
@@ -330,14 +330,14 @@ export function isIncoming(tx: Tx): boolean {
 }
 
 // The amount the `tx` transfers. `undefined` when not applicable.
-export function transferAmount(tx: Tx): BigNumber | undefined {
+export function transferAmount(tx: Tx): Big | undefined {
   switch (tx.kind) {
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
     case TxKind.TopUp:
-      return BigNumber.from(tx.amount);
+      return Big(tx.amount);
     case TxKind.SupportOnboarding:
-      return BigNumber.from(tx.topUp);
+      return Big(tx.topUp);
     default:
       return undefined;
   }

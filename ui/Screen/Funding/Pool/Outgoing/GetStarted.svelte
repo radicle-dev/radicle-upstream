@@ -6,6 +6,9 @@
   import * as fundingPool from "../../../../src/funding/pool";
 
   export let pool: fundingPool.Pool;
+  // Whether the onboarding tx is ongoing and this screen
+  // should, therefore, be disabled.
+  export let ongoingTx = false;
 
   function getStarted() {
     fundingPool.store.set(pool);
@@ -39,5 +42,5 @@
 <div class="wrapper">
   <Emoji emoji="💸" size="huge" />
   <p class="typo-text">Stream digital money to your favorite people.</p>
-  <Button on:click={getStarted}>Get started</Button>
+  <Button disabled={ongoingTx} on:click={getStarted}>Get started</Button>
 </div>

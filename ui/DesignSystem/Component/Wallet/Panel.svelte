@@ -10,7 +10,7 @@
   export let style = "";
 
   $: balanceFontSize = `min(36px, calc(20rem / ${Math.max(
-    account.balance.length,
+    account.balance.toString().length,
     1
   )}))`;
 
@@ -75,7 +75,7 @@
       color="var(--color-secondary)"
       size="h1"
       style={`font-size: ${balanceFontSize}`}>
-      {wallet.formattedBalance(parseInt(account.balance))}
+      {wallet.formattedBalance(account.balance.toNumber())}
     </Dai>
   </h1>
 

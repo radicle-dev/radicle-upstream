@@ -4,7 +4,7 @@
 
   import {
     budgetStore,
-    monthlyContributionValidationStore,
+    weeklyBudgetValidationStore,
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
@@ -13,7 +13,7 @@
   export let onContinue: () => void;
 
   let validating = false;
-  $: validation = monthlyContributionValidationStore();
+  $: validation = weeklyBudgetValidationStore();
   $: budgetStore.set(budget);
   $: {
     if ($budgetStore && $budgetStore.length > 0) validating = true;
@@ -52,9 +52,9 @@
 <svelte:window on:keydown={onKeydown} />
 
 <Emoji emoji="💸" size="huge" />
-<h1>Set a monthly budget</h1>
+<h1>Set a weekly budget</h1>
 <p>
-  Set your monthly budget for outgoing support. This amount will flow to your
+  Set your weekly budget for outgoing support. This amount will flow to your
   receivers in real time.
 </p>
 <Input.Text

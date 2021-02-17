@@ -1,3 +1,5 @@
+import * as ethereum from "./ethereum";
+
 // TYPES
 export interface Settings {
   appearance: Appearance;
@@ -64,6 +66,17 @@ export const featureFlagOptions: Option<boolean>[] = [
   {
     title: "Disabled",
     value: false,
+  },
+];
+
+export const fundingEnvironmentOptions: Option<ethereum.Environment>[] = [
+  {
+    title: ethereum.Environment.Local.toString(),
+    value: ethereum.Environment.Local,
+  },
+  {
+    title: ethereum.Environment.Ropsten.toString(),
+    value: ethereum.Environment.Ropsten,
   },
 ];
 

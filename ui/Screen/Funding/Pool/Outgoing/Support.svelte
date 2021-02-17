@@ -8,39 +8,38 @@
   import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as fundingPool from "../../../../src/funding/pool";
-  import * as transaction from "../../../../src/transaction";
+  import { TxKind, ongoing } from "../../../../src/transaction";
+  import { store as txs } from "../../../../src/transaction";
 
   import {
     budgetStore,
-    monthlyContributionValidationStore,
+    weeklyBudgetValidationStore,
   } from "../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../src/validation";
 
-  import { BigNumber } from "ethers";
+  import Big from "big.js";
 
   export let pool: fundingPool.Pool;
 
   $: fundingPool.store.set(pool);
 
   let ongoingTopUp = false;
-  let ongoingWithdraw = false;
-  let ongoingSupportUpdate = false;
-  let paused = false;
+  $: ongoingTopUp = $txs.some(ongoing(TxKind.TopUp));
 
-  transaction.store.subscribe(_ => {
-    ongoingTopUp = transaction.ongoing(transaction.TxKind.TopUp);
-    ongoingWithdraw = transaction.ongoing(transaction.TxKind.Withdraw);
-    ongoingSupportUpdate = transaction.ongoing(
-      transaction.TxKind.UpdateSupport
-    );
-  });
+  let ongoingWithdraw = false;
+  $: ongoingWithdraw = $txs.some(ongoing(TxKind.Withdraw));
+
+  let ongoingSupportUpdate = false;
+  $: ongoingSupportUpdate = $txs.some(ongoing(TxKind.UpdateSupport));
+
+  let paused = false;
 
   // Editing values
   let budget = "";
   let receivers: fundingPool.Receivers = new Map();
 
   let validatingBudget = false;
-  $: budgetValidation = monthlyContributionValidationStore();
+  $: budgetValidation = weeklyBudgetValidationStore();
   $: budgetStore.set(budget);
   $: {
     if ($budgetStore && $budgetStore.length > 0) validatingBudget = true;
@@ -60,17 +59,16 @@
     if (store.status === remote.Status.Success) {
       data = store.data;
       if (!editing) {
-        budget = data.amountPerBlock.toString();
+        budget = data.weeklyBudget.toString();
         receivers = new Map(data.receivers);
       }
-      paused =
-        data.balance.lte(data.amountPerBlock) || data.amountPerBlock.isZero();
+      paused = data.balance.lte(data.weeklyBudget) || data.weeklyBudget.eq(0);
     }
   });
 
   $: thereAreChanges =
-    fundingPool.isValidBigNumber(budget) &&
-    (!BigNumber.from(budget).eq(data.amountPerBlock) ||
+    fundingPool.isValidBig(budget) &&
+    (!Big(budget).eq(data.weeklyBudget) ||
       receivers.size !== data.receivers.size ||
       [...receivers.entries()].find(
         ([address, weight]) => data.receivers.get(address) !== weight
@@ -78,7 +76,7 @@
 
   function leaveEditMode(): void {
     editing = false;
-    budget = data.amountPerBlock.toString();
+    budget = data.weeklyBudget.toString();
     receivers = new Map(data.receivers);
   }
 
@@ -90,7 +88,7 @@
     );
 
     return pool
-      .updateSettings(BigNumber.from(budget), changedReceivers)
+      .updateSettings(Big(budget), changedReceivers)
       .then(_ => leaveEditMode());
   }
 
@@ -184,10 +182,10 @@
             </Input.Text>
           {:else}
             <p class="typo-text-bold">
-              <Dai>{poolData.amountPerBlock}</Dai>
+              <Dai>{poolData.weeklyBudget.toNumber()}</Dai>
             </p>
           {/if}
-          <span style="margin-left: 0.4375rem;"> per month</span>
+          <span style="margin-left: 0.4375rem;"> per week</span>
         </span>
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
@@ -204,25 +202,22 @@
         <p class="typo-text-bold row" style="margin-left: 0.75rem">
           <Dai>{poolData.balance}</Dai>
         </p>
-        {#if !ongoingWithdraw && !ongoingTopUp}
-          <Button
-            disabled={poolData.balance === 0}
-            dataCy="drain-pool-button"
-            variant="transparent"
-            on:click={openWithdrawModal}
-            style="margin-left: 0.75rem">
-            Withdraw
-          </Button>
-        {/if}
-        {#if !ongoingTopUp}
-          <Button
-            dataCy="top-up-pool-button"
-            variant="vanilla"
-            on:click={openTopUp}
-            style="margin-left: 0.75rem">
-            Top up
-          </Button>
-        {/if}
+        <Button
+          disabled={poolData.balance.eq(0) || ongoingWithdraw || ongoingTopUp}
+          dataCy="drain-pool-button"
+          variant="transparent"
+          on:click={openWithdrawModal}
+          style="margin-left: 0.75rem">
+          Withdraw
+        </Button>
+        <Button
+          disabled={ongoingTopUp}
+          dataCy="top-up-pool-button"
+          variant="vanilla"
+          on:click={openTopUp}
+          style="margin-left: 0.75rem">
+          Top up
+        </Button>
       </div>
     </header>
 
@@ -246,8 +241,8 @@
         {:else}
           <div style="display: flex; align-items: center">
             <strong style="margin-left: 0">
-              <Dai>{poolData.amountPerBlock}</Dai></strong>
-            per month will go to each of the
+              <Dai>{poolData.weeklyBudget}</Dai></strong>
+            per week will go to each of the
             <strong>{poolData.receivers.size} </strong>
             receivers you're supporting.
 
@@ -277,8 +272,8 @@
           the users you support.
         {:else}
           <Icon.InfoCircle />
-          To stop or pause your support, set the monthly contribution to 0 or
-          withdraw all the remaining balance.
+          To stop or pause your support, set the weekly budget to 0 or withdraw
+          all the remaining balance.
         {/if}
       </div>
     </div>

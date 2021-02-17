@@ -14,17 +14,18 @@
   } from "../../../src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
-  import { BigNumber } from "ethers";
+  import Big from "big.js";
 
   if ($store === null) pop();
 
   // Validate the amount beign withdrawn
   let validatingAmount = false;
   let amount = "";
-  let validation = balanceValidationStore(0);
+  let balance = Big(0);
+  let validation = balanceValidationStore(balance);
 
   $: {
-    const balance = $store?.data.unwrap()?.balance || 0;
+    balance = $store?.data.unwrap()?.balance || balance;
     validation = balanceValidationStore(balance);
   }
 
@@ -45,7 +46,7 @@
     const pool = get(store);
     if (pool) {
       if (mode === Mode.SpecifyAmount) {
-        await pool.withdraw(BigNumber.from(amount));
+        await pool.withdraw(Big(amount));
       } else {
         await pool.withdrawAll();
       }

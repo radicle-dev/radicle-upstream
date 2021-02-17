@@ -143,10 +143,7 @@ context("project creation", () => {
 
           // has to be no more than 64 characters long
           commands.pick("page", "name").clear();
-          commands
-            .pick("page", "name")
-            .invoke("val", "x".repeat(257))
-            .trigger("input");
+          commands.pasteInto(["page", "name"], "x".repeat(257));
           commands
             .pick("page")
             .contains(
@@ -170,10 +167,7 @@ context("project creation", () => {
 
             // the project description has to be no more than 256 characters long
             commands.pick("page", "description").clear();
-            commands
-              .pick("page", "description")
-              .invoke("val", "x".repeat(257))
-              .trigger("input");
+            commands.pasteInto(["page", "description"], "x".repeat(257));
             commands
               .pick("page")
               .contains(

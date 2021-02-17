@@ -137,10 +137,7 @@ context("onboarding", () => {
 
         // Has to be no more than 32 characters long.
         commands.pick("handle-input").clear();
-        commands
-          .pick("handle-input")
-          .invoke("val", "x".repeat(33))
-          .trigger("input");
+        commands.pasteInto(["handle-input"], "x".repeat(33));
         commands
           .pick("enter-name-screen")
           .contains(

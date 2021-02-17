@@ -149,22 +149,16 @@ pub fn push_tags(
     }
 }
 
-/// Craft the absolute path to git-platinum fixtures.
+/// Return the canonicalized path to the `git-platinum` fixtures repo.
 ///
 /// # Errors
 ///
-///   * Failed to get current directory
-pub fn platinum_directory() -> io::Result<path::PathBuf> {
-    let mut platinum_path = env::current_dir()?;
-
-    if platinum_path.as_path().ends_with("proxy") {
-        platinum_path.push("..");
-    } else {
-        platinum_path.push("../..");
-    }
-
-    platinum_path.push("fixtures/git-platinum");
-    Ok(path::Path::new("file://").join(platinum_path))
+///   * The path could not be canonicalized. This happens if the path does not exist.
+fn platinum_directory() -> io::Result<path::PathBuf> {
+    let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
+    path::Path::new(cargo_manifest_dir)
+        .join("../../fixtures/git-platinum")
+        .canonicalize()
 }
 
 /// TODO(finto): Burn this. It's just a big foot gun and it breaks whenever we try to access
@@ -271,10 +265,13 @@ pub async fn track_fake_peer(
 ///   * The platinum directory path was malformed
 ///   * Getting the branches fails
 pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error> {
-    let platinum_from = platinum_directory().expect("failed to get platinum directory");
-    let platinum_from = platinum_from
-        .to_str()
-        .expect("failed to get platinum directory");
+    let platinum_dir = platinum_directory().expect("failed to get platinum directory");
+    let platinum_from = format!(
+        "file://{}",
+        platinum_dir
+            .to_str()
+            .expect("failed to get platinum directory")
+    );
     let mut fetch_options = git2::FetchOptions::new();
     fetch_options.download_tags(git2::AutotagOption::All);
 
@@ -282,7 +279,7 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
         .branch("master")
         .clone_local(git2::build::CloneLocal::Auto)
         .fetch_options(fetch_options)
-        .clone(platinum_from, platinum_into.as_ref())?;
+        .clone(&platinum_from, platinum_into.as_ref())?;
 
     {
         let branches = platinum_repo.branches(Some(git2::BranchType::Remote))?;

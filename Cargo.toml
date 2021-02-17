@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+  "proxy/api",
+  "proxy/coco",
+]

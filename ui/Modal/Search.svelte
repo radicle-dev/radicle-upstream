@@ -127,7 +127,7 @@
   }
 </style>
 
-<div class="container">
+<div class="container" data-cy="search-modal">
   <div class="search-bar">
     <Input.Text
       autofocus

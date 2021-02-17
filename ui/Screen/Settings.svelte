@@ -2,6 +2,8 @@
   import { getContext } from "svelte";
   import * as svelteStore from "svelte/store";
 
+  import { selectedEnvironment as ethereumEnvironment } from "../src/ethereum";
+  import * as ethereum from "../src/ethereum";
   import * as ipc from "../src/ipc";
   import {
     settings,
@@ -12,7 +14,11 @@
     updateFeatureFlags,
   } from "../src/session";
   import type { UnsealedSession } from "../src/session";
-  import { themeOptions, featureFlagOptions } from "../src/settings";
+  import {
+    themeOptions,
+    featureFlagOptions,
+    fundingEnvironmentOptions,
+  } from "../src/settings";
   import { updateChecker } from "../src/updateChecker";
   import * as path from "../src/path";
   import * as modal from "../src/modal";
@@ -31,6 +37,11 @@
 
   const updateFundingFeatureFlag = (event: CustomEvent) =>
     updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
+
+  const updateEthereumEnvironment = (event: CustomEvent) => {
+    const environment = event.detail as ethereum.Environment;
+    ethereum.selectedEnvironment.set(environment);
+  };
 
   let seedInputValue = "";
 
@@ -84,7 +95,7 @@
     max-width: var(--content-max-width);
     margin: 64px auto;
     min-width: var(--content-min-width);
-    padding: 0 var(--content-padding) 4rem var(--content-padding);
+    padding: 0 var(--content-padding);
   }
 
   .sections {
@@ -165,7 +176,7 @@
   }
 </style>
 
-<SidebarLayout dataCy="page">
+<SidebarLayout dataCy="settings-page">
   <div class="container">
     <div class="title">
       <h1>Settings</h1>
@@ -216,7 +227,10 @@
                 more about seeds</a>
             </p>
           </div>
-          <form class="seed-entry-form" on:submit|preventDefault>
+          <form
+            class="seed-entry-form"
+            on:submit|preventDefault
+            data-cy="seed-entry-form">
             <div class="seed-entry-field">
               <Input.Text
                 dataCy="seed-input"
@@ -239,6 +253,7 @@
                 <div class="seed">
                   <StyledCopyable value={seed} />
                   <Icon.Cross
+                    dataCy="remove-seed"
                     on:click={() => removeSeed(seed)}
                     style="margin-left: 1.5rem; cursor:pointer;" />
                 </div>
@@ -281,6 +296,19 @@
                 on:select={updateFundingFeatureFlag} />
             </div>
           </div>
+          {#if $settings.featureFlags.funding}
+            <div class="section-item">
+              <div class="info">
+                <p class="typo-text-bold">Funding environment</p>
+              </div>
+              <div class="action">
+                <SegmentedControl
+                  active={$ethereumEnvironment}
+                  options={fundingEnvironmentOptions}
+                  on:select={updateEthereumEnvironment} />
+              </div>
+            </div>
+          {/if}
         </section>
       {/if}
 

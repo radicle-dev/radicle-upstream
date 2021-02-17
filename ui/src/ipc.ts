@@ -51,7 +51,7 @@ export const isDev = (): boolean => {
 // This option can only be enabled iff `isDev()` as we should only
 // want to toggle it while in development mode.
 export const isExperimental = (): boolean => {
-  return isDev() && window.electron.isExperimental;
+  return window.electron.isExperimental;
 };
 
 // Register a listener for the `ipcTypes.ProxyError` message.

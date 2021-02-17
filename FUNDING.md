@@ -1,3 +1,7 @@
+## Radicle Funding
+
+Welcome to the developer's documentation on the Radicle Funding.
+
 ### Overview
 
 Three moving pieces back the Radicle Funding experiences:
@@ -23,10 +27,41 @@ approve or reject) on their connected wallet.
 These same transactions are provided and ran by the [Radicle Contracts][rc], our
 custom Ethereum smart-contracts.
 
+### Ethereum environments
 
-#### Development environment
+The funding experiences can take place in three different environments:
 
-In the development environment, we set up these three pieces as follows:
+1. `Local`
+
+  In this environment, the Radicle Contracts are deployed to development Ethereum
+  node running locally and we use a local test wallet that can communicate with it.
+  The "DAI" token used in this environment is our custom Radicle Token. See the
+  [local environment](#local-environment) section to learn how to get set up.
+
+
+2. `Ropsten`
+
+  In this environment, the app will plug itself with the Radicle Contracts deployed
+  in the Ropsten network and Infura is used as a service provider. We recommend that
+  you use a real wallet to ensure that we are testing using real-world conditions.
+
+  You will need fake Ropsten Eth (aka `rEth`) to pay the incurring transactions fees.
+  No real money will be charged.
+
+  As in the `Local` environment, here the "DAI" token used is also our custom Radicle
+  Token, deployed in the Ropsten network. Reach out to the team to get some Radicle
+  Tokens into your account.
+
+3. `Mainnet`
+
+  In this environment, to be introduced in the future once we are ready to go mainnet,
+  the wallet will plug itself to the Radicle Contracts (to be) deployed in the Ethereum
+  Mainnet. This environment is not currently supported.
+
+
+#### Local environment
+
+In the local environment, we set up these three pieces as follows:
 
 - A local WalletConnect test wallet instance
 
@@ -37,12 +72,12 @@ In the development environment, we set up these three pieces as follows:
 
 - A local ganache instance
 
-  Ganache provides a local Ethereum RPC client for testing and development. The
-  Radicle Contracts are deployed to this instance. Here, we also set an initial
+  Ganache provides a local Ethereum RPC client for testing and development. We deploy the
+  Radicle Contracts to this instance. Here, we also set an initial
   balance of the account we choose for development purposes.
 
-  For piece of mind, note that this instance has no connection to other networks
-  such as mainnet or testnet. Therefore, no real assets are ever used. Feel free
+  For peace of mind, note that this instance has no connection to other networks
+  such as mainnet or testnet. Therefore, no real assets used ever. Feel free
   to play around!
 
 ![Radicle Funding Development Set up][dev-setup]
@@ -76,7 +111,7 @@ tabs:
 
 - `npm run start` within `walletconnect-test-wallet`
 - `yarn ethereum:start` within `radicle-upstream`
-`RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start` within `radicle-upstream`
+- `RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start` within `radicle-upstream`
 - Once the app is running, enable the funding feature in the Upstream settings
 
 

@@ -8,15 +8,15 @@
   } from "../../../../src/funding/pool";
   import { ValidationStatus } from "../../../../src/validation";
 
-  import { BigNumber } from "ethers";
+  import Big from "big.js";
 
   export let amount = "";
   export let onBack: [string, () => void];
-  export let balance = "0";
+  export let balance: Big = Big(0);
   export let disabled = true;
 
   let validating = false;
-  $: validation = balanceValidationStore(BigNumber.from(balance));
+  $: validation = balanceValidationStore(balance);
   $: amountStore.set(amount);
   $: {
     if ($amountStore && $amountStore.length > 0) validating = true;
@@ -48,8 +48,8 @@
 <Emoji emoji="💸" size="huge" />
 <h1>Top up your account</h1>
 <p>
-  You can top up a couple of months worth of support or just enough for this
-  month.
+  You can top up a couple of weeks worth of support or just enough for this
+  week.
 </p>
 <Input.Text
   dataCy="modal-amount-input"

@@ -1,5 +1,7 @@
 import WalletConnect from "@walletconnect/client";
 import * as svelteStore from "svelte/store";
+
+import type { Big } from "big.js";
 import * as ethers from "ethers";
 import * as ethersBytes from "@ethersproject/bytes";
 import {
@@ -10,10 +12,12 @@ import {
 import type {
   Provider,
   TransactionRequest,
+  TransactionResponse,
 } from "@ethersproject/abstract-provider";
 
 import * as contract from "../src/funding/contract";
 import * as error from "../src/error";
+import * as ethereum from "../src/ethereum";
 import * as modal from "../src/modal";
 import * as path from "../src/path";
 
@@ -30,50 +34,90 @@ export type State =
 
 export interface Connected {
   account: Account;
+  network: ethereum.Network;
 }
 
 export interface Account {
   address: string;
-  balance: string;
+  balance: Big;
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
+  environment: ethereum.Environment;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
+  provider: ethers.providers.Provider;
   signer: ethers.Signer;
   account(): Account | undefined;
 }
 
-export const provider = new ethers.providers.JsonRpcProvider(
-  "http://localhost:8545"
-);
+function getProvider(
+  environment: ethereum.Environment
+): ethers.providers.Provider {
+  switch (environment) {
+    case ethereum.Environment.Local:
+      return new ethers.providers.JsonRpcProvider("http://localhost:8545");
+    case ethereum.Environment.Ropsten:
+      return new ethers.providers.InfuraProvider(
+        "ropsten",
+        "66fa0f92a54e4d8c9483ffdc6840d77b"
+      );
+  }
+}
 
-export function build(): Wallet {
+export function build(
+  environment: ethereum.Environment,
+  provider: ethers.providers.Provider
+): Wallet {
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
   });
 
+  function onModalHide(): void {
+    const store = svelteStore.get(stateStore);
+    if (store.status === Status.NotConnected) {
+      reinitWalletConnect();
+    }
+  }
+
+  function newWalletConnect(): WalletConnect {
+    return new WalletConnect({
+      bridge: "https://bridge.walletconnect.org",
+      qrcodeModal: qrCodeModal,
+    });
+  }
+
+  // We need to reinitialize `WalletConnect` until this issue is fixed:
+  // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
+  function reinitWalletConnect() {
+    walletConnect = newWalletConnect();
+    signer.walletConnect = walletConnect;
+  }
+
   const qrCodeModal = {
     open: (uri: string, _cb: unknown, _opts?: unknown) => {
       uriStore.set(uri);
-      modal.toggle(path.walletQRCode());
+      modal.toggle(path.walletQRCode(), onModalHide);
     },
-    close: async () => {
+    close: () => {
       // N.B: this is actually called when the connection is established,
       // not when the modal is closed per se.
+      stateStore.set({ status: Status.Connecting });
       modal.hide();
     },
   };
 
-  let walletConnect = new WalletConnect({
-    bridge: "https://bridge.walletconnect.org",
-    qrcodeModal: qrCodeModal,
-  });
-
-  const signer = new WalletConnectSigner(walletConnect, provider, disconnect);
-  const daiTokenContract = contract.daiToken(signer);
-
-  window.ethereumDebug = new EthereumDebug(provider);
+  let walletConnect = newWalletConnect();
+  const signer = new WalletConnectSigner(
+    walletConnect,
+    provider,
+    environment,
+    disconnect
+  );
+  const daiTokenContract = contract.daiToken(
+    signer,
+    contract.daiTokenAddress(environment)
+  );
 
   // Connect to a wallet using walletconnect
   async function connect() {
@@ -103,13 +147,7 @@ export function build(): Wallet {
     });
 
     stateStore.set({ status: Status.NotConnected });
-    // We need to reinitialize `WalletConnect` until this issue is fixed:
-    // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
-    walletConnect = new WalletConnect({
-      bridge: "https://bridge.walletconnect.org",
-      qrcodeModal: qrCodeModal,
-    });
-    signer.walletConnect = walletConnect;
+    reinitWalletConnect();
   }
 
   async function initialize() {
@@ -121,12 +159,17 @@ export function build(): Wallet {
   async function loadAccountData() {
     try {
       const accountAddress = await signer.getAddress();
-      const balance = await daiTokenContract.balanceOf(accountAddress);
+      const balance = await daiTokenContract
+        .balanceOf(accountAddress)
+        .then(ethereum.toBaseUnit);
+      const chainId = walletConnect.chainId;
+
       const connected = {
         account: {
           address: accountAddress,
-          balance: balance.toString(),
+          balance,
         },
+        network: ethereum.networkFromChainId(chainId),
       };
       stateStore.set({ status: Status.Connected, connected });
     } catch (error) {
@@ -156,9 +199,11 @@ export function build(): Wallet {
   }
 
   return {
+    environment,
     subscribe: stateStore.subscribe,
     connect,
     disconnect,
+    provider,
     signer,
     account,
   };
@@ -173,15 +218,18 @@ declare global {
 class WalletConnectSigner extends ethers.Signer {
   public walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
+  private _environment: ethereum.Environment;
 
   constructor(
     walletConnect: WalletConnect,
     provider: Provider,
+    environment: ethereum.Environment,
     onDisconnect: () => void
   ) {
     super();
     defineReadOnly(this, "provider", provider);
     this._provider = provider;
+    this._environment = environment;
     this.walletConnect = walletConnect;
     this.walletConnect.on("disconnect", onDisconnect);
   }
@@ -200,12 +248,58 @@ class WalletConnectSigner extends ethers.Signer {
     throw new Error("not implemented");
   }
 
+  async sendTransaction(
+    transaction: Deferrable<TransactionRequest>
+  ): Promise<TransactionResponse> {
+    // When using a local Ethereum environment, we want our app to send
+    // the transaction to the local Ethereum node and have the external
+    // wallet just sign the transaction. In all other environments, we
+    // want the external wallet to submit the transaction to the network.
+    if (this._environment === ethereum.Environment.Local) {
+      return super.sendTransaction(transaction);
+    }
+
+    const tx = await resolveProperties(transaction);
+    const from = tx.from || (await this.getAddress());
+
+    const txHash = await this.walletConnect.sendTransaction({
+      from,
+      to: tx.to,
+      value: BigNumberToPrimitive(tx.value),
+      data: bytesLikeToString(tx.data),
+    });
+
+    return {
+      from,
+      value: ethers.BigNumber.from(tx.value || 0),
+      get chainId(): number {
+        throw new Error("this should never be called");
+      },
+      get nonce(): number {
+        throw new Error("this should never be called");
+      },
+      get gasLimit(): ethers.BigNumber {
+        throw new Error("this should never be called");
+      },
+      get gasPrice(): ethers.BigNumber {
+        throw new Error("this should never be called");
+      },
+      data: bytesLikeToString(tx.data) || "",
+      hash: txHash,
+      confirmations: 1,
+      wait: () => {
+        throw new Error("this should never be called");
+      },
+    };
+  }
+
   async signTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<string> {
     const tx = await resolveProperties(transaction);
     const from = tx.from || (await this.getAddress());
     const nonce = await this._provider.getTransactionCount(from);
+
     const signedTx = await this.walletConnect.signTransaction({
       from,
       to: tx.to,
@@ -272,5 +366,14 @@ export function formattedBalance(balance: number): string {
   return balance.toLocaleString("us-US");
 }
 
-// The wallet singleton
-export const wallet = build();
+export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
+  ethereum.selectedEnvironment,
+  environment => {
+    const provider = getProvider(environment);
+    if (provider instanceof ethers.providers.JsonRpcProvider) {
+      window.ethereumDebug = new EthereumDebug(provider);
+    }
+
+    return build(environment, provider);
+  }
+);

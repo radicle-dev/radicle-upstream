@@ -67,10 +67,11 @@ On Linux:
 2. Install dependencies: `cd radicle-upstream && yarn install`.
 3. Start Upstream in development mode: `yarn start`.
 
-Running upstream will create new directories in `XDG_DATA_HOME` & `XDG_CONFIG_HOME`
-(or `HOME` respectiveley). To overwrite the locations, you can set `RAD_HOME` to
-your desired directory. Note that you will also have to set it for using git remote
-helper functionality outside of upstream.
+Running upstream will create new directories in `XDG_DATA_HOME` &
+`XDG_CONFIG_HOME` (or `HOME` respectiveley). To overwrite the locations, you
+can set `RAD_HOME` to your desired directory. Note that you will also have to
+set it for using git remote helper functionality outside of upstream.
+
 
 ### Feature flagging
 
@@ -150,6 +151,50 @@ You can build and package Upstream with: `yarn dist`. The generated package
 will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
 
 
+#### Apple notarization
+
+To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
+which allows users to install and open Upstream without unnecessary
+[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
+
+This notarization step is automated using our custom macOS build host for
+releases.
+
+However, if the build host is not available, it is possible to set up and
+perform notarization locally on Apple hardware.
+
+For this we need:
+  - a paid Apple developer account registered to Monadic
+  - an Apple ID token for allowing the notarization script to run on behalf of
+    our developer account
+    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
+  - a valid "Developer ID Application" certificate
+    - [Certificates Add][ca] -> Developer ID Application
+      **Note:** this can only be created via the company account holder
+
+Once you've created the _Developer ID Application_ certificate, download it
+locally and add it to your keychain by double clicking on the file.
+
+Before building a notarized DMG, make sure you're connected to the internet and
+then run:
+
+```sh
+git checkout vX.X.X
+CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
+APPLE_ID="XXXXXXX@monadic.xyz" \
+APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
+NOTARIZE=true \
+yarn dist
+```
+
+Don't forget to replace the `X` in the template with the real values:
+  - `vX.X.X` is the version you'd like to build and notarize
+  - `CSC_NAME` is the "Developer ID Application" certificate ID
+  - `APPLE_ID` your Apple account ID
+  - `APPLE_ID_PASSWORD` your Apple account token that you generated in the
+    steps above
+
+
 ### Scripts
 
 To get a list of all available script commands, run: `yarn run`.
@@ -188,9 +233,10 @@ Here's a list of all scripts that are intended for developer use:
                                 #   - monorepo
                                 #   - saved preferences
 
-    yarn ethereum:start         # Setup a local ethereum node to which we deploy
-                                # the Radicle Contracts and set the intial balance
-                                # of a stated local ethereum development account.
+    yarn ethereum:start         # Setup a local ethereum node to which we
+                                # deploy the Radicle Contracts and set the
+                                # intial balance of a stated local ethereum
+                                # development account.
 
 ### Design System
 
@@ -365,8 +411,7 @@ application package by [electron-builder][eb].
 To be able to build the proxy first install all required dependencies from the
 [Running Upstream](#running-upstream) section.
 
-To start the proxy binary, run: `cd proxy && cargo run`.
-After that the API docs are served under `http://127.0.0.1:17246/docs`.
+To start the proxy binary, run `cargo run`.
 
 
 ### Testing
@@ -375,12 +420,11 @@ The proxy and UI share the same test fixtures, if you haven't done it already,
 set up the test fixtures like so:
 
 ```sh
-git submodule update --init --remote
-git submodule foreach "git fetch --all"
+./scripts/test-setup.sh
 ```
 
-💡 *You'll have to run the submodule commands every time there are any updates
-to the test fixture repository.*
+💡 *You'll have to run the command every time there are any updates to the test
+fixture repository.*
 
 Then run tests as usual: `cargo test --all-features --all-targets`.
 
@@ -398,7 +442,8 @@ a thin layer exposing well-typed entities. The heavy lifting is done in the
 modules named after the protocols we consume - [radicle-link][rl] through it
 [radicle-surf][rs], for code collaboration. By isolating concerns this way, we
 hope to enable ease-of-contribution to downstream teams. Empowering them to
-reflect changes in their public APIs easily with code contributions to Upstream.
+reflect changes in their public APIs easily with code contributions to
+Upstream.
 
 
 ## CI setup
@@ -454,231 +499,34 @@ build times. If you need to update this image, proceed as follows:
    create a new branch and build the updated image.
 
 ## Releases
-
 ### Prerequisites
+#### Google Cloud CLI
+
+For uploading artifacts to releases.radicle.xyz, you'll need a working `gcloud`
+environment. To do so, follow points 1 and 2 from the
+[Docker image updates][do] section.
+
 
 #### GitHub `hub` CLI tool
 
-Please install the [`hub`][hb] CLI tool, we use it in our release automation
-script to:
+Please install the [`hub`][hb] CLI tool (version >= **2.14**), we use it in our
+release automation script to:
+
   - create a pull-request off of a release branch;
   - to merge the release branch into master;
   - to close the pull-request.
 
 Then you'll have to create a _Personal access token_ for it in the
-[GitHub Developer settings][gs] page and authenticate the CLI tool once
+[GitHub Developer settings][gt] page and authenticate the CLI tool once
 by running any command that does a request to GitHub, like so: `hub api`.
 You'll be asked to provide your GitHub login and the access token.
 
-#### Apple notarization
 
-To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
-which allows the user to install and open Upstream without unnecessary
-[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
-
-For this we need:
-  - a paid Apple developer account registered to Monadic
-  - an Apple ID token for allowing the notarization script to run on behalf of
-    our developer account
-    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
-  - a valid "Developer ID Application" certificate
-    - [Certificates Add][ca] -> Developer ID Application
-      **Note:** this can only be created via the company account holder
-
-Once you've created the _Developer ID Application_ certificate, download it
-locally and add it to your keychain by double clicking on the file.
-
-
-## Preparing a release
+### Publishing a release
 
 To perform a release run: `git checkout master && yarn release` and follow the
 instructions.
 
-Once the release PR branch is merged into master, a build will be triggered on
-Buildkite, this will build Upstream for both Linux and macOS (unsigned).
-
-<details>
-<summary>Commands to prepare a release</summary>
-
-```sh
-$ git checkout master
-$ yarn release
-
-Cutting release v0.0.11:
-
-  ✔ git checkout master
-  ✔ git branch release-v0.0.11 && git checkout release-v0.0.11
-  ✔ yarn run standard-version
-  ✔ git push origin release-v0.0.11
-  ✔ hub pull-request -p --no-edit
-
-Now fix up CHANGELOG.md if necessary and update QA.md
-to cover the latest changes in functionality.
-
-When everything is in shape, ask a peer to review the
-pull request, but don't merge it via the GitHub UI:
-
-  👉 https://github.com/radicle-upstream/pull/417
-
-Finally, complete the release by running:
-
-  👉 yarn release --finalize v0.0.11 417
-
-
-$ yarn release --finalize v0.0.11 417
-
-Finalizing release v0.0.11:
-
-  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/417/merge"
-  ✔ git checkout master && git pull
-  ✔ git tag v0.0.11 ed968ee61ec30a18653b621f645a6abe354d2d16
-  ✔ git push --tags
-
-Release v0.0.11 successfully completed! 👏 🎉 🚀
-```
-</details>
-
-## Quality assurance
-
-We already have an extensive end-to-end test suite which covers most features
-and a good amount of edge cases, however it is impossible to eliminate every bug
-and regression this way, that's why we perform a QA procedure before publishing
-a release.
-
-After a release is cut, we create a GitHub issue for every supported platform
-which contains a QA checklist. Before publishing packages for a wider audience
-someone from the team goes through the checklist and manually tests the app,
-afterwards the team can evaluate whether the release is up to our standards.
-
-**Title:** `QA: vX.X.X macOS`\
-**Body** [QA.md][qa]
-
-**Title:** `QA: vX.X.X Linux`\
-**Body:** [QA.md][qa]
-
-## Publishing a release
-
-Once a release has passed QA, it is ready to be published. This involves a
-couple of manual steps since the macOS release has to be signed and notarized
-on a developer's **macOS** machine.
-
-If you haven't already, please set up an Apple developer account and signing
-certificates, see [Apple notarization][an] for more details.
-
-To build, sign and notarize a macOS dmg package of the latest version run the
-following commands:
-
-```
-cd radicle-upstream
-git checkout vX.X.X
-
-CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
-APPLE_ID="XXXXXXX@monadic.xyz" \
-APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
-NOTARIZE=true \
-yarn dist
-```
-
-Where:
-  - `CSC_NAME` is the name of the signing certificate
-  - `APPLE_ID` is your Apple developer ID
-  - `APPLE_ID_PASSWORD` is the app specific token generated from your Apple ID
-
-**Note**: building a release might take a while, especially the notarization
-step, because it has to upload the final package to the Apple notarization
-server. Make sure you're on a stable internet connection.
-
-Once the package is notarized you can upload it to the web using
-[`gsutil`][gs]:
-
-```bash
-gsutil cp dist/radicle-upstream-X.X.X.dmg gs://releases.radicle.xyz
-```
-
-To be able to upload packages to the GCS bucket you will need the appropriate
-permissions. Reach out to a co-worker if you don’t have them.
-
-After this you also need to obtain and upload the Linux package.
-
-```bash
-version="$(jq -r .version < package.json)"
-curl -fLO "https://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage"
-gsutil cp radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
-```
-
-After all the packages are uploaded, update the links to those binaries on the
-[radicle.xyz download][rd] and [docs.radicle.xyz/docs/getting-started][gs]
-pages and rebuild/deploy the websites.
-
-Now, announce the new release on our public channels (**make sure to update all
-the versions and links**):
-
-  - https://radicle.community/c/announcements
-    - subject:
-
-          Radicle Upstream vX.X.X is out! 🎉
-
-    - body text:
-
-          # Radicle Upstream vX.X.X is out! 🎉
-
-          You can find all the changelog for this release [here][1].
-
-          Here are packages for all our supported platforms:
-
-          - [macOS][2]
-          - [Linux][3]
-
-          For more information on how to use Radicle, check out our
-          [documentation][4].
-
-          For support, you can reach us in the [#support channel][5] of our Matrix
-          chat or in the #help category of this forum.
-
-          If you encounter a bug, please [open an issue][6].
-
-          [1]: https://github.com/radicle-dev/radicle-upstream/blob/master/CHANGELOG.md#XXX-XXXX-XX-XX
-          [2]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
-          [3]: https://releases.radicle.xyz/radicle-upstream-X.X.X.AppImage
-          [4]: https://docs.radicle.xyz/docs/what-is-radicle.html
-          [5]: https://matrix.radicle.community/#/room/#support:radicle.community
-          [6]: https://github.com/radicle-dev/radicle-upstream/issues
-
-  - Post the following two lines on:
-    https://matrix.radicle.community/#/room/#general:radicle.community
-
-        Radicle Upstream vX.X.X is out! 🎉
-        https://radicle.community/t/radicle-upstream-vX-X-X-is-out
-
-Finally, update the information about the latest release by running
-
-```bash
-./scripts/set-latest-release.ts
-```
-
-This also requires the `gsutil` tool and access to the `releases.radicle.xyz`
-bucket.
-
-
-## Checklist
-To avoid missing a step when performing a release, here's an ordered checklist
-for all of the required steps:
-
-- [ ] cut the release
-  - [ ] fix up `CHANGELOG.md` if there are any mistakes
-  - [ ] wait for the release PR to pass CI
-  - [ ] get 2 approvals for the release PR
-  - [ ] finalize the release
-- [ ] build and notarize macOS package
-- [ ] wait for release commit to build Linux packages on CI
-- [ ] upload Linux and macOS packages to releases.radicle.xyz
-- [ ] create macOS and Linux QA issues in the Upstream repo
-- [ ] wait until macOS and Linux QA is performed and passes
-- [ ] update radicle.xyz download links
-  - [ ] deploy radicle.xyz
-- [ ] announce new release on radicle.community
-- [ ] announce new release on the matrix #general:radicle.community channel
-- [ ] run script for updating version in auto-update notification
 
 
 [an]: #apple-notarization
@@ -691,12 +539,13 @@ for all of the required steps:
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
 [co]: https://github.com/rust-lang/cargo
 [cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits
+[do]: #docker-image-updates
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
+[es]: https://eslint.org
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gg]: https://cloud.google.com/storage/docs/gsutil_install
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
-[gs]: https://github.com/radicle-dev/radicle-docs/blob/master/docs/getting-started.md
 [gt]: https://github.com/settings/tokens
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
