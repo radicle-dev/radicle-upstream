@@ -309,6 +309,10 @@ context("project creation", () => {
             .contains("new-fancy-project");
 
           commands
+            .pick("project-screen", "revision-selector")
+            .contains(`trunk default`);
+
+          commands
             .pick("notification")
             .contains("Project new-fancy-project.xyz successfully created");
 

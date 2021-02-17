@@ -64,6 +64,8 @@ export function setup(window: Window): void {
     isDev: true,
     isExperimental: true,
   };
+
+  window.usersGitDefaultBranch = () => "trunk";
 }
 
 // Get the `ElectronStubs` object to stub and observe interactions of
