@@ -47,14 +47,6 @@ export const pickWithContent = (
   return cy.contains(selectorString, content);
 };
 
-// Selects the input element with the given `data-cy` ID and pastes
-// the value inside
-export const pasteInto = (ids: string[], value: string): void => {
-  pick(...ids)
-    .invoke("val", value)
-    .trigger("input");
-};
-
 export const createProjectWithFixture = (
   name = "platinum",
   description = "Best project ever.",
