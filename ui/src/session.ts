@@ -215,7 +215,7 @@ export const updateCoCo = (coco: CoCo): void =>
     settings: { ...get(settings), coco },
   });
 
-const VALID_SEED_MATCH = /^[\w\d]{54}@[\w\d.]*:[\d]{1,5}$/;
+const VALID_SEED_MATCH = /^[\w\d]{54}@([\w\d-]+\.)*[\w\d-]+:[\d]{1,5}$/;
 
 const checkSeedUniqueness = (seed: string): Promise<boolean> => {
   return Promise.resolve(!get(settings).coco.seeds.includes(seed));
@@ -253,4 +253,8 @@ export const removeSeed = (seed: string): void => {
     seeds: get(settings).coco.seeds.filter((x: string) => x !== seed),
   });
   seedValidation.reset();
+};
+
+export const __test__ = {
+  VALID_SEED_MATCH,
 };
