@@ -230,12 +230,23 @@ context("settings", () => {
 
       cy.visit("public/index.html");
 
-      commands.pickWithContent(["notification-action"], "Dismiss").click();
+      commands
+        .pickWithContent(
+          ["notification"],
+          "Want to check for new versions automatically"
+        )
+        .within(() => {
+          commands.pickWithContent(["notification-action"], "Dismiss").click();
+        });
       commands.pick("settings").click();
       commands.pick("version").find("button[value='on']").click();
-      commands.pickWithContent(["notification-action"], "Dismiss").click();
+      commands
+        .pickWithContent(["notification"], `Check out Version ${NEW_VERSION}`)
+        .within(() => {
+          commands.pickWithContent(["notification-action"], "Dismiss").click();
+        });
 
-      cy.tick(VERSION_NOTIFY_SILENCE_INTERVAL - 100);
+      cy.tick(VERSION_NOTIFY_SILENCE_INTERVAL - 500);
 
       commands
         .pickWithContent(
