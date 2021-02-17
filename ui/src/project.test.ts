@@ -3,7 +3,7 @@ import { get } from "svelte/store";
 import * as api from "./api";
 import * as project from "./project";
 import * as remote from "./remote";
-import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "./config";
+import { UPSTREAM_DEFAULT_BRANCH } from "./config";
 
 import { localStateMock } from "./__mocks__/api";
 
@@ -57,13 +57,8 @@ describe("creating a project", () => {
       const validation = project.repositoryPathValidationStore(false);
       validation.validate("/repository/path");
 
-      // resetting the default branch on validation start
-      expect(get(project.defaultBranch)).toEqual(
-        DEFAULT_BRANCH_FOR_NEW_PROJECTS
-      );
-
       process.nextTick(() => {
-        expect(get(project.defaultBranch)).toEqual("main");
+        expect(get(project.defaultBranch)).toEqual(UPSTREAM_DEFAULT_BRANCH);
       });
     });
   });
