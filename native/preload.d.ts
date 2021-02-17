@@ -14,5 +14,6 @@ declare global {
       isDev: boolean;
       isExperimental: boolean;
     };
+    usersGitDefaultBranch: () => string | undefined;
   }
 }

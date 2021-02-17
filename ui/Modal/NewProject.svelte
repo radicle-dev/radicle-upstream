@@ -12,6 +12,7 @@
     clearLocalState,
     create,
     defaultBranch,
+    defaultBranchForNewRepository,
     localState,
     nameValidationStore,
     descriptionValidationStore,
@@ -68,7 +69,7 @@
 
       const response = await create({
         description,
-        defaultBranch: $defaultBranch,
+        defaultBranch: defaultBranchForNewRepository(),
         repo: isNew
           ? { type: RepoType.New, name, path: newRepositoryPath }
           : { type: RepoType.Existing, path: existingRepositoryPath },

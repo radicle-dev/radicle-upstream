@@ -71,3 +71,8 @@ export function listenProxyError(
     }
   );
 }
+
+// The user-defined global git default branch.
+export function usersGitDefaultBranch(): string | undefined {
+  return window.usersGitDefaultBranch();
+}
