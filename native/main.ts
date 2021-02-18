@@ -166,9 +166,16 @@ ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
 
 ipcMain.handle(RendererMessage.USERS_GIT_DEFAULT_BRANCH, () => {
   try {
-    return childProcess
-      .execSync("git config --global --get init.defaultBranch", {
+    const stdout = await new Promise((resolve, reject) => 
+      childProcess
+      .exec("git config --global --get init.defaultBranch", {
         encoding: "utf-8",
+      }, (error, stdout, stderr) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(stdout)
+        }
       })
       .trim();
   } catch {
