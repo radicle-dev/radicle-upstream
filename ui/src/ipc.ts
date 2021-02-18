@@ -73,6 +73,8 @@ export function listenProxyError(
 }
 
 // The user-defined global git default branch.
-export function usersGitDefaultBranch(): string | undefined {
-  return window.usersGitDefaultBranch();
+export function usersGitDefaultBranch(): Promise<string | undefined> {
+  return window.electron.ipcRenderer.invoke(
+    ipcTypes.RendererMessage.USERS_GIT_DEFAULT_BRANCH
+  );
 }

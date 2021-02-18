@@ -1,5 +1,6 @@
 import * as ipcStub from "../../support/ipc-stub";
 import * as commands from "../../support/commands";
+import * as config from "../../../ui/src/config";
 
 context("project creation", () => {
   const withEmptyDirectoryStub = (callback: () => void) => {
@@ -289,40 +290,53 @@ context("project creation", () => {
     });
 
     context("happy paths", () => {
-      it("creates a new project from an empty directory", () => {
-        withEmptyDirectoryStub(() => {
-          commands.pick("new-project-button").click();
+      context("creates a new project from an empty directory", () => {
+        function go(expectedDefaultBranch: string) {
+          withEmptyDirectoryStub(() => {
+            commands.pick("new-project-button").click();
 
-          commands.pick("name").type("new-fancy-project.xyz");
-          commands.pick("description").type("My new fancy project");
+            commands.pick("name").type("new-fancy-project.xyz");
+            commands.pick("description").type("My new fancy project");
 
-          commands.pick("new-project").click();
-          commands.pick("new-project", "choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
+            commands.pick("new-project").click();
+            commands.pick("new-project", "choose-path-button").click();
+            // Make sure UI has time to update path value from stub,
+            // this prevents this spec from failing on CI.
+            cy.wait(500);
 
-          commands.pick("create-project-button").click();
+            commands.pick("create-project-button").click();
 
-          commands
-            .pick("project-screen", "header")
-            .contains("new-fancy-project");
+            commands
+              .pick("project-screen", "header")
+              .contains("new-fancy-project");
 
-          commands
-            .pick("project-screen", "revision-selector")
-            .contains(`trunk default`);
+            commands
+              .pick("project-screen", "revision-selector")
+              .contains(`${expectedDefaultBranch} default`);
 
-          commands
-            .pick("notification")
-            .contains("Project new-fancy-project.xyz successfully created");
+            commands
+              .pick("notification")
+              .contains("Project new-fancy-project.xyz successfully created");
 
-          commands.pick("profile").click();
-          commands
-            .pick("profile-screen", "project-list")
-            .contains("new-fancy-project.xyz");
-          commands
-            .pick("profile-screen", "project-list")
-            .contains("My new fancy project");
+            commands.pick("profile").click();
+            commands
+              .pick("profile-screen", "project-list")
+              .contains("new-fancy-project.xyz");
+            commands
+              .pick("profile-screen", "project-list")
+              .contains("My new fancy project");
+          });
+        }
+
+        it("picks the user-defined git default branch", () => {
+          go("trunk");
+        });
+
+        it("picks the Upstream default git branch when can not obtain a user-defined", () => {
+          ipcStub.getStubs().then(stubs => {
+            stubs.USERS_GIT_DEFAULT_BRANCH.returns(undefined);
+          });
+          go(config.UPSTREAM_DEFAULT_BRANCH);
         });
       });
 

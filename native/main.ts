@@ -1,3 +1,4 @@
+import childProcess from "child_process";
 import {
   app,
   BrowserWindow,
@@ -161,6 +162,18 @@ ipcMain.handle(RendererMessage.GET_VERSION, () => {
 
 ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
   openExternalLink(url);
+});
+
+ipcMain.handle(RendererMessage.USERS_GIT_DEFAULT_BRANCH, () => {
+  try {
+    return childProcess
+      .execSync("git config --global --get init.defaultBranch", {
+        encoding: "utf-8",
+      })
+      .trim();
+  } catch {
+    return undefined;
+  }
 });
 
 function setupWatcher() {

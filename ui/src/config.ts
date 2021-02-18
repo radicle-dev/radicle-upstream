@@ -6,6 +6,6 @@ export const GIT_DEFAULT_BRANCH = "master";
 export const NOTIFICATION_TIMEOUT = 8000; // ms
 export const FADE_DURATION = 200;
 
-export function usersGitDefaultBranch(): string | undefined {
+export function usersGitDefaultBranch(): Promise<string | undefined> {
   return ipc.usersGitDefaultBranch();
 }

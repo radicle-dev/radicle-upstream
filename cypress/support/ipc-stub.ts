@@ -14,6 +14,7 @@ interface ElectronStubs {
   [RendererMessage.OPEN_PATH]: sinon.SinonStub;
   [RendererMessage.OPEN_URL]: sinon.SinonStub;
   [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => void;
+  [RendererMessage.USERS_GIT_DEFAULT_BRANCH]: sinon.SinonStub;
   sendMessage: (message: MainMessage) => void;
   getClipboard: () => string;
 }
@@ -31,6 +32,7 @@ declare global {
 export function setup(window: Window): void {
   const ipcRendererMessages = new EventEmitter();
   let clipboard = "";
+
   const electronStubs: ElectronStubs = {
     [RendererMessage.GET_VERSION]: sinon
       .stub()
@@ -45,6 +47,9 @@ export function setup(window: Window): void {
     [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => {
       clipboard = text;
     },
+    [RendererMessage.USERS_GIT_DEFAULT_BRANCH]: sinon
+      .stub()
+      .returns(Promise.resolve("trunk")),
     sendMessage: (message: MainMessage) => {
       ipcRendererMessages.emit("message", undefined, message);
     },

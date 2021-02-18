@@ -69,7 +69,9 @@
 
       const response = await create({
         description,
-        defaultBranch: isNew ? defaultBranchForNewRepository() : $defaultBranch,
+        defaultBranch: isNew
+          ? await defaultBranchForNewRepository()
+          : $defaultBranch,
         repo: isNew
           ? { type: RepoType.New, name, path: newRepositoryPath }
           : { type: RepoType.Existing, path: existingRepositoryPath },

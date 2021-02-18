@@ -293,8 +293,10 @@ const DEFAULT_BRANCHES = [
   config.GIT_DEFAULT_BRANCH,
 ];
 
-export const defaultBranchForNewRepository = (): string => {
-  return config.usersGitDefaultBranch() || config.UPSTREAM_DEFAULT_BRANCH;
+export const defaultBranchForNewRepository = async (): Promise<string> => {
+  return (
+    (await config.usersGitDefaultBranch()) || config.UPSTREAM_DEFAULT_BRANCH
+  );
 };
 
 const fetchBranches = async (path: string) => {
