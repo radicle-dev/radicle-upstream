@@ -332,7 +332,7 @@ context("project creation", () => {
           go("trunk");
         });
 
-        it("picks the Upstream default git branch when can not obtain a user-defined", () => {
+        it("picks the Upstream default git branch when it can not obtain a user-defined", () => {
           ipcStub.getStubs().then(stubs => {
             stubs.USERS_GIT_DEFAULT_BRANCH.returns(undefined);
           });
