@@ -164,23 +164,24 @@ ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
   openExternalLink(url);
 });
 
-ipcMain.handle(RendererMessage.USERS_GIT_DEFAULT_BRANCH, () => {
-  try {
-    const stdout = await new Promise((resolve, reject) => 
-      childProcess
-      .exec("git config --global --get init.defaultBranch", {
+ipcMain.handle(RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH, async () => {
+  return await new Promise((resolve, reject) =>
+    childProcess.exec(
+      "git config --global --get init.defaultBranch",
+      {
         encoding: "utf-8",
-      }, (error, stdout, stderr) => {
+      },
+      (error, stdout, stderr) => {
         if (error) {
-          reject(error)
+          reject(error);
+        } else if (stderr) {
+          reject(stderr);
         } else {
-          resolve(stdout)
+          resolve(stdout.trim());
         }
-      })
-      .trim();
-  } catch {
-    return undefined;
-  }
+      }
+    )
+  );
 });
 
 function setupWatcher() {

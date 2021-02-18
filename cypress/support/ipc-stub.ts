@@ -14,7 +14,7 @@ interface ElectronStubs {
   [RendererMessage.OPEN_PATH]: sinon.SinonStub;
   [RendererMessage.OPEN_URL]: sinon.SinonStub;
   [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => void;
-  [RendererMessage.USERS_GIT_DEFAULT_BRANCH]: sinon.SinonStub;
+  [RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH]: sinon.SinonStub;
   sendMessage: (message: MainMessage) => void;
   getClipboard: () => string;
 }
@@ -47,7 +47,7 @@ export function setup(window: Window): void {
     [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => {
       clipboard = text;
     },
-    [RendererMessage.USERS_GIT_DEFAULT_BRANCH]: sinon
+    [RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH]: sinon
       .stub()
       .returns(Promise.resolve("trunk")),
     sendMessage: (message: MainMessage) => {

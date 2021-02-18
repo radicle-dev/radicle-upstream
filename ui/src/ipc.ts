@@ -72,9 +72,9 @@ export function listenProxyError(
   );
 }
 
-// The user-defined global git default branch.
-export function usersGitDefaultBranch(): Promise<string | undefined> {
+// Get the git global default branch, which can be customized by the user.
+export function getGitGlobalDefaultBranch(): Promise<string> {
   return window.electron.ipcRenderer.invoke(
-    ipcTypes.RendererMessage.USERS_GIT_DEFAULT_BRANCH
+    ipcTypes.RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH
   );
 }

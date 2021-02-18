@@ -334,7 +334,11 @@ context("project creation", () => {
 
         it("picks the Upstream default git branch when it can not obtain a user-defined", () => {
           ipcStub.getStubs().then(stubs => {
-            stubs.USERS_GIT_DEFAULT_BRANCH.returns(undefined);
+            stubs.GET_GIT_GLOBAL_DEFAULT_BRANCH.returns(
+              Promise.reject(
+                "Your version of git doesn't support such command."
+              )
+            );
           });
           go(config.UPSTREAM_DEFAULT_BRANCH);
         });

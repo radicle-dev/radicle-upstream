@@ -5,6 +5,7 @@ import * as api from "./api";
 import * as config from "./config";
 import * as event from "./event";
 import type * as identity from "./identity";
+import * as ipc from "./ipc";
 import * as remote from "./remote";
 import * as source from "./source";
 import type { Urn } from "./urn";
@@ -294,8 +295,9 @@ const DEFAULT_BRANCHES = [
 ];
 
 export const defaultBranchForNewRepository = async (): Promise<string> => {
-  return (
-    (await config.usersGitDefaultBranch()) || config.UPSTREAM_DEFAULT_BRANCH
+  return ipc.getGitGlobalDefaultBranch().then(
+    branch => branch,
+    _error => config.UPSTREAM_DEFAULT_BRANCH
   );
 };
 
