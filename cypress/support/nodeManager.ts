@@ -44,7 +44,7 @@ const credentialsHelper = (passphrase: string) =>
 export const createCommit = (options: createCommitOptions): void => {
   cy.exec(
     `set -euo pipefail
-export PATH=$PWD/proxy/target/release:$PATH
+export PATH=$PWD/target/release:$PATH
 cd ${options.repositoryPath}
 git commit --allow-empty -m "${options.subject}"
 git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
