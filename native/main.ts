@@ -168,18 +168,14 @@ ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
 // running on the machine does it yet support.
 // Returns a value in the form `Promise<string | undefined>`.
 ipcMain.handle(RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH, async () => {
-  return await new Promise((resolve, _reject) => {
-    try {
-      childProcess.exec(
-        "git config --global --get init.defaultBranch",
-        { encoding: "utf-8" },
-        (error, stdout, stderr) =>
-          resolve(error || stderr ? undefined : stdout.trim())
-      );
-    } catch (_) {
-      resolve(undefined);
-    }
-  });
+  try {
+    const { stdout, stderr } = await execAsync(
+      "git config --global --get init.defaultBranch"
+    );
+    return stderr ? undefined : stdout.trim();
+  } catch (error) {
+    return undefined;
+  }
 });
 
 function setupWatcher() {
@@ -252,3 +248,15 @@ app.on("activate", () => {
     windowManager.open();
   }
 });
+
+function execAsync(cmd: string): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    childProcess.exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+  });
+}
