@@ -73,7 +73,7 @@ export function listenProxyError(
 }
 
 // Get the git global default branch, which can be customized by the user.
-export function getGitGlobalDefaultBranch(): Promise<string> {
+export function getGitGlobalDefaultBranch(): Promise<string | undefined> {
   return window.electron.ipcRenderer.invoke(
     ipcTypes.RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH
   );

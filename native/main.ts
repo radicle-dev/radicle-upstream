@@ -164,24 +164,22 @@ ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
   openExternalLink(url);
 });
 
+// Fetch the git global default branch config property. Fails when the git version
+// running on the machine does it yet support.
+// Returns a value in the form `Promise<string | undefined>`.
 ipcMain.handle(RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH, async () => {
-  return await new Promise((resolve, reject) =>
-    childProcess.exec(
-      "git config --global --get init.defaultBranch",
-      {
-        encoding: "utf-8",
-      },
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(error);
-        } else if (stderr) {
-          reject(stderr);
-        } else {
-          resolve(stdout.trim());
-        }
-      }
-    )
-  );
+  return await new Promise((resolve, _reject) => {
+    try {
+      childProcess.exec(
+        "git config --global --get init.defaultBranch",
+        { encoding: "utf-8" },
+        (error, stdout, stderr) =>
+          resolve(error || stderr ? undefined : stdout.trim())
+      );
+    } catch (_) {
+      resolve(undefined);
+    }
+  });
 });
 
 function setupWatcher() {

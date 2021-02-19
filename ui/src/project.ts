@@ -295,9 +295,8 @@ const DEFAULT_BRANCHES = [
 ];
 
 export const defaultBranchForNewRepository = async (): Promise<string> => {
-  return ipc.getGitGlobalDefaultBranch().then(
-    branch => branch,
-    _error => config.UPSTREAM_DEFAULT_BRANCH
+  return (
+    (await ipc.getGitGlobalDefaultBranch()) || config.UPSTREAM_DEFAULT_BRANCH
   );
 };
 
