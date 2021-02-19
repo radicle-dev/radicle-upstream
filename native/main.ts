@@ -1,3 +1,4 @@
+import childProcess from "child_process";
 import {
   app,
   BrowserWindow,
@@ -163,6 +164,20 @@ ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
   openExternalLink(url);
 });
 
+// Fetch the git global default branch config property. Fails when the git version
+// running on the machine does it yet support.
+// Returns a value in the form `Promise<string | undefined>`.
+ipcMain.handle(RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH, async () => {
+  try {
+    const { stdout, stderr } = await execAsync(
+      "git config --global --get init.defaultBranch"
+    );
+    return stderr ? undefined : stdout.trim();
+  } catch (error) {
+    return undefined;
+  }
+});
+
 function setupWatcher() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const chokidar = require("chokidar");
@@ -233,3 +248,15 @@ app.on("activate", () => {
     windowManager.open();
   }
 });
+
+function execAsync(cmd: string): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    childProcess.exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+  });
+}
