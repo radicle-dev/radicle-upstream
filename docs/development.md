@@ -140,11 +140,24 @@ then you can use `RAD_PROFILE` instead of `RAD_HOME`, but be aware that
 Electron state will be shared by all instances.
 
 
+### Running on Windows (experimental)
+
+Windows have [some shortcomings on the directory depth](https://github.com/libgit2/libgit2/issues/3053)
+created by Radicle, even if long paths are enabled on the system.
+To prevent errors, set `RAD_HOME` to a root folder (eg: `$env:RAD_HOME="C:\rad"`). You may download a [free VM](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/) from Microsoft to test it out.
+
+
+Start Upstream in development mode: `yarn start` (or `yarn run start:dev:win` for Windows).
+
 ### Building an Upstream package for your platform
 
 You can build and package Upstream with: `yarn dist`. The generated package
-will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
+will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|exe}`.
 
+For windows, there is `yarn run dist:win:static` to
+[pre-compile](https://rust-lang.github.io/rfcs/1721-crt-static.html)
+`vcruntime140.dll` to avoid the need to install `Visual C++ Redistributable`
+on the target computer.
 
 #### Apple notarization
 

@@ -13,10 +13,7 @@ use std::{future::Future, net, sync::Arc, time::Duration};
 use argh::FromArgs;
 use futures::prelude::*;
 use thiserror::Error;
-use tokio::{
-    signal::unix::{signal, SignalKind},
-    sync::{watch, RwLock},
-};
+use tokio::sync::{watch, RwLock};
 
 use radicle_daemon::{convert::MaybeFrom as _, seed, Peer, PeerStatus, RunConfig};
 
@@ -76,19 +73,23 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         #[cfg(feature = "unsafe-fast-keystore")]
         unsafe_fast_keystore: args.unsafe_fast_keystore,
     })?;
-    let mut sighup = signal(SignalKind::hangup())?;
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
+        let mut sighup = signal(SignalKind::hangup())?;
 
-    let mut handle = service_manager.handle();
-    tokio::spawn(async move {
-        loop {
-            if sighup.recv().await.is_some() {
-                tracing::info!("SIGHUP received, reloading...");
-                handle.reset();
-            } else {
-                break;
+        let mut handle = service_manager.handle();
+        tokio::spawn(async move {
+            loop {
+                if sighup.recv().await.is_some() {
+                    tracing::info!("SIGHUP received, reloading...");
+                    handle.reset();
+                } else {
+                    break;
+                }
             }
-        }
-    });
+        });
+    }
 
     let auth_token = Arc::new(RwLock::new(None));
     loop {

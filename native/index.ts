@@ -27,6 +27,7 @@ import { parseRadicleUrl, throttled } from "./nativeCustomProtocolHandler";
 import type { Config } from "ui/src/config";
 
 const isDev = process.env.NODE_ENV === "development";
+const isWindows = process.platform === "win32";
 
 let proxyPath;
 let proxyArgs: string[] = [];
@@ -46,7 +47,11 @@ if (isDev) {
   proxyArgs.push("--unsafe-fast-keystore");
 } else {
   // Packaged app, i.e. production.
-  proxyPath = path.join(__dirname, "../../radicle-proxy");
+  if (isWindows) {
+    proxyPath = path.join(__dirname, "../../radicle-proxy.exe");
+  } else {
+    proxyPath = path.join(__dirname, "../../radicle-proxy");
+  }
   proxyArgs = [
     "--default-seed",
     "hynkyndc6w3p8urucakobzna7sxwgcqny7xxtw88dtx3pkf7m3nrzc@sprout.radicle.xyz:12345",
