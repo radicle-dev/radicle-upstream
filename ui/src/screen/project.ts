@@ -4,6 +4,7 @@ import * as error from "../error";
 import type { PeerId } from "../identity";
 import * as project from "../project";
 import * as remote from "../remote";
+import { Status } from "../remote";
 import type { Urn } from "../urn";
 import * as validation from "../validation";
 import * as proxy from "../proxy";
@@ -48,7 +49,7 @@ export const fetch = (projectUrn: Urn): void => {
 export const fetchPeers = (): void => {
   const screen = get(screenStore);
 
-  if (screen.status === remote.Status.Success) {
+  if (screen.status === Status.Success) {
     const { data: current } = screen;
     const { requestInProgress } = current;
 
@@ -81,7 +82,7 @@ export const fetchPeers = (): void => {
 export const refresh = (): void => {
   const screen = get(screenStore);
 
-  if (screen.status === remote.Status.Success) {
+  if (screen.status === Status.Success) {
     const { data: current } = screen;
     const {
       project: { urn },
@@ -117,7 +118,7 @@ export const refresh = (): void => {
 export const selectPeer = (peer: project.User): void => {
   const screen = get(screenStore);
 
-  if (screen.status === remote.Status.Success) {
+  if (screen.status === Status.Success) {
     const { data: current } = screen;
 
     if (peer.peerId !== current.selectedPeer.peerId) {
@@ -132,7 +133,7 @@ export const pendingPeers: Readable<
   }>
 > = derived(
   screenStore,
-  (store): remote.Data<{ peers: project.Peer[] }> => {
+  (store: remote.Data<{ peers: project.Peer[] }>) => {
     if (store.status === remote.Status.Success) {
       const peers = store.data.peers.filter(
         peer => peer.status.type === project.ReplicationStatusType.NotReplicated
@@ -167,7 +168,7 @@ export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
 const checkPeerUniqueness = (peer: string): Promise<boolean> => {
   const screen = get(screenStore);
 
-  if (screen.status === remote.Status.Success) {
+  if (screen.status === Status.Success) {
     const {
       data: { peers },
     } = screen;
@@ -218,7 +219,7 @@ export const addPeer = async (
 export const removePeer = (projectId: Urn, peerId: PeerId): void => {
   const screen = get(screenStore);
 
-  if (screen.status === remote.Status.Success) {
+  if (screen.status === Status.Success) {
     const { peerSelection, selectedPeer } = screen.data;
 
     untrackPeer(projectId, peerId);
