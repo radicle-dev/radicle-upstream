@@ -1,6 +1,6 @@
 //! git-remote-rad git helper related functionality.
 
-use std::{fs, io, os::unix::fs::PermissionsExt as _, path};
+use std::{fs, io, path};
 
 /// Git helper errors.
 #[derive(Debug, thiserror::Error)]
@@ -28,10 +28,13 @@ pub fn setup(src_dir: &path::Path, dst_dir: &path::Path) -> Result<(), Error> {
 
     fs::create_dir_all(dst_dir)?;
     fs::copy(helper_bin_src, helper_bin_dst.clone())?;
-    let mut permissions = helper_bin_dst.metadata()?.permissions();
-    permissions.set_mode(0o755);
-    fs::set_permissions(&helper_bin_dst, permissions)?;
-
+    #[cfg(unix)]
+    {
+        use os::unix::fs::PermissionsExt as _;
+        let mut permissions = helper_bin_dst.metadata()?.permissions();
+        permissions.set_mode(0o755);
+        fs::set_permissions(&helper_bin_dst, permissions)?;
+    }
     log::info!("Copied git remote helper to: {:?}", helper_bin_dst);
 
     Ok(())
@@ -39,7 +42,10 @@ pub fn setup(src_dir: &path::Path, dst_dir: &path::Path) -> Result<(), Error> {
 
 #[cfg(test)]
 mod test {
-    use std::{fs, os::unix::fs::PermissionsExt as _};
+    #[cfg(unix)]
+    use os::unix::fs::PermissionsExt as _;
+
+    use std::fs;
 
     use super::Error;
 
@@ -50,6 +56,7 @@ mod test {
         let file = fs::File::create(src_git_helper_bin_path.clone())
             .expect("failed to create mock binary");
         let mut src_permissions = file.metadata()?.permissions();
+        #[cfg(unix)]
         src_permissions.set_mode(0o644);
 
         fs::set_permissions(src_git_helper_bin_path, src_permissions)?;
@@ -62,6 +69,7 @@ mod test {
 
         let dst_metadata = dst_git_helper_bin_path.metadata()?;
         let dst_permissions = dst_metadata.permissions();
+        #[cfg(unix)]
         assert_eq!(dst_permissions.mode(), 0o100_755);
 
         Ok(())
