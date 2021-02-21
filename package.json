@@ -36,6 +36,14 @@
         "to": "./"
       },
       {
+        "from": "target/release/radicle-proxy.exe",
+        "to": "./"
+      },
+      {
+        "from": "target/release/git-remote-rad.exe",
+        "to": "./"
+      },
+      {
         "from": "proxy/assets",
         "to": "assets"
       }
@@ -115,6 +123,7 @@
     "prettier": "^2.2.1",
     "prettier-plugin-svelte": "^1.4.2",
     "prompts": "^2.4.1",
+    "rimraf": "^3.0.2",
     "sinon": "^10.0.0",
     "standard-version": "^9.2.0",
     "svelte": "^3.37.0",
@@ -159,7 +168,7 @@
     "_private:test:integration": "wait-on tcp:17246 && yarn run webpack build --config-name ui && yarn run cypress run",
     "_private:test:integration:debug": "wait-on ./public/bundle.js tcp:17246 && yarn run cypress open",
     "_private:electron:start": "wait-on ./public/bundle.js && NODE_ENV=development electron native/index.js",
-    "_private:dist:clean": "rm -rf ./dist && mkdir ./dist",
+    "_private:dist:clean": "rimraf ./dist && mkdir ./dist",
     "_private:prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "_private:proxy:build": "cargo build --all-features --all-targets",
     "_private:proxy:build:release": "cargo build --release",
