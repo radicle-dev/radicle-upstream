@@ -11,7 +11,12 @@ pub enum Error {
 }
 
 /// Filename of the git helper binary.
+#[cfg(not(windows))]
 pub const GIT_REMOTE_RAD: &str = "git-remote-rad";
+
+/// Filename of the git helper binary.
+#[cfg(windows)]
+pub const GIT_REMOTE_RAD: &str = "git-remote-rad.exe";
 
 /// Checks if the git-remote-rad helper is in a stable location and has the
 /// executable flag, if not copies the executable to the right place.
@@ -52,25 +57,28 @@ mod test {
     #[tokio::test]
     async fn ensure_setup_sets_up_remote_helper() -> Result<(), Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
-        let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
-        let file = fs::File::create(src_git_helper_bin_path.clone())
-            .expect("failed to create mock binary");
-        let mut src_permissions = file.metadata()?.permissions();
-        #[cfg(unix)]
-        src_permissions.set_mode(0o644);
 
-        fs::set_permissions(src_git_helper_bin_path, src_permissions)?;
+        #[cfg(unix)]
+        {
+            let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
+            let file = fs::File::create(src_git_helper_bin_path.clone())
+                .expect("failed to create mock binary");
+            let mut src_permissions = file.metadata()?.permissions();
+            src_permissions.set_mode(0o644);
+            fs::set_permissions(src_git_helper_bin_path, src_permissions)?;
+        }
 
         let tmp_dst_dir = tempfile::tempdir().expect("failed to create destination tempdir");
         let dst_full_path = tmp_dst_dir.path().join(".radicle/bin");
         super::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
 
-        let dst_git_helper_bin_path = dst_full_path.join(super::GIT_REMOTE_RAD);
-
-        let dst_metadata = dst_git_helper_bin_path.metadata()?;
-        let dst_permissions = dst_metadata.permissions();
         #[cfg(unix)]
-        assert_eq!(dst_permissions.mode(), 0o100_755);
+        {
+            let dst_git_helper_bin_path = dst_full_path.join(super::GIT_REMOTE_RAD);
+            let dst_metadata = dst_git_helper_bin_path.metadata()?;
+            let dst_permissions = dst_metadata.permissions();
+            assert_eq!(dst_permissions.mode(), 0o100_755);
+        }
 
         Ok(())
     }
