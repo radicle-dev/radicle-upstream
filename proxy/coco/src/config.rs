@@ -44,7 +44,7 @@ pub const RAD_REMOTE: &str = "rad";
 pub fn default(
     signer: BoxedSigner,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<BoxedSigner>, io::Error> {
+) -> Result<net::peer::Config<BoxedSigner>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, signer, *LOCALHOST_ANY))
 }
@@ -52,28 +52,21 @@ pub fn default(
 /// Configure a [`net::peer::PeerConfig`].
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn configure<S>(
-    paths: paths::Paths,
-    signer: S,
-    listen_addr: SocketAddr,
-) -> net::peer::PeerConfig<S>
+pub fn configure<S>(paths: paths::Paths, signer: S, listen_addr: SocketAddr) -> net::peer::Config<S>
 where
     S: Signer + Clone + Send + Sync + 'static,
     S::Error: std::error::Error + Send + Sync + 'static,
 {
-    let gossip_params = net::gossip::MembershipParams::default();
-    let storage_config = net::peer::StorageConfig::default();
-    let fetch_limit = fetch::Limit::default();
-    let network = net::Network::default();
-
-    net::peer::PeerConfig {
+    net::peer::Config {
         signer,
-        paths,
-        listen_addr,
-        gossip_params,
-        storage_config,
-        fetch_limit,
-        network,
+        protocol: net::protocol::Config {
+            paths,
+            listen_addr,
+            membership: net::protocol::membership::Params::default(),
+            network: net::Network::default(),
+            replication: librad::git::replication::Config::default(),
+        },
+        storage_pools: net::peer::PoolSizes::default(),
     }
 }
 

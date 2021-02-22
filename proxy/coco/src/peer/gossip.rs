@@ -2,7 +2,7 @@
 
 use librad::{
     identities::Urn,
-    net::peer::{Gossip, Rev},
+    net::protocol::gossip::{Payload, Rev},
     peer::PeerId,
 };
 use radicle_git_ext::Oid;
@@ -13,7 +13,7 @@ use crate::State;
 pub async fn announce(state: &State, urn: &Urn, rev: Option<Oid>) {
     let protocol = state.api.protocol();
     protocol
-        .announce(Gossip {
+        .announce(Payload {
             urn: urn.clone(),
             rev: rev.map(|rev| Rev::Git(rev.into())),
             origin: None,
@@ -26,7 +26,7 @@ pub async fn query(state: &State, urn: Urn, origin: Option<PeerId>) {
     state
         .api
         .protocol()
-        .query(Gossip {
+        .query(Payload {
             urn,
             rev: None,
             origin,

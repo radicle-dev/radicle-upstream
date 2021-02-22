@@ -12,22 +12,15 @@ use async_stream::stream;
 use futures::stream::{BoxStream, FuturesUnordered, SelectAll, StreamExt as _};
 use tokio::{
     sync::{broadcast, mpsc},
+    task::{JoinError, JoinHandle},
     time::interval,
 };
 
-use librad::{
-    identities::Urn,
-    net::{
-        peer::{Gossip, PeerEvent},
-        protocol::ProtocolEvent,
-    },
-    peer::PeerId,
-};
+use librad::{identities::Urn, net::protocol::event::Upstream, peer::PeerId};
 
 use crate::{
     convert::MaybeFrom as _,
     request::{self, waiting_room::WaitingRoom},
-    spawn_abortable::{self, SpawnAbortable},
     state::State,
 };
 
@@ -41,7 +34,7 @@ use super::{
 pub struct Subroutines {
     /// Set of handles of spawned subroutine tasks. Draining them will ensure resources are
     /// release.
-    pending_tasks: FuturesUnordered<SpawnAbortable<()>>,
+    pending_tasks: FuturesUnordered<JoinHandle<()>>,
     /// Stream of inputs to [`RunState`] state machine.
     inputs: SelectAll<BoxStream<'static, Input>>,
 
@@ -66,7 +59,7 @@ impl Subroutines {
         store: kv::Store,
         run_config: RunConfig,
         peer_events: BoxStream<'static, PeerEvent>,
-        protocol_events: BoxStream<'static, ProtocolEvent<Gossip>>,
+        protocol_events: BoxStream<'static, Upstream>,
         subscriber: broadcast::Sender<Event>,
         mut control_receiver: mpsc::Receiver<control::Request>,
     ) -> Self {
@@ -167,36 +160,34 @@ impl Subroutines {
     }
 
     /// Map commands produced by the state machine to spawned subroutine tasks.
-    fn spawn_command(&self, cmd: Command) -> SpawnAbortable<()> {
+    fn spawn_command(&self, cmd: Command) -> JoinHandle<()> {
         match cmd {
-            Command::Announce => SpawnAbortable::new(announce(
+            Command::Announce => tokio::spawn(announce(
                 self.state.clone(),
                 self.store.clone(),
                 self.input_sender.clone(),
             )),
             Command::Control(control_command) => match control_command {
                 command::Control::Respond(respond_command) => {
-                    SpawnAbortable::new(control_respond(respond_command))
+                    tokio::spawn(control_respond(respond_command))
                 },
             },
-            Command::Include(urn) => SpawnAbortable::new(include::update(self.state.clone(), urn)),
+            Command::Include(urn) => tokio::spawn(include::update(self.state.clone(), urn)),
             Command::PersistWaitingRoom(waiting_room) => {
-                SpawnAbortable::new(persist_waiting_room(waiting_room, self.store.clone()))
+                tokio::spawn(persist_waiting_room(waiting_room, self.store.clone()))
             },
             Command::Request(command::Request::Query(urn)) => {
-                SpawnAbortable::new(query(urn, self.state.clone(), self.input_sender.clone()))
+                tokio::spawn(query(urn, self.state.clone(), self.input_sender.clone()))
             },
-            Command::Request(command::Request::Clone(urn, remote_peer)) => {
-                SpawnAbortable::new(clone(
-                    urn,
-                    remote_peer,
-                    self.state.clone(),
-                    self.input_sender.clone(),
-                ))
-            },
+            Command::Request(command::Request::Clone(urn, remote_peer)) => tokio::spawn(clone(
+                urn,
+                remote_peer,
+                self.state.clone(),
+                self.input_sender.clone(),
+            )),
             Command::Request(command::Request::TimedOut(urn)) => {
                 let sender = self.input_sender.clone();
-                SpawnAbortable::new(async move {
+                tokio::spawn(async move {
                     sender
                         .send(Input::Request(input::Request::TimedOut(urn)))
                         .await
@@ -204,14 +195,14 @@ impl Subroutines {
                 })
             },
             Command::StartSyncTimeout(sync_period) => {
-                SpawnAbortable::new(start_sync_timeout(sync_period, self.input_sender.clone()))
+                tokio::spawn(start_sync_timeout(sync_period, self.input_sender.clone()))
             },
             Command::SyncPeer(peer_id) => {
-                SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
+                tokio::spawn(sync(self.state.clone(), peer_id, self.input_sender.clone()))
             },
             Command::EmitEvent(event) => {
                 self.subscriber.send(event).ok();
-                SpawnAbortable::new(async move {})
+                tokio::spawn(async move {})
             },
         }
     }
@@ -226,7 +217,7 @@ impl Drop for Subroutines {
 }
 
 impl Future for Subroutines {
-    type Output = Result<(), spawn_abortable::Error>;
+    type Output = Result<(), JoinError>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         let mut tasks_initial_empty = true;

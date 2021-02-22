@@ -21,7 +21,7 @@
     clippy::similar_names,
     clippy::too_many_lines
 )]
-#![feature(duration_zero, hash_set_entry, or_patterns)]
+#![feature(duration_zero, hash_set_entry, never_type, or_patterns)]
 
 use std::net::SocketAddr;
 
@@ -61,9 +61,6 @@ pub mod request;
 pub mod seed;
 
 pub mod source;
-
-mod spawn_abortable;
-pub use spawn_abortable::{Error as SpawnAbortableError, SpawnAbortable};
 
 /// Constructs a [`Peer`] and [`State`] pair from a [`net::peer::PeerConfig`].
 ///

@@ -2,14 +2,7 @@ use std::time::SystemTime;
 
 use tokio::sync::oneshot;
 
-use librad::{
-    identities::Urn,
-    net::{
-        peer::{Gossip, PeerEvent},
-        protocol::ProtocolEvent,
-    },
-    peer::PeerId,
-};
+use librad::{identities::Urn, net::peer::ProtocolEvent, peer::PeerId};
 
 use crate::{
     peer::announcement,
@@ -24,10 +17,8 @@ pub enum Input {
     Announce(Announce),
     /// Peer state change events.
     Control(Control),
-    /// Inputs from the underlying peer API.
-    Peer(PeerEvent),
     /// Inputs from the underlying coco protocol.
-    Protocol(ProtocolEvent<Gossip>),
+    Protocol(ProtocolEvent),
     /// Lifecycle events during peer sync operations.
     PeerSync(Sync),
     /// Request subroutine events that wish to attempt to fetch an identity from the network.

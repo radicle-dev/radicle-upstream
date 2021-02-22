@@ -9,11 +9,7 @@ use serde::Serialize;
 
 use librad::{
     identities::Urn,
-    net::{
-        gossip::{Has, Info, PutResult},
-        peer::{FetchInfo, Gossip, PeerEvent},
-        protocol::ProtocolEvent,
-    },
+    net::protocol::{broadcast::PutResult, event::Upstream},
     peer::PeerId,
 };
 
@@ -49,7 +45,7 @@ pub enum Event {
     },
     /// An event from the underlying coco network stack.
     /// FIXME(xla): Align variant naming to indicate observed occurrences.
-    Protocol(ProtocolEvent<Gossip>),
+    Protocol(Upstream),
     /// Sync with a peer completed.
     PeerSynced(PeerId),
     /// Request fullfilled with a successful clone.
@@ -526,7 +522,11 @@ mod test {
         git_ext::Oid,
         identities::Urn,
         keys::SecretKey,
-        net::{gossip, peer::Gossip, protocol::ProtocolEvent},
+        net::{
+            self,
+            peer::ProtocolEvent,
+            protocol::{event::upstream::Gossip, gossip::Payload},
+        },
         peer::PeerId,
     };
 
@@ -808,24 +808,22 @@ mod test {
                 .first(),
             Some(Command::PersistWaitingRoom(_))
         );
+        // Gossip(Box<upstream::Gossip<SocketAddr, gossip::Payload>>),
         assert!(state
-            .transition(Input::Protocol(ProtocolEvent::Gossip(gossip::Info::Has(
-                gossip::Has {
-                    provider: gossip::types::PeerInfo {
+            .transition(Input::Protocol(ProtocolEvent::Gossip(Box::new(
+                Gossip::Put {
+                    provider: librad::net::protocol::PeerInfo {
+                        advertised_info: net::protocol::PeerAdvertisement::new(),
                         peer_id,
-                        advertised_info: gossip::types::PeerAdvertisement {
-                            capabilities: HashSet::new(),
-                            listen_addr: IpAddr::V4(std::net::Ipv4Addr::new(192, 168, 1, 11)),
-                            listen_port: 12345,
-                        },
-                        seen_addrs: HashSet::new(),
+                        seen_addrs: vec![],
                     },
-                    val: Gossip {
+                    payload: Payload {
                         urn: urn.clone(),
                         origin: None,
                         rev: None
                     },
-                },
+                    result: net::peer::broadcast::PutResult::Applied(),
+                }
             ))))
             .is_empty());
 

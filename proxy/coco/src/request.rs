@@ -12,7 +12,7 @@ use std::{collections::HashMap, ops::Deref};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{identities::Urn, net::peer::types::Gossip, peer::PeerId};
+use librad::{identities::Urn, net::protocol::gossip::Payload, peer::PeerId};
 
 pub mod existential;
 pub use existential::SomeRequest;
@@ -73,7 +73,7 @@ impl<S, T> Deref for Request<S, T> {
     }
 }
 
-impl<S, T> From<Request<S, T>> for Gossip {
+impl<S, T> From<Request<S, T>> for Payload {
     fn from(request: Request<S, T>) -> Self {
         Self {
             urn: request.urn,

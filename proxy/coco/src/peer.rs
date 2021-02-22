@@ -3,20 +3,21 @@
 
 use std::{
     future::Future,
+    net::SocketAddr,
     pin::Pin,
     sync::Arc,
     task::{Context, Poll},
 };
 
 use futures::{future::FutureExt as _, stream::StreamExt as _};
-use tokio::sync::{broadcast, mpsc, Barrier};
-
-use librad::net::peer::RunLoop;
-
-use crate::{
-    spawn_abortable::{self, SpawnAbortable},
-    state::{self, State},
+use tokio::{
+    sync::{broadcast, mpsc, Barrier},
+    task::{JoinError, JoinHandle},
 };
+
+use librad::{keys::SecretKey, net, net::protocol};
+
+use crate::state::{self, State};
 
 mod announcement;
 pub use announcement::Announcement;
@@ -48,9 +49,11 @@ pub enum Error {
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
 
-    /// There was an error in a spawned task.
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
-    Spawn(#[source] spawn_abortable::Error),
+    Join(#[source] JoinError),
+
+    #[error(transparent)]
+    Protocol(#[from] net::quic::Error),
 
     /// There was an error when interacting with [`State`].
     #[error(transparent)]
@@ -58,9 +61,11 @@ pub enum Error {
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
-pub struct Peer {
-    /// Peer [`librad::net::peer::RunLoop`] to advance the network protocol.
-    run_loop: RunLoop,
+pub struct Peer<D> {
+    peer: net::peer::Peer<SecretKey>,
+    bound: protocol::Bound<net::peer::PeerStorage>,
+    disco: D,
+
     /// Underlying state that is passed to subroutines.
     state: State,
     /// On-disk storage for caching.
@@ -75,14 +80,26 @@ pub struct Peer {
     control_sender: mpsc::Sender<control::Request>,
 }
 
-impl Peer {
+impl<D> Peer<D>
+where
+    D: net::discovery::Discovery<Addr = SocketAddr> + Send,
+{
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: State, store: kv::Store, run_config: RunConfig) -> Self {
+    pub fn new(
+        peer: net::peer::Peer<SecretKey>,
+        bound: protocol::Bound<net::peer::PeerStorage>,
+        disco: D,
+        state: State,
+        store: kv::Store,
+        run_config: RunConfig,
+    ) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         let (control_sender, control_receiver) = mpsc::channel(RECEIVER_CAPACITY);
         Self {
-            run_loop,
+            peer,
+            bound,
+            disco,
             state,
             store,
             subscriber,
@@ -118,7 +135,9 @@ impl Peer {
     /// cancelled.
     pub fn into_running(self) -> Running {
         let Self {
-            run_loop,
+            peer,
+            bound,
+            disco,
             state,
             store,
             subscriber,
@@ -127,33 +146,21 @@ impl Peer {
             ..
         } = self;
 
-        // Rendezvous on a barrier to let the subroutines subscribe for protocol
-        // events before it actually starts. As `Protocol::subscribe` is async,
-        // we would otherwise need to make `into_running` async as well, which
-        // yields the weird requirement to double `.await` it.
-        let barrier = Arc::new(Barrier::new(2));
-        let subroutines = {
-            let barrier = barrier.clone();
-            SpawnAbortable::new(async move {
-                let peer_events = state.api.subscribe().await.boxed();
-                let protocol_events = state.api.protocol().subscribe().await.boxed();
-                barrier.wait().await;
-                Subroutines::new(
-                    state,
-                    store,
-                    run_config,
-                    peer_events,
-                    protocol_events,
-                    subscriber,
-                    control_receiver,
-                )
-                .await
-            })
-        };
-        let protocol = SpawnAbortable::new(async move {
-            barrier.wait().await;
-            run_loop.await
+        let subroutines = tokio::spawn(async move {
+            let peer_events = state.api.subscribe().await.boxed();
+            let protocol_events = state.api.protocol().subscribe().await.boxed();
+            Subroutines::new(
+                state,
+                store,
+                run_config,
+                peer_events,
+                protocol_events,
+                subscriber,
+                control_receiver,
+            )
+            .await
         });
+        let protocol = tokio::spawn(net::protocol::accept(bound, disco.discover()));
 
         Running {
             protocol,
@@ -166,9 +173,9 @@ impl Peer {
 #[must_use = "to the sig hup, don't stop, just drop"]
 pub struct Running {
     /// Join and abort handles for the protocol run loop.
-    protocol: SpawnAbortable<()>,
+    protocol: JoinHandle<Result<!, net::quic::Error>>,
     /// The [`Subroutines`] associated with this [`Peer`] instance.
-    subroutines: SpawnAbortable<Result<(), spawn_abortable::Error>>,
+    subroutines: JoinHandle<Result<(), spawn_abortable::Error>>,
 }
 
 impl Drop for Running {
@@ -185,8 +192,8 @@ impl Future for Running {
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         let err = match self.protocol.poll_unpin(cx) {
             Poll::Ready(val) => match val {
-                Err(e) => Some(Error::Spawn(e)),
-                Ok(()) => None,
+                Err(e) => Some(Error::Join(e)),
+                Ok(res) => Some(Error::Protocol(res.err().unwrap())),
             },
             Poll::Pending => None,
         };
@@ -199,7 +206,7 @@ impl Future for Running {
         match self.subroutines.poll_unpin(cx) {
             Poll::Ready(val) => {
                 let val = match val {
-                    Err(e) | Ok(Err(e)) => Err(Error::Spawn(e)),
+                    Err(e) | Ok(Err(e)) => Err(Error::Join(e)),
                     Ok(Ok(())) => Ok(()),
                 };
                 Poll::Ready(val)
