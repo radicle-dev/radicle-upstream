@@ -16,13 +16,14 @@ use librad::{
     identities::Project,
     keys,
     peer::PeerId,
+    net::peer::Peer,
     reflike, refspec_pattern,
+    signer::BoxedSigner,
 };
 use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
 use crate::{
-    peer::Peer,
     project,
     state::{self, Error},
 };
@@ -39,8 +40,8 @@ pub fn generate_peer_id() -> PeerId {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub async fn setup_fixtures<D>(
-    peer: &Peer<D>,
+pub async fn setup_fixtures(
+    peer: &Peer<BoxedSigner>,
     owner: &LocalIdentity,
 ) -> Result<Vec<Project>, Error> {
     let infos = vec![
@@ -80,8 +81,8 @@ pub async fn setup_fixtures<D>(
 ///
 /// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
-pub async fn replicate_platinum<D>(
-    peer: &Peer<D>,
+pub async fn replicate_platinum(
+    peer: &Peer<BoxedSigner>,
     owner: &LocalIdentity,
     name: &str,
     description: &str,
@@ -169,8 +170,8 @@ fn platinum_directory() -> io::Result<path::PathBuf> {
 /// `signed_refs`.
 ///
 /// Create and track a fake peer.
-pub async fn track_fake_peer<D>(
-    peer: &Peer<D>,
+pub async fn track_fake_peer(
+    peer: &Peer<BoxedSigner>,
     project: &Project,
     fake_user_handle: &str,
 ) -> (PeerId, LocalIdentity) {
