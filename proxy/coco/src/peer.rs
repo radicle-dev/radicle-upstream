@@ -56,9 +56,6 @@ pub enum Error {
 
     #[error(transparent)]
     Protocol(#[from] net::quic::Error),
-
-    #[error(transparent)]
-    State(#[from] state::error::Error),
 }
 
 /// Constructs a [`Peer`] and [`State`] pair from a [`net::peer::PeerConfig`].
