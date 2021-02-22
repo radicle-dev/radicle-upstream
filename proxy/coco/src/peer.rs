@@ -15,7 +15,7 @@ use tokio::{
     task::{JoinError, JoinHandle},
 };
 
-use librad::{keys::SecretKey, net, net::protocol};
+use librad::{keys::SecretKey, net, net::protocol, signer::BoxedSigner};
 
 use crate::state::{self, State};
 
@@ -62,7 +62,7 @@ pub enum Error {
 
 /// Local peer to participate in the radicle code-collaboration network.
 pub struct Peer<D> {
-    peer: net::peer::Peer<SecretKey>,
+    pub(crate) peer: net::peer::Peer<BoxedSigner>,
     bound: protocol::Bound<net::peer::PeerStorage>,
     disco: D,
 
