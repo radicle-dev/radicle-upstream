@@ -9,7 +9,7 @@ use serde::Serialize;
 
 use librad::{
     identities::Urn,
-    net::protocol::{broadcast::PutResult, event::Upstream},
+    net::{peer::ProtocolEvent, protocol::broadcast::PutResult},
     peer::PeerId,
 };
 
@@ -45,7 +45,7 @@ pub enum Event {
     },
     /// An event from the underlying coco network stack.
     /// FIXME(xla): Align variant naming to indicate observed occurrences.
-    Protocol(Upstream),
+    Protocol(ProtocolEvent),
     /// Sync with a peer completed.
     PeerSynced(PeerId),
     /// Request fullfilled with a successful clone.
@@ -69,17 +69,6 @@ impl MaybeFrom<&Input> for Event {
         match input {
             Input::Announce(input::Announce::Succeeded(updates)) => {
                 Some(Self::Announced(updates.clone()))
-            },
-            Input::Peer(event) => match event {
-                PeerEvent::GossipFetch(FetchInfo {
-                    provider,
-                    gossip,
-                    result,
-                }) => Some(Self::GossipFetched {
-                    provider: *provider,
-                    gossip: gossip.clone(),
-                    result: result.clone(),
-                }),
             },
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
             Input::Protocol(protocol_event) => Some(Self::Protocol(protocol_event.clone())),
@@ -186,7 +175,6 @@ impl RunState {
         let cmds = match input {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
             Input::Control(control_input) => self.handle_control(control_input),
-            Input::Peer(peer_event) => Self::handle_peer_event(peer_event),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
             Input::PeerSync(peer_sync_input) => self.handle_peer_sync(&peer_sync_input),
             Input::Request(request_input) => self.handle_request(request_input),
@@ -254,16 +242,6 @@ impl RunState {
         }
     }
 
-    fn handle_peer_event(event: PeerEvent) -> Vec<Command> {
-        match event {
-            PeerEvent::GossipFetch(FetchInfo {
-                result: PutResult::Applied(Gossip { urn, .. }),
-                ..
-            }) => vec![Command::Include(urn)],
-            PeerEvent::GossipFetch(_) => vec![],
-        }
-    }
-
     /// Handle [`input::Sync`]s.
     fn handle_peer_sync(&mut self, input: &input::Sync) -> Vec<Command> {
         if let Status::Syncing { synced, syncs } = self.status {
@@ -294,7 +272,7 @@ impl RunState {
 
     /// Handle [`ProtocolEvent`]s.
     #[allow(clippy::wildcard_enum_match_arm)]
-    fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
+    fn handle_protocol(&mut self, event: ProtocolEvent) -> Vec<Command> {
         match (&self.status, event) {
             // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
             (Status::Stopped { .. }, ProtocolEvent::Listening(_addr)) => {

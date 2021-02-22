@@ -15,9 +15,7 @@ use tokio::{
 };
 
 use librad::{keys::SecretKey, net, net::protocol, signer::BoxedSigner};
-
 use crate::{seed::Seed, state};
-use librad::{net, net::protocol, signer::BoxedSigner};
 
 mod announcement;
 pub use announcement::Announcement;

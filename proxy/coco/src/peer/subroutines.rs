@@ -26,7 +26,6 @@ use librad::{
 use crate::{
     convert::MaybeFrom as _,
     request::{self, waiting_room::WaitingRoom},
-    state::State,
 };
 
 use super::{
