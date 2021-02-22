@@ -147,13 +147,11 @@ where
         } = self;
 
         let subroutines = tokio::spawn(async move {
-            let peer_events = state.api.subscribe().await.boxed();
-            let protocol_events = state.api.protocol().subscribe().await.boxed();
+            let protocol_events = peer.subscribe().boxed();
             Subroutines::new(
                 state,
                 store,
                 run_config,
-                peer_events,
                 protocol_events,
                 subscriber,
                 control_receiver,
@@ -175,7 +173,7 @@ pub struct Running {
     /// Join and abort handles for the protocol run loop.
     protocol: JoinHandle<Result<!, net::quic::Error>>,
     /// The [`Subroutines`] associated with this [`Peer`] instance.
-    subroutines: JoinHandle<Result<(), spawn_abortable::Error>>,
+    subroutines: JoinHandle<Result<(), JoinError>>,
 }
 
 impl Drop for Running {

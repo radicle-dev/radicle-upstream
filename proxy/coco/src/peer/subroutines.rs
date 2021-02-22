@@ -16,7 +16,11 @@ use tokio::{
     time::interval,
 };
 
-use librad::{identities::Urn, net::protocol::event::Upstream, peer::PeerId};
+use librad::{
+    identities::Urn,
+    net::{self, peer::ProtocolEvent},
+    peer::PeerId,
+};
 
 use crate::{
     convert::MaybeFrom as _,
@@ -58,8 +62,7 @@ impl Subroutines {
         state: State,
         store: kv::Store,
         run_config: RunConfig,
-        peer_events: BoxStream<'static, PeerEvent>,
-        protocol_events: BoxStream<'static, Upstream>,
+        protocol_events: BoxStream<'static, Result<ProtocolEvent, net::protocol::RecvError>>,
         subscriber: broadcast::Sender<Event>,
         mut control_receiver: mpsc::Receiver<control::Request>,
     ) -> Self {
@@ -88,7 +91,6 @@ impl Subroutines {
 
         let inputs = {
             let mut coalesced = SelectAll::new();
-            coalesced.push(peer_events.map(Input::Peer).boxed());
             coalesced.push(protocol_events.map(Input::Protocol).boxed());
 
             if let Some(mut timer) = announce_timer {
