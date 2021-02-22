@@ -7,12 +7,14 @@ use kv::Codec as _;
 use librad::{
     git::identities::Revision,
     identities::urn::{ParseError, Urn},
+    net::peer::Peer,
+    signer::BoxedSigner,
 };
 use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
 use crate::{
-    peer::{gossip, Peer},
+    peer::{gossip},
     state,
 };
 
@@ -48,7 +50,7 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce<D>(peer: &Peer<D>, updates: impl Iterator<Item = &Announcement> + Send) {
+pub async fn announce(peer: &Peer<BoxedSigner>, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
         gossip::announce(peer, urn, Some(*hash)).await;
     }
@@ -60,7 +62,7 @@ pub async fn announce<D>(peer: &Peer<D>, updates: impl Iterator<Item = &Announce
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build<D>(peer: &Peer<D>) -> Result<Updates, Error> {
+pub async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
     let mut list: Updates = HashSet::new();
 
     match state::list_projects(peer).await {
@@ -117,7 +119,7 @@ pub fn load(store: &kv::Store) -> Result<Updates, Error> {
 ///
 /// * if it can't build the new list of updates
 /// * access to the storage fails
-pub async fn run<D>(peer: &Peer<D>, store: &kv::Store) -> Result<Updates, Error> {
+pub async fn run(peer: &Peer<BoxedSigner>, store: &kv::Store) -> Result<Updates, Error> {
     let old = load(store)?;
     let new = build(peer).await?;
     let updates = diff(&old, &new);
