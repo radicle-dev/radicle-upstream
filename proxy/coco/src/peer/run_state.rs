@@ -2,6 +2,7 @@
 
 use std::{
     collections::HashMap,
+    net::SocketAddr,
     time::{Duration, SystemTime},
 };
 
@@ -9,7 +10,14 @@ use serde::Serialize;
 
 use librad::{
     identities::Urn,
-    net::{peer::ProtocolEvent, protocol::broadcast::PutResult},
+    net::{
+        self,
+        peer::{PeerInfo, ProtocolEvent},
+        protocol::{
+            broadcast::{Message, PutResult},
+            gossip::Payload,
+        },
+    },
     peer::PeerId,
 };
 
@@ -37,15 +45,15 @@ pub enum Event {
     /// A fetch originated by a gossip message succeeded
     GossipFetched {
         /// Provider of the fetched update.
-        provider: PeerId,
+        provider: PeerInfo<SocketAddr>,
         /// Cooresponding gossip message.
-        gossip: Gossip,
+        gossip: Payload,
         /// Result of the storage fetch.
-        result: PutResult<Gossip>,
+        result: PutResult<Payload>,
     },
     /// An event from the underlying coco network stack.
     /// FIXME(xla): Align variant naming to indicate observed occurrences.
-    Protocol(ProtocolEvent),
+    Protocol(Result<ProtocolEvent, net::protocol::RecvError>),
     /// Sync with a peer completed.
     PeerSynced(PeerId),
     /// Request fullfilled with a successful clone.
