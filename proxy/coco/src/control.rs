@@ -23,7 +23,8 @@ use radicle_surf::vcs::git::git2;
 
 use crate::{
     project,
-    state::{Error, State},
+    state::{self, Error},
+    peer::Peer,
 };
 
 /// Generate a fresh `PeerId` for use in tests.
@@ -38,7 +39,7 @@ pub fn generate_peer_id() -> PeerId {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub async fn setup_fixtures(api: &State, owner: &LocalIdentity) -> Result<Vec<Project>, Error> {
+pub async fn setup_fixtures<D>(peer: &Peer<D>, owner: &LocalIdentity) -> Result<Vec<Project>, Error> {
     let infos = vec![
         (
             "monokel",
@@ -64,7 +65,7 @@ pub async fn setup_fixtures(api: &State, owner: &LocalIdentity) -> Result<Vec<Pr
 
     let mut projects = Vec::with_capacity(infos.len());
     for info in infos {
-        projects.push(replicate_platinum(api, owner, info.0, info.1, info.2).await?);
+        projects.push(replicate_platinum(peer, owner, info.0, info.1, info.2).await?);
     }
     Ok(projects)
 }
@@ -76,15 +77,15 @@ pub async fn setup_fixtures(api: &State, owner: &LocalIdentity) -> Result<Vec<Pr
 ///
 /// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
-pub async fn replicate_platinum(
-    api: &State,
+pub async fn replicate_platinum<D>(
+    peer: &Peer<D>,
     owner: &LocalIdentity,
     name: &str,
     description: &str,
     default_branch: OneLevel,
 ) -> Result<Project, Error> {
     // Construct path for fixtures to clone into.
-    let monorepo = api.monorepo();
+    let monorepo = state::monorepo(peer);
     let workspace = monorepo.join("../workspace");
     let platinum_into = workspace.join(name);
 
@@ -98,7 +99,7 @@ pub async fn replicate_platinum(
         },
     };
 
-    let meta = api.init_project(owner, project_creation).await?;
+    let meta = state::init_project(peer, owner, project_creation).await?;
 
     // Push branches and tags.
     {
@@ -111,7 +112,7 @@ pub async fn replicate_platinum(
                 force: Force::False,
             },
         );
-        let storage = api.settings();
+        let storage = state::settings(peer);
         // Push all tags to rad remote.
         push_tags(&mut rad, storage, &repo)?
     }
@@ -165,8 +166,8 @@ fn platinum_directory() -> io::Result<path::PathBuf> {
 /// `signed_refs`.
 ///
 /// Create and track a fake peer.
-pub async fn track_fake_peer(
-    state: &State,
+pub async fn track_fake_peer<D>(
+    peer: &Peer<D>,
     project: &Project,
     fake_user_handle: &str,
 ) -> (PeerId, LocalIdentity) {
@@ -178,9 +179,9 @@ pub async fn track_fake_peer(
     //   to fake_user
     let urn = project.urn();
     let fake_user =
-        state.init_user(fake_user_handle.to_string()).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+        state::init_user(peer, fake_user_handle.to_string()).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
     let remote = generate_peer_id();
-    let monorepo = git2::Repository::open(state.monorepo()).expect("failed to open monorepo");
+    let monorepo = git2::Repository::open(state::monorepo(peer)).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
     // Grab the Oid of master for the given project.
@@ -244,8 +245,7 @@ pub async fn track_fake_peer(
             .expect("failed to create rad/refs");
     }
 
-    state
-        .track(urn, remote)
+    state::track(peer, urn, remote)
         .await
         .expect("failed to track peer");
 
