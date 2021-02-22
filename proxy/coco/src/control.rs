@@ -22,9 +22,9 @@ use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
 use crate::{
+    peer::Peer,
     project,
     state::{self, Error},
-    peer::Peer,
 };
 
 /// Generate a fresh `PeerId` for use in tests.
@@ -39,7 +39,10 @@ pub fn generate_peer_id() -> PeerId {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub async fn setup_fixtures<D>(peer: &Peer<D>, owner: &LocalIdentity) -> Result<Vec<Project>, Error> {
+pub async fn setup_fixtures<D>(
+    peer: &Peer<D>,
+    owner: &LocalIdentity,
+) -> Result<Vec<Project>, Error> {
     let infos = vec![
         (
             "monokel",

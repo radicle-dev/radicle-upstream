@@ -21,17 +21,16 @@ use librad::{
     git_ext::{OneLevel, RefLike},
     identities::{delegation::Indirect, payload, Person, Project, SomeIdentity, Urn},
     internal::canonical::Cstring,
-    keys, paths,
+    keys,
+    net::peer::Peer,
+    paths,
     peer::PeerId,
+    signer::BoxedSigner,
 };
 use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
 
-use crate::{
-    peer::{gossip, Peer},
-    project::peer,
-    source,
-};
+use crate::{peer::gossip, project::peer, source};
 
 pub mod error;
 pub use error::Error;
@@ -41,12 +40,11 @@ pub use error::Error;
 /// # Errors
 ///
 ///   * Checking the storage for the commit fails.
-pub async fn has_commit<D, Oid>(peer: &Peer<D>, urn: Urn, oid: Oid) -> Result<bool, Error>
+pub async fn has_commit<Oid>(peer: &Peer<BoxedSigner>, urn: Urn, oid: Oid) -> Result<bool, Error>
 where
     Oid: AsRef<git2::Oid> + std::fmt::Debug + Send + 'static,
 {
     Ok(peer
-        .peer
         .using_storage(move |storage| storage.has_commit(&urn, oid))
         .await??)
 }
@@ -57,9 +55,8 @@ where
 ///   * Opening the storage config failed
 ///   * Fetching the `Urn` from the config failed
 ///   * Loading the `LocalIdentity` failed
-pub async fn default_owner<D>(peer: &Peer<D>) -> Result<Option<LocalIdentity>, Error> {
+pub async fn default_owner(peer: &Peer<BoxedSigner>) -> Result<Option<LocalIdentity>, Error> {
     Ok(peer
-        .peer
         .using_storage(move |store| {
             if let Some(urn) = store.config()?.user()? {
                 return local::load(store, urn).map_err(Error::from);
@@ -75,12 +72,11 @@ pub async fn default_owner<D>(peer: &Peer<D>) -> Result<Option<LocalIdentity>, E
 /// # Errors
 ///
 ///   * Fails to set the default `rad/self` for this `PeerApi`.
-pub async fn set_default_owner<D, U>(peer: &Peer<D>, user: U) -> Result<(), Error>
+pub async fn set_default_owner<U>(peer: &Peer<BoxedSigner>, user: U) -> Result<(), Error>
 where
     U: Into<Option<LocalIdentity>> + Send + Sync + 'static,
 {
     Ok(peer
-        .peer
         .using_storage(move |storage| storage.config()?.set_user(user).map_err(Error::from))
         .await??)
 }
@@ -93,17 +89,15 @@ where
 ///   * Fails to verify `User`.
 ///   * Fails to set the default `rad/self` for this `PeerApi`.
 #[allow(clippy::single_match_else)]
-pub async fn init_owner<D>(peer: &Peer<D>, name: String) -> Result<LocalIdentity, Error> {
+pub async fn init_owner(peer: &Peer<BoxedSigner>, name: String) -> Result<LocalIdentity, Error> {
     match peer
-        .peer
         .using_storage(move |store| local::default(store))
         .await??
     {
         Some(owner) => Ok(owner),
         None => {
-            let pk = keys::PublicKey::from(peer.peer.signer().public_key());
+            let pk = keys::PublicKey::from(peer.signer().public_key());
             let person = peer
-                .peer
                 .using_storage(move |store| {
                     person::create(
                         store,
@@ -117,21 +111,19 @@ pub async fn init_owner<D>(peer: &Peer<D>, name: String) -> Result<LocalIdentity
 
             let urn = person.urn();
             let owner = peer
-                .peer
                 .using_storage(move |store| local::load(store, urn))
                 .await??
                 .ok_or_else(|| Error::PersonNotFound(person.urn()))?;
 
             {
                 let owner = owner.clone();
-                peer.peer
-                    .using_storage(move |store| {
-                        let mut config = store.config()?;
-                        config.set_user(owner)?;
+                peer.using_storage(move |store| {
+                    let mut config = store.config()?;
+                    config.set_user(owner)?;
 
-                        Ok::<_, Error>(())
-                    })
-                    .await??;
+                    Ok::<_, Error>(())
+                })
+                .await??;
             }
 
             Ok(owner)
@@ -146,8 +138,8 @@ pub async fn init_owner<D>(peer: &Peer<D>, name: String) -> Result<LocalIdentity
 ///   * Could not open librad storage.
 ///   * Failed to clone the project.
 ///   * Failed to set the rad/self of this project.
-pub async fn clone_project<D, C, Addrs>(
-    peer: &Peer<D>,
+pub async fn clone_project<C, Addrs>(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
     remote_peer: PeerId,
     addr_hints: Addrs,
@@ -159,10 +151,9 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.peer.protocol_config().replication.clone());
+        .unwrap_or_else(|| peer.protocol_config().replication.clone());
     let owner = default_owner(peer).await?.ok_or(Error::MissingOwner)?;
     Ok(peer
-        .peer
         .using_storage(move |store| {
             replication::replicate(
                 store,
@@ -181,9 +172,8 @@ where
 /// # Errors
 ///
 ///   * Resolving the project fails.
-pub async fn get_project<D>(peer: &Peer<D>, urn: Urn) -> Result<Option<Project>, Error> {
-    peer.peer
-        .using_storage(move |store| identities::project::get(store, &urn))
+pub async fn get_project(peer: &Peer<BoxedSigner>, urn: Urn) -> Result<Option<Project>, Error> {
+    peer.using_storage(move |store| identities::project::get(store, &urn))
         .await?
         .map_err(Error::from)
 }
@@ -193,7 +183,7 @@ pub async fn get_project<D>(peer: &Peer<D>, urn: Urn) -> Result<Option<Project>,
 /// # Errors
 ///
 ///   * Retrieving the project entities from the store fails.
-pub async fn list_projects<D>(peer: &Peer<D>) -> Result<Vec<Project>, Error> {
+pub async fn list_projects(peer: &Peer<BoxedSigner>) -> Result<Vec<Project>, Error> {
     // FIXME(xla): Instead of implicitely expecting a presence of a default owner, there either
     // should be an explicit argument, or it's made impossible to call this function without an
     // owner associated with the state.
@@ -202,30 +192,29 @@ pub async fn list_projects<D>(peer: &Peer<D>) -> Result<Vec<Project>, Error> {
         Some(owner) => owner.into_inner().into_inner(),
     };
 
-    peer.peer
-        .using_storage(move |store| {
-            let projects = identities::any::list(store)?
-                .filter_map(Result::ok)
-                .filter_map(|id| match id {
-                    SomeIdentity::Project(project) => {
-                        let rad_self = Reference::rad_self(Namespace::from(project.urn()), None);
-                        let urn = Urn::try_from(rad_self).ok()?;
-                        let project_self = person::get(store, &urn).ok()??;
-                        // Filter projects that have a rad/self pointing to current default
-                        // owner
-                        if project_self == owner {
-                            Some(project)
-                        } else {
-                            None
-                        }
-                    },
-                    _ => None,
-                })
-                .collect::<Vec<_>>();
+    peer.using_storage(move |store| {
+        let projects = identities::any::list(store)?
+            .filter_map(Result::ok)
+            .filter_map(|id| match id {
+                SomeIdentity::Project(project) => {
+                    let rad_self = Reference::rad_self(Namespace::from(project.urn()), None);
+                    let urn = Urn::try_from(rad_self).ok()?;
+                    let project_self = person::get(store, &urn).ok()??;
+                    // Filter projects that have a rad/self pointing to current default
+                    // owner
+                    if project_self == owner {
+                        Some(project)
+                    } else {
+                        None
+                    }
+                },
+                _ => None,
+            })
+            .collect::<Vec<_>>();
 
-            Ok::<_, Error>(projects)
-        })
-        .await?
+        Ok::<_, Error>(projects)
+    })
+    .await?
 }
 
 /// Retrieves the [`librad::git::refs::Refs`] for the state owner.
@@ -233,9 +222,11 @@ pub async fn list_projects<D>(peer: &Peer<D>) -> Result<Vec<Project>, Error> {
 /// # Errors
 ///
 /// * if opening the storage fails
-pub async fn list_owner_project_refs<D>(peer: &Peer<D>, urn: Urn) -> Result<Option<Refs>, Error> {
-    peer.peer
-        .using_storage(move |store| Refs::load(store, &urn, None))
+pub async fn list_owner_project_refs(
+    peer: &Peer<BoxedSigner>,
+    urn: Urn,
+) -> Result<Option<Refs>, Error> {
+    peer.using_storage(move |store| Refs::load(store, &urn, None))
         .await?
         .map_err(Error::from)
 }
@@ -245,13 +236,12 @@ pub async fn list_owner_project_refs<D>(peer: &Peer<D>, urn: Urn) -> Result<Opti
 /// # Errors
 ///
 /// * if opening the storage fails
-pub async fn list_peer_project_refs<D>(
-    peer: &Peer<D>,
+pub async fn list_peer_project_refs(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
     peer_id: PeerId,
 ) -> Result<Option<Refs>, Error> {
-    peer.peer
-        .using_storage(move |store| Refs::load(store, &urn, Some(peer_id)))
+    peer.using_storage(move |store| Refs::load(store, &urn, Some(peer_id)))
         .await?
         .map_err(Error::from)
 }
@@ -261,20 +251,19 @@ pub async fn list_peer_project_refs<D>(
 /// # Errors
 ///
 ///   * Retrieval of the user entities from the store fails.
-pub async fn list_users<D>(peer: &Peer<D>) -> Result<Vec<Person>, Error> {
-    peer.peer
-        .using_storage(move |store| {
-            let projects = identities::any::list(store)?
-                .filter_map(Result::ok)
-                .filter_map(|id| match id {
-                    SomeIdentity::Person(person) => Some(person),
-                    _ => None,
-                })
-                .collect::<Vec<_>>();
+pub async fn list_users(peer: &Peer<BoxedSigner>) -> Result<Vec<Person>, Error> {
+    peer.using_storage(move |store| {
+        let projects = identities::any::list(store)?
+            .filter_map(Result::ok)
+            .filter_map(|id| match id {
+                SomeIdentity::Person(person) => Some(person),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
 
-            Ok::<_, Error>(projects)
-        })
-        .await?
+        Ok::<_, Error>(projects)
+    })
+    .await?
 }
 
 /// Given some hints as to where you might find it, get the urn of the user found at `url`.
@@ -284,8 +273,8 @@ pub async fn list_users<D>(peer: &Peer<D>) -> Result<Vec<Person>, Error> {
 ///   * Could not successfully acquire a lock to the API.
 ///   * Could not open librad storage.
 ///   * Failed to clone the user.
-pub async fn clone_user<D, C, Addrs>(
-    peer: &Peer<D>,
+pub async fn clone_user<C, Addrs>(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
     remote_peer: PeerId,
     addr_hints: Addrs,
@@ -297,13 +286,12 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.peer.protocol_config().replication.clone());
-    peer.peer
-        .using_storage(move |store| {
-            replication::replicate(store, config, None, urn, remote_peer, addr_hints)
-        })
-        .await?
-        .map_err(Error::from)
+        .unwrap_or_else(|| peer.protocol_config().replication.clone());
+    peer.using_storage(move |store| {
+        replication::replicate(store, config, None, urn, remote_peer, addr_hints)
+    })
+    .await?
+    .map_err(Error::from)
 }
 
 /// Get the user found at `urn`.
@@ -312,14 +300,13 @@ where
 ///
 ///   * Resolving the user fails.
 ///   * Could not successfully acquire a lock to the API.
-pub async fn get_user<D>(peer: &Peer<D>, urn: Urn) -> Result<Option<LocalIdentity>, Error> {
-    peer.peer
-        .using_storage(move |store| match identities::person::get(store, &urn)? {
-            None => Ok(None),
-            Some(person) => local::load(store, person.urn()),
-        })
-        .await?
-        .map_err(Error::from)
+pub async fn get_user(peer: &Peer<BoxedSigner>, urn: Urn) -> Result<Option<LocalIdentity>, Error> {
+    peer.using_storage(move |store| match identities::person::get(store, &urn)? {
+        None => Ok(None),
+        Some(person) => local::load(store, person.urn()),
+    })
+    .await?
+    .map_err(Error::from)
 }
 
 /// Fetch any updates at the given `RadUrl`, providing address hints if we have them.
@@ -330,8 +317,8 @@ pub async fn get_user<D>(peer: &Peer<D>, urn: Urn) -> Result<Option<LocalIdentit
 ///   * Could not open librad storage.
 ///   * Failed to fetch the updates.
 ///   * Failed to set the rad/self of this project.
-pub async fn fetch<D, C, Addrs>(
-    peer: &Peer<D>,
+pub async fn fetch<C, Addrs>(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
     remote_peer: PeerId,
     addr_hints: Addrs,
@@ -343,9 +330,8 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.peer.protocol_config().replication.clone());
+        .unwrap_or_else(|| peer.protocol_config().replication.clone());
     Ok(peer
-        .peer
         .using_storage(move |store| {
             replication::replicate(store, config, None, urn, remote_peer, addr_hints)
         })
@@ -360,8 +346,8 @@ where
 /// Will error if:
 ///     * The signing of the project metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-pub async fn init_project<D>(
-    peer: &Peer<D>,
+pub async fn init_project(
+    peer: &Peer<BoxedSigner>,
     owner: &LocalIdentity,
     create: crate::project::Create,
 ) -> Result<Project, Error> {
@@ -373,7 +359,6 @@ pub async fn init_project<D>(
         .map_err(crate::project::create::Error::from)?;
     let owner = owner.clone();
     let project = peer
-        .peer
         .using_storage(move |store| {
             project::create(
                 store,
@@ -425,22 +410,21 @@ pub async fn init_project<D>(
 /// Will error if:
 ///     * The signing of the user metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-pub async fn init_user<D>(peer: &Peer<D>, name: String) -> Result<LocalIdentity, Error> {
-    let pk = keys::PublicKey::from(peer.peer.signer().public_key());
-    peer.peer
-        .using_storage(move |store| {
-            let malkovich = person::create(
-                store,
-                payload::Person {
-                    name: Cstring::from(name),
-                },
-                Some(pk).into_iter().collect(),
-            )?;
+pub async fn init_user(peer: &Peer<BoxedSigner>, name: String) -> Result<LocalIdentity, Error> {
+    let pk = keys::PublicKey::from(peer.signer().public_key());
+    peer.using_storage(move |store| {
+        let malkovich = person::create(
+            store,
+            payload::Person {
+                name: Cstring::from(name),
+            },
+            Some(pk).into_iter().collect(),
+        )?;
 
-            Ok::<_, Error>(local::load(store, malkovich.urn())?)
-        })
-        .await??
-        .ok_or(Error::IdentityCreationFailed)
+        Ok::<_, Error>(local::load(store, malkovich.urn())?)
+    })
+    .await??
+    .ok_or(Error::IdentityCreationFailed)
 }
 
 /// Wrapper around the storage track.
@@ -448,11 +432,10 @@ pub async fn init_user<D>(peer: &Peer<D>, name: String) -> Result<LocalIdentity,
 /// # Errors
 ///
 /// * When the storage operation fails.
-pub async fn track<D>(peer: &Peer<D>, urn: Urn, remote_peer: PeerId) -> Result<(), Error> {
+pub async fn track(peer: &Peer<BoxedSigner>, urn: Urn, remote_peer: PeerId) -> Result<(), Error> {
     {
         let urn = urn.clone();
-        peer.peer
-            .using_storage(move |store| tracking::track(store, &urn, remote_peer))
+        peer.using_storage(move |store| tracking::track(store, &urn, remote_peer))
             .await??;
     }
 
@@ -468,11 +451,14 @@ pub async fn track<D>(peer: &Peer<D>, urn: Urn, remote_peer: PeerId) -> Result<(
 /// # Errors
 ///
 /// * When the storage operation fails.
-pub async fn untrack<D>(peer: &Peer<D>, urn: Urn, remote_peer: PeerId) -> Result<bool, Error> {
+pub async fn untrack(
+    peer: &Peer<BoxedSigner>,
+    urn: Urn,
+    remote_peer: PeerId,
+) -> Result<bool, Error> {
     let res = {
         let urn = urn.clone();
-        peer.peer
-            .using_storage(move |store| tracking::untrack(store, &urn, remote_peer))
+        peer.using_storage(move |store| tracking::untrack(store, &urn, remote_peer))
             .await??
     };
 
@@ -494,38 +480,37 @@ pub async fn untrack<D>(peer: &Peer<D>, urn: Urn, remote_peer: PeerId) -> Result
 /// * If did not have the `urn` in storage
 /// * If we could not fetch the tracked peers
 /// * If we could not get the `rad/self` of the peer
-pub async fn tracked<D>(
-    peer: &Peer<D>,
+pub async fn tracked(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
 ) -> Result<Vec<crate::project::Peer<peer::Status<Person>>>, Error> {
     let project = get_project(peer, urn.clone())
         .await?
         .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
 
-    peer.peer
-        .using_storage(move |store| {
-            let mut peers = vec![];
+    peer.using_storage(move |store| {
+        let mut peers = vec![];
 
-            for peer_id in tracking::tracked(store, &urn)? {
-                let rad_self =
-                    Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id))
-                        .expect("namespace is set");
-                let status = if store.has_urn(&rad_self)? {
-                    let malkovich =
-                        person::get(store, &rad_self)?.ok_or(Error::PersonNotFound(rad_self))?;
+        for peer_id in tracking::tracked(store, &urn)? {
+            let rad_self =
+                Urn::try_from(Reference::rad_self(Namespace::from(urn.clone()), peer_id))
+                    .expect("namespace is set");
+            let status = if store.has_urn(&rad_self)? {
+                let malkovich =
+                    person::get(store, &rad_self)?.ok_or(Error::PersonNotFound(rad_self))?;
 
-                    let role = role(store, &project, Either::Right(peer_id))?;
-                    peer::Status::replicated(role, malkovich)
-                } else {
-                    peer::Status::NotReplicated
-                };
+                let role = role(store, &project, Either::Right(peer_id))?;
+                peer::Status::replicated(role, malkovich)
+            } else {
+                peer::Status::NotReplicated
+            };
 
-                peers.push(crate::project::Peer::Remote { peer_id, status });
-            }
+            peers.push(crate::project::Peer::Remote { peer_id, status });
+        }
 
-            Ok::<_, Error>(peers)
-        })
-        .await?
+        Ok::<_, Error>(peers)
+    })
+    .await?
 }
 
 // TODO(xla): Account for projects not replicated but wanted.
@@ -541,8 +526,8 @@ pub async fn tracked<D>(
 ///
 /// * if the default owner can't be fetched
 #[allow(clippy::blocks_in_if_conditions)]
-pub async fn list_project_peers<D>(
-    peer: &Peer<D>,
+pub async fn list_project_peers(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
 ) -> Result<Vec<crate::project::Peer<peer::Status<Person>>>, Error> {
     let project = get_project(peer, urn.clone())
@@ -557,14 +542,13 @@ pub async fn list_project_peers<D>(
         .into_inner()
         .into_inner();
 
-    let local = peer.peer.peer_id();
+    let local = peer.peer_id();
     let role = peer
-        .peer
         .using_storage(move |store| role(store, &project, Either::Left(local)))
         .await??;
     let status = peer::Status::replicated(role, owner);
     peers.push(crate::project::Peer::Local {
-        peer_id: peer.peer.peer_id(),
+        peer_id: peer.peer_id(),
         status,
     });
 
@@ -586,8 +570,8 @@ pub async fn list_project_peers<D>(
 /// * if the project can't be found
 /// * if the include file creation fails
 /// * if the clone of the working copy fails
-pub async fn checkout<D, P>(
-    peer: &Peer<D>,
+pub async fn checkout<P>(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
     peer_id: P,
     destination: PathBuf,
@@ -621,7 +605,7 @@ where
 
     log::debug!("Determing Owner");
     let ownership = match peer_id {
-        None => crate::project::checkout::Ownership::Local(peer.peer.peer_id()),
+        None => crate::project::checkout::Ownership::Local(peer.peer_id()),
         Some(remote) => {
             let handle = {
                 let rad_self =
@@ -629,7 +613,6 @@ where
                         .expect("namespace is set");
                 log::debug!("Monorepo: {}", monorepo(peer).display());
                 let person = peer
-                    .peer
                     .using_storage(move |store| {
                         log::debug!("Urn -> {}", rad_self);
                         person::get(store, &rad_self)?.ok_or(Error::PersonNotFound(rad_self))
@@ -642,7 +625,7 @@ where
             crate::project::checkout::Ownership::Remote {
                 handle,
                 remote,
-                local: peer.peer.peer_id(),
+                local: peer.peer_id(),
             }
         },
     };
@@ -659,7 +642,7 @@ where
 /// # Errors
 ///
 /// * if getting the list of tracked peers fails
-pub async fn update_include<D>(peer: &Peer<D>, urn: Urn) -> Result<PathBuf, Error> {
+pub async fn update_include(peer: &Peer<BoxedSigner>, urn: Urn) -> Result<PathBuf, Error> {
     let local_url = LocalUrl::from(urn.clone());
     let tracked = tracked(peer, urn).await?;
     let include = Include::from_tracked_persons(
@@ -691,8 +674,8 @@ pub async fn update_include<D>(peer: &Peer<D>, urn: Urn) -> Result<PathBuf, Erro
 ///   * If we could not open the backing storage.
 ///   * If we could not initialise the `Browser`.
 ///   * If the callback provided returned an error.
-pub async fn with_browser<D, T, F>(
-    peer: &Peer<D>,
+pub async fn with_browser<T, F>(
+    peer: &Peer<BoxedSigner>,
     reference: Reference<Single>,
     callback: F,
 ) -> Result<T, Error>
@@ -731,8 +714,8 @@ where
 /// # Errors
 ///   * If the storage operations fail.
 ///   * If the requested reference was not found.
-pub async fn get_branch<D, P, B>(
-    peer: &Peer<D>,
+pub async fn get_branch<P, B>(
+    peer: &Peer<BoxedSigner>,
     urn: Urn,
     remote: P,
     branch_name: B,
@@ -760,15 +743,14 @@ where
     .parse()?;
 
     let remote = match remote.into() {
-        Some(peer_id) if peer_id == peer.peer.peer_id() => None,
+        Some(peer_id) if peer_id == peer.peer_id() => None,
         Some(peer_id) => Some(peer_id),
         None => None,
     };
     let reference = Reference::head(Namespace::from(urn), remote, name);
     let exists = {
         let reference = reference.clone();
-        peer.peer
-            .using_storage(move |storage| storage.has_ref(&reference))
+        peer.using_storage(move |storage| storage.has_ref(&reference))
             .await??
     };
 
@@ -789,7 +771,10 @@ where
 /// # Errors
 ///   * If the storage operations fail.
 ///   * If no default branch was found for the provided [`Urn`].
-pub async fn find_default_branch<D>(peer: &Peer<D>, urn: Urn) -> Result<Reference<Single>, Error> {
+pub async fn find_default_branch(
+    peer: &Peer<BoxedSigner>,
+    urn: Urn,
+) -> Result<Reference<Single>, Error> {
     let project = get_project(peer, urn.clone())
         .await?
         .ok_or_else(|| Error::ProjectNotFound(urn.clone()))?;
@@ -833,28 +818,28 @@ pub async fn find_default_branch<D>(peer: &Peer<D>, urn: Urn) -> Result<Referenc
 
 /// Returns the [`PathBuf`] to the underlying monorepo.
 #[must_use]
-pub fn monorepo<D>(peer: &Peer<D>) -> PathBuf {
-    peer.peer.protocol_config().paths.git_dir().to_owned()
+pub fn monorepo(peer: &Peer<BoxedSigner>) -> PathBuf {
+    peer.protocol_config().paths.git_dir().to_owned()
 }
 
 /// Returns the underlying [`paths::Paths`].
 #[must_use]
-pub fn paths<D>(peer: &Peer<D>) -> paths::Paths {
-    peer.peer.protocol_config().paths.clone()
+pub fn paths(peer: &Peer<BoxedSigner>) -> paths::Paths {
+    peer.protocol_config().paths.clone()
 }
 
 /// Construct the local [`transport::Settings`] for interacting with git related I/O.
 #[must_use]
-pub fn settings<D>(peer: &Peer<D>) -> transport::Settings {
+pub fn settings(peer: &Peer<BoxedSigner>) -> transport::Settings {
     transport::Settings {
-        paths: peer.peer.protocol_config().paths.clone(),
-        signer: peer.peer.signer().clone().into(),
+        paths: peer.protocol_config().paths.clone(),
+        signer: peer.signer().clone().into(),
     }
 }
 
 /// The [`SocketAddr`] this [`PeerApi`] is listening on.
-pub fn listen_addr<D>(peer: &Peer<D>) -> SocketAddr {
-    peer.peer.protocol_config().listen_addr
+pub fn listen_addr(peer: &Peer<BoxedSigner>) -> SocketAddr {
+    peer.protocol_config().listen_addr
 }
 
 /// Determine the [`peer::Role`] for a given [`Project`] and [`PeerId`].

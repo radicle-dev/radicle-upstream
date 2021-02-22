@@ -12,9 +12,8 @@ use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
 use crate::{
-    peer::gossip,
+    peer::{gossip, Peer},
     state,
-    peer::Peer,
 };
 
 /// Name for the bucket used in [`kv::Store`].
