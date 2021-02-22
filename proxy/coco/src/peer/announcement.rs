@@ -13,7 +13,8 @@ use radicle_surf::git::git2;
 
 use crate::{
     peer::gossip,
-    state::{self, State},
+    state,
+    peer::Peer,
 };
 
 /// Name for the bucket used in [`kv::Store`].
@@ -48,9 +49,9 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(state: &State, updates: impl Iterator<Item = &Announcement> + Send) {
+pub async fn announce<D>(peer: &Peer<D>, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
-        gossip::announce(state, urn, Some(*hash)).await;
+        gossip::announce(peer, urn, Some(*hash)).await;
     }
 }
 
@@ -60,17 +61,17 @@ pub async fn announce(state: &State, updates: impl Iterator<Item = &Announcement
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build(state: &State) -> Result<Updates, Error> {
+pub async fn build<D>(peer: &Peer<D>) -> Result<Updates, Error> {
     let mut list: Updates = HashSet::new();
 
-    match state.list_projects().await {
+    match state::list_projects(peer).await {
         // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
         // should be machinery to kick off these routines only if our app state is ready for it.
-        Err(crate::state::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
+        Err(state::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
         Err(err) => Err(err.into()),
         Ok(projects) => {
             for project in &projects {
-                if let Some(refs) = state.list_owner_project_refs(project.urn()).await? {
+                if let Some(refs) = state::list_owner_project_refs(peer, project.urn()).await? {
                     for (head, hash) in &refs.heads {
                         list.insert((
                             Urn {
@@ -117,12 +118,12 @@ pub fn load(store: &kv::Store) -> Result<Updates, Error> {
 ///
 /// * if it can't build the new list of updates
 /// * access to the storage fails
-pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
+pub async fn run<D>(peer: &Peer<D>, store: &kv::Store) -> Result<Updates, Error> {
     let old = load(store)?;
-    let new = build(state).await?;
+    let new = build(peer).await?;
     let updates = diff(&old, &new);
 
-    announce(state, updates.iter()).await;
+    announce(peer, updates.iter()).await;
 
     if !updates.is_empty() {
         save(store, new.clone()).map_err(Error::from)?;
