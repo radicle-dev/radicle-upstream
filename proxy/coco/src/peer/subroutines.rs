@@ -26,6 +26,7 @@ use librad::{
 use crate::{
     convert::MaybeFrom as _,
     request::{self, waiting_room::WaitingRoom},
+    state,
 };
 
 use super::{
@@ -152,7 +153,7 @@ impl Subroutines {
             pending_tasks: FuturesUnordered::new(),
             inputs,
 
-            state,
+            peer,
             store,
             run_state,
 
@@ -165,7 +166,7 @@ impl Subroutines {
     fn spawn_command(&self, cmd: Command) -> JoinHandle<()> {
         match cmd {
             Command::Announce => tokio::spawn(announce(
-                self.state.clone(),
+                self.peer.clone(),
                 self.store.clone(),
                 self.input_sender.clone(),
             )),
@@ -174,17 +175,17 @@ impl Subroutines {
                     tokio::spawn(control_respond(respond_command))
                 },
             },
-            Command::Include(urn) => tokio::spawn(include::update(self.state.clone(), urn)),
+            Command::Include(urn) => tokio::spawn(include::update(self.peer.clone(), urn)),
             Command::PersistWaitingRoom(waiting_room) => {
                 tokio::spawn(persist_waiting_room(waiting_room, self.store.clone()))
             },
             Command::Request(command::Request::Query(urn)) => {
-                tokio::spawn(query(urn, self.state.clone(), self.input_sender.clone()))
+                tokio::spawn(query(urn, self.peer.clone(), self.input_sender.clone()))
             },
             Command::Request(command::Request::Clone(urn, remote_peer)) => tokio::spawn(clone(
                 urn,
                 remote_peer,
-                self.state.clone(),
+                self.peer.clone(),
                 self.input_sender.clone(),
             )),
             Command::Request(command::Request::TimedOut(urn)) => {
@@ -200,7 +201,7 @@ impl Subroutines {
                 tokio::spawn(start_sync_timeout(sync_period, self.input_sender.clone()))
             },
             Command::SyncPeer(peer_id) => {
-                tokio::spawn(sync(self.state.clone(), peer_id, self.input_sender.clone()))
+                tokio::spawn(sync(self.peer.clone(), peer_id, self.input_sender.clone()))
             },
             Command::EmitEvent(event) => {
                 self.subscriber.send(event).ok();
@@ -285,8 +286,12 @@ impl Future for Subroutines {
 
 /// Run the announcement of updated refs for local projects. On completion report back with the
 /// success or failure.
-async fn announce(state: State, store: kv::Store, sender: mpsc::Sender<Input>) {
-    match announcement::run(&state, &store).await {
+async fn announce(
+    peer: net::peer::Peer<BoxedSigner>,
+    store: kv::Store,
+    sender: mpsc::Sender<Input>,
+) {
+    match announcement::run(&peer, &store).await {
         Ok(updates) => {
             sender
                 .send(Input::Announce(input::Announce::Succeeded(updates)))
@@ -323,13 +328,13 @@ async fn persist_waiting_room(waiting_room: WaitingRoom<SystemTime, Duration>, s
 
 /// Run the sync with a single peer to reach state parity for locally tracked projects. On
 /// completion report back with the success or failure.
-async fn sync(state: State, peer_id: PeerId, sender: mpsc::Sender<Input>) {
+async fn sync(peer: net::peer::Peer<BoxedSigner>, peer_id: PeerId, sender: mpsc::Sender<Input>) {
     sender
         .send(Input::PeerSync(input::Sync::Started(peer_id)))
         .await
         .ok();
 
-    match sync::sync(&state, peer_id).await {
+    match sync::sync(&peer, peer_id).await {
         Ok(_) => {
             sender
                 .send(Input::PeerSync(input::Sync::Succeeded(peer_id)))
@@ -356,8 +361,8 @@ async fn start_sync_timeout(sync_period: Duration, sender: mpsc::Sender<Input>) 
 }
 
 /// Send a query on the network for the given urn.
-async fn query(urn: Urn, state: State, sender: mpsc::Sender<Input>) {
-    gossip::query(&state, urn.clone(), None).await;
+async fn query(urn: Urn, peer: net::peer::Peer<BoxedSigner>, sender: mpsc::Sender<Input>) {
+    gossip::query(&peer, urn.clone(), None).await;
     sender
         .send(Input::Request(input::Request::Queried(urn)))
         .await
@@ -365,7 +370,12 @@ async fn query(urn: Urn, state: State, sender: mpsc::Sender<Input>) {
 }
 
 /// Run a clone for the given `url`. On completion report back with the success or failure.
-async fn clone(urn: Urn, remote_peer: PeerId, state: State, sender: mpsc::Sender<Input>) {
+async fn clone(
+    urn: Urn,
+    remote_peer: PeerId,
+    peer: net::peer::Peer<BoxedSigner>,
+    sender: mpsc::Sender<Input>,
+) {
     sender
         .send(Input::Request(input::Request::Cloning(
             urn.clone(),
@@ -374,10 +384,7 @@ async fn clone(urn: Urn, remote_peer: PeerId, state: State, sender: mpsc::Sender
         .await
         .ok();
 
-    match state
-        .clone_project(urn.clone(), remote_peer, None, None)
-        .await
-    {
+    match state::clone_project(&peer, urn.clone(), remote_peer, None, None).await {
         Ok(_urn) => {
             sender
                 .send(Input::Request(input::Request::Cloned(urn, remote_peer)))
