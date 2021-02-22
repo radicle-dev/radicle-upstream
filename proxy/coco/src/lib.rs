@@ -54,7 +54,6 @@ pub use peer::{
     bootstrap, Control as PeerControl, Event as PeerEvent, Peer, RunConfig, Status as PeerStatus,
 };
 pub mod state;
-pub use state::State;
 pub mod project;
 pub mod request;
 
