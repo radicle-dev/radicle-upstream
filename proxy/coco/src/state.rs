@@ -6,7 +6,7 @@ use either::Either;
 
 use librad::{
     git::{
-        fetch, identities,
+        identities,
         identities::{
             local::{self, LocalIdentity},
             person, project,
@@ -23,7 +23,6 @@ use librad::{
     internal::canonical::Cstring,
     keys, paths,
     peer::PeerId,
-    signer::BoxedSigner,
 };
 use radicle_keystore::sign::Signer as _;
 use radicle_surf::vcs::{git, git::git2};
@@ -31,7 +30,6 @@ use radicle_surf::vcs::{git, git::git2};
 use crate::{
     peer::{gossip, Peer},
     project::peer,
-    seed::Seed,
     source,
 };
 
@@ -47,9 +45,10 @@ pub async fn has_commit<D, Oid>(peer: &Peer<D>, urn: Urn, oid: Oid) -> Result<bo
 where
     Oid: AsRef<git2::Oid> + std::fmt::Debug + Send + 'static,
 {
-    peer.peer
+    Ok(peer
+        .peer
         .using_storage(move |storage| storage.has_commit(&urn, oid))
-        .await?
+        .await??)
 }
 
 /// Get the default owner for this `PeerApi`.
@@ -58,8 +57,9 @@ where
 ///   * Opening the storage config failed
 ///   * Fetching the `Urn` from the config failed
 ///   * Loading the `LocalIdentity` failed
-pub async fn default_owner<D>(&peer: &Peer<D>) -> Result<Option<LocalIdentity>, Error> {
-    peer.peer
+pub async fn default_owner<D>(peer: &Peer<D>) -> Result<Option<LocalIdentity>, Error> {
+    Ok(peer
+        .peer
         .using_storage(move |store| {
             if let Some(urn) = store.config()?.user()? {
                 return local::load(store, urn).map_err(Error::from);
@@ -67,7 +67,7 @@ pub async fn default_owner<D>(&peer: &Peer<D>) -> Result<Option<LocalIdentity>, 
 
             Ok::<_, Error>(None)
         })
-        .await?
+        .await??)
 }
 
 /// Set the default owner for this `PeerApi`.
@@ -82,7 +82,7 @@ where
     Ok(peer
         .peer
         .using_storage(move |storage| storage.config()?.set_user(user).map_err(Error::from))
-        .await?)
+        .await??)
 }
 
 /// Initialise a [`LocalIdentity`] and make them the default owner of this [`PeerApi`].
@@ -161,7 +161,8 @@ where
         .into()
         .unwrap_or_else(|| peer.peer.protocol_config().replication.clone());
     let owner = default_owner(peer).await?.ok_or(Error::MissingOwner)?;
-    peer.peer
+    Ok(peer
+        .peer
         .using_storage(move |store| {
             replication::replicate(
                 store,
@@ -172,8 +173,7 @@ where
                 addr_hints,
             )
         })
-        .await?
-        .map_err(Error::from)
+        .await??)
 }
 
 /// Get the project found at `urn`.
@@ -297,7 +297,7 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.protocol_config().replication.clone());
+        .unwrap_or_else(|| peer.peer.protocol_config().replication.clone());
     peer.peer
         .using_storage(move |store| {
             replication::replicate(store, config, None, urn, remote_peer, addr_hints)
@@ -343,7 +343,7 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.protocol_config().replication.clone());
+        .unwrap_or_else(|| peer.peer.protocol_config().replication.clone());
     Ok(peer
         .peer
         .using_storage(move |store| {
@@ -426,7 +426,7 @@ pub async fn init_project<D>(
 ///     * The signing of the user metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
 pub async fn init_user<D>(peer: &Peer<D>, name: String) -> Result<LocalIdentity, Error> {
-    let pk = keys::PublicKey::from(peer.signer().public_key());
+    let pk = keys::PublicKey::from(peer.peer.signer().public_key());
     peer.peer
         .using_storage(move |store| {
             let malkovich = person::create(
@@ -557,10 +557,10 @@ pub async fn list_project_peers<D>(
         .into_inner()
         .into_inner();
 
-    let local = peer.peer_id();
+    let local = peer.peer.peer_id();
     let role = peer
         .peer
-        .using_storage({ move |store| role(store, &project, Either::Left(local)) })
+        .using_storage(move |store| role(store, &project, Either::Left(local)))
         .await??;
     let status = peer::Status::replicated(role, owner);
     peers.push(crate::project::Peer::Local {
@@ -885,17 +885,6 @@ fn role(
 
     Ok(role)
 }
-
-/* FIXME: should be in terms of Peer
-impl From<&State> for Seed {
-    fn from(state: &State) -> Self {
-        Self {
-            peer_id: state.peer_id(),
-            addrs: state.listen_addrs().collect(),
-        }
-    }
-}
-*/
 
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]

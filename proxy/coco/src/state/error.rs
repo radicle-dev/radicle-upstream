@@ -12,14 +12,6 @@ use crate::source;
 /// Errors that may occur when interacting with [`super::State`].
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// Peer accept error.
-    #[error(transparent)]
-    Accept(#[from] net::peer::AcceptError),
-
-    /// Peer bootstrap error.
-    #[error(transparent)]
-    Bootstrap(#[from] net::peer::BootstrapError),
-
     /// An error occurred while trying to create a working copy of a project.
     #[error(transparent)]
     Create(#[from] crate::project::create::Error),
@@ -56,10 +48,6 @@ pub enum Error {
     #[error("this operation depends on the present of a default owner")]
     MissingOwner,
 
-    /// Peer API error
-    #[error(transparent)]
-    PeerApi(#[from] net::peer::ApiError),
-
     /// The [`librad::git::identities::Person`] was not found for the provided [`Urn`].
     #[error("person not found for '{0}'")]
     PersonNotFound(Urn),
@@ -84,7 +72,11 @@ pub enum Error {
     #[error(transparent)]
     Source(#[from] source::Error),
 
-    /// Storage error.
+    /// Peer storage error.
+    #[error(transparent)]
+    PeerStorage(#[from] net::peer::StorageError),
+
+    /// Peer storage error.
     #[error(transparent)]
     Storage(#[from] storage::Error),
 

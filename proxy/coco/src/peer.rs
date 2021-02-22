@@ -17,7 +17,7 @@ use tokio::{
 
 use librad::{keys::SecretKey, net, net::protocol, signer::BoxedSigner};
 
-use crate::state::{self, State};
+use crate::{seed::Seed, state};
 
 mod announcement;
 pub use announcement::Announcement;
@@ -78,6 +78,15 @@ pub struct Peer<D> {
     control_receiver: mpsc::Receiver<control::Request>,
     /// Sending end for control handles to send requests to the running peer.
     control_sender: mpsc::Sender<control::Request>,
+}
+
+impl<D> From<&Peer<D>> for Seed {
+    fn from(peer: &Peer<D>) -> Self {
+        Self {
+            peer_id: peer.peer.peer_id(),
+            addrs: vec![peer.peer.protocol_config().listen_addr],
+        }
+    }
 }
 
 impl<D> Peer<D>
