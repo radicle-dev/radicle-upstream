@@ -1,17 +1,16 @@
 //! Perform full state syncs with remote peers.
 
-use librad::{identities::generic::Identity, peer::PeerId};
+use librad::{identities::generic::Identity, peer::PeerId, net::peer::Peer, signer::BoxedSigner};
 
-use crate::state::State;
+use crate::state;
 
 use super::{include, Error};
 
 /// Initiaites a fetch for all locally tracked projects from the given [`PeerId`].
-pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
+pub async fn sync(peer: &Peer<BoxedSigner>, remote_peer: PeerId) -> Result<(), Error> {
     log::debug!("Starting sync from {}", remote_peer);
 
-    let urns = state
-        .list_projects()
+    let urns = state::list_projects(peer)
         .await?
         .iter()
         .map(Identity::urn)
@@ -19,7 +18,7 @@ pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
 
     for urn in urns {
         log::debug!("Starting fetch of {} from {}", urn, remote_peer);
-        match state.fetch(urn.clone(), remote_peer, vec![], None).await {
+        match state::fetch(peer, urn.clone(), remote_peer, vec![], None).await {
             Ok(result) => {
                 log::debug!(
                     "Finished fetch of {} from {} with the result {:?}",
@@ -27,7 +26,7 @@ pub async fn sync(state: &State, remote_peer: PeerId) -> Result<(), Error> {
                     remote_peer,
                     result
                 );
-                include::update(state.clone(), urn).await;
+                include::update(peer, urn).await;
             },
             Err(e) => log::debug!("Fetch of {} from {} errored: {}", urn, remote_peer, e),
         }
