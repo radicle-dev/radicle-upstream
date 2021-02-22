@@ -396,8 +396,7 @@ pub async fn init_project(
         .map_err(crate::project::create::Error::from)?;
     let include_path = update_include(peer, project.urn()).await?;
     include::set_include_path(&repo, include_path)?;
-    // FIXME: Can just announce directly here
-    crate::peer::gossip::announce(peer, &project.urn(), None).await;
+    gossip::announce(peer, &project.urn(), None);
 
     Ok(project)
 }
@@ -439,8 +438,7 @@ pub async fn track(peer: &Peer<BoxedSigner>, urn: Urn, remote_peer: PeerId) -> R
             .await??;
     }
 
-    // FIXME: Can just query directly here
-    gossip::query(peer, urn.clone(), Some(remote_peer)).await;
+    gossip::query(peer, urn.clone(), Some(remote_peer));
     let path = update_include(peer, urn).await?;
     log::debug!("Updated include path @ `{}`", path.display());
     Ok(())

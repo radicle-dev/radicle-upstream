@@ -52,7 +52,7 @@ pub async fn announce(
     updates: impl Iterator<Item = &Announcement> + Send,
 ) {
     for (urn, hash) in updates {
-        gossip::announce(peer, urn, Some(*hash)).await;
+        gossip::announce(peer, urn, Some(*hash));
     }
 }
 

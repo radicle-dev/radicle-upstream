@@ -2,34 +2,29 @@
 
 use librad::{
     identities::Urn,
-    net::protocol::gossip::{Payload, Rev},
+    net::{
+        peer::Peer,
+        protocol::gossip::{Payload, Rev},
+    },
     peer::PeerId,
+    signer::BoxedSigner,
 };
 use radicle_git_ext::Oid;
 
-use crate::State;
-
 /// Announce a new rev for the `urn`.
-pub async fn announce(state: &State, urn: &Urn, rev: Option<Oid>) {
-    let protocol = state.api.protocol();
-    protocol
-        .announce(Payload {
-            urn: urn.clone(),
-            rev: rev.map(|rev| Rev::Git(rev.into())),
-            origin: None,
-        })
-        .await;
+pub fn announce(peer: &Peer<BoxedSigner>, urn: &Urn, rev: Option<Oid>) {
+    peer.announce(Payload {
+        urn: urn.clone(),
+        rev: rev.map(|rev| Rev::Git(rev.into())),
+        origin: None,
+    });
 }
 
 /// Emit a [`Gossip`] request for the given `urn`.
-pub async fn query(state: &State, urn: Urn, origin: Option<PeerId>) {
-    state
-        .api
-        .protocol()
-        .query(Payload {
-            urn,
-            rev: None,
-            origin,
-        })
-        .await;
+pub fn query(peer: &Peer<BoxedSigner>, urn: Urn, origin: Option<PeerId>) {
+    peer.query(Payload {
+        urn,
+        rev: None,
+        origin,
+    });
 }
