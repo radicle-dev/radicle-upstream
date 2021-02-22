@@ -15,8 +15,8 @@ use librad::{
     },
     identities::Project,
     keys,
-    peer::PeerId,
     net::peer::Peer,
+    peer::PeerId,
     reflike, refspec_pattern,
     signer::BoxedSigner,
 };

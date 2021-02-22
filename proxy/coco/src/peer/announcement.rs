@@ -13,10 +13,7 @@ use librad::{
 use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
-use crate::{
-    peer::{gossip},
-    state,
-};
+use crate::{peer::gossip, state};
 
 /// Name for the bucket used in [`kv::Store`].
 const BUCKET_NAME: &str = "announcements";
@@ -50,7 +47,10 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(peer: &Peer<BoxedSigner>, updates: impl Iterator<Item = &Announcement> + Send) {
+pub async fn announce(
+    peer: &Peer<BoxedSigner>,
+    updates: impl Iterator<Item = &Announcement> + Send,
+) {
     for (urn, hash) in updates {
         gossip::announce(peer, urn, Some(*hash)).await;
     }

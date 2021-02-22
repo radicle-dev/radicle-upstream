@@ -17,6 +17,8 @@ use tokio::{
 use librad::{keys::SecretKey, net, net::protocol, signer::BoxedSigner};
 use crate::{seed::Seed, state};
 
+use crate::{seed::Seed, state};
+
 mod announcement;
 pub use announcement::Announcement;
 
@@ -56,6 +58,9 @@ pub enum Error {
 
     #[error(transparent)]
     Protocol(#[from] net::quic::Error),
+
+    #[error(transparent)]
+    State(#[from] state::error::Error),
 }
 
 /// Constructs a [`Peer`] and [`State`] pair from a [`net::peer::PeerConfig`].

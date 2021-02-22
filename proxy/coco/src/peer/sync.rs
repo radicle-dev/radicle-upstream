@@ -1,6 +1,6 @@
 //! Perform full state syncs with remote peers.
 
-use librad::{identities::generic::Identity, peer::PeerId, net::peer::Peer, signer::BoxedSigner};
+use librad::{identities::generic::Identity, net::peer::Peer, peer::PeerId, signer::BoxedSigner};
 
 use crate::state;
 
