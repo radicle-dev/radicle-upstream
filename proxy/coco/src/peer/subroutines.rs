@@ -88,11 +88,18 @@ impl Subroutines {
         };
         let mut waiting_room_timer = interval(run_config.waiting_room.interval);
         let (input_sender, mut external_inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
+        let mut stats_timer = interval(run_config.stats.interval);
         let run_state = RunState::new(run_config, waiting_room);
 
         let inputs = {
             let mut coalesced = SelectAll::new();
-            coalesced.push(protocol_events.map(Input::Protocol).boxed());
+            coalesced.push(
+                // TODO(xla): Ensure stream of Results has significance, or should just signal
+                // stream close.
+                protocol_events
+                    .map(|res| Input::Protocol(res.unwrap()))
+                    .boxed(),
+            );
 
             if let Some(mut timer) = announce_timer {
                 coalesced.push(
@@ -108,6 +115,14 @@ impl Subroutines {
                 stream! {
                     while let _instant = waiting_room_timer.tick().await {
                         yield Input::Request(input::Request::Tick);
+                    }
+                }
+                .boxed(),
+            );
+            coalesced.push(
+                stream! {
+                    while let _instant = stats_timer.tick().await {
+                        yield Input::Stats(input::Stats::Tick);
                     }
                 }
                 .boxed(),
@@ -175,7 +190,7 @@ impl Subroutines {
                     tokio::spawn(control_respond(respond_command))
                 },
             },
-            Command::Include(urn) => tokio::spawn(include::update(self.peer.clone(), urn)),
+            Command::Include(urn) => tokio::spawn(include::update(&self.peer.clone(), urn)),
             Command::PersistWaitingRoom(waiting_room) => {
                 tokio::spawn(persist_waiting_room(waiting_room, self.store.clone()))
             },
@@ -200,6 +215,7 @@ impl Subroutines {
             Command::StartSyncTimeout(sync_period) => {
                 tokio::spawn(start_sync_timeout(sync_period, self.input_sender.clone()))
             },
+            Command::Stats => tokio::spawn(get_stats(self.peer.clone(), self.input_sender.clone())),
             Command::SyncPeer(peer_id) => {
                 tokio::spawn(sync(self.peer.clone(), peer_id, self.input_sender.clone()))
             },
@@ -317,6 +333,16 @@ async fn control_respond(cmd: control::Response) {
         control::Response::ListSearches(sender, requests) => sender.send(requests).ok(),
         control::Response::StartSearch(sender, request) => sender.send(request).ok(),
     };
+}
+
+async fn get_stats(peer: net::peer::Peer<BoxedSigner>, sender: mpsc::Sender<Input>) {
+    let connected_peers = peer.connected_peers().await;
+    let stats = peer.stats().await;
+
+    sender
+        .send(Input::Stats(input::Stats::Values(connected_peers, stats)))
+        .await
+        .ok();
 }
 
 async fn persist_waiting_room(waiting_room: WaitingRoom<SystemTime, Duration>, store: kv::Store) {
