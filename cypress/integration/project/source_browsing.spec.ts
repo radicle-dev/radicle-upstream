@@ -191,8 +191,8 @@ context("project source browsing", () => {
               )
               .should("exist");
 
-            // Going to a different path and then switching back to the root path
-            // shows the README again.
+            // Going to a different path and then clicking on 'Files'
+            // sends us back to the project root, showing the README again.
             commands.pick("source-tree").within(() => {
               cy.contains(".i-am-well-hidden").click();
             });
@@ -210,6 +210,15 @@ context("project source browsing", () => {
               )
               .should("exist");
             commands.pick("project-screen", "files-tab").click();
+            commands
+              .pickWithContent(["project-screen", "file-view"], "README.md")
+              .should("exist");
+
+            // Going to a different path and then clicking on the project name
+            // sends us back to the project root, showing the README again.
+            commands.pick("project-screen", "commits-tab").click();
+            commands.pick("project-screen", "file-view").should("not.exist");
+            commands.pick("header", "entity-name").click();
             commands
               .pickWithContent(["project-screen", "file-view"], "README.md")
               .should("exist");
