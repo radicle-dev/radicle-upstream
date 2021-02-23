@@ -925,7 +925,7 @@ mod tests {
     use librad::{keys::SecretKey, net};
     use radicle_git_ext::Oid;
 
-    use crate::{config, control, signer, state::State};
+    use crate::{config, control, signer, state};
 
     // TODO(xla): A wise man once said: This probably should be an integration test.
     #[tokio::test]
@@ -937,13 +937,11 @@ mod tests {
         });
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(&[]);
-        let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, _run_loop) = peer.accept()?;
-        let state = State::new(api, signer);
+        let peer = net::peer::Peer::new(config);
 
-        let owner = state.init_owner("cloudhead".to_string()).await?;
+        let owner = state::init_owner(&peer, "cloudhead".to_string()).await?;
         let platinum_project = control::replicate_platinum(
-            &state,
+            &peer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -953,10 +951,10 @@ mod tests {
         let urn = platinum_project.urn();
         let sha = Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
-        let branch = state.find_default_branch(urn).await?;
-        let commit = state
-            .with_browser(branch, |browser| super::commit_header(browser, sha))
-            .await?;
+        let branch = state::find_default_branch(&peer, urn).await?;
+        let commit =
+            state::with_browser(&peer, branch, |browser| super::commit_header(browser, sha))
+                .await?;
 
         assert_eq!(commit.sha1, sha);
 

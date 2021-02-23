@@ -10,7 +10,6 @@ use futures::stream::BoxStream;
 use tokio::sync::watch;
 
 use librad::{
-    git::fetch,
     net,
     net::discovery,
     paths,

@@ -155,7 +155,7 @@ mod test {
     use librad::{identities::Urn, keys::SecretKey, net};
     use radicle_git_ext::{oid, RefLike};
 
-    use crate::{config, signer, state::State};
+    use crate::{config, signer, state};
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn announce() -> Result<(), Box<dyn std::error::Error>> {
@@ -166,15 +166,13 @@ mod test {
         });
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(&[]);
-        let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, _run_loop) = peer.accept()?;
-        let state = State::new(api, signer);
+        let peer = net::peer::Peer::new(config);
 
-        let _owner = state.init_owner("cloudhead".to_string()).await?;
+        let _owner = state::init_owner(&peer, "cloudhead".to_string()).await?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
-        let updates = super::build(&state).await?;
-        super::announce(&state, updates.iter()).await;
+        let updates = super::build(&peer).await?;
+        super::announce(&peer, updates.iter()).await;
 
         Ok(())
     }

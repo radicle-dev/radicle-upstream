@@ -878,8 +878,6 @@ mod test {
 
     use crate::{config, control, project, signer};
 
-    use super::State;
-
     fn fakie_project(path: PathBuf) -> project::Create {
         project::Create {
             repo: project::Repo::New {
@@ -909,11 +907,9 @@ mod test {
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(&[]);
-        let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, _run_loop) = peer.accept()?;
-        let state = State::new(api, signer);
+        let peer = net::peer::Peer::new(config);
 
-        let annie = state.init_user("annie_are_you_ok?".to_string()).await;
+        let annie = super::init_user(&peer, "annie_are_you_ok?".to_string()).await;
         assert!(annie.is_ok());
 
         Ok(())
@@ -928,14 +924,10 @@ mod test {
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(&[]);
-        let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, _run_loop) = peer.accept()?;
-        let state = State::new(api, signer);
+        let peer = net::peer::Peer::new(config);
 
-        let user = state.init_owner("cloudhead".to_string()).await?;
-        let project = state
-            .init_project(&user, radicle_project(repo_path.clone()))
-            .await;
+        let user = super::init_owner(&peer, "cloudhead".to_string()).await?;
+        let project = super::init_project(&peer, &user, radicle_project(repo_path.clone())).await;
 
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
@@ -952,14 +944,10 @@ mod test {
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(&[]);
-        let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, _run_loop) = peer.accept()?;
-        let state = State::new(api, signer);
+        let peer = net::peer::Peer::new(config);
 
-        let user = state.init_owner("cloudhead".to_string()).await?;
-        let project = state
-            .init_project(&user, radicle_project(repo_path.clone()))
-            .await;
+        let user = super::init_owner(&peer, "cloudhead".to_string()).await?;
+        let project = super::init_project(&peer, &user, radicle_project(repo_path.clone())).await;
 
         assert!(project.is_ok());
         assert!(repo_path.exists());
@@ -976,20 +964,18 @@ mod test {
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(&[]);
-        let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, _run_loop) = peer.accept()?;
-        let state = State::new(api, signer);
+        let peer = net::peer::Peer::new(config);
 
-        let user = state.init_owner("cloudhead".to_string()).await?;
+        let user = super::init_owner(&peer, "cloudhead".to_string()).await?;
 
-        let _fixtures = control::setup_fixtures(&state, &user)
+        let _fixtures = control::setup_fixtures(&peer, &user)
             .await
             .expect("unable to setup fixtures");
 
-        let kalt = state.init_user("kalt".to_string()).await?;
-        let fakie = state.init_project(&kalt, fakie_project(repo_path)).await?;
+        let kalt = super::init_user(&peer, "kalt".to_string()).await?;
+        let fakie = super::init_project(&peer, &kalt, fakie_project(repo_path)).await?;
 
-        let projects = state.list_projects().await?;
+        let projects = super::list_projects(&peer).await?;
         let mut project_names = projects
             .into_iter()
             .map(|project| project.subject().name.to_string())
@@ -1013,14 +999,12 @@ mod test {
         let signer = signer::BoxedSigner::from(key.clone());
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let disco = config::static_seed_discovery(&[]);
-        let peer = net::peer::Peer::bootstrap(config, disco).await?;
-        let (api, _run_loop) = peer.accept()?;
-        let state = State::new(api, signer);
+        let peer = net::peer::Peer::new(config);
 
-        let _cloudhead = state.init_user("cloudhead".to_string()).await?;
-        let _kalt = state.init_user("kalt".to_string()).await?;
+        let _cloudhead = super::init_user(&peer, "cloudhead".to_string()).await?;
+        let _kalt = super::init_user(&peer, "kalt".to_string()).await?;
 
-        let users = state.list_users().await?;
+        let users = super::list_users(&peer).await?;
         let mut user_handles = users
             .into_iter()
             .map(|user| user.subject().name.to_string())
