@@ -64,7 +64,8 @@
       urn={project.urn}
       name={project.metadata.name}
       description={project.metadata.description}
-      stats={project.stats}>
+      stats={project.stats}
+      onClick={() => push(path.project(urn))}>
       <div slot="top">
         <div style="display: flex">
           <PeerSelector
