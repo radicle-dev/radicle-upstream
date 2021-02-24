@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.11](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.10...v0.1.11) (2021-02-24)
+
+
+### Features
+
+* **ui:** click on project name to go to root view ([eb0d62b](https://github.com/radicle-dev/radicle-upstream/commit/eb0d62bd71ac47a3d0492000b72afa683ffcfc7c))
+* **ui:** pick global git default branch ([1ad2ae3](https://github.com/radicle-dev/radicle-upstream/commit/1ad2ae34d8ebe97bef201f6fde5b63ee57b9b10e))
+* **ui:** preselect main or master on import ([e9bac61](https://github.com/radicle-dev/radicle-upstream/commit/e9bac61c9809ebb95bf86dbce43dd3a0a9782baa))
+* **ui:** support Ropsten as a funding environment ([12b8926](https://github.com/radicle-dev/radicle-upstream/commit/12b89267ad45d756733163cd0cf6175de351e5a6))
+
+
+### Bug Fixes
+
+* **infra:** check minimum node version ([79420ab](https://github.com/radicle-dev/radicle-upstream/commit/79420abcf662454692ad4b63491bfa4b42384a17))
+* **tests:** fix flaky version tests ([33a54ac](https://github.com/radicle-dev/radicle-upstream/commit/33a54ac7ad590003fab75c0b73e64aefb31ee219))
+* **ui:** more permissive seed validation ([6ee2c53](https://github.com/radicle-dev/radicle-upstream/commit/6ee2c53150b9441a8a9f37e6fbcf55069f387a71)), closes [#1618](https://github.com/radicle-dev/radicle-upstream/issues/1618)
+* **ui:** reinit walletConnect dismissed modal ([1c49788](https://github.com/radicle-dev/radicle-upstream/commit/1c49788142317ad94da3c3aa3187586d397b6f4d))
+
 ### [0.1.10](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.9...v0.1.10) (2021-02-10)
 
 
