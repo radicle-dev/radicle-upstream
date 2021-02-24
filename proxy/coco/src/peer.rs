@@ -72,7 +72,6 @@ pub enum Error {
 pub async fn bootstrap<D>(
     config: net::peer::Config<BoxedSigner>,
     disco: D,
-    signer: BoxedSigner,
     store: kv::Store,
     run_config: RunConfig,
 ) -> Result<Peer<D>, Error>
@@ -90,7 +89,7 @@ where
 
 /// Local peer to participate in the radicle code-collaboration network.
 pub struct Peer<D> {
-    pub(crate) peer: net::peer::Peer<BoxedSigner>,
+    pub peer: net::peer::Peer<BoxedSigner>,
     bound: protocol::Bound<net::peer::PeerStorage>,
     disco: D,
 

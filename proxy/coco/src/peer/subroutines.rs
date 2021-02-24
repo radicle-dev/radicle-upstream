@@ -190,7 +190,7 @@ impl Subroutines {
                     tokio::spawn(control_respond(respond_command))
                 },
             },
-            Command::Include(urn) => tokio::spawn(include::update(&self.peer.clone(), urn)),
+            Command::Include(urn) => tokio::spawn(include::update(self.peer.clone(), urn)),
             Command::PersistWaitingRoom(waiting_room) => {
                 tokio::spawn(persist_waiting_room(waiting_room, self.store.clone()))
             },

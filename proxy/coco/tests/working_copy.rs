@@ -1,4 +1,4 @@
-use coco::RunConfig;
+use coco::{state, RunConfig};
 
 use pretty_assertions::assert_eq;
 
@@ -12,14 +12,21 @@ async fn upstream_for_default() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice".to_string()).await?;
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
 
-    tokio::task::spawn(alice_peer.into_running());
+    let alice_peer = {
+        let peer = alice_peer.peer.clone();
+        tokio::task::spawn(alice_peer.into_running());
+        peer
+    };
 
-    let _ = alice_state
-        .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
-        .await?;
+    let _ = state::init_project(
+        &alice_peer,
+        &alice,
+        shia_le_pathbuf(alice_repo_path.clone()),
+    )
+    .await?;
 
     let repo = git2::Repository::open(alice_repo_path.join("just"))
         .map_err(radicle_surf::vcs::git::error::Error::from)?;
@@ -39,22 +46,37 @@ async fn can_checkout() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice".to_string()).await?;
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
 
-    tokio::task::spawn(alice_peer.into_running());
+    let alice_peer = {
+        let peer = alice_peer.peer.clone();
+        tokio::task::spawn(alice_peer.into_running());
+        peer
+    };
 
-    let project = alice_state
-        .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
-        .await?;
+    let project = state::init_project(
+        &alice_peer,
+        &alice,
+        shia_le_pathbuf(alice_repo_path.clone()),
+    )
+    .await?;
 
-    let _ = alice_state
-        .checkout(project.urn(), None, alice_repo_path.join("checkout"))
-        .await?;
+    let _ = state::checkout(
+        &alice_peer,
+        project.urn(),
+        None,
+        alice_repo_path.join("checkout"),
+    )
+    .await?;
 
-    let _ = alice_state
-        .checkout(project.urn(), None, alice_repo_path.join("checkout"))
-        .await?;
+    let _ = state::checkout(
+        &alice_peer,
+        project.urn(),
+        None,
+        alice_repo_path.join("checkout"),
+    )
+    .await?;
 
     Ok(())
 }

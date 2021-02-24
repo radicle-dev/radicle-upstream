@@ -26,7 +26,7 @@ pub async fn sync(peer: &Peer<BoxedSigner>, remote_peer: PeerId) -> Result<(), E
                     remote_peer,
                     result
                 );
-                include::update(peer, urn).await;
+                include::update(peer.clone(), urn).await;
             },
             Err(e) => log::debug!("Fetch of {} from {} errored: {}", urn, remote_peer, e),
         }
