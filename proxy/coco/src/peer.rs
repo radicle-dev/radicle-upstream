@@ -15,9 +15,7 @@ use tokio::{
     task::{JoinError, JoinHandle},
 };
 
-use librad::{keys::SecretKey, net, net::protocol, signer::BoxedSigner};
-use crate::{seed::Seed, state};
-
+use librad::{net, net::protocol, signer::BoxedSigner};
 use crate::{seed::Seed, state};
 
 mod announcement;
