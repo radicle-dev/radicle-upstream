@@ -19,7 +19,7 @@ let proxyArgs: string[] = [];
 
 if (isDev) {
   if (process.env.RADICLE_UPSTREAM_PROXY_PATH) {
-    proxyPath = path.join(__dirname, process.env.RADICLE_UPSTREAM_PROXY_PATH);
+    proxyPath = path.resolve(process.env.RADICLE_UPSTREAM_PROXY_PATH);
   } else {
     throw new Error(
       "RADICLE_UPSTREAM_PROXY_PATH must be set when running in dev mode!"
@@ -41,8 +41,8 @@ if (isDev) {
 }
 
 if (process.env.RAD_HOME) {
-  const electronPath = `${process.env.RAD_HOME}/electron`;
-  if (!fs.existsSync(electronPath)) fs.mkdirSync(electronPath);
+  const electronPath = path.resolve(process.env.RAD_HOME, "electron");
+  fs.mkdirSync(electronPath, { recursive: true });
   app.setPath("userData", electronPath);
   app.setPath("appData", electronPath);
 }
