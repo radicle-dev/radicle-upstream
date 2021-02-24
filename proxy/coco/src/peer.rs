@@ -5,19 +5,19 @@ use std::{
     future::Future,
     net::SocketAddr,
     pin::Pin,
-    sync::Arc,
     task::{Context, Poll},
 };
 
 use futures::{future::FutureExt as _, stream::StreamExt as _};
 use tokio::{
-    sync::{broadcast, mpsc, Barrier},
+    sync::{broadcast, mpsc},
     task::{JoinError, JoinHandle},
 };
 
 use librad::{keys::SecretKey, net, net::protocol, signer::BoxedSigner};
 
 use crate::{seed::Seed, state};
+use librad::{net, net::protocol, signer::BoxedSigner};
 
 mod announcement;
 pub use announcement::Announcement;
@@ -49,15 +49,40 @@ pub enum Error {
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
 
+    /// Peer bootstrap error.
+    #[error(transparent)]
+    Bootstrap(#[from] net::protocol::error::Bootstrap),
+
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
     Join(#[source] JoinError),
 
     #[error(transparent)]
     Protocol(#[from] net::quic::Error),
+}
 
-    /// There was an error when interacting with [`State`].
-    #[error(transparent)]
-    State(#[from] state::Error),
+/// Constructs a [`Peer`] and [`State`] pair from a [`net::peer::PeerConfig`].
+///
+/// # Errors
+///
+/// * peer construction from config fails.
+/// * accept on the peer fails.
+pub async fn bootstrap<D>(
+    config: net::peer::Config<BoxedSigner>,
+    disco: D,
+    signer: BoxedSigner,
+    store: kv::Store,
+    run_config: RunConfig,
+) -> Result<Peer<D>, Error>
+where
+    D: net::discovery::Discovery<Addr = SocketAddr> + Send + 'static,
+    <D as net::discovery::Discovery>::Stream: 'static,
+{
+    let peer = librad::net::peer::Peer::new(config);
+    let bound = peer.bind().await?;
+
+    let peer = Peer::new(peer, bound, disco, store, run_config);
+
+    Ok(peer)
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
@@ -66,8 +91,6 @@ pub struct Peer<D> {
     bound: protocol::Bound<net::peer::PeerStorage>,
     disco: D,
 
-    /// Underlying state that is passed to subroutines.
-    state: State,
     /// On-disk storage for caching.
     store: kv::Store,
     /// Handle used to broadcast [`Event`]s.
@@ -91,15 +114,14 @@ impl<D> From<&Peer<D>> for Seed {
 
 impl<D> Peer<D>
 where
-    D: net::discovery::Discovery<Addr = SocketAddr> + Send,
+    D: net::discovery::Discovery<Addr = SocketAddr> + Send + 'static,
 {
     /// Constructs a new [`Peer`].
     #[must_use = "give a peer some love"]
     pub fn new(
-        peer: net::peer::Peer<SecretKey>,
+        peer: net::peer::Peer<BoxedSigner>,
         bound: protocol::Bound<net::peer::PeerStorage>,
         disco: D,
-        state: State,
         store: kv::Store,
         run_config: RunConfig,
     ) -> Self {
@@ -109,7 +131,6 @@ where
             peer,
             bound,
             disco,
-            state,
             store,
             subscriber,
             run_config,
@@ -147,7 +168,6 @@ where
             peer,
             bound,
             disco,
-            state,
             store,
             subscriber,
             run_config,
@@ -158,7 +178,7 @@ where
         let subroutines = tokio::spawn(async move {
             let protocol_events = peer.subscribe().boxed();
             Subroutines::new(
-                state,
+                peer.clone(),
                 store,
                 run_config,
                 protocol_events,

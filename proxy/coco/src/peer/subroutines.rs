@@ -20,6 +20,7 @@ use librad::{
     identities::Urn,
     net::{self, peer::ProtocolEvent},
     peer::PeerId,
+    signer::BoxedSigner,
 };
 
 use crate::{
@@ -43,7 +44,7 @@ pub struct Subroutines {
     inputs: SelectAll<BoxStream<'static, Input>>,
 
     /// [`State`] for suborutine task fulfillment.
-    state: State,
+    peer: net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] for suborutine task fulfillment.
     store: kv::Store,
 
@@ -59,7 +60,7 @@ pub struct Subroutines {
 impl Subroutines {
     /// Constructs a new subroutines manager.
     pub fn new(
-        state: State,
+        peer: net::peer::Peer<BoxedSigner>,
         store: kv::Store,
         run_config: RunConfig,
         protocol_events: BoxStream<'static, Result<ProtocolEvent, net::protocol::RecvError>>,
