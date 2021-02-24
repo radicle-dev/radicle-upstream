@@ -14,6 +14,7 @@ use coco::{peer::run_config, seed::Seed, state, RunConfig};
 mod common;
 use common::{
     assert_cloned, build_peer, build_peer_with_seeds, init_logging, radicle_project, requested,
+    wait_converged,
     shia_le_pathbuf,
 };
 
@@ -49,7 +50,10 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
     let announced = async_stream::stream! { loop { yield alice_events.recv().await } }
         .filter_map(|res| match res.unwrap() {
             coco::PeerEvent::Announced(updates) if updates.len() == 1 => future::ready(Some(())),
-            _ => future::ready(None),
+            res => {
+                println!("What? {:?}", res);
+                future::ready(None)
+            },
         })
         .map(|_| ());
     tokio::pin!(announced);
@@ -103,8 +107,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         peer
     };
 
-    // FIXME: how do we ensure connection?
-    // connected(bob_connected, &alice_peer_id).await?;
+    wait_converged(Some(bob_peer.subscribe()), 1).await;
 
     let project =
         state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path)).await?;
@@ -121,7 +124,10 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
                 },
                 _ => future::ready(None),
             },
-            _ => future::ready(None),
+            res => {
+                println!("What? {:?}", res);
+                future::ready(None)
+            }
         })
         .map(|_| ());
     tokio::pin!(announced);

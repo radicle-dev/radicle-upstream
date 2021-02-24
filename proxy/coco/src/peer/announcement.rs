@@ -165,7 +165,6 @@ mod test {
             signer: key.clone(),
         });
         let config = config::default(signer.clone(), tmp_dir.path())?;
-        let disco = config::static_seed_discovery(&[]);
         let peer = net::peer::Peer::new(config);
 
         let _owner = state::init_owner(&peer, "cloudhead".to_string()).await?;

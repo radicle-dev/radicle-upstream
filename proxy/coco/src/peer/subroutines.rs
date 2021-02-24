@@ -281,10 +281,10 @@ impl Future for Subroutines {
 
                     if old_status != self.run_state.status {
                         self.subscriber
-                            .send(Event::StatusChanged(
-                                old_status,
-                                self.run_state.status.clone(),
-                            ))
+                            .send(Event::StatusChanged {
+                                old: old_status,
+                                new: self.run_state.status.clone(),
+                            })
                             .ok();
                     }
                 },

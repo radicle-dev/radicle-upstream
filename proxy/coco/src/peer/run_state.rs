@@ -70,7 +70,10 @@ pub enum Event {
     /// The request for [`Urn`] timed out.
     RequestTimedOut(Urn),
     /// The [`Status`] of the peer changed.
-    StatusChanged(Status, Status),
+    StatusChanged {
+        old: Status,
+        new: Status
+    },
 }
 
 impl MaybeFrom<&Input> for Event {

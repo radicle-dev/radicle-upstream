@@ -1,6 +1,8 @@
 use std::{path::PathBuf, time::Duration};
 
 use futures::{future, StreamExt as _};
+use futures::TryStreamExt as _;
+use futures::FutureExt as _;
 use tokio::{
     sync::broadcast,
     time::{error::Elapsed, timeout},
@@ -9,6 +11,8 @@ use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
     git_ext::OneLevel, identities::Urn, keys::SecretKey, net::discovery, peer::PeerId, reflike,
+    net::peer,
+    net::protocol,
     signer,
 };
 
@@ -66,6 +70,54 @@ pub async fn requested(
         receiver,
         PeerEvent::RequestQueried(urn) if urn == *expected
     )
+}
+
+/*
+#[allow(dead_code)]
+pub async fn connected(
+    mut receiver: broadcast::Receiver<PeerEvent>,
+) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::StatusChanged { new: PeerStatus::Online { connected }, .. } if connected > 0
+    )
+}
+*/
+
+#[allow(dead_code)]
+pub async fn wait_converged<E>(events: E, min_connected: usize)
+where
+    E: IntoIterator,
+    E::Item: futures::Stream<Item = Result<protocol::event::Upstream, protocol::RecvError>> + Send,
+{
+    if min_connected < 2 {
+        return;
+    }
+
+    let mut pending = events
+        .into_iter()
+        .map(|stream| {
+            stream
+                .try_skip_while(|evt| {
+                    future::ok(!matches!(evt, protocol::event::Upstream::Membership(_)))
+                })
+                .map_ok(drop)
+                .boxed()
+                .into_future()
+                .map(|(x, _)| x)
+        })
+        .collect();
+    let mut connected = 0;
+    loop {
+        let (out, _, rest): (Option<Result<_, _>>, _, _) = future::select_all(pending).await;
+        if let Some(()) = out.transpose().unwrap() {
+            connected += 1;
+            if connected >= min_connected {
+                break;
+            }
+        }
+        pending = rest
+    }
 }
 
 pub async fn build_peer(

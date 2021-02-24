@@ -5,7 +5,7 @@ use std::time::Duration;
 /// Default time to wait between announcement subroutine runs.
 pub(super) const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(1);
 
-pub(super) const DEFAULT_STATS_INTERVAL: Duration = Duration::from_millis(8);
+pub(super) const DEFAULT_STATS_INTERVAL: Duration = Duration::from_millis(100);
 
 /// Default number of peers a full sync is attempting with up on startup.
 /// TODO(xla): Revise number.
