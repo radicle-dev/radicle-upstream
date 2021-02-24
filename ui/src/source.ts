@@ -1,6 +1,7 @@
 import { format } from "timeago.js";
 
 import * as api from "./api";
+import * as error from "./error";
 import type { PeerId } from "./identity";
 import type { Urn } from "./urn";
 
@@ -195,7 +196,7 @@ export const fetchCommits = (
     });
 };
 
-export const fetchReadme = (
+export const fetchReadme = async (
   projectUrn: Urn,
   peerId: PeerId,
   revision: Revision,
@@ -203,17 +204,28 @@ export const fetchReadme = (
   signal?: AbortSignal
 ): Promise<Readme | null> => {
   const path = findReadme(tree);
+  if (!path) {
+    return null;
+  }
 
-  return new Promise((resolve, _reject) => {
-    if (!path) {
-      return resolve(null);
+  try {
+    const blob = await fetchBlob(
+      projectUrn,
+      peerId,
+      path,
+      revision,
+      false,
+      signal
+    );
+    if (blob && !blob.binary) {
+      return blob;
+    } else {
+      return null;
     }
-
-    fetchBlob(projectUrn, peerId, path, revision, false, signal)
-      .then(blob => (blob && !blob.binary ? blob : null))
-      .then(resolve)
-      .catch(() => resolve(null));
-  });
+  } catch (err) {
+    error.log(err);
+    return null;
+  }
 };
 
 export const fetchRevisions = (
