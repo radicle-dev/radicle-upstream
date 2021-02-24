@@ -86,7 +86,7 @@ impl MaybeFrom<PeerEvent> for Notification {
             PeerEvent::RequestTimedOut(urn) => {
                 Some(Self::LocalPeer(LocalPeer::RequestTimedOut { urn }))
             },
-            PeerEvent::StatusChanged(old, new) => {
+            PeerEvent::StatusChanged { old, new } => {
                 Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
             },
             _ => None,
