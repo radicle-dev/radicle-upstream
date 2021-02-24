@@ -114,20 +114,12 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
     let announced = async_stream::stream! { loop { yield bob_events.recv().await } }
         .filter_map(|res| match res.unwrap() {
-            coco::PeerEvent::Protocol(ProtocolEvent::Gossip(gossip)) => match *gossip {
-                Gossip::Put {
-                    provider,
-                    payload: Payload { urn, .. },
-                    ..
-                } if provider.peer_id == alice_peer_id && urn.id == project.urn().id => {
-                    future::ready(Some(()))
-                },
-                _ => future::ready(None),
+            coco::PeerEvent::GossipFetched {
+                gossip, provider, ..
+            } if provider.peer_id == alice_peer_id && gossip.urn.id == project.urn().id => {
+                future::ready(Some(()))
             },
-            res => {
-                println!("What? {:?}", res);
-                future::ready(None)
-            },
+            _ => future::ready(None),
         })
         .map(|_| ());
     tokio::pin!(announced);

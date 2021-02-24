@@ -472,16 +472,25 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     let mut alice_events = alice_peer.subscribe();
     let mut alice_connections = alice_peer.subscribe();
 
-    let bob_tmp_dir = tempfile::tempdir()?;
-    let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
-
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
         let listen_addrs = alice_peer.listen_addrs.clone();
         tokio::task::spawn(alice_peer.into_running());
         (peer, listen_addrs)
     };
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let bob_peer = build_peer_with_seeds(
+        &bob_tmp_dir,
+        vec![Seed {
+            addrs: alice_addrs.clone(),
+            peer_id: alice_peer.peer_id(),
+        }],
+        RunConfig::default(),
+    )
+    .await?;
+    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+
     let bob_peer = {
         let peer = bob_peer.peer.clone();
         tokio::task::spawn(bob_peer.into_running());
@@ -500,13 +509,9 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     )
     .await?;
 
-    connected(alice_connections, 1).await?;
-
     state::track(&alice_peer, project.urn(), bob_peer.peer_id()).await?;
 
-    println!("OHNO");
     assert_event!(alice_events, coco::PeerEvent::GossipFetched { .. })?;
-    println!("OH YAAAAAA");
 
     let tracked = state::tracked(&alice_peer, project.urn()).await?;
     assert!(tracked.iter().any(|peer| match peer {
