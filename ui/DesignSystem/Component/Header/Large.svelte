@@ -15,6 +15,9 @@
   export let avatarShape: "circle" | "square" = "circle";
 
   export let stats: Stats | undefined = undefined;
+
+  // If defined, it is executed when the `entity-name` element is clicked.
+  export let onClick: (() => void) | undefined = undefined;
 </script>
 
 <style>
@@ -79,6 +82,10 @@
     display: flex;
     align-items: center;
   }
+
+  .clickable {
+    cursor: pointer;
+  }
 </style>
 
 <div data-cy="header" class="banner">
@@ -93,7 +100,12 @@
       {/if}
 
       <div class="metadata">
-        <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
+        <h1
+          data-cy="entity-name"
+          class="typo-overflow-ellipsis"
+          title={name}
+          class:clickable={onClick !== undefined}
+          on:click={() => (onClick ? onClick() : {})}>
           {name}
         </h1>
         {#if urn}
