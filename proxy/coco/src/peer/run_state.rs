@@ -1,7 +1,7 @@
 //! State machine to manage the current mode of operation during peer lifecycle.
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     net::SocketAddr,
     time::{Duration, SystemTime},
 };
@@ -14,7 +14,8 @@ use librad::{
         self,
         peer::{PeerInfo, ProtocolEvent},
         protocol::{
-            broadcast::{Message, PutResult},
+            broadcast::PutResult,
+            event::{downstream, upstream},
             gossip::Payload,
         },
     },
@@ -109,8 +110,9 @@ pub enum Status {
     /// Phase where the local peer tries get up-to-date.
     #[serde(rename_all = "camelCase")]
     Syncing {
+        failed: HashSet<PeerId>,
         /// Number of completed syncs.
-        synced: HashSet<Peerid>,
+        succeeded: HashSet<PeerId>,
         /// Number of synchronisation underway.
         syncs: HashSet<PeerId>,
     },
@@ -152,13 +154,14 @@ impl RunState {
     #[cfg(test)]
     fn construct(
         config: Config,
-        connected_peers: HashMap<PeerId, usize>,
+        connected_peers: HashSet<PeerId>,
         status: Status,
         status_since: SystemTime,
     ) -> Self {
         Self {
             config,
             connected_peers,
+            stats: downstream::Stats::default(),
             status,
             status_since,
             waiting_room: WaitingRoom::new(waiting_room::Config::default()),
@@ -169,7 +172,8 @@ impl RunState {
     pub fn new(config: Config, waiting_room: WaitingRoom<SystemTime, Duration>) -> Self {
         Self {
             config,
-            connected_peers: HashMap::new(),
+            connected_peers: HashSet::new(),
+            stats: downstream::Stats::default(),
             status: Status::Stopped,
             status_since: SystemTime::now(),
             waiting_room,
@@ -254,26 +258,30 @@ impl RunState {
 
     /// Handle [`input::Sync`]s.
     fn handle_peer_sync(&mut self, input: &input::Sync) -> Vec<Command> {
-        if let Status::Syncing { synced, syncs } = self.status {
+        if let Status::Syncing {
+            mut failed,
+            mut succeeded,
+            mut syncs,
+        } = &mut self.status
+        {
             match input {
-                input::Sync::Started(_peer_id) => {
-                    self.status = Status::Syncing {
-                        synced,
-                        syncs: syncs + 1,
-                    };
+                input::Sync::Started(peer_id) => {
+                    syncs.insert(*peer_id);
                 },
-                input::Sync::Failed(_peer_id) | input::Sync::Succeeded(_peer_id) => {
-                    self.status = if synced + 1 >= self.config.sync.max_peers {
-                        Status::Online {
-                            connected: self.connected_peers.len(),
-                        }
-                    } else {
-                        Status::Syncing {
-                            synced: synced + 1,
-                            syncs: syncs - 1,
-                        }
-                    };
+                input::Sync::Failed(peer_id) => {
+                    syncs.remove(peer_id);
+                    failed.insert(*peer_id);
                 },
+                input::Sync::Succeeded(peer_id) => {
+                    syncs.remove(peer_id);
+                    succeeded.insert(*peer_id);
+                },
+            }
+
+            if failed.len() + succeeded.len() >= self.config.sync.max_peers {
+                self.status = Status::Online {
+                    connected: self.stats.connected_peers,
+                };
             }
         }
 
@@ -284,76 +292,37 @@ impl RunState {
     #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent) -> Vec<Command> {
         match (&self.status, event) {
-            // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
-            (Status::Stopped { .. }, ProtocolEvent::Listening(_addr)) => {
+            (Status::Stopped, ProtocolEvent::Endpoint(upstream::Endpoint::Up { .. })) => {
                 self.status = Status::Started;
                 self.status_since = SystemTime::now();
 
                 vec![]
             },
-            (state, ProtocolEvent::Connected(peer_id)) => {
-                match state {
-                    // Update status with its connected peers.
-                    Status::Online { .. } => {
-                        self.status = Status::Online {
-                            connected: self.connected_peers.len(),
-                        };
-                        vec![]
-                    },
-                    // Noop
-                    Status::Stopped | Status::Syncing { .. } => vec![],
-                }
-            },
-            // Remove peer that just disconnected.
-            (_, ProtocolEvent::Disconnecting(peer_id)) => {
-                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
-                    *counter -= 1;
-
-                    if *counter == 0 {
-                        self.connected_peers.remove(&peer_id);
-                    }
-                } else {
-                    log::error!("The impossible has happened, somehow we disconnected from '{}' without already being connected to them", peer_id);
-                    return vec![];
-                }
-
-                // Go offline if we have no more connected peers left.
-                if self.connected_peers.is_empty() {
-                    self.status = Status::Offline;
-                    self.status_since = SystemTime::now();
-                }
+            (_, ProtocolEvent::Endpoint(upstream::Endpoint::Down)) => {
+                self.status = Status::Stopped;
+                self.status_since = SystemTime::now();
 
                 vec![]
             },
-            // Found URN.
-            (
-                _,
-                ProtocolEvent::Gossip(Info::Has(Has {
-                    provider,
-                    val: Gossip { urn, .. },
-                })),
-            ) => {
-                // This message is uninteresting to the waiting room
-                if !self.waiting_room.has(&urn) {
-                    return vec![];
-                }
+            (_, ProtocolEvent::Gossip(gossip)) => {
+                let mut cmds = vec![];
 
-                match self
-                    .waiting_room
-                    .found(&urn, provider.peer_id, SystemTime::now())
-                {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
-
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(command::Request::TimedOut(urn))]
-                            },
-                            _ => vec![],
+                match *gossip {
+                    // FIXME(xla): Find out if we care about the result variance.
+                    upstream::Gossip::Put {
+                        payload: Payload { urn, .. },
+                        provider: PeerInfo { peer_id, .. },
+                        ..
+                    } => {
+                        if let Err(waiting_room::Error::TimeOut { .. }) =
+                            self.waiting_room.found(&urn, peer_id, SystemTime::now())
+                        {
+                            cmds.push(Command::Request(command::Request::TimedOut(urn)));
                         }
                     },
-                    Ok(_) => vec![],
                 }
+
+                cmds
             },
             _ => vec![],
         }
@@ -419,13 +388,19 @@ impl RunState {
         }
     }
 
-    fn handle_stats(&mut self, input: Input::Stats) -> Vec<Command> {
+    fn handle_stats(&mut self, input: input::Stats) -> Vec<Command> {
         match (&self.status, input) {
             (_, input::Stats::Tick) => vec![Command::Stats],
             (status, input::Stats::Values(connected_peers, stats)) => {
                 let mut cmds = vec![];
 
                 match status {
+                    Status::Online { .. } | Status::Syncing { .. } | Status::Started
+                        if stats.connected_peers == 0 =>
+                    {
+                        self.status = Status::Offline;
+                        self.status_since = SystemTime::now();
+                    }
                     // TODO(xla): Also issue sync if we come online after a certain period of
                     // being disconnected from any peer.
                     Status::Offline if stats.connected_peers > 0 => {
@@ -435,8 +410,9 @@ impl RunState {
                     },
                     Status::Started if self.config.sync.on_startup && stats.connected_peers > 0 => {
                         self.status = Status::Syncing {
-                            synced: HashSet::new(),
-                            syncs: connected_peers.into_iter().collect::<HashSet<PeerId>>(),
+                            failed: HashSet::new(),
+                            succeeded: HashSet::new(),
+                            syncs: HashSet::new(),
                         };
                         self.status_since = SystemTime::now();
 
@@ -451,21 +427,16 @@ impl RunState {
                         };
                         self.status_since = SystemTime::now();
                     },
-                    Status::Syncing { syncs, synced } => {
-                        let connected = connected_peers.into_iter().collect::<HashSet<PeerId>>();
+                    Status::Syncing { .. } => {
+                        let connected =
+                            connected_peers.iter().copied().collect::<HashSet<PeerId>>();
                         let diff = connected.difference(&self.connected_peers);
 
-                        if diff.count() > 0 {
-                            for peer in diff {
-                                cmds.push(Command::SyncPeer(*peer));
-                            }
-
-                            self.status = Status::Syncing {
-                                syncs: syncs.union(&connected).copied().collect(),
-                                synced,
-                            };
+                        for peer in diff {
+                            cmds.push(Command::SyncPeer(*peer));
                         }
                     },
+                    _ => {},
                 };
 
                 self.connected_peers = connected_peers.into_iter().collect();

@@ -5,6 +5,8 @@ use std::time::Duration;
 /// Default time to wait between announcement subroutine runs.
 pub(super) const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(1);
 
+pub(super) const DEFAULT_STATS_INTERVAL: Duration = Duration::from_millis(8);
+
 /// Default number of peers a full sync is attempting with up on startup.
 /// TODO(xla): Revise number.
 pub(super) const DEFAULT_SYNC_MAX_PEERS: usize = 5;
@@ -25,6 +27,7 @@ pub(crate) const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10
 pub struct Config {
     /// Set of knobs to alter announce behaviour.
     pub announce: Announce,
+    pub stats: Stats,
     /// Set of knobs to alter sync behaviour.
     pub sync: Sync,
     /// Set of knobs to alter [`WaitingRoom`] behaviour.
@@ -41,6 +44,18 @@ impl Default for Announce {
     fn default() -> Self {
         Self {
             interval: DEFAULT_ANNOUNCE_INTERVAL,
+        }
+    }
+}
+
+pub struct Stats {
+    pub interval: Duration,
+}
+
+impl Default for Stats {
+    fn default() -> Self {
+        Self {
+            interval: DEFAULT_STATS_INTERVAL,
         }
     }
 }
