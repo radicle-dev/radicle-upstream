@@ -13,9 +13,8 @@ use coco::{peer::run_config, seed::Seed, state, RunConfig};
 #[macro_use]
 mod common;
 use common::{
-    assert_cloned, build_peer, build_peer_with_seeds, init_logging, radicle_project, requested,
-    wait_converged,
-    shia_le_pathbuf,
+    assert_cloned, build_peer, build_peer_with_seeds, connected, init_logging, radicle_project,
+    requested, shia_le_pathbuf,
 };
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -78,9 +77,15 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         },
     )
     .await?;
-    let alice_addrs = vec![state::listen_addr(&alice_peer.peer)];
     let alice_peer_id = alice_peer.peer.peer_id();
     let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let listen_addrs = alice_peer.listen_addrs.clone();
+        tokio::task::spawn(alice_peer.into_running());
+        (peer, listen_addrs)
+    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_peer = build_peer_with_seeds(
@@ -96,18 +101,13 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let mut bob_events = bob_peer.subscribe();
 
-    let alice_peer = {
-        let peer = alice_peer.peer.clone();
-        tokio::task::spawn(alice_peer.into_running());
-        peer
-    };
     let bob_peer = {
         let peer = bob_peer.peer.clone();
         tokio::task::spawn(bob_peer.into_running());
         peer
     };
 
-    wait_converged(Some(bob_peer.subscribe()), 1).await;
+    connected(bob_connected, 1).await;
 
     let project =
         state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path)).await?;
@@ -127,7 +127,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
             res => {
                 println!("What? {:?}", res);
                 future::ready(None)
-            }
+            },
         })
         .map(|_| ());
     tokio::pin!(announced);
@@ -143,9 +143,15 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice_addrs = vec![state::listen_addr(&alice_peer.peer)];
     let alice_peer_id = alice_peer.peer.peer_id();
     let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let listen_addrs = alice_peer.listen_addrs.clone();
+        tokio::task::spawn(alice_peer.into_running());
+        (peer, listen_addrs)
+    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_peer = build_peer_with_seeds(
@@ -163,19 +169,13 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let clone_listener = bob_peer.subscribe();
     let query_listener = bob_peer.subscribe();
 
-    let alice_peer = {
-        let peer = alice_peer.peer.clone();
-        tokio::task::spawn(alice_peer.into_running());
-        peer
-    };
     let bob_peer = {
         let peer = bob_peer.peer.clone();
         tokio::task::spawn(bob_peer.into_running());
         peer
     };
 
-    // FIXME: how do we ensure connection?
-    // connected(bob_events, &alice_peer_id).await?;
+    connected(bob_events, 1).await?;
 
     let urn = {
         let project = radicle_project(alice_repo_path.clone());

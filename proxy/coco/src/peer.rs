@@ -3,6 +3,7 @@
 
 use std::{
     future::Future,
+    io,
     net::SocketAddr,
     pin::Pin,
     task::{Context, Poll},
@@ -53,6 +54,9 @@ pub enum Error {
     #[error(transparent)]
     Bootstrap(#[from] net::protocol::error::Bootstrap),
 
+    #[error(transparent)]
+    Io(#[from] io::Error),
+
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
     Join(#[source] JoinError),
 
@@ -82,7 +86,7 @@ where
     let peer = librad::net::peer::Peer::new(config);
     let bound = peer.bind().await?;
 
-    let peer = Peer::new(peer, bound, disco, store, run_config);
+    let peer = Peer::new(peer, bound, disco, store, run_config)?;
 
     Ok(peer)
 }
@@ -90,6 +94,7 @@ where
 /// Local peer to participate in the radicle code-collaboration network.
 pub struct Peer<D> {
     pub peer: net::peer::Peer<BoxedSigner>,
+    pub listen_addrs: Vec<SocketAddr>,
     bound: protocol::Bound<net::peer::PeerStorage>,
     disco: D,
 
@@ -109,7 +114,7 @@ impl<D> From<&Peer<D>> for Seed {
     fn from(peer: &Peer<D>) -> Self {
         Self {
             peer_id: peer.peer.peer_id(),
-            addrs: vec![peer.peer.protocol_config().listen_addr],
+            addrs: peer.listen_addrs.clone(),
         }
     }
 }
@@ -126,11 +131,12 @@ where
         disco: D,
         store: kv::Store,
         run_config: RunConfig,
-    ) -> Self {
+    ) -> Result<Self, Error> {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         let (control_sender, control_receiver) = mpsc::channel(RECEIVER_CAPACITY);
-        Self {
+        Ok(Self {
             peer,
+            listen_addrs: bound.listen_addrs()?,
             bound,
             disco,
             store,
@@ -138,7 +144,7 @@ where
             run_config,
             control_receiver,
             control_sender,
-        }
+        })
     }
 
     /// Acquire a handle to inspect state and perform actions on a running peer.

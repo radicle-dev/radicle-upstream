@@ -835,11 +835,6 @@ pub fn settings(peer: &Peer<BoxedSigner>) -> transport::Settings {
     }
 }
 
-/// The [`SocketAddr`] this [`PeerApi`] is listening on.
-pub fn listen_addr(peer: &Peer<BoxedSigner>) -> SocketAddr {
-    peer.protocol_config().listen_addr
-}
-
 /// Determine the [`peer::Role`] for a given [`Project`] and [`PeerId`].
 ///
 /// If `peer` is `Either::Left` then we have the local `PeerId` and we can ignore it for looking

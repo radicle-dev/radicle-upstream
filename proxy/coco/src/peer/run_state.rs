@@ -70,10 +70,7 @@ pub enum Event {
     /// The request for [`Urn`] timed out.
     RequestTimedOut(Urn),
     /// The [`Status`] of the peer changed.
-    StatusChanged {
-        old: Status,
-        new: Status
-    },
+    StatusChanged { old: Status, new: Status },
 }
 
 impl MaybeFrom<&Input> for Event {
@@ -83,7 +80,20 @@ impl MaybeFrom<&Input> for Event {
                 Some(Self::Announced(updates.clone()))
             },
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
-            Input::Protocol(protocol_event) => Some(Self::Protocol(protocol_event.clone())),
+            Input::Protocol(protocol_event) => match protocol_event {
+                ProtocolEvent::Gossip(gossip) => match &**gossip {
+                    upstream::Gossip::Put {
+                        provider,
+                        payload,
+                        result,
+                    } => Some(Self::GossipFetched {
+                        provider: provider.clone(),
+                        gossip: payload.clone(),
+                        result: result.clone(),
+                    }),
+                },
+                event => Some(Self::Protocol(event.clone())),
+            },
             Input::Request(input::Request::Cloned(urn, remote_peer)) => {
                 Some(Self::RequestCloned(urn.clone(), *remote_peer))
             },
@@ -400,7 +410,7 @@ impl RunState {
                 let mut cmds = vec![];
 
                 match status {
-                    Status::Online { .. } | Status::Syncing { .. } | Status::Started
+                    Status::Online { .. } | Status::Syncing { .. }
                         if stats.connected_peers == 0 =>
                     {
                         self.status = Status::Offline;
