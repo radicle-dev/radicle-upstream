@@ -3,6 +3,8 @@
 use serde::Deserialize;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
+use coco::signer::BoxedSigner;
+
 use crate::{context, notification::Subscriptions};
 
 mod avatar;
@@ -108,9 +110,7 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::LocalIdentity,)
             let session =
                 crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
 
-            let user = ctx
-                .state
-                .get_user(session.identity.urn)
+            let user = coco::state::get_user(&ctx.peer, session.identity.urn)
                 .await
                 .expect("failed to get local identity")
                 .expect("the local identity is missing");
@@ -212,11 +212,11 @@ where
 /// Guard against access of wrong paths by the owners peer id.
 #[must_use]
 pub fn guard_self_peer_id(
-    state: &coco::State,
+    peer: &coco::net::peer::Peer<BoxedSigner>,
     peer_id: Option<coco::PeerId>,
 ) -> Option<coco::PeerId> {
     match peer_id {
-        Some(peer_id) if peer_id == state.peer_id() => None,
+        Some(peer_id) if peer_id == peer.peer_id() => None,
         Some(peer_id) => Some(peer_id),
         None => None,
     }
@@ -225,14 +225,14 @@ pub fn guard_self_peer_id(
 /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
 #[must_use]
 pub fn guard_self_revision(
-    state: &coco::State,
+    peer: &coco::net::peer::Peer<BoxedSigner>,
     revision: Option<coco::source::Revision<coco::PeerId>>,
 ) -> Option<coco::source::Revision<coco::PeerId>> {
     revision.map(|r| {
         if let coco::source::Revision::Branch { name, peer_id } = r {
             coco::source::Revision::Branch {
                 name,
-                peer_id: guard_self_peer_id(state, peer_id),
+                peer_id: guard_self_peer_id(peer, peer_id),
             }
         } else {
             r

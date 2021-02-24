@@ -62,7 +62,7 @@ mod handler {
             )));
         }
 
-        let id = identity::create(&ctx.state, &input.handle).await?;
+        let id = identity::create(&ctx.peer, &input.handle).await?;
 
         session::initialize(&ctx.store, id.clone(), &ctx.default_seeds)?;
 
@@ -71,13 +71,13 @@ mod handler {
 
     /// Get the [`identity::Identity`] for the given `id`.
     pub async fn get(id: coco::Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let id = identity::get(&ctx.state, id.clone()).await?;
+        let id = identity::get(&ctx.peer, id.clone()).await?;
         Ok(reply::json(&id))
     }
 
     /// Retrieve the list of identities known to the session user.
     pub async fn list(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let users = identity::list(&ctx.state).await?;
+        let users = identity::list(&ctx.peer).await?;
         Ok(reply::json(&users))
     }
 }
@@ -123,19 +123,17 @@ mod test {
             session.identity.urn
         };
 
-        let peer_id = ctx.state.peer_id();
+        let peer_id = ctx.peer.peer_id();
 
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                ctx.state
-                    .default_owner()
+                coco::state::default_owner(&ctx.peer)
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                ctx.state
-                    .get_user(urn.clone())
+                coco::state::get_user(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -169,7 +167,7 @@ mod test {
         let ctx = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
-        let user = ctx.state.init_user("cloudhead".to_string()).await?;
+        let user = coco::state::init_user(&ctx.peer, "cloudhead".to_string()).await?;
 
         let res = request()
             .method("GET")
@@ -178,7 +176,7 @@ mod test {
             .await;
 
         let handle = user.subject().name.to_string();
-        let peer_id = ctx.state.peer_id();
+        let peer_id = ctx.peer.peer_id();
         let urn = user.urn();
         let shareable_entity_identifier = (peer_id, user.into_inner().into_inner()).into();
 
@@ -208,14 +206,16 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let fintohaps: identity::Identity = {
-            let id = identity::create(&ctx.state, "cloudhead").await?;
+            let id = identity::create(&ctx.peer, "cloudhead").await?;
 
-            let owner = ctx.state.get_user(id.urn.clone()).await?.unwrap();
+            let owner = coco::state::get_user(&ctx.peer, id.urn.clone())
+                .await?
+                .unwrap();
 
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
 
             let platinum_project = coco::control::replicate_platinum(
-                &ctx.state,
+                &ctx.peer,
                 &owner,
                 "git-platinum",
                 "fixture data",
@@ -224,7 +224,7 @@ mod test {
             .await?;
 
             let (peer_id, local_identity) =
-                coco::control::track_fake_peer(&ctx.state, &platinum_project, "fintohaps").await;
+                coco::control::track_fake_peer(&ctx.peer, &platinum_project, "fintohaps").await;
             (peer_id, local_identity.into_inner().into_inner()).into()
         };
 

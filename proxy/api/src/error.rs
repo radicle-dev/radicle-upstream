@@ -13,6 +13,9 @@ pub enum Error {
     #[error(transparent)]
     State(#[from] coco::state::Error),
 
+    #[error(transparent)]
+    Peer(#[from] coco::peer::Error),
+
     /// An I/O error occurred.
     #[error(transparent)]
     Io(#[from] io::Error),

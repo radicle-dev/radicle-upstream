@@ -41,7 +41,7 @@ struct Rigging {
     /// The context provided to the API
     ctx: context::Context,
     /// The [`Peer`] to run
-    peer: Option<Peer>,
+    peer: Option<Peer<coco::config::StreamDiscovery>>,
     /// Channel to receive updates to the seed nodes from the API
     seeds_sender: Option<watch::Sender<Vec<seed::Seed>>>,
 }
@@ -89,7 +89,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
-            Err(RunError::Peer(coco::peer::Error::Spawn(_))) | Ok(()) => log::debug!("aborted"),
+            Err(RunError::Peer(coco::peer::Error::Join(_))) | Ok(()) => log::debug!("aborted"),
             // Actual error, abort the process
             Err(e) => return Err(e.into()),
         }
@@ -103,6 +103,8 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
 /// Error running either the peer, the event tasks or the API.
 #[derive(Debug, Error)]
 enum RunError {
+    #[error(transparent)]
+    Join(#[from] tokio::task::JoinError),
     /// The peer errored
     #[error(transparent)]
     Peer(#[from] coco::peer::Error),
@@ -110,10 +112,6 @@ enum RunError {
     /// Warp errored
     #[error(transparent)]
     Warp(#[from] warp::Error),
-
-    /// Event task aborted
-    #[error(transparent)]
-    SpawnAbortable(#[from] coco::SpawnAbortableError),
 }
 
 /// Run the API and peer.
@@ -160,7 +158,7 @@ async fn run_rigging(
         if let Some(seeds_sender) = seeds_sender {
             let mut peer_control = peer.control();
             let seeds_store = ctx.store().clone();
-            let seeds_event_task = coco::SpawnAbortable::new(async move {
+            let seeds_event_task = tokio::spawn(async move {
                 let mut last_seeds = session_seeds(&seeds_store, ctx.default_seeds())
                     .await
                     .expect("Failed to read session store");
@@ -188,7 +186,7 @@ async fn run_rigging(
             });
             tasks.push(seeds_event_task.map_err(RunError::from).boxed());
         }
-        let peer_event_task = coco::SpawnAbortable::new({
+        let peer_event_task = tokio::spawn({
             let mut peer_events = peer.subscribe();
 
             async move {
@@ -252,19 +250,12 @@ async fn rig(
         );
         let disco = coco::config::StreamDiscovery::new(seeds_receiver);
 
-        let (peer, state) = coco::boostrap(
-            config,
-            disco,
-            signer.clone(),
-            store.clone(),
-            coco_run_config(),
-        )
-        .await?;
+        let peer = coco::bootstrap(config, disco, store.clone(), coco_run_config()).await?;
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
             peer_control,
-            state,
+            peer: peer.peer.clone(),
             store,
             test: environment.test_mode,
             http_listen: args.http_listen,

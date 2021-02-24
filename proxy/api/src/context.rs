@@ -6,7 +6,7 @@ use data_encoding::HEXLOWER;
 use rand::Rng as _;
 use tokio::sync::RwLock;
 
-use coco::PeerControl;
+use coco::{signer::BoxedSigner, PeerControl};
 
 use crate::service;
 
@@ -153,7 +153,7 @@ pub struct Unsealed {
     /// Handle to inspect state and perform actions on the currently running local [`coco::Peer`].
     pub peer_control: PeerControl,
     /// [`coco::State`] to operate on the local monorepo.
-    pub state: coco::State,
+    pub peer: coco::net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
@@ -204,27 +204,22 @@ impl Unsealed {
         let key = coco::keys::SecretKey::new();
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
-        let (peer_control, state) = {
+        let (peer_control, peer) = {
             let config = coco::config::default(signer.clone(), tmp_dir.path())?;
             let disco = coco::config::static_seed_discovery(&[]);
-            let (peer, state) = coco::boostrap(
-                config,
-                disco,
-                signer.clone(),
-                store.clone(),
-                RunConfig::default(),
-            )
-            .await?;
+            let coco_peer =
+                coco::bootstrap(config, disco, store.clone(), RunConfig::default()).await?;
+            let peer = coco_peer.peer.clone();
 
-            let peer_control = peer.control();
-            tokio::spawn(peer.into_running());
+            let peer_control = coco_peer.control();
+            tokio::spawn(coco_peer.into_running());
 
-            (peer_control, state)
+            (peer_control, peer)
         };
 
         Ok(Self {
             peer_control,
-            state,
+            peer,
             store,
             test: false,
             http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),

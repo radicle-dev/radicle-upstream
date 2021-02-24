@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use radicle_avatar as avatar;
 
+use coco::signer::BoxedSigner;
+
 use crate::error;
 
 /// The users personal identifying metadata and keys.
@@ -50,9 +52,12 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub async fn create(state: &coco::State, handle: &str) -> Result<Identity, error::Error> {
-    let user = state.init_owner(handle.to_string()).await?;
-    Ok((state.peer_id(), user.into_inner().into_inner()).into())
+pub async fn create(
+    peer: &coco::net::peer::Peer<BoxedSigner>,
+    handle: &str,
+) -> Result<Identity, error::Error> {
+    let user = coco::state::init_owner(peer, handle.to_string()).await?;
+    Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
 /// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
@@ -60,10 +65,13 @@ pub async fn create(state: &coco::State, handle: &str) -> Result<Identity, error
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Option<Identity>, error::Error> {
-    match state.get_user(id).await? {
+pub async fn get(
+    peer: &coco::net::peer::Peer<BoxedSigner>,
+    id: coco::Urn,
+) -> Result<Option<Identity>, error::Error> {
+    match coco::state::get_user(peer, id).await? {
         Some(user) => Ok(Some(
-            (state.peer_id(), user.into_inner().into_inner()).into(),
+            (peer.peer_id(), user.into_inner().into_inner()).into(),
         )),
         None => Ok(None),
     }
@@ -77,12 +85,13 @@ pub async fn get(state: &coco::State, id: coco::Urn) -> Result<Option<Identity>,
 ///
 ///  * If we cannot get the list of projects
 ///  * If we cannot get the tracked peers for a given project
-pub async fn list(state: &coco::State) -> Result<Vec<Identity>, error::Error> {
+pub async fn list(
+    peer: &coco::net::peer::Peer<BoxedSigner>,
+) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
-    for project in state.list_projects().await? {
+    for project in coco::state::list_projects(peer).await? {
         let project_urn = project.urn();
-        for peer in state
-            .tracked(project_urn)
+        for peer in coco::state::tracked(peer, project_urn)
             .await?
             .into_iter()
             .filter_map(coco::project::Peer::replicated_remote)
