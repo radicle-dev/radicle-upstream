@@ -193,6 +193,7 @@ where
             )
             .await
         });
+        log::info!("listening addresses: {:?}", bound.listen_addrs());
         let protocol = tokio::spawn(net::protocol::accept(bound, disco.discover()));
 
         Running {
