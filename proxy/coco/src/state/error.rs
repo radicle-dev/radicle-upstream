@@ -9,7 +9,7 @@ use radicle_surf::vcs::git::git2;
 
 use crate::source;
 
-/// Errors that may occur when interacting with [`super::State`].
+/// Errors that may occur when interacting with [`librad::net::peer::Peer`].
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// An error occurred while trying to create a working copy of a project.

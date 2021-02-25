@@ -48,7 +48,7 @@ pub fn default(
     Ok(configure(paths, signer, *LOCALHOST_ANY))
 }
 
-/// Configure a [`net::peer::PeerConfig`].
+/// Configure a [`net::peer::Config`].
 #[allow(clippy::as_conversions)]
 #[must_use]
 pub fn configure<S>(paths: paths::Paths, signer: S, listen_addr: SocketAddr) -> net::peer::Config<S>

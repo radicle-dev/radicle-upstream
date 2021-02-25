@@ -69,7 +69,7 @@ pub enum Error {
     State(#[from] state::error::Error),
 }
 
-/// Constructs a [`Peer`] and [`State`] pair from a [`net::peer::PeerConfig`].
+/// Constructs a [`Peer`] from a [`net::peer::Config`].
 ///
 /// # Errors
 ///

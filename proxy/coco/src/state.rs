@@ -81,7 +81,7 @@ where
         .await??)
 }
 
-/// Initialise a [`LocalIdentity`] and make them the default owner of this [`PeerApi`].
+/// Initialise a [`LocalIdentity`] and make them the default owner of this [`Peer`].
 ///
 /// # Errors
 ///
@@ -664,7 +664,7 @@ pub async fn update_include(peer: &Peer<BoxedSigner>, urn: Urn) -> Result<PathBu
 /// Provide a repo [`git::Browser`] where the `Browser` is initialised with the provided
 /// `reference`.
 ///
-/// See [`State::find_default_branch`] and [`State::get_branch`] for obtaining a
+/// See [`find_default_branch`] and [`get_branch`] for obtaining a
 /// [`Reference`].
 ///
 /// # Errors

@@ -23,7 +23,7 @@ pub fn announce(peer: &Peer<BoxedSigner>, urn: &Urn, rev: Option<Oid>) {
     }
 }
 
-/// Emit a [`Gossip`] request for the given `urn`.
+/// Emit a [`Payload`] request for the given `urn`.
 pub fn query(peer: &Peer<BoxedSigner>, urn: &Urn, origin: Option<PeerId>) {
     match peer.query(Payload {
         urn: urn.clone(),
