@@ -1,6 +1,3 @@
-import * as uuid from "uuid";
-import * as path from "path";
-
 import * as proxy from "../../ui/src/proxy";
 
 const proxyClient = new proxy.Client("http://localhost:17246");
@@ -27,20 +24,32 @@ export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
   return cy.get(selectorString);
 };
 
-// A directory that can be used for temporary test data.
-//
-// It is located within this repository so that there is no extra setup
-// necessary when using it locally or on CI. To avoid committing any left-over
-// temp data this directory ignored via .gitignore.
-const CYPRESS_WORKSPACE_PATH = path.join(__dirname, "../workspace");
+const TMP_DIR_ROOT = "./cypress/workspace/test-tmp";
 
+// Create a temporary directory in TMP_DIR_ROOT and pass it to the
+// callback. The name of the temporary directory is based on the
+// current test name
 export const withTempDir = (callback: (tempDirPath: string) => void): void => {
-  const tempDirPath = path.join(CYPRESS_WORKSPACE_PATH, uuid.v4());
-  cy.exec(`mkdir -p ${tempDirPath}`);
-
-  callback(tempDirPath);
-
-  cy.exec(`rm -rf ${tempDirPath}`);
+  const testName = getCurrentTestName();
+  cy.exec(
+    `set -euo pipefail
+    mkdir -p "${TMP_DIR_ROOT}"
+    temp_dir=$(mktemp -d "${TMP_DIR_ROOT}/${testName}.XXXX")
+    chmod a+rx "$temp_dir"
+    echo "$temp_dir"`,
+    { log: false }
+  ).then(({ stdout }) => {
+    const path = stdout.trim();
+    Cypress.log({
+      name: "tmp",
+      message: "using temporary directory",
+      consoleProps: () => ({
+        path,
+      }),
+    });
+    callback(path);
+    cy.exec(`rm -r "${path}"`);
+  });
 };
 
 // Selects one or more elements with the given `data-cy` ID that
@@ -124,4 +133,19 @@ function requestOk(
       expect(response.status).to.be.within(200, 299, "Failed response");
     })
     .wrap(undefined);
+}
+
+function getCurrentTestName() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let test = (Cypress as any).mocha.getRunner().suite.ctx.test;
+  let testTitles = [];
+  while (test) {
+    if (test.title) {
+      testTitles.push(test.title);
+    }
+    test = test.parent;
+  }
+
+  testTitles = testTitles.reverse();
+  return testTitles.join(" -- ");
 }

@@ -96,8 +96,6 @@ time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
     s/^\\s*Running:/$(log-group-end)\n$(log-group-start)Running:/
     s/^.*Run Finished.*/$(log-group-end)\n$(log-group-start)Run Finished/
   "
-
-
 log-group-end
 
 if [[ "${BUILDKITE_BRANCH:-}" == "master" || -n "${BUILDKITE_TAG:-}" ]]; then

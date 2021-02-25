@@ -11,6 +11,8 @@
   artifact_paths:
     - "dist/*.AppImage"
     - "cypress/screenshots/**/*.png"
+    - "cypress/workspace/test-tmp/*/node-*/*.log"
+    - "cypress/workspace/test-tmp/*/combined-node.log"
 
 steps:
   - branches: master
@@ -35,3 +37,5 @@ steps:
     artifact_paths:
       - "dist/*.dmg"
       - "cypress/screenshots/**/*.png"
+      - "cypress/workspace/test-tmp/*/node-*/*.log"
+      - "cypress/workspace/test-tmp/*/combined-node.log"
