@@ -127,9 +127,9 @@
     "wait-on": "^5.2.1"
   },
   "scripts": {
-    "start": "RADICLE_UPSTREAM_PROXY_PATH=../target/release/radicle-proxy yarn _private:start",
-    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=../target/debug/radicle-proxy yarn _private:start:dev",
-    "start:test": "RADICLE_UPSTREAM_PROXY_PATH=../target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
+    "start": "RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy yarn _private:start",
+    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=./target/debug/radicle-proxy yarn _private:start:dev",
+    "start:test": "RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
     "ethereum:start": "./scripts/ethereum-dev-node.sh",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:integration": "TZ='UTC' run-p --race _private:proxy:start:test _private:test:integration",
