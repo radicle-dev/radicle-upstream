@@ -139,7 +139,7 @@ context("p2p networking", () => {
             "Commit replication from maintainer to contributor";
 
           nodeManager.exec(
-            `cd ${projectPath}
+            `cd "${projectPath}"
             git commit --allow-empty -m "${maintainerCommitSubject}"
             git push rad`,
             maintainerNode
@@ -196,7 +196,7 @@ context("p2p networking", () => {
           );
 
           nodeManager.exec(
-            `cd ${forkedProjectPath}
+            `cd "${forkedProjectPath}"
             git commit --allow-empty -m "${contributorCommitSubject}"
             git push rad`,
             contributorNode
