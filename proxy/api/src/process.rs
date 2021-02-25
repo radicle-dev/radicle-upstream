@@ -241,7 +241,6 @@ async fn rig(
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
         let seeds = session_seeds(&store, &args.default_seeds).await?;
-        log::info!("initial seed addresses: {:?}", seeds);
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
         let config = coco::config::configure(

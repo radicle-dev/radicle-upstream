@@ -103,7 +103,6 @@ impl discovery::Discovery for StreamDiscovery {
         let updates = stream! {
             loop {
                 let seeds = self.seeds_receiver.borrow().clone();
-                log::info!("planting seeds: {:?}", seeds);
                 for seed in seeds {
                     yield seed.into();
                 }
