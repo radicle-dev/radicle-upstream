@@ -102,12 +102,12 @@ impl discovery::Discovery for StreamDiscovery {
     fn discover(mut self) -> Self::Stream {
         let updates = stream! {
             loop {
-                self.seeds_receiver.changed().await.unwrap();
                 let seeds = self.seeds_receiver.borrow().clone();
                 log::info!("planting seeds: {:?}", seeds);
                 for seed in seeds {
                     yield seed.into();
                 }
+                self.seeds_receiver.changed().await.unwrap();
             }
         };
 
