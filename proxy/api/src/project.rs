@@ -5,7 +5,7 @@ use std::{collections::HashSet, convert::TryFrom, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
-use coco::{git::refs::signed, project::peer, signer::BoxedSigner};
+use coco::{project::peer, signer::BoxedSigner};
 
 use crate::{error, identity};
 

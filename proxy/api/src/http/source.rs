@@ -327,15 +327,15 @@ mod test {
             name: "master".to_string(),
             peer_id: None,
         };
-        let path = "text/arrows.txt";
+        let arrows = "text/arrows.txt";
         let default_branch = coco::state::find_default_branch(&ctx.peer, urn.clone()).await?;
         let want = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::blob(&mut browser, Some(revision.clone()), path, None)
+            coco::source::blob(&mut browser, Some(revision.clone()), arrows, None)
         })
         .await?;
 
         let query = super::BlobQuery {
-            path: path.to_string(),
+            path: arrows.to_string(),
             peer_id: None,
             revision: Some(revision.clone()),
             highlight: Some(false),
@@ -385,15 +385,15 @@ mod test {
         });
 
         // Get binary blob.
-        let path = "bin/ls";
+        let ls = "bin/ls";
         let default_branch = coco::state::find_default_branch(&ctx.peer, urn.clone()).await?;
         let want = coco::state::with_browser(&ctx.peer, default_branch, |browser| {
-            coco::source::blob(browser, Some(revision.clone()), path, None)
+            coco::source::blob(browser, Some(revision.clone()), ls, None)
         })
         .await?;
 
         let query = super::BlobQuery {
-            path: path.to_string(),
+            path: ls.to_string(),
             peer_id: None,
             revision: Some(revision),
             highlight: Some(false),

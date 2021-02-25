@@ -1,6 +1,6 @@
 use std::{path::PathBuf, time::Duration};
 
-use futures::{future, StreamExt as _, TryStreamExt as _};
+use futures::{future, StreamExt as _};
 use tokio::{
     sync::broadcast,
     time::{error::Elapsed, timeout},
@@ -8,12 +8,8 @@ use tokio::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
-    git_ext::OneLevel,
-    identities::Urn,
-    keys::SecretKey,
-    net::{discovery, peer, protocol},
-    peer::PeerId,
-    reflike, signer,
+    git_ext::OneLevel, identities::Urn, keys::SecretKey, net::discovery, peer::PeerId, reflike,
+    signer,
 };
 
 use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, PeerStatus, RunConfig};

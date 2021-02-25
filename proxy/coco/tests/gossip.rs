@@ -3,11 +3,6 @@ use std::time::{Duration, SystemTime};
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
-use librad::net::protocol::{
-    event::{upstream::Gossip, Upstream as ProtocolEvent},
-    gossip::Payload,
-};
-
 use coco::{peer::run_config, seed::Seed, state, RunConfig};
 
 #[macro_use]
@@ -101,13 +96,9 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     let bob_connected = bob_peer.subscribe();
     let mut bob_events = bob_peer.subscribe();
 
-    let bob_peer = {
-        let peer = bob_peer.peer.clone();
-        tokio::task::spawn(bob_peer.into_running());
-        peer
-    };
-
-    connected(bob_connected, 1).await;
+    println!("Ohno");
+    connected(bob_connected, 1).await?;
+    println!("Ohyaaaaaa");
 
     let project =
         state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path)).await?;

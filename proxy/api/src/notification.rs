@@ -21,6 +21,7 @@ pub enum Notification {
 }
 
 /// Event observed about the local peer.
+#[allow(clippy::clippy::large_enum_variant)]
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {

@@ -312,12 +312,6 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
 
     let bob_events = bob_peer.subscribe();
-    let bob_peer = {
-        let peer = bob_peer.peer.clone();
-        tokio::task::spawn(bob_peer.into_running());
-        peer
-    };
-
     connected(bob_events, 1).await?;
 
     assert_event!(
@@ -470,7 +464,6 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
     let mut alice_events = alice_peer.subscribe();
-    let mut alice_connections = alice_peer.subscribe();
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();

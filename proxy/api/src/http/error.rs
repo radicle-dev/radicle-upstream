@@ -12,9 +12,6 @@ use crate::error;
 /// HTTP layer specific rejections.
 #[derive(Debug, thiserror::Error)]
 pub enum Routing {
-    /// The currently active [`coco::Person`] is missing.
-    #[error("owner is missing")]
-    MissingOwner,
     /// The keystore is sealed, context does not have a signer.
     #[error("No session has been created yet")]
     NoSession,
@@ -64,9 +61,6 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             )
         } else if let Some(err) = err.find::<Routing>() {
             match err {
-                Routing::MissingOwner => {
-                    (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
-                },
                 Routing::NoSession => (StatusCode::NOT_FOUND, "NOT_FOUND", err.to_string()),
                 Routing::InvalidQuery { .. } => {
                     (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
@@ -163,18 +157,14 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                             err.to_string(),
                         ),
                     },
-                    coco::state::Error::Storage(state::error::storage::Error::Blob(
-                        state::error::blob::Error::NotFound(_),
-                    )) => (
-                        StatusCode::NOT_FOUND,
-                        "NOT_FOUND",
-                        "entity not found".to_string(),
-                    ),
                     coco::state::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
                         format!("Internal Git error: {:?}", git_error),
                     ),
+                    coco::state::Error::MissingOwner => {
+                        (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
+                    },
                     coco::state::Error::Source(coco::source::Error::Git(git_error)) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
@@ -188,6 +178,13 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                     coco::state::Error::Source(coco::source::Error::PathNotFound(path)) => {
                         (StatusCode::NOT_FOUND, "NOT_FOUND", path.to_string())
                     },
+                    coco::state::Error::Storage(state::error::storage::Error::Blob(
+                        state::error::blob::Error::NotFound(_),
+                    )) => (
+                        StatusCode::NOT_FOUND,
+                        "NOT_FOUND",
+                        "entity not found".to_string(),
+                    ),
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
                         // gaphql::error.

@@ -503,8 +503,7 @@ impl RunState {
 mod test {
     use std::{
         collections::{BTreeSet, HashSet},
-        iter::FromIterator,
-        net::{IpAddr, SocketAddr},
+        net::SocketAddr,
         str::FromStr,
         time::{Duration, SystemTime},
     };
@@ -872,7 +871,7 @@ mod test {
             Some(Command::PersistWaitingRoom(_))
         );
         // Gossip(Box<upstream::Gossip<SocketAddr, gossip::Payload>>),
-        assert!(state
+        assert_matches!(state
             .transition(Input::Protocol(ProtocolEvent::Gossip(Box::new(
                 Gossip::Put {
                     provider: librad::net::protocol::PeerInfo {
@@ -891,8 +890,7 @@ mod test {
                         rev: None,
                     }),
                 }
-            ))))
-            .is_empty());
+            )))).first(), Some(Command::Include(_)));
 
         let cmds = state.transition(Input::Request(input::Request::Tick));
         assert_matches!(
