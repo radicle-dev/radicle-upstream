@@ -13,18 +13,28 @@ use radicle_git_ext::Oid;
 
 /// Announce a new rev for the `urn`.
 pub fn announce(peer: &Peer<BoxedSigner>, urn: &Urn, rev: Option<Oid>) {
-    peer.announce(Payload {
+    match peer.announce(Payload {
         urn: urn.clone(),
         rev: rev.map(|rev| Rev::Git(rev.into())),
         origin: None,
-    });
+    }) {
+        Ok(()) => log::trace!("successfully announced for urn=`{}`, rev=`{:?}`", urn, rev),
+        Err(_payload) => log::warn!("failed to announce for urn=`{}`, rev=`{:?}`", urn, rev),
+    }
 }
 
 /// Emit a [`Gossip`] request for the given `urn`.
-pub fn query(peer: &Peer<BoxedSigner>, urn: Urn, origin: Option<PeerId>) {
-    peer.query(Payload {
-        urn,
+pub fn query(peer: &Peer<BoxedSigner>, urn: &Urn, origin: Option<PeerId>) {
+    match peer.query(Payload {
+        urn: urn.clone(),
         rev: None,
         origin,
-    });
+    }) {
+        Ok(()) => log::trace!(
+            "successfully queried for urn=`{}`, origin=`{:?}`",
+            urn,
+            origin
+        ),
+        Err(_payload) => log::warn!("failed to query for urn=`{}`, origin=`{:?}`", urn, origin),
+    };
 }

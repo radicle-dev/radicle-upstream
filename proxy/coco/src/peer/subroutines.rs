@@ -97,7 +97,15 @@ impl Subroutines {
                 // TODO(xla): Ensure stream of Results has significance, or should just signal
                 // stream close.
                 protocol_events
-                    .map(|res| Input::Protocol(res.unwrap()))
+                    .filter_map(|res| async move {
+                        match res {
+                            Ok(ev) => Some(Input::Protocol(ev)),
+                            Err(err) => {
+                                log::warn!("receive error: {}", err);
+                                None
+                            },
+                        }
+                    })
                     .boxed(),
             );
 
@@ -388,7 +396,7 @@ async fn start_sync_timeout(sync_period: Duration, sender: mpsc::Sender<Input>) 
 
 /// Send a query on the network for the given urn.
 async fn query(urn: Urn, peer: net::peer::Peer<BoxedSigner>, sender: mpsc::Sender<Input>) {
-    gossip::query(&peer, urn.clone(), None);
+    gossip::query(&peer, &urn, None);
     sender
         .send(Input::Request(input::Request::Queried(urn)))
         .await

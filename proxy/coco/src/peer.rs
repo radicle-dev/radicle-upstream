@@ -15,8 +15,8 @@ use tokio::{
     task::{JoinError, JoinHandle},
 };
 
-use librad::{net, net::protocol, signer::BoxedSigner};
 use crate::{seed::Seed, state};
+use librad::{net, net::protocol, signer::BoxedSigner};
 
 mod announcement;
 pub use announcement::Announcement;
@@ -52,15 +52,19 @@ pub enum Error {
     #[error(transparent)]
     Bootstrap(#[from] net::protocol::error::Bootstrap),
 
+    /// Encountered an I/O error, for example fetching the peer's listen addresses.
     #[error(transparent)]
     Io(#[from] io::Error),
 
+    /// The joining of a thread failed.
     #[error("the running peer was either cancelled, or one of its tasks panicked")]
     Join(#[source] JoinError),
 
+    /// The protocol encountered an error.
     #[error(transparent)]
     Protocol(#[from] net::quic::Error),
 
+    /// An interaction with the underlying storage failed.
     #[error(transparent)]
     State(#[from] state::error::Error),
 }
@@ -91,7 +95,9 @@ where
 
 /// Local peer to participate in the radicle code-collaboration network.
 pub struct Peer<D> {
+    /// The API for interacting with the protocol and storage.
     pub peer: net::peer::Peer<BoxedSigner>,
+    /// The listen addresses of this peer.
     pub listen_addrs: Vec<SocketAddr>,
     bound: protocol::Bound<net::peer::PeerStorage>,
     disco: D,
@@ -122,6 +128,10 @@ where
     D: net::discovery::Discovery<Addr = SocketAddr> + Send + 'static,
 {
     /// Constructs a new [`Peer`].
+    ///
+    /// # Errors
+    ///
+    /// Failed to get the listener addresses for the peer.
     #[must_use = "give a peer some love"]
     pub fn new(
         peer: net::peer::Peer<BoxedSigner>,
@@ -226,7 +236,7 @@ impl Future for Running {
         let err = match self.protocol.poll_unpin(cx) {
             Poll::Ready(val) => match val {
                 Err(e) => Some(Error::Join(e)),
-                Ok(res) => Some(Error::Protocol(res.err().unwrap())),
+                Ok(res) => Some(Error::Protocol(res.err().expect("the impossible has happened, someone changed the `!` type in `Running::protocol`, if only there was some sort of function that could show this at compile time"))),
             },
             Poll::Pending => None,
         };

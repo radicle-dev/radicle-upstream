@@ -70,7 +70,12 @@ pub enum Event {
     /// The request for [`Urn`] timed out.
     RequestTimedOut(Urn),
     /// The [`Status`] of the peer changed.
-    StatusChanged { old: Status, new: Status },
+    StatusChanged {
+        /// The old status
+        old: Status,
+        /// The net status
+        new: Status,
+    },
 }
 
 impl MaybeFrom<&Input> for Event {
@@ -123,10 +128,11 @@ pub enum Status {
     /// Phase where the local peer tries get up-to-date.
     #[serde(rename_all = "camelCase")]
     Syncing {
+        /// The set of failed syncs.
         failed: HashSet<PeerId>,
-        /// Number of completed syncs.
+        /// The set of completed syncs.
         succeeded: HashSet<PeerId>,
-        /// Number of synchronisation underway.
+        /// The of synchronisations underway.
         syncs: HashSet<PeerId>,
     },
     /// The local peer is operational and is able to interact with the peers it has connected to.
@@ -271,33 +277,31 @@ impl RunState {
 
     /// Handle [`input::Sync`]s.
     fn handle_peer_sync(&mut self, input: &input::Sync) -> Vec<Command> {
-        match &mut self.status {
-            Status::Syncing {
-                failed,
-                succeeded,
-                syncs,
-            } => {
-                match input {
-                    input::Sync::Started(peer_id) => {
-                        syncs.insert(*peer_id);
-                    },
-                    input::Sync::Failed(peer_id) => {
-                        syncs.remove(peer_id);
-                        failed.insert(*peer_id);
-                    },
-                    input::Sync::Succeeded(peer_id) => {
-                        syncs.remove(peer_id);
-                        succeeded.insert(*peer_id);
-                    },
-                }
+        if let Status::Syncing {
+            failed,
+            succeeded,
+            syncs,
+        } = &mut self.status
+        {
+            match input {
+                input::Sync::Started(peer_id) => {
+                    syncs.insert(*peer_id);
+                },
+                input::Sync::Failed(peer_id) => {
+                    syncs.remove(peer_id);
+                    failed.insert(*peer_id);
+                },
+                input::Sync::Succeeded(peer_id) => {
+                    syncs.remove(peer_id);
+                    succeeded.insert(*peer_id);
+                },
+            }
 
-                if failed.len() + succeeded.len() >= self.config.sync.max_peers {
-                    self.status = Status::Online {
-                        connected: self.stats.connected_peers,
-                    };
-                }
-            },
-            _ => {},
+            if failed.len() + succeeded.len() >= self.config.sync.max_peers {
+                self.status = Status::Online {
+                    connected: self.stats.connected_peers,
+                };
+            }
         }
 
         vec![]
@@ -327,12 +331,16 @@ impl RunState {
                     upstream::Gossip::Put {
                         payload: Payload { urn, .. },
                         provider: PeerInfo { peer_id, .. },
-                        ..
+                        result,
                     } => {
                         if let Err(waiting_room::Error::TimeOut { .. }) =
                             self.waiting_room.found(&urn, peer_id, SystemTime::now())
                         {
-                            cmds.push(Command::Request(command::Request::TimedOut(urn)));
+                            cmds.push(Command::Request(command::Request::TimedOut(urn.clone())));
+                        }
+
+                        if let PutResult::Applied(_) = result {
+                            cmds.push(Command::Include(urn));
                         }
                     },
                 }

@@ -27,6 +27,7 @@ pub(crate) const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10
 pub struct Config {
     /// Set of knobs to alter announce behaviour.
     pub announce: Announce,
+    /// Set of knobs to alter stats polling.
     pub stats: Stats,
     /// Set of knobs to alter sync behaviour.
     pub sync: Sync,
@@ -48,7 +49,9 @@ impl Default for Announce {
     }
 }
 
+/// Set of knobs to alter stats polling.
 pub struct Stats {
+    /// Determines how often the stats subroutine should be run.
     pub interval: Duration,
 }
 

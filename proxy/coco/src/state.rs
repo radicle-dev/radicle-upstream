@@ -151,7 +151,7 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.protocol_config().replication.clone());
+        .unwrap_or_else(|| peer.protocol_config().replication);
     let owner = default_owner(peer).await?.ok_or(Error::MissingOwner)?;
     Ok(peer
         .using_storage(move |store| {
@@ -286,7 +286,7 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.protocol_config().replication.clone());
+        .unwrap_or_else(|| peer.protocol_config().replication);
     peer.using_storage(move |store| {
         replication::replicate(store, config, None, urn, remote_peer, addr_hints)
     })
@@ -330,7 +330,7 @@ where
 {
     let config = config
         .into()
-        .unwrap_or_else(|| peer.protocol_config().replication.clone());
+        .unwrap_or_else(|| peer.protocol_config().replication);
     Ok(peer
         .using_storage(move |store| {
             replication::replicate(store, config, None, urn, remote_peer, addr_hints)
@@ -438,7 +438,7 @@ pub async fn track(peer: &Peer<BoxedSigner>, urn: Urn, remote_peer: PeerId) -> R
             .await??;
     }
 
-    gossip::query(peer, urn.clone(), Some(remote_peer));
+    gossip::query(peer, &urn, Some(remote_peer));
     let path = update_include(peer, urn).await?;
     log::debug!("Updated include path @ `{}`", path.display());
     Ok(())
@@ -831,7 +831,7 @@ pub fn paths(peer: &Peer<BoxedSigner>) -> paths::Paths {
 pub fn settings(peer: &Peer<BoxedSigner>) -> transport::Settings {
     transport::Settings {
         paths: peer.protocol_config().paths.clone(),
-        signer: peer.signer().clone().into(),
+        signer: peer.signer().clone(),
     }
 }
 
