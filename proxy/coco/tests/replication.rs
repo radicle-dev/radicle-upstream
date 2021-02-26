@@ -291,19 +291,25 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     let alice_peer_id = alice_peer.peer_id();
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let bob_peer = build_peer_with_seeds(
-        &bob_tmp_dir,
-        vec![Seed {
-            addrs: alice_addrs,
-            peer_id: alice_peer_id,
-        }],
-        RunConfig::default(),
-    )
-    .await?;
-    let bob_peer_id = bob_peer.peer.peer_id();
+    let (bob_peer, bob_events) = {
+        let peer = build_peer_with_seeds(
+            &bob_tmp_dir,
+            vec![Seed {
+                addrs: alice_addrs,
+                peer_id: alice_peer_id,
+            }],
+            RunConfig::default(),
+        )
+        .await?;
+        let bob_events = peer.subscribe();
+        let bob_peer = peer.peer.clone();
+        tokio::task::spawn(peer.into_running());
+        (bob_peer, bob_events)
+    };
+    let bob_peer_id = bob_peer.peer_id();
 
     let alice = state::init_owner(&alice_peer, "alice".to_string()).await?;
-    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+    let _bob = state::init_owner(&bob_peer, "bob".to_string()).await?;
     state::init_project(
         &alice_peer,
         &alice,
@@ -311,7 +317,6 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     )
     .await?;
 
-    let bob_events = bob_peer.subscribe();
     connected(bob_events, 1).await?;
 
     assert_event!(

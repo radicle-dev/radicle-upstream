@@ -92,13 +92,16 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
         RunConfig::default(),
     )
     .await?;
-    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
     let bob_connected = bob_peer.subscribe();
     let mut bob_events = bob_peer.subscribe();
 
-    println!("Ohno");
+    let bob_peer = {
+        let peer = bob_peer.peer.clone();
+        tokio::task::spawn(bob_peer.into_running());
+        peer
+    };
+    let _bob = state::init_owner(&bob_peer, "bob".to_string()).await?;
     connected(bob_connected, 1).await?;
-    println!("Ohyaaaaaa");
 
     let project =
         state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path)).await?;
