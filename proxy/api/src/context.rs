@@ -152,7 +152,7 @@ impl From<Sealed> for Context {
 pub struct Unsealed {
     /// Handle to inspect state and perform actions on the currently running local [`coco::Peer`].
     pub peer_control: PeerControl,
-    /// [`coco::State`] to operate on the local monorepo.
+    /// [`coco::net::peer::Peer`] to operate on the local monorepo.
     pub peer: coco::net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,

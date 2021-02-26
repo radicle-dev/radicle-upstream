@@ -43,7 +43,7 @@ pub struct Subroutines {
     /// Stream of inputs to [`RunState`] state machine.
     inputs: SelectAll<BoxStream<'static, Input>>,
 
-    /// [`State`] for suborutine task fulfillment.
+    /// [`net::peer::Peer`] for suborutine task fulfillment.
     peer: net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] for suborutine task fulfillment.
     store: kv::Store,

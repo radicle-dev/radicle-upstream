@@ -9,7 +9,7 @@ pub enum Error {
     #[error(transparent)]
     Keystore(#[from] coco::keystore::Error),
 
-    /// Error interacting with [`coco::state::State`].
+    /// Error interacting with [`coco::net::peer::Peer`].
     #[error(transparent)]
     State(#[from] coco::state::Error),
 

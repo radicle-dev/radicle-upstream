@@ -31,7 +31,7 @@ pub enum Error {
     #[error(transparent)]
     Parse(#[from] ParseError<git2::Error>),
 
-    /// Error occurred when interacting with [`State`].
+    /// Error occurred when interacting with [`Peer`].
     #[error(transparent)]
     State(#[from] state::Error),
 }
