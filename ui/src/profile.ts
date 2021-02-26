@@ -27,7 +27,7 @@ requestedProjectsStore.start(() => {
 
 export const following: Readable<remote.Data<Following | null>> = derived(
   [followingProjectsStore, requestedProjectsStore],
-  ([follows, requests]) => {
+  ([follows, requests]): remote.Data<Following | null> => {
     // Transition to loading.
     if (
       follows.status === remote.Status.Loading ||

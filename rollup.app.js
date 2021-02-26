@@ -89,14 +89,13 @@ export default {
     }
 
     if (
-      (warning.code === "CIRCULAR_DEPENDENCY" &&
-        warning.importer.includes("node_modules/readable-stream/")) ||
-      warning.importer.includes("semver")
+      warning.code === "CIRCULAR_DEPENDENCY" &&
+      warning.importer.includes("node_modules")
     ) {
       return;
     }
 
-    // // Pass on any other warnings
+    // Pass on any other warnings
     console.warn(warning.message);
   },
 };
