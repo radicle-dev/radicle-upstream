@@ -171,8 +171,10 @@ const printNextStepsMsg = (
 
   - [ ] wait until macOS and Linux QA is performed and passes
   - [ ] open a pull request on https://github.com/radicle-dev/radicle.xyz to update the website download links
-    - [ ] update the latest version in \`partials/upstream-version.mustache\`
-    - [ ] run \`make\`
+    - [ ] Update the version number and rebuild the site
+
+       echo -n ${version} > partials/upstream-version.mustache && make
+
     - [ ] open the pull request
     - [ ] deploy the website by merging in the pull request
   - [ ] announce new release on https://radicle.community/c/announcements
