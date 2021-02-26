@@ -871,26 +871,30 @@ mod test {
             Some(Command::PersistWaitingRoom(_))
         );
         // Gossip(Box<upstream::Gossip<SocketAddr, gossip::Payload>>),
-        assert_matches!(state
-            .transition(Input::Protocol(ProtocolEvent::Gossip(Box::new(
-                Gossip::Put {
-                    provider: librad::net::protocol::PeerInfo {
-                        advertised_info: net::protocol::PeerAdvertisement::new(addr),
-                        peer_id,
-                        seen_addrs: BTreeSet::new(),
-                    },
-                    payload: Payload {
-                        urn: urn.clone(),
-                        origin: None,
-                        rev: None
-                    },
-                    result: broadcast::PutResult::Applied(Payload {
-                        urn: urn.clone(),
-                        origin: None,
-                        rev: None,
-                    }),
-                }
-            )))).first(), Some(Command::Include(_)));
+        assert_matches!(
+            state
+                .transition(Input::Protocol(ProtocolEvent::Gossip(Box::new(
+                    Gossip::Put {
+                        provider: librad::net::protocol::PeerInfo {
+                            advertised_info: net::protocol::PeerAdvertisement::new(addr),
+                            peer_id,
+                            seen_addrs: BTreeSet::new(),
+                        },
+                        payload: Payload {
+                            urn: urn.clone(),
+                            origin: None,
+                            rev: None
+                        },
+                        result: broadcast::PutResult::Applied(Payload {
+                            urn: urn.clone(),
+                            origin: None,
+                            rev: None,
+                        }),
+                    }
+                ))))
+                .first(),
+            Some(Command::Include(_))
+        );
 
         let cmds = state.transition(Input::Request(input::Request::Tick));
         assert_matches!(
