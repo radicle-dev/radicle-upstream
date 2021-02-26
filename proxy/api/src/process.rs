@@ -52,9 +52,6 @@ struct Rigging {
 ///
 /// Errors when the setup or any of the services fatally fails.
 pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
-    // Required for `tokio::select`. We can’t put it on the element directly, though.
-    #![allow(clippy::unreachable)]
-
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
@@ -96,7 +93,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
 
         // Give `coco::SpawnAbortable` some time to release all the resources.
         // See https://github.com/radicle-dev/radicle-upstream/issues/1163
-        tokio::time::sleep(Duration::from_millis(200)).await
+        tokio::time::sleep(Duration::from_millis(500)).await
     }
 }
 
