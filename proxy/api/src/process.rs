@@ -208,12 +208,14 @@ async fn run_rigging(
 
         let peer = tokio::spawn(async move {
             log::info!("starting peer");
-            match peer.into_running().await {
+            let running = peer.into_running().await;
+            match running {
                 Ok(()) => {},
-                Err(err) => {
+                Err(ref err) => {
                     log::error!("Running peer error: {}", err);
                 },
             }
+            drop(running);
         });
         tasks.push(peer.map_err(RunError::from).boxed());
 
