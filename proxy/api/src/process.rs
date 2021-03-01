@@ -212,7 +212,6 @@ async fn run_rigging(
                 Ok(()) => {},
                 Err(err) => {
                     log::error!("Running peer error: {}", err);
-                    return;
                 },
             }
         });
