@@ -1,10 +1,28 @@
 import type { NodeSession } from "../plugins/nodeManager/shared";
-import { Commands } from "../plugins/nodeManager/shared";
+import {
+  pluginMethods,
+  NodeManagerPlugin,
+} from "../plugins/nodeManager/shared";
+
+const nodeManagerPlugin = createNodeManagerPlugin();
+
+const startAndOnboardNode = (
+  onboardedUser: OnboardedUser
+): Cypress.Chainable<NodeSession> => {
+  return nodeManagerPlugin.startNode().then(id => {
+    cy.log(`Started node ${id}`);
+    return nodeManagerPlugin.onboardNode({
+      id,
+      handle: onboardedUser.handle || "secretariat",
+      passphrase: onboardedUser.passphrase || "radicle-upstream",
+    });
+  });
+};
 
 const withNodeManager = (callback: () => void): void => {
-  cy.task(Commands.StopAllNodes, {}, { log: false });
+  nodeManagerPlugin.stopAllNodes();
   callback();
-  cy.task(Commands.StopAllNodes, {}, { log: false });
+  nodeManagerPlugin.stopAllNodes();
 };
 
 interface OnboardedUser {
@@ -22,11 +40,7 @@ export const connectTwoNodes = (
   node2: NodeSession
 ): void => {
   cy.log(`adding node ${node2.id} as seed to node ${node1.id}`);
-  cy.task(
-    Commands.ConnectNodes,
-    { nodeIds: [node1.id, node2.id] },
-    { log: false }
-  );
+  nodeManagerPlugin.connectNodes({ nodeIds: [node1.id, node2.id] });
 };
 
 interface createCommitOptions {
@@ -65,40 +79,11 @@ export const withTwoOnboardedNodes = (
   callback: (node1: NodeSession, node2: NodeSession) => void
 ): void => {
   withNodeManager(() => {
-    const NODE1_ID = 17000;
-    const NODE2_ID = 18000;
-
-    cy.log(`starting and onboarding node ${NODE1_ID}`);
-
-    cy.task(Commands.StartNode, { id: NODE1_ID }, { log: false });
-    cy.task(
-      Commands.OnboardNode,
-      {
-        id: NODE1_ID,
-        handle: options.node1User.handle,
-        passphrase: options.node1User.passphrase,
-      },
-      { log: false }
-    );
-
-    cy.log(`starting and onboarding node ${NODE2_ID}`);
-
-    cy.task(Commands.StartNode, { id: NODE2_ID }, { log: false });
-    cy.task(
-      Commands.OnboardNode,
-      {
-        id: NODE2_ID,
-        handle: options.node2User.handle,
-        passphrase: options.node2User.passphrase,
-      },
-      { log: false }
-    );
-
-    cy.task<NodeSession[]>(Commands.GetOnboardedNodes, {}, { log: false }).then(
-      nodes => {
-        callback(nodes[0], nodes[1]);
-      }
-    );
+    startAndOnboardNode(options.node1User).then(node0 => {
+      startAndOnboardNode(options.node2User).then(node1 => {
+        callback(node0, node1);
+      });
+    });
   });
 };
 
@@ -111,3 +96,43 @@ export const asNode = (node: NodeSession): void => {
   // `localhost`, the app loads with a auth-cookie mismatch error.
   cy.visit(`./public/index.html?backend=localhost:${node.httpPort}`);
 };
+
+// Replaces the return type `Promise<S>` of the function type `T` with
+// `Cypress.Chainable<S>`.
+//
+// For example, if
+//
+//    T ≡ (foo: number) => Promise<string>
+//
+// then
+//
+//    ChainableReturn<T> ≡ (foo: number) => Cypress.Chainable<string>
+//
+type ChainableReturn<T> = T extends (...params: infer P) => Promise<infer R>
+  ? (...params: P) => Cypress.Chainable<R>
+  : never;
+
+// Replaces the return type `Promise<S>` of all the properties in the
+// API object `R` with `Cypress.Chainable<S>`.
+//
+// For example, if
+//
+//    R ≡ { bar: (foo: number) => Promise<string> }
+//
+// then
+//
+//    ChainableApi<R> ≡ { bar: (foo: number) => Cypress.Chainable<string> }
+//
+type ChainableApi<R> = {
+  [K in keyof R]: ChainableReturn<R[K]>;
+};
+
+function createNodeManagerPlugin(): ChainableApi<NodeManagerPlugin> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nodeManagerPlugin: any = {};
+  pluginMethods.forEach(task => {
+    nodeManagerPlugin[task] = (arg: unknown) =>
+      cy.task(task, arg, { log: false });
+  });
+  return nodeManagerPlugin;
+}
