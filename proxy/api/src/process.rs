@@ -206,10 +206,16 @@ async fn run_rigging(
         });
         tasks.push(peer_event_task.map_err(RunError::from).boxed());
 
-        let peer = async move {
+        let peer = tokio::spawn(async move {
             log::info!("starting peer");
-            peer.into_running().await
-        };
+            match peer.into_running().await {
+                Ok(()) => {},
+                Err(err) => {
+                    log::error!("Running peer error: {}", err);
+                    return;
+                },
+            }
+        });
         tasks.push(peer.map_err(RunError::from).boxed());
 
         let (result, _, _) = futures::future::select_all(tasks).await;
