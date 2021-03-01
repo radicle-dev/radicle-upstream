@@ -89,11 +89,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
             Err(RunError::Peer(coco::peer::Error::Join(_))) | Ok(()) => log::debug!("aborted"),
             // Actual error, abort the process
             Err(e) => return Err(e.into()),
-        }
-
-        // Give `coco::SpawnAbortable` some time to release all the resources.
-        // See https://github.com/radicle-dev/radicle-upstream/issues/1163
-        tokio::time::sleep(Duration::from_secs(1)).await
+        };
     }
 }
 
@@ -155,7 +151,7 @@ async fn run_rigging(
         if let Some(seeds_sender) = seeds_sender {
             let mut peer_control = peer.control();
             let seeds_store = ctx.store().clone();
-            let seeds_event_task = tokio::spawn(async move {
+            let seeds_event_task = async move {
                 let mut last_seeds = session_seeds(&seeds_store, ctx.default_seeds())
                     .await
                     .expect("Failed to read session store");
@@ -180,10 +176,10 @@ async fn run_rigging(
 
                     last_seeds = seeds;
                 }
-            });
-            tasks.push(seeds_event_task.map_err(RunError::from).boxed());
+            };
+            tasks.push(seeds_event_task.map(Ok).boxed());
         }
-        let peer_event_task = tokio::spawn({
+        let peer_event_task = {
             let mut peer_events = peer.subscribe();
 
             async move {
@@ -203,20 +199,14 @@ async fn run_rigging(
                     }
                 }
             }
-        });
-        tasks.push(peer_event_task.map_err(RunError::from).boxed());
+        };
+        tasks.push(peer_event_task.map(Ok).boxed());
 
-        let peer = tokio::spawn(async move {
+        let peer = async move {
             log::info!("starting peer");
-            let running = peer.into_running().await;
-            match running {
-                Ok(()) => {},
-                Err(ref err) => {
-                    log::error!("Running peer error: {}", err);
-                },
-            }
-            drop(running);
-        });
+            peer.into_running().await
+        };
+
         tasks.push(peer.map_err(RunError::from).boxed());
 
         let (result, _, _) = futures::future::select_all(tasks).await;
