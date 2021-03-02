@@ -212,6 +212,10 @@ impl Unsealed {
             let peer = coco_peer.peer.clone();
 
             let peer_control = coco_peer.control();
+            // FIXME(finto): As we've seen `tokio::spawn` without explicit aborting of handling
+            // could mean we end up in resource locks. This is probably safe due to everything
+            // acting in a tmp dir, but it would be better to have something like `WithUnsealed`
+            // holding the handle which aborts when dropped.
             tokio::spawn(coco_peer.into_running());
 
             (peer_control, peer)

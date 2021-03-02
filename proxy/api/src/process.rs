@@ -96,8 +96,6 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
 /// Error running either the peer, the event tasks or the API.
 #[derive(Debug, Error)]
 enum RunError {
-    #[error(transparent)]
-    Join(#[from] tokio::task::JoinError),
     /// The peer errored
     #[error(transparent)]
     Peer(#[from] coco::peer::Error),

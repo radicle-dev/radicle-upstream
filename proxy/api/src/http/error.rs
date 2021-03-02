@@ -153,7 +153,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         ),
                         create::validation::Error::Remote(_) => (
                             StatusCode::INTERNAL_SERVER_ERROR,
-                            "NO_REMOTE",
+                            "MISSING_REMOTE",
                             err.to_string(),
                         ),
                     },
