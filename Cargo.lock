@@ -92,7 +92,7 @@ dependencies = [
  "serde_qs",
  "tempfile",
  "thiserror",
- "tokio 1.2.0",
+ "tokio",
  "warp",
 ]
 
@@ -444,7 +444,7 @@ dependencies = [
  "syntect",
  "tempfile",
  "thiserror",
- "tokio 1.2.0",
+ "tokio",
  "tracing",
  "tracing-subscriber",
 ]
@@ -489,7 +489,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d60ab4a8dba064f2fbb5aa270c28da5cf4bbd0e72dae1140a6b0353a779dbe00"
 dependencies = [
  "cfg-if 1.0.0",
- "crossbeam-utils 0.8.2",
+ "crossbeam-utils",
  "lazy_static",
  "loom",
  "memoffset",
@@ -498,24 +498,12 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-queue"
-version = "0.2.3"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "774ba60a54c213d409d5353bda12d49cd68d14e45036a285234c8d6f91f92570"
+checksum = "0f6cb3c7f5b8e51bc3ebb73a2327ad4abdbd119dc13223f14f961d2f38486756"
 dependencies = [
- "cfg-if 0.1.10",
- "crossbeam-utils 0.7.2",
- "maybe-uninit",
-]
-
-[[package]]
-name = "crossbeam-utils"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3c7c73a2d1e9fc0886a08b93e98eb643461230d5f1925e4036204d5f2e261a8"
-dependencies = [
- "autocfg",
- "cfg-if 0.1.10",
- "lazy_static",
+ "cfg-if 1.0.0",
+ "crossbeam-utils",
 ]
 
 [[package]]
@@ -601,14 +589,14 @@ dependencies = [
 
 [[package]]
 name = "deadpool"
-version = "0.5.2"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4aaff9a7a1de9893f4004fa08527b31cb2ae4121c44e053cf53f29203c73bd23"
+checksum = "3d126179d86aee4556e54f5f3c6bf6d9884e7cc52cef82f77ee6f90a7747616d"
 dependencies = [
  "async-trait",
  "crossbeam-queue",
  "num_cpus",
- "tokio 0.2.25",
+ "tokio",
 ]
 
 [[package]]
@@ -889,7 +877,7 @@ dependencies = [
  "futures-sink",
  "futures-task",
  "memchr",
- "pin-project-lite 0.2.4",
+ "pin-project-lite",
  "pin-utils",
  "proc-macro-hack",
  "proc-macro-nested",
@@ -1037,7 +1025,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.2.0",
+ "tokio",
  "tokio-util",
  "tracing",
  "tracing-futures",
@@ -1184,7 +1172,7 @@ dependencies = [
  "itoa",
  "pin-project 1.0.5",
  "socket2",
- "tokio 1.2.0",
+ "tokio",
  "tower-service",
  "tracing",
  "want",
@@ -1319,7 +1307,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=0336ae588f09c3031ea2b222502bc489797b1113#0336ae588f09c3031ea2b222502bc489797b1113"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d3a4ccf8b7067a12845fd1100b680ff03d6cad76#d3a4ccf8b7067a12845fd1100b680ff03d6cad76"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -1370,7 +1358,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "time 0.2.25",
- "tokio 1.2.0",
+ "tokio",
  "tokio-util",
  "tracing",
  "tracing-attributes",
@@ -1466,12 +1454,6 @@ name = "matches"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
-
-[[package]]
-name = "maybe-uninit"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60302e4db3a61da70c0cb7991976248362f30319e88850c487b9b95bbf059e00"
 
 [[package]]
 name = "memchr"
@@ -1875,12 +1857,6 @@ dependencies = [
 
 [[package]]
 name = "pin-project-lite"
-version = "0.1.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c917123afa01924fc84bb20c4c03f004d9c38e5127e3c039bbf7f4b9c76a2f6b"
-
-[[package]]
-name = "pin-project-lite"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "439697af366c49a6d0a010c56a0d97685bc140ce0d377b13a2ea2aa42d64a827"
@@ -2018,8 +1994,9 @@ checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 
 [[package]]
 name = "quinn"
-version = "0.6.1"
-source = "git+https://github.com/quinn-rs/quinn?rev=05bb6cdd5f53484f538a20da37407ef13faf42e0#05bb6cdd5f53484f538a20da37407ef13faf42e0"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "624cfcfa9fcfc826945183ecd4a613480f67a1cf6b55d9d8df0d43bf3c12e951"
 dependencies = [
  "bytes 1.0.1",
  "futures 0.3.12",
@@ -2030,15 +2007,16 @@ dependencies = [
  "rustls",
  "socket2",
  "thiserror",
- "tokio 1.2.0",
+ "tokio",
  "tracing",
  "webpki",
 ]
 
 [[package]]
 name = "quinn-proto"
-version = "0.6.1"
-source = "git+https://github.com/quinn-rs/quinn?rev=05bb6cdd5f53484f538a20da37407ef13faf42e0#05bb6cdd5f53484f538a20da37407ef13faf42e0"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "819acc105414fe4eacc122dc6a59d39b9b65915e66b8f7a787a9490c9d71e836"
 dependencies = [
  "bytes 1.0.1",
  "rand 0.8.3",
@@ -2046,6 +2024,7 @@ dependencies = [
  "rustls",
  "slab",
  "thiserror",
+ "tinyvec",
  "tracing",
  "webpki",
 ]
@@ -2070,9 +2049,10 @@ dependencies = [
 [[package]]
 name = "radicle-git-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=0336ae588f09c3031ea2b222502bc489797b1113#0336ae588f09c3031ea2b222502bc489797b1113"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d3a4ccf8b7067a12845fd1100b680ff03d6cad76#d3a4ccf8b7067a12845fd1100b680ff03d6cad76"
 dependencies = [
  "git2",
+ "minicbor",
  "multibase",
  "multihash",
  "percent-encoding",
@@ -2084,7 +2064,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=0336ae588f09c3031ea2b222502bc489797b1113#0336ae588f09c3031ea2b222502bc489797b1113"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d3a4ccf8b7067a12845fd1100b680ff03d6cad76#d3a4ccf8b7067a12845fd1100b680ff03d6cad76"
 dependencies = [
  "anyhow",
  "git2",
@@ -2117,7 +2097,7 @@ dependencies = [
 [[package]]
 name = "radicle-macros"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=0336ae588f09c3031ea2b222502bc489797b1113#0336ae588f09c3031ea2b222502bc489797b1113"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d3a4ccf8b7067a12845fd1100b680ff03d6cad76#d3a4ccf8b7067a12845fd1100b680ff03d6cad76"
 dependencies = [
  "quote",
  "radicle-git-ext",
@@ -2127,7 +2107,7 @@ dependencies = [
 [[package]]
 name = "radicle-std-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=0336ae588f09c3031ea2b222502bc489797b1113#0336ae588f09c3031ea2b222502bc489797b1113"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d3a4ccf8b7067a12845fd1100b680ff03d6cad76#d3a4ccf8b7067a12845fd1100b680ff03d6cad76"
 
 [[package]]
 name = "radicle-surf"
@@ -2337,7 +2317,7 @@ dependencies = [
  "base64 0.13.0",
  "blake2b_simd",
  "constant_time_eq",
- "crossbeam-utils 0.8.2",
+ "crossbeam-utils",
 ]
 
 [[package]]
@@ -2631,7 +2611,7 @@ checksum = "1d0132f3e393bcb7390c60bb45769498cf4550bcb7a21d7f95c02b69f6362cdc"
 dependencies = [
  "crc32fast",
  "crossbeam-epoch",
- "crossbeam-utils 0.8.2",
+ "crossbeam-utils",
  "fs2",
  "fxhash",
  "libc",
@@ -2909,18 +2889,6 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "0.2.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6703a273949a90131b290be1fe7b039d0fc884aa1935860dfcbe056f28cd8092"
-dependencies = [
- "bytes 0.5.6",
- "fnv",
- "pin-project-lite 0.1.11",
- "slab",
-]
-
-[[package]]
-name = "tokio"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8190d04c665ea9e6b6a0dc45523ade572c088d2e6566244c1122671dbf4ae3a"
@@ -2933,7 +2901,7 @@ dependencies = [
  "num_cpus",
  "once_cell",
  "parking_lot",
- "pin-project-lite 0.2.4",
+ "pin-project-lite",
  "signal-hook-registry",
  "tokio-macros",
  "winapi",
@@ -2957,8 +2925,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1981ad97df782ab506a1f43bf82c967326960d278acf3bf8279809648c3ff3ea"
 dependencies = [
  "futures-core",
- "pin-project-lite 0.2.4",
- "tokio 1.2.0",
+ "pin-project-lite",
+ "tokio",
 ]
 
 [[package]]
@@ -2972,8 +2940,8 @@ dependencies = [
  "futures-io",
  "futures-sink",
  "log",
- "pin-project-lite 0.2.4",
- "tokio 1.2.0",
+ "pin-project-lite",
+ "tokio",
 ]
 
 [[package]]
@@ -2999,7 +2967,7 @@ checksum = "f77d3842f76ca899ff2dbcf231c5c65813dea431301d6eb686279c15c4464f12"
 dependencies = [
  "cfg-if 1.0.0",
  "log",
- "pin-project-lite 0.2.4",
+ "pin-project-lite",
  "tracing-attributes",
  "tracing-core",
 ]
@@ -3225,7 +3193,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "tokio 1.2.0",
+ "tokio",
  "tokio-stream",
  "tokio-util",
  "tower-service",
