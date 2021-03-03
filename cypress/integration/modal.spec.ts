@@ -7,7 +7,7 @@ context("modal", () => {
     cy.visit("./public/index.html");
   });
 
-  it("no modal stacking possible", () => {
+  it("disallows modal stacking", () => {
     cy.log(
       "click the New Project button and check the corresponding modal is opened."
     );
