@@ -60,7 +60,8 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "builder/entitlements.mac.plist",
-      "entitlementsInherit": "builder/entitlements.mac.plist"
+      "entitlementsInherit": "builder/entitlements.mac.plist",
+      "minimumSystemVersion": "10.14"
     }
   },
   "main": "./native/main.comp.js",
@@ -135,7 +136,7 @@
     "test:integration:debug": "TZ='UTC' run-p --race _private:rollup:watch _private:proxy:start:test:watch _private:test:integration:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
-    "dist": "yarn _private:dist:clean && yarn _private:rollup:build && yarn _private:proxy:build:release && electron-builder --publish never",
+    "dist": "yarn _private:dist:clean && yarn _private:rollup:build:release && yarn _private:proxy:build:release && electron-builder --publish never",
     "release": "scripts/release.ts",
     "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "prettier:check": "yarn _private:prettier --check",
@@ -148,7 +149,6 @@
     "_private:test:integration:debug": "wait-on tcp:17246 && yarn run cypress open",
     "_private:electron:start": "wait-on ./public/bundle.js ./native/main.comp.js && NODE_ENV=development electron .",
     "_private:dist:clean": "rm -rf ./dist && mkdir ./dist && yarn _private:proxy:clean && yarn _private:rollup:clean",
-    "_private:rollup:clean": "rm -rf public/bundle.* && rm -f native/main.comp.js",
     "_private:prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "_private:proxy:build": "cargo build --all-features --all-targets",
     "_private:proxy:build:release": "cargo build --release",
@@ -156,6 +156,8 @@
     "_private:proxy:start:test": "cargo build --release --bin git-remote-rad && cargo run --release -- --test",
     "_private:proxy:start:test:watch": "cargo build --release --bin git-remote-rad && cargo watch -x 'run --release -- --test'",
     "_private:rollup:build": "yarn _private:rollup:clean && rollup -c --failAfterWarnings",
+    "_private:rollup:build:release": "yarn _private:rollup:clean && ROLLUP_RELEASE=true rollup -c --failAfterWarnings",
+    "_private:rollup:clean": "rm -rf public/bundle.* && rm -f native/main.comp.js",
     "_private:rollup:watch": "yarn _private:rollup:clean && rollup -c -w",
     "postinstall": "patch-package"
   },

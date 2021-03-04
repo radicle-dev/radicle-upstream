@@ -10,7 +10,9 @@ import typescript from "@rollup/plugin-typescript";
 import autoPreprocess from "svelte-preprocess";
 import css from "rollup-plugin-css-only";
 
-const production = !process.env.ROLLUP_WATCH;
+const watch = !!process.env.ROLLUP_WATCH;
+const release =
+  process.env.ROLLUP_RELEASE == "1" || process.env.ROLLUP_RELEASE == "true";
 
 export default {
   input: "ui/index.ts",
@@ -25,7 +27,7 @@ export default {
     svelte({
       compilerOptions: {
         // enable run-time checks when not in production
-        dev: !production,
+        dev: !release,
       },
       preprocess: autoPreprocess(),
     }),
@@ -64,16 +66,16 @@ export default {
 
     typescript({
       // See https://github.com/rollup/plugins/issues/272
-      noEmitOnError: production,
+      noEmitOnError: watch,
     }),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    !production && livereload("public"),
+    watch && livereload("public"),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify
-    production && terser(),
+    release && terser(),
   ],
   watch: {
     clearScreen: false,
