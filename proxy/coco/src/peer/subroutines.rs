@@ -112,7 +112,8 @@ impl Subroutines {
             if let Some(mut timer) = announce_timer {
                 coalesced.push(
                     stream! {
-                        while let _instant = timer.tick().await {
+                        loop {
+                            timer.tick().await;
                             yield Input::Announce(input::Announce::Tick);
                         }
                     }
@@ -121,7 +122,8 @@ impl Subroutines {
             }
             coalesced.push(
                 stream! {
-                    while let _instant = waiting_room_timer.tick().await {
+                    loop {
+                        waiting_room_timer.tick().await;
                         yield Input::Request(input::Request::Tick);
                     }
                 }
@@ -129,16 +131,16 @@ impl Subroutines {
             );
             coalesced.push(
                 stream! {
-                    while let _instant = stats_timer.tick().await {
+                    loop {
+                        stats_timer.tick().await;
                         yield Input::Stats(input::Stats::Tick);
                     }
                 }
                 .boxed(),
             );
             coalesced.push(
-                stream! {
-                    while let Some(request) = control_receiver.recv().await {
-                        let input = match request {
+                stream! { while let Some(request) = control_receiver.recv().await { yield request } }.map(|request| {
+                        match request {
                         control::Request::CurrentStatus(sender) => {
                             Input::Control(input::Control::Status(sender))
                         },
@@ -154,10 +156,8 @@ impl Subroutines {
                         control::Request::StartSearch(urn, time, sender) => {
                             Input::Control(input::Control::CreateRequest(urn, time, sender))
                         },
-                    };
-                        yield input;
                     }
-                }
+                })
                 .boxed(),
             );
             coalesced.push(
