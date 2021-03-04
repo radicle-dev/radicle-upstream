@@ -324,7 +324,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         let urn = {
@@ -406,7 +406,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         {
@@ -467,7 +467,7 @@ mod test {
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let repo_path = dir.path().join("Upstream");
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         {
@@ -542,7 +542,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         let urn = {
@@ -579,7 +579,7 @@ mod test {
     #[tokio::test]
     async fn list_for_user() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
@@ -610,7 +610,7 @@ mod test {
     #[tokio::test]
     async fn list_contributed() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
@@ -635,7 +635,7 @@ mod test {
     #[tokio::test]
     async fn track() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
@@ -663,7 +663,7 @@ mod test {
     #[tokio::test]
     async fn untrack() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
@@ -691,7 +691,7 @@ mod test {
     #[tokio::test]
     async fn untrack_after_track() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone().into());
 
         let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;

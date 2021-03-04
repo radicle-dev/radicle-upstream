@@ -102,7 +102,8 @@ mod test {
     #[tokio::test]
     async fn cancel() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir).await?;
+        let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
@@ -120,6 +121,7 @@ mod test {
             .await;
 
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
+        handle.abort();
 
         Ok(())
     }
@@ -127,7 +129,8 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir).await?;
+        let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
@@ -144,6 +147,7 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
         });
+        handle.abort();
 
         Ok(())
     }
@@ -151,7 +155,8 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir).await?;
+        let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
         let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
@@ -167,6 +172,7 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!([want]));
         });
+        handle.abort();
 
         Ok(())
     }
