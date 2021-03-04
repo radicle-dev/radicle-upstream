@@ -1,4 +1,29 @@
-import { __test__ as session } from "./session";
+import * as session from "./session";
+
+describe("waitUnsealed", () => {
+  it("resolves if session is already unsealed", async () => {
+    session.__test__.sessionStore.success({
+      status: session.Status.UnsealedSession,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      identity: undefined as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      settings: undefined as any,
+    });
+    await session.waitUnsealed();
+  });
+
+  it("resolves when the session becomes unsealed", async () => {
+    const unsealed = session.waitUnsealed();
+    session.__test__.sessionStore.success({
+      status: session.Status.UnsealedSession,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      identity: undefined as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      settings: undefined as any,
+    });
+    await unsealed;
+  });
+});
 
 describe("VALID_SEED_MATCH", () => {
   const peer_id = new Array(54).fill("a").join("");
@@ -13,7 +38,7 @@ describe("VALID_SEED_MATCH", () => {
     ];
 
     for (const value of values) {
-      expect(value).toMatch(session.VALID_SEED_MATCH);
+      expect(value).toMatch(session.__test__.VALID_SEED_MATCH);
     }
   });
 
@@ -25,7 +50,7 @@ describe("VALID_SEED_MATCH", () => {
     ];
 
     for (const value of values) {
-      expect(value).not.toMatch(session.VALID_SEED_MATCH);
+      expect(value).not.toMatch(session.__test__.VALID_SEED_MATCH);
     }
   });
 });
