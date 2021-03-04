@@ -38,7 +38,7 @@
   }
 </style>
 
-<div class="modal" class:hide={!$store.show}>
+<div class="modal" class:hide={!$store.show} data-cy="modal">
   <div class="overlay" on:click={clickOutside} />
   <div class="content">
     <svelte:component this={modalRoutes[$store.route]} on:hide={modal.hide} />
