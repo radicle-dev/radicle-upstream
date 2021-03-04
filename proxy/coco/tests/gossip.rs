@@ -1,5 +1,6 @@
 use std::time::{Duration, SystemTime};
 
+use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
@@ -131,6 +132,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice_peer_id = alice_peer.peer.peer_id();
     let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let mut alice_events = alice_peer.subscribe();
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
@@ -149,6 +151,8 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
         RunConfig::default(),
     )
     .await?;
+    let bob_peer_id = bob_peer.peer.peer_id();
+
     state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
     let bob_events = bob_peer.subscribe();
     let mut bob_control = bob_peer.control();
@@ -165,18 +169,60 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let urn = {
         let project = radicle_project(alice_repo_path.clone());
-        state::init_project(&alice_peer, &alice, project)
+        let urn = state::init_project(&alice_peer, &alice, project)
             .await?
-            .urn()
+            .urn();
+
+        urn
     };
+
+    // Alice will track Bob in anticipation of upcoming contributions.
+    state::track(&alice_peer, urn.clone(), bob_peer_id).await?;
+
+    // Make sure Bob is NotReplicated.
+    assert_eq!(
+        state::tracked(&alice_peer, urn.clone()).await?,
+        vec![coco::project::peer::Peer::Remote {
+            peer_id: bob_peer_id,
+            status: coco::project::peer::Status::NotReplicated,
+        }]
+    );
 
     bob_control.request_project(&urn, SystemTime::now()).await;
 
     requested(query_listener, &urn).await?;
     assert_cloned(clone_listener, &urn.clone(), alice_peer_id).await?;
-    // TODO(finto): List projects
-    let project = state::get_project(&bob_peer, urn).await;
+    let project = state::get_project(&bob_peer, urn.clone()).await;
     assert!(project.is_ok());
+
+    let announced = async_stream::stream! { loop { yield alice_events.recv().await } }
+        .filter_map(|res| match res.unwrap() {
+            coco::PeerEvent::GossipFetched {
+                gossip, provider, ..
+            } if provider.peer_id == bob_peer_id && gossip.urn.id == urn.id => {
+                future::ready(Some(()))
+            },
+            _ => future::ready(None),
+        })
+        .map(|_| ());
+    tokio::pin!(announced);
+    timeout(Duration::from_secs(1), announced.next()).await?;
+
+    let projects = state::list_projects(&bob_peer).await?;
+    assert_eq!(projects.len(), 1);
+
+    let alice_tracked = state::tracked(&alice_peer, urn.clone()).await?;
+
+    assert_matches!(
+        alice_tracked.first().unwrap(),
+        coco::project::peer::Peer::Remote {
+            peer_id,
+            status: coco::project::peer::Status::Replicated(coco::project::peer::Replicated { role, .. }),
+        } => {
+            assert_eq!(*peer_id, bob_peer_id);
+            assert_eq!(*role, coco::project::peer::Role::Tracker);
+        }
+    );
 
     Ok(())
 }

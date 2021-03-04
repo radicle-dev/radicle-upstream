@@ -421,9 +421,13 @@ async fn clone(
     match state::clone_project(&peer, urn.clone(), remote_peer, None, None).await {
         Ok(_urn) => {
             sender
-                .send(Input::Request(input::Request::Cloned(urn, remote_peer)))
+                .send(Input::Request(input::Request::Cloned(
+                    urn.clone(),
+                    remote_peer,
+                )))
                 .await
                 .ok();
+            gossip::announce(&peer, &urn, None);
         },
         Err(err) => {
             log::warn!(
