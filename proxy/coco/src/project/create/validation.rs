@@ -199,17 +199,8 @@ impl Repository {
             },
             super::Repo::New { name, path } => {
                 let repo_path = path.join(name.clone());
-
-                if repo_path.is_file() {
-                    return Err(Error::AlreadExists(repo_path));
-                }
-
-                if repo_path.exists()
-                    && repo_path.is_dir()
-                    && repo_path.read_dir()?.next().is_some()
-                {
-                    return Err(Error::AlreadExists(repo_path));
-                }
+                let _repo_path = crate::project::ensure_directory(&repo_path)?
+                    .ok_or_else(|| Error::AlreadExists(repo_path.clone()))?;
 
                 let signature = Self::existing_author()?;
 

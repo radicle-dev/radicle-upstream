@@ -106,6 +106,25 @@ context("project checkout", () => {
               expect(result.stdout).to.equal(`rad`);
             }
           );
+
+          // Make sure we can't check out a project to the same directory twice.
+          commands.pick("checkout-modal-toggle").click();
+
+          commands.pick("choose-path-button").click();
+          // Make sure UI has time to update path value from stub,
+          // prevents this spec from failing on CI.
+          cy.wait(500);
+
+          // Perform the checkout.
+          commands.pick("checkout-button").click();
+
+          // Notification should contain the full path to the working directory.
+          commands
+            .pick("notification")
+            .contains(
+              /Checkout failed: '.*checkout\/platinum' exists and is not an empty directory/
+            )
+            .should("exist");
         });
       });
     });

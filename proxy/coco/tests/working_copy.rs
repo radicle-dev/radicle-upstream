@@ -1,5 +1,6 @@
-use coco::{state, RunConfig};
+use coco::{project::checkout, state, RunConfig};
 
+use assert_matches::assert_matches;
 use pretty_assertions::assert_eq;
 
 #[macro_use]
@@ -70,13 +71,17 @@ async fn can_checkout() -> Result<(), Box<dyn std::error::Error>> {
     )
     .await?;
 
-    let _ = state::checkout(
-        &alice_peer,
-        project.urn(),
-        None,
-        alice_repo_path.join("checkout"),
-    )
-    .await?;
+    assert_matches!(
+        state::checkout(
+            &alice_peer,
+            project.urn(),
+            None,
+            alice_repo_path.join("checkout"),
+        )
+        .await
+        .err(),
+        Some(state::Error::Checkout(checkout::Error::AlreadExists(_)))
+    );
 
     Ok(())
 }

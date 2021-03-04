@@ -1,5 +1,7 @@
 //! Project creation data and functions.
 
+use std::{io, path::Path};
+
 use librad::{
     git::types::remote::Remote,
     git_ext::{is_not_found_err, OneLevel, Qualified},
@@ -44,4 +46,25 @@ fn set_upstream<Url>(
     config.set_multivar(&branch_remote, ".*", remote.name.as_str())?;
     config.set_multivar(&branch_merge, ".*", Qualified::from(branch).as_str())?;
     Ok(())
+}
+
+/// Check that the `path` provided is either:
+///  * an empty directory
+///  * a non-existent directory
+/// If these checks pass then the path is returned as `Ok(Some(path))`.
+///
+/// If the `path` is a file or is a directory with contents, then it will return `Ok(None)`.
+///
+/// # Errors
+///   * I/O error in reading the directory contents
+pub fn ensure_directory(path: &Path) -> Result<Option<&Path>, io::Error> {
+    if path.is_file() {
+        return Ok(None);
+    }
+
+    if path.exists() && path.is_dir() && path.read_dir()?.next().is_some() {
+        return Ok(None);
+    }
+
+    Ok(Some(path))
 }

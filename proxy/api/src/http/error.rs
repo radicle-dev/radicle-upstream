@@ -73,17 +73,25 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             match err {
                 error::Error::State(err) => match err {
                     coco::state::Error::Checkout(checkout_error) => match checkout_error {
-                        // TODO(finto): This seems like a large catch all. We should check the type
-                        // of git errors.
-                        coco::project::checkout::Error::Git(git_error) => (
+                        coco::project::checkout::Error::AlreadExists(_) => (
                             StatusCode::CONFLICT,
-                            "WORKING_DIRECTORY_EXISTS",
+                            "PATH_EXISTS",
+                            checkout_error.to_string(),
+                        ),
+                        coco::project::checkout::Error::Git(git_error) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "GIT_ERROR",
                             git_error.message().to_string(),
                         ),
                         coco::project::checkout::Error::Include(include_error) => (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             "INTERNAL_ERROR",
                             include_error.to_string(),
+                        ),
+                        coco::project::checkout::Error::Io(io) => (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "INTERNAL_ERROR",
+                            io.to_string(),
                         ),
                         coco::project::checkout::Error::Transport(err) => (
                             StatusCode::INTERNAL_SERVER_ERROR,

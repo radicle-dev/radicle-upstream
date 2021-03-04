@@ -1,6 +1,6 @@
 use std::{
     convert::TryFrom,
-    ffi,
+    ffi, io,
     path::{self, PathBuf},
 };
 
@@ -23,6 +23,10 @@ use radicle_surf::vcs::git::git2;
 /// When checking out a working copy, we can run into several I/O failures.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// The path already existed when trying to checkout the project.
+    #[error("the path provided '{0}' already exists")]
+    AlreadExists(PathBuf),
+
     /// Git error when checking out the project.
     #[error(transparent)]
     Git(#[from] git2::Error),
@@ -30,6 +34,10 @@ pub enum Error {
     /// An error occurred building include files.
     #[error(transparent)]
     Include(#[from] include::Error),
+
+    /// An error occurred validating the project path
+    #[error(transparent)]
+    Io(#[from] io::Error),
 
     /// An error occurred when attempting to strip a prefix from a reference.
     #[error(transparent)]
@@ -276,6 +284,8 @@ where
                         path.join(name)
                     }
                 });
+        crate::project::ensure_directory(&project_path)?
+            .ok_or_else(|| Error::AlreadExists(project_path.clone()))?;
 
         // Clone the repository
         let (repo, rad) =
