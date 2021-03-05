@@ -366,11 +366,11 @@ pub async fn init_project(
     let delegations = Indirect::from(owner.clone().into_inner().into_inner());
     let project = peer
         .using_storage(move |store| {
-            let urn = project::urn(&store, payload.clone(), delegations.clone())?;
-            if !store.has_urn(&urn)? {
-                Ok(project::create(store, owner.clone(), payload, delegations)?)
-            } else {
+            let urn = project::urn(store, payload.clone(), delegations.clone())?;
+            if store.has_urn(&urn)? {
                 Err(Error::IdentityExists(urn))
+            } else {
+                Ok(project::create(store, owner.clone(), payload, delegations)?)
             }
         })
         .await??;
