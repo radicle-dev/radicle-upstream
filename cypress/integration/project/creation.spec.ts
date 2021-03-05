@@ -397,7 +397,7 @@ context("project creation", () => {
           commands
             .pick("notification")
             .contains(
-              /Could not create project: the identity 'rad:git:[\w]{3}…[\w]{3}' already exists/
+              /Could not create project: the URN 'rad:git:[\w]{3}…[\w]{3}' already exists/
             )
             .should("exist");
         });

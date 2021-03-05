@@ -92,6 +92,10 @@ pub enum Error {
     #[error(transparent)]
     Tracking(#[from] librad::git::tracking::Error),
 
+    /// Attempted to create an identity that already exists.
+    #[error("the URN `{0}` already exists")]
+    IdentityExists(Urn),
+
     /// There were no references for a Browser to be initialised.
     #[error("we could not find a default branch for '{name}@{urn}'")]
     NoDefaultBranch {

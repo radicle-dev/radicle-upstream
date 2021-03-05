@@ -193,6 +193,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         "NOT_FOUND",
                         "entity not found".to_string(),
                     ),
+                    coco::state::Error::IdentityExists(_) => (
+                        StatusCode::CONFLICT,
+                        "IDENTITY_EXISTS",
+                        err.to_string(),
+                    ),
                     _ => {
                         // TODO(xla): Match all variants and properly transform similar to
                         // gaphql::error.
