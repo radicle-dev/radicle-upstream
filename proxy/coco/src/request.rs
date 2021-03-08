@@ -12,7 +12,7 @@ use std::{collections::HashMap, ops::Deref};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{identities::Urn, net::protocol::gossip::Payload, peer::PeerId};
+use librad::{git::Urn, net::protocol::gossip::Payload, peer::PeerId};
 
 pub mod existential;
 pub use existential::SomeRequest;

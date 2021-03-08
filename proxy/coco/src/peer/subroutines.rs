@@ -17,7 +17,7 @@ use tokio::{
 };
 
 use librad::{
-    identities::Urn,
+    git::Urn,
     net::{self, peer::ProtocolEvent},
     peer::PeerId,
     signer::BoxedSigner,

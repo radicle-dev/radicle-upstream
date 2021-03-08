@@ -1,8 +1,10 @@
 //! Capture `State` related error variants.
 
 use librad::{
-    git::types::{One, Reference},
-    identities::Urn,
+    git::{
+        types::{One, Reference},
+        Urn,
+    },
     net,
 };
 use radicle_surf::vcs::git::git2;

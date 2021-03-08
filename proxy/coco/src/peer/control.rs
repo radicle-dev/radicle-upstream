@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use either::Either;
 use tokio::sync::{mpsc, oneshot};
 
-use librad::identities::Urn;
+use librad::git::Urn;
 
 use crate::{request, request::waiting_room};
 

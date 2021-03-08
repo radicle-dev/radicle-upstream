@@ -12,9 +12,9 @@ use librad::{
             remote::{LocalFetchspec, LocalPushspec, Remote},
             Flat, Force, GenericRef, Reference, Refspec,
         },
+        Urn,
     },
     git_ext::{OneLevel, Qualified, RefLike},
-    identities::Urn,
     peer::PeerId,
     reflike, refspec_pattern,
 };

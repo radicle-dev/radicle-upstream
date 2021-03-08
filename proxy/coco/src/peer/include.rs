@@ -1,6 +1,6 @@
 //! Handling of include files
 
-use librad::{identities::Urn, net::peer::Peer, signer::BoxedSigner};
+use librad::{git::Urn, net::peer::Peer, signer::BoxedSigner};
 
 use crate::state;
 

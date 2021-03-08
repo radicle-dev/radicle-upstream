@@ -24,7 +24,7 @@ pub async fn sync(peer: &Peer<BoxedSigner>, remote_peer: PeerId) -> Result<(), E
                     "Finished fetch of {} from {} with the result {:?}",
                     urn,
                     remote_peer,
-                    result
+                    result.updated_tips
                 );
                 include::update(peer.clone(), urn).await;
             },

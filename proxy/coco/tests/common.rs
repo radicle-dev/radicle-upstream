@@ -8,8 +8,7 @@ use tokio::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
-    git_ext::OneLevel, identities::Urn, keys::SecretKey, net::discovery, peer::PeerId, reflike,
-    signer,
+    git::Urn, git_ext::OneLevel, keys::SecretKey, net::discovery, peer::PeerId, reflike, signer,
 };
 
 use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, PeerStatus, RunConfig};

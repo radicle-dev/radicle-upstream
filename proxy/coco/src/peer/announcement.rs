@@ -4,12 +4,7 @@ use std::{collections::HashSet, ops::Deref as _};
 
 use kv::Codec as _;
 
-use librad::{
-    git::identities::Revision,
-    identities::urn::{ParseError, Urn},
-    net::peer::Peer,
-    signer::BoxedSigner,
-};
+use librad::{git::Urn, identities::urn::ParseError, net::peer::Peer, signer::BoxedSigner};
 use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
@@ -37,7 +32,7 @@ pub enum Error {
 }
 
 /// An update and all the required information that can be announced on the network.
-pub type Announcement = (Urn<Revision>, Oid);
+pub type Announcement = (Urn, Oid);
 
 /// Unique list of [`Announcement`]s.
 pub type Updates = HashSet<Announcement>;
@@ -152,7 +147,7 @@ mod test {
 
     use pretty_assertions::assert_eq;
 
-    use librad::{identities::Urn, keys::SecretKey, net};
+    use librad::{git::Urn, keys::SecretKey, net};
     use radicle_git_ext::{oid, RefLike};
 
     use crate::{config, signer, state};

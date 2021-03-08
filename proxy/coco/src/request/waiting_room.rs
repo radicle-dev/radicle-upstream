@@ -14,7 +14,10 @@ use std::{
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use librad::{git::identities::Revision, identities::Urn, peer::PeerId};
+use librad::{
+    git::{identities::Revision, Urn},
+    peer::PeerId,
+};
 
 use crate::request::{Clones, Queries, Request, RequestState, SomeRequest, Status, TimedOut};
 
@@ -27,7 +30,7 @@ const MAX_CLONES: Clones = Clones::Infinite;
 /// An error that can occur when interacting with the [`WaitingRoom`] API.
 #[derive(Clone, Debug, thiserror::Error, PartialEq)]
 pub enum Error {
-    /// When looking up a `RadUrn` in the [`WaitingRoom`] it was missing.
+    /// When looking up a `Urn` in the [`WaitingRoom`] it was missing.
     #[error("the URN '{0}' was not found in the waiting room")]
     MissingUrn(Urn),
 
@@ -69,13 +72,13 @@ impl<T> From<Request<TimedOut, T>> for Error {
 pub type Created<T> = Either<SomeRequest<T>, SomeRequest<T>>;
 
 /// A `WaitingRoom` knows about a set of `Request`s that have been made, and can look them up via
-/// their `RadUrn`.
+/// their `Urn`.
 ///
 /// It keeps track of these states as the user tells the waiting room what is happening to the
 /// request on the outside.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WaitingRoom<T, D> {
-    /// The set of requests keyed by their `RadUrn`. This helps us keep only unique requests in the
+    /// The set of requests keyed by their `Urn`. This helps us keep only unique requests in the
     /// waiting room.
     #[serde(bound = "T: serde_millis::Milliseconds")]
     requests: HashMap<Revision, SomeRequest<T>>,
@@ -369,7 +372,7 @@ impl<T, D> WaitingRoom<T, D> {
         )
     }
 
-    /// Return the list of all `RadUrn`/`SomeRequest` pairs in the `WaitingRoom`.
+    /// Return the list of all `Urn`/`SomeRequest` pairs in the `WaitingRoom`.
     pub fn iter(&self) -> impl Iterator<Item = (Urn, &SomeRequest<T>)> {
         self.requests
             .iter()
@@ -445,7 +448,7 @@ mod test {
     use std::{error, str::FromStr};
 
     use assert_matches::assert_matches;
-    use librad::{git_ext::Oid, identities::Urn, keys::SecretKey, peer::PeerId};
+    use librad::{git::Urn, git_ext::Oid, keys::SecretKey, peer::PeerId};
     use pretty_assertions::assert_eq;
 
     use super::*;

@@ -1,7 +1,7 @@
 //! Emit `Have`s and `Want`s on the network.
 
 use librad::{
-    identities::Urn,
+    git::Urn,
     net::{
         peer::Peer,
         protocol::gossip::{Payload, Rev},

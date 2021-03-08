@@ -24,8 +24,8 @@
 #![feature(duration_zero, hash_set_entry, never_type, or_patterns)]
 
 pub use librad::{
-    git::{self, identities::local::LocalIdentity, include, local::url::LocalUrl},
-    identities::{Person, Project, Urn},
+    git::{self, identities::local::LocalIdentity, include, local::url::LocalUrl, Urn},
+    identities::{Person, Project},
     keys,
     net::{self, discovery},
     paths::Paths,

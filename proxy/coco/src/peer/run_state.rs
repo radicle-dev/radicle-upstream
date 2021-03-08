@@ -9,7 +9,7 @@ use std::{
 use serde::Serialize;
 
 use librad::{
-    identities::Urn,
+    git::Urn,
     net::{
         self,
         peer::{PeerInfo, ProtocolEvent},
@@ -513,8 +513,8 @@ mod test {
     use tokio::sync::oneshot;
 
     use librad::{
+        git::Urn,
         git_ext::Oid,
-        identities::Urn,
         keys::SecretKey,
         net::{
             self,
