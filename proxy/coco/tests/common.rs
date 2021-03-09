@@ -67,6 +67,8 @@ pub async fn requested(
     )
 }
 
+/// Assert that the `PeerStatus` transitions to `Online` and the number of connected peers is equal
+/// to or more than `min_connected`.
 #[allow(dead_code)]
 pub async fn connected(
     mut receiver: broadcast::Receiver<PeerEvent>,

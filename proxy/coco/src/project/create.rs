@@ -56,7 +56,7 @@ impl Repo {
     }
 
     /// Get the full path of the `Repo` creation data.
-    fn full_path(&self) -> PathBuf {
+    pub fn full_path(&self) -> PathBuf {
         match self {
             Self::Existing { path } => path.to_path_buf(),
             Self::New { name, path } => path.join(name),

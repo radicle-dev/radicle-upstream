@@ -5,9 +5,12 @@ use futures::{future, StreamExt as _};
 use pretty_assertions::assert_eq;
 use tokio::time::timeout;
 
-use librad::git::{
-    local::url::LocalUrl,
-    types::{remote::LocalPushspec, Fetchspec, Force, Remote},
+use librad::{
+    git::{
+        local::url::LocalUrl,
+        types::{remote::LocalPushspec, Fetchspec, Force, Remote},
+    },
+    reflike,
 };
 use radicle_git_ext::RefLike;
 
@@ -222,16 +225,14 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         {
             let mut rad =
                 Remote::<LocalUrl>::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
+            let branch =
+                RefLike::try_from(project.subject().default_branch.as_ref().unwrap().as_str())
+                    .unwrap();
             let _ = rad.push(
                 state::settings(&alice_peer),
                 &repo,
                 LocalPushspec::Matching {
-                    pattern: RefLike::try_from(format!(
-                        "refs/heads/{}",
-                        project.subject().default_branch.clone().unwrap()
-                    ))
-                    .unwrap()
-                    .into(),
+                    pattern: reflike!("refs/heads").join(branch).into(),
                     force: Force::False,
                 },
             )?;
@@ -387,9 +388,7 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let commit_id = {
         let alice_peer_id = alice_peer.peer_id();
-        log::debug!("CHECKING OUT");
         let path = state::checkout(&bob_peer, project.urn(), alice_peer_id, bob_repo_path).await?;
-        log::debug!("CHECKED OUT");
 
         let repo = git2::Repository::open(path)?;
         let oid = repo
@@ -460,7 +459,6 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
     Ok(())
 }
 
-#[allow(clippy::needless_collect)]
 #[tokio::test]
 async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
