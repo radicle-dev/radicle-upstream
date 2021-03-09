@@ -4,7 +4,9 @@ use std::{collections::HashSet, ops::Deref as _};
 
 use kv::Codec as _;
 
-use librad::{git::Urn, identities::urn::ParseError, net::peer::Peer, reflike, signer::BoxedSigner};
+use librad::{
+    git::Urn, identities::urn::ParseError, net::peer::Peer, reflike, signer::BoxedSigner,
+};
 use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
@@ -42,10 +44,7 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-async fn announce(
-    peer: &Peer<BoxedSigner>,
-    updates: impl Iterator<Item = &Announcement> + Send,
-) {
+async fn announce(peer: &Peer<BoxedSigner>, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
         gossip::announce(peer, urn, Some(*hash));
     }
