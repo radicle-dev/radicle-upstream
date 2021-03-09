@@ -8,8 +8,8 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * close any open modal on "Go to settings" ([f9124db](https://github.com/radicle-dev/radicle-upstream/commit/f9124dbdefa6cbae9faeba6f4e62d12008cc09bc))
-* **build:** Don’t minify rollup bundles for dev builds ([d49bd62](https://github.com/radicle-dev/radicle-upstream/commit/d49bd62b24c5a355b38002f2cf1e60b26825568e))
-* **infra:** skip circular dep warning for 3rd party deps ([15f1293](https://github.com/radicle-dev/radicle-upstream/commit/15f1293950331a16cc2de32655c02a041349b8bf))
+* set macOS minimumSystemVersion to 10.14 ([bed30a8](https://github.com/radicle-dev/radicle-upstream/commit/bed30a88b39a3463f65d060295cd9393127a931d))
+
 
 ### [0.1.11](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.10...v0.1.11) (2021-02-24)
 
