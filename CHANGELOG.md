@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* close any open modal on "Go to settings" ([f9124db](https://github.com/radicle-dev/radicle-upstream/commit/f9124dbdefa6cbae9faeba6f4e62d12008cc09bc))
+* **ui:** close any open modal on "Go to settings" ([f9124db](https://github.com/radicle-dev/radicle-upstream/commit/f9124dbdefa6cbae9faeba6f4e62d12008cc09bc))
 * set macOS minimumSystemVersion to 10.14 ([bed30a8](https://github.com/radicle-dev/radicle-upstream/commit/bed30a88b39a3463f65d060295cd9393127a931d))
 
 
