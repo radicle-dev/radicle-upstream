@@ -4,7 +4,7 @@ use std::{collections::HashSet, ops::Deref as _};
 
 use kv::Codec as _;
 
-use librad::{git::Urn, identities::urn::ParseError, net::peer::Peer, signer::BoxedSigner};
+use librad::{git::Urn, identities::urn::ParseError, net::peer::Peer, reflike, signer::BoxedSigner};
 use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
@@ -42,7 +42,7 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(
+async fn announce(
     peer: &Peer<BoxedSigner>,
     updates: impl Iterator<Item = &Announcement> + Send,
 ) {
@@ -57,7 +57,7 @@ pub async fn announce(
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
+async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
     let mut list: Updates = HashSet::new();
 
     match state::list_projects(peer).await {
@@ -71,7 +71,20 @@ pub async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
                     for (head, hash) in &refs.heads {
                         list.insert((
                             Urn {
-                                path: head.as_str().parse::<RefLike>().ok(),
+                                path: Some(RefLike::from(
+                                    head.clone().into_qualified(reflike!("heads")),
+                                )),
+                                ..project.urn()
+                            },
+                            Oid::from(*hash.deref()),
+                        ));
+                    }
+                    for (head, hash) in &refs.tags {
+                        list.insert((
+                            Urn {
+                                path: Some(RefLike::from(
+                                    head.clone().into_qualified(reflike!("tags")),
+                                )),
                                 ..project.urn()
                             },
                             Oid::from(*hash.deref()),
@@ -89,7 +102,7 @@ pub async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
 #[allow(clippy::implicit_hasher)]
 #[must_use]
-pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
+fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
     new_state.difference(old_state).cloned().collect()
 }
 
@@ -99,7 +112,7 @@ pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load(store: &kv::Store) -> Result<Updates, Error> {
+fn load(store: &kv::Store) -> Result<Updates, Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
@@ -135,7 +148,7 @@ pub async fn run(peer: &Peer<BoxedSigner>, store: &kv::Store) -> Result<Updates,
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
+fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
