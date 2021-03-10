@@ -196,7 +196,7 @@ where
             Subroutines::new(
                 peer.clone(),
                 store,
-                run_config,
+                &run_config,
                 protocol_events,
                 subscriber,
                 control_receiver,

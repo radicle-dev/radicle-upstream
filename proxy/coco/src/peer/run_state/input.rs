@@ -102,7 +102,3 @@ pub enum Sync {
     Succeeded(PeerId),
     Tick,
 }
-
-/// Scheduled timeouts which can occur.
-#[derive(Debug)]
-pub enum Timeout {}

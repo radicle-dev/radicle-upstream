@@ -62,7 +62,7 @@ impl Subroutines {
     pub fn new(
         peer: net::peer::Peer<BoxedSigner>,
         store: kv::Store,
-        run_config: RunConfig,
+        run_config: &RunConfig,
         protocol_events: BoxStream<'static, Result<ProtocolEvent, net::protocol::RecvError>>,
         subscriber: broadcast::Sender<Event>,
         mut control_receiver: mpsc::Receiver<control::Request>,
