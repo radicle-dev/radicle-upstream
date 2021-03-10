@@ -20,8 +20,6 @@ pub enum Command {
     Request(Request),
     /// Initiate a full sync with [`PeerId`].
     SyncPeer(PeerId),
-    /// Start sync timeout.
-    StartSyncTimeout(Duration),
     Stats,
     /// Emit an external event to all subscribers
     EmitEvent(super::Event),

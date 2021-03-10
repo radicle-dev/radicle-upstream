@@ -24,8 +24,6 @@ pub enum Input {
     /// Request subroutine events that wish to attempt to fetch an identity from the network.
     Request(Request),
     Stats(Stats),
-    /// Scheduled timeouts which can occur.
-    Timeout(Timeout),
 }
 
 /// Announcement subroutine lifecycle events.
@@ -102,12 +100,9 @@ pub enum Sync {
     Failed(PeerId),
     /// A sync has succeeded for `PeerId`.
     Succeeded(PeerId),
+    Tick,
 }
 
 /// Scheduled timeouts which can occur.
 #[derive(Debug)]
-pub enum Timeout {
-    /// Grace period is over signaling that we should go offline, no matter how many syncs have
-    /// succeeded.
-    SyncPeriod,
-}
+pub enum Timeout {}

@@ -89,7 +89,13 @@ impl Subroutines {
         let mut waiting_room_timer = interval(run_config.waiting_room.interval);
         let (input_sender, mut external_inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
         let mut stats_timer = interval(run_config.stats.interval);
-        let run_state = RunState::new(run_config, waiting_room);
+        let sync_timer = if run_config.sync.interval.is_zero() {
+            None
+        } else {
+            Some(interval(run_config.sync.interval))
+        };
+
+        let run_state = RunState::new(waiting_room);
 
         let inputs = {
             let mut coalesced = SelectAll::new();
@@ -115,6 +121,17 @@ impl Subroutines {
                         loop {
                             timer.tick().await;
                             yield Input::Announce(input::Announce::Tick);
+                        }
+                    }
+                    .boxed(),
+                );
+            }
+            if let Some(mut timer) = sync_timer {
+                coalesced.push(
+                    stream! {
+                        loop {
+                            timer.tick().await;
+                            yield Input::PeerSync(input::Sync::Tick);
                         }
                     }
                     .boxed(),
@@ -219,9 +236,6 @@ impl Subroutines {
                         .await
                         .ok();
                 })
-            },
-            Command::StartSyncTimeout(sync_period) => {
-                tokio::spawn(start_sync_timeout(sync_period, self.input_sender.clone()))
             },
             Command::Stats => tokio::spawn(get_stats(self.peer.clone(), self.input_sender.clone())),
             Command::SyncPeer(peer_id) => {
@@ -383,15 +397,6 @@ async fn sync(peer: net::peer::Peer<BoxedSigner>, peer_id: PeerId, sender: mpsc:
                 .ok();
         },
     }
-}
-
-/// Send a timeout input once the `sync_period` has elapsed.
-async fn start_sync_timeout(sync_period: Duration, sender: mpsc::Sender<Input>) {
-    tokio::time::sleep(sync_period).await;
-    sender
-        .send(Input::Timeout(input::Timeout::SyncPeriod))
-        .await
-        .ok();
 }
 
 /// Send a query on the network for the given urn.

@@ -15,7 +15,6 @@ use librad::{
 use radicle_git_ext::RefLike;
 
 use coco::{
-    peer::run_config,
     project::{peer, Peer},
     seed::Seed,
     state, RunConfig,
@@ -271,17 +270,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let alice_peer = build_peer(
-        &alice_tmp_dir,
-        RunConfig {
-            sync: run_config::Sync {
-                on_startup: true,
-                ..run_config::Sync::default()
-            },
-            ..RunConfig::default()
-        },
-    )
-    .await?;
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let mut alice_events = alice_peer.subscribe();
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
