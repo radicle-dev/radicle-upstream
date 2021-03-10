@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.12](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.11...v0.1.12) (2021-03-09)
+
+
+### Bug Fixes
+
+* **ui:** close any open modal on "Go to settings" ([f9124db](https://github.com/radicle-dev/radicle-upstream/commit/f9124dbdefa6cbae9faeba6f4e62d12008cc09bc))
+* set macOS minimumSystemVersion to 10.14 ([bed30a8](https://github.com/radicle-dev/radicle-upstream/commit/bed30a88b39a3463f65d060295cd9393127a931d))
+
+
 ### [0.1.11](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.10...v0.1.11) (2021-02-24)
 
 

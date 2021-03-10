@@ -7,14 +7,7 @@ pub(super) const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from
 
 pub(super) const DEFAULT_STATS_INTERVAL: Duration = Duration::from_millis(100);
 
-/// Default number of peers a full sync is attempting with up on startup.
-/// TODO(xla): Revise number.
-pub(super) const DEFAULT_SYNC_MAX_PEERS: usize = 5;
-
-/// Default Duration until the local peer goes online regardless if and how many syncs have
-/// succeeded.
-// TODO(xla): Review duration.
-pub(super) const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
+pub(super) const DEFAULT_SYNC_INTERVAL: Duration = std::time::Duration::from_secs(1);
 
 /// Default period at which we query the waiting room.
 pub(super) const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis(500);
@@ -65,20 +58,14 @@ impl Default for Stats {
 
 /// Set of knobs to alter sync behaviour.
 pub struct Sync {
-    /// Number of peers that a full sync is attempted with upon startup.
-    pub max_peers: usize,
-    /// Enables the syncing stage when coming online.
-    pub on_startup: bool,
-    /// Duration until the local peer goes online regardless if and how many syncs have succeeded.
-    pub period: Duration,
+    /// Duration to issue periodic syncs.
+    pub interval: Duration,
 }
 
 impl Default for Sync {
     fn default() -> Self {
         Self {
-            max_peers: DEFAULT_SYNC_MAX_PEERS,
-            on_startup: false,
-            period: DEFAULT_SYNC_PERIOD,
+            interval: DEFAULT_SYNC_INTERVAL,
         }
     }
 }

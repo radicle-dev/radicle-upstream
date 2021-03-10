@@ -198,13 +198,15 @@ impl Unsealed {
     /// * coco key creation fails
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
-    pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
+    pub async fn tmp(
+        tmp_dir: &tempfile::TempDir,
+    ) -> Result<(Self, impl std::future::Future<Output = ()>), crate::error::Error> {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let key = coco::keys::SecretKey::new();
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
-        let (peer_control, peer) = {
+        let (peer_control, peer, run_handle) = {
             let config = coco::config::default(signer.clone(), tmp_dir.path())?;
             let disco = coco::config::static_seed_discovery(&[]);
             let coco_peer =
@@ -212,25 +214,27 @@ impl Unsealed {
             let peer = coco_peer.peer.clone();
 
             let peer_control = coco_peer.control();
-            // FIXME(finto): As we've seen `tokio::spawn` without explicit aborting of handling
-            // could mean we end up in resource locks. This is probably safe due to everything
-            // acting in a tmp dir, but it would be better to have something like `WithUnsealed`
-            // holding the handle which aborts when dropped.
-            tokio::spawn(coco_peer.into_running());
-
-            (peer_control, peer)
+            let run_handle = async move {
+                if let Err(err) = coco_peer.into_running().await {
+                    log::error!("peer run error: {:?}", err);
+                }
+            };
+            (peer_control, peer, run_handle)
         };
 
-        Ok(Self {
-            peer_control,
-            peer,
-            store,
-            test: false,
-            http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
-            default_seeds: vec![],
-            service_handle: service::Handle::dummy(),
-            auth_token: Arc::new(RwLock::new(None)),
-            keystore: Arc::new(coco::keystore::memory()),
-        })
+        Ok((
+            Self {
+                peer_control,
+                peer,
+                store,
+                test: false,
+                http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
+                default_seeds: vec![],
+                service_handle: service::Handle::dummy(),
+                auth_token: Arc::new(RwLock::new(None)),
+                keystore: Arc::new(coco::keystore::memory()),
+            },
+            run_handle,
+        ))
     }
 }
