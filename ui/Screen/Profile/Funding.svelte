@@ -3,6 +3,7 @@
     selectedEnvironment as ethereumEnvironment,
     supportedNetwork,
   } from "../../src/ethereum";
+  import { ethereumAddress } from "../../src/identity";
   import { store, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 
@@ -11,6 +12,7 @@
   import WrongNetwork from "../../DesignSystem/Component/Wallet/WrongNetwork.svelte";
 
   import Pool from "../Funding/Pool.svelte";
+  import LinkAddress from "../Funding/LinkAddress.svelte";
 
   $: wallet = $store;
   // Hack to have Svelte working with checking the $wallet variant
@@ -38,7 +40,15 @@
       account={w.connected.account}
       style={'margin-right: var(--content-padding)'} />
     {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
-      <Pool pool={pool.make(wallet)} />
+      {#if $ethereumAddress === null}
+        <LinkAddress />
+      {:else if $ethereumAddress !== w.connected.account.address}
+        You connected with an address different than the one you have registered
+        with. Re-connect using your registered ethereum address
+        {$ethereumAddress}
+      {:else}
+        <Pool pool={pool.make(wallet)} />
+      {/if}
     {:else}
       <WrongNetwork expectedNetwork={supportedNetwork($ethereumEnvironment)} />
     {/if}

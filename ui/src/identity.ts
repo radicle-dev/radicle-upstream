@@ -1,3 +1,5 @@
+import persistentStore from "svelte-persistent-store/dist";
+
 import * as api from "./api";
 import * as remote from "./remote";
 import type { Urn } from "./urn";
@@ -24,6 +26,13 @@ export interface Identity {
   shareableEntityIdentifier: string;
   urn: Urn;
 }
+
+// Stub storing the user's registered Ethereum address
+// TODO(nuno): read this value from the Person's document once implemented
+export const ethereumAddress = persistentStore.local.writable<string | null>(
+  "radicle.identity.ethereum.address.v0",
+  null
+);
 
 // STATE
 const creationStore = remote.createStore<Identity>();

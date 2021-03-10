@@ -1,12 +1,11 @@
 <script lang="typescript">
-  import * as svelteStore from "svelte/store";
-
   import EthToRadicle from "./Link/EthToRadicle.svelte";
   import EnterPassphrase from "./Link/EnterPassphrase.svelte";
   import SavedToRadicle from "./Link/SavedToRadicle.svelte";
   import RadicleToEth from "./Link/RadicleToEth.svelte";
   import { Remote } from "../../DesignSystem/Component";
 
+  import * as identity from "../../src/identity";
   import { store as walletStore } from "../../src/wallet";
   import { session } from "../../src/session";
 
@@ -17,37 +16,42 @@
   }
 
   enum Step {
+    RadicleToEth = "RadicleToEth",
     EthToRadicle = "EthToRadicle",
     EnterPassphrase = "EnterPassphrase",
     SavedToRadicle = "SavedToRadicle",
-    RadicleToEth = "RadicleToEth",
   }
 
-  let currentStep = Step.EthToRadicle;
+  let currentStep = Step.RadicleToEth;
 
   function onContinue() {
     switch (currentStep) {
+      case Step.RadicleToEth:
+        currentStep = Step.EthToRadicle;
+        break;
       case Step.EthToRadicle:
         currentStep = Step.EnterPassphrase;
         break;
       case Step.EnterPassphrase:
-        // TODO(nuno): Add the eth address to the radicle identity
-        // once such API is available.
+        identity.ethereumAddress.set(address);
         currentStep = Step.SavedToRadicle;
         break;
       case Step.SavedToRadicle:
-        currentStep = Step.RadicleToEth;
-        break;
-      case Step.RadicleToEth:
         modal.hide();
         break;
     }
   }
 
+  async function claimRadicleIdentity() {
+    // TODO(nuno): call actual contract
+    await new Promise(res => setTimeout(res, 2500));
+    onContinue();
+  }
+
   // Values
   let passphrase: string = "";
 
-  $: address = svelteStore.get(walletStore).account()?.address || "";
+  $: address = $walletStore.account()?.address || "";
 </script>
 
 <style>
@@ -67,7 +71,13 @@
 
 <Remote store={session} let:data={it}>
   <div class="wrapper">
-    {#if currentStep === Step.EthToRadicle}
+    {#if currentStep === Step.RadicleToEth}
+      <RadicleToEth
+        {address}
+        identity={it.identity}
+        {onCancel}
+        onSendTransaction={claimRadicleIdentity} />
+    {:else if currentStep === Step.EthToRadicle}
       <EthToRadicle
         {address}
         identity={it.identity}
@@ -77,12 +87,6 @@
       <EnterPassphrase bind:passphrase {onCancel} onConfirm={onContinue} />
     {:else if currentStep === Step.SavedToRadicle}
       <SavedToRadicle {onCancel} {onContinue} />
-    {:else if currentStep === Step.RadicleToEth}
-      <RadicleToEth
-        {address}
-        identity={it.identity}
-        {onCancel}
-        onSendTransaction={onContinue} />
     {/if}
   </div>
 </Remote>
