@@ -7,7 +7,6 @@
   import * as error from "../src/error";
   import * as path from "../src/path";
   import * as remote from "../src/remote";
-  import * as urn from "../src/urn";
   import {
     clearLocalState,
     create,
@@ -85,7 +84,7 @@
       push(path.profileProjects());
       error.show({
         code: error.Code.ProjectCreationFailure,
-        message: `Could not create project: ${urn.shorten(err.message)}`,
+        message: `Could not create project: ${err.message}`,
         source: err,
       });
     } finally {
