@@ -44,7 +44,7 @@ async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let announced = async_stream::stream! { loop { yield alice_events.recv().await } }
         .filter_map(|res| match res.unwrap() {
-            coco::PeerEvent::Announced(updates) if updates.len() == 1 => future::ready(Some(())),
+            coco::PeerEvent::Announced(updates) if !updates.is_empty() => future::ready(Some(())),
             _ => future::ready(None),
         })
         .map(|_| ());

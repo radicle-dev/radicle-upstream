@@ -1,6 +1,6 @@
 //! Compute, track and announce noteworthy changes to the network.
 
-use std::{collections::HashSet, ops::Deref as _};
+use std::collections::HashSet;
 
 use kv::Codec as _;
 
@@ -42,10 +42,7 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(
-    peer: &Peer<BoxedSigner>,
-    updates: impl Iterator<Item = &Announcement> + Send,
-) {
+async fn announce(peer: &Peer<BoxedSigner>, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
         gossip::announce(peer, urn, Some(*hash));
     }
@@ -57,7 +54,7 @@ pub async fn announce(
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
+async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
     let mut list: Updates = HashSet::new();
 
     match state::list_projects(peer).await {
@@ -68,13 +65,13 @@ pub async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
         Ok(projects) => {
             for project in &projects {
                 if let Some(refs) = state::list_owner_project_refs(peer, project.urn()).await? {
-                    for (head, hash) in &refs.heads {
+                    for ((one_level, oid), category) in refs.iter_categorised() {
                         list.insert((
                             Urn {
-                                path: head.as_str().parse::<RefLike>().ok(),
+                                path: Some(RefLike::from(category).join(one_level.clone())),
                                 ..project.urn()
                             },
-                            Oid::from(*hash.deref()),
+                            *oid,
                         ));
                     }
                 }
@@ -89,7 +86,7 @@ pub async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
 #[allow(clippy::implicit_hasher)]
 #[must_use]
-pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
+fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
     new_state.difference(old_state).cloned().collect()
 }
 
@@ -99,7 +96,7 @@ pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load(store: &kv::Store) -> Result<Updates, Error> {
+fn load(store: &kv::Store) -> Result<Updates, Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
@@ -135,7 +132,7 @@ pub async fn run(peer: &Peer<BoxedSigner>, store: &kv::Store) -> Result<Updates,
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
+fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
