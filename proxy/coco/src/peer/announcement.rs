@@ -1,12 +1,10 @@
 //! Compute, track and announce noteworthy changes to the network.
 
-use std::{collections::HashSet, ops::Deref as _};
+use std::collections::HashSet;
 
 use kv::Codec as _;
 
-use librad::{
-    git::Urn, identities::urn::ParseError, net::peer::Peer, reflike, signer::BoxedSigner,
-};
+use librad::{git::Urn, identities::urn::ParseError, net::peer::Peer, signer::BoxedSigner};
 use radicle_git_ext::{Oid, RefLike};
 use radicle_surf::git::git2;
 
@@ -67,26 +65,13 @@ async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
         Ok(projects) => {
             for project in &projects {
                 if let Some(refs) = state::list_owner_project_refs(peer, project.urn()).await? {
-                    for (head, hash) in &refs.heads {
+                    for ((one_level, oid), category) in refs.iter_categorised() {
                         list.insert((
                             Urn {
-                                path: Some(RefLike::from(
-                                    head.clone().into_qualified(reflike!("heads")),
-                                )),
+                                path: Some(RefLike::from(category).join(one_level.clone())),
                                 ..project.urn()
                             },
-                            Oid::from(*hash.deref()),
-                        ));
-                    }
-                    for (head, hash) in &refs.tags {
-                        list.insert((
-                            Urn {
-                                path: Some(RefLike::from(
-                                    head.clone().into_qualified(reflike!("tags")),
-                                )),
-                                ..project.urn()
-                            },
-                            Oid::from(*hash.deref()),
+                            *oid,
                         ));
                     }
                 }
