@@ -24,7 +24,9 @@
     width: 100%;
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
-    overflow: hidden;
+    /* TODO: check if this causes problems in other lists */
+    /* changed it to quickly make the checkout drop down visible */
+    overflow: visible;
   }
 
   li {

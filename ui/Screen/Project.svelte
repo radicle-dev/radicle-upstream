@@ -59,7 +59,10 @@
 </script>
 
 <SidebarLayout dataCy="project-screen">
-  <Remote {store} let:data={{ peerSelection, project, selectedPeer }}>
+  <Remote
+    {store}
+    let:data={{ peerSelection, project, selectedPeer }}
+    context="project-page">
     <Header.Large
       urn={project.urn}
       name={project.metadata.name}

@@ -1,7 +1,8 @@
-import { parse, ParsedQs } from "qs";
+import { parse, ParsedQs, stringify } from "qs";
 import regexparam from "regexparam";
 
 import type { Urn } from "./urn";
+import type { MergeRequest } from "./source";
 
 export const blank = (): string => "/";
 export const settings = (): string => "/settings";
@@ -25,6 +26,15 @@ export const projectSourceCommit = (urn: Urn, hash: string): string =>
   `/projects/${urn}/source/commit/${hash}`;
 export const projectSourceCommits = (urn: Urn): string =>
   `/projects/${urn}/source/commits`;
+export const projectSourceMergeRequests = (urn: Urn): string =>
+  `/projects/${urn}/source/merge_requests`;
+export const projectSourceMergeRequest = (
+  urn: Urn,
+  mergeRequest: MergeRequest
+): string =>
+  `/projects/${urn}/source/merge_request?${stringify({
+    mergeRequest,
+  })}`;
 export const project = projectSourceFiles;
 
 export const parseQueryString = (querystring: string): ParsedQs => {

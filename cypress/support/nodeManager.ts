@@ -52,6 +52,16 @@ interface createCommitOptions {
   email?: string;
 }
 
+interface createMergeRequestOptions {
+  repositoryPath: string;
+  radHome: string;
+  tag: string;
+  subject: string;
+  passphrase: string;
+  name?: string;
+  email?: string;
+}
+
 const credentialsHelper = (passphrase: string) =>
   `'!f() { test "$1" = get && echo "password=${passphrase}"; }; f'`;
 
@@ -62,6 +72,33 @@ export PATH=$PWD/target/release:$PATH
 cd ${options.repositoryPath}
 git commit --allow-empty -m "${options.subject}"
 git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
+    {
+      env: {
+        HOME: options.radHome,
+        RAD_HOME: options.radHome,
+        GIT_AUTHOR_NAME: options.name || "John McPipefail",
+        GIT_AUTHOR_EMAIL: options.email || "john@mcpipefail.com",
+        GIT_COMMITTER_NAME: options.name || "John McPipefail",
+        GIT_COMMITTER_EMAIL: options.email || "john@mcpipefail.com",
+      },
+    }
+  );
+};
+
+export const createMergeRequest = (
+  options: createMergeRequestOptions
+): void => {
+  createCommit(options);
+  cy.exec(
+    `set -euo pipefail
+export PATH=$PWD/target/release:$PATH
+cd ${options.repositoryPath}
+git tag -a --message "This is an awesome feature" merge-request/${
+      options.tag
+    } HEAD
+git -c credential.helper=${credentialsHelper(
+      options.passphrase
+    )} push --tag rad`,
     {
       env: {
         HOME: options.radHome,

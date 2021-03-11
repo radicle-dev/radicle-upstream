@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use crate::{context, http};
+use crate::{context, http, identity};
 
 /// Combination of all source filters.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
@@ -13,6 +13,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(commits_filter(ctx.clone()))
         .or(local_state_filter())
         .or(tags_filter(ctx.clone()))
+        .or(merge_requests_filter(ctx.clone()))
         .or(tree_filter(ctx))
         .boxed()
 }
@@ -86,6 +87,18 @@ fn tags_filter(
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
         .and_then(handler::tags)
+}
+
+/// `GET /merge_requests/<project_urn>`
+fn merge_requests_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("merge_requests")
+        .and(path::param::<coco::Urn>())
+        .and(path::end())
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
+        .and_then(handler::merge_requests)
 }
 
 /// `GET /tree/<project_urn>?peerId=<peer_id>&prefix=<prefix>*revision=<revision>`
@@ -230,6 +243,22 @@ mod handler {
         Ok(reply::json(&tags))
     }
 
+    /// Fetch the list [`coco::source::Tag`].
+    pub async fn merge_requests(
+        project_urn: coco::Urn,
+        ctx: context::Unsealed,
+    ) -> Result<impl Reply, Rejection> {
+        let merge_requests = coco::merge_request::list(&ctx.peer, project_urn)
+            .await
+            .map_err(error::Error::from)?;
+        let merge_requests = merge_requests
+            .into_iter()
+            .map(super::MergeRequest::from)
+            .collect::<Vec<_>>();
+
+        Ok(reply::json(&merge_requests))
+    }
+
     /// Fetch a [`coco::source::Tree`].
     pub async fn tree(
         project_urn: coco::Urn,
@@ -252,6 +281,57 @@ mod handler {
         .map_err(error::Error::from)?;
 
         Ok(reply::json(&tree))
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MergeRequest {
+    id: String,
+    merged: bool,
+    peer_id: coco::PeerId,
+    identity: Option<identity::Identity>,
+    title: Option<String>,
+    description: Option<String>,
+    commit: String,
+}
+
+impl From<coco::merge_request::MergeRequest> for MergeRequest {
+    fn from(merge_request: coco::merge_request::MergeRequest) -> Self {
+        let coco::merge_request::MergeRequest {
+            id,
+            merged,
+            peer,
+            message,
+            commit,
+        } = merge_request;
+        let [title, description] = match message {
+            Some(msg) => {
+                let mut lines = msg.lines();
+                let line1 = lines.next();
+                let rest = if let Some(line) = line1 {
+                    msg.strip_prefix(line)
+                } else {
+                    None
+                };
+                [
+                    line1.map(|it| it.trim().to_string()),
+                    rest.map(|it| it.trim().to_string()),
+                ]
+            },
+            _ => [None, None],
+        };
+        Self {
+            id,
+            merged,
+            peer_id: peer.peer_id(),
+            identity: peer
+                .replicated()
+                .map(|peer| identity::Identity::from((peer.peer_id(), peer.status().user.clone()))),
+            title,
+            description,
+            commit: commit.to_string(),
+        }
     }
 }
 
@@ -303,6 +383,16 @@ pub struct TreeQuery {
 pub struct TagQuery {
     /// PeerId to scope the query by.
     peer_id: Option<coco::PeerId>,
+}
+
+/// A query param for [`handler::merge_request`].
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MergeRequestQuery {
+    /// PeerId to scope the query by.
+    peer_id: coco::PeerId,
+    /// id of the merge request to scope the query by.
+    id: String,
 }
 
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
