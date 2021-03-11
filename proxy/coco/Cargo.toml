@@ -14,7 +14,6 @@ repository = "git@github.com:radicle-dev/radicle-upstream.git"
 async-stream = "0.3"
 either = "1.6"
 futures = { version = "0.3", features = [ "compat" ] }
-git2 = "0.13"
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.6"
@@ -45,6 +44,11 @@ rev = "07b4bb364e8d268127b7b887cc94224676652afc"
 [dependencies.radicle-surf]
 version = "0.5"
 features = ["serialize"]
+
+[dependencies.git2]
+version = "0.13"
+default-features = false
+features = []
 
 [dev-dependencies]
 assert_matches = "1.3"
