@@ -1,4 +1,7 @@
 <script lang="typescript">
+  import { ethereumAddress } from "../../../src/identity";
+  import { ellipsed } from "../../../src/style";
+
   import { Button, Emoji } from "../../Primitive";
 
   export let onConnect: () => void;
@@ -26,8 +29,14 @@
 <div class="wrapper" class:connecting>
   <Emoji emoji="👛" size="huge" />
   <p class="typo-text">
-    In order to give and receive funds, you need to connect an Ethereum wallet
-    you own.
+    {#if $ethereumAddress === null}
+      In order to give and receive funds, you need to connect an Ethereum wallet
+      you own.
+    {:else}
+      In order to give and receive funds, you need to connect your linked
+      Ethereum account
+      {ellipsed($ethereumAddress)}.
+    {/if}
   </p>
   <Button disabled={connecting} on:click={onConnect}>
     Connect your wallet

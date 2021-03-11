@@ -10,6 +10,7 @@
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
   import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
   import WrongNetwork from "../../DesignSystem/Component/Wallet/WrongNetwork.svelte";
+  import WrongAccount from "../../DesignSystem/Component/Wallet/WrongAccount.svelte";
 
   import Pool from "../Funding/Pool.svelte";
   import LinkAddress from "../Funding/LinkAddress.svelte";
@@ -43,9 +44,7 @@
       {#if $ethereumAddress === null}
         <LinkAddress />
       {:else if $ethereumAddress !== w.connected.account.address}
-        You connected with an address different than the one you have registered
-        with. Re-connect using your registered ethereum address
-        {$ethereumAddress}
+        <WrongAccount expectedAddress={$ethereumAddress} />
       {:else}
         <Pool pool={pool.make(wallet)} />
       {/if}
