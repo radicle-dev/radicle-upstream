@@ -21,7 +21,7 @@ macro_rules! await_event {
             .filter_map($filter)
             .map(|_| ());
         tokio::pin!(filtered);
-        timeout(Duration::from_secs(1), filtered.next())
+        timeout(Duration::from_secs(2), filtered.next())
             .await
             .map(|_| ())
     }};
