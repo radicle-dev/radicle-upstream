@@ -152,6 +152,7 @@ pub struct RunState {
     stats: net::protocol::event::downstream::Stats,
     /// Timestamp of last status change.
     status_since: SystemTime,
+    syncs: HashSet<PeerId>,
     /// Current set of requests.
     waiting_room: WaitingRoom<SystemTime, Duration>,
 }
@@ -163,12 +164,14 @@ impl RunState {
         connected_peers: HashSet<PeerId>,
         status: Status,
         status_since: SystemTime,
+        syncs: HashSet<PeerId>,
     ) -> Self {
         Self {
             connected_peers,
             stats: downstream::Stats::default(),
             status,
             status_since,
+            syncs,
             waiting_room: WaitingRoom::new(waiting_room::Config::default()),
         }
     }
@@ -180,6 +183,7 @@ impl RunState {
             stats: downstream::Stats::default(),
             status: Status::Stopped,
             status_since: SystemTime::now(),
+            syncs: HashSet::new(),
             waiting_room,
         }
     }
@@ -265,12 +269,21 @@ impl RunState {
                 let mut cmds = vec![];
 
                 for peer_id in &self.connected_peers {
-                    cmds.push(Command::SyncPeer(*peer_id));
+                    if self.syncs.get(peer_id).is_none() {
+                        cmds.push(Command::SyncPeer(*peer_id));
+                    }
                 }
 
                 cmds
             },
-            _ => vec![],
+            input::Sync::Started(peer_id) => {
+                self.syncs.insert(*peer_id);
+                vec![]
+            },
+            input::Sync::Succeeded(peer_id) | input::Sync::Failed(peer_id) => {
+                self.syncs.remove(peer_id);
+                vec![]
+            },
         }
     }
 
