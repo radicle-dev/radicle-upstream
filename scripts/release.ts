@@ -156,13 +156,8 @@ const printNextStepsMsg = (
         packages
   - [ ] upload the macOS and Linux packages to https://releases.radicle.xyz
 
-          gsutil cp \
-            gs://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage \
-            gs://releases.radicle.xyz
-
-          gsutil cp \
-            gs://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.dmg \
-            gs://releases.radicle.xyz
+          gsutil cp gs://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.AppImage gs://releases.radicle.xyz
+          gsutil cp gs://builds.radicle.xyz/radicle-upstream/v${version}/dist/radicle-upstream-${version}.dmg gs://releases.radicle.xyz
 
   - [ ] create macOS and Linux QA issues in the Upstream repo
 
