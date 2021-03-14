@@ -491,6 +491,13 @@ Then you'll have to create a _Personal access token_ for it in the
 by running any command that does a request to GitHub, like so: `hub api`.
 You'll be asked to provide your GitHub login and the access token.
 
+#### Homebrew CLI
+
+To update a formula at [Homebrew package manager][br], you'll need a
+working `brew` CLI tool. The tool can use your GitHub _Personal access token_
+from the previous step with
+`export HOMEBREW_GITHUB_API_TOKEN='<github-api-token>'` for authentification,
+in order to [setup a Cask repository fork, commit and push][bs] on your behalf.
 
 ### Publishing a release
 
@@ -501,6 +508,8 @@ instructions.
 
 [an]: #apple-notarization
 [bk]: https://buildkite.com/monadic/radicle-upstream
+[br]: https://brew.sh
+[bs]: https://docs.brew.sh/How-To-Open-a-Homebrew-Pull-Request#submit-a-new-version-of-an-existing-formula
 [ca]: https://developer.apple.com/account/resources/certificates/add
 [cb]: https://doc.rust-lang.org/cargo/
 [cc]: https://www.conventionalcommits.org/en/v1.0.0
