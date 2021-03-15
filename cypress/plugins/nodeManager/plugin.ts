@@ -327,26 +327,6 @@ class NodeManager implements NodeManagerPlugin {
     return null;
   }
 
-  async getOnboardedNodes(): Promise<NodeSession[]> {
-    this.logger.log("getOnboardedNodes");
-
-    const onboardedNodes: NodeSession[] = [];
-
-    this.managedNodes.forEach(node => {
-      if (node.authToken && node.httpPort) {
-        onboardedNodes.push({
-          id: node.id,
-          authToken: node.authToken,
-          peerId: node.peerId,
-          httpPort: node.httpPort,
-          radHome: node.radHome,
-        });
-      }
-    });
-
-    return onboardedNodes;
-  }
-
   async stopAllNodes(): Promise<null> {
     this.logger.log("stopAllNodes");
 
