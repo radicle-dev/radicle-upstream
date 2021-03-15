@@ -2,7 +2,7 @@
   import { Button, Icon } from "../../../DesignSystem/Primitive";
   import { Copyable, Overlay } from "../../../DesignSystem/Component";
 
-  let expanded = false;
+  export let expanded = false;
   let copyable;
   const hide = () => (expanded = false);
   const toggleDropdown = () => {
@@ -49,8 +49,8 @@
       </p>
     </Copyable>
     <Button
-      variant="transparent"
-      style="display: block; margin: 1rem auto 0;"
+      variant="secondary"
+      style="display: block; margin: 1rem auto 0; width: 100%;"
       on:click={copy}>
       Copy
     </Button>

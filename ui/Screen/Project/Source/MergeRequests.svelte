@@ -7,12 +7,23 @@
   import { store } from "../../../src/screen/project/source";
   import type { MergeRequest } from "../../../src/source";
 
-  import { EmptyState, Error, Remote } from "../../../DesignSystem/Component";
+  import {
+    Copyable,
+    EmptyState,
+    Error,
+    Remote,
+  } from "../../../DesignSystem/Component";
+  import { Button } from "../../../DesignSystem/Primitive";
   import MergeRequestList from "./MergeRequestList.svelte";
 
   const project: Project = getContext("project-page").project;
   const select = ({ detail: mergeRequest }: { detail: MergeRequest }) => {
     push(path.projectSourceMergeRequest(project.urn, mergeRequest));
+  };
+  let copyable;
+
+  const copy = () => {
+    copyable.copy();
   };
 </script>
 
@@ -21,11 +32,24 @@
     <MergeRequestList {mergeRequests} on:select={select} />
   {:else}
     <EmptyState
-      text="There’s nothing here yet, get started by opening your first merge request."
-      primaryActionText="Start a new merge request"
-      on:primaryAction={() => {
-        console.log('Clicked new merge request');
-      }} />
+      emoji="👯‍♀️"
+      text="There’s nothing here yet, get started by opening your first merge request.">
+      <Copyable bind:this={copyable} showIcon={false}>
+        <p
+          class="typo-text-small-mono"
+          style="text-align: left; color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
+          git tag --annotate merge-request/tag-name
+          <br />
+          git push --tags rad
+        </p>
+      </Copyable>
+      <Button
+        variant="primary"
+        style="display: block; margin: 1rem auto 0;"
+        on:click={copy}>
+        Copy
+      </Button>
+    </EmptyState>
   {/if}
 
   <div slot="error" let:error>
