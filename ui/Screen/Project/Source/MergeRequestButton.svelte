@@ -1,13 +1,8 @@
 <script>
   import { Button, Icon } from "../../../DesignSystem/Primitive";
-  import {
-    Copyable,
-    Hoverable,
-    Overlay,
-  } from "../../../DesignSystem/Component";
+  import { Copyable, Overlay } from "../../../DesignSystem/Component";
 
   let expanded = false;
-  let hover = false;
   let copyable;
   const hide = () => (expanded = false);
   const toggleDropdown = () => {
@@ -44,20 +39,18 @@
     <p style="margin-bottom: 0.5rem;">
       To create a new merge request, run this in your terminal:
     </p>
-    <Hoverable bind:hovering={hover}>
-      <Copyable bind:this={copyable} showIcon={hover}>
-        <p
-          class="typo-text-small-mono"
-          style="color: var(--color-foreground-level-6)">
-          git tag --annotate merge-request/name-your-tag
-          <br />
-          git push --tags rad
-        </p>
-      </Copyable>
-    </Hoverable>
+    <Copyable bind:this={copyable} showIcon={false}>
+      <p
+        class="typo-text-small-mono"
+        style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
+        git tag --annotate merge-request/tag-name
+        <br />
+        git push --tags rad
+      </p>
+    </Copyable>
     <Button
       variant="transparent"
-      style="display: block; margin: auto;"
+      style="display: block; margin: 1rem auto 0;"
       on:click={copy}>
       Copy
     </Button>
