@@ -53,7 +53,7 @@ context("p2p networking", () => {
           cy.exec(`mkdir -p ${maintainerNodeWorkingDir}`);
 
           ipcStub.getStubs().then(stubs => {
-            stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(maintainerNodeWorkingDir);
+            stubs.selectDirectory.returns(maintainerNodeWorkingDir);
           });
           const projectName = "new-fancy-project.xyz";
 
@@ -179,7 +179,7 @@ context("p2p networking", () => {
           cy.exec(`mkdir -p ${contributorNodeWorkingDir}`);
 
           ipcStub.getStubs().then(stubs => {
-            stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(contributorNodeWorkingDir);
+            stubs.selectDirectory.returns(contributorNodeWorkingDir);
           });
           commands.pick("checkout-modal-toggle").click();
           commands.pick("choose-path-button").click();

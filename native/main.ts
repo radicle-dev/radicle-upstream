@@ -10,7 +10,12 @@ import {
 import fs from "fs";
 import path from "path";
 import { ProxyProcessManager } from "./proxy-process-manager";
-import { RendererMessage, MainMessage, MainMessageKind } from "./ipc-types";
+import {
+  MainMessage,
+  MainMessageKind,
+  MainProcess,
+  mainProcessMethods,
+} from "./ipc-types";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -131,51 +136,51 @@ const proxyProcessManager = new ProxyProcessManager({
   lineLimit: 500,
 });
 
-ipcMain.handle(RendererMessage.DIALOG_SHOWOPENDIALOG, async () => {
-  const window = windowManager.window;
-  if (window === null) {
-    return;
-  }
-
-  const result = await dialog.showOpenDialog(window, {
-    properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
+function installMainProcessHandler(handler: MainProcess) {
+  mainProcessMethods.forEach(method => {
+    ipcMain.handle(method, async (_event, arg) => handler[method](arg));
   });
+}
 
-  if (result.filePaths.length === 1) {
-    return result.filePaths[0];
-  } else {
-    return "";
-  }
-});
+installMainProcessHandler({
+  async clipboardWriteText(text: string): Promise<void> {
+    clipboard.writeText(text);
+  },
+  async getVersion(): Promise<string> {
+    return app.getVersion();
+  },
+  async openPath(path: string): Promise<void> {
+    shell.openPath(path);
+  },
+  async openUrl(url: string): Promise<void> {
+    openExternalLink(url);
+  },
+  async getGitGlobalDefaultBranch(): Promise<string | undefined> {
+    try {
+      const { stdout, stderr } = await execAsync(
+        "git config --global --get init.defaultBranch"
+      );
+      return stderr ? undefined : stdout.trim();
+    } catch (error) {
+      return undefined;
+    }
+  },
+  async selectDirectory(): Promise<string> {
+    const window = windowManager.window;
+    if (window === null) {
+      return "";
+    }
 
-ipcMain.handle(RendererMessage.CLIPBOARD_WRITETEXT, async (_event, text) => {
-  clipboard.writeText(text);
-});
+    const result = await dialog.showOpenDialog(window, {
+      properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
+    });
 
-ipcMain.handle(RendererMessage.OPEN_PATH, async (_event, path) => {
-  shell.openPath(path);
-});
-
-ipcMain.handle(RendererMessage.GET_VERSION, () => {
-  return app.getVersion();
-});
-
-ipcMain.handle(RendererMessage.OPEN_URL, (_event, url) => {
-  openExternalLink(url);
-});
-
-// Fetch the git global default branch config property. Fails when the git version
-// running on the machine does it yet support.
-// Returns a value in the form `Promise<string | undefined>`.
-ipcMain.handle(RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH, async () => {
-  try {
-    const { stdout, stderr } = await execAsync(
-      "git config --global --get init.defaultBranch"
-    );
-    return stderr ? undefined : stdout.trim();
-  } catch (error) {
-    return undefined;
-  }
+    if (result.filePaths.length === 1) {
+      return result.filePaths[0];
+    } else {
+      return "";
+    }
+  },
 });
 
 function setupWatcher() {
