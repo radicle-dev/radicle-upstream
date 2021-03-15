@@ -925,7 +925,7 @@ mod tests {
     use librad::{keys::SecretKey, net};
     use radicle_git_ext::Oid;
 
-    use crate::{config, control, signer, state};
+    use crate::{config, control, identities::payload::Person, signer, state};
 
     // TODO(xla): A wise man once said: This probably should be an integration test.
     #[tokio::test]
@@ -938,7 +938,13 @@ mod tests {
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let peer = net::peer::Peer::new(config);
 
-        let owner = state::init_owner(&peer, "cloudhead".to_string()).await?;
+        let owner = crate::state::init_owner(
+            &peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         let platinum_project = control::replicate_platinum(
             &peer,
             &owner,

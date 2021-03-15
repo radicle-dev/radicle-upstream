@@ -1,13 +1,17 @@
 //! Utility to work with the peer api of librad.
 
-use std::{convert::TryFrom as _, net::SocketAddr, path::PathBuf};
+use std::{
+    convert::{TryFrom as _, TryInto},
+    net::SocketAddr,
+    path::PathBuf,
+};
 
 use either::Either;
 
 use librad::{
     git::{
-        identities,
         identities::{
+            self,
             local::{self, LocalIdentity},
             person, project,
         },
@@ -20,7 +24,11 @@ use librad::{
         Urn,
     },
     git_ext::{OneLevel, RefLike},
-    identities::{delegation::Indirect, payload, Person, Project, SomeIdentity},
+    identities::{
+        delegation::Indirect,
+        payload::{self, PersonPayload},
+        Person, Project, SomeIdentity,
+    },
     internal::canonical::Cstring,
     keys,
     net::peer::Peer,
@@ -90,7 +98,11 @@ where
 ///   * Fails to verify `User`.
 ///   * Fails to set the default `rad/self` for this `PeerApi`.
 #[allow(clippy::single_match_else)]
-pub async fn init_owner(peer: &Peer<BoxedSigner>, name: String) -> Result<LocalIdentity, Error> {
+pub async fn init_owner<P>(peer: &Peer<BoxedSigner>, payload: P) -> Result<LocalIdentity, Error>
+where
+    P: TryInto<PersonPayload> + Send,
+    Error: From<P::Error>,
+{
     match peer
         .using_storage(move |store| local::default(store))
         .await??
@@ -98,15 +110,10 @@ pub async fn init_owner(peer: &Peer<BoxedSigner>, name: String) -> Result<LocalI
         Some(owner) => Ok(owner),
         None => {
             let pk = keys::PublicKey::from(peer.signer().public_key());
+            let payload = payload.try_into()?;
             let person = peer
                 .using_storage(move |store| {
-                    person::create(
-                        store,
-                        payload::Person {
-                            name: Cstring::from(name),
-                        },
-                        Some(pk).into_iter().collect(),
-                    )
+                    person::create(store, payload, Some(pk).into_iter().collect())
                 })
                 .await??;
 
@@ -869,10 +876,10 @@ fn role(
 
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
-mod test {
+pub mod test {
     use std::{env, path::PathBuf};
 
-    use librad::{git_ext::OneLevel, keys::SecretKey, net, reflike};
+    use librad::{git_ext::OneLevel, identities::payload::Person, keys::SecretKey, net, reflike};
 
     use crate::{config, control, project, signer};
 
@@ -922,7 +929,13 @@ mod test {
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let peer = net::peer::Peer::new(config);
 
-        let user = super::init_owner(&peer, "cloudhead".to_string()).await?;
+        let user = super::init_owner(
+            &peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         let project = super::init_project(&peer, &user, radicle_project(repo_path.clone())).await;
 
         assert!(project.is_ok());
@@ -941,7 +954,13 @@ mod test {
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let peer = net::peer::Peer::new(config);
 
-        let user = super::init_owner(&peer, "cloudhead".to_string()).await?;
+        let user = super::init_owner(
+            &peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         let project = super::init_project(&peer, &user, radicle_project(repo_path.clone())).await;
 
         assert!(project.is_ok());
@@ -960,7 +979,13 @@ mod test {
         let config = config::default(signer.clone(), tmp_dir.path())?;
         let peer = net::peer::Peer::new(config);
 
-        let user = super::init_owner(&peer, "cloudhead".to_string()).await?;
+        let user = super::init_owner(
+            &peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
 
         let _fixtures = control::setup_fixtures(&peer, &user)
             .await

@@ -30,6 +30,10 @@ mod config;
 mod context;
 pub mod env;
 mod error;
+mod ethereum {
+    pub mod address;
+    pub mod claim_ext;
+}
 mod http;
 mod identity;
 mod notification;

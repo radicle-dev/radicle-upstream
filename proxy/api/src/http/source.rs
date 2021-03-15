@@ -761,7 +761,13 @@ mod test {
     }
 
     async fn replicate_platinum(ctx: &context::Unsealed) -> Result<coco::Urn, error::Error> {
-        let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
+        let owner = coco::state::init_owner(
+            &ctx.peer,
+            coco::identities::payload::Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer,
             &owner,

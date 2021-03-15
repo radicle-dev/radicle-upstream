@@ -1,12 +1,22 @@
 //! Container to bundle and associate information around an identity.
 
+use chrono::{DateTime, Utc};
+
 use serde::{Deserialize, Serialize};
 
 use radicle_avatar as avatar;
 
-use coco::signer::BoxedSigner;
+use coco::{
+    identities::payload::{ExtError, Person, PersonPayload},
+    signer::BoxedSigner,
+};
 
-use crate::error;
+use crate::{
+    error,
+    ethereum::{address::Address, claim_ext::V1 as EthereumClaimExtV1},
+};
+
+use std::convert::TryFrom;
 
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -28,6 +38,14 @@ impl From<(coco::PeerId, coco::Person)> for Identity {
     fn from((peer_id, user): (coco::PeerId, coco::Person)) -> Self {
         let urn = user.urn();
         let handle = user.subject().name.to_string();
+        let ethereum = match user.payload().get_ext::<EthereumClaimExtV1>() {
+            Ok(ext_opt) => ext_opt.map(Ethereum::from),
+            Err(err) => {
+                log::warn!("Ethereum claim of user {} is malformed: {}", urn, err);
+                // Ignore the malformed extension payload, the identity itself is still valid
+                None
+            },
+        };
         Self {
             peer_id,
             urn: urn.clone(),
@@ -35,7 +53,7 @@ impl From<(coco::PeerId, coco::Person)> for Identity {
                 handle: handle.clone(),
                 peer_id,
             },
-            metadata: Metadata { handle },
+            metadata: Metadata { handle, ethereum },
             avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
         }
     }
@@ -47,6 +65,52 @@ impl From<(coco::PeerId, coco::Person)> for Identity {
 pub struct Metadata {
     /// Similar to a nickname, the users chosen short identifier.
     pub handle: String,
+    /// The user's Ethereum address.
+    pub ethereum: Option<Ethereum>,
+}
+
+impl TryFrom<Metadata> for PersonPayload {
+    type Error = ExtError;
+
+    fn try_from(metadata: Metadata) -> Result<Self, Self::Error> {
+        let person = Person {
+            name: metadata.handle.into(),
+        };
+        let mut payload = Self::new(person);
+        if let Some(ethereum) = metadata.ethereum {
+            payload.set_ext(EthereumClaimExtV1::from(ethereum))?;
+        };
+        Ok(payload)
+    }
+}
+
+/// The user's Ethereum address claim.
+/// Meaningful only if confirmed on Ethereum. See [the RFC](docs/ethereum_attestation.md).
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Ethereum {
+    /// The Ethereum address claimed by the user.
+    pub address: Address,
+    /// The timestamp before which the address claim is valid
+    pub expiration: DateTime<Utc>,
+}
+
+impl From<EthereumClaimExtV1> for Ethereum {
+    fn from(ethereum: EthereumClaimExtV1) -> Self {
+        Self {
+            address: ethereum.address,
+            expiration: ethereum.expiration,
+        }
+    }
+}
+
+impl From<Ethereum> for EthereumClaimExtV1 {
+    fn from(ethereum: Ethereum) -> Self {
+        Self {
+            address: ethereum.address,
+            expiration: ethereum.expiration,
+        }
+    }
 }
 
 /// Creates a new identity.
@@ -54,9 +118,9 @@ pub struct Metadata {
 /// # Errors
 pub async fn create(
     peer: &coco::net::peer::Peer<BoxedSigner>,
-    handle: &str,
+    metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let user = coco::state::init_owner(peer, handle.to_string()).await?;
+    let user = coco::state::init_owner(peer, metadata).await?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 

@@ -1,4 +1,9 @@
-use coco::{project::checkout, state, RunConfig};
+use coco::{
+    identities::payload::Person,
+    project::checkout,
+    state::{self, init_owner},
+    RunConfig,
+};
 
 use assert_matches::assert_matches;
 use pretty_assertions::assert_eq;
@@ -13,7 +18,13 @@ async fn upstream_for_default() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let alice_peer = {
         let peer = alice_peer.peer.clone();
@@ -43,7 +54,13 @@ async fn checkout_twice_fails() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let alice_peer = {
         let peer = alice_peer.peer.clone();

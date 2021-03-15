@@ -8,6 +8,7 @@ use librad::{
     net,
 };
 use radicle_surf::vcs::git::git2;
+use std::convert::Infallible;
 
 use crate::source;
 
@@ -113,6 +114,16 @@ pub enum Error {
         /// The reference that we looked for in the `Storage`.
         reference: Reference<One>,
     },
+
+    /// A document payload extension was malformed
+    #[error(transparent)]
+    MalformedPayloadExt(#[from] librad::identities::payload::ExtError),
+}
+
+impl From<Infallible> for Error {
+    fn from(infallible: Infallible) -> Self {
+        match infallible {}
+    }
 }
 
 /// Re-export the underlying [`storage::Error`] so that consumers don't need to add `librad` as a

@@ -25,7 +25,7 @@
 
 pub use librad::{
     git::{self, identities::local::LocalIdentity, include, local::url::LocalUrl, Urn},
-    identities::{Person, Project},
+    identities::{self, Person, Project},
     keys,
     net::{self, discovery},
     paths::Paths,

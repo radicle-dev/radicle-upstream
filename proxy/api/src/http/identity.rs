@@ -1,6 +1,5 @@
 //! Manage the state and stateful interactions with the underlying peer API of librad.
 
-use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use crate::{context, http};
@@ -54,7 +53,7 @@ mod handler {
     /// Create a new [`identity::Identity`].
     pub async fn create(
         ctx: context::Unsealed,
-        input: super::CreateInput,
+        metadata: identity::Metadata,
     ) -> Result<impl Reply, Rejection> {
         if let Some(session) = session::get_current(&ctx.store)? {
             return Err(Rejection::from(error::Error::SessionInUse(
@@ -62,7 +61,7 @@ mod handler {
             )));
         }
 
-        let id = identity::create(&ctx.peer, &input.handle).await?;
+        let id = identity::create(&ctx.peer, metadata).await?;
 
         session::initialize(&ctx.store, id.clone(), &ctx.default_seeds)?;
 
@@ -82,21 +81,12 @@ mod handler {
     }
 }
 
-// TODO(xla): Implement Deserialize on identity::Metadata and drop this type entirely, this will
-// help to avoid duplicate efforts for documentation.
-/// Bundled input data for identity creation.
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateInput {
-    /// Handle the user wants to go by.
-    handle: String,
-}
-
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
+    use std::convert::TryInto;
     use warp::{http::StatusCode, test::request};
 
     use radicle_avatar as avatar;
@@ -112,8 +102,15 @@ mod test {
         let res = request()
             .method("POST")
             .path("/")
-            .json(&super::CreateInput {
+            .json(&identity::Metadata {
                 handle: "cloudhead".into(),
+                ethereum: Some(identity::Ethereum {
+                    address: "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B"
+                        .to_string()
+                        .try_into()
+                        .expect("Invalid address"),
+                    expiration: "2021-03-19T23:15:30.001Z".parse().expect("Invalid date"),
+                }),
             })
             .reply(&api)
             .await;
@@ -152,6 +149,10 @@ mod test {
                     "urn": urn,
                     "metadata": {
                         "handle": "cloudhead",
+                        "ethereum": {
+                            "address": "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B",
+                            "expiration": "2021-03-19T23:15:30.001Z",
+                        }
                     },
                     "shareableEntityIdentifier": &shareable_entity_identifier,
                 })
@@ -188,7 +189,10 @@ mod test {
                 peer_id,
                 urn: urn.clone(),
                 shareable_entity_identifier,
-                metadata: identity::Metadata { handle },
+                metadata: identity::Metadata {
+                    handle,
+                    ethereum: None
+                },
                 avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
             })
         );
@@ -206,7 +210,11 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let fintohaps: identity::Identity = {
-            let id = identity::create(&ctx.peer, "cloudhead").await?;
+            let metadata = identity::Metadata {
+                handle: "cloudhead".to_string(),
+                ethereum: None,
+            };
+            let id = identity::create(&ctx.peer, metadata).await?;
 
             let owner = coco::state::get_user(&ctx.peer, id.urn.clone())
                 .await?

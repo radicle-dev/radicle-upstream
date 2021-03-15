@@ -4,7 +4,13 @@ use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
 use tokio::time::timeout;
 
-use coco::{peer::run_config, seed::Seed, state, RunConfig};
+use coco::{
+    identities::payload::Person,
+    peer::run_config,
+    seed::Seed,
+    state::{self, init_owner},
+    RunConfig,
+};
 
 #[macro_use]
 mod common;
@@ -30,7 +36,13 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
     )
     .await?;
     let alice_peer_id = alice_peer.peer.peer_id();
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
@@ -64,7 +76,7 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
         peer
     };
-    let _bob = state::init_owner(&bob_peer, "bob".to_string()).await?;
+    let _bob = init_owner(&bob_peer, Person { name: "bob".into() }).await?;
     connected(bob_connected, 1).await?;
 
     let project =
@@ -94,7 +106,13 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
     let alice_peer_id = alice_peer.peer.peer_id();
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
     let mut alice_events = alice_peer.subscribe();
 
     let (alice_peer, alice_addrs) = {
@@ -120,7 +138,7 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     let bob_peer_id = bob_peer.peer.peer_id();
 
-    state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+    init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
     let bob_events = bob_peer.subscribe();
     let mut bob_control = bob_peer.control();
     let clone_listener = bob_peer.subscribe();

@@ -15,9 +15,12 @@ use librad::{
 use radicle_git_ext::RefLike;
 
 use coco::{
+    identities::payload::Person,
     project::{peer, Peer},
     seed::Seed,
-    state, RunConfig,
+    state,
+    state::init_owner,
+    RunConfig,
 };
 
 #[macro_use]
@@ -33,11 +36,17 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+    let _bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
@@ -109,7 +118,13 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
@@ -157,11 +172,17 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+    let _bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
@@ -331,8 +352,14 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     };
     let bob_peer_id = bob_peer.peer_id();
 
-    let alice = state::init_owner(&alice_peer, "alice".to_string()).await?;
-    let _bob = state::init_owner(&bob_peer, "bob".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
+    let _bob = init_owner(&bob_peer, Person { name: "bob".into() }).await?;
     state::init_project(
         &alice_peer,
         &alice,
@@ -357,17 +384,23 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_repo_path = bob_tmp_dir.path().join("radicle");
     let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+    let bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
     let eve_tmp_dir = tempfile::tempdir()?;
     let eve_repo_path = eve_tmp_dir.path().join("radicle");
     let eve_peer = build_peer(&eve_tmp_dir, RunConfig::default()).await?;
-    let _eve = state::init_owner(&eve_peer.peer, "eve".to_string()).await?;
+    let _eve = init_owner(&eve_peer.peer, Person { name: "eve".into() }).await?;
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
@@ -497,7 +530,13 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
     let mut alice_events = alice_peer.subscribe();
 
     let (alice_peer, alice_addrs) = {
@@ -521,7 +560,7 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
         RunConfig::default(),
     )
     .await?;
-    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+    let _bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
     let bob_peer = {
         let peer = bob_peer.peer.clone();

@@ -1,7 +1,11 @@
 use nonempty::NonEmpty;
 use pretty_assertions::assert_eq;
 
-use coco::{state, RunConfig};
+use coco::{
+    identities::payload::Person,
+    state::{self, init_owner},
+    RunConfig,
+};
 
 mod common;
 use common::{build_peer, init_logging, shia_le_pathbuf, started};
@@ -14,11 +18,17 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
     let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = state::init_owner(&alice_peer.peer, "alice".to_string()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = state::init_owner(&bob_peer.peer, "bob".to_string()).await?;
+    let _bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();

@@ -311,6 +311,7 @@ pub struct MetadataInput {
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
+    use coco::{identities::payload::Person, state::init_owner};
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
@@ -329,7 +330,13 @@ mod test {
 
         let urn = {
             let handle = "cloudhead";
-            let owner = coco::state::init_owner(&ctx.peer, handle.to_string()).await?;
+            let owner = init_owner(
+                &ctx.peer,
+                Person {
+                    name: handle.into(),
+                },
+            )
+            .await?;
             session::initialize(
                 &ctx.store,
                 (ctx.peer.peer_id(), owner.clone().into_inner().into_inner()).into(),
@@ -410,8 +417,11 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         {
-            let handle = "cloudhead";
-            let id = identity::create(&ctx.peer, handle).await?;
+            let metadata = identity::Metadata {
+                handle: "cloudhead".to_string(),
+                ethereum: None,
+            };
+            let id = identity::create(&ctx.peer, metadata).await?;
 
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
         };
@@ -471,8 +481,11 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         {
-            let handle = "cloudhead";
-            let id = identity::create(&ctx.peer, handle).await?;
+            let metadata = identity::Metadata {
+                handle: "cloudhead".to_string(),
+                ethereum: None,
+            };
+            let id = identity::create(&ctx.peer, metadata).await?;
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
         };
 
@@ -546,7 +559,13 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = {
-            let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
+            let owner = init_owner(
+                &ctx.peer,
+                Person {
+                    name: "cloudhead".into(),
+                },
+            )
+            .await?;
             let platinum_project = coco::control::replicate_platinum(
                 &ctx.peer,
                 &owner,
@@ -582,7 +601,13 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
+        let owner = init_owner(
+            &ctx.peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         coco::control::setup_fixtures(&ctx.peer, &owner).await?;
 
         let projects = project::Projects::list(&ctx.peer).await?;
@@ -613,7 +638,13 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
+        let owner = init_owner(
+            &ctx.peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
 
         coco::control::setup_fixtures(&ctx.peer, &owner).await?;
 
@@ -638,7 +669,13 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
+        let owner = init_owner(
+            &ctx.peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         coco::control::setup_fixtures(&ctx.peer, &owner).await?;
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.contributed.first().expect("no projects setup");
@@ -666,7 +703,13 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
+        let owner = init_owner(
+            &ctx.peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         coco::control::setup_fixtures(&ctx.peer, &owner).await?;
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.contributed.first().expect("no projects setup");
@@ -694,7 +737,13 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = coco::state::init_owner(&ctx.peer, "cloudhead".to_string()).await?;
+        let owner = init_owner(
+            &ctx.peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         coco::control::setup_fixtures(&ctx.peer, &owner).await?;
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.contributed.first().expect("no projects setup");

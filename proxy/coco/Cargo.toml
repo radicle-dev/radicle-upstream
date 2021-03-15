@@ -23,6 +23,7 @@ serde_millis = "0.1"
 syntect = "4.2"
 thiserror = "1.0"
 tokio = { version = "1.2", features = [ "macros", "net", "rt-multi-thread", "sync", "time" ] }
+url = "2.1"
 
 [dependencies.kv]
 git = "https://github.com/zshipko/rust-kv.git"
