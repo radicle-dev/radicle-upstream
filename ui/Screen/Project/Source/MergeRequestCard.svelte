@@ -24,6 +24,13 @@
   .merge-request-card {
     display: flex;
     max-height: 3.2rem;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .left {
+    display: flex;
+    flex-direction: row;
   }
 
   .info-column {
@@ -52,40 +59,47 @@
   }
 
   .actions-column {
-    /* TODO: this should be at the right end of the card */
     display: flex;
     flex-direction: row;
+    gap: 1rem;
   }
 </style>
 
 {#if mergeRequest}
   <div class="merge-request-card">
-    <Icon.Revision />
-    <div class="info-column">
-      <div class="title-row">
-        <p
-          class="typo-text-bold typo-overflow-ellipsis"
-          title={mergeRequest.id}>
-          {mergeRequest.id}
-          {#if mergeRequest.title}
-            <span style="margin-left: 0.5rem"> {mergeRequest.title} </span>
-          {/if}
-        </p>
-      </div>
-      <div class="desc-row">
-        <p>{mergeInfo} by</p>
-        {#if mergeRequest.identity}
-          <Avatar
-            avatarFallback={mergeRequest.identity.avatarFallback}
-            size="small"
-            style="display: flex; justify-content: flex-start; margin-left: 0.5rem;"
-            title={mergeRequest.identity.metadata.handle}
-            variant="circle" />
-        {:else}
-          <p style="margin-left: 0.5rem;">{mergeRequest.peerId}</p>
-        {/if}
+    <div class="left">
+      <Icon.Revision style="margin-right: 0.5rem" />
+      <div>
+        <div class="info-column">
+          <div class="title-row">
+            <p
+              class="typo-text-bold typo-overflow-ellipsis"
+              title={mergeRequest.id}>
+              {#if mergeRequest.title}
+                {mergeRequest.title}
+              {:else}{mergeRequest.id}{/if}
+            </p>
+          </div>
+          <div class="desc-row">
+            <p style="color: var(--color-foreground-level-5);">
+              {mergeInfo}
+              by
+            </p>
+            {#if mergeRequest.identity}
+              <Avatar
+                avatarFallback={mergeRequest.identity.avatarFallback}
+                size="small"
+                style="display: flex; justify-content: flex-start; margin-left: 0.5rem;"
+                title={mergeRequest.identity.metadata.handle}
+                variant="circle" />
+            {:else}
+              <p style="margin-left: 0.5rem;">{mergeRequest.peerId}</p>
+            {/if}
+          </div>
+        </div>
       </div>
     </div>
+
     <div class="actions-column">
       {#if showCheckout}
         <CheckoutMergeRequestButton
