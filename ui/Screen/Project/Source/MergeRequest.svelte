@@ -4,7 +4,7 @@
 
   import { isMaintainer } from "../../../src/project";
   import { parseQueryString } from "../../../src/path";
-  import type { UnsealedSession } from "../src/session";
+  import type { UnsealedSession } from "../../../src/session";
   import {
     mergeRequestCommits as store,
     fetchMergeRequestCommits,
@@ -72,11 +72,6 @@
       {/if}
     </div>
     <div class="metadata">
-      {#if mergeRequest.description}
-        <pre class="row">
-          {mergeRequest.description}
-        </pre>
-      {/if}
       <span class="row">
         <span style="display:flex;">
           Opened by
@@ -92,6 +87,11 @@
           {/if}
         </span>
       </span>
+      {#if mergeRequest.description}
+        <pre class="row">
+          {mergeRequest.description}
+        </pre>
+      {/if}
     </div>
   </Header.Back>
   <Remote {store} let:data={history}>
