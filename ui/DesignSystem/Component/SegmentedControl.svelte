@@ -27,13 +27,16 @@
 <style>
   .segmented-control {
     display: flex;
+    width: fit-content;
+    border: 1px solid var(--color-foreground-level-3);
+    border-radius: 0.25rem;
   }
   .segmented-control:hover button.active:not(:hover) {
     background: none;
   }
   .segmented-control button {
     cursor: pointer;
-    padding: 8px 16px;
+    padding: 9px 16px;
     border-radius: 4px;
     margin: 0;
     background-color: var(--color-background);
