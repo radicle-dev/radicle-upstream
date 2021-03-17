@@ -1,10 +1,11 @@
 <script lang="typescript">
-  import type { MergeRequest } from "../../../src/source";
+  import type { Branch, MergeRequest } from "../../../src/source";
 
   import { List, SegmentedControl } from "../../../DesignSystem/Component";
   import MergeRequestCard from "./MergeRequestCard.svelte";
 
   export let mergeRequests: MergeRequest[];
+  export let defaultBranch: Branch;
 
   const filterOptions = [
     {
@@ -25,12 +26,12 @@
   function updateFilter(newFilter) {
     currentFilter = newFilter;
   }
-  // $: filteredIssues =
-  //   currentFilter === "All"
-  //     ? issues
-  //     : currentFilter === "Open"
-  //     ? issues.filter(issue => issue.open)
-  //     : issues.filter(issue => !issue.open);
+  $: filteredMergeRequests =
+    currentFilter === "All"
+      ? mergeRequests
+      : currentFilter === "Open"
+      ? mergeRequests.filter(mergeRequest => !mergeRequest.merged)
+      : mergeRequests.filter(mergeRequest => mergeRequest.merged);
 </script>
 
 <style>
@@ -48,7 +49,7 @@
     min-width: 0;
   }
   .filters {
-    margin-bottom: var(--content-padding);
+    margin: 0.5rem 0 1.5rem;
     padding: 0 var(--content-padding);
   }
 </style>
@@ -62,12 +63,12 @@
   </div>
   <List
     dataCy="merge-request-list"
-    items={mergeRequests}
+    items={filteredMergeRequests}
     on:select
     let:item={mergeRequest}
     style="margin: 0 auto; overflow: visible;">
     <div class="list-item" data-cy={`project-list-entry-${mergeRequest}`}>
-      <MergeRequestCard {mergeRequest} />
+      <MergeRequestCard {defaultBranch} {mergeRequest} />
     </div>
   </List>
 </div>

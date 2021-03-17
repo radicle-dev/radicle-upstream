@@ -1,23 +1,12 @@
 <script lang="ts">
-  import { getContext } from "svelte";
-
   import { Avatar, Icon } from "../../../DesignSystem/Primitive";
-  import CheckoutMergeRequestButton from "./CheckoutMergeRequestButton.svelte";
-  import AcceptMergeRequestButton from "./AcceptMergeRequestButton.svelte";
 
-  import type { UnsealedSession } from "../src/session";
-  import type { MergeRequest } from "../../../src/source";
-  import { isMaintainer } from "../../../src/project";
+  import type { Branch, MergeRequest } from "../../../src/source";
 
   export let mergeRequest: MergeRequest;
-
-  const session = getContext("session") as UnsealedSession;
+  export let defaultBranch: Branch;
 
   const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
-  const showCheckout = isMaintainer(
-    session.identity.urn,
-    getContext("project-page").project
-  );
 </script>
 
 <style>
@@ -58,10 +47,20 @@
     width: -webkit-fill-available;
   }
 
-  .actions-column {
+  .branches {
     display: flex;
-    flex-direction: row;
-    gap: 1rem;
+    align-self: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .branch {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: var(--color-foreground-level-1);
+    border-radius: 0.25rem;
   }
 </style>
 
@@ -93,20 +92,31 @@
                 title={mergeRequest.identity.metadata.handle}
                 variant="circle" />
             {:else}
-              <p style="margin-left: 0.5rem;">{mergeRequest.peerId}</p>
+              <p style="margin-left: 0.5rem;">{mergeRequest.peer_id}</p>
             {/if}
           </div>
         </div>
       </div>
     </div>
 
-    <div class="actions-column">
-      {#if showCheckout}
-        <CheckoutMergeRequestButton
-          id={mergeRequest.id}
-          peerId={mergeRequest.peerId} />
-        <AcceptMergeRequestButton id={mergeRequest.id} />
-      {/if}
+    <div class="branches">
+      <div class="branch">
+        <Icon.Branch />
+        <p
+          class="typo-text-bold"
+          style="color: var(--color-foreground-level-6);">
+          {defaultBranch}
+        </p>
+      </div>
+      <Icon.ArrowLeft />
+      <div class="branch">
+        <Icon.Branch />
+        <p
+          class="typo-text-bold"
+          style="color: var(--color-foreground-level-6);">
+          {mergeRequest.id}
+        </p>
+      </div>
     </div>
   </div>
 {/if}

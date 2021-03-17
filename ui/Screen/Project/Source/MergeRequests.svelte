@@ -29,7 +29,10 @@
 
 <Remote {store} let:data={{ mergeRequests }}>
   {#if mergeRequests.length > 0}
-    <MergeRequestList {mergeRequests} on:select={select} />
+    <MergeRequestList
+      {mergeRequests}
+      defaultBranch={project.metadata.defaultBranch}
+      on:select={select} />
   {:else}
     <EmptyState
       emoji="👯‍♀️"
