@@ -42,6 +42,15 @@
     cursor: pointer;
   }
 
+  .hover:hover:first-child {
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+  }
+  .hover:hover:last-child {
+    border-bottom-left-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+  }
+
   li:last-child {
     border-bottom: 0;
   }
