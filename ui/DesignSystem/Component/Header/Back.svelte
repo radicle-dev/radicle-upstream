@@ -16,11 +16,11 @@
     position: relative;
   }
 
-  header:hover .back-button {
+  .merge-request-page:hover header .back-button {
     left: -24px;
   }
 
-  header:hover :global(svg) {
+  .merge-request-page:hover header .back-button :global(svg) {
     fill: var(--color-foreground-level-4);
   }
 
@@ -36,7 +36,7 @@
     transition: fill 0.25s ease;
   }
 
-  .back-button:hover :global(svg) {
+  .merge-request-page:hover header .back-button:hover :global(svg) {
     fill: var(--color-foreground-level-6);
   }
 </style>

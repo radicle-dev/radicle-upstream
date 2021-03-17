@@ -55,9 +55,9 @@
 <div class="merge-request-page" data-cy="merge-request-page">
   <Header.Back style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
     <div style="display: flex; justify-content: space-between;">
-      <h3 style="margin-bottom: .75rem">
+      <h3 style="margin-bottom: .75rem; display: inline-flex;">
         <Icon.Revision />
-        {mergeRequest.id}
+        <!-- {mergeRequest.id} -->
         {#if mergeRequest.title}
           <span style="margin-left: 0.5rem"> {mergeRequest.title} </span>
         {/if}
