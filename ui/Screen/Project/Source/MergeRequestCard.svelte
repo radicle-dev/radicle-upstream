@@ -8,6 +8,8 @@
   export let defaultBranch: Branch;
 
   const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
+
+  console.log({ mergeRequest });
 </script>
 
 <style>
