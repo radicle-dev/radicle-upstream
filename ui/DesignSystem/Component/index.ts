@@ -1,6 +1,8 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Badge from "./Badge.svelte";
+import BranchBox from "./BranchBox.svelte";
 import Comment from "./Comment.svelte";
+import CompareBranches from "./CompareBranches.svelte";
 import Copyable from "./Copyable.svelte";
 import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 import Dai from "./Dai.svelte";
@@ -49,7 +51,9 @@ import QR from "./QR.svelte";
 export {
   AdditionalActionsDropdown,
   Badge,
+  BranchBox,
   Comment,
+  CompareBranches,
   Copyable,
   ConnectionStatusIndicator,
   Dai,

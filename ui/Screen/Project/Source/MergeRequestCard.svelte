@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { CompareBranches } from "../../../DesignSystem/Component";
   import { Avatar, Icon } from "../../../DesignSystem/Primitive";
 
   import type { Branch, MergeRequest } from "../../../src/source";
@@ -46,22 +47,6 @@
     margin-top: 0.125rem;
     width: -webkit-fill-available;
   }
-
-  .branches {
-    display: flex;
-    align-self: center;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .branch {
-    display: flex;
-    gap: 0.25rem;
-    align-items: center;
-    padding: 0.5rem;
-    background-color: var(--color-foreground-level-1);
-    border-radius: 0.25rem;
-  }
 </style>
 
 {#if mergeRequest}
@@ -98,25 +83,8 @@
         </div>
       </div>
     </div>
-
-    <div class="branches">
-      <div class="branch">
-        <Icon.Branch />
-        <p
-          class="typo-text-bold"
-          style="color: var(--color-foreground-level-6);">
-          {defaultBranch}
-        </p>
-      </div>
-      <Icon.ArrowLeft />
-      <div class="branch">
-        <Icon.Branch />
-        <p
-          class="typo-text-bold"
-          style="color: var(--color-foreground-level-6);">
-          {mergeRequest.id}
-        </p>
-      </div>
-    </div>
+    <CompareBranches
+      baseBranch={defaultBranch}
+      compareBranch={mergeRequest.id} />
   </div>
 {/if}
