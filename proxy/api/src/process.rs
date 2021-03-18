@@ -202,7 +202,7 @@ async fn run_rigging(
 
         let peer = async move {
             log::info!("starting peer");
-            peer.into_running().await
+            peer.run().await
         };
 
         tasks.push(peer.map_err(RunError::from).boxed());

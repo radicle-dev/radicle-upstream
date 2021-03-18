@@ -1,19 +1,12 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::{
-    future::Future,
-    io,
-    net::SocketAddr,
-    pin::Pin,
-    task::{Context, Poll},
-    vec,
-};
+use std::{io, net::SocketAddr, vec};
 
-use futures::{future::FutureExt as _, stream::StreamExt as _};
+use futures::prelude::*;
 use tokio::{
     sync::{broadcast, mpsc, watch},
-    task::{JoinError, JoinHandle},
+    task::JoinError,
 };
 
 use crate::state;
@@ -137,12 +130,12 @@ where
     /// Start up the internal machinery to advance the underlying protocol, react to significant
     /// events and keep auxiliary tasks running.
     ///
-    /// The returned [`Running`] future has similar semantics to [`tokio::task::JoinHandle`]:
-    /// internally, all tasks are spawned immediately, and polling the future is only necessary
-    /// to get notified of errors. Unlike [`tokio::task::JoinHandle`], however, [`Running`] does
-    /// not detach the tasks. That is, if and when [`Running`] is dropped, all tasks are
-    /// cancelled.
-    pub fn into_running(self) -> Running {
+    /// # Errors
+    /// * Failed to accept peer connections
+    /// * A subroutine panicked or was cancelled
+    pub async fn run(self) -> Result<(), Error> {
+        #![allow(clippy::mut_mut)]
+
         let Self {
             peer,
             disco,
@@ -152,113 +145,52 @@ where
             control_receiver,
             ..
         } = self;
-
         let (addrs_tx, addrs_rx) = watch::channel(vec![]);
-        let subroutines = tokio::spawn({
-            let peer = peer.clone();
-            async move {
-                let protocol_events = peer.subscribe().boxed();
-                Subroutines::new(
-                    peer,
-                    addrs_rx,
-                    store,
-                    &run_config,
-                    protocol_events,
-                    subscriber,
-                    control_receiver,
-                )
-                .await
-            }
-        });
-        let protocol = tokio::spawn({
-            async move {
-                loop {
-                    match peer.bind().await {
-                        Ok(bound) => {
-                            match bound.listen_addrs() {
-                                Ok(listen_addrs) => {
-                                    addrs_tx.send(listen_addrs).expect("subroutines is gone");
-                                },
-                                Err(e) => {
-                                    return Err(Error::Io(e));
-                                },
-                            }
 
-                            if let Err(e) =
-                                net::protocol::accept(bound, disco.clone().discover()).await
-                            {
-                                log::error!("accept error: {}", e);
-                            }
-                        },
-                        Err(e) => {
-                            log::error!("bound error: {}", e);
-                            return Err(Error::Bootstrap(e));
-                        },
-                    }
+        let protocol_events = peer.subscribe().boxed();
+        let mut subroutines = Subroutines::new(
+            peer.clone(),
+            addrs_rx,
+            store,
+            &run_config,
+            protocol_events,
+            subscriber,
+            control_receiver,
+        )
+        .map_err(Error::Join);
+
+        let protocol = async move {
+            loop {
+                match peer.bind().await {
+                    Ok(bound) => {
+                        match bound.listen_addrs() {
+                            Ok(listen_addrs) => {
+                                addrs_tx.send(listen_addrs).expect("subroutines is gone");
+                            },
+                            Err(e) => {
+                                return Err(Error::Io(e));
+                            },
+                        }
+
+                        if let Err(e) = net::protocol::accept(bound, disco.clone().discover()).await
+                        {
+                            log::error!("accept error: {}", e);
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("bound error: {}", e);
+                        return Err(Error::Bootstrap(e));
+                    },
                 }
             }
-        });
-
-        Running {
-            protocol,
-            subroutines,
         }
-    }
-}
+        .fuse();
+        futures::pin_mut!(protocol);
 
-/// Future returned by [`Peer::into_running`].
-#[must_use = "to the sig hup, don't stop, just drop"]
-pub struct Running {
-    /// Join and abort handles for the protocol run loop.
-    protocol: JoinHandle<Result<!, Error>>,
-    /// The [`Subroutines`] associated with this [`Peer`] instance.
-    subroutines: JoinHandle<Result<(), JoinError>>,
-}
-
-impl Drop for Running {
-    fn drop(&mut self) {
-        log::trace!("`peer::Running` is being dropped");
-        self.protocol.abort();
-        self.subroutines.abort();
-    }
-}
-
-impl Future for Running {
-    type Output = Result<(), Error>;
-
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        let err = match self.protocol.poll_unpin(cx) {
-            Poll::Ready(val) => match val {
-                Err(e) => Some(Error::Join(e)),
-                Ok(res) => Some(into_err(res)),
-            },
-            Poll::Pending => None,
+        futures::select! {
+            res = protocol => res?,
+            res = subroutines => res?
         };
-
-        if let Some(err) = err {
-            log::trace!("run loop error: {:?}", err);
-            return Poll::Ready(Err(err));
-        }
-
-        match self.subroutines.poll_unpin(cx) {
-            Poll::Ready(val) => {
-                let val = match val {
-                    Err(e) | Ok(Err(e)) => Err(Error::Join(e)),
-                    Ok(Ok(())) => Ok(()),
-                };
-                Poll::Ready(val)
-            },
-            Poll::Pending => Poll::Pending,
-        }
-    }
-}
-
-fn into_err<T, E>(r: Result<T, E>) -> E
-where
-    T: Into<!>,
-{
-    match r {
-        Ok(x) => x.into(),
-        Err(e) => e,
+        Ok(())
     }
 }
