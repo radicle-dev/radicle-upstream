@@ -286,7 +286,11 @@ impl Future for Subroutines {
         loop {
             match self.inputs.poll_next_unpin(cx) {
                 Poll::Ready(Some(input)) => {
-                    log::debug!("handling subroutine input: {:?}", input);
+                    log::debug!(
+                        "handling subroutine input: {:?} {:?}",
+                        input,
+                        self.run_state.status
+                    );
 
                     let old_status = self.run_state.status.clone();
 

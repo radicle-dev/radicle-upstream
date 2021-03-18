@@ -152,6 +152,7 @@ pub struct RunState {
     stats: net::protocol::event::downstream::Stats,
     /// Timestamp of last status change.
     status_since: SystemTime,
+    syncs: HashSet<PeerId>,
     /// Current set of requests.
     waiting_room: WaitingRoom<SystemTime, Duration>,
 }
@@ -163,12 +164,14 @@ impl RunState {
         connected_peers: HashSet<PeerId>,
         status: Status,
         status_since: SystemTime,
+        syncs: HashSet<PeerId>,
     ) -> Self {
         Self {
             connected_peers,
             stats: downstream::Stats::default(),
             status,
             status_since,
+            syncs,
             waiting_room: WaitingRoom::new(waiting_room::Config::default()),
         }
     }
@@ -180,6 +183,7 @@ impl RunState {
             stats: downstream::Stats::default(),
             status: Status::Stopped,
             status_since: SystemTime::now(),
+            syncs: HashSet::new(),
             waiting_room,
         }
     }
@@ -207,9 +211,11 @@ impl RunState {
     fn handle_announce(&mut self, input: input::Announce) -> Vec<Command> {
         match (&self.status, input) {
             // Announce new updates while the peer is online.
-            (Status::Online { .. } | Status::Started { .. }, input::Announce::Tick) => {
+            (Status::Online { .. } | Status::Started { .. }, input::Announce::Tick)
+                if self.stats.connected_peers > 0 && self.stats.membership_active > 0 =>
+            {
                 vec![Command::Announce]
-            },
+            }
             _ => vec![],
         }
     }
@@ -265,12 +271,21 @@ impl RunState {
                 let mut cmds = vec![];
 
                 for peer_id in &self.connected_peers {
-                    cmds.push(Command::SyncPeer(*peer_id));
+                    if self.syncs.get(peer_id).is_none() {
+                        cmds.push(Command::SyncPeer(*peer_id));
+                    }
                 }
 
                 cmds
             },
-            _ => vec![],
+            input::Sync::Started(peer_id) => {
+                self.syncs.insert(*peer_id);
+                vec![]
+            },
+            input::Sync::Succeeded(peer_id) | input::Sync::Failed(peer_id) => {
+                self.syncs.remove(peer_id);
+                vec![]
+            },
         }
     }
 
@@ -462,7 +477,7 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = SystemTime::now();
-        let mut state = RunState::construct(HashSet::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
 
         let cmds = state.transition(Input::Protocol(ProtocolEvent::Endpoint(Endpoint::Up {
             listen_addrs: vec![addr],
@@ -477,7 +492,7 @@ mod test {
     fn transition_to_online() {
         let status = Status::Started;
         let status_since = SystemTime::now();
-        let mut state = RunState::construct(HashSet::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
 
         let cmds = {
             let key = SecretKey::new();
@@ -501,8 +516,12 @@ mod test {
         let peer_id = PeerId::from(SecretKey::new());
         let status = Status::Online { connected: 0 };
         let status_since = SystemTime::now();
-        let mut state =
-            RunState::construct(Some(peer_id).into_iter().collect(), status, status_since);
+        let mut state = RunState::construct(
+            Some(peer_id).into_iter().collect(),
+            status,
+            status_since,
+            HashSet::new(),
+        );
 
         let _cmds = state.transition(Input::Stats(input::Stats::Values(
             vec![],
@@ -512,18 +531,47 @@ mod test {
     }
 
     #[test]
-    fn issue_announce_while_online() {
+    fn issue_announce_while_online_and_active_membering() {
         let status = Status::Online { connected: 1 };
         let status_since = SystemTime::now();
-        let mut state = RunState::construct(HashSet::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
+
+        let cmds = state.transition(Input::Announce(input::Announce::Tick));
+        assert!(cmds.is_empty(), "expected no command");
+
+        state.stats = librad::net::protocol::event::downstream::Stats {
+            connected_peers: 1,
+            membership_active: 1,
+            ..librad::net::protocol::event::downstream::Stats::default()
+        };
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
         assert_matches!(cmds.first().unwrap(), Command::Announce);
+    }
 
+    #[test]
+    fn dont_announce_with_inactive_member() {
+        let status = Status::Online { connected: 1 };
+        let status_since = SystemTime::now();
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
+
+        state.stats = librad::net::protocol::event::downstream::Stats {
+            connected_peers: 0,
+            membership_active: 0,
+            membership_passive: 1,
+            ..librad::net::protocol::event::downstream::Stats::default()
+        };
+
+        let cmds = state.transition(Input::Announce(input::Announce::Tick));
+        assert!(cmds.is_empty(), "expected no command");
+    }
+
+    #[test]
+    fn dont_announce_when_offline() {
         let status = Status::Offline;
         let status_since = SystemTime::now();
-        let mut state = RunState::construct(HashSet::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
@@ -536,7 +584,7 @@ mod test {
         let status = Status::Online { connected: 1 };
         let status_since = SystemTime::now();
         let (response_sender, _) = oneshot::channel();
-        let mut state = RunState::construct(HashSet::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
         state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             SystemTime::now(),
@@ -563,7 +611,7 @@ mod test {
         let status = Status::Online { connected: 0 };
         let status_since = SystemTime::now();
         let (response_sender, _) = oneshot::channel();
-        let mut state = RunState::construct(HashSet::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
 
         state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
@@ -627,7 +675,7 @@ mod test {
             connected: num_peers,
         };
         let status_since = SystemTime::now();
-        let mut state = RunState::construct(connected_peers, status, status_since);
+        let mut state = RunState::construct(connected_peers, status, status_since, HashSet::new());
 
         let cmds = state.transition(Input::PeerSync(input::Sync::Tick));
 
