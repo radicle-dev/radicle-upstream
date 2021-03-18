@@ -45,21 +45,23 @@
   }
 </style>
 
-{#each history.history as group (group.time)}
-  <div class="commit-group">
-    <header>
-      <p>{group.time}</p>
-    </header>
-    <ul>
-      {#each group.commits as commit (commit.sha1)}
-        <li class="commit" on:click={() => onSelect(commit)}>
-          <CommitTeaser
-            {commit}
-            style="background: none; --commit-message-color:
+<div class="history" data-cy="history">
+  {#each history.history as group (group.time)}
+    <div class="commit-group" data-cy="commit-group">
+      <header>
+        <p>{group.time}</p>
+      </header>
+      <ul>
+        {#each group.commits as commit (commit.sha1)}
+          <li class="commit" data-cy="commit" on:click={() => onSelect(commit)}>
+            <CommitTeaser
+              {commit}
+              style="background: none; --commit-message-color:
             var(--color-foreground-level-6); --commit-sha-color:
             var(--color-foreground)" />
-        </li>
-      {/each}
-    </ul>
-  </div>
-{/each}
+          </li>
+        {/each}
+      </ul>
+    </div>
+  {/each}
+</div>
