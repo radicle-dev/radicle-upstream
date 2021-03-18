@@ -58,7 +58,7 @@ interface CommitGroup {
   commits: CommitHeader[];
 }
 
-type CommitHistory = CommitGroup[];
+export type CommitHistory = CommitGroup[];
 
 export enum ObjectType {
   Blob = "BLOB",
@@ -354,7 +354,7 @@ const formatGroupTime = (t: number): string => {
   });
 };
 
-const groupCommits = (history: CommitHeader[]): CommitHistory => {
+export const groupCommits = (history: CommitHeader[]): CommitHistory => {
   const days: CommitHistory = [];
   let groupDate: Date | undefined = undefined;
 

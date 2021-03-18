@@ -394,20 +394,42 @@ export const fetchMergeRequestCommits = async (
 
   if (screen.status === remote.Status.Success) {
     const {
-      data: { project },
+      data: { peer, project },
     } = screen;
 
     try {
-      const revision: source.Sha = {
-        type: source.RevisionType.Sha,
-        sha: mergeRequest.commit,
-      };
-      const commits = await source.fetchCommits(
+      const baseProjectLatestCommit = (
+        await source.fetchCommits(project.urn, peer.peerId, {
+          type: source.RevisionType.Branch,
+          name: project.metadata.defaultBranch,
+        })
+      ).history[0]?.commits[0];
+
+      const mrCommits = await source.fetchCommits(
         project.urn,
         mergeRequest.peer_id,
-        revision
+        {
+          type: source.RevisionType.Sha,
+          sha: mergeRequest.commit,
+        }
       );
-      mergeRequestCommitsStore.success(commits);
+      // TODO(nuno): Grouping the commits pre-ui purposes is not handy. Consider rethinking the api.
+      const mrCommitsFlatten = flattenCommitHistory(mrCommits.history);
+
+      const nothingNewIdx = baseProjectLatestCommit
+        ? mrCommitsFlatten.findIndex(
+            ch => ch.sha1 === baseProjectLatestCommit.sha1
+          )
+        : 0;
+      const newCommits = mrCommitsFlatten.slice(
+        0,
+        nothingNewIdx === -1 ? 0 : nothingNewIdx
+      );
+
+      mergeRequestCommitsStore.success({
+        history: source.groupCommits(newCommits),
+        stats: mrCommits.stats, // FIXME(nuno): recalculate stats
+      });
     } catch (err) {
       mergeRequestCommitsStore.error(error.fromException(err));
       error.show({
@@ -447,3 +469,6 @@ const menuItems = (
     },
   ];
 };
+
+const flattenCommitHistory = (history: source.CommitHistory) =>
+  history.map(h => h.commits).reduce((acc, xxs) => acc.concat(xxs), []);
