@@ -18,7 +18,7 @@ async fn can_observe_timers() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut alice_events = alice_peer.subscribe();
 
-    tokio::spawn(alice_peer.into_running());
+    tokio::spawn(alice_peer.run());
 
     let ticked = async_stream::stream! {
         loop { yield alice_events.recv().await }

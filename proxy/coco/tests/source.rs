@@ -24,7 +24,7 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
         let peer = alice_peer.peer.clone();
         let events = alice_peer.subscribe();
         let mut peer_control = alice_peer.control();
-        tokio::task::spawn(alice_peer.into_running());
+        tokio::task::spawn(alice_peer.run());
         started(events).await?;
 
         let listen_addrs = peer_control.listen_addrs().await;
@@ -34,7 +34,7 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
     let bob_peer = {
         let peer = bob_peer.peer.clone();
         let events = bob_peer.subscribe();
-        tokio::task::spawn(bob_peer.into_running());
+        tokio::task::spawn(bob_peer.run());
         started(events).await?;
 
         peer

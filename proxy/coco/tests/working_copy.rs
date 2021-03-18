@@ -17,7 +17,7 @@ async fn upstream_for_default() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_peer = {
         let peer = alice_peer.peer.clone();
-        tokio::task::spawn(alice_peer.into_running());
+        tokio::task::spawn(alice_peer.run());
         peer
     };
 
@@ -47,7 +47,7 @@ async fn checkout_twice_fails() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_peer = {
         let peer = alice_peer.peer.clone();
-        tokio::task::spawn(alice_peer.into_running());
+        tokio::task::spawn(alice_peer.run());
         peer
     };
 
