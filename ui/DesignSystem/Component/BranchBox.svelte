@@ -13,7 +13,7 @@
     gap: 0.25rem;
     align-items: center;
     padding: 0.5rem;
-    background-color: var(--color-foreground-level-1);
+    background-color: var(--color-foreground-level-2);
     border-radius: 0.25rem;
   }
 </style>
