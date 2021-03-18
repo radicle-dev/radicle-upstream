@@ -10,7 +10,7 @@
     fetchMergeRequestCommits,
     selectCommit,
   } from "../../../src/screen/project/source";
-  import type { CommitHeader } from "../../../src/source";
+  import type { Branch, CommitHeader } from "../../../src/source";
 
   import { Avatar, Icon, Markdown } from "../../../DesignSystem/Primitive";
   import {
@@ -29,11 +29,14 @@
   const session = getContext("session") as UnsealedSession;
 
   const parsed = parseQueryString($querystring);
+  const defaultBranch = parsed.defaultBranch as Branch;
   const mergeRequest = parsed.mergeRequest;
+
   const mergeInfo =
     mergeRequest.mergeRequest && mergeRequest.mergeRequest.merged
       ? "Closed"
       : "Opened";
+
   fetchMergeRequestCommits(mergeRequest);
 </script>
 
@@ -112,7 +115,7 @@
   <div class="action-box">
     <CompareBranches
       bg="background-color: var(--color-background);"
-      baseBranch="main"
+      baseBranch={defaultBranch}
       compareBranch={mergeRequest.id} />
     <div class="buttons">
       <CheckoutMergeRequestButton

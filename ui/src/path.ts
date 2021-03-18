@@ -30,9 +30,11 @@ export const projectSourceMergeRequests = (urn: Urn): string =>
   `/projects/${urn}/source/merge_requests`;
 export const projectSourceMergeRequest = (
   urn: Urn,
-  mergeRequest: MergeRequest
+  mergeRequest: MergeRequest,
+  defaultBranch: string
 ): string =>
   `/projects/${urn}/source/merge_request?${stringify({
+    defaultBranch,
     mergeRequest,
   })}`;
 export const project = projectSourceFiles;
