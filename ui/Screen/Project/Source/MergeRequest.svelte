@@ -61,6 +61,16 @@
 
   .action-box {
     width: 100%;
+    height: 7rem;
+    display: flex;
+    background: var(--color-foreground-level-1);
+    border-radius: 0.5rem;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .action-box .buttons {
+    display: flex;
   }
 </style>
 
