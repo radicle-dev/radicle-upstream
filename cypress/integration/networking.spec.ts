@@ -415,6 +415,17 @@ context("p2p networking", () => {
           commands
             .pickWithContent(["merge-request-page"], mergeRequestTag)
             .should("exist");
+
+          cy.log("verify that there is only one commit");
+          commands
+            .pick("merge-request-page", "history", "commit-group")
+            .should("have.length", 1);
+          commands
+            .pick("merge-request-page", "history", "commit-group", "commit")
+            .should("have.length", 1);
+          commands
+            .pick("merge-request-page", "history", "commit-group", "commit")
+            .contains(mergeRequestCommitSubject);
         }
       );
     });
