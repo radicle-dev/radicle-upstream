@@ -13,6 +13,7 @@
     toggleDropdown();
   };
   const caption = "New Merge Request";
+  const instructions = `git tag --annotate merge-request/tag-name && git push --tags rad`;
 </script>
 
 <style>
@@ -43,9 +44,7 @@
       <p
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
-        git tag --annotate merge-request/tag-name
-        <br />
-        git push --tags rad
+        {instructions}
       </p>
     </Copyable>
     <Button

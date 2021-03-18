@@ -22,6 +22,8 @@
   const copy = () => {
     copyable.copy();
   };
+
+  const instructions = `git tag --annotate merge-request/tag-name && git push --tags rad`;
 </script>
 
 <Remote {store} let:data={{ mergeRequests, project }}>
@@ -38,9 +40,7 @@
         <p
           class="typo-text-small-mono"
           style="text-align: left; color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
-          git tag --annotate merge-request/tag-name
-          <br />
-          git push --tags rad
+          {instructions}
         </p>
       </Copyable>
       <Button

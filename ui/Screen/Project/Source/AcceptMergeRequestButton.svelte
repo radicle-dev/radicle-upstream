@@ -1,15 +1,10 @@
 <script lang="ts">
   import { Button, Icon } from "../../../DesignSystem/Primitive";
-  import {
-    Copyable,
-    Hoverable,
-    Overlay,
-  } from "../../../DesignSystem/Component";
+  import { Copyable, Overlay } from "../../../DesignSystem/Component";
 
   export let id: string;
 
   let expanded = false;
-  let hover = false;
   let copyable;
   const hide = () => (expanded = false);
   const toggleDropdown = () => {
@@ -20,7 +15,7 @@
     toggleDropdown();
   };
   const caption = "Merge";
-  const instructions = `git merge revisions/${id}`;
+  const instructions = `git merge merge-request/${id}`;
 </script>
 
 <style>
@@ -48,18 +43,16 @@
     <p style="margin-bottom: 0.5rem;">
       To merge this merge request, run this in your terminal:
     </p>
-    <Hoverable bind:hovering={hover}>
-      <Copyable bind:this={copyable} showIcon={hover}>
-        <p
-          class="typo-text-small-mono"
-          style="color: var(--color-foreground-level-6); overflow: scroll">
-          {instructions}
-        </p>
-      </Copyable>
-    </Hoverable>
+    <Copyable bind:this={copyable} showIcon={false}>
+      <p
+        class="typo-text-small-mono"
+        style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem;">
+        {instructions}
+      </p>
+    </Copyable>
     <Button
-      variant="transparent"
-      style="display: block; margin: auto;"
+      variant="secondary"
+      style="display: block; margin: 1rem auto 0; width: 100%;"
       on:click={copy}>
       Copy
     </Button>
