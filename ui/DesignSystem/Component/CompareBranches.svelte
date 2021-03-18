@@ -6,6 +6,7 @@
 
   export let baseBranch: Branch;
   export let compareBranch: Branch;
+  export let bg: string = "";
 </script>
 
 <style>
@@ -18,7 +19,7 @@
 </style>
 
 <div class="branches">
-  <BranchBox name={baseBranch} />
+  <BranchBox style={bg} name={baseBranch} />
   <Icon.ArrowLeft />
-  <BranchBox name={compareBranch} />
+  <BranchBox style={bg} name={compareBranch} />
 </div>

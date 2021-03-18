@@ -12,8 +12,12 @@
   } from "../../../src/screen/project/source";
   import type { CommitHeader } from "../../../src/source";
 
-  import { Avatar, Icon } from "../../../DesignSystem/Primitive";
-  import { Header, Remote } from "../../../DesignSystem/Component";
+  import { Avatar, Icon, Markdown } from "../../../DesignSystem/Primitive";
+  import {
+    CompareBranches,
+    Header,
+    Remote,
+  } from "../../../DesignSystem/Component";
   import History from "../../../DesignSystem/Component/SourceBrowser/History.svelte";
   import CheckoutMergeRequestButton from "./CheckoutMergeRequestButton.svelte";
   import AcceptMergeRequestButton from "./AcceptMergeRequestButton.svelte";
@@ -43,34 +47,36 @@
 
   .title {
     display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: -0.1875rem 0 0.5rem;
   }
 
   .metadata {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    color: var(--color-foreground-level-5);
   }
 
-  .row {
-    color: var(--color-foreground-level-6);
-    margin-bottom: 0.5rem;
-  }
-
-  .row:last-child {
-    margin-bottom: 0;
+  .desc {
+    border-top: 1px solid var(--color-foreground-level-3);
+    padding: 1.5rem;
   }
 
   .action-box {
-    width: 100%;
-    height: 7rem;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
     background: var(--color-foreground-level-1);
     border-radius: 0.5rem;
-    align-items: center;
-    justify-content: flex-end;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
   }
 
   .action-box .buttons {
     display: flex;
+    gap: 1rem;
   }
 </style>
 
@@ -99,12 +105,15 @@
     </div>
   </Header.Back>
   {#if mergeRequest.description}
-    <pre class="row">
-      {mergeRequest.description}
-    </pre>
+    <div class="desc">
+      <Markdown content={mergeRequest.description} />
+    </div>
   {/if}
   <div class="action-box">
-    <!-- put the branch stuff here -->
+    <CompareBranches
+      bg="background-color: var(--color-background);"
+      baseBranch="main"
+      compareBranch={mergeRequest.id} />
     <div class="buttons">
       <CheckoutMergeRequestButton
         id={mergeRequest.id}
