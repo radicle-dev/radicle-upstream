@@ -7,16 +7,17 @@ use std::{
     net::SocketAddr,
     pin::Pin,
     task::{Context, Poll},
+    vec,
 };
 
 use futures::{future::FutureExt as _, stream::StreamExt as _};
 use tokio::{
-    sync::{broadcast, mpsc},
+    sync::{broadcast, mpsc, watch},
     task::{JoinError, JoinHandle},
 };
 
-use crate::{seed::Seed, state};
-use librad::{net, net::protocol, signer::BoxedSigner};
+use crate::state;
+use librad::{net, signer::BoxedSigner};
 
 mod announcement;
 pub use announcement::Announcement;
@@ -69,39 +70,12 @@ pub enum Error {
     State(#[from] state::error::Error),
 }
 
-/// Constructs a [`Peer`] from a [`net::peer::Config`].
-///
-/// # Errors
-///
-/// * peer construction from config fails.
-/// * accept on the peer fails.
-pub async fn bootstrap<D>(
-    config: net::peer::Config<BoxedSigner>,
-    disco: D,
-    store: kv::Store,
-    run_config: RunConfig,
-) -> Result<Peer<D>, Error>
-where
-    D: net::discovery::Discovery<Addr = SocketAddr> + Send + 'static,
-    <D as net::discovery::Discovery>::Stream: 'static,
-{
-    let peer = librad::net::peer::Peer::new(config);
-    let bound = peer.bind().await?;
-
-    let peer = Peer::new(peer, bound, disco, store, run_config)?;
-
-    Ok(peer)
-}
-
 /// Local peer to participate in the radicle code-collaboration network.
 pub struct Peer<D> {
     /// The API for interacting with the protocol and storage.
     pub peer: net::peer::Peer<BoxedSigner>,
-    /// The listen addresses of this peer.
-    pub listen_addrs: Vec<SocketAddr>,
-    bound: protocol::Bound<net::peer::PeerStorage>,
-    disco: D,
 
+    disco: D,
     /// On-disk storage for caching.
     store: kv::Store,
     /// Handle used to broadcast [`Event`]s.
@@ -114,18 +88,9 @@ pub struct Peer<D> {
     control_sender: mpsc::Sender<control::Request>,
 }
 
-impl<D> From<&Peer<D>> for Seed {
-    fn from(peer: &Peer<D>) -> Self {
-        Self {
-            peer_id: peer.peer.peer_id(),
-            addrs: peer.listen_addrs.clone(),
-        }
-    }
-}
-
 impl<D> Peer<D>
 where
-    D: net::discovery::Discovery<Addr = SocketAddr> + Send + 'static,
+    D: net::discovery::Discovery<Addr = SocketAddr> + Clone + Send + Sync + 'static,
 {
     /// Constructs a new [`Peer`].
     ///
@@ -134,25 +99,23 @@ where
     /// Failed to get the listener addresses for the peer.
     #[must_use = "give a peer some love"]
     pub fn new(
-        peer: net::peer::Peer<BoxedSigner>,
-        bound: protocol::Bound<net::peer::PeerStorage>,
+        config: net::peer::Config<BoxedSigner>,
         disco: D,
         store: kv::Store,
         run_config: RunConfig,
-    ) -> Result<Self, Error> {
+    ) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         let (control_sender, control_receiver) = mpsc::channel(RECEIVER_CAPACITY);
-        Ok(Self {
+        let peer = librad::net::peer::Peer::new(config);
+        Self {
             peer,
-            listen_addrs: bound.listen_addrs()?,
-            bound,
             disco,
             store,
             subscriber,
             run_config,
             control_receiver,
             control_sender,
-        })
+        }
     }
 
     /// Acquire a handle to inspect state and perform actions on a running peer.
@@ -182,7 +145,6 @@ where
     pub fn into_running(self) -> Running {
         let Self {
             peer,
-            bound,
             disco,
             store,
             subscriber,
@@ -191,19 +153,51 @@ where
             ..
         } = self;
 
-        let subroutines = tokio::spawn(async move {
-            let protocol_events = peer.subscribe().boxed();
-            Subroutines::new(
-                peer.clone(),
-                store,
-                &run_config,
-                protocol_events,
-                subscriber,
-                control_receiver,
-            )
-            .await
+        let (addrs_tx, addrs_rx) = watch::channel(vec![]);
+        let subroutines = tokio::spawn({
+            let peer = peer.clone();
+            async move {
+                let protocol_events = peer.subscribe().boxed();
+                Subroutines::new(
+                    peer,
+                    addrs_rx,
+                    store,
+                    &run_config,
+                    protocol_events,
+                    subscriber,
+                    control_receiver,
+                )
+                .await
+            }
         });
-        let protocol = tokio::spawn(net::protocol::accept(bound, disco.discover()));
+        let protocol = tokio::spawn({
+            async move {
+                loop {
+                    match peer.bind().await {
+                        Ok(bound) => {
+                            match bound.listen_addrs() {
+                                Ok(listen_addrs) => {
+                                    addrs_tx.send(listen_addrs).expect("subroutines is gone");
+                                },
+                                Err(e) => {
+                                    return Err(Error::Io(e));
+                                },
+                            }
+
+                            if let Err(e) =
+                                net::protocol::accept(bound, disco.clone().discover()).await
+                            {
+                                log::error!("accept error: {}", e);
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("bound error: {}", e);
+                            return Err(Error::Bootstrap(e));
+                        },
+                    }
+                }
+            }
+        });
 
         Running {
             protocol,
@@ -216,7 +210,7 @@ where
 #[must_use = "to the sig hup, don't stop, just drop"]
 pub struct Running {
     /// Join and abort handles for the protocol run loop.
-    protocol: JoinHandle<Result<!, net::quic::Error>>,
+    protocol: JoinHandle<Result<!, Error>>,
     /// The [`Subroutines`] associated with this [`Peer`] instance.
     subroutines: JoinHandle<Result<(), JoinError>>,
 }
@@ -236,7 +230,7 @@ impl Future for Running {
         let err = match self.protocol.poll_unpin(cx) {
             Poll::Ready(val) => match val {
                 Err(e) => Some(Error::Join(e)),
-                Ok(res) => Some(Error::Protocol(res.err().expect("the impossible has happened, someone changed the `!` type in `Running::protocol`, if only there was some sort of function that could show this at compile time"))),
+                Ok(res) => Some(into_err(res)),
             },
             Poll::Pending => None,
         };
@@ -256,5 +250,15 @@ impl Future for Running {
             },
             Poll::Pending => Poll::Pending,
         }
+    }
+}
+
+fn into_err<T, E>(r: Result<T, E>) -> E
+where
+    T: Into<!>,
+{
+    match r {
+        Ok(x) => x.into(),
+        Err(e) => e,
     }
 }

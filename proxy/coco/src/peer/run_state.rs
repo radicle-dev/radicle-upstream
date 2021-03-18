@@ -136,17 +136,8 @@ pub enum Status {
 /// State kept for a running local peer.
 pub struct RunState {
     /// Tracking remote peers that have an active connection.
-    ///
-    /// As a peer known by [`PeerId`] can be connected multiple times, e.g. when opening a git
-    /// connection to clone and fetch, tracking the connection count per peer is paramount to not
-    /// falsely end up in an unconnected state despite the fact the protocol is connected, alive
-    /// and kicking. The following scenario led to an offline state when a `HashSet` was used in
-    /// the past:
-    ///
-    /// `Connected(Peer1) -> Connected(Peer1) -> Disconnecting(Peer1)`
-    //
-    // FIXME(xla): Use a `Option<NonEmpty>` here to express the invariance.
     connected_peers: HashSet<PeerId>,
+    listen_addrs: Vec<SocketAddr>,
     /// Current internal status.
     pub status: Status,
     stats: net::protocol::event::downstream::Stats,
@@ -168,6 +159,7 @@ impl RunState {
     ) -> Self {
         Self {
             connected_peers,
+            listen_addrs: vec![],
             stats: downstream::Stats::default(),
             status,
             status_since,
@@ -180,6 +172,7 @@ impl RunState {
     pub fn new(waiting_room: WaitingRoom<SystemTime, Duration>) -> Self {
         Self {
             connected_peers: HashSet::new(),
+            listen_addrs: vec![],
             stats: downstream::Stats::default(),
             status: Status::Stopped,
             status_since: SystemTime::now(),
@@ -196,6 +189,7 @@ impl RunState {
         let cmds = match input {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
             Input::Control(control_input) => self.handle_control(control_input),
+            Input::ListenAddrs(addrs) => self.handle_listen_addrs(addrs),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
             Input::PeerSync(peer_sync_input) => self.handle_peer_sync(&peer_sync_input),
             Input::Request(request_input) => self.handle_request(request_input),
@@ -258,10 +252,20 @@ impl RunState {
                         .collect::<Vec<_>>(),
                 )),
             )],
+            input::Control::ListenAddrs(sender) => {
+                vec![Command::Control(command::Control::Respond(
+                    control::Response::ListenAddrs(sender, self.listen_addrs.clone()),
+                ))]
+            },
             input::Control::Status(sender) => vec![Command::Control(command::Control::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
         }
+    }
+
+    fn handle_listen_addrs(&mut self, addrs: Vec<SocketAddr>) -> Vec<Command> {
+        self.listen_addrs = addrs;
+        vec![]
     }
 
     /// Handle [`input::Sync`]s.

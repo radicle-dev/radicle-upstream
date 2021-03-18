@@ -102,7 +102,7 @@ mod test {
     #[tokio::test]
     async fn cancel() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir)?;
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
@@ -129,7 +129,7 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir)?;
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
@@ -155,7 +155,7 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir)?;
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 

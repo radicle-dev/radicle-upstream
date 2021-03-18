@@ -22,7 +22,9 @@ use coco::{
 
 #[macro_use]
 mod common;
-use common::{build_peer, build_peer_with_seeds, connected, init_logging, shia_le_pathbuf};
+use common::{
+    build_peer, build_peer_with_seeds, connected, init_logging, shia_le_pathbuf, started,
+};
 
 #[tokio::test]
 async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
@@ -39,13 +41,20 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
     let bob_peer = {
         let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
         tokio::task::spawn(bob_peer.into_running());
+        started(events).await?;
+
         peer
     };
 
@@ -107,13 +116,20 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
     let bob_peer = {
         let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
         tokio::task::spawn(bob_peer.into_running());
+        started(events).await?;
+
         peer
     };
 
@@ -149,13 +165,20 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
     let bob_peer = {
         let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
         tokio::task::spawn(bob_peer.into_running());
+        started(events).await?;
+
         peer
     };
 
@@ -274,8 +297,12 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     let mut alice_events = alice_peer.subscribe();
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
     let alice_peer_id = alice_peer.peer_id();
@@ -338,19 +365,29 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
     let (bob_peer, bob_addrs) = {
         let peer = bob_peer.peer.clone();
-        let listen_addrs = bob_peer.listen_addrs.clone();
+        let events = bob_peer.subscribe();
+        let mut peer_control = bob_peer.control();
         tokio::task::spawn(bob_peer.into_running());
-        (peer, listen_addrs)
+        started(events).await?;
+
+        (peer, peer_control.listen_addrs().await)
     };
     let eve_peer = {
         let peer = eve_peer.peer.clone();
+        let events = eve_peer.subscribe();
         tokio::task::spawn(eve_peer.into_running());
+        started(events).await?;
+
         peer
     };
 
@@ -459,8 +496,12 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
 
@@ -478,7 +519,10 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
 
     let bob_peer = {
         let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
         tokio::task::spawn(bob_peer.into_running());
+        started(events).await?;
+
         peer
     };
 

@@ -198,7 +198,7 @@ impl Unsealed {
     /// * coco key creation fails
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
-    pub async fn tmp(
+    pub fn tmp(
         tmp_dir: &tempfile::TempDir,
     ) -> Result<(Self, impl std::future::Future<Output = ()>), crate::error::Error> {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
@@ -207,10 +207,9 @@ impl Unsealed {
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
         let (peer_control, peer, run_handle) = {
-            let config = coco::config::default(signer.clone(), tmp_dir.path())?;
+            let config = coco::config::default(signer, tmp_dir.path())?;
             let disco = coco::config::static_seed_discovery(&[]);
-            let coco_peer =
-                coco::bootstrap(config, disco, store.clone(), RunConfig::default()).await?;
+            let coco_peer = coco::Peer::new(config, disco, store.clone(), RunConfig::default());
             let peer = coco_peer.peer.clone();
 
             let peer_control = coco_peer.control();

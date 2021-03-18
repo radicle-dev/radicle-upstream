@@ -3,6 +3,7 @@
 
 use std::{
     future::Future,
+    net::SocketAddr,
     pin::Pin,
     task::{Context, Poll},
     time::{Duration, SystemTime},
@@ -11,7 +12,7 @@ use std::{
 use async_stream::stream;
 use futures::stream::{BoxStream, FuturesUnordered, SelectAll, StreamExt as _};
 use tokio::{
-    sync::{broadcast, mpsc},
+    sync::{broadcast, mpsc, watch},
     task::{JoinError, JoinHandle},
     time::interval,
 };
@@ -61,6 +62,7 @@ impl Subroutines {
     /// Constructs a new subroutines manager.
     pub fn new(
         peer: net::peer::Peer<BoxedSigner>,
+        mut listen_addrs: watch::Receiver<Vec<SocketAddr>>,
         store: kv::Store,
         run_config: &RunConfig,
         protocol_events: BoxStream<'static, Result<ProtocolEvent, net::protocol::RecvError>>,
@@ -115,6 +117,16 @@ impl Subroutines {
                     .boxed(),
             );
 
+            coalesced.push(
+                stream! {
+                    while listen_addrs.changed().await.is_ok() {
+                        let addrs = listen_addrs.borrow().clone();
+                        yield Input::ListenAddrs(addrs);
+                    }
+                }
+                .boxed(),
+            );
+
             if let Some(mut timer) = announce_timer {
                 coalesced.push(
                     stream! {
@@ -156,24 +168,27 @@ impl Subroutines {
                 .boxed(),
             );
             coalesced.push(
-                stream! { while let Some(request) = control_receiver.recv().await { yield request } }.map(|request| {
-                        match request {
-                        control::Request::CurrentStatus(sender) => {
-                            Input::Control(input::Control::Status(sender))
-                        },
-                        control::Request::CancelSearch(urn, time, sender) => {
-                            Input::Control(input::Control::CancelRequest(urn, time, sender))
-                        },
-                        control::Request::GetSearch(urn, sender) => {
-                            Input::Control(input::Control::GetRequest(urn, sender))
-                        },
-                        control::Request::ListSearches(sender) => {
-                            Input::Control(input::Control::ListRequests(sender))
-                        },
-                        control::Request::StartSearch(urn, time, sender) => {
-                            Input::Control(input::Control::CreateRequest(urn, time, sender))
-                        },
-                    }
+                stream! {
+                while let Some(request) = control_receiver.recv().await { yield request } }
+                .map(|request| match request {
+                    control::Request::CurrentStatus(sender) => {
+                        Input::Control(input::Control::Status(sender))
+                    },
+                    control::Request::ListenAddrs(sender) => {
+                        Input::Control(input::Control::ListenAddrs(sender))
+                    },
+                    control::Request::CancelSearch(urn, time, sender) => {
+                        Input::Control(input::Control::CancelRequest(urn, time, sender))
+                    },
+                    control::Request::GetSearch(urn, sender) => {
+                        Input::Control(input::Control::GetRequest(urn, sender))
+                    },
+                    control::Request::ListSearches(sender) => {
+                        Input::Control(input::Control::ListRequests(sender))
+                    },
+                    control::Request::StartSearch(urn, time, sender) => {
+                        Input::Control(input::Control::CreateRequest(urn, time, sender))
+                    },
                 })
                 .boxed(),
             );
@@ -355,6 +370,7 @@ async fn control_respond(cmd: control::Response) {
     match cmd {
         control::Response::CurrentStatus(sender, status) => sender.send(status).ok(),
         control::Response::CancelSearch(sender, request) => sender.send(request).ok(),
+        control::Response::ListenAddrs(sender, addrs) => sender.send(addrs).ok(),
         control::Response::GetSearch(sender, request) => sender.send(request).ok(),
         control::Response::ListSearches(sender, requests) => sender.send(requests).ok(),
         control::Response::StartSearch(sender, request) => sender.send(request).ok(),

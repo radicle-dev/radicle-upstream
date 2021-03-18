@@ -82,6 +82,7 @@ pub fn static_seed_discovery(seeds: &[seed::Seed]) -> discovery::Static {
 }
 
 /// Stream based discovery based on a watch.
+#[derive(Clone)]
 pub struct StreamDiscovery {
     /// Stream of new sets of seeds coming from configuration changes.
     seeds_receiver: watch::Receiver<Vec<seed::Seed>>,

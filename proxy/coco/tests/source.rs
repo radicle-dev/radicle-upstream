@@ -4,7 +4,7 @@ use pretty_assertions::assert_eq;
 use coco::{state, RunConfig};
 
 mod common;
-use common::{build_peer, init_logging, shia_le_pathbuf};
+use common::{build_peer, init_logging, shia_le_pathbuf, started};
 
 #[allow(clippy::needless_collect)]
 #[tokio::test]
@@ -22,13 +22,21 @@ async fn can_browse_peers_branch() -> Result<(), Box<dyn std::error::Error + 'st
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
+
     let bob_peer = {
         let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
         tokio::task::spawn(bob_peer.into_running());
+        started(events).await?;
+
         peer
     };
 

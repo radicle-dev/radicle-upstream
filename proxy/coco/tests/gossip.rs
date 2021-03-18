@@ -10,7 +10,7 @@ use coco::{peer::run_config, seed::Seed, state, RunConfig};
 mod common;
 use common::{
     assert_cloned, build_peer, build_peer_with_seeds, connected, init_logging, radicle_project,
-    requested, shia_le_pathbuf,
+    requested, shia_le_pathbuf, started,
 };
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -34,8 +34,12 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
 
@@ -54,7 +58,10 @@ async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn st
 
     let bob_peer = {
         let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
         tokio::task::spawn(bob_peer.into_running());
+        started(events).await?;
+
         peer
     };
     let _bob = state::init_owner(&bob_peer, "bob".to_string()).await?;
@@ -92,8 +99,12 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
-        let listen_addrs = alice_peer.listen_addrs.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
         tokio::task::spawn(alice_peer.into_running());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
         (peer, listen_addrs)
     };
 
@@ -117,7 +128,10 @@ async fn can_ask_and_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let bob_peer = {
         let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
         tokio::task::spawn(bob_peer.into_running());
+        started(events).await?;
+
         peer
     };
 

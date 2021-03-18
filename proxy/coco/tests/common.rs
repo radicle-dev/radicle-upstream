@@ -80,16 +80,27 @@ pub async fn connected(
     )
 }
 
+#[allow(dead_code)]
+pub async fn started(mut receiver: broadcast::Receiver<PeerEvent>) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::StatusChanged {
+            new: PeerStatus::Started,
+            ..
+        }
+    )
+}
+
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
     run_config: RunConfig,
 ) -> Result<Peer<discovery::Static>, Box<dyn std::error::Error>> {
     let key = SecretKey::new();
-    let signer = signer::BoxedSigner::from(key.clone());
+    let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-    let conf = config::default(signer.clone(), tmp_dir.path())?;
+    let conf = config::default(signer, tmp_dir.path())?;
     let disco = config::static_seed_discovery(&[]);
-    let peer = coco::bootstrap(conf, disco, store, run_config).await?;
+    let peer = coco::Peer::new(conf, disco, store, run_config);
 
     Ok(peer)
 }
@@ -104,9 +115,9 @@ pub async fn build_peer_with_seeds(
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
     let paths = Paths::from_root(tmp_dir.path())?;
-    let conf = config::configure(paths, signer.clone(), *config::LOCALHOST_ANY);
+    let conf = config::configure(paths, signer, *config::LOCALHOST_ANY);
     let disco = config::static_seed_discovery(&seeds);
-    let peer = coco::bootstrap(conf, disco, store, run_config).await?;
+    let peer = coco::Peer::new(conf, disco, store, run_config);
 
     Ok(peer)
 }

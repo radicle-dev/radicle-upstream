@@ -1,6 +1,6 @@
 //! Inspect state and perform actions on a running peer.
 
-use std::time::SystemTime;
+use std::{net::SocketAddr, time::SystemTime};
 
 use either::Either;
 use tokio::sync::{mpsc, oneshot};
@@ -15,6 +15,7 @@ use super::run_state::Status;
 #[allow(clippy::pub_enum_variant_names)]
 #[derive(Debug)]
 pub enum Request {
+    ListenAddrs(oneshot::Sender<Vec<SocketAddr>>),
     /// Request the current peer status.
     CurrentStatus(oneshot::Sender<Status>),
 
@@ -42,6 +43,7 @@ pub enum Request {
 /// Returned responses from the peer.
 #[derive(Debug)]
 pub enum Response {
+    ListenAddrs(oneshot::Sender<Vec<SocketAddr>>, Vec<SocketAddr>),
     /// Response to a status request.
     CurrentStatus(oneshot::Sender<Status>, Status),
 
@@ -87,6 +89,18 @@ impl Control {
 
         self.sender
             .send(Request::CurrentStatus(sender))
+            .await
+            .expect("peer is gone");
+
+        receiver.await.expect("receiver is gone")
+    }
+
+    /// List listen addrs of the running peer.
+    pub async fn listen_addrs(&mut self) -> Vec<SocketAddr> {
+        let (sender, receiver) = oneshot::channel::<Vec<SocketAddr>>();
+
+        self.sender
+            .send(Request::ListenAddrs(sender))
             .await
             .expect("peer is gone");
 

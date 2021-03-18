@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::{net::SocketAddr, time::SystemTime};
 
 use tokio::sync::oneshot;
 
@@ -17,6 +17,7 @@ pub enum Input {
     Announce(Announce),
     /// Peer state change events.
     Control(Control),
+    ListenAddrs(Vec<SocketAddr>),
     /// Inputs from the underlying coco protocol.
     Protocol(ProtocolEvent),
     /// Lifecycle events during peer sync operations.
@@ -40,6 +41,7 @@ pub enum Announce {
 /// Requests from the peer control.
 #[derive(Debug)]
 pub enum Control {
+    ListenAddrs(oneshot::Sender<Vec<SocketAddr>>),
     /// New status.
     Status(oneshot::Sender<super::Status>),
 
