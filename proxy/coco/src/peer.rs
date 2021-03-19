@@ -3,7 +3,10 @@
 
 use std::{io, net::SocketAddr, vec};
 
-use futures::prelude::*;
+use futures::{
+    future::{FutureExt as _, TryFutureExt as _},
+    stream::StreamExt as _,
+};
 use tokio::{
     sync::{broadcast, mpsc, watch},
     task::JoinError,
