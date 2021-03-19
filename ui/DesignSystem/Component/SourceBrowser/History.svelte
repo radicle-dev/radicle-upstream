@@ -1,7 +1,8 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { CommitHeader, CommitsHistory } from "../../../src/source";
+  import type { CommitHeader } from "../../../src/source";
+  import type { CommitsHistory } from "../../../src/screen/project/source";
 
   import CommitTeaser from "./CommitTeaser.svelte";
 

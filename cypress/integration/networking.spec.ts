@@ -416,7 +416,9 @@ context("p2p networking", () => {
             .pickWithContent(["merge-request-page"], mergeRequestTag)
             .should("exist");
 
-          cy.log("verify that there is only one commit");
+          cy.log(
+            "verify that only the single merge request commit is displayed"
+          );
           commands
             .pick("merge-request-page", "history", "commit-group")
             .should("have.length", 1);

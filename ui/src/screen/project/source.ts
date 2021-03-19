@@ -50,7 +50,7 @@ export interface Code {
 
 interface Screen {
   code: Writable<Code>;
-  history: source.CommitsHistory;
+  history: CommitsHistory;
   menuItems: HorizontalItem[];
   mergeRequests: source.MergeRequest[];
   peer: User;
@@ -59,6 +59,17 @@ interface Screen {
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
   tree: Writable<source.Tree>;
+}
+
+export interface CommitsHistory {
+  history: CommitGroup[];
+  stats: source.Stats;
+}
+
+// A set of commits groupped by time.
+interface CommitGroup {
+  time: string;
+  commits: source.CommitHeader[];
 }
 
 const pathStore = writable<source.SelectedPath>({
@@ -95,11 +106,12 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
       fetchTreeRoot(selectedRevision),
     ]);
+    const grouppedHistory = uiCommitHistory(history);
 
     screenStore.success({
       code: writable<Code>(root),
-      history,
-      menuItems: menuItems(project, history, mergeRequests),
+      history: grouppedHistory,
+      menuItems: menuItems(project, grouppedHistory, mergeRequests),
       mergeRequests,
       peer,
       project,
@@ -192,13 +204,18 @@ export const selectRevision = async (
         source.fetchCommits(project.urn, peer.peerId, revision),
         fetchTreeCode(),
       ]);
+      const grouppedHistory = uiCommitHistory(history);
       code.set(newCode);
       tree.set(newTree);
 
       screenStore.success({
         ...screen.data,
-        history,
-        menuItems: menuItems(project, history, screen.data.mergeRequests),
+        history: grouppedHistory,
+        menuItems: menuItems(
+          project,
+          grouppedHistory,
+          screen.data.mergeRequests
+        ),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -384,7 +401,7 @@ const mapRevisions = (
   return branches;
 };
 
-const mergeRequestCommitsStore = remote.createStore<source.CommitsHistory>();
+const mergeRequestCommitsStore = remote.createStore<CommitsHistory>();
 export const mergeRequestCommits = mergeRequestCommitsStore.readable;
 
 export const fetchMergeRequestCommits = async (
@@ -403,7 +420,7 @@ export const fetchMergeRequestCommits = async (
           type: source.RevisionType.Branch,
           name: project.metadata.defaultBranch,
         })
-      ).history[0]?.commits[0];
+      ).history[0];
 
       const mrCommits = await source.fetchCommits(
         project.urn,
@@ -413,22 +430,20 @@ export const fetchMergeRequestCommits = async (
           sha: mergeRequest.commit,
         }
       );
-      // TODO(nuno): Grouping the commits pre-ui purposes is not handy. Consider rethinking the api.
-      const mrCommitsFlatten = flattenCommitHistory(mrCommits.history);
 
       const nothingNewIdx = baseProjectLatestCommit
-        ? mrCommitsFlatten.findIndex(
-            ch => ch.sha1 === baseProjectLatestCommit.sha1
-          )
+        ? mrCommits.history.findIndex(
+          ch => ch.sha1 === baseProjectLatestCommit.sha1
+        )
         : 0;
-      const newCommits = mrCommitsFlatten.slice(
+      const newCommits = mrCommits.history.slice(
         0,
         nothingNewIdx === -1 ? 0 : nothingNewIdx
       );
 
       mergeRequestCommitsStore.success({
-        history: source.groupCommits(newCommits),
-        stats: mrCommits.stats, // FIXME(nuno): recalculate stats
+        history: groupCommits(newCommits),
+        stats: { ...mrCommits.stats, commits: newCommits.length },
       });
     } catch (err) {
       mergeRequestCommitsStore.error(error.fromException(err));
@@ -443,7 +458,7 @@ export const fetchMergeRequestCommits = async (
 
 const menuItems = (
   project: Project,
-  history: source.CommitsHistory,
+  history: CommitsHistory,
   mergeRequests: source.MergeRequest[]
 ): HorizontalItem[] => {
   return [
@@ -470,5 +485,52 @@ const menuItems = (
   ];
 };
 
-const flattenCommitHistory = (history: source.CommitHistory) =>
-  history.map(h => h.commits).reduce((acc, xxs) => acc.concat(xxs), []);
+// Convert a source.CommitsHistory to the UI-friendly `CommitsHistory` form.
+const uiCommitHistory = (history: source.CommitsHistory): CommitsHistory => {
+  return { ...history, history: groupCommits(history.history) };
+};
+
+export const groupCommits = (commits: source.CommitHeader[]): CommitGroup[] => {
+  const grouppedCommits: CommitGroup[] = [];
+  let groupDate: Date | undefined = undefined;
+
+  commits = commits.sort((a, b) => {
+    if (a.committerTime > b.committerTime) {
+      return -1;
+    } else if (a.committerTime < b.committerTime) {
+      return 1;
+    }
+
+    return 0;
+  });
+
+  for (const commit of commits) {
+    const time = commit.committerTime * 1000;
+    const date = new Date(time);
+    const isNewDay =
+      !grouppedCommits.length ||
+      !groupDate ||
+      date.getDate() < groupDate.getDate() ||
+      date.getMonth() < groupDate.getMonth() ||
+      date.getFullYear() < groupDate.getFullYear();
+
+    if (isNewDay) {
+      grouppedCommits.push({
+        time: formatGroupTime(time),
+        commits: [],
+      });
+      groupDate = date;
+    }
+    grouppedCommits[grouppedCommits.length - 1].commits.push(commit);
+  }
+  return grouppedCommits;
+};
+
+const formatGroupTime = (t: number): string => {
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "long",
+    weekday: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};

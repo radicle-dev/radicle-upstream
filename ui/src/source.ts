@@ -37,7 +37,7 @@ export interface Commit {
   changeset: Record<string, unknown>;
 }
 
-interface Stats {
+export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
@@ -49,16 +49,9 @@ interface Commits {
 }
 
 export interface CommitsHistory {
-  history: CommitHistory;
+  history: CommitHeader[];
   stats: Stats;
 }
-
-interface CommitGroup {
-  time: string;
-  commits: CommitHeader[];
-}
-
-export type CommitHistory = CommitGroup[];
 
 export enum ObjectType {
   Blob = "BLOB",
@@ -205,7 +198,7 @@ export const fetchCommits = (
     .then(response => {
       return {
         stats: response.stats,
-        history: groupCommits(response.headers),
+        history: response.headers,
       };
     });
 };
@@ -343,49 +336,4 @@ export const revisionQueryEq = (
 
 export const formatCommitTime = (t: number): string => {
   return format(t * 1000);
-};
-
-const formatGroupTime = (t: number): string => {
-  return new Date(t).toLocaleDateString("en-US", {
-    month: "long",
-    weekday: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-export const groupCommits = (history: CommitHeader[]): CommitHistory => {
-  const days: CommitHistory = [];
-  let groupDate: Date | undefined = undefined;
-
-  history = history.sort((a, b) => {
-    if (a.committerTime > b.committerTime) {
-      return -1;
-    } else if (a.committerTime < b.committerTime) {
-      return 1;
-    }
-
-    return 0;
-  });
-
-  for (const commit of history) {
-    const time = commit.committerTime * 1000;
-    const date = new Date(time);
-    const isNewDay =
-      !days.length ||
-      !groupDate ||
-      date.getDate() < groupDate.getDate() ||
-      date.getMonth() < groupDate.getMonth() ||
-      date.getFullYear() < groupDate.getFullYear();
-
-    if (isNewDay) {
-      days.push({
-        time: formatGroupTime(time),
-        commits: [],
-      });
-      groupDate = date;
-    }
-    days[days.length - 1].commits.push(commit);
-  }
-  return days;
 };
