@@ -16,7 +16,7 @@
     toggleDropdown();
   };
   const caption = "Checkout";
-  const instructions = `git checkout -b merge-request/${id} remotes/${peerId}/refs/tags/merge-request/${id}`;
+  const instructions = `git fetch rad refs/remotes/${peerId}/tags/merge-request/${id}:tags/merge-request/${id}`;
 </script>
 
 <style>

@@ -14,47 +14,6 @@ use common::{
 };
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn can_announce_new_project() -> Result<(), Box<dyn std::error::Error>> {
-    init_logging();
-
-    let alice_tmp_dir = tempfile::tempdir()?;
-    let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let alice_peer = build_peer(
-        &alice_tmp_dir,
-        RunConfig {
-            announce: run_config::Announce {
-                interval: Duration::from_millis(100),
-            },
-            ..RunConfig::default()
-        },
-    )
-    .await?;
-    let mut alice_events = alice_peer.subscribe();
-
-    let alice_peer = {
-        let peer = alice_peer.peer.clone();
-        tokio::task::spawn(alice_peer.into_running());
-        peer
-    };
-
-    let alice = state::init_owner(&alice_peer, "alice".to_string()).await?;
-    state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path))
-        .await
-        .expect("unable to init project");
-
-    let announced = async_stream::stream! { loop { yield alice_events.recv().await } }
-        .filter_map(|res| match res.unwrap() {
-            coco::PeerEvent::Announced(updates) if !updates.is_empty() => future::ready(Some(())),
-            _ => future::ready(None),
-        })
-        .map(|_| ());
-    tokio::pin!(announced);
-    timeout(Duration::from_secs(1), announced.next()).await?;
-
-    Ok(())
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn can_observe_announcement_from_connected_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
