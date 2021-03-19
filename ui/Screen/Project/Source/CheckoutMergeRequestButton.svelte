@@ -6,7 +6,7 @@
   export let peerId: string;
 
   let expanded = false;
-  let copyable;
+  let copyable: Copyable;
   const hide = () => (expanded = false);
   const toggleDropdown = () => {
     expanded = !expanded;
@@ -47,7 +47,7 @@
     <Copyable bind:this={copyable} showIcon={false}>
       <p
         class="typo-text-small-mono"
-        style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
+        style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem;">
         {instructions}
       </p>
     </Copyable>

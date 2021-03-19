@@ -5,7 +5,7 @@
   export let id: string;
 
   let expanded = false;
-  let copyable;
+  let copyable: Copyable;
   const hide = () => (expanded = false);
   const toggleDropdown = () => {
     expanded = !expanded;

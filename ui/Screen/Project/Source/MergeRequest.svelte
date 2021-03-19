@@ -114,7 +114,6 @@
   {/if}
   <div class="action-box">
     <CompareBranches
-      bg="background-color: var(--color-background);"
       baseBranch={defaultBranch}
       compareBranch={mergeRequest.id} />
     <div class="buttons">

@@ -8,8 +8,6 @@
   export let defaultBranch: Branch;
 
   const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
-
-  console.log({ mergeRequest });
 </script>
 
 <style>
@@ -22,7 +20,6 @@
 
   .left {
     display: flex;
-    flex-direction: row;
   }
 
   .info-column {
@@ -79,7 +76,7 @@
                 title={mergeRequest.identity.metadata.handle}
                 variant="circle" />
             {:else}
-              <p style="margin-left: 0.5rem;">{mergeRequest.peer_id}</p>
+              <p style="margin-left: 0.5rem;">{mergeRequest.peerId}</p>
             {/if}
           </div>
         </div>

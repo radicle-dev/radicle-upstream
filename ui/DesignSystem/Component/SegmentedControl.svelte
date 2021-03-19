@@ -36,8 +36,8 @@
   }
   .segmented-control button {
     cursor: pointer;
-    padding: 9px 16px;
-    border-radius: 4px;
+    padding: 0.5625rem 1rem;
+    border-radius: 0.25rem;
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);

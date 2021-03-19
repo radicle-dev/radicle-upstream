@@ -17,11 +17,7 @@
   const onSelect = ({ detail: mergeRequest }: { detail: MergeRequest }) => {
     selectMergeRequest(mergeRequest);
   };
-  let copyable: string;
-
-  const copy = () => {
-    copyable.copy();
-  };
+  let copyable: Copyable;
 
   const instructions = `git tag --annotate merge-request/tag-name && git push --tags rad`;
 </script>
@@ -46,7 +42,7 @@
       <Button
         variant="primary"
         style="display: block; margin: 1rem auto 0;"
-        on:click={copy}>
+        on:click={() => copyable.copy()}>
         Copy
       </Button>
     </EmptyState>
