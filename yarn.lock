@@ -9152,14 +9152,10 @@ twemoji-parser@13.0.0:
   resolved "https://registry.yarnpkg.com/twemoji-parser/-/twemoji-parser-13.0.0.tgz#bd9d1b98474f1651dc174696b45cabefdfa405af"
   integrity sha512-zMaGdskpH8yKjT2RSE/HwE340R4Fm+fbie4AaqjDa4H/l07YUmAvxkSfNl6awVWNRRQ0zdzLQ8SAJZuY5MgstQ==
 
-"twemoji-svg-assets@git+https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1":
-  version "13.0.1"
-  resolved "git+https://github.com/radicle-dev/twemoji-svg-assets.git#d5118e43f8cf01de6db52448e2fba3d059979fc1"
-
-twemoji@13.0.1:
-  version "13.0.1"
-  resolved "https://registry.yarnpkg.com/twemoji/-/twemoji-13.0.1.tgz#57ddc8bd86c8175c11376f5f9ab322a02e739c2d"
-  integrity sha512-mrTBq+XpCLM4zm76NJOjLHoQNV9mHdBt3Cba/T5lS1rxn8ArwpqE47mqTocupNlkvcLxoeZJjYSUW0DU5ZwqZg==
+twemoji@13.0.2:
+  version "13.0.2"
+  resolved "https://registry.yarnpkg.com/twemoji/-/twemoji-13.0.2.tgz#e7ee8d26fd0ccc23a0afe68c7b7e61bd8d14ad24"
+  integrity sha512-R9tDS4pEVczjVYM5SvoAJ0AcZ4EgG1h3yw1oi1m/yrXOH17OOjaaRxZU4r5TIHEy3xYbuZQLB/tJZyC6rpQVmA==
   dependencies:
     fs-extra "^8.0.1"
     jsonfile "^5.0.0"

@@ -157,7 +157,7 @@
     "_private:rollup:build": "rollup -c --failAfterWarnings",
     "_private:rollup:build:release": "ROLLUP_RELEASE=true rollup -c --failAfterWarnings",
     "_private:rollup:watch": "rollup -c -w",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package && scripts/install-twemoji-assets.sh"
   },
   "dependencies": {
     "@types/big.js": "^6.0.2",
@@ -175,8 +175,7 @@
     "semver": "^7.3.4",
     "svelte-persistent-store": "^0.1.6",
     "timeago.js": "^4.0.2",
-    "twemoji": "13.0.1",
-    "twemoji-svg-assets": "git+https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1",
+    "twemoji": "13.0.2",
     "uuid": "^8.3.0",
     "validate.js": "^0.13.1"
   },
