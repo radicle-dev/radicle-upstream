@@ -64,10 +64,7 @@ export default {
       },
     },
 
-    typescript({
-      // See https://github.com/rollup/plugins/issues/272
-      noEmitOnError: watch,
-    }),
+    typescript(),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
