@@ -66,6 +66,7 @@ git commit --allow-empty -m "${options.subject}"
 git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
     {
       env: {
+        HOME: options.radHome,
         RAD_HOME: options.radHome,
         GIT_AUTHOR_NAME: options.name || "John McPipefail",
         GIT_AUTHOR_EMAIL: options.email || "john@mcpipefail.com",
