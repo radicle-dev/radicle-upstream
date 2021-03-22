@@ -4,7 +4,7 @@
 
 set -Eeou pipefail
 
-version="$(yarn --silent info twemoji version)"
+version="$(node -e 'console.log(require("twemoji/package.json").version)')"
 
 echo "Installing Twemoji SVG assets v${version}"
 
