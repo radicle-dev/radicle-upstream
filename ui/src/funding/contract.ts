@@ -13,12 +13,16 @@ import * as ethereum from "../ethereum";
 
 const addresses = {
   pool: {
-    local: "0x37c10d847bf9e708add451bf2f80c1297d7aa691",
-    ropsten: "0xEc5bfca987C5FAA6d394044793f0aD6C9A85Da76",
+    local: "0x56a32c0c857f1ae733562078a693ea845d9bb423",
+    ropsten: "0x336C7fE92c08A9e48738a48f846860C1fD35647C",
   },
   dai: {
-    local: "0xf34a89802590f944e3de71b1f74d66ed1bafc9cd",
-    ropsten: "0xD069f9Cbe64979953357bCa3f21d902e775f1F48",
+    local: "0xff1d4d289bf0aaaf918964c57ac30481a67728ef",
+    ropsten: "0x6e80bf4Fd0b102E6385C545375C8fF3B30D554eA",
+  },
+  claims: {
+    local: "0x785e8de68df899d77ce689f863e4166849c8bfd5",
+    ropsten: "0xF8F22AA794DDA79aC0C634a381De0226f369bCCe",
   },
 };
 
@@ -67,7 +71,7 @@ export class PoolContract {
     return this.contract.updateSender(
       ethereum.fromBaseUnit(topUp),
       0,
-      weeklyBudgetToAmountPerBlock(weeklyBudget),
+      weeklyBudgetToAmountPerSec(weeklyBudget),
       receivers,
       []
     );
@@ -80,14 +84,14 @@ export class PoolContract {
     return this.contract.updateSender(
       0,
       0,
-      weeklyBudgetToAmountPerBlock(weeklyBudget),
+      weeklyBudgetToAmountPerSec(weeklyBudget),
       receivers,
       []
     );
   }
 
   async topUp(amount: Big): Promise<ContractTransaction> {
-    const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
+    const UNCHANGED = await this.contract.AMT_PER_SEC_UNCHANGED();
     return this.contract.updateSender(
       ethereum.fromBaseUnit(amount),
       0,
@@ -98,7 +102,7 @@ export class PoolContract {
   }
 
   async withdraw(amount: Big): Promise<ContractTransaction> {
-    const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
+    const UNCHANGED = await this.contract.AMT_PER_SEC_UNCHANGED();
     return this.contract.updateSender(
       0,
       ethereum.fromBaseUnit(amount),
@@ -109,7 +113,7 @@ export class PoolContract {
   }
 
   async withdrawAll(): Promise<ContractTransaction> {
-    const UNCHANGED = await this.contract.AMOUNT_PER_BLOCK_UNCHANGED();
+    const UNCHANGED = await this.contract.AMT_PER_SEC_UNCHANGED();
     const ALL = await this.withdrawAllFlag();
     return this.contract.updateSender(0, ALL, UNCHANGED, [], []);
   }
@@ -131,7 +135,7 @@ export class PoolContract {
   }
 
   async weeklyBudget(): Promise<Big> {
-    return this.contract.getAmountPerBlock().then(amountPerBlockToWeeklyBudget);
+    return this.contract.getAmtPerSec().then(amountPerSecToWeeklyBudget);
   }
 
   async receivers(): Promise<PoolReceiver[]> {
@@ -148,23 +152,15 @@ export interface PoolReceiver {
 }
 
 // Convert the user-inputed `weeklyBudget` into how much it means per Ethereum block.
-function weeklyBudgetToAmountPerBlock(weeklyBudget: Big): BigNumber {
-  return ethereum.fromBaseUnit(weeklyBudget.div(ESTIMATED_BLOCKS_IN_WEEK));
+function weeklyBudgetToAmountPerSec(weeklyBudget: Big): BigNumber {
+  return ethereum.fromBaseUnit(weeklyBudget.div(SECONDS_IN_A_WEEK));
 }
 
-// The inverse operation of `weeklyBudgetToAmountPerBlock`.
-function amountPerBlockToWeeklyBudget(amountPerBlock: BigNumber): Big {
+// The inverse operation of `weeklyBudgetToAmountPerSec`.
+function amountPerSecToWeeklyBudget(amountPerBlock: BigNumber): Big {
   return ethereum.toBaseUnit(
-    Big(amountPerBlock.toString()).mul(ESTIMATED_BLOCKS_IN_WEEK)
+    Big(amountPerBlock.toString()).mul(SECONDS_IN_A_WEEK)
   );
 }
 
-// The Ethereum network aims to mine a block at every 12.5 seconds.
-const AVG_ETHEREUM_BLOCK_TIME_SECONDS = 12.5;
-
-// The number of seconds in a week
-const AVG_SECONDS_IN_WEEK = 604800;
-
-// The estimated number of Ethereum blocks mined in a week
-const ESTIMATED_BLOCKS_IN_WEEK =
-  AVG_SECONDS_IN_WEEK / AVG_ETHEREUM_BLOCK_TIME_SECONDS;
+const SECONDS_IN_A_WEEK = 604800;
