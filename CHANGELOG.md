@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.13](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.12...v0.1.13) (2021-03-23)
+
+
+### Bug Fixes
+
+* **build:** don't crash app on typescript error ([183fba5](https://github.com/radicle-dev/radicle-upstream/commit/183fba53c8b6de47325551530c95906fcd4ff1dd))
+* **build:** fix bundling of electron main files ([f316539](https://github.com/radicle-dev/radicle-upstream/commit/f316539412f552e9576a042886a2e3117b6c06dc))
+* **ci:** run-p --race kills process ([c8db022](https://github.com/radicle-dev/radicle-upstream/commit/c8db022c25c5fd924ba3f2ca15a173d392f57238))
+* **test:** isolate git config in cypress tests ([4a93462](https://github.com/radicle-dev/radicle-upstream/commit/4a9346259295a40fd3a266a7f622aa299f896d80)), closes [#1631](https://github.com/radicle-dev/radicle-upstream/issues/1631)
+* **tests:** cypress tests wait until bundle is build ([273a295](https://github.com/radicle-dev/radicle-upstream/commit/273a2953e42ad64756f6618427f80fd7fc5b1a20))
+* **ui:** enable Electron context isolation ([785f5d5](https://github.com/radicle-dev/radicle-upstream/commit/785f5d5afeeda67b760e29d7ff5c7317ea31d73b)), closes [#1307](https://github.com/radicle-dev/radicle-upstream/issues/1307)
+* **ui:** Fix waitUnsealed when session already unsealed ([1c1b63c](https://github.com/radicle-dev/radicle-upstream/commit/1c1b63c7a739773f5d3a77349efcb42edbbacc90))
+* **ui:** remove unnecessary call to path.resolve ([2a83d47](https://github.com/radicle-dev/radicle-upstream/commit/2a83d473fd0000ea02630d8628f8d713dee6a00d))
+
 ### [0.1.12](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.11...v0.1.12) (2021-03-09)
 
 
