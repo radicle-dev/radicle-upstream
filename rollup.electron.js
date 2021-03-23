@@ -3,7 +3,7 @@ import externals from "rollup-plugin-node-externals";
 import typescript from "@rollup/plugin-typescript";
 
 export default {
-  input: "native/main.ts",
+  input: "native/index.ts",
   output: {
     sourcemap: true,
     file: "native/bundle.js",

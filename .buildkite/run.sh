@@ -56,6 +56,9 @@ echo "--- Run proxy tests"
   timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
 
+echo "--- Bundle electron main files"
+time yarn run rollup -c rollup.electron.js
+
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
 
