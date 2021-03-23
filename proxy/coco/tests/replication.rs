@@ -293,7 +293,13 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let config = RunConfig {
+        sync: coco::peer::run_config::Sync {
+            interval: Duration::from_millis(500),
+        },
+        ..RunConfig::default()
+    };
+    let alice_peer = build_peer(&alice_tmp_dir, config.clone()).await?;
     let mut alice_events = alice_peer.subscribe();
     let (alice_peer, alice_addrs) = {
         let peer = alice_peer.peer.clone();
@@ -315,7 +321,7 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
                 addrs: alice_addrs,
                 peer_id: alice_peer_id,
             }],
-            RunConfig::default(),
+            config,
         )
         .await?;
         let bob_events = peer.subscribe();

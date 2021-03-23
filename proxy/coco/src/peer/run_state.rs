@@ -280,8 +280,7 @@ impl RunState {
                     }
                 }
 
-                // cmds
-                vec![]
+                cmds
             },
             input::Sync::Started(peer_id) => {
                 self.syncs.insert(*peer_id);

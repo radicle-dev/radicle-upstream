@@ -7,7 +7,7 @@ pub(super) const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from
 
 pub(super) const DEFAULT_STATS_INTERVAL: Duration = Duration::from_millis(1000);
 
-pub(super) const DEFAULT_SYNC_INTERVAL: Duration = std::time::Duration::from_secs(1);
+pub(super) const DEFAULT_SYNC_INTERVAL: Duration = std::time::Duration::from_secs(30);
 
 /// Default period at which we query the waiting room.
 pub(super) const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis(500);
@@ -16,7 +16,7 @@ pub(super) const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis
 pub(crate) const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Set of knobs to change the behaviour of the `RunState`.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Config {
     /// Set of knobs to alter announce behaviour.
     pub announce: Announce,
@@ -29,6 +29,7 @@ pub struct Config {
 }
 
 /// Set of knobs to alter announce behaviour.
+#[derive(Clone, Debug)]
 pub struct Announce {
     /// Determines how often the announcement subroutine should be run.
     pub interval: Duration,
@@ -43,6 +44,7 @@ impl Default for Announce {
 }
 
 /// Set of knobs to alter stats polling.
+#[derive(Clone, Debug)]
 pub struct Stats {
     /// Determines how often the stats subroutine should be run.
     pub interval: Duration,
@@ -57,6 +59,7 @@ impl Default for Stats {
 }
 
 /// Set of knobs to alter sync behaviour.
+#[derive(Clone, Debug)]
 pub struct Sync {
     /// Duration to issue periodic syncs.
     pub interval: Duration,
