@@ -14,7 +14,8 @@
   export let defaultBranch: Branch;
 
   let copyable: Copyable;
-  const instructions = `git tag --annotate merge-request/tag-name && git push --tags rad`;
+  const instructions = `git tag --annotate merge-request/tag-name
+git push --tags rad`;
 
   const filterOptions = [
     {
@@ -86,11 +87,11 @@
       emoji="👯‍♀️"
       text="There’s nothing here yet, get started by opening your first merge request.">
       <Copyable bind:this={copyable} showIcon={false}>
-        <p
+        <pre
           class="typo-text-small-mono"
           style="text-align: left; color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
           {instructions}
-        </p>
+        </pre>
       </Copyable>
       <Button
         variant="primary"

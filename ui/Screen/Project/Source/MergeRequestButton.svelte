@@ -13,7 +13,8 @@
     toggleDropdown();
   };
   const caption = "New Merge Request";
-  const instructions = `git tag --annotate merge-request/tag-name && git push --tags rad`;
+  const instructions = `git tag --annotate merge-request/tag-name
+git push --tags rad`;
 </script>
 
 <style>
@@ -41,11 +42,11 @@
       To create a new merge request, run this in your terminal:
     </p>
     <Copyable bind:this={copyable} showIcon={false}>
-      <p
+      <pre
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
         {instructions}
-      </p>
+      </pre>
     </Copyable>
     <Button
       variant="secondary"
