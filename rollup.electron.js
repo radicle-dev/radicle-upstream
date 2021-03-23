@@ -6,7 +6,7 @@ export default {
   input: "native/main.ts",
   output: {
     sourcemap: true,
-    file: "native/main.comp.js",
+    file: "native/bundle.js",
     format: "cjs",
   },
   plugins: [

@@ -1,4 +1,4 @@
-import app from "./rollup.app";
+import ui from "./rollup.ui";
 import electron from "./rollup.electron";
 
-export default [app, electron];
+export default [ui, electron];
