@@ -9,15 +9,19 @@ echo "--- Installing yarn dependencies"
 yarn install --immutable
 
 echo "--- Loading proxy target cache"
-declare -r target_cache="$CACHE_FOLDER/proxy-target"
 
-mkdir -p "$target_cache"
+declare -r rust_target_cache="$CACHE_FOLDER/proxy-target"
+mkdir -p "$rust_target_cache"
+ln -s "${rust_target_cache}" ./target
 
-if [[ -d "$target_cache" ]]; then
-	ln -s "$target_cache" ./target
-  echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
-else
-  echo "Cache $target_cache not available"
+free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
+min_free_cache_kb=$(( 2 * 1024 * 1024 )) # 2GiB is 25%
+echo "$(( free_cache_space_kb / 1024 )) MiB free space on /cache"
+if [[ $free_cache_space_kb -le $min_free_cache_kb ]]; then
+  echo "Not enough free space on /cache. Deleting ${rust_target_cache}"
+  du -sh /cache/*
+  rm -r "${rust_target_cache}"
+  mkdir -p "${rust_target_cache}"
 fi
 
 echo "--- Updating submodules"
