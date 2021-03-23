@@ -288,6 +288,7 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
+#[ignore] // TODO syncing is disabled since 155fced102ff3fa22946d0992e75a7a7db39ae22
 async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 

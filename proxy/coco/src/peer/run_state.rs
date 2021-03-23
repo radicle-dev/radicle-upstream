@@ -668,6 +668,7 @@ mod test {
     }
 
     #[test]
+    #[ignore] // TODO syncing is disabled since 155fced102ff3fa22946d0992e75a7a7db39ae22
     fn issue_syncs() {
         let num_peers = 5;
 
