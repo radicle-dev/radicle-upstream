@@ -5,7 +5,6 @@
   import { TxButton } from "../../../DesignSystem/Component";
   import TopUp from "../../../DesignSystem/Component/Funding/Pool/TopUp.svelte";
 
-  import { resolve } from "path";
   import * as modal from "../../../src/modal";
   import { store } from "../../../src/funding/pool";
 
@@ -17,7 +16,6 @@
   async function onConfirmed(): Promise<void> {
     await get(store)?.topUp(Big(amount));
     modal.hide();
-    resolve();
   }
 
   async function onCancel(): Promise<void> {

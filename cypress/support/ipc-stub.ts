@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference,spaced-comment
 /// <reference path="../../native/preload.d.ts" />
-import { RendererMessage, MainMessage } from "../../native/ipc-types";
+import type { MainMessage, MainProcess } from "../../native/ipc-types";
 import { EventEmitter } from "events";
 import * as sinon from "sinon";
 
@@ -8,13 +8,12 @@ import * as sinon from "sinon";
 //
 // `ipcRenderer.invoke(msg, params)` uses the `msg` argument to look
 // up the stub and call it.
-interface ElectronStubs {
-  [RendererMessage.GET_VERSION]: sinon.SinonStub;
-  [RendererMessage.DIALOG_SHOWOPENDIALOG]: sinon.SinonStub;
-  [RendererMessage.OPEN_PATH]: sinon.SinonStub;
-  [RendererMessage.OPEN_URL]: sinon.SinonStub;
-  [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => void;
-  [RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH]: sinon.SinonStub;
+interface ElectronStubs extends MainProcess {
+  getVersion: sinon.SinonStub;
+  selectDirectory: sinon.SinonStub;
+  openPath: sinon.SinonStub;
+  openUrl: sinon.SinonStub;
+  getGitGlobalDefaultBranch: sinon.SinonStub;
   sendMessage: (message: MainMessage) => void;
   getClipboard: () => string;
 }
@@ -34,22 +33,14 @@ export function setup(window: Window): void {
   let clipboard = "";
 
   const electronStubs: ElectronStubs = {
-    [RendererMessage.GET_VERSION]: sinon
-      .stub()
-      .returns(Promise.resolve("v1.2.3")),
-    [RendererMessage.DIALOG_SHOWOPENDIALOG]: sinon
-      .stub()
-      .throws(new Error("not implemented")),
-    [RendererMessage.OPEN_PATH]: sinon
-      .stub()
-      .throws(new Error("not implemented")),
-    [RendererMessage.OPEN_URL]: sinon.stub(),
-    [RendererMessage.CLIPBOARD_WRITETEXT]: (text: string) => {
+    getVersion: sinon.stub().returns(Promise.resolve("v1.2.3")),
+    selectDirectory: sinon.stub().throws(new Error("not implemented")),
+    openPath: sinon.stub().throws(new Error("not implemented")),
+    openUrl: sinon.stub(),
+    async clipboardWriteText(text: string): Promise<void> {
       clipboard = text;
     },
-    [RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH]: sinon
-      .stub()
-      .returns(Promise.resolve("trunk")),
+    getGitGlobalDefaultBranch: sinon.stub().returns(Promise.resolve("trunk")),
     sendMessage: (message: MainMessage) => {
       ipcRendererMessages.emit("message", undefined, message);
     },
@@ -62,7 +53,7 @@ export function setup(window: Window): void {
     ipcRenderer: {
       invoke: (msg, params) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return electronStubs[msg](params as any);
+        return (electronStubs as any)[msg as any](params as any);
       },
       on: ipcRendererMessages.on.bind(ipcRendererMessages),
     },

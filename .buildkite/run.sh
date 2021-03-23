@@ -5,13 +5,8 @@ TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
 source .buildkite/env.sh
 
-echo "--- Removing old Yarn temp dir"
-du -hs "$YARN_TEMPDIR"
-rm -rf "$YARN_TEMPDIR"
-mkdir -p "$YARN_TEMPDIR"
-
 echo "--- Installing yarn dependencies"
-time TMPDIR="$YARN_TEMPDIR" yarn install --frozen-lockfile
+yarn install --immutable
 
 echo "--- Loading proxy target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"

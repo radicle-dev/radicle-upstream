@@ -4,8 +4,6 @@
 // don't have access to those, so indlucing `plugin.ts` inside `commands.ts`
 // leads to errors.
 
-import * as path from "path";
-
 export type PeerId = string;
 
 export interface NodeSession {
@@ -28,19 +26,17 @@ export interface ConnectNodeOptions {
   nodeIds: NodeId[];
 }
 
-// A directory that can be used for temporary test data.
-//
-// It is located within this repository so that there is no extra setup
-// necessary when using it locally or on CI. To avoid committing any left-over
-// temp data this directory ignored via .gitignore.
-export const CYPRESS_WORKSPACE_PATH = path.join(__dirname, "../../workspace");
-
 // We us `Promise<null>` because Cypress complains if we use
 // `Promise<void>` or `Promise<undefined>`.
 //
 // See https://docs.cypress.io/api/commands/task.html#Usage
 export interface NodeManagerPlugin {
-  startNode: () => Promise<number>;
+  // Start a node and return the node’s ID which is also the port it
+  // the API is listening on.
+  //
+  // The directory `${dataDir}/node-${id}` will be used to store node
+  // related data.
+  startNode: (dataDir: string) => Promise<number>;
   onboardNode: (options: OnboardNodeOptions) => Promise<NodeSession>;
   connectNodes: (options: ConnectNodeOptions) => Promise<null>;
   stopAllNodes: () => Promise<null>;

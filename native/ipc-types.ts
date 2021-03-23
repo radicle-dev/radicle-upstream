@@ -15,12 +15,24 @@ export interface ProxyError {
   output: string;
 }
 
-// Message kinds sent from the renderer to the main process.
-export enum RendererMessage {
-  CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT",
-  DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG",
-  GET_VERSION = "GET_VERSION",
-  OPEN_PATH = "IPC_OPEN_PATH",
-  OPEN_URL = "IPC_OPEN_URL",
-  GET_GIT_GLOBAL_DEFAULT_BRANCH = "GET_GIT_GLOBAL_DEFAULT_BRANCH",
+// RPC interface exposed by the main process to the renderer.
+export interface MainProcess {
+  clipboardWriteText(text: string): Promise<void>;
+  getVersion(): Promise<string>;
+  openPath(path: string): Promise<void>;
+  openUrl(path: string): Promise<void>;
+  // Open a system dialog to select a directory and returns the
+  // selected directory.
+  selectDirectory(): Promise<string>;
+  // Get the git global default branch, which can be customized by the user.
+  getGitGlobalDefaultBranch(): Promise<string | undefined>;
 }
+
+export const mainProcessMethods: Array<keyof MainProcess> = [
+  "clipboardWriteText",
+  "getVersion",
+  "openPath",
+  "openUrl",
+  "selectDirectory",
+  "getGitGlobalDefaultBranch",
+];

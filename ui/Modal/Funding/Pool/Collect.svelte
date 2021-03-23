@@ -1,6 +1,4 @@
-<script lang="ts">
-  import { resolve } from "path";
-  import { get } from "svelte/store";
+<script lang="typescript">
   import { pop } from "svelte-spa-router";
 
   import { Dai, Remote, TxButton } from "../../../DesignSystem/Component";
@@ -10,12 +8,11 @@
   import { store } from "../../../src/funding/pool";
 
   if ($store === null) pop();
-  $: pool = get(store);
+  $: pool = $store;
 
   async function onConfirmed(): Promise<void> {
     await $store?.collect();
     modal.hide();
-    resolve();
   }
 
   async function onCancel(): Promise<void> {

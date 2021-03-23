@@ -4,33 +4,27 @@ FROM debian:buster-slim
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
+    build-essential \
     ca-certificates \
     clang \
     curl \
-    gcc \
     git \
     jq \
-    libc6-dev \
     libssl-dev \
-    make \
-    pkg-config
+    pkg-config \
+    procps
 
 # install cypress deps
 RUN apt-get -y install --no-install-recommends autoconf git nettle-dev m4 gnupg xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2
 
-# install npm
-RUN curl -sfLS https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get -y update
-RUN apt-get -y --no-install-recommends install build-essential nodejs
-
-# install yarn
-RUN curl -sfLS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt-get -y update
-RUN apt-get -y --no-install-recommends install yarn
-
-RUN apt-get autoremove; \
-    rm -rf /var/lib/apt/lists/*
+# install node and yarn
+RUN set -eux; \
+  curl -sfLS https://deb.nodesource.com/setup_14.x | bash -; \
+  apt-get -y update; \
+  apt-get -y --no-install-recommends install nodejs; \
+  apt-get autoremove; \
+  rm -rf /var/lib/apt/lists/*; \
+  npm install --global yarn;
 
 # Rust toolchain
 # Make sure this is in sync with rust-toolchain!

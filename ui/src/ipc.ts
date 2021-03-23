@@ -13,33 +13,29 @@ const isNodeTestEnv = Boolean(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isCypressTestEnv = Boolean((globalThis as any).cy);
 
-// We have to be able to select empty directories when we create new
-// projects. Unfortunately we can't use the HTML5 open dialog via
-// <input type="file"> for this. Although it lets us select directories,
-// it doesn't fire an event when an empty directory is selected.
-//
-// The workaround is to use the electron native open dialog. As a bonus we
-// can configure it to allow users to create new directories.
-export const getDirectoryPath = (): Promise<string> =>
-  window.electron.ipcRenderer.invoke(
-    ipcTypes.RendererMessage.DIALOG_SHOWOPENDIALOG
-  );
+function makeMainProcessClient(): ipcTypes.MainProcess {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const client: any = {};
+  ipcTypes.mainProcessMethods.forEach(method => {
+    client[method] = (arg: unknown) =>
+      window.electron.ipcRenderer.invoke(method as unknown, arg);
+  });
+  return client;
+}
 
-export const getVersion = (): Promise<string> =>
-  window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.GET_VERSION);
+const mainProcess = makeMainProcessClient();
 
-export const copyToClipboard = (text: string): Promise<void> =>
-  window.electron.ipcRenderer.invoke(
-    ipcTypes.RendererMessage.CLIPBOARD_WRITETEXT,
-    text
-  );
+export const getDirectoryPath = mainProcess.selectDirectory;
 
-export const openPath = (path: string): Promise<void> =>
-  window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.OPEN_PATH, path);
+export const getVersion = mainProcess.getVersion;
 
-export const openUrl = (url: string): void => {
-  window.electron.ipcRenderer.invoke(ipcTypes.RendererMessage.OPEN_URL, url);
-};
+export const copyToClipboard = mainProcess.clipboardWriteText;
+
+export const openPath = mainProcess.openPath;
+
+export const openUrl = mainProcess.openUrl;
+
+export const getGitGlobalDefaultBranch = mainProcess.getGitGlobalDefaultBranch;
 
 // Informs whether it's running in a development environment.
 export const isDev = (): boolean => {
@@ -69,12 +65,5 @@ export function listenProxyError(
         f(message.data);
       }
     }
-  );
-}
-
-// Get the git global default branch, which can be customized by the user.
-export function getGitGlobalDefaultBranch(): Promise<string | undefined> {
-  return window.electron.ipcRenderer.invoke(
-    ipcTypes.RendererMessage.GET_GIT_GLOBAL_DEFAULT_BRANCH
   );
 }

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx ts-node -P tsconfig.scripts.json
+#!/usr/bin/env -S yarn run ts-node
 
 // This script updates `releases.radicle.xyz/latest.json` with the
 // current.

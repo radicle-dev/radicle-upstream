@@ -12,8 +12,8 @@ context("project checkout", () => {
       cy.exec(`mkdir -p ${checkoutPath}`);
 
       ipcStub.getStubs().then(stubs => {
-        stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(checkoutPath);
-        stubs.IPC_OPEN_PATH.returns("");
+        stubs.selectDirectory.returns(checkoutPath);
+        stubs.openPath.returns("");
       });
 
       callback(checkoutPath);
@@ -72,7 +72,7 @@ context("project checkout", () => {
 
           // Make sure mock is set up correctly.
           ipcStub.getStubs().then(stubs => {
-            expect(stubs.IPC_OPEN_PATH.called).to.be.false;
+            expect(stubs.openPath.called).to.be.false;
           });
 
           // Perform the checkout.
@@ -93,7 +93,7 @@ context("project checkout", () => {
           // Make sure we do the electron call for opening the folder in the OS
           // file browser.
           ipcStub.getStubs().then(stubs => {
-            expect(stubs.IPC_OPEN_PATH.called).to.be.true;
+            expect(stubs.openPath.called).to.be.true;
           });
 
           // Make sure the notification gets closed after we open the folder in
