@@ -9945,13 +9945,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radicle-contracts@github:radicle-dev/radicle-contracts#commit=5dd3138d8a731cff59835961deb7295b89520608":
+"radicle-contracts@github:radicle-dev/radicle-contracts#commit=9fb23ac74a403b167a22513fc666779d871d292e":
   version: 0.1.0
-  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=5dd3138d8a731cff59835961deb7295b89520608"
+  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=9fb23ac74a403b167a22513fc666779d871d292e"
   dependencies:
     "@ensdomains/ens": ^0.4.5
     "@uniswap/v2-periphery": ^1.1.0-beta.0
-  checksum: 61c3e1ddc520bdbaf09566cf1cdba38071918886f887a0de9c3fcd55edc0bb3a1fb1bd59cae8a12b6cbfe6201dff9828719c414d540ad7b38a50b6e6798d8610
+  checksum: 896224927d7344fda4bec53d665ea83e1ef7e70ca6e40f7f19422cca329afe6886ae81eb53a78554d9f3f4dec326e83c7dad8c511df847eee216bd5f9ee65997
   languageName: node
   linkType: hard
 
@@ -10011,7 +10011,7 @@ __metadata:
     prettier-plugin-svelte: ^1.4.2
     prompts: ^2.4.0
     pure-svg-code: ^1.0.6
-    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=5dd3138d8a731cff59835961deb7295b89520608"
+    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=9fb23ac74a403b167a22513fc666779d871d292e"
     rollup: ^2.39.0
     rollup-plugin-css-only: ^3.1.0
     rollup-plugin-livereload: ^2.0.0
