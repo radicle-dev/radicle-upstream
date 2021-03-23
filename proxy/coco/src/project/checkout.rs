@@ -101,6 +101,8 @@ where
         let msg = format!("Fetched `{}->{}`", reference, oid);
         log::debug!("{}", msg);
 
+        // FIXME(finto): we should ignore refs that don't start with heads to avoid unintended
+        // side-effects.
         let branch: RefLike = OneLevel::from(reference).into();
         let branch = branch.strip_prefix(remote.name.clone())?;
         let branch = branch.strip_prefix(reflike!("heads")).unwrap_or(branch);
