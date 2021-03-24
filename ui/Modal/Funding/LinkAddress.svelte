@@ -1,5 +1,6 @@
 <script lang="typescript">
   import * as svelteStore from "svelte/store";
+  import * as ethers from "ethers";
 
   import EthToRadicle from "./Link/EthToRadicle.svelte";
   import EnterPassphrase from "./Link/EnterPassphrase.svelte";
@@ -7,6 +8,8 @@
   import RadicleToEth from "./Link/RadicleToEth.svelte";
   import { Remote } from "../../DesignSystem/Component";
 
+  import { claims, claimsAddress } from "../../src/funding/contract";
+  import type { Identity } from "../../scr/identity";
   import * as identity from "../../src/identity";
   import { store as walletStore } from "../../src/wallet";
   import { session } from "../../src/session";
@@ -46,6 +49,15 @@
     }
   }
 
+  async function claimRadicleIdentity(identity: Identity) {
+    const claimsContract = claims(
+      $walletStore.signer,
+      claimsAddress($walletStore.environment)
+    );
+    const payload = ethers.utils.toUtf8Bytes(identity.peerId);
+    await claimsContract.claim(0, payload).then(onContinue);
+  }
+
   // Values
   let passphrase: string = "";
 </script>
@@ -82,7 +94,7 @@
         {address}
         identity={it.identity}
         {onCancel}
-        onSendTransaction={onContinue} />
+        onSendTransaction={() => claimRadicleIdentity(it.identity)} />
     {/if}
   </div>
 </Remote>

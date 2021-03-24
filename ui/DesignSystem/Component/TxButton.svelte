@@ -6,6 +6,7 @@
   import * as error from "../../src/error";
   import * as transaction from "../../src/transaction";
 
+  export let style = "";
   export let variant: ButtonVariant = "primary";
   export let dataCy = "";
   export let onClick: () => Promise<void>;
@@ -42,7 +43,7 @@
   }
 </style>
 
-<span class="tx-button" class:running data-cy={dataCy}>
+<span class="tx-button" {style} class:running data-cy={dataCy}>
   <Button disabled={disabled || running} {variant} on:click={userDidClick}>
     <slot />
   </Button>

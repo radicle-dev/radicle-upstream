@@ -3,6 +3,8 @@ import type { ethers, BigNumber, ContractTransaction, Signer } from "ethers";
 import Big from "big.js";
 
 import {
+  Claims,
+  Claims__factory as ClaimsFactory,
   Erc20Pool,
   Erc20Pool__factory as PoolFactory,
   ERC20,
@@ -52,6 +54,20 @@ export function daiTokenAddress(environment: ethereum.Environment): string {
 
 export function daiToken(signer: Signer, address: string): ERC20 {
   return Erc20Factory.connect(address, signer);
+}
+
+// Get the address of the Claims Contract for the given environment
+export function claimsAddress(environment: ethereum.Environment): string {
+  switch (environment) {
+    case ethereum.Environment.Local:
+      return addresses.claims.local;
+    case ethereum.Environment.Ropsten:
+      return addresses.claims.ropsten;
+  }
+}
+
+export function claims(signer: Signer, address: string): Claims {
+  return ClaimsFactory.connect(address, signer);
 }
 
 // PoolContract is a wrapper type around the actual contract, `Erc20Pool`,

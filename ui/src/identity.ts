@@ -34,9 +34,11 @@ export const store = creationStore.readable;
 // Stub storing the user's claimed Ethereum address
 // TODO(nuno): read this value from the Person's document once implemented
 export const ethereumAddress = persistentStore.local.writable<string | null>(
-  "radicle.identity.ethereum.address.v0",
+  "radicle.identity.ethereum.address.v00",
   null
 );
+
+ethereumAddress.set(null);
 
 interface CreateInput {
   handle: string;
