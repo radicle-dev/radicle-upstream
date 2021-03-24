@@ -7,6 +7,7 @@
   import RadicleToEth from "./Link/RadicleToEth.svelte";
   import { Remote } from "../../DesignSystem/Component";
 
+  import * as identity from "../../src/identity";
   import { store as walletStore } from "../../src/wallet";
   import { session } from "../../src/session";
 
@@ -25,14 +26,15 @@
 
   let currentStep = Step.EthToRadicle;
 
+  $: address = svelteStore.get(walletStore).account()?.address || "";
+
   function onContinue() {
     switch (currentStep) {
       case Step.EthToRadicle:
         currentStep = Step.EnterPassphrase;
         break;
       case Step.EnterPassphrase:
-        // TODO(nuno): Add the eth address to the radicle identity
-        // once such API is available.
+        identity.ethereumAddress.set(address);
         currentStep = Step.SavedToRadicle;
         break;
       case Step.SavedToRadicle:
@@ -46,8 +48,6 @@
 
   // Values
   let passphrase: string = "";
-
-  $: address = svelteStore.get(walletStore).account()?.address || "";
 </script>
 
 <style>

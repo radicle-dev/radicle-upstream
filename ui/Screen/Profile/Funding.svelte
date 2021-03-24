@@ -3,6 +3,7 @@
     selectedEnvironment as ethereumEnvironment,
     supportedNetwork,
   } from "../../src/ethereum";
+  import { ethereumAddress } from "../../src/identity";
   import { store, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 
@@ -10,6 +11,7 @@
   import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
   import WrongNetwork from "../../DesignSystem/Component/Wallet/WrongNetwork.svelte";
 
+  import LinkAddress from "../Funding/LinkAddress.svelte";
   import Pool from "../Funding/Pool.svelte";
 
   $: wallet = $store;
@@ -38,7 +40,16 @@
       account={w.connected.account}
       style={'margin-right: var(--content-padding)'} />
     {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
-      <Pool pool={pool.make(wallet)} />
+      {#if $ethereumAddress === null}
+        <LinkAddress />
+      {:else if $ethereumAddress !== w.connected.account.address}
+        <!-- TODO(nuno): design this state with Brandon -->
+        You connected with an address different than the one you have registered
+        with. Re-connect using your registered ethereum address
+        {$ethereumAddress}
+      {:else}
+        <Pool pool={pool.make(wallet)} />
+      {/if}
     {:else}
       <WrongNetwork expectedNetwork={supportedNetwork($ethereumEnvironment)} />
     {/if}
