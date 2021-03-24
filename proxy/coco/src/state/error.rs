@@ -118,6 +118,10 @@ pub enum Error {
     /// A document payload extension was malformed
     #[error(transparent)]
     MalformedPayloadExt(#[from] librad::identities::payload::ExtError),
+
+    /// Bytes are not valid UTF-8
+    #[error(transparent)]
+    Utf8(#[from] std::str::Utf8Error),
 }
 
 impl From<Infallible> for Error {

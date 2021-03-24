@@ -126,6 +126,7 @@ pub fn init_logging() {
     if pretty_env_logger::try_init().is_ok() {
         let subscriber = FmtSubscriber::builder()
             .with_env_filter(EnvFilter::from_default_env())
+            .pretty()
             .finish();
         tracing::subscriber::set_global_default(subscriber)
             .expect("setting tracing default failed");

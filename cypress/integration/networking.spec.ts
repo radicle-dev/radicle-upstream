@@ -244,4 +244,179 @@ context("p2p networking", () => {
       );
     });
   });
+
+  it("replicates a merge request from contributor to maintainer", () => {
+    const maintainer = {
+      handle: "rudolfs",
+      fullName: "Rūdolfs Ošiņš",
+      passphrase: "1111",
+    };
+    const contributor = {
+      handle: "abbey",
+      fullName: "Abbey Titcomb",
+      passphrase: "2222",
+    };
+
+    commands.withTempDir(tempDirPath => {
+      nodeManager.withTwoOnboardedNodes(
+        {
+          dataDir: tempDirPath,
+          node1User: maintainer,
+          node2User: contributor,
+        },
+        (maintainerNode, contributorNode) => {
+          nodeManager.connectTwoNodes(maintainerNode, contributorNode);
+          nodeManager.asNode(maintainerNode);
+
+          const maintainerProjectsDir = path.join(
+            tempDirPath,
+            "maintainer-projects"
+          );
+          cy.exec(`mkdir -p ${maintainerProjectsDir}`);
+
+          ipcStub.getStubs().then(stubs => {
+            stubs.selectDirectory.returns(maintainerProjectsDir);
+          });
+          const projectName = "new-fancy-project.xyz";
+
+          commands.pick("new-project-button").click();
+          commands.pasteInto(["name"], projectName);
+
+          commands.pick("new-project").click();
+          commands.pick("new-project", "choose-path-button").click();
+          // Make sure UI has time to update path value from stub,
+          // this prevents this spec from failing on CI.
+          cy.wait(500);
+
+          commands.pick("create-project-button").click();
+
+          commands
+            .pickWithContent(["project-screen", "header"], "new-fancy-project")
+            .should("exist");
+
+          commands.pick("project-screen", "header", "urn").then(el => {
+            const urn = el.attr("title");
+            if (!urn) {
+              throw new Error("Could not find URN");
+            }
+
+            nodeManager.asNode(contributorNode);
+
+            cy.log("navigate to the 'Following' tab");
+            commands.pick("following-tab").click();
+            commands.pick("sidebar", "search").click();
+            commands.pasteInto(["search-input"], urn);
+            commands.pick("follow-toggle").click();
+          });
+
+          cy.log("project moved out of the waiting area and is available");
+          commands
+            .pick(
+              "following-tab-contents",
+              "project-list-entry-new-fancy-project.xyz"
+            )
+            .click();
+
+          cy.log("contributor checks out the project");
+          const contributorProjectsDir = path.join(
+            tempDirPath,
+            "contributor-projects"
+          );
+
+          cy.exec(`mkdir -p ${contributorProjectsDir}`);
+
+          ipcStub.getStubs().then(stubs => {
+            stubs.selectDirectory.returns(contributorProjectsDir);
+          });
+          commands.pick("checkout-modal-toggle").click();
+          commands.pick("choose-path-button").click();
+          commands.pick("checkout-button").click();
+
+          cy.log("make sure checkout finishes writing to disk");
+          commands
+            .pickWithContent(["notification"], `${projectName} checked out to`)
+            .should("exist");
+
+          cy.log("add contributor remote on maintainer's node");
+          nodeManager.asNode(maintainerNode);
+
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+
+          commands.pick("peer-selector").click();
+          commands.pick("manage-remotes").click();
+          commands.pick("followed-peers", "peer-abbey").should("not.exist");
+
+          commands.pasteInto(["peer-input"], contributorNode.peerId);
+          commands.pick("follow-button").click();
+
+          cy.log("remote shows up in the waiting area");
+          const shortenedPeerId = contributorNode.peerId.slice(0, 7);
+          commands
+            .pickWithContent(["followed-peers", "peer-abbey"], shortenedPeerId)
+            .should("exist");
+          commands
+            .pickWithContent(
+              ["followed-peers", "peer-abbey", "follow-toggle"],
+              "Following"
+            )
+            .should("exist");
+
+          cy.log(
+            "test merge request replication from contributor to maintainer"
+          );
+          nodeManager.asNode(contributorNode);
+
+          cy.log("add a merge request to the project from contributor's node");
+          const mergeRequestCommitSubject =
+            "Merge request replication from contributor to maintainer";
+          const forkedProjectPath = path.join(
+            contributorProjectsDir,
+            projectName
+          );
+          const mergeRequestTag = "feature-1";
+
+          nodeManager.createMergeRequest({
+            repositoryPath: forkedProjectPath,
+            radHome: contributorNode.radHome,
+            tag: mergeRequestTag,
+            subject: mergeRequestCommitSubject,
+            passphrase: contributor.passphrase,
+            name: contributor.fullName,
+          });
+
+          cy.log("refresh the UI for the merge request to show up");
+          cy.get("body").type("{esc}");
+          commands.pick("sidebar", "profile").click();
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+
+          cy.log("contributor sees the commit related to the merge request");
+          commands.pickWithContent(["peer-selector"], "abbey").should("exist");
+          commands.pickWithContent(["peer-selector"], "you").should("exist");
+          commands.pick("commits-tab").click();
+          commands
+            .pickWithContent(["commits-page"], mergeRequestCommitSubject)
+            .should("exist");
+
+          cy.log("contributor sees the merge request");
+          commands.pick("merge requests-tab").click();
+          commands
+            .pickWithContent(["merge-request-list"], mergeRequestTag)
+            .should("exist");
+
+          cy.log("maintainer received the contributor's merge request");
+          nodeManager.asNode(maintainerNode);
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          commands.pick("merge requests-tab").click();
+          commands
+            .pickWithContent(["merge-request-list"], mergeRequestTag)
+            .click();
+
+          cy.log("maintainer can see the merge request details");
+          commands
+            .pickWithContent(["merge-request-page"], mergeRequestTag)
+            .should("exist");
+        }
+      );
+    });
+  });
 });

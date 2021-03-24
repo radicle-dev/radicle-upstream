@@ -1,3 +1,4 @@
+import * as svelte from "svelte";
 import { get, derived, Readable } from "svelte/store";
 
 import * as error from "../error";
@@ -7,12 +8,18 @@ import * as remote from "../remote";
 import type { Urn } from "../urn";
 import * as validation from "../validation";
 
-interface Screen {
+export interface Screen {
   peers: project.Peer[];
   peerSelection: project.User[];
   project: project.Project;
   requestInProgress: AbortController | null;
   selectedPeer: project.User;
+}
+
+export const contextName = "screen/project";
+
+export function getContext(): Screen {
+  return svelte.getContext<Screen>(contextName);
 }
 
 const screenStore = remote.createStore<Screen>();
