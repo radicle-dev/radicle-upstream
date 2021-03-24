@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx ts-node -P tsconfig.scripts.json
+#!/usr/bin/env -S yarn run ts-node
 
 import { execSync } from "child_process";
 import prompts from "prompts";

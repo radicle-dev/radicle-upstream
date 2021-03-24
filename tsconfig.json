@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["ui/**/*", "native/**/*.ts", "scripts/**/*.ts"],
-  "exclude": ["native/main.comp.js", "node_modules/*", "public/*"],
+  "include": ["ui/**/*", "native/**/*", "scripts/**/*.ts"],
+  "exclude": ["native/bundle.js", "node_modules/*", "public/*"],
   "compilerOptions": {
     /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
     "target": "ES2018",
@@ -97,5 +97,10 @@
     // "experimentalDecorators": true,
     /* Enables experimental support for emitting type metadata for decorators. */
     // "emitDecoratorMetadata": true,
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   }
 }

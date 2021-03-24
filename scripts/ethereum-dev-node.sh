@@ -5,7 +5,7 @@
 
 set -eumo pipefail
 
-npx ganache-cli \
+yarn run ganache-cli \
   --mnemonic "image napkin cruise dentist name plunge crisp muscle nest floor vessel blush" \
   --defaultBalanceEther 1000 \
   "$@" &
@@ -24,7 +24,7 @@ echo "Deploying the Radicle Dev Contracts..."
 echo "Done"
 
 echo "Adding funds to your account..."
-npx ethers --rpc http://localhost:8545 --account-rpc 0 --yes send $(< ./sandbox/.local-eth-account) 10
+yarn run ethers --rpc http://localhost:8545 --account-rpc 0 --yes send $(< ./sandbox/.local-eth-account) 10
 echo "Done"
 
 fg %1

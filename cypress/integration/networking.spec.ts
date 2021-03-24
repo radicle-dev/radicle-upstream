@@ -9,17 +9,19 @@ context("p2p networking", () => {
       "reacts to network state changes",
       { defaultCommandTimeout: 8000 },
       () => {
-        nodeManager.withTwoOnboardedNodes(
-          { node1User: {}, node2User: {} },
-          (node1, node2) => {
-            nodeManager.asNode(node1);
-            commands.pick("connection-status-offline").should("exist");
-            nodeManager.connectTwoNodes(node1, node2);
-            commands.pick("connection-status-online").should("exist");
-            nodeManager.asNode(node2);
-            commands.pick("connection-status-online").should("exist");
-          }
-        );
+        commands.withTempDir(tempDirPath => {
+          nodeManager.withTwoOnboardedNodes(
+            { dataDir: tempDirPath, node1User: {}, node2User: {} },
+            (node1, node2) => {
+              nodeManager.asNode(node1);
+              commands.pick("connection-status-offline").should("exist");
+              nodeManager.connectTwoNodes(node1, node2);
+              commands.pick("connection-status-online").should("exist");
+              nodeManager.asNode(node2);
+              commands.pick("connection-status-online").should("exist");
+            }
+          );
+        });
       }
     );
   });
@@ -39,6 +41,7 @@ context("p2p networking", () => {
     commands.withTempDir(tempDirPath => {
       nodeManager.withTwoOnboardedNodes(
         {
+          dataDir: tempDirPath,
           node1User: maintainer,
           node2User: contributor,
         },
@@ -46,14 +49,14 @@ context("p2p networking", () => {
           nodeManager.connectTwoNodes(maintainerNode, contributorNode);
           nodeManager.asNode(maintainerNode);
 
-          const maintainerNodeWorkingDir = path.join(
+          const maintainerProjectsDir = path.join(
             tempDirPath,
-            "maintainerNode"
+            "maintainer-projects"
           );
-          cy.exec(`mkdir -p ${maintainerNodeWorkingDir}`);
+          cy.exec(`mkdir -p "${maintainerProjectsDir}"`);
 
           ipcStub.getStubs().then(stubs => {
-            stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(maintainerNodeWorkingDir);
+            stubs.selectDirectory.returns(maintainerProjectsDir);
           });
           const projectName = "new-fancy-project.xyz";
 
@@ -136,7 +139,7 @@ context("p2p networking", () => {
           cy.log("test commit replication from maintainer to contributor");
 
           cy.log("add a new commit to the maintainer's project working dir");
-          const projctPath = path.join(maintainerNodeWorkingDir, projectName);
+          const projctPath = path.join(maintainerProjectsDir, projectName);
           const maintainerCommitSubject =
             "Commit replication from maintainer to contributor";
 
@@ -171,15 +174,15 @@ context("p2p networking", () => {
 
           cy.log("test commit replication from contributor to maintainer");
 
-          const contributorNodeWorkingDir = path.join(
+          const contributorProjectsPath = path.join(
             tempDirPath,
-            "contributorNode"
+            "contributor-projects"
           );
 
-          cy.exec(`mkdir -p ${contributorNodeWorkingDir}`);
+          cy.exec(`mkdir -p "${contributorProjectsPath}"`);
 
           ipcStub.getStubs().then(stubs => {
-            stubs.IPC_DIALOG_SHOWOPENDIALOG.returns(contributorNodeWorkingDir);
+            stubs.selectDirectory.returns(contributorProjectsPath);
           });
           commands.pick("checkout-modal-toggle").click();
           commands.pick("choose-path-button").click();
@@ -194,7 +197,7 @@ context("p2p networking", () => {
           const contributorCommitSubject =
             "Commit replication from contributor to maintainer";
           const forkedProjectPath = path.join(
-            contributorNodeWorkingDir,
+            contributorProjectsPath,
             projectName
           );
 

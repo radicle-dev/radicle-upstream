@@ -170,7 +170,7 @@ context("settings", () => {
         .click();
 
       ipcStub.getStubs().then(stubs => {
-        assert.deepEqual(stubs.IPC_OPEN_URL.args, [["ANNOUNCEMENT_URL"]]);
+        assert.deepEqual(stubs.openUrl.args, [["ANNOUNCEMENT_URL"]]);
       });
 
       commands
@@ -213,7 +213,7 @@ context("settings", () => {
       commands.pick("checkout-new-version").click();
 
       ipcStub.getStubs().then(stubs => {
-        assert.deepEqual(stubs.IPC_OPEN_URL.args, [["ANNOUNCEMENT_URL"]]);
+        assert.deepEqual(stubs.openUrl.args, [["ANNOUNCEMENT_URL"]]);
       });
     });
 

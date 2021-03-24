@@ -1,7 +1,7 @@
 {
   "name": "radicle-upstream",
   "productName": "Radicle Upstream",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "author": {
     "name": "radicle team",
     "email": "dev@radicle.xyz",
@@ -19,7 +19,9 @@
     "afterSign": "builder/notarize.js",
     "files": [
       "public/**/*",
-      "native/**/*"
+      "native/bundle.js",
+      "native/bundle.js.map",
+      "native/preload.js"
     ],
     "directories": {
       "buildResources": "public"
@@ -64,7 +66,7 @@
       "minimumSystemVersion": "10.14"
     }
   },
-  "main": "./native/main.comp.js",
+  "main": "./native/bundle.js",
   "devDependencies": {
     "@ethersproject/cli": "^5.0.9",
     "@rollup/plugin-commonjs": "^16.0.0",
@@ -143,23 +145,22 @@
     "prettier:write": "yarn _private:prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
     "reset:state": "scripts/reset-state.sh",
-    "_private:start": "yarn _private:proxy:build:release && yarn run-p --race _private:rollup:watch _private:electron:start",
-    "_private:start:dev": "yarn _private:proxy:build && yarn run-p --race _private:rollup:watch _private:electron:start",
-    "_private:test:integration": "wait-on tcp:17246 && yarn _private:rollup:build && yarn run cypress run; status=$?; [ \"$CI\" = true ] && kill `pidof radicle-proxy`; exit $status",
-    "_private:test:integration:debug": "wait-on tcp:17246 && yarn run cypress open",
-    "_private:electron:start": "wait-on ./public/bundle.js ./native/main.comp.js && NODE_ENV=development electron .",
-    "_private:dist:clean": "rm -rf ./dist && mkdir ./dist && yarn _private:proxy:clean && yarn _private:rollup:clean",
+    "_private:start": "yarn _private:proxy:build:release && yarn _private:start:app",
+    "_private:start:dev": "yarn _private:proxy:build && yarn _private:start:app",
+    "_private:start:app": "run-p --race _private:rollup:ui:watch _private:electron:start",
+    "_private:test:integration": "wait-on tcp:17246 && yarn _private:rollup:ui && yarn run cypress run",
+    "_private:test:integration:debug": "wait-on ./public/bundle.js tcp:17246 && yarn run cypress open",
+    "_private:electron:start": "wait-on ./public/bundle.js && NODE_ENV=development electron native/index.js",
+    "_private:dist:clean": "rm -rf ./dist && mkdir ./dist",
     "_private:prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "_private:proxy:build": "cargo build --all-features --all-targets",
     "_private:proxy:build:release": "cargo build --release",
-    "_private:proxy:clean": "cargo clean",
     "_private:proxy:start:test": "cargo build --release --bin git-remote-rad && cargo run --release -- --test",
     "_private:proxy:start:test:watch": "cargo build --release --bin git-remote-rad && cargo watch -x 'run --release -- --test'",
-    "_private:rollup:build": "yarn _private:rollup:clean && rollup -c --failAfterWarnings",
-    "_private:rollup:build:release": "yarn _private:rollup:clean && ROLLUP_RELEASE=true rollup -c --failAfterWarnings",
-    "_private:rollup:clean": "rm -rf public/bundle.* && rm -f native/main.comp.js",
-    "_private:rollup:watch": "yarn _private:rollup:clean && rollup -c -w",
-    "postinstall": "patch-package"
+    "_private:rollup:build:release": "ROLLUP_RELEASE=true rollup -c --failAfterWarnings",
+    "_private:rollup:ui": "rollup -c rollup.ui.js",
+    "_private:rollup:ui:watch": "rollup -c rollup.ui.js -w",
+    "postinstall": "patch-package && scripts/install-twemoji-assets.sh"
   },
   "dependencies": {
     "@types/big.js": "^6.0.2",
@@ -172,13 +173,12 @@
     "marked": "^2.0.0",
     "mnemonist": "^0.38.1",
     "pure-svg-code": "^1.0.6",
-    "radicle-contracts": "git+https://github.com/radicle-dev/radicle-contracts.git#5dd3138d8a731cff59835961deb7295b89520608",
+    "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=9fb23ac74a403b167a22513fc666779d871d292e",
     "rollup-plugin-css-only": "^3.1.0",
     "semver": "^7.3.4",
     "svelte-persistent-store": "^0.1.6",
     "timeago.js": "^4.0.2",
-    "twemoji": "13.0.1",
-    "twemoji-svg-assets": "git+https://github.com/radicle-dev/twemoji-svg-assets.git#v13.0.1",
+    "twemoji": "13.0.2",
     "uuid": "^8.3.0",
     "validate.js": "^0.13.1"
   },

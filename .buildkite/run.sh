@@ -5,13 +5,8 @@ TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
 source .buildkite/env.sh
 
-echo "--- Removing old Yarn temp dir"
-du -hs "$YARN_TEMPDIR"
-rm -rf "$YARN_TEMPDIR"
-mkdir -p "$YARN_TEMPDIR"
-
 echo "--- Installing yarn dependencies"
-time TMPDIR="$YARN_TEMPDIR" yarn install --frozen-lockfile
+yarn install --immutable
 
 echo "--- Loading proxy target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"
@@ -59,6 +54,9 @@ echo "--- Run proxy tests"
   export RUST_TEST_TIME_INTEGRATION=2000,8000
   timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
+
+echo "--- Bundle electron main files"
+time yarn run rollup -c rollup.electron.js
 
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test

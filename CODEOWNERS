@@ -10,7 +10,7 @@ native/* @radicle-dev/upstream-ui
 *.js @radicle-dev/upstream-ui
 package.json @radicle-dev/upstream-ui
 cypress.json @radicle-dev/upstream-ui
-tsconfig.scripts.json @radicle-dev/upstream-ui
+tsconfig.json @radicle-dev/upstream-ui
 
 # All Proxy related code and files
 fixtures/* @radicle-dev/upstream-proxy

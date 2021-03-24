@@ -7,9 +7,10 @@ import {
 const nodeManagerPlugin = createNodeManagerPlugin();
 
 const startAndOnboardNode = (
+  dataDir: string,
   onboardedUser: OnboardedUser
 ): Cypress.Chainable<NodeSession> => {
-  return nodeManagerPlugin.startNode().then(id => {
+  return nodeManagerPlugin.startNode(dataDir).then(id => {
     cy.log(`Started node ${id}`);
     return nodeManagerPlugin.onboardNode({
       id,
@@ -31,6 +32,7 @@ interface OnboardedUser {
 }
 
 interface WithTwoOnboardedNodesOptions {
+  dataDir: string;
   node1User: OnboardedUser;
   node2User: OnboardedUser;
 }
@@ -64,6 +66,7 @@ git commit --allow-empty -m "${options.subject}"
 git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
     {
       env: {
+        HOME: options.radHome,
         RAD_HOME: options.radHome,
         GIT_AUTHOR_NAME: options.name || "John McPipefail",
         GIT_AUTHOR_EMAIL: options.email || "john@mcpipefail.com",
@@ -79,8 +82,8 @@ export const withTwoOnboardedNodes = (
   callback: (node1: NodeSession, node2: NodeSession) => void
 ): void => {
   withNodeManager(() => {
-    startAndOnboardNode(options.node1User).then(node0 => {
-      startAndOnboardNode(options.node2User).then(node1 => {
+    startAndOnboardNode(options.dataDir, options.node1User).then(node0 => {
+      startAndOnboardNode(options.dataDir, options.node2User).then(node1 => {
         callback(node0, node1);
       });
     });

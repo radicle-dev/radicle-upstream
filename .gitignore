@@ -2,8 +2,8 @@ node_modules
 yarn-error.log
 dist
 .DS_Store
-native/main.comp.js
-native/main.comp.js.map
+native/bundle.js
+native/bundle.js.map
 public/bundle.*
 public/twemoji
 cypress/videos
@@ -14,3 +14,10 @@ proxy/**/target
 proxy/**/*.rs.bk
 /target
 sandbox
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*

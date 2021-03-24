@@ -3,7 +3,6 @@ import * as path from "path";
 import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
-import * as uuid from "uuid";
 import * as fs from "fs-extra";
 
 import type {
@@ -14,7 +13,7 @@ import type {
   OnboardNodeOptions,
   PeerId,
 } from "./shared";
-import { pluginMethods, CYPRESS_WORKSPACE_PATH } from "./shared";
+import { pluginMethods } from "./shared";
 
 type PeerAddress = string;
 type AuthToken = string;
@@ -109,20 +108,20 @@ class Node {
     return this.state.kind;
   }
 
-  constructor(options: { id: NodeId }) {
+  constructor(id: NodeId, dataDir: string) {
     this.logger = new Logger({
-      prefix: `[${options.id}]: `,
+      prefix: `[${id}]: `,
       indentationLevel: 2,
     });
 
-    this.id = options.id;
-    this.httpPort = options.id;
-    this.peerPort = options.id;
-    this.radHome = path.join(CYPRESS_WORKSPACE_PATH, uuid.v4());
+    this.id = id;
+    this.httpPort = id;
+    this.peerPort = id;
+    this.radHome = path.resolve(dataDir, `node-${id}`);
   }
 
   async start() {
-    this.logger.log("starting node");
+    this.logger.log(`starting node ${this.id}`);
 
     await fs.mkdirs(this.radHome);
 
@@ -258,7 +257,7 @@ class NodeManager implements NodeManagerPlugin {
     this.logger = new Logger({ prefix: `[nodeManager] ` });
   }
 
-  private getNode = (id: NodeId) => {
+  private getNode(id: NodeId) {
     const node = this.managedNodes.find(node => {
       return node.id === id;
     });
@@ -268,13 +267,11 @@ class NodeManager implements NodeManagerPlugin {
     }
 
     return node;
-  };
+  }
 
-  async startNode(): Promise<number> {
+  async startNode(dataDir: string): Promise<number> {
     const id = this.nextPort++;
-    this.logger.log("startNode");
-
-    const node = new Node({ id });
+    const node = new Node(id, dataDir);
     await node.start();
     this.managedNodes.push(node);
 
@@ -325,26 +322,6 @@ class NodeManager implements NodeManagerPlugin {
     });
 
     return null;
-  }
-
-  async getOnboardedNodes(): Promise<NodeSession[]> {
-    this.logger.log("getOnboardedNodes");
-
-    const onboardedNodes: NodeSession[] = [];
-
-    this.managedNodes.forEach(node => {
-      if (node.authToken && node.httpPort) {
-        onboardedNodes.push({
-          id: node.id,
-          authToken: node.authToken,
-          peerId: node.peerId,
-          httpPort: node.httpPort,
-          radHome: node.radHome,
-        });
-      }
-    });
-
-    return onboardedNodes;
   }
 
   async stopAllNodes(): Promise<null> {

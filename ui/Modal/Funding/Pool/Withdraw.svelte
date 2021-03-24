@@ -4,7 +4,6 @@
 
   import { Dai, TxButton } from "../../../DesignSystem/Component";
   import { Button, Emoji, Input } from "../../../DesignSystem/Primitive";
-  import { resolve } from "path";
 
   import * as modal from "../../../src/modal";
   import {
@@ -51,7 +50,6 @@
         await pool.withdrawAll();
       }
       modal.hide();
-      resolve();
     }
   }
 
