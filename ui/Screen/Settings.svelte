@@ -5,6 +5,7 @@
   import { selectedEnvironment as ethereumEnvironment } from "../src/ethereum";
   import * as ethereum from "../src/ethereum";
   import * as ipc from "../src/ipc";
+  import * as config from "../src/config";
   import {
     settings,
     seedValidation,
@@ -22,7 +23,6 @@
   import { updateChecker } from "../src/updateChecker";
   import * as path from "../src/path";
   import * as modal from "../src/modal";
-  import { getVersion } from "../src/ipc";
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
@@ -57,7 +57,7 @@
 
   let version = "";
   (async () => {
-    version = await getVersion();
+    version = await ipc.getVersion();
   })();
 
   // We trick TypeScript because svelte cannot deal with type refinement
@@ -280,7 +280,7 @@
         </div>
       </section>
 
-      {#if ipc.isExperimental()}
+      {#if config.isExperimental}
         <section>
           <header>
             <h3>Features</h3>

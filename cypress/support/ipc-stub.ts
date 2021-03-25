@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference,spaced-comment
-/// <reference path="../../native/preload.d.ts" />
+import type {} from "../../native/preload";
 import type { MainMessage, MainProcess } from "../../native/ipc-types";
 import { EventEmitter } from "events";
 import * as sinon from "sinon";

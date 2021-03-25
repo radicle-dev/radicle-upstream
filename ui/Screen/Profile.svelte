@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
-  import { isExperimental } from "../src/ipc";
+  import { isExperimental } from "../src/config";
   import * as path from "../src/path";
   import type { UnsealedSession } from "../src/session";
   import { settings } from "../src/session";
@@ -49,7 +49,7 @@
     },
   ];
 
-  if (isExperimental() && $settings.featureFlags.funding) {
+  if (isExperimental && $settings.featureFlags.funding) {
     topbarMenuItems.push({
       icon: Icon.Wallet,
       title: "Funding",

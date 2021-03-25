@@ -3,7 +3,7 @@ import type { Readable, Writable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
 import * as error from "../../error";
-import { isExperimental } from "../../ipc";
+import * as config from "../../config";
 import type { HorizontalItem } from "../../menu";
 import * as path from "../../path";
 import type { Project, User } from "../../project";
@@ -356,7 +356,7 @@ const mapRevisions = (
 ): [source.Branch | source.Tag] => {
   const branches = revisions.branches as [source.Branch | source.Tag];
   const tags = revisions.tags as [source.Branch | source.Tag];
-  if (isExperimental()) {
+  if (config.isExperimental) {
     return branches.concat(tags) as [source.Branch | source.Tag];
   }
   return branches;
