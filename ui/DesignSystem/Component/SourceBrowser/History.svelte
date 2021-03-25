@@ -2,11 +2,11 @@
   import { createEventDispatcher } from "svelte";
 
   import type { CommitHeader } from "../../../src/source";
-  import type { CommitsHistory } from "../../../src/screen/project/source";
+  import type { GrouppedCommitsHistory } from "../../../src/screen/project/source";
 
   import CommitTeaser from "./CommitTeaser.svelte";
 
-  export let history: CommitsHistory;
+  export let history: GrouppedCommitsHistory;
 
   const dispatch = createEventDispatcher();
   const onSelect = (commit: CommitHeader) => {

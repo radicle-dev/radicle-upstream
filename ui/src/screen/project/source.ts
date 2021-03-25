@@ -50,7 +50,7 @@ export interface Code {
 
 interface Screen {
   code: Writable<Code>;
-  history: CommitsHistory;
+  history: GrouppedCommitsHistory;
   menuItems: HorizontalItem[];
   mergeRequests: source.MergeRequest[];
   peer: User;
@@ -61,7 +61,7 @@ interface Screen {
   tree: Writable<source.Tree>;
 }
 
-export interface CommitsHistory {
+export interface GrouppedCommitsHistory {
   history: CommitGroup[];
   stats: source.Stats;
 }
@@ -106,7 +106,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
       fetchTreeRoot(selectedRevision),
     ]);
-    const grouppedHistory = uiCommitHistory(history);
+    const grouppedHistory = groupCommitHistory(history);
 
     screenStore.success({
       code: writable<Code>(root),
@@ -204,7 +204,7 @@ export const selectRevision = async (
         source.fetchCommits(project.urn, peer.peerId, revision),
         fetchTreeCode(),
       ]);
-      const grouppedHistory = uiCommitHistory(history);
+      const grouppedHistory = groupCommitHistory(history);
       code.set(newCode);
       tree.set(newTree);
 
@@ -401,7 +401,7 @@ const mapRevisions = (
   return branches;
 };
 
-const mergeRequestCommitsStore = remote.createStore<CommitsHistory>();
+const mergeRequestCommitsStore = remote.createStore<GrouppedCommitsHistory>();
 export const mergeRequestCommits = mergeRequestCommitsStore.readable;
 
 export const fetchMergeRequestCommits = async (
@@ -433,8 +433,8 @@ export const fetchMergeRequestCommits = async (
 
       const nothingNewIdx = baseProjectLatestCommit
         ? mrCommits.history.findIndex(
-          ch => ch.sha1 === baseProjectLatestCommit.sha1
-        )
+            ch => ch.sha1 === baseProjectLatestCommit.sha1
+          )
         : 0;
       const newCommits = mrCommits.history.slice(
         0,
@@ -458,7 +458,7 @@ export const fetchMergeRequestCommits = async (
 
 const menuItems = (
   project: Project,
-  history: CommitsHistory,
+  history: GrouppedCommitsHistory,
   mergeRequests: source.MergeRequest[]
 ): HorizontalItem[] => {
   return [
@@ -485,8 +485,10 @@ const menuItems = (
   ];
 };
 
-// Convert a source.CommitsHistory to the UI-friendly `CommitsHistory` form.
-const uiCommitHistory = (history: source.CommitsHistory): CommitsHistory => {
+// Convert a source.CommitsHistory to the UI-friendly `GrouppedCommitsHistory` form.
+const groupCommitHistory = (
+  history: source.CommitsHistory
+): GrouppedCommitsHistory => {
   return { ...history, history: groupCommits(history.history) };
 };
 
