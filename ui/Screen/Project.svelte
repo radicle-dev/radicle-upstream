@@ -1,10 +1,3 @@
-<script context="module" lang="typescript">
-  /* import type { Screen } from "../src/screen/project"; */
-  export function getContext(): void {
-    /* return svelteGetContext<Screen>("project-page"); */
-  }
-</script>
-
 <script lang="typescript">
   import { getContext as svelteGetContext } from "svelte";
   import { push } from "svelte-spa-router";
@@ -14,7 +7,13 @@
   import * as path from "../src/path";
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
-  import { fetch, selectPeer, refresh, store } from "../src/screen/project";
+  import {
+    fetch,
+    selectPeer,
+    refresh,
+    store,
+    contextName,
+  } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
@@ -69,7 +68,7 @@
   <Remote
     {store}
     let:data={{ peerSelection, project, selectedPeer }}
-    context="project-page">
+    context={contextName}>
     <Header.Large
       urn={project.urn}
       name={project.metadata.name}

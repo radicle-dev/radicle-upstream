@@ -10,7 +10,7 @@
     fetchMergeRequestCommits,
     selectCommit,
   } from "../../../src/screen/project/source";
-  import type { Branch, CommitHeader } from "../../../src/source";
+  import type { CommitHeader } from "../../../src/source";
 
   import { Avatar, Icon, Markdown } from "../../../DesignSystem/Primitive";
   import {
@@ -30,7 +30,8 @@
   const session = getContext("session") as UnsealedSession;
 
   const parsed = qs.parse($querystring || "");
-  const defaultBranch = (parsed.defaultBranch as unknown) as Branch;
+  // TODO type this correctly
+  const defaultBranch = (parsed.defaultBranch as unknown) as string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mergeRequest = (parsed.mergeRequest as unknown) as any;
 
@@ -116,7 +117,7 @@
   {/if}
   <div class="action-box">
     <CompareBranches
-      baseBranch={defaultBranch.name}
+      baseBranch={defaultBranch}
       compareBranch={mergeRequest.id} />
     <div class="buttons">
       <CheckoutMergeRequestButton
