@@ -13,12 +13,12 @@ use crate::error;
 #[derive(Debug, thiserror::Error)]
 pub enum Routing {
     /// The keystore is sealed, context does not have a signer.
-    #[error("No session has been created yet")]
+    #[error("no session has been created yet")]
     NoSession,
     /// Query part of the URL cannot be deserialized.
     ///
     /// Used by [`crate::http::with_qs`] and [`crate::http::with_qs_opt`].
-    #[error("Invalid query string \"{query}\": {error}")]
+    #[error("invalid query string \"{query}\": {error}")]
     InvalidQuery {
         /// The original query string
         query: String,
@@ -30,7 +30,7 @@ pub enum Routing {
     /// A query string is required but missing
     ///
     /// Used by [`crate::http::with_qs`].
-    #[error("Required query string is missing")]
+    #[error("required query string is missing")]
     QueryMissing,
 }
 

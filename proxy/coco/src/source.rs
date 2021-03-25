@@ -36,7 +36,7 @@ pub enum Error {
     Git(#[from] git::error::Error),
 
     /// When trying to query a repositories branches, but there are none.
-    #[error("The repository has no branches")]
+    #[error("the repository has no branches")]
     NoBranches,
 
     /// Trying to find a file path which could not be found.

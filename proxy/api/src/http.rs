@@ -305,7 +305,7 @@ mod test {
             assert_eq!(
                 have,
                 serde_json::json!({
-                    "message": "Invalid query string \"value=not_a_number\": failed with reason: invalid digit found in string",
+                    "message": "invalid query string \"value=not_a_number\": failed with reason: invalid digit found in string",
                     "variant": "INVALID_QUERY"
                 })
             );
@@ -341,7 +341,7 @@ mod test {
             assert_eq!(
                 have,
                 serde_json::json!({
-                    "message": "Required query string is missing",
+                    "message": "required query string is missing",
                     "variant": "QUERY_MISSING"
                 })
             );

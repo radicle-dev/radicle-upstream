@@ -28,15 +28,15 @@ pub enum Error {
     Store(#[from] kv::Error),
 
     /// The key store is sealed
-    #[error("Keystore is sealed")]
+    #[error("keystore is sealed")]
     KeystoreSealed,
 
     /// The passphrase was incorrect
-    #[error("Passphrase incorrect")]
+    #[error("passphrase incorrect")]
     WrongPassphrase,
 
     /// The request auth token differs from the one in context
-    #[error("Invalid authentication token")]
+    #[error("invalid authentication token")]
     InvalidAuthCookie,
 
     /// Errors stemming from [`coco::request::waiting_room::WaitingRoom`] interactions.

@@ -24,7 +24,7 @@ pub struct Environment {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Failed to create temporary directory
-    #[error("Failed to create temporary directory")]
+    #[error("failed to create temporary directory")]
     TempDir(
         #[source]
         #[from]
