@@ -1,3 +1,4 @@
+import { get } from "svelte/store";
 import * as ethers from "ethers";
 import type { BigNumber, ContractTransaction, Signer } from "ethers";
 
@@ -13,6 +14,7 @@ import {
 
 import * as ethereum from "../ethereum";
 import type { Identity } from "../identity";
+import * as session from "../session";
 import * as transaction from "../transaction";
 
 const addresses = {
@@ -84,6 +86,12 @@ export class ClaimsContract {
     return this.contract.claim(0, payload).then((tx: ContractTransaction) => {
       transaction.add(transaction.claimRadicleIdentity(tx, identity));
     });
+  }
+
+  async claimed(): Promise<string | null> {
+    // TODO(nuno): look for the latest - if any - claimed Radicle Identity
+    // by the connected wallet's account.
+    return "hybz4nzjwaur4jyoki4fce19xrs6y1iqzmxumzn4kqxqagusoa7k64";
   }
 }
 
