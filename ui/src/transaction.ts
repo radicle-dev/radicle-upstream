@@ -332,6 +332,8 @@ function direction(tx: Tx): Direction {
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
       return Direction.Incoming;
+
+    case TxKind.ClaimRadicleIdentity:
     case TxKind.Erc20Allowance:
     case TxKind.SupportOnboarding:
     case TxKind.TopUp:

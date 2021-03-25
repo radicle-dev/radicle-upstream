@@ -1,7 +1,7 @@
-import type { ethers, BigNumber, ContractTransaction, Signer } from "ethers";
+import * as ethers from "ethers";
+import type { BigNumber, ContractTransaction, Signer } from "ethers";
 
 import Big from "big.js";
-
 import {
   Claims,
   Claims__factory as ClaimsFactory,
@@ -12,6 +12,8 @@ import {
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 import * as ethereum from "../ethereum";
+import type { Identity } from "../identity";
+import * as transaction from "../transaction";
 
 const addresses = {
   pool: {
@@ -68,6 +70,21 @@ export function claimsAddress(environment: ethereum.Environment): string {
 
 export function claims(signer: Signer, address: string): Claims {
   return ClaimsFactory.connect(address, signer);
+}
+
+export class ClaimsContract {
+  contract: Claims;
+
+  constructor(signer: Signer, address: string) {
+    this.contract = ClaimsFactory.connect(address, signer);
+  }
+
+  async claim(identity: Identity): Promise<void> {
+    const payload = ethers.utils.toUtf8Bytes(identity.peerId);
+    return this.contract.claim(0, payload).then((tx: ContractTransaction) => {
+      transaction.add(transaction.claimRadicleIdentity(tx, identity));
+    });
+  }
 }
 
 // PoolContract is a wrapper type around the actual contract, `Erc20Pool`,
