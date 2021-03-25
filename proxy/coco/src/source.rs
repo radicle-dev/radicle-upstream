@@ -157,8 +157,6 @@ pub struct Commit {
     pub stats: CommitStats,
     /// The changeset introduced by this commit.
     pub diff: diff::Diff,
-    /// The branch this commit belongs to.
-    pub branch: Branch,
 }
 
 impl Serialize for Commit {
@@ -170,7 +168,6 @@ impl Serialize for Commit {
         changeset.serialize_field("header", &self.header)?;
         changeset.serialize_field("stats", &self.stats)?;
         changeset.serialize_field("diff", &self.diff)?;
-        changeset.serialize_field("branch", &self.branch)?;
         changeset.end()
     }
 }
@@ -656,29 +653,12 @@ pub fn commit(browser: &mut Browser<'_>, sha1: Oid) -> Result<Commit, Error> {
         }
     }
 
-    let oid: git2::Oid = sha1.into();
-    let branches = browser.revision_branches(oid)?;
-
-    // If a commit figures in more than one branch, there's no real way to know
-    // which branch to show without additional context. So, we choose the first
-    // branch.
-    let branch = branches.first();
-
-    // Known commits always have at least one branch. If this isn't the case, it's a bug.
-    let branch = Branch(
-        branch
-            .expect("known commits must be on a branch")
-            .name
-            .to_string(),
-    );
-
     Ok(Commit {
         header: CommitHeader::from(commit),
         stats: CommitStats {
             additions,
             deletions,
         },
-        branch,
         diff,
     })
 }
