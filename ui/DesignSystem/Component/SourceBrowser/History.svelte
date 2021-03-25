@@ -46,7 +46,7 @@
   }
 </style>
 
-<div class="history" data-cy="history">
+<div data-cy="history">
   {#each history.history as group (group.time)}
     <div class="commit-group" data-cy="commit-group">
       <header>
