@@ -11,6 +11,8 @@
   import { claims, claimsAddress } from "../../src/funding/contract";
   import type { Identity } from "../../scr/identity";
   import * as identity from "../../src/identity";
+  import * as transaction from "../../src/transaction";
+
   import { store as walletStore } from "../../src/wallet";
   import { session } from "../../src/session";
 
@@ -55,7 +57,12 @@
       claimsAddress($walletStore.environment)
     );
     const payload = ethers.utils.toUtf8Bytes(identity.peerId);
-    await claimsContract.claim(0, payload).then(onContinue);
+    await claimsContract
+      .claim(0, payload)
+      .then((ctx: ethers.ContractTransaction) => {
+        transaction.add(transaction.claimRadicleIdentity(ctx, identity));
+        onContinue();
+      });
   }
 
   // Values

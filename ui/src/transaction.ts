@@ -5,6 +5,7 @@ import Big from "big.js";
 import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
+import type { Identity } from "./identity";
 import * as error from "./error";
 import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
@@ -42,12 +43,19 @@ export interface TxData {
 
 // The meta transactions that we provide to the user.
 type MetaTx =
+  | ClaimRadicleIdentity
   | Erc20Allowance
   | SupportOnboarding
   | TopUp
   | CollectFunds
   | UpdateSupport
   | Withdraw;
+
+interface ClaimRadicleIdentity {
+  kind: TxKind.ClaimRadicleIdentity;
+  // The claimed Radicle Identity
+  identity: Identity;
+}
 
 interface Erc20Allowance {
   kind: TxKind.Erc20Allowance;
@@ -87,6 +95,7 @@ interface UpdateSupport {
 }
 
 export enum TxKind {
+  ClaimRadicleIdentity = "Claim Radicle Identity",
   Erc20Allowance = "ERC-20 Allowance",
   SupportOnboarding = "Support Onboarding",
   Withdraw = "Withdraw",
@@ -106,6 +115,12 @@ export enum TxStatus {
 
 /* Smart constructors for `Tx` values */
 
+export function claimRadicleIdentity(
+  txc: ContractTransaction,
+  identity: Identity
+): Tx {
+  return { ...txData(txc), kind: TxKind.ClaimRadicleIdentity, identity };
+}
 export function erc20Allowance(txc: ContractTransaction): Tx {
   return { ...txData(txc), kind: TxKind.Erc20Allowance };
 }
