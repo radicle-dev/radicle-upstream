@@ -1,6 +1,7 @@
 <script lang="typescript">
   import { get } from "svelte/store";
   import Router, { location } from "svelte-spa-router";
+  import * as router from "svelte-spa-router/wrap";
 
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
@@ -41,7 +42,12 @@
     "/projects/:urn/source/commit/:hash": Commit,
     "/projects/:urn/source/commits": Commits,
     "/projects/:urn/source/merge_requests": MergeRequests,
-    "/projects/:urn/source/merge_request": MergeRequest,
+    "/projects/:urn/source/merge_request": router.wrap({
+      component: MergeRequest,
+      props: {
+        project,
+      },
+    }),
   };
   let mergeRequestsTab = path.active(
     path.projectSourceMergeRequests(project.urn),

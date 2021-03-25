@@ -1,6 +1,8 @@
 <script lang="typescript">
-  import type { MergeRequest } from "../../../src/source";
+  import * as router from "svelte-spa-router";
 
+  import * as path from "../../../src/path";
+  import type { MergeRequest } from "../../../src/source";
   import {
     Copyable,
     EmptyState,
@@ -8,10 +10,28 @@
     SegmentedControl,
   } from "../../../DesignSystem/Component";
   import { Button } from "../../../DesignSystem/Primitive";
+  import type { Project } from "../../../src/project";
+
   import MergeRequestCard from "./MergeRequestCard.svelte";
 
   export let mergeRequests: MergeRequest[];
-  export let defaultBranch: string;
+  export let project: Project;
+
+  const defaultBranch = project.metadata.defaultBranch;
+
+  const selectMergeRequest = ({
+    detail: mergeRequest,
+  }: {
+    detail: MergeRequest;
+  }) => {
+    router.push(
+      path.projectSourceMergeRequest(
+        project.urn,
+        mergeRequest,
+        project.metadata.defaultBranch
+      )
+    );
+  };
 
   let copyable: Copyable;
   const instructions = `git tag --annotate merge-request/tag-name
@@ -74,7 +94,7 @@ git push --tags rad`;
     <List
       dataCy="merge-request-list"
       items={filteredMergeRequests}
-      on:select
+      on:select={selectMergeRequest}
       let:item={mergeRequest}
       style="margin: 0 auto; overflow: visible;">
       <div class="list-item" data-cy={`project-list-entry-${mergeRequest}`}>

@@ -115,7 +115,7 @@ export interface Tag {
 export interface MergeRequest {
   id: string;
   merged: boolean;
-  peer_id: string;
+  peerId: string;
   identity?: Identity;
   title?: string;
   description?: string;

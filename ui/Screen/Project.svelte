@@ -7,13 +7,7 @@
   import * as path from "../src/path";
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
-  import {
-    fetch,
-    selectPeer,
-    refresh,
-    store,
-    contextName,
-  } from "../src/screen/project";
+  import { fetch, selectPeer, refresh, store } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
@@ -65,10 +59,7 @@
 </script>
 
 <SidebarLayout dataCy="project-screen">
-  <Remote
-    {store}
-    let:data={{ peerSelection, project, selectedPeer }}
-    context={contextName}>
+  <Remote {store} let:data={{ peerSelection, project, selectedPeer }}>
     <Header.Large
       urn={project.urn}
       name={project.metadata.name}

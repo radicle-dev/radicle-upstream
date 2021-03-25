@@ -1,4 +1,3 @@
-import * as svelte from "svelte";
 import { get, derived, Readable } from "svelte/store";
 
 import * as error from "../error";
@@ -14,12 +13,6 @@ export interface Screen {
   project: project.Project;
   requestInProgress: AbortController | null;
   selectedPeer: project.User;
-}
-
-export const contextName = "screen/project";
-
-export function getContext(): Screen {
-  return svelte.getContext<Screen>(contextName);
 }
 
 const screenStore = remote.createStore<Screen>();

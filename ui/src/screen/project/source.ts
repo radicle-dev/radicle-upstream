@@ -263,24 +263,6 @@ export const selectCommit = (commit: source.CommitHeader): void => {
   }
 };
 
-export const selectMergeRequest = (mergeRequest: source.MergeRequest): void => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const {
-      data: { project },
-    } = screen;
-
-    push(
-      path.projectSourceMergeRequest(
-        project.urn,
-        mergeRequest,
-        project.metadata.defaultBranch
-      )
-    );
-  }
-};
-
 const defaultRevision = (
   project: Project,
   revisions: source.Revisions
@@ -424,7 +406,7 @@ export const fetchMergeRequestCommits = async (
 
       const mrCommits = await source.fetchCommits(
         project.urn,
-        mergeRequest.peer_id,
+        mergeRequest.peerId,
         {
           type: source.RevisionType.Sha,
           sha: mergeRequest.commit,

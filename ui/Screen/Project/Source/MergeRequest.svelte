@@ -4,13 +4,14 @@
   import { getContext } from "svelte";
 
   import { isMaintainer } from "../../../src/project";
+  import type { Project } from "../../../src/project";
   import type { UnsealedSession } from "../../../src/session";
   import {
     mergeRequestCommits as store,
     fetchMergeRequestCommits,
     selectCommit,
   } from "../../../src/screen/project/source";
-  import type { CommitHeader } from "../../../src/source";
+  import type { CommitHeader, MergeRequest } from "../../../src/source";
 
   import { Avatar, Icon, Markdown } from "../../../DesignSystem/Primitive";
   import {
@@ -21,7 +22,8 @@
   import History from "../../../DesignSystem/Component/SourceBrowser/History.svelte";
   import CheckoutMergeRequestButton from "./CheckoutMergeRequestButton.svelte";
   import AcceptMergeRequestButton from "./AcceptMergeRequestButton.svelte";
-  import * as projectScreen from "../../../src/screen/project";
+
+  export let project: Project;
 
   const onSelect = ({ detail: commit }: { detail: CommitHeader }) => {
     selectCommit(commit);
@@ -30,15 +32,10 @@
   const session = getContext("session") as UnsealedSession;
 
   const parsed = qs.parse($querystring || "");
-  // TODO type this correctly
   const defaultBranch = (parsed.defaultBranch as unknown) as string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mergeRequest = (parsed.mergeRequest as unknown) as any;
+  const mergeRequest = (parsed.mergeRequest as unknown) as MergeRequest;
 
-  const mergeInfo =
-    mergeRequest.mergeRequest && mergeRequest.mergeRequest.merged
-      ? "Closed"
-      : "Opened";
+  const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
 
   fetchMergeRequestCommits(mergeRequest);
 </script>
@@ -122,8 +119,8 @@
     <div class="buttons">
       <CheckoutMergeRequestButton
         id={mergeRequest.id}
-        peerId={mergeRequest.identity.peerId} />
-      {#if isMaintainer(session.identity.urn, projectScreen.getContext().project)}
+        peerId={mergeRequest.peerId} />
+      {#if isMaintainer(session.identity.urn, project)}
         <AcceptMergeRequestButton id={mergeRequest.id} />
       {/if}
     </div>

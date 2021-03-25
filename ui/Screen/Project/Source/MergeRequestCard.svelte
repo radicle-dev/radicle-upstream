@@ -7,7 +7,7 @@
   export let mergeRequest: MergeRequest;
   export let defaultBranch: string;
 
-  const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
+  const mergeInfo = mergeRequest.merged ? "Closed" : "Opened";
 </script>
 
 <style>
@@ -48,42 +48,35 @@
   }
 </style>
 
-{#if mergeRequest}
-  <div class="merge-request-card">
-    <div class="left">
-      <Icon.Revision style="margin-right: 0.5rem" />
-      <div>
-        <div class="info-column">
-          <div class="title-row">
-            <p
-              class="typo-text-bold typo-overflow-ellipsis"
-              title={mergeRequest.id}>
-              {#if mergeRequest.title}
-                {mergeRequest.title}
-              {:else}{mergeRequest.id}{/if}
-            </p>
-          </div>
-          <div class="desc-row">
-            <p style="color: var(--color-foreground-level-5);">
-              {mergeInfo}
-              by
-            </p>
-            {#if mergeRequest.identity}
-              <Avatar
-                avatarFallback={mergeRequest.identity.avatarFallback}
-                size="small"
-                style="display: flex; justify-content: flex-start; margin-left: 0.5rem;"
-                title={mergeRequest.identity.metadata.handle}
-                variant="circle" />
-            {:else}
-              <p style="margin-left: 0.5rem;">{mergeRequest.peer_id}</p>
-            {/if}
-          </div>
+<div class="merge-request-card">
+  <div class="left">
+    <Icon.Revision style="margin-right: 0.5rem" />
+    <div>
+      <div class="info-column">
+        <div class="title-row">
+          <p
+            class="typo-text-bold typo-overflow-ellipsis"
+            title={mergeRequest.id}>
+            {#if mergeRequest.title}
+              {mergeRequest.title}
+            {:else}{mergeRequest.id}{/if}
+          </p>
+        </div>
+        <div class="desc-row">
+          <p style="color: var(--color-foreground-level-5);">{mergeInfo} by</p>
+          {#if mergeRequest.identity}
+            <Avatar
+              avatarFallback={mergeRequest.identity.avatarFallback}
+              size="small"
+              style="display: flex; justify-content: flex-start; margin-left: 0.5rem;"
+              title={mergeRequest.identity.metadata.handle}
+              variant="circle" />
+          {:else}
+            <p style="margin-left: 0.5rem;">{mergeRequest.peerId}</p>
+          {/if}
         </div>
       </div>
     </div>
-    <CompareBranches
-      baseBranch={defaultBranch}
-      compareBranch={mergeRequest.id} />
   </div>
-{/if}
+  <CompareBranches baseBranch={defaultBranch} compareBranch={mergeRequest.id} />
+</div>
