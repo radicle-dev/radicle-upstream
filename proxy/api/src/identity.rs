@@ -69,6 +69,18 @@ pub struct Metadata {
     pub ethereum: Option<Ethereum>,
 }
 
+impl Metadata {
+    pub fn update_payload(self, mut payload: PersonPayload) -> Result<PersonPayload, ExtError> {
+        payload.subject = Person {
+            name: self.handle.into(),
+        };
+        if let Some(ethereum) = self.ethereum {
+            payload.set_ext(EthereumClaimExtV1::from(ethereum))?;
+        };
+        Ok(payload)
+    }
+}
+
 impl TryFrom<Metadata> for PersonPayload {
     type Error = ExtError;
 
@@ -121,6 +133,25 @@ pub async fn create(
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
     let user = coco::state::init_owner(peer, metadata).await?;
+    Ok((peer.peer_id(), user.into_inner().into_inner()).into())
+}
+
+/// Updates the new identity metadata.
+///
+/// # Errors
+pub async fn update(
+    peer: &coco::net::peer::Peer<BoxedSigner>,
+    metadata: Metadata,
+) -> Result<Identity, error::Error> {
+    let old_payload = coco::state::default_owner(peer)
+        .await?
+        .ok_or(coco::state::Error::MissingOwner)?
+        .payload()
+        .clone();
+    let new_payload = metadata
+        .update_payload(old_payload)
+        .map_err(coco::state::Error::from)?;
+    let user = coco::state::update_owner_payload(peer, new_payload).await?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
