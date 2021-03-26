@@ -72,7 +72,7 @@ impl Keystore for FileStore {
             Ok(_keypair) => Err(FileError::KeyExists.into()),
             Err(FileError::NoSuchKey) => {
                 let key = keys::SecretKey::new();
-                store.put_key(key)?;
+                store.put_key(key.clone())?;
                 Ok(key)
             },
             Err(err) => Err(err.into()),
@@ -110,7 +110,7 @@ impl Keystore for MemoryStore {
         }
 
         let key = keys::SecretKey::new();
-        *key_and_passphrase = Some((key, passphrase));
+        *key_and_passphrase = Some((key.clone(), passphrase));
         Ok(key)
     }
 
@@ -121,7 +121,7 @@ impl Keystore for MemoryStore {
             .expect("Failed to access memory key")
         {
             if *stored_passphrase == passphrase {
-                Ok(*key)
+                Ok(key.clone())
             } else {
                 Err(FileError::Crypto(SecretBoxError::InvalidKey).into())
             }

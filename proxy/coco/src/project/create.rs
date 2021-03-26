@@ -2,15 +2,8 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use librad::{
-    git::local::url::LocalUrl,
-    git_ext::OneLevel,
-    keys,
-    meta::{entity, project},
-};
+use librad::{git::local::url::LocalUrl, git_ext::OneLevel};
 use radicle_surf::vcs::git::git2;
-
-use crate::user::User;
 
 pub mod validation;
 
@@ -20,10 +13,6 @@ pub enum Error {
     /// Internal git error while trying to create the project.
     #[error(transparent)]
     Git(#[from] git2::Error),
-
-    /// Entity meta error.
-    #[error(transparent)]
-    Meta(#[from] entity::Error),
 
     /// An error occurred while validating input.
     #[error(transparent)]
@@ -67,7 +56,8 @@ impl Repo {
     }
 
     /// Get the full path of the `Repo` creation data.
-    fn full_path(&self) -> PathBuf {
+    #[must_use]
+    pub fn full_path(&self) -> PathBuf {
         match self {
             Self::Existing { path } => path.to_path_buf(),
             Self::New { name, path } => path.join(name),
@@ -97,29 +87,6 @@ impl Create {
     pub fn validate(self, url: LocalUrl) -> Result<validation::Repository, validation::Error> {
         validation::Repository::validate(self.repo, url, self.default_branch)
     }
-
-    /// Build a [`project::Project`], where the provided [`User`] is the owner, and the set of
-    /// keys starts with the provided [`keys::PublicKey`].
-    ///
-    /// # Errors
-    ///
-    ///   * Failed to build the project entity.
-    pub fn build(
-        &self,
-        owner: &User,
-        key: keys::PublicKey,
-    ) -> Result<project::Project<entity::Draft>, Error> {
-        let name = self.repo.project_name()?;
-        let project = project::Project::<entity::Draft>::create(name, owner.urn())?
-            .to_builder()
-            .set_description(self.description.clone())
-            .set_default_branch(self.default_branch.as_str().to_string())
-            .add_key(key)
-            .add_certifier(owner.urn())
-            .build()?;
-
-        Ok(project)
-    }
 }
 
 // Clippy is stupid and doesn't realise the `Create`s here are different types than `Self`.
@@ -139,27 +106,21 @@ impl Create {
 
 #[cfg(test)]
 mod test {
+    use std::convert::TryFrom as _;
+
     use assert_matches::assert_matches;
 
-    use librad::{
-        git_ext::OneLevel,
-        hash::Hash,
-        keys::SecretKey,
-        peer::PeerId,
-        reflike,
-        uri::{self, RadUrn},
-    };
+    use librad::{git_ext::OneLevel, identities::Urn, reflike};
+    use radicle_git_ext::Oid;
 
     use super::*;
 
     #[test]
     fn validation_fails_on_non_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>>
     {
-        let peer_id = PeerId::from(SecretKey::new());
-        let url = LocalUrl::from_urn(
-            RadUrn::new(Hash::hash(b"geez"), uri::Protocol::Git, uri::Path::empty()),
-            peer_id,
-        );
+        let url = LocalUrl::from(Urn::new(Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
         std::fs::create_dir(exists.clone())?;
@@ -183,11 +144,9 @@ mod test {
 
     #[test]
     fn validation_succeeds_on_empty_existing_directory() -> Result<(), Box<dyn std::error::Error>> {
-        let peer_id = PeerId::from(SecretKey::new());
-        let url = LocalUrl::from_urn(
-            RadUrn::new(Hash::hash(b"geez"), uri::Protocol::Git, uri::Path::empty()),
-            peer_id,
-        );
+        let url = LocalUrl::from(Urn::new(Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?));
         let tmpdir = tempfile::tempdir().expect("failed to create tmp dir");
         let exists = tmpdir.path().join("exists");
         std::fs::create_dir(exists)?;

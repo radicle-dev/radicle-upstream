@@ -3,6 +3,8 @@
 use serde::Deserialize;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
+use coco::signer::BoxedSigner;
+
 use crate::{context, notification::Subscriptions};
 
 mod avatar;
@@ -101,19 +103,17 @@ pub fn api(
 /// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::user::User,)> {
+fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::LocalIdentity,)> {
     warp::any()
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {
             let session =
                 crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
 
-            let user = ctx
-                .state
-                .get_user(session.identity.urn)
+            let user = coco::state::get_user(&ctx.peer, session.identity.urn)
                 .await
-                .expect("unable to get coco user");
-            let user = coco::user::verify(user).expect("unable to verify user");
+                .expect("failed to get local identity")
+                .expect("the local identity is missing");
 
             Ok::<_, Rejection>(user)
         })
@@ -212,11 +212,11 @@ where
 /// Guard against access of wrong paths by the owners peer id.
 #[must_use]
 pub fn guard_self_peer_id(
-    state: &coco::State,
+    peer: &coco::net::peer::Peer<BoxedSigner>,
     peer_id: Option<coco::PeerId>,
 ) -> Option<coco::PeerId> {
     match peer_id {
-        Some(peer_id) if peer_id == state.peer_id() => None,
+        Some(peer_id) if peer_id == peer.peer_id() => None,
         Some(peer_id) => Some(peer_id),
         None => None,
     }
@@ -225,14 +225,14 @@ pub fn guard_self_peer_id(
 /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
 #[must_use]
 pub fn guard_self_revision(
-    state: &coco::State,
-    revision: Option<coco::Revision<coco::PeerId>>,
-) -> Option<coco::Revision<coco::PeerId>> {
+    peer: &coco::net::peer::Peer<BoxedSigner>,
+    revision: Option<coco::source::Revision<coco::PeerId>>,
+) -> Option<coco::source::Revision<coco::PeerId>> {
     revision.map(|r| {
-        if let coco::Revision::Branch { name, peer_id } = r {
-            coco::Revision::Branch {
+        if let coco::source::Revision::Branch { name, peer_id } = r {
+            coco::source::Revision::Branch {
                 name,
-                peer_id: guard_self_peer_id(state, peer_id),
+                peer_id: guard_self_peer_id(peer, peer_id),
             }
         } else {
             r
@@ -305,7 +305,7 @@ mod test {
             assert_eq!(
                 have,
                 serde_json::json!({
-                    "message": "Invalid query string \"value=not_a_number\": failed with reason: invalid digit found in string",
+                    "message": "invalid query string \"value=not_a_number\": failed with reason: invalid digit found in string",
                     "variant": "INVALID_QUERY"
                 })
             );
@@ -341,7 +341,7 @@ mod test {
             assert_eq!(
                 have,
                 serde_json::json!({
-                    "message": "Required query string is missing",
+                    "message": "required query string is missing",
                     "variant": "QUERY_MISSING"
                 })
             );

@@ -24,8 +24,6 @@ pub fn local_peer_status_stream(
 
 /// Notification handlers to serve event streams.
 mod handler {
-    use std::convert::Infallible;
-
     use futures::StreamExt as _;
     use warp::{sse, Rejection, Reply};
 
@@ -41,7 +39,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let mut peer_control = ctx.peer_control;
         let current_status = peer_control.current_status().await;
-        let subscriber = subscriptions.subscribe().await;
+        let mut subscriber = subscriptions.subscribe().await;
 
         let initial = futures::stream::iter(vec![Notification::LocalPeer(
             notification::LocalPeer::StatusChanged {
@@ -51,12 +49,13 @@ mod handler {
         )]);
         let filter = |notification: Notification| async move {
             match notification.clone() {
-                Notification::LocalPeer(event) => Some(Ok::<_, Infallible>(sse::json(event))),
+                Notification::LocalPeer(event) => Some(sse::Event::default().json_data(event)),
             }
         };
+        let stream = async_stream::stream! { while let Some(notification) = subscriber.recv().await { yield notification } };
 
         Ok(sse::reply(
-            sse::keep_alive().stream(initial.chain(subscriber).filter_map(filter)),
+            sse::keep_alive().stream(initial.chain(stream).filter_map(filter)),
         ))
     }
 }

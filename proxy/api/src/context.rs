@@ -6,7 +6,7 @@ use data_encoding::HEXLOWER;
 use rand::Rng as _;
 use tokio::sync::RwLock;
 
-use coco::PeerControl;
+use coco::{signer::BoxedSigner, PeerControl};
 
 use crate::service;
 
@@ -152,8 +152,8 @@ impl From<Sealed> for Context {
 pub struct Unsealed {
     /// Handle to inspect state and perform actions on the currently running local [`coco::Peer`].
     pub peer_control: PeerControl,
-    /// [`coco::State`] to operate on the local monorepo.
-    pub state: coco::State,
+    /// [`coco::net::peer::Peer`] to operate on the local monorepo.
+    pub peer: coco::net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
@@ -198,34 +198,42 @@ impl Unsealed {
     /// * coco key creation fails
     /// * creation of the [`kv::Store`] fails
     #[cfg(test)]
-    pub async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
+    pub fn tmp(
+        tmp_dir: &tempfile::TempDir,
+    ) -> Result<(Self, impl std::future::Future<Output = ()>), crate::error::Error> {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let key = coco::keys::SecretKey::new();
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
-        let (peer_control, state) = {
-            let config = coco::config::default(key, tmp_dir.path())?;
-            let (peer, state) =
-                coco::into_peer_state(config, signer.clone(), store.clone(), RunConfig::default())
-                    .await?;
+        let (peer_control, peer, run_handle) = {
+            let config = coco::config::default(signer, tmp_dir.path())?;
+            let disco = coco::config::static_seed_discovery(&[]);
+            let coco_peer = coco::Peer::new(config, disco, store.clone(), RunConfig::default());
+            let peer = coco_peer.peer.clone();
 
-            let peer_control = peer.control();
-            tokio::spawn(peer.into_running());
-
-            (peer_control, state)
+            let peer_control = coco_peer.control();
+            let run_handle = async move {
+                if let Err(err) = coco_peer.run().await {
+                    log::error!("peer run error: {:?}", err);
+                }
+            };
+            (peer_control, peer, run_handle)
         };
 
-        Ok(Self {
-            peer_control,
-            state,
-            store,
-            test: false,
-            http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
-            default_seeds: vec![],
-            service_handle: service::Handle::dummy(),
-            auth_token: Arc::new(RwLock::new(None)),
-            keystore: Arc::new(coco::keystore::memory()),
-        })
+        Ok((
+            Self {
+                peer_control,
+                peer,
+                store,
+                test: false,
+                http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
+                default_seeds: vec![],
+                service_handle: service::Handle::dummy(),
+                auth_token: Arc::new(RwLock::new(None)),
+                keystore: Arc::new(coco::keystore::memory()),
+            },
+            run_handle,
+        ))
     }
 }

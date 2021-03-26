@@ -1,9 +1,6 @@
 use std::time::{Duration, SystemTime};
 
-use librad::{
-    peer::PeerId,
-    uri::{RadUrl, RadUrn},
-};
+use librad::{git::Urn, peer::PeerId};
 
 use crate::{peer::control, request::waiting_room::WaitingRoom};
 
@@ -15,16 +12,15 @@ pub enum Command {
     Announce,
     /// Answer control requests.
     Control(Control),
-    /// Update the include file for the provided `RadUrn`.
-    Include(RadUrn),
-    /// Tell the subroutine to persist the `WaitingRoom`.
+    /// Update the include file for the provided [`Urn`].
+    Include(Urn),
+    /// Tell the subroutine to persist the [`WaitingRoom`].
     PersistWaitingRoom(WaitingRoom<SystemTime, Duration>),
     /// Fulfill request commands.
     Request(Request),
-    /// Initiate a full sync with `PeerId`.
+    /// Initiate a full sync with [`PeerId`].
     SyncPeer(PeerId),
-    /// Start sync timeout.
-    StartSyncTimeout(Duration),
+    Stats,
     /// Emit an external event to all subscribers
     EmitEvent(super::Event),
 }
@@ -39,12 +35,12 @@ pub enum Control {
 /// Commands issued when requesting an identity from the network.
 #[derive(Debug, PartialEq)]
 pub enum Request {
-    /// Tell the subroutine to attempt a clone from the given `RadUrl`.
-    Clone(RadUrl),
-    /// Tell the subroutine that we should query for the given `RadUrn` on the network.
-    Query(RadUrn),
-    /// The request for [`RadUrn`] timed out.
-    TimedOut(RadUrn),
+    /// Tell the subroutine to attempt a clone from the given [`Urn`] and [`PeerId`].
+    Clone(Urn, PeerId),
+    /// Tell the subroutine that we should query for the given [`Urn`] on the network.
+    Query(Urn),
+    /// The request for [`Urn`] timed out.
+    TimedOut(Urn),
 }
 
 impl From<Request> for Command {

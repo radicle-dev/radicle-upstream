@@ -1,20 +1,31 @@
 //! Utility for fixture data in the monorepo.
 
-use std::{convert::TryFrom, io, path};
+use std::{env, io, path, str::FromStr};
+
+use nonempty::NonEmpty;
 
 use librad::{
-    git_ext::OneLevel,
+    git::{
+        identities::local::LocalIdentity,
+        local::{transport, url::LocalUrl},
+        types::{
+            remote::{LocalPushspec, Remote},
+            Force, Pushspec, Refspec,
+        },
+    },
+    identities::Project,
     keys,
-    meta::{entity, project as librad_project},
+    net::peer::Peer,
     peer::PeerId,
-    reflike,
+    reflike, refspec_pattern,
+    signer::BoxedSigner,
 };
+use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
 use crate::{
-    config, project,
-    state::{Error, State},
-    user::User,
+    project,
+    state::{self, Error},
 };
 
 /// Generate a fresh `PeerId` for use in tests.
@@ -23,24 +34,16 @@ pub fn generate_peer_id() -> PeerId {
     PeerId::from(keys::SecretKey::new())
 }
 
-/// Deletes the local git repsoitory coco uses for its state.
-///
-/// # Errors
-///
-/// * if the call to [`std::fs::remove_dir_all`] fails.
-pub fn reset_monorepo() -> Result<(), std::io::Error> {
-    let paths =
-        librad::paths::Paths::try_from(config::Paths::default()).expect("unable to create paths");
-    std::fs::remove_dir_all(paths.git_dir())
-}
-
 /// Creates a small set of projects in your peer.
 ///
 /// # Errors
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub async fn setup_fixtures(api: &State, owner: &User) -> Result<(), Error> {
+pub async fn setup_fixtures(
+    peer: &Peer<BoxedSigner>,
+    owner: &LocalIdentity,
+) -> Result<Vec<Project>, Error> {
     let infos = vec![
         (
             "monokel",
@@ -64,11 +67,11 @@ pub async fn setup_fixtures(api: &State, owner: &User) -> Result<(), Error> {
         ),
     ];
 
+    let mut projects = Vec::with_capacity(infos.len());
     for info in infos {
-        replicate_platinum(api, owner, info.0, info.1, info.2).await?;
+        projects.push(replicate_platinum(peer, owner, info.0, info.1, info.2).await?);
     }
-
-    Ok(())
+    Ok(projects)
 }
 
 /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
@@ -79,14 +82,14 @@ pub async fn setup_fixtures(api: &State, owner: &User) -> Result<(), Error> {
 /// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub async fn replicate_platinum(
-    api: &State,
-    owner: &User,
+    peer: &Peer<BoxedSigner>,
+    owner: &LocalIdentity,
     name: &str,
     description: &str,
     default_branch: OneLevel,
-) -> Result<librad_project::Project<entity::Draft>, Error> {
+) -> Result<Project, Error> {
     // Construct path for fixtures to clone into.
-    let monorepo = api.monorepo();
+    let monorepo = state::monorepo(peer);
     let workspace = monorepo.join("../workspace");
     let platinum_into = workspace.join(name);
 
@@ -100,25 +103,55 @@ pub async fn replicate_platinum(
         },
     };
 
-    let meta = api.init_project(owner, project_creation).await?;
+    let meta = state::init_project(peer, owner, project_creation).await?;
 
     // Push branches and tags.
     {
         let repo = git2::Repository::open(platinum_into)?;
-        let mut rad_remote = repo.find_remote("rad")?;
-
+        let mut rad = Remote::rad_remote(
+            LocalUrl::from(meta.urn()),
+            Refspec {
+                src: refspec_pattern!("refs/tags/*"),
+                dst: refspec_pattern!("refs/tags/*"),
+                force: Force::False,
+            },
+        );
+        let storage = state::settings(peer);
         // Push all tags to rad remote.
-        let tags = repo
-            .tag_names(None)?
-            .into_iter()
-            .flatten()
-            .map(|t| format!("+refs/tags/{}", t))
-            .collect::<Vec<_>>();
-        rad_remote.push(&tags, None)?;
+        push_tags(&mut rad, storage, &repo)?
     }
 
     // Init as rad project.
     Ok(meta)
+}
+
+/// Push any tags that are in the `repo` to the monorepo storage.
+///
+/// # Errors
+///   * If we could not retrive the tag names from the repository.
+pub fn push_tags(
+    remote: &mut Remote<LocalUrl>,
+    storage: transport::Settings,
+    repo: &git2::Repository,
+) -> Result<(), Error> {
+    let tags = repo
+        .tag_names(None)?
+        .into_iter()
+        .flatten()
+        .flat_map(|tag| Pushspec::from_str(&format!("+refs/tags/{}:refs/tags/{}", tag, tag)).ok())
+        .collect::<Vec<_>>();
+    let tags = NonEmpty::from_vec(tags);
+
+    match tags {
+        None => {
+            log::debug!("No tags to push to remote");
+            Ok(())
+        },
+        Some(tags) => {
+            let _ = remote.push(storage, repo, LocalPushspec::Specs(tags));
+            Ok(())
+        },
+    }
 }
 
 /// Return the canonicalized path to the `git-platinum` fixtures repo.
@@ -138,13 +171,10 @@ fn platinum_directory() -> io::Result<path::PathBuf> {
 ///
 /// Create and track a fake peer.
 pub async fn track_fake_peer(
-    state: &State,
-    project: &librad_project::Project<entity::Draft>,
+    peer: &Peer<BoxedSigner>,
+    project: &Project,
     fake_user_handle: &str,
-) -> (
-    PeerId,
-    librad::meta::entity::Entity<librad::meta::user::UserInfo, librad::meta::entity::Draft>,
-) {
+) -> (PeerId, LocalIdentity) {
     // TODO(finto): We're faking a lot of the networking interaction here.
     // Create git references of the form and track the peer.
     //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/signed_refs/heads
@@ -153,9 +183,9 @@ pub async fn track_fake_peer(
     //   to fake_user
     let urn = project.urn();
     let fake_user =
-        state.init_user(fake_user_handle).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+        state::init_user(peer, fake_user_handle.to_string()).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
     let remote = generate_peer_id();
-    let monorepo = git2::Repository::open(state.monorepo()).expect("failed to open monorepo");
+    let monorepo = git2::Repository::open(state::monorepo(peer)).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
     // Grab the Oid of master for the given project.
@@ -219,8 +249,7 @@ pub async fn track_fake_peer(
             .expect("failed to create rad/refs");
     }
 
-    state
-        .track(urn, remote)
+    state::track(peer, urn, remote)
         .await
         .expect("failed to track peer");
 

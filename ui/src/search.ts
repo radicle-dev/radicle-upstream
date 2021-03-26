@@ -2,7 +2,6 @@ import * as api from "./api";
 import * as error from "./error";
 import type * as project from "./project";
 import * as remote from "./remote";
-import * as validation from "./validation";
 import type * as waitingRoom from "./waitingRoom";
 
 // STATE
@@ -41,15 +40,3 @@ export const searchProject = async (urn: string): Promise<void> => {
     projectSearchStore.error(error.fromException(err));
   }
 };
-
-// URN validation.
-const VALID_URN_MATCH = /^rad:git:[1-9A-HJ-NP-Za-km-z]{59}/;
-const urnConstraints = {
-  format: {
-    pattern: VALID_URN_MATCH,
-    message: `Not a valid project URN`,
-  },
-};
-
-export const urnValidationStore = (): validation.ValidationStore =>
-  validation.createValidationStore(urnConstraints);

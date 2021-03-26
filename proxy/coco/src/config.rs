@@ -1,14 +1,21 @@
 //! Crate configuration.
 
 use std::{
-    convert::TryFrom,
     io,
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
 };
 
-use tokio::sync::{mpsc, watch};
+use async_stream::stream;
+use futures::stream::BoxStream;
+use tokio::sync::watch;
 
-use librad::{keys, net, net::discovery, paths, peer::PeerId};
+use librad::{
+    net,
+    net::discovery,
+    paths,
+    peer::PeerId,
+    signer::{BoxedSigner, Signer},
+};
 
 use crate::seed;
 
@@ -24,37 +31,6 @@ pub const RAD_HOME: &str = "RAD_HOME";
 /// The default name for a user's remote, which is `"rad"`.
 pub const RAD_REMOTE: &str = "rad";
 
-/// Path configuration
-pub enum Paths {
-    /// Select the default [`paths::Paths`] for configuration.
-    Default,
-    /// Use [`paths::Paths::from_root`] for configuration.
-    FromRoot(std::path::PathBuf),
-}
-
-impl Default for Paths {
-    fn default() -> Self {
-        Self::Default
-    }
-}
-impl TryFrom<Paths> for paths::Paths {
-    type Error = io::Error;
-
-    fn try_from(config: Paths) -> Result<Self, Self::Error> {
-        match config {
-            Paths::Default => Ok(Self::new()?),
-            Paths::FromRoot(path) => Ok(Self::from_root(path)?),
-        }
-    }
-}
-
-/// Short-hand type for [`discovery::Static`] over a vector of [`PeerId`]s and
-/// [`SocketAddr`].
-pub type Disco = discovery::Static<
-    std::iter::Map<std::vec::IntoIter<seed::Seed>, fn(seed::Seed) -> (PeerId, SocketAddr)>,
-    SocketAddr,
->;
-
 /// Provide the default config.
 ///
 /// Address: 127.0.0.1:0
@@ -65,52 +41,48 @@ pub type Disco = discovery::Static<
 ///
 /// Results in an error if the [`paths::Paths`] could not be created.
 pub fn default(
-    key: keys::SecretKey,
+    signer: BoxedSigner,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, io::Error> {
+) -> Result<net::peer::Config<BoxedSigner>, io::Error> {
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(
-        paths,
-        key,
-        *LOCALHOST_ANY,
-        static_seed_discovery(vec![]),
-    ))
+    Ok(configure(paths, signer, *LOCALHOST_ANY))
 }
 
-/// Configure a [`net::peer::PeerConfig`].
+/// Configure a [`net::peer::Config`].
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn configure<D>(
-    paths: paths::Paths,
-    key: keys::SecretKey,
-    listen_addr: SocketAddr,
-    disco: D,
-) -> net::peer::PeerConfig<D, keys::SecretKey> {
-    let gossip_params = net::gossip::MembershipParams::default();
-    let storage_config = net::peer::StorageConfig::default();
-
-    net::peer::PeerConfig {
-        signer: key,
-        paths,
-        listen_addr,
-        gossip_params,
-        disco,
-        storage_config,
+pub fn configure<S>(paths: paths::Paths, signer: S, listen_addr: SocketAddr) -> net::peer::Config<S>
+where
+    S: Signer + Clone + Send + Sync + 'static,
+    S::Error: std::error::Error + Send + Sync + 'static,
+{
+    net::peer::Config {
+        signer,
+        protocol: net::protocol::Config {
+            paths,
+            listen_addr,
+            membership: net::protocol::membership::Params::default(),
+            network: net::Network::default(),
+            replication: librad::git::replication::Config::default(),
+        },
+        storage_pools: net::peer::PoolSizes::default(),
     }
 }
 
 /// Builds a static discovery over the list of given `seeds`.
 #[allow(clippy::as_conversions)]
 #[must_use]
-pub fn static_seed_discovery(seeds: Vec<seed::Seed>) -> Disco {
-    discovery::Static::new(
+pub fn static_seed_discovery(seeds: &[seed::Seed]) -> discovery::Static {
+    discovery::Static::resolve(
         seeds
-            .into_iter()
-            .map(seed::Seed::into as fn(seed::Seed) -> (PeerId, SocketAddr)),
+            .iter()
+            .map(|seed| (seed.peer_id, seed.addrs.as_slice())),
     )
+    .expect("unable to resolve seeds")
 }
 
 /// Stream based discovery based on a watch.
+#[derive(Clone)]
 pub struct StreamDiscovery {
     /// Stream of new sets of seeds coming from configuration changes.
     seeds_receiver: watch::Receiver<Vec<seed::Seed>>,
@@ -126,20 +98,19 @@ impl StreamDiscovery {
 
 impl discovery::Discovery for StreamDiscovery {
     type Addr = SocketAddr;
-    type Stream = mpsc::Receiver<(PeerId, Vec<SocketAddr>)>;
+    type Stream = BoxStream<'static, (PeerId, Vec<SocketAddr>)>;
 
     fn discover(mut self) -> Self::Stream {
-        let (mut sender, receiver) = mpsc::channel(1024);
-
-        tokio::spawn(async move {
-            while let Some(seeds) = self.seeds_receiver.recv().await {
-                for seed in &seeds {
-                    let pair = (seed.peer_id, vec![seed.addr]);
-                    sender.send(pair).await.ok();
+        let updates = stream! {
+            loop {
+                let seeds = self.seeds_receiver.borrow().clone();
+                for seed in seeds {
+                    yield seed.into();
                 }
+                self.seeds_receiver.changed().await.unwrap();
             }
-        });
+        };
 
-        receiver
+        Box::pin(updates)
     }
 }

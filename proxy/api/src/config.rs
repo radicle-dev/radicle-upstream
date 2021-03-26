@@ -28,7 +28,7 @@ pub fn dirs() -> ProjectDirs {
 }
 
 /// Returns the directory for the application store
-pub fn store_dir() -> path::PathBuf {
+pub fn store_dir(profile_id: &str) -> path::PathBuf {
     let store_root = match std::env::var_os("RAD_HOME") {
         None => {
             let dirs = dirs();
@@ -36,7 +36,7 @@ pub fn store_dir() -> path::PathBuf {
         },
         Some(root) => path::Path::new(&root).to_path_buf(),
     };
-    store_root.join("store")
+    store_root.join(profile_id).join("store")
 }
 
 /// Returns the path to a folder containing helper binaries.

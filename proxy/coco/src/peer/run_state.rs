@@ -1,20 +1,25 @@
 //! State machine to manage the current mode of operation during peer lifecycle.
 
 use std::{
-    collections::HashMap,
+    collections::HashSet,
+    net::SocketAddr,
     time::{Duration, SystemTime},
 };
 
 use serde::Serialize;
 
 use librad::{
+    git::Urn,
     net::{
-        gossip::{Has, Info, PutResult},
-        peer::{FetchInfo, Gossip, PeerEvent},
-        protocol::ProtocolEvent,
+        self,
+        peer::{PeerInfo, ProtocolEvent},
+        protocol::{
+            broadcast::PutResult,
+            event::{downstream, upstream},
+            gossip::Payload,
+        },
     },
     peer::PeerId,
-    uri::{RadUrl, RadUrn},
 };
 
 use crate::{
@@ -41,31 +46,36 @@ pub enum Event {
     /// A fetch originated by a gossip message succeeded
     GossipFetched {
         /// Provider of the fetched update.
-        provider: PeerId,
+        provider: PeerInfo<SocketAddr>,
         /// Cooresponding gossip message.
-        gossip: Gossip,
+        gossip: Payload,
         /// Result of the storage fetch.
-        result: PutResult<Gossip>,
+        result: PutResult<Payload>,
     },
     /// An event from the underlying coco network stack.
     /// FIXME(xla): Align variant naming to indicate observed occurrences.
-    Protocol(ProtocolEvent<Gossip>),
+    Protocol(ProtocolEvent),
     /// Sync with a peer completed.
     PeerSynced(PeerId),
     /// Request fullfilled with a successful clone.
-    RequestCloned(RadUrl),
+    RequestCloned(Urn, PeerId),
     /// Request is being cloned from a peer.
-    RequestCloning(RadUrl),
+    RequestCloning(Urn, PeerId),
     /// Request for the URN was created and is pending submission to the network.
-    RequestCreated(RadUrn),
+    RequestCreated(Urn),
     /// Request for the URN was submitted to the network.
-    RequestQueried(RadUrn),
+    RequestQueried(Urn),
     /// Waiting room interval ticked.
     RequestTick,
-    /// The request for [`RadUrn`] timed out.
-    RequestTimedOut(RadUrn),
+    /// The request for [`Urn`] timed out.
+    RequestTimedOut(Urn),
     /// The [`Status`] of the peer changed.
-    StatusChanged(Status, Status),
+    StatusChanged {
+        /// The old status
+        old: Status,
+        /// The net status
+        new: Status,
+    },
 }
 
 impl MaybeFrom<&Input> for Event {
@@ -74,21 +84,27 @@ impl MaybeFrom<&Input> for Event {
             Input::Announce(input::Announce::Succeeded(updates)) => {
                 Some(Self::Announced(updates.clone()))
             },
-            Input::Peer(event) => match event {
-                PeerEvent::GossipFetch(FetchInfo {
-                    provider,
-                    gossip,
-                    result,
-                }) => Some(Self::GossipFetched {
-                    provider: *provider,
-                    gossip: gossip.clone(),
-                    result: result.clone(),
-                }),
-            },
             Input::PeerSync(input::Sync::Succeeded(peer_id)) => Some(Self::PeerSynced(*peer_id)),
-            Input::Protocol(protocol_event) => Some(Self::Protocol(protocol_event.clone())),
-            Input::Request(input::Request::Cloned(url)) => Some(Self::RequestCloned(url.clone())),
-            Input::Request(input::Request::Cloning(url)) => Some(Self::RequestCloning(url.clone())),
+            Input::Protocol(protocol_event) => match protocol_event {
+                ProtocolEvent::Gossip(gossip) => match &**gossip {
+                    upstream::Gossip::Put {
+                        provider,
+                        payload,
+                        result,
+                    } => Some(Self::GossipFetched {
+                        provider: provider.clone(),
+                        gossip: payload.clone(),
+                        result: result.clone(),
+                    }),
+                },
+                event => Some(Self::Protocol(event.clone())),
+            },
+            Input::Request(input::Request::Cloned(urn, remote_peer)) => {
+                Some(Self::RequestCloned(urn.clone(), *remote_peer))
+            },
+            Input::Request(input::Request::Cloning(urn, remote_peer)) => {
+                Some(Self::RequestCloning(urn.clone(), *remote_peer))
+            },
             Input::Request(input::Request::Queried(urn)) => Some(Self::RequestQueried(urn.clone())),
             Input::Request(input::Request::Tick) => Some(Self::RequestTick),
             Input::Request(input::Request::TimedOut(urn)) => {
@@ -109,14 +125,6 @@ pub enum Status {
     Started,
     /// The local peer lost its connections to all its peers.
     Offline,
-    /// Phase where the local peer tries get up-to-date.
-    #[serde(rename_all = "camelCase")]
-    Syncing {
-        /// Number of completed syncs.
-        synced: usize,
-        /// Number of synchronisation underway.
-        syncs: usize,
-    },
     /// The local peer is operational and is able to interact with the peers it has connected to.
     #[serde(rename_all = "camelCase")]
     Online {
@@ -127,24 +135,15 @@ pub enum Status {
 
 /// State kept for a running local peer.
 pub struct RunState {
-    /// Confiugration to change how input [`Input`]s are interpreted.
-    config: Config,
     /// Tracking remote peers that have an active connection.
-    ///
-    /// As a peer known by [`PeerId`] can be connected multiple times, e.g. when opening a git
-    /// connection to clone and fetch, tracking the connection count per peer is paramount to not
-    /// falsely end up in an unconnected state despite the fact the protocol is connected, alive
-    /// and kicking. The following scenario led to an offline state when a `HashSet` was used in
-    /// the past:
-    ///
-    /// `Connected(Peer1) -> Connected(Peer1) -> Disconnecting(Peer1)`
-    //
-    // FIXME(xla): Use a `Option<NonEmpty>` here to express the invariance.
-    connected_peers: HashMap<PeerId, usize>,
+    connected_peers: HashSet<PeerId>,
+    listen_addrs: Vec<SocketAddr>,
     /// Current internal status.
     pub status: Status,
+    stats: net::protocol::event::downstream::Stats,
     /// Timestamp of last status change.
     status_since: SystemTime,
+    syncs: HashSet<PeerId>,
     /// Current set of requests.
     waiting_room: WaitingRoom<SystemTime, Duration>,
 }
@@ -153,27 +152,31 @@ impl RunState {
     /// Constructs a new state.
     #[cfg(test)]
     fn construct(
-        config: Config,
-        connected_peers: HashMap<PeerId, usize>,
+        connected_peers: HashSet<PeerId>,
         status: Status,
         status_since: SystemTime,
+        syncs: HashSet<PeerId>,
     ) -> Self {
         Self {
-            config,
             connected_peers,
+            listen_addrs: vec![],
+            stats: downstream::Stats::default(),
             status,
             status_since,
+            syncs,
             waiting_room: WaitingRoom::new(waiting_room::Config::default()),
         }
     }
 
     /// Creates a new `RunState` initialising it with the provided `config` and `waiting_room`.
-    pub fn new(config: Config, waiting_room: WaitingRoom<SystemTime, Duration>) -> Self {
+    pub fn new(waiting_room: WaitingRoom<SystemTime, Duration>) -> Self {
         Self {
-            config,
-            connected_peers: HashMap::new(),
+            connected_peers: HashSet::new(),
+            listen_addrs: vec![],
+            stats: downstream::Stats::default(),
             status: Status::Stopped,
             status_since: SystemTime::now(),
+            syncs: HashSet::new(),
             waiting_room,
         }
     }
@@ -186,11 +189,11 @@ impl RunState {
         let cmds = match input {
             Input::Announce(announce_input) => self.handle_announce(announce_input),
             Input::Control(control_input) => self.handle_control(control_input),
-            Input::Peer(peer_event) => Self::handle_peer_event(peer_event),
+            Input::ListenAddrs(addrs) => self.handle_listen_addrs(addrs),
             Input::Protocol(protocol_event) => self.handle_protocol(protocol_event),
             Input::PeerSync(peer_sync_input) => self.handle_peer_sync(&peer_sync_input),
             Input::Request(request_input) => self.handle_request(request_input),
-            Input::Timeout(timeout_input) => self.handle_timeout(timeout_input),
+            Input::Stats(stats_input) => self.handle_stats(stats_input),
         };
 
         log::trace!("TRANSITION END: {:?} {:?}", self.status, cmds);
@@ -202,10 +205,11 @@ impl RunState {
     fn handle_announce(&mut self, input: input::Announce) -> Vec<Command> {
         match (&self.status, input) {
             // Announce new updates while the peer is online.
-            (
-                Status::Online { .. } | Status::Started { .. } | Status::Syncing { .. },
-                input::Announce::Tick,
-            ) => vec![Command::Announce],
+            (Status::Online { .. } | Status::Started { .. }, input::Announce::Tick)
+                if self.stats.connected_peers > 0 && self.stats.membership_active > 0 =>
+            {
+                vec![Command::Announce]
+            }
             _ => vec![],
         }
     }
@@ -248,171 +252,86 @@ impl RunState {
                         .collect::<Vec<_>>(),
                 )),
             )],
+            input::Control::ListenAddrs(sender) => {
+                vec![Command::Control(command::Control::Respond(
+                    control::Response::ListenAddrs(sender, self.listen_addrs.clone()),
+                ))]
+            },
             input::Control::Status(sender) => vec![Command::Control(command::Control::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
         }
     }
 
-    fn handle_peer_event(event: PeerEvent) -> Vec<Command> {
-        match event {
-            PeerEvent::GossipFetch(FetchInfo {
-                result: PutResult::Applied(Gossip { urn, .. }),
-                ..
-            }) => vec![Command::Include(urn)],
-            PeerEvent::GossipFetch(_) => vec![],
-        }
+    fn handle_listen_addrs(&mut self, addrs: Vec<SocketAddr>) -> Vec<Command> {
+        self.listen_addrs = addrs;
+        vec![]
     }
 
     /// Handle [`input::Sync`]s.
     fn handle_peer_sync(&mut self, input: &input::Sync) -> Vec<Command> {
-        if let Status::Syncing { synced, syncs } = self.status {
-            match input {
-                input::Sync::Started(_peer_id) => {
-                    self.status = Status::Syncing {
-                        synced,
-                        syncs: syncs + 1,
-                    };
-                },
-                input::Sync::Failed(_peer_id) | input::Sync::Succeeded(_peer_id) => {
-                    self.status = if synced + 1 >= self.config.sync.max_peers {
-                        Status::Online {
-                            connected: self.connected_peers.len(),
-                        }
-                    } else {
-                        Status::Syncing {
-                            synced: synced + 1,
-                            syncs: syncs - 1,
-                        }
-                    };
-                },
-            }
-        }
+        match input {
+            input::Sync::Tick => {
+                let mut cmds = vec![];
 
-        vec![]
+                for peer_id in &self.connected_peers {
+                    if self.syncs.get(peer_id).is_none() {
+                        cmds.push(Command::SyncPeer(*peer_id));
+                    }
+                }
+
+                cmds
+            },
+            input::Sync::Started(peer_id) => {
+                self.syncs.insert(*peer_id);
+                vec![]
+            },
+            input::Sync::Succeeded(peer_id) | input::Sync::Failed(peer_id) => {
+                self.syncs.remove(peer_id);
+                vec![]
+            },
+        }
     }
 
     /// Handle [`ProtocolEvent`]s.
     #[allow(clippy::wildcard_enum_match_arm)]
-    fn handle_protocol(&mut self, event: ProtocolEvent<Gossip>) -> Vec<Command> {
+    fn handle_protocol(&mut self, event: ProtocolEvent) -> Vec<Command> {
         match (&self.status, event) {
-            // Go from [`Status::Stopped`] to [`Status::Started`] once we are listening.
-            (Status::Stopped { .. }, ProtocolEvent::Listening(_addr)) => {
+            (Status::Stopped, ProtocolEvent::Endpoint(upstream::Endpoint::Up { .. })) => {
                 self.status = Status::Started;
                 self.status_since = SystemTime::now();
 
                 vec![]
             },
-            (state, ProtocolEvent::Connected(peer_id)) => {
-                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
-                    *counter += 1;
-                } else {
-                    self.connected_peers.insert(peer_id, 1);
-                }
-
-                match state {
-                    Status::Offline => {
-                        self.status = Status::Online {
-                            connected: self.connected_peers.len(),
-                        };
-
-                        vec![]
-                    },
-                    Status::Started => {
-                        // Sync with first incoming peer.
-                        //
-                        // In case the peer is configured to sync on startup we start syncing,
-                        // otherwise we go online straight away.
-                        // TODO(xla): Also issue sync if we come online after a certain period of
-                        // being disconnected from any peer.
-                        if self.config.sync.on_startup {
-                            self.status = Status::Syncing {
-                                synced: 0,
-                                syncs: 0,
-                            };
-                            self.status_since = SystemTime::now();
-
-                            vec![
-                                Command::SyncPeer(peer_id),
-                                Command::StartSyncTimeout(self.config.sync.period),
-                            ]
-                        } else {
-                            self.status = Status::Online {
-                                connected: self.connected_peers.len(),
-                            };
-                            self.status_since = SystemTime::now();
-
-                            vec![]
-                        }
-                    },
-                    // Issue syncs until we reach maximum amount of peers to sync with.
-                    Status::Syncing { syncs, .. } if *syncs < self.config.sync.max_peers => {
-                        vec![Command::SyncPeer(peer_id)]
-                    },
-                    // Update status with its connected peers.
-                    Status::Online { .. } => {
-                        self.status = Status::Online {
-                            connected: self.connected_peers.len(),
-                        };
-                        vec![]
-                    },
-                    // Noop
-                    Status::Stopped | Status::Syncing { .. } => vec![],
-                }
-            },
-            // Remove peer that just disconnected.
-            (_, ProtocolEvent::Disconnecting(peer_id)) => {
-                if let Some(counter) = self.connected_peers.get_mut(&peer_id) {
-                    *counter -= 1;
-
-                    if *counter == 0 {
-                        self.connected_peers.remove(&peer_id);
-                    }
-                } else {
-                    log::error!("The impossible has happened, somehow we disconnected from '{}' without already being connected to them", peer_id);
-                    return vec![];
-                }
-
-                // Go offline if we have no more connected peers left.
-                if self.connected_peers.is_empty() {
-                    self.status = Status::Offline;
-                    self.status_since = SystemTime::now();
-                }
+            (_, ProtocolEvent::Endpoint(upstream::Endpoint::Down)) => {
+                self.status = Status::Stopped;
+                self.status_since = SystemTime::now();
 
                 vec![]
             },
-            // Found URN.
-            (
-                _,
-                ProtocolEvent::Gossip(Info::Has(Has {
-                    provider,
-                    val: Gossip { urn, .. },
-                })),
-            ) => {
-                // This message is uninteresting to the waiting room
-                if !self.waiting_room.has(&urn) {
-                    return vec![];
-                }
+            (_, ProtocolEvent::Gossip(gossip)) => {
+                let mut cmds = vec![];
 
-                match self.waiting_room.found(
-                    RadUrl {
-                        urn: urn.clone(),
-                        authority: provider.peer_id,
-                    },
-                    SystemTime::now(),
-                ) {
-                    Err(err) => {
-                        log::warn!("waiting room error: {:?}", err);
+                match *gossip {
+                    // FIXME(xla): Find out if we care about the result variance.
+                    upstream::Gossip::Put {
+                        payload: Payload { urn, .. },
+                        provider: PeerInfo { peer_id, .. },
+                        result,
+                    } => {
+                        if let Err(waiting_room::Error::TimeOut { .. }) =
+                            self.waiting_room.found(&urn, peer_id, SystemTime::now())
+                        {
+                            cmds.push(Command::Request(command::Request::TimedOut(urn.clone())));
+                        }
 
-                        match err {
-                            waiting_room::Error::TimeOut { .. } => {
-                                vec![Command::Request(command::Request::TimedOut(urn))]
-                            },
-                            _ => vec![],
+                        if let PutResult::Applied(_) = result {
+                            cmds.push(Command::Include(urn));
                         }
                     },
-                    Ok(_) => vec![],
                 }
+
+                cmds
             },
             _ => vec![],
         }
@@ -423,32 +342,32 @@ impl RunState {
     fn handle_request(&mut self, input: input::Request) -> Vec<Command> {
         match (&self.status, input) {
             // Check for new query and clone requests.
-            (Status::Online { .. } | Status::Syncing { .. }, input::Request::Tick) => {
+            (Status::Online { .. }, input::Request::Tick) => {
                 let mut cmds = Vec::with_capacity(2);
 
                 if let Some(urn) = self.waiting_room.next_query(SystemTime::now()) {
                     cmds.push(Command::Request(command::Request::Query(urn)));
                     cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
-                if let Some(url) = self.waiting_room.next_clone() {
-                    cmds.push(Command::Request(command::Request::Clone(url)));
+                if let Some((urn, remote_peer)) = self.waiting_room.next_clone() {
+                    cmds.push(Command::Request(command::Request::Clone(urn, remote_peer)));
                     cmds.push(Command::PersistWaitingRoom(self.waiting_room.clone()));
                 }
                 cmds
             },
             // FIXME(xla): Come up with a strategy for the results returned by the waiting room.
-            (_, input::Request::Cloning(url)) => self
+            (_, input::Request::Cloning(urn, remote_peer)) => self
                 .waiting_room
-                .cloning(url.clone(), SystemTime::now())
+                .cloning(&urn, remote_peer, SystemTime::now())
                 .map_or_else(
-                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+                    |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 ),
-            (_, input::Request::Cloned(url)) => self
+            (_, input::Request::Cloned(urn, remote_peer)) => self
                 .waiting_room
-                .cloned(&url, SystemTime::now())
+                .cloned(&urn, remote_peer, SystemTime::now())
                 .map_or_else(
-                    |error| Self::handle_waiting_room_timeout(url.urn, &error),
+                    |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 ),
             (_, input::Request::Queried(urn)) => self
@@ -458,11 +377,17 @@ impl RunState {
                     |error| Self::handle_waiting_room_timeout(urn, &error),
                     |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
                 ),
-            (_, input::Request::Failed { url, reason }) => {
+            (
+                _,
+                input::Request::Failed {
+                    remote_peer,
+                    reason,
+                    urn,
+                },
+            ) => {
                 log::warn!("Cloning failed with: {}", reason);
-                let urn = url.urn.clone();
                 self.waiting_room
-                    .cloning_failed(url, SystemTime::now())
+                    .cloning_failed(&urn, remote_peer, SystemTime::now())
                     .map_or_else(
                         |error| Self::handle_waiting_room_timeout(urn, &error),
                         |_| vec![Command::PersistWaitingRoom(self.waiting_room.clone())],
@@ -472,28 +397,43 @@ impl RunState {
         }
     }
 
+    fn handle_stats(&mut self, input: input::Stats) -> Vec<Command> {
+        match (&self.status, input) {
+            (_, input::Stats::Tick) => vec![Command::Stats],
+            (status, input::Stats::Values(connected_peers, stats)) => {
+                match status {
+                    Status::Online { .. } if stats.connected_peers == 0 => {
+                        self.status = Status::Offline;
+                        self.status_since = SystemTime::now();
+                    },
+                    Status::Offline if stats.connected_peers > 0 => {
+                        self.status = Status::Online {
+                            connected: stats.connected_peers,
+                        };
+                    },
+                    Status::Started if stats.connected_peers > 0 => {
+                        self.status = Status::Online {
+                            connected: stats.connected_peers,
+                        };
+                        self.status_since = SystemTime::now();
+                    },
+                    _ => {},
+                };
+
+                self.connected_peers = connected_peers.into_iter().collect();
+                self.stats = stats;
+
+                vec![]
+            },
+        }
+    }
+
     /// Handle [`waiting_room::Error`]s.
-    fn handle_waiting_room_timeout(urn: RadUrn, error: &waiting_room::Error) -> Vec<Command> {
+    fn handle_waiting_room_timeout(urn: Urn, error: &waiting_room::Error) -> Vec<Command> {
         log::warn!("WaitingRoom::Error : {}", error);
         match error {
             waiting_room::Error::TimeOut { .. } => {
                 vec![Command::Request(command::Request::TimedOut(urn))]
-            },
-            _ => vec![],
-        }
-    }
-
-    /// Handle [`input::Timeout`]s.
-    fn handle_timeout(&mut self, input: input::Timeout) -> Vec<Command> {
-        match (&self.status, input) {
-            // Go online if we exceed the sync period.
-            (Status::Syncing { .. }, input::Timeout::SyncPeriod) => {
-                self.status = Status::Online {
-                    connected: self.connected_peers.len(),
-                };
-                self.status_since = SystemTime::now();
-
-                vec![]
             },
             _ => vec![],
         }
@@ -504,10 +444,10 @@ impl RunState {
 #[cfg(test)]
 mod test {
     use std::{
-        collections::{HashMap, HashSet},
-        iter::FromIterator,
-        net::{IpAddr, SocketAddr},
-        time::{Duration, SystemTime},
+        collections::{BTreeSet, HashSet},
+        net::SocketAddr,
+        str::FromStr,
+        time::SystemTime,
     };
 
     use assert_matches::assert_matches;
@@ -515,13 +455,25 @@ mod test {
     use tokio::sync::oneshot;
 
     use librad::{
+        git::Urn,
+        git_ext::Oid,
         keys::SecretKey,
-        net::{gossip, peer::Gossip, protocol::ProtocolEvent},
+        net::{
+            self,
+            peer::ProtocolEvent,
+            protocol::{
+                broadcast,
+                event::{
+                    downstream,
+                    upstream::{Endpoint, Gossip},
+                },
+                gossip::Payload,
+            },
+        },
         peer::PeerId,
-        uri::{RadUrl, RadUrn},
     };
 
-    use super::{command, config, input, Command, Config, Input, RunState, Status};
+    use super::{command, input, Command, Input, RunState, Status};
 
     #[test]
     fn transition_to_started_on_listen() -> Result<(), Box<dyn std::error::Error>> {
@@ -529,10 +481,11 @@ mod test {
 
         let status = Status::Stopped;
         let status_since = SystemTime::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
 
-        let cmds = state.transition(Input::Protocol(ProtocolEvent::Listening(addr)));
+        let cmds = state.transition(Input::Protocol(ProtocolEvent::Endpoint(Endpoint::Up {
+            listen_addrs: vec![addr],
+        })));
         assert!(cmds.is_empty());
         assert_matches!(state.status, Status::Started { .. });
 
@@ -540,60 +493,25 @@ mod test {
     }
 
     #[test]
-    fn transition_to_online_if_sync_is_disabled() {
+    fn transition_to_online() {
         let status = Status::Started;
         let status_since = SystemTime::now();
-        let mut state = RunState::construct(
-            Config {
-                sync: config::Sync {
-                    on_startup: false,
-                    ..config::Sync::default()
-                },
-                ..Config::default()
-            },
-            HashMap::new(),
-            status,
-            status_since,
-        );
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
 
         let cmds = {
             let key = SecretKey::new();
             let peer_id = PeerId::from(key);
-            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
+            state.transition(Input::Stats(input::Stats::Values(
+                vec![peer_id],
+                downstream::Stats {
+                    connections_total: 1,
+                    connected_peers: 1,
+                    membership_active: 1,
+                    membership_passive: 1,
+                },
+            )))
         };
         assert!(cmds.is_empty());
-        assert_matches!(state.status, Status::Online { .. });
-    }
-
-    #[test]
-    fn transition_to_online_after_sync_max_peers() {
-        let status = Status::Syncing {
-            synced: config::DEFAULT_SYNC_MAX_PEERS - 1,
-            syncs: 1,
-        };
-        let status_since = SystemTime::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
-
-        let _cmds = {
-            let key = SecretKey::new();
-            let peer_id = PeerId::from(key);
-            state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)))
-        };
-        assert_matches!(state.status, Status::Online { .. });
-    }
-
-    #[test]
-    fn transition_to_online_after_sync_period() {
-        let status = Status::Syncing {
-            synced: 0,
-            syncs: 3,
-        };
-        let status_since = SystemTime::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
-
-        let _cmds = state.transition(Input::Timeout(input::Timeout::SyncPeriod));
         assert_matches!(state.status, Status::Online { .. });
     }
 
@@ -603,121 +521,61 @@ mod test {
         let status = Status::Online { connected: 0 };
         let status_since = SystemTime::now();
         let mut state = RunState::construct(
-            Config::default(),
-            HashMap::from_iter(vec![(peer_id, 1)]),
+            Some(peer_id).into_iter().collect(),
             status,
             status_since,
+            HashSet::new(),
         );
 
-        let _cmds = state.transition(Input::Protocol(ProtocolEvent::Disconnecting(peer_id)));
+        let _cmds = state.transition(Input::Stats(input::Stats::Values(
+            vec![],
+            downstream::Stats::default(),
+        )));
         assert_matches!(state.status, Status::Offline);
     }
 
     #[test]
-    fn issue_sync_command_until_max_peers() {
-        let max_peers = 13;
-        let status = Status::Started;
+    fn issue_announce_while_online_and_active_membering() {
+        let status = Status::Online { connected: 1 };
         let status_since = SystemTime::now();
-        let mut state = RunState::construct(
-            Config {
-                sync: config::Sync {
-                    max_peers,
-                    on_startup: true,
-                    ..config::Sync::default()
-                },
-                ..Config::default()
-            },
-            HashMap::new(),
-            status,
-            status_since,
-        );
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
 
-        for _i in 0..(max_peers - 1) {
-            let key = SecretKey::new();
-            let peer_id = PeerId::from(key);
+        let cmds = state.transition(Input::Announce(input::Announce::Tick));
+        assert!(cmds.is_empty(), "expected no command");
 
-            // Expect to sync with the first connected peer.
-            let cmds = state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)));
-            assert!(!cmds.is_empty(), "expected command");
-            assert_matches!(cmds.first().unwrap(), Command::SyncPeer(sync_id) => {
-                assert_eq!(*sync_id, peer_id);
-            });
-            let _cmds = state.transition(Input::PeerSync(input::Sync::Started(peer_id)));
-            assert_matches!(state.status, Status::Syncing{ syncs: syncing_peers, .. } => {
-                assert_eq!(syncing_peers, 1);
-            });
-            let _cmds = state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)));
-        }
-
-        // Issue last sync.
-        {
-            let key = SecretKey::new();
-            let peer_id = PeerId::from(key);
-            let cmds = state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)));
-
-            assert!(!cmds.is_empty(), "expected command");
-            assert_matches!(cmds.first().unwrap(), Command::SyncPeer { .. });
-
-            let _cmds = state.transition(Input::PeerSync(input::Sync::Started(peer_id)));
-            let _cmds = state.transition(Input::PeerSync(input::Sync::Succeeded(peer_id)));
+        state.stats = librad::net::protocol::event::downstream::Stats {
+            connected_peers: 1,
+            membership_active: 1,
+            ..librad::net::protocol::event::downstream::Stats::default()
         };
-
-        // Expect to be online at this point.
-        assert_matches!(state.status, Status::Online { .. });
-
-        // No more syncs should be expected after the maximum of peers have connected.
-        let cmd = {
-            let key = SecretKey::new();
-            let peer_id = PeerId::from(key);
-            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
-        };
-        assert!(cmd.is_empty(), "should not emit any more commands");
-    }
-
-    #[test]
-    fn issue_sync_timeout_when_transitioning_to_syncing() {
-        let sync_period = Duration::from_secs(60 * 10);
-        let status = Status::Started;
-        let status_since = SystemTime::now();
-        let mut state = RunState::construct(
-            Config {
-                sync: config::Sync {
-                    on_startup: true,
-                    period: sync_period,
-                    ..config::Sync::default()
-                },
-                ..Config::default()
-            },
-            HashMap::new(),
-            status,
-            status_since,
-        );
-
-        let cmds = {
-            let key = SecretKey::new();
-            let peer_id = PeerId::from(key);
-            state.transition(Input::Protocol(ProtocolEvent::Connected(peer_id)))
-        };
-        assert_matches!(cmds.get(1), Some(Command::StartSyncTimeout(period)) => {
-            assert_eq!(*period, sync_period);
-        });
-    }
-
-    #[test]
-    fn issue_announce_while_online() {
-        let status = Status::Online { connected: 0 };
-        let status_since = SystemTime::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(!cmds.is_empty(), "expected command");
         assert_matches!(cmds.first().unwrap(), Command::Announce);
+    }
 
+    #[test]
+    fn dont_announce_with_inactive_member() {
+        let status = Status::Online { connected: 1 };
+        let status_since = SystemTime::now();
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
+
+        state.stats = librad::net::protocol::event::downstream::Stats {
+            connected_peers: 0,
+            membership_active: 0,
+            membership_passive: 1,
+            ..librad::net::protocol::event::downstream::Stats::default()
+        };
+
+        let cmds = state.transition(Input::Announce(input::Announce::Tick));
+        assert!(cmds.is_empty(), "expected no command");
+    }
+
+    #[test]
+    fn dont_announce_when_offline() {
         let status = Status::Offline;
         let status_since = SystemTime::now();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
         let cmds = state.transition(Input::Announce(input::Announce::Tick));
 
         assert!(cmds.is_empty(), "expected no command");
@@ -725,14 +583,12 @@ mod test {
 
     #[test]
     fn issue_query_when_requested_and_online() -> Result<(), Box<dyn std::error::Error + 'static>> {
-        let urn: RadUrn =
-            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
 
         let status = Status::Online { connected: 1 };
         let status_since = SystemTime::now();
         let (response_sender, _) = oneshot::channel();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
         state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
             SystemTime::now(),
@@ -751,49 +607,15 @@ mod test {
     }
 
     #[test]
-    fn issue_query_when_requested_and_syncing() -> Result<(), Box<dyn std::error::Error + 'static>>
-    {
-        let urn: RadUrn =
-            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
-
-        let status = Status::Syncing {
-            synced: 0,
-            syncs: 1,
-        };
-        let status_since = SystemTime::now();
-        let (response_sender, _) = oneshot::channel();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
-        state.transition(Input::Control(input::Control::CreateRequest(
-            urn.clone(),
-            SystemTime::now(),
-            response_sender,
-        )));
-
-        let cmds = state.transition(Input::Request(input::Request::Tick));
-        let cmd = cmds.first().unwrap();
-        assert_matches!(cmd, Command::Request(command::Request::Query(have)) => {
-            assert_eq!(*have, urn);
-        });
-
-        Ok(())
-    }
-
-    #[test]
     fn issue_clone_when_found() -> Result<(), Box<dyn std::error::Error + 'static>> {
-        let urn: RadUrn =
-            "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c".parse()?;
+        let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
         let peer_id = PeerId::from(SecretKey::new());
-        let url = RadUrl {
-            urn: urn.clone(),
-            authority: peer_id,
-        };
+        let addr = "127.0.0.0:80".parse()?;
 
         let status = Status::Online { connected: 0 };
         let status_since = SystemTime::now();
         let (response_sender, _) = oneshot::channel();
-        let mut state =
-            RunState::construct(Config::default(), HashMap::new(), status, status_since);
+        let mut state = RunState::construct(HashSet::new(), status, status_since, HashSet::new());
 
         state.transition(Input::Control(input::Control::CreateRequest(
             urn.clone(),
@@ -806,35 +628,61 @@ mod test {
                 .first(),
             Some(Command::PersistWaitingRoom(_))
         );
-        assert!(state
-            .transition(Input::Protocol(ProtocolEvent::Gossip(gossip::Info::Has(
-                gossip::Has {
-                    provider: gossip::types::PeerInfo {
-                        peer_id,
-                        advertised_info: gossip::types::PeerAdvertisement {
-                            capabilities: HashSet::new(),
-                            listen_addr: IpAddr::V4(std::net::Ipv4Addr::new(192, 168, 1, 11)),
-                            listen_port: 12345,
+        // Gossip(Box<upstream::Gossip<SocketAddr, gossip::Payload>>),
+        assert_matches!(
+            state
+                .transition(Input::Protocol(ProtocolEvent::Gossip(Box::new(
+                    Gossip::Put {
+                        provider: librad::net::protocol::PeerInfo {
+                            advertised_info: net::protocol::PeerAdvertisement::new(addr),
+                            peer_id,
+                            seen_addrs: BTreeSet::new(),
                         },
-                        seen_addrs: HashSet::new(),
-                    },
-                    val: Gossip {
-                        urn,
-                        origin: None,
-                        rev: None
-                    },
-                },
-            ))))
-            .is_empty());
+                        payload: Payload {
+                            urn: urn.clone(),
+                            origin: None,
+                            rev: None
+                        },
+                        result: broadcast::PutResult::Applied(Payload {
+                            urn: urn.clone(),
+                            origin: None,
+                            rev: None,
+                        }),
+                    }
+                ))))
+                .first(),
+            Some(Command::Include(_))
+        );
 
         let cmds = state.transition(Input::Request(input::Request::Tick));
         assert_matches!(
             cmds.first().unwrap(),
-            Command::Request(command::Request::Clone(have)) => {
-                assert_eq!(*have, url);
+            Command::Request(command::Request::Clone(remote_urn, remote_peer)) => {
+                assert_eq!(remote_urn.clone(), urn);
+                assert_eq!(*remote_peer, peer_id);
             }
         );
 
         Ok(())
+    }
+
+    #[test]
+    fn issue_syncs() {
+        let num_peers = 5;
+
+        let mut connected_peers = HashSet::new();
+        for _ in 0..num_peers {
+            connected_peers.insert(PeerId::from(SecretKey::new()));
+        }
+
+        let status = Status::Online {
+            connected: num_peers,
+        };
+        let status_since = SystemTime::now();
+        let mut state = RunState::construct(connected_peers, status, status_since, HashSet::new());
+
+        let cmds = state.transition(Input::PeerSync(input::Sync::Tick));
+
+        assert_eq!(cmds.len(), num_peers);
     }
 }

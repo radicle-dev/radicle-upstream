@@ -12,8 +12,8 @@ pub struct Environment {
     pub key: Option<coco::keys::SecretKey>,
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
-    /// Paths for on-disk persistence.
-    pub coco_paths: coco::Paths,
+    /// Paths & profile id for on-disk persistence.
+    pub coco_profile: coco::profile::Profile,
     /// A reference to the key store.
     pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
     /// If true we are running the service in test mode.
@@ -24,12 +24,14 @@ pub struct Environment {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Failed to create temporary directory
-    #[error("Failed to create temporary directory")]
+    #[error("failed to create temporary directory")]
     TempDir(
         #[source]
         #[from]
         std::io::Error,
     ),
+    #[error(transparent)]
+    Profile(#[from] coco::profile::Error),
 }
 
 impl Environment {
@@ -40,22 +42,22 @@ impl Environment {
     fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
-            let coco_paths = coco::Paths::from_root(temp_dir.path())?;
+            let coco_profile = coco::profile::Profile::from_root(temp_dir.path(), None)?;
             let keystore = Arc::new(coco::keystore::memory());
             Ok(Self {
                 key: None,
                 temp_dir: Some(temp_dir),
-                coco_paths,
+                coco_profile,
                 keystore,
                 test_mode,
             })
         } else {
-            let coco_paths = coco::Paths::from_env()?;
-            let keystore = Arc::new(coco::keystore::file(coco_paths.clone()));
+            let coco_profile = coco::profile::Profile::load()?;
+            let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
             Ok(Self {
                 key: None,
                 temp_dir: None,
-                coco_paths,
+                coco_profile,
                 keystore,
                 test_mode,
             })
@@ -101,7 +103,7 @@ impl Manager {
 
     /// Get the current environment
     pub fn environment(&mut self) -> Result<&Environment, Error> {
-        while let Ok(message) = self.message_receiver.try_recv() {
+        while let Some(Some(message)) = self.message_receiver.recv().now_or_never() {
             match message {
                 Message::Reset => {
                     let test_mode = self.environment.test_mode;
@@ -176,7 +178,7 @@ impl Handle {
                 },
             },
         }
-        self.reload_notify.notify();
+        self.reload_notify.notify_one();
     }
 
     /// Create a handle where none of the methods have any effect.

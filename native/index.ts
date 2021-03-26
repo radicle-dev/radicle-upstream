@@ -36,12 +36,16 @@ if (isDev) {
       Boolean
     );
   }
+  proxyArgs.push("--default-seed");
+  proxyArgs.push(
+    "hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345"
+  );
 } else {
   // Packaged app, i.e. production.
   proxyPath = path.join(__dirname, "../../radicle-proxy");
   proxyArgs = [
     "--default-seed",
-    "hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345",
+    "hynkyndc6w3p8urucakobzna7sxwgcqny7xxtw88dtx3pkf7m3nrzc@sprout.radicle.xyz:12345",
   ];
 }
 
@@ -124,7 +128,15 @@ class WindowManager {
       this.messages = [];
     });
 
-    window.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
+    let uiUrl;
+
+    if (isDev && process.env.RADICLE_UPSTREAM_UI_ARGS) {
+      uiUrl = `../public/index.html?${process.env.RADICLE_UPSTREAM_UI_ARGS}`;
+    } else {
+      uiUrl = "../public/index.html";
+    }
+
+    window.loadURL(`file://${path.join(__dirname, uiUrl)}`);
 
     this.window = window;
   }

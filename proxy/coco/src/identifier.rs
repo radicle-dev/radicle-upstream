@@ -1,11 +1,11 @@
-//! A `Identifier` is the combination of a user handle and the [`librad::uri::RadUrn`] that
+//! An `Identifier` is the combination of a user handle and the [`librad::git::Urn`] that
 //! identifies the user.
 
 use std::{fmt, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-use librad::{meta::user, peer};
+use librad::{identities::Person, peer};
 
 /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
 #[derive(Debug, thiserror::Error)]
@@ -33,10 +33,10 @@ pub struct Identifier {
     pub peer_id: peer::PeerId,
 }
 
-impl<ST> From<(peer::PeerId, user::User<ST>)> for Identifier {
-    fn from((peer_id, user): (peer::PeerId, user::User<ST>)) -> Self {
+impl From<(peer::PeerId, Person)> for Identifier {
+    fn from((peer_id, user): (peer::PeerId, Person)) -> Self {
         Self {
-            handle: user.name().to_string(),
+            handle: user.subject().name.to_string(),
             peer_id,
         }
     }

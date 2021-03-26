@@ -49,9 +49,9 @@ fn seal_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use warp::{http::StatusCode, reply, Rejection, Reply};
+    use std::convert::TryFrom;
 
-    use coco::user;
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::{context, error, project};
 
@@ -59,11 +59,11 @@ mod handler {
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Unsealed,
-        owner: user::User,
+        owner: coco::LocalIdentity,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let meta = coco::control::replicate_platinum(
-            &ctx.state,
+            &ctx.peer,
             &owner,
             &input.name,
             &input.description,
@@ -74,20 +74,17 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ = coco::control::track_fake_peer(&ctx.state, &meta, &user_handle);
+                let _ = coco::control::track_fake_peer(&ctx.peer, &meta, &user_handle);
             }
         }
-        let branch = ctx
-            .state
-            .get_branch(meta.urn(), None, None)
+        let branch = coco::state::get_branch(&ctx.peer, meta.urn(), None, None)
             .await
             .map_err(error::Error::from)?;
-        let stats = ctx
-            .state
-            .with_browser(branch, |browser| Ok(browser.get_stats()?))
-            .await
-            .map_err(error::Error::from)?;
-        let project: project::Full = (meta, stats).into();
+        let stats =
+            coco::state::with_browser(&ctx.peer, branch, |browser| Ok(browser.get_stats()?))
+                .await
+                .map_err(error::Error::from)?;
+        let project = project::Full::try_from((meta, stats))?;
 
         Ok(reply::with_status(
             reply::json(&project),

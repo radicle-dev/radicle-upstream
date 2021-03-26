@@ -91,7 +91,7 @@ mod handler {
 
 #[cfg(test)]
 mod test {
-    use std::time::SystemTime;
+    use std::{convert::TryFrom, time::SystemTime};
 
     use pretty_assertions::assert_eq;
     use serde_json::json;
@@ -102,14 +102,13 @@ mod test {
     #[tokio::test]
     async fn cancel() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir)?;
+        let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
-        );
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?);
 
         let _request = ctx
             .peer_control
@@ -122,6 +121,7 @@ mod test {
             .await;
 
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
+        handle.abort();
 
         Ok(())
     }
@@ -129,14 +129,13 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir)?;
+        let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
-        );
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?);
 
         let res = request()
             .method("PUT")
@@ -148,6 +147,7 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
         });
+        handle.abort();
 
         Ok(())
     }
@@ -155,14 +155,13 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (mut ctx, run) = context::Unsealed::tmp(&tmp_dir)?;
+        let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(
-            coco::Hash::hash(b"kisses-of-the-sun"),
-            coco::uri::Protocol::Git,
-            coco::uri::Path::empty(),
-        );
+        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+            "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
+        )?);
 
         let want = ctx
             .peer_control
@@ -173,6 +172,7 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!([want]));
         });
+        handle.abort();
 
         Ok(())
     }

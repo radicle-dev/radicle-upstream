@@ -1,16 +1,14 @@
 //! Compute, track and announce noteworthy changes to the network.
 
-use std::{collections::HashSet, ops::Deref as _};
+use std::collections::HashSet;
 
 use kv::Codec as _;
 
-use librad::uri::{path::ParseError, Path, RadUrn};
+use librad::{git::Urn, identities::urn::ParseError, net::peer::Peer, signer::BoxedSigner};
+use radicle_git_ext::{Oid, RefLike};
+use radicle_surf::git::git2;
 
-use crate::{
-    oid::Oid,
-    peer::gossip,
-    state::{self, State},
-};
+use crate::{peer::gossip, state};
 
 /// Name for the bucket used in [`kv::Store`].
 const BUCKET_NAME: &str = "announcements";
@@ -26,14 +24,15 @@ pub enum Error {
 
     /// Failures parsing.
     #[error(transparent)]
-    Parse(#[from] ParseError),
-    /// Error occurred when interacting with [`State`].
+    Parse(#[from] ParseError<git2::Error>),
+
+    /// Error occurred when interacting with [`Peer`].
     #[error(transparent)]
     State(#[from] state::Error),
 }
 
 /// An update and all the required information that can be announced on the network.
-pub type Announcement = (RadUrn, Oid);
+pub type Announcement = (Urn, Oid);
 
 /// Unique list of [`Announcement`]s.
 pub type Updates = HashSet<Announcement>;
@@ -43,9 +42,9 @@ pub type Updates = HashSet<Announcement>;
 /// # Errors
 ///
 /// * if the announcemnet of one of the project heads failed
-pub async fn announce(state: &State, updates: impl Iterator<Item = &Announcement> + Send) {
+async fn announce(peer: &Peer<BoxedSigner>, updates: impl Iterator<Item = &Announcement> + Send) {
     for (urn, hash) in updates {
-        gossip::announce(state, urn, Some(*hash)).await;
+        gossip::announce(peer, urn, Some(*hash));
     }
 }
 
@@ -55,26 +54,26 @@ pub async fn announce(state: &State, updates: impl Iterator<Item = &Announcement
 ///
 /// * if listing of the projects fails
 /// * if listing of the Refs for a project fails
-pub async fn build(state: &State) -> Result<Updates, Error> {
+async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
     let mut list: Updates = HashSet::new();
 
-    match state.list_projects().await {
+    match state::list_projects(peer).await {
         // TODO(xla): We need to avoid the case where there is no owner yet for the peer api, there
         // should be machinery to kick off these routines only if our app state is ready for it.
-        Err(crate::state::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
+        Err(state::Error::Storage(librad::git::storage::Error::Config(_err))) => Ok(list),
         Err(err) => Err(err.into()),
         Ok(projects) => {
             for project in &projects {
-                let refs = state.list_owner_project_refs(project.urn()).await?;
-
-                for (head, hash) in &refs.heads {
-                    list.insert((
-                        RadUrn {
-                            path: head.as_str().parse::<Path>()?,
-                            ..project.urn()
-                        },
-                        Oid::from(*hash.deref()),
-                    ));
+                if let Some(refs) = state::list_owner_project_refs(peer, project.urn()).await? {
+                    for ((one_level, oid), category) in refs.iter_categorised() {
+                        list.insert((
+                            Urn {
+                                path: Some(RefLike::from(category).join(one_level.clone())),
+                                ..project.urn()
+                            },
+                            *oid,
+                        ));
+                    }
                 }
             }
 
@@ -87,7 +86,7 @@ pub async fn build(state: &State) -> Result<Updates, Error> {
 /// [`Announcement`] will be included if an entry in `new` can't be found in `old`.
 #[allow(clippy::implicit_hasher)]
 #[must_use]
-pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
+fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
     new_state.difference(old_state).cloned().collect()
 }
 
@@ -97,7 +96,7 @@ pub fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the access of the key in the [`kv::Bucket`] fails
-pub fn load(store: &kv::Store) -> Result<Updates, Error> {
+fn load(store: &kv::Store) -> Result<Updates, Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     let value = bucket
         .get(KEY_NAME)?
@@ -112,12 +111,12 @@ pub fn load(store: &kv::Store) -> Result<Updates, Error> {
 ///
 /// * if it can't build the new list of updates
 /// * access to the storage fails
-pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
+pub async fn run(peer: &Peer<BoxedSigner>, store: &kv::Store) -> Result<Updates, Error> {
     let old = load(store)?;
-    let new = build(state).await?;
+    let new = build(peer).await?;
     let updates = diff(&old, &new);
 
-    announce(state, updates.iter()).await;
+    announce(peer, updates.iter()).await;
 
     if !updates.is_empty() {
         save(store, new.clone()).map_err(Error::from)?;
@@ -133,7 +132,7 @@ pub async fn run(state: &State, store: &kv::Store) -> Result<Updates, Error> {
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
 #[allow(clippy::implicit_hasher)]
-pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
+fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)
 }
@@ -141,28 +140,36 @@ pub fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
 #[allow(clippy::panic)]
 #[cfg(test)]
 mod test {
-    use std::collections::HashSet;
+    use std::{collections::HashSet, convert::TryFrom as _};
 
     use pretty_assertions::assert_eq;
 
-    use librad::{hash::Hash, keys::SecretKey, uri};
+    use librad::{git::Urn, keys::SecretKey, net};
+    use radicle_git_ext::{oid, RefLike};
 
-    use crate::{config, oid, signer, state::State};
+    use crate::{config, identities::payload::Person, signer};
 
-    #[tokio::test(core_threads = 2)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn announce() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
-        let config = config::default(key, tmp_dir.path())?;
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer);
+        let signer = signer::BoxedSigner::new(signer::SomeSigner {
+            signer: key.clone(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
+        let peer = net::peer::Peer::new(config);
 
-        let _owner = state.init_owner("cloudhead").await?;
+        let _owner = crate::state::init_owner(
+            &peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
 
         // TODO(xla): Build up proper testnet to assert that haves are announced.
-        let updates = super::build(&state).await?;
-        super::announce(&state, updates.iter()).await;
+        let updates = super::build(&peer).await?;
+        super::announce(&peer, updates.iter()).await;
 
         Ok(())
     }
@@ -222,37 +229,15 @@ mod test {
     fn save_and_load() -> Result<(), Box<dyn std::error::Error>> {
         let updates: HashSet<_> = vec![
             (
-                uri::RadUrn {
-                    id: Hash::hash(b"project0"),
-                    proto: uri::Protocol::Git,
-                    path: "cloudhead/new-language".parse::<uri::Path>()?,
-                },
+                project0("cloudead/new-language"),
                 "7dec3269".parse::<oid::Oid>()?,
             ),
             (
-                uri::RadUrn {
-                    id: Hash::hash(b"project0"),
-                    proto: uri::Protocol::Git,
-                    path: "fintohaps/notations".parse::<uri::Path>()?,
-                },
+                project0("fintohaps/notations"),
                 "b4d3276d".parse::<oid::Oid>()?,
             ),
-            (
-                uri::RadUrn {
-                    id: Hash::hash(b"project0"),
-                    proto: uri::Protocol::Git,
-                    path: "kalt/loops".parse::<uri::Path>()?,
-                },
-                "2206e5dc".parse::<oid::Oid>()?,
-            ),
-            (
-                uri::RadUrn {
-                    id: Hash::hash(b"project1"),
-                    proto: uri::Protocol::Git,
-                    path: "backport".parse::<uri::Path>()?,
-                },
-                "869e5740".parse::<oid::Oid>()?,
-            ),
+            (project0("kalt/loops"), "2206e5dc".parse::<oid::Oid>()?),
+            (project1("backport"), "869e5740".parse::<oid::Oid>()?),
         ]
         .iter()
         .cloned()
@@ -267,18 +252,20 @@ mod test {
         Ok(())
     }
 
-    fn project0(head: &str) -> uri::RadUrn {
-        uri::RadUrn {
-            id: Hash::hash(b"project0"),
-            proto: uri::Protocol::Git,
-            path: head.parse::<uri::Path>().expect("unable to parse head"),
+    fn project0(head: &str) -> Urn {
+        Urn {
+            id: "7ab8629dd6da14dcacde7f65b3d58cd291d7e235"
+                .parse::<radicle_git_ext::Oid>()
+                .expect("oid parse failed"),
+            path: Some(RefLike::try_from(head).expect("head was not reflike")),
         }
     }
-    fn project1(head: &str) -> uri::RadUrn {
-        uri::RadUrn {
-            id: Hash::hash(b"project1"),
-            proto: uri::Protocol::Git,
-            path: head.parse::<uri::Path>().expect("unable to parse head"),
+    fn project1(head: &str) -> Urn {
+        Urn {
+            id: "7ab8629dd6da14dcacde7f65b3d58cd291d7e234"
+                .parse::<radicle_git_ext::Oid>()
+                .expect("oid parse failed"),
+            path: Some(RefLike::try_from(head).expect("head was not reflike")),
         }
     }
 }

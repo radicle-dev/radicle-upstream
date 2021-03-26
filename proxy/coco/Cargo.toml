@@ -11,6 +11,7 @@ keywords = [ "radicle", "upstream", "proxy", "git", "quic" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
+async-stream = "0.3"
 either = "1.6"
 futures = { version = "0.3", features = [ "compat" ] }
 lazy_static = "1.4"
@@ -21,7 +22,8 @@ serde = { version = "1.0", features = [ "derive" ] }
 serde_millis = "0.1"
 syntect = "4.2"
 thiserror = "1.0"
-tokio = { version = "0.2", features = [ "dns", "macros", "time" ] }
+tokio = { version = "1.2", features = [ "macros", "net", "rt-multi-thread", "sync", "time" ] }
+url = "2.1"
 
 [dependencies.kv]
 git = "https://github.com/zshipko/rust-kv.git"
@@ -30,19 +32,24 @@ features = [ "json-value" ]
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "308d2dd872ca8bdbb8711c5a8c67e2cc48c2da04"
+rev = "07b4bb364e8d268127b7b887cc94224676652afc"
 
 [dependencies.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "308d2dd872ca8bdbb8711c5a8c67e2cc48c2da04"
+rev = "07b4bb364e8d268127b7b887cc94224676652afc"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "308d2dd872ca8bdbb8711c5a8c67e2cc48c2da04"
+rev = "07b4bb364e8d268127b7b887cc94224676652afc"
 
 [dependencies.radicle-surf]
 version = "0.5"
 features = ["serialize"]
+
+[dependencies.git2]
+version = "0.13"
+default-features = false
+features = []
 
 [dev-dependencies]
 assert_matches = "1.3"

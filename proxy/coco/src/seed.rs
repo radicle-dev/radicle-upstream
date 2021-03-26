@@ -25,12 +25,12 @@ pub struct Seed {
     /// The seed peer id.
     pub peer_id: peer::PeerId,
     /// The seed address.
-    pub addr: SocketAddr,
+    pub addrs: Vec<SocketAddr>,
 }
 
-impl From<Seed> for (peer::PeerId, SocketAddr) {
-    fn from(seed: Seed) -> (peer::PeerId, SocketAddr) {
-        (seed.peer_id, seed.addr)
+impl From<Seed> for (peer::PeerId, Vec<SocketAddr>) {
+    fn from(seed: Seed) -> Self {
+        (seed.peer_id, seed.addrs)
     }
 }
 
@@ -50,7 +50,10 @@ impl Seed {
                 let peer_id = peer::PeerId::from_default_encoding(peer_id)
                     .map_err(|err| Error::InvalidSeed(seed.to_string(), Some(err)))?;
 
-                Ok(Self { peer_id, addr })
+                Ok(Self {
+                    peer_id,
+                    addrs: vec![addr],
+                })
             } else {
                 Err(Error::DnsLookupFailed(seed.to_string()))
             }
@@ -78,7 +81,7 @@ pub async fn resolve<T: AsRef<str> + Send + Sync>(seeds: &[T]) -> Result<Vec<See
     Ok(resolved)
 }
 
-#[allow(clippy::panic)]
+#[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod tests {
     use std::net;
@@ -94,7 +97,8 @@ mod tests {
 
         assert!(!seeds.is_empty(), "seeds should not be empty");
 
-        if let Some(super::Seed { addr, .. }) = seeds.first() {
+        if let Some(super::Seed { addrs, .. }) = seeds.first() {
+            let addr = addrs.first().unwrap();
             let expected: net::SocketAddr = match *addr {
                 net::SocketAddr::V4(_addr) => ([127, 0, 0, 1], 9999).into(),
                 net::SocketAddr::V6(_addr) => "[::1]:9999".parse().expect("valid ivp6 address"),

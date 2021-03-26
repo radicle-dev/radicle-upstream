@@ -1,11 +1,11 @@
 //! Inspect state and perform actions on a running peer.
 
-use std::time::SystemTime;
+use std::{net::SocketAddr, time::SystemTime};
 
 use either::Either;
 use tokio::sync::{mpsc, oneshot};
 
-use librad::uri::RadUrn;
+use librad::git::Urn;
 
 use crate::{request, request::waiting_room};
 
@@ -15,25 +15,26 @@ use super::run_state::Status;
 #[allow(clippy::pub_enum_variant_names)]
 #[derive(Debug)]
 pub enum Request {
+    ListenAddrs(oneshot::Sender<Vec<SocketAddr>>),
     /// Request the current peer status.
     CurrentStatus(oneshot::Sender<Status>),
 
     /// Cancel an ongoing project search.
     CancelSearch(
-        RadUrn,
+        Urn,
         SystemTime,
         oneshot::Sender<Result<Option<request::SomeRequest<SystemTime>>, waiting_room::Error>>,
     ),
     /// Get a project search.
     GetSearch(
-        RadUrn,
+        Urn,
         oneshot::Sender<Option<request::SomeRequest<SystemTime>>>,
     ),
     /// List all project searches.
     ListSearches(oneshot::Sender<Vec<request::SomeRequest<SystemTime>>>),
     /// Initiate a search for a project on the network.
     StartSearch(
-        RadUrn,
+        Urn,
         SystemTime,
         oneshot::Sender<waiting_room::Created<SystemTime>>,
     ),
@@ -42,6 +43,7 @@ pub enum Request {
 /// Returned responses from the peer.
 #[derive(Debug)]
 pub enum Response {
+    ListenAddrs(oneshot::Sender<Vec<SocketAddr>>, Vec<SocketAddr>),
     /// Response to a status request.
     CurrentStatus(oneshot::Sender<Status>, Status),
 
@@ -93,6 +95,18 @@ impl Control {
         receiver.await.expect("receiver is gone")
     }
 
+    /// List listen addrs of the running peer.
+    pub async fn listen_addrs(&mut self) -> Vec<SocketAddr> {
+        let (sender, receiver) = oneshot::channel::<Vec<SocketAddr>>();
+
+        self.sender
+            .send(Request::ListenAddrs(sender))
+            .await
+            .expect("peer is gone");
+
+        receiver.await.expect("receiver is gone")
+    }
+
     /// Cancel an ongoing search for a project.
     ///
     /// # Errors
@@ -100,7 +114,7 @@ impl Control {
     /// * if the waiting room returns an error
     pub async fn cancel_project_request(
         &mut self,
-        urn: &RadUrn,
+        urn: &Urn,
         timestamp: SystemTime,
     ) -> Result<Option<request::SomeRequest<SystemTime>>, waiting_room::Error> {
         let (sender, receiver) = oneshot::channel();
@@ -116,7 +130,7 @@ impl Control {
     /// Initiate a new request to fetch a project from the network.
     pub async fn get_project_request(
         &mut self,
-        urn: &RadUrn,
+        urn: &Urn,
     ) -> Option<request::SomeRequest<SystemTime>> {
         let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<SystemTime>>>();
 
@@ -143,7 +157,7 @@ impl Control {
     /// Initiate a new request for the `urn`.
     pub async fn request_project(
         &mut self,
-        urn: &RadUrn,
+        urn: &Urn,
         timestamp: SystemTime,
     ) -> request::SomeRequest<SystemTime> {
         let (sender, receiver) = oneshot::channel::<waiting_room::Created<SystemTime>>();

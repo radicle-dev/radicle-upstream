@@ -1,34 +1,40 @@
 //! Emit `Have`s and `Want`s on the network.
 
 use librad::{
-    net::peer::{Gossip, Rev},
+    git::Urn,
+    net::{
+        peer::Peer,
+        protocol::gossip::{Payload, Rev},
+    },
     peer::PeerId,
-    uri::RadUrn,
+    signer::BoxedSigner,
 };
-
-use crate::{oid::Oid, State};
+use radicle_git_ext::Oid;
 
 /// Announce a new rev for the `urn`.
-pub async fn announce(state: &State, urn: &RadUrn, rev: Option<Oid>) {
-    let protocol = state.api.protocol();
-    protocol
-        .announce(Gossip {
-            urn: urn.clone(),
-            rev: rev.map(|rev| Rev::Git(rev.into())),
-            origin: None,
-        })
-        .await;
+pub fn announce(peer: &Peer<BoxedSigner>, urn: &Urn, rev: Option<Oid>) {
+    match peer.announce(Payload {
+        urn: urn.clone(),
+        rev: rev.map(|rev| Rev::Git(rev.into())),
+        origin: None,
+    }) {
+        Ok(()) => log::trace!("successfully announced for urn=`{}`, rev=`{:?}`", urn, rev),
+        Err(_payload) => log::warn!("failed to announce for urn=`{}`, rev=`{:?}`", urn, rev),
+    }
 }
 
-/// Emit a [`Gossip`] request for the given `urn`.
-pub async fn query(state: &State, urn: RadUrn, origin: Option<PeerId>) {
-    state
-        .api
-        .protocol()
-        .query(Gossip {
+/// Emit a [`Payload`] request for the given `urn`.
+pub fn query(peer: &Peer<BoxedSigner>, urn: &Urn, origin: Option<PeerId>) {
+    match peer.query(Payload {
+        urn: urn.clone(),
+        rev: None,
+        origin,
+    }) {
+        Ok(()) => log::trace!(
+            "successfully queried for urn=`{}`, origin=`{:?}`",
             urn,
-            rev: None,
-            origin,
-        })
-        .await;
+            origin
+        ),
+        Err(_payload) => log::warn!("failed to query for urn=`{}`, origin=`{:?}`", urn, origin),
+    };
 }

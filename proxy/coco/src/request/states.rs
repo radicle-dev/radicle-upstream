@@ -8,7 +8,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use librad::{peer::PeerId, uri::RadUrl};
+use librad::peer::PeerId;
 
 use super::sealed;
 
@@ -138,7 +138,7 @@ impl Deref for Cloning {
 #[serde(rename_all = "camelCase")]
 pub struct Cloned {
     /// The identity that we were attempting to find and the peer that we found it from.
-    pub(crate) url: RadUrl,
+    pub(crate) remote_peer: PeerId,
 }
 /// One of the terminal states for a `Request` where the task has been cancelled.
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]

@@ -4,13 +4,19 @@
 use std::{convert::TryFrom, io, path::PathBuf};
 
 use librad::{
-    git::{local::url::LocalUrl, types::remote::Remote},
+    git::{
+        local::{transport::CanOpenStorage, url::LocalUrl},
+        types::{
+            remote::{self, LocalPushspec, Remote},
+            Fetchspec, Force, Refspec,
+        },
+    },
     git_ext::{self, OneLevel},
+    reflike, refspec_pattern,
     std_ext::result::ResultExt as _,
 };
+use nonempty::NonEmpty;
 use radicle_surf::vcs::git::git2;
-
-use crate::config;
 
 const USER_NAME: &str = "user.name";
 const USER_EMAIL: &str = "user.email";
@@ -73,6 +79,14 @@ pub enum Error {
     /// The path was expected to exist already but does not.
     #[error("the path provided '{0}' does not exist when it was expected to")]
     PathDoesNotExist(PathBuf),
+
+    /// When attempting to find a particular remote that _should_ exist, it did not.
+    #[error(transparent)]
+    Remote(#[from] remote::FindError),
+
+    /// An internal error occurred when talking to the local transport for git related I/O.
+    #[error(transparent)]
+    Transport(#[from] librad::git::local::transport::Error),
 
     /// The `rad` remote was found, but the URL did not match the URL we were expecting.
     #[error("the `rad` remote was found but the url field does not match the provided url, found: '{found}' expected: '{expected}'")]
@@ -185,17 +199,8 @@ impl Repository {
             },
             super::Repo::New { name, path } => {
                 let repo_path = path.join(name.clone());
-
-                if repo_path.is_file() {
-                    return Err(Error::AlreadExists(repo_path));
-                }
-
-                if repo_path.exists()
-                    && repo_path.is_dir()
-                    && repo_path.read_dir()?.next().is_some()
-                {
-                    return Err(Error::AlreadExists(repo_path));
-                }
+                let _repo_path = crate::project::ensure_directory(&repo_path)?
+                    .ok_or_else(|| Error::AlreadExists(repo_path.clone()))?;
 
                 let signature = Self::existing_author()?;
 
@@ -215,7 +220,14 @@ impl Repository {
     /// # Errors
     ///
     ///   * Failed to setup the repository
-    pub fn setup_repo(self, description: &str) -> Result<git2::Repository, super::Error> {
+    pub fn setup_repo<F>(
+        self,
+        open_storage: F,
+        description: &str,
+    ) -> Result<git2::Repository, super::Error>
+    where
+        F: CanOpenStorage + Clone + 'static,
+    {
         match self {
             Self::Existing {
                 repo,
@@ -226,7 +238,7 @@ impl Repository {
                     "Setting up existing repository @ '{}'",
                     repo.path().display()
                 );
-                Self::setup_remote(&repo, url, &default_branch)?;
+                Self::setup_remote(&repo, open_storage, url, &default_branch)?;
                 Ok(repo)
             },
             Self::New {
@@ -244,8 +256,25 @@ impl Repository {
                     &default_branch,
                     &git2::Signature::try_from(signature)?,
                 )?;
-                Self::setup_remote(&repo, url, &default_branch)?;
-                crate::project::set_rad_upstream(&repo, &default_branch)?;
+                let mut remote =
+                    Self::setup_remote(&repo, open_storage.clone(), url, &default_branch)?;
+                // Set up the default branch under the remote to allow setting the upstream
+                let _fetched = remote
+                    .fetch(
+                        open_storage,
+                        &repo,
+                        remote::LocalFetchspec::Specs(NonEmpty::new(Fetchspec::from(Refspec {
+                            src: reflike!("refs/heads").join(default_branch.clone()),
+                            dst: reflike!("refs/remotes")
+                                .join(remote.name.clone())
+                                .join(default_branch.clone()),
+                            force: Force::False,
+                        }))),
+                    )
+                    .map_err(Error::from)?;
+
+                crate::project::set_upstream(&repo, &remote, default_branch)?;
+
                 Ok(repo)
             },
         }
@@ -297,34 +326,43 @@ impl Repository {
 
     /// Equips a repository with a rad remote for the given id. If the directory at the given path
     /// is not managed by git yet we initialise it first.
-    fn setup_remote(
+    fn setup_remote<F>(
         repo: &git2::Repository,
+        open_storage: F,
         url: LocalUrl,
         default_branch: &OneLevel,
-    ) -> Result<(), Error> {
+    ) -> Result<Remote<LocalUrl>, Error>
+    where
+        F: CanOpenStorage + 'static,
+    {
         let _default_branch_ref = Self::existing_branch(repo, default_branch)?;
 
         log::debug!("Creating rad remote");
-        let mut git_remote = Self::existing_remote(repo, &url)?
-            .map_or_else(|| Remote::rad_remote(url, None).create(repo), Ok)?;
-        Self::push_branches(repo, &mut git_remote)?;
-        Ok(())
-    }
 
-    fn push_branches(repo: &git2::Repository, remote: &mut git2::Remote) -> Result<(), Error> {
-        let local_branches = repo
-            .branches(Some(git2::BranchType::Local))?
-            .filter_map(|branch_result| {
-                let (branch, _) = branch_result.ok()?;
-                let name = branch.name().ok()?;
-                name.map(|branch| format!("refs/heads/{}", branch))
-            })
-            .collect::<Vec<String>>();
-
-        log::debug!("Pushing branches {:?}", local_branches);
-
-        remote.push(&local_branches, None)?;
-        Ok(())
+        let fetchspec = Refspec {
+            src: refspec_pattern!("refs/heads/*"),
+            dst: refspec_pattern!("refs/remotes/rad/*"),
+            force: Force::True,
+        };
+        let mut git_remote = Self::existing_remote(repo, &url)?.map_or_else(
+            || {
+                let mut rad = Remote::rad_remote(url, fetchspec);
+                rad.save(repo)?;
+                Ok::<_, Error>(rad)
+            },
+            Ok,
+        )?;
+        for pushed in git_remote.push(
+            open_storage,
+            repo,
+            LocalPushspec::Matching {
+                pattern: refspec_pattern!("refs/heads/*"),
+                force: Force::True,
+            },
+        )? {
+            log::debug!("Pushed local branch `{}`", pushed);
+        }
+        Ok(git_remote)
     }
 
     fn existing_branch<'a>(
@@ -340,21 +378,25 @@ impl Repository {
             })
     }
 
-    fn existing_remote<'a>(
-        repo: &'a git2::Repository,
+    fn existing_remote(
+        repo: &git2::Repository,
         url: &LocalUrl,
-    ) -> Result<Option<git2::Remote<'a>>, Error> {
-        match repo.find_remote(config::RAD_REMOTE) {
-            Err(err) if git_ext::is_not_found_err(&err) => Ok(None),
-            Err(err) => Err(err.into()),
-            Ok(remote) => match remote.url() {
-                None => Err(Error::MissingUrl),
-                Some(remote_url) if remote_url != url.to_string() => Err(Error::UrlMismatch {
-                    expected: url.to_string(),
-                    found: remote_url.to_string(),
-                }),
-                Some(_) => Ok(Some(remote)),
+    ) -> Result<Option<Remote<LocalUrl>>, Error> {
+        match Remote::<LocalUrl>::find(repo, reflike!("rad")) {
+            Err(remote::FindError::ParseUrl(_)) => {
+                log::warn!("an old/invalid URL was found when trying to load the `rad` remote");
+                log::warn!(
+                    "we are going to rename the remote to `rad_old` and create a new `rad` remote"
+                );
+                repo.remote_rename("rad", "rad_old")?;
+                Ok(None)
             },
+            Err(err) => Err(err.into()),
+            Ok(Some(remote)) if remote.url != *url => Err(Error::UrlMismatch {
+                expected: url.to_string(),
+                found: remote.url.to_string(),
+            }),
+            Ok(remote) => Ok(remote),
         }
     }
 

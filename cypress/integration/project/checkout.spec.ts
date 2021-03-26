@@ -122,7 +122,7 @@ context("project checkout", () => {
           commands
             .pick("notification")
             .contains(
-              /Checkout failed: '.*checkout\/platinum' exists and is not an empty directory/
+              /Checkout failed: the path provided '.*checkout\/platinum' already exists/
             )
             .should("exist");
         });

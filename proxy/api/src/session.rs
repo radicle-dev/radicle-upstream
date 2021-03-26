@@ -95,12 +95,15 @@ pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(
 /// Panics if anything goes wrong.
 #[cfg(test)]
 pub async fn initialize_test(ctx: &crate::context::Unsealed, owner_handle: &str) -> Session {
-    let owner = ctx
-        .state
-        .init_owner(owner_handle)
-        .await
-        .expect("cannot init owner identity");
-    let identity = (ctx.state.peer_id(), owner).into();
+    let owner = coco::state::init_owner(
+        &ctx.peer,
+        coco::identities::payload::Person {
+            name: owner_handle.into(),
+        },
+    )
+    .await
+    .expect("cannot init owner identity");
+    let identity = (ctx.peer.peer_id(), owner.into_inner().into_inner()).into();
     initialize(&ctx.store, identity, &ctx.default_seeds).expect("failed to initialize session")
 }
 

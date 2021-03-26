@@ -21,6 +21,7 @@ pub enum Notification {
 }
 
 /// Event observed about the local peer.
+#[allow(clippy::clippy::large_enum_variant)]
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {
@@ -71,13 +72,12 @@ impl MaybeFrom<PeerEvent> for Notification {
             PeerEvent::GossipFetched {
                 provider, gossip, ..
             } => Some(Self::LocalPeer(LocalPeer::ProjectUpdated {
-                provider,
+                provider: provider.peer_id,
                 urn: gossip.urn,
             })),
-            PeerEvent::RequestCloned(url) => Some(Self::LocalPeer(LocalPeer::RequestCloned {
-                peer: url.authority,
-                urn: url.urn,
-            })),
+            PeerEvent::RequestCloned(urn, peer) => {
+                Some(Self::LocalPeer(LocalPeer::RequestCloned { peer, urn }))
+            },
             PeerEvent::RequestCreated(urn) => {
                 Some(Self::LocalPeer(LocalPeer::RequestCreated { urn }))
             },
@@ -87,7 +87,7 @@ impl MaybeFrom<PeerEvent> for Notification {
             PeerEvent::RequestTimedOut(urn) => {
                 Some(Self::LocalPeer(LocalPeer::RequestTimedOut { urn }))
             },
-            PeerEvent::StatusChanged(old, new) => {
+            PeerEvent::StatusChanged { old, new } => {
                 Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
             },
             _ => None,

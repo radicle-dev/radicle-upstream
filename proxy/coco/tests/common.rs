@@ -3,28 +3,25 @@ use std::{path::PathBuf, time::Duration};
 use futures::{future, StreamExt as _};
 use tokio::{
     sync::broadcast,
-    time::{timeout, Elapsed},
+    time::{error::Elapsed, timeout},
 };
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use librad::{
-    git_ext::OneLevel,
-    keys::SecretKey,
-    net::protocol::ProtocolEvent,
-    peer::PeerId,
-    reflike, signer,
-    uri::{RadUrl, RadUrn},
+    git::Urn, git_ext::OneLevel, keys::SecretKey, net::discovery, peer::PeerId, reflike, signer,
 };
 
-use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, RunConfig, State};
+use coco::{config, project, seed::Seed, Paths, Peer, PeerEvent, PeerStatus, RunConfig};
 
 #[doc(hidden)]
 #[macro_export]
 macro_rules! await_event {
     ( $receiver:expr , $filter:expr ) => {{
-        let filtered = $receiver.into_stream().filter_map($filter).map(|_| ());
+        let filtered = async_stream::stream! { loop { yield $receiver.recv().await } }
+            .filter_map($filter)
+            .map(|_| ());
         tokio::pin!(filtered);
-        timeout(Duration::from_secs(1), filtered.next())
+        timeout(Duration::from_secs(2), filtered.next())
             .await
             .map(|_| ())
     }};
@@ -45,40 +42,24 @@ macro_rules! assert_event {
     }};
 }
 
-/// Given one peers stream of events and another peers id, it will succeed once a connection from
-/// the given id has been observed.
-///
-/// # Errors
-///
-/// * if the timeout waiting for the [`ProtocolEvent::Connected`] has been reached.
-#[allow(dead_code)]
-pub async fn connected(
-    receiver: broadcast::Receiver<PeerEvent>,
-    expected_id: &PeerId,
-) -> Result<(), Elapsed> {
-    assert_event!(
-        receiver,
-        PeerEvent::Protocol(ProtocolEvent::Connected(remote_id)) if remote_id == *expected_id
-    )
-}
-
 /// Assert that we received a cloned event for the expected `RadUrl`.
 #[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn assert_cloned(
-    receiver: broadcast::Receiver<PeerEvent>,
-    expected: &RadUrl,
+    mut receiver: broadcast::Receiver<PeerEvent>,
+    expected_urn: &Urn,
+    expected_remote: PeerId,
 ) -> Result<(), Elapsed> {
     assert_event!(
         receiver,
-        PeerEvent::RequestCloned(url) if url == *expected
+        PeerEvent::RequestCloned(urn, remote_peer) if urn == *expected_urn && remote_peer == expected_remote
     )
 }
 
 /// Assert that we received a query event for the expected `RadUrn`.
 #[allow(dead_code)] // NOTE(finto): this is used in integrations tests.
 pub async fn requested(
-    receiver: broadcast::Receiver<PeerEvent>,
-    expected: &RadUrn,
+    mut receiver: broadcast::Receiver<PeerEvent>,
+    expected: &Urn,
 ) -> Result<(), Elapsed> {
     assert_event!(
         receiver,
@@ -86,17 +67,42 @@ pub async fn requested(
     )
 }
 
+/// Assert that the `PeerStatus` transitions to `Online` and the number of connected peers is equal
+/// to or more than `min_connected`.
+#[allow(dead_code)]
+pub async fn connected(
+    mut receiver: broadcast::Receiver<PeerEvent>,
+    min_connected: usize,
+) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::StatusChanged { new: PeerStatus::Online { connected }, .. } if connected >= min_connected
+    )
+}
+
+#[allow(dead_code)]
+pub async fn started(mut receiver: broadcast::Receiver<PeerEvent>) -> Result<(), Elapsed> {
+    assert_event!(
+        receiver,
+        PeerEvent::StatusChanged {
+            new: PeerStatus::Started,
+            ..
+        }
+    )
+}
+
 pub async fn build_peer(
     tmp_dir: &tempfile::TempDir,
     run_config: RunConfig,
-) -> Result<(Peer, State), Box<dyn std::error::Error>> {
+) -> Result<Peer<discovery::Static>, Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-    let conf = config::default(key, tmp_dir.path())?;
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
+    let conf = config::default(signer, tmp_dir.path())?;
+    let disco = config::static_seed_discovery(&[]);
+    let peer = coco::Peer::new(conf, disco, store, run_config);
 
-    Ok((peer, state))
+    Ok(peer)
 }
 
 #[allow(dead_code)]
@@ -104,22 +110,16 @@ pub async fn build_peer_with_seeds(
     tmp_dir: &tempfile::TempDir,
     seeds: Vec<Seed>,
     run_config: RunConfig,
-) -> Result<(Peer, State), Box<dyn std::error::Error>> {
+) -> Result<Peer<discovery::Static>, Box<dyn std::error::Error>> {
     let key = SecretKey::new();
     let signer = signer::BoxedSigner::from(key);
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-
     let paths = Paths::from_root(tmp_dir.path())?;
-    let conf = config::configure(
-        paths,
-        key,
-        *config::LOCALHOST_ANY,
-        config::static_seed_discovery(seeds),
-    );
+    let conf = config::configure(paths, signer, *config::LOCALHOST_ANY);
+    let disco = config::static_seed_discovery(&seeds);
+    let peer = coco::Peer::new(conf, disco, store, run_config);
 
-    let (peer, state) = coco::into_peer_state(conf, signer.clone(), store, run_config).await?;
-
-    Ok((peer, state))
+    Ok(peer)
 }
 
 pub fn init_logging() {

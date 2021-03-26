@@ -70,7 +70,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
         let session = session::initialize_test(&ctx, "xla").await;
 
@@ -87,7 +87,7 @@ mod test {
     #[tokio::test]
     async fn update_settings() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = context::Unsealed::tmp(&tmp_dir).await?;
+        let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
         session::initialize_test(&ctx, "cloudhead").await;
 

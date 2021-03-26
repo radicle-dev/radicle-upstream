@@ -1,24 +1,33 @@
-use std::time::Duration;
+use std::{convert::TryFrom, time::Duration};
 
 use assert_matches::assert_matches;
 use futures::{future, StreamExt as _};
 use pretty_assertions::assert_eq;
 use tokio::time::timeout;
 
-use librad::uri;
-use radicle_surf::vcs::git::git2;
+use librad::{
+    git::{
+        local::url::LocalUrl,
+        types::{remote::LocalPushspec, Fetchspec, Force, Remote},
+    },
+    reflike,
+};
+use radicle_git_ext::RefLike;
 
 use coco::{
-    config,
-    peer::run_config,
+    identities::payload::Person,
     project::{peer, Peer},
     seed::Seed,
+    state,
+    state::init_owner,
     RunConfig,
 };
 
 #[macro_use]
 mod common;
-use common::{build_peer, build_peer_with_seeds, connected, init_logging, shia_le_pathbuf};
+use common::{
+    build_peer, build_peer_with_seeds, connected, init_logging, shia_le_pathbuf, started,
+};
 
 #[tokio::test]
 async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,50 +35,62 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = bob_state.init_owner("bob").await?;
+    let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let _bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
+        tokio::task::spawn(alice_peer.run());
+        started(events).await?;
 
-    let project = alice_state
-        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
-        .await?;
+        let listen_addrs = peer_control.listen_addrs().await;
+        (peer, listen_addrs)
+    };
+    let bob_peer = {
+        let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
+        tokio::task::spawn(bob_peer.run());
+        started(events).await?;
 
-    let project_urn = {
-        let alice_peer_id = alice_state.peer_id();
-        let alice_addr = alice_state.listen_addr();
-        bob_state
-            .clone_project(
-                project.urn().into_rad_url(alice_peer_id),
-                vec![alice_addr].into_iter(),
-            )
-            .await
-            .expect("unable to clone project")
+        peer
     };
 
-    let have = bob_state
-        .list_projects()
+    let project =
+        state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path)).await?;
+
+    {
+        let alice_peer_id = alice_peer.peer_id();
+        state::clone_project(&bob_peer, project.urn(), alice_peer_id, alice_addrs, None).await?;
+    }
+
+    let have = state::list_projects(&bob_peer)
         .await?
         .into_iter()
         .map(|project| project.urn())
         .collect::<Vec<_>>();
-    let want = vec![project_urn];
+    let want = vec![project.urn()];
 
     assert_eq!(have, want);
 
     {
         let another_peer = librad::peer::PeerId::from(librad::keys::SecretKey::new());
-        bob_state.track(project.urn(), another_peer).await?;
-        let mut have = bob_state
-            .tracked(project.urn())
+        state::track(&bob_peer, project.urn(), another_peer).await?;
+        let mut have = state::tracked(&bob_peer, project.urn())
             .await?
             .into_iter()
-            .map(|peer| peer.map(|status| status.map(|user| user.name().to_string())))
+            .map(|peer| peer.map(|status| status.map(|user| user.subject().name.to_string())))
             .collect::<Vec<_>>();
         have.sort_by(|p1, p2| p1.status().cmp(p2.status()));
         let want: Vec<_> = vec![
@@ -78,8 +99,11 @@ async fn can_clone_project() -> Result<(), Box<dyn std::error::Error>> {
                 status: peer::Status::NotReplicated,
             },
             coco::project::Peer::Remote {
-                peer_id: alice_state.peer_id(),
-                status: peer::Status::replicated(peer::Role::Maintainer, alice.name().to_string()),
+                peer_id: alice_peer.peer_id(),
+                status: peer::Status::replicated(
+                    peer::Role::Maintainer,
+                    alice.subject().name.to_string(),
+                ),
             },
         ];
         assert_eq!(have, want);
@@ -93,33 +117,48 @@ async fn can_clone_user() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     let alice_tmp_dir = tempfile::tempdir()?;
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
+        tokio::task::spawn(alice_peer.run());
+        started(events).await?;
 
-    let cloned_urn = {
-        let alice_peer_id = alice_state.peer_id();
-        let alice_addr = alice_state.listen_addr();
-        let url = alice.urn().into_rad_url(alice_peer_id);
+        let listen_addrs = peer_control.listen_addrs().await;
+        (peer, listen_addrs)
+    };
+    let bob_peer = {
+        let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
+        tokio::task::spawn(bob_peer.run());
+        started(events).await?;
 
-        bob_state
-            .clone_user(url, vec![alice_addr].into_iter())
-            .await
-            .expect("unable to clone project")
+        peer
     };
 
-    let want = bob_state
-        .list_users()
+    {
+        let alice_peer_id = alice_peer.peer_id();
+        state::clone_user(&bob_peer, alice.urn(), alice_peer_id, alice_addrs, None).await?;
+    }
+
+    let want = state::list_users(&bob_peer)
         .await?
         .into_iter()
         .map(|user| user.urn())
         .collect::<Vec<_>>();
-    let have = vec![cloned_urn];
+    let have = vec![alice.urn()];
 
     assert_eq!(want, have);
 
@@ -132,45 +171,75 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = bob_state.init_owner("bob").await?;
+    let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let _bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
+        tokio::task::spawn(alice_peer.run());
+        started(events).await?;
 
-    let project = alice_state
-        .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
-        .await?;
+        let listen_addrs = peer_control.listen_addrs().await;
+        (peer, listen_addrs)
+    };
+    let bob_peer = {
+        let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
+        tokio::task::spawn(bob_peer.run());
+        started(events).await?;
 
-    let project_urn = {
-        let alice_addr = alice_state.listen_addr();
-        let alice_peer_id = alice_state.peer_id();
-        let clone_url = project.urn().into_rad_url(alice_peer_id);
+        peer
+    };
 
-        bob_state
-            .clone_project(clone_url, vec![alice_addr].into_iter())
-            .await
-            .expect("unable to clone project")
+    let project = state::init_project(
+        &alice_peer,
+        &alice,
+        shia_le_pathbuf(alice_repo_path.clone()),
+    )
+    .await?;
+
+    {
+        let alice_peer_id = alice_peer.peer_id();
+        state::clone_project(
+            &bob_peer,
+            project.urn(),
+            alice_peer_id,
+            alice_addrs.clone(),
+            None,
+        )
+        .await
+        .expect("unable to clone project")
     };
 
     assert_eq!(
-        bob_state
-            .list_projects()
+        state::list_projects(&bob_peer)
             .await?
             .into_iter()
             .map(|project| project.urn())
             .collect::<Vec<_>>(),
-        vec![project_urn.clone()]
+        vec![project.urn()]
     );
 
     let commit_id = {
-        let repo = git2::Repository::open(alice_repo_path.join(project.name()))?;
+        let repo =
+            git2::Repository::open(alice_repo_path.join(project.subject().name.to_string()))?;
         let oid = repo
-            .find_reference(&format!("refs/heads/{}", project.default_branch()))?
+            .find_reference(&format!(
+                "refs/heads/{}",
+                project.subject().default_branch.clone().unwrap()
+            ))?
             .target()
             .expect("Missing first commit");
         let commit = repo.find_commit(oid)?;
@@ -181,9 +250,13 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
                 repo.find_tree(oid)?
             };
 
-            let author = git2::Signature::now(alice.name(), "alice@example.com")?;
+            let author =
+                git2::Signature::now(&alice.subject().name.to_string(), "alice@example.com")?;
             repo.commit(
-                Some(&format!("refs/heads/{}", project.default_branch())),
+                Some(&format!(
+                    "refs/heads/{}",
+                    project.subject().default_branch.clone().unwrap()
+                )),
                 &author,
                 &author,
                 "Successor commit",
@@ -193,43 +266,44 @@ async fn can_fetch_project_changes() -> Result<(), Box<dyn std::error::Error>> {
         };
 
         {
-            let results = alice_state.transport_results();
-            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
-            assert!(results.wait(Duration::from_secs(3)).is_some());
+            let mut rad =
+                Remote::<LocalUrl>::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
+            let branch =
+                RefLike::try_from(project.subject().default_branch.as_ref().unwrap().as_str())
+                    .unwrap();
+            let _ = rad.push(
+                state::settings(&alice_peer),
+                &repo,
+                LocalPushspec::Matching {
+                    pattern: reflike!("refs/heads").join(branch).into(),
+                    force: Force::False,
+                },
+            )?;
         }
 
         commit_id
     };
 
     {
-        let alice_addr = alice_state.listen_addr();
-        let alice_peer_id = alice_state.peer_id();
-        let fetch_url = project.urn().into_rad_url(alice_peer_id);
-
-        bob_state
-            .fetch(fetch_url, vec![alice_addr])
-            .await
-            .expect("unable to fetch");
+        let alice_peer_id = alice_peer.peer_id();
+        state::fetch(&bob_peer, project.urn(), alice_peer_id, alice_addrs, None).await?;
     };
 
-    let alice_peer_id = alice_state.peer_id();
-    assert!(
-        bob_state
-            .has_commit(
-                uri::RadUrn {
-                    path: uri::Path::parse(format!(
-                        "refs/remotes/{}/heads/{}",
-                        alice_peer_id,
-                        project.default_branch()
-                    ))
-                    .expect("failed to parse uri::Path"),
-                    ..project.urn()
-                },
-                commit_id
-            )
-            .await?
-    );
+    let alice_peer_id = alice_peer.peer_id();
+    let has_commit = state::has_commit(
+        &bob_peer,
+        project.urn().with_path(Some(
+            RefLike::try_from(format!(
+                "refs/remotes/{}/heads/{}",
+                alice_peer_id,
+                project.subject().default_branch.clone().unwrap(),
+            ))
+            .unwrap(),
+        )),
+        coco::git_ext::Oid::from(commit_id),
+    )
+    .await?;
+    assert!(has_commit);
 
     Ok(())
 }
@@ -240,43 +314,60 @@ async fn can_sync_on_startup() -> Result<(), Box<dyn std::error::Error>> {
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(
-        &alice_tmp_dir,
-        RunConfig {
-            sync: run_config::Sync {
-                on_startup: true,
-                ..run_config::Sync::default()
-            },
-            ..RunConfig::default()
+    let config = RunConfig {
+        sync: coco::peer::run_config::Sync {
+            interval: Duration::from_millis(500),
+        },
+        ..RunConfig::default()
+    };
+    let alice_peer = build_peer(&alice_tmp_dir, config.clone()).await?;
+    let mut alice_events = alice_peer.subscribe();
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
+        tokio::task::spawn(alice_peer.run());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
+        (peer, listen_addrs)
+    };
+    let alice_peer_id = alice_peer.peer_id();
+
+    let bob_tmp_dir = tempfile::tempdir()?;
+    let (bob_peer, bob_events) = {
+        let peer = build_peer_with_seeds(
+            &bob_tmp_dir,
+            vec![Seed {
+                addrs: alice_addrs,
+                peer_id: alice_peer_id,
+            }],
+            config,
+        )
+        .await?;
+        let bob_events = peer.subscribe();
+        let bob_peer = peer.peer.clone();
+        tokio::task::spawn(peer.run());
+        (bob_peer, bob_events)
+    };
+    let bob_peer_id = bob_peer.peer_id();
+
+    let alice = init_owner(
+        &alice_peer,
+        Person {
+            name: "alice".into(),
         },
     )
     .await?;
-    let alice_addr = alice_state.listen_addr();
-    let alice_peer_id = alice_state.peer_id();
-    let alice_events = alice_peer.subscribe();
-
-    let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state) = build_peer_with_seeds(
-        &bob_tmp_dir,
-        vec![Seed {
-            addr: alice_addr,
-            peer_id: alice_peer_id,
-        }],
-        RunConfig::default(),
+    let _bob = init_owner(&bob_peer, Person { name: "bob".into() }).await?;
+    state::init_project(
+        &alice_peer,
+        &alice,
+        shia_le_pathbuf(alice_repo_path.clone()),
     )
     .await?;
-    let bob_peer_id = bob_state.peer_id();
 
-    let alice = alice_state.init_owner("alice").await?;
-    let _bob = bob_state.init_owner("bob").await?;
-    alice_state
-        .init_project(&alice, shia_le_pathbuf(alice_repo_path.clone()))
-        .await?;
-
-    let bob_events = bob_peer.subscribe();
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
-    connected(bob_events, &alice_peer_id).await?;
+    connected(bob_events, 1).await?;
 
     assert_event!(
         alice_events,
@@ -292,55 +383,84 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
 
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
 
     let bob_tmp_dir = tempfile::tempdir()?;
     let bob_repo_path = bob_tmp_dir.path().join("radicle");
-    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let bob = bob_state.init_owner("bob").await?;
+    let bob_peer = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
+    let bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
     let eve_tmp_dir = tempfile::tempdir()?;
     let eve_repo_path = eve_tmp_dir.path().join("radicle");
-    let (eve_peer, eve_state) = build_peer(&eve_tmp_dir, RunConfig::default()).await?;
-    let _eve = eve_state.init_owner("eve").await?;
+    let eve_peer = build_peer(&eve_tmp_dir, RunConfig::default()).await?;
+    let _eve = init_owner(&eve_peer.peer, Person { name: "eve".into() }).await?;
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
-    tokio::task::spawn(eve_peer.into_running());
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
+        tokio::task::spawn(alice_peer.run());
+        started(events).await?;
 
-    let project = alice_state
-        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
-        .await?;
+        let listen_addrs = peer_control.listen_addrs().await;
+        (peer, listen_addrs)
+    };
+    let (bob_peer, bob_addrs) = {
+        let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
+        let mut peer_control = bob_peer.control();
+        tokio::task::spawn(bob_peer.run());
+        started(events).await?;
+
+        (peer, peer_control.listen_addrs().await)
+    };
+    let eve_peer = {
+        let peer = eve_peer.peer.clone();
+        let events = eve_peer.subscribe();
+        tokio::task::spawn(eve_peer.run());
+        started(events).await?;
+
+        peer
+    };
+
+    let project =
+        state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path)).await?;
 
     let project = {
-        let alice_peer_id = alice_state.peer_id();
-        let alice_addr = alice_state.listen_addr();
-        let bob_peer_id = bob_state.peer_id();
-        let bob_addr = bob_state.listen_addr();
-        let urn = bob_state
-            .clone_project(
-                project.urn().into_rad_url(alice_peer_id),
-                vec![alice_addr].into_iter(),
-            )
+        let alice_peer_id = alice_peer.peer_id();
+        let bob_peer_id = bob_peer.peer_id();
+        state::clone_project(&bob_peer, project.urn(), alice_peer_id, alice_addrs, None)
             .await
             .expect("unable to clone project");
-        let urn = eve_state
-            .clone_project(urn.into_rad_url(bob_peer_id), vec![bob_addr].into_iter())
-            .await
-            .expect("unable to clone project");
-        eve_state.get_project(urn.clone(), None).await?
+        state::clone_project(
+            &eve_peer,
+            project.urn(),
+            bob_peer_id,
+            bob_addrs.clone(),
+            None,
+        )
+        .await
+        .expect("unable to clone project");
+        state::get_project(&eve_peer, project.urn()).await?.unwrap()
     };
 
     let commit_id = {
-        let alice_peer_id = alice_state.peer_id();
-        let path = bob_state
-            .checkout(project.urn(), alice_peer_id, bob_repo_path)
-            .await?;
+        let alice_peer_id = alice_peer.peer_id();
+        let path = state::checkout(&bob_peer, project.urn(), alice_peer_id, bob_repo_path).await?;
 
         let repo = git2::Repository::open(path)?;
         let oid = repo
-            .find_reference(&format!("refs/heads/{}", project.default_branch()))?
+            .find_reference(&format!(
+                "refs/heads/{}",
+                project.subject().default_branch.clone().unwrap()
+            ))?
             .target()
             .expect("Missing first commit");
         let commit = repo.find_commit(oid)?;
@@ -351,9 +471,15 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
                 repo.find_tree(oid)?
             };
 
-            let author = git2::Signature::now(bob.name(), &format!("{}@example.com", bob.name()))?;
+            let author = git2::Signature::now(
+                bob.subject().name.as_str(),
+                &format!("{}@example.com", bob.subject().name),
+            )?;
             repo.commit(
-                Some(&format!("refs/heads/{}", project.default_branch())),
+                Some(&format!(
+                    "refs/heads/{}",
+                    project.subject().default_branch.clone().unwrap()
+                )),
                 &author,
                 &author,
                 "Successor commit",
@@ -363,28 +489,33 @@ async fn can_create_working_copy_of_peer() -> Result<(), Box<dyn std::error::Err
         };
 
         {
-            let results = bob_state.transport_results();
-            let mut rad = repo.find_remote(config::RAD_REMOTE)?;
-            rad.push(&[&format!("refs/heads/{}", project.default_branch())], None)?;
-            assert!(results.wait(Duration::from_secs(3)).is_some());
+            let mut rad = Remote::rad_remote::<_, Fetchspec>(LocalUrl::from(project.urn()), None);
+            let _ = rad.push(
+                state::settings(&bob_peer),
+                &repo,
+                LocalPushspec::Matching {
+                    pattern: RefLike::try_from(format!(
+                        "refs/heads/{}",
+                        project.subject().default_branch.clone().unwrap()
+                    ))
+                    .unwrap()
+                    .into(),
+                    force: Force::False,
+                },
+            )?;
         }
 
         commit_id
     };
 
     {
-        let bob_addr = bob_state.listen_addr();
-        let bob_peer_id = bob_state.peer_id();
-        let fetch_url = project.urn().into_rad_url(bob_peer_id);
-
-        eve_state.fetch(fetch_url, vec![bob_addr]).await?;
+        let bob_peer_id = bob_peer.peer_id();
+        state::fetch(&eve_peer, project.urn(), bob_peer_id, bob_addrs, None).await?;
     }
 
     let path = {
-        let alice_peer_id = alice_state.peer_id();
-        eve_state
-            .checkout(project.urn(), alice_peer_id, eve_repo_path)
-            .await?
+        let alice_peer_id = alice_peer.peer_id();
+        state::checkout(&eve_peer, project.urn(), alice_peer_id, eve_repo_path).await?
     };
 
     let repo = git2::Repository::open(path)?;
@@ -398,38 +529,68 @@ async fn track_peer() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
     let alice_tmp_dir = tempfile::tempdir()?;
     let alice_repo_path = alice_tmp_dir.path().join("radicle");
-    let (alice_peer, alice_state) = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
-    let alice = alice_state.init_owner("alice").await?;
-    let alice_events = alice_peer.subscribe();
+    let alice_peer = build_peer(&alice_tmp_dir, RunConfig::default()).await?;
+    let alice = init_owner(
+        &alice_peer.peer,
+        Person {
+            name: "alice".into(),
+        },
+    )
+    .await?;
+    let mut alice_events = alice_peer.subscribe();
+
+    let (alice_peer, alice_addrs) = {
+        let peer = alice_peer.peer.clone();
+        let events = alice_peer.subscribe();
+        let mut peer_control = alice_peer.control();
+        tokio::task::spawn(alice_peer.run());
+        started(events).await?;
+
+        let listen_addrs = peer_control.listen_addrs().await;
+        (peer, listen_addrs)
+    };
 
     let bob_tmp_dir = tempfile::tempdir()?;
-    let (bob_peer, bob_state) = build_peer(&bob_tmp_dir, RunConfig::default()).await?;
-    let _bob = bob_state.init_owner("bob").await?;
+    let bob_peer = build_peer_with_seeds(
+        &bob_tmp_dir,
+        vec![Seed {
+            addrs: alice_addrs.clone(),
+            peer_id: alice_peer.peer_id(),
+        }],
+        RunConfig::default(),
+    )
+    .await?;
+    let _bob = init_owner(&bob_peer.peer, Person { name: "bob".into() }).await?;
 
-    tokio::task::spawn(alice_peer.into_running());
-    tokio::task::spawn(bob_peer.into_running());
+    let bob_peer = {
+        let peer = bob_peer.peer.clone();
+        let events = bob_peer.subscribe();
+        tokio::task::spawn(bob_peer.run());
+        started(events).await?;
 
-    let project = alice_state
-        .init_project(&alice, shia_le_pathbuf(alice_repo_path))
-        .await?;
+        peer
+    };
 
-    bob_state
-        .clone_project(
-            project.urn().into_rad_url(alice_state.peer_id()),
-            Some(alice_state.listen_addr()),
-        )
-        .await?;
+    let project =
+        state::init_project(&alice_peer, &alice, shia_le_pathbuf(alice_repo_path)).await?;
 
-    alice_state
-        .track(project.urn(), bob_state.peer_id())
-        .await?;
+    state::clone_project(
+        &bob_peer,
+        project.urn(),
+        alice_peer.peer_id(),
+        alice_addrs.into_iter(),
+        None,
+    )
+    .await?;
+
+    state::track(&alice_peer, project.urn(), bob_peer.peer_id()).await?;
 
     assert_event!(alice_events, coco::PeerEvent::GossipFetched { .. })?;
 
-    let tracked = alice_state.tracked(project.urn()).await?;
+    let tracked = state::tracked(&alice_peer, project.urn()).await?;
     assert!(tracked.iter().any(|peer| match peer {
         Peer::Remote { peer_id, status } =>
-            *peer_id == bob_state.peer_id() && matches!(status, peer::Status::Replicated(_)),
+            *peer_id == bob_peer.peer_id() && matches!(status, peer::Status::Replicated(_)),
         _ => false,
     }));
 

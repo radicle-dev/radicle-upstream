@@ -3,31 +3,31 @@
 
 use std::{
     future::Future,
+    net::SocketAddr,
     pin::Pin,
     task::{Context, Poll},
     time::{Duration, SystemTime},
 };
 
+use async_stream::stream;
 use futures::stream::{BoxStream, FuturesUnordered, SelectAll, StreamExt as _};
 use tokio::{
-    sync::{broadcast, mpsc},
+    sync::{broadcast, mpsc, watch},
+    task::{JoinError, JoinHandle},
     time::interval,
 };
 
 use librad::{
-    net::{
-        peer::{Gossip, PeerEvent},
-        protocol::ProtocolEvent,
-    },
+    git::Urn,
+    net::{self, peer::ProtocolEvent},
     peer::PeerId,
-    uri::{RadUrl, RadUrn},
+    signer::BoxedSigner,
 };
 
 use crate::{
     convert::MaybeFrom as _,
     request::{self, waiting_room::WaitingRoom},
-    spawn_abortable::{self, SpawnAbortable},
-    state::State,
+    state,
 };
 
 use super::{
@@ -40,12 +40,12 @@ use super::{
 pub struct Subroutines {
     /// Set of handles of spawned subroutine tasks. Draining them will ensure resources are
     /// release.
-    pending_tasks: FuturesUnordered<SpawnAbortable<()>>,
+    pending_tasks: FuturesUnordered<JoinHandle<()>>,
     /// Stream of inputs to [`RunState`] state machine.
     inputs: SelectAll<BoxStream<'static, Input>>,
 
-    /// [`State`] for suborutine task fulfillment.
-    state: State,
+    /// [`net::peer::Peer`] for suborutine task fulfillment.
+    peer: net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] for suborutine task fulfillment.
     store: kv::Store,
 
@@ -61,13 +61,13 @@ pub struct Subroutines {
 impl Subroutines {
     /// Constructs a new subroutines manager.
     pub fn new(
-        state: State,
+        peer: net::peer::Peer<BoxedSigner>,
+        mut listen_addrs: watch::Receiver<Vec<SocketAddr>>,
         store: kv::Store,
-        run_config: RunConfig,
-        peer_events: BoxStream<'static, PeerEvent>,
-        protocol_events: BoxStream<'static, ProtocolEvent<Gossip>>,
+        run_config: &RunConfig,
+        protocol_events: BoxStream<'static, Result<ProtocolEvent, net::protocol::RecvError>>,
         subscriber: broadcast::Sender<Event>,
-        control_receiver: mpsc::Receiver<control::Request>,
+        mut control_receiver: mpsc::Receiver<control::Request>,
     ) -> Self {
         let announce_timer = if run_config.announce.interval.is_zero() {
             None
@@ -88,49 +88,118 @@ impl Subroutines {
             }),
             Ok(Some(room)) => room,
         };
-        let waiting_room_timer = interval(run_config.waiting_room.interval);
-        let (input_sender, inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
-        let run_state = RunState::new(run_config, waiting_room);
+        let mut waiting_room_timer = interval(run_config.waiting_room.interval);
+        let (input_sender, mut external_inputs) = mpsc::channel::<Input>(RECEIVER_CAPACITY);
+        let mut stats_timer = interval(run_config.stats.interval);
+        let sync_timer = if run_config.sync.interval.is_zero() {
+            None
+        } else {
+            Some(interval(run_config.sync.interval))
+        };
+
+        let run_state = RunState::new(waiting_room);
 
         let inputs = {
             let mut coalesced = SelectAll::new();
-            coalesced.push(peer_events.map(Input::Peer).boxed());
-            coalesced.push(protocol_events.map(Input::Protocol).boxed());
-
-            if let Some(timer) = announce_timer {
-                coalesced.push(
-                    timer
-                        .map(|_tick| Input::Announce(input::Announce::Tick))
-                        .boxed(),
-                );
-            }
             coalesced.push(
-                waiting_room_timer
-                    .map(|_tick| Input::Request(input::Request::Tick))
-                    .boxed(),
-            );
-            coalesced.push(
-                control_receiver
-                    .map(|request| match request {
-                        control::Request::CurrentStatus(sender) => {
-                            Input::Control(input::Control::Status(sender))
-                        },
-                        control::Request::CancelSearch(urn, time, sender) => {
-                            Input::Control(input::Control::CancelRequest(urn, time, sender))
-                        },
-                        control::Request::GetSearch(urn, sender) => {
-                            Input::Control(input::Control::GetRequest(urn, sender))
-                        },
-                        control::Request::ListSearches(sender) => {
-                            Input::Control(input::Control::ListRequests(sender))
-                        },
-                        control::Request::StartSearch(urn, time, sender) => {
-                            Input::Control(input::Control::CreateRequest(urn, time, sender))
-                        },
+                // TODO(xla): Ensure stream of Results has significance, or should just signal
+                // stream close.
+                protocol_events
+                    .filter_map(|res| async move {
+                        match res {
+                            Ok(ev) => Some(Input::Protocol(ev)),
+                            Err(err) => {
+                                log::warn!("receive error: {}", err);
+                                None
+                            },
+                        }
                     })
                     .boxed(),
             );
-            coalesced.push(inputs.boxed());
+
+            coalesced.push(
+                stream! {
+                    while listen_addrs.changed().await.is_ok() {
+                        let addrs = listen_addrs.borrow().clone();
+                        yield Input::ListenAddrs(addrs);
+                    }
+                }
+                .boxed(),
+            );
+
+            if let Some(mut timer) = announce_timer {
+                coalesced.push(
+                    stream! {
+                        loop {
+                            timer.tick().await;
+                            yield Input::Announce(input::Announce::Tick);
+                        }
+                    }
+                    .boxed(),
+                );
+            }
+            if let Some(mut timer) = sync_timer {
+                coalesced.push(
+                    stream! {
+                        loop {
+                            timer.tick().await;
+                            yield Input::PeerSync(input::Sync::Tick);
+                        }
+                    }
+                    .boxed(),
+                );
+            }
+            coalesced.push(
+                stream! {
+                    loop {
+                        waiting_room_timer.tick().await;
+                        yield Input::Request(input::Request::Tick);
+                    }
+                }
+                .boxed(),
+            );
+            coalesced.push(
+                stream! {
+                    loop {
+                        stats_timer.tick().await;
+                        yield Input::Stats(input::Stats::Tick);
+                    }
+                }
+                .boxed(),
+            );
+            coalesced.push(
+                stream! {
+                while let Some(request) = control_receiver.recv().await { yield request } }
+                .map(|request| match request {
+                    control::Request::CurrentStatus(sender) => {
+                        Input::Control(input::Control::Status(sender))
+                    },
+                    control::Request::ListenAddrs(sender) => {
+                        Input::Control(input::Control::ListenAddrs(sender))
+                    },
+                    control::Request::CancelSearch(urn, time, sender) => {
+                        Input::Control(input::Control::CancelRequest(urn, time, sender))
+                    },
+                    control::Request::GetSearch(urn, sender) => {
+                        Input::Control(input::Control::GetRequest(urn, sender))
+                    },
+                    control::Request::ListSearches(sender) => {
+                        Input::Control(input::Control::ListRequests(sender))
+                    },
+                    control::Request::StartSearch(urn, time, sender) => {
+                        Input::Control(input::Control::CreateRequest(urn, time, sender))
+                    },
+                })
+                .boxed(),
+            );
+            coalesced.push(
+                stream! {
+                    while let Some(input) = external_inputs.recv().await {
+                        yield input;
+                    }
+                }
+                .boxed(),
+            );
 
             coalesced
         };
@@ -139,7 +208,7 @@ impl Subroutines {
             pending_tasks: FuturesUnordered::new(),
             inputs,
 
-            state,
+            peer,
             store,
             run_state,
 
@@ -149,46 +218,47 @@ impl Subroutines {
     }
 
     /// Map commands produced by the state machine to spawned subroutine tasks.
-    fn spawn_command(&self, cmd: Command) -> SpawnAbortable<()> {
+    fn spawn_command(&self, cmd: Command) -> JoinHandle<()> {
         match cmd {
-            Command::Announce => SpawnAbortable::new(announce(
-                self.state.clone(),
+            Command::Announce => tokio::spawn(announce(
+                self.peer.clone(),
                 self.store.clone(),
                 self.input_sender.clone(),
             )),
             Command::Control(control_command) => match control_command {
                 command::Control::Respond(respond_command) => {
-                    SpawnAbortable::new(control_respond(respond_command))
+                    tokio::spawn(control_respond(respond_command))
                 },
             },
-            Command::Include(urn) => SpawnAbortable::new(include::update(self.state.clone(), urn)),
+            Command::Include(urn) => tokio::spawn(include::update(self.peer.clone(), urn)),
             Command::PersistWaitingRoom(waiting_room) => {
-                SpawnAbortable::new(persist_waiting_room(waiting_room, self.store.clone()))
+                tokio::spawn(persist_waiting_room(waiting_room, self.store.clone()))
             },
             Command::Request(command::Request::Query(urn)) => {
-                SpawnAbortable::new(query(urn, self.state.clone(), self.input_sender.clone()))
+                tokio::spawn(query(urn, self.peer.clone(), self.input_sender.clone()))
             },
-            Command::Request(command::Request::Clone(url)) => {
-                SpawnAbortable::new(clone(url, self.state.clone(), self.input_sender.clone()))
-            },
+            Command::Request(command::Request::Clone(urn, remote_peer)) => tokio::spawn(clone(
+                urn,
+                remote_peer,
+                self.peer.clone(),
+                self.input_sender.clone(),
+            )),
             Command::Request(command::Request::TimedOut(urn)) => {
-                let mut sender = self.input_sender.clone();
-                SpawnAbortable::new(async move {
+                let sender = self.input_sender.clone();
+                tokio::spawn(async move {
                     sender
                         .send(Input::Request(input::Request::TimedOut(urn)))
                         .await
                         .ok();
                 })
             },
-            Command::StartSyncTimeout(sync_period) => {
-                SpawnAbortable::new(start_sync_timeout(sync_period, self.input_sender.clone()))
-            },
+            Command::Stats => tokio::spawn(get_stats(self.peer.clone(), self.input_sender.clone())),
             Command::SyncPeer(peer_id) => {
-                SpawnAbortable::new(sync(self.state.clone(), peer_id, self.input_sender.clone()))
+                tokio::spawn(sync(self.peer.clone(), peer_id, self.input_sender.clone()))
             },
             Command::EmitEvent(event) => {
                 self.subscriber.send(event).ok();
-                SpawnAbortable::new(async move {})
+                tokio::spawn(async move {})
             },
         }
     }
@@ -203,7 +273,7 @@ impl Drop for Subroutines {
 }
 
 impl Future for Subroutines {
-    type Output = Result<(), spawn_abortable::Error>;
+    type Output = Result<(), JoinError>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         let mut tasks_initial_empty = true;
@@ -231,7 +301,11 @@ impl Future for Subroutines {
         loop {
             match self.inputs.poll_next_unpin(cx) {
                 Poll::Ready(Some(input)) => {
-                    log::debug!("handling subroutine input: {:?}", input);
+                    log::debug!(
+                        "handling subroutine input: {:?} {:?}",
+                        input,
+                        self.run_state.status
+                    );
 
                     let old_status = self.run_state.status.clone();
 
@@ -248,10 +322,10 @@ impl Future for Subroutines {
 
                     if old_status != self.run_state.status {
                         self.subscriber
-                            .send(Event::StatusChanged(
-                                old_status,
-                                self.run_state.status.clone(),
-                            ))
+                            .send(Event::StatusChanged {
+                                old: old_status,
+                                new: self.run_state.status.clone(),
+                            })
                             .ok();
                     }
                 },
@@ -269,8 +343,12 @@ impl Future for Subroutines {
 
 /// Run the announcement of updated refs for local projects. On completion report back with the
 /// success or failure.
-async fn announce(state: State, store: kv::Store, mut sender: mpsc::Sender<Input>) {
-    match announcement::run(&state, &store).await {
+async fn announce(
+    peer: net::peer::Peer<BoxedSigner>,
+    store: kv::Store,
+    sender: mpsc::Sender<Input>,
+) {
+    match announcement::run(&peer, &store).await {
         Ok(updates) => {
             sender
                 .send(Input::Announce(input::Announce::Succeeded(updates)))
@@ -292,10 +370,21 @@ async fn control_respond(cmd: control::Response) {
     match cmd {
         control::Response::CurrentStatus(sender, status) => sender.send(status).ok(),
         control::Response::CancelSearch(sender, request) => sender.send(request).ok(),
+        control::Response::ListenAddrs(sender, addrs) => sender.send(addrs).ok(),
         control::Response::GetSearch(sender, request) => sender.send(request).ok(),
         control::Response::ListSearches(sender, requests) => sender.send(requests).ok(),
         control::Response::StartSearch(sender, request) => sender.send(request).ok(),
     };
+}
+
+async fn get_stats(peer: net::peer::Peer<BoxedSigner>, sender: mpsc::Sender<Input>) {
+    let connected_peers = peer.connected_peers().await;
+    let stats = peer.stats().await;
+
+    sender
+        .send(Input::Stats(input::Stats::Values(connected_peers, stats)))
+        .await
+        .ok();
 }
 
 async fn persist_waiting_room(waiting_room: WaitingRoom<SystemTime, Duration>, store: kv::Store) {
@@ -307,13 +396,13 @@ async fn persist_waiting_room(waiting_room: WaitingRoom<SystemTime, Duration>, s
 
 /// Run the sync with a single peer to reach state parity for locally tracked projects. On
 /// completion report back with the success or failure.
-async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<Input>) {
+async fn sync(peer: net::peer::Peer<BoxedSigner>, peer_id: PeerId, sender: mpsc::Sender<Input>) {
     sender
         .send(Input::PeerSync(input::Sync::Started(peer_id)))
         .await
         .ok();
 
-    match sync::sync(&state, peer_id).await {
+    match sync::sync(&peer, peer_id).await {
         Ok(_) => {
             sender
                 .send(Input::PeerSync(input::Sync::Succeeded(peer_id)))
@@ -330,18 +419,9 @@ async fn sync(state: State, peer_id: PeerId, mut sender: mpsc::Sender<Input>) {
     }
 }
 
-/// Send a timeout input once the `sync_period` has elapsed.
-async fn start_sync_timeout(sync_period: Duration, mut sender: mpsc::Sender<Input>) {
-    tokio::time::delay_for(sync_period).await;
-    sender
-        .send(Input::Timeout(input::Timeout::SyncPeriod))
-        .await
-        .ok();
-}
-
 /// Send a query on the network for the given urn.
-async fn query(urn: RadUrn, state: State, mut sender: mpsc::Sender<Input>) {
-    gossip::query(&state, urn.clone(), None).await;
+async fn query(urn: Urn, peer: net::peer::Peer<BoxedSigner>, sender: mpsc::Sender<Input>) {
+    gossip::query(&peer, &urn, None);
     sender
         .send(Input::Request(input::Request::Queried(urn)))
         .await
@@ -349,28 +429,42 @@ async fn query(urn: RadUrn, state: State, mut sender: mpsc::Sender<Input>) {
 }
 
 /// Run a clone for the given `url`. On completion report back with the success or failure.
-async fn clone(url: RadUrl, state: State, mut sender: mpsc::Sender<Input>) {
+async fn clone(
+    urn: Urn,
+    remote_peer: PeerId,
+    peer: net::peer::Peer<BoxedSigner>,
+    sender: mpsc::Sender<Input>,
+) {
     sender
-        .send(Input::Request(input::Request::Cloning(url.clone())))
+        .send(Input::Request(input::Request::Cloning(
+            urn.clone(),
+            remote_peer,
+        )))
         .await
         .ok();
 
-    match state.clone_project(url.clone(), None).await {
+    match state::clone_project(&peer, urn.clone(), remote_peer, None, None).await {
         Ok(_urn) => {
             sender
-                .send(Input::Request(input::Request::Cloned(url)))
+                .send(Input::Request(input::Request::Cloned(
+                    urn.clone(),
+                    remote_peer,
+                )))
                 .await
                 .ok();
+            gossip::announce(&peer, &urn, None);
         },
         Err(err) => {
             log::warn!(
-                "an error occurred for the command 'Clone' for the URL '{}':\n{}",
-                url,
-                err
+                "an error occurred for the command 'Clone' for the URN '{}' from {}:\n{}",
+                urn,
+                remote_peer,
+                err,
             );
             sender
                 .send(Input::Request(input::Request::Failed {
-                    url,
+                    urn,
+                    remote_peer,
                     reason: err.to_string(),
                 }))
                 .await

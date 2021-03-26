@@ -1,15 +1,8 @@
-use std::time::SystemTime;
+use std::{net::SocketAddr, time::SystemTime};
 
 use tokio::sync::oneshot;
 
-use librad::{
-    net::{
-        peer::{Gossip, PeerEvent},
-        protocol::ProtocolEvent,
-    },
-    peer::PeerId,
-    uri::{RadUrl, RadUrn},
-};
+use librad::{git::Urn, net, net::peer::ProtocolEvent, peer::PeerId};
 
 use crate::{
     peer::announcement,
@@ -24,16 +17,14 @@ pub enum Input {
     Announce(Announce),
     /// Peer state change events.
     Control(Control),
-    /// Inputs from the underlying peer API.
-    Peer(PeerEvent),
+    ListenAddrs(Vec<SocketAddr>),
     /// Inputs from the underlying coco protocol.
-    Protocol(ProtocolEvent<Gossip>),
+    Protocol(ProtocolEvent),
     /// Lifecycle events during peer sync operations.
     PeerSync(Sync),
     /// Request subroutine events that wish to attempt to fetch an identity from the network.
     Request(Request),
-    /// Scheduled timeouts which can occur.
-    Timeout(Timeout),
+    Stats(Stats),
 }
 
 /// Announcement subroutine lifecycle events.
@@ -50,23 +41,24 @@ pub enum Announce {
 /// Requests from the peer control.
 #[derive(Debug)]
 pub enum Control {
+    ListenAddrs(oneshot::Sender<Vec<SocketAddr>>),
     /// New status.
     Status(oneshot::Sender<super::Status>),
 
     /// Cancel an ongoing project search.
     CancelRequest(
-        RadUrn,
+        Urn,
         SystemTime,
         oneshot::Sender<Result<Option<SomeRequest<SystemTime>>, waiting_room::Error>>,
     ),
     /// Initiate a new project search on the network.
     CreateRequest(
-        RadUrn,
+        Urn,
         SystemTime,
         oneshot::Sender<waiting_room::Created<SystemTime>>,
     ),
     /// Request a project search.
-    GetRequest(RadUrn, oneshot::Sender<Option<SomeRequest<SystemTime>>>),
+    GetRequest(Urn, oneshot::Sender<Option<SomeRequest<SystemTime>>>),
     /// Request the list of project searches.
     ListRequests(oneshot::Sender<Vec<SomeRequest<SystemTime>>>),
 }
@@ -75,22 +67,30 @@ pub enum Control {
 #[derive(Debug)]
 pub enum Request {
     /// Started cloning the requested urn from a peer.
-    Cloning(RadUrl),
+    Cloning(Urn, PeerId),
     /// Succeeded cloning from the `RadUrl`.
-    Cloned(RadUrl),
+    Cloned(Urn, PeerId),
     /// Failed to clone from the `RadUrl`.
     Failed {
-        /// The URL that we were attempting the clone from.
-        url: RadUrl,
+        /// The URN we attempted to clone.
+        urn: Urn,
+        // The id of the remote peer we attempted to clone from.
+        remote_peer: PeerId,
         /// The reason the clone failed.
         reason: String,
     },
-    /// Query the network for the `RadUrn`.
-    Queried(RadUrn),
+    /// Query the network for the `Urn`.
+    Queried(Urn),
     /// [`crate::request::waiting_room::WaitingRoom`] query interval.
     Tick,
-    /// The request for [`RadUrn`] timed out.
-    TimedOut(RadUrn),
+    /// The request for [`Urn`] timed out.
+    TimedOut(Urn),
+}
+
+#[derive(Debug)]
+pub enum Stats {
+    Tick,
+    Values(Vec<PeerId>, net::protocol::event::downstream::Stats),
 }
 
 /// Lifecycle events during peer sync operations.
@@ -102,12 +102,5 @@ pub enum Sync {
     Failed(PeerId),
     /// A sync has succeeded for `PeerId`.
     Succeeded(PeerId),
-}
-
-/// Scheduled timeouts which can occur.
-#[derive(Debug)]
-pub enum Timeout {
-    /// Grace period is over signaling that we should go offline, no matter how many syncs have
-    /// succeeded.
-    SyncPeriod,
+    Tick,
 }

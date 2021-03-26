@@ -1,9 +1,11 @@
 //! Provides [`run`] to run the proxy process.
 // Otherwise clippy complains about FromArgs
 #![allow(clippy::default_trait_access)]
+
+use std::{future::Future, net, sync::Arc, time::Duration};
+
 use argh::FromArgs;
 use futures::prelude::*;
-use std::{future::Future, net, sync::Arc, time::Duration};
 use thiserror::Error;
 use tokio::{
     signal::unix::{signal, SignalKind},
@@ -39,7 +41,7 @@ struct Rigging {
     /// The context provided to the API
     ctx: context::Context,
     /// The [`Peer`] to run
-    peer: Option<Peer>,
+    peer: Option<Peer<coco::config::StreamDiscovery>>,
     /// Channel to receive updates to the seed nodes from the API
     seeds_sender: Option<watch::Sender<Vec<seed::Seed>>>,
 }
@@ -50,9 +52,6 @@ struct Rigging {
 ///
 /// Errors when the setup or any of the services fatally fails.
 pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
-    // Required for `tokio::select`. We can’t put it on the element directly, though.
-    #![allow(clippy::unreachable)]
-
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     coco::git_helper::setup(&proxy_path, &bin_dir)?;
@@ -87,14 +86,10 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
-            Err(RunError::Peer(coco::peer::Error::Spawn(_))) | Ok(()) => log::debug!("aborted"),
+            Err(RunError::Peer(coco::peer::Error::Join(_))) | Ok(()) => log::debug!("aborted"),
             // Actual error, abort the process
             Err(e) => return Err(e.into()),
-        }
-
-        // Give `coco::SpawnAbortable` some time to release all the resources.
-        // See https://github.com/radicle-dev/radicle-upstream/issues/1163
-        tokio::time::delay_for(Duration::from_millis(200)).await
+        };
     }
 }
 
@@ -108,10 +103,6 @@ enum RunError {
     /// Warp errored
     #[error(transparent)]
     Warp(#[from] warp::Error),
-
-    /// Event task aborted
-    #[error(transparent)]
-    SpawnAbortable(#[from] coco::SpawnAbortableError),
 }
 
 /// Run the API and peer.
@@ -158,7 +149,7 @@ async fn run_rigging(
         if let Some(seeds_sender) = seeds_sender {
             let mut peer_control = peer.control();
             let seeds_store = ctx.store().clone();
-            let seeds_event_task = coco::SpawnAbortable::new(async move {
+            let seeds_event_task = async move {
                 let mut last_seeds = session_seeds(&seeds_store, ctx.default_seeds())
                     .await
                     .expect("Failed to read session store");
@@ -177,37 +168,43 @@ async fn run_rigging(
                         continue;
                     }
 
-                    if seeds_sender.broadcast(seeds.clone()).is_err() {
+                    if seeds_sender.send(seeds.clone()).is_err() {
                         break;
                     }
 
                     last_seeds = seeds;
                 }
-            });
-            tasks.push(seeds_event_task.map_err(RunError::from).boxed());
+            };
+            tasks.push(seeds_event_task.map(Ok).boxed());
         }
-        let peer_event_task = coco::SpawnAbortable::new({
+        let peer_event_task = {
             let mut peer_events = peer.subscribe();
 
             async move {
                 loop {
-                    if let Some(notification) = notification::Notification::maybe_from(
-                        peer_events
-                            .recv()
-                            .await
-                            .expect("Failed to receive peer event"),
-                    ) {
-                        peer_subscriptions.broadcast(notification).await
+                    match peer_events.recv().await {
+                        Ok(event) => {
+                            if let Some(notification) =
+                                notification::Notification::maybe_from(event)
+                            {
+                                peer_subscriptions.broadcast(notification).await
+                            }
+                        },
+                        Err(err) => {
+                            log::error!("Failed to receive peer event: {}", err);
+                            return;
+                        },
                     }
                 }
             }
-        });
-        tasks.push(peer_event_task.map_err(RunError::from).boxed());
+        };
+        tasks.push(peer_event_task.map(Ok).boxed());
 
         let peer = async move {
             log::info!("starting peer");
-            peer.into_running().await
+            peer.run().await
         };
+
         tasks.push(peer.map_err(RunError::from).boxed());
 
         let (result, _, _) = futures::future::select_all(tasks).await;
@@ -225,34 +222,32 @@ async fn rig(
     args: Args,
 ) -> Result<Rigging, Box<dyn std::error::Error>> {
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
-        std::env::set_var("RAD_HOME", temp_dir.path());
         temp_dir.path().join("store")
     } else {
-        config::store_dir()
+        config::store_dir(environment.coco_profile.id())
     };
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
 
-    if let Some(key) = environment.key {
+    if let Some(key) = environment.key.clone() {
         let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
 
         let seeds = session_seeds(&store, &args.default_seeds).await?;
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
         let config = coco::config::configure(
-            environment.coco_paths.clone(),
-            key,
+            environment.coco_profile.paths().clone(),
+            signer.clone(),
             args.peer_listen,
-            coco::config::StreamDiscovery::new(seeds_receiver),
         );
+        let disco = coco::config::StreamDiscovery::new(seeds_receiver);
 
-        let (peer, state) =
-            coco::into_peer_state(config, signer.clone(), store.clone(), coco_run_config()).await?;
+        let peer = coco::Peer::new(config, disco, store.clone(), coco_run_config());
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
             peer_control,
-            state,
+            peer: peer.peer.clone(),
             store,
             test: environment.test_mode,
             http_listen: args.http_listen,
@@ -301,9 +296,7 @@ async fn session_seeds(
 fn coco_run_config() -> RunConfig {
     RunConfig {
         sync: run_config::Sync {
-            max_peers: 1,
-            on_startup: true,
-            period: Duration::from_secs(5),
+            interval: Duration::from_secs(5),
         },
         ..RunConfig::default()
     }

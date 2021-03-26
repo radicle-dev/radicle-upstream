@@ -5,14 +5,9 @@ use std::time::Duration;
 /// Default time to wait between announcement subroutine runs.
 pub(super) const DEFAULT_ANNOUNCE_INTERVAL: Duration = std::time::Duration::from_secs(1);
 
-/// Default number of peers a full sync is attempting with up on startup.
-/// TODO(xla): Revise number.
-pub(super) const DEFAULT_SYNC_MAX_PEERS: usize = 5;
+pub(super) const DEFAULT_STATS_INTERVAL: Duration = Duration::from_millis(1000);
 
-/// Default Duration until the local peer goes online regardless if and how many syncs have
-/// succeeded.
-// TODO(xla): Review duration.
-pub(super) const DEFAULT_SYNC_PERIOD: Duration = Duration::from_secs(5);
+pub(super) const DEFAULT_SYNC_INTERVAL: Duration = std::time::Duration::from_secs(30);
 
 /// Default period at which we query the waiting room.
 pub(super) const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis(500);
@@ -21,10 +16,12 @@ pub(super) const DEFAULT_WAITING_ROOM_INTERVAL: Duration = Duration::from_millis
 pub(crate) const DEFAULT_WAITING_ROOM_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Set of knobs to change the behaviour of the `RunState`.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Config {
     /// Set of knobs to alter announce behaviour.
     pub announce: Announce,
+    /// Set of knobs to alter stats polling.
+    pub stats: Stats,
     /// Set of knobs to alter sync behaviour.
     pub sync: Sync,
     /// Set of knobs to alter [`WaitingRoom`] behaviour.
@@ -32,6 +29,7 @@ pub struct Config {
 }
 
 /// Set of knobs to alter announce behaviour.
+#[derive(Clone, Debug)]
 pub struct Announce {
     /// Determines how often the announcement subroutine should be run.
     pub interval: Duration,
@@ -45,22 +43,32 @@ impl Default for Announce {
     }
 }
 
+/// Set of knobs to alter stats polling.
+#[derive(Clone, Debug)]
+pub struct Stats {
+    /// Determines how often the stats subroutine should be run.
+    pub interval: Duration,
+}
+
+impl Default for Stats {
+    fn default() -> Self {
+        Self {
+            interval: DEFAULT_STATS_INTERVAL,
+        }
+    }
+}
+
 /// Set of knobs to alter sync behaviour.
+#[derive(Clone, Debug)]
 pub struct Sync {
-    /// Number of peers that a full sync is attempted with upon startup.
-    pub max_peers: usize,
-    /// Enables the syncing stage when coming online.
-    pub on_startup: bool,
-    /// Duration until the local peer goes online regardless if and how many syncs have succeeded.
-    pub period: Duration,
+    /// Duration to issue periodic syncs.
+    pub interval: Duration,
 }
 
 impl Default for Sync {
     fn default() -> Self {
         Self {
-            max_peers: DEFAULT_SYNC_MAX_PEERS,
-            on_startup: false,
-            period: DEFAULT_SYNC_PERIOD,
+            interval: DEFAULT_SYNC_INTERVAL,
         }
     }
 }

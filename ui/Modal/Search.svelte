@@ -12,9 +12,9 @@
     reset,
     requestProject,
     searchProject,
-    urnValidationStore,
   } from "../src/search";
   import { ValidationStatus } from "../src/validation";
+  import { urnValidationStore } from "../src/urn";
 
   import { Icon, Input } from "../DesignSystem/Primitive";
   import { FollowToggle, Remote } from "../DesignSystem/Component";

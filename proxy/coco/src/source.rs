@@ -9,15 +9,13 @@ use syntect::{
 };
 
 use librad::peer::PeerId;
+use radicle_git_ext::Oid;
 use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchType, Browser, Rev, Stats},
 };
 
-use crate::{
-    oid::Oid,
-    project::{peer, Peer},
-};
+use crate::project::{peer, Peer};
 
 /// An error occurred when interacting with [`radicle_surf`] for browsing source code.
 #[derive(Debug, thiserror::Error)]
@@ -38,7 +36,7 @@ pub enum Error {
     Git(#[from] git::error::Error),
 
     /// When trying to query a repositories branches, but there are none.
-    #[error("The repository has no branches")]
+    #[error("the repository has no branches")]
     NoBranches,
 
     /// Trying to find a file path which could not be found.
@@ -924,22 +922,31 @@ where
 mod tests {
     use std::convert::TryFrom as _;
 
-    use librad::keys::SecretKey;
+    use librad::{keys::SecretKey, net};
+    use radicle_git_ext::Oid;
 
-    use crate::{config, control, oid, signer, state::State};
+    use crate::{config, control, identities::payload::Person, signer, state};
 
     // TODO(xla): A wise man once said: This probably should be an integration test.
     #[tokio::test]
     async fn browse_commit() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir().expect("failed to get tempdir");
         let key = SecretKey::new();
-        let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
-        let config = config::default(key, tmp_dir.path()).expect("unable to get default config");
-        let (api, _run_loop) = config.try_into_peer().await?.accept()?;
-        let state = State::new(api, signer);
-        let owner = state.init_owner("cloudhead").await?;
+        let signer = signer::BoxedSigner::new(signer::SomeSigner {
+            signer: key.clone(),
+        });
+        let config = config::default(signer.clone(), tmp_dir.path())?;
+        let peer = net::peer::Peer::new(config);
+
+        let owner = crate::state::init_owner(
+            &peer,
+            Person {
+                name: "cloudhead".into(),
+            },
+        )
+        .await?;
         let platinum_project = control::replicate_platinum(
-            &state,
+            &peer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -947,15 +954,12 @@ mod tests {
         )
         .await?;
         let urn = platinum_project.urn();
-        let sha = oid::Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
+        let sha = Oid::try_from("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1")?;
 
-        let branch = state.find_default_branch(urn).await?;
-        let commit = state
-            .with_browser(branch, |browser| {
-                Ok(super::commit_header(browser, sha).expect("unable to get commit header"))
-            })
-            .await
-            .expect("failed to get commit");
+        let branch = state::find_default_branch(&peer, urn).await?;
+        let commit =
+            state::with_browser(&peer, branch, |browser| super::commit_header(browser, sha))
+                .await?;
 
         assert_eq!(commit.sha1, sha);
 

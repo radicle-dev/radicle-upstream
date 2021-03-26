@@ -1,22 +1,19 @@
 //! Machinery to advance the underlying network protocol and manage auxiliary tasks ensuring
 //! prorper state updates.
 
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::Arc,
-    task::{Context, Poll},
+use std::{io, net::SocketAddr, vec};
+
+use futures::{
+    future::{FutureExt as _, TryFutureExt as _},
+    stream::StreamExt as _,
+};
+use tokio::{
+    sync::{broadcast, mpsc, watch},
+    task::JoinError,
 };
 
-use futures::{future::FutureExt as _, stream::StreamExt as _};
-use tokio::sync::{broadcast, mpsc, Barrier};
-
-use librad::net::peer::RunLoop;
-
-use crate::{
-    spawn_abortable::{self, SpawnAbortable},
-    state::{self, State},
-};
+use crate::state;
+use librad::{net, signer::BoxedSigner};
 
 mod announcement;
 pub use announcement::Announcement;
@@ -48,21 +45,33 @@ pub enum Error {
     #[error(transparent)]
     Announcement(#[from] announcement::Error),
 
-    /// There was an error in a spawned task.
-    #[error("the running peer was either cancelled, or one of its tasks panicked")]
-    Spawn(#[source] spawn_abortable::Error),
-
-    /// There was an error when interacting with [`State`].
+    /// Peer bootstrap error.
     #[error(transparent)]
-    State(#[from] state::Error),
+    Bootstrap(#[from] net::protocol::error::Bootstrap),
+
+    /// Encountered an I/O error, for example fetching the peer's listen addresses.
+    #[error(transparent)]
+    Io(#[from] io::Error),
+
+    /// The joining of a thread failed.
+    #[error("the running peer was either cancelled, or one of its tasks panicked")]
+    Join(#[source] JoinError),
+
+    /// The protocol encountered an error.
+    #[error(transparent)]
+    Protocol(#[from] net::quic::Error),
+
+    /// An interaction with the underlying storage failed.
+    #[error(transparent)]
+    State(#[from] state::error::Error),
 }
 
 /// Local peer to participate in the radicle code-collaboration network.
-pub struct Peer {
-    /// Peer [`librad::net::peer::RunLoop`] to advance the network protocol.
-    run_loop: RunLoop,
-    /// Underlying state that is passed to subroutines.
-    state: State,
+pub struct Peer<D> {
+    /// The API for interacting with the protocol and storage.
+    pub peer: net::peer::Peer<BoxedSigner>,
+
+    disco: D,
     /// On-disk storage for caching.
     store: kv::Store,
     /// Handle used to broadcast [`Event`]s.
@@ -75,15 +84,28 @@ pub struct Peer {
     control_sender: mpsc::Sender<control::Request>,
 }
 
-impl Peer {
+impl<D> Peer<D>
+where
+    D: net::discovery::Discovery<Addr = SocketAddr> + Clone + Send + Sync + 'static,
+{
     /// Constructs a new [`Peer`].
+    ///
+    /// # Errors
+    ///
+    /// Failed to get the listener addresses for the peer.
     #[must_use = "give a peer some love"]
-    pub fn new(run_loop: RunLoop, state: State, store: kv::Store, run_config: RunConfig) -> Self {
+    pub fn new(
+        config: net::peer::Config<BoxedSigner>,
+        disco: D,
+        store: kv::Store,
+        run_config: RunConfig,
+    ) -> Self {
         let (subscriber, _receiver) = broadcast::channel(RECEIVER_CAPACITY);
         let (control_sender, control_receiver) = mpsc::channel(RECEIVER_CAPACITY);
+        let peer = librad::net::peer::Peer::new(config);
         Self {
-            run_loop,
-            state,
+            peer,
+            disco,
             store,
             subscriber,
             run_config,
@@ -111,100 +133,67 @@ impl Peer {
     /// Start up the internal machinery to advance the underlying protocol, react to significant
     /// events and keep auxiliary tasks running.
     ///
-    /// The returned [`Running`] future has similar semantics to [`tokio::task::JoinHandle`]:
-    /// internally, all tasks are spawned immediately, and polling the future is only necessary
-    /// to get notified of errors. Unlike [`tokio::task::JoinHandle`], however, [`Running`] does
-    /// not detach the tasks. That is, if and when [`Running`] is dropped, all tasks are
-    /// cancelled.
-    pub fn into_running(self) -> Running {
+    /// # Errors
+    /// * Failed to accept peer connections
+    /// * A subroutine panicked or was cancelled
+    pub async fn run(self) -> Result<(), Error> {
+        #![allow(clippy::mut_mut)]
+
         let Self {
-            run_loop,
-            state,
+            peer,
+            disco,
             store,
             subscriber,
             run_config,
             control_receiver,
             ..
         } = self;
+        let (addrs_tx, addrs_rx) = watch::channel(vec![]);
 
-        // Rendezvous on a barrier to let the subroutines subscribe for protocol
-        // events before it actually starts. As `Protocol::subscribe` is async,
-        // we would otherwise need to make `into_running` async as well, which
-        // yields the weird requirement to double `.await` it.
-        let barrier = Arc::new(Barrier::new(2));
-        let subroutines = {
-            let barrier = barrier.clone();
-            SpawnAbortable::new(async move {
-                let peer_events = state.api.subscribe().await.boxed();
-                let protocol_events = state.api.protocol().subscribe().await.boxed();
-                barrier.wait().await;
-                Subroutines::new(
-                    state,
-                    store,
-                    run_config,
-                    peer_events,
-                    protocol_events,
-                    subscriber,
-                    control_receiver,
-                )
-                .await
-            })
+        let protocol_events = peer.subscribe().boxed();
+        let mut subroutines = Subroutines::new(
+            peer.clone(),
+            addrs_rx,
+            store,
+            &run_config,
+            protocol_events,
+            subscriber,
+            control_receiver,
+        )
+        .map_err(Error::Join);
+
+        let protocol = async move {
+            loop {
+                match peer.bind().await {
+                    Ok(bound) => {
+                        match bound.listen_addrs() {
+                            Ok(listen_addrs) => {
+                                addrs_tx.send(listen_addrs).expect("subroutines is gone");
+                            },
+                            Err(e) => {
+                                return Err(Error::Io(e));
+                            },
+                        }
+
+                        if let Err(e) = net::protocol::accept(bound, disco.clone().discover()).await
+                        {
+                            log::error!("accept error: {}", e);
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("bound error: {}", e);
+                        return Err(Error::Bootstrap(e));
+                    },
+                }
+            }
+        }
+        .fuse();
+        futures::pin_mut!(protocol);
+
+        futures::select! {
+            res = protocol => res?,
+            res = subroutines => res?
         };
-        let protocol = SpawnAbortable::new(async move {
-            barrier.wait().await;
-            run_loop.await
-        });
-
-        Running {
-            protocol,
-            subroutines,
-        }
-    }
-}
-
-/// Future returned by [`Peer::into_running`].
-#[must_use = "to the sig hup, don't stop, just drop"]
-pub struct Running {
-    /// Join and abort handles for the protocol run loop.
-    protocol: SpawnAbortable<()>,
-    /// The [`Subroutines`] associated with this [`Peer`] instance.
-    subroutines: SpawnAbortable<Result<(), spawn_abortable::Error>>,
-}
-
-impl Drop for Running {
-    fn drop(&mut self) {
-        log::trace!("`peer::Running` is being dropped");
-        self.protocol.abort();
-        self.subroutines.abort();
-    }
-}
-
-impl Future for Running {
-    type Output = Result<(), Error>;
-
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        let err = match self.protocol.poll_unpin(cx) {
-            Poll::Ready(val) => match val {
-                Err(e) => Some(Error::Spawn(e)),
-                Ok(()) => None,
-            },
-            Poll::Pending => None,
-        };
-
-        if let Some(err) = err {
-            log::trace!("run loop error: {:?}", err);
-            return Poll::Ready(Err(err));
-        }
-
-        match self.subroutines.poll_unpin(cx) {
-            Poll::Ready(val) => {
-                let val = match val {
-                    Err(e) | Ok(Err(e)) => Err(Error::Spawn(e)),
-                    Ok(Ok(())) => Ok(()),
-                };
-                Poll::Ready(val)
-            },
-            Poll::Pending => Poll::Pending,
-        }
+        Ok(())
     }
 }

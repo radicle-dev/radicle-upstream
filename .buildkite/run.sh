@@ -56,6 +56,7 @@ echo "--- Run proxy tests"
 (
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
+  cargo build --tests --all --all-features --all-targets
   timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
 

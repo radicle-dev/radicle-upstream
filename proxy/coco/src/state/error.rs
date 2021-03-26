@@ -2,28 +2,19 @@
 
 use librad::{
     git::{
-        repo,
-        types::{namespace, NamespacedRef, Single},
+        types::{One, Reference},
+        Urn,
     },
-    meta::entity,
     net,
-    uri::{self, RadUrn},
 };
 use radicle_surf::vcs::git::git2;
+use std::convert::Infallible;
 
 use crate::source;
 
-/// Errors that may occur when interacting with [`super::State`].
+/// Errors that may occur when interacting with [`librad::net::peer::Peer`].
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// Peer accept error.
-    #[error(transparent)]
-    Accept(#[from] net::peer::AcceptError),
-
-    /// Peer bootstrap error.
-    #[error(transparent)]
-    Bootstrap(#[from] net::peer::BootstrapError),
-
     /// An error occurred while trying to create a working copy of a project.
     #[error(transparent)]
     Create(#[from] crate::project::create::Error),
@@ -36,45 +27,77 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
-    /// An error occured building include files.
+    /// An attempt to create an identity failed.
+    #[error("failed to create identity")]
+    IdentityCreationFailed,
+
+    /// An interaction involving an identity failed.
+    #[error(transparent)]
+    Identities(#[from] librad::git::identities::Error),
+
+    /// An interaction involving [`librad::git::identities::local::LocalIdentity`] failed.
+    #[error(transparent)]
+    IdentitiesLocal(#[from] librad::git::identities::local::Error),
+
+    /// An error occurred building include files.
     #[error(transparent)]
     Include(#[from] librad::git::include::Error),
 
-    /// Entity meta error.
-    #[error(transparent)]
-    Meta(#[from] entity::Error),
+    /// The namespace was expected in a reference but was not found.
+    #[error("missing namespace in reference")]
+    MissingNamespace,
 
-    /// Peer API error
-    #[error(transparent)]
-    PeerApi(#[from] net::peer::ApiError),
+    /// An operation relied on a default owner being set, but it was not.
+    #[error("this operation depends on the present of a default owner")]
+    MissingOwner,
+
+    /// The [`librad::git::identities::Person`] was not found for the provided [`Urn`].
+    #[error("person not found for '{0}'")]
+    PersonNotFound(Urn),
+
+    /// The [`librad::git::identities::Project`] was not found for the provided [`Urn`].
+    #[error("project not found for '{0}'")]
+    ProjectNotFound(Urn),
 
     /// Failed to parse a reference.
     #[error(transparent)]
     ReferenceName(#[from] librad::git_ext::reference::name::Error),
 
-    /// Repo error.
+    /// An action involving `rad/signed_refs` resulted in an error.
     #[error(transparent)]
-    Repo(#[from] repo::Error),
+    Refs(#[from] librad::git::refs::stored::Error),
+
+    /// An error occurred when attempting to replicate data from another peer.
+    #[error(transparent)]
+    Replication(#[from] librad::git::replication::Error),
 
     /// An error occurred when interacting with the source code of a project.
     #[error(transparent)]
     Source(#[from] source::Error),
 
-    /// Storage error.
+    /// Peer storage error.
+    #[error(transparent)]
+    PeerStorage(#[from] net::peer::StorageError),
+
+    /// Peer storage error.
     #[error(transparent)]
     Storage(#[from] storage::Error),
 
-    /// An error occurred on the local git transport level.
+    /// An interaction with the config file for the storage failed.
     #[error(transparent)]
-    Transport(#[from] librad::git::local::transport::Error),
+    StorageConfig(#[from] librad::git::storage::config::Error),
 
-    /// Emitted when the parsing of a [`librad::uri::Path`] failed.
+    /// An error occurred interacting with the `radicle_surf` package.
     #[error(transparent)]
-    UriParse(#[from] uri::path::ParseError),
+    Surf(#[from] radicle_surf::git::error::Error),
 
-    /// Verifcation error.
+    /// An error occurred when attempting to track or untrack a peer.
     #[error(transparent)]
-    Verification(#[from] entity::HistoryVerificationError),
+    Tracking(#[from] librad::git::tracking::Error),
+
+    /// Attempted to create an identity that already exists.
+    #[error("the URN `{0}` already exists")]
+    IdentityExists(Urn),
 
     /// There were no references for a Browser to be initialised.
     #[error("we could not find a default branch for '{name}@{urn}'")]
@@ -82,22 +105,24 @@ pub enum Error {
         /// Name of the project.
         name: String,
         /// RadUrn of the project.
-        urn: RadUrn,
+        urn: Urn,
     },
 
     /// Could not find a `NamespacedRef` when searching for it in the `Storage`.
     #[error("we could not find the '{reference}'")]
     MissingRef {
         /// The reference that we looked for in the `Storage`.
-        reference: NamespacedRef<namespace::Legacy, Single>,
+        reference: Reference<One>,
     },
+
+    /// A document payload extension was malformed
+    #[error(transparent)]
+    MalformedPayloadExt(#[from] librad::identities::payload::ExtError),
 }
 
-impl Error {
-    /// Easily create an [`storage::Error::AlreadyExists`] exists error.
-    #[must_use = "you made it, you use it"]
-    pub const fn already_exists(urn: RadUrn) -> Self {
-        Self::Storage(storage::Error::AlreadyExists(urn))
+impl From<Infallible> for Error {
+    fn from(infallible: Infallible) -> Self {
+        match infallible {}
     }
 }
 
