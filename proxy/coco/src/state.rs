@@ -119,6 +119,34 @@ where
     Ok(owner)
 }
 
+/// Sets a new person payload for the default owner of this [`Peer`].
+///
+/// # Errors
+///
+///   * Fails to load the default owner
+///   * Fails to verify `User`.
+///   * Fails to set the default `rad/self` for this `PeerApi`.
+#[allow(clippy::single_match_else)]
+pub async fn update_owner_payload<P>(
+    peer: &Peer<BoxedSigner>,
+    payload: P,
+) -> Result<LocalIdentity, Error>
+where
+    P: TryInto<PersonPayload> + Send,
+    Error: From<P::Error>,
+{
+    let urn = default_owner(peer).await?.ok_or(Error::MissingOwner)?.urn();
+    let payload = payload.try_into()?;
+    peer.using_storage(move |store| person::update(store, &urn, None, payload, None))
+        .await??;
+    // Update the default user info in the config with the new payload data.
+    // This works, because the payload update doesn't change the owner's URN,
+    // so the old config can be used to load the owner with the updated payload.
+    let owner = default_owner(peer).await?.ok_or(Error::MissingOwner)?;
+    set_default_owner(peer, owner.clone()).await?;
+    Ok(owner)
+}
+
 /// Given some hints as to where you might find it, get the urn of the project found at `url`.
 ///
 /// # Errors
@@ -857,11 +885,27 @@ fn role(
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 pub mod test {
-    use std::{env, path::PathBuf};
-
+    use crate::{config, control, identities::payload::HasNamespace, project, signer};
+    use lazy_static::lazy_static;
     use librad::{git_ext::OneLevel, identities::payload::Person, keys::SecretKey, net, reflike};
+    use serde::{Deserialize, Serialize};
+    use std::{env, path::PathBuf};
+    use url::Url;
 
-    use crate::{config, control, project, signer};
+    #[derive(Deserialize, Serialize)]
+    struct TestExt(String);
+
+    lazy_static! {
+        static ref NAMESPACE: Url = "https://radicle.xyz/test"
+            .parse()
+            .expect("Static URL malformed");
+    }
+
+    impl HasNamespace for TestExt {
+        fn namespace() -> &'static Url {
+            &NAMESPACE
+        }
+    }
 
     fn fakie_project(path: PathBuf) -> project::Create {
         project::Create {
@@ -896,6 +940,75 @@ pub mod test {
         let annie = super::init_user(&peer, "annie_are_you_ok?".to_string()).await;
         assert!(annie.is_ok());
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn can_init_owner() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let signer = signer::BoxedSigner::from(key.clone());
+        let config = config::default(signer.clone(), tmp_dir.path())?;
+        let peer = net::peer::Peer::new(config);
+        let payload = super::PersonPayload::new(Person {
+            name: "cloudhead".into(),
+        })
+        .with_ext(TestExt("test".to_string()))?;
+
+        super::init_owner(&peer, payload).await?;
+
+        peer.using_storage(|storage| {
+            assert_eq!(
+                storage.config()?.user_name()?,
+                "cloudhead",
+                "Invalid config user name"
+            );
+            Ok::<_, super::Error>(())
+        })
+        .await??;
+        let owner = super::default_owner(&peer).await?.expect("No owner set");
+        assert_eq!(*owner.subject().name, "cloudhead", "Invalid owner name");
+        let ext: TestExt = owner.payload().get_ext()?.expect("No owner extension");
+        assert_eq!(ext.0, "test", "Invalid owner extension");
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn can_update_owner_payload() -> Result<(), Box<dyn std::error::Error>> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let signer = signer::BoxedSigner::from(key.clone());
+        let config = config::default(signer.clone(), tmp_dir.path())?;
+        let peer = net::peer::Peer::new(config);
+        let payload = super::PersonPayload::new(Person {
+            name: "cloudhead".into(),
+        })
+        .with_ext(TestExt("test".to_string()))?;
+        super::init_owner(&peer, payload).await?;
+        let new_payload = super::PersonPayload::new(Person {
+            name: "cloudhead_next".into(),
+        })
+        .with_ext(TestExt("test_next".to_string()))?;
+
+        super::update_owner_payload(&peer, new_payload).await?;
+
+        peer.using_storage(|storage| {
+            assert_eq!(
+                storage.config()?.user_name()?,
+                "cloudhead_next",
+                "Invalid config user name"
+            );
+            Ok::<_, super::Error>(())
+        })
+        .await??;
+        let owner = super::default_owner(&peer).await?.expect("No owner set");
+        assert_eq!(
+            *owner.subject().name,
+            "cloudhead_next",
+            "Invalid owner name"
+        );
+        let ext: TestExt = owner.payload().get_ext()?.expect("No owner extension");
+        assert_eq!(ext.0, "test_next", "Invalid owner extension");
         Ok(())
     }
 
