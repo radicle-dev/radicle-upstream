@@ -66,13 +66,7 @@ where
 ///   * Loading the `LocalIdentity` failed
 pub async fn default_owner(peer: &Peer<BoxedSigner>) -> Result<Option<LocalIdentity>, Error> {
     Ok(peer
-        .using_storage(move |store| {
-            if let Some(urn) = store.config()?.user()? {
-                return local::load(store, urn).map_err(Error::from);
-            }
-
-            Ok::<_, Error>(None)
-        })
+        .using_storage(move |store| local::default(store))
         .await??)
 }
 
@@ -103,40 +97,26 @@ where
     P: TryInto<PersonPayload> + Send,
     Error: From<P::Error>,
 {
-    match peer
-        .using_storage(move |store| local::default(store))
-        .await??
-    {
-        Some(owner) => Ok(owner),
-        None => {
-            let pk = keys::PublicKey::from(peer.signer().public_key());
-            let payload = payload.try_into()?;
-            let person = peer
-                .using_storage(move |store| {
-                    person::create(store, payload, Some(pk).into_iter().collect())
-                })
-                .await??;
-
-            let urn = person.urn();
-            let owner = peer
-                .using_storage(move |store| local::load(store, urn))
-                .await??
-                .ok_or_else(|| Error::PersonNotFound(person.urn()))?;
-
-            {
-                let owner = owner.clone();
-                peer.using_storage(move |store| {
-                    let mut config = store.config()?;
-                    config.set_user(owner)?;
-
-                    Ok::<_, Error>(())
-                })
-                .await??;
-            }
-
-            Ok(owner)
-        },
+    if let Some(owner) = default_owner(peer).await? {
+        return Ok(owner);
     }
+
+    let payload = payload.try_into()?;
+    let pk = keys::PublicKey::from(peer.signer().public_key());
+    let delegations = Some(pk).into_iter().collect();
+    let person = peer
+        .using_storage(move |store| person::create(store, payload, delegations))
+        .await??;
+
+    let urn = person.urn();
+    let owner = peer
+        .using_storage(move |store| local::load(store, urn))
+        .await??
+        .ok_or_else(|| Error::PersonNotFound(person.urn()))?;
+
+    set_default_owner(peer, owner.clone()).await?;
+
+    Ok(owner)
 }
 
 /// Given some hints as to where you might find it, get the urn of the project found at `url`.
