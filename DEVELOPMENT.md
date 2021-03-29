@@ -448,21 +448,13 @@ Upstream.
 
 ## CI setup
 
-Our CI infrastructure runs on [Buildkite][bk]. The build process is run for
-every commit which is pushed to GitHub. When tests pass, the build process
-uploads the Upstream binary as a build artifact. If the UI end-to-end tests
-fail, screenshots of the failing tests are uploaded instead of the binary.
+We run CI builds with [Buildkite][bk] and [Github Actions][ga]. Buildkite builds
+all branch pushes to the Github repository. Github actions builds pull requests
+on Github.
 
-All relevant configuration can be found here:
-
-```sh
-radicle-upstream/.buildkite
-.
-├── Dockerfile
-├── pipeline.yaml
-└── run.sh
-```
-
+When tests pass, the build process uploads the Upstream binary as a build
+artifact. If the UI end-to-end tests fail, screenshots of the failing tests are
+uploaded instead of the binary.
 
 ### Docker image updates
 
@@ -475,13 +467,13 @@ build times. If you need to update this image, proceed as follows:
    `[1] opensourcecoin` when asked for which project to use.
 
 3. Prepare a new docker image with all the necessary dependencies by editing:
-   `.buildkite/Dockerfile`.
+   `ci/Dockerfile`.
 
 4. Get the current image version from `pipeline.yaml` and build a new Docker
    image (remember to bump the version):
 
     ```sh
-    cd .buildkite
+    cd ci
     docker build . -t gcr.io/opensourcecoin/radicle-upstream:0.2.1
     ```
 
@@ -489,13 +481,15 @@ build times. If you need to update this image, proceed as follows:
 
    `docker push gcr.io/opensourcecoin/radicle-upstream:0.2.1`
 
-6. Update the image version in `pipeline.yaml`:
+6. Update the image version in `.buildkite/pipeline.yaml`:
 
    ```yaml
    DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
    ```
 
-7. Commit changes to `Dockerfile` and `pipeline.yaml`. Pushing the changes will
+7. Update the image version in `.github/workflows/build.yaml`
+
+8. Commit changes to `Dockerfile` and `pipeline.yaml`. Pushing the changes will
    create a new branch and build the updated image.
 
 ## Releases
@@ -555,6 +549,7 @@ instructions.
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
 [es]: https://eslint.org
+[ga]: https://docs.github.com/en/actions
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gg]: https://cloud.google.com/storage/docs/gsutil_install
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream

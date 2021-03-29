@@ -3,13 +3,25 @@ set -Eeou pipefail
 
 TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
-source .buildkite/env.sh
+if [[ "${BUILDKITE:-}" = "true" ]]; then
+  source ci/setup-buildkite.sh
+elif [[ "${GITHUB_ACTIONS:-}" = "true" ]]; then
+  source ci/setup-github-actions.sh
+else
+  echo "Unknown CI platform"
+  exit 1
+fi
 
-echo "--- Installing yarn dependencies"
+export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
+export CARGO_HOME="$CACHE_FOLDER/cargo"
+export CYPRESS_CACHE_FOLDER="$CACHE_FOLDER/cypress"
+export PATH="$HOME/.cargo/bin:$PATH"
+
+log-group-start "Installing yarn dependencies"
 yarn install --immutable
+log-group-end
 
-echo "--- Loading proxy target cache"
-
+log-group-start "Loading proxy target cache"
 declare -r rust_target_cache="$CACHE_FOLDER/proxy-target"
 mkdir -p "$rust_target_cache"
 ln -s "${rust_target_cache}" ./target
@@ -25,50 +37,63 @@ if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
     mkdir -p "${rust_target_cache}"
   fi
 fi
+log-group-end
 
-echo "--- Updating submodules"
+log-group-start "Updating submodules"
 ./scripts/test-setup.sh
+log-group-end
 
-echo "--- Set custom git config"
+log-group-start "Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
+log-group-end
 
-echo "--- Run proxy docs"
+log-group-start "Run proxy docs"
 (
   export RUSTDOCFLAGS="-D intra-doc-link-resolution-failure"
   time cargo doc --workspace --no-deps --all-features --document-private-items
 )
+log-group-end
 
-echo "--- Run proxy fmt"
+log-group-start "Run proxy fmt"
 time cargo fmt --all -- --check
+log-group-end
 
-echo "--- Run proxy lints"
+log-group-start "Run proxy lints"
 time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings
+log-group-end
 
-echo "--- Run app eslint checks"
+log-group-start "Run app eslint checks"
 time yarn lint
+log-group-end
 
-echo "--- Run app prettier checks"
+log-group-start "Run app prettier checks"
 time yarn prettier:check
+log-group-end
 
-echo "--- Check TypeScript"
+log-group-start "Check TypeScript"
 time yarn typescript:check
+log-group-end
 
-echo "--- Run proxy tests"
+log-group-start "Run proxy tests"
 (
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
   cargo build --tests --all --all-features --all-targets
   timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
+log-group-end
 
-echo "--- Bundle electron main files"
+log-group-start "Bundle electron main files"
 time yarn run webpack --config-name main
+log-group-end
 
-echo "--- Starting proxy daemon and runing app tests"
+log-group-start "Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
+log-group-end
 
 if [[ "${BUILDKITE_BRANCH:-}" == "master" || -n "${BUILDKITE_TAG:-}" ]]; then
-  echo "--- Packaging and uploading app binaries"
+  log-group-start "Packaging and uploading app binaries"
   time yarn dist
+  log-group-end
 fi
