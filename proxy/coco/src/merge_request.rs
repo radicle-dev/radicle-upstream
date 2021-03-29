@@ -71,13 +71,34 @@ pub async fn list(
         let refs = ref_pattern.references(&monorepo)?;
         for r in refs {
             let r = r?;
-            let tag = r.peel_to_tag()?;
+            let tag = match r.peel_to_tag() {
+                Ok(tag) => tag,
+                Err(err) => {
+                    tracing::warn!(?err, "merge request ref cannot be peeled");
+                    continue;
+                },
+            };
+
             let merged = default_branch_head_commit == tag.target_id()
                 || monorepo.graph_descendant_of(default_branch_head_commit, tag.target_id())?;
-            let id = std::str::from_utf8(tag.name_bytes())?
+
+            let tag_name = match std::str::from_utf8(tag.name_bytes()) {
+                Ok(tag_name) => tag_name,
+                Err(err) => {
+                    tracing::warn!(tag_id = ?tag.id(), ?err, "merge request tag name is not valid UTF-8");
+                    continue;
+                },
+            };
+
+            let id = tag_name
                 .strip_prefix("merge-request/")
                 .expect("invalid prefix");
-            assert_eq!(tag.target_type(), Some(git2::ObjectType::Commit));
+
+            if tag.target_type() != Some(git2::ObjectType::Commit) {
+                tracing::warn!(tag_id = ?tag.id(), "merge request tag target object is not a commit");
+                continue;
+            }
+
             merge_requests.push(MergeRequest {
                 id: id.to_owned(),
                 merged,
