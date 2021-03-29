@@ -60,7 +60,7 @@ fn list_filter(
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error, identity, session};
+    use crate::{context, error, http, identity, session};
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
@@ -85,7 +85,7 @@ mod handler {
         ctx: context::Unsealed,
         metadata: identity::Metadata,
     ) -> Result<impl Reply, Rejection> {
-        session::get_current(&ctx.store)?.ok_or(error::Error::NoSession())?;
+        session::get_current(&ctx.store)?.ok_or(http::error::Routing::NoSession)?;
         let id = identity::update(&ctx.peer, metadata).await?;
         Ok(reply::with_status(reply::json(&id), StatusCode::OK))
     }
