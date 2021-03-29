@@ -49,6 +49,7 @@ pub mod git_helper;
 mod identifier;
 pub use identifier::Identifier;
 pub mod keystore;
+pub mod merge_request;
 pub mod peer;
 pub use peer::{Control as PeerControl, Event as PeerEvent, Peer, RunConfig, Status as PeerStatus};
 pub mod project;

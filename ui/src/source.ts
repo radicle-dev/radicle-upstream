@@ -1,8 +1,8 @@
 import { format } from "timeago.js";
 
 import * as api from "./api";
+import type { Identity, PeerId } from "./identity";
 import * as error from "./error";
-import type { PeerId } from "./identity";
 import type { Urn } from "./urn";
 
 import type * as diff from "./source/diff";
@@ -31,14 +31,13 @@ export interface CommitStats {
 }
 
 export interface Commit {
-  branch: string;
   diff: diff.Diff;
   header: CommitHeader;
   stats: CommitStats;
   changeset: Record<string, unknown>;
 }
 
-interface Stats {
+export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
@@ -50,16 +49,9 @@ interface Commits {
 }
 
 export interface CommitsHistory {
-  history: CommitHistory;
+  history: CommitHeader[];
   stats: Stats;
 }
-
-interface CommitGroup {
-  time: string;
-  commits: CommitHeader[];
-}
-
-type CommitHistory = CommitGroup[];
 
 export enum ObjectType {
   Blob = "BLOB",
@@ -118,6 +110,21 @@ export interface Branch {
 export interface Tag {
   type: RevisionType.Tag;
   name: string;
+}
+
+export interface MergeRequest {
+  id: string;
+  merged: boolean;
+  peer_id: string;
+  identity?: Identity;
+  title?: string;
+  description?: string;
+  commit: string;
+}
+
+export interface MergeRequestDetails {
+  mergeRequest: MergeRequest;
+  commits: CommitsHistory;
 }
 
 export interface Sha {
@@ -191,7 +198,7 @@ export const fetchCommits = (
     .then(response => {
       return {
         stats: response.stats,
-        history: groupCommits(response.headers),
+        history: response.headers,
       };
     });
 };
@@ -254,6 +261,22 @@ export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
     );
 };
 
+export const fetchMergeRequests = (
+  projectUrn: Urn
+): Promise<MergeRequest[]> => {
+  return api.get<MergeRequest[]>(`source/merge_requests/${projectUrn}`);
+};
+
+export const fetchMergeRequest = (
+  projectUrn: Urn,
+  peerId: string,
+  id: string
+): Promise<MergeRequestDetails> => {
+  return api.get<MergeRequestDetails>(`source/merge_request/${projectUrn}/`, {
+    query: { peerId, id },
+  });
+};
+
 export const fetchTree = (
   projectUrn: Urn,
   peerId: PeerId,
@@ -313,49 +336,4 @@ export const revisionQueryEq = (
 
 export const formatCommitTime = (t: number): string => {
   return format(t * 1000);
-};
-
-const formatGroupTime = (t: number): string => {
-  return new Date(t).toLocaleDateString("en-US", {
-    month: "long",
-    weekday: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-const groupCommits = (history: CommitHeader[]): CommitHistory => {
-  const days: CommitHistory = [];
-  let groupDate: Date | undefined = undefined;
-
-  history = history.sort((a, b) => {
-    if (a.committerTime > b.committerTime) {
-      return -1;
-    } else if (a.committerTime < b.committerTime) {
-      return 1;
-    }
-
-    return 0;
-  });
-
-  for (const commit of history) {
-    const time = commit.committerTime * 1000;
-    const date = new Date(time);
-    const isNewDay =
-      !days.length ||
-      !groupDate ||
-      date.getDate() < groupDate.getDate() ||
-      date.getMonth() < groupDate.getMonth() ||
-      date.getFullYear() < groupDate.getFullYear();
-
-    if (isNewDay) {
-      days.push({
-        time: formatGroupTime(time),
-        commits: [],
-      });
-      groupDate = date;
-    }
-    days[days.length - 1].commits.push(commit);
-  }
-  return days;
 };

@@ -24,7 +24,9 @@
     width: 100%;
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
-    overflow: hidden;
+    /* TODO: check if this causes problems in other lists */
+    /* changed it to quickly make the checkout drop down visible */
+    overflow: visible;
   }
 
   li {
@@ -38,6 +40,15 @@
   .hover:hover {
     background-color: var(--color-foreground-level-1);
     cursor: pointer;
+  }
+
+  .hover:hover:first-child {
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+  }
+  .hover:hover:last-child {
+    border-bottom-left-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
   }
 
   li:last-child {

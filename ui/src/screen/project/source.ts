@@ -12,6 +12,7 @@ import * as source from "../../source";
 
 import IconCommit from "../../../DesignSystem/Primitive/Icon/Commit.svelte";
 import IconFile from "../../../DesignSystem/Primitive/Icon/File.svelte";
+import IconRevision from "../../../DesignSystem/Primitive/Icon/Revision.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -49,14 +50,26 @@ export interface Code {
 
 interface Screen {
   code: Writable<Code>;
-  history: source.CommitsHistory;
+  history: GrouppedCommitsHistory;
   menuItems: HorizontalItem[];
+  mergeRequests: source.MergeRequest[];
   peer: User;
   project: Project;
   revisions: [source.Branch | source.Tag];
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
   tree: Writable<source.Tree>;
+}
+
+export interface GrouppedCommitsHistory {
+  history: CommitGroup[];
+  stats: source.Stats;
+}
+
+// A set of commits groupped by time.
+interface CommitGroup {
+  time: string;
+  commits: source.CommitHeader[];
 }
 
 const pathStore = writable<source.SelectedPath>({
@@ -87,16 +100,19 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
 
   try {
     const revisions = await source.fetchRevisions(project.urn, peer.peerId);
+    const mergeRequests = await source.fetchMergeRequests(project.urn);
     const selectedRevision = defaultRevision(project, revisions);
     const [history, [tree, root]] = await Promise.all([
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
       fetchTreeRoot(selectedRevision),
     ]);
+    const grouppedHistory = groupCommitHistory(history);
 
     screenStore.success({
       code: writable<Code>(root),
-      history,
-      menuItems: menuItems(project, history),
+      history: grouppedHistory,
+      menuItems: menuItems(project, grouppedHistory, mergeRequests),
+      mergeRequests,
       peer,
       project,
       revisions: mapRevisions(revisions),
@@ -188,13 +204,18 @@ export const selectRevision = async (
         source.fetchCommits(project.urn, peer.peerId, revision),
         fetchTreeCode(),
       ]);
+      const grouppedHistory = groupCommitHistory(history);
       code.set(newCode);
       tree.set(newTree);
 
       screenStore.success({
         ...screen.data,
-        history,
-        menuItems: menuItems(project, history),
+        history: grouppedHistory,
+        menuItems: menuItems(
+          project,
+          grouppedHistory,
+          screen.data.mergeRequests
+        ),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -239,6 +260,24 @@ export const selectCommit = (commit: source.CommitHeader): void => {
     } = screen;
 
     push(path.projectSourceCommit(project.urn, commit.sha1));
+  }
+};
+
+export const selectMergeRequest = (mergeRequest: source.MergeRequest): void => {
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const {
+      data: { project },
+    } = screen;
+
+    push(
+      path.projectSourceMergeRequest(
+        project.urn,
+        mergeRequest,
+        project.metadata.defaultBranch
+      )
+    );
   }
 };
 
@@ -362,9 +401,65 @@ const mapRevisions = (
   return branches;
 };
 
+const mergeRequestCommitsStore = remote.createStore<GrouppedCommitsHistory>();
+export const mergeRequestCommits = mergeRequestCommitsStore.readable;
+
+export const fetchMergeRequestCommits = async (
+  mergeRequest: source.MergeRequest
+): Promise<void> => {
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const {
+      data: { peer, project },
+    } = screen;
+
+    try {
+      const baseProjectLatestCommit = (
+        await source.fetchCommits(project.urn, peer.peerId, {
+          type: source.RevisionType.Branch,
+          name: project.metadata.defaultBranch,
+        })
+      ).history[0];
+
+      const mrCommits = await source.fetchCommits(
+        project.urn,
+        mergeRequest.peer_id,
+        {
+          type: source.RevisionType.Sha,
+          sha: mergeRequest.commit,
+        }
+      );
+
+      const nothingNewIdx = baseProjectLatestCommit
+        ? mrCommits.history.findIndex(
+            ch => ch.sha1 === baseProjectLatestCommit.sha1
+          )
+        : 0;
+      const newCommits = mrCommits.history.slice(
+        0,
+        nothingNewIdx === -1 ? 0 : nothingNewIdx
+      );
+
+      mergeRequestCommitsStore.success({
+        history: groupCommits(newCommits),
+        stats: { ...mrCommits.stats, commits: newCommits.length },
+      });
+    } catch (err) {
+      mergeRequestCommitsStore.error(error.fromException(err));
+      error.show({
+        code: error.Code.CommitFetchFailure,
+        message: "Could not fetch merge request commits",
+        source: err,
+      });
+    }
+  }
+};
+
 const menuItems = (
   project: Project,
-  history: source.CommitsHistory
+  history: GrouppedCommitsHistory,
+  mergeRequests: source.MergeRequest[]
 ): HorizontalItem[] => {
   return [
     {
@@ -380,5 +475,64 @@ const menuItems = (
       href: path.projectSourceCommits(project.urn),
       looseActiveStateMatching: true,
     },
+    {
+      icon: IconRevision,
+      title: "Merge Requests",
+      counter: mergeRequests.length,
+      href: path.projectSourceMergeRequests(project.urn),
+      looseActiveStateMatching: true,
+    },
   ];
+};
+
+// Convert a source.CommitsHistory to the UI-friendly `GrouppedCommitsHistory` form.
+const groupCommitHistory = (
+  history: source.CommitsHistory
+): GrouppedCommitsHistory => {
+  return { ...history, history: groupCommits(history.history) };
+};
+
+export const groupCommits = (commits: source.CommitHeader[]): CommitGroup[] => {
+  const grouppedCommits: CommitGroup[] = [];
+  let groupDate: Date | undefined = undefined;
+
+  commits = commits.sort((a, b) => {
+    if (a.committerTime > b.committerTime) {
+      return -1;
+    } else if (a.committerTime < b.committerTime) {
+      return 1;
+    }
+
+    return 0;
+  });
+
+  for (const commit of commits) {
+    const time = commit.committerTime * 1000;
+    const date = new Date(time);
+    const isNewDay =
+      !grouppedCommits.length ||
+      !groupDate ||
+      date.getDate() < groupDate.getDate() ||
+      date.getMonth() < groupDate.getMonth() ||
+      date.getFullYear() < groupDate.getFullYear();
+
+    if (isNewDay) {
+      grouppedCommits.push({
+        time: formatGroupTime(time),
+        commits: [],
+      });
+      groupDate = date;
+    }
+    grouppedCommits[grouppedCommits.length - 1].commits.push(commit);
+  }
+  return grouppedCommits;
+};
+
+const formatGroupTime = (t: number): string => {
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "long",
+    weekday: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 };

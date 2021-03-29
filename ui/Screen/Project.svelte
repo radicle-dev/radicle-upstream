@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { getContext } from "svelte";
+  import { getContext as svelteGetContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as localPeer from "../src/localPeer";
@@ -7,7 +7,13 @@
   import * as path from "../src/path";
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
-  import { fetch, selectPeer, refresh, store } from "../src/screen/project";
+  import {
+    fetch,
+    selectPeer,
+    refresh,
+    store,
+    contextName,
+  } from "../src/screen/project";
   import type { UnsealedSession } from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
@@ -26,7 +32,7 @@
   export let params: { urn: Urn };
 
   const { urn } = params;
-  const session: UnsealedSession = getContext("session");
+  const session: UnsealedSession = svelteGetContext("session");
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
@@ -59,7 +65,10 @@
 </script>
 
 <SidebarLayout dataCy="project-screen">
-  <Remote {store} let:data={{ peerSelection, project, selectedPeer }}>
+  <Remote
+    {store}
+    let:data={{ peerSelection, project, selectedPeer }}
+    context={contextName}>
     <Header.Large
       urn={project.urn}
       name={project.metadata.name}
