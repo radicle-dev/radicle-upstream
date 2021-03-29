@@ -24,7 +24,6 @@
     width: 100%;
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
-    overflow: hidden;
   }
 
   li {
@@ -35,13 +34,25 @@
     user-select: none;
   }
 
-  .hover:hover {
-    background-color: var(--color-foreground-level-1);
+  li:last-child {
+    border-bottom: 0;
+  }
+
+  .hover {
     cursor: pointer;
   }
 
-  li:last-child {
-    border-bottom: 0;
+  .hover:hover {
+    background-color: var(--color-foreground-level-1);
+  }
+
+  .hover:hover:first-child {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+  .hover:hover:last-child {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
   }
 </style>
 

@@ -176,7 +176,7 @@
 
   .transparent {
     background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-background);
+    border-color: transparent;
     color: var(--color-foreground-level-6);
   }
 
@@ -202,7 +202,7 @@
 
   .transparent.disabled {
     background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-background);
+    border-color: transparent;
     color: var(--color-foreground-level-3);
     cursor: not-allowed;
   }
@@ -210,13 +210,13 @@
   .transparent.disabled:hover {
     background-color: rgba(var(--color-background), 0);
     box-shadow: 0 0 0 0;
-    border-color: var(--color-background);
+    border-color: transparent;
     color: var(--color-foreground-level-3);
   }
 
   .transparent.disabled:active {
     background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-background);
+    border-color: transparent;
     color: var(--color-foreground-level-3);
   }
 
