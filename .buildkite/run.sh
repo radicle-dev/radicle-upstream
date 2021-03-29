@@ -14,14 +14,16 @@ declare -r rust_target_cache="$CACHE_FOLDER/proxy-target"
 mkdir -p "$rust_target_cache"
 ln -s "${rust_target_cache}" ./target
 
-free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
-min_free_cache_kb=$(( 2 * 1024 * 1024 )) # 2GiB is 25%
-echo "$(( free_cache_space_kb / 1024 )) MiB free space on /cache"
-if [[ $free_cache_space_kb -le $min_free_cache_kb ]]; then
-  echo "Not enough free space on /cache. Deleting ${rust_target_cache}"
-  du -sh /cache/*
-  rm -r "${rust_target_cache}"
-  mkdir -p "${rust_target_cache}"
+if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
+  free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
+  min_free_cache_kb=$(( 2 * 1024 * 1024 )) # 2GiB is 25%
+  echo "$(( free_cache_space_kb / 1024 )) MiB free space on /cache"
+  if [[ $free_cache_space_kb -le $min_free_cache_kb ]]; then
+    echo "Not enough free space on /cache. Deleting ${rust_target_cache}"
+    du -sh /cache/*
+    rm -r "${rust_target_cache}"
+    mkdir -p "${rust_target_cache}"
+  fi
 fi
 
 echo "--- Updating submodules"
