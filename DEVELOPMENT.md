@@ -493,11 +493,14 @@ You'll be asked to provide your GitHub login and the access token.
 
 #### Homebrew CLI
 
-To update a formula at [Homebrew package manager][br], you'll need a
-working `brew` CLI tool. The tool can use your GitHub _Personal access token_
-from the previous step with
-`export HOMEBREW_GITHUB_API_TOKEN='<github-api-token>'` for authentification,
-in order to [setup a Cask repository fork, commit and push][bs] on your behalf.
+To update a formula at the [Homebrew package manager][br], you'll need a working 
+`brew` CLI tool. 
+
+The `brew`  CLI requires a [GitHub Personal access token][gt] to [set up a Cask repository 
+fork, commit and push][bs] on your behalf. You can make it available to brew with 
+`export HOMEBREW_GITHUB_API_TOKEN='<github-api-token>'`
+
+Note: this Github access token _must_ grant the `public_repo` scope.
 
 ### Publishing a release
 
