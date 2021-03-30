@@ -151,7 +151,7 @@ where
         let (addrs_tx, addrs_rx) = watch::channel(vec![]);
 
         let protocol_events = peer.subscribe().boxed();
-        let mut subroutines = Subroutines::new(
+        let subroutines = Subroutines::new(
             peer.clone(),
             addrs_rx,
             store,
@@ -160,6 +160,8 @@ where
             subscriber,
             control_receiver,
         )
+        .run()
+        .fuse()
         .map_err(Error::Join);
 
         let protocol = async move {
@@ -188,6 +190,8 @@ where
             }
         }
         .fuse();
+
+        futures::pin_mut!(subroutines);
         futures::pin_mut!(protocol);
 
         futures::select! {
