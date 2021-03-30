@@ -11,7 +11,8 @@
     fetchMergeRequestCommits,
     selectCommit,
   } from "../../../src/screen/project/source";
-  import type { CommitHeader, MergeRequest } from "../../../src/source";
+  import type { CommitHeader } from "../../../src/source";
+  import type { MergeRequest } from "../../../src/project/mergeRequest";
 
   import { Avatar, Icon, Markdown } from "../../../DesignSystem/Primitive";
   import {

@@ -2,7 +2,7 @@
   import * as router from "svelte-spa-router";
 
   import * as path from "../../../src/path";
-  import type { MergeRequest } from "../../../src/source";
+  import type { MergeRequest } from "../../../src/project/mergeRequest";
   import {
     Copyable,
     EmptyState,

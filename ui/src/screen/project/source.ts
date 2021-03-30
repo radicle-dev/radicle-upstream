@@ -7,6 +7,7 @@ import { isExperimental } from "../../ipc";
 import type { HorizontalItem } from "../../menu";
 import * as path from "../../path";
 import type { Project, User } from "../../project";
+import * as mergeRequest from "../../project/mergeRequest";
 import * as remote from "../../remote";
 import * as source from "../../source";
 
@@ -50,26 +51,15 @@ export interface Code {
 
 interface Screen {
   code: Writable<Code>;
-  history: GrouppedCommitsHistory;
+  history: source.GrouppedCommitsHistory;
   menuItems: HorizontalItem[];
-  mergeRequests: source.MergeRequest[];
+  mergeRequests: mergeRequest.MergeRequest[];
   peer: User;
   project: Project;
   revisions: [source.Branch | source.Tag];
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
   tree: Writable<source.Tree>;
-}
-
-export interface GrouppedCommitsHistory {
-  history: CommitGroup[];
-  stats: source.Stats;
-}
-
-// A set of commits groupped by time.
-interface CommitGroup {
-  time: string;
-  commits: source.CommitHeader[];
 }
 
 const pathStore = writable<source.SelectedPath>({
@@ -100,13 +90,13 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
 
   try {
     const revisions = await source.fetchRevisions(project.urn, peer.peerId);
-    const mergeRequests = await source.fetchMergeRequests(project.urn);
+    const mergeRequests = await mergeRequest.getAll(project.urn);
     const selectedRevision = defaultRevision(project, revisions);
     const [history, [tree, root]] = await Promise.all([
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
       fetchTreeRoot(selectedRevision),
     ]);
-    const grouppedHistory = groupCommitHistory(history);
+    const grouppedHistory = source.groupCommitHistory(history);
 
     screenStore.success({
       code: writable<Code>(root),
@@ -204,7 +194,7 @@ export const selectRevision = async (
         source.fetchCommits(project.urn, peer.peerId, revision),
         fetchTreeCode(),
       ]);
-      const grouppedHistory = groupCommitHistory(history);
+      const grouppedHistory = source.groupCommitHistory(history);
       code.set(newCode);
       tree.set(newTree);
 
@@ -383,11 +373,11 @@ const mapRevisions = (
   return branches;
 };
 
-const mergeRequestCommitsStore = remote.createStore<GrouppedCommitsHistory>();
+const mergeRequestCommitsStore = remote.createStore<source.GrouppedCommitsHistory>();
 export const mergeRequestCommits = mergeRequestCommitsStore.readable;
 
 export const fetchMergeRequestCommits = async (
-  mergeRequest: source.MergeRequest
+  mr: mergeRequest.MergeRequest
 ): Promise<void> => {
   const screen = get(screenStore);
 
@@ -397,36 +387,9 @@ export const fetchMergeRequestCommits = async (
     } = screen;
 
     try {
-      const baseProjectLatestCommit = (
-        await source.fetchCommits(project.urn, peer.peerId, {
-          type: source.RevisionType.Branch,
-          name: project.metadata.defaultBranch,
-        })
-      ).history[0];
+      const history = await mergeRequest.getCommits(peer.peerId, project, mr);
 
-      const mrCommits = await source.fetchCommits(
-        project.urn,
-        mergeRequest.peerId,
-        {
-          type: source.RevisionType.Sha,
-          sha: mergeRequest.commit,
-        }
-      );
-
-      const nothingNewIdx = baseProjectLatestCommit
-        ? mrCommits.history.findIndex(
-            ch => ch.sha1 === baseProjectLatestCommit.sha1
-          )
-        : 0;
-      const newCommits = mrCommits.history.slice(
-        0,
-        nothingNewIdx === -1 ? 0 : nothingNewIdx
-      );
-
-      mergeRequestCommitsStore.success({
-        history: groupCommits(newCommits),
-        stats: { ...mrCommits.stats, commits: newCommits.length },
-      });
+      mergeRequestCommitsStore.success(source.groupCommitHistory(history));
     } catch (err) {
       mergeRequestCommitsStore.error(error.fromException(err));
       error.show({
@@ -440,8 +403,8 @@ export const fetchMergeRequestCommits = async (
 
 const menuItems = (
   project: Project,
-  history: GrouppedCommitsHistory,
-  mergeRequests: source.MergeRequest[]
+  history: source.GrouppedCommitsHistory,
+  mergeRequests: mergeRequest.MergeRequest[]
 ): HorizontalItem[] => {
   return [
     {
@@ -465,56 +428,4 @@ const menuItems = (
       looseActiveStateMatching: true,
     },
   ];
-};
-
-// Convert a source.CommitsHistory to the UI-friendly `GrouppedCommitsHistory` form.
-const groupCommitHistory = (
-  history: source.CommitsHistory
-): GrouppedCommitsHistory => {
-  return { ...history, history: groupCommits(history.history) };
-};
-
-export const groupCommits = (commits: source.CommitHeader[]): CommitGroup[] => {
-  const grouppedCommits: CommitGroup[] = [];
-  let groupDate: Date | undefined = undefined;
-
-  commits = commits.sort((a, b) => {
-    if (a.committerTime > b.committerTime) {
-      return -1;
-    } else if (a.committerTime < b.committerTime) {
-      return 1;
-    }
-
-    return 0;
-  });
-
-  for (const commit of commits) {
-    const time = commit.committerTime * 1000;
-    const date = new Date(time);
-    const isNewDay =
-      !grouppedCommits.length ||
-      !groupDate ||
-      date.getDate() < groupDate.getDate() ||
-      date.getMonth() < groupDate.getMonth() ||
-      date.getFullYear() < groupDate.getFullYear();
-
-    if (isNewDay) {
-      grouppedCommits.push({
-        time: formatGroupTime(time),
-        commits: [],
-      });
-      groupDate = date;
-    }
-    grouppedCommits[grouppedCommits.length - 1].commits.push(commit);
-  }
-  return grouppedCommits;
-};
-
-const formatGroupTime = (t: number): string => {
-  return new Date(t).toLocaleDateString("en-US", {
-    month: "long",
-    weekday: "long",
-    day: "numeric",
-    year: "numeric",
-  });
 };

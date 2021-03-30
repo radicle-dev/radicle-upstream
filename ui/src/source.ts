@@ -1,8 +1,8 @@
 import { format } from "timeago.js";
 
 import * as api from "./api";
-import type { Identity, PeerId } from "./identity";
 import * as error from "./error";
+import type { PeerId } from "./identity";
 import type { Urn } from "./urn";
 
 import type * as diff from "./source/diff";
@@ -51,6 +51,11 @@ interface Commits {
 export interface CommitsHistory {
   history: CommitHeader[];
   stats: Stats;
+}
+
+interface CommitGroup {
+  time: string;
+  commits: CommitHeader[];
 }
 
 export enum ObjectType {
@@ -110,21 +115,6 @@ export interface Branch {
 export interface Tag {
   type: RevisionType.Tag;
   name: string;
-}
-
-export interface MergeRequest {
-  id: string;
-  merged: boolean;
-  peerId: string;
-  identity?: Identity;
-  title?: string;
-  description?: string;
-  commit: string;
-}
-
-export interface MergeRequestDetails {
-  mergeRequest: MergeRequest;
-  commits: CommitsHistory;
 }
 
 export interface Sha {
@@ -261,22 +251,6 @@ export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
     );
 };
 
-export const fetchMergeRequests = (
-  projectUrn: Urn
-): Promise<MergeRequest[]> => {
-  return api.get<MergeRequest[]>(`source/merge_requests/${projectUrn}`);
-};
-
-export const fetchMergeRequest = (
-  projectUrn: Urn,
-  peerId: string,
-  id: string
-): Promise<MergeRequestDetails> => {
-  return api.get<MergeRequestDetails>(`source/merge_request/${projectUrn}/`, {
-    query: { peerId, id },
-  });
-};
-
 export const fetchTree = (
   projectUrn: Urn,
   peerId: PeerId,
@@ -336,4 +310,65 @@ export const revisionQueryEq = (
 
 export const formatCommitTime = (t: number): string => {
   return format(t * 1000);
+};
+
+const formatGroupTime = (t: number): string => {
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "long",
+    weekday: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+export interface GrouppedCommitsHistory {
+  history: CommitGroup[];
+  stats: Stats;
+}
+
+// A set of commits groupped by time.
+interface CommitGroup {
+  time: string;
+  commits: CommitHeader[];
+}
+
+export const groupCommitHistory = (
+  history: CommitsHistory
+): GrouppedCommitsHistory => {
+  return { ...history, history: groupCommits(history.history) };
+};
+
+const groupCommits = (commits: CommitHeader[]): CommitGroup[] => {
+  const grouppedCommits: CommitGroup[] = [];
+  let groupDate: Date | undefined = undefined;
+
+  commits = commits.sort((a, b) => {
+    if (a.committerTime > b.committerTime) {
+      return -1;
+    } else if (a.committerTime < b.committerTime) {
+      return 1;
+    }
+
+    return 0;
+  });
+
+  for (const commit of commits) {
+    const time = commit.committerTime * 1000;
+    const date = new Date(time);
+    const isNewDay =
+      !grouppedCommits.length ||
+      !groupDate ||
+      date.getDate() < groupDate.getDate() ||
+      date.getMonth() < groupDate.getMonth() ||
+      date.getFullYear() < groupDate.getFullYear();
+
+    if (isNewDay) {
+      grouppedCommits.push({
+        time: formatGroupTime(time),
+        commits: [],
+      });
+      groupDate = date;
+    }
+    grouppedCommits[grouppedCommits.length - 1].commits.push(commit);
+  }
+  return grouppedCommits;
 };

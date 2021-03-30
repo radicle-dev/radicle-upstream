@@ -2,7 +2,7 @@
   import { CompareBranches } from "../../../DesignSystem/Component";
   import { Avatar, Icon } from "../../../DesignSystem/Primitive";
 
-  import type { MergeRequest } from "../../../src/source";
+  import type { MergeRequest } from "../../../src/project/mergeRequest";
 
   export let mergeRequest: MergeRequest;
   export let defaultBranch: string;

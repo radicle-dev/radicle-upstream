@@ -1,8 +1,10 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { CommitHeader } from "../../../src/source";
-  import type { GrouppedCommitsHistory } from "../../../src/screen/project/source";
+  import type {
+    CommitHeader,
+    GrouppedCommitsHistory,
+  } from "../../../src/source";
 
   import CommitTeaser from "./CommitTeaser.svelte";
 
