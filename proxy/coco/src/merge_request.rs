@@ -1,9 +1,19 @@
 //! TODO
 
 use either::Either;
-use librad::{peer::PeerId, signer::BoxedSigner};
+use librad::{
+    git::types::{namespace::Namespace, Reference, RefsCategory},
+    peer::PeerId,
+    signer::BoxedSigner,
+};
+use radicle_git_ext::RefspecPattern;
 
-use crate::state;
+use crate::{
+    project::{self, peer},
+    state, Person,
+};
+
+const TAG_PREFIX: &str = "radicle-merge-request/";
 
 /// TODO
 #[derive(Debug, Clone)]
@@ -13,7 +23,7 @@ pub struct MergeRequest {
     /// TODO
     pub merged: bool,
     /// TODO
-    pub peer: crate::project::Peer<crate::project::peer::Status<crate::Person>>,
+    pub peer: project::Peer<peer::Status<Person>>,
     /// TODO
     pub message: Option<String>,
     /// TODO
@@ -26,15 +36,15 @@ pub struct MergeRequest {
 pub async fn list(
     peer: &crate::net::peer::Peer<BoxedSigner>,
     project_urn: crate::Urn,
-) -> Result<Vec<MergeRequest>, crate::state::Error> {
+) -> Result<Vec<MergeRequest>, state::Error> {
     let mut merge_requests = Vec::new();
-    let monorepo_path = crate::state::monorepo(peer);
+    let monorepo_path = state::monorepo(peer);
     let monorepo = git2::Repository::open(monorepo_path)?;
-    let namespace = librad::git::types::namespace::Namespace::from(project_urn.clone());
+    let namespace = Namespace::from(project_urn.clone());
     let default_branch_head_commit = {
-        let project = crate::state::get_project(peer, project_urn.clone())
+        let project = state::get_project(peer, project_urn.clone())
             .await?
-            .ok_or_else(|| crate::state::Error::ProjectNotFound(project_urn.clone()))?;
+            .ok_or_else(|| state::Error::ProjectNotFound(project_urn.clone()))?;
         let maintainer = project
             .delegations()
             .iter()
@@ -57,15 +67,17 @@ pub async fn list(
             .id()
     };
 
-    for project_peer in crate::state::list_project_peers(peer, project_urn.clone()).await? {
+    for project_peer in state::list_project_peers(peer, project_urn.clone()).await? {
         let remote = match project_peer {
-            crate::project::Peer::Local { .. } => None,
-            crate::project::Peer::Remote { peer_id, .. } => Some(peer_id),
+            project::Peer::Local { .. } => None,
+            project::Peer::Remote { peer_id, .. } => Some(peer_id),
         };
-        let ref_pattern = librad::git::types::Reference {
+        let ref_pattern = Reference {
             remote,
-            category: librad::git::types::RefsCategory::Tags,
-            name: librad::refspec_pattern!("merge-request/*"),
+            category: RefsCategory::Tags,
+            name: format!("{}*", TAG_PREFIX)
+                .parse::<RefspecPattern>()
+                .expect("invalid refspec pattern"),
             namespace: Some(namespace.clone()),
         };
         let refs = ref_pattern.references(&monorepo)?;
@@ -90,9 +102,7 @@ pub async fn list(
                 },
             };
 
-            let id = tag_name
-                .strip_prefix("merge-request/")
-                .expect("invalid prefix");
+            let id = tag_name.strip_prefix(TAG_PREFIX).expect("invalid prefix");
 
             if tag.target_type() != Some(git2::ObjectType::Commit) {
                 tracing::warn!(tag_id = ?tag.id(), "merge request tag target object is not a commit");

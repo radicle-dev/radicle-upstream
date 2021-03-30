@@ -75,10 +75,9 @@ async fn merge_request() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
 
     let head_commit = repo.find_object(head_commit_id, None).unwrap();
-    // git tag --annotated --message MESSAGE merge-request/REV HEAD
     let _tag_id = repo
         .tag(
-            "merge-request/REV",
+            "radicle-merge-request/MY-MR",
             &head_commit,
             &alice_signature,
             "MESSAGE",
@@ -107,7 +106,7 @@ async fn merge_request() -> Result<(), Box<dyn std::error::Error>> {
         "testing alice's merge request list"
     );
     assert_eq!(
-        &alice_merge_requests[0].id, "REV",
+        &alice_merge_requests[0].id, "MY-MR",
         "testing alice's merge request list"
     );
 
@@ -123,7 +122,7 @@ async fn merge_request() -> Result<(), Box<dyn std::error::Error>> {
         "testing bob's merge request list"
     );
     assert_eq!(
-        &bob_merge_requests[0].id, "REV",
+        &bob_merge_requests[0].id, "MY-MR",
         "testing bob's merge request list"
     );
 
