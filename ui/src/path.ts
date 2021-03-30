@@ -1,4 +1,3 @@
-import { parse, ParsedQs } from "qs";
 import regexparam from "regexparam";
 
 import type { Urn } from "./urn";
@@ -26,10 +25,6 @@ export const projectSourceCommit = (urn: Urn, hash: string): string =>
 export const projectSourceCommits = (urn: Urn): string =>
   `/projects/${urn}/source/commits`;
 export const project = projectSourceFiles;
-
-export const parseQueryString = (querystring: string): ParsedQs => {
-  return parse(querystring);
-};
 
 export const designSystemGuide = (): string => "/design-system-guide";
 
