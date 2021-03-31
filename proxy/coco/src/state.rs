@@ -884,7 +884,7 @@ pub mod test {
 
     use librad::{git_ext::OneLevel, identities::payload::Person, keys::SecretKey, net, reflike};
 
-    use crate::{config, control, project, signer};
+    use crate::{config, project, signer};
 
     fn fakie_project(path: PathBuf) -> project::Create {
         project::Create {
@@ -906,6 +906,44 @@ pub mod test {
             description: "the people".to_string(),
             default_branch: OneLevel::from(reflike!("power")),
         }
+    }
+
+    fn fixtures(path: PathBuf) -> Vec<project::Create> {
+        vec![
+            project::Create {
+                repo: project::Repo::New {
+                    path: path.clone(),
+                    name: "monokel".to_string(),
+                },
+                description: "A looking glass into the future".to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+            project::Create {
+                repo: project::Repo::New {
+                    path: path.clone(),
+                    name: "Monadic".to_string(),
+                },
+                description: "Open source organization of amazing things.".to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+            project::Create {
+                repo: project::Repo::New {
+                    path: path.clone(),
+                    name: "open source coin".to_string(),
+                },
+                description: "Research for the sustainability of the open source community."
+                    .to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+            project::Create {
+                repo: project::Repo::New {
+                    path,
+                    name: "radicle".to_string(),
+                },
+                description: "Decentralized open source collaboration".to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+        ]
     }
 
     #[tokio::test]
@@ -990,9 +1028,9 @@ pub mod test {
         )
         .await?;
 
-        let _fixtures = control::setup_fixtures(&peer, &user)
-            .await
-            .expect("unable to setup fixtures");
+        for fixture in fixtures(repo_path.clone()) {
+            super::init_project(&peer, &user, fixture).await?;
+        }
 
         let kalt = super::init_user(&peer, "kalt".to_string()).await?;
         let fakie = super::init_project(&peer, &kalt, fakie_project(repo_path)).await?;

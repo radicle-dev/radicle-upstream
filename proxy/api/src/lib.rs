@@ -28,6 +28,7 @@
 
 mod config;
 mod context;
+mod control;
 pub mod env;
 mod error;
 mod ethereum {

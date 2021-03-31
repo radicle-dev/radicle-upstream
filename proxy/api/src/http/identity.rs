@@ -222,17 +222,17 @@ mod test {
 
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
 
-            let platinum_project = coco::control::replicate_platinum(
+            let platinum_project = crate::control::replicate_platinum(
                 &ctx.peer,
                 &owner,
                 "git-platinum",
                 "fixture data",
-                coco::control::default_branch(),
+                crate::control::default_branch(),
             )
             .await?;
 
             let (peer_id, local_identity) =
-                coco::control::track_fake_peer(&ctx.peer, &platinum_project, "fintohaps").await;
+                crate::control::track_fake_peer(&ctx.peer, &platinum_project, "fintohaps").await;
             (peer_id, local_identity.into_inner().into_inner()).into()
         };
 

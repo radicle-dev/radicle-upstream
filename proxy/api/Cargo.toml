@@ -44,6 +44,10 @@ features = [ "json-value" ]
 [dependencies.coco]
 path = "../coco"
 
+[dependencies.radicle-git-ext]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "9467c364fa232f6563caf7ec123c43ade9c23284"
+
 [dependencies.radicle-avatar]
 git = "https://github.com/radicle-dev/radicle-avatar.git"
 rev = "4e34e6b992fd9f465b0547a5693b47b0d41dea01"
