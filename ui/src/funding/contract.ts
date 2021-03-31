@@ -89,7 +89,7 @@ export class ClaimsContract {
     const claimsFactory = new ClaimsFactory();
     const inputs = claimsFactory.interface.decodeFunctionData("claim", tx.data);
     const payload = ethers.utils.arrayify(inputs.payload);
-    const root = ethereum.bytesToString(payload);
+    const root = Buffer.from(payload).toString("utf-8");
 
     return root;
   }
