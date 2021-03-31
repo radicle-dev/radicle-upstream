@@ -4,75 +4,32 @@ use std::{env, io, path, str::FromStr};
 
 use nonempty::NonEmpty;
 
-use librad::{
-    git::{
-        identities::local::LocalIdentity,
-        local::{transport, url::LocalUrl},
-        types::{
-            remote::{LocalPushspec, Remote},
-            Force, Pushspec, Refspec,
-        },
-    },
-    identities::Project,
-    keys,
-    net::peer::Peer,
-    peer::PeerId,
-    reflike, refspec_pattern,
-    signer::BoxedSigner,
-};
-use radicle_git_ext::OneLevel;
 use radicle_surf::vcs::git::git2;
 
-use crate::{
+use coco::{
+    librad::{
+        git::{
+            identities::local::LocalIdentity,
+            local::{transport, url::LocalUrl},
+            types::{
+                remote::{LocalPushspec, Remote},
+                Force, Pushspec, Refspec,
+            },
+        },
+        git_ext::OneLevel,
+        identities::Project,
+        keys,
+        net::peer::Peer,
+        peer::PeerId,
+        refspec_pattern,
+        signer::BoxedSigner,
+    },
     project,
     state::{self, Error},
 };
 
-/// Generate a fresh `PeerId` for use in tests.
-#[must_use]
-pub fn generate_peer_id() -> PeerId {
-    PeerId::from(keys::SecretKey::new())
-}
-
-/// Creates a small set of projects in your peer.
-///
-/// # Errors
-///
-/// Will error if filesystem access is not granted or broken for the configured
-/// [`librad::paths::Paths`].
-pub async fn setup_fixtures(
-    peer: &Peer<BoxedSigner>,
-    owner: &LocalIdentity,
-) -> Result<Vec<Project>, Error> {
-    let infos = vec![
-        (
-            "monokel",
-            "A looking glass into the future",
-            default_branch(),
-        ),
-        (
-            "Monadic",
-            "Open source organization of amazing things.",
-            default_branch(),
-        ),
-        (
-            "open source coin",
-            "Research for the sustainability of the open source community.",
-            default_branch(),
-        ),
-        (
-            "radicle",
-            "Decentralized open source collaboration",
-            default_branch(),
-        ),
-    ];
-
-    let mut projects = Vec::with_capacity(infos.len());
-    for info in infos {
-        projects.push(replicate_platinum(peer, owner, info.0, info.1, info.2).await?);
-    }
-    Ok(projects)
-}
+#[cfg(test)]
+pub use test::*;
 
 /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
 /// branch.
@@ -184,7 +141,7 @@ pub async fn track_fake_peer(
     let urn = project.urn();
     let fake_user =
         state::init_user(peer, fake_user_handle.to_string()).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
-    let remote = generate_peer_id();
+    let remote = PeerId::from(keys::SecretKey::new());
     let monorepo = git2::Repository::open(state::monorepo(peer)).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
@@ -308,10 +265,67 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
     Ok(())
 }
 
-/// **Testing Only**
-///
-/// Default reference name for testing purposes.
-#[must_use]
-pub fn default_branch() -> OneLevel {
-    OneLevel::from(reflike!("master"))
+#[cfg(test)]
+mod test {
+    use coco::{
+        librad::{
+            git::identities::local::LocalIdentity, git_ext::OneLevel, identities::Project, keys,
+            net::peer::Peer, peer::PeerId, reflike, signer::BoxedSigner,
+        },
+        state::Error,
+    };
+
+    /// Generate a fresh `PeerId` for use in tests.
+    #[must_use]
+    pub fn generate_peer_id() -> PeerId {
+        PeerId::from(keys::SecretKey::new())
+    }
+
+    /// **Testing Only**
+    ///
+    /// Default reference name for testing purposes.
+    #[must_use]
+    pub fn default_branch() -> OneLevel {
+        OneLevel::from(reflike!("master"))
+    }
+
+    /// Creates a small set of projects in your peer.
+    ///
+    /// # Errors
+    ///
+    /// Will error if filesystem access is not granted or broken for the configured
+    /// [`librad::paths::Paths`].
+    pub async fn setup_fixtures(
+        peer: &Peer<BoxedSigner>,
+        owner: &LocalIdentity,
+    ) -> Result<Vec<Project>, Error> {
+        let infos = vec![
+            (
+                "monokel",
+                "A looking glass into the future",
+                default_branch(),
+            ),
+            (
+                "Monadic",
+                "Open source organization of amazing things.",
+                default_branch(),
+            ),
+            (
+                "open source coin",
+                "Research for the sustainability of the open source community.",
+                default_branch(),
+            ),
+            (
+                "radicle",
+                "Decentralized open source collaboration",
+                default_branch(),
+            ),
+        ];
+
+        let mut projects = Vec::with_capacity(infos.len());
+        for info in infos {
+            projects.push(super::replicate_platinum(peer, owner, info.0, info.1, info.2).await?);
+        }
+        Ok(projects)
+    }
 }

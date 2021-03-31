@@ -86,6 +86,7 @@ dependencies = [
  "pretty_assertions",
  "pretty_env_logger",
  "radicle-avatar",
+ "radicle-git-ext",
  "radicle-surf",
  "rand 0.7.3",
  "secstr",
