@@ -31,7 +31,6 @@ export interface CommitStats {
 }
 
 export interface Commit {
-  branch: string;
   diff: diff.Diff;
   header: CommitHeader;
   stats: CommitStats;

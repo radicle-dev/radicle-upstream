@@ -172,6 +172,11 @@ const printNextStepsMsg = (
 
     - [ ] open the pull request
     - [ ] deploy the website by merging in the pull request
+  - [ ] update Homebrew cask at https://formulae.brew.sh/cask/radicle-upstream
+
+       brew tap homebrew/cask
+       brew bump-cask-pr --version ${version} radicle-upstream
+
   - [ ] announce new release on https://radicle.community/c/announcements
         ${communityAnnouncementTemplate(version)}
   - [ ] announce new release on https://matrix.radicle.community/#/room/#general:radicle.community

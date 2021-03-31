@@ -1,4 +1,5 @@
 const { notarize } = require("electron-notarize");
+const appId = require("../package.json").build.appId;
 
 exports.default = async function notarizeApp(context) {
   if (process.env.NOTARIZE !== "true") {
@@ -21,8 +22,12 @@ exports.default = async function notarizeApp(context) {
     );
   }
 
+  if (!(typeof appId === "string" && appId.length > 0)) {
+    throw new Error("build.appId must be set in package.json!");
+  }
+
   return await notarize({
-    appBundleId: process.env.npm_package_build_appId,
+    appBundleId: appId,
     appPath: `${context.appOutDir}/${context.packager.appInfo.productFilename}.app`,
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_ID_PASSWORD,

@@ -35,6 +35,7 @@ mod ethereum {
     pub mod claim_ext;
 }
 mod http;
+mod identifier;
 mod identity;
 mod notification;
 mod process;

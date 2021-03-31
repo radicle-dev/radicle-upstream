@@ -63,7 +63,7 @@ echo "--- Run proxy tests"
 )
 
 echo "--- Bundle electron main files"
-time yarn run rollup -c rollup.electron.js
+time yarn run webpack --config-name main
 
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
