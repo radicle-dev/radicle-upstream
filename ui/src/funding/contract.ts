@@ -1,6 +1,5 @@
 import * as ethers from "ethers";
 import type { BigNumber, ContractTransaction, Signer } from "ethers";
-import InputDataDecoder from "ethereum-input-data-decoder";
 
 import Big from "big.js";
 
@@ -62,43 +61,6 @@ export function claims(signer: Signer, address: string): ClaimsContract {
 export class ClaimsContract {
   contract: Claims;
 
-  // The application binary interface (abi) of this contract,
-  // needed to decode transactions that it produces. May need
-  // to be updated if the API of this contract changes.
-  readonly abi = [
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
-          name: "addr",
-          type: "address",
-        },
-      ],
-      name: "Claimed",
-      type: "event",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "format",
-          type: "uint256",
-        },
-        {
-          internalType: "bytes",
-          name: "payload",
-          type: "bytes",
-        },
-      ],
-      name: "claim",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-  ];
-
   constructor(signer: Signer, address: string) {
     this.contract = ClaimsFactory.connect(address, signer);
   }
@@ -124,9 +86,9 @@ export class ClaimsContract {
     }
 
     const tx = await last.getTransaction();
-    const decoder = new InputDataDecoder(this.abi);
-    const decoded = decoder.decodeData(tx.data);
-    const payload = decoded.inputs[1];
+    const claimsFactory = new ClaimsFactory();
+    const inputs = claimsFactory.interface.decodeFunctionData("claim", tx.data);
+    const payload = ethers.utils.arrayify(inputs.payload);
     const root = ethereum.bytesToString(payload);
 
     return root;

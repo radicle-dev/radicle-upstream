@@ -170,7 +170,6 @@
     "@walletconnect/client": "^1.3.6",
     "big.js": "^6.0.3",
     "browserify": "^17.0.0",
-    "ethereum-input-data-decoder": "github:miguelmota/ethereum-input-data-decoder#3b89e05518f81c88f94902013e7b7aceb3c3e700",
     "ethers": "^5.0.31",
     "marked": "^2.0.0",
     "mnemonist": "^0.38.1",
