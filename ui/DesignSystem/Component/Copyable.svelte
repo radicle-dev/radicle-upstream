@@ -21,7 +21,7 @@
 
   let copied = false;
 
-  const copy = () => {
+  export const copy = (): void => {
     if (copied) return;
 
     const content = copyContent.length ? copyContent : slotContent.textContent;
@@ -44,6 +44,7 @@
     cursor: pointer;
     display: inline-flex;
     white-space: nowrap;
+    max-width: -webkit-fill-available;
   }
 
   .basic {
