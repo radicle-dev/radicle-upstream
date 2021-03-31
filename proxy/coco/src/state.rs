@@ -372,27 +372,30 @@ pub async fn init_project(
         name: Cstring::from(name),
     };
     let delegations = Indirect::from(owner.clone().into_inner().into_inner());
-    let project = peer
+    let (repository, project) = peer
         .using_storage(move |store| {
             let urn = project::urn(store, payload.clone(), delegations.clone())?;
+            let url = LocalUrl::from(urn.clone());
+            let repository = create
+                .validate(url)
+                .map_err(crate::project::create::Error::from)?;
+
             if store.has_urn(&urn)? {
                 Err(Error::IdentityExists(urn))
             } else {
-                Ok(project::create(store, owner.clone(), payload, delegations)?)
+                Ok((
+                    repository,
+                    project::create(store, owner.clone(), payload, delegations)?,
+                ))
             }
         })
         .await??;
+
     log::debug!(
         "Created project '{}#{}'",
         project.urn(),
         project.subject().name
     );
-
-    // TODO(xla): Validate project working copy before creation and don't depend on URL.
-    let url = LocalUrl::from(project.urn());
-    let repository = create
-        .validate(url)
-        .map_err(crate::project::create::Error::from)?;
 
     let repo = repository
         .setup_repo(
