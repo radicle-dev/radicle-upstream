@@ -5174,9 +5174,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereum-input-data-decoder@github:NunoAlexandre/ethereum-input-data-decoder#e4e4cf4bf6f53ea525b85965e87fc07c635361e5":
+"ethereum-input-data-decoder@github:miguelmota/ethereum-input-data-decoder#3b89e05518f81c88f94902013e7b7aceb3c3e700":
   version: 0.3.1
-  resolution: "ethereum-input-data-decoder@https://github.com/NunoAlexandre/ethereum-input-data-decoder.git#commit=e4e4cf4bf6f53ea525b85965e87fc07c635361e5"
+  resolution: "ethereum-input-data-decoder@https://github.com/miguelmota/ethereum-input-data-decoder.git#commit=3b89e05518f81c88f94902013e7b7aceb3c3e700"
   dependencies:
     bn.js: ^4.11.8
     buffer: ^5.2.1
@@ -5187,7 +5187,7 @@ __metadata:
   bin:
     ethereum-input-data-decoder: bin/ethereum_input_data_decoder
     ethereum_input_data_decoder: bin/ethereum_input_data_decoder
-  checksum: 0d456ce9fe2fbabd6514acdb85ba170d387fbf8285151b872c791a5b1cb95db11281ae2de85e49ef18aeab713672ec96f87c6ba980e7f68c70d5db3843283596
+  checksum: fd3f28c78ad328be331729ee58bb3860aed6d1ce3a19c99ac7327cd8376330e9c7cf9ec69edaa68f7d2abfc70f668477b60f73e16eebadbedaebb20c4034b575
   languageName: node
   linkType: hard
 
@@ -10149,7 +10149,7 @@ __metadata:
     eslint-plugin-no-only-tests: ^2.4.0
     eslint-plugin-svelte3: =3.0.0
     eslint-svelte3-preprocess: =0.0.4
-    ethereum-input-data-decoder: "github:NunoAlexandre/ethereum-input-data-decoder#e4e4cf4bf6f53ea525b85965e87fc07c635361e5"
+    ethereum-input-data-decoder: "github:miguelmota/ethereum-input-data-decoder#3b89e05518f81c88f94902013e7b7aceb3c3e700"
     ethers: ^5.0.31
     exit-hook: ^2.2.0
     ganache-cli: ^6.12.2
