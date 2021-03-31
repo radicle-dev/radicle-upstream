@@ -29,7 +29,7 @@ pub use librad::{
     keys,
     net::{self, discovery},
     paths::Paths,
-    peer::PeerId,
+    peer::{conversion, PeerId},
     profile, signer,
 };
 
@@ -46,8 +46,6 @@ pub mod config;
 pub mod control;
 pub mod convert;
 pub mod git_helper;
-mod identifier;
-pub use identifier::Identifier;
 pub mod keystore;
 pub mod peer;
 pub use peer::{Control as PeerControl, Event as PeerEvent, Peer, RunConfig, Status as PeerStatus};

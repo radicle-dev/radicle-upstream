@@ -1,0 +1,15 @@
+diff --git a/node_modules/svelte-persistent-store/package.json b/node_modules/svelte-persistent-store/package.json
+index 115449e..2d2999d 100644
+--- a/node_modules/svelte-persistent-store/package.json
++++ b/node_modules/svelte-persistent-store/package.json
+@@ -11,10 +11,6 @@
+   "homepage": "https://github.com/andsala/svelte-persistent-store",
+   "main": "dist/index.js",
+   "module": "dist/index.mjs",
+-  "exports": {
+-    ".": "./dist/index.js",
+-    "./": "./dist/"
+-  },
+   "types": "dist/**",
+   "scripts": {
+     "build": "tsup src/local.ts src/session.ts src/index.ts --external svelte --format esm,cjs --inlineDynamicImports --dts",

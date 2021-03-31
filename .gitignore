@@ -5,6 +5,7 @@ dist
 native/bundle.js
 native/bundle.js.map
 public/bundle.*
+public/index.html
 public/twemoji
 cypress/videos
 cypress/screenshots
