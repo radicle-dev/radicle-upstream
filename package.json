@@ -70,7 +70,6 @@
   "devDependencies": {
     "@ethersproject/cli": "^5.0.9",
     "@tsconfig/svelte": "^1.0.10",
-    "@typechain/ethers-v5": "^6.0.0",
     "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.168",
     "@types/marked": "^1.2.2",

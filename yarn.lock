@@ -1342,17 +1342,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typechain/ethers-v5@npm:^6.0.0":
-  version: 6.0.5
-  resolution: "@typechain/ethers-v5@npm:6.0.5"
-  peerDependencies:
-    ethers: ^5.0.0
-    typechain: ^4.0.0
-    typescript: ">=4.0.0"
-  checksum: 94889c97b9f46815f02f704b00a023ea1c3a5d15cd0c4bc15465f1c2ec1095d23a0e26585485005e8e2627ec5454b511c5d9a4bd3efa0ff543f22999bcdc5151
-  languageName: node
-  linkType: hard
-
 "@types/babel__core@npm:^7.0.0, @types/babel__core@npm:^7.1.7":
   version: 7.1.12
   resolution: "@types/babel__core@npm:7.1.12"
@@ -10484,7 +10473,6 @@ __metadata:
     "@ethersproject/cli": ^5.0.9
     "@ethersproject/properties": ^5.0.7
     "@tsconfig/svelte": ^1.0.10
-    "@typechain/ethers-v5": ^6.0.0
     "@types/big.js": ^6.0.2
     "@types/jest": ^26.0.20
     "@types/lodash": ^4.14.168
