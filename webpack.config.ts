@@ -92,6 +92,7 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
     },
     plugins: [
       new webpack.ProvidePlugin({
+        Buffer: ["buffer", "Buffer"],
         process: "process",
       }),
       new HtmlWebpackPlugin({
