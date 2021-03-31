@@ -4,6 +4,7 @@ import * as childProcess from "child_process";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
 import * as fs from "fs-extra";
+import execa from "execa";
 
 import type {
   ConnectNodeOptions,
@@ -167,6 +168,18 @@ class Node {
     if (this.state.kind !== StateKind.Started) {
       throw new Error("Tried to onboard a node that wasn't started yet");
     }
+
+    const gitConfigSet = (name: string, value: string) =>
+      execa("git", ["config", "--global", name, value], {
+        env: { ...global.process.env, HOME: this.radHome },
+      });
+
+    await gitConfigSet(
+      "credential.helper",
+      `!f() { test "$1" = get && echo "password=${options.passphrase}"; }; f`
+    );
+    await gitConfigSet("user.name", options.handle);
+    await gitConfigSet("user.email", `${options.handle}@example.com`);
 
     const keystoreResponse = await fetch(
       `http://${HOST}:${this.id}/v1/keystore`,

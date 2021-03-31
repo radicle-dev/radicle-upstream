@@ -45,33 +45,18 @@ export const connectTwoNodes = (
   nodeManagerPlugin.connectNodes({ nodeIds: [node1.id, node2.id] });
 };
 
-interface createCommitOptions {
-  repositoryPath: string;
-  radHome: string;
-  subject: string;
-  passphrase: string;
-  name?: string;
-  email?: string;
-}
-
-const credentialsHelper = (passphrase: string) =>
-  `'!f() { test "$1" = get && echo "password=${passphrase}"; }; f'`;
-
-export const createCommit = (options: createCommitOptions): void => {
+// Executes a shell command in the context of a node session.
+//
+// In particular, `.gitconfig` is properly set for the node.
+export const exec = (cmd: string, session: NodeSession): void => {
   cy.exec(
     `set -euo pipefail
-export PATH=$PWD/target/release:$PATH
-cd ${options.repositoryPath}
-git commit --allow-empty -m "${options.subject}"
-git -c credential.helper=${credentialsHelper(options.passphrase)} push rad`,
+export PATH="$PWD/target/release:$PATH"
+${cmd}`,
     {
       env: {
-        HOME: options.radHome,
-        RAD_HOME: options.radHome,
-        GIT_AUTHOR_NAME: options.name || "John McPipefail",
-        GIT_AUTHOR_EMAIL: options.email || "john@mcpipefail.com",
-        GIT_COMMITTER_NAME: options.name || "John McPipefail",
-        GIT_COMMITTER_EMAIL: options.email || "john@mcpipefail.com",
+        HOME: session.radHome,
+        RAD_HOME: session.radHome,
       },
     }
   );

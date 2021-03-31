@@ -10768,6 +10768,7 @@ __metadata:
     eslint-plugin-svelte3: =3.0.0
     eslint-svelte3-preprocess: =0.0.4
     ethers: ^5.1.0
+    execa: ^5.0.0
     exit-hook: ^2.2.1
     ganache-cli: ^6.12.2
     html-webpack-plugin: ^5.3.1
