@@ -17,6 +17,14 @@ export interface Avatar {
 
 export interface Metadata {
   handle: string;
+  ethereum?: Ethereum;
+}
+
+// A claim over an Ethereum Address
+export interface Ethereum {
+  // TODO(nuno): make type-safe?
+  address: string;
+  expiration: Date;
 }
 
 export interface Identity {
