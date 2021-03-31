@@ -32,6 +32,7 @@ export interface Appearance {
 export enum Theme {
   Dark = "dark",
   Light = "light",
+  H4x0r = "h4x0r",
 }
 
 export interface CoCo {
@@ -51,6 +52,10 @@ export const themeOptions: Option<string>[] = [
   {
     title: "Dark",
     value: Theme.Dark,
+  },
+  {
+    title: "H4x0r",
+    value: Theme.H4x0r,
   },
 ];
 

@@ -78,3 +78,42 @@
     8px -5.39px 69.61px rgba(0, 255, 0, 0.2),
     8px 7.14244px 79.34px rgba(0, 0, 255, 0.4);
 }
+
+[data-theme="h4x0r"] {
+  --color-primary: #ff55ff;
+  --color-primary-level-1: #382847;
+  --color-primary-level-2: #62326d;
+  --color-primary-level-6: #ffeaff;
+  --color-secondary: #5555ff;
+  --color-secondary-level-1: #212847;
+  --color-secondary-level-2: #2c326d;
+  --color-secondary-level-6: #e3e3ff;
+  --color-tertiary: #55ffff;
+  --color-tertiary-level-1: #214047;
+  --color-tertiary-level-2: #2c686d;
+  --color-tertiary-level-6: #d4ffff;
+  --color-positive: #53db53;
+  --color-positive-level-1: #21402f;
+  --color-positive-level-2: #2c6837;
+  --color-positive-level-6: #e3ffe3;
+  --color-caution: #ffc555;
+  --color-caution-level-1: #2f312d;
+  --color-caution-level-2: #524a34;
+  --color-caution-level-6: #ffefcf;
+  --color-negative: #ff5555;
+  --color-negative-level-1: #38282f;
+  --color-negative-level-2: #623237;
+  --color-negative-level-6: #ffd4d4;
+  --color-foreground: #ffffff;
+  --color-foreground-level-1: #11ff11;
+  --color-foreground-level-2: #cdffcd;
+  --color-foreground-level-3: #00bb00;
+  --color-foreground-level-4: #008800;
+  --color-foreground-level-5: #005500;
+  --color-foreground-level-6: #002200;
+  --color-background: #021800;
+  --color-shadows: 0px -1px 1px rgba(255, 255, 255, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.25), -12px 12.4829px 90.82px rgba(255, 0, 0, 0.2),
+    8px -5.39px 69.61px rgba(0, 255, 0, 0.2),
+    8px 7.14244px 79.34px rgba(0, 0, 255, 0.4);
+}
