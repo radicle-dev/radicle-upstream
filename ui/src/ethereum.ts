@@ -71,3 +71,11 @@ export function toBaseUnit(n: ethers.BigNumber | Big): Big {
 export function fromBaseUnit(n: Big): ethers.BigNumber {
   return ethers.BigNumber.from(n.mul(TOKEN_DECIMALS).round().toString());
 }
+
+export function bytesToString(array: ethers.Bytes): string {
+  let string = "";
+  for (let i = 0; i < array.length; ++i) {
+    string += String.fromCharCode(array[i]);
+  }
+  return string;
+}
