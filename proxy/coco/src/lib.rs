@@ -45,7 +45,6 @@ pub use radicle_surf::{
 pub mod config;
 pub mod control;
 pub mod convert;
-pub mod git_helper;
 pub mod keystore;
 pub mod peer;
 pub use peer::{Control as PeerControl, Event as PeerEvent, Peer, RunConfig, Status as PeerStatus};

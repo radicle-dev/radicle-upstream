@@ -14,7 +14,7 @@ use tokio::{
 
 use coco::{convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, RunConfig};
 
-use crate::{config, context, http, notification, service, session};
+use crate::{config, context, git_helper, http, notification, service, session};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, FromArgs)]
@@ -54,7 +54,7 @@ struct Rigging {
 pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
-    coco::git_helper::setup(&proxy_path, &bin_dir)?;
+    git_helper::setup(&proxy_path, &bin_dir)?;
 
     let mut service_manager = service::Manager::new(args.test)?;
     let mut sighup = signal(SignalKind::hangup())?;
