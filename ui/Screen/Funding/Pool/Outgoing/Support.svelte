@@ -1,4 +1,5 @@
-<script lang="ts">
+<script lang="typescript">
+  import { onMount } from "svelte";
   import { Button, Icon, Input } from "../../../../DesignSystem/Primitive";
   import { Dai, Remote, TxButton } from "../../../../DesignSystem/Component";
 
@@ -55,16 +56,18 @@
   }
 
   let data: fundingPool.PoolData;
-  pool.data.subscribe(store => {
-    if (store.status === remote.Status.Success) {
-      data = store.data;
-      if (!editing) {
-        budget = data.weeklyBudget.toString();
-        receivers = new Map(data.receivers);
+  onMount(() =>
+    pool.data.subscribe(store => {
+      if (store.status === remote.Status.Success) {
+        data = store.data;
+        if (!editing) {
+          budget = data.weeklyBudget.toString();
+          receivers = new Map(data.receivers);
+        }
+        paused = data.balance.lte(data.weeklyBudget) || data.weeklyBudget.eq(0);
       }
-      paused = data.balance.lte(data.weeklyBudget) || data.weeklyBudget.eq(0);
-    }
-  });
+    })
+  );
 
   $: thereAreChanges =
     fundingPool.isValidBig(budget) &&
