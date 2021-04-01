@@ -1,18 +1,18 @@
-//! An `Identifier` is the combination of a user handle and the [`coco::PeerId`] that
+//! An `Identifier` is the combination of a user handle and the [`radicle_daemon::PeerId`] that
 //! identifies the user.
 
 use std::{fmt, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-use coco::{identities::Person, PeerId};
+use radicle_daemon::{identities::Person, librad::peer::conversion, PeerId};
 
 /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
 #[derive(Debug, thiserror::Error)]
 pub enum ParseError {
     /// Could not parse the URN portion of the identifier.
     #[error(transparent)]
-    Peer(#[from] coco::conversion::Error),
+    Peer(#[from] conversion::Error),
     /// The identifier contained more than one '@' symbol.
     #[error("shared identifier contains more than one '@' symbol")]
     AtSplitError,

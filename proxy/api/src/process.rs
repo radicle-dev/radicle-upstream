@@ -12,7 +12,9 @@ use tokio::{
     sync::{watch, RwLock},
 };
 
-use coco::{convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, RunConfig};
+use radicle_daemon::{
+    convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, PeerStatus, RunConfig,
+};
 
 use crate::{config, context, git_helper, http, notification, service, session};
 
@@ -41,7 +43,7 @@ struct Rigging {
     /// The context provided to the API
     ctx: context::Context,
     /// The [`Peer`] to run
-    peer: Option<Peer<coco::config::StreamDiscovery>>,
+    peer: Option<Peer<radicle_daemon::config::StreamDiscovery>>,
     /// Channel to receive updates to the seed nodes from the API
     seeds_sender: Option<watch::Sender<Vec<seed::Seed>>>,
 }
@@ -86,7 +88,9 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         let result = run_rigging(rigging, notified_restart).await;
         match result {
             // We've been shut down, ignore
-            Err(RunError::Peer(coco::peer::Error::Join(_))) | Ok(()) => log::debug!("aborted"),
+            Err(RunError::Peer(radicle_daemon::peer::Error::Join(_))) | Ok(()) => {
+                log::debug!("aborted")
+            },
             // Actual error, abort the process
             Err(e) => return Err(e.into()),
         };
@@ -98,7 +102,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
 enum RunError {
     /// The peer errored
     #[error(transparent)]
-    Peer(#[from] coco::peer::Error),
+    Peer(#[from] radicle_daemon::peer::Error),
 
     /// Warp errored
     #[error(transparent)]
@@ -164,7 +168,7 @@ async fn run_rigging(
 
                     let current_status = peer_control.current_status().await;
 
-                    if seeds == last_seeds && current_status != coco::PeerStatus::Offline {
+                    if seeds == last_seeds && current_status != PeerStatus::Offline {
                         continue;
                     }
 
@@ -235,14 +239,14 @@ async fn rig(
         let seeds = session_seeds(&store, &args.default_seeds).await?;
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
-        let config = coco::config::configure(
+        let config = radicle_daemon::config::configure(
             environment.coco_profile.paths().clone(),
             signer.clone(),
             args.peer_listen,
         );
-        let disco = coco::config::StreamDiscovery::new(seeds_receiver);
+        let disco = radicle_daemon::config::StreamDiscovery::new(seeds_receiver);
 
-        let peer = coco::Peer::new(config, disco, store.clone(), coco_run_config());
+        let peer = radicle_daemon::Peer::new(config, disco, store.clone(), coco_run_config());
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
@@ -284,7 +288,7 @@ async fn rig(
 async fn session_seeds(
     store: &kv::Store,
     default_seeds: &[String],
-) -> Result<Vec<coco::seed::Seed>, Box<dyn std::error::Error>> {
+) -> Result<Vec<radicle_daemon::seed::Seed>, Box<dyn std::error::Error>> {
     let seeds = session::seeds(store, default_seeds).await?;
     Ok(seed::resolve(&seeds).await.unwrap_or_else(|err| {
         log::error!("Error parsing seed list {:?}: {}", seeds, err);

@@ -6,9 +6,11 @@ use serde::{Deserialize, Serialize};
 
 use radicle_avatar as avatar;
 
-use coco::{
-    identities::payload::{ExtError, Person, PersonPayload},
+use radicle_daemon::{
+    identities::payload::{self, ExtError, PersonPayload},
+    net, project,
     signer::BoxedSigner,
+    state, PeerId, Person, Urn,
 };
 
 use crate::{
@@ -24,9 +26,9 @@ use std::convert::TryFrom;
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
     /// The Peer Id for the user.
-    pub peer_id: coco::PeerId,
+    pub peer_id: PeerId,
     /// The coco URN.
-    pub urn: coco::Urn,
+    pub urn: Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: Identifier,
     /// Bundle of user provided data.
@@ -35,8 +37,8 @@ pub struct Identity {
     pub avatar_fallback: avatar::Avatar,
 }
 
-impl From<(coco::PeerId, coco::Person)> for Identity {
-    fn from((peer_id, user): (coco::PeerId, coco::Person)) -> Self {
+impl From<(PeerId, Person)> for Identity {
+    fn from((peer_id, user): (PeerId, Person)) -> Self {
         let urn = user.urn();
         let handle = user.subject().name.to_string();
         let ethereum = match user.payload().get_ext::<EthereumClaimExtV1>() {
@@ -75,7 +77,7 @@ pub fn update_payload(
     mut payload: PersonPayload,
     metadata: Metadata,
 ) -> Result<PersonPayload, ExtError> {
-    payload.subject = Person {
+    payload.subject = payload::Person {
         name: metadata.handle.into(),
     };
     let ethereum_claim = metadata.ethereum.map(EthereumClaimExtV1::from);
@@ -86,7 +88,7 @@ impl TryFrom<Metadata> for PersonPayload {
     type Error = ExtError;
 
     fn try_from(metadata: Metadata) -> Result<Self, Self::Error> {
-        let person = Person {
+        let person = payload::Person {
             name: metadata.handle.into(),
         };
         let mut payload = Self::new(person);
@@ -130,10 +132,10 @@ impl From<Ethereum> for EthereumClaimExtV1 {
 ///
 /// # Errors
 pub async fn create(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
+    peer: &net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let user = coco::state::init_owner(peer, metadata).await?;
+    let user = state::init_owner(peer, metadata).await?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
@@ -141,20 +143,19 @@ pub async fn create(
 ///
 /// # Errors
 pub async fn update(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
+    peer: &net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let current_payload = coco::state::default_owner(peer)
+    let current_payload = state::default_owner(peer)
         .await?
-        .ok_or(coco::state::Error::MissingOwner)?
+        .ok_or(state::Error::MissingOwner)?
         .payload()
         .clone();
-    let new_payload =
-        update_payload(current_payload, metadata).map_err(coco::state::Error::from)?;
-    coco::state::update_owner_payload(peer, new_payload).await?;
-    let user = coco::state::default_owner(peer)
+    let new_payload = update_payload(current_payload, metadata).map_err(state::Error::from)?;
+    state::update_owner_payload(peer, new_payload).await?;
+    let user = state::default_owner(peer)
         .await?
-        .ok_or(coco::state::Error::MissingOwner)?;
+        .ok_or(state::Error::MissingOwner)?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
@@ -164,10 +165,10 @@ pub async fn update(
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub async fn get(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
-    id: coco::Urn,
+    peer: &net::peer::Peer<BoxedSigner>,
+    id: Urn,
 ) -> Result<Option<Identity>, error::Error> {
-    match coco::state::get_user(peer, id).await? {
+    match state::get_user(peer, id).await? {
         Some(user) => Ok(Some(
             (peer.peer_id(), user.into_inner().into_inner()).into(),
         )),
@@ -183,16 +184,14 @@ pub async fn get(
 ///
 ///  * If we cannot get the list of projects
 ///  * If we cannot get the tracked peers for a given project
-pub async fn list(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
-) -> Result<Vec<Identity>, error::Error> {
+pub async fn list(peer: &net::peer::Peer<BoxedSigner>) -> Result<Vec<Identity>, error::Error> {
     let mut users = vec![];
-    for project in coco::state::list_projects(peer).await? {
+    for project in state::list_projects(peer).await? {
         let project_urn = project.urn();
-        for peer in coco::state::tracked(peer, project_urn)
+        for peer in state::tracked(peer, project_urn)
             .await?
             .into_iter()
-            .filter_map(coco::project::Peer::replicated_remote)
+            .filter_map(project::Peer::replicated_remote)
         {
             let user = peer.into();
             if !users.contains(&user) {

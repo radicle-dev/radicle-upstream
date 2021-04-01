@@ -2,6 +2,8 @@
 
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use radicle_daemon::Urn;
+
 use crate::{context, http};
 
 /// Combination of all identity routes.
@@ -39,7 +41,7 @@ fn update_filter(
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<coco::Urn>()
+    path::param::<Urn>()
         .and(warp::path::end())
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
@@ -59,6 +61,8 @@ fn list_filter(
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
+
+    use radicle_daemon::Urn;
 
     use crate::{context, error, http, identity, session};
 
@@ -93,7 +97,7 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(id: coco::Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+    pub async fn get(id: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let id = identity::get(&ctx.peer, id.clone()).await?;
         Ok(reply::json(&id))
     }
@@ -114,6 +118,7 @@ mod test {
     use warp::{http::StatusCode, test::request};
 
     use radicle_avatar as avatar;
+    use radicle_daemon::state;
 
     use crate::{context, error, http, identity, session};
 
@@ -149,12 +154,12 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                coco::state::default_owner(&ctx.peer)
+                state::default_owner(&ctx.peer)
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                coco::state::get_user(&ctx.peer, urn.clone())
+                state::get_user(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -229,12 +234,12 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                coco::state::default_owner(&ctx.peer)
+                state::default_owner(&ctx.peer)
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                coco::state::get_user(&ctx.peer, urn.clone())
+                state::get_user(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -309,12 +314,12 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                coco::state::default_owner(&ctx.peer)
+                state::default_owner(&ctx.peer)
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                coco::state::get_user(&ctx.peer, urn.clone())
+                state::get_user(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -349,7 +354,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let user = coco::state::init_user(&ctx.peer, "cloudhead".to_string()).await?;
+        let user = state::init_user(&ctx.peer, "cloudhead".to_string()).await?;
 
         let res = request()
             .method("GET")
@@ -397,9 +402,7 @@ mod test {
             };
             let id = identity::create(&ctx.peer, metadata).await?;
 
-            let owner = coco::state::get_user(&ctx.peer, id.urn.clone())
-                .await?
-                .unwrap();
+            let owner = state::get_user(&ctx.peer, id.urn.clone()).await?.unwrap();
 
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
 

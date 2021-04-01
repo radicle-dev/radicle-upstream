@@ -3,6 +3,8 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use radicle_daemon::keystore;
+
 use crate::{context, http};
 
 /// Combination of all keystore filters.
@@ -73,7 +75,7 @@ mod handler {
 #[serde(rename_all = "camelCase")]
 pub struct UnsealInput {
     /// Passphrase to unlock the keystore.
-    passphrase: coco::keystore::SecUtf8,
+    passphrase: keystore::SecUtf8,
 }
 
 /// Bundled input data for `create` request.
@@ -81,7 +83,7 @@ pub struct UnsealInput {
 #[serde(rename_all = "camelCase")]
 pub struct CreateInput {
     /// Passphrase to encrypt the keystore with.
-    passphrase: coco::keystore::SecUtf8,
+    passphrase: keystore::SecUtf8,
 }
 
 /// Format the cookie header attributes.

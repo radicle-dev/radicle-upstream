@@ -1,17 +1,17 @@
 //! Datastructure and machinery to safely share the common dependencies across components.
 
-use std::{net, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 
 use data_encoding::HEXLOWER;
 use rand::Rng as _;
 use tokio::sync::RwLock;
 
-use coco::{signer::BoxedSigner, PeerControl};
+use radicle_daemon::{keystore, net, signer::BoxedSigner, PeerControl};
 
 use crate::service;
 
 #[cfg(test)]
-use coco::{signer, RunConfig};
+use radicle_daemon::{config, keys, signer, Peer, RunConfig};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -32,8 +32,8 @@ impl Context {
         }
     }
 
-    /// Returns the [`net::SocketAddr`] where the HTTP API is bound to.
-    pub const fn http_listen(&self) -> net::SocketAddr {
+    /// Returns the [`SocketAddr`] where the HTTP API is bound to.
+    pub const fn http_listen(&self) -> SocketAddr {
         match self {
             Self::Sealed(sealed) => sealed.http_listen,
             Self::Unsealed(unsealed) => unsealed.http_listen,
@@ -82,7 +82,7 @@ impl Context {
     /// * Errors if there is no key in the storage yet.
     pub async fn unseal_keystore(
         &mut self,
-        passphrase: coco::keystore::SecUtf8,
+        passphrase: keystore::SecUtf8,
     ) -> Result<String, crate::error::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.get(passphrase))
@@ -101,7 +101,7 @@ impl Context {
     /// Errors when the storage backend fails to persist the key or a key already exists.
     pub async fn create_key(
         &mut self,
-        passphrase: coco::keystore::SecUtf8,
+        passphrase: keystore::SecUtf8,
     ) -> Result<String, crate::error::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.create_key(passphrase))
@@ -112,7 +112,7 @@ impl Context {
         Ok(auth_token)
     }
 
-    fn keystore(&self) -> Arc<dyn coco::keystore::Keystore + Sync + Send> {
+    fn keystore(&self) -> Arc<dyn keystore::Keystore + Sync + Send> {
         match self {
             Self::Sealed(sealed) => sealed.keystore.clone(),
             Self::Unsealed(unsealed) => unsealed.keystore.clone(),
@@ -150,16 +150,17 @@ impl From<Sealed> for Context {
 /// Context for HTTP requests with access to coco peer APIs.
 #[derive(Clone)]
 pub struct Unsealed {
-    /// Handle to inspect state and perform actions on the currently running local [`coco::Peer`].
+    /// Handle to inspect state and perform actions on the currently running local
+    /// [`radicle_daemon::Peer`].
     pub peer_control: PeerControl,
-    /// [`coco::net::peer::Peer`] to operate on the local monorepo.
-    pub peer: coco::net::peer::Peer<BoxedSigner>,
+    /// [`net::peer::Peer`] to operate on the local monorepo.
+    pub peer: net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
     /// Flag to run the HTTP API on the specified address:port.
-    pub http_listen: net::SocketAddr,
+    pub http_listen: SocketAddr,
     /// Default seeds that will be written to the settings kv store.
     pub default_seeds: Vec<String>,
     /// Handle to control the service configuration.
@@ -167,7 +168,7 @@ pub struct Unsealed {
     /// Cookie set on unsealing the key store.
     pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
-    pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
+    pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -178,7 +179,7 @@ pub struct Sealed {
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
     /// Flag to run the HTTP API on the specified address:port.
-    pub http_listen: net::SocketAddr,
+    pub http_listen: SocketAddr,
     /// Default seeds that will be written to the settings kv store.
     pub default_seeds: Vec<String>,
     /// Handle to control the service configuration.
@@ -186,7 +187,7 @@ pub struct Sealed {
     /// Cookie set on unsealing the key store.
     pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
-    pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
+    pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
 }
 
 impl Unsealed {
@@ -203,13 +204,13 @@ impl Unsealed {
     ) -> Result<(Self, impl std::future::Future<Output = ()>), crate::error::Error> {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
-        let key = coco::keys::SecretKey::new();
+        let key = keys::SecretKey::new();
         let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
 
         let (peer_control, peer, run_handle) = {
-            let config = coco::config::default(signer, tmp_dir.path())?;
-            let disco = coco::config::static_seed_discovery(&[]);
-            let coco_peer = coco::Peer::new(config, disco, store.clone(), RunConfig::default());
+            let config = config::default(signer, tmp_dir.path())?;
+            let disco = config::static_seed_discovery(&[]);
+            let coco_peer = Peer::new(config, disco, store.clone(), RunConfig::default());
             let peer = coco_peer.peer.clone();
 
             let peer_control = coco_peer.control();
@@ -231,7 +232,7 @@ impl Unsealed {
                 default_seeds: vec![],
                 service_handle: service::Handle::dummy(),
                 auth_token: Arc::new(RwLock::new(None)),
-                keystore: Arc::new(coco::keystore::memory()),
+                keystore: Arc::new(keystore::memory()),
             },
             run_handle,
         ))
