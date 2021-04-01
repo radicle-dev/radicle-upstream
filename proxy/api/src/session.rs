@@ -83,7 +83,7 @@ pub fn initialize(
 pub fn update_identity(
     store: &kv::Store,
     identity: identity::Identity,
-) -> Result<Session, error::Error> {
+) -> Result<(), error::Error> {
     if let Some(mut session) = get_current(store)? {
         session.identity = identity;
         set_current(store, session)?
