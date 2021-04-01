@@ -39,16 +39,16 @@
     <p>1. Make your changes.</p>
     <p>
       2. Annotate a git tag with the title
-      <span class="typo-mono-bold">{`merge-request/<name>`}</span>. Be sure to
-      replace the
-      <span class="typo-mono-bold">{`<name>`}</span>
-      with your Merge Request title.`}
+      <span class="typo-mono-bold">{`merge-request/<tag-title>`}</span>. Be sure
+      to replace the
+      <span class="typo-mono-bold">{`<tag-title>`}</span>
+      with your Merge Request title.
     </p>
     <Copyable style="margin-bottom: 1rem;">
       <pre
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
-        {`git tag --annotate merge-request/<name>`}
+        {`git tag --annotate merge-request/<tag-title>`}
       </pre>
     </Copyable>
     <p>
