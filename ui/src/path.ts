@@ -2,7 +2,7 @@ import qs from "qs";
 import regexparam from "regexparam";
 
 import type { Urn } from "./urn";
-import type { MergeRequest } from "./source";
+import type { MergeRequest } from "./project/mergeRequest";
 
 export const blank = (): string => "/";
 export const settings = (): string => "/settings";
