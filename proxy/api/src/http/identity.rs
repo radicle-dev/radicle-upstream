@@ -87,6 +87,8 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         session::get_current(&ctx.store)?.ok_or(http::error::Routing::NoSession)?;
         let id = identity::update(&ctx.peer, metadata).await?;
+        session::update_identity(&ctx.store, id);
+
         Ok(reply::with_status(reply::json(&id), StatusCode::OK))
     }
 
