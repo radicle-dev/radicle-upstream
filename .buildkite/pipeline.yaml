@@ -1,6 +1,6 @@
 .test-linux: &test-linux
   label: "Test and package app on Linux"
-  command: ".buildkite/run.sh"
+  command: "ci/run.sh"
   agents:
     production: "true"
     platform: "linux"
@@ -17,7 +17,8 @@ steps:
     concurrency: 1
     concurrency_group: master
     <<: *test-linux
-  - branches: "!master"
+  # Build everything but `master` and pull requests from forks
+  - if: build.branch != "master" && build.pull_request.repository.fork != true
     <<: *test-linux
   - branches: "master"
     <<: *test-linux
