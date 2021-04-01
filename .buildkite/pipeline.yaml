@@ -27,7 +27,7 @@ steps:
       queue: agent-preview
   - label: "Test and package app on macOS"
     if: build.branch == 'master' || build.tag != null
-    command: ".buildkite/run.sh"
+    command: "ci/run.sh"
     agents:
       production: "false"
       platform: "macos"
