@@ -7,7 +7,11 @@
   export let mergeRequest: MergeRequest;
   export let defaultBranch: string;
 
-  const mergeInfo = mergeRequest.merged ? "Closed" : "Opened";
+  const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
+  const iconColor =
+    mergeRequest && mergeRequest.merged
+      ? "fill: var(--color-negative); margin-right: 0.5rem;"
+      : "fill: var(--color-positive); margin-right: 0.5rem;";
 </script>
 
 <style>
@@ -50,7 +54,7 @@
 
 <div class="merge-request-card">
   <div class="left">
-    <Icon.Revision style="margin-right: 0.5rem" />
+    <Icon.Revision style={iconColor} />
     <div>
       <div class="info-column">
         <div class="title-row">
