@@ -9,7 +9,6 @@
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
   import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
   import WrongNetwork from "../../DesignSystem/Component/Wallet/WrongNetwork.svelte";
-
   import Pool from "../Funding/Pool.svelte";
 
   $: wallet = $store;
