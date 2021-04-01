@@ -62,7 +62,7 @@ mod handler {
         owner: coco::LocalIdentity,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let meta = coco::control::replicate_platinum(
+        let meta = crate::control::replicate_platinum(
             &ctx.peer,
             &owner,
             &input.name,
@@ -74,7 +74,7 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ = coco::control::track_fake_peer(&ctx.peer, &meta, &user_handle);
+                let _ = crate::control::track_fake_peer(&ctx.peer, &meta, &user_handle);
             }
         }
         let branch = coco::state::get_branch(&ctx.peer, meta.urn(), None, None)

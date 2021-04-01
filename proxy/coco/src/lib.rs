@@ -24,6 +24,7 @@
 #![feature(duration_zero, hash_set_entry, never_type, or_patterns)]
 
 pub use librad::{
+    self,
     git::{self, identities::local::LocalIdentity, include, local::url::LocalUrl, Urn},
     identities::{self, Person, Project},
     keys,
@@ -43,9 +44,7 @@ pub use radicle_surf::{
 };
 
 pub mod config;
-pub mod control;
 pub mod convert;
-pub mod git_helper;
 pub mod keystore;
 pub mod peer;
 pub use peer::{Control as PeerControl, Event as PeerEvent, Peer, RunConfig, Status as PeerStatus};
