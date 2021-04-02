@@ -70,15 +70,16 @@ pub struct Metadata {
     pub ethereum: Option<Ethereum>,
 }
 
-impl Metadata {
-    pub fn update_payload(self, mut payload: PersonPayload) -> Result<PersonPayload, ExtError> {
-        payload.subject = Person {
-            name: self.handle.into(),
-        };
-        let ethereum_claim = self.ethereum.map(EthereumClaimExtV1::from);
-        payload.set_ext(ethereum_claim)?;
-        Ok(payload)
-    }
+// Update the given payload using the properties from the given metadata.
+pub fn update_payload(
+    mut payload: PersonPayload,
+    metadata: Metadata,
+) -> Result<PersonPayload, ExtError> {
+    payload.subject = Person {
+        name: metadata.handle.into(),
+    };
+    let ethereum_claim = metadata.ethereum.map(EthereumClaimExtV1::from);
+    Ok(payload.with_ext(ethereum_claim)?)
 }
 
 impl TryFrom<Metadata> for PersonPayload {
@@ -143,14 +144,13 @@ pub async fn update(
     peer: &coco::net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let old_payload = coco::state::default_owner(peer)
+    let current_payload = coco::state::default_owner(peer)
         .await?
         .ok_or(coco::state::Error::MissingOwner)?
         .payload()
         .clone();
-    let new_payload = metadata
-        .update_payload(old_payload)
-        .map_err(coco::state::Error::from)?;
+    let new_payload =
+        update_payload(current_payload, metadata).map_err(coco::state::Error::from)?;
     let user = coco::state::update_owner_payload(peer, new_payload).await?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
