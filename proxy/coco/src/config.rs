@@ -10,6 +10,7 @@ use futures::stream::BoxStream;
 use tokio::sync::watch;
 
 use librad::{
+    git::replication,
     net,
     net::discovery,
     paths,
@@ -63,7 +64,7 @@ where
             listen_addr,
             membership: net::protocol::membership::Params::default(),
             network: net::Network::default(),
-            replication: librad::git::replication::Config::default(),
+            replication: replication::Config::default(),
         },
         storage_pools: net::peer::PoolSizes::default(),
     }
