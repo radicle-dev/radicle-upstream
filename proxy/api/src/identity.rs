@@ -3,6 +3,7 @@
 use chrono::{DateTime, Utc};
 
 use serde::{Deserialize, Serialize};
+use std::convert::TryInto;
 
 use radicle_avatar as avatar;
 
@@ -70,18 +71,6 @@ pub struct Metadata {
     pub ethereum: Option<Ethereum>,
 }
 
-// Update the given payload using the properties from the given metadata.
-pub fn update_payload(
-    mut payload: PersonPayload,
-    metadata: Metadata,
-) -> Result<PersonPayload, ExtError> {
-    payload.subject = Person {
-        name: metadata.handle.into(),
-    };
-    let ethereum_claim = metadata.ethereum.map(EthereumClaimExtV1::from);
-    Ok(payload.with_ext(ethereum_claim)?)
-}
-
 impl TryFrom<Metadata> for PersonPayload {
     type Error = ExtError;
 
@@ -90,9 +79,9 @@ impl TryFrom<Metadata> for PersonPayload {
             name: metadata.handle.into(),
         };
         let mut payload = Self::new(person);
-        if let Some(ethereum) = metadata.ethereum {
-            payload.set_ext(EthereumClaimExtV1::from(ethereum))?;
-        };
+        let ethereum_claim = metadata.ethereum.map(EthereumClaimExtV1::from);
+        payload.set_ext(ethereum_claim)?;
+
         Ok(payload)
     }
 }
@@ -144,13 +133,10 @@ pub async fn update(
     peer: &coco::net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let current_payload = coco::state::default_owner(peer)
+    coco::state::default_owner(peer)
         .await?
-        .ok_or(coco::state::Error::MissingOwner)?
-        .payload()
-        .clone();
-    let new_payload =
-        update_payload(current_payload, metadata).map_err(coco::state::Error::from)?;
+        .ok_or(coco::state::Error::MissingOwner)?;
+    let new_payload: PersonPayload = metadata.try_into().map_err(coco::state::Error::from)?;
     let user = coco::state::update_owner_payload(peer, new_payload).await?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
