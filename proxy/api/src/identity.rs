@@ -75,9 +75,8 @@ impl Metadata {
         payload.subject = Person {
             name: self.handle.into(),
         };
-        if let Some(ethereum) = self.ethereum {
-            payload.set_ext(EthereumClaimExtV1::from(ethereum))?;
-        };
+        let ethereum_claim = self.ethereum.map(EthereumClaimExtV1::from);
+        payload.set_ext(ethereum_claim)?;
         Ok(payload)
     }
 }
