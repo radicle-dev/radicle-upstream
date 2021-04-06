@@ -7,7 +7,7 @@ jobs:
   build-linux:
     # If this was triggered by a pull request, only run it if it
     # originates from a fork.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != 'radicle-dev/upstream'
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != 'radicle-dev/radicle-upstream'
     runs-on: ubuntu-latest
     container:
       image: "gcr.io/opensourcecoin/radicle-upstream:0.7.0"
