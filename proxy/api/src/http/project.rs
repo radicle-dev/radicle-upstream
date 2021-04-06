@@ -343,12 +343,12 @@ mod test {
                 &ctx.default_seeds,
             )?;
 
-            let platinum_project = coco::control::replicate_platinum(
+            let platinum_project = crate::control::replicate_platinum(
                 &ctx.peer,
                 &owner,
                 "git-platinum",
                 "fixture data",
-                coco::control::default_branch(),
+                crate::control::default_branch(),
             )
             .await?;
             platinum_project.urn()
@@ -432,7 +432,7 @@ mod test {
                 name: "Upstream".to_string(),
             },
             description: "Desktop client for radicle.".into(),
-            default_branch: coco::control::default_branch(),
+            default_branch: crate::control::default_branch(),
         };
 
         let res = request()
@@ -494,11 +494,11 @@ mod test {
                 path: repo_path.clone(),
             },
             description: "Desktop client for radicle.".into(),
-            default_branch: coco::control::default_branch(),
+            default_branch: crate::control::default_branch(),
         };
 
         // Create the repository for which we'll create a project for
-        coco::control::clone_platinum(repo_path.clone())?;
+        crate::control::clone_platinum(repo_path.clone())?;
 
         let repo = git2::Repository::open(repo_path)?;
 
@@ -566,12 +566,12 @@ mod test {
                 },
             )
             .await?;
-            let platinum_project = coco::control::replicate_platinum(
+            let platinum_project = crate::control::replicate_platinum(
                 &ctx.peer,
                 &owner,
                 "git-platinum",
                 "fixture data",
-                coco::control::default_branch(),
+                crate::control::default_branch(),
             )
             .await?;
             platinum_project.urn()
@@ -608,7 +608,7 @@ mod test {
             },
         )
         .await?;
-        coco::control::setup_fixtures(&ctx.peer, &owner).await?;
+        crate::control::setup_fixtures(&ctx.peer, &owner).await?;
 
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.into_iter().next().unwrap();
@@ -617,7 +617,7 @@ mod test {
             .unwrap();
 
         let (peer_id, local_identity) =
-            coco::control::track_fake_peer(&ctx.peer, &coco_project, "rafalca").await;
+            crate::control::track_fake_peer(&ctx.peer, &coco_project, "rafalca").await;
         let user: identity::Identity = (peer_id, local_identity.into_inner().into_inner()).into();
 
         let res = request()
@@ -646,7 +646,7 @@ mod test {
         )
         .await?;
 
-        coco::control::setup_fixtures(&ctx.peer, &owner).await?;
+        crate::control::setup_fixtures(&ctx.peer, &owner).await?;
 
         let res = request()
             .method("GET")
@@ -676,7 +676,7 @@ mod test {
             },
         )
         .await?;
-        coco::control::setup_fixtures(&ctx.peer, &owner).await?;
+        crate::control::setup_fixtures(&ctx.peer, &owner).await?;
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.contributed.first().expect("no projects setup");
 
@@ -685,7 +685,7 @@ mod test {
             .path(&format!(
                 "/{}/track/{}",
                 project.urn,
-                coco::control::generate_peer_id()
+                crate::control::generate_peer_id()
             ))
             .reply(&api)
             .await;
@@ -710,7 +710,7 @@ mod test {
             },
         )
         .await?;
-        coco::control::setup_fixtures(&ctx.peer, &owner).await?;
+        crate::control::setup_fixtures(&ctx.peer, &owner).await?;
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.contributed.first().expect("no projects setup");
 
@@ -719,7 +719,7 @@ mod test {
             .path(&format!(
                 "/{}/untrack/{}",
                 project.urn,
-                coco::control::generate_peer_id()
+                crate::control::generate_peer_id()
             ))
             .reply(&api)
             .await;
@@ -744,7 +744,7 @@ mod test {
             },
         )
         .await?;
-        coco::control::setup_fixtures(&ctx.peer, &owner).await?;
+        crate::control::setup_fixtures(&ctx.peer, &owner).await?;
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.contributed.first().expect("no projects setup");
 
@@ -753,7 +753,7 @@ mod test {
             .path(&format!(
                 "/{}/track/{}",
                 project.urn,
-                coco::control::generate_peer_id()
+                crate::control::generate_peer_id()
             ))
             .reply(&api)
             .await;
@@ -767,7 +767,7 @@ mod test {
             .path(&format!(
                 "/{}/untrack/{}",
                 project.urn,
-                coco::control::generate_peer_id()
+                crate::control::generate_peer_id()
             ))
             .reply(&api)
             .await;

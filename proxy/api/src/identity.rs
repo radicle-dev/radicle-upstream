@@ -14,6 +14,7 @@ use coco::{
 use crate::{
     error,
     ethereum::{address::Address, claim_ext::V1 as EthereumClaimExtV1},
+    identifier::Identifier,
 };
 
 use std::convert::TryFrom;
@@ -27,7 +28,7 @@ pub struct Identity {
     /// The coco URN.
     pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
-    pub shareable_entity_identifier: coco::Identifier,
+    pub shareable_entity_identifier: Identifier,
     /// Bundle of user provided data.
     pub metadata: Metadata,
     /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
@@ -49,7 +50,7 @@ impl From<(coco::PeerId, coco::Person)> for Identity {
         Self {
             peer_id,
             urn: urn.clone(),
-            shareable_entity_identifier: coco::Identifier {
+            shareable_entity_identifier: Identifier {
                 handle: handle.clone(),
                 peer_id,
             },

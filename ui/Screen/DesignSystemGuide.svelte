@@ -7,6 +7,8 @@
   import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    BranchBox,
+    CompareBranches,
     Copyable,
     ConnectionStatusIndicator,
     EmptyState,
@@ -793,6 +795,15 @@
           active={1}
           options={segmentedControlOptions}
           on:select={() => console.log('event(select)')} />
+      </Swatch>
+
+      <Swatch>
+        <BranchBox name="branch-name" />
+      </Swatch>
+      <Swatch>
+        <CompareBranches
+          baseBranch="base-branch-name"
+          compareBranch="compare-branch-name" />
       </Swatch>
 
       <Swatch>

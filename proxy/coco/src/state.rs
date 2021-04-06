@@ -372,27 +372,30 @@ pub async fn init_project(
         name: Cstring::from(name),
     };
     let delegations = Indirect::from(owner.clone().into_inner().into_inner());
-    let project = peer
+    let (repository, project) = peer
         .using_storage(move |store| {
             let urn = project::urn(store, payload.clone(), delegations.clone())?;
+            let url = LocalUrl::from(urn.clone());
+            let repository = create
+                .validate(url)
+                .map_err(crate::project::create::Error::from)?;
+
             if store.has_urn(&urn)? {
                 Err(Error::IdentityExists(urn))
             } else {
-                Ok(project::create(store, owner.clone(), payload, delegations)?)
+                Ok((
+                    repository,
+                    project::create(store, owner.clone(), payload, delegations)?,
+                ))
             }
         })
         .await??;
+
     log::debug!(
         "Created project '{}#{}'",
         project.urn(),
         project.subject().name
     );
-
-    // TODO(xla): Validate project working copy before creation and don't depend on URL.
-    let url = LocalUrl::from(project.urn());
-    let repository = create
-        .validate(url)
-        .map_err(crate::project::create::Error::from)?;
 
     let repo = repository
         .setup_repo(
@@ -881,7 +884,7 @@ pub mod test {
 
     use librad::{git_ext::OneLevel, identities::payload::Person, keys::SecretKey, net, reflike};
 
-    use crate::{config, control, project, signer};
+    use crate::{config, project, signer};
 
     fn fakie_project(path: PathBuf) -> project::Create {
         project::Create {
@@ -903,6 +906,44 @@ pub mod test {
             description: "the people".to_string(),
             default_branch: OneLevel::from(reflike!("power")),
         }
+    }
+
+    fn fixtures(path: PathBuf) -> Vec<project::Create> {
+        vec![
+            project::Create {
+                repo: project::Repo::New {
+                    path: path.clone(),
+                    name: "monokel".to_string(),
+                },
+                description: "A looking glass into the future".to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+            project::Create {
+                repo: project::Repo::New {
+                    path: path.clone(),
+                    name: "Monadic".to_string(),
+                },
+                description: "Open source organization of amazing things.".to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+            project::Create {
+                repo: project::Repo::New {
+                    path: path.clone(),
+                    name: "open source coin".to_string(),
+                },
+                description: "Research for the sustainability of the open source community."
+                    .to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+            project::Create {
+                repo: project::Repo::New {
+                    path,
+                    name: "radicle".to_string(),
+                },
+                description: "Decentralized open source collaboration".to_string(),
+                default_branch: OneLevel::from(reflike!("mastor")),
+            },
+        ]
     }
 
     #[tokio::test]
@@ -987,9 +1028,9 @@ pub mod test {
         )
         .await?;
 
-        let _fixtures = control::setup_fixtures(&peer, &user)
-            .await
-            .expect("unable to setup fixtures");
+        for fixture in fixtures(repo_path.clone()) {
+            super::init_project(&peer, &user, fixture).await?;
+        }
 
         let kalt = super::init_user(&peer, "kalt".to_string()).await?;
         let fakie = super::init_project(&peer, &kalt, fakie_project(repo_path)).await?;

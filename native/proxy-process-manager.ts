@@ -49,10 +49,14 @@ export class ProxyProcessManager {
 
     this.childProcess = childProcess;
 
-    let stdoutBuf = "";
     // We know that `stdout` is set because of the `stdio` spawn options
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    childProcess.stdout!.on("data", (chunk: Buffer) => {
+    const stdout = childProcess.stdout!;
+
+    const stdoutDone = streamDone(stdout);
+
+    let stdoutBuf = "";
+    stdout.on("data", (chunk: Buffer) => {
       process.stdout.write(chunk);
       const split = chunk.toString("utf8").split("\n");
       split[0] = stdoutBuf + split[0];
@@ -62,9 +66,13 @@ export class ProxyProcessManager {
       }
     });
 
-    let stderrBuf = "";
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    childProcess.stderr!.on("data", (chunk: Buffer) => {
+    const stderr = childProcess.stderr!;
+
+    const stderrDone = streamDone(stderr);
+
+    let stderrBuf = "";
+    stderr.on("data", (chunk: Buffer) => {
       process.stderr.write(chunk);
       const split = chunk.toString("utf8").split("\n");
       split[0] = stderrBuf + split[0];
@@ -80,6 +88,8 @@ export class ProxyProcessManager {
         resolve([status, signal]);
       });
     });
+
+    await Promise.all([stdoutDone, stderrDone]);
 
     let output = Array.from(outputBuffer).join("\n");
     if (stderrBuf) {
@@ -102,4 +112,12 @@ export class ProxyProcessManager {
       this.childProcess.kill();
     }
   }
+}
+
+// Returns a promise that resolves when the stream ends or errors.
+function streamDone(stream: NodeJS.ReadableStream): Promise<void> {
+  return new Promise<void>(resolve => {
+    stream.on("end", () => resolve());
+    stream.on("error", () => resolve());
+  });
 }
