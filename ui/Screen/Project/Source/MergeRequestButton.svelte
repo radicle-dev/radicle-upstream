@@ -1,6 +1,7 @@
-<script>
+<script lang="typescript">
   import { Button, Icon } from "../../../DesignSystem/Primitive";
   import { Copyable, Overlay } from "../../../DesignSystem/Component";
+  import * as mergeRequest from "../../../src/project/mergeRequest";
 
   export let expanded = false;
   const hide = () => (expanded = false);
@@ -39,13 +40,13 @@
     <p>1. Make your changes.</p>
     <p>
       2. Create an annotated Git Tag that starts with
-      <span class="typo-mono-bold">merge-request/</span>
+      <span class="typo-mono-bold">${mergeRequest.tagPrefix}</span>
     </p>
     <Copyable style="margin-bottom: 1rem;">
       <pre
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
-        {`git tag --annotate merge-request/<name>`}
+        {`git tag --annotate ${mergeRequest.tagPrefix}/<name>`}
       </pre>
     </Copyable>
     <p>

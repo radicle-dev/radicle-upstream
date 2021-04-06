@@ -1,6 +1,7 @@
-<script lang="ts">
+<script lang="typescript">
   import { Button, Icon } from "../../../DesignSystem/Primitive";
   import { Copyable, Overlay } from "../../../DesignSystem/Component";
+  import * as mergeRequest from "../../../src/project/mergeRequest";
 
   export let id: string;
 
@@ -15,7 +16,7 @@
     toggleDropdown();
   };
   const caption = "Merge";
-  const instructions = `git merge merge-request/${id}`;
+  const instructions = `git merge ${mergeRequest.tagPrefix}${id}`;
 </script>
 
 <style>

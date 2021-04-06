@@ -19,6 +19,8 @@ export interface MergeRequestDetails {
   commits: source.GrouppedCommitsHistory;
 }
 
+export const tagPrefix = "radicle-merge-request/";
+
 export const getAll = (projectUrn: Urn): Promise<MergeRequest[]> => {
   return api.get<MergeRequest[]>(`source/merge_requests/${projectUrn}`);
 };
