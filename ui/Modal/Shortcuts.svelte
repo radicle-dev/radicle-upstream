@@ -1,5 +1,5 @@
-<script lang="ts">
-  import { isDev } from "../src/ipc";
+<script lang="typescript">
+  import { isDev } from "../src/config";
 
   import * as hotkeys from "../src/hotkeys";
   import { Variant as IllustrationVariant } from "../src/illustration";
@@ -8,7 +8,7 @@
 
   const shortcuts = [
     ...hotkeys.shortcuts,
-    ...(isDev() ? hotkeys.devShortcuts : []),
+    ...(isDev ? hotkeys.devShortcuts : []),
     hotkeys.escape,
   ];
 </script>

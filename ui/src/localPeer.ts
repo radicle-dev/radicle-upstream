@@ -1,8 +1,8 @@
-import { derived, get, writable, Readable } from "svelte/store";
+import { derived, writable, Readable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
 import type * as identity from "./identity";
-import { backendAddressStore } from "./api";
+import * as config from "./config";
 import * as notifiation from "./notification";
 import * as path from "./path";
 import * as remote from "./remote";
@@ -98,7 +98,7 @@ session.session.subscribe(sess => {
   ) {
     if (eventSource === null || eventSource.readyState === EventSource.CLOSED) {
       eventSource = new EventSource(
-        `http://${get(backendAddressStore)}/v1/notifications/local_peer_events`,
+        `http://${config.proxyAddress}/v1/notifications/local_peer_events`,
         { withCredentials: true }
       );
       eventSource.addEventListener("message", msg => {

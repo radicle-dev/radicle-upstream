@@ -1,8 +1,11 @@
-import type { ethers, BigNumber, ContractTransaction, Signer } from "ethers";
+import * as ethers from "ethers";
+import type { BigNumber, ContractTransaction, Signer } from "ethers";
 
 import Big from "big.js";
 
 import {
+  Claims,
+  Claims__factory as ClaimsFactory,
   Erc20Pool,
   Erc20Pool__factory as PoolFactory,
   ERC20,
@@ -10,6 +13,7 @@ import {
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 import * as ethereum from "../ethereum";
+import * as transaction from "../transaction";
 
 const addresses = {
   pool: {
@@ -27,20 +31,6 @@ const addresses = {
 };
 
 // Get the address of the Pool Contract for the given environment
-export function poolAddress(environment: ethereum.Environment): string {
-  switch (environment) {
-    case ethereum.Environment.Local:
-      return addresses.pool.local;
-    case ethereum.Environment.Ropsten:
-      return addresses.pool.ropsten;
-  }
-}
-
-export function pool(signer: Signer, address: string): PoolContract {
-  return new PoolContract(signer, address);
-}
-
-// Get the address of the Pool Contract for the given environment
 export function daiTokenAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
@@ -52,6 +42,71 @@ export function daiTokenAddress(environment: ethereum.Environment): string {
 
 export function daiToken(signer: Signer, address: string): ERC20 {
   return Erc20Factory.connect(address, signer);
+}
+
+// Get the address of the Claims Contract for the given environment
+export function claimsAddress(environment: ethereum.Environment): string {
+  switch (environment) {
+    case ethereum.Environment.Local:
+      return addresses.claims.local;
+    case ethereum.Environment.Ropsten:
+      return addresses.claims.ropsten;
+  }
+}
+
+export function claims(signer: Signer, address: string): ClaimsContract {
+  return new ClaimsContract(signer, address);
+}
+
+export class ClaimsContract {
+  contract: Claims;
+
+  constructor(signer: Signer, address: string) {
+    this.contract = ClaimsFactory.connect(address, signer);
+  }
+
+  async claim(root: string): Promise<void> {
+    const payload = ethers.utils.toUtf8Bytes(root);
+    return this.contract
+      .claim(0, payload)
+      .then((ctx: ContractTransaction) =>
+        transaction.add(transaction.claimRadicleIdentity(ctx, root))
+      );
+  }
+
+  // Fetch the latest Radicle Identity root claim by the given ethereum address.
+  // Return undefined if no claim is found.
+  async claimed(address: string): Promise<string | undefined> {
+    const filter = this.contract.filters.Claimed(address);
+    const events = await this.contract.queryFilter(filter, 0, "latest");
+    const last = events[events.length - 1];
+
+    if (last === undefined) {
+      return undefined;
+    }
+
+    const tx = await last.getTransaction();
+    const claimsFactory = new ClaimsFactory();
+    const inputs = claimsFactory.interface.decodeFunctionData("claim", tx.data);
+    const payload = ethers.utils.arrayify(inputs.payload);
+    const root = Buffer.from(payload).toString("utf-8");
+
+    return root;
+  }
+}
+
+// Get the address of the Pool Contract for the given environment
+export function poolAddress(environment: ethereum.Environment): string {
+  switch (environment) {
+    case ethereum.Environment.Local:
+      return addresses.pool.local;
+    case ethereum.Environment.Ropsten:
+      return addresses.pool.ropsten;
+  }
+}
+
+export function pool(signer: Signer, address: string): PoolContract {
+  return new PoolContract(signer, address);
 }
 
 // PoolContract is a wrapper type around the actual contract, `Erc20Pool`,

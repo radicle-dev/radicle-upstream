@@ -1,18 +1,18 @@
-//! An `Identifier` is the combination of a user handle and the [`librad::git::Urn`] that
+//! An `Identifier` is the combination of a user handle and the [`coco::PeerId`] that
 //! identifies the user.
 
 use std::{fmt, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-use librad::{identities::Person, peer};
+use coco::{identities::Person, PeerId};
 
 /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
 #[derive(Debug, thiserror::Error)]
 pub enum ParseError {
     /// Could not parse the URN portion of the identifier.
     #[error(transparent)]
-    Peer(#[from] peer::conversion::Error),
+    Peer(#[from] coco::conversion::Error),
     /// The identifier contained more than one '@' symbol.
     #[error("shared identifier contains more than one '@' symbol")]
     AtSplitError,
@@ -30,11 +30,11 @@ pub struct Identifier {
     /// The user's chosen handle.
     pub handle: String,
     /// The unique identifier of the user.
-    pub peer_id: peer::PeerId,
+    pub peer_id: PeerId,
 }
 
-impl From<(peer::PeerId, Person)> for Identifier {
-    fn from((peer_id, user): (peer::PeerId, Person)) -> Self {
+impl From<(PeerId, Person)> for Identifier {
+    fn from((peer_id, user): (PeerId, Person)) -> Self {
         Self {
             handle: user.subject().name.to_string(),
             peer_id,

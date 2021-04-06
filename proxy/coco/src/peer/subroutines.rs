@@ -2,10 +2,7 @@
 //! inputs, producing commands.
 
 use std::{
-    future::Future,
     net::SocketAddr,
-    pin::Pin,
-    task::{Context, Poll},
     time::{Duration, SystemTime},
 };
 
@@ -262,81 +259,58 @@ impl Subroutines {
             },
         }
     }
+
+    fn handle_input(&mut self, input: Input) {
+        log::debug!("handling subroutine input: {:?}", input);
+
+        let old_status = self.run_state.status.clone();
+
+        if let Some(event) = Event::maybe_from(&input) {
+            // Ignore if there are no subscribers.
+            self.subscriber.send(event).ok();
+        }
+
+        for cmd in self.run_state.transition(input) {
+            let task = self.spawn_command(cmd);
+
+            self.pending_tasks.push(task);
+        }
+
+        if old_status != self.run_state.status {
+            self.subscriber
+                .send(Event::StatusChanged {
+                    old: old_status,
+                    new: self.run_state.status.clone(),
+                })
+                .ok();
+        }
+    }
+
+    pub async fn run(mut self) -> Result<(), JoinError> {
+        #![allow(clippy::mut_mut)]
+        loop {
+            futures::select! {
+                maybe_result = self.pending_tasks.next() => {
+                    if let Some(Err(err)) = maybe_result {
+                        return Err(err)
+                    }
+                }
+                maybe_input = self.inputs.next() => {
+                    if let Some(input) = maybe_input {
+                        self.handle_input(input)
+                    } else {
+                        return Ok(())
+                    }
+                }
+            }
+        }
+    }
 }
 
 impl Drop for Subroutines {
     fn drop(&mut self) {
         for task in self.pending_tasks.iter_mut() {
             task.abort()
-        }
-    }
-}
-
-impl Future for Subroutines {
-    type Output = Result<(), JoinError>;
-
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        let mut tasks_initial_empty = true;
-
-        // Drain the task queue.
-        loop {
-            match self.pending_tasks.poll_next_unpin(cx) {
-                Poll::Ready(Some(Err(e))) => {
-                    log::warn!("error in spawned subroutine task: {:?}", e);
-                    return Poll::Ready(Err(e));
-                },
-                Poll::Ready(Some(Ok(()))) => continue,
-                // Either pending, or FuturesUnordered thinks it's done, but
-                // we'll enqueue new tasks below
-                Poll::Ready(None) => break,
-                Poll::Pending => {
-                    tasks_initial_empty = false;
-                    break;
-                },
-            }
-        }
-
-        // Drain all pending inputs, feed them to the [`RunState`] and execute the returned
-        // commands as async tasks.
-        loop {
-            match self.inputs.poll_next_unpin(cx) {
-                Poll::Ready(Some(input)) => {
-                    log::debug!(
-                        "handling subroutine input: {:?} {:?}",
-                        input,
-                        self.run_state.status
-                    );
-
-                    let old_status = self.run_state.status.clone();
-
-                    if let Some(event) = Event::maybe_from(&input) {
-                        // Ignore if there are no subscribers.
-                        self.subscriber.send(event).ok();
-                    }
-
-                    for cmd in self.run_state.transition(input) {
-                        let task = self.spawn_command(cmd);
-
-                        self.pending_tasks.push(task);
-                    }
-
-                    if old_status != self.run_state.status {
-                        self.subscriber
-                            .send(Event::StatusChanged {
-                                old: old_status,
-                                new: self.run_state.status.clone(),
-                            })
-                            .ok();
-                    }
-                },
-                Poll::Ready(None) => return Poll::Ready(Ok(())),
-                Poll::Pending => {
-                    if tasks_initial_empty && !self.pending_tasks.is_empty() {
-                        cx.waker().wake_by_ref()
-                    }
-                    return Poll::Pending;
-                },
-            }
         }
     }
 }

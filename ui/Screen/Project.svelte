@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { getContext as svelteGetContext } from "svelte";
+  import { onMount, getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as localPeer from "../src/localPeer";
@@ -26,7 +26,7 @@
   export let params: { urn: Urn };
 
   const { urn } = params;
-  const session: UnsealedSession = svelteGetContext("session");
+  const session: UnsealedSession = getContext("session");
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
@@ -44,14 +44,15 @@
     selectPeer(peer);
   };
 
-  localPeer.projectEvents.subscribe(event => {
-    if (!event) {
-      return;
-    }
-
-    if (event.urn === urn) {
-      refresh();
-    }
+  onMount(() => {
+    localPeer.projectEvents.subscribe(event => {
+      if (!event) {
+        return;
+      }
+      if (event.urn === urn) {
+        refresh();
+      }
+    });
   });
 
   // Initialise the screen by fetching the project and associated data.

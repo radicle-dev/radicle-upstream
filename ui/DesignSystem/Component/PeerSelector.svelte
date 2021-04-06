@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { isExperimental } from "../../src/ipc";
+  import { isExperimental } from "../../src/config";
   import { Role } from "../../src/project";
   import type { User } from "../../src/project";
   import { CSSPosition } from "../../src/style";
@@ -45,7 +45,7 @@
     hide();
     dispatch("select", peer);
   };
-  const showProfile = isExperimental();
+  const showProfile = isExperimental;
 </script>
 
 <style>

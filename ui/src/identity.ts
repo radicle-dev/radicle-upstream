@@ -15,11 +15,13 @@ export interface Avatar {
   emoji: string;
 }
 
+export interface Metadata {
+  handle: string;
+}
+
 export interface Identity {
   avatarFallback: Avatar;
-  metadata: {
-    handle: string;
-  };
+  metadata: Metadata;
   peerId: PeerId;
   shareableEntityIdentifier: string;
   urn: Urn;
@@ -29,13 +31,8 @@ export interface Identity {
 const creationStore = remote.createStore<Identity>();
 export const store = creationStore.readable;
 
-interface CreateInput {
-  handle: string;
-  passphrase: string;
-}
-
-export const createIdentity = (input: CreateInput): Promise<Identity> => {
-  return api.post<CreateInput, Identity>("identities", input);
+export const createIdentity = (metadata: Metadata): Promise<Identity> => {
+  return api.post<Metadata, Identity>("identities", metadata);
 };
 
 export const fetch = (urn: string): Promise<Identity> => {

@@ -1,0 +1,32 @@
+name: build
+on:
+  push:
+    branches: [master]
+  pull_request:
+jobs:
+  build-linux:
+    # If this was triggered by a pull request, only run it if it
+    # originates from a fork.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != 'radicle-dev/upstream'
+    runs-on: ubuntu-latest
+    container:
+      image: "gcr.io/opensourcecoin/radicle-upstream:0.7.0"
+    steps:
+      - uses: actions/checkout@master
+      - name: Cache Yarn
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/yarn
+            ~/cache/cypress
+          key: build-${{ runner.os }}-yarn-v1-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            build-${{ runner.os }}-yarn-v1-
+      - name: Cache Rust
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/cargo
+            ~/cache/proxy-target
+          key: build-${{ runner.os }}-rust-v1-${{ hashFiles('Cargo.lock') }}
+      - run: ci/run.sh

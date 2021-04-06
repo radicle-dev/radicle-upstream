@@ -42,12 +42,19 @@ export interface TxData {
 
 // The meta transactions that we provide to the user.
 type MetaTx =
+  | ClaimRadicleIdentity
   | Erc20Allowance
   | SupportOnboarding
   | TopUp
   | CollectFunds
   | UpdateSupport
   | Withdraw;
+
+interface ClaimRadicleIdentity {
+  kind: TxKind.ClaimRadicleIdentity;
+  // The claimed Radicle identity root
+  root: string;
+}
 
 interface Erc20Allowance {
   kind: TxKind.Erc20Allowance;
@@ -87,6 +94,7 @@ interface UpdateSupport {
 }
 
 export enum TxKind {
+  ClaimRadicleIdentity = "Claim Radicle Identity",
   Erc20Allowance = "ERC-20 Allowance",
   SupportOnboarding = "Support Onboarding",
   Withdraw = "Withdraw",
@@ -105,6 +113,13 @@ export enum TxStatus {
 }
 
 /* Smart constructors for `Tx` values */
+
+export function claimRadicleIdentity(
+  txc: ContractTransaction,
+  root: string
+): Tx {
+  return { ...txData(txc), kind: TxKind.ClaimRadicleIdentity, root };
+}
 
 export function erc20Allowance(txc: ContractTransaction): Tx {
   return { ...txData(txc), kind: TxKind.Erc20Allowance };
@@ -317,6 +332,8 @@ function direction(tx: Tx): Direction {
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
       return Direction.Incoming;
+
+    case TxKind.ClaimRadicleIdentity:
     case TxKind.Erc20Allowance:
     case TxKind.SupportOnboarding:
     case TxKind.TopUp:

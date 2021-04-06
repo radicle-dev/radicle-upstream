@@ -24,12 +24,13 @@
 #![feature(duration_zero, hash_set_entry, never_type, or_patterns)]
 
 pub use librad::{
+    self,
     git::{self, identities::local::LocalIdentity, include, local::url::LocalUrl, Urn},
     identities::{self, Person, Project},
     keys,
     net::{self, discovery},
     paths::Paths,
-    peer::PeerId,
+    peer::{conversion, PeerId},
     profile, signer,
 };
 
@@ -43,11 +44,7 @@ pub use radicle_surf::{
 };
 
 pub mod config;
-pub mod control;
 pub mod convert;
-pub mod git_helper;
-mod identifier;
-pub use identifier::Identifier;
 pub mod keystore;
 pub mod merge_request;
 pub mod peer;

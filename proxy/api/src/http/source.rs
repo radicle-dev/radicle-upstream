@@ -143,6 +143,7 @@ mod handler {
             Some(match settings.appearance.theme {
                 settings::Theme::Dark => "base16-ocean.dark",
                 settings::Theme::Light => "base16-ocean.light",
+                settings::Theme::H4x0r => "base16-ocean.h4x0r",
             })
         } else {
             None
@@ -857,12 +858,12 @@ mod test {
             },
         )
         .await?;
-        let platinum_project = coco::control::replicate_platinum(
+        let platinum_project = crate::control::replicate_platinum(
             &ctx.peer,
             &owner,
             "git-platinum",
             "fixture data",
-            coco::control::default_branch(),
+            crate::control::default_branch(),
         )
         .await?;
         Ok(platinum_project.urn())

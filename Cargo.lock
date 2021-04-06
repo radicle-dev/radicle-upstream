@@ -86,6 +86,7 @@ dependencies = [
  "pretty_assertions",
  "pretty_env_logger",
  "radicle-avatar",
+ "radicle-git-ext",
  "radicle-surf",
  "rand 0.7.3",
  "secstr",
@@ -1259,7 +1260,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8#b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=9467c364fa232f6563caf7ec123c43ade9c23284#9467c364fa232f6563caf7ec123c43ade9c23284"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -1951,7 +1952,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8#b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=9467c364fa232f6563caf7ec123c43ade9c23284#9467c364fa232f6563caf7ec123c43ade9c23284"
 dependencies = [
  "git2",
  "minicbor",
@@ -1966,7 +1967,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8#b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=9467c364fa232f6563caf7ec123c43ade9c23284#9467c364fa232f6563caf7ec123c43ade9c23284"
 dependencies = [
  "anyhow",
  "git2",
@@ -1999,7 +2000,7 @@ dependencies = [
 [[package]]
 name = "radicle-macros"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8#b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=9467c364fa232f6563caf7ec123c43ade9c23284#9467c364fa232f6563caf7ec123c43ade9c23284"
 dependencies = [
  "quote",
  "radicle-git-ext",
@@ -2009,7 +2010,7 @@ dependencies = [
 [[package]]
 name = "radicle-std-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8#b6f3ffcdfd7f4ade57f6c1aab2032faa96f808c8"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=9467c364fa232f6563caf7ec123c43ade9c23284#9467c364fa232f6563caf7ec123c43ade9c23284"
 
 [[package]]
 name = "radicle-surf"
