@@ -373,34 +373,6 @@ const mapRevisions = (
   return branches;
 };
 
-const mergeRequestCommitsStore = remote.createStore<source.GrouppedCommitsHistory>();
-export const mergeRequestCommits = mergeRequestCommitsStore.readable;
-
-export const fetchMergeRequestCommits = async (
-  mr: mergeRequest.MergeRequest
-): Promise<void> => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const {
-      data: { peer, project },
-    } = screen;
-
-    try {
-      const history = await mergeRequest.getCommits(peer.peerId, project, mr);
-
-      mergeRequestCommitsStore.success(source.groupCommitHistory(history));
-    } catch (err) {
-      mergeRequestCommitsStore.error(error.fromException(err));
-      error.show({
-        code: error.Code.CommitFetchFailure,
-        message: "Could not fetch merge request commits",
-        source: err,
-      });
-    }
-  }
-};
-
 const menuItems = (
   project: Project,
   history: source.GrouppedCommitsHistory,

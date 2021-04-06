@@ -42,7 +42,7 @@
     "/projects/:urn/source/commit/:hash": Commit,
     "/projects/:urn/source/commits": Commits,
     "/projects/:urn/source/merge_requests": MergeRequests,
-    "/projects/:urn/source/merge_request": router.wrap({
+    "/projects/:urn/source/merge_request/:peerId/:id": router.wrap({
       component: MergeRequest,
       props: {
         project,

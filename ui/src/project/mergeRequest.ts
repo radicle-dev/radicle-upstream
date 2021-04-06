@@ -16,21 +16,32 @@ export interface MergeRequest {
 
 export interface MergeRequestDetails {
   mergeRequest: MergeRequest;
-  commits: source.CommitsHistory;
+  commits: source.GrouppedCommitsHistory;
 }
 
 export const getAll = (projectUrn: Urn): Promise<MergeRequest[]> => {
   return api.get<MergeRequest[]>(`source/merge_requests/${projectUrn}`);
 };
 
-export const getDetails = (
-  projectUrn: Urn,
+export const getDetails = async (
+  myPeerId: string,
+  project: Project,
   peerId: string,
   id: string
 ): Promise<MergeRequestDetails> => {
-  return api.get<MergeRequestDetails>(`source/merge_request/${projectUrn}/`, {
-    query: { peerId, id },
+  const mergeRequests = await getAll(project.urn);
+  const mergeRequest = mergeRequests.find(mergeRequest => {
+    return mergeRequest.peerId === peerId, mergeRequest.id === id;
   });
+  if (!mergeRequest) {
+    throw new Error("Merge request not found");
+  }
+
+  const commits = await getCommits(myPeerId, project, mergeRequest);
+  return {
+    mergeRequest,
+    commits: source.groupCommitHistory(commits),
+  };
 };
 
 export const getCommits = async (

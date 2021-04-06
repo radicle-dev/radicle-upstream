@@ -1,8 +1,6 @@
-import qs from "qs";
 import regexparam from "regexparam";
 
 import type { Urn } from "./urn";
-import type { MergeRequest } from "./project/mergeRequest";
 
 export const blank = (): string => "/";
 export const settings = (): string => "/settings";
@@ -29,14 +27,10 @@ export const projectSourceCommits = (urn: Urn): string =>
 export const projectSourceMergeRequests = (urn: Urn): string =>
   `/projects/${urn}/source/merge_requests`;
 export const projectSourceMergeRequest = (
-  urn: Urn,
-  mergeRequest: MergeRequest,
-  defaultBranch: string
-): string =>
-  `/projects/${urn}/source/merge_request?${qs.stringify({
-    defaultBranch,
-    mergeRequest,
-  })}`;
+  projectUrn: Urn,
+  peerId: string,
+  id: string
+): string => `/projects/${projectUrn}/source/merge_request/${peerId}/${id}`;
 export const project = projectSourceFiles;
 
 export const designSystemGuide = (): string => "/design-system-guide";

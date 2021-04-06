@@ -23,8 +23,8 @@
     router.push(
       path.projectSourceMergeRequest(
         project.urn,
-        mergeRequest,
-        project.metadata.defaultBranch
+        mergeRequest.peerId,
+        mergeRequest.id
       )
     );
   };
