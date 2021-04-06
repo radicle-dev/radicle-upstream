@@ -29,12 +29,10 @@ context("p2p networking", () => {
   it("replicates a project from one node to another", () => {
     const maintainer = {
       handle: "rudolfs",
-      fullName: "Rūdolfs Ošiņš",
       passphrase: "1111",
     };
     const contributor = {
       handle: "abbey",
-      fullName: "Abbey Titcomb",
       passphrase: "2222",
     };
 
@@ -139,17 +137,16 @@ context("p2p networking", () => {
           cy.log("test commit replication from maintainer to contributor");
 
           cy.log("add a new commit to the maintainer's project working dir");
-          const projctPath = path.join(maintainerProjectsDir, projectName);
+          const projectPath = path.join(maintainerProjectsDir, projectName);
           const maintainerCommitSubject =
             "Commit replication from maintainer to contributor";
 
-          nodeManager.createCommit({
-            repositoryPath: projctPath,
-            radHome: maintainerNode.radHome,
-            subject: maintainerCommitSubject,
-            passphrase: maintainer.passphrase,
-            name: maintainer.fullName,
-          });
+          nodeManager.exec(
+            `cd ${projectPath}
+            git commit --allow-empty -m "${maintainerCommitSubject}"
+            git push rad`,
+            maintainerNode
+          );
 
           cy.log("refresh the UI for the new commit to show up");
           cy.get("body").type("{esc}");
@@ -201,13 +198,12 @@ context("p2p networking", () => {
             projectName
           );
 
-          nodeManager.createCommit({
-            repositoryPath: forkedProjectPath,
-            radHome: contributorNode.radHome,
-            subject: contributorCommitSubject,
-            passphrase: contributor.passphrase,
-            name: contributor.fullName,
-          });
+          nodeManager.exec(
+            `cd ${forkedProjectPath}
+            git commit --allow-empty -m "${contributorCommitSubject}"
+            git push rad`,
+            contributorNode
+          );
 
           cy.log("refresh the UI for the new commit to show up");
           cy.get("body").type("{esc}");
@@ -375,14 +371,14 @@ context("p2p networking", () => {
           );
           const mergeRequestTag = "feature-1";
 
-          nodeManager.createMergeRequest({
-            repositoryPath: forkedProjectPath,
-            radHome: contributorNode.radHome,
-            tag: mergeRequestTag,
-            subject: mergeRequestCommitSubject,
-            passphrase: contributor.passphrase,
-            name: contributor.fullName,
-          });
+          nodeManager.exec(
+            `cd ${forkedProjectPath}
+            git commit --allow-empty -m "${mergeRequestCommitSubject}"
+            git push rad
+            git tag -a --message "This is an awesome feature" radicle-merge-request/${mergeRequestTag} HEAD
+            git push --tag rad`,
+            contributorNode
+          );
 
           cy.log("refresh the UI for the merge request to show up");
           cy.get("body").type("{esc}");
