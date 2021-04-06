@@ -4,14 +4,10 @@
   import * as path from "../../../src/path";
   import type { MergeRequest } from "../../../src/project/mergeRequest";
   import {
-    Copyable,
     EmptyState,
     List,
     SegmentedControl,
   } from "../../../DesignSystem/Component";
-  import { Button } from "../../../DesignSystem/Primitive";
-  import type { Project } from "../../../src/project";
-
   import MergeRequestCard from "./MergeRequestCard.svelte";
 
   export let mergeRequests: MergeRequest[];
@@ -32,10 +28,6 @@
       )
     );
   };
-
-  let copyable: Copyable;
-  const instructions = `git tag --annotate merge-request/tag-name
-git push --tags rad`;
 
   const filterOptions = [
     {
@@ -104,20 +96,6 @@ git push --tags rad`;
   {:else}
     <EmptyState
       emoji="👯‍♀️"
-      text="There’s nothing here yet, get started by opening your first merge request.">
-      <Copyable bind:this={copyable} showIcon={false}>
-        <pre
-          class="typo-text-small-mono"
-          style="text-align: left; color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
-          {instructions}
-        </pre>
-      </Copyable>
-      <Button
-        variant="primary"
-        style="display: block; margin: 1rem auto 0;"
-        on:click={() => copyable.copy()}>
-        Copy
-      </Button>
-    </EmptyState>
+      text="There’s nothing to show here at the moment. If you’re looking for a peer’s Merge Request, be sure to add that peer’s Device ID as a remote." />
   {/if}
 </div>

@@ -33,7 +33,7 @@
     border-radius: 0.5rem;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
-    box-shadow: var(--elevation-medium);
+    box-shadow: var(--color-shadows);
     padding: 1rem;
     width: 25rem;
   }
