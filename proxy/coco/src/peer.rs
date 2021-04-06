@@ -136,6 +136,9 @@ where
     /// # Errors
     /// * Failed to accept peer connections
     /// * A subroutine panicked or was cancelled
+    ///
+    /// # Panics
+    /// * If the subroutine is gone when the protocol network stack is still setting up shop.
     pub async fn run(self) -> Result<(), Error> {
         #![allow(clippy::mut_mut)]
 

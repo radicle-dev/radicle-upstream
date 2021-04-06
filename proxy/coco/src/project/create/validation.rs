@@ -177,12 +177,12 @@ impl Repository {
                     return Err(Error::PathDoesNotExist(path));
                 }
 
-                let _ = path
+                let _components = path
                     .components()
                     .next_back()
                     .and_then(|component| component.as_os_str().to_str())
                     .map(ToString::to_string)
-                    .ok_or_else(|| Error::EmptyExistingPath(path.to_path_buf()))?;
+                    .ok_or_else(|| Error::EmptyExistingPath(path.clone()))?;
 
                 let repo = git2::Repository::open(path.clone())
                     .or_matches(git_ext::is_not_found_err, || Err(Error::NotARepo(path)))?;

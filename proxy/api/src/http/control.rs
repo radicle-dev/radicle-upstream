@@ -74,7 +74,7 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ = crate::control::track_fake_peer(&ctx.peer, &meta, &user_handle);
+                let _fake_peer = crate::control::track_fake_peer(&ctx.peer, &meta, &user_handle);
             }
         }
         let branch = coco::state::get_branch(&ctx.peer, meta.urn(), None, None)

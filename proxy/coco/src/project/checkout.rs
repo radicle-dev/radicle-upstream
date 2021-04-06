@@ -203,7 +203,7 @@ impl Ownership {
             };
             let mut rad = Remote::rad_remote(url, fetchspec);
             rad.save(&repo)?;
-            let _ = rad.push(
+            let _refs = rad.push(
                 open_storage,
                 &repo,
                 LocalPushspec::Matching {

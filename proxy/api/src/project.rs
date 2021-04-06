@@ -282,10 +282,7 @@ impl<'a> Iterator for Iter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.contributed
             .next()
-            .or_else(|| match self.tracked.next() {
-                Some(tracked) => Some(&tracked.0),
-                None => None,
-            })
+            .or_else(|| self.tracked.next().map(|tracked| &tracked.0))
     }
 }
 
@@ -379,7 +376,7 @@ pub async fn list_for_user(
                 peer,
                 project.urn(),
                 peer_id,
-                subject.default_branch.to_owned(),
+                subject.default_branch.clone(),
             )
             .await?;
             let stats =

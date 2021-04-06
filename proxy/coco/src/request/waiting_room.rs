@@ -538,7 +538,7 @@ mod test {
             ..Config::default()
         });
         let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
-        let _ = waiting_room.request(&urn, 0);
+        let _req = waiting_room.request(&urn, 0);
 
         // Initial schedule to be querying after it has been requested.
         let request = waiting_room.next_query(1);
@@ -567,7 +567,7 @@ mod test {
         });
         let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
 
-        let _ = waiting_room.request(&urn, ());
+        let _req = waiting_room.request(&urn, ());
         for _ in 0..NUM_QUERIES {
             waiting_room.queried(&urn, ())?;
         }
@@ -601,7 +601,7 @@ mod test {
             peers.push(PeerId::from(SecretKey::new()));
         }
 
-        let _ = waiting_room.request(&urn, ());
+        let _req = waiting_room.request(&urn, ());
         waiting_room.queried(&urn, ())?;
 
         for remote_peer in &peers {
@@ -647,7 +647,7 @@ mod test {
             peers.push(PeerId::from(SecretKey::new()));
         }
 
-        let _ = waiting_room.request(&urn, 0);
+        let _req = waiting_room.request(&urn, 0);
         waiting_room.queried(&urn, 1)?;
 
         for remote_peer in peers {
@@ -675,7 +675,7 @@ mod test {
         let peer = PeerId::from(SecretKey::new());
 
         // created
-        let _ = waiting_room.request(&urn, ());
+        let _req = waiting_room.request(&urn, ());
         waiting_room.canceled(&urn, ())?;
         assert_eq!(
             waiting_room.get(&urn),
@@ -744,7 +744,7 @@ mod test {
         let ready = waiting_room.find_by_state(RequestState::Cloned);
         assert_eq!(ready, None);
 
-        let _ = waiting_room.request(&urn, 0);
+        let _req = waiting_room.request(&urn, 0);
         waiting_room.queried(&urn, 0)?;
         waiting_room.found(&urn, remote_peer, 0)?;
         waiting_room.cloning(&urn, remote_peer, 0)?;
@@ -786,7 +786,7 @@ mod test {
             ..Config::default()
         });
         let urn: Urn = Urn::new(Oid::from_str("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")?);
-        let _ = waiting_room.request(&urn, 0);
+        let _req = waiting_room.request(&urn, 0);
 
         // Initial schedule to be querying after it has been requested.
         let request = waiting_room.next_query(1);

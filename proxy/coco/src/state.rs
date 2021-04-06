@@ -814,8 +814,8 @@ pub async fn find_default_branch(
         .expect("missing delegation");
 
     let (owner, remote) = tokio::join!(
-        get_branch(peer, urn.clone(), None, default_branch.to_owned()),
-        get_branch(peer, urn.clone(), remote, default_branch.to_owned())
+        get_branch(peer, urn.clone(), None, default_branch.clone()),
+        get_branch(peer, urn.clone(), remote, default_branch.clone())
     );
     match owner.or(remote) {
         Ok(reference) => Ok(reference),

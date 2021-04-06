@@ -21,7 +21,7 @@
     clippy::similar_names,
     clippy::too_many_lines
 )]
-#![feature(duration_zero, hash_set_entry, never_type, or_patterns)]
+#![feature(duration_zero, hash_set_entry, never_type)]
 
 pub use librad::{
     self,

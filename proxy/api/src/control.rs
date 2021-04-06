@@ -105,7 +105,7 @@ pub fn push_tags(
             Ok(())
         },
         Some(tags) => {
-            let _ = remote.push(storage, repo, LocalPushspec::Specs(tags));
+            let _refs = remote.push(storage, repo, LocalPushspec::Specs(tags));
             Ok(())
         },
     }

@@ -31,10 +31,6 @@ pub enum Error {
     #[error("keystore is sealed")]
     KeystoreSealed,
 
-    /// The passphrase was incorrect
-    #[error("passphrase incorrect")]
-    WrongPassphrase,
-
     /// The request auth token differs from the one in context
     #[error("invalid authentication token")]
     InvalidAuthCookie,
