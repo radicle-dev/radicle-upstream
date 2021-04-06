@@ -38,19 +38,21 @@
   <div class="request-dropdown" hidden={!expanded}>
     <p>1. Make your changes.</p>
     <p>
-      2. Annotate a git tag with the title
-      <span class="typo-mono-bold">{`merge-request/<tag-title>`}</span>. Be sure
-      to replace the
-      <span class="typo-mono-bold">{`<tag-title>`}</span>
-      with your Merge Request title.
+      2. Create an annotated Git Tag that starts with
+      <span class="typo-mono-bold">merge-request/</span>
     </p>
     <Copyable style="margin-bottom: 1rem;">
       <pre
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6); overflow-x: scroll; padding: .5rem .5rem .5rem .25rem">
-        {`git tag --annotate merge-request/<tag-title>`}
+        {`git tag --annotate merge-request/<name>`}
       </pre>
     </Copyable>
+    <p>
+      Be sure to replace
+      <span class="typo-mono-bold">{`<name>`}</span>
+      with the name of your merge request.
+    </p>
     <p>
       3. In the tag message, add a title and description and save. Then, push
       your changes.
