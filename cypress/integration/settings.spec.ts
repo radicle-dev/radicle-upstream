@@ -22,6 +22,11 @@ context("settings", () => {
       cy.get("[data-theme='light']").should("exist");
     });
 
+    it("can be switched to h4x0r", () => {
+      cy.get("button[value='h4x0r']").click();
+      cy.get("[data-theme='h4x0r']").should("exist");
+    });
+
     it("is persisted across app start", () => {
       cy.get("button[value='light']").click();
       cy.get("[data-theme='light']").should("exist");

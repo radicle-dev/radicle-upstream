@@ -31,6 +31,8 @@ pub enum Theme {
     Dark,
     /// A light theme.
     Light,
+    /// A h4x0r theme.
+    H4x0r,
 }
 
 impl Default for Theme {
