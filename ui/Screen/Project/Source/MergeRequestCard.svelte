@@ -10,8 +10,8 @@
   const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
   const iconColor =
     mergeRequest && mergeRequest.merged
-      ? "fill: var(--color-negative); margin-right: 0.5rem;"
-      : "fill: var(--color-positive); margin-right: 0.5rem;";
+      ? "var(--color-negative)"
+      : "var(--color-positive)";
 </script>
 
 <style>
@@ -54,7 +54,7 @@
 
 <div class="merge-request-card">
   <div class="left">
-    <Icon.Revision style={iconColor} />
+    <Icon.Revision style={`margin-right: 0.5rem; fill: ${iconColor};`} />
     <div>
       <div class="info-column">
         <div class="title-row">

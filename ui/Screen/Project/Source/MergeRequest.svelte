@@ -39,8 +39,8 @@
   const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
   const iconColor =
     mergeRequest && mergeRequest.merged
-      ? "fill: var(--color-negative);"
-      : "fill: var(--color-positive);";
+      ? "var(--color-negative);"
+      : "var(--color-positive);";
 
   fetchMergeRequestCommits(mergeRequest);
 </script>
@@ -92,7 +92,7 @@
   <Header.Back style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
     <div>
       <div class="title">
-        <Icon.Revision style={iconColor} />
+        <Icon.Revision style={`fill: ${iconColor};`} />
         {#if mergeRequest.title}
           <h2>{mergeRequest.title}</h2>
         {/if}
