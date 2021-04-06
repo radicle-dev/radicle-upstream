@@ -19,11 +19,10 @@
   export let commits: GrouppedCommitsHistory;
   export let session: UnsealedSession;
 
-  const mergeInfo = mergeRequest && mergeRequest.merged ? "Closed" : "Opened";
-  const iconColor =
-    mergeRequest && mergeRequest.merged
-      ? "var(--color-negative);"
-      : "var(--color-positive);";
+  const mergeInfo = mergeRequest.merged ? "Closed" : "Opened";
+  const iconColor = mergeRequest.merged
+    ? "var(--color-negative);"
+    : "var(--color-positive);";
 </script>
 
 <style>
