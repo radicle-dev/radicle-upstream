@@ -1,6 +1,6 @@
 import { Readable, derived, get } from "svelte/store";
 
-import * as api from "./api";
+import * as proxy from "./proxy";
 import * as error from "./error";
 import * as event from "./event";
 import type * as identity from "./identity";
@@ -111,14 +111,10 @@ type Msg = ClearCache | Fetch | UpdateSettings;
 
 const fetchSession = async (): Promise<void> => {
   try {
-    const ses = await api.withRetry(
-      () => api.get<SessionData>(`session`),
-      100,
-      50
-    );
+    const ses = await proxy.withRetry(() => proxy.client.sessionGet(), 100, 50);
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
   } catch (err) {
-    if (err instanceof api.ResponseError) {
+    if (err instanceof proxy.ResponseError) {
       if (err.response.status === 404) {
         sessionStore.success({ status: Status.NoSession });
         return;
@@ -143,7 +139,7 @@ const fetchSession = async (): Promise<void> => {
  */
 export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
-    await api.set<unknown>(`keystore/unseal`, { passphrase });
+    await proxy.client.keyStoreUnseal({ passphrase });
   } catch (err) {
     error.show({
       code: error.Code.KeyStoreUnsealFailure,
@@ -158,13 +154,13 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
   return true;
 };
 
-export const createKeystore = (passphrase: string): Promise<null> => {
-  return api.set<unknown>(`keystore`, { passphrase });
+export const createKeystore = (passphrase: string): Promise<void> => {
+  return proxy.client.keyStoreCreate({ passphrase });
 };
 
 const updateSettings = async (settings: Settings): Promise<void> => {
   try {
-    await api.set<Settings>(`session/settings`, settings);
+    await proxy.client.sessionSettingsSet(settings);
   } catch (err) {
     error.show({
       code: error.Code.SessionSettingsUpdateFailure,

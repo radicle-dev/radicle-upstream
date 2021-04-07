@@ -1,42 +1,23 @@
-import * as api from "./api";
 import * as remote from "./remote";
-import type { Urn } from "./urn";
+import * as proxy from "./proxy";
+import type { Identity } from "./proxy/identity";
 
-// TYPES
+export type { Identity };
+
 // FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
 export type PeerId = string;
 
-export interface Avatar {
-  background: {
-    r: number;
-    g: number;
-    b: number;
-  };
-  emoji: string;
-}
-
-export interface Metadata {
-  handle: string;
-}
-
-export interface Identity {
-  avatarFallback: Avatar;
-  metadata: Metadata;
-  peerId: PeerId;
-  shareableEntityIdentifier: string;
-  urn: Urn;
-}
-
-// STATE
 const creationStore = remote.createStore<Identity>();
 export const store = creationStore.readable;
 
-export const createIdentity = (metadata: Metadata): Promise<Identity> => {
-  return api.post<Metadata, Identity>("identities", metadata);
+export const createIdentity = (
+  params: proxy.IdentityCreateParams
+): Promise<Identity> => {
+  return proxy.client.identityCreate(params);
 };
 
 export const fetch = (urn: string): Promise<Identity> => {
-  return api.get<Identity>(`identities/${urn}`);
+  return proxy.client.identityGet(urn);
 };
 
 // MOCK

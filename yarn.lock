@@ -10811,6 +10811,7 @@ __metadata:
     wait-on: ^5.3.0
     webpack: ^5.30.0
     webpack-cli: ^4.6.0
+    zod: ^1.11.13
   languageName: unknown
   linkType: soft
 
@@ -14181,5 +14182,12 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: 096c3b40beb2804659539be1605a35c58eb0c85285f94b77b3e924f42ee265c1a40bf9f4153770039517146b469a964d51742395f35ca8135fc9f7e4982b785d
+  languageName: node
+  linkType: hard
+
+"zod@npm:^1.11.13":
+  version: 1.11.13
+  resolution: "zod@npm:1.11.13"
+  checksum: 23b86e185a66b9703d656fe8fa78c3e559676cb993cb2c06d7190ab0b22a528033c74ff62591c1be7c551d947c403b4e46f4c6f7b62cd4b32497e54ec406d706
   languageName: node
   linkType: hard

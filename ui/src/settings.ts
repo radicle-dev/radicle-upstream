@@ -1,11 +1,15 @@
 import * as ethereum from "./ethereum";
 
-// TYPES
-export interface Settings {
-  appearance: Appearance;
-  coco: CoCo;
-  featureFlags: FeatureFlags;
-}
+import {
+  Settings,
+  Theme,
+  Appearance,
+  CoCo,
+  FeatureFlags,
+} from "./proxy/settings";
+
+export type { Settings, Appearance, CoCo, FeatureFlags };
+export { Theme };
 
 export const defaultSetttings = (): Settings => ({
   appearance: {
@@ -21,23 +25,6 @@ export const defaultSetttings = (): Settings => ({
     funding: false,
   },
 });
-
-export interface Appearance {
-  theme: Theme;
-  hints: {
-    showRemoteHelper: boolean;
-  };
-}
-
-export enum Theme {
-  Dark = "dark",
-  Light = "light",
-  H4x0r = "h4x0r",
-}
-
-export interface CoCo {
-  seeds: string[];
-}
 
 interface Option<T> {
   value: T;
@@ -58,10 +45,6 @@ export const themeOptions: Option<string>[] = [
     value: Theme.H4x0r,
   },
 ];
-
-export interface FeatureFlags {
-  funding: boolean;
-}
 
 export const featureFlagOptions: Option<boolean>[] = [
   {

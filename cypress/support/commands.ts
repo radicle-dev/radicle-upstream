@@ -1,11 +1,17 @@
 import * as uuid from "uuid";
 import * as path from "path";
 
-export const resetProxyState = (): Cypress.Chainable<void> =>
-  requestOk({ url: "http://localhost:17246/v1/control/reset" });
+import * as proxy from "../../ui/src/proxy";
 
-export const sealKeystore = (): Cypress.Chainable<void> =>
-  requestOk({ url: "http://localhost:17246/v1/control/seal" });
+const proxyClient = new proxy.Client("http://localhost:17246");
+
+export const resetProxyState = (): void => {
+  cy.then(() => proxyClient.control.reset());
+};
+
+export const sealKeystore = (): void => {
+  cy.then(() => proxyClient.control.seal());
+};
 
 export const restartAndUnlock = (): void => {
   sealKeystore();
@@ -58,60 +64,26 @@ export const createProjectWithFixture = (
   description = "Best project ever.",
   defaultBranch = "master",
   fakePeers: string[] = []
-): Cypress.Chainable<void> =>
-  requestOk({
-    url: "http://localhost:17246/v1/control/create-project",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+): void => {
+  cy.then(() => {
+    proxyClient.control.projectCreate({
       name,
       description,
       defaultBranch,
       fakePeers,
-    }),
+    });
   });
+};
 
 export const onboardUser = (
   handle = "secretariat"
 ): Cypress.Chainable<void> => {
-  requestOk({
-    url: "http://localhost:17246/v1/keystore",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      passphrase: "radicle-upstream",
-    }),
-  });
-  return requestOk({
-    url: "http://localhost:17246/v1/identities",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      handle,
-    }),
+  return cy.then(async () => {
+    await proxyClient.keyStoreCreate({ passphrase: "radicle-upstream" });
+    await proxyClient.identityCreate({ handle });
   });
 };
 
 export const metaKey = (): string => {
   return navigator.platform.includes("Mac") ? "meta" : "ctrl";
 };
-
-/**
- * Invokes `cy.request` and assert that the response status code is 2xx.
- */
-function requestOk(
-  opts: Partial<Cypress.RequestOptions> & { url: string }
-): Cypress.Chainable<void> {
-  return cy
-    .request(opts)
-    .then(response => {
-      expect(response.status).to.be.within(200, 299, "Failed response");
-    })
-    .wrap(undefined);
-}

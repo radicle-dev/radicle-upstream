@@ -16,7 +16,7 @@ interface Init extends Options {
 }
 
 export class ResponseError extends Error {
-  public response;
+  public response: Response;
   constructor(response: Response, body_: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body: any = body_;
