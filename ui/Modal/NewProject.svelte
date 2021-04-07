@@ -82,11 +82,13 @@
       });
     } catch (err) {
       push(path.profileProjects());
-      error.show({
-        code: error.Code.ProjectCreationFailure,
-        message: `Could not create project: ${err.message}`,
-        source: err,
-      });
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectCreationFailure,
+          message: `Could not create project: ${err.message}`,
+          source: err,
+        })
+      );
     } finally {
       dispatch("hide");
       loading = false;

@@ -129,12 +129,15 @@ export function build(
       await walletConnect.connect();
     } catch (e) {
       stateStore.set({ status: Status.NotConnected, error: e });
-      error.show({
-        code: error.Code.WalletConnectionFailure,
-        message: `Failed to connect wallet: ${e
-          .toString()
-          .replace("Error: ", "")}`,
-      });
+      error.show(
+        new error.Error({
+          code: error.Code.WalletConnectionFailure,
+          message: `Failed to connect wallet: ${e
+            .toString()
+            .replace("Error: ", "")}`,
+          source: error.fromJsError(e),
+        })
+      );
     }
     await initialize();
   }

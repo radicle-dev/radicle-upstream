@@ -1,18 +1,47 @@
+import * as svelteStore from "svelte/store";
+import * as lodash from "lodash";
+
 import * as notification from "./notification";
 import * as ipc from "./ipc";
-import * as svelteStore from "svelte/store";
 
-export interface Error {
+interface ErrorParams {
   // A unique code for easy identification of the error.
   code: Code;
   // Message that is displayed to the user if the error is shown.
   message: string;
+  // Arbitrary additional information associated with the error
+  details?: unknown;
+  // The underlying source of this error. This is usually another error
+  // that was thrown and is wrapped.
+  //
+  // The constructor calls `fromUnknown` on this value to set
+  // `Error.source`.
+  source?: unknown;
+}
+
+// An extension of the built-in JavaScript `Error` that includes more
+// contextual information.
+export class Error extends globalThis.Error {
+  // A unique code for easy identification of the error.
+  readonly code: Code;
+  // Message that is displayed to the user if the error is shown.
+  readonly message: string;
   // An optional stack trace
   stack?: string;
   // Arbitrary additional information associated with the error
-  details?: unknown;
+  readonly details?: unknown;
   // The error that caused this error
-  source?: Error;
+  readonly source?: Error;
+
+  constructor(params: ErrorParams) {
+    super(params.message);
+    this.message = params.message;
+    this.code = params.code;
+    this.details = params.details;
+    if (params.source) {
+      this.source = fromUnknown(params.source);
+    }
+  }
 }
 
 export enum Code {
@@ -43,31 +72,77 @@ export enum Code {
   CustomProtocolParseError = "CustomProtocolParseError",
 }
 
-// Turn a Javascript `Error` into our `Error`.
+// Turn a built-in Javascript `Error` into our `Error`.
 //
-// Uses the code `unknown-exception`.
-export const fromException = (exception: globalThis.Error): Error => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const details = Object.assign({}, exception) as any;
-  details.name = exception.name;
+// Uses the code `UnknownException`, assigns all properties of
+// `originalError` to `Error.details` and preserves the stacktrace.
+export const fromJsError = (
+  originalError: globalThis.Error,
+  code: Code = Code.UnknownException
+): Error => {
+  const details = Object.assign(
+    {
+      // `name` might only be defined on the prototype of
+      // `originalError` so we need to add it explicitly
+      name: originalError.name,
+    },
+    lodash.omit(originalError, ["message", "stack"])
+  );
 
-  let code = Code.UnknownException;
   if (details.name === "AbortError") {
     code = Code.RequestAbortError;
   }
 
-  return {
+  const error = new Error({
     code: code,
-    message: exception.message,
-    stack: exception.stack,
+    message: originalError.message,
     details,
-  };
+  });
+
+  error.stack = originalError.stack;
+
+  return error;
 };
 
-// Log an error to the console.
+// Creates an error from an unknown value. This is useful in
+// `try/catch` statements or `Promise.catch()` where nothing is known
+// about the error value.
+//
+// If `value` is already an instance of of `Error`, it is returned.
+//
+// If `value` is an instance of the built-in JavaScript `Error`, it is
+// converted with `fromJsError` using `fallbackCode` as `Error.code`.
+//
+// Otherwise, an error with the given fallback code and message is
+// created and `value` is assigned to `Error.details`.
+export function fromUnknown(
+  value: unknown,
+  fallbackCode: Code = Code.UnknownException,
+  fallbackMessage: string = "An unexpected error occured"
+): Error {
+  if (value instanceof Error) {
+    return value;
+  } else if (value instanceof globalThis.Error) {
+    return fromJsError(value, fallbackCode);
+  } else {
+    return new Error({
+      code: fallbackCode,
+      message: fallbackMessage,
+      details: value,
+    });
+  }
+}
+
+// Log an error to the console for inspection by developers.
 export const log = (error: Error): void => {
-  const { message, ...rest } = error;
-  console.error(message, rest);
+  const info: { details?: unknown; source?: Error } = {};
+  if (error.details) {
+    info.details = error.details;
+  }
+  if (error.source) {
+    info.source = error.source;
+  }
+  console.error(error, info);
 };
 
 // Show an error notification and log the error to the console
@@ -109,49 +184,28 @@ export const setFatal = (fatalError: FatalError): void => {
 };
 
 ipc.listenProxyError(proxyError => {
-  log({
-    code: Code.BackendTerminated,
-    message: "Proxy process exited unexpectedly",
-    details: { proxyError },
-  });
+  log(
+    new Error({
+      code: Code.BackendTerminated,
+      message: "Proxy process exited unexpectedly",
+      details: { proxyError },
+    })
+  );
   setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 if (!(window as any).Cypress) {
   window.addEventListener("unhandledrejection", ev => {
-    const code = Code.UnhandledRejection;
-    const message = "An unexpected error occured";
-    if (ev.reason instanceof globalThis.Error) {
-      show({
-        code,
-        message,
-        source: fromException(ev.reason),
-      });
-    } else {
-      show({
-        code,
-        message,
-        details: ev.reason,
-      });
-    }
+    ev.preventDefault();
+    show(fromUnknown(ev.reason, Code.UnhandledRejection));
   });
 
-  window.onerror = (
-    _event: unknown,
-    _source?: string,
-    _lineno?: number,
-    _colno?: number,
-    error?: globalThis.Error
-  ): void => {
-    if (error) {
-      show({
-        code: Code.UnhandledError,
-        message: "An unexpected error occured",
-        source: fromException(error),
-      });
-    }
-  };
+  window.addEventListener("error", ev => {
+    ev.preventDefault();
+    show(fromUnknown(ev.error, Code.UnhandledError));
+  });
 }
+
 // Value is `true` if there was a fatal error
 export const fatalError: svelteStore.Readable<FatalError | null> = fatalErrorWritable;

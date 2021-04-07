@@ -13,12 +13,12 @@ export const fetchProjects = (urn: string): void => {
   project
     .fetchUserList(urn)
     .then(projectsStore.success)
-    .catch((err: Error) => projectsStore.error(error.fromException(err)));
+    .catch(err => projectsStore.error(error.fromUnknown(err)));
 };
 
 export const fetchUser = (urn: string): void => {
   identity
     .fetch(urn)
     .then(userStore.success)
-    .catch((err: Error) => userStore.error(error.fromException(err)));
+    .catch(err => userStore.error(error.fromUnknown(err)));
 };

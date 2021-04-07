@@ -18,11 +18,13 @@ const handleMessage = (message: ipc.CustomProtocolInvocation): void => {
   );
 
   if (!match) {
-    error.show({
-      code: error.Code.CustomProtocolParseError,
-      message: "Could not parse the provided URL",
-      details: { url: message.url },
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.CustomProtocolParseError,
+        message: "Could not parse the provided URL",
+        details: { url: message.url },
+      })
+    );
 
     return;
   }
@@ -30,31 +32,37 @@ const handleMessage = (message: ipc.CustomProtocolInvocation): void => {
   const [namespace, version, urn] = match.slice(1);
 
   if (namespace !== "link") {
-    error.show({
-      code: error.Code.CustomProtocolUnsupportedNamespace,
-      message: `The custom protocol namespace "${namespace}" is not supported`,
-      details: { url: message.url },
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.CustomProtocolUnsupportedNamespace,
+        message: `The custom protocol namespace "${namespace}" is not supported`,
+        details: { url: message.url },
+      })
+    );
 
     return;
   }
 
   if (Number(version) !== 0) {
-    error.show({
-      code: error.Code.CustomProtocolUnsupportedVersion,
-      message: `The custom protocol version v${version} is not supported`,
-      details: { url: message.url },
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.CustomProtocolUnsupportedVersion,
+        message: `The custom protocol version v${version} is not supported`,
+        details: { url: message.url },
+      })
+    );
 
     return;
   }
 
   if (!urn) {
-    error.show({
-      code: error.Code.CustomProtocolParseError,
-      message: "The provided URL does not contain a Radicle ID",
-      details: { url: message.url },
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.CustomProtocolParseError,
+        message: "The provided URL does not contain a Radicle ID",
+        details: { url: message.url },
+      })
+    );
 
     return;
   }

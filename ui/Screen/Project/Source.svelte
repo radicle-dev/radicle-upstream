@@ -65,11 +65,13 @@
         ],
       });
     } catch (err) {
-      error.show({
-        code: error.Code.ProjectCheckoutFailure,
-        message: `Checkout failed: ${err.message}`,
-        source: err,
-      });
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectCheckoutFailure,
+          message: `Checkout failed: ${err.message}`,
+          source: err,
+        })
+      );
     } finally {
       screen.unlock();
     }

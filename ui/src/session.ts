@@ -101,11 +101,13 @@ const fetchSession = async (): Promise<void> => {
       }
     }
 
-    sessionStore.error({
-      code: error.Code.SessionFetchFailure,
-      message: "Failed to load the session",
-      source: error.fromException(err),
-    });
+    sessionStore.error(
+      new error.Error({
+        code: error.Code.SessionFetchFailure,
+        message: "Failed to load the session",
+        source: error.fromJsError(err),
+      })
+    );
   }
 };
 
@@ -118,11 +120,13 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await proxy.client.keyStoreUnseal({ passphrase });
   } catch (err) {
-    error.show({
-      code: error.Code.KeyStoreUnsealFailure,
-      message: `Could not unlock the session: ${err.message}`,
-      source: err,
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.KeyStoreUnsealFailure,
+        message: `Could not unlock the session: ${err.message}`,
+        source: err,
+      })
+    );
 
     return false;
   }
@@ -144,11 +148,13 @@ const setSettings = async (settings: Settings): Promise<void> => {
   try {
     await proxy.client.sessionSettingsSet(settings);
   } catch (err) {
-    error.show({
-      code: error.Code.SessionSettingsUpdateFailure,
-      message: `Failed to update settings: ${err.message}`,
-      source: error.fromException(err),
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.SessionSettingsUpdateFailure,
+        message: `Failed to update settings: ${err.message}`,
+        source: error.fromJsError(err),
+      })
+    );
     return;
   }
 
