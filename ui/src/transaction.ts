@@ -398,9 +398,9 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
     message = "an unkown transaction error occurred";
   }
 
-  return {
+  return new error.Error({
     code,
     message: `${label}: ${message}`,
-    stack: e.message,
-  };
+    source: error.fromJsError(e),
+  });
 }

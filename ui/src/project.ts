@@ -173,7 +173,7 @@ const update = (msg: Msg): void => {
       api
         .post<CreateInput, Project>(`projects`, msg.input)
         .then(creationStore.success)
-        .catch((err: Error) => creationStore.error(error.fromException(err)));
+        .catch(err => creationStore.error(error.fromUnknown(err)));
 
       break;
 
@@ -183,7 +183,7 @@ const update = (msg: Msg): void => {
       api
         .get<Projects>("projects/contributed")
         .then(projectsStore.success)
-        .catch((err: Error) => projectsStore.error(error.fromException(err)));
+        .catch(err => projectsStore.error(error.fromUnknown(err)));
 
       break;
 
@@ -192,7 +192,7 @@ const update = (msg: Msg): void => {
       source
         .getLocalState(msg.path)
         .then(localStateStore.success)
-        .catch((err: Error) => localStateStore.error(error.fromException(err)));
+        .catch(err => localStateStore.error(error.fromUnknown(err)));
       break;
   }
 };
@@ -315,11 +315,13 @@ const fetchBranches = async (path: string) => {
   try {
     state = await source.getLocalState(path);
   } catch (err) {
-    error.log({
-      code: error.Code.LocalStateFetchFailure,
-      message: err.message,
-      source: err,
-    });
+    error.log(
+      new error.Error({
+        code: error.Code.LocalStateFetchFailure,
+        message: err.message,
+        source: err,
+      })
+    );
     localStateError.set(err.message);
     return;
   }

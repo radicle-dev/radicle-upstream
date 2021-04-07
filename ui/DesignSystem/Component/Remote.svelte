@@ -24,11 +24,7 @@
     !!noErrorSlotProvided &&
     !disableErrorLogging
   ) {
-    error.show({
-      code: error.Code.RemoteStoreError,
-      message: storeValue.error.message,
-      source: storeValue.error,
-    });
+    error.show(storeValue.error);
   }
 
   $: data =
