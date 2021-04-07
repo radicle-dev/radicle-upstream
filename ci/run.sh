@@ -50,7 +50,7 @@ log-group-end
 
 log-group-start "Run proxy docs"
 (
-  export RUSTDOCFLAGS="-D intra-doc-link-resolution-failure"
+  export RUSTDOCFLAGS="-D broken-intra-doc-links"
   time cargo doc --workspace --no-deps --all-features --document-private-items
 )
 log-group-end
