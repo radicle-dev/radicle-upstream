@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.13...v0.2.0) (2021-04-08)
+
+
+### Features
+
+* **ci:** enable Github Actions for external PRs and master ([653337f](https://github.com/radicle-dev/radicle-upstream/commit/653337f6e5bc7028f2f6b6091d105526143b22c5)), closes [#1471](https://github.com/radicle-dev/radicle-upstream/issues/1471)
+* **proxy:** add PUT identity metadata endpoint ([f59c80b](https://github.com/radicle-dev/radicle-upstream/commit/f59c80b17d0eebd129b8e0b404052e35f1c1150b))
+* **proxy:** bump link dependencies ([cf70496](https://github.com/radicle-dev/radicle-upstream/commit/cf704961c91ba1c279e3e0ed454ddcf44dea448e))
+* **test:** reusable `nodeManager.exec` command ([3741682](https://github.com/radicle-dev/radicle-upstream/commit/3741682828c077675ae060ffc537c144c6073ba4))
+* **ui:** add ClaimsContract ([c2f7ed2](https://github.com/radicle-dev/radicle-upstream/commit/c2f7ed2ccf5263c8ae9f58a52e2e2b00d78ce4df))
+* **ui:** add new h4xor color theme ([e097dd7](https://github.com/radicle-dev/radicle-upstream/commit/e097dd715f18ae641b574e669d59c56f07a4ec96))
+* **ui:** design improvements from merge request work ([29703cd](https://github.com/radicle-dev/radicle-upstream/commit/29703cd8092b8420211960266b82d3dd8a5d1e4b))
+* **proxy**: raidcle-upstream upgrades involving radicle-link's `next` changes ([f0081b3](https://github.com/radicle-dev/radicle-upstream/commit/f0081b33bca6612fc7dbbea416a04e6f90c80b48))
+* **proxy**: log timestamps ([3f6bcc7](https://github.com/radicle-dev/radicle-upstream/commit/3f6bcc7b9e45711d04a52aea7cdf9bf86cd87409))
+
+
+### Bug Fixes
+
+* **build:** fix macOS notarization bundle identifier ([a0ed66e](https://github.com/radicle-dev/radicle-upstream/commit/a0ed66e30fdf0182b52db5e7030968ea9abf871b))
+* **build:** fix test:integration:debug script ([ddefd6f](https://github.com/radicle-dev/radicle-upstream/commit/ddefd6fb3959245099c4afcfbab8ab9021a5b2e3))
+* **build**: add 'Buffer' to webpack.ProvidePlugin list ([938f360](https://github.com/radicle-dev/radicle-upstream/commit/938f360666e3592c5e84cc2452b729d9d63cfe75))
+* **ci:** automatically clean cache when it is almost full ([6ec277f](https://github.com/radicle-dev/radicle-upstream/commit/6ec277fafc12fd5d5f1ab7287240a1d3e749833d))
+* **ci:** don’t clean free cache on mac agent ([1e02a7d](https://github.com/radicle-dev/radicle-upstream/commit/1e02a7d0bb278f6f39e2d14d87fe42169952bc12)), closes [#1707](https://github.com/radicle-dev/radicle-upstream/issues/1707)
+* **ci:** only run github ci for external contributors ([7bded01](https://github.com/radicle-dev/radicle-upstream/commit/7bded011b8ae8ae94332b5ab7abc6b526bd61773))
+* **ci:** replace deprecated rustdoc lint ([560a941](https://github.com/radicle-dev/radicle-upstream/commit/560a941622484a460a281d2f7e872c9c48e79ba1))
+* **ci:** use new ci script on mac os agent ([2d343f2](https://github.com/radicle-dev/radicle-upstream/commit/2d343f23de59650c97820d0bead065140bafb1a1))
+* **fmt:** replace deprecated rustfmt option ([7ddb73a](https://github.com/radicle-dev/radicle-upstream/commit/7ddb73a5c509def928e8f4dd6a7e854d01c417ed))
+* **ui:** don't leak store subscriptions ([99c55b6](https://github.com/radicle-dev/radicle-upstream/commit/99c55b6e79574e84b26cf707e0c7c042994a60d4))
+* **ui:** wait for process streams to end ([7b6340d](https://github.com/radicle-dev/radicle-upstream/commit/7b6340ded0892a3f83c627a0d7c03da41fed61b1)), closes [#1409](https://github.com/radicle-dev/radicle-upstream/issues/1409)
+* make reset script backwards compatible ([7be2cb4](https://github.com/radicle-dev/radicle-upstream/commit/7be2cb49a0a3e60af2bd4d1b0d8c446d5a96114d))
+
 ### [0.1.13](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.12...v0.1.13) (2021-03-23)
 
 
