@@ -74,6 +74,23 @@ pub fn initialize(
     Ok(session)
 }
 
+/// Update the current session with the given identity.
+/// Does nothing if there is no session yet.
+///
+/// # Errors
+///
+/// * Errors when we cannot write to the store.
+pub fn update_identity(
+    store: &kv::Store,
+    identity: identity::Identity,
+) -> Result<(), error::Error> {
+    if let Some(mut session) = get_current(store)? {
+        session.identity = identity;
+        set_current(store, session)?
+    }
+    Ok(())
+}
+
 /// Update the session settings. Does nothing if there is no session yet.
 ///
 /// # Errors
