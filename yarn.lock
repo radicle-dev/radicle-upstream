@@ -1589,7 +1589,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^14.14.37":
+"@types/node@npm:*, @types/node@npm:^14.14.37, @types/node@npm:^14.6.2":
   version: 14.14.37
   resolution: "@types/node@npm:14.14.37"
   checksum: 5e2d9baf7594ebacaf016716515f30de0765169412787f981481c2fb8b468923149bb9e2e3219ee672399811672ceddc339a7372a61cf15bc656836a5494d991
@@ -1600,13 +1600,6 @@ __metadata:
   version: 12.12.50
   resolution: "@types/node@npm:12.12.50"
   checksum: 02e4e057a353e61eb8b4146633cc766f932951bc11cff9707af03aca8eaf9813133bfca3f2d4b4329cb41a0b892698bf04a1fce1e134813bd8a00dd5b7d36288
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^12.0.12":
-  version: 12.20.4
-  resolution: "@types/node@npm:12.20.4"
-  checksum: 16d002434239f11379819fc3d2a85f0c2652cf9fb0dcaf581e8652b85aef3816bba915552388d7db72f4f6d079822ab0f16a571980eeedb2acceedf2a9e5c940
   languageName: node
   linkType: hard
 
@@ -5137,16 +5130,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^11.4.2":
-  version: 11.4.2
-  resolution: "electron@npm:11.4.2"
+"electron@npm:^12.0.2":
+  version: 12.0.2
+  resolution: "electron@npm:12.0.2"
   dependencies:
     "@electron/get": ^1.0.1
-    "@types/node": ^12.0.12
+    "@types/node": ^14.6.2
     extract-zip: ^1.0.3
   bin:
     electron: cli.js
-  checksum: ff7acad3fbae129b8f14c7b1e9cc4be03d2589ac60759cd312505336b7c0b2c35f0f7fac969781c000bebf6f9f70265420001ffa5bac18054d0407d4fe26e569
+  checksum: 77f69f651309151748913fe3b57bcfc82f814142d7ccc8f9157c2ba7647b08ab9ae7d38b3231075ecce348422f0ce4351879e5f0e76095a8c8c304d08c2983d0
   languageName: node
   linkType: hard
 
@@ -10759,7 +10752,7 @@ __metadata:
     chokidar: ^3.5.1
     crypto-browserify: ^3.12.0
     cypress: ^6.9.1
-    electron: ^11.4.2
+    electron: ^12.0.2
     electron-builder: ^22.10.5
     electron-notarize: ^1.0.0
     eslint: ^7.23.0
