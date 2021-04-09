@@ -6,10 +6,11 @@ context("project following", () => {
   beforeEach(() => {
     commands.resetProxyState();
     commands.onboardUser("cloudhead");
+    commands.createProjectWithFixture();
     cy.visit("./public/index.html");
   });
 
-  it("follows and unfollows", () => {
+  it("follows and unfollows with mouse click", () => {
     commands.pick("following-tab").click();
     commands.pick("primary-action").contains("Look for a project").click();
     // The extra whitespace is intentional to check that the input is
@@ -30,5 +31,36 @@ context("project following", () => {
       });
 
     commands.pick("empty-state").should("exist");
+  });
+
+  context("when the project is not yet followed", () => {
+    it("follows the project when the [enter] hotkey is pressed", () => {
+      commands.pick("sidebar", "search").click();
+      commands.pasteInto(["search-input"], `rad:git:${projectId}`);
+      cy.get("body").type("{enter}");
+      commands
+        .pickWithContent(["undiscovered-project"], projectId)
+        .should("exist");
+    });
+  });
+
+  context("when the project is already followed", () => {
+    it("opens the project when the [enter] hotkey is pressed", () => {
+      commands.pick("project-list-entry-platinum").click();
+      commands.pick("project-screen", "header", "urn").then(el => {
+        const urn = el.attr("title");
+        if (!urn) {
+          throw new Error("Could not find URN");
+        }
+        commands.pick("sidebar", "profile").click();
+        commands.pick("profile-screen").should("exist");
+
+        commands.pick("sidebar", "search").click();
+        commands.pick("search-input").type(urn);
+        cy.get("body").type("{enter}");
+
+        commands.pick("project-screen").should("exist");
+      });
+    });
   });
 });

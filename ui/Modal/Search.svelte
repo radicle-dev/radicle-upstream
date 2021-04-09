@@ -42,6 +42,8 @@
           navigateToProject(
             ($store as { status: remote.Status.Success; data: Project }).data
           );
+        } else {
+          follow();
         }
         break;
       case "Escape":
