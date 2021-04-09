@@ -65,8 +65,8 @@ export const createProjectWithFixture = (
   defaultBranch = "master",
   fakePeers: string[] = []
 ): void => {
-  cy.then(() => {
-    proxyClient.control.projectCreate({
+  cy.then(async () => {
+    await proxyClient.control.projectCreate({
       name,
       description,
       defaultBranch,
