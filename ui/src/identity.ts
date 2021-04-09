@@ -32,6 +32,7 @@ export const fallback: Identity = {
   },
   metadata: {
     handle: "cloudhead",
+    ethereum: null,
   },
   peerId: "hwd1yreyza9z77xzp1rwyxw9uk4kdrrzag5uybd7w1ihke18xxhxn6qu4oy",
   shareableEntityIdentifier:

@@ -22,6 +22,10 @@ export interface Identity {
   avatarFallback: Avatar;
   metadata: {
     handle: string;
+    ethereum: {
+      address: string;
+      expiration: string;
+    } | null;
   };
   peerId: string;
   shareableEntityIdentifier: string;
@@ -32,6 +36,12 @@ export const identitySchema: zod.ZodSchema<Identity> = zod.object({
   avatarFallback: avatarSchema,
   metadata: zod.object({
     handle: zod.string(),
+    ethereum: zod
+      .object({
+        address: zod.string(),
+        expiration: zod.string(),
+      })
+      .nullable(),
   }),
   peerId: zod.string(),
   shareableEntityIdentifier: zod.string(),
