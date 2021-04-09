@@ -8,6 +8,7 @@
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
+  import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
   export let identity: Identity;
 </script>
@@ -110,6 +111,14 @@
           size="regular"
           avatarFallback={identity.avatarFallback}
           variant="circle" />
+      </div>
+    </Tooltip>
+    <Tooltip value="Create an org">
+      <div
+        class="item indicator"
+        data-cy="add-org-btn"
+        on:click|stopPropagation={() => modal.toggle(path.createOrg())}>
+        <AddOrgButton />
       </div>
     </Tooltip>
   </div>

@@ -40,6 +40,7 @@ export const poolTopUp = (): string => "/funding/pool/top-up";
 export const poolWithdraw = (): string => "/funding/pool/withdraw";
 export const collectFunds = (): string => "/funding/pool/collect";
 export const transaction = (): string => "/transaction";
+export const createOrg = (): string => "/orgs/create";
 
 export const active = (
   path: string,

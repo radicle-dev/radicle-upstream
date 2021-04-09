@@ -41,6 +41,7 @@
   import ModalTopUp from "./Modal/Funding/Pool/TopUp.svelte";
   import ModalWithdraw from "./Modal/Funding/Pool/Withdraw.svelte";
   import ModalCollect from "./Modal/Funding/Pool/Collect.svelte";
+  import ModalOrgCreate from "./Modal/Orgs/Create.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -68,6 +69,7 @@
     "/funding/pool/collect": ModalCollect,
     "/funding/pool/withdraw": ModalWithdraw,
     "/funding/pool/top-up": ModalTopUp,
+    "/orgs/create": ModalOrgCreate,
     "/transaction": ModalTransaction,
   };
 
