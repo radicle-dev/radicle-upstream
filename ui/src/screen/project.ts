@@ -32,6 +32,7 @@ export const fetch = (projectUrn: Urn): void => {
     })
     .then(peers => {
       const peerSelection = filterPeers(peers);
+      throwUnlessPeersPresent(peerSelection, projectUrn);
       screenStore.success({
         peers,
         peerSelection,
@@ -63,10 +64,12 @@ export const fetchPeers = (): void => {
     project
       .fetchPeers(current.project.urn, request.signal)
       .then(peers => {
+        const filteredPeers = filterPeers(peers);
+        throwUnlessPeersPresent(filteredPeers, current.project.urn);
         screenStore.success({
           ...current,
           peers,
-          peerSelection: filterPeers(peers),
+          peerSelection: filteredPeers,
           requestInProgress: null,
         });
       })
@@ -96,14 +99,16 @@ export const refresh = (): void => {
 
     project
       .fetchPeers(urn, request.signal)
-      .then(peers =>
+      .then(peers => {
+        const filteredPeers = filterPeers(peers);
+        throwUnlessPeersPresent(filteredPeers, current.project.urn);
         screenStore.success({
           ...current,
           peers,
-          peerSelection: filterPeers(peers),
+          peerSelection: filteredPeers,
           requestInProgress: null,
-        })
-      )
+        });
+      })
       .catch(err => screenStore.error(error.fromException(err)));
   }
 };
@@ -285,4 +290,10 @@ const filterPeers = (peers: project.Peer[]): project.User[] => {
 
       return 0;
     });
+};
+
+const throwUnlessPeersPresent = (peers: project.User[], projectId: Urn) => {
+  if (peers.length === 0) {
+    throw new Error(`Project ${projectId} is missing peers`);
+  }
 };
