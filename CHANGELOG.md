@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.0...v0.2.1) (2021-04-12)
+
+
+### Features
+
+* **ui:** handle "enter" hotkey in search modal ([b8c4ad4](https://github.com/radicle-dev/radicle-upstream/commit/b8c4ad4afb781342c3446beebf57ee36e3f42b35))
+* **ui:** open Upstream via radicle:// ([#1652](https://github.com/radicle-dev/radicle-upstream/issues/1652)) ([1bcd941](https://github.com/radicle-dev/radicle-upstream/commit/1bcd9412fb5682cb4c37c90f663910d31bbb30bb))
+
+
+### Bug Fixes
+
+* **tests:** wait for test project to be created ([4b93e75](https://github.com/radicle-dev/radicle-upstream/commit/4b93e75d407be4093f0dde505171bcb1e4398dbf))
+* **ui:** parse ethereum field of identity in ui ([aefbaf4](https://github.com/radicle-dev/radicle-upstream/commit/aefbaf405044f2d515f6468bc690f7c5e0e528a4)), closes [#1756](https://github.com/radicle-dev/radicle-upstream/issues/1756) [#1712](https://github.com/radicle-dev/radicle-upstream/issues/1712)
+* **ui:** show an error when a project is missing peers ([9545069](https://github.com/radicle-dev/radicle-upstream/commit/95450696c21235d8cd33597a895808f4c1a3ac12))
+
 ## [0.2.0](https://github.com/radicle-dev/radicle-upstream/compare/v0.1.13...v0.2.0) (2021-04-08)
 
 
