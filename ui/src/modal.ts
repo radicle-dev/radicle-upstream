@@ -1,9 +1,8 @@
 import { derived, get, writable } from "svelte/store";
 
 type OnHide = () => void;
-const doNothing = () => {
-  /**/
-};
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const doNothing = () => {};
 
 type ModalOverlay =
   | { show: true; route: string; onHide: OnHide }
@@ -23,6 +22,10 @@ export const hide = (): void => {
   overlayStore.set({ show: false });
 };
 
+export const show = (route: string, onHide: OnHide = doNothing): void => {
+  overlayStore.set({ show: true, route, onHide });
+};
+
 export const toggle = (route: string, onHide: OnHide = doNothing): void => {
   const modal = get(store);
   if (modal.show && modal.route === route) {
@@ -30,5 +33,5 @@ export const toggle = (route: string, onHide: OnHide = doNothing): void => {
     return;
   }
 
-  overlayStore.set({ show: true, route, onHide });
+  show(route, onHide);
 };

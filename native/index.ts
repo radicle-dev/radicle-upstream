@@ -16,6 +16,7 @@ import {
   MainProcess,
   mainProcessMethods,
 } from "./ipc-types";
+import { handleCustomProtocolInvocation } from "./nativeCustomProtocolHandler";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -140,6 +141,18 @@ class WindowManager {
 
     this.window = window;
   }
+
+  focus() {
+    if (!this.window) {
+      return;
+    }
+
+    if (this.window.isMinimized()) {
+      this.window.restore();
+    }
+
+    this.window.focus();
+  }
 }
 
 const windowManager = new WindowManager();
@@ -230,27 +243,61 @@ app.on("will-quit", () => {
   proxyProcessManager.kill();
 });
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on("ready", () => {
-  proxyProcessManager.run().then(({ status, signal, output }) => {
+// Handle custom protocol on macOS
+app.on("open-url", (event, url) => {
+  event.preventDefault();
+  handleCustomProtocolInvocation(url, url => {
     windowManager.sendMessage({
-      kind: MainMessageKind.PROXY_ERROR,
-      data: {
-        status,
-        signal,
-        output,
-      },
+      kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+      data: { url },
+    });
+  });
+});
+
+if (app.requestSingleInstanceLock()) {
+  // Handle custom protocol on Linux when Upstream is already running
+  app.on("second-instance", (_event, argv, _workingDirectory) => {
+    handleCustomProtocolInvocation(argv[1], url => {
+      windowManager.focus();
+      windowManager.sendMessage({
+        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: { url },
+      });
     });
   });
 
-  if (isDev) {
-    setupWatcher();
-  }
+  // Handle custom protocol on Linux when Upstream is not running
+  handleCustomProtocolInvocation(process.argv[1], url => {
+    windowManager.sendMessage({
+      kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+      data: { url },
+    });
+  });
 
-  windowManager.open();
-});
+  // This method will be called when Electron has finished
+  // initialization and is ready to create browser windows.
+  // Some APIs can only be used after this event occurs.
+  app.on("ready", () => {
+    proxyProcessManager.run().then(({ status, signal, output }) => {
+      windowManager.sendMessage({
+        kind: MainMessageKind.PROXY_ERROR,
+        data: {
+          status,
+          signal,
+          output,
+        },
+      });
+    });
+
+    if (isDev) {
+      setupWatcher();
+    }
+
+    windowManager.open();
+  });
+} else {
+  app.quit();
+}
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {

@@ -7,6 +7,7 @@
   import type { Project } from "../src/project";
   import * as remote from "../src/remote";
   import {
+    inputStore,
     projectRequest as request,
     projectSearch as store,
     reset,
@@ -20,10 +21,9 @@
   import { FollowToggle, Remote } from "../DesignSystem/Component";
 
   let id: string;
-  let input: string = "";
 
   let value: string;
-  $: value = input.trim();
+  $: value = $inputStore.trim();
 
   const dispatch = createEventDispatcher();
   const urnValidation = urnValidationStore();
@@ -133,7 +133,7 @@
   <div class="search-bar">
     <Input.Text
       autofocus
-      bind:value={input}
+      bind:value={$inputStore}
       dataCy="search-input"
       inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0; box-shadow: var(--color-shadows);"
       on:keydown={onKeydown}

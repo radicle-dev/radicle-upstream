@@ -40,6 +40,14 @@
         "to": "assets"
       }
     ],
+    "protocols": [
+      {
+        "name": "radicle",
+        "schemes": [
+          "radicle"
+        ]
+      }
+    ],
     "linux": {
       "target": [
         "Appimage"

@@ -36,6 +36,11 @@ export enum Code {
   FailedOrRejectedTransaction = "FailedOrRejectedTransaction",
   UnkownTransactionFailure = "UnkownTransactionFailure",
   InsufficientGas = "InsufficientGas",
+
+  // Custom protocol error codes
+  CustomProtocolUnsupportedVersion = "CustomProtocolUnsupportedVersion",
+  CustomProtocolUnsupportedNamespace = "CustomProtocolUnsupportedNamespace",
+  CustomProtocolParseError = "CustomProtocolParseError",
 }
 
 // Turn a Javascript `Error` into our `Error`.
