@@ -101,7 +101,7 @@
       </Button>
       {#if $fatalError.kind === 'PROXY_EXIT' && $fatalError.data.output}
         <div class="proxy-log-container">
-          <code data-cy="proxy-log" class="proxy-log typo-mono-semi-bold">
+          <code data-cy="proxy-log" class="proxy-log typo-mono-bold">
             {$fatalError.data.output}
           </code>
           <Button

@@ -19,6 +19,10 @@ pub struct Settings {
 pub struct Appearance {
     /// Currently active color scheme.
     pub theme: Theme,
+    /// Currently active UI font.
+    pub ui_font: UIFont,
+    /// Currently active code font.
+    pub code_font: CodeFont,
     /// User dismissable hints.
     pub hints: Hints,
 }
@@ -38,6 +42,38 @@ pub enum Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self::Dark
+    }
+}
+
+/// uiFont schemes available.
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum UIFont {
+    /// The Inter font.
+    Inter,
+    /// The system font.
+    System,
+}
+
+impl Default for UIFont {
+    fn default() -> Self {
+        Self::Inter
+    }
+}
+
+/// codeFont schemes available.
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum CodeFont {
+    /// The Source Code font.
+    SourceCode,
+    /// The system font.
+    System,
+}
+
+impl Default for CodeFont {
+    fn default() -> Self {
+        Self::SourceCode
     }
 }
 
