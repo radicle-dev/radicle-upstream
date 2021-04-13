@@ -26,7 +26,10 @@
 {#if view.readme}
   <Readme content={view.readme.content} path={view.readme.path} />
 {:else if emptyRepo}
-  EMPTY REPO
+  <EmptyState
+    text="This project doesn't have any files yet."
+    emoji="👀"
+    style="height: 320px;" />
 {:else}
   <EmptyState
     text="This project doesn't have a README yet."
