@@ -61,14 +61,14 @@ where
         signer,
         protocol: net::protocol::Config {
             advertised_addrs: None,
-            fetch: Default::default(),
+            fetch: net::protocol::config::Fetch::default(),
             paths,
             listen_addr,
             membership: net::protocol::membership::Params::default(),
             network: net::Network::default(),
             replication: replication::Config::default(),
         },
-        storage: Default::default(),
+        storage: net::peer::config::Storage::default(),
     }
 }
 

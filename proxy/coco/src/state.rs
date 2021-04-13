@@ -168,10 +168,17 @@ where
                 remote_peer,
                 addr_hints,
             )
-            .build(&store)
-            .unwrap()
-            .unwrap();
-            replication::replicate(store, fetcher, config, Some(owner))
+            .build(store)?;
+
+            match fetcher {
+                Ok(fetcher) => {
+                    replication::replicate(store, fetcher, config, Some(owner)).map_err(Error::from)
+                },
+                Err(info) => Err(Error::FetchLocked {
+                    urn: info.urn,
+                    remote_peer: info.remote_peer,
+                }),
+            }
         })
         .await??)
 }
@@ -298,10 +305,17 @@ where
         .unwrap_or_else(|| peer.protocol_config().replication);
     peer.using_storage(move |store| {
         let fetcher = librad::git::storage::fetcher::PeerToPeer::new(urn, remote_peer, addr_hints)
-            .build(&store)
-            .unwrap()
-            .unwrap();
-        replication::replicate(store, fetcher, config, None)
+            .build(store)?;
+
+        match fetcher {
+            Ok(fetcher) => {
+                replication::replicate(store, fetcher, config, None).map_err(Error::from)
+            },
+            Err(info) => Err(Error::FetchLocked {
+                urn: info.urn,
+                remote_peer: info.remote_peer,
+            }),
+        }
     })
     .await?
     .map_err(Error::from)
@@ -348,10 +362,17 @@ where
         .using_storage(move |store| {
             let fetcher =
                 librad::git::storage::fetcher::PeerToPeer::new(urn, remote_peer, addr_hints)
-                    .build(&store)
-                    .unwrap()
-                    .unwrap();
-            replication::replicate(store, fetcher, config, None)
+                    .build(store)?;
+
+            match fetcher {
+                Ok(fetcher) => {
+                    replication::replicate(store, fetcher, config, None).map_err(Error::from)
+                },
+                Err(info) => Err(Error::FetchLocked {
+                    urn: info.urn,
+                    remote_peer: info.remote_peer,
+                }),
+            }
         })
         .await??)
 }

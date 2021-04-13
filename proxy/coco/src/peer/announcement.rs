@@ -16,6 +16,7 @@ const BUCKET_NAME: &str = "announcements";
 const KEY_NAME: &str = "latest";
 
 /// Announcement errors.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Failures from [`kv`].

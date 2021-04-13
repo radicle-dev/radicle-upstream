@@ -6,6 +6,7 @@ use librad::{
         Urn,
     },
     net,
+    peer::PeerId,
 };
 use radicle_surf::vcs::git::git2;
 use std::convert::Infallible;
@@ -13,6 +14,7 @@ use std::convert::Infallible;
 use crate::source;
 
 /// Errors that may occur when interacting with [`librad::net::peer::Peer`].
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// An error occurred while trying to create a working copy of a project.
@@ -22,6 +24,15 @@ pub enum Error {
     /// An error occurred while performing the checkout of a project.
     #[error(transparent)]
     Checkout(#[from] crate::project::checkout::Error),
+
+    /// Could not acquire the lock to replicate the identity.
+    #[error("a fetch is in progress for urn={urn}, remote={remote_peer}")]
+    FetchLocked {
+        /// The Urn we are fetching
+        urn: Urn,
+        /// The remote peer we are fetching from
+        remote_peer: PeerId,
+    },
 
     /// An error occurred when performing git operations.
     #[error(transparent)]
