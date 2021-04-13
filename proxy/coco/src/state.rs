@@ -163,14 +163,15 @@ where
     let owner = default_owner(peer).await?.ok_or(Error::MissingOwner)?;
     Ok(peer
         .using_storage(move |store| {
-            replication::replicate(
-                store,
-                config,
-                Some(owner),
+            let fetcher = librad::git::storage::fetcher::PeerToPeer::new(
                 urn.clone(),
                 remote_peer,
                 addr_hints,
             )
+            .build(&store)
+            .unwrap()
+            .unwrap();
+            replication::replicate(store, fetcher, config, Some(owner))
         })
         .await??)
 }
@@ -296,7 +297,11 @@ where
         .into()
         .unwrap_or_else(|| peer.protocol_config().replication);
     peer.using_storage(move |store| {
-        replication::replicate(store, config, None, urn, remote_peer, addr_hints)
+        let fetcher = librad::git::storage::fetcher::PeerToPeer::new(urn, remote_peer, addr_hints)
+            .build(&store)
+            .unwrap()
+            .unwrap();
+        replication::replicate(store, fetcher, config, None)
     })
     .await?
     .map_err(Error::from)
@@ -341,7 +346,12 @@ where
         .unwrap_or_else(|| peer.protocol_config().replication);
     Ok(peer
         .using_storage(move |store| {
-            replication::replicate(store, config, None, urn, remote_peer, addr_hints)
+            let fetcher =
+                librad::git::storage::fetcher::PeerToPeer::new(urn, remote_peer, addr_hints)
+                    .build(&store)
+                    .unwrap()
+                    .unwrap();
+            replication::replicate(store, fetcher, config, None)
         })
         .await??)
 }

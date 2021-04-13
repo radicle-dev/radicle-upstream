@@ -60,13 +60,15 @@ where
     net::peer::Config {
         signer,
         protocol: net::protocol::Config {
+            advertised_addrs: None,
+            fetch: Default::default(),
             paths,
             listen_addr,
             membership: net::protocol::membership::Params::default(),
             network: net::Network::default(),
             replication: replication::Config::default(),
         },
-        storage_pools: net::peer::PoolSizes::default(),
+        storage: Default::default(),
     }
 }
 
