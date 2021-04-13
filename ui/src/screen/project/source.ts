@@ -371,14 +371,12 @@ const menuItems = (
       icon: IconFile,
       title: "Files",
       href: path.projectSourceFiles(project.urn),
-      looseActiveStateMatching: true,
     },
     {
       icon: IconCommit,
       title: "Commits",
       counter: history.stats.commits,
       href: path.projectSourceCommits(project.urn),
-      looseActiveStateMatching: true,
     },
   ];
 };

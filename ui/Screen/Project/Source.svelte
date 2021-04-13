@@ -77,7 +77,7 @@
   const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
     if (
       item.title === "Files" &&
-      path.active(path.projectSourceFiles(project.urn), get(location), true)
+      get(location).startsWith(path.projectSourceFiles(project.urn))
     ) {
       selectPath("");
     }
