@@ -28,7 +28,7 @@
   }
 
   .item.active {
-    color: var(--color-secondary);
+    color: var(--color-primary);
   }
 
   .counter {
@@ -43,7 +43,7 @@
 <a data-cy={dataCy} {href} use:link on:click>
   {#if active}
     <div class="icon">
-      <svelte:component this={icon} style="fill: var(--color-secondary)" />
+      <svelte:component this={icon} style="fill: var(--color-primary)" />
     </div>
   {:else}
     <div class="icon">

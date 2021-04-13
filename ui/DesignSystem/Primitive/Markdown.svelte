@@ -98,7 +98,7 @@
 
   .markdown :global(a) {
     background-color: initial;
-    color: var(--color-secondary);
+    color: var(--color-primary);
     text-decoration: none;
   }
   .markdown :global(a:hover) {

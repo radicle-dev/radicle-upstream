@@ -300,24 +300,6 @@
         </tr>
         <tr>
           <td>
-            <Button variant="secondary">Secondary</Button>
-          </td>
-          <td>
-            <Button variant="secondary" disabled>Secondary</Button>
-          </td>
-          <td>
-            <Button icon={Icon.MagnifyingGlass} variant="secondary">
-              Secondary
-            </Button>
-          </td>
-          <td>
-            <Button icon={Icon.MagnifyingGlass} variant="secondary" disabled>
-              Secondary
-            </Button>
-          </td>
-        </tr>
-        <tr>
-          <td>
             <Button variant="vanilla">Vanilla</Button>
           </td>
           <td>

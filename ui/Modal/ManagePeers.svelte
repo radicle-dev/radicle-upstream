@@ -84,7 +84,6 @@
         <Button
           dataCy="follow-button"
           style="display: flex; align-self: flex-start;"
-          variant="secondary"
           disabled={!newPeer}
           on:click={() => submitPeer(project.urn)}>
           Add
