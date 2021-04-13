@@ -9,6 +9,7 @@
 
   export let commit: CommitHeader;
   export let view: Root;
+  export let emptyRepo: boolean;
 </script>
 
 <style>
@@ -24,6 +25,8 @@
 
 {#if view.readme}
   <Readme content={view.readme.content} path={view.readme.path} />
+{:else if emptyRepo}
+  EMPTY REPO
 {:else}
   <EmptyState
     text="This project doesn't have a README yet."

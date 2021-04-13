@@ -11,6 +11,7 @@
   import Root from "./FileView/Root.svelte";
 
   export let code: Readable<Code>;
+  export let tree: Readable<Tree>;
 
   const dispatch = createEventDispatcher();
   const onSelectCommit = ({ detail: sha1 }: { detail: string }) =>
@@ -25,7 +26,11 @@
   {#if view.kind === ViewKind.Blob}
     <Blob {view} on:root={onSelectRoot} on:select={onSelectCommit} />
   {:else if view.kind === ViewKind.Root}
-    <Root commit={$code.lastCommit} {view} on:select={onSelectCommit} />
+    <Root
+      emptyRepo={$tree.entries.length === 0}
+      commit={$code.lastCommit}
+      {view}
+      on:select={onSelectCommit} />
   {:else if view.kind === ViewKind.Error}
     <EmptyState
       emoji="👀"
