@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { push } from "svelte-spa-router";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onDestroy } from "svelte";
 
   import * as notification from "../src/notification";
   import * as path from "../src/path";
@@ -28,6 +28,10 @@
   const dispatch = createEventDispatcher();
   const urnValidation = urnValidationStore();
 
+  onDestroy(() => {
+    $inputStore = "";
+  });
+
   const navigateToProject = (project: Project) => {
     reset();
     push(path.project(project.urn));
@@ -53,7 +57,9 @@
     }
   };
   const follow = () => {
-    requestProject(value);
+    if ($urnValidation.status === ValidationStatus.Success) {
+      requestProject(value);
+    }
   };
 
   // Validate input entered, at the moment valid RadUrns are the only acceptable input.
@@ -150,6 +156,7 @@
     <Remote {store} let:data={project}>
       <div style="padding: 1.5rem;">
         <div
+          data-cy="project-name"
           class="header typo-header-3"
           on:click={_ev => navigateToProject(project)}>
           <span class="id">{project.metadata.name}</span>
