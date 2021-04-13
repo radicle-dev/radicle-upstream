@@ -4,6 +4,7 @@
 
   import { ViewKind } from "../../../src/screen/project/source";
   import type { Code, View } from "../../../src/screen/project/source";
+  import type { Tree } from "../../../src/source";
 
   import EmptyState from "../../../DesignSystem/Component/EmptyState.svelte";
 
