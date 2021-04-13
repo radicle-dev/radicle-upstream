@@ -104,7 +104,7 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={path.active(path.profile(), $location, true)}
+        class:active={$location.startsWith(path.profile())}
         on:click|stopPropagation={() => push(path.profileProjects())}>
         <Avatar
           size="regular"
@@ -127,7 +127,7 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={path.active(path.settings(), $location)}
+        class:active={$location.startsWith(path.settings())}
         on:click|stopPropagation={() => push(path.settings())}>
         <Icon.Settings />
       </div>

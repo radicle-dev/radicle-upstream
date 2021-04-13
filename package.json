@@ -180,7 +180,6 @@
     "pure-svg-code": "^1.0.6",
     "qs": "^6.10.1",
     "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=9fb23ac74a403b167a22513fc666779d871d292e",
-    "regexparam": "^1.3.0",
     "semver": "^7.3.5",
     "stream-browserify": "^3.0.0",
     "svelte-persistent-store": "^0.1.6",

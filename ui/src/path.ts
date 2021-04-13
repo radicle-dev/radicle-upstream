@@ -1,5 +1,3 @@
-import regexparam from "regexparam";
-
 import type { Urn } from "./urn";
 
 export const blank = (): string => "/";
@@ -40,11 +38,3 @@ export const poolTopUp = (): string => "/funding/pool/top-up";
 export const poolWithdraw = (): string => "/funding/pool/withdraw";
 export const collectFunds = (): string => "/funding/pool/collect";
 export const transaction = (): string => "/transaction";
-
-export const active = (
-  path: string,
-  location: string,
-  loose = false
-): boolean => {
-  return regexparam(path, loose).pattern.test(location);
-};
