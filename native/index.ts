@@ -16,7 +16,7 @@ import {
   MainProcess,
   mainProcessMethods,
 } from "./ipc-types";
-import { handleCustomProtocolInvocation } from "./nativeCustomProtocolHandler";
+import { parseRadicleUrl, throttled } from "./nativeCustomProtocolHandler";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -246,33 +246,43 @@ app.on("will-quit", () => {
 // Handle custom protocol on macOS
 app.on("open-url", (event, url) => {
   event.preventDefault();
-  handleCustomProtocolInvocation(url, url => {
-    windowManager.sendMessage({
-      kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-      data: { url },
+
+  const parsedUrl = parseRadicleUrl(url);
+  if (parsedUrl) {
+    throttled(() => {
+      windowManager.sendMessage({
+        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: { url: parsedUrl },
+      });
     });
-  });
+  }
 });
 
 if (app.requestSingleInstanceLock()) {
   // Handle custom protocol on Linux when Upstream is already running
   app.on("second-instance", (_event, argv, _workingDirectory) => {
-    handleCustomProtocolInvocation(argv[1], url => {
-      windowManager.focus();
-      windowManager.sendMessage({
-        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-        data: { url },
+    const parsedUrl = parseRadicleUrl(argv[1]);
+    if (parsedUrl) {
+      throttled(() => {
+        windowManager.focus();
+        windowManager.sendMessage({
+          kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+          data: { url: parsedUrl },
+        });
       });
-    });
+    }
   });
 
   // Handle custom protocol on Linux when Upstream is not running
-  handleCustomProtocolInvocation(process.argv[1], url => {
-    windowManager.sendMessage({
-      kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-      data: { url },
+  const parsedUrl = parseRadicleUrl(process.argv[1]);
+  if (parsedUrl) {
+    throttled(() => {
+      windowManager.sendMessage({
+        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: { url: parsedUrl },
+      });
     });
-  });
+  }
 
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
