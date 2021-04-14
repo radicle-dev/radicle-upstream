@@ -21,6 +21,7 @@
     RadicleId,
     FollowToggle,
   } from "../../DesignSystem/Component";
+  import { Button, Icon } from "../../DesignSystem/Primitive";
 
   const session: UnsealedSession = getContext("session");
   const onCancel = (urn: Urn): void => {
@@ -57,6 +58,14 @@
 
   .undiscovered-project:hover {
     background-color: var(--color-background);
+  }
+
+  .search-box {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
   }
 </style>
 
@@ -95,6 +104,20 @@
         </List>
       </div>
     {/if}
+
+    <div class="search-box">
+      <p style="color: var(--color-foreground-level-5);">
+        Follow a new project
+      </p>
+      <Button
+        on:click={() => {
+          modal.toggle(path.search());
+        }}
+        icon={Icon.MagnifyingGlass}
+        variant="outline">
+        Look for a project
+      </Button>
+    </div>
 
     <div slot="empty">
       <EmptyState
