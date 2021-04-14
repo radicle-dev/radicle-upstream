@@ -17,14 +17,14 @@ export enum Status {
   Failed = "FAILED", // Transaction failed
 }
 
-export const store: svelteStore.Readable<Status> = svelteStore.writable(
+export const store: svelteStore.Writable<Status> = svelteStore.writable(
   Status.Initial
 );
 
 export async function createOrg(
-  owner: ethers.Address,
+  owner: string,
   signer: ethers.Signer
-): void {
+): Promise<void> {
   const orgFactory = new ethers.Contract(
     addresses.orgFactory.ropsten,
     orgFactoryAbi,
