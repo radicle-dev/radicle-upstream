@@ -1,11 +1,11 @@
-<script>
+<script lang="typescript">
   import { fade, fly } from "svelte/transition";
 
-  import { withRetry } from "../src/api.ts";
-  import { State } from "../src/onboarding.ts";
-  import { createIdentity } from "../src/identity.ts";
-  import * as screen from "../src/screen.ts";
-  import * as session from "../src/session.ts";
+  import { withRetry } from "../src/api";
+  import { State } from "../src/onboarding";
+  import { createIdentity } from "../src/identity";
+  import * as screen from "../src/screen";
+  import * as session from "../src/session";
   import * as error from "../src/error";
 
   import Welcome from "./Onboarding/Welcome.svelte";
@@ -13,8 +13,8 @@
   import EnterPassphrase from "./Onboarding/EnterPassphrase.svelte";
   import Success from "./Onboarding/Success.svelte";
 
-  let identity;
-  let handle;
+  let peerId: string = "";
+  let handle: string | undefined;
   let state = State.Welcome;
   let createIdentityInProgress = false;
 
@@ -37,20 +37,25 @@
     session.fetch();
   };
 
-  const onCreateIdentity = async (handle, passphrase) => {
+  const onCreateIdentity = async (handle: string, passphrase: string) => {
     try {
       screen.lock();
       createIdentityInProgress = true;
       await session.createKeystore(passphrase);
       // Retry until the API is up
-      identity = await withRetry(() => createIdentity({ handle }), 100, 50);
+      const identity = await withRetry(
+        () => createIdentity({ handle }),
+        100,
+        50
+      );
+      peerId = identity.peerId;
       state = State.SuccessView;
     } catch (err) {
       animateBackward();
       state = State.EnterName;
       error.show(
         new error.Error({
-          code: "create-identity-failed",
+          code: error.Code.IdentityCreationFailure,
           message: `Could not create identity`,
           details: {
             handle,
@@ -116,6 +121,7 @@
             state = State.EnterName;
           }}
           on:next={event => {
+            // @ts-expect-error: the value of `state` guarantees that `handle` is defined
             onCreateIdentity(handle, event.detail);
           }} />
       </div>
@@ -123,7 +129,7 @@
   {:else if state === State.SuccessView}
     <div class="content" in:fly={{ y: inY }}>
       <div class="inner">
-        <Success peerId={identity.peerId} on:close={complete} />
+        <Success {peerId} on:close={complete} />
       </div>
     </div>
   {/if}
