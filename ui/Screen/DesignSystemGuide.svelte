@@ -154,7 +154,7 @@
   <div class="layout">
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
-    <Section title="Colors" subTitle="Primary, secondary and grays">
+    <Section title="Colors" subTitle="Primary and grays">
       {#each colorGroups as colorGroup}
         <div>
           {#each colors.filter(color => {
@@ -264,7 +264,7 @@
 
     <Section
       title="Buttons"
-      subTitle="Vanilla, Primary, Secondary, Cancel, disabled state">
+      subTitle="Vanilla, Primary, Cancel, disabled state">
       <table>
         <thead>
           <tr>
