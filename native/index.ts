@@ -173,7 +173,19 @@ installMainProcessHandler({
     clipboard.writeText(text);
   },
   async getVersion(): Promise<string> {
-    return app.getVersion();
+    if (isDev) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const version = require("../package.json")["version"];
+      const { stdout, stderr } = await execAsync("git rev-parse HEAD");
+
+      if (!version || stderr) {
+        return "0.0.0";
+      } else {
+        return `${version}-${stdout.trim()}`;
+      }
+    } else {
+      return app.getVersion();
+    }
   },
   async openPath(path: string): Promise<void> {
     shell.openPath(path);
