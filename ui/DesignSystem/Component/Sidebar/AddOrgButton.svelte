@@ -9,10 +9,10 @@
     cursor: pointer;
   }
   .button:hover {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
   .button:hover :global(svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
 
   .button.disabled:hover {

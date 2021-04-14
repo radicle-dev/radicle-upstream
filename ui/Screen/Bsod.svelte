@@ -38,7 +38,7 @@
   }
 
   .container {
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary);
     height: 100vh;
     width: 100vw;
     position: fixed;
@@ -107,7 +107,6 @@
           <Button
             dataCy="proxy-log-copy-clipboard"
             style="position: sticky; bottom: 0; margin-left: auto;"
-            variant="secondary"
             on:click={() => copyToClipboard($fatalError.data.output)}
             icon={copyIcon}>
             Copy to clipboard

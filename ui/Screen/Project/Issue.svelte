@@ -92,7 +92,7 @@ Part of #277
           },
           {
             title: "infra",
-            color: "var(--color-secondary-level-2)",
+            color: "var(--color-primary-level-2)",
           },
         ],
         time_ago: "2 weeks ago",

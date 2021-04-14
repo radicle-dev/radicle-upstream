@@ -75,7 +75,6 @@
           toggleDropdown();
         }}
         disabled={!checkoutPath}
-        variant="secondary"
         style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
         {caption}
       </Button>

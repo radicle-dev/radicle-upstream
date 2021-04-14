@@ -49,11 +49,11 @@
     cursor: pointer;
   }
   button:hover {
-    color: var(--color-secondary);
+    color: var(--color-primary);
   }
 
   button:active {
-    color: var(--color-secondary-level-6);
+    color: var(--color-primary-level-6);
   }
 
   button:focus {

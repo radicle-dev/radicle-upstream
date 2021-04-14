@@ -82,7 +82,7 @@
     content: "";
     width: 4px;
     height: 32px;
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary);
     top: 0px;
     left: 0px;
     border-top-right-radius: 4px;
@@ -90,11 +90,11 @@
   }
 
   .indicator :global(div:hover svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
 
   .indicator.active :global(svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
 </style>
 
