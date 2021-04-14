@@ -96,7 +96,9 @@
           has crashed or it isn’t starting.
         {/if}
       </p>
-      <Button style="display: flex; color: #fff;" on:click={support}>
+      <Button
+        style="display: flex; background: #fff; color: var(--color-primary);"
+        on:click={support}>
         Reach out for support
       </Button>
       {#if $fatalError.kind === 'PROXY_EXIT' && $fatalError.data.output}
