@@ -79,7 +79,7 @@
     </Dai>
   </h1>
 
-  <div class="address-box typo-text">
+  <div class="address-box typo-text typo-disable-calt">
     <Copyable
       showIcon={false}
       styleContent={false}

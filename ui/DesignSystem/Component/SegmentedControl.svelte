@@ -61,7 +61,7 @@
 <div class="segmented-control">
   {#each options as option}
     <button
-      class="typo-semi-bold"
+      class="typo-semi-bold typo-disable-calt"
       class:active={option.value === currentlyActive}
       value={option.value}
       on:click={() => onClick(option)}>

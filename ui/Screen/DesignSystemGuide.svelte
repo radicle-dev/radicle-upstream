@@ -224,6 +224,10 @@
       <TypographySwatch title={`<p class="typo-all-caps">`}>
         <p class="typo-all-caps">Radicle Upstream</p>
       </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-disable-calt">`}>
+        <p class="typo-disable-calt">0x0Baf8f...fe71F471</p>
+      </TypographySwatch>
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">

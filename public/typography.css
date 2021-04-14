@@ -144,3 +144,8 @@ p,
   text-transform: uppercase;
   letter-spacing: 0.05rem;
 }
+
+/* Disables contextual alternates */
+.typo-disable-calt {
+  font-feature-settings: "calt" 0;
+}
