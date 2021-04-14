@@ -1,4 +1,4 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
   import { Copyable, Modal } from "../../DesignSystem/Component";
   import { Avatar, Button, Emoji } from "../../DesignSystem/Primitive";
@@ -8,8 +8,9 @@
   // import type { UnsealedSession } from "../../src/session";
 
   const dispatch = createEventDispatcher();
+  const orgStore = org.store;
 
-  function createOrg(owner) {
+  function createOrg(owner): void {
     org.createOrg(owner, $store.signer);
   }
 
@@ -72,7 +73,7 @@
         Cancel
       </Button>
       <Button on:click={() => createOrg($wallet.connected.account.address)}>
-        Create
+        Create ({$orgStore})
       </Button>
     </div>
   </Modal>

@@ -1,11 +1,15 @@
 import * as ethers from "ethers";
+import type {
+  TransactionReceipt,
+  TransactionResponse,
+} from "@ethersproject/providers";
 import * as svelteStore from "svelte/store";
 
 const orgFactoryAbi = ["function createOrg(address) returns (address)"];
 
 const addresses = {
   orgFactory: {
-    ropsten: "0x0000000000000000000000000000000000000000",
+    ropsten: "0xe30aA5594FFB52B6bF5bbB21eB7e71Ac525bB028",
   },
 };
 
@@ -24,7 +28,8 @@ export const store: svelteStore.Writable<Status> = svelteStore.writable(
 export async function createOrg(
   owner: string,
   signer: ethers.Signer
-): Promise<void> {
+): Promise<string> {
+  console.log("createOrg", owner, signer);
   const orgFactory = new ethers.Contract(
     addresses.orgFactory.ropsten,
     orgFactoryAbi,
@@ -33,11 +38,17 @@ export async function createOrg(
   store.set(Status.Waiting);
 
   try {
-    const response = await orgFactory.createOrg(owner);
+    const response: TransactionResponse = await orgFactory.createOrg(owner);
+    // NEVER REACHED!
+    console.log(response);
     store.set(Status.Pending);
-    await response.wait();
+    const receipt: TransactionReceipt = await response.wait();
+    console.log(receipt);
+
     store.set(Status.Success);
   } catch (e) {
     store.set(Status.Failed);
   }
+
+  return "";
 }
