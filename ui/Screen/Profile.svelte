@@ -39,13 +39,11 @@
       icon: Icon.ChevronLeftRight,
       title: "Projects",
       href: path.profileProjects(),
-      looseActiveStateMatching: true,
     },
     {
       icon: Icon.Network,
       title: "Following",
       href: path.profileFollowing(),
-      looseActiveStateMatching: false,
     },
   ];
 
@@ -54,7 +52,6 @@
       icon: Icon.Wallet,
       title: "Funding",
       href: path.profileFunding(),
-      looseActiveStateMatching: false,
     });
   }
 
