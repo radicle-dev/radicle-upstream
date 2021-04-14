@@ -15,7 +15,7 @@
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
     border-radius: 0.5rem;
-    background-color: var(--color-secondary-level-1);
+    background-color: var(--color-primary-level-1);
   }
 
   .row {
@@ -26,7 +26,7 @@
   .text {
     display: flex;
     align-items: center;
-    color: var(--color-secondary);
+    color: var(--color-primary);
   }
 </style>
 
@@ -35,7 +35,7 @@
     <div class="text">
       There’s
       <div class="typo-text-bold">
-        <Dai color="var(--color-secondary)" style="margin: 0 0.4375rem">
+        <Dai color="var(--color-primary)" style="margin: 0 0.4375rem">
           {amount}
         </Dai>
       </div>
@@ -46,7 +46,7 @@
       style="margin-left: 12px;"
       disabled={ongoingCollect}
       on:click={onCollect}
-      variant={'secondary'}>
+      variant={'primary'}>
       Collect
     </Button>
   </div>

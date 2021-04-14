@@ -31,11 +31,11 @@
   }
 
   nav :global(.menu-list-item:hover p) {
-    color: var(--color-secondary) !important;
+    color: var(--color-primary) !important;
   }
 
   nav :global(.menu-list-item:hover .icon svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
 </style>
 

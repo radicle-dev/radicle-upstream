@@ -24,7 +24,7 @@
     white-space: nowrap;
     min-width: var(--content-min-width);
     border-radius: 4px;
-    background-color: var(--color-secondary-level-1);
+    background-color: var(--color-primary-level-1);
   }
 
   .align-left {
@@ -41,20 +41,20 @@
   }
 
   .commit-message {
-    color: var(--commit-message-color, var(--color-secondary));
+    color: var(--commit-message-color, var(--color-primary));
     text-overflow: ellipsis;
     overflow-x: hidden;
   }
 
   .commit-sha {
     padding: 0 8px 0 4px;
-    color: var(--commit-sha-color, var(--color-secondary));
+    color: var(--commit-sha-color, var(--color-primary));
   }
 </style>
 
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
-    <Icon.Commit style="fill: var(--color-secondary)" />
+    <Icon.Commit style="fill: var(--color-primary)" />
     <!-- svelte-ignore a11y-missing-attribute -->
     <a class="commit-sha typo-text-small-mono" on:click={onSelect}>
       {commit.sha1.substring(0, 7)}

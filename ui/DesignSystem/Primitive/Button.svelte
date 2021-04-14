@@ -36,7 +36,6 @@
   }
 
   .primary :global(svg),
-  .secondary :global(svg),
   .destructive :global(svg) {
     fill: var(--color-background);
   }
@@ -126,52 +125,6 @@
     background-color: var(--color-primary-level-1);
     border-color: var(--color-primary-level-1);
     color: var(--color-background);
-  }
-
-  .secondary {
-    background-color: var(--color-secondary);
-    border-color: var(--color-secondary);
-    color: var(--color-background);
-  }
-
-  .secondary:hover {
-    background-color: var(--color-secondary-level-2);
-    border-color: var(--color-secondary-level-2);
-    color: var(--color-background);
-  }
-
-  .secondary:active {
-    background-color: var(--color-secondary-level-2);
-    border-color: var(--color-secondary-level-2);
-    color: var(--color-secondary-level-1);
-  }
-
-  .secondary:active :global(svg) {
-    fill: var(--color-secondary-level-1);
-  }
-
-  .secondary.disabled {
-    background-color: var(--color-secondary-level-1);
-    border-color: var(--color-secondary-level-1);
-    color: var(--color-background);
-    cursor: not-allowed;
-  }
-
-  .secondary.disabled:hover {
-    background-color: var(--color-secondary-level-1);
-    box-shadow: 0 0 0 0;
-    border-color: var(--color-secondary-level-1);
-    color: var(--color-background);
-  }
-
-  .secondary.disabled:active {
-    background-color: var(--color-secondary-level-1);
-    border-color: var(--color-secondary-level-1);
-    color: var(--color-background);
-  }
-
-  .secondary.disabled :global(svg) {
-    fill: var(--color-background);
   }
 
   .transparent {
