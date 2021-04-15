@@ -1,17 +1,24 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
+  import { push } from "svelte-spa-router";
   import { Copyable, Modal } from "../../DesignSystem/Component";
   import { Avatar, Button, Emoji } from "../../DesignSystem/Primitive";
   import { store, Status } from "../../src/wallet";
   import * as org from "../../src/org";
+  import * as path from "../../src/path";
   import { ellipsed } from "../../src/style";
   // import type { UnsealedSession } from "../../src/session";
 
   const dispatch = createEventDispatcher();
   const orgStore = org.store;
 
-  function createOrg(owner): void {
-    org.createOrg(owner, $store.signer);
+  async function createOrg(owner): void {
+    const orgAddr = await org.createOrg(owner, $store.signer, $store.provider);
+    if (orgAddr) {
+      push(path.org(orgAddr));
+    } else {
+      console.log("error");
+    }
   }
 
   $: wallet = $store;

@@ -32,6 +32,7 @@
   import ModalShortcuts from "./Modal/Shortcuts.svelte";
   import ModalTransaction from "./Modal/Transaction.svelte";
   import NotFound from "./Screen/NotFound.svelte";
+  import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
@@ -52,6 +53,8 @@
     "/profile/*": Profile,
     "/projects/:urn/*": Project,
     "/projects/:urn": Project,
+    "/orgs/:address/*": Org,
+    "/orgs/:address": Org,
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
