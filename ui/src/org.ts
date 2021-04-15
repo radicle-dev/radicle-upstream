@@ -57,10 +57,13 @@ export async function createOrg(
 
     let orgAddr: string = "";
     receipt.logs.forEach(log => {
-      const parsed = iface.parseLog(log);
-      if (parsed.name === "OrgCreated") {
-        orgAddr = parsed.args[0];
-        return;
+      try {
+        const parsed = iface.parseLog(log);
+        if (parsed.name === "OrgCreated") {
+          orgAddr = parsed.args[0];
+        }
+      } catch (_) {
+        // Not an 'OrgCreated' event.
       }
     });
     if (!orgAddr) {
@@ -79,7 +82,7 @@ export async function createOrg(
   return null;
 }
 
-export async function getOrgSafeAddr(
+export async function getSafeAddr(
   orgAddr: string,
   provider: ethers.providers.Provider
 ): Promise<string | null> {

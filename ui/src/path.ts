@@ -11,7 +11,7 @@ export const profileProjects = (): string => "/profile/projects";
 export const profileFollowing = (): string => "/profile/following";
 export const profileFunding = (): string => "/profile/funding";
 
-export const org = (addr: string): string => `/org/${addr}`;
+export const org = (addr: string): string => `/orgs/${addr}`;
 
 export const onboarding = (): string => "/onboarding";
 export const lock = (): string => "/lock";
