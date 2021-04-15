@@ -6,6 +6,8 @@ import * as proxy from "../../ui/src/proxy";
 const proxyClient = new proxy.Client("http://localhost:17246");
 
 export const resetProxyState = (): void => {
+  // We unload the app so that resetting does not mess with it
+  cy.visit("./cypress/empty.html");
   cy.then(() => proxyClient.control.reset());
 };
 
