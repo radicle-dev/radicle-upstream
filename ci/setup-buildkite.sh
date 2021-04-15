@@ -21,7 +21,7 @@ else
 fi
 
 function log-group-start () {
-  echo "--- $1"
+  echo "--- ${1:-}"
 }
 
 function log-group-end () {
