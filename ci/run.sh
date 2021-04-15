@@ -89,7 +89,15 @@ time yarn run webpack --config-name main
 log-group-end
 
 log-group-start "Starting proxy daemon and runing app tests"
-time ELECTRON_ENABLE_LOGGING=1 yarn test
+# We modify the output of the tests to add log groups to the cypress
+# tests.
+time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
+  sed "
+    s/^\\s*Running:/$(log-group-end)\n$(log-group-start)Running:/
+    s/^.*Run Finished.*/$(log-group-end)\n$(log-group-start)Run Finished/
+  "
+
+
 log-group-end
 
 if [[ "${BUILDKITE_BRANCH:-}" == "master" || -n "${BUILDKITE_TAG:-}" ]]; then
