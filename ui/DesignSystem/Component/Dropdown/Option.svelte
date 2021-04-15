@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import type { EmojiAvatar } from "../../../src/avatar";
+  import type { Avatar as AvatarT } from "../../../src/proxy/identity";
   import { Avatar } from "../../Primitive";
 
   const dispatch = createEventDispatcher();
@@ -13,7 +13,7 @@
   // dynamic sizing
   export let avatarProps:
     | {
-        avatarFallback: EmojiAvatar;
+        avatarFallback: AvatarT;
         title?: string;
         variant?: "circle" | "square";
       }

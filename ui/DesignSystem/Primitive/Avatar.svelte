@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { EmojiAvatar, RGBValue } from "../../src/avatar";
+  import type { Avatar } from "../../src/proxy/identity";
 
   import Emoji from "./Emoji.svelte";
 
@@ -9,7 +9,7 @@
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
   export let imageUrl: string = "";
-  export let avatarFallback: EmojiAvatar | undefined = undefined;
+  export let avatarFallback: Avatar | undefined = undefined;
   export let title: string = "";
 
   export let variant: "circle" | "square" = "circle";
@@ -17,8 +17,8 @@
   type AvatarSize = "small" | "regular" | "medium" | "big" | "huge";
   export let size: AvatarSize = "regular";
 
-  const fmt = (background: RGBValue) =>
-    `rgb(${background.r}, ${background.g}, ${background.b})`;
+  const background = (avatar: Avatar) =>
+    `rgb(${avatar.background.r}, ${avatar.background.g}, ${avatar.background.b})`;
 
   let avatarClass: string;
   $: avatarClass = [variant, size].join(" ");
@@ -125,7 +125,7 @@
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}
-      style="background: {fmt(avatarFallback.background)}"
+      style="background: {background(avatarFallback)}"
       data-cy="emoji">
       <Emoji {size} emoji={avatarFallback.emoji} />
     </div>
