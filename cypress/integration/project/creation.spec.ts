@@ -245,9 +245,6 @@ context("project creation", () => {
           commands.pick("existing-project").click();
           commands.pick("name").should("be.disabled");
           commands.pick("existing-project", "choose-path-button").click();
-          // Make sure the UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
           commands.pick("name").should("have.value", repoName);
           commands.pick("default-branch").contains("master");
         });
@@ -262,9 +259,6 @@ context("project creation", () => {
           commands.pick("existing-project").click();
           commands.pick("name").should("be.disabled");
           commands.pick("existing-project", "choose-path-button").click();
-          // Make sure the UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
           commands.pick("name").should("have.value", repoName);
           commands.pick("default-branch").contains("main");
         });
@@ -278,9 +272,6 @@ context("project creation", () => {
         commands.pick("existing-project").click();
 
         commands.pick("existing-project", "choose-path-button").click();
-        // Make sure UI has time to update path value from stub,
-        // this prevents this spec from failing on CI.
-        cy.wait(500);
 
         commands
           .pick("existing-project")
@@ -302,9 +293,6 @@ context("project creation", () => {
 
             commands.pick("new-project").click();
             commands.pick("new-project", "choose-path-button").click();
-            // Make sure UI has time to update path value from stub,
-            // this prevents this spec from failing on CI.
-            cy.wait(500);
 
             commands.pick("create-project-button").click();
 
@@ -352,9 +340,6 @@ context("project creation", () => {
           commands.pick("name").should("be.disabled");
 
           commands.pick("existing-project", "choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
 
           commands.pick("name").should("have.value", repoName);
           commands.pick("default-branch").contains("master");
@@ -387,9 +372,6 @@ context("project creation", () => {
           commands.pick("existing-project").click();
 
           commands.pick("existing-project", "choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
 
           commands.pick("name").should("have.value", repoName);
           commands.pick("description").type("Best project");
