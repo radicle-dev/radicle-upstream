@@ -38,6 +38,7 @@ import EyeOpen from "./EyeOpen.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
 import Fork from "./Fork.svelte";
+import Gnosis from "./Gnosis.svelte";
 import Heart from "./Heart.svelte";
 import HeartFaceSmall from "./HeartFaceSmall.svelte";
 import House from "./House.svelte";
@@ -107,6 +108,7 @@ export default {
   File,
   Folder,
   Fork,
+  Gnosis,
   Heart,
   HeartFaceSmall,
   House,

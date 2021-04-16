@@ -1,6 +1,9 @@
 <script lang="typescript">
-  import * as org from "../src/org.ts";
+  import * as org from "../src/org";
   import { store } from "../src/wallet";
+
+  import { SidebarLayout } from "../DesignSystem/Component";
+  import { Icon } from "../DesignSystem/Primitive";
 
   export let params: { address: string };
 
@@ -8,20 +11,39 @@
 </script>
 
 <style>
+  header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: var(--content-max-width);
+    background-color: var(--color-foreground-level-1);
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--content-padding);
+    height: 12.5rem;
+  }
+  .safe-addr {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 </style>
 
-<div>
-  Org page for
-  {params.address}
-  <p>
-    Safe address:
+<SidebarLayout dataCy="org-screen">
+  <header>
+    <h1>{params.address}</h1>
     {#await safeAddr}
       Loading..
     {:then addr}
-      {addr}
+      <div class="safe-addr">
+        <Icon.Gnosis />
+        {addr}
+      </div>
     {:catch error}
       Error:
       {error}
     {/await}
-  </p>
-</div>
+  </header>
+  <p>projects</p>
+</SidebarLayout>
