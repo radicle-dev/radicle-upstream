@@ -16,6 +16,7 @@
     const orgAddr = await org.createOrg(owner, $store.signer, $store.provider);
     if (orgAddr) {
       push(path.org(orgAddr));
+      dispatch("hide");
     } else {
       console.log("error");
     }
