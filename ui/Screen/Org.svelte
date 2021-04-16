@@ -17,16 +17,25 @@
     justify-content: center;
     max-width: var(--content-max-width);
     background-color: var(--color-foreground-level-1);
-    gap: 0.5rem;
     width: 100%;
     margin: 0 auto;
     padding: 0 var(--content-padding);
+    gap: 0.5rem;
     height: 12.5rem;
   }
   .safe-addr {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+  main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: var(--content-max-width);
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--content-padding);
+    gap: 2rem;
   }
 </style>
 
@@ -45,5 +54,20 @@
       {error}
     {/await}
   </header>
-  <p>projects</p>
+  <main>
+    <div class="projects">
+      <h3>Projects</h3>
+      <ul>
+        <li>project 1</li>
+        <li>project 2</li>
+      </ul>
+    </div>
+    <div class="members">
+      <h3>Members</h3>
+      <ul>
+        <li>member 1</li>
+        <li>member 2</li>
+      </ul>
+    </div>
+  </main>
 </SidebarLayout>
