@@ -57,6 +57,9 @@ where
     S: Signer + Clone + Send + Sync + 'static,
     S::Error: std::error::Error + Send + Sync + 'static,
 {
+    let mut repconf = replication::Config::default();
+    // This number based on discussions in https://github.com/radicle-dev/radicle-upstream/issues/1795
+    repconf.fetch_limit.peek = 5000000;
     net::peer::Config {
         signer,
         protocol: net::protocol::Config {
@@ -64,7 +67,7 @@ where
             listen_addr,
             membership: net::protocol::membership::Params::default(),
             network: net::Network::default(),
-            replication: replication::Config::default(),
+            replication: repconf,
         },
         storage_pools: net::peer::PoolSizes::default(),
     }
