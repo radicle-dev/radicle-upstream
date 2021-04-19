@@ -3,7 +3,6 @@
 export type ButtonVariant =
   | "vanilla"
   | "primary"
-  | "secondary"
   | "transparent"
   | "outline"
   | "destructive"

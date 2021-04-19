@@ -1,19 +1,23 @@
 import * as ethereum from "./ethereum";
 
 import {
-  Settings,
-  Theme,
   Appearance,
   CoCo,
+  CodeFont,
   FeatureFlags,
+  Settings,
+  Theme,
+  UIFont,
 } from "./proxy/settings";
 
 export type { Settings, Appearance, CoCo, FeatureFlags };
-export { Theme };
+export { CodeFont, Theme, UIFont };
 
 export const defaultSetttings = (): Settings => ({
   appearance: {
     theme: Theme.Dark,
+    uiFont: UIFont.Inter,
+    codeFont: CodeFont.SourceCode,
     hints: {
       showRemoteHelper: true,
     },
@@ -43,6 +47,28 @@ export const themeOptions: Option<string>[] = [
   {
     title: "H4x0r",
     value: Theme.H4x0r,
+  },
+];
+
+export const uiFontOptions: Option<string>[] = [
+  {
+    title: "Inter",
+    value: UIFont.Inter,
+  },
+  {
+    title: "System",
+    value: UIFont.System,
+  },
+];
+
+export const codeFontOptions: Option<string>[] = [
+  {
+    title: "Source Code",
+    value: CodeFont.SourceCode,
+  },
+  {
+    title: "System",
+    value: CodeFont.System,
   },
 ];
 

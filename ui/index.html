@@ -61,21 +61,51 @@
       }
 
       @font-face {
-        font-family: "SourceCodePro SemiBold";
-        src: url("fonts/SourceCodePro-Semibold.otf");
-      }
-
-      @font-face {
         font-family: "SourceCodePro Regular";
         src: url("fonts/SourceCodePro-Regular.otf");
       }
 
       :root {
+        --typeface-bold: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        --typeface-medium: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        --typeface-regular: -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
+          "Segoe UI Emoji", "Segoe UI Symbol";
+        --typeface-mono-bold: SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        --typeface-mono-regular: SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+      }
+      [data-uifont="system"] {
+        --typeface-bold: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        --typeface-medium: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        --typeface-regular: -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
+          "Segoe UI Emoji", "Segoe UI Symbol";
+      }
+      [data-codefont="system"] {
+        --typeface-mono-bold: SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        --typeface-mono-regular: SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+      }
+
+      [data-uifont="inter"] {
         --typeface-bold: "Inter Bold";
         --typeface-medium: "Inter SemiBold";
         --typeface-regular: "Inter Regular";
+      }
+
+      [data-codefont="sourceCode"] {
         --typeface-mono-bold: "SourceCodePro Bold";
-        --typeface-mono-medium: "SourceCodePro SemiBold";
         --typeface-mono-regular: "SourceCodePro Regular";
       }
     </style>

@@ -323,7 +323,12 @@ class NodeManager implements NodeManagerPlugin {
     await fetch(`http://${HOST}:${firstNode.httpPort}/v1/session/settings`, {
       method: "post",
       body: JSON.stringify({
-        appearance: { theme: "dark", hints: { showRemoteHelper: true } },
+        appearance: {
+          theme: "dark",
+          hints: { showRemoteHelper: true },
+          uiFont: "inter",
+          codeFont: "sourceCode",
+        },
         coco: {
           seeds: remainingNodes.map(node => node.peerAddress),
         },

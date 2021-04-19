@@ -48,14 +48,16 @@
     } catch (err) {
       animateBackward();
       state = State.EnterName;
-      error.show({
-        code: "create-identity-failed",
-        message: `Could not create identity`,
-        details: {
-          handle,
-        },
-        source: error.fromException(err),
-      });
+      error.show(
+        new error.Error({
+          code: "create-identity-failed",
+          message: `Could not create identity`,
+          details: {
+            handle,
+          },
+          source: err,
+        })
+      );
     } finally {
       screen.unlock();
       createIdentityInProgress = false;

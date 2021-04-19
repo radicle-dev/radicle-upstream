@@ -7,6 +7,7 @@
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
   import * as error from "./src/error.ts";
+  import * as customProtocolHandler from "./src/customProtocolHandler.ts";
   import { fetch, session as store, Status } from "./src/session.ts";
 
   import {
@@ -108,6 +109,8 @@
   $: sessionIsUnsealed =
     $store.status === remote.Status.Success &&
     $store.data.status === Status.UnsealedSession;
+
+  customProtocolHandler.register();
 </script>
 
 <style>

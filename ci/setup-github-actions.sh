@@ -4,7 +4,7 @@ set -Eeou pipefail
 export CACHE_FOLDER="$HOME/cache"
 
 function log-group-start () {
-  echo "::group::$1"
+  echo "::group::${1:-}"
 }
 
 function log-group-end () {

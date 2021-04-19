@@ -154,7 +154,7 @@
   <div class="layout">
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
-    <Section title="Colors" subTitle="Primary, secondary and grays">
+    <Section title="Colors" subTitle="Primary and grays">
       {#each colorGroups as colorGroup}
         <div>
           {#each colors.filter(color => {
@@ -224,6 +224,10 @@
       <TypographySwatch title={`<p class="typo-all-caps">`}>
         <p class="typo-all-caps">Radicle Upstream</p>
       </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-disable-calt">`}>
+        <p class="typo-disable-calt">0x0Baf8f...fe71F471</p>
+      </TypographySwatch>
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
@@ -264,7 +268,7 @@
 
     <Section
       title="Buttons"
-      subTitle="Vanilla, Primary, Secondary, Cancel, disabled state">
+      subTitle="Vanilla, Primary, Cancel, disabled state">
       <table>
         <thead>
           <tr>
@@ -295,24 +299,6 @@
           <td>
             <Button icon={Icon.Minus} variant="primary" disabled>
               Primary
-            </Button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <Button variant="secondary">Secondary</Button>
-          </td>
-          <td>
-            <Button variant="secondary" disabled>Secondary</Button>
-          </td>
-          <td>
-            <Button icon={Icon.MagnifyingGlass} variant="secondary">
-              Secondary
-            </Button>
-          </td>
-          <td>
-            <Button icon={Icon.MagnifyingGlass} variant="secondary" disabled>
-              Secondary
             </Button>
           </td>
         </tr>

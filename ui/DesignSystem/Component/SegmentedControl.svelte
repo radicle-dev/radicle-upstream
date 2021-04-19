@@ -47,21 +47,21 @@
   }
   .segmented-control button.active {
     background-color: var(--color-foreground-level-1);
-    color: var(--color-secondary);
+    color: var(--color-primary);
   }
   .segmented-control button:hover {
     background-color: var(--color-foreground-level-1);
   }
   .segmented-control button:active {
     background-color: var(--color-foreground-level-1);
-    color: var(--color-secondary-level-2);
+    color: var(--color-primary-level-2);
   }
 </style>
 
 <div class="segmented-control">
   {#each options as option}
     <button
-      class="typo-semi-bold"
+      class="typo-semi-bold typo-disable-calt"
       class:active={option.value === currentlyActive}
       value={option.value}
       on:click={() => onClick(option)}>

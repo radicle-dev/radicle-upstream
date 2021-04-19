@@ -165,5 +165,5 @@ export const fetch = <T>(
       return filter ? filter(val) : val;
     })
     .then(store.success)
-    .catch((err: globalThis.Error) => store.error(error.fromException(err)));
+    .catch(err => store.error(error.fromUnknown(err)));
 };

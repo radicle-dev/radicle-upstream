@@ -34,13 +34,11 @@
     border-radius: inherit;
     background: linear-gradient(
       90deg,
-      var(--color-secondary),
-      var(--color-tertiary),
+      var(--color-primary),
       var(--color-positive),
       var(--color-caution),
       var(--color-negative),
-      var(--color-primary),
-      var(--color-secondary)
+      var(--color-primary)
     );
     background-size: 200% 200%;
   }
@@ -56,13 +54,11 @@
     border-radius: inherit;
     background: linear-gradient(
       90deg,
-      var(--color-secondary),
-      var(--color-tertiary),
+      var(--color-primary),
       var(--color-positive),
       var(--color-caution),
       var(--color-negative),
-      var(--color-primary),
-      var(--color-secondary)
+      var(--color-primary)
     );
     background-size: 200% auto;
     animation: shine 2s linear infinite;

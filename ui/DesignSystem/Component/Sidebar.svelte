@@ -83,7 +83,7 @@
     content: "";
     width: 4px;
     height: 32px;
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary);
     top: 0px;
     left: 0px;
     border-top-right-radius: 4px;
@@ -91,11 +91,11 @@
   }
 
   .indicator :global(div:hover svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
 
   .indicator.active :global(svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
 </style>
 
@@ -105,7 +105,7 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={path.active(path.profile(), $location, true)}
+        class:active={$location.startsWith(path.profile())}
         on:click|stopPropagation={() => push(path.profileProjects())}>
         <Avatar
           size="regular"
@@ -136,7 +136,7 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={path.active(path.settings(), $location)}
+        class:active={$location.startsWith(path.settings())}
         on:click|stopPropagation={() => push(path.settings())}>
         <Icon.Settings />
       </div>

@@ -2,7 +2,6 @@ import { Readable, derived, get } from "svelte/store";
 
 import * as proxy from "./proxy";
 import * as error from "./error";
-import * as event from "./event";
 import type * as identity from "./identity";
 import * as remote from "./remote";
 import {
@@ -87,28 +86,6 @@ export const settings: Readable<Settings> = derived(sessionStore, sess => {
   }
 });
 
-// EVENTS
-enum Kind {
-  ClearCache = "CLEAR_CACHE",
-  Fetch = "FETCH",
-  UpdateSettings = "UPDATE_SETTINGS",
-}
-
-interface ClearCache extends event.Event<Kind> {
-  kind: Kind.ClearCache;
-}
-
-interface Fetch extends event.Event<Kind> {
-  kind: Kind.Fetch;
-}
-
-interface UpdateSettings extends event.Event<Kind> {
-  kind: Kind.UpdateSettings;
-  settings: Settings;
-}
-
-type Msg = ClearCache | Fetch | UpdateSettings;
-
 const fetchSession = async (): Promise<void> => {
   try {
     const ses = await proxy.withRetry(() => proxy.client.sessionGet(), 100, 50);
@@ -124,11 +101,13 @@ const fetchSession = async (): Promise<void> => {
       }
     }
 
-    sessionStore.error({
-      code: error.Code.SessionFetchFailure,
-      message: "Failed to load the session",
-      source: error.fromException(err),
-    });
+    sessionStore.error(
+      new error.Error({
+        code: error.Code.SessionFetchFailure,
+        message: "Failed to load the session",
+        source: error.fromJsError(err),
+      })
+    );
   }
 };
 
@@ -141,11 +120,13 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await proxy.client.keyStoreUnseal({ passphrase });
   } catch (err) {
-    error.show({
-      code: error.Code.KeyStoreUnsealFailure,
-      message: `Could not unlock the session: ${err.message}`,
-      source: err,
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.KeyStoreUnsealFailure,
+        message: `Could not unlock the session: ${err.message}`,
+        source: err,
+      })
+    );
 
     return false;
   }
@@ -158,70 +139,57 @@ export const createKeystore = (passphrase: string): Promise<void> => {
   return proxy.client.keyStoreCreate({ passphrase });
 };
 
-const updateSettings = async (settings: Settings): Promise<void> => {
+export const fetch = async (): Promise<void> => {
+  sessionStore.loading();
+  await fetchSession();
+};
+
+const setSettings = async (settings: Settings): Promise<void> => {
   try {
     await proxy.client.sessionSettingsSet(settings);
   } catch (err) {
-    error.show({
-      code: error.Code.SessionSettingsUpdateFailure,
-      message: `Failed to update settings: ${err.message}`,
-      source: error.fromException(err),
-    });
+    error.show(
+      new error.Error({
+        code: error.Code.SessionSettingsUpdateFailure,
+        message: `Failed to update settings: ${err.message}`,
+        source: error.fromJsError(err),
+      })
+    );
     return;
   }
 
   await fetchSession();
 };
 
-const update = (msg: Msg): void => {
-  switch (msg.kind) {
-    case Kind.Fetch:
-      sessionStore.loading();
-      fetchSession();
-      break;
-
-    case Kind.UpdateSettings:
-      updateSettings(msg.settings);
-      break;
-  }
+const updateSettings = (f: (settings: Settings) => Settings): Promise<void> => {
+  return setSettings(f(get(settings)));
 };
 
-export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
-
-export const updateAppearance = (appearance: Appearance): void =>
-  event.create<Kind, Msg>(
-    Kind.UpdateSettings,
-    update
-  )({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    settings: { ...get(settings), appearance },
-  });
-
-export const updateFeatureFlags = (featureFlags: FeatureFlags): void =>
-  event.create<Kind, Msg>(
-    Kind.UpdateSettings,
-    update
-  )({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    settings: { ...get(settings), featureFlags },
-  });
-
-export const dismissRemoteHelperHint = (): void => {
-  updateAppearance({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    ...get(settings).appearance,
-    hints: { showRemoteHelper: false },
-  });
+export const updateAppearance = async (
+  appearance: Appearance
+): Promise<void> => {
+  await updateSettings(s => ({ ...s, appearance }));
 };
 
-export const updateCoCo = (coco: CoCo): void =>
-  event.create<Kind, Msg>(
-    Kind.UpdateSettings,
-    update
-  )({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    settings: { ...get(settings), coco },
-  });
+export const updateFeatureFlags = async (
+  featureFlags: FeatureFlags
+): Promise<void> => {
+  await updateSettings(s => ({ ...s, featureFlags }));
+};
+
+export const dismissRemoteHelperHint = async (): Promise<void> => {
+  await updateSettings(s => ({
+    ...s,
+    appearance: {
+      ...s.appearance,
+      hints: { showRemoteHelper: false },
+    },
+  }));
+};
+
+const updateCoCo = async (coco: CoCo): Promise<void> => {
+  await updateSettings(s => ({ ...s, coco }));
+};
 
 const VALID_SEED_MATCH = /^[\w\d]{54}@([\w\d-]+\.)*[\w\d-]+:[\d]{1,5}$/;
 

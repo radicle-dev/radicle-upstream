@@ -41,7 +41,7 @@ export const fetch = (projectUrn: Urn): void => {
         selectedPeer: peerSelection[0],
       });
     })
-    .catch(err => screenStore.error(error.fromException(err)));
+    .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
 export const fetchPeers = (): void => {
@@ -73,7 +73,7 @@ export const fetchPeers = (): void => {
           requestInProgress: null,
         });
       })
-      .catch(err => screenStore.error(error.fromException(err)));
+      .catch(err => screenStore.error(error.fromUnknown(err)));
   }
 };
 
@@ -109,7 +109,7 @@ export const refresh = (): void => {
           requestInProgress: null,
         });
       })
-      .catch(err => screenStore.error(error.fromException(err)));
+      .catch(err => screenStore.error(error.fromUnknown(err)));
   }
 };
 
@@ -151,14 +151,14 @@ export const trackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   project
     .trackPeer(projectUrn, peerId)
     .then(() => fetchPeers())
-    .catch(err => screenStore.error(error.fromException(err)));
+    .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
 export const untrackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   project
     .untrackPeer(projectUrn, peerId)
     .then(() => fetchPeers())
-    .catch(err => screenStore.error(error.fromException(err)));
+    .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
 export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;

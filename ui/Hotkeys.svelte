@@ -9,7 +9,7 @@
   import { isDev } from "./src/config";
 
   const toggle = (destination: string) => {
-    if (path.active(destination, $location)) {
+    if (destination === $location) {
       pop();
     }
     push(destination);
@@ -17,7 +17,7 @@
   };
 
   const toggleModal = (destination: string) => {
-    if (path.active(path.designSystemGuide(), $location)) {
+    if (path.designSystemGuide() === $location) {
       pop();
     }
     modal.toggle(destination);

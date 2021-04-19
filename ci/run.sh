@@ -89,11 +89,31 @@ time yarn run webpack --config-name main
 log-group-end
 
 log-group-start "Starting proxy daemon and runing app tests"
-time ELECTRON_ENABLE_LOGGING=1 yarn test
+# We modify the output of the tests to add log groups to the cypress
+# tests.
+time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
+  sed "
+    s/^\\s*Running:/$(log-group-end)\n$(log-group-start)Running:/
+    s/^.*Run Finished.*/$(log-group-end)\n$(log-group-start)Run Finished/
+  "
+
+
 log-group-end
 
 if [[ "${BUILDKITE_BRANCH:-}" == "master" || -n "${BUILDKITE_TAG:-}" ]]; then
-  log-group-start "Packaging and uploading app binaries"
-  time yarn dist
-  log-group-end
+  if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" == "macos" ]]; then
+    log-group-start "Packaging, notarizing and uploading app binaries"
+    (
+      export NOTARIZE=true
+      export APPLE_ID="rudolfs@monadic.xyz"
+      export APPLE_ID_PASSWORD="@keychain:AC_PASSWORD"
+      export CSC_NAME="Monadic GmbH (35C27H9VL2)"
+      time yarn dist
+    )
+    log-group-end
+  else
+    log-group-start "Packaging and uploading app binaries"
+    time yarn dist
+    log-group-end
+  fi
 fi

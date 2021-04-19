@@ -6,6 +6,7 @@ context("project following", () => {
   beforeEach(() => {
     commands.resetProxyState();
     commands.onboardUser("cloudhead");
+    commands.createProjectWithFixture();
     cy.visit("./public/index.html");
   });
 

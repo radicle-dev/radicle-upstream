@@ -1,12 +1,13 @@
 <script lang="typescript">
   import { push } from "svelte-spa-router";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onDestroy } from "svelte";
 
   import * as notification from "../src/notification";
   import * as path from "../src/path";
   import type { Project } from "../src/project";
   import * as remote from "../src/remote";
   import {
+    inputStore,
     projectRequest as request,
     projectSearch as store,
     reset,
@@ -20,13 +21,16 @@
   import { FollowToggle, Remote } from "../DesignSystem/Component";
 
   let id: string;
-  let input: string = "";
 
   let value: string;
-  $: value = input.trim();
+  $: value = $inputStore.trim();
 
   const dispatch = createEventDispatcher();
   const urnValidation = urnValidationStore();
+
+  onDestroy(() => {
+    $inputStore = "";
+  });
 
   const navigateToProject = (project: Project) => {
     reset();
@@ -42,6 +46,8 @@
           navigateToProject(
             ($store as { status: remote.Status.Success; data: Project }).data
           );
+        } else {
+          follow();
         }
         break;
       case "Escape":
@@ -51,7 +57,9 @@
     }
   };
   const follow = () => {
-    requestProject(value);
+    if ($urnValidation.status === ValidationStatus.Success) {
+      requestProject(value);
+    }
   };
 
   // Validate input entered, at the moment valid RadUrns are the only acceptable input.
@@ -131,7 +139,7 @@
   <div class="search-bar">
     <Input.Text
       autofocus
-      bind:value={input}
+      bind:value={$inputStore}
       dataCy="search-input"
       inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0; box-shadow: var(--color-shadows);"
       on:keydown={onKeydown}
@@ -148,6 +156,7 @@
     <Remote {store} let:data={project}>
       <div style="padding: 1.5rem;">
         <div
+          data-cy="project-name"
           class="header typo-header-3"
           on:click={_ev => navigateToProject(project)}>
           <span class="id">{project.metadata.name}</span>

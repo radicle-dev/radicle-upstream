@@ -38,7 +38,7 @@
   }
 
   .container {
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary);
     height: 100vh;
     width: 100vw;
     position: fixed;
@@ -96,18 +96,19 @@
           has crashed or it isn’t starting.
         {/if}
       </p>
-      <Button style="display: flex; color: #fff;" on:click={support}>
+      <Button
+        style="display: flex; background: #fff; color: var(--color-primary);"
+        on:click={support}>
         Reach out for support
       </Button>
       {#if $fatalError.kind === 'PROXY_EXIT' && $fatalError.data.output}
         <div class="proxy-log-container">
-          <code data-cy="proxy-log" class="proxy-log typo-mono-semi-bold">
+          <code data-cy="proxy-log" class="proxy-log typo-mono-bold">
             {$fatalError.data.output}
           </code>
           <Button
             dataCy="proxy-log-copy-clipboard"
             style="position: sticky; bottom: 0; margin-left: auto;"
-            variant="secondary"
             on:click={() => copyToClipboard($fatalError.data.output)}
             icon={copyIcon}>
             Copy to clipboard

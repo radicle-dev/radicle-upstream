@@ -20,7 +20,7 @@
   }
 
   .step.active {
-    color: var(--color-secondary);
+    color: var(--color-primary);
   }
 </style>
 

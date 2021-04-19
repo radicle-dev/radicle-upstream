@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import type { EmojiAvatar } from "../../../src/avatar";
+  import type { Avatar as AvatarT } from "../../../src/proxy/identity";
   import type { Stats } from "../../../src/project";
 
   import { Avatar, Icon } from "../../Primitive";
@@ -11,7 +11,7 @@
   export let peerId: string | null = null;
   export let description: string = "";
 
-  export let avatarFallback: EmojiAvatar | undefined = undefined;
+  export let avatarFallback: AvatarT | undefined = undefined;
   export let avatarShape: "circle" | "square" = "circle";
 
   export let stats: Stats | undefined = undefined;

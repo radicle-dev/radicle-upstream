@@ -3,7 +3,6 @@ import { get, writable } from "svelte/store";
 import * as error from "./error";
 import * as api from "./api";
 import * as config from "./config";
-import * as event from "./event";
 import type * as identity from "./identity";
 import * as ipc from "./ipc";
 import * as remote from "./remote";
@@ -123,79 +122,11 @@ export const localState = localStateStore.readable;
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
 
-// EVENTS
-enum Kind {
-  ClearLocalState = "CLEAR_LOCAL_STATE",
-  Create = "CREATE",
-  FetchList = "FETCH_LIST",
-  FetchTracked = "FETCH_TRACKED",
-  FetchLocalState = "FETCH_LOCAL_STATE",
-}
-
-interface ClearLocalState extends event.Event<Kind> {
-  kind: Kind.ClearLocalState;
-}
-
-interface Create extends event.Event<Kind> {
-  kind: Kind.Create;
-  input: CreateInput;
-}
-
-interface FetchList extends event.Event<Kind> {
-  kind: Kind.FetchList;
-  urn?: string;
-}
-
-interface FetchLocalState extends event.Event<Kind> {
-  kind: Kind.FetchLocalState;
-  path: string;
-}
-
-type Msg = ClearLocalState | Create | FetchList | FetchLocalState;
-
-// REQUEST INPUTS
 interface CreateInput {
   repo: Repo;
   description?: string;
   defaultBranch: string;
 }
-
-const update = (msg: Msg): void => {
-  switch (msg.kind) {
-    case Kind.ClearLocalState:
-      localStateStore.reset();
-      localStateError.set("");
-
-      break;
-
-    case Kind.Create:
-      creationStore.loading();
-      api
-        .post<CreateInput, Project>(`projects`, msg.input)
-        .then(creationStore.success)
-        .catch((err: Error) => creationStore.error(error.fromException(err)));
-
-      break;
-
-    case Kind.FetchList:
-      projectsStore.loading();
-
-      api
-        .get<Projects>("projects/contributed")
-        .then(projectsStore.success)
-        .catch((err: Error) => projectsStore.error(error.fromException(err)));
-
-      break;
-
-    case Kind.FetchLocalState:
-      localStateStore.loading();
-      source
-        .getLocalState(msg.path)
-        .then(localStateStore.success)
-        .catch((err: Error) => localStateStore.error(error.fromException(err)));
-      break;
-  }
-};
 
 export const create = (input: CreateInput): Promise<Project> => {
   return api.post<CreateInput, Project>(`projects`, input);
@@ -217,16 +148,27 @@ export const checkout = (
   });
 };
 
-export const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+export const fetchList = (): void => {
+  projectsStore.loading();
 
-export const clearLocalState = event.create<Kind, Msg>(
-  Kind.ClearLocalState,
-  update
-);
-export const fetchLocalState = event.create<Kind, Msg>(
-  Kind.FetchLocalState,
-  update
-);
+  api
+    .get<Projects>("projects/contributed")
+    .then(projectsStore.success)
+    .catch(err => projectsStore.error(error.fromUnknown(err)));
+};
+
+export const clearLocalState = (): void => {
+  localStateStore.reset();
+  localStateError.set("");
+};
+
+const fetchLocalState = (path: string): void => {
+  localStateStore.loading();
+  source
+    .getLocalState(path)
+    .then(localStateStore.success)
+    .catch(err => localStateStore.error(error.fromUnknown(err)));
+};
 
 export const cancelRequest = (urn: string): Promise<null> => {
   return api.del(`projects/requests/${urn}`);
@@ -301,7 +243,7 @@ export const defaultBranchForNewRepository = async (): Promise<string> => {
 };
 
 const fetchBranches = async (path: string) => {
-  fetchLocalState({ path });
+  fetchLocalState(path);
 
   localStateError.set("");
 
@@ -315,11 +257,13 @@ const fetchBranches = async (path: string) => {
   try {
     state = await source.getLocalState(path);
   } catch (err) {
-    error.log({
-      code: error.Code.LocalStateFetchFailure,
-      message: err.message,
-      source: err,
-    });
+    error.log(
+      new error.Error({
+        code: error.Code.LocalStateFetchFailure,
+        message: err.message,
+        source: err,
+      })
+    );
     localStateError.set(err.message);
     return;
   }

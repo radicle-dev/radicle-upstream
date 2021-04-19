@@ -17,6 +17,8 @@
   import type { UnsealedSession } from "../src/session";
   import {
     themeOptions,
+    uiFontOptions,
+    codeFontOptions,
     featureFlagOptions,
     fundingEnvironmentOptions,
   } from "../src/settings";
@@ -34,6 +36,12 @@
 
   const updateTheme = (event: CustomEvent) =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
+
+  const updateUIFont = (event: CustomEvent) =>
+    updateAppearance({ ...$settings.appearance, uiFont: event.detail });
+
+  const updateCodeFont = (event: CustomEvent) =>
+    updateAppearance({ ...$settings.appearance, codeFont: event.detail });
 
   const updateFundingFeatureFlag = (event: CustomEvent) =>
     updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
@@ -276,6 +284,28 @@
               active={$settings.appearance.theme}
               options={themeOptions}
               on:select={updateTheme} />
+          </div>
+        </div>
+        <div class="section-item">
+          <div class="info">
+            <p class="typo-text-bold">UI Font</p>
+          </div>
+          <div class="action">
+            <SegmentedControl
+              active={$settings.appearance.uiFont}
+              options={uiFontOptions}
+              on:select={updateUIFont} />
+          </div>
+        </div>
+        <div class="section-item">
+          <div class="info">
+            <p class="typo-text-bold">Code Font</p>
+          </div>
+          <div class="action">
+            <SegmentedControl
+              active={$settings.appearance.codeFont}
+              options={codeFontOptions}
+              on:select={updateCodeFont} />
           </div>
         </div>
       </section>

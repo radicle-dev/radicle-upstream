@@ -108,7 +108,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       tree: writable<source.Tree>(tree),
     });
   } catch (err) {
-    screenStore.error(error.fromException(err));
+    screenStore.error(error.fromUnknown(err));
   }
 };
 
@@ -201,7 +201,7 @@ export const selectRevision = async (
         },
       });
     } catch (err) {
-      screenStore.error(error.fromException(err));
+      screenStore.error(error.fromUnknown(err));
     }
   }
 };
@@ -220,12 +220,14 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
     try {
       commitStore.success(await source.fetchCommit(project.urn, sha1));
     } catch (err) {
-      commitStore.error(error.fromException(err));
-      error.show({
-        code: error.Code.CommitFetchFailure,
-        message: "Could not fetch commit",
-        source: err,
-      });
+      commitStore.error(error.fromUnknown(err));
+      error.show(
+        new error.Error({
+          code: error.Code.CommitFetchFailure,
+          message: "Could not fetch commit",
+          source: err,
+        })
+      );
     }
   }
 };
@@ -371,14 +373,12 @@ const menuItems = (
       icon: IconFile,
       title: "Files",
       href: path.projectSourceFiles(project.urn),
-      looseActiveStateMatching: true,
     },
     {
       icon: IconCommit,
       title: "Commits",
       counter: history.stats.commits,
       href: path.projectSourceCommits(project.urn),
-      looseActiveStateMatching: true,
     },
   ];
 };

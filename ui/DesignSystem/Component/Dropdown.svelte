@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Icon } from "../Primitive";
-  import type { EmojiAvatar } from "../../src/avatar";
+  import type { Avatar } from "../../src/proxy/identity";
 
   import Option from "./Dropdown/Option.svelte";
   import Overlay from "./Overlay.svelte";
@@ -11,7 +11,7 @@
         value: string;
         title: string;
         avatarProps: {
-          avatarFallback: EmojiAvatar;
+          avatarFallback: Avatar;
           title: string;
           variant?: "circle" | "square";
         };

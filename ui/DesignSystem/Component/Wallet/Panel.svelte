@@ -39,7 +39,7 @@
 
   h1 {
     margin: 1.35rem 0 1rem 0;
-    color: var(--color-secondary);
+    color: var(--color-primary);
   }
 
   .menu {
@@ -72,14 +72,14 @@
   <h3>Balance</h3>
   <h1>
     <Dai
-      color="var(--color-secondary)"
+      color="var(--color-primary)"
       size="h1"
       style={`font-size: ${balanceFontSize}`}>
       {wallet.formattedBalance(account.balance.toNumber())}
     </Dai>
   </h1>
 
-  <div class="address-box typo-text">
+  <div class="address-box typo-text typo-disable-calt">
     <Copyable
       showIcon={false}
       styleContent={false}

@@ -16,6 +16,7 @@ import {
   MainProcess,
   mainProcessMethods,
 } from "./ipc-types";
+import { parseRadicleUrl, throttled } from "./nativeCustomProtocolHandler";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -140,6 +141,18 @@ class WindowManager {
 
     this.window = window;
   }
+
+  focus() {
+    if (!this.window) {
+      return;
+    }
+
+    if (this.window.isMinimized()) {
+      this.window.restore();
+    }
+
+    this.window.focus();
+  }
 }
 
 const windowManager = new WindowManager();
@@ -160,7 +173,19 @@ installMainProcessHandler({
     clipboard.writeText(text);
   },
   async getVersion(): Promise<string> {
-    return app.getVersion();
+    if (isDev) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const version = require("../package.json")["version"];
+      const { stdout, stderr } = await execAsync("git rev-parse HEAD");
+
+      if (!version || stderr) {
+        return "0.0.0";
+      } else {
+        return `${version}-${stdout.trim()}`;
+      }
+    } else {
+      return app.getVersion();
+    }
   },
   async openPath(path: string): Promise<void> {
     shell.openPath(path);
@@ -230,27 +255,71 @@ app.on("will-quit", () => {
   proxyProcessManager.kill();
 });
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on("ready", () => {
-  proxyProcessManager.run().then(({ status, signal, output }) => {
-    windowManager.sendMessage({
-      kind: MainMessageKind.PROXY_ERROR,
-      data: {
-        status,
-        signal,
-        output,
-      },
+// Handle custom protocol on macOS
+app.on("open-url", (event, url) => {
+  event.preventDefault();
+
+  const parsedUrl = parseRadicleUrl(url);
+  if (parsedUrl) {
+    throttled(() => {
+      windowManager.sendMessage({
+        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: { url: parsedUrl },
+      });
     });
+  }
+});
+
+if (app.requestSingleInstanceLock()) {
+  // Handle custom protocol on Linux when Upstream is already running
+  app.on("second-instance", (_event, argv, _workingDirectory) => {
+    const parsedUrl = parseRadicleUrl(argv[1]);
+    if (parsedUrl) {
+      throttled(() => {
+        windowManager.focus();
+        windowManager.sendMessage({
+          kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+          data: { url: parsedUrl },
+        });
+      });
+    }
   });
 
-  if (isDev) {
-    setupWatcher();
+  // Handle custom protocol on Linux when Upstream is not running
+  const parsedUrl = parseRadicleUrl(process.argv[1]);
+  if (parsedUrl) {
+    throttled(() => {
+      windowManager.sendMessage({
+        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: { url: parsedUrl },
+      });
+    });
   }
 
-  windowManager.open();
-});
+  // This method will be called when Electron has finished
+  // initialization and is ready to create browser windows.
+  // Some APIs can only be used after this event occurs.
+  app.on("ready", () => {
+    proxyProcessManager.run().then(({ status, signal, output }) => {
+      windowManager.sendMessage({
+        kind: MainMessageKind.PROXY_ERROR,
+        data: {
+          status,
+          signal,
+          output,
+        },
+      });
+    });
+
+    if (isDev) {
+      setupWatcher();
+    }
+
+    windowManager.open();
+  });
+} else {
+  app.quit();
+}
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {

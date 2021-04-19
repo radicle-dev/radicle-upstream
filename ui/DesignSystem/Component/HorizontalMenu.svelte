@@ -3,7 +3,6 @@
   import { location } from "svelte-spa-router";
 
   import type { HorizontalItem } from "../../src/menu";
-  import * as path from "../../src/path";
 
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
@@ -32,11 +31,11 @@
   }
 
   nav :global(.menu-list-item:hover p) {
-    color: var(--color-secondary) !important;
+    color: var(--color-primary) !important;
   }
 
   nav :global(.menu-list-item:hover .icon svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-primary);
   }
 </style>
 
@@ -51,7 +50,7 @@
           dataCy={`${item.title.toLowerCase()}-tab`}
           counter={item.counter}
           href={item.href}
-          active={path.active(item.href, $location, item.looseActiveStateMatching)} />
+          active={$location.startsWith(item.href)} />
       </li>
     {/each}
   </ul>
