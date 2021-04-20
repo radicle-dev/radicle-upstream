@@ -5,6 +5,10 @@
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import * as theGraphApi from "../../src/theGraphApi";
+  import {
+    store as walletStore,
+    Status as WalletStatus,
+  } from "../../src/wallet";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -20,6 +24,8 @@
       "0xA66A5686D5c3A42C0b6c76FEd05e58C6bc851E9f"
     );
   })();
+
+  $: wallet = $walletStore;
 </script>
 
 <style>
@@ -122,21 +128,25 @@
           variant="circle" />
       </div>
     </Tooltip>
-    {#each orgs as org}
-      <Tooltip value={org.id}>
-        <div class="item indicator">
-          <Avatar size="regular" variant="square" />
+    {#if $wallet.status === WalletStatus.Connected}
+      {#each orgs as org}
+        <Tooltip value={org.id}>
+          <div
+            class="item indicator"
+            on:click|stopPropagation={() => push(path.org(org.id))}>
+            <Avatar size="regular" variant="square" />
+          </div>
+        </Tooltip>
+      {/each}
+      <Tooltip value="Create an org">
+        <div
+          class="item indicator"
+          data-cy="add-org-btn"
+          on:click|stopPropagation={() => modal.toggle(path.createOrg())}>
+          <AddOrgButton />
         </div>
       </Tooltip>
-    {/each}
-    <Tooltip value="Create an org">
-      <div
-        class="item indicator"
-        data-cy="add-org-btn"
-        on:click|stopPropagation={() => modal.toggle(path.createOrg())}>
-        <AddOrgButton />
-      </div>
-    </Tooltip>
+    {/if}
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
