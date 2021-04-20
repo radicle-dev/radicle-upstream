@@ -2835,6 +2835,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"baconjs@npm:^3.0.17":
+  version: 3.0.17
+  resolution: "baconjs@npm:3.0.17"
+  checksum: 4a1773d26f6ca11c78a187c47aa4fbb50609fb4ca2973835cd89a05b632b505f0e883c4e934a199b527239ea36d18cf92046622233673231ebd1e6a09b323c2c
+  languageName: node
+  linkType: hard
+
 "balanced-match@npm:^1.0.0":
   version: 1.0.0
   resolution: "balanced-match@npm:1.0.0"
@@ -10728,6 +10735,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^4.22.0
     "@typescript-eslint/parser": ^4.22.0
     "@walletconnect/client": ^1.4.1
+    baconjs: ^3.0.17
     big.js: ^6.0.3
     browserify: ^17.0.0
     chokidar: ^3.5.1
