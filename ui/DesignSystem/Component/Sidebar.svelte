@@ -19,13 +19,12 @@
 
   let orgs = [];
 
-  (async () => {
-    orgs = await theGraphApi.getOrgs(
-      "0xA66A5686D5c3A42C0b6c76FEd05e58C6bc851E9f"
-    );
-  })();
-
   $: wallet = $walletStore;
+  $: if ($wallet.status === WalletStatus.Connected) {
+    (async () => {
+      orgs = await theGraphApi.getOrgs($wallet.connected.account.address);
+    })();
+  }
 </script>
 
 <style>
