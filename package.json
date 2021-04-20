@@ -159,7 +159,7 @@
     "_private:proxy:build": "cargo build --all-features --all-targets",
     "_private:proxy:build:release": "cargo build --release",
     "_private:proxy:start:test": "cargo build --release --bin git-remote-rad && cargo run --release -- --test",
-    "_private:proxy:start:test:watch": "cargo build --release --bin git-remote-rad && cargo watch -x 'run --release -- --test'",
+    "_private:proxy:start:test:watch": "cargo build --release --bin git-remote-rad && cargo watch -x 'run --release'",
     "_private:webpack:ui:watch": "webpack build --watch --config-name ui",
     "postinstall": "patch-package && scripts/install-twemoji-assets.sh"
   },

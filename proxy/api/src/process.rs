@@ -296,7 +296,7 @@ async fn session_seeds(
 fn coco_run_config() -> RunConfig {
     RunConfig {
         sync: run_config::Sync {
-            interval: Duration::from_secs(5),
+            interval: Duration::from_secs(0),
         },
         ..RunConfig::default()
     }
