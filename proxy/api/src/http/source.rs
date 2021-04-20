@@ -67,11 +67,11 @@ fn commits_filter(
         .and_then(handler::commits)
 }
 
-/// `GET /local-state/<path>`
+/// `GET /local-state?path=<path>`
 fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("local-state")
-        .and(path::tail())
         .and(warp::get())
+        .and(http::with_qs::<LocalStateQuery>())
         .and_then(handler::local_state)
 }
 
@@ -103,7 +103,7 @@ fn tree_filter(
 
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::{path::Tail, reply, Rejection, Reply};
+    use warp::{reply, Rejection, Reply};
 
     use coco::git_ext::Oid;
 
@@ -206,8 +206,10 @@ mod handler {
     }
 
     /// Fetch the list [`coco::source::Branch`] for a local repository.
-    pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
-        let state = coco::source::local_state(path.as_str())
+    pub async fn local_state(
+        commits_query: super::LocalStateQuery,
+    ) -> Result<impl Reply, Rejection> {
+        let state = coco::source::local_state(&commits_query.path)
             .map_err(coco::state::Error::from)
             .map_err(error::Error::from)?;
 
@@ -254,6 +256,14 @@ mod handler {
 
         Ok(reply::json(&tree))
     }
+}
+
+/// Query parameters for [`handler::local_state`]
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalStateQuery {
+    /// Path to the repository to get the local state of
+    path: String,
 }
 
 /// Bundled query params to pass to the commits handler.
@@ -604,7 +614,13 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/local-state/{}", path.to_str().unwrap()))
+            .path(&format!(
+                "/local-state?{}",
+                serde_qs::to_string(&super::LocalStateQuery {
+                    path: path.to_str().unwrap().to_string()
+                })
+                .unwrap()
+            ))
             .reply(&api)
             .await;
 
