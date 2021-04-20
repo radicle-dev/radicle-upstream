@@ -4,6 +4,7 @@
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
+  import * as theGraphApi from "../../src/theGraphApi";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -11,6 +12,14 @@
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
   export let identity: Identity;
+
+  let orgs = [];
+
+  (async () => {
+    orgs = await theGraphApi.getOrgs(
+      "0xA66A5686D5c3A42C0b6c76FEd05e58C6bc851E9f"
+    );
+  })();
 </script>
 
 <style>
@@ -113,6 +122,13 @@
           variant="circle" />
       </div>
     </Tooltip>
+    {#each orgs as org}
+      <Tooltip value={org.id}>
+        <div class="item indicator">
+          <Avatar size="regular" variant="square" />
+        </div>
+      </Tooltip>
+    {/each}
     <Tooltip value="Create an org">
       <div
         class="item indicator"
