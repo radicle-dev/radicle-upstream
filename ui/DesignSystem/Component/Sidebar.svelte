@@ -143,7 +143,11 @@
         <div
           class="item indicator"
           data-cy="add-org-btn"
-          on:click|stopPropagation={() => modal.toggle(ModalCreateOrg)}>
+          on:click|stopPropagation={() => modal.toggle(
+              ModalCreateOrg,
+              () => {},
+              { identity }
+            )}>
           <AddOrgButton />
         </div>
       </Tooltip>

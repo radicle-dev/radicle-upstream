@@ -7,7 +7,7 @@
   import * as path from "../../src/path";
   import { ellipsed } from "../../src/style";
   import * as modal from "../../src/modal";
-  // import type { UnsealedSession } from "../../src/session";
+  import type { Identity } from "../../src/identity";
 
   const orgStore = org.store;
 
@@ -23,8 +23,7 @@
 
   $: wallet = $store;
 
-  // const session = getContext();
-  // console.log(session)
+  export let identity: Identity;
 </script>
 
 <style>
@@ -63,9 +62,8 @@
         style="margin-right: 16px"
         size="small"
         variant="circle"
-        title="cloudhead" />
-      <!-- title={session.identity.metadata.handle}
-      avatarFallback={session.identity.avatarFallback} /> -->
+        title={identity.metadata.handle}
+        avatarFallback={identity.avatarFallback} />
       <Copyable
         showIcon={false}
         styleContent={false}
