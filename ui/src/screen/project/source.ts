@@ -2,16 +2,16 @@ import { derived, get, writable } from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
-import * as error from "../../error";
-import * as config from "../../config";
-import type { HorizontalItem } from "../../menu";
-import * as path from "../../path";
-import type { Project, User } from "../../project";
-import * as remote from "../../remote";
-import * as source from "../../source";
+import * as error from "ui/src/error";
+import * as config from "ui/src/config";
+import type { HorizontalItem } from "ui/src/menu";
+import * as path from "ui/src/path";
+import type { Project, User } from "ui/src/project";
+import * as remote from "ui/src/remote";
+import * as source from "ui/src/source";
 
-import IconCommit from "../../../DesignSystem/Primitive/Icon/Commit.svelte";
-import IconFile from "../../../DesignSystem/Primitive/Icon/File.svelte";
+import IconCommit from "ui/DesignSystem/Primitive/Icon/Commit.svelte";
+import IconFile from "ui/DesignSystem/Primitive/Icon/File.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",

@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import type { Blob } from "../../../../src/screen/project/source";
+  import type { Blob } from "ui/src/screen/project/source";
 
   import FileSource from "../FileSource.svelte";
 

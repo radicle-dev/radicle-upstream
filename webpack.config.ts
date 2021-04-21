@@ -2,6 +2,7 @@ import path from "path";
 import sveltePreprocess from "svelte-preprocess";
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 
 interface Argv {
   mode?: "production" | "development";
@@ -85,6 +86,11 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
         stream: require.resolve("stream-browserify"),
       },
       extensions: [".svelte", ".ts", ".js"],
+      plugins: [
+        new TsconfigPathsPlugin({
+          extensions: [".svelte", ".ts", ".js"],
+        }),
+      ],
     },
     output: {
       filename: "bundle.js",
