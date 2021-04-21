@@ -19,7 +19,8 @@ import * as contract from "../src/funding/contract";
 import * as error from "../src/error";
 import * as ethereum from "../src/ethereum";
 import * as modal from "../src/modal";
-import * as path from "../src/path";
+
+import ModalWalletQRCode from "../Modal/Wallet/QRCode.svelte";
 
 export enum Status {
   Connected = "CONNECTED",
@@ -97,7 +98,7 @@ export function build(
   const qrCodeModal = {
     open: (uri: string, _cb: unknown, _opts?: unknown) => {
       uriStore.set(uri);
-      modal.toggle(path.walletQRCode(), onModalHide);
+      modal.toggle(ModalWalletQRCode, onModalHide);
     },
     close: () => {
       // N.B: this is actually called when the connection is established,

@@ -1,10 +1,11 @@
 <script lang="typescript">
-  import { createEventDispatcher, onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
   import { push } from "svelte-spa-router";
 
   import { UPSTREAM_DEFAULT_BRANCH } from "../src/config";
   import * as notification from "../src/notification";
   import * as error from "../src/error";
+  import * as modal from "../src/modal";
   import * as path from "../src/path";
   import * as remote from "../src/remote";
   import {
@@ -38,7 +39,6 @@
   let currentSelection: RepoType;
   let nameInput: HTMLInputElement;
 
-  const dispatch = createEventDispatcher();
   let startValidations = false;
 
   $: isNew = currentSelection === RepoType.New;
@@ -90,7 +90,7 @@
         })
       );
     } finally {
-      dispatch("hide");
+      modal.hide();
       loading = false;
       screen.unlock();
     }
@@ -288,7 +288,7 @@
         <Button
           dataCy="cancel-button"
           variant="transparent"
-          on:click={() => dispatch('hide')}>
+          on:click={() => modal.hide()}>
           Cancel
         </Button>
         <Button

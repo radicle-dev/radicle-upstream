@@ -1,7 +1,8 @@
 <script lang="typescript">
   import { push } from "svelte-spa-router";
-  import { createEventDispatcher, onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
 
+  import * as modal from "../src/modal";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
   import type { Project } from "../src/project";
@@ -25,7 +26,6 @@
   let value: string;
   $: value = $inputStore.trim();
 
-  const dispatch = createEventDispatcher();
   const urnValidation = urnValidationStore();
 
   onDestroy(() => {
@@ -35,7 +35,7 @@
   const navigateToProject = (project: Project) => {
     reset();
     push(path.project(project.urn));
-    dispatch("hide");
+    modal.hide();
   };
   const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
@@ -52,7 +52,7 @@
         break;
       case "Escape":
         reset();
-        dispatch("hide");
+        modal.hide();
         break;
     }
   };
@@ -84,7 +84,7 @@
     notification.info({
       message: "You’ll be notified when this project has been found.",
     });
-    dispatch("hide");
+    modal.hide();
   }
 
   $: tracked = $store.status === remote.Status.Success;
