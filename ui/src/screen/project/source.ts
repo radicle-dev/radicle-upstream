@@ -49,7 +49,7 @@ export interface Code {
 
 interface Screen {
   code: Writable<Code>;
-  history: source.CommitsHistory;
+  history: source.GroupedCommitsHistory;
   menuItems: HorizontalItem[];
   peer: User;
   project: Project;
@@ -92,11 +92,12 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
       fetchTreeRoot(selectedRevision),
     ]);
+    const groupedHistory = source.groupCommitHistory(history);
 
     screenStore.success({
       code: writable<Code>(root),
-      history,
-      menuItems: menuItems(project, history),
+      history: groupedHistory,
+      menuItems: menuItems(project, groupedHistory),
       peer,
       project,
       revisions: mapRevisions(revisions),
@@ -188,13 +189,14 @@ export const selectRevision = async (
         source.fetchCommits(project.urn, peer.peerId, revision),
         fetchTreeCode(),
       ]);
+      const groupedHistory = source.groupCommitHistory(history);
       code.set(newCode);
       tree.set(newTree);
 
       screenStore.success({
         ...screen.data,
-        history,
-        menuItems: menuItems(project, history),
+        history: groupedHistory,
+        menuItems: menuItems(project, groupedHistory),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -366,7 +368,7 @@ const mapRevisions = (
 
 const menuItems = (
   project: Project,
-  history: source.CommitsHistory
+  history: source.GroupedCommitsHistory
 ): HorizontalItem[] => {
   return [
     {

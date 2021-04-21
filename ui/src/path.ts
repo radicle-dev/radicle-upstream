@@ -27,17 +27,3 @@ export const projectSourceCommits = (urn: Urn): string =>
 export const project = projectSourceFiles;
 
 export const designSystemGuide = (): string => "/design-system-guide";
-
-// modal routes
-export const managePeers = (): string => "/manage-peers";
-export const newProject = (): string => "/new-project";
-export const search = (): string => "/search";
-export const shortcuts = (): string => "/shortcuts";
-export const walletQRCode = (): string => "/wallet/qrcode";
-export const linkAddress = (): string => "/funding/link";
-export const poolOnboarding = (): string => "/funding/pool/onboarding";
-export const poolTopUp = (): string => "/funding/pool/top-up";
-export const poolWithdraw = (): string => "/funding/pool/withdraw";
-export const collectFunds = (): string => "/funding/pool/collect";
-export const transaction = (): string => "/transaction";
-export const createOrg = (): string => "/orgs/create";

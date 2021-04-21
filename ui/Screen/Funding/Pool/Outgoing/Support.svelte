@@ -4,9 +4,10 @@
   import { Dai, Remote, TxButton } from "../../../../DesignSystem/Component";
 
   import Receivers from "../../../../DesignSystem/Component/Funding/Pool/Receivers.svelte";
+  import ModalTopUp from "../../../../Modal/Funding/Pool/TopUp.svelte";
+  import ModalWithdraw from "../../../../Modal/Funding/Pool/Withdraw.svelte";
 
   import * as modal from "../../../../src/modal";
-  import * as path from "../../../../src/path";
   import * as remote from "../../../../src/remote";
   import * as fundingPool from "../../../../src/funding/pool";
   import { TxKind, ongoing } from "../../../../src/transaction";
@@ -97,12 +98,12 @@
 
   const openTopUp = () => {
     fundingPool.store.set(pool);
-    modal.toggle(path.poolTopUp());
+    modal.toggle(ModalTopUp);
   };
 
   const openWithdrawModal = () => {
     fundingPool.store.set(pool);
-    modal.toggle(path.poolWithdraw());
+    modal.toggle(ModalWithdraw);
   };
 </script>
 

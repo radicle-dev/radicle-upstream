@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
   import { push } from "svelte-spa-router";
   import { Copyable, Modal } from "../../DesignSystem/Component";
   import { Avatar, Button, Emoji } from "../../DesignSystem/Primitive";
@@ -7,16 +6,16 @@
   import * as org from "../../src/org";
   import * as path from "../../src/path";
   import { ellipsed } from "../../src/style";
+  import * as modal from "../../src/modal";
   // import type { UnsealedSession } from "../../src/session";
 
-  const dispatch = createEventDispatcher();
   const orgStore = org.store;
 
   async function createOrg(owner): void {
     const orgAddr = await org.createOrg(owner, $store.signer, $store.provider);
     if (orgAddr) {
       push(path.org(orgAddr));
-      dispatch("hide");
+      modal.hide();
     } else {
       console.log("error");
     }
@@ -77,7 +76,7 @@
     </div>
     <!-- <p>Status: {$orgStore}</p> -->
     <div class="actions">
-      <Button variant="transparent" on:click={() => dispatch('hide')}>
+      <Button variant="transparent" on:click={() => modal.hide()}>
         Cancel
       </Button>
       <Button on:click={() => createOrg($wallet.connected.account.address)}>

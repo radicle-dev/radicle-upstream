@@ -14,6 +14,8 @@
   import { Avatar, Icon } from "../Primitive";
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
+  import ModalSearch from "../../Modal/Search.svelte";
+  import ModalCreateOrg from "../../Modal/Orgs/Create.svelte";
 
   export let identity: Identity;
 
@@ -141,7 +143,7 @@
         <div
           class="item indicator"
           data-cy="add-org-btn"
-          on:click|stopPropagation={() => modal.toggle(path.createOrg())}>
+          on:click|stopPropagation={() => modal.toggle(ModalCreateOrg)}>
           <AddOrgButton />
         </div>
       </Tooltip>
@@ -152,7 +154,7 @@
       <div
         class="item indicator"
         data-cy="search"
-        on:click|stopPropagation={() => modal.toggle(path.search())}>
+        on:click|stopPropagation={() => modal.toggle(ModalSearch)}>
         <Icon.MagnifyingGlass />
       </div>
     </Tooltip>

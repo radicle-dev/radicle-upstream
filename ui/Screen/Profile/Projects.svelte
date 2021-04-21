@@ -2,6 +2,8 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
+  import ModalNewProject from "../../Modal/NewProject.svelte";
+
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { fetchList, projects as store } from "../../src/project";
@@ -19,7 +21,7 @@
   const session: UnsealedSession = getContext("session");
 
   const create = () => {
-    modal.toggle(path.newProject());
+    modal.toggle(ModalNewProject);
   };
   const select = ({ detail: project }: { detail: Project }) =>
     push(path.project(project.urn));
