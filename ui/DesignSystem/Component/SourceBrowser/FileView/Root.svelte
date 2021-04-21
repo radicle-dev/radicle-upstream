@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import type { CommitHeader } from "../../../../src/source";
-  import type { Root } from "../../../../src/screen/project/source";
+  import type { CommitHeader } from "ui/src/source";
+  import type { Root } from "ui/src/screen/project/source";
 
   import EmptyState from "../../EmptyState.svelte";
   import Readme from "../Readme.svelte";
