@@ -1,37 +1,48 @@
 import { derived, get, writable } from "svelte/store";
+import type { SvelteComponent } from "svelte";
 
 type OnHide = () => void;
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const doNothing = () => {};
 
-type ModalOverlay =
-  | { show: true; route: string; onHide: OnHide }
-  | { show: false };
+type ModalOverlay = {
+  modalComponent: typeof SvelteComponent;
+  onHide: OnHide;
+  modalComponentProps: unknown;
+};
 
-const overlayStore = writable<ModalOverlay>({
-  show: false,
-});
+const overlayStore = writable<ModalOverlay | null>(null);
 export const store = derived(overlayStore, $store => $store);
 
 export const hide = (): void => {
-  const modal = get(store);
-  if (modal.show) {
-    modal.onHide();
+  const stored = get(store);
+  if (stored === null) {
+    return;
   }
 
-  overlayStore.set({ show: false });
+  stored.onHide();
+  overlayStore.set(null);
 };
 
-export const show = (route: string, onHide: OnHide = doNothing): void => {
-  overlayStore.set({ show: true, route, onHide });
+export const show = (
+  modalComponent: typeof SvelteComponent,
+  onHide: OnHide = doNothing,
+  modalComponentProps: unknown = {}
+): void => {
+  overlayStore.set({ modalComponent, onHide, modalComponentProps });
 };
 
-export const toggle = (route: string, onHide: OnHide = doNothing): void => {
-  const modal = get(store);
-  if (modal.show && modal.route === route) {
+export const toggle = (
+  modalComponent: typeof SvelteComponent,
+  onHide: OnHide = doNothing,
+  modalComponentProps: unknown = {}
+): void => {
+  const stored = get(store);
+
+  if (stored && stored.modalComponent === modalComponent) {
     hide();
     return;
   }
 
-  show(route, onHide);
+  show(modalComponent, onHide, modalComponentProps);
 };

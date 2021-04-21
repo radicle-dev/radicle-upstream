@@ -1,15 +1,15 @@
 <script lang="typescript">
   import * as modal from "../src/modal";
-  import * as path from "../src/path";
   import { store as transactions, selectedStore } from "../src/transaction";
 
   import Center from "../DesignSystem/Component/Transaction/Center.svelte";
+  import ModalTransaction from "../Modal/Transaction.svelte";
 
   const onSelect = (event: { detail: string }) => {
     const hash = event.detail;
     selectedStore.set(hash);
     modal.hide();
-    modal.toggle(path.transaction());
+    modal.toggle(ModalTransaction);
   };
 </script>
 

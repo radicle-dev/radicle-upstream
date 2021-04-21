@@ -3,11 +3,11 @@
 
   import Outgoing from "./Pool/Outgoing.svelte";
   import Incoming from "./Pool/Incoming.svelte";
+  import ModalCollect from "../../Modal/Funding/Pool/Collect.svelte";
 
   import * as modal from "../../src/modal";
   import * as fundingPool from "../../src/funding/pool";
   import type { Pool } from "../../src/funding/pool";
-  import * as path from "../../src/path";
   import { TxKind, ongoing } from "../../src/transaction";
   import { store as txs } from "../../src/transaction";
 
@@ -15,7 +15,7 @@
 
   function onCollect() {
     fundingPool.store.set(pool);
-    modal.toggle(path.collectFunds());
+    modal.toggle(ModalCollect);
   }
 
   let ongoingCollect = false;

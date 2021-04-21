@@ -1,12 +1,13 @@
-<script>
+<script lang="typescript">
   import * as modal from "../../src/modal";
-
-  export let modalRoutes = {};
-  const store = modal.store;
 
   const clickOutside = () => {
     modal.hide();
   };
+
+  const modalStore = modal.store;
+  // Hack to make svelte typecheck in the markup section.
+  $: store = $modalStore;
 </script>
 
 <style>
@@ -38,9 +39,13 @@
   }
 </style>
 
-<div class="modal" class:hide={!$store.show} data-cy="modal">
+<div class="modal" class:hide={store === null} data-cy="modal">
   <div class="overlay" on:click={clickOutside} />
   <div class="content">
-    <svelte:component this={modalRoutes[$store.route]} on:hide={modal.hide} />
+    {#if store !== null}
+      <svelte:component
+        this={store.modalComponent}
+        {...store.modalComponentProps} />
+    {/if}
   </div>
 </div>

@@ -20,6 +20,7 @@
     Tooltip,
   } from "../DesignSystem/Component";
   import PeerSelector from "../DesignSystem/Component/PeerSelector.svelte";
+  import ModalManagePeers from "../Modal/ManagePeers.svelte";
 
   import Source from "./Project/Source.svelte";
 
@@ -38,7 +39,7 @@
     }
   };
   const onPeerModal = () => {
-    modal.toggle(path.managePeers());
+    modal.toggle(ModalManagePeers);
   };
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {
     selectPeer(peer);
