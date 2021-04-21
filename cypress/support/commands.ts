@@ -79,9 +79,7 @@ export const createProjectWithFixture = (
 
 export const createEmptyProject = (
   name: string = "new-project",
-  description: string,
   path: string,
-  defaultBranch: string = "trunk",
   localhost: number = 17246
 ): Cypress.Chainable<void> =>
   requestOk({
@@ -96,8 +94,8 @@ export const createEmptyProject = (
         path,
         name,
       },
-      description,
-      defaultBranch,
+      description: "This is the description.",
+      defaultBranch: "main",
     }),
   });
 

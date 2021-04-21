@@ -57,9 +57,7 @@ context("p2p networking", () => {
           cy.log("Create a project via API");
           commands.createEmptyProject(
             projectName,
-            "description...",
             maintainerProjectsDir,
-            "main",
             maintainerNode.httpPort
           );
 
