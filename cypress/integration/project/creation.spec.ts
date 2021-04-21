@@ -6,10 +6,12 @@ context("project creation", () => {
   const withEmptyDirectoryStub = (callback: () => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
-      const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-directory`;
+      // We’re deliberately using a path with spaces and non-ascii
+      // characters.
+      const emptyDirectoryPath = `${pwd}/cypress/workspace/empty directöry`;
 
-      cy.exec(`rm -rf ${emptyDirectoryPath}`);
-      cy.exec(`mkdir -p ${emptyDirectoryPath}`);
+      cy.exec(`rm -rf "${emptyDirectoryPath}"`);
+      cy.exec(`mkdir -p "${emptyDirectoryPath}"`);
 
       ipcStub.getStubs().then(stubs => {
         stubs.selectDirectory.returns(emptyDirectoryPath);
@@ -18,7 +20,7 @@ context("project creation", () => {
       callback();
 
       // clean up the fixture
-      cy.exec(`rm -rf ${emptyDirectoryPath}`);
+      cy.exec(`rm -rf "${emptyDirectoryPath}"`);
     });
   };
 

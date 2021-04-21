@@ -267,7 +267,9 @@ export const fetchTree = (
 };
 
 export const getLocalState = (path: string): Promise<LocalState> => {
-  return api.get<LocalState>(`source/local-state/${path}`);
+  return api.get<LocalState>(`source/local-state`, {
+    query: { path },
+  });
 };
 
 const findReadme = (tree: Tree): string | null => {

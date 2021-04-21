@@ -1,10 +1,11 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
   import {
     ValidationStatus,
     getValidationState,
-  } from "../../src/validation.ts";
+    ValidationState,
+  } from "../../src/validation";
 
   import { Button, Input } from "../../DesignSystem/Primitive";
 
@@ -12,19 +13,20 @@
 
   const dispatch = createEventDispatcher();
 
-  let passphraseInput;
-  let repeatedPassphraseInput;
-  let passphrase;
-  let repeatedPassphrase;
+  let passphraseInput: HTMLInputElement;
+  let repeatedPassphraseInput: HTMLInputElement;
+  let passphrase = "";
+  let repeatedPassphrase = "";
 
-  let validations = false;
+  let validations: { [key: string]: string[] } | false = false;
   let beginValidation = false;
 
+  // @ts-expect-error: not part of the type definitions
   validatejs.options = {
     fullMessages: false,
   };
 
-  validatejs.validators.optional = (value, options) => {
+  validatejs.validators.optional = (value: unknown, options: unknown) => {
     return !validatejs.isEmpty(value)
       ? validatejs.single(value, options)
       : null;
@@ -45,10 +47,16 @@
     },
   };
 
-  let passphraseValidation = { status: ValidationStatus.NotStarted };
-  let repeatedPassphraseValidation = { status: ValidationStatus.NotStarted };
+  let passphraseValidation: ValidationState = {
+    status: ValidationStatus.NotStarted,
+  };
+  let repeatedPassphraseValidation: ValidationState = {
+    status: ValidationStatus.NotStarted,
+  };
 
-  const validate = () => {
+  // The `dummy` argument allows us to encode reactive dependencies for
+  // the caller
+  const validate = (_dummy?: unknown) => {
     if (!beginValidation) {
       return;
     }
@@ -61,14 +69,16 @@
       constraints
     );
 
+    // @ts-expect-error: `validations` is guaranteed to be a validations object
     passphraseValidation = getValidationState("passphrase", validations);
     repeatedPassphraseValidation = getValidationState(
       "repeatedPassphrase",
+      // @ts-expect-error: `validations` is guaranteed to be a validations object
       validations
     );
   };
 
-  $: validate(passphrase, repeatedPassphrase);
+  $: validate([passphrase, repeatedPassphrase]);
   $: if (
     passphrase &&
     repeatedPassphrase &&
@@ -95,7 +105,7 @@
     }
   };
 
-  const onKeydown = event => {
+  const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
       case "Enter":
         if (passphrase.length === 0) {
