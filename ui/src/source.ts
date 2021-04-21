@@ -37,7 +37,7 @@ export interface Commit {
   changeset: Record<string, unknown>;
 }
 
-interface Stats {
+export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
@@ -49,7 +49,7 @@ interface Commits {
 }
 
 export interface CommitsHistory {
-  history: CommitHistory;
+  history: CommitHeader[];
   stats: Stats;
 }
 
@@ -57,8 +57,6 @@ interface CommitGroup {
   time: string;
   commits: CommitHeader[];
 }
-
-type CommitHistory = CommitGroup[];
 
 export enum ObjectType {
   Blob = "BLOB",
@@ -190,7 +188,7 @@ export const fetchCommits = (
     .then(response => {
       return {
         stats: response.stats,
-        history: groupCommits(response.headers),
+        history: response.headers,
       };
     });
 };
@@ -324,12 +322,28 @@ const formatGroupTime = (t: number): string => {
     year: "numeric",
   });
 };
+export interface GroupedCommitsHistory {
+  history: CommitGroup[];
+  stats: Stats;
+}
 
-const groupCommits = (history: CommitHeader[]): CommitHistory => {
-  const days: CommitHistory = [];
+// A set of commits grouped by time.
+interface CommitGroup {
+  time: string;
+  commits: CommitHeader[];
+}
+
+export const groupCommitHistory = (
+  history: CommitsHistory
+): GroupedCommitsHistory => {
+  return { ...history, history: groupCommits(history.history) };
+};
+
+const groupCommits = (commits: CommitHeader[]): CommitGroup[] => {
+  const groupedCommits: CommitGroup[] = [];
   let groupDate: Date | undefined = undefined;
 
-  history = history.sort((a, b) => {
+  commits = commits.sort((a, b) => {
     if (a.committerTime > b.committerTime) {
       return -1;
     } else if (a.committerTime < b.committerTime) {
@@ -339,24 +353,24 @@ const groupCommits = (history: CommitHeader[]): CommitHistory => {
     return 0;
   });
 
-  for (const commit of history) {
+  for (const commit of commits) {
     const time = commit.committerTime * 1000;
     const date = new Date(time);
     const isNewDay =
-      !days.length ||
+      !groupedCommits.length ||
       !groupDate ||
       date.getDate() < groupDate.getDate() ||
       date.getMonth() < groupDate.getMonth() ||
       date.getFullYear() < groupDate.getFullYear();
 
     if (isNewDay) {
-      days.push({
+      groupedCommits.push({
         time: formatGroupTime(time),
         commits: [],
       });
       groupDate = date;
     }
-    days[days.length - 1].commits.push(commit);
+    groupedCommits[groupedCommits.length - 1].commits.push(commit);
   }
-  return days;
+  return groupedCommits;
 };
