@@ -78,8 +78,10 @@ pub fn update_payload(
     payload.subject = Person {
         name: metadata.handle.into(),
     };
-    let ethereum_claim = metadata.ethereum.map(EthereumClaimExtV1::from);
-    payload.with_ext(ethereum_claim)
+    if let Some(ethereum) = metadata.ethereum {
+        payload.set_ext(EthereumClaimExtV1::from(ethereum))?;
+    }
+    Ok(payload)
 }
 
 impl TryFrom<Metadata> for PersonPayload {
@@ -90,8 +92,9 @@ impl TryFrom<Metadata> for PersonPayload {
             name: metadata.handle.into(),
         };
         let mut payload = Self::new(person);
-        let ethereum_claim = metadata.ethereum.map(EthereumClaimExtV1::from);
-        payload.set_ext(ethereum_claim)?;
+        if let Some(ethereum) = metadata.ethereum {
+            payload.set_ext(EthereumClaimExtV1::from(ethereum))?;
+        }
 
         Ok(payload)
     }
