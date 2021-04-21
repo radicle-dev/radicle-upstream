@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import { getContext } from "svelte";
   import { fade } from "svelte/transition";
   import { push } from "svelte-spa-router";
 
@@ -11,7 +10,7 @@
   import { following as store, fetchFollowing } from "../../src/profile";
   import * as proxy from "../../src/proxy";
   import type { Project } from "../../src/project";
-  import type { UnsealedSession } from "../../src/session";
+  import * as sess from "../../src/session";
   import type { Urn } from "../../src/urn";
 
   import {
@@ -25,7 +24,7 @@
   } from "../../DesignSystem/Component";
   import { Button, Icon } from "../../DesignSystem/Primitive";
 
-  const session: UnsealedSession = getContext("session");
+  const session = sess.getUnsealedFromContext();
   const onCancel = (urn: Urn): void => {
     proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };

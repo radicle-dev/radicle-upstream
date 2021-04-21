@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { onMount, getContext } from "svelte";
+  import { onMount } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as localPeer from "../src/localPeer";
@@ -8,7 +8,7 @@
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
   import { fetch, selectPeer, refresh, store } from "../src/screen/project";
-  import type { UnsealedSession } from "../src/session";
+  import * as sess from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
 
@@ -28,7 +28,7 @@
   export let params: { urn: Urn };
 
   const { urn } = params;
-  const session: UnsealedSession = getContext("session");
+  const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 

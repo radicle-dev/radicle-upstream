@@ -1,3 +1,4 @@
+import * as svelte from "svelte";
 import { Readable, derived, get } from "svelte/store";
 
 import * as proxy from "./proxy";
@@ -85,6 +86,26 @@ export const settings: Readable<Settings> = derived(sessionStore, sess => {
     return defaultSetttings();
   }
 });
+
+// Get the unsealed session from the Svelte context. Throws if the
+// session is not unsealed.
+//
+// The function uses `svelte.getContext` and must be called from a
+// component.
+export const getUnsealedFromContext = (): UnsealedSession => {
+  const session = svelte.getContext("session") as Session;
+  if (session.status === Status.UnsealedSession) {
+    return session;
+  } else {
+    throw new error.Error({
+      code: error.Code.UnsealedSessionExpected,
+      message: "session is not unsealed",
+      details: {
+        status: session.status,
+      },
+    });
+  }
+};
 
 const fetchSession = async (): Promise<void> => {
   try {

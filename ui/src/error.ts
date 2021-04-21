@@ -60,6 +60,7 @@ export enum Code {
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
   UnknownException = "UnknownException",
+  UnsealedSessionExpected = "UnsealedSessionExpected",
 
   // Funding related error codes
   WalletConnectionFailure = "WalletConnectionFailure",

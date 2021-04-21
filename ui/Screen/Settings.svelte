@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import { getContext } from "svelte";
   import * as svelteStore from "svelte/store";
 
   import { selectedEnvironment as ethereumEnvironment } from "../src/ethereum";
@@ -14,7 +13,7 @@
     updateAppearance,
     updateFeatureFlags,
   } from "../src/session";
-  import type { UnsealedSession } from "../src/session";
+  import * as sess from "../src/session";
   import {
     themeOptions,
     uiFontOptions,
@@ -95,7 +94,7 @@
     { value: "off", title: "Turn off" },
   ];
 
-  const session = getContext("session") as UnsealedSession;
+  const session = sess.getUnsealedFromContext();
 </script>
 
 <style>
