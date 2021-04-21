@@ -80,6 +80,8 @@ pub fn update_payload(
     };
     if let Some(ethereum) = metadata.ethereum {
         payload.set_ext(EthereumClaimExtV1::from(ethereum))?;
+    } else {
+        payload.remove_ext::<EthereumClaimExtV1>()?;
     }
     Ok(payload)
 }
