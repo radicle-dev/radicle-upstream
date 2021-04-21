@@ -1,9 +1,10 @@
 import * as ipc from "./ipc";
 import * as session from "./session";
 import * as modal from "./modal";
-import * as path from "./path";
 import * as error from "./error";
 import { inputStore } from "./search";
+
+import ModalSearch from "../Modal/Search.svelte";
 
 export const register = (): void => {
   ipc.listenCustomProtocolInvocation(async message => {
@@ -68,5 +69,5 @@ const handleMessage = (message: ipc.CustomProtocolInvocation): void => {
   }
 
   inputStore.set(urn);
-  modal.show(path.search());
+  modal.show(ModalSearch);
 };

@@ -1,11 +1,11 @@
 <script lang="typescript">
   import { Button, Emoji } from "../../DesignSystem/Primitive";
+  import ModalLinkAddress from "../../Modal/Funding/LinkAddress.svelte";
 
   import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
 
   function onLink() {
-    modal.toggle(path.linkAddress());
+    modal.toggle(ModalLinkAddress);
   }
 </script>
 

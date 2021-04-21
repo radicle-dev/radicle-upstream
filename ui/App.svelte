@@ -27,21 +27,10 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import Lock from "./Screen/Lock.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import ModalManagePeers from "./Modal/ManagePeers.svelte";
-  import ModalNewProject from "./Modal/NewProject.svelte";
-  import ModalSearch from "./Modal/Search.svelte";
-  import ModalShortcuts from "./Modal/Shortcuts.svelte";
-  import ModalTransaction from "./Modal/Transaction.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
-  import ModalLinkAddress from "./Modal/Funding/LinkAddress.svelte";
-  import ModalPoolOnboarding from "./Modal/Funding/Onboarding.svelte";
-  import ModalWalletQRCode from "./Modal/Wallet/QRCode.svelte";
-  import ModalTopUp from "./Modal/Funding/Pool/TopUp.svelte";
-  import ModalWithdraw from "./Modal/Funding/Pool/Withdraw.svelte";
-  import ModalCollect from "./Modal/Funding/Pool/Collect.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -56,20 +45,6 @@
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
     "*": NotFound,
-  };
-
-  const modalRoutes = {
-    "/manage-peers": ModalManagePeers,
-    "/new-project": ModalNewProject,
-    "/search": ModalSearch,
-    "/shortcuts": ModalShortcuts,
-    "/wallet/qrcode": ModalWalletQRCode,
-    "/funding/link": ModalLinkAddress,
-    "/funding/pool/onboarding": ModalPoolOnboarding,
-    "/funding/pool/collect": ModalCollect,
-    "/funding/pool/withdraw": ModalWithdraw,
-    "/funding/pool/top-up": ModalTopUp,
-    "/transaction": ModalTransaction,
   };
 
   $: switch ($store.status) {
@@ -121,7 +96,7 @@
 
 <Bsod />
 <Hotkeys />
-<ModalOverlay {modalRoutes} />
+<ModalOverlay />
 <NotificationFaucet />
 <Theme />
 

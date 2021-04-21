@@ -23,7 +23,6 @@
     fundingEnvironmentOptions,
   } from "../src/settings";
   import { updateChecker } from "../src/updateChecker";
-  import * as path from "../src/path";
   import * as modal from "../src/modal";
 
   import { Button, Icon, Input } from "../DesignSystem/Primitive";
@@ -33,6 +32,7 @@
     SegmentedControl,
     StyledCopyable,
   } from "../DesignSystem/Component";
+  import ModalShortcuts from "../Modal/Shortcuts.svelte";
 
   const updateTheme = (event: CustomEvent) =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
@@ -190,7 +190,7 @@
       <h1>Settings</h1>
       <span
         class="typo-link"
-        on:click|stopPropagation={() => modal.toggle(path.shortcuts())}>
+        on:click|stopPropagation={() => modal.toggle(ModalShortcuts)}>
         Keyboard shortcuts
       </span>
     </div>

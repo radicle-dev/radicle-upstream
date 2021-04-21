@@ -1,5 +1,10 @@
 <script lang="typescript">
   import { location, pop, push } from "svelte-spa-router";
+  import type { SvelteComponent } from "svelte";
+
+  import ModalNewProject from "./Modal/NewProject.svelte";
+  import ModalSearch from "./Modal/Search.svelte";
+  import ModalShortcuts from "./Modal/Shortcuts.svelte";
 
   import * as modal from "./src/modal";
   import * as path from "./src/path";
@@ -7,6 +12,14 @@
   import { isMac } from "./src/settings";
   import * as hotkeys from "./src/hotkeys";
   import { isDev } from "./src/config";
+
+  const show = (destination: string) => {
+    modal.hide();
+    if (destination === $location) {
+      return;
+    }
+    push(destination);
+  };
 
   const toggle = (destination: string) => {
     if (destination === $location) {
@@ -16,11 +29,11 @@
     modal.hide();
   };
 
-  const toggleModal = (destination: string) => {
+  const toggleModal = (modalComponent: typeof SvelteComponent) => {
     if (path.designSystemGuide() === $location) {
       pop();
     }
-    modal.toggle(destination);
+    modal.toggle(modalComponent);
   };
 
   const onKeydown = (event: KeyboardEvent) => {
@@ -56,19 +69,19 @@
 
     switch (shortcut.key) {
       case hotkeys.ShortcutKey.Help:
-        toggleModal(path.shortcuts());
+        toggleModal(ModalShortcuts);
         break;
       case hotkeys.ShortcutKey.Settings:
-        toggle(path.settings());
+        show(path.settings());
         break;
       case hotkeys.ShortcutKey.Search:
-        toggleModal(path.search());
+        toggleModal(ModalSearch);
         break;
       case hotkeys.ShortcutKey.DesignSystem:
         toggle(path.designSystemGuide());
         break;
       case hotkeys.ShortcutKey.NewProjects:
-        toggleModal(path.newProject());
+        toggleModal(ModalNewProject);
         break;
     }
   };

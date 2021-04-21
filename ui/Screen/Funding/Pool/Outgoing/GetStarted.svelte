@@ -1,8 +1,8 @@
 <script lang="typescript">
   import { Button, Emoji } from "../../../../DesignSystem/Primitive";
+  import ModalPoolOnboarding from "../../../../Modal/Funding/Onboarding.svelte";
 
   import * as modal from "../../../../src/modal";
-  import * as path from "../../../../src/path";
   import * as fundingPool from "../../../../src/funding/pool";
 
   export let pool: fundingPool.Pool;
@@ -12,7 +12,7 @@
 
   function getStarted() {
     fundingPool.store.set(pool);
-    modal.toggle(path.poolOnboarding());
+    modal.toggle(ModalPoolOnboarding);
   }
 </script>
 

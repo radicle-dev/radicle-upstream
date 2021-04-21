@@ -8,6 +8,7 @@
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
+  import ModalSearch from "../../Modal/Search.svelte";
 
   export let identity: Identity;
 </script>
@@ -118,7 +119,7 @@
       <div
         class="item indicator"
         data-cy="search"
-        on:click|stopPropagation={() => modal.toggle(path.search())}>
+        on:click|stopPropagation={() => modal.toggle(ModalSearch)}>
         <Icon.MagnifyingGlass />
       </div>
     </Tooltip>
