@@ -15,7 +15,7 @@
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
   import ModalSearch from "../../Modal/Search.svelte";
-  import ModalCreateOrg from "../../Modal/Orgs/Create.svelte";
+  import ModalCreateOrg from "../../Modal/Org/Create.svelte";
 
   export let identity: Identity;
 
