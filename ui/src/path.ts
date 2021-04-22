@@ -10,6 +10,8 @@ export const profileFollowing = (): string => "/profile/following";
 export const profileFunding = (): string => "/profile/funding";
 
 export const org = (addr: string): string => `/org/${addr}`;
+export const orgProjects = (addr: string): string => `/org/${addr}/projects`;
+export const orgMembers = (addr: string): string => `/org/${addr}/members`;
 
 export const onboarding = (): string => "/onboarding";
 export const lock = (): string => "/lock";

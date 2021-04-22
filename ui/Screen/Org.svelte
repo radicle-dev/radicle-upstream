@@ -1,73 +1,80 @@
 <script lang="typescript">
+  import Router from "svelte-spa-router";
+
   import * as org from "../src/org";
+  import * as path from "../src/path";
   import { store } from "../src/wallet";
 
+  import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
+  import Header from "../DesignSystem/Component/Header/Large.svelte";
+  import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
   import { SidebarLayout } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
   export let params: { address: string };
 
-  const safeAddr = org.getSafeAddr(params.address, $store.provider);
+  import Projects from "./Org/Projects.svelte";
+  import Members from "./Org/Members.svelte";
+
+  const screenRoutes = {
+    "/org/:address/projects": Projects,
+    "/org/:address/members": Members,
+    "*": Projects,
+  };
+
+  $: topbarMenuItems = [
+    {
+      icon: Icon.ChevronLeftRight,
+      title: "Projects",
+      href: path.orgProjects(params.address),
+    },
+    {
+      icon: Icon.User,
+      title: "Members",
+      href: path.orgMembers(params.address),
+    },
+  ];
+
+  import ProjectsMenu from "./Org/ProjectsMenu.svelte";
+  import MembersMenu from "./Org/MembersMenu.svelte";
+  const menuRoutes = {
+    "/org/:address/projects": ProjectsMenu,
+    "/org/:address/members": MembersMenu,
+    "*": ProjectsMenu,
+  };
+
+  let gnosisSafeAddress = null;
+
+  (async () => {
+    try {
+      gnosisSafeAddress = await org.getSafeAddr(
+        params.address,
+        $store.provider
+      );
+    } catch (err) {
+      return null;
+    }
+  })();
 </script>
 
-<style>
-  header {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-width: var(--content-max-width);
-    background-color: var(--color-foreground-level-1);
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 var(--content-padding);
-    gap: 0.5rem;
-    height: 12.5rem;
-  }
-  .safe-addr {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  main {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    max-width: var(--content-max-width);
-    width: 100%;
-    margin: 0 auto;
-    padding: var(--content-padding);
-    gap: 2rem;
-  }
-</style>
+<SidebarLayout>
+  <Header name={params.address}>
+    <div slot="top">
+      <Router routes={menuRoutes} />
+    </div>
+  </Header>
 
-<SidebarLayout dataCy="org-screen">
-  <header>
-    <h1>{params.address}</h1>
-    {#await safeAddr}
-      Loading..
-    {:then addr}
-      <div class="safe-addr">
-        <Icon.Gnosis />
-        {addr}
-      </div>
-    {:catch error}
-      Error:
-      {error}
-    {/await}
-  </header>
-  <main>
-    <div class="projects">
-      <h3>Projects</h3>
-      <ul>
-        <li>project 1</li>
-        <li>project 2</li>
-      </ul>
+  <!-- TODO: This should go into the header.
+  {#if gnosisSafeAddress}
+    Gnosis safe address: {gnosisSafeAddress}
+  {/if}
+  -->
+
+  <ActionBar>
+    <div slot="left">
+      <HorizontalMenu items={topbarMenuItems} />
     </div>
-    <div class="members">
-      <h3>Members</h3>
-      <ul>
-        <li>member 1</li>
-        <li>member 2</li>
-      </ul>
-    </div>
-  </main>
+  </ActionBar>
+
+  <Router routes={screenRoutes} />
 </SidebarLayout>
