@@ -6,5 +6,5 @@
 </script>
 
 <span on:click|stopPropagation={() => modal.toggle(ModalAddMember)}>
-  <Button variant="outline" icon={Icon.Plus} on:click>Add a member</Button>
+  <Button variant="transparent" icon={Icon.Plus} on:click>Add a member</Button>
 </span>

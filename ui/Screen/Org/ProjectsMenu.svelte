@@ -6,7 +6,7 @@
 </script>
 
 <span on:click|stopPropagation={() => modal.toggle(ModalAnchorProject)}>
-  <Button variant="outline" icon={Icon.Anchor} on:click>
+  <Button variant="transparent" icon={Icon.Anchor} on:click>
     Anchor a project
   </Button>
 </span>

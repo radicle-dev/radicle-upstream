@@ -58,11 +58,7 @@
 </script>
 
 <SidebarLayout>
-  <Header name={params.address}>
-    <div slot="top">
-      <Router routes={menuRoutes} />
-    </div>
-  </Header>
+  <Header name={params.address} />
 
   <!-- TODO: This should go into the header.
   {#if gnosisSafeAddress}
@@ -73,6 +69,9 @@
   <ActionBar>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
+    </div>
+    <div slot="right">
+      <Router routes={menuRoutes} />
     </div>
   </ActionBar>
 
