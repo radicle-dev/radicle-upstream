@@ -1,11 +1,8 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
-  import {
-    ValidationStatus,
-    getValidationState,
-    ValidationState,
-  } from "../../src/validation";
+  import { ValidationStatus, getValidationState } from "../../src/validation";
+  import type { ValidationState } from "../../src/validation";
 
   import { Button, Input } from "../../DesignSystem/Primitive";
 
