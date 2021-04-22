@@ -3,16 +3,19 @@
   import Router from "svelte-spa-router";
 
   import { isExperimental } from "../src/config";
+  import * as modal from "../src/modal.ts";
   import * as path from "../src/path";
   import type { UnsealedSession } from "../src/session";
   import { settings } from "../src/session";
 
-  import { Icon } from "../DesignSystem/Primitive";
+  import { Button, Icon } from "../DesignSystem/Primitive";
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
   import Header from "../DesignSystem/Component/Header/Large.svelte";
   import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
+
+  import ModalNewProject from "../Modal/NewProject.svelte";
 
   import Following from "./Profile/Following.svelte";
   import Projects from "./Profile/Projects.svelte";
@@ -24,14 +27,6 @@
     "/profile/projects": Projects,
     "/profile/funding": Funding,
     "*": NotFound,
-  };
-
-  import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
-
-  const menuRoutes = {
-    "/profile/projects": ProjectsMenu,
-    "/profile/tracking": ProjectsMenu,
-    "*": ProjectsMenu,
   };
 
   const topbarMenuItems = [
@@ -63,8 +58,16 @@
     avatarFallback={session.identity.avatarFallback}
     name={session.identity.metadata.handle}
     peerId={session.identity.peerId}>
-    <div slot="top">
-      <Router routes={menuRoutes} />
+    <div slot="right">
+      <span on:click|stopPropagation={() => modal.toggle(ModalNewProject)}>
+        <Button
+          dataCy="new-project-button"
+          variant="outline"
+          icon={Icon.Plus}
+          on:click>
+          New project
+        </Button>
+      </span>
     </div>
   </Header>
 

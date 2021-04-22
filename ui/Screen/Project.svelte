@@ -68,7 +68,7 @@
       description={project.metadata.description}
       stats={project.stats}
       onClick={() => push(path.project(urn))}>
-      <div slot="top">
+      <div slot="right">
         <div style="display: flex">
           <PeerSelector
             peers={peerSelection}

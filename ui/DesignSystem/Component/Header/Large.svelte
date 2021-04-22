@@ -144,7 +144,7 @@
       </div>
     </div>
     <div class="banner-action">
-      <slot name="top" />
+      <slot name="right" />
     </div>
   </div>
 </div>
