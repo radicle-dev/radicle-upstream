@@ -134,6 +134,7 @@
         <Tooltip value={org.id}>
           <div
             class="item indicator"
+            class:active={$location.startsWith(path.org(org.id))}
             on:click|stopPropagation={() => push(path.org(org.id))}>
             <Avatar size="regular" variant="square" />
           </div>
