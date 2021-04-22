@@ -77,6 +77,28 @@ export const createProjectWithFixture = (
   });
 };
 
+export const createEmptyProject = (
+  name: string = "new-project",
+  path: string,
+  localhost: number = 17246
+): Cypress.Chainable<void> =>
+  requestOk({
+    url: `http://localhost:${localhost}/v1/projects`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      repo: {
+        type: "new",
+        path,
+        name,
+      },
+      description: "This is the description.",
+      defaultBranch: "main",
+    }),
+  });
+
 export const onboardUser = (
   handle = "secretariat"
 ): Cypress.Chainable<void> => {
@@ -89,3 +111,17 @@ export const onboardUser = (
 export const metaKey = (): string => {
   return navigator.platform.includes("Mac") ? "meta" : "ctrl";
 };
+
+/**
+ * Invokes `cy.request` and assert that the response status code is 2xx.
+ */
+function requestOk(
+  opts: Partial<Cypress.RequestOptions> & { url: string }
+): Cypress.Chainable<void> {
+  return cy
+    .request(opts)
+    .then(response => {
+      expect(response.status).to.be.within(200, 299, "Failed response");
+    })
+    .wrap(undefined);
+}
