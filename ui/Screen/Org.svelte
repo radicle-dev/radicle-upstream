@@ -6,6 +6,8 @@
   import { store } from "../src/wallet";
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
+  import AdditionalActionsDropdown from "../DesignSystem/Component/AdditionalActionsDropdown.svelte";
+  import FollowToggle from "../DesignSystem/Component/FollowToggle.svelte";
   import Header from "../DesignSystem/Component/Header/Large.svelte";
   import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
   import { SidebarLayout } from "../DesignSystem/Component";
@@ -43,6 +45,14 @@
     "*": ProjectsMenu,
   };
 
+  const additionalActionsDropdownItems = [
+    {
+      title: "Add something",
+      icon: Icon.Plus,
+      event: () => console.log("event(Add Something)"),
+    },
+  ];
+
   let gnosisSafeAddress = null;
 
   (async () => {
@@ -58,7 +68,17 @@
 </script>
 
 <SidebarLayout>
-  <Header name={params.address} />
+  <Header name={params.address}>
+    <div slot="right">
+      <div style="display: flex">
+        <FollowToggle following disabled />
+        <AdditionalActionsDropdown
+          headerTitle={params.address}
+          style="margin-left: 10px; border: 1px solid var(--color-foreground-level-3); border-radius: 4px;"
+          menuItems={additionalActionsDropdownItems} />
+      </div>
+    </div>
+  </Header>
 
   <!-- TODO: This should go into the header.
   {#if gnosisSafeAddress}
