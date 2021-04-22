@@ -1,9 +1,12 @@
 import * as ethers from "ethers";
+import * as svelteStore from "svelte/store";
+
 import type {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers";
-import * as svelteStore from "svelte/store";
+
+import * as transaction from "./transaction";
 
 const orgFactoryAbi = [
   "function createOrg(address) returns (address)",
@@ -50,7 +53,8 @@ export async function createOrg(
     const receipt: TransactionReceipt = await provider.waitForTransaction(
       response.hash
     );
-    console.log(receipt);
+    transaction.add(transaction.createOrg(response));
+    console.log("RECEIPT: ", receipt);
 
     const iface = new ethers.utils.Interface(orgFactoryAbi);
     console.log(iface);
