@@ -46,7 +46,7 @@ path = "../coco"
 
 [dependencies.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ad85ec32aca5786b3456b8e85d4f7b6fd30b4c08"
+rev = "aab2979190a346f743302ef2893d7dfac0c66612"
 
 [dependencies.radicle-avatar]
 git = "https://github.com/radicle-dev/radicle-avatar.git"
