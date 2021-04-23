@@ -1,5 +1,6 @@
 import { derived, writable, Readable } from "svelte/store";
 import { push } from "svelte-spa-router";
+import * as zod from "zod";
 
 import type * as identity from "./identity";
 import * as config from "./config";
@@ -42,6 +43,26 @@ interface Online {
 
 type Status = Stopped | Offline | Started | Syncing | Online;
 
+const statusSchema = zod.union([
+  zod.object({
+    type: zod.literal(StatusType.Stopped),
+  }),
+  zod.object({
+    type: zod.literal(StatusType.Offline),
+  }),
+  zod.object({
+    type: zod.literal(StatusType.Started),
+  }),
+  zod.object({
+    type: zod.literal(StatusType.Syncing),
+    syncs: zod.number(),
+  }),
+  zod.object({
+    type: zod.literal(StatusType.Online),
+    connected: zod.number(),
+  }),
+]);
+
 enum EventType {
   ProjectUpdated = "projectUpdated",
   RequestCreated = "requestCreated",
@@ -53,7 +74,7 @@ enum EventType {
 
 interface ProjectUpdated {
   type: EventType.ProjectUpdated;
-  peer: identity.PeerId;
+  provider: identity.PeerId;
   urn: urn.Urn;
 }
 
@@ -89,6 +110,36 @@ export type Event =
   | RequestEvent
   | { type: EventType.StatusChanged; old: Status; new: Status };
 
+const eventSchema: zod.Schema<Event> = zod.union([
+  zod.object({
+    type: zod.literal(EventType.ProjectUpdated),
+    provider: zod.string(),
+    urn: zod.string(),
+  }),
+  zod.object({
+    type: zod.literal(EventType.RequestCreated),
+    urn: zod.string(),
+  }),
+  zod.object({
+    type: zod.literal(EventType.RequestCloned),
+    peer: zod.string(),
+    urn: zod.string(),
+  }),
+  zod.object({
+    type: zod.literal(EventType.RequestQueried),
+    urn: zod.string(),
+  }),
+  zod.object({
+    type: zod.literal(EventType.RequestTimedOut),
+    urn: zod.string(),
+  }),
+  zod.object({
+    type: zod.literal(EventType.StatusChanged),
+    old: statusSchema,
+    new: statusSchema,
+  }),
+]);
+
 let eventSource: EventSource | null = null;
 
 session.session.subscribe(sess => {
@@ -102,7 +153,8 @@ session.session.subscribe(sess => {
         { withCredentials: true }
       );
       eventSource.addEventListener("message", msg => {
-        const event: Event = JSON.parse(msg.data);
+        const data = JSON.parse(msg.data);
+        const event = eventSchema.parse(data);
         eventStore.set(event);
       });
     }
