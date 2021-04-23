@@ -45,7 +45,7 @@
     placeholder="Enter your passphrase"
     on:enter={() => (passphrase.length > 0 ? onConfirm() : {})}
     autofocus
-    style={'width: 60%; margin-top: 1.5rem;'} />
+    style="width: 60%; margin-top: 1.5rem;" />
 
   <div class="submit">
     <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>
