@@ -25,6 +25,7 @@
 
   let value: string;
   $: value = $inputStore.trim();
+  $: storeValue = $store;
 
   const urnValidation = urnValidationStore();
 
@@ -40,13 +41,9 @@
   const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
       case "Enter":
-        // Navigate to project directly if present.
-        if ($store.status === remote.Status.Success) {
-          // FIXME(xla): Once remote/Remote offer stronger type guarantees this needs to go.
-          navigateToProject(
-            ($store as { status: remote.Status.Success; data: Project }).data
-          );
-        } else {
+        if (storeValue.status === remote.Status.Success) {
+          navigateToProject(storeValue.data);
+        } else if (storeValue.status === remote.Status.Error) {
           follow();
         }
         break;
