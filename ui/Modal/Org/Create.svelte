@@ -16,7 +16,7 @@
 
   const orgStore = org.store;
 
-  async function createOrg(owner): void {
+  async function createOrg(owner: string): Promise<void> {
     const orgAddr = await org.createOrg(
       owner,
       $walletStore.signer,

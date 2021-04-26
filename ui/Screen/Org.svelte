@@ -55,7 +55,7 @@
     },
   ];
 
-  let gnosisSafeAddress = null;
+  let gnosisSafeAddress: string | null = null;
 
   $: (async () => {
     try {

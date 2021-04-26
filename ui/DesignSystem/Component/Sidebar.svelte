@@ -2,6 +2,7 @@
   import { location, push } from "svelte-spa-router";
 
   import type { Identity } from "../../src/identity";
+  import type { Org } from "../../src/theGraphApi";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import * as theGraphApi from "../../src/theGraphApi";
@@ -19,7 +20,7 @@
 
   export let identity: Identity;
 
-  let orgs = [];
+  let orgs: Org[] = [];
 
   $: wallet = $walletStore;
   $: if ($wallet.status === WalletStatus.Connected) {
