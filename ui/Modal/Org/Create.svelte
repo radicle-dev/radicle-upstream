@@ -6,7 +6,10 @@
   import { Copyable, Modal } from "../../DesignSystem/Component";
   import { Avatar, Button, Emoji } from "../../DesignSystem/Primitive";
 
-  import { store as walletStore } from "../../src/wallet";
+  import {
+    store as walletStore,
+    Status as WalletStatus,
+  } from "../../src/wallet";
   import * as org from "../../src/org";
   import * as path from "../../src/path";
   import { ellipsed } from "../../src/style";
@@ -32,7 +35,17 @@
   }
 
   $: wallet = $walletStore;
+  $: console.log($wallet);
+  $: console.log($walletStore);
   $: console.log("ORG_STORE STATE: ", $orgStore);
+
+  let walletAddress: string = "";
+
+  $: if ($wallet.status === WalletStatus.Connected) {
+    walletAddress = $wallet.connected.account.address;
+  } else {
+    throw new Error("Org create modal called while wallet is not connected");
+  }
 </script>
 
 <style>
@@ -75,15 +88,15 @@
     <Copyable
       showIcon={false}
       styleContent={false}
-      copyContent={$wallet.connected.account.address}
+      copyContent={walletAddress}
       notificationText="Address copied to the clipboard">
-      {ellipsed($wallet.connected.account.address)}
+      {ellipsed(walletAddress)}
     </Copyable>
   </div>
 
   <div class="actions">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
-    <Button on:click={() => createOrg($wallet.connected.account.address)}>
+    <Button on:click={() => createOrg(walletAddress)}>
       Confirm in your wallet
     </Button>
   </div>
