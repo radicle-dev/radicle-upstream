@@ -134,7 +134,8 @@ context("project creation", () => {
           commands.pick("page", "name").type("bad$");
           commands
             .pick("page")
-            .contains(
+            .should(
+              "contain",
               "Your project name has unsupported characters in it. You can " +
                 "only use basic letters, numbers, and the _ , - and . characters."
             );
@@ -144,7 +145,8 @@ context("project creation", () => {
           commands.pick("page", "name").type("-nope");
           commands
             .pick("page")
-            .contains(
+            .should(
+              "contain",
               "Your project name should start with a letter or a number."
             );
 
@@ -153,7 +155,8 @@ context("project creation", () => {
           commands.pick("page", "name").type("x");
           commands
             .pick("page")
-            .contains(
+            .should(
+              "contain",
               "Your project name should be at least 2 characters long."
             );
 
@@ -162,7 +165,8 @@ context("project creation", () => {
           commands.pasteInto(["page", "name"], "x".repeat(257));
           commands
             .pick("page")
-            .contains(
+            .should(
+              "contain",
               "Your project name should not be longer than 64 characters."
             );
         });
@@ -186,7 +190,8 @@ context("project creation", () => {
             commands.pasteInto(["page", "description"], "x".repeat(257));
             commands
               .pick("page")
-              .contains(
+              .should(
+                "contain",
                 "Your project description should not be longer than 256 characters."
               );
             commands.pick("create-project-button").should("be.disabled");
@@ -207,7 +212,8 @@ context("project creation", () => {
 
             commands
               .pick("page", "new-project")
-              .contains(
+              .should(
+                "contain",
                 "Please choose a directory that's not already a git repository."
               )
               .should("exist");
@@ -246,7 +252,7 @@ context("project creation", () => {
           commands.pick("name").should("be.disabled");
           commands.pick("existing-project", "choose-path-button").click();
           commands.pick("name").should("have.value", repoName);
-          commands.pick("default-branch").contains("master");
+          commands.pick("default-branch").should("contain", "master");
         });
       });
 
@@ -260,7 +266,7 @@ context("project creation", () => {
           commands.pick("name").should("be.disabled");
           commands.pick("existing-project", "choose-path-button").click();
           commands.pick("name").should("have.value", repoName);
-          commands.pick("default-branch").contains("main");
+          commands.pick("default-branch").should("contain", "main");
         });
       });
     });
@@ -275,7 +281,8 @@ context("project creation", () => {
 
         commands
           .pick("existing-project")
-          .contains(
+          .should(
+            "contain",
             "The directory should contain a git repository with at least one branch"
           )
           .should("exist");
@@ -298,23 +305,26 @@ context("project creation", () => {
 
             commands
               .pick("project-screen", "header")
-              .contains("new-fancy-project");
+              .should("contain", "new-fancy-project");
 
             commands
               .pick("project-screen", "revision-selector")
-              .contains(`${expectedDefaultBranch} default`);
+              .should("contain", `${expectedDefaultBranch} default`);
 
             commands
               .pick("notification")
-              .contains("Project new-fancy-project.xyz successfully created");
+              .should(
+                "contain",
+                "Project new-fancy-project.xyz successfully created"
+              );
 
             commands.pick("profile").click();
             commands
               .pick("profile-screen", "project-list")
-              .contains("new-fancy-project.xyz");
+              .should("contain", "new-fancy-project.xyz");
             commands
               .pick("profile-screen", "project-list")
-              .contains("My new fancy project");
+              .should("contain", "My new fancy project");
           });
         }
 
@@ -342,28 +352,32 @@ context("project creation", () => {
           commands.pick("existing-project", "choose-path-button").click();
 
           commands.pick("name").should("have.value", repoName);
-          commands.pick("default-branch").contains("master");
+          commands.pick("default-branch").should("contain", "master");
           commands.pick("description").type("Best project");
 
           commands.pick("create-project-button").click();
-          commands.pick("project-screen", "header").contains(repoName);
-
-          commands.pick("project-screen", "header").contains("Best project");
+          commands.pick("project-screen", "header").should("contain", repoName);
 
           commands
-            .pick("notification")
-            .contains(`Project ${repoName} successfully created`);
-
-          commands.pick("profile").click();
-          commands.pick("profile-screen", "project-list").contains(repoName);
-          commands
-            .pick("profile-screen", "project-list")
-            .contains("Best project");
+            .pick("project-screen", "header")
+            .should("contain", "Best project");
 
           commands
             .pick("notification")
             .contains(`Project ${repoName} successfully created`)
             .should("exist");
+
+          commands.pick("profile").click();
+          commands
+            .pick("profile-screen", "project-list")
+            .should("contain", repoName);
+          commands
+            .pick("profile-screen", "project-list")
+            .should("contain", "Best project");
+
+          commands
+            .pick("notification")
+            .should("contain", `Project ${repoName} successfully created`);
           commands.pick("notification").contains("Close").click();
 
           // Make sure we can't add the same project twice.
