@@ -156,6 +156,10 @@ context("p2p networking", () => {
             .pickWithContent(["commits-page"], maintainerCommitSubject)
             .should("exist");
 
+          // Commit replication can take a while which leads this test to often
+          // fail on CI.
+          cy.wait(2000);
+
           cy.log("check that the commit shows up in the contributor's UI");
           nodeManager.asNode(contributorNode);
 

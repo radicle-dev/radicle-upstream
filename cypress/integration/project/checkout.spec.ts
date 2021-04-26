@@ -66,12 +66,9 @@ context("project checkout", () => {
 
         withWorkspaceStub(checkoutPath => {
           commands.pick("choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // prevents this spec from failing on CI.
-          cy.wait(500);
 
           // Make sure mock is set up correctly.
-          ipcStub.getStubs().then(stubs => {
+          ipcStub.getStubs().should(stubs => {
             expect(stubs.openPath.called).to.be.false;
           });
 
@@ -111,9 +108,6 @@ context("project checkout", () => {
           commands.pick("checkout-modal-toggle").click();
 
           commands.pick("choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // prevents this spec from failing on CI.
-          cy.wait(500);
 
           // Perform the checkout.
           commands.pick("checkout-button").click();
