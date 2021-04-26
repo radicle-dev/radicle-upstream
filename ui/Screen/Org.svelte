@@ -72,7 +72,10 @@
 
 <SidebarLayout>
   <Header>
-    <OrgHeader slot="left" name={params.address} {gnosisSafeAddress} />
+    <OrgHeader
+      slot="left"
+      gnosisSafeWalletAddress={params.address}
+      {gnosisSafeAddress} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
