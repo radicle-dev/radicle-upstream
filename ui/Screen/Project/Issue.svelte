@@ -2,7 +2,8 @@
   import { pop } from "svelte-spa-router";
 
   import { Markdown } from "../../DesignSystem/Primitive";
-  import { Comment, Header, Timeline } from "../../DesignSystem/Component";
+  import { Comment, Timeline } from "../../DesignSystem/Component";
+  import BackButton from "./BackButton.svelte";
 
   $: openClass = issue.open ? "open" : "closed";
 
@@ -149,7 +150,7 @@ Part of #277
 </style>
 
 <div class="container">
-  <Header.Back
+  <BackButton
     on:arrowClick={() => pop()}
     style="padding: 0 16px 24px 16px; border-bottom: 1px solid
     var(--color-foreground-level-3);">
@@ -169,7 +170,7 @@ Part of #277
         </span>
       </p>
     </div>
-  </Header.Back>
+  </BackButton>
   <article>
     <Markdown content={issue.description} />
   </article>

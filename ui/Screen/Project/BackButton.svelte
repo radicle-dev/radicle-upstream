@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { Icon } from "../../Primitive";
+  import { Icon } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();
   const onArrowClick = () => {
