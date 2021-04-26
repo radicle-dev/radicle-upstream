@@ -57,8 +57,9 @@
 
   let gnosisSafeAddress = null;
 
-  (async () => {
+  $: (async () => {
     try {
+      gnosisSafeAddress = null;
       gnosisSafeAddress = await org.getSafeAddr(
         params.address,
         $store.provider
@@ -71,7 +72,7 @@
 
 <SidebarLayout>
   <Header>
-    <OrgHeader slot="left" name={params.address} />
+    <OrgHeader slot="left" name={params.address} {gnosisSafeAddress} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
@@ -80,12 +81,6 @@
         menuItems={additionalActionsDropdownItems} />
     </div>
   </Header>
-
-  <!-- TODO: This should go into the header.
-  {#if gnosisSafeAddress}
-    Gnosis safe address: {gnosisSafeAddress}
-  {/if}
-  -->
 
   <ActionBar>
     <div slot="left">
