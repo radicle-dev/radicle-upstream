@@ -10,7 +10,7 @@ import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
 import FollowToggle from "./FollowToggle.svelte";
-import Header from "./Header";
+import Header from "./Header.svelte";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Identity from "./Identity.svelte";

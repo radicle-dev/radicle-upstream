@@ -3,7 +3,7 @@
   import Router from "svelte-spa-router";
 
   import { isExperimental } from "../src/config";
-  import * as modal from "../src/modal.ts";
+  import * as modal from "../src/modal";
   import * as path from "../src/path";
   import type { UnsealedSession } from "../src/session";
   import { settings } from "../src/session";
@@ -11,9 +11,10 @@
   import { Button, Icon } from "../DesignSystem/Primitive";
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
-  import Header from "../DesignSystem/Component/Header/Large.svelte";
+  import Header from "../DesignSystem/Component/Header.svelte";
   import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
+  import ProfileHeader from "./Profile/ProfileHeader.svelte";
 
   import ModalNewProject from "../Modal/NewProject.svelte";
 
@@ -54,27 +55,27 @@
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-  <Header
-    avatarFallback={session.identity.avatarFallback}
-    name={session.identity.metadata.handle}
-    peerId={session.identity.peerId}>
-    <div slot="right">
-      <span on:click|stopPropagation={() => modal.toggle(ModalNewProject)}>
-        <Button
-          dataCy="new-project-button"
-          variant="outline"
-          icon={Icon.Plus}
-          on:click>
-          New project
-        </Button>
-      </span>
-    </div>
+  <Header>
+    <ProfileHeader
+      slot="left"
+      avatarFallback={session.identity.avatarFallback}
+      name={session.identity.metadata.handle}
+      peerId={session.identity.peerId} />
+
+    <Button
+      slot="right"
+      dataCy="new-project-button"
+      variant="outline"
+      icon={Icon.Plus}
+      on:click={() => {
+        modal.toggle(ModalNewProject);
+      }}>
+      New project
+    </Button>
   </Header>
 
   <ActionBar>
-    <div slot="left">
-      <HorizontalMenu items={topbarMenuItems} />
-    </div>
+    <HorizontalMenu slot="left" items={topbarMenuItems} />
   </ActionBar>
 
   <Router routes={screenRoutes} />

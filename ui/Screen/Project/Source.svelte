@@ -7,7 +7,7 @@
   import type { HorizontalItem } from "../../src/menu";
   import * as notification from "../../src/notification";
   import * as path from "../../src/path";
-  import { checkout } from "../../src/project";
+  import * as proxy from "../../src/proxy";
   import type { Project, User } from "../../src/project";
   import {
     fetch,
@@ -46,11 +46,10 @@
   ) => {
     try {
       screen.lock();
-      const path = await checkout(
-        project.urn,
-        checkoutPath,
-        peer.identity.peerId
-      );
+      const path = await proxy.client.project.checkout(project.urn, {
+        path: checkoutPath,
+        peerId: peer.identity.peerId,
+      });
 
       notification.info({
         message: `${project.metadata.name} checked out to ${path}`,

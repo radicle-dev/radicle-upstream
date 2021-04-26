@@ -9,7 +9,8 @@
   import type { Urn } from "../../../src/urn";
 
   import { Icon } from "../../../DesignSystem/Primitive";
-  import { Header, Remote } from "../../../DesignSystem/Component";
+  import { Remote } from "../../../DesignSystem/Component";
+  import BackButton from "../BackButton.svelte";
 
   import Changeset from "../../../DesignSystem/Component/SourceBrowser/Changeset.svelte";
 
@@ -67,7 +68,7 @@
 
 <div class="commit-page" data-cy="commit-page">
   <Remote {store} let:data={commit}>
-    <Header.Back style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
+    <BackButton style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
       <h3 style="margin-bottom: .75rem">{commit.header.summary}</h3>
       <div class="metadata">
         <span class="field">
@@ -89,7 +90,7 @@
           </span>
         </span>
       </div>
-    </Header.Back>
+    </BackButton>
     <div class="content" data-cy="commit-header">
       <pre
         class="typo-mono"

@@ -11,7 +11,7 @@
 
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
-    description: project.metadata.description,
+    description: project.metadata.description || "",
     showMaintainerBadge: isMaintainer(userUrn, project),
   });
 </script>

@@ -6,6 +6,7 @@ import * as project from "../project";
 import * as remote from "../remote";
 import type { Urn } from "../urn";
 import * as validation from "../validation";
+import * as proxy from "../proxy";
 
 interface Screen {
   peers: project.Peer[];
@@ -23,8 +24,8 @@ export const fetch = (projectUrn: Urn): void => {
 
   let current: project.Project;
 
-  project
-    .fetch(projectUrn)
+  proxy.client.project
+    .get(projectUrn)
     .then(p => {
       current = p;
 
@@ -148,15 +149,15 @@ export const pendingPeers: Readable<
 );
 
 export const trackPeer = (projectUrn: Urn, peerId: PeerId): void => {
-  project
-    .trackPeer(projectUrn, peerId)
+  proxy.client.project
+    .peerTrack(projectUrn, peerId)
     .then(() => fetchPeers())
     .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
 export const untrackPeer = (projectUrn: Urn, peerId: PeerId): void => {
-  project
-    .untrackPeer(projectUrn, peerId)
+  proxy.client.project
+    .peerUntrack(projectUrn, peerId)
     .then(() => fetchPeers())
     .catch(err => screenStore.error(error.fromUnknown(err)));
 };

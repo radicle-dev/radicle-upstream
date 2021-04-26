@@ -30,3 +30,11 @@ jobs:
             ~/cache/proxy-target
           key: build-${{ runner.os }}-rust-v1-${{ hashFiles('Cargo.lock') }}
       - run: ci/run.sh
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-artifacts
+          path: |
+            cypress/screenshots/**/*.png
+            cypress/workspace/test-tmp/*/node-*/*.log
+            cypress/workspace/test-tmp/*/combined-node.log

@@ -19,6 +19,7 @@
     SidebarLayout,
     Tooltip,
   } from "../DesignSystem/Component";
+  import ProjectHeader from "./Project/ProjectHeader.svelte";
   import PeerSelector from "../DesignSystem/Component/PeerSelector.svelte";
   import ModalManagePeers from "../Modal/ManagePeers.svelte";
 
@@ -62,28 +63,29 @@
 
 <SidebarLayout dataCy="project-screen">
   <Remote {store} let:data={{ peerSelection, project, selectedPeer }}>
-    <Header.Large
-      urn={project.urn}
-      name={project.metadata.name}
-      description={project.metadata.description}
-      stats={project.stats}
-      onClick={() => push(path.project(urn))}>
-      <div slot="right">
-        <div style="display: flex">
-          <PeerSelector
-            peers={peerSelection}
-            on:modal={onPeerModal}
-            on:open={onOpenPeer}
-            on:select={onSelectPeer}
-            selected={selectedPeer} />
-          <Tooltip
-            position={CSSPosition.Left}
-            value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
-            <FollowToggle disabled following />
-          </Tooltip>
-        </div>
+    <Header>
+      <ProjectHeader
+        slot="left"
+        urn={project.urn}
+        name={project.metadata.name}
+        description={project.metadata.description}
+        stats={project.stats}
+        onClick={() => push(path.project(urn))} />
+
+      <div slot="right" style="display: flex;">
+        <PeerSelector
+          peers={peerSelection}
+          on:modal={onPeerModal}
+          on:open={onOpenPeer}
+          on:select={onSelectPeer}
+          selected={selectedPeer} />
+        <Tooltip
+          position={CSSPosition.Left}
+          value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
+          <FollowToggle disabled following />
+        </Tooltip>
       </div>
-    </Header.Large>
+    </Header>
     <Source
       {project}
       {selectedPeer}

@@ -5,6 +5,7 @@ import * as localPeer from "./localPeer";
 import * as project from "./project";
 import * as remote from "./remote";
 import * as waitingRoom from "./waitingRoom";
+import * as proxy from "./proxy";
 
 // TYPES
 interface Following {
@@ -71,14 +72,14 @@ export const following: Readable<remote.Data<Following | null>> = derived(
 
 // ACTIONS
 export const fetchFollowing = (): void => {
-  remote.fetch(followingProjectsStore, project.fetchTracking());
+  remote.fetch(followingProjectsStore, proxy.client.project.listTracked());
   remote.fetch(requestedProjectsStore, project.fetchSearching(), reqs => {
     return reqs.filter(req => req.type !== waitingRoom.Status.Cloned);
   });
 };
 
 export const showNotificationsForFailedProjects = async (): Promise<void> => {
-  const failedProjects = await project.fetchFailed();
+  const failedProjects = await proxy.client.project.listFailed();
   failedProjects.forEach(failedProject => {
     error.show(
       new error.Error({
