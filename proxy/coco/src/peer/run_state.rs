@@ -430,12 +430,7 @@ impl RunState {
 #[allow(clippy::needless_update, clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::{
-        collections::{BTreeSet, HashSet},
-        net::SocketAddr,
-        str::FromStr,
-        time::SystemTime,
-    };
+    use std::{collections::HashSet, iter, net::SocketAddr, str::FromStr, time::SystemTime};
 
     use assert_matches::assert_matches;
     use pretty_assertions::assert_eq;
@@ -611,7 +606,7 @@ mod test {
                         provider: librad::net::protocol::PeerInfo {
                             advertised_info: net::protocol::PeerAdvertisement::new(addr),
                             peer_id,
-                            seen_addrs: BTreeSet::new(),
+                            seen_addrs: iter::empty().into(),
                         },
                         payload: Payload {
                             urn: urn.clone(),

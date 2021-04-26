@@ -19,6 +19,7 @@ use librad::{
         local::{transport, url::LocalUrl},
         refs::Refs,
         replication::{self, ReplicateResult},
+        storage::fetcher::{self, BuildFetcher},
         tracking,
         types::{Namespace, Reference, Single},
         Urn,
@@ -163,14 +164,18 @@ where
     let owner = default_owner(peer).await?.ok_or(Error::MissingOwner)?;
     Ok(peer
         .using_storage(move |store| {
-            replication::replicate(
-                store,
-                config,
-                Some(owner),
-                urn.clone(),
-                remote_peer,
-                addr_hints,
-            )
+            let fetcher =
+                fetcher::PeerToPeer::new(urn, remote_peer, addr_hints).build_fetcher(store)?;
+
+            match fetcher {
+                Ok(fetcher) => {
+                    replication::replicate(store, fetcher, config, Some(owner)).map_err(Error::from)
+                },
+                Err(info) => Err(Error::FetchLocked {
+                    urn: info.urn,
+                    remote_peer: info.remote_peer,
+                }),
+            }
         })
         .await??)
 }
@@ -296,7 +301,17 @@ where
         .into()
         .unwrap_or_else(|| peer.protocol_config().replication);
     peer.using_storage(move |store| {
-        replication::replicate(store, config, None, urn, remote_peer, addr_hints)
+        let fetcher =
+            fetcher::PeerToPeer::new(urn, remote_peer, addr_hints).build_fetcher(store)?;
+        match fetcher {
+            Ok(fetcher) => {
+                replication::replicate(store, fetcher, config, None).map_err(Error::from)
+            },
+            Err(info) => Err(Error::FetchLocked {
+                urn: info.urn,
+                remote_peer: info.remote_peer,
+            }),
+        }
     })
     .await?
     .map_err(Error::from)
@@ -339,11 +354,21 @@ where
     let config = config
         .into()
         .unwrap_or_else(|| peer.protocol_config().replication);
-    Ok(peer
-        .using_storage(move |store| {
-            replication::replicate(store, config, None, urn, remote_peer, addr_hints)
-        })
-        .await??)
+    peer.using_storage(move |store| {
+        let fetcher =
+            fetcher::PeerToPeer::new(urn, remote_peer, addr_hints).build_fetcher(store)?;
+
+        match fetcher {
+            Ok(fetcher) => {
+                replication::replicate(store, fetcher, config, None).map_err(Error::from)
+            },
+            Err(info) => Err(Error::FetchLocked {
+                urn: info.urn,
+                remote_peer: info.remote_peer,
+            }),
+        }
+    })
+    .await?
 }
 
 /// Initialize a [`Project`] that is owned by the `owner`.

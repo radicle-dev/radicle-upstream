@@ -171,14 +171,9 @@ where
             loop {
                 match peer.bind().await {
                     Ok(bound) => {
-                        match bound.listen_addrs() {
-                            Ok(listen_addrs) => {
-                                addrs_tx.send(listen_addrs).expect("subroutines is gone");
-                            },
-                            Err(e) => {
-                                return Err(Error::Io(e));
-                            },
-                        }
+                        addrs_tx
+                            .send(bound.listen_addrs())
+                            .expect("subroutines is gone");
 
                         if let Err(e) = net::protocol::accept(bound, disco.clone().discover()).await
                         {
