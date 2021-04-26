@@ -9,7 +9,7 @@
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { following as store, fetchFollowing } from "../../src/profile";
-  import { cancelRequest } from "../../src/project";
+  import * as proxy from "../../src/proxy";
   import type { Project } from "../../src/project";
   import type { UnsealedSession } from "../../src/session";
   import type { Urn } from "../../src/urn";
@@ -27,7 +27,7 @@
 
   const session: UnsealedSession = getContext("session");
   const onCancel = (urn: Urn): void => {
-    cancelRequest(urn).then(fetchFollowing);
+    proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
     push(path.project(project.urn));

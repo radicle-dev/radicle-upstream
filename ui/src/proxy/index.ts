@@ -4,6 +4,7 @@ import * as config from "../config";
 import * as settings from "./settings";
 import * as identity from "./identity";
 import * as control from "./control";
+import * as project from "./project";
 import { Fetcher, ResponseError, RequestOptions } from "./fetcher";
 
 export { ResponseError };
@@ -34,10 +35,12 @@ export class Client {
   private fetcher: Fetcher;
 
   public control: control.Control;
+  public project: project.Client;
 
   constructor(baseUrl: string) {
     this.fetcher = new Fetcher(baseUrl);
     this.control = new control.Control(this.fetcher);
+    this.project = new project.Client(this.fetcher);
   }
 
   async sessionGet(options?: RequestOptions): Promise<Session> {

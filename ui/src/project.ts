@@ -10,32 +10,10 @@ import * as source from "./source";
 import type { Urn } from "./urn";
 import * as validation from "./validation";
 import type * as waitingRoom from "./waitingRoom";
+import * as proxy from "./proxy";
+import type { Project, Metadata, Stats } from "./proxy/project";
 
-// TYPES.
-export interface Metadata {
-  name: string;
-  defaultBranch: string;
-  description?: string;
-  maintainers: string[];
-}
-
-export enum RepoType {
-  New = "new",
-  Existing = "existing",
-}
-
-export interface New {
-  type: RepoType.New;
-  path: string;
-  name: string;
-}
-
-export interface Existing {
-  type: RepoType.Existing;
-  path: string;
-}
-
-type Repo = New | Existing;
+export type { Project, Metadata, Stats };
 
 export enum Role {
   Contributor = "contributor",
@@ -86,73 +64,20 @@ export interface User {
   role: Role;
 }
 
-export interface Stats {
-  branches: number;
-  commits: number;
-  contributors: number;
-}
-
-export interface Project {
-  urn: Urn;
-  shareableEntityIdentifier: string;
-  metadata: Metadata;
-  stats: Stats;
-}
-
-export interface Stats {
-  branches: number;
-  commits: number;
-  contributors: number;
-}
-
-export interface User {
-  identity: identity.Identity;
-  role: Role;
-}
-
-type Projects = Project[];
-
-// STATE
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
 const localStateStore = remote.createStore<source.LocalState>();
 export const localState = localStateStore.readable;
 
-const projectsStore = remote.createStore<Projects>();
+const projectsStore = remote.createStore<Project[]>();
 export const projects = projectsStore.readable;
-
-interface CreateInput {
-  repo: Repo;
-  description?: string;
-  defaultBranch: string;
-}
-
-export const create = (input: CreateInput): Promise<Project> => {
-  return api.post<CreateInput, Project>(`projects`, input);
-};
-
-interface CheckoutInput {
-  peerId?: string;
-  path: string;
-}
-
-export const checkout = (
-  urn: Urn,
-  path: string,
-  peerId?: identity.PeerId
-): Promise<string> => {
-  return api.post<CheckoutInput, string>(`projects/${urn}/checkout`, {
-    path,
-    peerId,
-  });
-};
 
 export const fetchList = (): void => {
   projectsStore.loading();
 
-  api
-    .get<Projects>("projects/contributed")
+  proxy.client.project
+    .listContributed()
     .then(projectsStore.success)
     .catch(err => projectsStore.error(error.fromUnknown(err)));
 };
@@ -170,18 +95,6 @@ const fetchLocalState = (path: string): void => {
     .catch(err => localStateStore.error(error.fromUnknown(err)));
 };
 
-export const cancelRequest = (urn: string): Promise<null> => {
-  return api.del(`projects/requests/${urn}`);
-};
-
-export const fetch = (projectUrn: Urn): Promise<Project> => {
-  return api.get<Project>(`projects/${projectUrn}`);
-};
-
-export const fetchFailed = (): Promise<Project[]> => {
-  return api.get<Project[]>("projects/failed");
-};
-
 export const fetchPeers = (
   projectUrn: Urn,
   signal?: AbortSignal
@@ -191,31 +104,6 @@ export const fetchPeers = (
 
 export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {
   return api.get<waitingRoom.ProjectRequest[]>("projects/requests");
-};
-
-export const fetchTracking = (): Promise<Project[]> => {
-  return api.get<Project[]>("projects/tracked");
-};
-
-export const fetchUserList = (urn: string): Promise<Project[]> => {
-  return api.get<Projects>(`projects/user/${urn}`);
-};
-
-export const trackPeer = (
-  projectUrn: Urn,
-  peerId: identity.PeerId
-): Promise<boolean> => {
-  return api.put<null, boolean>(`projects/${projectUrn}/track/${peerId}`, null);
-};
-
-export const untrackPeer = (
-  projectUrn: Urn,
-  peerId: identity.PeerId
-): Promise<boolean> => {
-  return api.put<null, boolean>(
-    `projects/${projectUrn}/untrack/${peerId}`,
-    null
-  );
 };
 
 // NEW PROJECT

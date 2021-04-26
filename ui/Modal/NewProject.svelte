@@ -10,7 +10,6 @@
   import * as remote from "../src/remote";
   import {
     clearLocalState,
-    create,
     defaultBranch,
     defaultBranchForNewRepository,
     localState,
@@ -19,8 +18,8 @@
     formatNameInput,
     extractName,
     repositoryPathValidationStore,
-    RepoType,
   } from "../src/project";
+  import * as proxy from "../src/proxy";
   import { ValidationStatus } from "../src/validation";
   import * as screen from "../src/screen";
   import type { Settings } from "../src/settings";
@@ -36,13 +35,15 @@
   } from "../DesignSystem/Component";
   import { CSSPosition } from "../src/style";
 
+  type RepoType = "new" | "existing";
+
   let currentSelection: RepoType;
   let nameInput: HTMLInputElement;
 
   let startValidations = false;
 
-  $: isNew = currentSelection === RepoType.New;
-  $: isExisting = currentSelection === RepoType.Existing;
+  $: isNew = currentSelection === "new";
+  $: isExisting = currentSelection === "existing";
 
   let name = "";
   let description = "";
@@ -66,14 +67,14 @@
       loading = true;
       screen.lock();
 
-      const response = await create({
+      const response = await proxy.client.project.create({
         description,
         defaultBranch: isNew
           ? await defaultBranchForNewRepository()
           : $defaultBranch,
         repo: isNew
-          ? { type: RepoType.New, name, path: newRepositoryPath }
-          : { type: RepoType.Existing, path: existingRepositoryPath },
+          ? { type: "new", name, path: newRepositoryPath }
+          : { type: "existing", path: existingRepositoryPath },
       });
 
       push(path.project(response.urn));
@@ -197,7 +198,7 @@
         active={isNew}
         on:click={ev => {
           ev.stopPropagation();
-          setCurrentSelection(RepoType.New);
+          setCurrentSelection('new');
         }}
         dataCy="new-project">
         <div slot="option-body">
@@ -220,7 +221,7 @@
         active={isExisting}
         on:click={ev => {
           ev.stopPropagation();
-          setCurrentSelection(RepoType.Existing);
+          setCurrentSelection('existing');
         }}
         dataCy="existing-project">
         <div slot="option-body">

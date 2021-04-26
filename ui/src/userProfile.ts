@@ -1,17 +1,18 @@
 import * as identity from "./identity";
-import * as project from "./project";
 import * as remote from "./remote";
 import * as error from "./error";
+import * as proxy from "./proxy";
+import type { Project } from "./proxy/project";
 
-const projectsStore = remote.createStore<project.Project[]>();
+const projectsStore = remote.createStore<Project[]>();
 export const projects = projectsStore.readable;
 
 const userStore = remote.createStore<identity.Identity>();
 export const user = userStore.readable;
 
 export const fetchProjects = (urn: string): void => {
-  project
-    .fetchUserList(urn)
+  proxy.client.project
+    .listForUser(urn)
     .then(projectsStore.success)
     .catch(err => projectsStore.error(error.fromUnknown(err)));
 };

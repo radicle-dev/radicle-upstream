@@ -1,6 +1,5 @@
 import { get } from "svelte/store";
 
-import * as api from "./api";
 import * as project from "./project";
 import * as remote from "./remote";
 import { UPSTREAM_DEFAULT_BRANCH } from "./config";
@@ -60,32 +59,6 @@ describe("creating a project", () => {
       process.nextTick(() => {
         expect(get(project.defaultBranch)).toEqual(UPSTREAM_DEFAULT_BRANCH);
       });
-    });
-  });
-
-  it("sends a correctly-formatted POST request to api", () => {
-    project
-      .create({
-        defaultBranch: "trunk",
-        description: "surfing",
-        repo: {
-          type: project.RepoType.New,
-          name: "radicle-surf",
-          path: "somewhere/in/the/machine",
-        },
-      })
-      .catch(reason => {
-        console.error("Project creation failed: ", reason);
-      });
-
-    expect(api.post).toHaveBeenCalledWith("projects", {
-      defaultBranch: "trunk",
-      description: "surfing",
-      repo: {
-        type: project.RepoType.New,
-        name: "radicle-surf",
-        path: "somewhere/in/the/machine",
-      },
     });
   });
 });
