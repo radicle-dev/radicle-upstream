@@ -199,10 +199,6 @@ the CLI, they're only to be used by other scripts.
 Here's a list of all scripts that are intended for developer use:
 
     yarn start                  # Start Upstream with hot-UI-code-reload
-    yarn start:dev              # Start Upstream with hot-UI-code-reload and
-                                # run proxy compiled with debug information
-    yarn start:test             # Start Upstream with hot-ui-code-reload and
-                                # run proxy in test mode with test fixtures
 
     yarn test                   # Run all UI tests
     yarn test:integration       # Run only Cypress integration tests
@@ -226,11 +222,6 @@ Here's a list of all scripts that are intended for developer use:
                                 #   - identity keys
                                 #   - monorepo
                                 #   - saved preferences
-
-    yarn ethereum:start         # Setup a local ethereum node to which we
-                                # deploy the Radicle Contracts and set the
-                                # intial balance of a stated local ethereum
-                                # development account.
 
 ### Design System
 

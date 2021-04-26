@@ -51,7 +51,8 @@ export const connectTwoNodes = (
 export const exec = (cmd: string, session: NodeSession): void => {
   cy.exec(
     `set -euo pipefail
-export PATH="$PWD/target/release:$PATH"
+export PATH="$PWD/target/debug:$PATH"
+export RADICLE_UNSAFE_FAST_KEYSTORE=1
 ${cmd}`,
     {
       env: {

@@ -1,4 +1,5 @@
 #!/usr/bin/bash
 
 export RAD_HOME="$(realpath ./sandbox/rad_home)"
-export PATH="$(realpath ./target/release):$PATH"
+export PATH="$(realpath ./target/debug):$PATH"
+export RADICLE_UNSAFE_FAST_KEYSTORE=1
