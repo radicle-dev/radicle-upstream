@@ -368,21 +368,6 @@ export function emoji(tx: Tx): string {
   }
 }
 
-export function receiverName(tx: Tx): string {
-  switch (tx.kind) {
-    case TxKind.CreateOrg:
-      return "Gnosis safe";
-    case TxKind.CollectFunds:
-    case TxKind.Withdraw:
-    case TxKind.ClaimRadicleIdentity:
-    case TxKind.Erc20Allowance:
-    case TxKind.SupportOnboarding:
-    case TxKind.TopUp:
-    case TxKind.UpdateSupport:
-      return "Radicle Pool";
-  }
-}
-
 export function isIncoming(tx: Tx): boolean {
   return direction(tx) === Direction.Incoming;
 }
