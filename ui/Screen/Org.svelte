@@ -3,6 +3,7 @@
 
   import * as org from "../src/org";
   import * as path from "../src/path";
+  import * as style from "../src/style.ts";
   import { store } from "../src/wallet";
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
@@ -49,9 +50,9 @@
 
   const additionalActionsDropdownItems = [
     {
-      title: "Add something",
-      icon: Icon.Plus,
-      event: () => console.log("event(Add Something)"),
+      title: "Change avatar",
+      icon: Icon.Pen,
+      event: () => console.log("event(Change avatar)"),
     },
   ];
 
@@ -79,7 +80,7 @@
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
-        headerTitle={params.address}
+        headerTitle={style.ellipsed(params.address, 7)}
         style="margin-left: 10px; border: 1px solid var(--color-foreground-level-3); border-radius: 4px;"
         menuItems={additionalActionsDropdownItems} />
     </div>
