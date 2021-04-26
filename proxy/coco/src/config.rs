@@ -59,7 +59,7 @@ where
 {
     let mut repconf = replication::Config::default();
     // This number based on discussions in https://github.com/radicle-dev/radicle-upstream/issues/1795
-    repconf.fetch_limit.peek = 5000000;
+    repconf.fetch_limit.peek = 5_000_000;
     net::peer::Config {
         signer,
         protocol: net::protocol::Config {
