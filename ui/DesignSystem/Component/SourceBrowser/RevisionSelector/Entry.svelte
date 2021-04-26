@@ -1,12 +1,12 @@
 <script lang="typescript">
-  import { RevisionType } from "../../../../src/source";
-  import { BadgeType } from "../../../../src/badge";
-  import type { Branch, Tag } from "../../../../src/source";
+  import { RevisionType } from "ui/src/source";
+  import { BadgeType } from "ui/src/badge";
+  import type { Branch, Tag } from "ui/src/source";
 
-  import IconBranch from "../../../Primitive/Icon/Branch.svelte";
-  import IconLabel from "../../../Primitive/Icon/Label.svelte";
-  import Spinner from "../../../Component/Spinner.svelte";
-  import Badge from "../../../Component/Badge.svelte";
+  import IconBranch from "ui/DesignSystem/Primitive/Icon/Branch.svelte";
+  import IconLabel from "ui/DesignSystem/Primitive/Icon/Label.svelte";
+  import Spinner from "ui/DesignSystem/Component/Spinner.svelte";
+  import Badge from "ui/DesignSystem/Component/Badge.svelte";
 
   export let loading: boolean = false;
   export let defaultBranch: boolean = false;

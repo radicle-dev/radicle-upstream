@@ -1,6 +1,8 @@
-import exitHook from "exit-hook";
+import * as stream from "stream";
+import { StringDecoder } from "string_decoder";
 import * as path from "path";
 import * as childProcess from "child_process";
+import exitHook from "exit-hook";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
 import * as fs from "fs-extra";
@@ -75,6 +77,7 @@ type NodeState = ConfiguredNode | StartedNode | OnboardedNode;
 class Node {
   private state: NodeState = { kind: StateKind.Configured };
   private logger: Logger;
+  private dataDir: string;
 
   id: NodeId;
   httpPort: number;
@@ -110,8 +113,9 @@ class Node {
   }
 
   constructor(id: NodeId, dataDir: string) {
+    this.dataDir = dataDir;
     this.logger = new Logger({
-      prefix: `[${id}]: `,
+      prefix: `[node ${id}]: `,
       indentationLevel: 2,
     });
 
@@ -122,7 +126,7 @@ class Node {
   }
 
   async start() {
-    this.logger.log(`starting node ${this.id}`);
+    this.logger.log(`starting node`);
 
     await fs.mkdirs(this.radHome);
 
@@ -139,18 +143,18 @@ class Node {
 
     process.on("exit", async () => {
       this.logger.log(`node terminated`);
-      await this.cleanup();
     });
 
-    process.stderr.setEncoding("utf8");
-    process.stderr.on("data", data => {
-      this.logger.log(`  STDERR: ${data.trim()}`);
-    });
+    const stderrLogPath = path.join(this.radHome, "stderr.log");
+    this.logger.log(`writing output to ${stderrLogPath}`);
+    const stderrLog = fs.createWriteStream(stderrLogPath);
+    process.stderr.pipe(stderrLog);
 
-    process.stdout.setEncoding("utf8");
-    process.stdout.on("data", data => {
-      this.logger.log(`  STDOUT: ${data.trim()}`);
-    });
+    const combinedLogPath = path.join(this.dataDir, "combined-node.log");
+    const combinedLog = fs.createWriteStream(combinedLogPath, { flags: "a" });
+    const prependNodeId = new LinePrefix(`Node ${this.id}: `);
+
+    process.stderr.pipe(prependNodeId).pipe(combinedLog);
 
     this.state = { ...this.state, kind: StateKind.Started, process: process };
 
@@ -253,11 +257,6 @@ class Node {
     } else {
       this.logger.log("ignoring stop node command, node wasn't running");
     }
-  }
-
-  private async cleanup(): Promise<void> {
-    this.logger.log("cleaning up state");
-    await fs.remove(this.radHome);
   }
 }
 
@@ -374,3 +373,26 @@ export const nodeManagerPlugin = createNodeManagerPlugin(nodeManager);
 exitHook(() => {
   nodeManager.stopAllNodes();
 });
+
+// A transform that prefixes each line from the source with the given
+// string and pushes it to the sink.
+class LinePrefix extends stream.Transform {
+  private buffer: string = "";
+  private stringDecoder = new StringDecoder();
+  constructor(private prefix: string) {
+    super();
+  }
+
+  _transform(data: Buffer, _encoding: string, next: () => void) {
+    const str = this.buffer + this.stringDecoder.write(data);
+    const lines = str.split(/\r?\n/);
+    this.buffer = lines.pop() || "";
+    lines.forEach(line => this.push(`${this.prefix}${line}\n`));
+    next();
+  }
+
+  _flush(done: () => void) {
+    this.push(`${this.prefix}${this.buffer}${this.stringDecoder.end()}\n`);
+    done();
+  }
+}

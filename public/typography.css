@@ -145,7 +145,7 @@ p,
   letter-spacing: 0.05rem;
 }
 
-/* Disables contextual alternates */
-.typo-disable-calt {
-  font-feature-settings: "calt" 0;
+/* Enable contextual alternates */
+.typo-enable-calt {
+  font-feature-settings: "calt";
 }

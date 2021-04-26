@@ -1,4 +1,4 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
   import { RadicleLogo } from "../../DesignSystem/Component";
@@ -8,7 +8,7 @@
 
   let ran = false;
 
-  const onKeydown = event => {
+  const onKeydown = (event: KeyboardEvent) => {
     if (!ran && event.key === "Enter") {
       next();
       ran = true;

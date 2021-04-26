@@ -53,21 +53,18 @@ context("p2p networking", () => {
           );
           cy.exec(`mkdir -p "${maintainerProjectsDir}"`);
 
-          ipcStub.getStubs().then(stubs => {
-            stubs.selectDirectory.returns(maintainerProjectsDir);
-          });
           const projectName = "new-fancy-project.xyz";
+          cy.log("Create a project via API");
+          commands.createEmptyProject(
+            projectName,
+            maintainerProjectsDir,
+            maintainerNode.httpPort
+          );
 
-          commands.pick("new-project-button").click();
-          commands.pasteInto(["name"], projectName);
-
-          commands.pick("new-project").click();
-          commands.pick("new-project", "choose-path-button").click();
-          // Make sure UI has time to update path value from stub,
-          // this prevents this spec from failing on CI.
-          cy.wait(500);
-
-          commands.pick("create-project-button").click();
+          cy.log("refresh the UI for the project to show up");
+          commands.pick("sidebar", "settings").click();
+          commands.pick("sidebar", "profile").click();
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
           commands
             .pickWithContent(["project-screen", "header"], "new-fancy-project")
@@ -142,7 +139,7 @@ context("p2p networking", () => {
             "Commit replication from maintainer to contributor";
 
           nodeManager.exec(
-            `cd ${projectPath}
+            `cd "${projectPath}"
             git commit --allow-empty -m "${maintainerCommitSubject}"
             git push rad`,
             maintainerNode
@@ -199,7 +196,7 @@ context("p2p networking", () => {
           );
 
           nodeManager.exec(
-            `cd ${forkedProjectPath}
+            `cd "${forkedProjectPath}"
             git commit --allow-empty -m "${contributorCommitSubject}"
             git push rad`,
             contributorNode

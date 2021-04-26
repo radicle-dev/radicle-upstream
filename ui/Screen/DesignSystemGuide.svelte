@@ -225,8 +225,8 @@
         <p class="typo-all-caps">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title={`<p class="typo-disable-calt">`}>
-        <p class="typo-disable-calt">0x0Baf8f...fe71F471</p>
+      <TypographySwatch title={`<p class="typo-enable-calt">`}>
+        <p class="typo-enable-calt">100x20</p>
       </TypographySwatch>
     </Section>
 

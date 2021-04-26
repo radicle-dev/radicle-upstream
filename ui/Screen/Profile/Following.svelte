@@ -3,6 +3,8 @@
   import { fade } from "svelte/transition";
   import { push } from "svelte-spa-router";
 
+  import ModalSearch from "../../Modal/Search.svelte";
+
   import { FADE_DURATION } from "../../src/config";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
@@ -111,7 +113,7 @@
       </p>
       <Button
         on:click={() => {
-          modal.toggle(path.search());
+          modal.toggle(ModalSearch);
         }}
         icon={Icon.MagnifyingGlass}
         variant="outline">
@@ -125,7 +127,7 @@
         emoji="🐎"
         primaryActionText="Look for a project"
         on:primaryAction={() => {
-          modal.toggle(path.search());
+          modal.toggle(ModalSearch);
         }} />
     </div>
   </Remote>

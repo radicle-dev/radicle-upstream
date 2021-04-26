@@ -2,16 +2,16 @@ import { derived, get, writable } from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
 import { push } from "svelte-spa-router";
 
-import * as error from "../../error";
-import * as config from "../../config";
-import type { HorizontalItem } from "../../menu";
-import * as path from "../../path";
-import type { Project, User } from "../../project";
-import * as remote from "../../remote";
-import * as source from "../../source";
+import * as error from "ui/src/error";
+import * as config from "ui/src/config";
+import type { HorizontalItem } from "ui/src/menu";
+import * as path from "ui/src/path";
+import type { Project, User } from "ui/src/project";
+import * as remote from "ui/src/remote";
+import * as source from "ui/src/source";
 
-import IconCommit from "../../../DesignSystem/Primitive/Icon/Commit.svelte";
-import IconFile from "../../../DesignSystem/Primitive/Icon/File.svelte";
+import IconCommit from "ui/DesignSystem/Primitive/Icon/Commit.svelte";
+import IconFile from "ui/DesignSystem/Primitive/Icon/File.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -49,7 +49,7 @@ export interface Code {
 
 interface Screen {
   code: Writable<Code>;
-  history: source.CommitsHistory;
+  history: source.GroupedCommitsHistory;
   menuItems: HorizontalItem[];
   peer: User;
   project: Project;
@@ -92,11 +92,12 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
       fetchTreeRoot(selectedRevision),
     ]);
+    const groupedHistory = source.groupCommitHistory(history);
 
     screenStore.success({
       code: writable<Code>(root),
-      history,
-      menuItems: menuItems(project, history),
+      history: groupedHistory,
+      menuItems: menuItems(project, groupedHistory),
       peer,
       project,
       revisions: mapRevisions(revisions),
@@ -188,13 +189,14 @@ export const selectRevision = async (
         source.fetchCommits(project.urn, peer.peerId, revision),
         fetchTreeCode(),
       ]);
+      const groupedHistory = source.groupCommitHistory(history);
       code.set(newCode);
       tree.set(newTree);
 
       screenStore.success({
         ...screen.data,
-        history,
-        menuItems: menuItems(project, history),
+        history: groupedHistory,
+        menuItems: menuItems(project, groupedHistory),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -366,7 +368,7 @@ const mapRevisions = (
 
 const menuItems = (
   project: Project,
-  history: source.CommitsHistory
+  history: source.GroupedCommitsHistory
 ): HorizontalItem[] => {
   return [
     {

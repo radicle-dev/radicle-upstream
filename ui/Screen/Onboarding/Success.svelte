@@ -1,14 +1,14 @@
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
   import { PeerId } from "../../DesignSystem/Component";
   import { Button } from "../../DesignSystem/Primitive";
 
-  export let peerId = null;
+  export let peerId: string;
 
   const dispatch = createEventDispatcher();
 
-  const onKeydown = event => {
+  const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
       next();
     }

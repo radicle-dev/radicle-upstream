@@ -47,6 +47,7 @@ export class Error extends globalThis.Error {
 export enum Code {
   BackendTerminated = "BackendTerminated",
   CommitFetchFailure = "CommitFetchFailure",
+  IdentityCreationFailure = "IdentityCreationFailure",
   KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
   LocalStateFetchFailure = "LocalStateFetchFailure",
   ProjectCheckoutFailure = "ProjectCheckoutFailure",

@@ -27,6 +27,7 @@ context("search", () => {
     it("follows the project by pressing the [enter] hotkey", () => {
       commands.pick("sidebar", "search").click();
       commands.pasteInto(["search-input"], `rad:git:${projectId}`);
+      commands.pick("search-modal", "follow-toggle").should("exist");
       cy.get("body").type("{enter}");
       commands
         .pickWithContent(["undiscovered-project"], projectId)
@@ -92,6 +93,9 @@ context("search", () => {
 
         commands.pick("sidebar", "search").click();
         commands.pick("search-input").type(urn);
+        commands
+          .pick("search-modal", "project-name")
+          .should("contain", "platinum");
         cy.get("body").type("{enter}");
 
         commands.pick("project-screen").should("exist");

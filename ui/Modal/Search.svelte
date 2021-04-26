@@ -1,7 +1,8 @@
 <script lang="typescript">
   import { push } from "svelte-spa-router";
-  import { createEventDispatcher, onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
 
+  import * as modal from "../src/modal";
   import * as notification from "../src/notification";
   import * as path from "../src/path";
   import type { Project } from "../src/project";
@@ -24,8 +25,8 @@
 
   let value: string;
   $: value = $inputStore.trim();
+  $: storeValue = $store;
 
-  const dispatch = createEventDispatcher();
   const urnValidation = urnValidationStore();
 
   onDestroy(() => {
@@ -35,24 +36,20 @@
   const navigateToProject = (project: Project) => {
     reset();
     push(path.project(project.urn));
-    dispatch("hide");
+    modal.hide();
   };
   const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
       case "Enter":
-        // Navigate to project directly if present.
-        if ($store.status === remote.Status.Success) {
-          // FIXME(xla): Once remote/Remote offer stronger type guarantees this needs to go.
-          navigateToProject(
-            ($store as { status: remote.Status.Success; data: Project }).data
-          );
-        } else {
+        if (storeValue.status === remote.Status.Success) {
+          navigateToProject(storeValue.data);
+        } else if (storeValue.status === remote.Status.Error) {
           follow();
         }
         break;
       case "Escape":
         reset();
-        dispatch("hide");
+        modal.hide();
         break;
     }
   };
@@ -84,7 +81,7 @@
     notification.info({
       message: "You’ll be notified when this project has been found.",
     });
-    dispatch("hide");
+    modal.hide();
   }
 
   $: tracked = $store.status === remote.Status.Success;
