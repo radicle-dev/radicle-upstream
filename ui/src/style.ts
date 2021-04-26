@@ -16,5 +16,5 @@ export enum CSSPosition {
 }
 
 export function ellipsed(x: string, length: number = 10): string {
-  return `${x.slice(0, length + 2)}...${x.slice(-length)}`;
+  return `${x.slice(0, length + 2)}…${x.slice(-length)}`;
 }

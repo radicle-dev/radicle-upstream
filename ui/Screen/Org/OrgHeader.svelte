@@ -1,13 +1,11 @@
 <script lang="typescript">
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
 
+  import * as style from "../../src/style";
+
   export let name: string | undefined = undefined;
   export let gnosisSafeWalletAddress: string;
-  $: [head, tail] = gnosisSafeWalletAddress
-    .split(/0x(.{8}).*(.{8})/)
-    .filter(Boolean);
-
-  export let gnosisSafeAddress: string | undefined = undefined;
+  export let gnosisSafeAddress: string | null = null;
 </script>
 
 <style>
@@ -30,7 +28,7 @@
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
-      {name || `0x${head}…${tail}`}
+      {name || style.ellipsed(gnosisSafeWalletAddress)}
     </h1>
     <div class="safe-addr">
       <Icon.Gnosis />
