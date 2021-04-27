@@ -1,3 +1,4 @@
+import ActionBar from "./ActionBar.svelte";
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Badge from "./Badge.svelte";
 import BranchBox from "./BranchBox.svelte";
@@ -49,6 +50,7 @@ import Topbar from "./Topbar.svelte";
 import QR from "./QR.svelte";
 
 export {
+  ActionBar,
   AdditionalActionsDropdown,
   Badge,
   BranchBox,

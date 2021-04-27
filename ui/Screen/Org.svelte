@@ -5,20 +5,23 @@
   import * as path from "../src/path";
   import { store } from "../src/wallet";
 
-  import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
-  import AdditionalActionsDropdown from "../DesignSystem/Component/AdditionalActionsDropdown.svelte";
-  import FollowToggle from "../DesignSystem/Component/FollowToggle.svelte";
-  import Header from "../DesignSystem/Component/Header.svelte";
-  import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
-  import { SidebarLayout } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
-
-  import OrgHeader from "./Org/OrgHeader.svelte";
-
-  export let params: { address: string };
+  import {
+    ActionBar,
+    AdditionalActionsDropdown,
+    FollowToggle,
+    Header,
+    HorizontalMenu,
+    SidebarLayout,
+  } from "../DesignSystem/Component";
 
   import Projects from "./Org/Projects.svelte";
   import Members from "./Org/Members.svelte";
+  import OrgHeader from "./Org/OrgHeader.svelte";
+  import ProjectsMenu from "./Org/ProjectsMenu.svelte";
+  import MembersMenu from "./Org/MembersMenu.svelte";
+
+  export let params: { address: string };
 
   const screenRoutes = {
     "/org/:address/projects": Projects,
@@ -39,8 +42,6 @@
     },
   ];
 
-  import ProjectsMenu from "./Org/ProjectsMenu.svelte";
-  import MembersMenu from "./Org/MembersMenu.svelte";
   const menuRoutes = {
     "/org/:address/projects": ProjectsMenu,
     "/org/:address/members": MembersMenu,
