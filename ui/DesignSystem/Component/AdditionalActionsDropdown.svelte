@@ -134,7 +134,7 @@
       <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
         {#if headerTitle}
           <div class="header">
-            <StyledCopyable value={headerTitle} />
+            <StyledCopyable value={headerTitle} expandable={false} truncate />
           </div>
         {/if}
 

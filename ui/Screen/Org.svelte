@@ -3,7 +3,6 @@
 
   import * as org from "../src/org";
   import * as path from "../src/path";
-  import * as style from "../src/style.ts";
   import { store } from "../src/wallet";
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
@@ -80,7 +79,7 @@
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
-        headerTitle={style.ellipsed(params.address, 7)}
+        headerTitle={params.address}
         style="margin-left: 10px; border: 1px solid var(--color-foreground-level-3); border-radius: 4px;"
         menuItems={additionalActionsDropdownItems} />
     </div>
