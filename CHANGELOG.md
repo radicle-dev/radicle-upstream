@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.2](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.1...v0.2.2) (2021-04-27)
+
+
+### Features
+
+* **ci:** collapse cypress tests in CI logs ([3aad194](https://github.com/radicle-dev/radicle-upstream/commit/3aad1946a5ff813a1a49b7d0f0a740b2dd789919))
+* **test:** store test node logs in file ([2137e6c](https://github.com/radicle-dev/radicle-upstream/commit/2137e6c320c0d13d02625d1d958cb94e463b488a))
+* **ui:** improve error handling ([e483582](https://github.com/radicle-dev/radicle-upstream/commit/e483582a7da637d02f8e8c015ed8e4a5d53ac8f7))
+
+
+### Bug Fixes
+
+* **proxy:** properly decode repo paths on project creation ([c6d2fcb](https://github.com/radicle-dev/radicle-upstream/commit/c6d2fcbbc8c1693143d9cd52091cc8606a563532)), closes [#1806](https://github.com/radicle-dev/radicle-upstream/issues/1806)
+* **tests:** eliminate unnecessary waits ([dd253a0](https://github.com/radicle-dev/radicle-upstream/commit/dd253a0590b515fdc4f868d5d9ba7ee62c4acf70))
+* **tests:** use explicit assertions for retry ([2ae60b6](https://github.com/radicle-dev/radicle-upstream/commit/2ae60b6861e057339bc25ff07c07f906f5c64988))
+* **ui:** clear search input after every search ([cb4a387](https://github.com/radicle-dev/radicle-upstream/commit/cb4a387ffaf9b03042a836299aa33ed0f325fe57))
+* **ui:** fix deep-links on macOS ([eaaf4af](https://github.com/radicle-dev/radicle-upstream/commit/eaaf4afcf116bdf3a433b3cd0c13f246d09b1522))
+* **ui:** replace `path.active` ([be98c75](https://github.com/radicle-dev/radicle-upstream/commit/be98c75fdacef413ce4af7c655b9acd4d5dbf21e))
+* **ui:** search enter key follow only when fetched ([7872159](https://github.com/radicle-dev/radicle-upstream/commit/78721592250bd33cf82ee0a822eccfddd6e8c8bd))
+* **ui:** validate event payload and fix fields ([f104765](https://github.com/radicle-dev/radicle-upstream/commit/f1047653a2a2aba287311b220f22a2bd765f0d19))
+
 ### [0.2.1](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.0...v0.2.1) (2021-04-12)
 
 
