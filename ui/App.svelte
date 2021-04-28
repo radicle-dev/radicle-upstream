@@ -1,12 +1,15 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
+  import wrap from "svelte-spa-router/wrap";
 
   import * as hotkeys from "./src/hotkeys.ts";
   import { isExperimental } from "./src/config";
   import "./src/localPeer.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
+  import * as screen from "./src/screen.ts";
   import * as error from "./src/error.ts";
+  import * as org from "./src/org.ts";
   import * as customProtocolHandler from "./src/customProtocolHandler.ts";
   import { fetch, session as store, Status } from "./src/session.ts";
 
@@ -34,6 +37,27 @@
   import Settings from "./Screen/Settings.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
+  const orgWrap = wrap({
+    component: Org,
+    conditions: [
+      async detail => {
+        try {
+          screen.lock();
+
+          // TODO(rudolfs): clean this up.
+          const orgAddress = detail.location.match(/\/org\/(.{42})/)[1];
+          await org.fetchOrg(orgAddress);
+
+          return true;
+        } catch {
+          return false;
+        } finally {
+          screen.unlock();
+        }
+      },
+    ],
+  });
+
   const routes = {
     "/": Blank,
     "/onboarding": Onboarding,
@@ -42,8 +66,8 @@
     "/profile/*": Profile,
     "/projects/:urn/*": Project,
     "/projects/:urn": Project,
-    "/org/:address/*": Org,
-    "/org/:address": Org,
+    "/org/:address/*": orgWrap,
+    "/org/:address": orgWrap,
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,

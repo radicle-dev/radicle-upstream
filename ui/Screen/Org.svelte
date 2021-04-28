@@ -1,9 +1,8 @@
 <script lang="typescript">
   import Router from "svelte-spa-router";
 
-  import * as org from "../src/org";
+  import { orgScreenStore } from "../src/org";
   import * as path from "../src/path";
-  import { store } from "../src/wallet";
 
   import { Icon } from "../DesignSystem/Primitive";
   import {
@@ -55,28 +54,14 @@
       event: () => console.log("event(Change avatar)"),
     },
   ];
-
-  let gnosisSafeAddress: string | null = null;
-
-  $: (async () => {
-    try {
-      gnosisSafeAddress = null;
-      gnosisSafeAddress = await org.getSafeAddr(
-        params.address,
-        $store.provider
-      );
-    } catch (err) {
-      return null;
-    }
-  })();
 </script>
 
 <SidebarLayout>
   <Header>
     <OrgHeader
       slot="left"
-      gnosisSafeWalletAddress={params.address}
-      {gnosisSafeAddress} />
+      gnosisSafeWalletAddress={$orgScreenStore.orgAddress}
+      gnosisSafeAddress={$orgScreenStore.gnosisSafeAddress} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown

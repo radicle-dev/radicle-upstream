@@ -1,8 +1,10 @@
+import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
 import { push } from "svelte-spa-router";
 
 import * as notification from "./notification";
 import * as path from "./path";
+import * as wallet from "./wallet";
 
 import type {
   TransactionReceipt,
@@ -88,12 +90,33 @@ export const createOrg = async (
   });
 };
 
-export const getSafeAddr = async (
+const getGnosisSafeAddr = async (
   orgAddress: string,
   provider: ethers.providers.Provider
-): Promise<string | null> => {
+): Promise<string> => {
   const org = new ethers.Contract(orgAddress, orgAbi, provider);
   const safeAddr: string = await org.owner();
 
   return safeAddr;
+};
+
+export type EthereumAddress = string;
+
+interface OrgScreenStore {
+  orgAddress: EthereumAddress;
+  gnosisSafeAddress: EthereumAddress;
+}
+
+export const orgScreenStore = svelteStore.writable<OrgScreenStore | null>(null);
+
+export const fetchOrg = async (orgAddress: EthereumAddress): Promise<void> => {
+  if (svelteStore.get(orgScreenStore)?.orgAddress === orgAddress) {
+    return;
+  }
+  const walletStore = svelteStore.get(wallet.store);
+  const gnosisSafeAddress = await getGnosisSafeAddr(
+    orgAddress,
+    walletStore.provider
+  );
+  orgScreenStore.set({ orgAddress, gnosisSafeAddress });
 };
