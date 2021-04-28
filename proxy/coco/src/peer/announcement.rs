@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use kv::Codec as _;
 
 use librad::{git::Urn, identities::urn::ParseError, net::peer::Peer, signer::BoxedSigner};
-use radicle_git_ext::{Oid, RefLike};
+use radicle_git_ext::Oid;
 use radicle_surf::git::git2;
 
 use crate::{peer::gossip, state};
@@ -67,9 +67,10 @@ async fn build(peer: &Peer<BoxedSigner>) -> Result<Updates, Error> {
             for project in &projects {
                 if let Some(refs) = state::list_owner_project_refs(peer, project.urn()).await? {
                     for ((one_level, oid), category) in refs.iter_categorised() {
+                        let path = one_level.clone().into_qualified(category.into());
                         list.insert((
                             Urn {
-                                path: Some(RefLike::from(category).join(one_level.clone())),
+                                path: Some(path.into()),
                                 ..project.urn()
                             },
                             *oid,
