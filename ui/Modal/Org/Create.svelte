@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
-
   import type { Identity } from "../../src/identity";
 
   import { Copyable, Modal } from "../../DesignSystem/Component";
@@ -11,33 +9,17 @@
     Status as WalletStatus,
   } from "../../src/wallet";
   import * as org from "../../src/org";
-  import * as path from "../../src/path";
   import { ellipsed } from "../../src/style";
   import * as modal from "../../src/modal";
 
   export let identity: Identity;
 
-  const orgStore = org.store;
-
-  async function createOrg(owner: string): Promise<void> {
-    const orgAddr = await org.createOrg(
-      owner,
-      $walletStore.signer,
-      $walletStore.provider
-    );
-
-    if (orgAddr) {
-      push(path.org(orgAddr));
-      modal.hide();
-    } else {
-      console.log("NO ORGADDR");
-    }
-  }
+  const createOrg = async (owner: string): Promise<void> => {
+    modal.hide();
+    await org.createOrg(owner, $walletStore.signer, $walletStore.provider);
+  };
 
   $: wallet = $walletStore;
-  $: console.log($wallet);
-  $: console.log($walletStore);
-  $: console.log("ORG_STORE STATE: ", $orgStore);
 
   let walletAddress: string = "";
 

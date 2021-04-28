@@ -262,20 +262,16 @@ class WalletConnectSigner extends ethers.Signer {
     if (this._environment === ethereum.Environment.Local) {
       return super.sendTransaction(transaction);
     }
-    console.log("resolvingProperties");
 
     const tx = await resolveProperties(transaction);
-    console.log("getAddress");
     const from = tx.from || (await this.getAddress());
 
-    console.log("sendTransaction", from, tx);
     const txHash = await this.walletConnect.sendTransaction({
       from,
       to: tx.to,
       value: BigNumberToPrimitive(tx.value),
       data: bytesLikeToString(tx.data),
     });
-    console.log("return");
 
     return {
       from,
