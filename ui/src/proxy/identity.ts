@@ -20,16 +20,22 @@ const avatarSchema: zod.ZodSchema<Avatar> = zod.object({
 
 export interface Identity {
   avatarFallback: Avatar;
-  metadata: {
-    handle: string;
-    ethereum: {
-      address: string;
-      expiration: string;
-    } | null;
-  };
+  metadata: Metadata;
   peerId: string;
   shareableEntityIdentifier: string;
   urn: string;
+}
+
+export interface Metadata {
+  handle: string;
+  ethereum: Ethereum | null;
+}
+
+// A claim over an Ethereum Address
+export interface Ethereum {
+  // TODO(nuno): make type-safe?
+  address: string;
+  expiration: string;
 }
 
 export const identitySchema: zod.ZodSchema<Identity> = zod.object({

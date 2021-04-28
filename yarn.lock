@@ -1230,6 +1230,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@multiformats/base-x@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@multiformats/base-x@npm:4.0.1"
+  checksum: 18217570660476f494a97406ffdb2d57205c8a4840e5edbd7b72cb62c7c2dc0b2e2ab38704db72225d2ae850ef67f4f378443741664efe8e547b5cf3c62bd8ac
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.4":
   version: 2.1.4
   resolution: "@nodelib/fs.scandir@npm:2.1.4"
@@ -9403,6 +9410,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"multibase@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "multibase@npm:4.0.4"
+  dependencies:
+    "@multiformats/base-x": ^4.0.1
+  checksum: 359e8c931ceb2826e46ac518815f26f8e64da0e4601cd61b290c5d95411f189bd4729a163ac6e77642e07977f248b58c349c4a2b20d24de6873993d8743c8694
+  languageName: node
+  linkType: hard
+
 "nanomatch@npm:^1.2.9":
   version: 1.2.13
   resolution: "nanomatch@npm:1.2.13"
@@ -10736,6 +10752,7 @@ __metadata:
     lodash: ^4.17.21
     marked: ^2.0.3
     mnemonist: ^0.38.3
+    multibase: ^4.0.4
     node-fetch: ^2.6.1
     npm-run-all: ^4.1.5
     patch-package: ^6.4.7

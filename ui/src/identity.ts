@@ -1,6 +1,8 @@
+import * as error from "./error";
 import * as remote from "./remote";
 import * as proxy from "./proxy";
-import type { Identity } from "./proxy/identity";
+import * as session from "./session";
+import type { Ethereum, Identity } from "./proxy/identity";
 
 export type { Identity };
 
@@ -15,6 +17,51 @@ export const createIdentity = (
 ): Promise<Identity> => {
   return proxy.client.identityCreate(params);
 };
+
+// Claim the ownership of an Ethereum address, stored on the user's Radicle Identity.
+export const claimEthAddress = async (address: string): Promise<void> =>
+  updateEthereumClaim({
+    address,
+    expiration: getExpirationDate().toISOString(),
+  });
+
+// Remove, if present, a claim over an Ethereum address from the user's Radicle Identity.
+export const removeEthClaim = async (): Promise<void> =>
+  updateEthereumClaim(null);
+
+const updateEthereumClaim = async (
+  ethereum: Ethereum | null
+): Promise<void> => {
+  try {
+    const unsealed = session.unsealed();
+    if (!unsealed) {
+      throw new Error("Session is not unsealed");
+    }
+    const { metadata } = unsealed.identity;
+    proxy.client.identityUpdate({
+      ...metadata,
+      ethereum,
+    });
+  } catch (err) {
+    error.show(
+      new error.Error({
+        code: error.Code.UpdateEthereumClaimFailure,
+        message: `Failed to update the Ethereum claim in your identity: ${err.message}`,
+        source: error.fromUnknown(err),
+      })
+    );
+    return;
+  }
+
+  session.fetch();
+};
+
+function getExpirationDate(): Date {
+  const days = 60;
+  const result = new Date();
+  result.setDate(result.getDate() + days);
+  return result;
+}
 
 export const fetch = (urn: string): Promise<Identity> => {
   return proxy.client.identityGet(urn);
