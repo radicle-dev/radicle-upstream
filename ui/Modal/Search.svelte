@@ -2,11 +2,12 @@
   import { push } from "svelte-spa-router";
   import { onDestroy } from "svelte";
 
-  import * as modal from "../src/modal";
-  import * as notification from "../src/notification";
-  import * as path from "../src/path";
-  import type { Project } from "../src/project";
-  import * as remote from "../src/remote";
+  import * as modal from "ui/src/modal";
+  import * as notification from "ui/src/notification";
+  import * as path from "ui/src/path";
+  import * as error from "ui/src/error";
+  import type { Project } from "ui/src/project";
+  import * as remote from "ui/src/remote";
   import {
     inputStore,
     projectRequest as request,
@@ -14,12 +15,12 @@
     reset,
     requestProject,
     searchProject,
-  } from "../src/search";
-  import { ValidationStatus } from "../src/validation";
-  import { urnValidationStore } from "../src/urn";
+  } from "ui/src/search";
+  import { ValidationStatus } from "ui/src/validation";
+  import { urnValidationStore } from "ui/src/urn";
 
-  import { Icon, Input } from "../DesignSystem/Primitive";
-  import { FollowToggle, Remote } from "../DesignSystem/Component";
+  import { Icon, Input } from "ui/DesignSystem/Primitive";
+  import { FollowToggle, Remote } from "ui/DesignSystem/Component";
 
   let id: string;
 
@@ -82,6 +83,10 @@
       message: "You’ll be notified when this project has been found.",
     });
     modal.hide();
+  }
+
+  $: if ($request.status === remote.Status.Error) {
+    error.show($request.error);
   }
 
   $: tracked = $store.status === remote.Status.Success;
