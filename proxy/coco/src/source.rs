@@ -157,6 +157,8 @@ pub struct Commit {
     pub stats: CommitStats,
     /// The changeset introduced by this commit.
     pub diff: diff::Diff,
+    /// The list of branches this commit belongs to.
+    pub branches: Vec<Branch>,
 }
 
 impl Serialize for Commit {
@@ -168,6 +170,7 @@ impl Serialize for Commit {
         changeset.serialize_field("header", &self.header)?;
         changeset.serialize_field("stats", &self.stats)?;
         changeset.serialize_field("diff", &self.diff)?;
+        changeset.serialize_field("branches", &self.branches)?;
         changeset.end()
     }
 }
@@ -653,12 +656,20 @@ pub fn commit(browser: &mut Browser<'_>, sha1: Oid) -> Result<Commit, Error> {
         }
     }
 
+    let oid: git2::Oid = sha1.into();
+    let branches = browser
+        .revision_branches(oid)?
+        .into_iter()
+        .map(|branch| Branch(branch.name.to_string()))
+        .collect();
+
     Ok(Commit {
         header: CommitHeader::from(commit),
         stats: CommitStats {
             additions,
             deletions,
         },
+        branches,
         diff,
     })
 }
