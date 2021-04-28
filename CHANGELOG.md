@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.3](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.2...v0.2.3) (2021-04-28)
+
+
+### Bug Fixes
+
+* **proxy:** qualify announcement ([72c54d2](https://github.com/radicle-dev/radicle-upstream/commit/72c54d22a4a159f073ceef4ec4b3d6a866a547fc))
+* **ui:** display branch a commit belongs to ([0141921](https://github.com/radicle-dev/radicle-upstream/commit/0141921168c80d946422d93882a6522b5ed2506a)), closes [#1717](https://github.com/radicle-dev/radicle-upstream/issues/1717) [#1798](https://github.com/radicle-dev/radicle-upstream/issues/1798) [#1717](https://github.com/radicle-dev/radicle-upstream/issues/1717) [#1793](https://github.com/radicle-dev/radicle-upstream/issues/1793)
+
 ### [0.2.2](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.1...v0.2.2) (2021-04-27)
 
 
