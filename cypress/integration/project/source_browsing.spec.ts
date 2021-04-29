@@ -49,6 +49,7 @@ context("project source browsing", () => {
           .pick("commit-header")
           .contains("Commit 223aaf87d6ea62eef0014857640fd7c8dd0f80b5")
           .should("exist");
+        commands.pick("commit-branch").should("contain", "master");
       });
 
       it("shows the commit history for another branch", () => {
@@ -76,6 +77,8 @@ context("project source browsing", () => {
             "Commit 27acd68c7504755aa11023300890bb85bbd69d45"
           )
           .should("exist");
+
+        commands.pick("commit-branch").should("contain", "dev");
       });
     });
   });

@@ -1,21 +1,25 @@
 <script lang="typescript">
   import { pop } from "svelte-spa-router";
 
-  import { formatCommitTime } from "../../../src/source";
-  import {
-    commit as store,
-    fetchCommit,
-  } from "../../../src/screen/project/source";
-  import type { Urn } from "../../../src/urn";
+  import * as error from "ui/src/error";
+  import { formatCommitTime } from "ui/src/source";
+  import { commit, fetchCommit } from "ui/src/screen/project/source";
+  import type { Urn } from "ui/src/urn";
+  import * as remote from "ui/src/remote";
 
-  import { Icon } from "../../../DesignSystem/Primitive";
-  import { Remote } from "../../../DesignSystem/Component";
+  import { Icon } from "ui/DesignSystem/Primitive";
   import BackButton from "../BackButton.svelte";
 
-  import Changeset from "../../../DesignSystem/Component/SourceBrowser/Changeset.svelte";
+  import Changeset from "ui/DesignSystem/Component/SourceBrowser/Changeset.svelte";
 
   export let params: { hash: string; urn: Urn };
   const { hash } = params;
+
+  $: {
+    if ($commit.status === remote.Status.Error) {
+      error.show($commit.error);
+    }
+  }
 
   fetchCommit(hash);
 </script>
@@ -67,26 +71,31 @@
 </style>
 
 <div class="commit-page" data-cy="commit-page">
-  <Remote {store} let:data={commit}>
+  {#if $commit.status === remote.Status.Success}
     <BackButton style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
-      <h3 style="margin-bottom: .75rem">{commit.header.summary}</h3>
+      <h3 style="margin-bottom: .75rem">{$commit.data.header.summary}</h3>
       <div class="metadata">
         <span class="field">
           <!-- NOTE(cloudhead): These awful margin hacks are here because
             there is a bug in prettier that breaks our HTML if we try to format
             it differently. -->
-          <span>{commit.header.author.name}</span>
+          <span>{$commit.data.header.author.name}</span>
           <span>committed</span>
-          <span class="typo-mono">{commit.header.sha1.substring(0, 7)}</span>
-          <span style="margin-right: -1ch">to</span>
-          <span class="branch typo-semi-bold">
-            <Icon.Branch
-              style="vertical-align: bottom; fill:
-              var(--color-foreground-level-6)" />
-            <span style="margin-left: -0.5ch">{commit.branch}</span>
-          </span>
+          <span
+            class="typo-mono">{$commit.data.header.sha1.substring(0, 7)}</span>
+          {#if $commit.data.branches.length > 0}
+            <span style="margin-right: -1ch">to</span>
+            <span class="branch typo-semi-bold">
+              <Icon.Branch
+                style="vertical-align: bottom; fill:
+                var(--color-foreground-level-6)" />
+              <span
+                data-cy="commit-branch"
+                style="margin-left: -0.5ch">{$commit.data.branches[0]}</span>
+            </span>
+          {/if}
           <span style="margin-left: -0.5ch">
-            {formatCommitTime(commit.header.committerTime)}
+            {formatCommitTime($commit.data.header.committerTime)}
           </span>
         </span>
       </div>
@@ -95,12 +104,12 @@
       <pre
         class="typo-mono"
         style="margin-bottom: 1rem">
-        {commit.header.summary}
+        {$commit.data.header.summary}
       </pre>
       <pre
         class="description"
         style="margin-bottom: 1rem">
-        {commit.header.description}
+        {$commit.data.header.description}
       </pre>
       <hr />
       <div class="context">
@@ -108,18 +117,19 @@
           <p class="field">
             Authored by
             <span class="author typo-semi-bold">
-              {commit.header.author.name}
+              {$commit.data.header.author.name}
             </span>
-            <span class="typo-mono">&lt;{commit.header.author.email}&gt;</span>
+            <span
+              class="typo-mono">&lt;{$commit.data.header.author.email}&gt;</span>
           </p>
-          {#if commit.header.committer.email != commit.header.author.email}
+          {#if $commit.data.header.committer.email != $commit.data.header.author.email}
             <p class="field">
               Committed by
               <span class="author typo-semi-bold">
-                {commit.header.committer.name}
+                {$commit.data.header.committer.name}
               </span>
               <span class="typo-mono">
-                &lt;{commit.header.committer.email}&gt;
+                &lt;{$commit.data.header.committer.email}&gt;
               </span>
             </p>
           {/if}
@@ -127,13 +137,13 @@
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
           Commit
-          <span class="hash">{commit.header.sha1}</span>
+          <span class="hash">{$commit.data.header.sha1}</span>
         </p>
       </div>
     </div>
 
     <main>
-      <Changeset diff={commit.diff} stats={commit.stats} />
+      <Changeset diff={$commit.data.diff} stats={$commit.data.stats} />
     </main>
-  </Remote>
+  {/if}
 </div>
