@@ -63,15 +63,22 @@ On Linux:
   - [OpenSSL](https://www.openssl.org)
   - [Yarn](https://yarnpkg.com)
 
+On Windows:
+
+Windows have [some shortcomings on the directory depth](https://github.com/libgit2/libgit2/issues/3053)
+created by Radicle, even if long paths are enabled on the system.
+To prevent errors, set `RAD_HOME` to a root folder (eg: `$env:RAD_HOME="C:\rad"`). You may download a [free VM](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/) from Microsoft to test it out.
+
+---
+
 1. Get Upstream: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
 2. Install dependencies: `cd radicle-upstream && yarn install`.
-3. Start Upstream in development mode: `yarn start`.
+3. Start Upstream in development mode: `yarn start` (or `yarn run start:dev:win` for Windows).
 
 Running upstream will create new directories in `XDG_DATA_HOME` &
 `XDG_CONFIG_HOME` (or `HOME` respectiveley). To overwrite the locations, you
 can set `RAD_HOME` to your desired directory. Note that you will also have to
 set it for using git remote helper functionality outside of upstream.
-
 
 ### Feature flagging
 
@@ -148,7 +155,7 @@ Electron state will be shared by all instances.
 ### Building an Upstream package for your platform
 
 You can build and package Upstream with: `yarn dist`. The generated package
-will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
+will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|exe}`.
 
 
 #### Apple notarization
