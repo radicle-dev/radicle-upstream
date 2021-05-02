@@ -134,8 +134,11 @@
   },
   "scripts": {
     "start": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy yarn _private:start",
+    "start:win": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy.exe yarn _private:start",
     "start:dev": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/debug/radicle-proxy yarn _private:start:dev",
+    "start:dev:win": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/debug/radicle-proxy.exe yarn _private:start:dev",
     "start:test": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
+    "start:test:win": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy.exe RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
     "ethereum:start": "./scripts/ethereum-dev-node.sh",
     "test": "cross-env TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:integration": "cross-env TZ='UTC' run-p --race _private:proxy:start:test _private:test:integration",
