@@ -4376,6 +4376,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cross-env@npm:^7.0.3":
+  version: 7.0.3
+  resolution: "cross-env@npm:7.0.3"
+  dependencies:
+    cross-spawn: ^7.0.1
+  bin:
+    cross-env: src/bin/cross-env.js
+    cross-env-shell: src/bin/cross-env-shell.js
+  checksum: af4fa4dab3ddf6c25ed5e0c95ef53ea363aceb41741e22b7eae83a12cc10cb2416e3aba29c95f2f2c3a1aa918d3444fe92fab318a8ba761e8d52ae88388496cc
+  languageName: node
+  linkType: hard
+
 "cross-spawn@npm:^6.0.0, cross-spawn@npm:^6.0.5":
   version: 6.0.5
   resolution: "cross-spawn@npm:6.0.5"
@@ -10683,7 +10695,7 @@ __metadata:
   dependencies:
     "@ensdomains/ens": ^0.4.5
     "@uniswap/v2-periphery": ^1.1.0-beta.0
-  checksum: 896224927d7344fda4bec53d665ea83e1ef7e70ca6e40f7f19422cca329afe6886ae81eb53a78554d9f3f4dec326e83c7dad8c511df847eee216bd5f9ee65997
+  checksum: 961d66dee32043383fc2cc24fc9c4f5de50730ea260a7f13e95754c6b8a0156664f0bf0cb41ff8722bbf6ee04c89c6f01fdfaa9bdff9340d963133711791989d
   languageName: node
   linkType: hard
 
@@ -10715,6 +10727,7 @@ __metadata:
     big.js: ^6.0.3
     browserify: ^17.0.0
     chokidar: ^3.5.1
+    cross-env: ^7.0.3
     crypto-browserify: ^3.12.0
     cypress: ^7.1.0
     electron: ^12.0.5
@@ -10745,6 +10758,7 @@ __metadata:
     pure-svg-code: ^1.0.6
     qs: ^6.10.1
     radicle-contracts: "github:radicle-dev/radicle-contracts#commit=9fb23ac74a403b167a22513fc666779d871d292e"
+    rimraf: ^3.0.2
     semver: ^7.3.5
     sinon: ^10.0.0
     standard-version: ^9.2.0
