@@ -1149,6 +1149,7 @@ pub mod test {
         );
 
         assert!(!project_names.contains(&fakie.subject().name.to_string()));
+        drop(tmp_dir); // ensure repo lives until end of test
 
         Ok(())
     }
