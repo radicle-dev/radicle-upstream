@@ -133,7 +133,7 @@ export const pendingPeers: Readable<
   }>
 > = derived(
   screenStore,
-  (store: remote.Data<{ peers: project.Peer[] }>) => {
+  (store): remote.Data<{ peers: project.Peer[] }> => {
     if (store.status === remote.Status.Success) {
       const peers = store.data.peers.filter(
         peer => peer.status.type === project.ReplicationStatusType.NotReplicated
