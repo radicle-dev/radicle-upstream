@@ -59,7 +59,7 @@ mod test {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
         let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
         let _file = fs::File::create(src_git_helper_bin_path.clone())
-        .expect("failed to create mock binary");
+            .expect("failed to create mock binary");
 
         #[cfg(unix)]
         {
@@ -73,7 +73,10 @@ mod test {
         super::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
 
         let dst_git_helper_bin_path = dst_full_path.join(super::GIT_REMOTE_RAD);
-        assert!(dst_git_helper_bin_path.exists(), "destination helper exists");
+        assert!(
+            dst_git_helper_bin_path.exists(),
+            "destination helper exists"
+        );
 
         #[cfg(unix)]
         {
