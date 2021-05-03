@@ -156,6 +156,7 @@
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "dist": "yarn _private:dist:clean && webpack build --mode production && yarn _private:proxy:build:release && electron-builder --publish never",
+    "dist:win:static": "cross-env RUSTFLAGS='-C target-feature=+crt-static' yarn dist",
     "release": "scripts/release.ts",
     "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "prettier:check": "yarn _private:prettier --check",

@@ -157,6 +157,10 @@ Electron state will be shared by all instances.
 You can build and package Upstream with: `yarn dist`. The generated package
 will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|exe}`.
 
+For windows, there is `yarn run dist:win:static` to
+[pre-compile](https://rust-lang.github.io/rfcs/1721-crt-static.html)
+`vcruntime140.dll` to avoid the need to install `Visual C++ Redistributable`
+on the target computer.
 
 #### Apple notarization
 
