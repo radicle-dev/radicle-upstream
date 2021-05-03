@@ -35,8 +35,14 @@ export class Error extends globalThis.Error {
 
   constructor(params: ErrorParams) {
     super(params.message);
-    this.message = params.message;
+    Object.defineProperty(this, "stack", {
+      enumerable: true,
+    });
     this.code = params.code;
+    this.message = params.message;
+    Object.defineProperty(this, "message", {
+      enumerable: true,
+    });
     this.details = params.details;
     if (params.source) {
       this.source = fromUnknown(params.source);
@@ -48,6 +54,7 @@ export enum Code {
   BackendTerminated = "BackendTerminated",
   CommitFetchFailure = "CommitFetchFailure",
   IdentityCreationFailure = "IdentityCreationFailure",
+  ProxyEventParseFailure = "ProxyEventParseFailure",
   KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
   LocalStateFetchFailure = "LocalStateFetchFailure",
   ProjectCheckoutFailure = "ProjectCheckoutFailure",

@@ -9,6 +9,7 @@ import * as path from "./path";
 import * as remote from "./remote";
 import * as session from "./session";
 import type * as urn from "./urn";
+import * as error from "./error";
 
 // TYPES
 export enum StatusType {
@@ -154,8 +155,20 @@ session.session.subscribe(sess => {
       );
       eventSource.addEventListener("message", msg => {
         const data = JSON.parse(msg.data);
-        const event = eventSchema.parse(data);
-        eventStore.set(event);
+        const result = eventSchema.safeParse(data);
+        if (result.success) {
+          eventStore.set(result.data);
+        } else {
+          error.show(
+            new error.Error({
+              code: error.Code.ProxyEventParseFailure,
+              message: "Failed to parse proxy event",
+              details: {
+                errors: result.error.errors,
+              },
+            })
+          );
+        }
       });
     }
   }
