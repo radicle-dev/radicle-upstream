@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { Avatar, Button, Emoji, Icon } from "../../../DesignSystem/Primitive";
-  import { Copyable } from "../../../DesignSystem/Component";
+  import { Copyable, TxButton } from "../../../DesignSystem/Component";
 
   import type { Identity } from "../../../src/identity";
   import type { Address } from "../../../src/funding/pool";
@@ -9,7 +9,7 @@
   export let identity: Identity;
 
   export let onCancel: () => void;
-  export let onSendTransaction: () => void;
+  export let onSendTransaction: () => Promise<void>;
 </script>
 
 <style>
@@ -90,11 +90,12 @@
       Cancel
     </Button>
 
-    <Button
+    <TxButton
       dataCy="confirm-button"
-      on:click={onSendTransaction}
-      style="margin-left: 14px;">
+      onClick={onSendTransaction}
+      style="margin-left: 14px;"
+      errorLabel="Failed to claim your Radicle Identity on Ethereum">
       Send transaction
-    </Button>
+    </TxButton>
   </div>
 </div>

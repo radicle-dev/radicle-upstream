@@ -3,14 +3,21 @@
     selectedEnvironment as ethereumEnvironment,
     supportedNetwork,
   } from "../../src/ethereum";
+  import {
+    watchAttestationStatus,
+    attestationStatus,
+    AttestationStatus,
+  } from "../../src/attestation/status";
   import { store, Status } from "../../src/wallet";
   import * as pool from "../../src/funding/pool";
 
   import ConnectWallet from "../../DesignSystem/Component/Wallet/Connect.svelte";
   import WalletPanel from "../../DesignSystem/Component/Wallet/Panel.svelte";
   import WrongNetwork from "../../DesignSystem/Component/Wallet/WrongNetwork.svelte";
-
   import Pool from "../Funding/Pool.svelte";
+  import LinkAddress from "../Funding/LinkAddress.svelte";
+
+  watchAttestationStatus(store);
 
   $: wallet = $store;
   // Hack to have Svelte working with checking the $wallet variant
@@ -38,7 +45,13 @@
       account={w.connected.account}
       style={'margin-right: var(--content-padding)'} />
     {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
-      <Pool pool={pool.make(wallet)} />
+      {#if $attestationStatus === AttestationStatus.Fetching}
+        Checking whether you have attested your Ethereum adddress...
+      {:else if $attestationStatus === AttestationStatus.Valid}
+        <Pool pool={pool.make(wallet)} />
+      {:else}
+        <LinkAddress />
+      {/if}
     {:else}
       <WrongNetwork expectedNetwork={supportedNetwork($ethereumEnvironment)} />
     {/if}

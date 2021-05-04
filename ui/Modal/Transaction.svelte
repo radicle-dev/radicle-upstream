@@ -11,6 +11,7 @@
 
   import { ellipsed } from "../src/style";
   import {
+    emoji,
     selectedStore,
     store as txs,
     colorForStatus,
@@ -18,6 +19,7 @@
     formatDate,
     transferAmount,
     TxStatus,
+    TxKind,
   } from "../src/transaction";
   import type { Tx } from "../src/transaction";
 
@@ -119,27 +121,31 @@
 <div class="wrapper">
   {#if tx}
     <header>
-      <Emoji emoji="👛" size="huge" />
+      <Emoji emoji={emoji(tx)} size="huge" />
       <h1>{tx.kind}</h1>
       <Summary {tx} style="margin-top: 1.5rem" />
-      <div class="from-to" class:incoming>
-        <div>
-          <p class="typo-text-bold" style="margin-bottom: 7px">Radicle Pool</p>
-          <Copyable
-            showIcon={false}
-            styleContent={false}
-            copyContent={tx.to}
-            notificationText="Address copied to the clipboard">
-            <p class="address typo-text">{tx.to || 'n/a'}</p>
-          </Copyable>
-        </div>
+      {#if tx.kind !== TxKind.ClaimRadicleIdentity}
+        <div class="from-to" class:incoming>
+          <div>
+            <p class="typo-text-bold" style="margin-bottom: 7px">
+              Radicle Pool
+            </p>
+            <Copyable
+              showIcon={false}
+              styleContent={false}
+              copyContent={tx.to}
+              notificationText="Address copied to the clipboard">
+              <p class="address typo-text">{tx.to || 'n/a'}</p>
+            </Copyable>
+          </div>
 
-        <div class="arrow">
-          <Icon.ArrowDown />
-        </div>
+          <div class="arrow">
+            <Icon.ArrowDown />
+          </div>
 
-        <Identity address={tx.from} />
-      </div>
+          <Identity address={tx.from} />
+        </div>
+      {/if}
     </header>
 
     <div class="content">
