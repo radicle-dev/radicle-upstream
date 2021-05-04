@@ -124,11 +124,11 @@
       <Emoji emoji={emoji(tx)} size="huge" />
       <h1>{tx.kind}</h1>
       <Summary {tx} style="margin-top: 1.5rem" />
-      {#if tx.kind !== TxKind.CreateOrg}
+      {#if !(tx.kind === TxKind.ClaimRadicleIdentity || tx.kind === TxKind.CreateOrg)}
         <div class="from-to" class:incoming>
           <div>
             <p class="typo-text-bold" style="margin-bottom: 7px">
-              "Radicle Pool"
+              Radicle Pool
             </p>
             <Copyable
               showIcon={false}

@@ -1,11 +1,10 @@
 <script lang="typescript">
-  import { getContext } from "svelte";
   import Router from "svelte-spa-router";
 
   import { isExperimental } from "../src/config";
   import * as modal from "../src/modal";
   import * as path from "../src/path";
-  import type { UnsealedSession } from "../src/session";
+  import * as sess from "../src/session";
   import { settings } from "../src/session";
 
   import { Button, Icon } from "../DesignSystem/Primitive";
@@ -51,7 +50,7 @@
     });
   }
 
-  const session: UnsealedSession = getContext("session");
+  const session = sess.getUnsealedFromContext();
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">

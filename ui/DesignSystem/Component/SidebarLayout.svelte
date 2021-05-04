@@ -1,14 +1,12 @@
 <script lang="typescript">
-  import { getContext } from "svelte";
-
-  import type { UnsealedSession } from "../../src/session";
+  import * as sess from "../../src/session";
 
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy: string = "";
   export let style: string = "";
 
-  const session: UnsealedSession = getContext("session");
+  const session = sess.getUnsealedFromContext();
 </script>
 
 <style>

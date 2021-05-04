@@ -56,10 +56,12 @@ export enum Code {
   RemoteStoreError = "RemoteStoreError",
   RequestAbortError = "RequestAbortError",
   SessionFetchFailure = "SessionFetchFailure",
+  UpdateEthereumClaimFailure = "UpdateEthereumClaimFailure",
   SessionSettingsUpdateFailure = "SessionSettingsUpdateFailure",
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
   UnknownException = "UnknownException",
+  UnsealedSessionExpected = "UnsealedSessionExpected",
 
   // Funding related error codes
   WalletConnectionFailure = "WalletConnectionFailure",

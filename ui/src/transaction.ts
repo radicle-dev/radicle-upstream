@@ -357,9 +357,10 @@ export function emoji(tx: Tx): string {
   switch (tx.kind) {
     case TxKind.CreateOrg:
       return "🎪";
+    case TxKind.ClaimRadicleIdentity:
+      return "🧦";
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
-    case TxKind.ClaimRadicleIdentity:
     case TxKind.Erc20Allowance:
     case TxKind.SupportOnboarding:
     case TxKind.TopUp:

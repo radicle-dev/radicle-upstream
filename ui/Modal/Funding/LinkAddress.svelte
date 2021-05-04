@@ -1,12 +1,14 @@
 <script lang="typescript">
-  import * as svelteStore from "svelte/store";
-
   import EthToRadicle from "./Link/EthToRadicle.svelte";
-  import EnterPassphrase from "./Link/EnterPassphrase.svelte";
   import SavedToRadicle from "./Link/SavedToRadicle.svelte";
   import RadicleToEth from "./Link/RadicleToEth.svelte";
   import { Remote } from "../../DesignSystem/Component";
 
+  import {
+    ClaimsContract,
+    claimsAddress,
+  } from "../../src/attestation/contract";
+  import * as identity from "../../src/identity";
   import { store as walletStore } from "../../src/wallet";
   import { session } from "../../src/session";
 
@@ -18,7 +20,6 @@
 
   enum Step {
     EthToRadicle = "EthToRadicle",
-    EnterPassphrase = "EnterPassphrase",
     SavedToRadicle = "SavedToRadicle",
     RadicleToEth = "RadicleToEth",
   }
@@ -28,11 +29,6 @@
   function onContinue() {
     switch (currentStep) {
       case Step.EthToRadicle:
-        currentStep = Step.EnterPassphrase;
-        break;
-      case Step.EnterPassphrase:
-        // TODO(nuno): Add the eth address to the radicle identity
-        // once such API is available.
         currentStep = Step.SavedToRadicle;
         break;
       case Step.SavedToRadicle:
@@ -44,10 +40,21 @@
     }
   }
 
-  // Values
-  let passphrase: string = "";
+  $: address = $walletStore.account()?.address || "";
 
-  $: address = svelteStore.get(walletStore).account()?.address || "";
+  async function claimEthAddress() {
+    await identity.claimEthAddress(address);
+    onContinue();
+  }
+
+  async function claimRadicleIdentity(identity: identity.Identity) {
+    const claims = new ClaimsContract(
+      $walletStore.signer,
+      claimsAddress($walletStore.environment)
+    );
+    await claims.claim(identity.urn);
+    onContinue();
+  }
 </script>
 
 <style>
@@ -72,9 +79,7 @@
         {address}
         identity={it.identity}
         {onCancel}
-        onConfirm={onContinue} />
-    {:else if currentStep === Step.EnterPassphrase}
-      <EnterPassphrase bind:passphrase {onCancel} onConfirm={onContinue} />
+        onConfirm={claimEthAddress} />
     {:else if currentStep === Step.SavedToRadicle}
       <SavedToRadicle {onCancel} {onContinue} />
     {:else if currentStep === Step.RadicleToEth}
@@ -82,7 +87,7 @@
         {address}
         identity={it.identity}
         {onCancel}
-        onSendTransaction={onContinue} />
+        onSendTransaction={() => claimRadicleIdentity(it.identity)} />
     {/if}
   </div>
 </Remote>

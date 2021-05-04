@@ -110,7 +110,7 @@ With everything installed and set up, run the following commands in different
 tabs:
 
 - `npm run start` within `walletconnect-test-wallet`
-- `yarn ethereum:start` within `radicle-upstream`
+- `./scripts/ethereum-dev-node.ts` in `radicle-upstream`
 - `RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start` within `radicle-upstream`
 - Once the app is running, enable the funding feature in the Upstream settings
 

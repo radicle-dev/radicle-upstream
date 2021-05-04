@@ -1,11 +1,8 @@
-import * as ethers from "ethers";
 import type { BigNumber, ContractTransaction, Signer } from "ethers";
 
 import Big from "big.js";
 
 import {
-  Claims,
-  Claims__factory as ClaimsFactory,
   Erc20Pool,
   Erc20Pool__factory as PoolFactory,
   ERC20,
@@ -13,7 +10,6 @@ import {
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 import * as ethereum from "../ethereum";
-import * as transaction from "../transaction";
 
 const addresses = {
   pool: {
@@ -23,10 +19,6 @@ const addresses = {
   dai: {
     local: "0xff1d4d289bf0aaaf918964c57ac30481a67728ef",
     ropsten: "0x6e80bf4Fd0b102E6385C545375C8fF3B30D554eA",
-  },
-  claims: {
-    local: "0x785e8de68df899d77ce689f863e4166849c8bfd5",
-    ropsten: "0xF8F22AA794DDA79aC0C634a381De0226f369bCCe",
   },
 };
 
@@ -42,57 +34,6 @@ export function daiTokenAddress(environment: ethereum.Environment): string {
 
 export function daiToken(signer: Signer, address: string): ERC20 {
   return Erc20Factory.connect(address, signer);
-}
-
-// Get the address of the Claims Contract for the given environment
-export function claimsAddress(environment: ethereum.Environment): string {
-  switch (environment) {
-    case ethereum.Environment.Local:
-      return addresses.claims.local;
-    case ethereum.Environment.Ropsten:
-      return addresses.claims.ropsten;
-  }
-}
-
-export function claims(signer: Signer, address: string): ClaimsContract {
-  return new ClaimsContract(signer, address);
-}
-
-export class ClaimsContract {
-  contract: Claims;
-
-  constructor(signer: Signer, address: string) {
-    this.contract = ClaimsFactory.connect(address, signer);
-  }
-
-  async claim(root: string): Promise<void> {
-    const payload = ethers.utils.toUtf8Bytes(root);
-    return this.contract
-      .claim(0, payload)
-      .then((ctx: ContractTransaction) =>
-        transaction.add(transaction.claimRadicleIdentity(ctx, root))
-      );
-  }
-
-  // Fetch the latest Radicle Identity root claim by the given ethereum address.
-  // Return undefined if no claim is found.
-  async claimed(address: string): Promise<string | undefined> {
-    const filter = this.contract.filters.Claimed(address);
-    const events = await this.contract.queryFilter(filter, 0, "latest");
-    const last = events[events.length - 1];
-
-    if (last === undefined) {
-      return undefined;
-    }
-
-    const tx = await last.getTransaction();
-    const claimsFactory = new ClaimsFactory();
-    const inputs = claimsFactory.interface.decodeFunctionData("claim", tx.data);
-    const payload = ethers.utils.arrayify(inputs.payload);
-    const root = Buffer.from(payload).toString("utf-8");
-
-    return root;
-  }
 }
 
 // Get the address of the Pool Contract for the given environment
@@ -177,7 +118,7 @@ export class PoolContract {
     return this.contract.collect();
   }
 
-  async withdrawAllFlag(): Promise<ethers.BigNumber> {
+  async withdrawAllFlag(): Promise<BigNumber> {
     return this.contract.WITHDRAW_ALL();
   }
 

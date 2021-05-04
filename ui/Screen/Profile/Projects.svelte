@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import ModalNewProject from "../../Modal/NewProject.svelte";
@@ -9,7 +8,7 @@
   import { fetchList, projects as store } from "../../src/project";
   import type { Project } from "../../src/project";
   import { showNotificationsForFailedProjects } from "../../src/profile";
-  import type { UnsealedSession } from "../../src/session";
+  import * as sess from "../../src/session";
 
   import {
     EmptyState,
@@ -18,7 +17,7 @@
     Remote,
   } from "../../DesignSystem/Component";
 
-  const session: UnsealedSession = getContext("session");
+  const session = sess.getUnsealedFromContext();
 
   const create = () => {
     modal.toggle(ModalNewProject);
