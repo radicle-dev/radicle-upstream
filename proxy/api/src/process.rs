@@ -7,10 +7,7 @@ use std::{future::Future, net, sync::Arc, time::Duration};
 use argh::FromArgs;
 use futures::prelude::*;
 use thiserror::Error;
-use tokio::{
-    signal::unix::{signal, SignalKind},
-    sync::{watch, RwLock},
-};
+use tokio::sync::{watch, RwLock};
 
 use coco::{convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, RunConfig};
 
@@ -57,19 +54,25 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     git_helper::setup(&proxy_path, &bin_dir)?;
 
     let mut service_manager = service::Manager::new(args.test)?;
-    let mut sighup = signal(SignalKind::hangup())?;
 
-    let mut handle = service_manager.handle();
-    tokio::spawn(async move {
-        loop {
-            if sighup.recv().await.is_some() {
-                log::info!("SIGHUP received, reloading...");
-                handle.reset();
-            } else {
-                break;
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
+
+        let mut sighup = signal(SignalKind::hangup())?;
+
+        let mut handle = service_manager.handle();
+        tokio::spawn(async move {
+            loop {
+                if sighup.recv().await.is_some() {
+                    log::info!("SIGHUP received, reloading...");
+                    handle.reset();
+                } else {
+                    break;
+                }
             }
-        }
-    });
+        });
+    }
 
     let auth_token = Arc::new(RwLock::new(None));
     loop {

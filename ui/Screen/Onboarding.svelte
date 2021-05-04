@@ -44,7 +44,14 @@
       await session.createKeystore(passphrase);
       // Retry until the API is up
       const identity = await withRetry(
-        () => createIdentity({ handle }),
+        async () => {
+          try {
+            return await createIdentity({ handle });
+          } catch (_) {
+            // The proxy might fail the first request after store creation
+            throw new Error("Failed to fetch");
+          }
+        },
         100,
         50
       );

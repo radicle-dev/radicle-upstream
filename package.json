@@ -36,6 +36,14 @@
         "to": "./"
       },
       {
+        "from": "target/release/radicle-proxy.exe",
+        "to": "./"
+      },
+      {
+        "from": "target/release/git-remote-rad.exe",
+        "to": "./"
+      },
+      {
         "from": "proxy/assets",
         "to": "assets"
       }
@@ -92,6 +100,7 @@
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "chokidar": "^3.5.1",
+    "cross-env": "^7.0.3",
     "cypress": "^7.1.0",
     "electron": "^12.0.5",
     "electron-builder": "^22.10.5",
@@ -115,6 +124,7 @@
     "prettier": "^2.2.1",
     "prettier-plugin-svelte": "^1.4.2",
     "prompts": "^2.4.1",
+    "rimraf": "^3.0.2",
     "sinon": "^10.0.0",
     "standard-version": "^9.2.0",
     "svelte": "^3.37.0",
@@ -134,16 +144,20 @@
     "webpack-cli": "^4.6.0"
   },
   "scripts": {
-    "start": "RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy yarn _private:start",
-    "start:dev": "RADICLE_UPSTREAM_PROXY_PATH=./target/debug/radicle-proxy yarn _private:start:dev",
-    "start:test": "RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
+    "start": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy yarn _private:start",
+    "start:win": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy.exe yarn _private:start",
+    "start:dev": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/debug/radicle-proxy yarn _private:start:dev",
+    "start:dev:win": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/debug/radicle-proxy.exe yarn _private:start:dev",
+    "start:test": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
+    "start:test:win": "cross-env RADICLE_UPSTREAM_PROXY_PATH=./target/release/radicle-proxy.exe RADICLE_UPSTREAM_PROXY_ARGS='--test' yarn _private:start",
     "ethereum:start": "./scripts/ethereum-dev-node.sh",
-    "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
-    "test:integration": "TZ='UTC' run-p --race _private:proxy:start:test _private:test:integration",
-    "test:integration:debug": "TZ='UTC' run-p --race _private:webpack:ui:watch _private:proxy:start:test:watch _private:test:integration:debug",
+    "test": "cross-env TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
+    "test:integration": "cross-env TZ='UTC' run-p --race _private:proxy:start:test _private:test:integration",
+    "test:integration:debug": "cross-env TZ='UTC' run-p --race _private:webpack:ui:watch _private:proxy:start:test:watch _private:test:integration:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "dist": "yarn _private:dist:clean && webpack build --mode production && yarn _private:proxy:build:release && electron-builder --publish never",
+    "dist:win:static": "cross-env RUSTFLAGS='-C target-feature=+crt-static' yarn dist",
     "release": "scripts/release.ts",
     "typescript:check": "tsc --noEmit && tsc --noEmit --project cypress && svelte-check",
     "prettier:check": "yarn _private:prettier --check",
@@ -156,7 +170,7 @@
     "_private:test:integration": "wait-on tcp:17246 && yarn run webpack build --config-name ui && yarn run cypress run",
     "_private:test:integration:debug": "wait-on ./public/bundle.js tcp:17246 && yarn run cypress open",
     "_private:electron:start": "wait-on ./public/bundle.js && NODE_ENV=development electron native/index.js",
-    "_private:dist:clean": "rm -rf ./dist && mkdir ./dist",
+    "_private:dist:clean": "rimraf ./dist && mkdir ./dist",
     "_private:prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "_private:proxy:build": "cargo build --all-features --all-targets",
     "_private:proxy:build:release": "cargo build --release",
@@ -211,5 +225,8 @@
       "prettier --write",
       "eslint --fix --max-warnings=0"
     ]
+  },
+  "volta": {
+    "node": "14.15.5"
   }
 }
