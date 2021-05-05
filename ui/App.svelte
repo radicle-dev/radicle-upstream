@@ -30,7 +30,6 @@
   import Onboarding from "./Screen/Onboarding.svelte";
   import Lock from "./Screen/Lock.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
@@ -71,7 +70,6 @@
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
-    "*": NotFound,
   };
 
   $: switch ($store.status) {
