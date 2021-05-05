@@ -2,14 +2,9 @@
   import { location, push } from "svelte-spa-router";
 
   import type { Identity } from "../../src/identity";
-  import type { Org } from "../../src/theGraphApi";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
-  import * as theGraphApi from "../../src/theGraphApi";
-  import {
-    store as walletStore,
-    Status as WalletStatus,
-  } from "../../src/wallet";
+  import { orgSidebarStore } from "../../src/org";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -19,15 +14,6 @@
   import ModalCreateOrg from "../../Modal/Org/Create.svelte";
 
   export let identity: Identity;
-
-  let orgs: Org[] = [];
-
-  $: wallet = $walletStore;
-  $: if ($wallet.status === WalletStatus.Connected) {
-    (async () => {
-      orgs = await theGraphApi.getOrgs($wallet.connected.account.address);
-    })();
-  }
 </script>
 
 <style>
@@ -130,30 +116,26 @@
           variant="circle" />
       </div>
     </Tooltip>
-    {#if $wallet.status === WalletStatus.Connected}
-      {#each orgs as org}
-        <Tooltip value={org.id}>
-          <div
-            class="item indicator"
-            class:active={$location.startsWith(path.org(org.id))}
-            on:click|stopPropagation={() => push(path.orgProjects(org.id))}>
-            <Avatar size="regular" variant="square" />
-          </div>
-        </Tooltip>
-      {/each}
-      <Tooltip value="Create an org">
+    {#each $orgSidebarStore as org (org.id)}
+      <Tooltip value={org.id}>
         <div
           class="item indicator"
-          data-cy="add-org-btn"
-          on:click|stopPropagation={() => modal.toggle(
-              ModalCreateOrg,
-              () => {},
-              { identity }
-            )}>
-          <AddOrgButton />
+          class:active={$location.startsWith(path.org(org.id))}
+          on:click|stopPropagation={() => push(path.orgProjects(org.id))}>
+          <Avatar size="regular" variant="square" />
         </div>
       </Tooltip>
-    {/if}
+    {/each}
+    <Tooltip value="Create an org">
+      <div
+        class="item indicator"
+        data-cy="add-org-btn"
+        on:click|stopPropagation={() => modal.toggle(ModalCreateOrg, () => {}, {
+            identity,
+          })}>
+        <AddOrgButton />
+      </div>
+    </Tooltip>
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">

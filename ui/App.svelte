@@ -10,6 +10,7 @@
   import * as screen from "./src/screen.ts";
   import * as error from "./src/error.ts";
   import * as org from "./src/org.ts";
+  import * as wallet from "./src/wallet.ts";
   import * as customProtocolHandler from "./src/customProtocolHandler.ts";
   import { fetch, session as store, Status } from "./src/session.ts";
 
@@ -106,6 +107,15 @@
     $store.data.status === Status.UnsealedSession;
 
   customProtocolHandler.register();
+
+  const walletStore = wallet.store;
+  $: w = $walletStore;
+
+  $: if ($w.status === wallet.Status.Connected) {
+    (async () => {
+      await org.fetchOrgs();
+    })();
+  }
 </script>
 
 <style>

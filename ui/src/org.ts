@@ -5,6 +5,7 @@ import { push } from "svelte-spa-router";
 import * as notification from "./notification";
 import * as path from "./path";
 import * as wallet from "./wallet";
+import * as theGraphApi from "./theGraphApi";
 
 import type {
   TransactionReceipt,
@@ -64,7 +65,7 @@ export const createOrg = async (
       const parsed = iface.parseLog(log);
 
       if (parsed.name === "OrgCreated") {
-        orgAddress = parsed.args[0];
+        orgAddress = parsed.args[0].toLowerCase();
       }
     } catch {
       // Ignore parsing errors.
@@ -83,11 +84,12 @@ export const createOrg = async (
       {
         label: "Go to org",
         handler: () => {
-          push(path.org(orgAddress));
+          push(path.orgProjects(orgAddress));
         },
       },
     ],
   });
+  await fetchOrgs();
 };
 
 const getGnosisSafeAddr = async (
@@ -97,7 +99,7 @@ const getGnosisSafeAddr = async (
   const org = new ethers.Contract(orgAddress, orgAbi, provider);
   const safeAddr: string = await org.owner();
 
-  return safeAddr;
+  return safeAddr.toLowerCase();
 };
 
 export type EthereumAddress = string;
@@ -110,13 +112,31 @@ interface OrgScreenStore {
 export const orgScreenStore = svelteStore.writable<OrgScreenStore | null>(null);
 
 export const fetchOrg = async (orgAddress: EthereumAddress): Promise<void> => {
+  // Don't re-fetch if we already have the org.
   if (svelteStore.get(orgScreenStore)?.orgAddress === orgAddress) {
     return;
   }
+
   const walletStore = svelteStore.get(wallet.store);
   const gnosisSafeAddress = await getGnosisSafeAddr(
     orgAddress,
     walletStore.provider
   );
   orgScreenStore.set({ orgAddress, gnosisSafeAddress });
+};
+
+export const orgSidebarStore = svelteStore.writable<theGraphApi.Org[] | []>([]);
+
+export const fetchOrgs = async (): Promise<void> => {
+  const walletStore = svelteStore.get(wallet.store);
+  const w = svelteStore.get(walletStore);
+
+  if (w.status !== wallet.Status.Connected) {
+    throw new Error(
+      "Tried to call fetchOrgs while the wallet wasn't connected"
+    );
+  }
+
+  const orgs = await theGraphApi.getOrgs(w.connected.account.address);
+  orgSidebarStore.set(orgs);
 };
