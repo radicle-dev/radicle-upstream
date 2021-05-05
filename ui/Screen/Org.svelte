@@ -1,5 +1,6 @@
 <script lang="typescript">
   import Router from "svelte-spa-router";
+  import { wrap } from "svelte-spa-router/wrap";
 
   import { orgScreenStore } from "../src/org";
   import * as path from "../src/path";
@@ -43,7 +44,10 @@
 
   const menuRoutes = {
     "/org/:address/projects": ProjectsMenu,
-    "/org/:address/members": MembersMenu,
+    "/org/:address/members": wrap({
+      component: MembersMenu,
+      props: { gnosisSafeAddress: $orgScreenStore.gnosisSafeAddress },
+    }),
     "*": ProjectsMenu,
   };
 

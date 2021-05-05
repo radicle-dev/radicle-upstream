@@ -8,6 +8,8 @@
   const toggleModal = () => {
     expanded = !expanded;
   };
+
+  export let gnosisSafeAddress;
 </script>
 
 <style>
@@ -39,8 +41,7 @@
 
     <Button
       on:click={() => {
-        // TODO(rudolfs): update the link.
-        window.location.href = 'https://gnosis-safe.io/';
+        window.location.href = `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings`;
         toggleModal();
       }}
       style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
