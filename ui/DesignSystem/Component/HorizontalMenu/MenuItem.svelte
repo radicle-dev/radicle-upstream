@@ -1,7 +1,7 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
   import { createEventDispatcher } from "svelte";
-  import { push } from "ui/vendor/svelte-spa-router";
+  import { push } from "ui/src/router";
 
   export let href: string;
   export let dataCy: string;

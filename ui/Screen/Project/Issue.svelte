@@ -1,5 +1,5 @@
 <script>
-  import { pop } from "ui/vendor/svelte-spa-router";
+  import { pop } from "ui/src/router";
 
   import { Markdown } from "../../DesignSystem/Primitive";
   import { Comment, Timeline } from "../../DesignSystem/Component";

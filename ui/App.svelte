@@ -1,5 +1,5 @@
 <script>
-  import Router, { push, location } from "ui/vendor/svelte-spa-router";
+  import { location, push, Router } from "ui/src/router.ts";
 
   import * as hotkeys from "./src/hotkeys.ts";
   import { isExperimental } from "./src/config";
@@ -39,6 +39,7 @@
     "/lock": Lock,
     "/settings": Settings,
     "/profile/*": Profile,
+    "/profile/projects": Profile, // TODO fixme
     "/projects/:urn/*": Project,
     "/projects/:urn": Project,
     "/user/:urn": UserProfile,
@@ -81,6 +82,8 @@
     $store.data.status === Status.UnsealedSession;
 
   customProtocolHandler.register();
+
+  $: console.log($location);
 </script>
 
 <style>
@@ -105,7 +108,7 @@
 {/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
-  <Router {routes} />
+  <Router {routes} initial={window.location.hash.slice(1)} />
 
   <div slot="loading" class="error">
     <EmptyState headerText="Loading..." emoji="🕵️" text="" />

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { get } from "svelte/store";
-  import { pop } from "ui/vendor/svelte-spa-router";
+  import { pop } from "ui/src/router";
 
   import { Dai, TxButton } from "../../../DesignSystem/Component";
   import { Button, Emoji, Input } from "../../../DesignSystem/Primitive";

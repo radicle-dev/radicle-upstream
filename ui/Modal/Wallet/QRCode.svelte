@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { pop } from "ui/vendor/svelte-spa-router";
+  import { pop } from "ui/src/router";
 
   import { Copyable, QR } from "../../DesignSystem/Component";
   import { Emoji } from "../../DesignSystem/Primitive";

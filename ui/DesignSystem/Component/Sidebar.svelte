@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { location, push } from "ui/vendor/svelte-spa-router";
+  import { location, push } from "ui/src/router";
 
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";

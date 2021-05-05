@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { onMount } from "svelte";
-  import { push } from "ui/vendor/svelte-spa-router";
+  import { push } from "ui/src/router";
 
   import * as localPeer from "../src/localPeer";
   import * as modal from "../src/modal";

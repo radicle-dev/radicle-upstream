@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import Router from "ui/vendor/svelte-spa-router";
+  import { Router } from "ui/src/router";
 
   import * as path from "../src/path";
   import { fetchUser, user as store } from "../src/userProfile";

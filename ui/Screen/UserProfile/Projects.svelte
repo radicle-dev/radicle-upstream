@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { push } from "ui/vendor/svelte-spa-router";
+  import { push } from "ui/src/router";
 
   import * as path from "../../src/path";
   import type { Project } from "../../src/project";

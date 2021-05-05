@@ -1,7 +1,7 @@
 import * as svelteStore from "svelte/store";
 import persistentStore from "svelte-persistent-store/dist";
 import * as semver from "semver";
-import * as router from "ui/vendor/svelte-spa-router";
+import * as router from "ui/src/router";
 
 import * as ipc from "./ipc";
 import * as modal from "./modal";

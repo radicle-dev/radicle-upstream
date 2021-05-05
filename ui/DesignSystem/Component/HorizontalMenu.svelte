@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
-  import { location } from "ui/vendor/svelte-spa-router";
+  import { location } from "ui/src/router";
 
   import type { HorizontalItem } from "../../src/menu";
 

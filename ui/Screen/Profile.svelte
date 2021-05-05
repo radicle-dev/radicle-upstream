@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import Router from "ui/vendor/svelte-spa-router";
+  import { Router } from "ui/src/router";
 
   import { isExperimental } from "../src/config";
   import * as modal from "../src/modal";

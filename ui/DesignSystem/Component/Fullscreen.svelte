@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { pop } from "ui/vendor/svelte-spa-router";
+  import { pop } from "ui/src/router";
 
   import { Icon } from "../Primitive";
 

@@ -1,6 +1,6 @@
 import { derived, get, writable } from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
-import { push } from "ui/vendor/svelte-spa-router";
+import { push } from "ui/src/router";
 
 import * as error from "ui/src/error";
 import * as config from "ui/src/config";

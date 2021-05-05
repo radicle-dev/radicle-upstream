@@ -1,5 +1,5 @@
 import { derived, writable, Readable } from "svelte/store";
-import { push } from "ui/vendor/svelte-spa-router";
+import { push } from "ui/src/router";
 import * as zod from "zod";
 
 import type * as identity from "./identity";
