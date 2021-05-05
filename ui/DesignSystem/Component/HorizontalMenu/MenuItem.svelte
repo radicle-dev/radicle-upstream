@@ -1,6 +1,7 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
-  import { link } from "ui/vendor/svelte-spa-router";
+  import { createEventDispatcher } from "svelte";
+  import { push } from "ui/vendor/svelte-spa-router";
 
   export let href: string;
   export let dataCy: string;
@@ -8,6 +9,13 @@
   export let title: string;
   export let active: boolean;
   export let counter: number | undefined;
+
+  const dispatch = createEventDispatcher();
+
+  const click = () => {
+    push(href);
+    dispatch("click");
+  };
 </script>
 
 <style>
@@ -40,7 +48,8 @@
   }
 </style>
 
-<a data-cy={dataCy} {href} use:link on:click>
+<!-- svelte-ignore a11y-missing-attribute -->
+<a data-cy={dataCy} on:click={click}>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-primary)" />
