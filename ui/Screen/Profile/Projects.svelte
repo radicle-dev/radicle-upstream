@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
+  import { push } from "ui/vendor/svelte-spa-router";
 
   import ModalNewProject from "../../Modal/NewProject.svelte";
 

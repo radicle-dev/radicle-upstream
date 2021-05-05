@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
-  import { push } from "svelte-spa-router";
+  import { push } from "ui/vendor/svelte-spa-router";
 
   import { UPSTREAM_DEFAULT_BRANCH } from "../src/config";
   import * as notification from "../src/notification";

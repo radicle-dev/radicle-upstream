@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
-  import { push } from "svelte-spa-router";
+  import { push } from "ui/vendor/svelte-spa-router";
 
   import ModalSearch from "../../Modal/Search.svelte";
 

@@ -1,6 +1,6 @@
 <script>
   import * as path from "../../src/path.ts";
-  import { push } from "svelte-spa-router";
+  import { push } from "ui/vendor/svelte-spa-router";
   import IssueCard from "./Issues/IssueCard.svelte";
   import {
     EmptyState,

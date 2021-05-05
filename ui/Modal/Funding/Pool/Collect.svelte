@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { pop } from "svelte-spa-router";
+  import { pop } from "ui/vendor/svelte-spa-router";
 
   import { Dai, Remote, TxButton } from "../../../DesignSystem/Component";
   import { Button, Emoji } from "../../../DesignSystem/Primitive";

@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { pop } from "svelte-spa-router";
+  import { pop } from "ui/vendor/svelte-spa-router";
 
   import * as error from "ui/src/error";
   import { formatCommitTime } from "ui/src/source";

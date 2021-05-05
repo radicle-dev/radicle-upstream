@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { get } from "svelte/store";
-  import Router, { location } from "svelte-spa-router";
+  import Router, { location } from "ui/vendor/svelte-spa-router";
 
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";

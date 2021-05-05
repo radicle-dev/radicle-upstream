@@ -1,6 +1,6 @@
 <script lang="ts">
   import { get } from "svelte/store";
-  import { pop } from "svelte-spa-router";
+  import { pop } from "ui/vendor/svelte-spa-router";
 
   import { TxButton } from "../../../DesignSystem/Component";
   import TopUp from "../../../DesignSystem/Component/Funding/Pool/TopUp.svelte";

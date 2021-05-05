@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { location, pop, push } from "svelte-spa-router";
+  import { location, pop, push } from "ui/vendor/svelte-spa-router";
   import type { SvelteComponent } from "svelte";
 
   import ModalNewProject from "./Modal/NewProject.svelte";

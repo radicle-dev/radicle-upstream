@@ -10762,6 +10762,7 @@ __metadata:
     pure-svg-code: ^1.0.6
     qs: ^6.10.1
     radicle-contracts: "github:radicle-dev/radicle-contracts#commit=9fb23ac74a403b167a22513fc666779d871d292e"
+    regexparam: 1.3.0
     semver: ^7.3.5
     sinon: ^10.0.0
     standard-version: ^9.2.0
@@ -10771,7 +10772,6 @@ __metadata:
     svelte-loader: ^3.1.1
     svelte-persistent-store: ^0.1.6
     svelte-preprocess: ^4.7.2
-    svelte-spa-router: ^3.1.0
     timeago.js: ^4.0.2
     ts-jest: ^26.5.5
     ts-loader: ^9.1.1
@@ -12544,15 +12544,6 @@ __metadata:
     typescript:
       optional: true
   checksum: 89e7663a86295b25de759a3b2b6f6f2ecf4f3592e26828864656a61cbf0ea084af913e1f81d83306d30e5231e3ba4d8e9e3e28882d1ef9af20c8bd123578001b
-  languageName: node
-  linkType: hard
-
-"svelte-spa-router@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "svelte-spa-router@npm:3.1.0"
-  dependencies:
-    regexparam: 1.3.0
-  checksum: 6951d3871b35022c87a32c7c750724d9840bd42f2180088a09b7077c23fe6751cd2f44b8761178cf96aadda89c13160ef0e152bf2d29a85b4da4f0aa110f347a
   languageName: node
   linkType: hard
 

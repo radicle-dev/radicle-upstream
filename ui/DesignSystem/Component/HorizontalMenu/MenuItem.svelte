@@ -1,6 +1,6 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
-  import { link } from "svelte-spa-router";
+  import { link } from "ui/vendor/svelte-spa-router";
 
   export let href: string;
   export let dataCy: string;

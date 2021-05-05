@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
+  import { push } from "ui/vendor/svelte-spa-router";
   import { onDestroy } from "svelte";
 
   import * as modal from "../src/modal";

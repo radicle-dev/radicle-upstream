@@ -1,0 +1,50 @@
+{
+  "name": "svelte-spa-router",
+  "version": "3.1.0",
+  "description": "Router for SPAs using Svelte 3",
+  "main": "Router.svelte",
+  "svelte": "Router.svelte",
+  "types": "Router.d.ts",
+  "scripts": {
+    "build-test-app": "(cd test/app && npx rollup -c)",
+    "start-test-app": "npx serve -n -l 5000 test/app/dist",
+    "eslint": "npx eslint -c .eslintrc.js --ext .js,.svelte,.html .",
+    "lint": "npm run eslint",
+    "nightwatch": "npx nightwatch -e selenium.chrome",
+    "test": "npm run nightwatch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ItalyPaleAle/svelte-spa-router.git"
+  },
+  "keywords": [
+    "router",
+    "svelte",
+    "svelte3",
+    "spa"
+  ],
+  "author": "Alessandro Segala (@ItalyPaleAle)",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/ItalyPaleAle",
+  "bugs": {
+    "url": "https://github.com/ItalyPaleAle/svelte-spa-router/issues"
+  },
+  "homepage": "https://github.com/ItalyPaleAle/svelte-spa-router#readme",
+  "dependencies": {
+    "regexparam": "1.3.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.0.0",
+    "chromedriver": "^85.0.0",
+    "eslint": "^7.14.0",
+    "eslint-plugin-html": "^6.1.1",
+    "eslint-plugin-svelte3": "^2.7.3",
+    "nightwatch": "^1.5.1",
+    "rollup": "^2.34.0",
+    "rollup-plugin-css-only": "^3.0.0",
+    "rollup-plugin-svelte": "^7.0.0",
+    "serve": "^11.3.2",
+    "svelte": "^3.31.0"
+  }
+}

@@ -1,5 +1,5 @@
 <script>
-  import Router, { push, location } from "svelte-spa-router";
+  import Router, { push, location } from "ui/vendor/svelte-spa-router";
 
   import * as hotkeys from "./src/hotkeys.ts";
   import { isExperimental } from "./src/config";
