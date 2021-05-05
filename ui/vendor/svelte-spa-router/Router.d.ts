@@ -1,37 +1,39 @@
 ///<reference types="svelte" />
 
-import {SvelteComponent} from 'svelte'
-import {Readable} from 'svelte/store'
+import { SvelteComponent } from "svelte";
+import { Readable } from "svelte/store";
 
 /** Dictionary with route details passed to the pre-conditions functions, as well as the `routeLoading` and `conditionsFailed` events */
 export interface RouteDetail {
-    /** Route matched as defined in the route definition (could be a string or a regular expression object) */
-    route: string | RegExp
+  /** Route matched as defined in the route definition (could be a string or a regular expression object) */
+  route: string | RegExp;
 
-    /** Location path */
-    location: string
+  /** Location path */
+  location: string;
 
-    /** Querystring from the hash */
-    querystring: string
+  /** Querystring from the hash */
+  querystring: string;
 
-    /** Custom data passed by the user */
-    userData?: object
+  /** Custom data passed by the user */
+  userData?: object;
 }
 
 /** Detail object for the `routeLoaded` event */
 export interface RouteDetailLoaded extends RouteDetail {
-     /** Svelte component */
-     component: typeof SvelteComponent
+  /** Svelte component */
+  component: typeof SvelteComponent;
 
-     /** Name of the Svelte component that was loaded (note: might be minified in production) */
-     name: string
+  /** Name of the Svelte component that was loaded (note: might be minified in production) */
+  name: string;
 }
 
 /**
  * This is a Svelte component loaded asynchronously.
  * It's meant to be used with the `import()` function, such as `() => import('Foo.svelte')}`
  */
-export type AsyncSvelteComponent = () => Promise<{default: typeof SvelteComponent}>
+export type AsyncSvelteComponent = () => Promise<{
+  default: typeof SvelteComponent;
+}>;
 
 /**
  * Route pre-condition function. This is a callback that receives a RouteDetail object as argument containing information on the route that we're trying to load.
@@ -42,44 +44,46 @@ export type AsyncSvelteComponent = () => Promise<{default: typeof SvelteComponen
  * @param detail Route detail object
  * @returns If the callback returns a false-y value, it's interpreted as the precondition failed, so it aborts loading the component (and won't process other pre-condition callbacks)
  */
-export type RoutePrecondition = (detail: RouteDetail) => (boolean | Promise<boolean>)
+export type RoutePrecondition = (
+  detail: RouteDetail
+) => boolean | Promise<boolean>;
 
 /** Object returned by the `wrap` method */
 export interface WrappedComponent {
-    /** Component to load (this is always asynchronous) */
-    component: typeof SvelteComponent
+  /** Component to load (this is always asynchronous) */
+  component: typeof SvelteComponent;
 
-    /** Route pre-conditions to validate */
-    conditions?: RoutePrecondition[]
+  /** Route pre-conditions to validate */
+  conditions?: RoutePrecondition[];
 
-    /** Optional dictionary of static props */
-    props?: object
+  /** Optional dictionary of static props */
+  props?: object;
 
-    /** Optional user data dictionary */
-    userData?: object
+  /** Optional user data dictionary */
+  userData?: object;
 
-    /**
-     * Internal flag used by the router to identify wrapped routes
-     * @internal
-     */
-    //_sveltesparouter?: boolean
+  /**
+   * Internal flag used by the router to identify wrapped routes
+   * @internal
+   */
+  //_sveltesparouter?: boolean
 }
 
 /**
  * Wraps a component to add route pre-conditions.
  *
  * @deprecated Use `wrap` from `svelte-spa-router/wrap` instead. This function will be removed in a later version.
- * 
+ *
  * @param component Svelte component for the route
  * @param userData Optional object that will be passed to each `conditionsFailed` event
  * @param conditions Route pre-conditions to add, which will be executed in order
  * @returns Wrapped component
  */
 export function wrap(
-    component: typeof SvelteComponent,
-    userData?: object,
-    ...conditions: RoutePrecondition[]
-): WrappedComponent
+  component: typeof SvelteComponent,
+  userData?: object,
+  ...conditions: RoutePrecondition[]
+): WrappedComponent;
 
 /**
  * Navigates to a new page programmatically.
@@ -87,14 +91,14 @@ export function wrap(
  * @param location Path to navigate to (must start with `/` or '#/')
  * @returns Promise that resolves after the page navigation has completed
  */
-export function push(location: string): Promise<void>
+export function push(location: string): Promise<void>;
 
 /**
  * Navigates back in history (equivalent to pressing the browser's back button).
- * 
+ *
  * @returns Promise that resolves after the page navigation has completed
  */
-export function pop(): Promise<void>
+export function pop(): Promise<void>;
 
 /**
  * Replaces the current page but without modifying the history stack.
@@ -102,7 +106,7 @@ export function pop(): Promise<void>
  * @param location - Path to navigate to (must start with `/` or '#/')
  * @returns Promise that resolves after the page navigation has completed
  */
-export function replace(location: string): Promise<void>
+export function replace(location: string): Promise<void>;
 
 /**
  * Svelte Action that enables a link element (`<a>`) to use our history management.
@@ -116,85 +120,98 @@ export function replace(location: string): Promise<void>
  * @param node - The target node (automatically set by Svelte). Must be an anchor tag (`<a>`) with a href attribute starting in `/`
  * @param hrefVar - A string to use in place of the link's href attribute. Using this allows for updating link's targets reactively.
  */
-export function link(node: HTMLElement, hrefVar?: string): {update: (hrefVar?: string) => void}
+export function link(
+  node: HTMLElement,
+  hrefVar?: string
+): { update: (hrefVar?: string) => void };
 
 /** Full location from the hash: page and querystring */
 interface Location {
-    /** Location (page/view), for example `/book` */
-    location: string
+  /** Location (page/view), for example `/book` */
+  location: string;
 
-    /** Querystring from the hash, as a string not parsed */
-    querystring?: string
+  /** Querystring from the hash, as a string not parsed */
+  querystring?: string;
 }
 
 /**
  * Readable store that returns the current full location (incl. querystring)
  */
-export const loc: Readable<Location>
+export const loc: Readable<Location>;
 
 /**
  * Readable store that returns the current location
  */
-export const location: Readable<string>
+export const location: Readable<string>;
 
 /**
  * Readable store that returns the current querystring
  */
-export const querystring: Readable<string | undefined>
+export const querystring: Readable<string | undefined>;
 
 /** List of routes */
-export type RouteDefinition = Record<string, typeof SvelteComponent | WrappedComponent> |
-    Map<string | RegExp, typeof SvelteComponent | WrappedComponent>
+export type RouteDefinition =
+  | Record<string, typeof SvelteComponent | WrappedComponent>
+  | Map<string | RegExp, typeof SvelteComponent | WrappedComponent>;
 
 /** Generic interface for events from the router */
 interface RouterEvent<T> {
-    detail: T
+  detail: T;
 }
 
 /** Event type for conditionsFailed */
-export type ConditionsFailedEvent = RouterEvent<RouteDetail>
+export type ConditionsFailedEvent = RouterEvent<RouteDetail>;
 
 /** Event type for routeLoading */
-export type RouteLoadingEvent = RouterEvent<RouteDetail>
+export type RouteLoadingEvent = RouterEvent<RouteDetail>;
 
 /** Event type for routeLoaded */
-export type RouteLoadedEvent = RouterEvent<RouteDetailLoaded>
+export type RouteLoadedEvent = RouterEvent<RouteDetailLoaded>;
 
 /**
  * Router component
  */
 export default class Router extends SvelteComponent {
-    // Props
-    $$prop_def: {
-        /**
-         * Dictionary of all routes, in the format `'/path': component`.
-         *
-         * For example:
-         * ````js
-         * import HomeRoute from './routes/HomeRoute.svelte'
-         * import BooksRoute from './routes/BooksRoute.svelte'
-         * import NotFoundRoute from './routes/NotFoundRoute.svelte'
-         * routes = {
-         *     '/': HomeRoute,
-         *     '/books': BooksRoute,
-         *     '*': NotFoundRoute
-         * }
-         * ````
-         */
-        routes: RouteDefinition,
-        /**
-         * Optional prefix for the routes in this router. This is useful for example in the case of nested routers.
-         */
-        prefix?: string | RegExp,
-        /**
-         * If set to true, the router will restore scroll positions on back navigation
-         * and scroll to top on forward navigation.
-         */
-        restoreScrollState?: boolean
-    }
+  // Props
+  $$prop_def: {
+    /**
+     * Dictionary of all routes, in the format `'/path': component`.
+     *
+     * For example:
+     * ````js
+     * import HomeRoute from './routes/HomeRoute.svelte'
+     * import BooksRoute from './routes/BooksRoute.svelte'
+     * import NotFoundRoute from './routes/NotFoundRoute.svelte'
+     * routes = {
+     *     '/': HomeRoute,
+     *     '/books': BooksRoute,
+     *     '*': NotFoundRoute
+     * }
+     * ````
+     */
+    routes: RouteDefinition;
+    /**
+     * Optional prefix for the routes in this router. This is useful for example in the case of nested routers.
+     */
+    prefix?: string | RegExp;
+    /**
+     * If set to true, the router will restore scroll positions on back navigation
+     * and scroll to top on forward navigation.
+     */
+    restoreScrollState?: boolean;
+  };
 
-    $on(event: 'routeEvent', callback: (event: CustomEvent) => void): () => void
-    $on(event: 'conditionsFailed', callback: (event: ConditionsFailedEvent) => void): () => void
-    $on(event: 'routeLoading', callback: (event: RouteLoadingEvent) => void): () => void
-    $on(event: 'routeLoaded', callback: (event: RouteLoadedEvent) => void): () => void
+  $on(event: "routeEvent", callback: (event: CustomEvent) => void): () => void;
+  $on(
+    event: "conditionsFailed",
+    callback: (event: ConditionsFailedEvent) => void
+  ): () => void;
+  $on(
+    event: "routeLoading",
+    callback: (event: RouteLoadingEvent) => void
+  ): () => void;
+  $on(
+    event: "routeLoaded",
+    callback: (event: RouteLoadedEvent) => void
+  ): () => void;
 }
