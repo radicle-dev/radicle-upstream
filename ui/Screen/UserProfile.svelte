@@ -15,13 +15,11 @@
   import UserProfileHeader from "./UserProfile/UserProfileHeader.svelte";
 
   import Projects from "./UserProfile/Projects.svelte";
-  import NotFound from "./NotFound.svelte";
 
   export let params: { urn: string };
 
   const screenRoutes = {
     "/user/:urn/projects": Projects,
-    "*": NotFound,
   };
   const topbarMenuItems = [
     {

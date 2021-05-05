@@ -20,13 +20,11 @@
   import Following from "./Profile/Following.svelte";
   import Projects from "./Profile/Projects.svelte";
   import Funding from "./Profile/Funding.svelte";
-  import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/following": Following,
     "/profile/projects": Projects,
     "/profile/funding": Funding,
-    "*": NotFound,
   };
 
   const topbarMenuItems = [
