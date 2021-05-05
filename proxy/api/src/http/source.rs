@@ -3,6 +3,8 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use radicle_daemon::{git_ext, PeerId, Urn};
+
 use crate::{context, http};
 
 /// Combination of all source filters.
@@ -22,7 +24,7 @@ fn blob_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
-        .and(path::param::<coco::Urn>())
+        .and(path::param::<Urn>())
         .and(path::end())
         .and(http::with_qs::<BlobQuery>())
         .and(http::with_context_unsealed(ctx))
@@ -34,7 +36,7 @@ fn branches_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
-        .and(path::param::<coco::Urn>())
+        .and(path::param::<Urn>())
         .and(path::end())
         .and(warp::query::<BranchQuery>())
         .and(warp::get())
@@ -47,8 +49,8 @@ fn commit_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
-        .and(path::param::<coco::Urn>())
-        .and(path::param::<coco::git_ext::Oid>())
+        .and(path::param::<Urn>())
+        .and(path::param::<git_ext::Oid>())
         .and(path::end())
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
@@ -62,7 +64,7 @@ fn commits_filter(
     path("commits")
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
-        .and(path::param::<coco::Urn>())
+        .and(path::param::<Urn>())
         .and(http::with_qs::<CommitsQuery>())
         .and_then(handler::commits)
 }
@@ -80,7 +82,7 @@ fn tags_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
-        .and(path::param::<coco::Urn>())
+        .and(path::param::<Urn>())
         .and(warp::query::<TagQuery>())
         .and(path::end())
         .and(warp::get())
@@ -93,7 +95,7 @@ fn tree_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
-        .and(path::param::<coco::Urn>())
+        .and(path::param::<Urn>())
         .and(path::end())
         .and(warp::get())
         .and(http::with_qs::<TreeQuery>())
@@ -105,13 +107,14 @@ fn tree_filter(
 mod handler {
     use warp::{reply, Rejection, Reply};
 
-    use coco::git_ext::Oid;
+    use radicle_daemon::{git_ext::Oid, state, Urn};
+    use radicle_source::surf::vcs::git::BranchSelector;
 
-    use crate::{context, error, session, session::settings};
+    use crate::{browser, context, error, session, session::settings};
 
-    /// Fetch a [`coco::source::Blob`].
+    /// Fetch a [`radicle_source::Blob`].
     pub async fn blob(
-        project_urn: coco::Urn,
+        project_urn: Urn,
         super::BlobQuery {
             path,
             peer_id,
@@ -136,11 +139,11 @@ mod handler {
             None
         };
 
-        let branch = coco::state::get_branch(&ctx.peer, project_urn, peer_id, None)
+        let branch = state::get_branch(&ctx.peer, project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
-        let blob = coco::state::with_browser(&ctx.peer, branch, |mut browser| {
-            coco::source::blob(&mut browser, revision, &path, theme)
+        let blob = browser::using(&ctx.peer, branch, |browser| {
+            radicle_source::blob::highlighting::blob(browser, revision, &path, theme)
         })
         .await
         .map_err(error::Error::from)?;
@@ -148,18 +151,18 @@ mod handler {
         Ok(reply::json(&blob))
     }
 
-    /// Fetch the list [`coco::source::Branch`].
+    /// Fetch the list [`radicle_source::Branch`].
     pub async fn branches(
-        project_urn: coco::Urn,
+        project_urn: Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
-        let default_branch = coco::state::get_branch(&ctx.peer, project_urn, peer_id, None)
+        let default_branch = state::get_branch(&ctx.peer, project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
-        let branches = coco::state::with_browser(&ctx.peer, default_branch, |browser| {
-            coco::source::branches(browser, Some(coco::source::into_branch_type(peer_id)))
+        let branches = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::branches(browser, BranchSelector::from(peer_id))
         })
         .await
         .map_err(error::Error::from)?;
@@ -167,17 +170,17 @@ mod handler {
         Ok(reply::json(&branches))
     }
 
-    /// Fetch a [`coco::source::Commit`].
+    /// Fetch a [`radicle_source::Commit`].
     pub async fn commit(
-        project_urn: coco::Urn,
+        project_urn: Urn,
         sha1: Oid,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let default_branch = coco::state::find_default_branch(&ctx.peer, project_urn)
+        let default_branch = state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
-        let commit = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::commit(&mut browser, sha1)
+        let commit = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::commit(&mut browser, *sha1)
         })
         .await
         .map_err(error::Error::from)?;
@@ -185,19 +188,19 @@ mod handler {
         Ok(reply::json(&commit))
     }
 
-    /// Fetch the list of [`coco::source::Commit`] from a branch.
+    /// Fetch the list of [`radicle_source::Commit`] from a branch.
     pub async fn commits(
         ctx: context::Unsealed,
-        project_urn: coco::Urn,
+        project_urn: Urn,
         super::CommitsQuery { revision }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, project_urn)
+        let default_branch = state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
-        let commits = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::commits(&mut browser, revision)
+        let commits = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::commits(&mut browser, revision)
         })
         .await
         .map_err(error::Error::from)?;
@@ -205,37 +208,35 @@ mod handler {
         Ok(reply::json(&commits))
     }
 
-    /// Fetch the list [`coco::source::Branch`] for a local repository.
+    /// Fetch the list [`radicle_source::Branch`] for a local repository.
     pub async fn local_state(
         commits_query: super::LocalStateQuery,
     ) -> Result<impl Reply, Rejection> {
-        let state = coco::source::local_state(&commits_query.path)
-            .map_err(coco::state::Error::from)
+        let state = radicle_source::local_state(&commits_query.path, "master")
             .map_err(error::Error::from)?;
 
         Ok(reply::json(&state))
     }
 
-    /// Fetch the list [`coco::source::Tag`].
+    /// Fetch the list [`radicle_source::Tag`].
     pub async fn tags(
-        project_urn: coco::Urn,
+        project_urn: Urn,
         _query: super::TagQuery,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let branch = coco::state::find_default_branch(&ctx.peer, project_urn)
+        let branch = state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
-        let tags =
-            coco::state::with_browser(&ctx.peer, branch, |browser| coco::source::tags(browser))
-                .await
-                .map_err(error::Error::from)?;
+        let tags = browser::using(&ctx.peer, branch, |browser| radicle_source::tags(browser))
+            .await
+            .map_err(error::Error::from)?;
 
         Ok(reply::json(&tags))
     }
 
-    /// Fetch a [`coco::source::Tree`].
+    /// Fetch a [`radicle_source::Tree`].
     pub async fn tree(
-        project_urn: coco::Urn,
+        project_urn: Urn,
         super::TreeQuery {
             prefix,
             peer_id,
@@ -245,11 +246,11 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
-        let branch = coco::state::get_branch(&ctx.peer, project_urn, peer_id, None)
+        let branch = state::get_branch(&ctx.peer, project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
-        let tree = coco::state::with_browser(&ctx.peer, branch, |mut browser| {
-            coco::source::tree(&mut browser, revision, prefix)
+        let tree = browser::using(&ctx.peer, branch, |mut browser| {
+            radicle_source::tree(&mut browser, revision, prefix)
         })
         .await
         .map_err(error::Error::from)?;
@@ -271,7 +272,7 @@ pub struct LocalStateQuery {
 #[serde(rename_all = "camelCase")]
 pub struct CommitsQuery {
     /// Revision to query at.
-    revision: Option<coco::source::Revision<coco::PeerId>>,
+    revision: Option<radicle_source::Revision<PeerId>>,
 }
 
 /// Bundled query params to pass to the blob handler.
@@ -281,9 +282,9 @@ pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
     /// PeerId to scope the query by.
-    peer_id: Option<coco::PeerId>,
+    peer_id: Option<PeerId>,
     /// Revision to query at.
-    revision: Option<coco::source::Revision<coco::PeerId>>,
+    revision: Option<radicle_source::Revision<PeerId>>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
 }
@@ -293,7 +294,7 @@ pub struct BlobQuery {
 #[serde(rename_all = "camelCase")]
 pub struct BranchQuery {
     /// PeerId to scope the query by.
-    peer_id: Option<coco::PeerId>,
+    peer_id: Option<PeerId>,
 }
 
 /// Bundled query params to pass to the tree handler.
@@ -303,9 +304,9 @@ pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
     /// PeerId to scope the query by.
-    peer_id: Option<coco::PeerId>,
+    peer_id: Option<PeerId>,
     /// Revision to query at.
-    revision: Option<coco::source::Revision<coco::PeerId>>,
+    revision: Option<radicle_source::Revision<PeerId>>,
 }
 
 /// A query param for [`handler::tags`].
@@ -313,19 +314,22 @@ pub struct TreeQuery {
 #[serde(rename_all = "camelCase")]
 pub struct TagQuery {
     /// PeerId to scope the query by.
-    peer_id: Option<coco::PeerId>,
+    peer_id: Option<PeerId>,
 }
 
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::{convert::TryFrom, env};
+    use std::{convert::TryFrom as _, env};
 
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use crate::{context, error, http};
+    use radicle_daemon::{git_ext, identities, state, Urn};
+    use radicle_source::surf::vcs::git::BranchSelector;
+
+    use crate::{browser, context, error, http};
 
     #[tokio::test]
     async fn blob() -> Result<(), Box<dyn std::error::Error>> {
@@ -334,14 +338,14 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
-        let revision = coco::source::Revision::Branch {
+        let revision = radicle_source::Revision::Branch {
             name: "master".to_string(),
             peer_id: None,
         };
         let arrows = "text/arrows.txt";
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn.clone()).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::blob(&mut browser, Some(revision.clone()), arrows, None)
+        let default_branch = state::find_default_branch(&ctx.peer, urn.clone()).await?;
+        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::blob(&mut browser, Some(revision.clone()), arrows)
         })
         .await?;
 
@@ -397,9 +401,9 @@ mod test {
 
         // Get binary blob.
         let ls = "bin/ls";
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn.clone()).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |browser| {
-            coco::source::blob(browser, Some(revision.clone()), ls, None)
+        let default_branch = state::find_default_branch(&ctx.peer, urn.clone()).await?;
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::blob(browser, Some(revision.clone()), ls)
         })
         .await?;
 
@@ -454,7 +458,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
-        let revision = coco::source::Revision::Branch {
+        let revision = radicle_source::Revision::Branch {
             name: "dev".to_string(),
             peer_id: None,
         };
@@ -478,9 +482,9 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::blob(&mut browser, Some(revision), path, None)
+        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::blob(&mut browser, Some(revision), path)
         })
         .await?;
 
@@ -504,9 +508,9 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |browser| {
-            coco::source::branches(browser, None)
+        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::branches(browser, BranchSelector::All)
         })
         .await?;
 
@@ -526,7 +530,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
-        let sha1 = coco::git_ext::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
+        let sha1 = git_ext::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
 
         let res = request()
             .method("GET")
@@ -534,9 +538,9 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::commit_header(&mut browser, sha1)
+        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::commit::header(&mut browser, *sha1)
         })
         .await?;
 
@@ -573,7 +577,7 @@ mod test {
         let urn = replicate_platinum(&ctx).await?;
 
         let branch_name = "dev";
-        let revision = coco::source::Revision::Branch {
+        let revision = radicle_source::Revision::Branch {
             name: branch_name.to_string(),
             peer_id: None,
         };
@@ -590,9 +594,9 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::commits(&mut browser, Some(revision.clone()))
+        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::commits(&mut browser, Some(revision.clone()))
         })
         .await?;
 
@@ -624,7 +628,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let want = coco::source::local_state(path.to_str().unwrap()).unwrap();
+        let want = radicle_source::local_state(path.to_str().unwrap(), "master").unwrap();
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -656,9 +660,9 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |browser| {
-            coco::source::tags(browser)
+        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::tags(browser)
         })
         .await?;
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -680,7 +684,7 @@ mod test {
         let urn = replicate_platinum(&ctx).await?;
 
         let prefix = "src";
-        let revision = coco::source::Revision::Branch {
+        let revision = radicle_source::Revision::Branch {
             name: "master".to_string(),
             peer_id: None,
         };
@@ -692,9 +696,9 @@ mod test {
         let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::tree(&mut browser, Some(revision), Some(prefix.to_string()))
+        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::tree(&mut browser, Some(revision), Some(prefix.to_string()))
         })
         .await?;
 
@@ -748,7 +752,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
         let urn = replicate_platinum(&ctx).await?;
 
-        let revision = coco::source::Revision::Branch {
+        let revision = radicle_source::Revision::Branch {
             name: "dev".to_string(),
             peer_id: None,
         };
@@ -764,9 +768,9 @@ mod test {
         );
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = coco::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = coco::state::with_browser(&ctx.peer, default_branch, |mut browser| {
-            coco::source::tree(&mut browser, Some(revision), None)
+        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
+            radicle_source::tree(&mut browser, Some(revision), None)
         })
         .await?;
 
@@ -777,10 +781,10 @@ mod test {
         Ok(())
     }
 
-    async fn replicate_platinum(ctx: &context::Unsealed) -> Result<coco::Urn, error::Error> {
-        let owner = coco::state::init_owner(
+    async fn replicate_platinum(ctx: &context::Unsealed) -> Result<Urn, error::Error> {
+        let owner = state::init_owner(
             &ctx.peer,
-            coco::identities::payload::Person {
+            identities::payload::Person {
                 name: "cloudhead".into(),
             },
         )

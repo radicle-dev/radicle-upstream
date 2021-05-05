@@ -4,18 +4,20 @@ use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
 
+use radicle_daemon::{keys, keystore, profile};
+
 /// Persistent environment with depedencies for running the API and coco peer services.
 pub struct Environment {
     /// Secret key for the coco peer.
     ///
     /// If this is `None` coco is not started.
-    pub key: Option<coco::keys::SecretKey>,
+    pub key: Option<keys::SecretKey>,
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
     /// Paths & profile id for on-disk persistence.
-    pub coco_profile: coco::profile::Profile,
+    pub coco_profile: profile::Profile,
     /// A reference to the key store.
-    pub keystore: Arc<dyn coco::keystore::Keystore + Send + Sync>,
+    pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
     /// If true we are running the service in test mode.
     pub test_mode: bool,
 }
@@ -31,7 +33,7 @@ pub enum Error {
         std::io::Error,
     ),
     #[error(transparent)]
-    Profile(#[from] coco::profile::Error),
+    Profile(#[from] profile::Error),
 }
 
 impl Environment {
@@ -42,8 +44,8 @@ impl Environment {
     fn new(test_mode: bool) -> Result<Self, Error> {
         if test_mode {
             let temp_dir = tempfile::tempdir()?;
-            let coco_profile = coco::profile::Profile::from_root(temp_dir.path(), None)?;
-            let keystore = Arc::new(coco::keystore::memory());
+            let coco_profile = profile::Profile::from_root(temp_dir.path(), None)?;
+            let keystore = Arc::new(keystore::memory());
             Ok(Self {
                 key: None,
                 temp_dir: Some(temp_dir),
@@ -52,8 +54,8 @@ impl Environment {
                 test_mode,
             })
         } else {
-            let coco_profile = coco::profile::Profile::load()?;
-            let keystore = Arc::new(coco::keystore::file(coco_profile.paths().clone()));
+            let coco_profile = profile::Profile::load()?;
+            let keystore = Arc::new(keystore::file(coco_profile.paths().clone()));
             Ok(Self {
                 key: None,
                 temp_dir: None,
@@ -132,7 +134,7 @@ enum Message {
     /// Reset the service to the initial environment and delete all persisted state
     Reset,
     /// Unseal the key store with the given secret key
-    SetSecretKey(coco::keys::SecretKey),
+    SetSecretKey(keys::SecretKey),
     /// Seal the key store and reload the services
     Seal,
 }
@@ -153,7 +155,7 @@ impl Handle {
     }
 
     /// Unseal the key store with the given secret key
-    pub fn set_secret_key(&mut self, key: coco::keys::SecretKey) {
+    pub fn set_secret_key(&mut self, key: keys::SecretKey) {
         self.send_message(Message::SetSecretKey(key))
     }
 

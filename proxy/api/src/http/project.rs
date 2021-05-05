@@ -5,6 +5,8 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use radicle_daemon::{PeerId, Urn};
+
 use crate::{context, http};
 
 mod request;
@@ -30,7 +32,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn checkout_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<coco::Urn>()
+    path::param::<Urn>()
         .and(path("checkout"))
         .and(path::end())
         .and(warp::post())
@@ -66,7 +68,7 @@ fn failed_filter(
 fn get_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<coco::Urn>()
+    path::param::<Urn>()
         .and(path::end())
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
@@ -101,7 +103,7 @@ fn peers_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context_unsealed(ctx)
         .and(warp::get())
-        .and(path::param::<coco::Urn>())
+        .and(path::param::<Urn>())
         .and(path("peers"))
         .and(path::end())
         .and_then(handler::peers)
@@ -111,9 +113,9 @@ fn peers_filter(
 fn track_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<coco::Urn>()
+    path::param::<Urn>()
         .and(path("track"))
-        .and(path::param::<coco::PeerId>())
+        .and(path::param::<PeerId>())
         .and(path::end())
         .and(warp::put())
         .and(http::with_context_unsealed(ctx))
@@ -124,9 +126,9 @@ fn track_filter(
 fn untrack_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<coco::Urn>()
+    path::param::<Urn>()
         .and(path("untrack"))
-        .and(path::param::<coco::PeerId>())
+        .and(path::param::<PeerId>())
         .and(path::end())
         .and(http::with_context_unsealed(ctx))
         .and(warp::put())
@@ -138,7 +140,7 @@ fn user_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("user")
-        .and(path::param::<coco::Urn>())
+        .and(path::param::<Urn>())
         .and(path::end())
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
@@ -152,16 +154,18 @@ mod handler {
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error::Error, http, project};
+    use radicle_daemon::{state, LocalIdentity, PeerId, Urn};
+
+    use crate::{browser, context, error::Error, http, project};
 
     /// Checkout a [`project::Project`]'s source code.
     pub async fn checkout(
-        urn: coco::Urn,
+        urn: Urn,
         ctx: context::Unsealed,
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = http::guard_self_peer_id(&ctx.peer, peer_id);
-        let path = coco::state::checkout(&ctx.peer, urn, peer_id, path)
+        let path = state::checkout(&ctx.peer, urn, peer_id, path)
             .await
             .map_err(Error::from)?;
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
@@ -170,15 +174,15 @@ mod handler {
     /// Create a new [`project::Project`].
     pub async fn create(
         ctx: context::Unsealed,
-        owner: coco::LocalIdentity,
-        input: coco::project::Create,
+        owner: LocalIdentity,
+        input: radicle_daemon::project::Create,
     ) -> Result<impl Reply, Rejection> {
-        let project = coco::state::init_project(&ctx.peer, &owner, input)
+        let project = state::init_project(&ctx.peer, &owner, input)
             .await
             .map_err(Error::from)?;
         let urn = project.urn();
 
-        let branch = coco::state::get_branch(
+        let branch = state::get_branch(
             &ctx.peer,
             urn,
             None,
@@ -186,8 +190,8 @@ mod handler {
         )
         .await
         .map_err(Error::from)?;
-        let stats = coco::state::with_browser(&ctx.peer, branch, |browser| {
-            browser.get_stats().map_err(coco::source::Error::from)
+        let stats = browser::using(&ctx.peer, branch, |browser| {
+            browser.get_stats().map_err(radicle_source::Error::from)
         })
         .await
         .map_err(Error::from)?;
@@ -200,7 +204,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(urn: coco::Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+    pub async fn get(urn: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         Ok(reply::json(&project::get(&ctx.peer, urn).await?))
     }
 
@@ -229,18 +233,15 @@ mod handler {
     /// `user` (i.e. the "default user"), but rather should be another user that you are tracking.
     ///
     /// See [`project::list_for_user`] for more information.
-    pub async fn list_user(
-        user_id: coco::Urn,
-        ctx: context::Unsealed,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn list_user(user_id: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let projects = project::list_for_user(&ctx.peer, &user_id).await?;
 
         Ok(reply::json(&projects))
     }
 
     /// List the remote peers for a project.
-    pub async fn peers(ctx: context::Unsealed, urn: coco::Urn) -> Result<impl Reply, Rejection> {
-        let peers: Vec<project::Peer> = coco::state::list_project_peers(&ctx.peer, urn)
+    pub async fn peers(ctx: context::Unsealed, urn: Urn) -> Result<impl Reply, Rejection> {
+        let peers: Vec<project::Peer> = state::list_project_peers(&ctx.peer, urn)
             .await
             .map_err(Error::from)?
             .into_iter()
@@ -252,11 +253,11 @@ mod handler {
 
     /// Track the peer for the provided project.
     pub async fn track(
-        urn: coco::Urn,
-        peer_id: coco::PeerId,
+        urn: Urn,
+        peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        coco::state::track(&ctx.peer, urn, peer_id)
+        state::track(&ctx.peer, urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -264,11 +265,11 @@ mod handler {
 
     /// Untrack the peer for the provided project.
     pub async fn untrack(
-        urn: coco::Urn,
-        peer_id: coco::PeerId,
+        urn: Urn,
+        peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        coco::state::untrack(&ctx.peer, urn, peer_id)
+        state::untrack(&ctx.peer, urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -293,7 +294,7 @@ pub struct CheckoutInput {
     /// Location on the filesystem where the working copy should be created.
     path: PathBuf,
     /// Which peer are we checking out from. If it's `None`, we're checking out our own project.
-    peer_id: Option<coco::PeerId>,
+    peer_id: Option<PeerId>,
 }
 
 /// User provided metadata for project manipulation.
@@ -311,12 +312,14 @@ pub struct MetadataInput {
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use coco::{identities::payload::Person, state::init_owner};
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use radicle_surf::vcs::git::git2;
+    use radicle_daemon::{
+        config, identities::payload::Person, include, state, state::init_owner, LocalUrl,
+    };
+    use radicle_source::surf::vcs::git::git2;
 
     use crate::{context, http, identity, project, session};
 
@@ -381,17 +384,17 @@ mod test {
                     .to_string()
             })
             .collect::<Vec<_>>();
-        let remote = repo.find_remote(coco::config::RAD_REMOTE)?;
+        let remote = repo.find_remote(config::RAD_REMOTE)?;
         assert_eq!(
             remote.url(),
-            Some(coco::LocalUrl::from(urn.clone()).to_string().as_str())
+            Some(LocalUrl::from(urn.clone()).to_string().as_str())
         );
         assert_eq!(refs, vec!["dev", "master", "rad/dev", "rad/master"]);
 
         // Verify presence of include file.
         let config = repo.config()?;
         let include_path = config
-            .get_entry(coco::include::GIT_CONFIG_PATH_KEY)?
+            .get_entry(include::GIT_CONFIG_PATH_KEY)?
             .value()
             .unwrap()
             .to_string();
@@ -426,8 +429,8 @@ mod test {
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
         };
 
-        let project = coco::project::Create {
-            repo: coco::project::Repo::New {
+        let project = radicle_daemon::project::Create {
+            repo: radicle_daemon::project::Repo::New {
                 path: dir.path().to_path_buf(),
                 name: "Upstream".to_string(),
             },
@@ -489,8 +492,8 @@ mod test {
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
         };
 
-        let project = coco::project::Create {
-            repo: coco::project::Repo::Existing {
+        let project = radicle_daemon::project::Create {
+            repo: radicle_daemon::project::Repo::Existing {
                 path: repo_path.clone(),
             },
             description: "Desktop client for radicle.".into(),
@@ -612,7 +615,7 @@ mod test {
 
         let projects = project::Projects::list(&ctx.peer).await?;
         let project = projects.into_iter().next().unwrap();
-        let coco_project = coco::state::get_project(&ctx.peer, project.urn.clone())
+        let coco_project = state::get_project(&ctx.peer, project.urn.clone())
             .await?
             .unwrap();
 

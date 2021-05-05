@@ -79,14 +79,24 @@ export const fetchFollowing = (): void => {
 };
 
 export const showNotificationsForFailedProjects = async (): Promise<void> => {
-  const failedProjects = await proxy.client.project.listFailed();
-  failedProjects.forEach(failedProject => {
+  try {
+    const failedProjects = await proxy.client.project.listFailed();
+    failedProjects.forEach(failedProject => {
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectRequestFailure,
+          message: `The project ${failedProject.metadata.name} could not be loaded`,
+          details: failedProject,
+        })
+      );
+    });
+  } catch (error) {
     error.show(
       new error.Error({
         code: error.Code.ProjectRequestFailure,
-        message: `The project ${failedProject.metadata.name} could not be loaded`,
-        details: failedProject,
+        message: "Failed to get failed projects",
+        source: error,
       })
     );
-  });
+  }
 };

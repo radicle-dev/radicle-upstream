@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use coco::git_ext;
+use radicle_daemon::git_ext;
 
 use crate::context;
 
@@ -53,13 +53,15 @@ mod handler {
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error, project};
+    use radicle_daemon::{state, LocalIdentity};
+
+    use crate::{browser, context, error, project};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Unsealed,
-        owner: coco::LocalIdentity,
+        owner: LocalIdentity,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let meta = crate::control::replicate_platinum(
@@ -77,13 +79,12 @@ mod handler {
                 let _fake_peer = crate::control::track_fake_peer(&ctx.peer, &meta, &user_handle);
             }
         }
-        let branch = coco::state::get_branch(&ctx.peer, meta.urn(), None, None)
+        let branch = state::get_branch(&ctx.peer, meta.urn(), None, None)
             .await
             .map_err(error::Error::from)?;
-        let stats =
-            coco::state::with_browser(&ctx.peer, branch, |browser| Ok(browser.get_stats()?))
-                .await
-                .map_err(error::Error::from)?;
+        let stats = browser::using(&ctx.peer, branch, |browser| Ok(browser.get_stats()?))
+            .await
+            .map_err(error::Error::from)?;
         let project = project::Full::try_from((meta, stats))?;
 
         Ok(reply::with_status(

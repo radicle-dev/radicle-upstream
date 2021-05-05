@@ -26,6 +26,7 @@
     clippy::large_types_passed_by_value
 )]
 
+mod browser;
 mod config;
 mod context;
 mod control;

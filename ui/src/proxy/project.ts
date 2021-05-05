@@ -1,6 +1,26 @@
 import * as zod from "zod";
 import type { Fetcher } from "./fetcher";
 
+export interface Metadata {
+  name: string;
+  defaultBranch: string;
+  description: string | null;
+  maintainers: string[];
+}
+
+const metadataSchema: zod.Schema<Metadata> = zod.object({
+  name: zod.string(),
+  defaultBranch: zod.string(),
+  description: zod.string().nullable(),
+  maintainers: zod.array(zod.string()),
+});
+
+export interface CreateParams {
+  repo: NewRepo | ExistingRepo;
+  description?: string;
+  defaultBranch: string;
+}
+
 export interface Project {
   urn: string;
   shareableEntityIdentifier: string;
@@ -11,12 +31,7 @@ export interface Project {
 const projectSchema: zod.Schema<Project> = zod.object({
   urn: zod.string(),
   shareableEntityIdentifier: zod.string(),
-  metadata: zod.object({
-    name: zod.string(),
-    defaultBranch: zod.string(),
-    description: zod.string().nullable(),
-    maintainers: zod.array(zod.string()),
-  }),
+  metadata: metadataSchema,
   stats: zod.object({
     branches: zod.number(),
     commits: zod.number(),
@@ -24,23 +39,24 @@ const projectSchema: zod.Schema<Project> = zod.object({
   }),
 });
 
+export interface FailedProject {
+  urn: string;
+  shareableEntityIdentifier: string;
+  metadata: Metadata;
+}
+
+const failedProjectSchema: zod.Schema<FailedProject> = zod
+  .object({
+    urn: zod.string(),
+    shareableEntityIdentifier: zod.string(),
+    metadata: metadataSchema,
+  })
+  .nonstrict();
+
 export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
-}
-
-export interface Metadata {
-  name: string;
-  defaultBranch: string;
-  description: string | null;
-  maintainers: string[];
-}
-
-export interface CreateParams {
-  repo: NewRepo | ExistingRepo;
-  description?: string;
-  defaultBranch: string;
 }
 
 interface NewRepo {
@@ -87,13 +103,13 @@ export class Client {
     );
   }
 
-  async listFailed(): Promise<Project[]> {
+  async listFailed(): Promise<FailedProject[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
         path: "projects/failed",
       },
-      zod.array(projectSchema)
+      zod.array(failedProjectSchema)
     );
   }
 

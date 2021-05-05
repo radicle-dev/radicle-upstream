@@ -11,7 +11,7 @@ use std::{
 use serde::Serialize;
 use tokio::sync::{mpsc, RwLock};
 
-use coco::{convert::MaybeFrom, PeerEvent, PeerStatus};
+use radicle_daemon::{convert::MaybeFrom, PeerEvent, PeerId, PeerStatus, Urn};
 
 /// Significant events happening during proxy runtime.
 #[derive(Clone, Debug)]
@@ -26,34 +26,34 @@ pub enum Notification {
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalPeer {
     ProjectUpdated {
-        provider: coco::PeerId,
-        urn: coco::Urn,
+        provider: PeerId,
+        urn: Urn,
     },
     /// A request for a project was created and is pending submission to the network
     #[serde(rename_all = "camelCase")]
     RequestCreated {
         /// Urn of the project.
-        urn: coco::Urn,
+        urn: Urn,
     },
     /// A request for a project was cloned successfully.
     #[serde(rename_all = "camelCase")]
     RequestCloned {
         /// Origin the project was cloned from.
-        peer: coco::PeerId,
+        peer: PeerId,
         /// Urn of the cloned project.
-        urn: coco::Urn,
+        urn: Urn,
     },
     /// A request for a project was queried on the network.
     #[serde(rename_all = "camelCase")]
     RequestQueried {
         /// Urn of the queried project.
-        urn: coco::Urn,
+        urn: Urn,
     },
     /// A request for a project timed out.
     #[serde(rename_all = "camelCase")]
     RequestTimedOut {
         /// Urn of the timed out project.
-        urn: coco::Urn,
+        urn: Urn,
     },
     /// Transition between two statuses occurred.
     #[serde(rename_all = "camelCase")]

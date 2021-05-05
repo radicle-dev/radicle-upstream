@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
-use coco::signer::BoxedSigner;
+use radicle_daemon::{net, signer::BoxedSigner, state, LocalIdentity, PeerId};
 
 use crate::{context, notification::Subscriptions};
 
@@ -103,14 +103,14 @@ pub fn api(
 /// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(coco::LocalIdentity,)> {
+fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(LocalIdentity,)> {
     warp::any()
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {
             let session =
                 crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
 
-            let user = coco::state::get_user(&ctx.peer, session.identity.urn)
+            let user = state::get_user(&ctx.peer, session.identity.urn)
                 .await
                 .expect("failed to get local identity")
                 .expect("the local identity is missing");
@@ -212,9 +212,9 @@ where
 /// Guard against access of wrong paths by the owners peer id.
 #[must_use]
 pub fn guard_self_peer_id(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
-    peer_id: Option<coco::PeerId>,
-) -> Option<coco::PeerId> {
+    peer: &net::peer::Peer<BoxedSigner>,
+    peer_id: Option<PeerId>,
+) -> Option<PeerId> {
     match peer_id {
         Some(peer_id) if peer_id == peer.peer_id() => None,
         Some(peer_id) => Some(peer_id),
@@ -225,12 +225,12 @@ pub fn guard_self_peer_id(
 /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
 #[must_use]
 pub fn guard_self_revision(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
-    revision: Option<coco::source::Revision<coco::PeerId>>,
-) -> Option<coco::source::Revision<coco::PeerId>> {
+    peer: &net::peer::Peer<BoxedSigner>,
+    revision: Option<radicle_source::Revision<PeerId>>,
+) -> Option<radicle_source::Revision<PeerId>> {
     revision.map(|r| {
-        if let coco::source::Revision::Branch { name, peer_id } = r {
-            coco::source::Revision::Branch {
+        if let radicle_source::Revision::Branch { name, peer_id } = r {
+            radicle_source::Revision::Branch {
                 name,
                 peer_id: guard_self_peer_id(peer, peer_id),
             }
