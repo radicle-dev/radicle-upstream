@@ -34,6 +34,7 @@ const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
       }
     `,
     variables: { owners: [walletOwnerAddress] },
+    fetchPolicy: "no-cache",
   });
 };
 
@@ -54,6 +55,7 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<[Org]> => {
         }
       `,
       variables: { owners: gnosisSafeWallets.map(owner => owner.id) },
+      fetchPolicy: "no-cache",
     })
   ).data.orgs;
 
