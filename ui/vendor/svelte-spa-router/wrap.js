@@ -66,7 +66,7 @@ export function wrap(args) {
     }
     for (let i = 0; i < args.conditions.length; i++) {
       if (!args.conditions[i] || typeof args.conditions[i] != "function") {
-        throw Error("Invalid parameter conditions[" + i + "]");
+        throw Error(`Invalid parameter conditions[${i}]`);
       }
     }
   }

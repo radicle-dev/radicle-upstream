@@ -1,4 +1,4 @@
-///<reference types="svelte" />
+// /<reference types="svelte" />
 
 import { SvelteComponent } from "svelte";
 import { Readable } from "svelte/store";
@@ -15,7 +15,7 @@ export interface RouteDetail {
   querystring: string;
 
   /** Custom data passed by the user */
-  userData?: object;
+  userData?: Record<string, unknown>;
 }
 
 /** Detail object for the `routeLoaded` event */
@@ -29,7 +29,7 @@ export interface RouteDetailLoaded extends RouteDetail {
 
 /**
  * This is a Svelte component loaded asynchronously.
- * It's meant to be used with the `import()` function, such as `() => import('Foo.svelte')}`
+ * It's meant to be used with the `import()` function, such as `() => import('Foo.svelte')}`
  */
 export type AsyncSvelteComponent = () => Promise<{
   default: typeof SvelteComponent;
@@ -57,16 +57,16 @@ export interface WrappedComponent {
   conditions?: RoutePrecondition[];
 
   /** Optional dictionary of static props */
-  props?: object;
+  props?: Record<string, unknown>;
 
   /** Optional user data dictionary */
-  userData?: object;
+  userData?: Record<string, unknown>;
 
   /**
    * Internal flag used by the router to identify wrapped routes
    * @internal
    */
-  //_sveltesparouter?: boolean
+  // _sveltesparouter?: boolean
 }
 
 /**
@@ -81,7 +81,7 @@ export interface WrappedComponent {
  */
 export function wrap(
   component: typeof SvelteComponent,
-  userData?: object,
+  userData?: Record<string, unknown>,
   ...conditions: RoutePrecondition[]
 ): WrappedComponent;
 

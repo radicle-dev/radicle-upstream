@@ -33,7 +33,7 @@ function toggleClasses(el, className, shouldAdd) {
 loc.subscribe(value => {
   // Update the location
   location =
-    value.location + (value.querystring ? "?" + value.querystring : "");
+    value.location + (value.querystring ? `?${value.querystring}` : "");
 
   // Update all nodes
   nodes.map(checkActive);
