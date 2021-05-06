@@ -12,7 +12,7 @@
     margin: 0 0 1.75rem;
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
-  .markdown :global(h1):not(:first-child) {
+  .markdown :global(h1:not(:first-child)) {
     margin-top: 2rem;
   }
 
