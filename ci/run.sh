@@ -33,7 +33,7 @@ if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
   if [[ $free_cache_space_kb -le $min_free_cache_kb ]]; then
     echo "Not enough free space on /cache. Deleting ${rust_target_cache}"
     du -sh /cache/*
-    rm -r "${rust_target_cache}"
+    rm -rf "${rust_target_cache}"
     mkdir -p "${rust_target_cache}"
   fi
 fi
