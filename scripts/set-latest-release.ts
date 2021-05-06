@@ -9,7 +9,7 @@
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
-import * as childProcess from "child_process";
+import execa from "execa";
 
 import * as semver from "semver";
 import fetch from "node-fetch";
@@ -56,23 +56,17 @@ async function main() {
       "utf8"
     );
 
-    const result = childProcess.spawnSync(
+    await execa(
       "gsutil",
-      ["cp", latestPath, `gs://releases.radicle.xyz/${fileName}`],
+      [
+        "-h",
+        "cache-control:no-cache",
+        "cp",
+        latestPath,
+        `gs://releases.radicle.xyz/${fileName}`,
+      ],
       { stdio: "inherit" }
     );
-
-    if (result.error) {
-      throw result.error;
-    }
-
-    if (result.signal !== null) {
-      throw new Error(`gsutil killed by signal ${result.signal}`);
-    }
-
-    if (result.status !== 0) {
-      throw new Error(`gsutil exited with status code ${result.status}`);
-    }
   });
 }
 
