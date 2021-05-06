@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import { isExperimental } from "../../src/config";
-  import { Role } from "../../src/project";
+  import { PeerRole } from "../../src/project";
   import type { User } from "../../src/project";
   import { CSSPosition } from "../../src/style";
 
@@ -39,7 +39,7 @@
     dispatch("open", peer);
   };
   const onSelect = (peer: User) => {
-    if (peer.role === Role.Tracker) {
+    if (peer.role === PeerRole.Tracker) {
       return;
     }
     hide();
@@ -133,10 +133,10 @@
     <div class="peer-dropdown" hidden={!expanded}>
       {#each orderPeers(peers) as peer (peer.peerId)}
         <Entry
-          disabled={peer.role === Role.Tracker}
+          disabled={peer.role === PeerRole.Tracker}
           on:click={() => onSelect(peer)}
           selected={peer.identity.peerId === selected.identity.peerId}>
-          {#if peer.role === Role.Tracker}
+          {#if peer.role === PeerRole.Tracker}
             <Tooltip position={CSSPosition.Left} value="Remote has no changes">
               <Peer {peer} />
             </Tooltip>

@@ -1,7 +1,6 @@
 import { get, writable } from "svelte/store";
 
 import * as error from "./error";
-import * as api from "./api";
 import * as config from "./config";
 import type * as identity from "./identity";
 import * as ipc from "./ipc";
@@ -16,58 +15,21 @@ import {
   Stats,
   Request,
   RequestStatus,
+  Peer,
+  PeerType,
+  PeerRole,
+  PeerReplicationStatusType,
+  PeerReplicated,
 } from "./proxy/project";
 
-export type { Project, Metadata, Stats, Request };
-export { RequestStatus };
-
-export enum Role {
-  Contributor = "contributor",
-  Maintainer = "maintainer",
-  Tracker = "tracker",
-}
-
-export enum ReplicationStatusType {
-  NotReplicated = "notReplicated",
-  Replicated = "replicated",
-}
-
-export interface NotReplicated {
-  type: ReplicationStatusType.NotReplicated;
-}
-
-export interface Replicated {
-  type: ReplicationStatusType.Replicated;
-  role: Role;
-  user: identity.Identity;
-}
-
-export type ReplicationStatus = NotReplicated | Replicated;
-
-export enum PeerType {
-  Local = "local",
-  Remote = "remote",
-}
-
-export interface Local {
-  type: PeerType.Local;
-  peerId: identity.PeerId;
-  status: ReplicationStatus;
-}
-
-export interface Remote {
-  type: PeerType.Remote;
-  peerId: identity.PeerId;
-  status: ReplicationStatus;
-}
-
-export type Peer = Local | Remote;
+export type { Project, Metadata, Stats, Request, Peer, PeerReplicated };
+export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
 export interface User {
   peerId: identity.PeerId;
   type: PeerType;
   identity: identity.Identity;
-  role: Role;
+  role: PeerRole;
 }
 
 const creationStore = remote.createStore<Project>();
@@ -99,13 +61,6 @@ const fetchLocalState = (path: string): void => {
     .getLocalState(path)
     .then(localStateStore.success)
     .catch(err => localStateStore.error(error.fromUnknown(err)));
-};
-
-export const fetchPeers = (
-  projectUrn: Urn,
-  signal?: AbortSignal
-): Promise<Peer[]> => {
-  return api.get<Peer[]>(`projects/${projectUrn}/peers`, { signal });
 };
 
 // NEW PROJECT
@@ -264,6 +219,6 @@ export const isContributor = (users: User[]): boolean => {
   return !!users.find(
     u =>
       u.type === PeerType.Local &&
-      (u.role === Role.Maintainer || u.role == Role.Contributor)
+      (u.role === PeerRole.Maintainer || u.role == PeerRole.Contributor)
   );
 };
