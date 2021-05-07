@@ -2908,6 +2908,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"baconjs@npm:^3.0.17":
+  version: 3.0.17
+  resolution: "baconjs@npm:3.0.17"
+  checksum: 4a1773d26f6ca11c78a187c47aa4fbb50609fb4ca2973835cd89a05b632b505f0e883c4e934a199b527239ea36d18cf92046622233673231ebd1e6a09b323c2c
+  languageName: node
+  linkType: hard
+
 "balanced-match@npm:^1.0.0":
   version: 1.0.0
   resolution: "balanced-match@npm:1.0.0"
@@ -2987,15 +2994,6 @@ __metadata:
   version: 4.15.0
   resolution: "binaryextensions@npm:4.15.0"
   checksum: c594a31c1699460a9786cd3fa57cef73eab9635dc6eba586738ea7f012dcc92d10d00f4ce60c42d2de21b0931b4fdb6b560d8095e515f69e3ebe757f8dd60be1
-  languageName: node
-  linkType: hard
-
-"bindings@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "bindings@npm:1.5.0"
-  dependencies:
-    file-uri-to-path: 1.0.0
-  checksum: bd623dec58f126eb0c30f04a20da7080f06cdd5af26bf5a91615e70055fbba66c4cec5c88b156e8181c1d822f2392034a40a9121ef3ebc25638dc2163332b12d
   languageName: node
   linkType: hard
 
@@ -4661,25 +4659,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deasync-promise@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "deasync-promise@npm:1.0.1"
-  dependencies:
-    deasync: ^0.1.7
-  checksum: fdc7abac00b2f08db8cfbcdb137d340d8f9ae01dcac096c7ae52e7239feb2e6d3554110205e23c2d2591264544cae7748888406970b1498dda53cadbb0b03c52
-  languageName: node
-  linkType: hard
-
-"deasync@npm:^0.1.7":
-  version: 0.1.21
-  resolution: "deasync@npm:0.1.21"
-  dependencies:
-    bindings: ^1.5.0
-    node-addon-api: ^1.7.1
-  checksum: 122dca8ed34459a2e0232cbbd4fcb273d00146b772517d2161afef0c08142df45b9793bafa48c02d946486125ca52c2b8f4fab9c15130528afc8273e1ef34c36
-  languageName: node
-  linkType: hard
-
 "debug@npm:4.3.2, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.2.0, debug@npm:^4.3.1, debug@npm:^4.3.2":
   version: 4.3.2
   resolution: "debug@npm:4.3.2"
@@ -5498,13 +5477,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-svelte3@npm:=3.0.0":
-  version: 3.0.0
-  resolution: "eslint-plugin-svelte3@npm:3.0.0"
+"eslint-plugin-svelte3@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "eslint-plugin-svelte3@npm:3.2.0"
   peerDependencies:
     eslint: ">=6.0.0"
     svelte: ^3.2.0
-  checksum: 370b528f1979115c30533a7cc6757928a65d392f6d6f21ad853aed9ccef091663439231efc5af9fc05b000316979b808c0f825a99002889e241933432bf35698
+  checksum: 21c23ed6f2e9e9c54ef46d95e9ef9b8ab95a5143f9a9e5ec4e3c9b60de89b963fc303f2b704cce17a220360421ee71033d8abf541453543ab411df53e326ced7
   languageName: node
   linkType: hard
 
@@ -5515,18 +5494,6 @@ __metadata:
     esrecurse: ^4.3.0
     estraverse: ^4.1.1
   checksum: 79465cf5082f4216176f6d49c7d088de89ee890f912eb87b831f23ee9a5e17ed0f3f2ab6108fb8fefa0474ba5ebeaa9bdefbe49ba704bd879b73f2445e23ee10
-  languageName: node
-  linkType: hard
-
-"eslint-svelte3-preprocess@npm:=0.0.4":
-  version: 0.0.4
-  resolution: "eslint-svelte3-preprocess@npm:0.0.4"
-  dependencies:
-    deasync-promise: ^1.0.1
-    patch-package: ^6.2.2
-  peerDependencies:
-    svelte: ">1.44.0"
-  checksum: 71d2243a15cab3d7d1c327ef9c5c83ab2cd7da63e88ebc7eef971078f7f5ed62b4933f3105cf65301d8f1a509e362e8bc55539fe7406e3c6ba2be9fd24943947
   languageName: node
   linkType: hard
 
@@ -6106,13 +6073,6 @@ __metadata:
   dependencies:
     flat-cache: ^3.0.4
   checksum: af83a412143100405a995bb7d9a31982ebcfabe6c545dac2e787fc5580b2da74e253ef62968057fa5bbfaf0811a8b85623aeea776e16c77e3ce4c2488b0e4821
-  languageName: node
-  linkType: hard
-
-"file-uri-to-path@npm:1.0.0":
-  version: 1.0.0
-  resolution: "file-uri-to-path@npm:1.0.0"
-  checksum: 5ddb9682f04f6f87b7765b93306206db2f96bc86162487e27639c55fe3ffeed12c30906ef1dedaa5307d7cabbbbdcbfa299b79aaec435de0f17e17ab31bd20b3
   languageName: node
   linkType: hard
 
@@ -9593,7 +9553,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-addon-api@npm:^1.6.3, node-addon-api@npm:^1.7.1":
+"node-addon-api@npm:^1.6.3":
   version: 1.7.2
   resolution: "node-addon-api@npm:1.7.2"
   dependencies:
@@ -10308,7 +10268,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"patch-package@npm:^6.2.2, patch-package@npm:^6.4.7":
+"patch-package@npm:^6.4.7":
   version: 6.4.7
   resolution: "patch-package@npm:6.4.7"
   dependencies:
@@ -10861,6 +10821,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^4.22.0
     "@typescript-eslint/parser": ^4.22.0
     "@walletconnect/client": ^1.4.1
+    baconjs: ^3.0.17
     big.js: ^6.0.3
     browserify: ^17.0.0
     chokidar: ^3.5.1
@@ -10872,8 +10833,7 @@ __metadata:
     eslint: ^7.25.0
     eslint-plugin-cypress: ^2.11.2
     eslint-plugin-no-only-tests: ^2.5.0
-    eslint-plugin-svelte3: =3.0.0
-    eslint-svelte3-preprocess: =0.0.4
+    eslint-plugin-svelte3: ^3.2.0
     ethers: ^5.1.3
     execa: ^5.0.0
     exit-hook: ^2.2.1

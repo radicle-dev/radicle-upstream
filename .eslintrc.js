@@ -1,6 +1,3 @@
-const eslintSveltePreprocess = require("eslint-svelte3-preprocess");
-const svelteConfig = require("./svelte.config");
-
 module.exports = {
   env: {
     node: true,
@@ -13,7 +10,7 @@ module.exports = {
     ecmaVersion: 2019,
     sourceType: "module",
   },
-  extends: ["eslint:recommended"],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   plugins: ["svelte3", "@typescript-eslint", "no-only-tests"],
   overrides: [
     {
@@ -43,7 +40,6 @@ module.exports = {
   rules: {
     // Disallow Unused Variables
     // https://eslint.org/docs/rules/no-unused-vars
-    "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     // require using arrow functions as callbacks
     // https://eslint.org/docs/rules/prefer-arrow-callback
@@ -65,8 +61,15 @@ module.exports = {
     "spaced-comment": ["warn", "always"],
     // Disallow focused tests
     "no-only-tests/no-only-tests": "error",
+
+    // We are ok with providing explict type annotations for additional
+    // clarity.
+    "@typescript-eslint/no-inferrable-types": "off",
+    // We are ok with empty functions. Often we need a no-op function
+    // as an argument.
+    "@typescript-eslint/no-empty-function": "off",
   },
   settings: {
-    "svelte3/preprocess": eslintSveltePreprocess(svelteConfig.preprocess),
+    "svelte3/typescript": true,
   },
 };
