@@ -3,6 +3,7 @@
   import { wrap } from "svelte-spa-router/wrap";
 
   import { orgScreenStore } from "../src/org";
+  import * as org from "../src/org";
   import * as path from "../src/path";
 
   import { Icon } from "../DesignSystem/Primitive";
@@ -23,9 +24,23 @@
 
   export let params: { address: string };
 
+  const membersWrap = wrap({
+    component: Members,
+    conditions: [
+      async () => {
+        try {
+          await org.fetchMembers($orgScreenStore.gnosisSafeAddress);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+    ],
+  });
+
   const screenRoutes = {
     "/org/:address/projects": Projects,
-    "/org/:address/members": Members,
+    "/org/:address/members": membersWrap,
     "*": Projects,
   };
 
@@ -44,10 +59,7 @@
 
   const menuRoutes = {
     "/org/:address/projects": ProjectsMenu,
-    "/org/:address/members": wrap({
-      component: MembersMenu,
-      props: { gnosisSafeAddress: $orgScreenStore.gnosisSafeAddress },
-    }),
+    "/org/:address/members": MembersMenu,
     "*": ProjectsMenu,
   };
 

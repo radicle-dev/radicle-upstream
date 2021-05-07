@@ -23,6 +23,10 @@ export type Org = {
   creator: string;
 };
 
+export type Member = {
+  id: string;
+};
+
 const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
   return await gnosisSubgraphClient.query({
     query: gql`
@@ -60,4 +64,23 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<[Org]> => {
   ).data.orgs;
 
   return orgs;
+};
+
+export const getGnosisSafeMembers = async (
+  walletAddress: string
+): Promise<[Member]> => {
+  const members: [Member] = (
+    await gnosisSubgraphClient.query({
+      query: gql`
+        query GetGnosisSafeWallets($id: String!) {
+          wallets(where: { id: $id }) {
+            owners
+          }
+        }
+      `,
+      variables: { id: walletAddress },
+      fetchPolicy: "no-cache",
+    })
+  ).data.wallets[0].owners;
+  return members;
 };

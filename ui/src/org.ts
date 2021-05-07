@@ -140,3 +140,14 @@ export const fetchOrgs = async (): Promise<void> => {
   const orgs = await theGraphApi.getOrgs(w.connected.account.address);
   orgSidebarStore.set(orgs);
 };
+
+export const orgMembersStore = svelteStore.writable<theGraphApi.Member[] | []>(
+  []
+);
+
+export const fetchMembers = async (
+  gnosisSafeAddress: string
+): Promise<void> => {
+  const members = await theGraphApi.getGnosisSafeMembers(gnosisSafeAddress);
+  orgMembersStore.set(members);
+};
