@@ -5,7 +5,7 @@
   import Option from "./Dropdown/Option.svelte";
   import Overlay from "./Overlay.svelte";
 
-  type Option =
+  type OptionT =
     | { value: string; title: string }
     | {
         value: string;
@@ -17,7 +17,7 @@
         };
       };
 
-  export let options: Option[];
+  export let options: OptionT[];
 
   export let placeholder = "";
 
