@@ -10428,7 +10428,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radicle-contracts@github:radicle-dev/radicle-contracts#head=master":
+"radicle-contracts@github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421":
   version: 0.1.0
   resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
   checksum: 35874e6eeece3a2d94a4cbc1995b63159fad98a5e63a7b5b52048595a845af3d4a05237dfb687f6a84ea458ba640ee06fb7e7b73621dcad691759d465a6d41cb
@@ -10493,7 +10493,7 @@ __metadata:
     prompts: ^2.4.1
     pure-svg-code: ^1.0.6
     qs: ^6.10.1
-    radicle-contracts: "github:radicle-dev/radicle-contracts#head=master"
+    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
     semver: ^7.3.5
     sinon: ^10.0.0
     standard-version: ^9.2.0
