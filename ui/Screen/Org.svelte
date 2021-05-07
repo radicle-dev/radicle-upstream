@@ -59,7 +59,10 @@
 
   const menuRoutes = {
     "/org/:address/projects": ProjectsMenu,
-    "/org/:address/members": MembersMenu,
+    "/org/:address/members": wrap({
+      component: MembersMenu,
+      props: { gnosisSafeAddress: $orgScreenStore.gnosisSafeAddress },
+    }),
     "*": ProjectsMenu,
   };
 
