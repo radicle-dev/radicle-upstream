@@ -77,5 +77,5 @@
     <HorizontalMenu slot="left" items={topbarMenuItems} />
   </ActionBar>
 
-  <Router routes={screenRoutes} />
+  <!--Router routes={screenRoutes} /-->
 </SidebarLayout>

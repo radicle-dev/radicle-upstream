@@ -56,7 +56,7 @@
     case remote.Status.Success:
       if ($store.data.status === Status.NoSession) {
         hotkeys.disable();
-        push(path.onboarding());
+        push({component: Onboarding});
       } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
@@ -64,11 +64,11 @@
           $location === path.onboarding() ||
           $location === path.lock()
         ) {
-          push(path.profileProjects());
+          push({component: Profile});
         }
       } else {
         hotkeys.disable();
-        push(path.lock());
+        push({component: Lock});
       }
       break;
 
@@ -108,7 +108,7 @@
 {/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
-  <Router {routes} initial={window.location.hash.slice(1)} />
+  <Router />
 
   <div slot="loading" class="error">
     <EmptyState headerText="Loading..." emoji="🕵️" text="" />

@@ -121,5 +121,5 @@
     </div>
   </ActionBar>
 
-  <Router {routes} />
+  <!--Router {routes} /-->
 </Remote>

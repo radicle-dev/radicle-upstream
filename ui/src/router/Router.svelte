@@ -1,10 +1,5 @@
 <script lang="typescript">
-  import { location } from "ui/src/router";
-
-  export let routes;
-  export let initial;
-
-  $: component = routes[$location || initial];
+  import { state } from "ui/src/router";
 </script>
 
-<svelte:component this={component} />
+<svelte:component this={$state.component} {...$state.props} />

@@ -4,6 +4,8 @@
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
+  import Profile from "ui/Screen/Profile.svelte";
+  import Settings from "ui/Screen/Settings.svelte";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -106,7 +108,7 @@
         class="item indicator"
         data-cy="profile"
         class:active={$location.startsWith(path.profile())}
-        on:click|stopPropagation={() => push(path.profileProjects())}>
+        on:click|stopPropagation={() => push({component: Profile})}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -129,7 +131,7 @@
         class="item indicator"
         data-cy="settings"
         class:active={$location.startsWith(path.settings())}
-        on:click|stopPropagation={() => push(path.settings())}>
+        on:click|stopPropagation={() => push({component: Settings})}>
         <Icon.Settings />
       </div>
     </Tooltip>
