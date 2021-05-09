@@ -6,7 +6,6 @@
   import * as notification from "../src/notification";
   import * as error from "../src/error";
   import * as modal from "../src/modal";
-  import * as path from "../src/path";
   import * as remote from "../src/remote";
   import {
     clearLocalState,
@@ -24,6 +23,9 @@
   import * as screen from "../src/screen";
   import type { Settings } from "../src/settings";
   import { dismissRemoteHelperHint, settings } from "../src/session";
+  import ProjectScreen from "ui/screen/Project.svelte";
+  import ProfileScreen from "ui/screen/Profile.svelte";
+  import ProjectsTab from "ui/screen/Profile/Projects.svelte";
 
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
   import {
@@ -77,12 +79,12 @@
           : { type: "existing", path: existingRepositoryPath },
       });
 
-      push(path.project(response.urn));
+      push({ component: ProjectScreen, props: { urn: response.urn } });
       notification.info({
         message: `Project ${response.metadata.name} successfully created`,
       });
     } catch (err) {
-      push(path.profileProjects());
+      push({ component: ProfileScreen, props: { activeTab: ProjectsTab } });
       error.show(
         new error.Error({
           code: error.Code.ProjectCreationFailure,
