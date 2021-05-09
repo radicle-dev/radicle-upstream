@@ -4,11 +4,12 @@
   import ModalNewProject from "../../Modal/NewProject.svelte";
 
   import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
   import { fetchList, projects as store } from "../../src/project";
   import type { Project } from "../../src/project";
   import { showNotificationsForFailedProjects } from "../../src/profile";
   import * as sess from "../../src/session";
+
+  import ProjectScreen from "ui/Screen/Project.svelte";
 
   import {
     EmptyState,
@@ -23,7 +24,7 @@
     modal.toggle(ModalNewProject);
   };
   const select = ({ detail: project }: { detail: Project }) =>
-    push(path.project(project.urn));
+    push({ component: ProjectScreen, props: { urn: project.urn } });
 
   fetchList();
   showNotificationsForFailedProjects();

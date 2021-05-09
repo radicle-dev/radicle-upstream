@@ -1,10 +1,13 @@
 <script lang="typescript">
-  import { location, pop, push } from "ui/src/router";
+  import { pop, push, state } from "ui/src/router";
   import type { SvelteComponent } from "svelte";
 
-  import ModalNewProject from "./Modal/NewProject.svelte";
-  import ModalSearch from "./Modal/Search.svelte";
-  import ModalShortcuts from "./Modal/Shortcuts.svelte";
+  import NewProjectModal from "ui/Modal/NewProject.svelte";
+  import SearchModal from "ui/Modal/Search.svelte";
+  import ShortcutsModal from "ui/Modal/Shortcuts.svelte";
+
+  import SettingsScreen from "ui/Screen/Settings.svelte";
+  import DesignSystemGuideScreen from "ui/Screen/DesignSystemGuide.svelte";
 
   import * as modal from "./src/modal";
   import * as path from "./src/path";
@@ -13,24 +16,24 @@
   import * as hotkeys from "./src/hotkeys";
   import { isDev } from "./src/config";
 
-  const show = (destination: string) => {
+  const show = (destination: typeof SvelteComponent) => {
     modal.hide();
-    if (destination === $location) {
+    if (destination === $state.component) {
       return;
     }
-    push(destination);
+    push({ component: destination });
   };
 
-  const toggle = (destination: string) => {
-    if (destination === $location) {
+  const toggle = (destination: typeof SvelteComponent) => {
+    if (destination === $state.component) {
       pop();
     }
-    push(destination);
+    push({ component: destination });
     modal.hide();
   };
 
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
-    if (path.designSystemGuide() === $location) {
+    if (path.designSystemGuide() === $state.component) {
       pop();
     }
     modal.toggle(modalComponent);
@@ -69,19 +72,19 @@
 
     switch (shortcut.key) {
       case hotkeys.ShortcutKey.Help:
-        toggleModal(ModalShortcuts);
+        toggleModal(ShortcutsModal);
         break;
       case hotkeys.ShortcutKey.Settings:
-        show(path.settings());
+        show(SettingsScreen);
         break;
       case hotkeys.ShortcutKey.Search:
-        toggleModal(ModalSearch);
+        toggleModal(SearchModal);
         break;
       case hotkeys.ShortcutKey.DesignSystem:
-        toggle(path.designSystemGuide());
+        toggle(DesignSystemGuideScreen);
         break;
       case hotkeys.ShortcutKey.NewProjects:
-        toggleModal(ModalNewProject);
+        toggleModal(NewProjectModal);
         break;
     }
   };

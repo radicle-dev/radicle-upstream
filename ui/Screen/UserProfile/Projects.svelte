@@ -1,16 +1,16 @@
 <script lang="typescript">
   import { push } from "ui/src/router";
 
-  import * as path from "../../src/path";
   import type { Project } from "../../src/project";
   import { fetchProjects, projects as store } from "../../src/userProfile";
 
   import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
+  import ProjectScreen from "ui/Screen/Project.svelte";
 
   export let params: { urn: string };
 
   const select = ({ detail: project }: { detail: Project }) => {
-    push(path.project(project.urn));
+    push({ component: ProjectScreen, props: { urn: project.urn } });
   };
 
   fetchProjects(params.urn);

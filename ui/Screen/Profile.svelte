@@ -1,9 +1,8 @@
 <script lang="typescript">
-  import { Router } from "ui/src/router";
+  import type { SvelteComponent } from "svelte";
 
   import { isExperimental } from "../src/config";
   import * as modal from "../src/modal";
-  import * as path from "../src/path";
   import * as sess from "../src/session";
   import { settings } from "../src/session";
 
@@ -17,28 +16,22 @@
 
   import ModalNewProject from "../Modal/NewProject.svelte";
 
-  import Following from "./Profile/Following.svelte";
-  import Projects from "./Profile/Projects.svelte";
-  import Funding from "./Profile/Funding.svelte";
-  import NotFound from "./NotFound.svelte";
+  import FollowingTab from "./Profile/Following.svelte";
+  import ProjectsTab from "./Profile/Projects.svelte";
+  import FundingTab from "./Profile/Funding.svelte";
 
-  const screenRoutes = {
-    "/profile/following": Following,
-    "/profile/projects": Projects,
-    "/profile/funding": Funding,
-    "*": NotFound,
-  };
+  export let activeTab: typeof SvelteComponent = ProjectsTab;
 
   const topbarMenuItems = [
     {
       icon: Icon.ChevronLeftRight,
       title: "Projects",
-      href: path.profileProjects(),
+      tab: ProjectsTab,
     },
     {
       icon: Icon.Network,
       title: "Following",
-      href: path.profileFollowing(),
+      tab: FollowingTab,
     },
   ];
 
@@ -46,7 +39,7 @@
     topbarMenuItems.push({
       icon: Icon.Wallet,
       title: "Funding",
-      href: path.profileFunding(),
+      tab: FundingTab,
     });
   }
 
@@ -74,8 +67,13 @@
   </Header>
 
   <ActionBar>
-    <HorizontalMenu slot="left" items={topbarMenuItems} />
+    <HorizontalMenu
+      slot="left"
+      items={topbarMenuItems}
+      on:select={event => {
+        activeTab = event.detail.tab;
+      }} />
   </ActionBar>
 
-  <!--Router routes={screenRoutes} /-->
+  <svelte:component this={activeTab} />
 </SidebarLayout>

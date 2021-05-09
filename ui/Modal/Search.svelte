@@ -4,7 +4,6 @@
 
   import * as modal from "../src/modal";
   import * as notification from "../src/notification";
-  import * as path from "../src/path";
   import type { Project } from "../src/project";
   import * as remote from "../src/remote";
   import {
@@ -21,6 +20,10 @@
   import { Icon, Input } from "../DesignSystem/Primitive";
   import { FollowToggle, Remote } from "../DesignSystem/Component";
 
+  import ProjectScreen from "ui/Screen/Project.svelte";
+  import ProfileScreen from "ui/Screen/Profile.svelte";
+  import FollowingTab from "ui/Screen/Profile/Following.svelte";
+
   let id: string;
 
   let value: string;
@@ -35,7 +38,7 @@
 
   const navigateToProject = (project: Project) => {
     reset();
-    push(path.project(project.urn));
+    push({ component: ProjectScreen, props: { urn: project.urn } });
     modal.hide();
   };
   const onKeydown = (event: KeyboardEvent) => {
@@ -77,7 +80,7 @@
   // Fire notification when a request has been created.
   $: if ($request.status === remote.Status.Success) {
     reset();
-    push(path.profileFollowing());
+    push({ component: ProfileScreen, props: { activeTab: FollowingTab } });
     notification.info({
       message: "You’ll be notified when this project has been found.",
     });

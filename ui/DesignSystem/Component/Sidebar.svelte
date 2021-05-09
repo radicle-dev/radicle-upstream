@@ -1,11 +1,10 @@
 <script lang="typescript">
-  import { location, push } from "ui/src/router";
+  import { state, push } from "ui/src/router";
 
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
-  import Profile from "ui/Screen/Profile.svelte";
-  import Settings from "ui/Screen/Settings.svelte";
+  import ProfileScreen from "ui/Screen/Profile.svelte";
+  import SettingsScreen from "ui/Screen/Settings.svelte";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -107,8 +106,8 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={$location.startsWith(path.profile())}
-        on:click|stopPropagation={() => push({component: Profile})}>
+        class:active={$state.component === ProfileScreen}
+        on:click|stopPropagation={() => push({ component: ProfileScreen })}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -130,8 +129,8 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={$location.startsWith(path.settings())}
-        on:click|stopPropagation={() => push({component: Settings})}>
+        class:active={$state.component === SettingsScreen}
+        on:click|stopPropagation={() => push({ component: SettingsScreen })}>
         <Icon.Settings />
       </div>
     </Tooltip>

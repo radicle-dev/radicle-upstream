@@ -13,6 +13,8 @@
   import * as sess from "../../src/session";
   import type { Urn } from "../../src/urn";
 
+  import ProjectScreen from "ui/Screen/Project.svelte";
+
   import {
     EmptyState,
     Hoverable,
@@ -30,6 +32,7 @@
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
     push(path.project(project.urn));
+    push({ component: ProjectScreen, props: { urn: project.urn } });
   };
 
   fetchFollowing();

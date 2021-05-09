@@ -25,9 +25,8 @@
 
   import Source from "./Project/Source.svelte";
 
-  export let params: { urn: Urn };
+  export let urn: Urn;
 
-  const { urn } = params;
   const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";

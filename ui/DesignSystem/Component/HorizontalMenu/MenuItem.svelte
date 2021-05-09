@@ -1,9 +1,8 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
   import { createEventDispatcher } from "svelte";
-  import { push } from "ui/src/router";
 
-  export let href: string;
+  export let tab: typeof SvelteComponent;
   export let dataCy: string;
   export let icon: typeof SvelteComponent;
   export let title: string;
@@ -13,8 +12,7 @@
   const dispatch = createEventDispatcher();
 
   const click = () => {
-    push(href);
-    dispatch("click");
+    dispatch("click", { tab });
   };
 </script>
 
@@ -25,9 +23,10 @@
     padding-top: 1px;
   }
 
-  a {
+  .tab {
     display: flex;
     align-items: center;
+    cursor: pointer;
   }
 
   .item {
@@ -48,8 +47,7 @@
   }
 </style>
 
-<!-- svelte-ignore a11y-missing-attribute -->
-<a data-cy={dataCy} on:click={click}>
+<div class="tab" data-cy={dataCy} on:click={click}>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-primary)" />
@@ -64,7 +62,7 @@
   {#if counter}
     <span class="counter typo-mono-bold" data-cy="counter">{counter}</span>
   {/if}
-</a>
+</div>
 
 {#if active}
   <slot />

@@ -1,10 +1,9 @@
 <script>
-  import { location, push, Router } from "ui/src/router.ts";
+  import { push, state, Router } from "ui/src/router.ts";
 
   import * as hotkeys from "./src/hotkeys.ts";
   import { isExperimental } from "./src/config";
   import "./src/localPeer.ts";
-  import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
   import * as error from "./src/error.ts";
   import * as customProtocolHandler from "./src/customProtocolHandler.ts";
@@ -22,31 +21,11 @@
 
   import TransactionCenter from "./App/TransactionCenter.svelte";
 
-  import Blank from "./Screen/Blank.svelte";
-  import Bsod from "./Screen/Bsod.svelte";
-  import Onboarding from "./Screen/Onboarding.svelte";
-  import Lock from "./Screen/Lock.svelte";
-  import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import NotFound from "./Screen/NotFound.svelte";
-  import Profile from "./Screen/Profile.svelte";
-  import Project from "./Screen/Project.svelte";
-  import Settings from "./Screen/Settings.svelte";
-  import UserProfile from "./Screen/UserProfile.svelte";
-
-  const routes = {
-    "/": Blank,
-    "/onboarding": Onboarding,
-    "/lock": Lock,
-    "/settings": Settings,
-    "/profile/*": Profile,
-    "/profile/projects": Profile, // TODO fixme
-    "/projects/:urn/*": Project,
-    "/projects/:urn": Project,
-    "/user/:urn": UserProfile,
-    "/user/:urn/*": UserProfile,
-    "/design-system-guide": DesignSystemGuide,
-    "*": NotFound,
-  };
+  import BsodScreen from "ui/Screen/Bsod.svelte";
+  import OnboardingScreen from "ui/Screen/Onboarding.svelte";
+  import LockScreen from "ui/Screen/Lock.svelte";
+  import DesignSystemGuideScreen from "ui/Screen/DesignSystemGuide.svelte";
+  import ProfileScreen from "ui/Screen/Profile.svelte";
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -56,19 +35,19 @@
     case remote.Status.Success:
       if ($store.data.status === Status.NoSession) {
         hotkeys.disable();
-        push({component: Onboarding});
+        push({ component: OnboardingScreen });
       } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
-          $location === path.blank() ||
-          $location === path.onboarding() ||
-          $location === path.lock()
+          $state.component === null ||
+          $state.component === OnboardingScreen ||
+          $state.component === LockScreen
         ) {
-          push({component: Profile});
+          push({ component: ProfileScreen });
         }
       } else {
         hotkeys.disable();
-        push({component: Lock});
+        push({ component: LockScreen });
       }
       break;
 
@@ -82,8 +61,6 @@
     $store.data.status === Status.UnsealedSession;
 
   customProtocolHandler.register();
-
-  $: console.log($location);
 </script>
 
 <style>
@@ -97,13 +74,13 @@
   }
 </style>
 
-<Bsod />
+<BsodScreen />
 <Hotkeys />
 <ModalOverlay />
 <NotificationFaucet />
 <Theme />
 
-{#if isExperimental && sessionIsUnsealed && $location !== path.designSystemGuide()}
+{#if isExperimental && sessionIsUnsealed && $state.component !== DesignSystemGuideScreen}
   <TransactionCenter />
 {/if}
 
