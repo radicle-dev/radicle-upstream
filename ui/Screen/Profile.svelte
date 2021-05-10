@@ -71,7 +71,7 @@
       slot="left"
       items={topbarMenuItems}
       on:select={event => {
-        activeTab = event.detail.tab;
+        activeTab = event.detail.tab.component;
       }} />
   </ActionBar>
 
