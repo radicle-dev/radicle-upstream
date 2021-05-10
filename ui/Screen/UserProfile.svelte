@@ -41,7 +41,7 @@
     </Header>
 
     <ActionBar>
-      <HorizontalMenu slot="left" items={topbarMenuItems} />
+      <HorizontalMenu slot="left" items={topbarMenuItems} {activeTab} />
     </ActionBar>
     <svelte:component this={activeTab} />
   </Remote>
