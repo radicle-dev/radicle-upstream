@@ -10,7 +10,7 @@ context("project source browsing", () => {
   });
 
   beforeEach(() => {
-    cy.visit("./public/index.html#/profile/projects");
+    cy.visit("./public/index.html");
     cy.contains("platinum").click();
   });
 
