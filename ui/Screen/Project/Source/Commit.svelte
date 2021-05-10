@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { pop } from "ui/src/router";
+  import { push } from "ui/src/router";
 
   import * as error from "ui/src/error";
   import { formatCommitTime } from "ui/src/source";
@@ -7,7 +7,9 @@
   import * as remote from "ui/src/remote";
 
   import { Icon } from "ui/DesignSystem/Primitive";
-  import BackButton from "../BackButton.svelte";
+  import BackButton from "ui/Screen/Project/BackButton.svelte";
+  import SourceCommitsTab from "ui/Screen/Project/Source/Commits.svelte";
+  import ProjectScreen from "ui/Screen/Project.svelte";
 
   import Changeset from "ui/DesignSystem/Component/SourceBrowser/Changeset.svelte";
 
@@ -72,7 +74,9 @@
 
 <div class="commit-page" data-cy="commit-page">
   {#if $commit.status === remote.Status.Success}
-    <BackButton style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
+    <BackButton
+      style="padding: 1rem; z-index: 0;"
+      on:arrowClick={() => push( { component: ProjectScreen, props: { activeTab: SourceCommitsTab } } )}>
       <h3 style="margin-bottom: .75rem">{$commit.data.header.summary}</h3>
       <div class="metadata">
         <span class="field">
