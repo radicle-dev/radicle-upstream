@@ -71,7 +71,9 @@
     if (item.title === "Files" && activeTab === CodeTab) {
       selectPath("");
     } else {
-      activeTab = item.tab.component;
+      if (item.tab.component !== null) {
+        activeTab = item.tab.component;
+      }
     }
   };
   const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {

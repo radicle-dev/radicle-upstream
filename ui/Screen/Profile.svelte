@@ -26,12 +26,12 @@
     {
       icon: Icon.ChevronLeftRight,
       title: "Projects",
-      tab: ProjectsTab,
+      tab: { component: ProjectsTab, props: {} },
     },
     {
       icon: Icon.Network,
       title: "Following",
-      tab: FollowingTab,
+      tab: { component: FollowingTab, props: {} },
     },
   ];
 
@@ -39,7 +39,7 @@
     topbarMenuItems.push({
       icon: Icon.Wallet,
       title: "Funding",
-      tab: FundingTab,
+      tab: { component: FundingTab, props: {} },
     });
   }
 
