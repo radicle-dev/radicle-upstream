@@ -32,38 +32,3 @@ export const state: svelteStore.Readable<State> = svelteStore.derived(
     }
   }
 );
-
-function getLocation() {
-  const hashPosition = window.location.href.indexOf("#/");
-  let location =
-    hashPosition > -1 ? window.location.href.substr(hashPosition + 1) : "/";
-  // Check if there's a querystring
-  const qsPosition = location.indexOf("?");
-  let querystring = "";
-  if (qsPosition > -1) {
-    querystring = location.substr(qsPosition + 1);
-    location = location.substr(0, qsPosition);
-  }
-  return { location, querystring };
-}
-/**
- * Readable store that returns the current full location (incl. querystring)
- */
-export const loc = svelteStore.readable(
-  null,
-  // eslint-disable-next-line prefer-arrow-callback
-  function start(set) {
-    set(getLocation());
-    const update = () => {
-      set(getLocation());
-    };
-    window.addEventListener("hashchange", update, false);
-    return function stop() {
-      window.removeEventListener("hashchange", update, false);
-    };
-  }
-);
-/**
- * Readable store that returns the current location
- */
-export const location = svelteStore.derived(loc, $loc => $loc.location);
