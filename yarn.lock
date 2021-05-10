@@ -532,7 +532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/abi@npm:5.1.2, @ethersproject/abi@npm:^5.1.0":
+"@ethersproject/abi@npm:5.1.2, @ethersproject/abi@npm:^5.1.0, @ethersproject/abi@npm:^5.1.2":
   version: 5.1.2
   resolution: "@ethersproject/abi@npm:5.1.2"
   dependencies:
@@ -787,7 +787,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/providers@npm:5.1.2":
+"@ethersproject/providers@npm:5.1.2, @ethersproject/providers@npm:^5.1.2":
   version: 5.1.2
   resolution: "@ethersproject/providers@npm:5.1.2"
   dependencies:
@@ -10455,10 +10455,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radicle-contracts@github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421":
+"radicle-contracts@github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26":
   version: 0.1.0
-  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
-  checksum: 35874e6eeece3a2d94a4cbc1995b63159fad98a5e63a7b5b52048595a845af3d4a05237dfb687f6a84ea458ba640ee06fb7e7b73621dcad691759d465a6d41cb
+  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=752cf0767c6ba7428c626abf91ae1874de613f26"
+  dependencies:
+    "@ethersproject/abi": ^5.1.2
+    "@ethersproject/bytes": ^5.1.0
+    "@ethersproject/providers": ^5.1.2
+    ethers: ^5.1.4
+  checksum: 4ac258434d0042bcbfec457301128b7a8f91006f0a42fb353463ceb395e42db808bb8e9da0e8c771f88646f96855d07b5b9bdc3062583645281e88ea6dc133d9
   languageName: node
   linkType: hard
 
@@ -10520,7 +10525,7 @@ __metadata:
     prompts: ^2.4.1
     pure-svg-code: ^1.0.6
     qs: ^6.10.1
-    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
+    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26"
     semver: ^7.3.5
     sinon: ^10.0.0
     standard-version: ^9.3.0
