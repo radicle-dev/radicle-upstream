@@ -69,7 +69,8 @@
 
   // We trick TypeScript because svelte cannot deal with type refinement
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const latestVersionInfo: svelteStore.Readable<any> = updateChecker.newVersion();
+  const latestVersionInfo: svelteStore.Readable<any> =
+    updateChecker.newVersion();
 
   // This value is not reactive on purpose. We only want to move this to
   // the top on the initial render. Subsequent changes should not mess
@@ -95,6 +96,7 @@
   ];
 
   const session = sess.getUnsealedFromContext();
+
 </script>
 
 <style>
@@ -181,6 +183,7 @@
     align-items: flex-end;
     padding: 0 0.75rem;
   }
+
 </style>
 
 <SidebarLayout dataCy="settings-page">

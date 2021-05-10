@@ -4,6 +4,7 @@
   export let title = "";
   export let active: boolean = false;
   export let dataCy = "";
+
 </script>
 
 <style>
@@ -36,6 +37,7 @@
     padding: 0 1rem 1rem 1rem;
     border-radius: 0 0 0.25rem 0.25rem;
   }
+
 </style>
 
 <div class="option" class:active data-cy={dataCy}>

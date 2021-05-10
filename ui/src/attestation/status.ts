@@ -18,9 +18,8 @@ export enum AttestationStatus {
   Valid = "Valid",
 }
 
-export const attestationStatus: svelteStore.Writable<AttestationStatus> = svelteStore.writable(
-  AttestationStatus.Fetching
-);
+export const attestationStatus: svelteStore.Writable<AttestationStatus> =
+  svelteStore.writable(AttestationStatus.Fetching);
 
 let watching = false;
 

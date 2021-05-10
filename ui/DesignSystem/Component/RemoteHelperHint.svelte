@@ -9,6 +9,7 @@
 
   export let style = null;
   let hover = false;
+
 </script>
 
 <style>
@@ -30,6 +31,7 @@
     float: right;
     cursor: pointer;
   }
+
 </style>
 
 <div class="info" {style} data-cy="remote-helper-hint">

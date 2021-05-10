@@ -19,6 +19,7 @@
     selectPath(path);
   };
   const onSelectRoot = () => selectPath("");
+
 </script>
 
 <style>
@@ -53,6 +54,7 @@
     overflow-x: auto;
     width: 18rem;
   }
+
 </style>
 
 <div class="wrapper">

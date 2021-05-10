@@ -31,6 +31,7 @@
     $store.status === remote.Status.Success
       ? ($store as remote.SuccessState).data
       : undefined;
+
 </script>
 
 {#if $store.status === remote.Status.NotAsked}

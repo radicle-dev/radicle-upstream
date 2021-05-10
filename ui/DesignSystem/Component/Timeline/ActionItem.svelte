@@ -23,6 +23,7 @@
       "close-issue": "reopened the issue",
     }[variant];
   };
+
 </script>
 
 <style>
@@ -30,6 +31,7 @@
     display: flex;
     margin-left: 4px;
   }
+
 </style>
 
 <svelte:component this={icon(item.variant)} />

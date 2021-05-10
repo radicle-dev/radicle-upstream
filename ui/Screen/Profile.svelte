@@ -51,6 +51,7 @@
   }
 
   const session = sess.getUnsealedFromContext();
+
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">

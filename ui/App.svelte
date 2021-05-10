@@ -81,6 +81,7 @@
     $store.data.status === Status.UnsealedSession;
 
   customProtocolHandler.register();
+
 </script>
 
 <style>
@@ -92,6 +93,7 @@
     justify-content: center;
     align-items: center;
   }
+
 </style>
 
 <Bsod />

@@ -5,6 +5,7 @@
 
   export let content: string;
   export let path: string;
+
 </script>
 
 <style>
@@ -35,6 +36,7 @@
   .container {
     padding: 1rem 2rem;
   }
+
 </style>
 
 <div class="readme">

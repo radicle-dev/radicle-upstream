@@ -11,6 +11,7 @@
     ...(isDev ? hotkeys.devShortcuts : []),
     hotkeys.escape,
   ];
+
 </script>
 
 <style>
@@ -28,6 +29,7 @@
     color: var(--color-foreground-level-6);
     margin: 0rem 0.625rem;
   }
+
 </style>
 
 <Modal dataCy="hotkey-modal">

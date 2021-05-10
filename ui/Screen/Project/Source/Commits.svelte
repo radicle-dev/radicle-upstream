@@ -9,6 +9,7 @@
   const onSelect = ({ detail: commit }: { detail: CommitHeader }) => {
     selectCommit(commit);
   };
+
 </script>
 
 <style>
@@ -18,6 +19,7 @@
     min-width: var(--content-min-width);
     padding: 2rem var(--content-padding) 0;
   }
+
 </style>
 
 <div class="commits-page" data-cy="commits-page">

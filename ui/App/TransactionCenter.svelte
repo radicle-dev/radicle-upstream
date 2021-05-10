@@ -11,6 +11,7 @@
     modal.hide();
     modal.toggle(ModalTransaction);
   };
+
 </script>
 
 <style>
@@ -20,6 +21,7 @@
     right: 2rem;
     z-index: 50;
   }
+
 </style>
 
 {#if $transactions.length > 0}

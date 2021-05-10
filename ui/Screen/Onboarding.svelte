@@ -68,6 +68,7 @@
       createIdentityInProgress = false;
     }
   };
+
 </script>
 
 <style>
@@ -87,6 +88,7 @@
   .inner {
     width: 33.75rem;
   }
+
 </style>
 
 <div class="modal">

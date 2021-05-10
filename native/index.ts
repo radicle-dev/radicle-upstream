@@ -33,9 +33,8 @@ if (isDev) {
   }
 
   if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
-    proxyArgs = process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(
-      Boolean
-    );
+    proxyArgs =
+      process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(Boolean);
   }
   proxyArgs.push("--default-seed");
   proxyArgs.push(

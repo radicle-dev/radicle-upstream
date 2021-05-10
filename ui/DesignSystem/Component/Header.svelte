@@ -24,6 +24,7 @@
     display: flex;
     align-items: center;
   }
+
 </style>
 
 <div data-cy="header" class="banner">

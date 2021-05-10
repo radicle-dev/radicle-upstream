@@ -11,6 +11,7 @@
   export let dataCy = "";
   export let style = "";
   export let key: string | null = null;
+
 </script>
 
 <style>
@@ -54,6 +55,7 @@
     border-bottom-left-radius: 0.5rem;
     border-bottom-right-radius: 0.5rem;
   }
+
 </style>
 
 <div class="list-container" {style}>

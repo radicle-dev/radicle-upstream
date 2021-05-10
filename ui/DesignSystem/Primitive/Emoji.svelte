@@ -7,6 +7,7 @@
   export let size: EmojiSize = "regular";
 
   export let style: string = "";
+
 </script>
 
 <style>
@@ -40,13 +41,9 @@
     height: 3rem;
     width: 3rem;
   }
+
 </style>
 
 <div {style} class="container">
-  {@html twemoji.parse(emoji, {
-    className: `emoji ${size}`,
-    base: '',
-    folder: 'twemoji/',
-    ext: '.svg',
-  })}
+  {@html twemoji.parse( emoji, { className: `emoji ${size}`, base: '', folder: 'twemoji/', ext: '.svg' } )}
 </div>

@@ -5,6 +5,7 @@
   export let style: string = "";
 
   const caption = String(variant);
+
 </script>
 
 <style>
@@ -16,6 +17,7 @@
     margin-top: 0.125rem;
     white-space: nowrap;
   }
+
 </style>
 
 <span {style} class="badge typo-text-small">{caption}</span>

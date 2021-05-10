@@ -34,6 +34,7 @@
   $: if (selectedRevision.request === null) {
     current = fetchTree(prefix);
   }
+
 </script>
 
 <style>
@@ -60,6 +61,7 @@
     padding-left: 0.5rem;
     margin: 0;
   }
+
 </style>
 
 <div class="folder" on:click={toggle}>

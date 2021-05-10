@@ -14,6 +14,7 @@
     fundingPool.store.set(pool);
     modal.toggle(ModalPoolOnboarding);
   }
+
 </script>
 
 <style>
@@ -37,6 +38,7 @@
 
     width: 18.75rem;
   }
+
 </style>
 
 <div class="wrapper">

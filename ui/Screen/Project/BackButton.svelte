@@ -9,6 +9,7 @@
   };
 
   export let style: string = "";
+
 </script>
 
 <style>
@@ -41,6 +42,7 @@
   header .back-button:hover :global(svg) {
     fill: var(--color-foreground-level-6);
   }
+
 </style>
 
 <header {style}>

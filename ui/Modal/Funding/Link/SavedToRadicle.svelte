@@ -3,6 +3,7 @@
 
   export let onCancel: () => void;
   export let onContinue: () => void;
+
 </script>
 
 <style>
@@ -23,6 +24,7 @@
     width: 100%;
     margin-top: 1.5rem;
   }
+
 </style>
 
 <div class="wrapper">

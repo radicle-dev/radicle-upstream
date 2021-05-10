@@ -45,6 +45,7 @@
       return !(peer.type === PeerType.Local && peer.role === Role.Tracker);
     });
   };
+
 </script>
 
 <style>
@@ -62,6 +63,7 @@
     margin-top: 2rem;
     width: 100%;
   }
+
 </style>
 
 <Remote {store} let:data={{ peerSelection, project }}>

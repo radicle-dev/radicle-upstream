@@ -10,6 +10,7 @@
 
   export let onCancel: () => void;
   export let onSendTransaction: () => Promise<void>;
+
 </script>
 
 <style>
@@ -52,6 +53,7 @@
     width: 100%;
     margin-top: 1.5rem;
   }
+
 </style>
 
 <div class="wrapper">

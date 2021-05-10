@@ -23,6 +23,7 @@
   const toggleDropdown = () => {
     expanded = !expanded;
   };
+
 </script>
 
 <style>
@@ -42,6 +43,7 @@
     color: var(--color-foreground-level-6);
     user-select: none;
   }
+
 </style>
 
 <Overlay {expanded} on:hide={hide} style="position: relative;">

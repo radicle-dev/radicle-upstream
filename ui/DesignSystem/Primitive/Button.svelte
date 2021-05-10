@@ -12,6 +12,7 @@
   export let title = "";
 
   $: buttonClass = [variant, icon && "icon", disabled && "disabled"].join(" ");
+
 </script>
 
 <style>
@@ -310,6 +311,7 @@
   .embedded.disabled :global(svg) {
     fill: var(--color-foreground-level-3);
   }
+
 </style>
 
 <button

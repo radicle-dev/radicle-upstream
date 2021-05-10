@@ -21,6 +21,7 @@
   const onSelectPath = ({ detail: path }: { detail: string }): void => {
     dispatch("select", path);
   };
+
 </script>
 
 {#each $tree.entries as entry (entry.path)}

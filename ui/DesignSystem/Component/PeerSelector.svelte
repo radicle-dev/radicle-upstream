@@ -46,6 +46,7 @@
     dispatch("select", peer);
   };
   const showProfile = isExperimental;
+
 </script>
 
 <style>
@@ -110,6 +111,7 @@
   p.remotes {
     white-space: nowrap;
   }
+
 </style>
 
 <Overlay

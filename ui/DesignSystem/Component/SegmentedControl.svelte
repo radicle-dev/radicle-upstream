@@ -22,6 +22,7 @@
   };
 
   $: currentlyActive = active;
+
 </script>
 
 <style>
@@ -56,6 +57,7 @@
     background-color: var(--color-foreground-level-1);
     color: var(--color-primary-level-2);
   }
+
 </style>
 
 <div class="segmented-control">

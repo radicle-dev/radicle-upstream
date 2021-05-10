@@ -18,6 +18,7 @@
   $: circumference = 2 * Math.PI * radius;
   $: dashLength = progress;
   $: dashArray = (dashLength * circumference) / max_progress;
+
 </script>
 
 <style>
@@ -36,6 +37,7 @@
       transform: rotate(359deg);
     }
   }
+
 </style>
 
 <svg

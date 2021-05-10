@@ -30,6 +30,7 @@
     window.location.href =
       "https://matrix.radicle.community/#/room/#support:radicle.community";
   };
+
 </script>
 
 <style>
@@ -82,6 +83,7 @@
 
     max-width: 100%;
   }
+
 </style>
 
 {#if $fatalError !== null}
