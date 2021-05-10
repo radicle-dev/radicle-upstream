@@ -6,7 +6,6 @@
 
   import { FADE_DURATION } from "../../src/config";
   import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
   import { following as store, fetchFollowing } from "../../src/profile";
   import * as proxy from "../../src/proxy";
   import type { Project } from "../../src/project";
@@ -31,7 +30,6 @@
     proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
-    push(path.project(project.urn));
     push({ component: ProjectScreen, props: { urn: project.urn } });
   };
 

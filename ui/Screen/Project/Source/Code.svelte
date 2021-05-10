@@ -1,7 +1,6 @@
 <script lang="typescript">
   import { push } from "ui/src/router";
 
-  import * as path from "../../../src/path";
   import { selectPath, store } from "../../../src/screen/project/source";
   import { fetchTree } from "../../../src/source";
   import type { Sha1 } from "../../../src/source";
@@ -12,8 +11,18 @@
   import FileView from "../../../DesignSystem/Component/SourceBrowser/FileView.svelte";
   import Tree from "../../../DesignSystem/Component/SourceBrowser/Tree.svelte";
 
+  import SourceCommitTab from "ui/Screen/Project/Source/Commit.svelte";
+  import ProjectScreen from "ui/Screen/Project.svelte";
+
   const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {
-    push(path.projectSourceCommit(projectUrn, sha1));
+    push({
+      component: ProjectScreen,
+      props: {
+        activeTab: SourceCommitTab,
+        urn: projectUrn,
+        commitHash: sha1,
+      },
+    });
   };
   const onSelectPath = ({ detail: path }: { detail: string }) => {
     selectPath(path);

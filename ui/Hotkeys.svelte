@@ -10,7 +10,6 @@
   import DesignSystemGuideScreen from "ui/Screen/DesignSystemGuide.svelte";
 
   import * as modal from "./src/modal";
-  import * as path from "./src/path";
   import * as screen from "./src/screen";
   import { isMac } from "./src/settings";
   import * as hotkeys from "./src/hotkeys";
@@ -18,25 +17,27 @@
 
   const show = (destination: typeof SvelteComponent) => {
     modal.hide();
-    if (destination === $state.component) {
+    if ($state.component === destination) {
       return;
     }
     push({ component: destination });
   };
 
   const toggle = (destination: typeof SvelteComponent) => {
-    if (destination === $state.component) {
+    if ($state.component == destination) {
       pop();
+    } else {
+      push({ component: destination });
+      modal.hide();
     }
-    push({ component: destination });
-    modal.hide();
   };
 
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
-    if (path.designSystemGuide() === $state.component) {
+    if ($state.component === DesignSystemGuideScreen) {
       pop();
+    } else {
+      modal.toggle(modalComponent);
     }
-    modal.toggle(modalComponent);
   };
 
   const onKeydown = (event: KeyboardEvent) => {
