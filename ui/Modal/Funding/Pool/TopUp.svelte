@@ -25,7 +25,6 @@
   let disabled = true;
   let balance = Big(0);
   $: balance = $store?.getAccount()?.balance || balance;
-
 </script>
 
 <style>
@@ -43,11 +42,10 @@
 
     width: 37.5rem;
   }
-
 </style>
 
 <div class="wrapper" data-cy="top-up-modal">
-  <TopUp bind:amount {balance} onBack={['Cancel', onCancel]} bind:disabled>
+  <TopUp bind:amount {balance} onBack={["Cancel", onCancel]} bind:disabled>
     <TxButton onClick={onConfirmed} {disabled} errorLabel="Failed top up">
       Confirm in your wallet
     </TxButton>

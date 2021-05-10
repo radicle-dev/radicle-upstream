@@ -117,7 +117,6 @@
         }
     }
   };
-
 </script>
 
 <style>
@@ -147,7 +146,6 @@
   .repeat {
     margin: 1.5rem 0 0 0;
   }
-
 </style>
 
 <svelte:window on:keydown={onKeydown} />
@@ -197,7 +195,7 @@
         dataCy="back-button"
         variant="transparent"
         style="margin-right: 1rem;"
-        on:click={() => dispatch('previous')}
+        on:click={() => dispatch("previous")}
         {disabled}>
         Back
       </Button>

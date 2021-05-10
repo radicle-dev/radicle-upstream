@@ -14,7 +14,6 @@
   const issueIconColor = issueOpen => {
     return issueOpen ? "--color-positive" : "--color-negative";
   };
-
 </script>
 
 <style>
@@ -37,7 +36,6 @@
     display: flex;
     margin-right: 24px;
   }
-
 </style>
 
 <div class="issue-card">

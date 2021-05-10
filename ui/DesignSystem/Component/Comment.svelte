@@ -3,7 +3,6 @@
 
   export let style = null;
   export let user = null;
-
 </script>
 
 <style>
@@ -22,7 +21,6 @@
   .actions {
     display: flex;
   }
-
 </style>
 
 <div class="comment" {style}>

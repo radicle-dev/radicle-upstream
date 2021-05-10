@@ -105,7 +105,6 @@
     fundingPool.store.set(pool);
     modal.toggle(ModalWithdraw);
   };
-
 </script>
 
 <style>
@@ -162,7 +161,6 @@
     width: 100%;
     margin-top: calc(var(--content-padding) / 2);
   }
-
 </style>
 
 <Remote store={pool.data} let:data={poolData}>
@@ -176,10 +174,10 @@
               dataCy="budget-input"
               bind:value={budget}
               validation={$budgetValidation}
-              validationStyle={'position: absolute; top: 1.875rem;'}
+              validationStyle={"position: absolute; top: 1.875rem;"}
               showLeftItem
               autofocus
-              style={'width: 7.8rem'}>
+              style={"width: 7.8rem"}>
               <div
                 slot="left"
                 style="position: absolute; top: 0.0625rem; left: 0.75rem;">
@@ -278,8 +276,8 @@
           the users you support.
         {:else}
           <Icon.InfoCircle />
-          To stop or pause your support, set the weekly budget to 0 or withdraw
-          all the remaining balance.
+          To stop or pause your support, set the weekly budget to 0 or withdraw all
+          the remaining balance.
         {/if}
       </div>
     </div>
@@ -292,11 +290,12 @@
         dataCy="cancel"
         on:click={leaveEditMode}
         style="margin-right: 1rem">
-        {thereAreChanges ? 'Discard changes' : 'Cancel'}
+        {thereAreChanges ? "Discard changes" : "Cancel"}
       </Button>
 
       <TxButton
-        disabled={!thereAreChanges || $budgetValidation.status !== ValidationStatus.Success}
+        disabled={!thereAreChanges ||
+          $budgetValidation.status !== ValidationStatus.Success}
         dataCy="confirm-button"
         onClick={onConfirmInWallet}
         errorLabel="Failed to save support settings">

@@ -61,7 +61,6 @@
   }
 
   let mode = Mode.SpecifyAmount;
-
 </script>
 
 <style>
@@ -102,7 +101,6 @@
     width: 100%;
     margin-top: var(--content-padding);
   }
-
 </style>
 
 <div class="wrapper" data-cy="pool-withdraw-modal">
@@ -114,8 +112,9 @@
       Enter the amount you’d like to transfer to your linked Ethereum account
       below.
       <!-- svelte-ignore a11y-missing-attribute -->
-      <a class="typo-link" on:click={() => (mode = Mode.CashoutAll)}>Want to
-        stop support completely</a>?
+      <a class="typo-link" on:click={() => (mode = Mode.CashoutAll)}
+        >Want to stop support completely</a
+      >?
     </p>
     <div class="input">
       <Input.Text
@@ -124,7 +123,7 @@
         validation={$validation}
         showLeftItem
         autofocus
-        style={'width: 125px'}>
+        style={"width: 125px"}>
         <div slot="left" style="position: absolute; top: 1px; left: 12px;">
           <Dai />
         </div>

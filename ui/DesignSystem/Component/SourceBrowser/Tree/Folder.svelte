@@ -34,7 +34,6 @@
   $: if (selectedRevision.request === null) {
     current = fetchTree(prefix);
   }
-
 </script>
 
 <style>
@@ -61,7 +60,6 @@
     padding-left: 0.5rem;
     margin: 0;
   }
-
 </style>
 
 <div class="folder" on:click={toggle}>
@@ -89,7 +87,8 @@
           <File
             active={entry.path === $selectedPath.selected}
             dataCy={`file-${entry.path}`}
-            loading={entry.path === $selectedPath.selected && $selectedPath.request !== null}
+            loading={entry.path === $selectedPath.selected &&
+              $selectedPath.request !== null}
             name={entry.info.name}
             on:click={() => {
               onSelectPath({ detail: entry.path });

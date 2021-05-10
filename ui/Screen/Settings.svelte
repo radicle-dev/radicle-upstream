@@ -96,7 +96,6 @@
   ];
 
   const session = sess.getUnsealedFromContext();
-
 </script>
 
 <style>
@@ -183,7 +182,6 @@
     align-items: flex-end;
     padding: 0 0.75rem;
   }
-
 </style>
 
 <SidebarLayout dataCy="settings-page">
@@ -208,8 +206,8 @@
               <br /><a
                 style="color: var(--color-foreground-level-5);"
                 class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices">Learn
-                more about managing devices</a>
+                href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
+                >Learn more about managing devices</a>
             </p>
           </div>
           <div class="action">
@@ -233,8 +231,8 @@
               <a
                 style="color: var(--color-foreground-level-5);"
                 class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed">Learn
-                more about seeds</a>
+                href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
+                >Learn more about seeds</a>
             </p>
           </div>
           <form
@@ -372,7 +370,7 @@
         </div>
       </section>
 
-      <section data-cy="version" style={showVersionAtTop ? 'order: -1' : ''}>
+      <section data-cy="version" style={showVersionAtTop ? "order: -1" : ""}>
         <header>
           <h3>Version</h3>
         </header>
@@ -389,7 +387,8 @@
               <Button
                 style="margin-left: 1em"
                 dataCy="checkout-new-version"
-                on:click={() => ipc.openUrl($latestVersionInfo.announcementUrl)}>
+                on:click={() =>
+                  ipc.openUrl($latestVersionInfo.announcementUrl)}>
                 Check out Version
                 {$latestVersionInfo.version}
               </Button>

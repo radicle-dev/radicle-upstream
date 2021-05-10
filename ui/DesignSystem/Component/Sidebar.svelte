@@ -11,7 +11,6 @@
   import ModalSearch from "../../Modal/Search.svelte";
 
   export let identity: Identity;
-
 </script>
 
 <style>
@@ -98,7 +97,6 @@
   .indicator.active :global(svg) {
     fill: var(--color-primary);
   }
-
 </style>
 
 <div class="wrapper" data-cy="sidebar">

@@ -10,7 +10,6 @@
   export let style: string = "";
 
   const dispatch = createEventDispatcher();
-
 </script>
 
 <style>
@@ -38,7 +37,6 @@
   nav :global(.menu-list-item:hover .icon svg) {
     fill: var(--color-primary);
   }
-
 </style>
 
 <nav data-cy="horizontal-menu" {style}>
@@ -46,7 +44,7 @@
     {#each items as item}
       <li class="menu-list-item">
         <MenuItem
-          on:click={() => dispatch('select', item)}
+          on:click={() => dispatch("select", item)}
           icon={item.icon}
           title={item.title}
           dataCy={`${item.title.toLowerCase()}-tab`}

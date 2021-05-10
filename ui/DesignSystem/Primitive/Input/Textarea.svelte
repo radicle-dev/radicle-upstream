@@ -28,7 +28,6 @@
       destroy: () => el.removeEventListener("input", resize),
     };
   }
-
 </script>
 
 <style>
@@ -84,7 +83,6 @@
     color: var(--color-negative);
     text-align: left;
   }
-
 </style>
 
 <div {style} class="wrapper">

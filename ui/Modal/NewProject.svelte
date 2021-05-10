@@ -150,7 +150,6 @@
 
   $: showRemoteHelper =
     $settings && ($settings as Settings).appearance.hints.showRemoteHelper;
-
 </script>
 
 <style>
@@ -183,13 +182,12 @@
     align-items: center;
     margin-top: 1rem;
   }
-
 </style>
 
 <Modal dataCy="page">
   <div class="create-project" data-cy="create-project">
     <Emoji
-      emoji={'🌠'}
+      emoji={"🌠"}
       size="huge"
       style="align-self: center; margin-bottom: 1rem;" />
     <h2 style="margin-bottom: 3rem;">Start a new project</h2>
@@ -200,7 +198,7 @@
         active={isNew}
         on:click={ev => {
           ev.stopPropagation();
-          setCurrentSelection('new');
+          setCurrentSelection("new");
         }}
         dataCy="new-project">
         <div slot="option-body">
@@ -223,7 +221,7 @@
         active={isExisting}
         on:click={ev => {
           ev.stopPropagation();
-          setCurrentSelection('existing');
+          setCurrentSelection("existing");
         }}
         dataCy="existing-project">
         <div slot="option-body">
@@ -240,7 +238,11 @@
               <Dropdown
                 dataCy="default-branch"
                 style="max-width: 22.9rem;"
-                options={localBranches.map( branch => ({ variant: 'text', value: branch, title: branch }) )}
+                options={localBranches.map(branch => ({
+                  variant: "text",
+                  value: branch,
+                  title: branch,
+                }))}
                 bind:value={$defaultBranch} />
             {:else}
               <Dropdown
@@ -264,7 +266,9 @@
     </div>
 
     <Tooltip
-      value={isExisting ? 'The project name is taken from the chosen repository' : ''}
+      value={isExisting
+        ? "The project name is taken from the chosen repository"
+        : ""}
       position={CSSPosition.Top}>
       <Input.Text
         placeholder="Project name*"

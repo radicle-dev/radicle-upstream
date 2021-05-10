@@ -28,7 +28,6 @@
       onContinue();
     }
   };
-
 </script>
 
 <style>
@@ -48,7 +47,6 @@
     justify-content: flex-end;
     width: 100%;
   }
-
 </style>
 
 <svelte:window on:keydown={onKeydown} />
@@ -65,7 +63,7 @@
   validation={$validation}
   showLeftItem
   autofocus
-  style={'width: 125px; padding: 0; margin-top: 1.5rem;'}>
+  style={"width: 125px; padding: 0; margin-top: 1.5rem;"}>
   <div slot="left" style="position: absolute; top: 1px; left: 12px;">
     <Dai />
   </div>

@@ -94,7 +94,6 @@
   let budget = "";
   let topUp = "";
   let receivers: Receivers = new Map();
-
 </script>
 
 <style>
@@ -110,7 +109,6 @@
 
     text-align: center;
   }
-
 </style>
 
 <div class="wrapper">

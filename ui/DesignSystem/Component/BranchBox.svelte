@@ -3,7 +3,6 @@
 
   export let name: string;
   export let style: string = "";
-
 </script>
 
 <style>
@@ -15,7 +14,6 @@
     background-color: var(--color-foreground-level-2);
     border-radius: 0.25rem;
   }
-
 </style>
 
 <div class="branch" {style}>

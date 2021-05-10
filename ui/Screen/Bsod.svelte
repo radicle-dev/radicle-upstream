@@ -30,7 +30,6 @@
     window.location.href =
       "https://matrix.radicle.community/#/room/#support:radicle.community";
   };
-
 </script>
 
 <style>
@@ -83,7 +82,6 @@
 
     max-width: 100%;
   }
-
 </style>
 
 {#if $fatalError !== null}
@@ -91,9 +89,9 @@
     <div class="content" data-cy="blue-screen-of-death">
       <Emoji emoji="🧻" size="huge" style="margin-bottom: 1.5rem;" />
       <p style="width: 321px; text-align: center">
-        {#if $fatalError.kind === 'SESSION'}
+        {#if $fatalError.kind === "SESSION"}
           We're not totally sure what's going on, but we can't load the app
-        {:else if $fatalError.kind === 'PROXY_EXIT'}
+        {:else if $fatalError.kind === "PROXY_EXIT"}
           Hmm, looks like the app can’t be loaded right now because the backend
           has crashed or it isn’t starting.
         {/if}
@@ -103,7 +101,7 @@
         on:click={support}>
         Reach out for support
       </Button>
-      {#if $fatalError.kind === 'PROXY_EXIT' && $fatalError.data.output}
+      {#if $fatalError.kind === "PROXY_EXIT" && $fatalError.data.output}
         <div class="proxy-log-container">
           <code data-cy="proxy-log" class="proxy-log typo-mono-bold">
             {$fatalError.data.output}

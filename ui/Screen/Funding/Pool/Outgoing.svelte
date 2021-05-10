@@ -12,7 +12,6 @@
 
   let ongoingOnboardingTx = false;
   $: ongoingOnboardingTx = $txs.some(ongoing(TxKind.SupportOnboarding));
-
 </script>
 
 <Remote store={pool.data} let:data={poolData}>

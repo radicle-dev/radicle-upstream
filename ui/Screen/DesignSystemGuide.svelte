@@ -133,7 +133,6 @@
       value: 2,
     },
   ];
-
 </script>
 
 <style>
@@ -149,7 +148,6 @@
   .layout {
     padding: 32px;
   }
-
 </style>
 
 <Fullscreen>
@@ -405,7 +403,10 @@
         <Input.Text
           placeholder="And I'm an input with a validation error."
           style="flex: 1"
-          validation={{ status: ValidationStatus.Error, message: "Well, that didn't go well..." }} />
+          validation={{
+            status: ValidationStatus.Error,
+            message: "Well, that didn't go well...",
+          }} />
       </Swatch>
 
       <Swatch>
@@ -415,7 +416,7 @@
           showSuccessCheck
           validation={{ status: ValidationStatus.Success }}
           on:input={() => {
-            console.log('event(Input changed)');
+            console.log("event(Input changed)");
           }} />
       </Swatch>
 
@@ -452,7 +453,10 @@
           placeholder="Enter user name."
           style="width: 100%"
           showLeftItem={true}
-          validation={{ status: ValidationStatus.Error, message: 'Id already taken' }}
+          validation={{
+            status: ValidationStatus.Error,
+            message: "Id already taken",
+          }}
           value="myUser">
           <div slot="left">
             <Avatar size="small" avatarFallback={avatarFallback2} />
@@ -474,7 +478,10 @@
         <Input.Password
           style="width: 100%;"
           value="too short"
-          validation={{ status: ValidationStatus.Error, message: 'Password too short.' }} />
+          validation={{
+            status: ValidationStatus.Error,
+            message: "Password too short.",
+          }} />
       </Swatch>
 
       <Swatch>
@@ -622,42 +629,68 @@
     <Section title="Notifications" subTitle="Info, Warnings and Errors">
       <Swatch>
         <Notification
-          notification={notification.create('INFO', { message: 'Snackbar' })} />
+          notification={notification.create("INFO", { message: "Snackbar" })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create( 'INFO', { message: 'Info with icon', showIcon: true } )} />
+          notification={notification.create("INFO", {
+            message: "Info with icon",
+            showIcon: true,
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create( 'INFO', { message: 'Info without default action', actions: [] } )} />
+          notification={notification.create("INFO", {
+            message: "Info without default action",
+            actions: [],
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create( 'ERROR', { message: 'Just plain error' } )} />
+          notification={notification.create("ERROR", {
+            message: "Just plain error",
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create( 'ERROR', { message: 'Error with icon', showIcon: true } )} />
+          notification={notification.create("ERROR", {
+            message: "Error with icon",
+            showIcon: true,
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create( 'ERROR', { message: 'Error with one action', actions: [{ label: 'Action', handler: () => {} }] } )} />
+          notification={notification.create("ERROR", {
+            message: "Error with one action",
+            actions: [{ label: "Action", handler: () => {} }],
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create( 'ERROR', { message: 'Error with two actions', actions: [{ label: 'Action 1', handler: () => {} }, { label: 'Action 2', handler: () => {} }] } )} />
+          notification={notification.create("ERROR", {
+            message: "Error with two actions",
+            actions: [
+              { label: "Action 1", handler: () => {} },
+              { label: "Action 2", handler: () => {} },
+            ],
+          })} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create( 'PRIMARY', { message: 'Primary notification', actions: [{ label: 'Action 1', handler: () => {} }, { label: 'Action 2', handler: () => {} }] } )} />
+          notification={notification.create("PRIMARY", {
+            message: "Primary notification",
+            actions: [
+              { label: "Action 1", handler: () => {} },
+              { label: "Action 2", handler: () => {} },
+            ],
+          })} />
       </Swatch>
     </Section>
 
@@ -707,10 +740,10 @@
       <Swatch>
         <FollowToggle
           on:follow={() => {
-            console.log('follow');
+            console.log("follow");
           }}
           on:unfollow={() => {
-            console.log('unfollow');
+            console.log("unfollow");
           }} />
       </Swatch>
 
@@ -718,10 +751,10 @@
         <FollowToggle
           following
           on:follow={() => {
-            console.log('follow');
+            console.log("follow");
           }}
           on:unfollow={() => {
-            console.log('unfollow');
+            console.log("unfollow");
           }} />
       </Swatch>
 
@@ -729,10 +762,10 @@
         <FollowToggle
           disabled
           on:follow={() => {
-            console.log('follow');
+            console.log("follow");
           }}
           on:unfollow={() => {
-            console.log('unfollow');
+            console.log("unfollow");
           }} />
       </Swatch>
 
@@ -741,10 +774,10 @@
           disabled
           following
           on:follow={() => {
-            console.log('follow');
+            console.log("follow");
           }}
           on:unfollow={() => {
-            console.log('unfollow');
+            console.log("unfollow");
           }} />
       </Swatch>
 
@@ -756,7 +789,7 @@
         <SegmentedControl
           active={1}
           options={segmentedControlOptions}
-          on:select={() => console.log('event(select)')} />
+          on:select={() => console.log("event(select)")} />
       </Swatch>
 
       <Swatch>

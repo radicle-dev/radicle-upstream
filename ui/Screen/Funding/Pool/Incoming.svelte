@@ -6,7 +6,6 @@
   export let onCollect: () => void;
   export let ongoingCollect = false;
   export let style = "";
-
 </script>
 
 <style>
@@ -29,7 +28,6 @@
     align-items: center;
     color: var(--color-primary);
   }
-
 </style>
 
 <div class="incoming-container" {style}>
@@ -48,7 +46,7 @@
       style="margin-left: 12px;"
       disabled={ongoingCollect}
       on:click={onCollect}
-      variant={'primary'}>
+      variant={"primary"}>
       Collect
     </Button>
   </div>

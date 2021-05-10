@@ -18,7 +18,6 @@
   const next = () => {
     dispatch("next");
   };
-
 </script>
 
 <style>
@@ -36,7 +35,6 @@
     margin: 2.5rem 0;
     max-width: 20rem;
   }
-
 </style>
 
 <svelte:window on:keydown={onKeydown} />

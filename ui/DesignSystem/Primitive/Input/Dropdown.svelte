@@ -10,7 +10,6 @@
 
   const dispatch = createEventDispatcher();
   const change = () => dispatch("select", value);
-
 </script>
 
 <style>
@@ -50,7 +49,6 @@
       no-repeat;
     background-position: right 8px top 50%;
   }
-
 </style>
 
 <select

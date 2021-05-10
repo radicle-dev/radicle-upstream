@@ -78,7 +78,6 @@
 
   let disabled = true;
   $: disabled = $validation.status !== ValidationStatus.Success;
-
 </script>
 
 <style>
@@ -99,10 +98,9 @@
   .row + .row {
     margin-top: 0.625rem;
   }
-
 </style>
 
-<div class="receivers" {style} class:centered={alignment === 'center'}>
+<div class="receivers" {style} class:centered={alignment === "center"}>
   <div class="row list">
     {#each sortedEntries as [address, status]}
       <Receiver

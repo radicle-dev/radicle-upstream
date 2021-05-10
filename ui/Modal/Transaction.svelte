@@ -33,7 +33,6 @@
   $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
   $: transferedAmount = tx ? transferAmount(tx) : undefined;
   $: incoming = tx ? isIncoming(tx) : false;
-
 </script>
 
 <style>
@@ -117,7 +116,6 @@
   .content .section .row + .row {
     margin-top: 1.5rem;
   }
-
 </style>
 
 <div class="wrapper">
@@ -137,7 +135,7 @@
               styleContent={false}
               copyContent={tx.to}
               notificationText="Address copied to the clipboard">
-              <p class="address typo-text">{tx.to || 'n/a'}</p>
+              <p class="address typo-text">{tx.to || "n/a"}</p>
             </Copyable>
           </div>
 

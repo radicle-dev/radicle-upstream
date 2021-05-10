@@ -3,7 +3,6 @@
 
   export let onConnect: () => void;
   export let connecting = false;
-
 </script>
 
 <style>
@@ -22,7 +21,6 @@
   .connecting {
     cursor: wait;
   }
-
 </style>
 
 <div class="wrapper" class:connecting>

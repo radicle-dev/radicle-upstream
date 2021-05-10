@@ -37,7 +37,6 @@
   const revisionKey = (revision: Branch | Tag): string => {
     return `${revision.type}-${revision.name}`;
   };
-
 </script>
 
 <style>
@@ -88,7 +87,6 @@
   .revision-dropdown li:last-child:not(:only-child) {
     border-radius: 0 0 0.1875rem 0.1875rem;
   }
-
 </style>
 
 <Overlay {expanded} on:hide={hide}>
@@ -121,7 +119,8 @@
               on:click={() => select(revision)}
               {revision}
               defaultBranch={revision.name === defaultBranch}
-              selected={selected.type === revision.type && selected.name === revision.name}
+              selected={selected.type === revision.type &&
+                selected.name === revision.name}
               style="padding: 0 0.5rem;" />
           </li>
         {/each}

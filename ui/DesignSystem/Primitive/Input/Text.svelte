@@ -30,7 +30,6 @@
   $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
 
   $: showHint = hint.length > 0 && value.length === 0;
-
 </script>
 
 <style>
@@ -121,7 +120,6 @@
     position: absolute;
     right: 0.75rem;
   }
-
 </style>
 
 <div {style} class="wrapper">

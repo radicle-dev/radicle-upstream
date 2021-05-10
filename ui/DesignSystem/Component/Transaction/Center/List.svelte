@@ -9,7 +9,6 @@
 
   const dispatch = createEventDispatcher();
   const select = (id: string) => dispatch("select", id);
-
 </script>
 
 <style>
@@ -17,7 +16,6 @@
     background-color: var(--color-foreground-level-1);
     border-radius: 0.4375rem 0.4375rem 0 0;
   }
-
 </style>
 
 <div class="list">

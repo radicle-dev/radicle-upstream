@@ -19,7 +19,6 @@
     selectPath(path);
   };
   const onSelectRoot = () => selectPath("");
-
 </script>
 
 <style>
@@ -54,7 +53,6 @@
     overflow-x: auto;
     width: 18rem;
   }
-
 </style>
 
 <div class="wrapper">
@@ -65,7 +63,13 @@
       <div class="column-left">
         <div class="source-tree" data-cy="source-tree">
           <Tree
-            fetchTree={path => fetchTree(project.urn, peer.peerId, selectedRevision.selected, path)}
+            fetchTree={path =>
+              fetchTree(
+                project.urn,
+                peer.peerId,
+                selectedRevision.selected,
+                path
+              )}
             on:select={onSelectPath}
             {selectedPath}
             {selectedRevision}

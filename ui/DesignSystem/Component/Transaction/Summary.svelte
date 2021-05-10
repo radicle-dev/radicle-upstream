@@ -6,7 +6,6 @@
 
   export let tx: Tx;
   export let style = "";
-
 </script>
 
 <style>
@@ -24,7 +23,6 @@
   p {
     padding: 0 4rem;
   }
-
 </style>
 
 <div class="wrapper" {style}>
@@ -55,8 +53,8 @@
       <p>
         Stream
         <strong>{tx.amount} DAI</strong>
-        per week. You haven’t set any receivers. As soon as you do, money will
-        begin streaming to them at this rate.
+        per week. You haven’t set any receivers. As soon as you do, money will begin
+        streaming to them at this rate.
       </p>
     {:else}
       <p>Stream <strong>{tx.amount} DAI</strong> per week to these users:</p>
