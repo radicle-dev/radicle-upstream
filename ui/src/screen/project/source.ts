@@ -100,7 +100,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.success({
       code: writable<Code>(root),
       history: groupedHistory,
-      menuItems: menuItems(project, groupedHistory),
+      menuItems: menuItems(groupedHistory.stats.commits),
       peer,
       project,
       revisions: mapRevisions(revisions),
@@ -199,7 +199,7 @@ export const selectRevision = async (
       screenStore.success({
         ...screen.data,
         history: groupedHistory,
-        menuItems: menuItems(project, groupedHistory),
+        menuItems: menuItems(groupedHistory.stats.commits),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -376,10 +376,7 @@ const mapRevisions = (
   return branches;
 };
 
-const menuItems = (
-  project: Project,
-  history: source.GroupedCommitsHistory
-): HorizontalItem[] => {
+const menuItems = (commitCount: number): HorizontalItem[] => {
   return [
     {
       icon: IconFile,
@@ -389,7 +386,7 @@ const menuItems = (
     {
       icon: IconCommit,
       title: "Commits",
-      counter: history.stats.commits,
+      counter: commitCount,
       tab: {
         component: SourceCommitsTab,
         props: {},
