@@ -7,18 +7,18 @@
   import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
   import ProjectScreen from "ui/Screen/Project.svelte";
 
-  export let params: { urn: string };
+  export let urn: string;
 
   const select = ({ detail: project }: { detail: Project }) => {
     push({ component: ProjectScreen, props: { urn: project.urn } });
   };
 
-  fetchProjects(params.urn);
+  fetchProjects(urn);
 
 </script>
 
 <Remote {store} let:data={projects}>
-  <ProjectList {projects} userUrn={params.urn} on:select={select} />
+  <ProjectList {projects} userUrn={urn} on:select={select} />
 
   <div slot="error" let:error>
     <Error message={error.message} />
