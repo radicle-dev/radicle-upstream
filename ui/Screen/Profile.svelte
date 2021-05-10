@@ -71,6 +71,7 @@
     <HorizontalMenu
       slot="left"
       items={topbarMenuItems}
+      {activeTab}
       on:select={event => {
         activeTab = event.detail.tab.component;
       }} />

@@ -106,7 +106,10 @@
             {revisions} />
         </div>
 
-        <HorizontalMenu items={menuItems} on:select={onMenuSelect} />
+        <HorizontalMenu
+          items={menuItems}
+          on:select={onMenuSelect}
+          {activeTab} />
       </div>
     </div>
     <div slot="right">
