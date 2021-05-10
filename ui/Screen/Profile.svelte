@@ -16,9 +16,9 @@
 
   import ModalNewProject from "../Modal/NewProject.svelte";
 
-  import FollowingTab from "ui/screen/Profile/Following.svelte";
-  import ProjectsTab from "ui/screen//Profile/Projects.svelte";
-  import FundingTab from "ui/screen/Profile/Funding.svelte";
+  import FollowingTab from "ui/Screen/Profile/Following.svelte";
+  import ProjectsTab from "ui/Screen//Profile/Projects.svelte";
+  import FundingTab from "ui/Screen/Profile/Funding.svelte";
 
   export let activeTab: typeof SvelteComponent = ProjectsTab;
 

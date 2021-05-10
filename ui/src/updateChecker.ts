@@ -8,7 +8,7 @@ import * as modal from "./modal";
 import * as notification from "./notification";
 import * as session from "./session";
 
-import SettingsScreen from "ui/screen/Settings.svelte";
+import SettingsScreen from "ui/Screen/Settings.svelte";
 
 interface LatestVersionInfo {
   version: string;

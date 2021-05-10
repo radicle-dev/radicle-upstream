@@ -10,10 +10,10 @@
   import * as sess from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
-  import ProfileScreen from "ui/screen/Profile.svelte";
-  import UserProfileScreen from "ui/screen/UserProfile.svelte";
-  import ProjectScreen from "ui/screen/Project.svelte";
-  import CodeTab from "ui/screen/Project/Source/Code.svelte";
+  import ProfileScreen from "ui/Screen/Profile.svelte";
+  import UserProfileScreen from "ui/Screen/UserProfile.svelte";
+  import ProjectScreen from "ui/Screen/Project.svelte";
+  import CodeTab from "ui/Screen/Project/Source/Code.svelte";
 
   import {
     FollowToggle,

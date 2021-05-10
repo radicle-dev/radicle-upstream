@@ -20,7 +20,7 @@
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
-  import CodeTab from "ui/screen/Project/Source/Code.svelte";
+  import CodeTab from "ui/Screen/Project/Source/Code.svelte";
 
   export let project: Project;
   export let selectedPeer: User;

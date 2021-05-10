@@ -10,7 +10,7 @@ import * as session from "./session";
 import type * as urn from "./urn";
 import * as error from "./error";
 
-import ProjectScreen from "ui/screen/Project.svelte";
+import ProjectScreen from "ui/Screen/Project.svelte";
 
 // TYPES
 export enum StatusType {

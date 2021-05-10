@@ -10,7 +10,7 @@
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
 
   import UserProfileHeader from "./UserProfile/UserProfileHeader.svelte";
-  import ProjectsTab from "ui/screen/UserProfile/Projects.svelte";
+  import ProjectsTab from "ui/Screen/UserProfile/Projects.svelte";
 
   export let urn;
   export let activeTab: typeof SvelteComponent = ProjectsTab;

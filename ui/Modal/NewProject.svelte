@@ -23,9 +23,9 @@
   import * as screen from "../src/screen";
   import type { Settings } from "../src/settings";
   import { dismissRemoteHelperHint, settings } from "../src/session";
-  import ProjectScreen from "ui/screen/Project.svelte";
-  import ProfileScreen from "ui/screen/Profile.svelte";
-  import ProjectsTab from "ui/screen/Profile/Projects.svelte";
+  import ProjectScreen from "ui/Screen/Project.svelte";
+  import ProfileScreen from "ui/Screen/Profile.svelte";
+  import ProjectsTab from "ui/Screen/Profile/Projects.svelte";
 
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
   import {
