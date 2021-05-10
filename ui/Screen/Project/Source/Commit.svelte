@@ -4,7 +4,6 @@
   import * as error from "ui/src/error";
   import { formatCommitTime } from "ui/src/source";
   import { commit, fetchCommit } from "ui/src/screen/project/source";
-  import type { Urn } from "ui/src/urn";
   import * as remote from "ui/src/remote";
 
   import { Icon } from "ui/DesignSystem/Primitive";
@@ -12,8 +11,7 @@
 
   import Changeset from "ui/DesignSystem/Component/SourceBrowser/Changeset.svelte";
 
-  export let params: { hash: string; urn: Urn };
-  const { hash } = params;
+  export let commitHash: string;
 
   $: {
     if ($commit.status === remote.Status.Error) {
@@ -21,7 +19,7 @@
     }
   }
 
-  fetchCommit(hash);
+  fetchCommit(commitHash);
 </script>
 
 <style>

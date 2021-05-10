@@ -5,13 +5,16 @@ import { push } from "ui/src/router";
 import * as error from "ui/src/error";
 import * as config from "ui/src/config";
 import type { HorizontalItem } from "ui/src/menu";
-import * as path from "ui/src/path";
 import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
 import * as source from "ui/src/source";
 
 import IconCommit from "ui/DesignSystem/Primitive/Icon/Commit.svelte";
 import IconFile from "ui/DesignSystem/Primitive/Icon/File.svelte";
+import SourceCodeTab from "ui/Screen/Project/Source/Code.svelte";
+import SourceCommitTab from "ui/Screen/Project/Source/Commit.svelte";
+import SourceCommitsTab from "ui/Screen/Project/Source/Commits.svelte";
+import ProjectScreen from "ui/Screen/Project.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -242,7 +245,14 @@ export const selectCommit = (commit: source.CommitHeader): void => {
       data: { project },
     } = screen;
 
-    push(path.projectSourceCommit(project.urn, commit.sha1));
+    push({
+      component: ProjectScreen,
+      props: {
+        activeTab: SourceCommitTab,
+        urn: project.urn,
+        commitHash: commit.sha1,
+      },
+    });
   }
 };
 
@@ -374,13 +384,16 @@ const menuItems = (
     {
       icon: IconFile,
       title: "Files",
-      href: path.projectSourceFiles(project.urn),
+      tab: { component: SourceCodeTab, props: {} },
     },
     {
       icon: IconCommit,
       title: "Commits",
       counter: history.stats.commits,
-      href: path.projectSourceCommits(project.urn),
+      tab: {
+        component: SourceCommitsTab,
+        props: {},
+      },
     },
   ];
 };

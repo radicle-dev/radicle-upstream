@@ -3,7 +3,7 @@ import * as svelteStore from "svelte/store";
 
 export { default as Router } from "ui/src/router/Router.svelte";
 
-type State = {
+export type State = {
   component: typeof SvelteComponent | null;
   // any object | empty object
   props: Record<string, unknown> | Record<string, never>;

@@ -1,7 +1,4 @@
 <script lang="typescript">
-  import { Router } from "ui/src/router";
-
-  import * as path from "../src/path";
   import { fetchUser, user as store } from "../src/userProfile";
 
   import { Icon } from "../DesignSystem/Primitive";
@@ -13,26 +10,21 @@
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
 
   import UserProfileHeader from "./UserProfile/UserProfileHeader.svelte";
+  import ProjectsTab from "ui/screen/UserProfile/Projects.svelte";
 
-  import Projects from "./UserProfile/Projects.svelte";
-  import NotFound from "./NotFound.svelte";
+  export let urn;
+  export let activeTab: typeof SvelteComponent = ProjectsTab;
 
-  export let params: { urn: string };
-
-  const screenRoutes = {
-    "/user/:urn/projects": Projects,
-    "*": NotFound,
-  };
   const topbarMenuItems = [
     {
       icon: Icon.ChevronLeftRight,
       title: "Projects",
-      href: path.userProfileProjects(params.urn),
+      tab: { component: ProjectsTab, props: { urn } },
       looseActiveStateMatching: true,
     },
   ];
 
-  fetchUser(params.urn);
+  fetchUser(urn);
 </script>
 
 <SidebarLayout>
@@ -48,7 +40,6 @@
     <ActionBar>
       <HorizontalMenu slot="left" items={topbarMenuItems} />
     </ActionBar>
-
-    <!--Router routes={screenRoutes} /-->
+    <svelte:component this={activeTab} />
   </Remote>
 </SidebarLayout>

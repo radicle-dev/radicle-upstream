@@ -1,12 +1,8 @@
 <script lang="typescript">
-  import { get } from "svelte/store";
-  import { location, Router } from "ui/src/router";
-
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
   import type { HorizontalItem } from "../../src/menu";
   import * as notification from "../../src/notification";
-  import * as path from "../../src/path";
   import * as proxy from "../../src/proxy";
   import type { Project, User } from "../../src/project";
   import {
@@ -24,20 +20,14 @@
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
-
-  import Code from "./Source/Code.svelte";
-  import Commit from "./Source/Commit.svelte";
-  import Commits from "./Source/Commits.svelte";
+  import CodeTab from "ui/screen/Project/Source/Code.svelte";
 
   export let project: Project;
   export let selectedPeer: User;
   export let isContributor: boolean;
 
-  const routes = {
-    "/projects/:urn/source/code": Code,
-    "/projects/:urn/source/commit/:hash": Commit,
-    "/projects/:urn/source/commits": Commits,
-  };
+  export let activeTab: typeof SvelteComponent;
+  export let commitHash: string;
 
   const onCheckout = async (
     { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
@@ -76,11 +66,10 @@
     }
   };
   const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
-    if (
-      item.title === "Files" &&
-      get(location).startsWith(path.projectSourceFiles(project.urn))
-    ) {
+    if (item.title === "Files" && activeTab === CodeTab) {
       selectPath("");
+    } else {
+      activeTab = item.tab.component;
     }
   };
   const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
@@ -121,5 +110,5 @@
     </div>
   </ActionBar>
 
-  <!--Router {routes} /-->
+  <svelte:component this={activeTab} {commitHash} />
 </Remote>

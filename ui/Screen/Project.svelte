@@ -4,13 +4,16 @@
 
   import * as localPeer from "../src/localPeer";
   import * as modal from "../src/modal";
-  import * as path from "../src/path";
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
   import { fetch, selectPeer, refresh, store } from "../src/screen/project";
   import * as sess from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
+  import ProfileScreen from "ui/screen/Profile.svelte";
+  import UserProfileScreen from "ui/screen/UserProfile.svelte";
+  import ProjectScreen from "ui/screen/Project.svelte";
+  import CodeTab from "ui/screen/Project/Source/Code.svelte";
 
   import {
     FollowToggle,
@@ -26,6 +29,8 @@
   import Source from "./Project/Source.svelte";
 
   export let urn: Urn;
+  export let activeTab: typeof SvelteComponent = CodeTab;
+  export let commitHash: string;
 
   const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
@@ -33,9 +38,12 @@
 
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
     if (peer.identity.urn === session.identity.urn) {
-      push(path.profileProjects());
+      push({ component: ProfileScreen });
     } else {
-      push(path.userProfileProjects(peer.identity.urn));
+      push({
+        component: UserProfileScreen,
+        params: { urn: peer.identity.urn },
+      });
     }
   };
   const onPeerModal = () => {
@@ -69,7 +77,7 @@
         name={project.metadata.name}
         description={project.metadata.description}
         stats={project.stats}
-        onClick={() => push(path.project(urn))} />
+        onClick={() => push({ component: ProjectScreen, props: { urn } })} />
 
       <div slot="right" style="display: flex;">
         <PeerSelector
@@ -86,6 +94,8 @@
       </div>
     </Header>
     <Source
+      {activeTab}
+      {commitHash}
       {project}
       {selectedPeer}
       isContributor={isContributor(peerSelection)} />

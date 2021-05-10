@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
-  import { location } from "ui/src/router";
 
   import type { HorizontalItem } from "../../src/menu";
 
@@ -49,8 +48,8 @@
           title={item.title}
           dataCy={`${item.title.toLowerCase()}-tab`}
           counter={item.counter}
-          href={item.href}
-          active={$location.startsWith(item.href)} />
+          tab={item.tab}
+          active={false} />
       </li>
     {/each}
   </ul>
