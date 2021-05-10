@@ -56,10 +56,7 @@
   };
 
   onMount(() => {
-    localPeer.projectEvents.subscribe(event => {
-      if (!event) {
-        return;
-      }
+    localPeer.projectEvents.onValue(event => {
       if (event.urn === urn) {
         refresh();
       }

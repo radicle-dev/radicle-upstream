@@ -1,4 +1,3 @@
-import { derived, writable, Readable } from "svelte/store";
 import { push } from "ui/src/router";
 import * as zod from "zod";
 
@@ -9,6 +8,7 @@ import * as remote from "./remote";
 import * as session from "./session";
 import type * as urn from "./urn";
 import * as error from "./error";
+import * as bacon from "./bacon";
 
 import ProjectScreen from "ui/Screen/Project.svelte";
 
@@ -158,7 +158,7 @@ session.session.subscribe(sess => {
         const data = JSON.parse(msg.data);
         const result = eventSchema.safeParse(data);
         if (result.success) {
-          eventStore.set(result.data);
+          eventBus.push(result.data);
         } else {
           error.show(
             new error.Error({
@@ -175,16 +175,9 @@ session.session.subscribe(sess => {
   }
 });
 
-// STATE
-const eventStore = writable<Event | null>(null);
+const eventBus = new bacon.Bus<Event>();
 
-// Event handling.
-// FIXME(xla): Formalise event handling.
-eventStore.subscribe((event: Event | null): void => {
-  if (!event) {
-    return;
-  }
-
+eventBus.onValue(event => {
   switch (event.type) {
     case EventType.RequestCloned:
       notifiation.info({
@@ -207,30 +200,18 @@ eventStore.subscribe((event: Event | null): void => {
   }
 });
 
-export const projectEvents: Readable<ProjectUpdated | null> = derived(
-  eventStore,
-  (event: Event | null): ProjectUpdated | null => {
-    if (!event) {
-      return null;
-    }
-
-    switch (event.type) {
-      case EventType.ProjectUpdated:
-        return event;
-
-      default:
-        return null;
+export const projectEvents: bacon.EventStream<ProjectUpdated> = bacon.filterMap(
+  eventBus,
+  event => {
+    if (event.type === EventType.ProjectUpdated) {
+      return event;
     }
   }
 );
 
-export const requestEvents: Readable<RequestEvent | null> = derived(
-  eventStore,
-  (event: Event | null): RequestEvent | null => {
-    if (!event) {
-      return null;
-    }
-
+export const requestEvents: bacon.EventStream<RequestEvent> = bacon.filterMap(
+  eventBus,
+  event => {
     switch (event.type) {
       case EventType.RequestCloned:
       case EventType.RequestQueried:
@@ -239,17 +220,15 @@ export const requestEvents: Readable<RequestEvent | null> = derived(
         return event;
 
       default:
-        return null;
+        return undefined;
     }
   }
 );
 
-export const status: Readable<remote.Data<Status>> = derived(
-  eventStore,
-  (event: Event | null, set: (status: remote.Data<Status>) => void): void => {
-    if (event && event.type === EventType.StatusChanged) {
-      set({ status: remote.Status.Success, data: event.new });
-    }
-  },
-  { status: remote.Status.Loading }
-);
+export const status = remote.createStore<Status>();
+
+eventBus.onValue(event => {
+  if (event.type === EventType.StatusChanged) {
+    status.success(event.new);
+  }
+});
