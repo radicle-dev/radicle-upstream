@@ -182,7 +182,7 @@
     "mnemonist": "^0.38.3",
     "pure-svg-code": "^1.0.6",
     "qs": "^6.10.1",
-    "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=9fb23ac74a403b167a22513fc666779d871d292e",
+    "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421",
     "semver": "^7.3.5",
     "stream-browserify": "^3.0.0",
     "svelte-persistent-store": "^0.1.6",
