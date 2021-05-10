@@ -6,8 +6,9 @@ import * as router from "ui/src/router";
 import * as ipc from "./ipc";
 import * as modal from "./modal";
 import * as notification from "./notification";
-import * as path from "./path";
 import * as session from "./session";
+
+import SettingsScreen from "ui/screen/Settings.svelte";
 
 interface LatestVersionInfo {
   version: string;
@@ -90,7 +91,7 @@ class UpdateChecker {
             label: "Go to settings",
             handler: () => {
               modal.hide();
-              router.push(path.settings());
+              router.push({ component: SettingsScreen, props: {} });
             },
           },
           {

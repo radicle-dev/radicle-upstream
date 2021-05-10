@@ -5,11 +5,12 @@ import * as zod from "zod";
 import type * as identity from "./identity";
 import * as config from "./config";
 import * as notifiation from "./notification";
-import * as path from "./path";
 import * as remote from "./remote";
 import * as session from "./session";
 import type * as urn from "./urn";
 import * as error from "./error";
+
+import ProjectScreen from "ui/screen/Project.svelte";
 
 // TYPES
 export enum StatusType {
@@ -191,7 +192,8 @@ eventStore.subscribe((event: Event | null): void => {
         actions: [
           {
             label: "Show Project",
-            handler: () => push(path.project(event.urn)),
+            handler: () =>
+              push({ component: ProjectScreen, props: { urn: event.urn } }),
           },
         ],
       });
