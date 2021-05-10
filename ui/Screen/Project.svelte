@@ -1,4 +1,6 @@
 <script lang="typescript">
+  import type { SvelteComponent } from "svelte";
+
   import { onMount } from "svelte";
   import { push } from "ui/src/router";
 
@@ -38,11 +40,11 @@
 
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
     if (peer.identity.urn === session.identity.urn) {
-      push({ component: ProfileScreen });
+      push({ component: ProfileScreen, props: {} });
     } else {
       push({
         component: UserProfileScreen,
-        params: { urn: peer.identity.urn },
+        props: { urn: peer.identity.urn },
       });
     }
   };

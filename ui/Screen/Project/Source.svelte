@@ -1,4 +1,6 @@
 <script lang="typescript">
+  import type { SvelteComponent } from "svelte";
+
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
   import type { HorizontalItem } from "../../src/menu";

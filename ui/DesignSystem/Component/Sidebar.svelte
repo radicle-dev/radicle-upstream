@@ -107,7 +107,10 @@
         class="item indicator"
         data-cy="profile"
         class:active={$state.component === ProfileScreen}
-        on:click|stopPropagation={() => push({ component: ProfileScreen })}>
+        on:click|stopPropagation={() => push({
+            component: ProfileScreen,
+            props: {},
+          })}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -130,7 +133,10 @@
         class="item indicator"
         data-cy="settings"
         class:active={$state.component === SettingsScreen}
-        on:click|stopPropagation={() => push({ component: SettingsScreen })}>
+        on:click|stopPropagation={() => push({
+            component: SettingsScreen,
+            props: {},
+          })}>
         <Icon.Settings />
       </div>
     </Tooltip>

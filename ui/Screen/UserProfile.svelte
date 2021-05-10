@@ -1,4 +1,6 @@
 <script lang="typescript">
+  import type { SvelteComponent } from "svelte";
+
   import { fetchUser, user as store } from "../src/userProfile";
 
   import { Icon } from "../DesignSystem/Primitive";
@@ -12,7 +14,7 @@
   import UserProfileHeader from "./UserProfile/UserProfileHeader.svelte";
   import ProjectsTab from "ui/Screen/UserProfile/Projects.svelte";
 
-  export let urn;
+  export let urn: string;
   export let activeTab: typeof SvelteComponent = ProjectsTab;
 
   const topbarMenuItems = [

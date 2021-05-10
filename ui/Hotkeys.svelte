@@ -20,14 +20,14 @@
     if ($state.component === destination) {
       return;
     }
-    push({ component: destination });
+    push({ component: destination, props: {} });
   };
 
   const toggle = (destination: typeof SvelteComponent) => {
     if ($state.component == destination) {
       pop();
     } else {
-      push({ component: destination });
+      push({ component: destination, props: {} });
       modal.hide();
     }
   };
