@@ -117,6 +117,7 @@
         }
     }
   };
+
 </script>
 
 <style>
@@ -146,6 +147,7 @@
   .repeat {
     margin: 1.5rem 0 0 0;
   }
+
 </style>
 
 <svelte:window on:keydown={onKeydown} />

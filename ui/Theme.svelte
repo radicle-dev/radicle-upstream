@@ -12,4 +12,5 @@
     document.documentElement.setAttribute("data-uifont", uiFont);
     document.documentElement.setAttribute("data-codefont", codeFont);
   }
+
 </script>

@@ -34,6 +34,7 @@
   };
 
   fetchFollowing();
+
 </script>
 
 <style>
@@ -69,6 +70,7 @@
     align-items: center;
     margin-top: 1.5rem;
   }
+
 </style>
 
 <div class="container" data-cy="following-tab-contents">

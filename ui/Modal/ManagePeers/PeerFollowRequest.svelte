@@ -10,6 +10,7 @@
   export let projectUrn: Urn;
 
   const dispatch = createEventDispatcher();
+
 </script>
 
 <style>
@@ -22,6 +23,7 @@
   .left {
     max-width: 22em;
   }
+
 </style>
 
 <div class="peer-request" data-cy="peer-request">

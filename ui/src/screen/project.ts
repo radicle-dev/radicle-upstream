@@ -130,23 +130,20 @@ export const pendingPeers: Readable<
   remote.Data<{
     peers: project.Peer[];
   }>
-> = derived(
-  screenStore,
-  (store): remote.Data<{ peers: project.Peer[] }> => {
-    if (store.status === remote.Status.Success) {
-      const peers = store.data.peers.filter(
-        peer => peer.status.type === project.ReplicationStatusType.NotReplicated
-      );
+> = derived(screenStore, (store): remote.Data<{ peers: project.Peer[] }> => {
+  if (store.status === remote.Status.Success) {
+    const peers = store.data.peers.filter(
+      peer => peer.status.type === project.ReplicationStatusType.NotReplicated
+    );
 
-      return {
-        status: remote.Status.Success,
-        data: { peers },
-      };
-    } else {
-      return store;
-    }
+    return {
+      status: remote.Status.Success,
+      data: { peers },
+    };
+  } else {
+    return store;
   }
-);
+});
 
 export const trackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   proxy.client.project

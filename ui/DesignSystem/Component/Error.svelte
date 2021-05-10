@@ -2,6 +2,7 @@
   import { Icon } from "../../DesignSystem/Primitive";
 
   export let message = "Something went wrong";
+
 </script>
 
 <style>
@@ -19,6 +20,7 @@
   .error p {
     padding-left: 0.5rem;
   }
+
 </style>
 
 <div class="error">

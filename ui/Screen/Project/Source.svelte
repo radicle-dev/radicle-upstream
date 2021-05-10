@@ -81,6 +81,7 @@
   };
 
   $: fetch(project, selectedPeer);
+
 </script>
 
 <style>
@@ -89,6 +90,7 @@
     position: relative;
     margin-right: 2rem;
   }
+
 </style>
 
 <Remote {store} let:data={{ menuItems, revisions, selectedRevision }}>

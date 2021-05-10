@@ -14,6 +14,7 @@
     description: project.metadata.description || "",
     showMaintainerBadge: isMaintainer(userUrn, project),
   });
+
 </script>
 
 <style>
@@ -25,6 +26,7 @@
     align-items: center;
     min-width: 0;
   }
+
 </style>
 
 <List

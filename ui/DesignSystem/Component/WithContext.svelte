@@ -5,6 +5,7 @@
   export let name: string;
 
   setContext(name, data);
+
 </script>
 
 <slot />

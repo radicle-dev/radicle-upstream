@@ -10,6 +10,7 @@
   import { Icon } from "../../Primitive";
 
   export let file: ModifiedFile;
+
 </script>
 
 <style>
@@ -98,6 +99,7 @@
   td.diff-line-number {
     color: var(--color-foreground-level-4);
   }
+
 </style>
 
 <article class="changeset-file">

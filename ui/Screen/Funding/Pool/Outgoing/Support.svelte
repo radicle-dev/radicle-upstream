@@ -105,6 +105,7 @@
     fundingPool.store.set(pool);
     modal.toggle(ModalWithdraw);
   };
+
 </script>
 
 <style>
@@ -161,6 +162,7 @@
     width: 100%;
     margin-top: calc(var(--content-padding) / 2);
   }
+
 </style>
 
 <Remote store={pool.data} let:data={poolData}>

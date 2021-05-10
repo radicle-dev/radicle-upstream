@@ -89,6 +89,7 @@
         break;
     }
   };
+
 </script>
 
 <svelte:window on:keydown={onKeydown} />

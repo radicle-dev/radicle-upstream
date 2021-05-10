@@ -65,6 +65,7 @@
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
+
 </script>
 
 <SidebarLayout dataCy="project-screen">

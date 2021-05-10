@@ -13,6 +13,7 @@
   const onSelect = () => {
     dispatch("select", commit.sha1);
   };
+
 </script>
 
 <style>
@@ -50,6 +51,7 @@
     padding: 0 8px 0 4px;
     color: var(--commit-sha-color, var(--color-primary));
   }
+
 </style>
 
 <div class="container" {style} data-cy="commit-teaser">

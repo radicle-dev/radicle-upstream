@@ -114,6 +114,7 @@ Part of #277
       },
     ],
   };
+
 </script>
 
 <style>
@@ -147,6 +148,7 @@ Part of #277
     padding: 24px 16px 32px 16px;
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
+
 </style>
 
 <div class="container">

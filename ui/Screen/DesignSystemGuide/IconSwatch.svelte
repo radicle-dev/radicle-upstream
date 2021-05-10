@@ -5,6 +5,7 @@
     grid-gap: 1.5rem;
     margin-bottom: 34px;
   }
+
 </style>
 
 <div class="swatch">

@@ -20,6 +20,7 @@
 
   $: if (expanded) open(container);
   $: if ($current !== container) dispatch("hide");
+
 </script>
 
 <svelte:window on:click={handleClick} />

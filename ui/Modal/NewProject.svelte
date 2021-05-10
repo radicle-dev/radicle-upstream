@@ -152,6 +152,7 @@
 
   $: showRemoteHelper =
     $settings && ($settings as Settings).appearance.hints.showRemoteHelper;
+
 </script>
 
 <style>
@@ -184,6 +185,7 @@
     align-items: center;
     margin-top: 1rem;
   }
+
 </style>
 
 <Modal dataCy="page">
@@ -240,11 +242,7 @@
               <Dropdown
                 dataCy="default-branch"
                 style="max-width: 22.9rem;"
-                options={localBranches.map(branch => ({
-                  variant: 'text',
-                  value: branch,
-                  title: branch,
-                }))}
+                options={localBranches.map( branch => ({ variant: 'text', value: branch, title: branch }) )}
                 bind:value={$defaultBranch} />
             {:else}
               <Dropdown

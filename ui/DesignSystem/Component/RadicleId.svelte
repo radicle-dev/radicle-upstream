@@ -7,12 +7,14 @@
   export let truncate: boolean = false;
 
   const hash = urn.replace("rad:git:", "");
+
 </script>
 
 <style>
   .radicle-id {
     display: flex;
   }
+
 </style>
 
 <div class="radicle-id" {style} data-cy="urn" title={urn}>

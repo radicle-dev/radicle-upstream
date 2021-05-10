@@ -6,6 +6,7 @@
 
   export let tx: Tx;
   export let style = "";
+
 </script>
 
 <style>
@@ -23,6 +24,7 @@
   p {
     padding: 0 4rem;
   }
+
 </style>
 
 <div class="wrapper" {style}>

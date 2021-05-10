@@ -21,6 +21,7 @@
       unlock();
     }
   };
+
 </script>
 
 <style>
@@ -39,6 +40,7 @@
     display: flex;
     margin-top: 1.5rem;
   }
+
 </style>
 
 <div class="lock">

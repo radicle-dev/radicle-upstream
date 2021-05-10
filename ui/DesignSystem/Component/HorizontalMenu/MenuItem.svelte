@@ -16,6 +16,7 @@
   const click = () => {
     dispatch("click", { tab });
   };
+
 </script>
 
 <style>
@@ -47,6 +48,7 @@
     border-radius: 0.75rem;
     margin-left: 0.5rem;
   }
+
 </style>
 
 <div class="tab" data-cy={dataCy} on:click={click}>

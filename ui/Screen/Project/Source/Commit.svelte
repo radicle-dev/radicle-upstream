@@ -20,6 +20,7 @@
   }
 
   fetchCommit(commitHash);
+
 </script>
 
 <style>
@@ -66,6 +67,7 @@
     border-top: 1px solid var(--color-foreground-level-3);
     margin: 1rem 0 1.5rem 0;
   }
+
 </style>
 
 <div class="commit-page" data-cy="commit-page">

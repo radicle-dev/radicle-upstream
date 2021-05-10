@@ -12,6 +12,7 @@
   import ModalSearch from "../../Modal/Search.svelte";
 
   export let identity: Identity;
+
 </script>
 
 <style>
@@ -98,6 +99,7 @@
   .indicator.active :global(svg) {
     fill: var(--color-primary);
   }
+
 </style>
 
 <div class="wrapper" data-cy="sidebar">
@@ -107,10 +109,7 @@
         class="item indicator"
         data-cy="profile"
         class:active={$state.component === ProfileScreen}
-        on:click|stopPropagation={() => push({
-            component: ProfileScreen,
-            props: {},
-          })}>
+        on:click|stopPropagation={() => push( { component: ProfileScreen, props: {} } )}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -133,10 +132,7 @@
         class="item indicator"
         data-cy="settings"
         class:active={$state.component === SettingsScreen}
-        on:click|stopPropagation={() => push({
-            component: SettingsScreen,
-            props: {},
-          })}>
+        on:click|stopPropagation={() => push( { component: SettingsScreen, props: {} } )}>
         <Icon.Settings />
       </div>
     </Tooltip>

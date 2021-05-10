@@ -13,6 +13,7 @@
     background: bgColor,
     ecl: "M",
   });
+
 </script>
 
 <div class="container" data-cy="qr-code">

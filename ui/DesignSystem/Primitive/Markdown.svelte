@@ -2,6 +2,7 @@
   import marked from "marked";
 
   export let content: string;
+
 </script>
 
 <style>
@@ -12,7 +13,7 @@
     margin: 0 0 1.75rem;
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
-  .markdown :global(h1):not(:first-child) {
+  .markdown :global(h1:not(:first-child)) {
     margin-top: 2rem;
   }
 
@@ -156,6 +157,7 @@
     padding-left: 1.25rem;
     margin-bottom: 1rem;
   }
+
 </style>
 
 {#if content}

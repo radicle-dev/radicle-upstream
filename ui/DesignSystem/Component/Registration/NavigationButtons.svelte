@@ -11,6 +11,7 @@
   const dispatch = createEventDispatcher();
   const cancel = () => dispatch("cancel");
   const submit = () => dispatch("submit");
+
 </script>
 
 <style>
@@ -19,6 +20,7 @@
     display: flex;
     justify-content: flex-end;
   }
+
 </style>
 
 <div class="container" {style}>

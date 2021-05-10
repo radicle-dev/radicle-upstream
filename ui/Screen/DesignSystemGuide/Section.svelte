@@ -1,6 +1,7 @@
 <script>
   export let title = null;
   export let subTitle = null;
+
 </script>
 
 <style>
@@ -22,6 +23,7 @@
   p {
     color: var(--color-foreground-level-5);
   }
+
 </style>
 
 <div class="section">

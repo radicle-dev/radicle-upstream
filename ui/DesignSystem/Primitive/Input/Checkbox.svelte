@@ -1,5 +1,6 @@
 <script>
   export let checked = null;
+
 </script>
 
 <style>
@@ -29,6 +30,7 @@
   span {
     margin-left: 14px;
   }
+
 </style>
 
 <label class="wrapper">
