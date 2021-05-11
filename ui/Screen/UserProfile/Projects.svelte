@@ -14,6 +14,7 @@
   };
 
   fetchProjects(params.urn);
+
 </script>
 
 <Remote {store} let:data={projects}>

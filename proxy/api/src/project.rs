@@ -5,9 +5,12 @@ use std::{collections::HashSet, convert::TryFrom, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
-use coco::{project::peer, signer::BoxedSigner};
+use radicle_daemon::{
+    net, project, project::peer, signer::BoxedSigner, state, Person, Project as RadProject, Urn,
+};
+use radicle_source::surf::vcs::git::Stats;
 
-use crate::{error, identity};
+use crate::{browser, error, identity};
 
 /// Object encapsulating project metadata.
 #[derive(Deserialize, Serialize)]
@@ -20,14 +23,14 @@ pub struct Metadata {
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
     /// List of maintainers.
-    pub maintainers: HashSet<coco::Urn>,
+    pub maintainers: HashSet<Urn>,
 }
 
-impl TryFrom<coco::Project> for Metadata {
+impl TryFrom<RadProject> for Metadata {
     type Error = error::Error;
 
     #[allow(clippy::redundant_closure_for_method_calls)]
-    fn try_from(project: coco::Project) -> Result<Self, Self::Error> {
+    fn try_from(project: RadProject) -> Result<Self, Self::Error> {
         let subject = project.subject();
         // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their
         // PublicKey. Should we display these?
@@ -62,7 +65,7 @@ impl TryFrom<coco::Project> for Metadata {
 #[serde(rename_all = "camelCase")]
 pub struct Project<S> {
     /// Unique identifier of the project in the network.
-    pub urn: coco::Urn,
+    pub urn: Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
@@ -71,16 +74,16 @@ pub struct Project<S> {
     pub stats: S,
 }
 
-/// A `Partial` project is one where we _weren't_ able to fetch the [`coco::Stats`] for it.
+/// A `Partial` project is one where we _weren't_ able to fetch the [`Stats`] for it.
 pub type Partial = Project<()>;
 
-/// A `Full` project is one where we _were_ able to fetch the [`coco::Stats`] for it.
-pub type Full = Project<coco::Stats>;
+/// A `Full` project is one where we _were_ able to fetch the [`Stats`] for it.
+pub type Full = Project<Stats>;
 
 impl Partial {
     /// Convert a `Partial` project into a `Full` one by providing the `stats` for the project.
     #[allow(clippy::missing_const_for_fn)]
-    pub fn fulfill(self, stats: coco::Stats) -> Full {
+    pub fn fulfill(self, stats: Stats) -> Full {
         Project {
             urn: self.urn,
             shareable_entity_identifier: self.shareable_entity_identifier,
@@ -91,12 +94,12 @@ impl Partial {
 }
 
 /// Construct a Project from its metadata and stats
-impl TryFrom<coco::Project> for Partial {
+impl TryFrom<RadProject> for Partial {
     type Error = error::Error;
 
-    /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
+    /// Create a `Project` given a [`RadProject`] and the [`Stats`]
     /// for the repository.
-    fn try_from(project: coco::Project) -> Result<Self, Self::Error> {
+    fn try_from(project: RadProject) -> Result<Self, Self::Error> {
         let urn = project.urn();
         let metadata = Metadata::try_from(project)?;
 
@@ -110,12 +113,12 @@ impl TryFrom<coco::Project> for Partial {
 }
 
 /// Construct a Project from its metadata and stats
-impl TryFrom<(coco::Project, coco::Stats)> for Full {
+impl TryFrom<(RadProject, Stats)> for Full {
     type Error = error::Error;
 
-    /// Create a `Project` given a [`coco::Project`] and the [`coco::Stats`]
+    /// Create a `Project` given a [`RadProject`] and the [`Stats`]
     /// for the repository.
-    fn try_from((project, stats): (coco::Project, coco::Stats)) -> Result<Self, Self::Error> {
+    fn try_from((project, stats): (RadProject, Stats)) -> Result<Self, Self::Error> {
         let urn = project.urn();
         let metadata = Metadata::try_from(project)?;
 
@@ -140,8 +143,8 @@ impl Deref for Peer {
     }
 }
 
-impl From<peer::Peer<peer::Status<coco::Person>>> for Peer {
-    fn from(peer: peer::Peer<peer::Status<coco::Person>>) -> Self {
+impl From<peer::Peer<peer::Status<Person>>> for Peer {
+    fn from(peer: peer::Peer<peer::Status<Person>>) -> Self {
         let peer_id = peer.peer_id();
         Self(peer.map(|status| status.map(|user| (peer_id, user).into())))
     }
@@ -207,26 +210,25 @@ impl Projects {
     ///   * We couldn't get the list of projects
     ///   * We couldn't inspect the `signed_refs` of the project
     ///   * We couldn't get stats for a project
-    pub async fn list(peer: &coco::net::peer::Peer<BoxedSigner>) -> Result<Self, error::Error> {
+    pub async fn list(peer: &net::peer::Peer<BoxedSigner>) -> Result<Self, error::Error> {
         let mut projects = Self {
             tracked: vec![],
             contributed: vec![],
             failures: vec![],
         };
 
-        for project in coco::state::list_projects(peer).await? {
+        for project in state::list_projects(peer).await? {
             let project = Project::try_from(project)?;
-            let default_branch =
-                match coco::state::find_default_branch(peer, project.urn.clone()).await {
-                    Err(err) => {
-                        log::warn!("Failure for '{}': {}", project.urn, err);
-                        projects.failures.push(Failure::DefaultBranch(project));
-                        continue;
-                    },
-                    Ok(branch) => branch,
-                };
+            let default_branch = match state::find_default_branch(peer, project.urn.clone()).await {
+                Err(err) => {
+                    log::warn!("Failure for '{}': {}", project.urn, err);
+                    projects.failures.push(Failure::DefaultBranch(project));
+                    continue;
+                },
+                Ok(branch) => branch,
+            };
 
-            let stats = match coco::state::with_browser(peer, default_branch, |browser| {
+            let stats = match browser::using(peer, default_branch, |browser| {
                 Ok(browser.get_stats()?)
             })
             .await
@@ -241,7 +243,7 @@ impl Projects {
 
             let project = project.fulfill(stats);
 
-            let refs = match coco::state::list_owner_project_refs(peer, project.urn.clone()).await {
+            let refs = match state::list_owner_project_refs(peer, project.urn.clone()).await {
                 Err(err) => {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::SignedRefs(project));
@@ -329,16 +331,15 @@ impl Iterator for IntoIter {
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
 pub async fn get(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
-    project_urn: coco::Urn,
+    peer: &net::peer::Peer<BoxedSigner>,
+    project_urn: Urn,
 ) -> Result<Full, error::Error> {
-    let project = coco::state::get_project(peer, project_urn.clone())
+    let project = state::get_project(peer, project_urn.clone())
         .await?
         .ok_or(crate::error::Error::ProjectNotFound)?;
 
-    let branch = coco::state::find_default_branch(peer, project_urn.clone()).await?;
-    let project_stats =
-        coco::state::with_browser(peer, branch, |browser| Ok(browser.get_stats()?)).await?;
+    let branch = state::find_default_branch(peer, project_urn.clone()).await?;
+    let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?)).await?;
 
     Full::try_from((project, project_stats))
 }
@@ -359,28 +360,23 @@ pub async fn get(
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
 pub async fn list_for_user(
-    peer: &coco::net::peer::Peer<BoxedSigner>,
-    user: &coco::Urn,
+    peer: &net::peer::Peer<BoxedSigner>,
+    user: &Urn,
 ) -> Result<Vec<Full>, error::Error> {
     let mut projects = vec![];
 
-    for project in coco::state::list_projects(peer).await? {
-        let tracked = coco::state::tracked(peer, project.urn())
+    for project in state::list_projects(peer).await? {
+        let tracked = state::tracked(peer, project.urn())
             .await?
             .into_iter()
-            .filter_map(coco::project::Peer::replicated_remote)
+            .filter_map(project::Peer::replicated_remote)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer_id, _)) = tracked {
             let subject = project.subject();
-            let branch = coco::state::get_branch(
-                peer,
-                project.urn(),
-                peer_id,
-                subject.default_branch.clone(),
-            )
-            .await?;
-            let stats =
-                coco::state::with_browser(peer, branch, |browser| Ok(browser.get_stats()?)).await?;
+            let branch =
+                state::get_branch(peer, project.urn(), peer_id, subject.default_branch.clone())
+                    .await?;
+            let stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?)).await?;
             let full = Full::try_from((project, stats))?;
 
             projects.push(full);

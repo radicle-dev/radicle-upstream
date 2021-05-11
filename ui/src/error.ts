@@ -35,8 +35,14 @@ export class Error extends globalThis.Error {
 
   constructor(params: ErrorParams) {
     super(params.message);
-    this.message = params.message;
+    Object.defineProperty(this, "stack", {
+      enumerable: true,
+    });
     this.code = params.code;
+    this.message = params.message;
+    Object.defineProperty(this, "message", {
+      enumerable: true,
+    });
     this.details = params.details;
     if (params.source) {
       this.source = fromUnknown(params.source);
@@ -48,6 +54,7 @@ export enum Code {
   BackendTerminated = "BackendTerminated",
   CommitFetchFailure = "CommitFetchFailure",
   IdentityCreationFailure = "IdentityCreationFailure",
+  ProxyEventParseFailure = "ProxyEventParseFailure",
   KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
   LocalStateFetchFailure = "LocalStateFetchFailure",
   ProjectCheckoutFailure = "ProjectCheckoutFailure",
@@ -56,6 +63,7 @@ export enum Code {
   RemoteStoreError = "RemoteStoreError",
   RequestAbortError = "RequestAbortError",
   SessionFetchFailure = "SessionFetchFailure",
+  UpdateEthereumClaimFailure = "UpdateEthereumClaimFailure",
   SessionSettingsUpdateFailure = "SessionSettingsUpdateFailure",
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
@@ -175,9 +183,8 @@ export enum FatalErrorKind {
   ProxyExit = "PROXY_EXIT",
 }
 
-const fatalErrorWritable: svelteStore.Writable<FatalError | null> = svelteStore.writable(
-  null
-);
+const fatalErrorWritable: svelteStore.Writable<FatalError | null> =
+  svelteStore.writable(null);
 
 // Notify the app that there was a fatal error and show the blue screen
 // of death.
@@ -210,4 +217,5 @@ if (!(window as any).Cypress) {
 }
 
 // Value is `true` if there was a fatal error
-export const fatalError: svelteStore.Readable<FatalError | null> = fatalErrorWritable;
+export const fatalError: svelteStore.Readable<FatalError | null> =
+  fatalErrorWritable;

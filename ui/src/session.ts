@@ -35,7 +35,7 @@ export interface SessionData {
 }
 
 // STATE
-const sessionStore = remote.createStore<Session>();
+const sessionStore: remote.Store<Session> = remote.createStore<Session>();
 export const session = sessionStore.readable;
 
 sessionStore.subscribe(data => {
@@ -45,6 +45,16 @@ sessionStore.subscribe(data => {
     });
   }
 });
+
+// Return the unseleased session if the session is unsealed, undefined otherwise.
+export const unsealed = (): UnsealedSession | undefined => {
+  const session = sessionStore.unwrap();
+  if (session === undefined || session.status !== Status.UnsealedSession) {
+    return undefined;
+  } else {
+    return session;
+  }
+};
 
 // Returns when the session becomes unsealed. Throws when fetching the
 // session failed.

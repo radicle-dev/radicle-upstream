@@ -4,6 +4,7 @@
   export let selectedStep = null;
   export let steps = null;
   export let style = null;
+
 </script>
 
 <style>
@@ -22,6 +23,7 @@
   .step.active {
     color: var(--color-primary);
   }
+
 </style>
 
 <div class="step-counter" {style}>

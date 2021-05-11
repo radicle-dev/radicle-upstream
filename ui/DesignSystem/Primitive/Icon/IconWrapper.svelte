@@ -1,6 +1,7 @@
 <script lang="ts">
   export let dataCy = "";
   export let style = "";
+
 </script>
 
 <svg

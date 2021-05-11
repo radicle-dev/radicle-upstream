@@ -4,6 +4,7 @@
 
   const enter = () => (hovering = true);
   const leave = () => (hovering = false);
+
 </script>
 
 <div {style} on:mouseenter={enter} on:mouseleave={leave}>

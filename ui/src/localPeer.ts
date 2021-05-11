@@ -1,4 +1,3 @@
-import { derived, writable, Readable } from "svelte/store";
 import { push } from "svelte-spa-router";
 import * as zod from "zod";
 
@@ -9,6 +8,8 @@ import * as path from "./path";
 import * as remote from "./remote";
 import * as session from "./session";
 import type * as urn from "./urn";
+import * as error from "./error";
+import * as bacon from "./bacon";
 
 // TYPES
 export enum StatusType {
@@ -154,23 +155,28 @@ session.session.subscribe(sess => {
       );
       eventSource.addEventListener("message", msg => {
         const data = JSON.parse(msg.data);
-        const event = eventSchema.parse(data);
-        eventStore.set(event);
+        const result = eventSchema.safeParse(data);
+        if (result.success) {
+          eventBus.push(result.data);
+        } else {
+          error.show(
+            new error.Error({
+              code: error.Code.ProxyEventParseFailure,
+              message: "Failed to parse proxy event",
+              details: {
+                errors: result.error.errors,
+              },
+            })
+          );
+        }
       });
     }
   }
 });
 
-// STATE
-const eventStore = writable<Event | null>(null);
+const eventBus = new bacon.Bus<Event>();
 
-// Event handling.
-// FIXME(xla): Formalise event handling.
-eventStore.subscribe((event: Event | null): void => {
-  if (!event) {
-    return;
-  }
-
+eventBus.onValue(event => {
   switch (event.type) {
     case EventType.RequestCloned:
       notifiation.info({
@@ -192,30 +198,18 @@ eventStore.subscribe((event: Event | null): void => {
   }
 });
 
-export const projectEvents: Readable<ProjectUpdated | null> = derived(
-  eventStore,
-  (event: Event | null): ProjectUpdated | null => {
-    if (!event) {
-      return null;
-    }
-
-    switch (event.type) {
-      case EventType.ProjectUpdated:
-        return event;
-
-      default:
-        return null;
+export const projectEvents: bacon.EventStream<ProjectUpdated> = bacon.filterMap(
+  eventBus,
+  event => {
+    if (event.type === EventType.ProjectUpdated) {
+      return event;
     }
   }
 );
 
-export const requestEvents: Readable<RequestEvent | null> = derived(
-  eventStore,
-  (event: Event | null): RequestEvent | null => {
-    if (!event) {
-      return null;
-    }
-
+export const requestEvents: bacon.EventStream<RequestEvent> = bacon.filterMap(
+  eventBus,
+  event => {
     switch (event.type) {
       case EventType.RequestCloned:
       case EventType.RequestQueried:
@@ -224,17 +218,15 @@ export const requestEvents: Readable<RequestEvent | null> = derived(
         return event;
 
       default:
-        return null;
+        return undefined;
     }
   }
 );
 
-export const status: Readable<remote.Data<Status>> = derived(
-  eventStore,
-  (event: Event | null, set: (status: remote.Data<Status>) => void): void => {
-    if (event && event.type === EventType.StatusChanged) {
-      set({ status: remote.Status.Success, data: event.new });
-    }
-  },
-  { status: remote.Status.Loading }
-);
+export const status = remote.createStore<Status>();
+
+eventBus.onValue(event => {
+  if (event.type === EventType.StatusChanged) {
+    status.success(event.new);
+  }
+});

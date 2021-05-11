@@ -4,6 +4,7 @@
   import FileSource from "../FileSource.svelte";
 
   export let view: Blob;
+
 </script>
 
 <FileSource

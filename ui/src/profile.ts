@@ -4,20 +4,17 @@ import * as error from "./error";
 import * as localPeer from "./localPeer";
 import * as project from "./project";
 import * as remote from "./remote";
-import * as waitingRoom from "./waitingRoom";
 import * as proxy from "./proxy";
 
 // TYPES
 interface Following {
   follows: project.Project[];
-  requests: waitingRoom.ProjectRequest[];
+  requests: project.Request[];
 }
 
 // STATE
 const followingProjectsStore = remote.createStore<project.Project[]>();
-const requestedProjectsStore = remote.createStore<
-  waitingRoom.ProjectRequest[]
->();
+const requestedProjectsStore = remote.createStore<project.Request[]>();
 
 // Subscribe to request events from the local peer to refresh the lists.
 requestedProjectsStore.start(() => {
@@ -53,8 +50,8 @@ export const following: Readable<remote.Data<Following | null>> = derived(
       let data = null;
       const reqs = requests.data.filter(
         req =>
-          req.type !== waitingRoom.Status.Cancelled &&
-          req.type !== waitingRoom.Status.TimedOut
+          req.type !== project.RequestStatus.Cancelled &&
+          req.type !== project.RequestStatus.TimedOut
       );
 
       if (follows.data.length > 0 || reqs.length > 0) {
@@ -73,20 +70,34 @@ export const following: Readable<remote.Data<Following | null>> = derived(
 // ACTIONS
 export const fetchFollowing = (): void => {
   remote.fetch(followingProjectsStore, proxy.client.project.listTracked());
-  remote.fetch(requestedProjectsStore, project.fetchSearching(), reqs => {
-    return reqs.filter(req => req.type !== waitingRoom.Status.Cloned);
-  });
+  remote.fetch(
+    requestedProjectsStore,
+    proxy.client.project.requestsList(),
+    reqs => {
+      return reqs.filter(req => req.type !== project.RequestStatus.Cloned);
+    }
+  );
 };
 
 export const showNotificationsForFailedProjects = async (): Promise<void> => {
-  const failedProjects = await proxy.client.project.listFailed();
-  failedProjects.forEach(failedProject => {
+  try {
+    const failedProjects = await proxy.client.project.listFailed();
+    failedProjects.forEach(failedProject => {
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectRequestFailure,
+          message: `The project ${failedProject.metadata.name} could not be loaded`,
+          details: failedProject,
+        })
+      );
+    });
+  } catch (error) {
     error.show(
       new error.Error({
         code: error.Code.ProjectRequestFailure,
-        message: `The project ${failedProject.metadata.name} could not be loaded`,
-        details: failedProject,
+        message: "Failed to get failed projects",
+        source: error,
       })
     );
-  });
+  }
 };

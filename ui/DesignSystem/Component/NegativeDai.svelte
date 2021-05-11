@@ -3,6 +3,7 @@
 
   export let style = "";
   export let size = "p"; // h1
+
 </script>
 
 <style>
@@ -23,6 +24,7 @@
     margin-left: -1px;
     margin-right: 1px;
   }
+
 </style>
 
 <div class="negative-dai" {style}>

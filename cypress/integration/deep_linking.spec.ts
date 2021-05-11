@@ -15,8 +15,7 @@ context("deep linking", () => {
         stubs.sendMessage({
           kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
           data: {
-            url:
-              "radicle://link/v0/rad:git:hnrkjm5z3rwae9g3n6jhyo6kzh9eup5ku5odo",
+            url: "radicle://link/v0/rad:git:hnrkjm5z3rwae9g3n6jhyo6kzh9eup5ku5odo",
           },
         });
       });

@@ -1,6 +1,7 @@
 <script>
   export let style = null;
   export let dataCy = null;
+
 </script>
 
 <style>
@@ -73,6 +74,7 @@
   .support:active {
     color: var(--color-foreground-level-5);
   }
+
 </style>
 
 <button data-cy={dataCy} class="support" on:click {style}>

@@ -15,6 +15,7 @@
       return `${count} peers`;
     }
   };
+
 </script>
 
 <style>
@@ -28,6 +29,7 @@
     align-items: center;
     cursor: help;
   }
+
 </style>
 
 <Remote {store} let:data={status}>

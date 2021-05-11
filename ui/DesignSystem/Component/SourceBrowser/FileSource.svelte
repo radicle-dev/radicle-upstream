@@ -9,6 +9,7 @@
 
   export let blob: Blob;
   export let commit: CommitHeader;
+
 </script>
 
 <style>
@@ -68,6 +69,7 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
 </style>
 
 <div class="file-source">

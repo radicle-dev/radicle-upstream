@@ -95,6 +95,21 @@ export class Client {
     );
   }
 
+  async identityUpdate(
+    params: identity.Metadata,
+    options?: RequestOptions
+  ): Promise<identity.Identity> {
+    return this.fetcher.fetchOk(
+      {
+        method: "PUT",
+        path: "identities",
+        body: params,
+        options,
+      },
+      identity.identitySchema
+    );
+  }
+
   async keyStoreUnseal(
     params: KeyStoreUnsealParams,
     options?: RequestOptions

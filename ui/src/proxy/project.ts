@@ -1,6 +1,26 @@
 import * as zod from "zod";
 import type { Fetcher } from "./fetcher";
 
+export interface Metadata {
+  name: string;
+  defaultBranch: string;
+  description: string | null;
+  maintainers: string[];
+}
+
+const metadataSchema: zod.Schema<Metadata> = zod.object({
+  name: zod.string(),
+  defaultBranch: zod.string(),
+  description: zod.string().nullable(),
+  maintainers: zod.array(zod.string()),
+});
+
+export interface CreateParams {
+  repo: NewRepo | ExistingRepo;
+  description?: string;
+  defaultBranch: string;
+}
+
 export interface Project {
   urn: string;
   shareableEntityIdentifier: string;
@@ -11,12 +31,7 @@ export interface Project {
 const projectSchema: zod.Schema<Project> = zod.object({
   urn: zod.string(),
   shareableEntityIdentifier: zod.string(),
-  metadata: zod.object({
-    name: zod.string(),
-    defaultBranch: zod.string(),
-    description: zod.string().nullable(),
-    maintainers: zod.array(zod.string()),
-  }),
+  metadata: metadataSchema,
   stats: zod.object({
     branches: zod.number(),
     commits: zod.number(),
@@ -24,23 +39,24 @@ const projectSchema: zod.Schema<Project> = zod.object({
   }),
 });
 
+export interface FailedProject {
+  urn: string;
+  shareableEntityIdentifier: string;
+  metadata: Metadata;
+}
+
+const failedProjectSchema: zod.Schema<FailedProject> = zod
+  .object({
+    urn: zod.string(),
+    shareableEntityIdentifier: zod.string(),
+    metadata: metadataSchema,
+  })
+  .nonstrict();
+
 export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
-}
-
-export interface Metadata {
-  name: string;
-  defaultBranch: string;
-  description: string | null;
-  maintainers: string[];
-}
-
-export interface CreateParams {
-  repo: NewRepo | ExistingRepo;
-  description?: string;
-  defaultBranch: string;
 }
 
 interface NewRepo {
@@ -58,6 +74,39 @@ export interface CheckoutParams {
   peerId?: string;
   path: string;
 }
+
+export enum RequestStatus {
+  Created = "created",
+  Requested = "requested",
+  Found = "found",
+  Cloning = "cloning",
+  Cloned = "cloned",
+  Cancelled = "cancelled",
+  Failed = "failed",
+  TimedOut = "timedOut",
+}
+
+export interface Request {
+  type: RequestStatus;
+  urn: string;
+}
+
+const requestSchema = zod
+  .object({
+    type: zod.enum([
+      RequestStatus.Created,
+      RequestStatus.Requested,
+      RequestStatus.Found,
+      RequestStatus.Cloning,
+      RequestStatus.Cloned,
+      RequestStatus.Cancelled,
+      RequestStatus.Failed,
+      RequestStatus.TimedOut,
+    ]),
+    urn: zod.string(),
+  })
+  // The API provides some additional fields, that we’re not using yet.
+  .nonstrict();
 
 export class Client {
   private fetcher: Fetcher;
@@ -87,13 +136,13 @@ export class Client {
     );
   }
 
-  async listFailed(): Promise<Project[]> {
+  async listFailed(): Promise<FailedProject[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
         path: "projects/failed",
       },
-      zod.array(projectSchema)
+      zod.array(failedProjectSchema)
     );
   }
 
@@ -126,12 +175,31 @@ export class Client {
       zod.array(projectSchema)
     );
   }
+  async requestsList(): Promise<Request[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `projects/requests/`,
+      },
+      zod.array(requestSchema)
+    );
+  }
 
   async requestCancel(urn: string): Promise<void> {
     return this.fetcher.fetchOkNoContent({
       method: "DELETE",
       path: `projects/requests/${urn}`,
     });
+  }
+
+  async requestSubmit(projectUrn: string): Promise<Request> {
+    return this.fetcher.fetchOk(
+      {
+        method: "PUT",
+        path: `projects/requests/${projectUrn}`,
+      },
+      requestSchema
+    );
   }
 
   async peerTrack(urn: string, peerId: string): Promise<boolean> {

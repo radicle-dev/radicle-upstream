@@ -1,5 +1,6 @@
 <script>
   import { SidebarLayout } from "../DesignSystem/Component";
+
 </script>
 
 <SidebarLayout>

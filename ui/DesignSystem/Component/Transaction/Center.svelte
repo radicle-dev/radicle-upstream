@@ -31,6 +31,7 @@
     }
   }
   $: negative = transactions.some(tx => tx.status === TxStatus.Rejected);
+
 </script>
 
 <style>
@@ -73,6 +74,7 @@
   .stack.expand {
     transform: translateY(0px);
   }
+
 </style>
 
 <svelte:window on:click={toggleStack} />

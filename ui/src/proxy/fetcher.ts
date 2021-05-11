@@ -25,6 +25,28 @@ export class ResponseError extends Error {
   }
 }
 
+// Error that is thrown by `Fetcher` methods when parsing the response
+// body fails.
+export class ResponseParseError extends Error {
+  public method: string;
+  public path: string;
+  public body: unknown;
+  public errors: zod.ZodSuberror[];
+
+  constructor(
+    method: string,
+    path: string,
+    body: unknown,
+    zodErrors: zod.ZodSuberror[]
+  ) {
+    super("Failed to parse response body");
+    this.method = method;
+    this.path = path;
+    this.body = body;
+    this.errors = zodErrors;
+  }
+}
+
 export interface RequestOptions {
   abort?: AbortSignal;
 }
@@ -60,7 +82,17 @@ export class Fetcher {
       throw new ResponseError(response, responseBody);
     }
 
-    return schema.parse(responseBody);
+    const result = schema.safeParse(responseBody);
+    if (result.success) {
+      return result.data;
+    } else {
+      throw new ResponseParseError(
+        params.method,
+        params.path,
+        responseBody,
+        result.error.errors
+      );
+    }
   }
 
   // Execute a fetch and ignore the response body.

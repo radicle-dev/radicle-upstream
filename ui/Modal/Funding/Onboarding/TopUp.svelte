@@ -22,6 +22,7 @@
       onContinue();
     }
   };
+
 </script>
 
 <svelte:window on:keydown={onKeydown} />

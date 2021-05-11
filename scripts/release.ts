@@ -254,11 +254,8 @@ const printUsageAndExit = (exitCode = 0) => {
 const main = async () => {
   checkPrerequisites();
 
-  const [
-    releaseAs = "patch",
-    finalizeVersion,
-    finalizePullRequestId,
-  ] = process.argv.slice(2);
+  const [releaseAs = "patch", finalizeVersion, finalizePullRequestId] =
+    process.argv.slice(2);
 
   let newVersion;
 

@@ -10,6 +10,7 @@
   export let style: string = "";
 
   const dispatch = createEventDispatcher();
+
 </script>
 
 <style>
@@ -37,6 +38,7 @@
   nav :global(.menu-list-item:hover .icon svg) {
     fill: var(--color-primary);
   }
+
 </style>
 
 <nav data-cy="horizontal-menu" {style}>

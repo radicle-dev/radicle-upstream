@@ -66,6 +66,7 @@
       : currentFilter === "Open"
       ? issues.filter(issue => issue.open)
       : issues.filter(issue => !issue.open);
+
 </script>
 
 <style>
@@ -78,6 +79,7 @@
     margin-bottom: var(--content-padding);
     padding: 0 var(--content-padding);
   }
+
 </style>
 
 <div class="container">

@@ -2,6 +2,8 @@
 
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
+use radicle_daemon::Urn;
+
 use crate::{context, http};
 
 /// Combination of all routes.
@@ -16,7 +18,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
 fn cancel_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<coco::Urn>()
+    path::param::<Urn>()
         .and(path::end())
         .and(http::with_context_unsealed(ctx))
         .and(warp::delete())
@@ -27,7 +29,7 @@ fn cancel_filter(
 fn create_filter(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<coco::Urn>()
+    path::param::<Urn>()
         .and(path::end())
         .and(warp::put())
         .and(http::with_context_unsealed(ctx))
@@ -50,13 +52,12 @@ mod handler {
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
+    use radicle_daemon::Urn;
+
     use crate::{context, error};
 
     /// Abort search for an ongoing request.
-    pub async fn cancel(
-        urn: coco::Urn,
-        mut ctx: context::Unsealed,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn cancel(urn: Urn, mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         ctx.peer_control
             .cancel_project_request(&urn, SystemTime::now())
             .await
@@ -69,10 +70,7 @@ mod handler {
     ///
     /// FIXME(xla): Endpoint ought to return `201` if the request was newly created, otherwise
     /// `200` if there was a request present for the urn.
-    pub async fn create(
-        urn: coco::Urn,
-        mut ctx: context::Unsealed,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn create(urn: Urn, mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let request = ctx
             .peer_control
             .request_project(&urn, SystemTime::now())
@@ -91,11 +89,13 @@ mod handler {
 
 #[cfg(test)]
 mod test {
-    use std::{convert::TryFrom, time::SystemTime};
+    use std::{convert::TryFrom as _, time::SystemTime};
 
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use warp::{http::StatusCode, test::request};
+
+    use radicle_daemon::{git_ext, Urn};
 
     use crate::{context, http};
 
@@ -106,7 +106,7 @@ mod test {
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+        let urn = Urn::new(git_ext::Oid::try_from(
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 
@@ -133,7 +133,7 @@ mod test {
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+        let urn = Urn::new(git_ext::Oid::try_from(
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 
@@ -159,7 +159,7 @@ mod test {
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = coco::Urn::new(coco::git_ext::Oid::try_from(
+        let urn = Urn::new(git_ext::Oid::try_from(
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 

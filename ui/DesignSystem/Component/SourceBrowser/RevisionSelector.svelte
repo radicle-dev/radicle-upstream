@@ -37,6 +37,7 @@
   const revisionKey = (revision: Branch | Tag): string => {
     return `${revision.type}-${revision.name}`;
   };
+
 </script>
 
 <style>
@@ -87,6 +88,7 @@
   .revision-dropdown li:last-child:not(:only-child) {
     border-radius: 0 0 0.1875rem 0.1875rem;
   }
+
 </style>
 
 <Overlay {expanded} on:hide={hide}>

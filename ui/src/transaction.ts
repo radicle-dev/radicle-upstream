@@ -342,6 +342,20 @@ function direction(tx: Tx): Direction {
   }
 }
 
+export function emoji(tx: Tx): string {
+  switch (tx.kind) {
+    case TxKind.ClaimRadicleIdentity:
+      return "🧦";
+    case TxKind.CollectFunds:
+    case TxKind.Withdraw:
+    case TxKind.Erc20Allowance:
+    case TxKind.SupportOnboarding:
+    case TxKind.TopUp:
+    case TxKind.UpdateSupport:
+      return "👛";
+  }
+}
+
 export function isIncoming(tx: Tx): boolean {
   return direction(tx) === Direction.Incoming;
 }

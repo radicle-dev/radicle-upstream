@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.4](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.3...v0.2.4) (2021-05-04)
+
+
+### Features
+
+* **ui:** improve error reporting for parse failures ([52a5114](https://github.com/radicle-dev/radicle-upstream/commit/52a5114b31fff6225259346306375aca44caa7dc))
+
+
+### Bug Fixes
+
+* **dev:** implement ethereum dev node in typescript ([57a15d5](https://github.com/radicle-dev/radicle-upstream/commit/57a15d5e7250380fd6e6531c434a3b05a63e7ce5))
+* **ui:** more robust session context ([29a4545](https://github.com/radicle-dev/radicle-upstream/commit/29a45459948dca38dd0af97c452be064396949d6))
+* **ui:** properly handle failed project ([1352f61](https://github.com/radicle-dev/radicle-upstream/commit/1352f61c8c629a31bba2dcfe625818d3bf149287))
+
 ### [0.2.3](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.2...v0.2.3) (2021-04-28)
 
 

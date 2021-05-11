@@ -20,6 +20,7 @@
       icon = null;
       break;
   }
+
 </script>
 
 <style>
@@ -82,6 +83,7 @@
   .variant-primary .action-divider {
     background-color: var(--color-primary-level-1);
   }
+
 </style>
 
 <div class={`notification ${variantClass}`} {style}>

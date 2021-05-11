@@ -6,12 +6,14 @@
   export let peerId: string = "";
   export let truncate: boolean = false;
   export let expandable: boolean = true;
+
 </script>
 
 <style>
   .peer-id {
     display: flex;
   }
+
 </style>
 
 <div class="peer-id" {style} data-cy="peer-id" title={peerId}>

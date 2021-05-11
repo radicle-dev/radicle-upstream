@@ -25,6 +25,7 @@
   let disabled = true;
   let balance = Big(0);
   $: balance = $store?.getAccount()?.balance || balance;
+
 </script>
 
 <style>
@@ -42,6 +43,7 @@
 
     width: 37.5rem;
   }
+
 </style>
 
 <div class="wrapper" data-cy="top-up-modal">

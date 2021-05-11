@@ -3,6 +3,7 @@
 
   export let style = null;
   export let color = null;
+
 </script>
 
 <style>
@@ -17,6 +18,7 @@
   .border {
     border: 1px solid var(--color-foreground-level-3);
   }
+
 </style>
 
 <div class="wrapper" {style}>

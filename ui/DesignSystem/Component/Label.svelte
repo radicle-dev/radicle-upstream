@@ -2,6 +2,7 @@
   export let title = null;
   export let color = null;
   export let style = null;
+
 </script>
 
 <style>
@@ -11,6 +12,7 @@
     height: 24px;
     border-radius: 2px;
   }
+
 </style>
 
 <div class="label" style="--color: {color}; {style}">

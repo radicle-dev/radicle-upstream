@@ -8,6 +8,7 @@
   export let peerId: string;
 
   export let avatarFallback: AvatarT;
+
 </script>
 
 <style>
@@ -18,6 +19,7 @@
     width: -webkit-fill-available;
     min-width: 0;
   }
+
 </style>
 
 <Avatar

@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { get } from "svelte/store";
   import { pop } from "svelte-spa-router";
 
@@ -61,6 +61,7 @@
   }
 
   let mode = Mode.SpecifyAmount;
+
 </script>
 
 <style>
@@ -101,6 +102,7 @@
     width: 100%;
     margin-top: var(--content-padding);
   }
+
 </style>
 
 <div class="wrapper" data-cy="pool-withdraw-modal">

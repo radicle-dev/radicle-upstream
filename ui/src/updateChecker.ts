@@ -50,9 +50,8 @@ class UpdateChecker {
     LatestVersionInfo | undefined
   > = svelteStore.writable(undefined);
 
-  private currentVersion: svelteStore.Writable<
-    string | undefined
-  > = svelteStore.writable(undefined);
+  private currentVersion: svelteStore.Writable<string | undefined> =
+    svelteStore.writable(undefined);
 
   // Create an `UpdateChecker` and initialize it.
   //

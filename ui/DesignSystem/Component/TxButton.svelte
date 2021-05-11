@@ -7,6 +7,7 @@
   import * as transaction from "../../src/transaction";
 
   export let variant: ButtonVariant = "primary";
+  export let style = "";
   export let dataCy = "";
   export let onClick: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,6 +31,7 @@
       running = false;
     }
   }
+
 </script>
 
 <style>
@@ -40,9 +42,10 @@
   .running {
     cursor: wait;
   }
+
 </style>
 
-<span class="tx-button" class:running data-cy={dataCy}>
+<span class="tx-button" class:running data-cy={dataCy} {style}>
   <Button disabled={disabled || running} {variant} on:click={userDidClick}>
     <slot />
   </Button>

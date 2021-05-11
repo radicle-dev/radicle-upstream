@@ -47,10 +47,7 @@
   };
 
   onMount(() => {
-    localPeer.projectEvents.subscribe(event => {
-      if (!event) {
-        return;
-      }
+    localPeer.projectEvents.onValue(event => {
       if (event.urn === urn) {
         refresh();
       }
@@ -59,6 +56,7 @@
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
+
 </script>
 
 <SidebarLayout dataCy="project-screen">

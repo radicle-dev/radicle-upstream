@@ -9,11 +9,17 @@ import * as remote from "./remote";
 import * as source from "./source";
 import type { Urn } from "./urn";
 import * as validation from "./validation";
-import type * as waitingRoom from "./waitingRoom";
 import * as proxy from "./proxy";
-import type { Project, Metadata, Stats } from "./proxy/project";
+import {
+  Project,
+  Metadata,
+  Stats,
+  Request,
+  RequestStatus,
+} from "./proxy/project";
 
-export type { Project, Metadata, Stats };
+export type { Project, Metadata, Stats, Request };
+export { RequestStatus };
 
 export enum Role {
   Contributor = "contributor",
@@ -100,10 +106,6 @@ export const fetchPeers = (
   signal?: AbortSignal
 ): Promise<Peer[]> => {
   return api.get<Peer[]>(`projects/${projectUrn}/peers`, { signal });
-};
-
-export const fetchSearching = (): Promise<waitingRoom.ProjectRequest[]> => {
-  return api.get<waitingRoom.ProjectRequest[]>("projects/requests");
 };
 
 // NEW PROJECT

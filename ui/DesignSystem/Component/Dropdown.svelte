@@ -5,7 +5,7 @@
   import Option from "./Dropdown/Option.svelte";
   import Overlay from "./Overlay.svelte";
 
-  type Option =
+  type OptionT =
     | { value: string; title: string }
     | {
         value: string;
@@ -17,7 +17,7 @@
         };
       };
 
-  export let options: Option[];
+  export let options: OptionT[];
 
   export let placeholder = "";
 
@@ -59,6 +59,7 @@
   };
 
   $: optionByValue = options.find(option => option.value === value);
+
 </script>
 
 <style>
@@ -116,6 +117,7 @@
     box-shadow: 0 0 0 1px var(--color-negative);
     border: 1px solid var(--color-negative);
   }
+
 </style>
 
 <Overlay {expanded} on:hide={hideMenu}>
