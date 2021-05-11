@@ -13,13 +13,11 @@ const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable([]);
 const emptyRoute = { component: null, props: {} };
 
 export const push = (newRoute: Route): void => {
-  const oldHistory = svelteStore.get(writableHistory);
-  writableHistory.set([...oldHistory, newRoute]);
+  writableHistory.update(history => [...history, newRoute]);
 };
 
 export const pop = (): void => {
-  const oldHistory = svelteStore.get(writableHistory);
-  writableHistory.set(oldHistory.slice(0, -1));
+  writableHistory.update(history => history.slice(0, -1));
 };
 
 export const routeStore: svelteStore.Readable<Route> = svelteStore.derived(
