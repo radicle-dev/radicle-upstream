@@ -1,5 +1,5 @@
 <script>
-  import { push, state, Router } from "ui/src/router.ts";
+  import { push, routeStore, Router } from "ui/src/router.ts";
 
   import * as hotkeys from "./src/hotkeys.ts";
   import { isExperimental } from "./src/config";
@@ -39,9 +39,9 @@
       } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
-          $state.component === null ||
-          $state.component === OnboardingScreen ||
-          $state.component === LockScreen
+          $routeStore.component === null ||
+          $routeStore.component === OnboardingScreen ||
+          $routeStore.component === LockScreen
         ) {
           push({ component: ProfileScreen });
         }
@@ -82,7 +82,7 @@
 <NotificationFaucet />
 <Theme />
 
-{#if isExperimental && sessionIsUnsealed && $state.component !== DesignSystemGuideScreen}
+{#if isExperimental && sessionIsUnsealed && $routeStore.component !== DesignSystemGuideScreen}
   <TransactionCenter />
 {/if}
 

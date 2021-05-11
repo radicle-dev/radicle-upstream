@@ -1,9 +1,9 @@
 import type { SvelteComponent } from "svelte";
-import type { State } from "ui/src/router";
+import type { Route } from "ui/src/router";
 
 export interface HorizontalItem {
   icon: typeof SvelteComponent;
   title: string;
-  tab: State;
+  tab: Route;
   counter?: number;
 }

@@ -1,10 +1,10 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
-  import type { State } from "ui/src/router";
+  import type { Route } from "ui/src/router";
 
   import { createEventDispatcher } from "svelte";
 
-  export let tab: State;
+  export let tab: Route;
   export let dataCy: string;
   export let icon: typeof SvelteComponent;
   export let title: string;

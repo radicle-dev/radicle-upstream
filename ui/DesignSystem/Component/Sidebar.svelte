@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { state, push } from "ui/src/router";
+  import { routeStore, push } from "ui/src/router";
 
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
@@ -108,7 +108,7 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={$state.component === ProfileScreen}
+        class:active={$routeStore.component === ProfileScreen}
         on:click|stopPropagation={() => push( { component: ProfileScreen, props: {} } )}>
         <Avatar
           size="regular"
@@ -131,7 +131,7 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={$state.component === SettingsScreen}
+        class:active={$routeStore.component === SettingsScreen}
         on:click|stopPropagation={() => push( { component: SettingsScreen, props: {} } )}>
         <Icon.Settings />
       </div>

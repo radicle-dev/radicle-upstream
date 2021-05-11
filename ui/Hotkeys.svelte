@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { pop, push, state } from "ui/src/router";
+  import { pop, push, routeStore } from "ui/src/router";
   import type { SvelteComponent } from "svelte";
 
   import NewProjectModal from "ui/Modal/NewProject.svelte";
@@ -17,14 +17,14 @@
 
   const show = (destination: typeof SvelteComponent) => {
     modal.hide();
-    if ($state.component === destination) {
+    if ($routeStore.component === destination) {
       return;
     }
     push({ component: destination, props: {} });
   };
 
   const toggle = (destination: typeof SvelteComponent) => {
-    if ($state.component == destination) {
+    if ($routeStore.component == destination) {
       pop();
     } else {
       push({ component: destination, props: {} });
@@ -33,7 +33,7 @@
   };
 
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
-    if ($state.component === DesignSystemGuideScreen) {
+    if ($routeStore.component === DesignSystemGuideScreen) {
       pop();
     } else {
       modal.toggle(modalComponent);
