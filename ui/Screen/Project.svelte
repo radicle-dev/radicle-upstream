@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
-
   import { onMount } from "svelte";
   import { push } from "ui/src/router";
 
@@ -15,7 +13,6 @@
   import ProfileScreen from "ui/Screen/Profile.svelte";
   import UserProfileScreen from "ui/Screen/UserProfile.svelte";
   import ProjectScreen from "ui/Screen/Project.svelte";
-  import CodeTab from "ui/Screen/Project/Source/Code.svelte";
 
   import {
     FollowToggle,
@@ -31,7 +28,7 @@
   import Source from "./Project/Source.svelte";
 
   export let urn: Urn;
-  export let activeTab: typeof SvelteComponent = CodeTab;
+  export let activeTab: "files" | "commits" | "commit";
   export let commitHash: string;
 
   const session = sess.getUnsealedFromContext();

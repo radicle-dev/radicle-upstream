@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
-
   import { isExperimental } from "../src/config";
   import * as modal from "../src/modal";
   import * as sess from "../src/session";
@@ -20,7 +18,7 @@
   import ProjectsTab from "ui/Screen//Profile/Projects.svelte";
   import FundingTab from "ui/Screen/Profile/Funding.svelte";
 
-  export let activeTab: typeof SvelteComponent = ProjectsTab;
+  export let activeTab: "projects" | "following" = "projects";
 
   const topbarMenuItems = [
     {
