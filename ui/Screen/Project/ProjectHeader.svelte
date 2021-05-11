@@ -9,6 +9,7 @@
   export let description: string = "";
   export let stats: Stats;
   export let onClick: (() => void) | undefined = undefined;
+
 </script>
 
 <style>
@@ -51,6 +52,7 @@
   .clickable {
     cursor: pointer;
   }
+
 </style>
 
 <div class="metadata">

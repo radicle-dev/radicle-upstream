@@ -15,6 +15,7 @@
   )}))`;
 
   let expanded = false;
+
 </script>
 
 <style>
@@ -66,6 +67,7 @@
     padding: 1rem 2rem;
     color: var(--color-foreground-level-6);
   }
+
 </style>
 
 <div class="panel" {style}>

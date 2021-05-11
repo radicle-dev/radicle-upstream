@@ -4,6 +4,7 @@
   export let startDate = null;
   export let items = null;
   export let style = null;
+
 </script>
 
 <style>
@@ -29,6 +30,7 @@
   .comment-item {
     padding-bottom: 24px;
   }
+
 </style>
 
 <ul {style}>

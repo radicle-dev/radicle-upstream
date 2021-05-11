@@ -26,7 +26,7 @@ export function filterMap<S, T>(
         return sink(new bacon.Next(next));
       }
     } else {
-      return sink((event as unknown) as bacon.Event<T>);
+      return sink(event as unknown as bacon.Event<T>);
     }
   });
 }

@@ -22,6 +22,7 @@
 
   let avatarClass: string;
   $: avatarClass = [variant, size].join(" ");
+
 </script>
 
 <style>
@@ -117,6 +118,7 @@
     height: 32px;
     border-radius: 16px;
   }
+
 </style>
 
 <div data-cy={dataCy} class={`container ${size}`} {style}>

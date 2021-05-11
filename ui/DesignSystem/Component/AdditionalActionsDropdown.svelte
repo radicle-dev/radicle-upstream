@@ -38,6 +38,7 @@
     hideModal();
     item.event();
   };
+
 </script>
 
 <style>
@@ -120,6 +121,7 @@
   .menu-item.disabled :global(svg) {
     fill: var(--color-foreground-level-4);
   }
+
 </style>
 
 <Overlay {expanded} on:hide={hideModal}>

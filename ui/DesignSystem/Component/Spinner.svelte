@@ -3,6 +3,7 @@
   export let height: number = 24;
   export let style: string = "";
   export let width: number = 24;
+
 </script>
 
 <style>
@@ -17,6 +18,7 @@
       transform: rotate(359deg);
     }
   }
+
 </style>
 
 <!-- FYI: We're not using the <IconWrapper /> component here because it would be too complicated to animate the svg with it.  -->

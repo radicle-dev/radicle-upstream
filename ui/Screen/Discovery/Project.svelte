@@ -14,6 +14,7 @@
   const toggleFollowToggle = e => {
     showFollowToggle = project.tracked || e.type === "mouseenter";
   };
+
 </script>
 
 <style>
@@ -53,6 +54,7 @@
     display: flex;
     justify-content: space-between;
   }
+
 </style>
 
 <div

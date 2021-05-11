@@ -33,6 +33,7 @@
   $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
   $: transferedAmount = tx ? transferAmount(tx) : undefined;
   $: incoming = tx ? isIncoming(tx) : false;
+
 </script>
 
 <style>
@@ -116,6 +117,7 @@
   .content .section .row + .row {
     margin-top: 1.5rem;
   }
+
 </style>
 
 <div class="wrapper">

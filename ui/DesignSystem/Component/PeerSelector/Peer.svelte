@@ -7,6 +7,7 @@
   import Badge from "../Badge.svelte";
 
   export let peer: User;
+
 </script>
 
 <style>
@@ -19,6 +20,7 @@
   p.badge {
     margin-left: 0.5rem;
   }
+
 </style>
 
 <div class="peer" data-peer-handle={peer.identity.metadata.handle}>

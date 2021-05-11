@@ -10,6 +10,7 @@
   export let commit: CommitHeader;
   export let view: Root;
   export let emptyRepo: boolean;
+
 </script>
 
 <style>
@@ -17,6 +18,7 @@
     height: 2.5rem;
     margin-bottom: 1rem;
   }
+
 </style>
 
 <div class="commit-header">

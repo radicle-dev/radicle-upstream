@@ -116,6 +116,7 @@
       await org.fetchOrgs();
     })();
   }
+
 </script>
 
 <style>
@@ -127,6 +128,7 @@
     justify-content: center;
     align-items: center;
   }
+
 </style>
 
 <Bsod />

@@ -92,10 +92,8 @@ export class ClaimsContract {
     if (tx.to.toLowerCase() !== this.contract.address.toLowerCase()) {
       throw new Error("Claim transaction sent to an invalid contract");
     }
-    const [format, payloadRaw]: [
-      ethers.BigNumberish,
-      ethers.BytesLike
-    ] = this.contract.interface.decodeFunctionData("claim", tx.data);
+    const [format, payloadRaw]: [ethers.BigNumberish, ethers.BytesLike] =
+      this.contract.interface.decodeFunctionData("claim", tx.data);
     if (FORMAT_SHA1.eq(format) === false) {
       throw new Error(
         `Bad claim transaction payload format version ${format.toString()}`

@@ -7,6 +7,7 @@
   export let description = "";
 
   export let showMaintainerBadge: boolean = false;
+
 </script>
 
 <style>
@@ -34,6 +35,7 @@
     margin-top: 0.125rem;
     width: -webkit-fill-available;
   }
+
 </style>
 
 <div class="project-card">

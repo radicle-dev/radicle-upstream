@@ -22,6 +22,7 @@
   const onSecondaryAction = () => {
     dispatch("secondaryAction");
   };
+
 </script>
 
 <style>
@@ -59,6 +60,7 @@
   button:focus {
     outline-style: none;
   }
+
 </style>
 
 <div class="empty-state" data-cy="empty-state" {style}>

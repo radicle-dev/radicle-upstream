@@ -13,6 +13,7 @@
         return 20;
     }
   }
+
 </script>
 
 <style>
@@ -22,6 +23,7 @@
 
     color: var(--color-foreground-level-6);
   }
+
 </style>
 
 <div class="dai" style="{style}; color: {color};">

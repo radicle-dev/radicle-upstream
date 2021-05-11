@@ -6,6 +6,7 @@
   export let dataCy: string = "";
   export let loading: boolean;
   export let name: string;
+
 </script>
 
 <style>
@@ -48,6 +49,7 @@
   .active :global(svg) {
     fill: var(--color-foreground-level-6);
   }
+
 </style>
 
 <div class="file" class:active on:click data-cy={dataCy}>

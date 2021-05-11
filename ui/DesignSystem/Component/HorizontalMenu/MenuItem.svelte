@@ -8,6 +8,7 @@
   export let title: string;
   export let active: boolean;
   export let counter: number | undefined;
+
 </script>
 
 <style>
@@ -38,6 +39,7 @@
     border-radius: 0.75rem;
     margin-left: 0.5rem;
   }
+
 </style>
 
 <a data-cy={dataCy} {href} use:link on:click>

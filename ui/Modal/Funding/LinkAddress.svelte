@@ -55,6 +55,7 @@
     await claims.claim(identity.urn);
     onContinue();
   }
+
 </script>
 
 <style>
@@ -70,6 +71,7 @@
 
     text-align: center;
   }
+
 </style>
 
 <Remote store={session} let:data={it}>

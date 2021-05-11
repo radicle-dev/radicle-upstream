@@ -9,6 +9,7 @@
 
   $: $uriStore || pop();
   $: uri = $uriStore || "";
+
 </script>
 
 <style>
@@ -44,6 +45,7 @@
     padding-top: 0.625rem;
     color: var(--color-foreground-level-5);
   }
+
 </style>
 
 <div class="qrcode-modal">

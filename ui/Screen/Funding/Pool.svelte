@@ -20,12 +20,14 @@
 
   let ongoingCollect = false;
   $: ongoingCollect = $txs.some(ongoing(TxKind.CollectFunds));
+
 </script>
 
 <style>
   .pool-container {
     width: 100%;
   }
+
 </style>
 
 <div class="pool-container">

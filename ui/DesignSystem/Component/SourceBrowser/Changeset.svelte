@@ -8,6 +8,7 @@
 
   export let diff: Diff;
   export let stats: CommitStats;
+
 </script>
 
 <style>
@@ -55,6 +56,7 @@
     color: var(--color-negative);
     background-color: var(--color-negative-level-1);
   }
+
 </style>
 
 <div class="changeset-summary">

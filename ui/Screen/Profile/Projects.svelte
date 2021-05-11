@@ -27,6 +27,7 @@
 
   fetchList();
   showNotificationsForFailedProjects();
+
 </script>
 
 <Remote {store} let:data={projects}>

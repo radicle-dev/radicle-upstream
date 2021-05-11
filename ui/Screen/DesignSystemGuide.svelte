@@ -133,6 +133,7 @@
       value: 2,
     },
   ];
+
 </script>
 
 <style>
@@ -148,6 +149,7 @@
   .layout {
     padding: 32px;
   }
+
 </style>
 
 <Fullscreen>
@@ -625,63 +627,37 @@
 
       <Swatch>
         <Notification
-          notification={notification.create('INFO', {
-            message: 'Info with icon',
-            showIcon: true,
-          })} />
+          notification={notification.create( 'INFO', { message: 'Info with icon', showIcon: true } )} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create('INFO', {
-            message: 'Info without default action',
-            actions: [],
-          })} />
+          notification={notification.create( 'INFO', { message: 'Info without default action', actions: [] } )} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create('ERROR', {
-            message: 'Just plain error',
-          })} />
+          notification={notification.create( 'ERROR', { message: 'Just plain error' } )} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create('ERROR', {
-            message: 'Error with icon',
-            showIcon: true,
-          })} />
+          notification={notification.create( 'ERROR', { message: 'Error with icon', showIcon: true } )} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create('ERROR', {
-            message: 'Error with one action',
-            actions: [{ label: 'Action', handler: () => {} }],
-          })} />
+          notification={notification.create( 'ERROR', { message: 'Error with one action', actions: [{ label: 'Action', handler: () => {} }] } )} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create('ERROR', {
-            message: 'Error with two actions',
-            actions: [
-              { label: 'Action 1', handler: () => {} },
-              { label: 'Action 2', handler: () => {} },
-            ],
-          })} />
+          notification={notification.create( 'ERROR', { message: 'Error with two actions', actions: [{ label: 'Action 1', handler: () => {} }, { label: 'Action 2', handler: () => {} }] } )} />
       </Swatch>
 
       <Swatch>
         <Notification
-          notification={notification.create('PRIMARY', {
-            message: 'Primary notification',
-            actions: [
-              { label: 'Action 1', handler: () => {} },
-              { label: 'Action 2', handler: () => {} },
-            ],
-          })} />
+          notification={notification.create( 'PRIMARY', { message: 'Primary notification', actions: [{ label: 'Action 1', handler: () => {} }, { label: 'Action 2', handler: () => {} }] } )} />
       </Swatch>
     </Section>
 

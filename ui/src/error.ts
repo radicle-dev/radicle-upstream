@@ -183,9 +183,8 @@ export enum FatalErrorKind {
   ProxyExit = "PROXY_EXIT",
 }
 
-const fatalErrorWritable: svelteStore.Writable<FatalError | null> = svelteStore.writable(
-  null
-);
+const fatalErrorWritable: svelteStore.Writable<FatalError | null> =
+  svelteStore.writable(null);
 
 // Notify the app that there was a fatal error and show the blue screen
 // of death.
@@ -218,4 +217,5 @@ if (!(window as any).Cypress) {
 }
 
 // Value is `true` if there was a fatal error
-export const fatalError: svelteStore.Readable<FatalError | null> = fatalErrorWritable;
+export const fatalError: svelteStore.Readable<FatalError | null> =
+  fatalErrorWritable;

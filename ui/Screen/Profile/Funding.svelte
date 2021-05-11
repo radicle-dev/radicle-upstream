@@ -23,6 +23,7 @@
   // Hack to have Svelte working with checking the $wallet variant
   // and thus be able to access its appropriate fields.
   $: w = $wallet;
+
 </script>
 
 <style>
@@ -36,6 +37,7 @@
     display: flex;
     align-items: flex-start;
   }
+
 </style>
 
 {#if w.status === Status.Connected}

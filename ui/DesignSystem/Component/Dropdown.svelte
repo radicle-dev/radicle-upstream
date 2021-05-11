@@ -59,6 +59,7 @@
   };
 
   $: optionByValue = options.find(option => option.value === value);
+
 </script>
 
 <style>
@@ -116,6 +117,7 @@
     box-shadow: 0 0 0 1px var(--color-negative);
     border: 1px solid var(--color-negative);
   }
+
 </style>
 
 <Overlay {expanded} on:hide={hideMenu}>

@@ -17,6 +17,7 @@
   const next = () => {
     dispatch("close");
   };
+
 </script>
 
 <style>
@@ -32,6 +33,7 @@
     flex-direction: column;
     align-items: center;
   }
+
 </style>
 
 <svelte:window on:keydown={onKeydown} />

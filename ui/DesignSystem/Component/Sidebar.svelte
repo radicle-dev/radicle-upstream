@@ -14,6 +14,7 @@
   import ModalCreateOrg from "../../Modal/Org/Create.svelte";
 
   export let identity: Identity;
+
 </script>
 
 <style>
@@ -100,6 +101,7 @@
   .indicator.active :global(svg) {
     fill: var(--color-primary);
   }
+
 </style>
 
 <div class="wrapper" data-cy="sidebar">
@@ -130,9 +132,7 @@
       <div
         class="item indicator"
         data-cy="add-org-btn"
-        on:click|stopPropagation={() => modal.toggle(ModalCreateOrg, () => {}, {
-            identity,
-          })}>
+        on:click|stopPropagation={() => modal.toggle( ModalCreateOrg, () => {}, { identity } )}>
         <AddOrgButton />
       </div>
     </Tooltip>

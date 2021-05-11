@@ -31,6 +31,7 @@
   const clickHandler = () => {
     dispatch("selected", { value: value });
   };
+
 </script>
 
 <style>
@@ -50,6 +51,7 @@
   .option:hover {
     background-color: var(--color-foreground-level-1);
   }
+
 </style>
 
 <div class="option" on:click={clickHandler} class:selected {style}>

@@ -3,6 +3,7 @@
 
   export let dataCy: string = "";
   export let style: string = "";
+
 </script>
 
 <IconWrapper on:click {dataCy} {style}>

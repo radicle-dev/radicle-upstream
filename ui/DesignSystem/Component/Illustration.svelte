@@ -4,12 +4,14 @@
   export let dataCy = "";
   export let style = "";
   export let variant: Variant = Variant.Plant;
+
 </script>
 
 <style>
   svg {
     flex-shrink: 0;
   }
+
 </style>
 
 {#if variant === Variant.Plant || variant === Variant.Keyboard}

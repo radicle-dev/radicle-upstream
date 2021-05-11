@@ -8,6 +8,7 @@
   const modalStore = modal.store;
   // Hack to make svelte typecheck in the markup section.
   $: store = $modalStore;
+
 </script>
 
 <style>
@@ -37,6 +38,7 @@
   .hide {
     display: none;
   }
+
 </style>
 
 <div class="modal" class:hide={store === null} data-cy="modal">

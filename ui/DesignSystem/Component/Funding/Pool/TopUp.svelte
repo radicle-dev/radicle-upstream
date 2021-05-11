@@ -24,6 +24,7 @@
   }
 
   $: disabled = $validation.status !== ValidationStatus.Success;
+
 </script>
 
 <style>
@@ -43,6 +44,7 @@
     justify-content: flex-end;
     width: 100%;
   }
+
 </style>
 
 <Emoji emoji="💸" size="huge" />

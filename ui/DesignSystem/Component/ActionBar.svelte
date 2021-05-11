@@ -6,6 +6,7 @@
   $: if (wrapper) {
     scrollHeight = wrapper.getBoundingClientRect().top;
   }
+
 </script>
 
 <style>
@@ -30,6 +31,7 @@
   .elevation {
     box-shadow: var(--elevation-low);
   }
+
 </style>
 
 <svelte:window bind:scrollY />
