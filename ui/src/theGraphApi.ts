@@ -1,14 +1,14 @@
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client/core";
 
+// TODO(rudolfs): make this respect the network selector in settings
 const gnosisSubgraphClient = new ApolloClient({
-  uri:
-    "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-ropsten",
+  uri: "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby",
   cache: new InMemoryCache(),
 });
 
+// TODO(rudolfs): make this respect the network selector in settings
 const orgsSubgraphClient = new ApolloClient({
-  uri:
-    "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-ropsten",
+  uri: "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby",
   cache: new InMemoryCache(),
 });
 

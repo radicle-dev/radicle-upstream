@@ -15,10 +15,12 @@ const addresses = {
   pool: {
     local: "0x56a32c0c857f1ae733562078a693ea845d9bb423",
     ropsten: "0x336C7fE92c08A9e48738a48f846860C1fD35647C",
+    rinkeby: "0x8c6E1E293346cc4cD31A1972D94DaDcecEd98997",
   },
   dai: {
     local: "0xff1d4d289bf0aaaf918964c57ac30481a67728ef",
     ropsten: "0x6e80bf4Fd0b102E6385C545375C8fF3B30D554eA",
+    rinkeby: "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
   },
 };
 
@@ -29,6 +31,8 @@ export function daiTokenAddress(environment: ethereum.Environment): string {
       return addresses.dai.local;
     case ethereum.Environment.Ropsten:
       return addresses.dai.ropsten;
+    case ethereum.Environment.Rinkeby:
+      return addresses.dai.rinkeby;
   }
 }
 
@@ -43,6 +47,8 @@ export function poolAddress(environment: ethereum.Environment): string {
       return addresses.pool.local;
     case ethereum.Environment.Ropsten:
       return addresses.pool.ropsten;
+    case ethereum.Environment.Rinkeby:
+      return addresses.pool.rinkeby;
   }
 }
 

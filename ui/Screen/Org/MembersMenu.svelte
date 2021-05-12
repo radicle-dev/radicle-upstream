@@ -10,6 +10,11 @@
   };
 
   export let gnosisSafeAddress;
+
+  // TODO(rudolfs): make the link go to
+  // `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings` for
+  // mainnet
+
 </script>
 
 <style>
@@ -29,6 +34,7 @@
     color: var(--color-foreground-level-6);
     user-select: none;
   }
+
 </style>
 
 <Overlay {expanded} on:hide={hide} style="position: relative;">
@@ -41,7 +47,7 @@
 
     <Button
       on:click={() => {
-        window.location.href = `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings`;
+        window.location.href = `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings`;
         toggleModal();
       }}
       style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
