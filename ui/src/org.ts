@@ -15,15 +15,15 @@ import type {
 import * as transaction from "./transaction";
 
 const orgFactoryAbi = [
-  "function createOrg(address) returns (address)",
-  "event OrgCreated(address)",
+  "function createOrg(address[], uint256) returns (address)",
+  "event OrgCreated(address, address)",
 ];
 
 const orgAbi = ["function owner() view returns (address)"];
 
 const addresses = {
   orgFactory: {
-    ropsten: "0xe30aA5594FFB52B6bF5bbB21eB7e71Ac525bB028",
+    ropsten: "0x2007bcEf1247CD03Bb4262eF420D6487368f473B",
   },
 };
 
@@ -43,7 +43,7 @@ export const createOrg = async (
     showIcon: true,
   });
   // WAITING
-  const response: TransactionResponse = await orgFactory.createOrg(owner);
+  const response: TransactionResponse = await orgFactory.createOrg([owner], 1);
 
   // PENDING
   notification.info({
