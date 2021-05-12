@@ -5,12 +5,16 @@
   import { fetchProjects, projects as store } from "../../src/userProfile";
 
   import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
-  import ProjectScreen from "ui/Screen/Project.svelte";
 
   export let urn: string;
 
   const select = ({ detail: project }: { detail: Project }) => {
-    push({ component: ProjectScreen, props: { urn: project.urn } });
+    push({
+      type: "project",
+      urn: project.urn,
+      activeTab: "files",
+      commitHash: null,
+    });
   };
 
   fetchProjects(urn);

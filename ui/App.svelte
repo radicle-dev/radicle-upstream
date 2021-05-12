@@ -21,11 +21,7 @@
 
   import TransactionCenter from "./App/TransactionCenter.svelte";
 
-  import BsodScreen from "ui/Screen/Bsod.svelte";
-  import OnboardingScreen from "ui/Screen/Onboarding.svelte";
-  import LockScreen from "ui/Screen/Lock.svelte";
-  import DesignSystemGuideScreen from "ui/Screen/DesignSystemGuide.svelte";
-  import ProfileScreen from "ui/Screen/Profile.svelte";
+  import Bsod from "ui/Screen/Bsod.svelte";
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -35,19 +31,19 @@
     case remote.Status.Success:
       if ($store.data.status === Status.NoSession) {
         hotkeys.disable();
-        push({ component: OnboardingScreen });
+        push({ type: "onboarding" });
       } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
-          $routeStore.component === null ||
-          $routeStore.component === OnboardingScreen ||
-          $routeStore.component === LockScreen
+          $routeStore.type === "empty" ||
+          $routeStore.type === "onboarding" ||
+          $routeStore.type === "lock"
         ) {
-          push({ component: ProfileScreen });
+          push({ type: "profile", activeTab: "projects" });
         }
       } else {
         hotkeys.disable();
-        push({ component: LockScreen });
+        push({ type: "lock" });
       }
       break;
 
@@ -76,13 +72,13 @@
 
 </style>
 
-<BsodScreen />
+<Bsod />
 <Hotkeys />
 <ModalOverlay />
 <NotificationFaucet />
 <Theme />
 
-{#if isExperimental && sessionIsUnsealed && $routeStore.component !== DesignSystemGuideScreen}
+{#if isExperimental && sessionIsUnsealed && $routeStore.type !== 'designSystemGuide'}
   <TransactionCenter />
 {/if}
 

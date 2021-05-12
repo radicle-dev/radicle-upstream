@@ -10,8 +10,6 @@ import type * as urn from "./urn";
 import * as error from "./error";
 import * as bacon from "./bacon";
 
-import ProjectScreen from "ui/Screen/Project.svelte";
-
 // TYPES
 export enum StatusType {
   Stopped = "stopped",
@@ -186,7 +184,12 @@ eventBus.onValue(event => {
           {
             label: "Show Project",
             handler: () =>
-              push({ component: ProjectScreen, props: { urn: event.urn } }),
+              push({
+                type: "project",
+                urn: event.urn,
+                activeTab: "files",
+                commitHash: null,
+              }),
           },
         ],
       });

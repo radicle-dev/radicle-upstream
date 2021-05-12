@@ -8,11 +8,12 @@ export type Route =
   | { type: "lock" }
   | { type: "onboarding" }
   | { type: "profile"; activeTab: "projects" | "following" }
+  | { type: "userProfile"; activeTab: "projects"; urn: string }
   | {
       type: "project";
       activeTab: "files" | "commits" | "commit";
       urn: string;
-      commitHash: string;
+      commitHash: string | null;
     }
   | { type: "settings" };
 
@@ -36,3 +37,7 @@ export const routeStore: svelteStore.Readable<Route> = svelteStore.derived(
     }
   }
 );
+
+routeStore.subscribe(state => {
+  console.log(state);
+});

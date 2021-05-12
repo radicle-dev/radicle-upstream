@@ -6,38 +6,17 @@
   import SearchModal from "ui/Modal/Search.svelte";
   import ShortcutsModal from "ui/Modal/Shortcuts.svelte";
 
-  import SettingsScreen from "ui/Screen/Settings.svelte";
-  import DesignSystemGuideScreen from "ui/Screen/DesignSystemGuide.svelte";
-
   import * as modal from "./src/modal";
   import * as screen from "./src/screen";
   import { isMac } from "./src/settings";
   import * as hotkeys from "./src/hotkeys";
   import { isDev } from "./src/config";
 
-  const show = (destination: typeof SvelteComponent) => {
-    modal.hide();
-    if ($routeStore.component === destination) {
-      return;
-    }
-    push({ component: destination, props: {} });
-  };
-
-  const toggle = (destination: typeof SvelteComponent) => {
-    if ($routeStore.component == destination) {
-      pop();
-    } else {
-      push({ component: destination, props: {} });
-      modal.hide();
-    }
-  };
-
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
-    if ($routeStore.component === DesignSystemGuideScreen) {
+    if ($routeStore.type === "designSystemGuide") {
       pop();
-    } else {
-      modal.toggle(modalComponent);
     }
+    modal.toggle(modalComponent);
   };
 
   const onKeydown = (event: KeyboardEvent) => {
@@ -76,13 +55,22 @@
         toggleModal(ShortcutsModal);
         break;
       case hotkeys.ShortcutKey.Settings:
-        show(SettingsScreen);
+        modal.hide();
+        if ($routeStore.type === "settings") {
+          return;
+        }
+        push({ type: "settings" });
         break;
       case hotkeys.ShortcutKey.Search:
         toggleModal(SearchModal);
         break;
       case hotkeys.ShortcutKey.DesignSystem:
-        toggle(DesignSystemGuideScreen);
+        if ($routeStore.type === "designSystemGuide") {
+          pop();
+        } else {
+          push({ type: "designSystemGuide" });
+          modal.hide();
+        }
         break;
       case hotkeys.ShortcutKey.NewProjects:
         toggleModal(NewProjectModal);

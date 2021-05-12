@@ -3,8 +3,6 @@
 
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
-  import ProfileScreen from "ui/Screen/Profile.svelte";
-  import SettingsScreen from "ui/Screen/Settings.svelte";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -108,8 +106,8 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={$routeStore.component === ProfileScreen}
-        on:click|stopPropagation={() => push( { component: ProfileScreen, props: {} } )}>
+        class:active={$routeStore.type === 'profile'}
+        on:click|stopPropagation={() => push( { type: 'profile', activeTab: 'projects' } )}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -131,8 +129,8 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={$routeStore.component === SettingsScreen}
-        on:click|stopPropagation={() => push( { component: SettingsScreen, props: {} } )}>
+        class:active={$routeStore.type === 'settings'}
+        on:click|stopPropagation={() => push({ type: 'settings' })}>
         <Icon.Settings />
       </div>
     </Tooltip>

@@ -10,9 +10,6 @@
   import * as sess from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
-  import ProfileScreen from "ui/Screen/Profile.svelte";
-  import UserProfileScreen from "ui/Screen/UserProfile.svelte";
-  import ProjectScreen from "ui/Screen/Project.svelte";
 
   import {
     FollowToggle,
@@ -29,7 +26,7 @@
 
   export let urn: Urn;
   export let activeTab: "files" | "commits" | "commit";
-  export let commitHash: string;
+  export let commitHash: string | null;
 
   const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
@@ -37,11 +34,12 @@
 
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
     if (peer.identity.urn === session.identity.urn) {
-      push({ component: ProfileScreen, props: {} });
+      push({ type: "profile", activeTab: "projects" });
     } else {
       push({
-        component: UserProfileScreen,
-        props: { urn: peer.identity.urn },
+        type: "userProfile",
+        activeTab: "projects",
+        urn: peer.identity.urn,
       });
     }
   };
@@ -74,7 +72,7 @@
         name={project.metadata.name}
         description={project.metadata.description}
         stats={project.stats}
-        onClick={() => push({ component: ProjectScreen, props: { urn } })} />
+        onClick={() => push( { type: 'project', urn: urn, activeTab: 'files', commitHash: null } )} />
 
       <div slot="right" style="display: flex;">
         <PeerSelector

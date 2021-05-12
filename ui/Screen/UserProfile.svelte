@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
-
   import { fetchUser, user as store } from "../src/userProfile";
 
   import { Icon } from "../DesignSystem/Primitive";
@@ -15,14 +13,19 @@
   import ProjectsTab from "ui/Screen/UserProfile/Projects.svelte";
 
   export let urn: string;
-  export let activeTab: typeof SvelteComponent = ProjectsTab;
+  export let activeTab: "projects";
+
+  const activeTabToComponent = {
+    projects: ProjectsTab,
+  };
+
+  $: activeTabComponent = activeTabToComponent[activeTab];
 
   const topbarMenuItems = [
     {
       icon: Icon.ChevronLeftRight,
       title: "Projects",
-      tab: { component: ProjectsTab, props: { urn } },
-      looseActiveStateMatching: true,
+      tab: { type: "userProfile", activeTab: "projects", urn: urn },
     },
   ];
 
@@ -41,8 +44,11 @@
     </Header>
 
     <ActionBar>
-      <HorizontalMenu slot="left" items={topbarMenuItems} {activeTab} />
+      <HorizontalMenu
+        slot="left"
+        items={topbarMenuItems}
+        activeTab={activeTabComponent} />
     </ActionBar>
-    <svelte:component this={activeTab} />
+    <svelte:component this={activeTabComponent} />
   </Remote>
 </SidebarLayout>

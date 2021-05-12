@@ -11,10 +11,6 @@ import * as source from "ui/src/source";
 
 import IconCommit from "ui/DesignSystem/Primitive/Icon/Commit.svelte";
 import IconFile from "ui/DesignSystem/Primitive/Icon/File.svelte";
-import SourceCodeTab from "ui/Screen/Project/Source/Code.svelte";
-import SourceCommitTab from "ui/Screen/Project/Source/Commit.svelte";
-import SourceCommitsTab from "ui/Screen/Project/Source/Commits.svelte";
-import ProjectScreen from "ui/Screen/Project.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -100,7 +96,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.success({
       code: writable<Code>(root),
       history: groupedHistory,
-      menuItems: menuItems(groupedHistory.stats.commits),
+      menuItems: menuItems(project.urn, groupedHistory.stats.commits),
       peer,
       project,
       revisions: mapRevisions(revisions),
@@ -199,7 +195,7 @@ export const selectRevision = async (
       screenStore.success({
         ...screen.data,
         history: groupedHistory,
-        menuItems: menuItems(groupedHistory.stats.commits),
+        menuItems: menuItems(project.urn, groupedHistory.stats.commits),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -246,12 +242,10 @@ export const selectCommit = (commit: source.CommitHeader): void => {
     } = screen;
 
     push({
-      component: ProjectScreen,
-      props: {
-        activeTab: SourceCommitTab,
-        urn: project.urn,
-        commitHash: commit.sha1,
-      },
+      type: "project",
+      activeTab: "commit",
+      urn: project.urn,
+      commitHash: commit.sha1,
     });
   }
 };
@@ -376,20 +370,22 @@ const mapRevisions = (
   return branches;
 };
 
-const menuItems = (commitCount: number): HorizontalItem[] => {
+const menuItems = (urn: string, commitCount: number): HorizontalItem[] => {
   return [
     {
       icon: IconFile,
       title: "Files",
-      tab: { component: SourceCodeTab, props: {} },
+      tab: { type: "project", urn: urn, activeTab: "files", commitHash: null },
     },
     {
       icon: IconCommit,
       title: "Commits",
       counter: commitCount,
       tab: {
-        component: SourceCommitsTab,
-        props: {},
+        type: "project",
+        activeTab: "commits",
+        urn: urn,
+        commitHash: null,
       },
     },
   ];

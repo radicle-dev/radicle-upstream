@@ -12,8 +12,6 @@
   import * as sess from "../../src/session";
   import type { Urn } from "../../src/urn";
 
-  import ProjectScreen from "ui/Screen/Project.svelte";
-
   import {
     EmptyState,
     Hoverable,
@@ -30,7 +28,12 @@
     proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
-    push({ component: ProjectScreen, props: { urn: project.urn } });
+    push({
+      type: "project",
+      urn: project.urn,
+      activeTab: "files",
+      commitHash: null,
+    });
   };
 
   fetchFollowing();

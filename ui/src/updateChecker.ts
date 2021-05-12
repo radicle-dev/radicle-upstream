@@ -8,8 +8,6 @@ import * as modal from "./modal";
 import * as notification from "./notification";
 import * as session from "./session";
 
-import SettingsScreen from "ui/Screen/Settings.svelte";
-
 interface LatestVersionInfo {
   version: string;
   announcementUrl: string;
@@ -90,7 +88,7 @@ class UpdateChecker {
             label: "Go to settings",
             handler: () => {
               modal.hide();
-              router.push({ component: SettingsScreen, props: {} });
+              router.push({ type: "settings" });
             },
           },
           {

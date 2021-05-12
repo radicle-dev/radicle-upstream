@@ -20,6 +20,13 @@
 
   export let activeTab: "projects" | "following" = "projects";
 
+  const activeTabToComponent = {
+    projects: ProjectsTab,
+    following: FollowingTab,
+  };
+
+  $: activeTabComponent = activeTabToComponent[activeTab];
+
   const topbarMenuItems = [
     {
       icon: Icon.ChevronLeftRight,
@@ -69,11 +76,11 @@
     <HorizontalMenu
       slot="left"
       items={topbarMenuItems}
-      {activeTab}
+      activeTab={activeTabComponent}
       on:select={event => {
         activeTab = event.detail.tab.component;
       }} />
   </ActionBar>
 
-  <svelte:component this={activeTab} />
+  <svelte:component this={activeTabComponent} />
 </SidebarLayout>
