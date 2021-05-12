@@ -12,8 +12,12 @@
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
   import ModalSearch from "../../Modal/Search.svelte";
   import ModalCreateOrg from "../../Modal/Org/Create.svelte";
+  import * as wallet from "ui/src/wallet";
 
   export let identity: Identity;
+
+  const walletStore = wallet.store;
+  $: w = $walletStore;
 
 </script>
 
@@ -118,24 +122,26 @@
           variant="circle" />
       </div>
     </Tooltip>
-    {#each $orgSidebarStore as org (org.id)}
-      <Tooltip value={org.id}>
+    {#if $w.status === wallet.Status.Connected}
+      {#each $orgSidebarStore as org (org.id)}
+        <Tooltip value={org.id}>
+          <div
+            class="item indicator"
+            class:active={$location.startsWith(path.org(org.id))}
+            on:click|stopPropagation={() => push(path.orgProjects(org.id))}>
+            <Avatar size="regular" variant="square" />
+          </div>
+        </Tooltip>
+      {/each}
+      <Tooltip value="Create an org">
         <div
           class="item indicator"
-          class:active={$location.startsWith(path.org(org.id))}
-          on:click|stopPropagation={() => push(path.orgProjects(org.id))}>
-          <Avatar size="regular" variant="square" />
+          data-cy="add-org-btn"
+          on:click|stopPropagation={() => modal.toggle( ModalCreateOrg, () => {}, { identity } )}>
+          <AddOrgButton />
         </div>
       </Tooltip>
-    {/each}
-    <Tooltip value="Create an org">
-      <div
-        class="item indicator"
-        data-cy="add-org-btn"
-        on:click|stopPropagation={() => modal.toggle( ModalCreateOrg, () => {}, { identity } )}>
-        <AddOrgButton />
-      </div>
-    </Tooltip>
+    {/if}
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
