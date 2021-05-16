@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
-
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
   import type { HorizontalItem } from "../../src/menu";
@@ -22,14 +20,17 @@
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
-  import CodeTab from "ui/Screen/Project/Source/Code.svelte";
+
+  import FilesTab from "ui/Screen/Project/Source/Code.svelte";
+  import CommitsTab from "ui/Screen/Project/Source/Commits.svelte";
+  import CommitTab from "ui/Screen/Project/Source/Commit.svelte";
 
   export let project: Project;
   export let selectedPeer: User;
   export let isContributor: boolean;
 
-  export let activeTab: typeof SvelteComponent;
-  export let commitHash: string;
+  export let activeTab: "files" | "commits" | "commit";
+  export let commitHash: string | null;
 
   const onCheckout = async (
     { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
@@ -68,11 +69,11 @@
     }
   };
   const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
-    if (item.title === "Files" && activeTab === CodeTab) {
+    if (item.title === "Files" && activeTab === "files") {
       selectPath("");
     } else {
-      if (item.tab.component !== null) {
-        activeTab = item.tab.component;
+      if (item.tab !== null) {
+        activeTab = item.tab;
       }
     }
   };
@@ -119,5 +120,13 @@
     </div>
   </ActionBar>
 
-  <svelte:component this={activeTab} {commitHash} />
+  {#if activeTab === 'files'}
+    <FilesTab />
+  {:else if activeTab === 'commits'}
+    <CommitsTab />
+  {:else if activeTab === 'commit'}
+    {#if commitHash}
+      <CommitTab {commitHash} />
+    {/if}
+  {/if}
 </Remote>

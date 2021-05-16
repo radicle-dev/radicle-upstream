@@ -375,18 +375,13 @@ const menuItems = (urn: string, commitCount: number): HorizontalItem[] => {
     {
       icon: IconFile,
       title: "Files",
-      tab: { type: "project", urn: urn, activeTab: "files", commitHash: null },
+      tab: "files",
     },
     {
       icon: IconCommit,
       title: "Commits",
       counter: commitCount,
-      tab: {
-        type: "project",
-        activeTab: "commits",
-        urn: urn,
-        commitHash: null,
-      },
+      tab: "commits",
     },
   ];
 };

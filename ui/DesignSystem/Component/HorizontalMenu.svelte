@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
   import { createEventDispatcher } from "svelte";
 
   import type { HorizontalItem } from "../../src/menu";
@@ -7,7 +6,7 @@
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
   export let items: HorizontalItem[];
-  export let activeTab: typeof SvelteComponent;
+  export let activeTab: "files" | "commit" | "commits";
   export let style: string = "";
 
   const dispatch = createEventDispatcher();
@@ -53,7 +52,7 @@
           dataCy={`${item.title.toLowerCase()}-tab`}
           counter={item.counter}
           tab={item.tab}
-          active={activeTab === item.tab.component} />
+          active={activeTab === item.tab} />
       </li>
     {/each}
   </ul>
