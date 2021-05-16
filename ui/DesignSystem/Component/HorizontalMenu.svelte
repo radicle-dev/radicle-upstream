@@ -18,41 +18,38 @@
 </script>
 
 <style>
-  .menu-list {
+  .tab-bar {
     height: 100%;
     align-items: center;
     display: flex;
     flex-direction: row;
   }
 
-  .menu-list-item:first-child {
+  .tab-bar :global(.tab:hover p) {
+    color: var(--color-primary) !important;
+  }
+
+  .tab-bar :global(.tab:hover .icon svg) {
+    fill: var(--color-primary);
+  }
+
+  .tab:first-child {
     margin-left: 0px;
   }
-  .menu-list-item {
+
+  .tab {
     margin-left: 24px;
     margin-right: 8px;
     align-items: center;
     line-height: 100%;
-  }
-
-  nav :global(.menu-list-item:hover p) {
-    color: var(--color-primary) !important;
-  }
-
-  nav :global(.menu-list-item:hover .icon svg) {
-    fill: var(--color-primary);
+    display: flex;
+    cursor: pointer;
   }
 
   .icon {
     margin-right: 0.5rem;
     align-items: center;
     padding-top: 1px;
-  }
-
-  .tab {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
   }
 
   .title {
@@ -74,30 +71,27 @@
 
 </style>
 
-<nav data-cy="horizontal-menu" {style}>
-  <ul class="menu-list">
-    {#each items as item}
-      <li class="menu-list-item">
-        <div
-          class="tab"
-          data-cy={`${item.title.toLowerCase()}-tab`}
-          on:click={() => dispatch('select', item)}>
-          <div class="icon">
-            <svelte:component
-              this={item.icon}
-              style={activeTab === item.tab ? 'fill: var(--color-primary)' : ''} />
-          </div>
+<ul data-cy="horizontal-menu" class="tab-bar" {style}>
+  {#each items as item}
+    <li
+      class="tab"
+      data-cy={`${item.title.toLowerCase()}-tab`}
+      on:click={() => dispatch('select', item)}>
+      <div class="icon">
+        <svelte:component
+          this={item.icon}
+          style={activeTab === item.tab ? 'fill: var(--color-primary)' : ''} />
+      </div>
 
-          <p class="title typo-text-bold" class:active={activeTab === item.tab}>
-            {item.title}
-          </p>
-          {#if item.counter}
-            <span
-              class="counter typo-mono-bold"
-              data-cy="counter">{item.counter}</span>
-          {/if}
-        </div>
-      </li>
-    {/each}
-  </ul>
-</nav>
+      <p class="title typo-text-bold" class:active={activeTab === item.tab}>
+        {item.title}
+      </p>
+
+      {#if item.counter}
+        <span
+          class="counter typo-mono-bold"
+          data-cy="counter">{item.counter}</span>
+      {/if}
+    </li>
+  {/each}
+</ul>
