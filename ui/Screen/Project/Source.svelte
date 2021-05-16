@@ -29,7 +29,13 @@
   export let selectedPeer: User;
   export let isContributor: boolean;
 
-  export let activeTab: "files" | "commits" | "commit";
+  export let activeTab:
+    | "files"
+    | "commits"
+    | "commit"
+    | "projects"
+    | "following"
+    | "funding";
   export let commitHash: string | null;
 
   const onCheckout = async (
