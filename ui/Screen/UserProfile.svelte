@@ -13,19 +13,12 @@
   import ProjectsTab from "ui/Screen/UserProfile/Projects.svelte";
 
   export let urn: string;
-  export let activeTab: "projects";
-
-  const activeTabToComponent = {
-    projects: ProjectsTab,
-  };
-
-  $: activeTabComponent = activeTabToComponent[activeTab];
 
   const topbarMenuItems = [
     {
       icon: Icon.ChevronLeftRight,
       title: "Projects",
-      tab: { type: "userProfile", activeTab: "projects", urn: urn },
+      tab: <const>"projects",
     },
   ];
 
@@ -47,8 +40,8 @@
       <HorizontalMenu
         slot="left"
         items={topbarMenuItems}
-        activeTab={activeTabComponent} />
+        activeTab="projects" />
     </ActionBar>
-    <svelte:component this={activeTabComponent} />
+    <ProjectsTab {urn} />
   </Remote>
 </SidebarLayout>
