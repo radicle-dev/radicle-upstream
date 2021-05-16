@@ -17,6 +17,8 @@
     dispatch("click", { tab });
   };
 
+  $: iconStyle = active ? "fill: var(--color-primary)" : "";
+
 </script>
 
 <style>
@@ -32,12 +34,12 @@
     cursor: pointer;
   }
 
-  .item {
+  .title {
     line-height: 130%;
     color: var(--color-foreground-level-6);
   }
 
-  .item.active {
+  .title.active {
     color: var(--color-primary);
   }
 
@@ -52,22 +54,12 @@
 </style>
 
 <div class="tab" data-cy={dataCy} on:click={click}>
-  {#if active}
-    <div class="icon">
-      <svelte:component this={icon} style="fill: var(--color-primary)" />
-    </div>
-  {:else}
-    <div class="icon">
-      <svelte:component this={icon} />
-    </div>
-  {/if}
+  <div class="icon">
+    <svelte:component this={icon} style={iconStyle} />
+  </div>
 
-  <p class="item typo-text-bold" class:active>{title}</p>
+  <p class="title typo-text-bold" class:active>{title}</p>
   {#if counter}
     <span class="counter typo-mono-bold" data-cy="counter">{counter}</span>
   {/if}
 </div>
-
-{#if active}
-  <slot />
-{/if}
