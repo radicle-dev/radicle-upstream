@@ -4,7 +4,13 @@
   import type { HorizontalItem } from "../../src/menu";
 
   export let items: HorizontalItem[];
-  export let activeTab: "files" | "commit" | "commits";
+  export let activeTab:
+    | "files"
+    | "commit"
+    | "commits"
+    | "projects"
+    | "following"
+    | "funding";
   export let style: string = "";
 
   const dispatch = createEventDispatcher();

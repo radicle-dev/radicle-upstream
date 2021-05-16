@@ -3,6 +3,7 @@
   import * as modal from "../src/modal";
   import * as sess from "../src/session";
   import { settings } from "../src/session";
+  import type { HorizontalItem } from "ui/src/menu";
 
   import { Button, Icon } from "../DesignSystem/Primitive";
 
@@ -20,23 +21,16 @@
 
   export let activeTab: "projects" | "following" = "projects";
 
-  const activeTabToComponent = {
-    projects: ProjectsTab,
-    following: FollowingTab,
-  };
-
-  $: activeTabComponent = activeTabToComponent[activeTab];
-
-  const topbarMenuItems = [
+  const topbarMenuItems: HorizontalItem[] = [
     {
       icon: Icon.ChevronLeftRight,
       title: "Projects",
-      tab: { component: ProjectsTab, props: {} },
+      tab: "projects",
     },
     {
       icon: Icon.Network,
       title: "Following",
-      tab: { component: FollowingTab, props: {} },
+      tab: "following",
     },
   ];
 
@@ -44,7 +38,7 @@
     topbarMenuItems.push({
       icon: Icon.Wallet,
       title: "Funding",
-      tab: { component: FundingTab, props: {} },
+      tab: "funding",
     });
   }
 
@@ -76,11 +70,17 @@
     <HorizontalMenu
       slot="left"
       items={topbarMenuItems}
-      activeTab={activeTabComponent}
+      {activeTab}
       on:select={event => {
-        activeTab = event.detail.tab.component;
+        activeTab = event.detail.tab;
       }} />
   </ActionBar>
 
-  <svelte:component this={activeTabComponent} />
+  {#if activeTab === 'projects'}
+    <ProjectsTab />
+  {:else if activeTab === 'following'}
+    <FollowingTab />
+  {:else if activeTab === 'funding'}
+    <FundingTab />
+  {/if}
 </SidebarLayout>
