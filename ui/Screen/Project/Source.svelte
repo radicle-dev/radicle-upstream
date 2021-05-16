@@ -25,6 +25,8 @@
   import CommitsTab from "ui/Screen/Project/Source/Commits.svelte";
   import CommitTab from "ui/Screen/Project/Source/Commit.svelte";
 
+  import { Icon } from "ui/DesignSystem/Primitive";
+
   export let project: Project;
   export let selectedPeer: User;
   export let isContributor: boolean;
@@ -37,6 +39,22 @@
     | "following"
     | "funding";
   export let commitHash: string | null;
+
+  const menuItems = (commitCount: number): HorizontalItem[] => {
+    return [
+      {
+        icon: Icon.File,
+        title: "Files",
+        tab: "files",
+      },
+      {
+        icon: Icon.Commit,
+        title: "Commits",
+        counter: commitCount,
+        tab: "commits",
+      },
+    ];
+  };
 
   const onCheckout = async (
     { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
@@ -100,7 +118,7 @@
 
 </style>
 
-<Remote {store} let:data={{ menuItems, revisions, selectedRevision }}>
+<Remote {store} let:data={{ history, revisions, selectedRevision }}>
   <ActionBar>
     <div slot="left">
       <div style="display: flex">
@@ -114,7 +132,7 @@
         </div>
 
         <HorizontalMenu
-          items={menuItems}
+          items={menuItems(history.stats.commits)}
           on:select={onMenuSelect}
           {activeTab} />
       </div>

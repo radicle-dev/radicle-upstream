@@ -4,13 +4,9 @@ import { push } from "ui/src/router";
 
 import * as error from "ui/src/error";
 import * as config from "ui/src/config";
-import type { HorizontalItem } from "ui/src/menu";
 import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
 import * as source from "ui/src/source";
-
-import IconCommit from "ui/DesignSystem/Primitive/Icon/Commit.svelte";
-import IconFile from "ui/DesignSystem/Primitive/Icon/File.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -49,7 +45,6 @@ export interface Code {
 interface Screen {
   code: Writable<Code>;
   history: source.GroupedCommitsHistory;
-  menuItems: HorizontalItem[];
   peer: User;
   project: Project;
   revisions: [source.Branch | source.Tag];
@@ -96,7 +91,6 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.success({
       code: writable<Code>(root),
       history: groupedHistory,
-      menuItems: menuItems(project.urn, groupedHistory.stats.commits),
       peer,
       project,
       revisions: mapRevisions(revisions),
@@ -195,7 +189,6 @@ export const selectRevision = async (
       screenStore.success({
         ...screen.data,
         history: groupedHistory,
-        menuItems: menuItems(project.urn, groupedHistory.stats.commits),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -368,20 +361,4 @@ const mapRevisions = (
     return branches.concat(tags) as [source.Branch | source.Tag];
   }
   return branches;
-};
-
-const menuItems = (urn: string, commitCount: number): HorizontalItem[] => {
-  return [
-    {
-      icon: IconFile,
-      title: "Files",
-      tab: "files",
-    },
-    {
-      icon: IconCommit,
-      title: "Commits",
-      counter: commitCount,
-      tab: "commits",
-    },
-  ];
 };
