@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import * as radicleAvatar from "radicle-avatar";
   import { location, push } from "svelte-spa-router";
 
   import type { Identity } from "../../src/identity";
@@ -129,7 +130,10 @@
             class="item indicator"
             class:active={$location.startsWith(path.org(org.id))}
             on:click|stopPropagation={() => push(path.orgProjects(org.id))}>
-            <Avatar size="regular" variant="square" />
+            <Avatar
+              size="regular"
+              variant="square"
+              avatarFallback={radicleAvatar.generateAvatar(org.id, radicleAvatar.Usage.Any)} />
           </div>
         </Tooltip>
       {/each}

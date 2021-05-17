@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import * as radicleAvatar from "radicle-avatar";
   import { Avatar, Icon } from "../../DesignSystem/Primitive";
 
   import * as style from "../../src/style";
@@ -6,6 +7,7 @@
   export let name: string | undefined = undefined;
   export let gnosisSafeWalletAddress: string;
   export let gnosisSafeAddress: string | null = null;
+
 </script>
 
 <style>
@@ -21,10 +23,15 @@
     align-items: center;
     gap: 0.5rem;
   }
+
 </style>
 
 <div style="display: flex">
-  <Avatar style="margin-right: 32px" size="huge" variant="square" />
+  <Avatar
+    style="margin-right: 32px"
+    size="huge"
+    variant="square"
+    avatarFallback={radicleAvatar.generateAvatar(gnosisSafeWalletAddress, radicleAvatar.Usage.Any)} />
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>

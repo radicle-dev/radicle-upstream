@@ -10587,6 +10587,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#rudolfs/ts-port":
+  version: 0.1.0
+  resolution: "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#commit=cd57ba31b05651b47cce3310d8d2fa1fb4b3c154"
+  checksum: 2d1a39804060ff31cd2f92f71542bdc6fd14d23a90d690dbdda258a87cd988589ad448be6ed7701f4c5ec807e8dbd51f5ad70985a81866e58b53380389a62c94
+  languageName: node
+  linkType: hard
+
 "radicle-contracts@github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421":
   version: 0.1.0
   resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
@@ -10654,6 +10661,7 @@ __metadata:
     prompts: ^2.4.1
     pure-svg-code: ^1.0.6
     qs: ^6.10.1
+    radicle-avatar: "https://github.com/radicle-dev/radicle-avatar.git#rudolfs/ts-port"
     radicle-contracts: "github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
     semver: ^7.3.5
     sinon: ^10.0.0
