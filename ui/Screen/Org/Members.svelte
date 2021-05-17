@@ -1,6 +1,7 @@
 <script>
   import { orgMembersStore } from "../../src/org";
   import { List } from "../../DesignSystem/Component";
+
 </script>
 
 <style>
@@ -12,6 +13,7 @@
     align-items: center;
     min-width: 0;
   }
+
 </style>
 
 <List items={$orgMembersStore} let:item={member} styleHoverState={false}>

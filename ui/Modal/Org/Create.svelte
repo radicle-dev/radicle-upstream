@@ -28,6 +28,7 @@
   } else {
     throw new Error("Org create modal called while wallet is not connected");
   }
+
 </script>
 
 <style>
@@ -47,6 +48,7 @@
     gap: 1.5rem;
     justify-content: flex-end;
   }
+
 </style>
 
 <Modal>

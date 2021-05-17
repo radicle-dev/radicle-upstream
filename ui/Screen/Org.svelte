@@ -73,6 +73,7 @@
       event: () => console.log("event(Change avatar)"),
     },
   ];
+
 </script>
 
 <SidebarLayout>

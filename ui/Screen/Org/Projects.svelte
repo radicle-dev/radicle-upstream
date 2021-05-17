@@ -1,6 +1,7 @@
 <script>
   import { EmptyState } from "../../DesignSystem/Component";
   import { Variant as IllustrationVariant } from "../../src/illustration.ts";
+
 </script>
 
 <EmptyState
