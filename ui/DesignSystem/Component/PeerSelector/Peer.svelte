@@ -1,6 +1,6 @@
 <script lang="typescript">
   import { BadgeType } from "../../../src/badge";
-  import { Role, PeerType } from "../../../src/project";
+  import { PeerRole, PeerType } from "../../../src/project";
   import type { User } from "../../../src/project";
 
   import Avatar from "../../Primitive/Avatar.svelte";
@@ -31,7 +31,7 @@
   <p class="name typo-text-bold typo-overflow-ellipsis">
     {peer.identity.metadata.handle}
   </p>
-  {#if peer.role === Role.Maintainer}
+  {#if peer.role === PeerRole.Maintainer}
     <p class="badge">
       <Badge variant={BadgeType.Maintainer} />
     </p>

@@ -1,5 +1,6 @@
 import * as zod from "zod";
-import type { Fetcher } from "./fetcher";
+import type { Fetcher, RequestOptions } from "./fetcher";
+import { Identity, identitySchema } from "./identity";
 
 export interface Metadata {
   name: string;
@@ -108,6 +109,59 @@ const requestSchema = zod
   // The API provides some additional fields, that we’re not using yet.
   .nonstrict();
 
+export interface Peer {
+  type: PeerType;
+  peerId: string;
+  status: PeerReplicationStatus;
+}
+
+export enum PeerType {
+  Local = "local",
+  Remote = "remote",
+}
+
+export enum PeerRole {
+  Contributor = "contributor",
+  Maintainer = "maintainer",
+  Tracker = "tracker",
+}
+
+export enum PeerReplicationStatusType {
+  NotReplicated = "notReplicated",
+  Replicated = "replicated",
+}
+
+export interface PeerNotReplicated {
+  type: PeerReplicationStatusType.NotReplicated;
+}
+
+export interface PeerReplicated {
+  type: PeerReplicationStatusType.Replicated;
+  role: PeerRole;
+  user: Identity;
+}
+
+export type PeerReplicationStatus = PeerNotReplicated | PeerReplicated;
+
+const peerSchema: zod.Schema<Peer> = zod.object({
+  type: zod.enum([PeerType.Local, PeerType.Remote]),
+  peerId: zod.string(),
+  status: zod.union([
+    zod.object({
+      type: zod.literal(PeerReplicationStatusType.NotReplicated),
+    }),
+    zod.object({
+      type: zod.literal(PeerReplicationStatusType.Replicated),
+      role: zod.enum([
+        PeerRole.Tracker,
+        PeerRole.Maintainer,
+        PeerRole.Contributor,
+      ]),
+      user: identitySchema,
+    }),
+  ]),
+});
+
 export class Client {
   private fetcher: Fetcher;
 
@@ -199,6 +253,20 @@ export class Client {
         path: `projects/requests/${projectUrn}`,
       },
       requestSchema
+    );
+  }
+
+  async listPeers(
+    projectUrn: string,
+    options?: RequestOptions
+  ): Promise<Peer[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `projects/${projectUrn}/peers`,
+        options,
+      },
+      zod.array(peerSchema)
     );
   }
 

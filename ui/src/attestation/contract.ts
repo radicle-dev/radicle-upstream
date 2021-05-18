@@ -59,10 +59,11 @@ export class ClaimsContract {
   ): Promise<() => void> {
     const filter = this.contract.filters.Claimed(address);
 
-    await this.contract.on(filter, async (_: unknown, event: ethers.Event) => {
+    const listener = async (_: unknown, event: ethers.Event) => {
       const claimed = await this.getClaimed(event.transactionHash, address);
       onClaimed(claimed);
-    });
+    };
+    await this.contract.on(filter, listener);
 
     const lastEvent = (await this.contract.queryFilter(filter)).pop();
     if (lastEvent !== undefined) {
@@ -75,7 +76,7 @@ export class ClaimsContract {
       onClaimed(undefined);
     }
     return () => {
-      this.contract.off(filter, onClaimed);
+      this.contract.off(filter, listener);
     };
   }
 

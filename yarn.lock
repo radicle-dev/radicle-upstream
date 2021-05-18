@@ -13,8 +13,8 @@ __metadata:
   linkType: hard
 
 "@apollo/client@npm:^3.3.15":
-  version: 3.3.16
-  resolution: "@apollo/client@npm:3.3.16"
+  version: 3.3.18
+  resolution: "@apollo/client@npm:3.3.18"
   dependencies:
     "@graphql-typed-document-node/core": ^3.0.0
     "@types/zen-observable": ^0.8.0
@@ -23,7 +23,7 @@ __metadata:
     fast-json-stable-stringify: ^2.0.0
     graphql-tag: ^2.12.0
     hoist-non-react-statics: ^3.3.2
-    optimism: ^0.15.0
+    optimism: ^0.16.0
     prop-types: ^15.7.2
     symbol-observable: ^2.0.0
     ts-invariant: ^0.7.0
@@ -38,7 +38,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 5eaccf99ed298b8e6516210888c82ef3ccda42c7d8aa72054aff4bb34a9fddb6029124a9e435fb868ec0b259996a0f67d10e80b2a7823355b5f01b75a2fc96f7
+  checksum: 7d72f4eda7f9f65821c0e431ca4442fe3baee8a69dc5a059094260b2cabe9c8d9ee8bf50613ea15bfca422f92edfb5e6110289a4a97298d863426fe464294f16
   languageName: node
   linkType: hard
 
@@ -562,7 +562,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/abi@npm:5.1.2, @ethersproject/abi@npm:^5.1.0":
+"@ethersproject/abi@npm:5.1.2, @ethersproject/abi@npm:^5.1.0, @ethersproject/abi@npm:^5.1.2":
   version: 5.1.2
   resolution: "@ethersproject/abi@npm:5.1.2"
   dependencies:
@@ -817,7 +817,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/providers@npm:5.1.2":
+"@ethersproject/providers@npm:5.1.2, @ethersproject/providers@npm:^5.1.2":
   version: 5.1.2
   resolution: "@ethersproject/providers@npm:5.1.2"
   dependencies:
@@ -9768,13 +9768,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"optimism@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "optimism@npm:0.15.0"
+"optimism@npm:^0.16.0":
+  version: 0.16.1
+  resolution: "optimism@npm:0.16.1"
   dependencies:
     "@wry/context": ^0.6.0
     "@wry/trie": ^0.3.0
-  checksum: a9152e33a27be9b2b4a441387061a7e8aff9877872169eba49c11c07fee19b7369efd48f7530f5a65e142f46b63ba3c8a56c9b893eaa696e143f1fdff33760a2
+  checksum: 760b1295525ba86592edf245736ed704670330a8997d91144c1b45bc9f76e392b53c170fb1eb3b265f67584a4f7e205bc777d0c8ed97774326dba9fbfe899e27
   languageName: node
   linkType: hard
 
@@ -10589,15 +10589,20 @@ __metadata:
 
 "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#rudolfs/ts-port":
   version: 0.1.0
-  resolution: "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#commit=ae8ed8d8f285a27e407167209cb9fb67e694bd54"
+  resolution: "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#commit=b555a04c24c723678bf0c30838a17d01c65b9533"
   checksum: 7a730c241cc22fbe44960b6f0aea58b4079bdd1dc9a503876d425160d09d87b9f2266417e40dcce1c03097a1a0824e4004873b715fb8819a7e2ba9a225558015
   languageName: node
   linkType: hard
 
-"radicle-contracts@github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421":
+"radicle-contracts@github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26":
   version: 0.1.0
-  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
-  checksum: 35874e6eeece3a2d94a4cbc1995b63159fad98a5e63a7b5b52048595a845af3d4a05237dfb687f6a84ea458ba640ee06fb7e7b73621dcad691759d465a6d41cb
+  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=752cf0767c6ba7428c626abf91ae1874de613f26"
+  dependencies:
+    "@ethersproject/abi": ^5.1.2
+    "@ethersproject/bytes": ^5.1.0
+    "@ethersproject/providers": ^5.1.2
+    ethers: ^5.1.4
+  checksum: 4ac258434d0042bcbfec457301128b7a8f91006f0a42fb353463ceb395e42db808bb8e9da0e8c771f88646f96855d07b5b9bdc3062583645281e88ea6dc133d9
   languageName: node
   linkType: hard
 
@@ -10662,7 +10667,7 @@ __metadata:
     pure-svg-code: ^1.0.6
     qs: ^6.10.1
     radicle-avatar: "https://github.com/radicle-dev/radicle-avatar.git#rudolfs/ts-port"
-    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=f401f4f1222cbee48197c5268d81ee2cb92b6421"
+    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26"
     semver: ^7.3.5
     sinon: ^10.0.0
     standard-version: ^9.3.0

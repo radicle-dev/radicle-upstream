@@ -15,7 +15,7 @@ import type {
   TransactionResponse,
 } from "@ethersproject/abstract-provider";
 
-import * as contract from "../src/funding/contract";
+import * as daiToken from "../src/funding/daiToken";
 import * as error from "../src/error";
 import * as ethereum from "../src/ethereum";
 import * as modal from "../src/modal";
@@ -120,9 +120,9 @@ export function build(
     environment,
     disconnect
   );
-  const daiTokenContract = contract.daiToken(
+  const daiTokenContract = daiToken.connect(
     signer,
-    contract.daiTokenAddress(environment)
+    daiToken.daiTokenAddress(environment)
   );
 
   // Connect to a wallet using walletconnect

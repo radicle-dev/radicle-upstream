@@ -6,7 +6,7 @@
 
   import { BadgeType } from "../../src/badge";
   import { CSSPosition } from "../../src/style";
-  import { PeerType, Role } from "../../src/project";
+  import { PeerType, PeerRole } from "../../src/project";
 
   import { Avatar } from "../../DesignSystem/Primitive";
   import {
@@ -49,7 +49,7 @@
       <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
         {peer.identity.metadata.handle}
       </p>
-      {#if peer.role === Role.Maintainer}
+      {#if peer.role === PeerRole.Maintainer}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {:else if peer.type === PeerType.Local}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.You} />
@@ -62,7 +62,7 @@
       peerId={peer.peerId} />
   </div>
   {#if peer.type !== PeerType.Local}
-    {#if peer.role === Role.Maintainer}
+    {#if peer.role === PeerRole.Maintainer}
       <Tooltip
         position={CSSPosition.Top}
         value="Can't unfollow the maintainer's remote">
