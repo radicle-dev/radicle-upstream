@@ -182,7 +182,7 @@
     "mnemonist": "^0.38.3",
     "pure-svg-code": "^1.0.6",
     "qs": "^6.10.1",
-    "radicle-avatar": "https://github.com/radicle-dev/radicle-avatar.git#rudolfs/ts-port",
+    "radicle-avatar": "https://github.com/radicle-dev/radicle-avatar.git#commit=0a032c204af7a37b0392d2259e747d66cf258998",
     "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26",
     "semver": "^7.3.5",
     "stream-browserify": "^3.0.0",
