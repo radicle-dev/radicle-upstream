@@ -31,7 +31,7 @@
     style="margin-right: 32px"
     size="huge"
     variant="square"
-    avatarFallback={radicleAvatar.generateAvatar(gnosisSafeWalletAddress, radicleAvatar.Usage.Any)} />
+    avatarFallback={radicleAvatar.generate(gnosisSafeWalletAddress, radicleAvatar.Usage.Any)} />
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>

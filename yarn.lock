@@ -10589,8 +10589,8 @@ __metadata:
 
 "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#rudolfs/ts-port":
   version: 0.1.0
-  resolution: "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#commit=cd57ba31b05651b47cce3310d8d2fa1fb4b3c154"
-  checksum: 2d1a39804060ff31cd2f92f71542bdc6fd14d23a90d690dbdda258a87cd988589ad448be6ed7701f4c5ec807e8dbd51f5ad70985a81866e58b53380389a62c94
+  resolution: "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#commit=ae8ed8d8f285a27e407167209cb9fb67e694bd54"
+  checksum: 7a730c241cc22fbe44960b6f0aea58b4079bdd1dc9a503876d425160d09d87b9f2266417e40dcce1c03097a1a0824e4004873b715fb8819a7e2ba9a225558015
   languageName: node
   linkType: hard
 

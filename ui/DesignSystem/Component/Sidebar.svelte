@@ -133,7 +133,7 @@
             <Avatar
               size="regular"
               variant="square"
-              avatarFallback={radicleAvatar.generateAvatar(org.id, radicleAvatar.Usage.Any)} />
+              avatarFallback={radicleAvatar.generate(org.id, radicleAvatar.Usage.Any)} />
           </div>
         </Tooltip>
       {/each}
