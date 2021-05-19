@@ -2,11 +2,11 @@
   import Router from "svelte-spa-router";
   import { wrap } from "svelte-spa-router/wrap";
 
-  import { orgScreenStore } from "../src/org";
-  import * as org from "../src/org";
-  import * as path from "../src/path";
+  import { orgScreenStore } from "ui/src/org";
+  import * as org from "ui/src/org";
+  import * as path from "ui/src/path";
 
-  import { Icon } from "../DesignSystem/Primitive";
+  import { Icon } from "ui/DesignSystem/Primitive";
   import {
     ActionBar,
     AdditionalActionsDropdown,
@@ -14,13 +14,13 @@
     Header,
     HorizontalMenu,
     SidebarLayout,
-  } from "../DesignSystem/Component";
+  } from "ui/DesignSystem/Component";
 
-  import Projects from "./Org/Projects.svelte";
-  import Members from "./Org/Members.svelte";
-  import OrgHeader from "./Org/OrgHeader.svelte";
-  import ProjectsMenu from "./Org/ProjectsMenu.svelte";
-  import MembersMenu from "./Org/MembersMenu.svelte";
+  import Projects from "ui/Screen/Org/Projects.svelte";
+  import Members from "ui/Screen/Org/Members.svelte";
+  import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
+  import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
+  import MembersMenu from "ui/Screen/Org/MembersMenu.svelte";
 
   export let params: { address: string };
 

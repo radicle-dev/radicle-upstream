@@ -1,6 +1,6 @@
 <script>
-  import { Button, Icon } from "../../DesignSystem/Primitive";
-  import { Overlay } from "../../DesignSystem/Component";
+  import { Button, Icon } from "ui/DesignSystem/Primitive";
+  import { Overlay } from "ui/DesignSystem/Component";
 
   let expanded = false;
 
