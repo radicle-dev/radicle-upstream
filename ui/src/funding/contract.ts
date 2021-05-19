@@ -14,7 +14,6 @@ import * as ethereum from "../ethereum";
 const addresses = {
   local: "0x56a32c0c857f1ae733562078a693ea845d9bb423",
   ropsten: "0x22B39d2F5768CE402077223b3f871d9b4393A5f2",
-  rinkeby: "0x8c6E1E293346cc4cD31A1972D94DaDcecEd98997",
 };
 
 interface SenderUpdatedArgs {
@@ -47,8 +46,6 @@ export function poolAddress(environment: ethereum.Environment): string {
       return addresses.local;
     case ethereum.Environment.Ropsten:
       return addresses.ropsten;
-    case ethereum.Environment.Rinkeby:
-      return addresses.rinkeby;
   }
 }
 

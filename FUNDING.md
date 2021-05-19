@@ -52,16 +52,6 @@ The funding experiences can take place in three different environments:
   Token, deployed in the Ropsten network. Reach out to the team to get some Radicle
   Tokens into your account.
 
-3. `Rinkeby`
-
-  Gnosis Safe has only a test [UI for the Rinkeby testnet][ri], therefore all
-  Org related testing should happen on Rinkeby.
-
-  We're using the official Rinkeby DAI contract:
-    0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea
-
-  Faucet: https://app.compound.finance/ -> DAI -> Withdraw -> Faucet
-
 4. `Mainnet`
 
   In this environment, to be introduced in the future once we are ready to go mainnet,

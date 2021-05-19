@@ -30,9 +30,6 @@ const orgFactoryAddress = (network: ethereum.Environment) => {
     case ethereum.Environment.Ropsten:
       return "0x2007bcEf1247CD03Bb4262eF420D6487368f473B";
       break;
-    case ethereum.Environment.Rinkeby:
-      return "0xe30aA5594FFB52B6bF5bbB21eB7e71Ac525bB028";
-      break;
   }
 };
 
