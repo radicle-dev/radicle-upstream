@@ -12,20 +12,16 @@ const orgsSubgraphClient = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-type GnosisSafeWallet = {
+interface GnosisSafeWallet {
   id: string;
   owners: [string];
-};
+}
 
-export type Org = {
+export interface Org {
   id: string;
   owner: string;
   creator: string;
-};
-
-export type Member = {
-  id: string;
-};
+}
 
 const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
   return await gnosisSubgraphClient.query({
@@ -66,21 +62,32 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<[Org]> => {
   return orgs;
 };
 
+interface Member {
+  id: string;
+}
+
+export interface MemberResponse {
+  threshold: number;
+  members: Member[];
+}
+
 export const getGnosisSafeMembers = async (
   walletAddress: string
-): Promise<[Member]> => {
-  const members: [Member] = (
+): Promise<MemberResponse> => {
+  const response = (
     await gnosisSubgraphClient.query({
       query: gql`
         query GetGnosisSafeWallets($id: String!) {
           wallets(where: { id: $id }) {
             owners
+            threshold
           }
         }
       `,
       variables: { id: walletAddress },
       fetchPolicy: "no-cache",
     })
-  ).data.wallets[0].owners;
-  return members;
+  ).data.wallets[0];
+
+  return { members: response.owners, threshold: response.threshold };
 };

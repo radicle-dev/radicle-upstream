@@ -148,13 +148,16 @@ export const fetchOrgs = async (): Promise<void> => {
   orgSidebarStore.set(orgs);
 };
 
-export const orgMembersStore = svelteStore.writable<theGraphApi.Member[] | []>(
-  []
-);
+interface OrgMemberTabStore extends theGraphApi.MemberResponse {
+  gnosisSafeAddress: string;
+}
+
+export const orgMemberTabStore =
+  svelteStore.writable<OrgMemberTabStore | null>(null);
 
 export const fetchMembers = async (
   gnosisSafeAddress: string
 ): Promise<void> => {
-  const members = await theGraphApi.getGnosisSafeMembers(gnosisSafeAddress);
-  orgMembersStore.set(members);
+  const response = await theGraphApi.getGnosisSafeMembers(gnosisSafeAddress);
+  orgMemberTabStore.set({ gnosisSafeAddress, ...response });
 };
