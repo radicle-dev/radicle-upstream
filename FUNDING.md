@@ -52,7 +52,7 @@ The funding experiences can take place in three different environments:
   Token, deployed in the Ropsten network. Reach out to the team to get some Radicle
   Tokens into your account.
 
-4. `Mainnet`
+3. `Mainnet`
 
   In this environment, to be introduced in the future once we are ready to go mainnet,
   the wallet will plug itself to the Radicle Contracts (to be) deployed in the Ethereum

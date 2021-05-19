@@ -9,8 +9,9 @@ export enum Environment {
   // network. However, those would not be the real 'Ropsten' and 'Mainnet'
   // networks, respectively, but simply fake ones for testing purposes.
   Local = "Local",
-  // The Ropsten testnet where our funding features are deployed
+  // The Ropsten testnet network
   Ropsten = "Ropsten",
+  // N.B: We will support 'Mainnet' in the future
 }
 
 // The ethereum networks we may parse from a connected wallet across
