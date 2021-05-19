@@ -1,6 +1,8 @@
-<script>
+<script lang="typescript">
+  import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
   import { Button, Icon } from "../../DesignSystem/Primitive";
   import { Overlay } from "../../DesignSystem/Component";
+  import * as modal from "ui/src/modal";
 
   let expanded = false;
 
@@ -39,8 +41,7 @@
 
     <Button
       on:click={() => {
-        // TODO(rudolfs): update the link.
-        window.location.href = 'https://gnosis-safe.io/';
+        modal.toggle(ModalAnchorProject);
         toggleModal();
       }}
       style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
