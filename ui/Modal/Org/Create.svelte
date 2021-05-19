@@ -4,30 +4,17 @@
   import { Copyable, Modal } from "../../DesignSystem/Component";
   import { Avatar, Button, Emoji } from "../../DesignSystem/Primitive";
 
-  import {
-    store as walletStore,
-    Status as WalletStatus,
-  } from "../../src/wallet";
   import * as org from "../../src/org";
   import { ellipsed } from "../../src/style";
   import * as modal from "../../src/modal";
 
   export let identity: Identity;
+  export let walletAddress: string;
 
   const createOrg = async (owner: string): Promise<void> => {
     modal.hide();
-    await org.createOrg(owner, $walletStore.signer, $walletStore.provider);
+    await org.createOrg(owner);
   };
-
-  $: wallet = $walletStore;
-
-  let walletAddress: string = "";
-
-  $: if ($wallet.status === WalletStatus.Connected) {
-    walletAddress = $wallet.connected.account.address;
-  } else {
-    throw new Error("Org create modal called while wallet is not connected");
-  }
 </script>
 
 <style>

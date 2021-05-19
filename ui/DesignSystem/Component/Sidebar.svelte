@@ -5,6 +5,7 @@
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
   import * as path from "../../src/path";
+  import * as wallet from "ui/src/wallet";
   import { orgSidebarStore } from "../../src/org";
 
   import Tooltip from "./Tooltip.svelte";
@@ -13,7 +14,6 @@
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
   import ModalSearch from "../../Modal/Search.svelte";
   import ModalCreateOrg from "../../Modal/Org/Create.svelte";
-  import * as wallet from "ui/src/wallet";
 
   export let identity: Identity;
 
@@ -143,7 +143,13 @@
           class="item indicator"
           data-cy="add-org-btn"
           on:click|stopPropagation={() =>
-            modal.toggle(ModalCreateOrg, () => {}, { identity })}>
+            modal.toggle(ModalCreateOrg, () => {}, {
+              identity,
+              walletAddress:
+                $w.status === wallet.Status.Connected
+                  ? $w.connected.account.address
+                  : null,
+            })}>
           <AddOrgButton />
         </div>
       </Tooltip>

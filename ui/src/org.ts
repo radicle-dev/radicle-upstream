@@ -33,16 +33,12 @@ const orgFactoryAddress = (network: ethereum.Environment) => {
   }
 };
 
-export const createOrg = async (
-  owner: string,
-  signer: ethers.Signer,
-  provider: ethers.providers.Provider
-): Promise<void> => {
+export const createOrg = async (owner: string): Promise<void> => {
   const walletStore = svelteStore.get(wallet.store);
   const orgFactory = new ethers.Contract(
     orgFactoryAddress(walletStore.environment),
     orgFactoryAbi,
-    signer
+    walletStore.signer
   );
   notification.info({
     message:
@@ -58,9 +54,8 @@ export const createOrg = async (
     showIcon: true,
   });
 
-  const receipt: TransactionReceipt = await provider.waitForTransaction(
-    response.hash
-  );
+  const receipt: TransactionReceipt =
+    await walletStore.provider.waitForTransaction(response.hash);
   transaction.add(transaction.createOrg(response));
 
   const iface = new ethers.utils.Interface(orgFactoryAbi);
