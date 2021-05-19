@@ -29,8 +29,12 @@
     conditions: [
       async () => {
         try {
-          await org.fetchMembers($orgScreenStore.gnosisSafeAddress);
-          return true;
+          if ($orgScreenStore) {
+            await org.fetchMembers($orgScreenStore.gnosisSafeAddress);
+            return true;
+          } else {
+            return false;
+          }
         } catch {
           return false;
         }
@@ -61,7 +65,7 @@
     "/org/:address/projects": ProjectsMenu,
     "/org/:address/members": wrap({
       component: MembersMenu,
-      props: { gnosisSafeAddress: $orgScreenStore.gnosisSafeAddress },
+      props: { gnosisSafeAddress: $orgScreenStore?.gnosisSafeAddress },
     }),
     "*": ProjectsMenu,
   };
@@ -80,8 +84,8 @@
   <Header>
     <OrgHeader
       slot="left"
-      gnosisSafeWalletAddress={$orgScreenStore.orgAddress}
-      gnosisSafeAddress={$orgScreenStore.gnosisSafeAddress} />
+      gnosisSafeWalletAddress={$orgScreenStore ? $orgScreenStore.orgAddress : ''}
+      gnosisSafeAddress={$orgScreenStore?.gnosisSafeAddress} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
