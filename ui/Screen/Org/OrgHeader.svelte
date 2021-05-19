@@ -7,7 +7,6 @@
   export let name: string | undefined = undefined;
   export let gnosisSafeWalletAddress: string;
   export let gnosisSafeAddress: string | null = null;
-
 </script>
 
 <style>
@@ -23,7 +22,6 @@
     align-items: center;
     gap: 0.5rem;
   }
-
 </style>
 
 <div style="display: flex">
@@ -31,7 +29,10 @@
     style="margin-right: 32px"
     size="huge"
     variant="square"
-    avatarFallback={radicleAvatar.generate(gnosisSafeWalletAddress, radicleAvatar.Usage.Any)} />
+    avatarFallback={radicleAvatar.generate(
+      gnosisSafeWalletAddress,
+      radicleAvatar.Usage.Any
+    )} />
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
@@ -39,7 +40,7 @@
     </h1>
     <div class="safe-addr">
       <Icon.Gnosis />
-      {gnosisSafeAddress || 'loading…'}
+      {gnosisSafeAddress || "loading…"}
     </div>
   </div>
 </div>

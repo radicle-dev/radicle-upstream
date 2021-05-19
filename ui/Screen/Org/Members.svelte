@@ -4,7 +4,6 @@
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import { List } from "ui/DesignSystem/Component";
-
 </script>
 
 <style>
@@ -56,7 +55,6 @@
   .member-address {
     color: var(--color-foreground-level-5);
   }
-
 </style>
 
 <div class="metadata-container">

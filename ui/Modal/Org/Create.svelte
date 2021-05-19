@@ -28,7 +28,6 @@
   } else {
     throw new Error("Org create modal called while wallet is not connected");
   }
-
 </script>
 
 <style>
@@ -48,11 +47,10 @@
     gap: 1.5rem;
     justify-content: flex-end;
   }
-
 </style>
 
 <Modal>
-  <Emoji emoji={'🎪'} size="huge" style="margin-bottom: 1.5rem;" />
+  <Emoji emoji={"🎪"} size="huge" style="margin-bottom: 1.5rem;" />
   <h1>Create a new org</h1>
   <p
     style="margin: 0.5rem 0 1.5rem; color: var(--color-foreground-level-6); text-align: center;">

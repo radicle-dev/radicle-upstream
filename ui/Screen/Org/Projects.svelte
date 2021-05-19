@@ -4,7 +4,6 @@
 
   import { EmptyState } from "ui/DesignSystem/Component";
   import { Variant as IllustrationVariant } from "ui/src/illustration";
-
 </script>
 
 <EmptyState
