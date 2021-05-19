@@ -10360,13 +10360,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-plugin-svelte@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "prettier-plugin-svelte@npm:1.4.2"
+"prettier-plugin-svelte@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "prettier-plugin-svelte@npm:2.3.0"
   peerDependencies:
     prettier: ^1.16.4 || ^2.0.0
     svelte: ^3.2.0
-  checksum: 2582f2d56dbc4382f25b711b1808597cba14b1a1a2239755e294f80d86a7304236dc265622326a61945aab5b0fd5c73aca3ffaacbe63c0aaff6e1a49adee6703
+  checksum: 0bde958a10809774da773874172cb00ef23c1b8cd4de42b248c84e46d4876575884a73736e779f974e3f4f74c542b29b00b8a95ae326972b728ab9fac1989682
   languageName: node
   linkType: hard
 
@@ -10662,7 +10662,7 @@ __metadata:
     npm-run-all: ^4.1.5
     patch-package: ^6.4.7
     prettier: ^2.3.0
-    prettier-plugin-svelte: ^1.4.2
+    prettier-plugin-svelte: ^2.3.0
     prompts: ^2.4.1
     pure-svg-code: ^1.0.6
     qs: ^6.10.1

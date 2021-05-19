@@ -23,7 +23,6 @@
   const toggleDropdown = () => {
     expanded = !expanded;
   };
-
 </script>
 
 <style>
@@ -43,7 +42,6 @@
     color: var(--color-foreground-level-6);
     user-select: none;
   }
-
 </style>
 
 <Overlay {expanded} on:hide={hide} style="position: relative;">
@@ -68,12 +66,12 @@
     {/if}
 
     <Tooltip
-      value={!checkoutPath ? 'Please select a folder' : ''}
+      value={!checkoutPath ? "Please select a folder" : ""}
       position="bottom">
       <Button
         dataCy="checkout-button"
         on:click={() => {
-          dispatch('checkout', { checkoutPath: checkoutPath });
+          dispatch("checkout", { checkoutPath: checkoutPath });
           toggleDropdown();
         }}
         disabled={!checkoutPath}

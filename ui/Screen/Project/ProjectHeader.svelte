@@ -9,7 +9,6 @@
   export let description: string = "";
   export let stats: Stats;
   export let onClick: (() => void) | undefined = undefined;
-
 </script>
 
 <style>
@@ -52,7 +51,6 @@
   .clickable {
     cursor: pointer;
   }
-
 </style>
 
 <div class="metadata">
@@ -86,7 +84,9 @@
       <div class="stat-item">
         <Icon.User />
         <p>
-          {stats.contributors === 1 ? `1 Contributor` : `${stats.contributors} Contributors`}
+          {stats.contributors === 1
+            ? `1 Contributor`
+            : `${stats.contributors} Contributors`}
         </p>
       </div>
     {/if}

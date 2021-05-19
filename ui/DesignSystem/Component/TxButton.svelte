@@ -31,7 +31,6 @@
       running = false;
     }
   }
-
 </script>
 
 <style>
@@ -42,7 +41,6 @@
   .running {
     cursor: wait;
   }
-
 </style>
 
 <span class="tx-button" class:running data-cy={dataCy} {style}>

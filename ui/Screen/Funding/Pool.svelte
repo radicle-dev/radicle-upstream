@@ -20,14 +20,12 @@
 
   let ongoingCollect = false;
   $: ongoingCollect = $txs.some(ongoing(TxKind.CollectFunds));
-
 </script>
 
 <style>
   .pool-container {
     width: 100%;
   }
-
 </style>
 
 <div class="pool-container">
@@ -37,7 +35,7 @@
         amount={poolData.collectableFunds}
         {onCollect}
         {ongoingCollect}
-        style={'margin-bottom: var(--content-padding)'} />
+        style={"margin-bottom: var(--content-padding)"} />
     {/if}
   </Remote>
   <Outgoing {pool} />

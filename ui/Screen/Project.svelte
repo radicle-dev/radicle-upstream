@@ -56,7 +56,6 @@
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
-
 </script>
 
 <SidebarLayout dataCy="project-screen">
@@ -79,7 +78,9 @@
           selected={selectedPeer} />
         <Tooltip
           position={CSSPosition.Left}
-          value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
+          value={isMaintainer(session.identity.urn, project)
+            ? trackTooltipMaintainer
+            : trackTooltip}>
           <FollowToggle disabled following />
         </Tooltip>
       </div>

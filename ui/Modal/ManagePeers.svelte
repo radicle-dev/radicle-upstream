@@ -45,7 +45,6 @@
       return !(peer.type === PeerType.Local && peer.role === PeerRole.Tracker);
     });
   };
-
 </script>
 
 <style>
@@ -63,12 +62,11 @@
     margin-top: 2rem;
     width: 100%;
   }
-
 </style>
 
 <Remote {store} let:data={{ peerSelection, project }}>
   <Modal dataCy="remotes-modal">
-    <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
+    <Emoji emoji={"💻"} size="huge" style="margin-bottom: 1.5rem;" />
 
     <h1>Manage remotes</h1>
     <p style="margin-top: 0.5rem; color: var(--color-foreground-level-6);">

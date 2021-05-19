@@ -20,7 +20,6 @@
   export let projectUrn: Urn;
 
   const dispatch = createEventDispatcher();
-
 </script>
 
 <style>
@@ -35,7 +34,6 @@
     max-width: 22em;
     flex-direction: column;
   }
-
 </style>
 
 <div class="peer" data-cy={`peer-${peer.identity.metadata.handle}`}>
@@ -72,7 +70,7 @@
       <FollowToggle
         following
         on:unfollow={() => {
-          dispatch('unfollow', { projectUrn, peerId: peer.peerId });
+          dispatch("unfollow", { projectUrn, peerId: peer.peerId });
         }} />
     {/if}
   {/if}

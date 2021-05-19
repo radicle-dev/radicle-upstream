@@ -10,7 +10,6 @@
   export let projectUrn: Urn;
 
   const dispatch = createEventDispatcher();
-
 </script>
 
 <style>
@@ -23,7 +22,6 @@
   .left {
     max-width: 22em;
   }
-
 </style>
 
 <div class="peer-request" data-cy="peer-request">
@@ -38,6 +36,6 @@
   <FollowToggle
     following
     on:unfollow={() => {
-      dispatch('cancel', { projectUrn, peerId: peer.peerId });
+      dispatch("cancel", { projectUrn, peerId: peer.peerId });
     }} />
 </div>

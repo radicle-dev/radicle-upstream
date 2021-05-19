@@ -23,7 +23,6 @@
   // Hack to have Svelte working with checking the $wallet variant
   // and thus be able to access its appropriate fields.
   $: w = $wallet;
-
 </script>
 
 <style>
@@ -37,7 +36,6 @@
     display: flex;
     align-items: flex-start;
   }
-
 </style>
 
 {#if w.status === Status.Connected}
@@ -45,7 +43,7 @@
     <WalletPanel
       onDisconnect={wallet.disconnect}
       account={w.connected.account}
-      style={'margin-right: var(--content-padding)'} />
+      style={"margin-right: var(--content-padding)"} />
     {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
       {#if $attestationStatus === AttestationStatus.Fetching}
         Checking whether you have attested your Ethereum adddress...

@@ -5,7 +5,6 @@
   import { session } from "../../src/session";
 
   export let address = "";
-
 </script>
 
 <style>
@@ -20,7 +19,6 @@
     align-items: center;
     margin-bottom: 0.5rem;
   }
-
 </style>
 
 <Remote store={session} let:data={it}>

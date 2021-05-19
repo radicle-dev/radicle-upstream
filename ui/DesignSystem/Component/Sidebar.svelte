@@ -19,7 +19,6 @@
 
   const walletStore = wallet.store;
   $: w = $walletStore;
-
 </script>
 
 <style>
@@ -106,7 +105,6 @@
   .indicator.active :global(svg) {
     fill: var(--color-primary);
   }
-
 </style>
 
 <div class="wrapper" data-cy="sidebar">
@@ -133,7 +131,10 @@
             <Avatar
               size="regular"
               variant="square"
-              avatarFallback={radicleAvatar.generate(org.id, radicleAvatar.Usage.Any)} />
+              avatarFallback={radicleAvatar.generate(
+                org.id,
+                radicleAvatar.Usage.Any
+              )} />
           </div>
         </Tooltip>
       {/each}
@@ -141,7 +142,8 @@
         <div
           class="item indicator"
           data-cy="add-org-btn"
-          on:click|stopPropagation={() => modal.toggle( ModalCreateOrg, () => {}, { identity } )}>
+          on:click|stopPropagation={() =>
+            modal.toggle(ModalCreateOrg, () => {}, { identity })}>
           <AddOrgButton />
         </div>
       </Tooltip>

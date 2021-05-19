@@ -9,7 +9,6 @@
 
   export let blob: Blob;
   export let commit: CommitHeader;
-
 </script>
 
 <style>
@@ -69,7 +68,6 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-
 </style>
 
 <div class="file-source">
@@ -77,7 +75,7 @@
     <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />
       <span class="file-name">
-        <span>{blob.path.split('/').join(' / ')}</span>
+        <span>{blob.path.split("/").join(" / ")}</span>
       </span>
     </div>
     <div class="commit-header">
@@ -95,7 +93,8 @@
         <Markdown content={blob.content} />
       </div>
     {:else}
-      <pre class="line-numbers typo-text-mono">
+      <pre
+        class="line-numbers typo-text-mono">
         {@html blob.content
           .split('\n')
           .slice(0, -1)
@@ -104,7 +103,8 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code typo-text-mono no-scrollbar">
+      <pre
+        class="code typo-text-mono no-scrollbar">
         {#if blob.html}
           {@html blob.content}
         {:else}{blob.content}{/if}

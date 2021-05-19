@@ -14,7 +14,6 @@
       opacity: 0;
     }
   }
-
 </style>
 
 <svg

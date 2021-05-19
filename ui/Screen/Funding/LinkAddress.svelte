@@ -7,7 +7,6 @@
   function onLink() {
     modal.toggle(ModalLinkAddress);
   }
-
 </script>
 
 <style>
@@ -40,7 +39,6 @@
     margin-top: 1rem;
     margin-bottom: 1.25rem;
   }
-
 </style>
 
 <div class="wrapper">

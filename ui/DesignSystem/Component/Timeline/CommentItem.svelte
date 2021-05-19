@@ -1,7 +1,6 @@
 <script>
   import { Avatar, Markdown } from "../../../DesignSystem/Primitive";
   export let item = null;
-
 </script>
 
 <style>
@@ -19,7 +18,6 @@
   .content {
     padding: 1rem 1rem 0.375rem 1rem;
   }
-
 </style>
 
 <Avatar

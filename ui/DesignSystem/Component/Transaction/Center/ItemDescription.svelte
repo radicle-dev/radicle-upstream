@@ -2,7 +2,6 @@
   import type { Tx } from "../../../../src/transaction";
 
   export let tx: Tx;
-
 </script>
 
 <style>
@@ -11,7 +10,6 @@
     display: flex;
     flex-direction: column;
   }
-
 </style>
 
 <div class="description">

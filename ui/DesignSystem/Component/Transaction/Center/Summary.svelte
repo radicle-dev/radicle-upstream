@@ -8,7 +8,6 @@
 
   $: status = transaction.summaryStatus(counts);
   $: text = transaction.summaryText(counts);
-
 </script>
 
 <style>
@@ -31,7 +30,6 @@
   .icon {
     margin-right: 1rem;
   }
-
 </style>
 
 <div class="summary" on:click>

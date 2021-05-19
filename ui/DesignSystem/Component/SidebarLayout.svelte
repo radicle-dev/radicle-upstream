@@ -7,7 +7,6 @@
   export let style: string = "";
 
   const session = sess.getUnsealedFromContext();
-
 </script>
 
 <style>
@@ -22,7 +21,6 @@
   .content {
     padding-bottom: 1rem;
   }
-
 </style>
 
 <div data-cy={dataCy}>

@@ -2,7 +2,6 @@
   import marked from "marked";
 
   export let content: string;
-
 </script>
 
 <style>
@@ -157,7 +156,6 @@
     padding-left: 1.25rem;
     margin-bottom: 1rem;
   }
-
 </style>
 
 {#if content}

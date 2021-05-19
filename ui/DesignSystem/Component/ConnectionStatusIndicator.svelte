@@ -15,7 +15,6 @@
       return `${count} peers`;
     }
   };
-
 </script>
 
 <style>
@@ -29,7 +28,6 @@
     align-items: center;
     cursor: help;
   }
-
 </style>
 
 <Remote {store} let:data={status}>
@@ -42,7 +40,9 @@
       </Tooltip>
     {:else if status.type === StatusType.Syncing}
       <Tooltip
-        value={`Syncing with ${peerCount(status.syncs)} to get new content from your network`}>
+        value={`Syncing with ${peerCount(
+          status.syncs
+        )} to get new content from your network`}>
         <div class="item indicator" data-cy="connection-status-syncing">
           <Syncing />
         </div>

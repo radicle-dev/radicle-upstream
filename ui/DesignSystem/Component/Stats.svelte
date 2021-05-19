@@ -12,7 +12,6 @@
     { icon: Icon.Commit, count: commits },
     { icon: Icon.User, count: contributors },
   ];
-
 </script>
 
 <style>
@@ -34,7 +33,6 @@
   .stat p {
     color: var(--color-foreground-level-6);
   }
-
 </style>
 
 <div class="stats" {style}>

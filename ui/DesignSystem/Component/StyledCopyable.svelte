@@ -13,7 +13,6 @@
   const [head, tail] = value.split(/(.{8}).*(.{8})/).filter(Boolean);
 
   let hover = false;
-
 </script>
 
 <style>
@@ -21,7 +20,6 @@
     display: flex;
     position: relative;
   }
-
 </style>
 
 <Hoverable bind:hovering={hover}>
