@@ -33,12 +33,12 @@
 
   const topbarMenuItems = [
     {
-      icon: Icon.ChevronLeftRight,
+      icon: Icon.Transactions,
       title: "Transactions",
       href: path.walletTransactions(),
     },
     {
-      icon: Icon.Network,
+      icon: Icon.TokenStreams,
       title: "Token Streams",
       href: path.walletStreams(),
     },
@@ -71,7 +71,7 @@
   }
   .content {
     display: grid;
-    grid-template-columns: 25rem auto;
+    grid-template-columns: 20rem auto;
     margin-top: 1.5rem;
     gap: 1.5rem;
   }
