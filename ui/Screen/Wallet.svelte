@@ -24,7 +24,11 @@
   import Transactions from "./Wallet/Transactions.svelte";
   import LinkAddress from "./Wallet/LinkAddress.svelte";
 
-  import { HorizontalMenu, SidebarLayout } from "ui/DesignSystem/Component";
+  import {
+    EmptyState,
+    HorizontalMenu,
+    SidebarLayout,
+  } from "ui/DesignSystem/Component";
   import { Icon } from "ui/DesignSystem/Primitive";
 
   const topbarMenuItems = [
@@ -90,10 +94,14 @@
         </div>
         {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
           {#if $attestationStatus === AttestationStatus.Fetching}
-            Checking whether you have attested your Ethereum address...
+            <EmptyState
+              text="Checking whether you have attested your Ethereum address..."
+              style="height: 30rem;"
+              emoji="🧦" />
           {:else if $attestationStatus === AttestationStatus.Valid}
             <div class="right-column">
               <HorizontalMenu
+                slot="left"
                 items={topbarMenuItems}
                 style="padding: 0.5rem 0; margin-bottom: 1rem;" />
               <Router routes={screenRoutes} />

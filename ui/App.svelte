@@ -2,7 +2,6 @@
   import Router, { push, location } from "svelte-spa-router";
 
   import * as hotkeys from "./src/hotkeys.ts";
-  import { isExperimental } from "./src/config";
   import "./src/localPeer.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
@@ -19,8 +18,6 @@
 
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
-
-  import TransactionCenter from "./App/TransactionCenter.svelte";
 
   import Blank from "./Screen/Blank.svelte";
   import Bsod from "./Screen/Bsod.svelte";
@@ -102,10 +99,6 @@
 <ModalOverlay />
 <NotificationFaucet />
 <Theme />
-
-{#if isExperimental && sessionIsUnsealed && $location !== path.designSystemGuide()}
-  <TransactionCenter />
-{/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
   <Router {routes} />
