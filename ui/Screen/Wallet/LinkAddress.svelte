@@ -1,8 +1,13 @@
 <script lang="typescript">
-  import { Button, Emoji } from "../../DesignSystem/Primitive";
+  import { Button, Emoji } from "ui/DesignSystem/Primitive";
+  import Spinner from "ui/DesignSystem/Component/Spinner.svelte";
   import ModalLinkAddress from "../../Modal/Funding/LinkAddress.svelte";
 
   import * as modal from "../../src/modal";
+  import { lastClaimed } from "../../src/attestation/lastClaimed";
+  import { store as walletStore } from "../../src/wallet";
+
+  $: address = $walletStore.account()?.address.toLowerCase();
 
   function onLink() {
     modal.toggle(ModalLinkAddress);
@@ -39,6 +44,12 @@
     margin-top: 1rem;
     margin-bottom: 1.25rem;
   }
+
+  .spinner-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 </style>
 
 <div class="wrapper">
@@ -48,6 +59,14 @@
       In order to give and receive funds, you need to link your Radicle Identity
       to Ethereum.
     </p>
-    <Button on:click={onLink}>Link your ID</Button>
+    {#if !$lastClaimed || $lastClaimed !== address}
+      <Button on:click={onLink}>Link your ID</Button>
+    {:else}
+      <div class="spinner-wrapper">
+        <Spinner height={40} width={40} />
+        Linking your ID…
+        <Button variant="transparent" on:click={onLink}>Retry</Button>
+      </div>
+    {/if}
   </div>
 </div>
