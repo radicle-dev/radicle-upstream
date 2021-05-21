@@ -5,7 +5,6 @@ import Comment from "./Comment.svelte";
 import CompareBranches from "./CompareBranches.svelte";
 import Copyable from "./Copyable.svelte";
 import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
-import Dai from "./Dai.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
@@ -21,7 +20,6 @@ import List from "./List.svelte";
 import Modal from "./Modal.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
-import NegativeDai from "./NegativeDai.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Fullscreen from "./Fullscreen.svelte";
@@ -56,7 +54,6 @@ export {
   CompareBranches,
   Copyable,
   ConnectionStatusIndicator,
-  Dai,
   Dropdown,
   EmptyState,
   Error,
@@ -72,7 +69,6 @@ export {
   Modal,
   ModalOverlay,
   NavigationButtons,
-  NegativeDai,
   Notification,
   NotificationFaucet,
   Fullscreen,
