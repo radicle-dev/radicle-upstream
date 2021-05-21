@@ -31,6 +31,7 @@
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
+  import Wallet from "./Screen/Wallet.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
 
   const routes = {
@@ -38,6 +39,8 @@
     "/onboarding": Onboarding,
     "/lock": Lock,
     "/settings": Settings,
+    "/wallet/*": Wallet,
+    "/wallet": Wallet,
     "/profile/*": Profile,
     "/projects/:urn/*": Project,
     "/projects/:urn": Project,

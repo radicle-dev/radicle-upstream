@@ -123,6 +123,15 @@
         <Icon.MagnifyingGlass />
       </div>
     </Tooltip>
+    <Tooltip value="Wallet">
+      <div
+        class="item indicator"
+        data-cy="wallet"
+        class:active={$location.startsWith(path.wallet())}
+        on:click|stopPropagation={() => push(path.wallet())}>
+        <Icon.Wallet />
+      </div>
+    </Tooltip>
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
       <div

@@ -22,8 +22,6 @@
     display: flex;
     flex-direction: column;
 
-    width: 25rem;
-
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
     border-radius: 0.5rem;

@@ -395,6 +395,29 @@ const monthNames = [
   "December",
 ];
 
+export function getDay(date: Date): string {
+  return `${date.getUTCDate()}`;
+}
+
+export function getShortMonth(date: Date): string {
+  return `${shortMonthNames[date.getMonth()]}`;
+}
+
+const shortMonthNames = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+
 // Convert a transaction-related `globalThis.Error` to `error.Error`.
 export function convertError(e: globalThis.Error, label: string): error.Error {
   let code: error.Code;
