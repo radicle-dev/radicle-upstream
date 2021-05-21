@@ -10551,7 +10551,7 @@ __metadata:
     wait-on: ^5.3.0
     webpack: ^5.36.2
     webpack-cli: ^4.7.0
-    zod: ^1.11.17
+    zod: ^3.0.2
   languageName: unknown
   linkType: soft
 
@@ -13765,9 +13765,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^1.11.17":
-  version: 1.11.17
-  resolution: "zod@npm:1.11.17"
-  checksum: 27e8799fa87ea4478a3155f40c39c4bef331b3c3273f00252ca646879c92eef54a5c36dcf31b6cd29bfd723fa4c1502e24d59e252d657183eab1252f273dfd7f
+"zod@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "zod@npm:3.0.2"
+  checksum: 7fb88d132297d9e85ab862293028d7b6391c158c968bb6dc1bfbe9afc4ce3b52f587393189634b7bc41992c1fa3467c0be51cef5dfd01cf6e0fddb213ba4505a
   languageName: node
   linkType: hard

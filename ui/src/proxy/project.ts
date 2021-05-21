@@ -46,13 +46,11 @@ export interface FailedProject {
   metadata: Metadata;
 }
 
-const failedProjectSchema: zod.Schema<FailedProject> = zod
-  .object({
-    urn: zod.string(),
-    shareableEntityIdentifier: zod.string(),
-    metadata: metadataSchema,
-  })
-  .nonstrict();
+const failedProjectSchema: zod.Schema<FailedProject> = zod.object({
+  urn: zod.string(),
+  shareableEntityIdentifier: zod.string(),
+  metadata: metadataSchema,
+});
 
 export interface Stats {
   branches: number;
@@ -92,22 +90,19 @@ export interface Request {
   urn: string;
 }
 
-const requestSchema = zod
-  .object({
-    type: zod.enum([
-      RequestStatus.Created,
-      RequestStatus.Requested,
-      RequestStatus.Found,
-      RequestStatus.Cloning,
-      RequestStatus.Cloned,
-      RequestStatus.Cancelled,
-      RequestStatus.Failed,
-      RequestStatus.TimedOut,
-    ]),
-    urn: zod.string(),
-  })
-  // The API provides some additional fields, that we’re not using yet.
-  .nonstrict();
+const requestSchema = zod.object({
+  type: zod.enum([
+    RequestStatus.Created,
+    RequestStatus.Requested,
+    RequestStatus.Found,
+    RequestStatus.Cloning,
+    RequestStatus.Cloned,
+    RequestStatus.Cancelled,
+    RequestStatus.Failed,
+    RequestStatus.TimedOut,
+  ]),
+  urn: zod.string(),
+});
 
 export interface Peer {
   type: PeerType;
