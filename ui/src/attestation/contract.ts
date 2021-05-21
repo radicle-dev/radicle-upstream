@@ -53,9 +53,32 @@ export class ClaimsContract {
     transaction.add(transaction.claimRadicleIdentity(tx, urn));
   }
 
+  // Fetches the identity claimed by the given Ethereum address.
+  // Returns `undefined` if currently there's no valid claim.
+  async getClaimed(address: string): Promise<Uint8Array | undefined> {
+    const filter = this.contract.filters.Claimed(address);
+    const lastEvent = (await this.contract.queryFilter(filter)).pop();
+    if (!lastEvent) {
+      return undefined;
+    }
+    let claimed;
+    try {
+      claimed = await this.getClaimedByTx(lastEvent.transactionHash, address);
+    } catch {
+      // Lack of a valid claim on the Ethereum side, the whole claim is invalid
+      return undefined;
+    }
+    // Claim of hash `0`, the identity has been explicitly unclaimed
+    if (claimed.every(hashByte => hashByte === 0)) {
+      return undefined;
+    }
+    return claimed;
+  }
+
   // Start watching claims of a given Ethereum address.
   // `onClaimed` is called immediately with the latest claim or `undefined` if there was none.
   // Returns a function, which unwatches claims when called.
+  // Throws if the current claim is invalid.
   async watchClaimed(
     address: string,
     onClaimed: (claimed?: Uint8Array) => void
@@ -63,14 +86,14 @@ export class ClaimsContract {
     const filter = this.contract.filters.Claimed(address);
 
     const listener = async (_: unknown, event: ethers.Event) => {
-      const claimed = await this.getClaimed(event.transactionHash, address);
+      const claimed = await this.getClaimedByTx(event.transactionHash, address);
       onClaimed(claimed);
     };
     await this.contract.on(filter, listener);
 
     const lastEvent = (await this.contract.queryFilter(filter)).pop();
-    if (lastEvent !== undefined) {
-      const lastClaimed = await this.getClaimed(
+    if (lastEvent) {
+      const lastClaimed = await this.getClaimedByTx(
         lastEvent.transactionHash,
         address
       );
@@ -84,7 +107,8 @@ export class ClaimsContract {
   }
 
   // Extracts the claimed identity root from the transaction sent by the address
-  private async getClaimed(
+  // Throws if the current claim is invalid.
+  private async getClaimedByTx(
     txHash: string,
     address: string
   ): Promise<Uint8Array> {

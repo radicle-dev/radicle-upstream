@@ -18,12 +18,15 @@ const avatarSchema: zod.ZodSchema<Avatar> = zod.object({
   emoji: zod.string(),
 });
 
-export interface Identity {
+export interface RemoteIdentity {
   avatarFallback: Avatar;
   metadata: Metadata;
+  urn: string;
+}
+
+export interface Identity extends RemoteIdentity {
   peerId: string;
   shareableEntityIdentifier: string;
-  urn: string;
 }
 
 export interface Metadata {
@@ -38,7 +41,7 @@ export interface Ethereum {
   expiration: string;
 }
 
-export const identitySchema: zod.ZodSchema<Identity> = zod.object({
+export const remoteIdentitySchema = zod.object({
   avatarFallback: avatarSchema,
   metadata: zod.object({
     handle: zod.string(),
@@ -49,7 +52,10 @@ export const identitySchema: zod.ZodSchema<Identity> = zod.object({
       })
       .nullable(),
   }),
+  urn: zod.string(),
+});
+
+export const identitySchema = remoteIdentitySchema.extend({
   peerId: zod.string(),
   shareableEntityIdentifier: zod.string(),
-  urn: zod.string(),
 });

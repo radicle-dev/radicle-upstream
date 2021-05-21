@@ -1,9 +1,7 @@
 <script lang="typescript">
+  import { Avatar } from "ui/DesignSystem/Primitive";
+  import { List, StyledCopyable } from "ui/DesignSystem/Component";
   import type * as org from "ui/src/org";
-
-  import { ellipsed } from "ui/src/style";
-
-  import { List } from "ui/DesignSystem/Component";
 
   export let members: org.Member[];
 </script>
@@ -18,26 +16,48 @@
   .list-item {
     display: flex;
     width: 100%;
+    height: 70px;
     justify-content: space-between;
-    padding: 1.375rem 1.5rem;
+    padding: 1rem;
     align-items: center;
     min-width: 0;
   }
 
-  .member-name {
-    color: var(--color-foreground-level-6);
-  }
-
-  .member-address {
-    color: var(--color-foreground-level-5);
+  .member-details {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    width: -webkit-fill-available;
+    min-width: 0;
   }
 </style>
 
 <div class="container">
   <List items={members} let:item={member} styleHoverState={false}>
     <div class="list-item">
-      <div class="member-name typo-text-bold">{member}</div>
-      <div class="member-address">{ellipsed(member)}</div>
+      {#if member.identity}
+        <div style="display: flex">
+          <Avatar
+            style="margin-right: 10px"
+            size="medium"
+            variant="circle"
+            avatarFallback={member.identity.avatarFallback} />
+          <div
+            class="member-details"
+            data-cy="entity-name"
+            title={member.identity.metadata.handle}>
+            {member.identity.metadata.handle}
+          </div>
+        </div>
+      {:else}
+        <div
+          class="member-details"
+          data-cy="entity-name"
+          title="Unknown identity">
+          {member.ethereumAddress}
+        </div>
+      {/if}
+      <StyledCopyable truncate value={member.ethereumAddress} />
     </div>
   </List>
 </div>

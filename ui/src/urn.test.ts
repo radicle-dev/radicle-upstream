@@ -7,7 +7,8 @@
  *
  */
 
-import { parseIdentitySha1 } from "./urn";
+import { Code, Error } from "ui/src/error";
+import { parseIdentitySha1, identitySha1Urn } from "./urn";
 import * as ethers from "ethers";
 
 describe("parseIdentitySha1", () => {
@@ -74,5 +75,30 @@ describe("parseIdentitySha1", () => {
       "rad:git:hnrmr5f1pdx7jysj5wkep9ci3pfaztfrgt7ay",
       "URN has an invalid multihash payload size: 22"
     );
+  });
+});
+
+describe("identitySha1Urn", () => {
+  it("builds a URN for a SHA-1 hash", () => {
+    const hash = "0x0102030405060708091011121314151617181920";
+    const hashBytes = ethers.utils.arrayify(hash);
+
+    const urn = identitySha1Urn(hashBytes);
+
+    const hashParsedBytes = parseIdentitySha1(urn);
+    const hashParsed = ethers.utils.hexlify(hashParsedBytes);
+    expect(hashParsed).toEqual(hash);
+  });
+
+  it("rejects a non-SHA1 hash", () => {
+    const hash = "0x010203040506070809101112131415161718192021";
+    const hashBytes = ethers.utils.arrayify(hash);
+    const expectedError = new Error({
+      code: Code.OrgIdentitySha1UrnError,
+      message: "SHA1 hash has invalid size",
+      details: { hash, hashLength: 21 },
+    });
+
+    expect(() => identitySha1Urn(hashBytes)).toThrow(expectedError);
   });
 });

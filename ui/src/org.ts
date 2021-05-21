@@ -10,9 +10,10 @@ import type {
   TransactionResponse,
 } from "@ethersproject/providers";
 import type * as project from "ui/src/project";
-import type { Org, Member, MemberResponse } from "ui/src/org/theGraphApi";
+import type { Org, MemberResponse } from "ui/src/org/theGraphApi";
 
 import * as svelteStore from "ui/src/svelteStore";
+import type * as identity from "ui/src/proxy/identity";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as ipc from "ui/src/ipc";
@@ -24,6 +25,8 @@ import * as transaction from "./transaction";
 import * as urn from "ui/src/urn";
 import * as wallet from "ui/src/wallet";
 import { sleep } from "ui/src/sleep";
+import { claimsAddress, ClaimsContract } from "./attestation/contract";
+import { identitySha1Urn } from "ui/src/urn";
 
 import {
   getOrgs,
@@ -31,7 +34,7 @@ import {
   getOrgProjectAnchors,
 } from "ui/src/org/theGraphApi";
 
-export type { Member, MemberResponse };
+export type { MemberResponse, Org };
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
@@ -389,8 +392,47 @@ export const fetchOrg = async (orgAddress: string): Promise<OrgWithSafe> => {
     orgAddress,
     walletStore.provider
   );
-  const { members, threshold } = await getGnosisSafeMembers(gnosisSafeAddress);
+  const { members, threshold } = await fetchMembers(
+    walletStore,
+    gnosisSafeAddress
+  );
   return { orgAddress, gnosisSafeAddress, members, threshold };
+};
+
+interface OrgMembers {
+  threshold: number;
+  members: Member[];
+}
+
+export interface Member {
+  ethereumAddress: string;
+  identity: identity.RemoteIdentity | undefined;
+}
+
+export const fetchMembers = async (
+  wallet: wallet.Wallet,
+  gnosisSafeAddress: string
+): Promise<OrgMembers> => {
+  const response: MemberResponse = await getGnosisSafeMembers(
+    gnosisSafeAddress
+  );
+
+  const contract = new ClaimsContract(
+    wallet.signer,
+    claimsAddress(wallet.environment)
+  );
+
+  const members = await Promise.all(
+    response.members.map(async ethereumAddress => {
+      const identity = await getClaimedIdentity(contract, ethereumAddress);
+      return { ethereumAddress, identity };
+    })
+  );
+
+  return {
+    threshold: response.threshold,
+    members,
+  };
 };
 
 // Return all anchors for the org where the anchoring transactions are
@@ -533,3 +575,29 @@ export const getProjectCount = async (): Promise<number> => {
 
   return tracked.length + contributed.length;
 };
+
+async function getClaimedIdentity(
+  contract: ClaimsContract,
+  address: string
+): Promise<identity.RemoteIdentity | undefined> {
+  const radicleIdBytes = await contract.getClaimed(address);
+  if (!radicleIdBytes) {
+    return undefined;
+  }
+  const urn = identitySha1Urn(radicleIdBytes);
+  let identity;
+  try {
+    identity = await proxy.client.remoteIdentityGet(urn);
+  } catch (error) {
+    if (error instanceof proxy.ResponseError && error.response.status === 404) {
+      return undefined;
+    }
+    throw error;
+  }
+  // Assert that the identity claims the ethereum address
+  const claimed = identity.metadata.ethereum?.address.toLowerCase();
+  if (claimed !== address.toLowerCase()) {
+    return undefined;
+  }
+  return identity;
+}
