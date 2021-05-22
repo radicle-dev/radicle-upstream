@@ -5,7 +5,7 @@
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
   import Header from "../DesignSystem/Component/Header.svelte";
-  import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
+  import TabBar from "../DesignSystem/Component/TabBar.svelte";
   import Remote from "../DesignSystem/Component/Remote.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
 
@@ -14,11 +14,13 @@
 
   export let urn: string;
 
-  const topbarMenuItems = [
+  const tabs = [
     {
-      icon: Icon.ChevronLeftRight,
       title: "Projects",
-      tab: <const>"projects",
+      type: "projects",
+      active: true,
+      icon: Icon.ChevronLeftRight,
+      onClick: () => {},
     },
   ];
 
@@ -36,10 +38,7 @@
     </Header>
 
     <ActionBar>
-      <HorizontalMenu
-        slot="left"
-        items={topbarMenuItems}
-        activeTab="projects" />
+      <TabBar slot="left" {tabs} />
     </ActionBar>
     <ProjectsTab {urn} />
   </Remote>

@@ -23,7 +23,7 @@ context("project source browsing", () => {
         .pickWithContent(["header", "project-stats"], "4 Contributors")
         .should("exist");
       commands
-        .pickWithContent(["horizontal-menu", "commits-tab", "counter"], "15")
+        .pickWithContent(["tab-bar", "commits-tab", "counter"], "15")
         .should("exist");
     });
   });
@@ -33,9 +33,9 @@ context("project source browsing", () => {
       it("shows the commit history for the default branch", () => {
         // Wait for the commit tab to be updated
         commands
-          .pickWithContent(["horizontal-menu", "commits-tab", "counter"], "15")
+          .pickWithContent(["tab-bar", "commits-tab", "counter"], "15")
           .should("exist");
-        commands.pick("horizontal-menu", "commits-tab").click();
+        commands.pick("tab-bar", "commits-tab").click();
         commands.pick("commits-page").should("exist");
         commands
           .pickWithContent(["commit-teaser"], "Commit on the dev branch")
@@ -57,9 +57,9 @@ context("project source browsing", () => {
         commands.pick("revision-dropdown", "revision-branch-dev").click();
         // Wait for the commit tab to be updated
         commands
-          .pickWithContent(["horizontal-menu", "commits-tab", "counter"], "8")
+          .pickWithContent(["tab-bar", "commits-tab", "counter"], "8")
           .should("exist");
-        commands.pick("horizontal-menu", "commits-tab").click();
+        commands.pick("tab-bar", "commits-tab").click();
 
         commands.pick("commits-page").should("exist");
         commands
@@ -356,9 +356,9 @@ context("project source browsing", () => {
         });
       });
 
-      it("doesn't interfere with the horizontal menu item active state", () => {
+      it("doesn't interfere with the tab active state", () => {
         commands
-          .pick("horizontal-menu", "files-tab")
+          .pick("tab-bar", "files-tab")
           .get("p")
           .should("have.class", "active");
 
@@ -370,14 +370,14 @@ context("project source browsing", () => {
         });
 
         commands
-          .pick("horizontal-menu", "files-tab")
+          .pick("tab-bar", "files-tab")
           .get("p")
           .should("have.class", "active");
 
         commands.pick("file-view", "file-header").click();
 
         commands
-          .pick("horizontal-menu", "files-tab")
+          .pick("tab-bar", "files-tab")
           .get("p")
           .should("have.class", "active");
       });

@@ -1,7 +1,6 @@
 <script lang="typescript">
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
-  import type { HorizontalItem } from "../../src/menu";
   import * as notification from "../../src/notification";
   import * as proxy from "../../src/proxy";
   import type { Project, User } from "../../src/project";
@@ -15,7 +14,7 @@
   import * as screen from "../../src/screen";
 
   import ActionBar from "../../DesignSystem/Component/ActionBar.svelte";
-  import HorizontalMenu from "../../DesignSystem/Component/HorizontalMenu.svelte";
+  import TabBar from "../../DesignSystem/Component/TabBar.svelte";
   import Remote from "../../DesignSystem/Component/Remote.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
@@ -31,27 +30,32 @@
   export let selectedPeer: User;
   export let isContributor: boolean;
 
-  export let activeTab:
-    | "files"
-    | "commits"
-    | "commit"
-    | "projects"
-    | "following"
-    | "funding";
+  type Tab = "files" | "commits" | "commit";
+  export let activeTab: Tab = "files";
   export let commitHash: string | null;
 
-  const menuItems = (commitCount: number): HorizontalItem[] => {
+  const tabs = (active: Tab, commitCount: number) => {
     return [
       {
-        icon: Icon.File,
         title: "Files",
-        tab: "files",
+        active: active === "files",
+        icon: Icon.File,
+        onClick: () => {
+          if (activeTab === "files") {
+            selectPath("");
+          } else {
+            activeTab = "files";
+          }
+        },
       },
       {
-        icon: Icon.Commit,
         title: "Commits",
+        active: active === "commits",
+        icon: Icon.Commit,
         counter: commitCount,
-        tab: "commits",
+        onClick: () => {
+          activeTab = "commits";
+        },
       },
     ];
   };
@@ -92,15 +96,7 @@
       screen.unlock();
     }
   };
-  const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
-    if (item.title === "Files" && activeTab === "files") {
-      selectPath("");
-    } else {
-      if (item.tab !== null) {
-        activeTab = item.tab;
-      }
-    }
-  };
+
   const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
     selectRevision(revision);
   };
@@ -129,10 +125,7 @@
             {revisions} />
         </div>
 
-        <HorizontalMenu
-          items={menuItems(history.stats.commits)}
-          on:select={onMenuSelect}
-          {activeTab} />
+        <TabBar tabs={tabs(activeTab, history.stats.commits)} />
       </div>
     </div>
     <div slot="right">

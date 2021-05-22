@@ -1,19 +1,16 @@
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
+  import type { SvelteComponent } from "svelte";
 
-  import type { HorizontalItem } from "../../src/menu";
+  interface Tab {
+    title: string;
+    active: boolean;
+    icon: typeof SvelteComponent;
+    counter?: number;
+    onClick: () => void;
+  }
 
-  export let items: HorizontalItem[];
-  export let activeTab:
-    | "files"
-    | "commit"
-    | "commits"
-    | "projects"
-    | "following"
-    | "funding";
+  export let tabs: Tab[];
   export let style: string = "";
-
-  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -69,25 +66,25 @@
   }
 </style>
 
-<ul data-cy="horizontal-menu" class="tab-bar" {style}>
-  {#each items as item}
+<ul data-cy="tab-bar" class="tab-bar" {style}>
+  {#each tabs as tab}
     <li
       class="tab"
-      data-cy={`${item.title.toLowerCase()}-tab`}
-      on:click={() => dispatch("select", item)}>
+      data-cy={`${tab.title.toLowerCase()}-tab`}
+      on:click={tab.onClick}>
       <div class="icon">
         <svelte:component
-          this={item.icon}
-          style={activeTab === item.tab ? "fill: var(--color-primary)" : ""} />
+          this={tab.icon}
+          style={tab.active ? "fill: var(--color-primary)" : ""} />
       </div>
 
-      <p class="title typo-text-bold" class:active={activeTab === item.tab}>
-        {item.title}
+      <p class="title typo-text-bold" class:active={tab.active}>
+        {tab.title}
       </p>
 
-      {#if item.counter}
+      {#if tab.counter}
         <span class="counter typo-mono-bold" data-cy="counter"
-          >{item.counter}</span>
+          >{tab.counter}</span>
       {/if}
     </li>
   {/each}
