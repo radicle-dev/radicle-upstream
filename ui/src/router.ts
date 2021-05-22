@@ -19,14 +19,20 @@ export type Route =
     }
   | { type: "settings" };
 
-const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable([]);
+const persistedState: Route | null = window.history.state;
+
+const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
+  persistedState === null ? [] : [persistedState]
+);
 
 export const push = (newRoute: Route): void => {
   writableHistory.update(history => [...history, newRoute]);
+  window.history.pushState(newRoute, "", "");
 };
 
 export const pop = (): void => {
   writableHistory.update(history => history.slice(0, -1));
+  window.history.back();
 };
 
 export const routeStore: svelteStore.Readable<Route> = svelteStore.derived(
