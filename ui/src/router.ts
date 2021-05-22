@@ -1,7 +1,5 @@
 import * as svelteStore from "svelte/store";
 
-export { default as Router } from "ui/src/router/Router.svelte";
-
 export type Route =
   | { type: "empty" }
   | { type: "designSystemGuide" }
