@@ -17,7 +17,6 @@
   const tabs = [
     {
       title: "Projects",
-      type: "projects",
       active: true,
       icon: Icon.ChevronLeftRight,
       onClick: () => {},

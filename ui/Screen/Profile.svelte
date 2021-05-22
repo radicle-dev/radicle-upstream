@@ -3,6 +3,7 @@
   import * as modal from "../src/modal";
   import * as sess from "../src/session";
   import { settings } from "../src/session";
+  import * as router from "ui/src/router";
 
   import { Button, Icon } from "../DesignSystem/Primitive";
 
@@ -18,17 +19,16 @@
   import ProjectsTab from "ui/Screen//Profile/Projects.svelte";
   import FundingTab from "ui/Screen/Profile/Funding.svelte";
 
-  type Tab = "projects" | "following" | "funding";
-  export let activeTab: Tab = "projects";
+  export let activeTab: router.ProfileTab = "projects";
 
-  const tabs = (active: Tab) => {
+  const tabs = (active: router.ProfileTab) => {
     const tabs = [
       {
         title: "Projects",
         active: active === "projects",
         icon: Icon.ChevronLeftRight,
         onClick: () => {
-          activeTab = "projects";
+          router.push({ type: "profile", activeTab: "projects" });
         },
       },
       {
@@ -36,7 +36,7 @@
         active: active === "following",
         icon: Icon.Network,
         onClick: () => {
-          activeTab = "following";
+          router.push({ type: "profile", activeTab: "following" });
         },
       },
     ];
@@ -47,7 +47,7 @@
         active: active === "funding",
         icon: Icon.Wallet,
         onClick: () => {
-          activeTab = "funding";
+          router.push({ type: "profile", activeTab: "funding" });
         },
       });
     }

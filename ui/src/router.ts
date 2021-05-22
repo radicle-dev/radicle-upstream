@@ -1,15 +1,19 @@
 import * as svelteStore from "svelte/store";
 
+export type ProfileTab = "projects" | "following" | "funding";
+export type ProjectTab = "files" | "commits" | "commit";
+export type UserProfileTab = "projects";
+
 export type Route =
   | { type: "empty" }
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
-  | { type: "profile"; activeTab: "projects" | "following" }
-  | { type: "userProfile"; activeTab: "projects"; urn: string }
+  | { type: "profile"; activeTab: ProfileTab }
+  | { type: "userProfile"; activeTab: UserProfileTab; urn: string }
   | {
       type: "project";
-      activeTab: "files" | "commits" | "commit";
+      activeTab: ProjectTab;
       urn: string;
       commitHash: string | null;
     }

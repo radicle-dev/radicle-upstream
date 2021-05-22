@@ -3,6 +3,7 @@
   import { openPath } from "../../src/ipc";
   import * as notification from "../../src/notification";
   import * as proxy from "../../src/proxy";
+  import * as router from "ui/src/router";
   import type { Project, User } from "../../src/project";
   import {
     fetch,
@@ -30,11 +31,10 @@
   export let selectedPeer: User;
   export let isContributor: boolean;
 
-  type Tab = "files" | "commits" | "commit";
-  export let activeTab: Tab = "files";
+  export let activeTab: router.ProjectTab = "files";
   export let commitHash: string | null;
 
-  const tabs = (active: Tab, commitCount: number) => {
+  const tabs = (active: router.ProjectTab, commitCount: number) => {
     return [
       {
         title: "Files",
@@ -44,7 +44,12 @@
           if (activeTab === "files") {
             selectPath("");
           } else {
-            activeTab = "files";
+            router.push({
+              type: "project",
+              activeTab: "files",
+              urn: project.urn,
+              commitHash: null,
+            });
           }
         },
       },
@@ -54,7 +59,12 @@
         icon: Icon.Commit,
         counter: commitCount,
         onClick: () => {
-          activeTab = "commits";
+          router.push({
+            type: "project",
+            activeTab: "commits",
+            urn: project.urn,
+            commitHash: null,
+          });
         },
       },
     ];
