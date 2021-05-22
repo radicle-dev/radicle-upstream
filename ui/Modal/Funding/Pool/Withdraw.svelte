@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { get } from "svelte/store";
-  import { pop } from "ui/src/router";
 
   import { Dai, TxButton } from "../../../DesignSystem/Component";
   import { Button, Emoji, Input } from "../../../DesignSystem/Primitive";
@@ -14,8 +13,6 @@
   import { ValidationStatus } from "../../../src/validation";
 
   import Big from "big.js";
-
-  if ($store === null) pop();
 
   // Validate the amount beign withdrawn
   let validatingAmount = false;

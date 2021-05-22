@@ -1,13 +1,10 @@
 <script lang="typescript">
-  import { pop } from "ui/src/router";
-
   import { Dai, Remote, TxButton } from "../../../DesignSystem/Component";
   import { Button, Emoji } from "../../../DesignSystem/Primitive";
 
   import * as modal from "../../../src/modal";
   import { store } from "../../../src/funding/pool";
 
-  if ($store === null) pop();
   $: pool = $store;
 
   async function onConfirmed(): Promise<void> {

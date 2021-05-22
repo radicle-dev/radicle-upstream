@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { get } from "svelte/store";
-  import { pop } from "ui/src/router";
 
   import { TxButton } from "../../../DesignSystem/Component";
   import TopUp from "../../../DesignSystem/Component/Funding/Pool/TopUp.svelte";
@@ -9,8 +8,6 @@
   import { store } from "../../../src/funding/pool";
 
   import Big from "big.js";
-
-  if ($store === null) pop();
 
   let amount = "";
   async function onConfirmed(): Promise<void> {

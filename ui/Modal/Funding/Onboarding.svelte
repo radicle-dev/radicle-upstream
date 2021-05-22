@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import { pop } from "ui/src/router";
-
   import Erc20Allowance from "./Onboarding/Erc20Allowance.svelte";
   import Intro from "./Onboarding/Intro.svelte";
   import SetBudget from "./Onboarding/SetBudget.svelte";
@@ -22,8 +20,6 @@
     TopUp = "topup",
     Review = "review",
   }
-
-  if ($store === null) pop();
 
   function resolveFirstStep(): Step {
     return ($store?.data?.unwrap()?.erc20Allowance || 0) > 0

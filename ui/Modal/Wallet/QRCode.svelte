@@ -1,13 +1,10 @@
 <script lang="typescript">
-  import { pop } from "ui/src/router";
-
   import { Copyable, QR } from "../../DesignSystem/Component";
   import { Emoji } from "../../DesignSystem/Primitive";
 
   import { uriStore } from "../../src/wallet";
   import { ellipsed } from "../../src/style";
 
-  $: $uriStore || pop();
   $: uri = $uriStore || "";
 </script>
 
