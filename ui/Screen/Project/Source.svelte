@@ -15,7 +15,7 @@
   import * as screen from "../../src/screen";
 
   import ActionBar from "../../DesignSystem/Component/ActionBar.svelte";
-  import TabBar from "../../DesignSystem/Component/TabBar.svelte";
+  import TabBar from "ui/DesignSystem/Component/TabBar.svelte";
   import Remote from "../../DesignSystem/Component/Remote.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 

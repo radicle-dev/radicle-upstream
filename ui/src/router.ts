@@ -53,7 +53,3 @@ export const routeStore: svelteStore.Readable<Route> = svelteStore.derived(
     }
   }
 );
-
-routeStore.subscribe(state => {
-  console.log(state);
-});

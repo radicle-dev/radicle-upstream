@@ -9,7 +9,7 @@
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
   import Header from "../DesignSystem/Component/Header.svelte";
-  import TabBar from "../DesignSystem/Component/TabBar.svelte";
+  import TabBar from "ui/DesignSystem/Component/TabBar.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
   import ProfileHeader from "./Profile/ProfileHeader.svelte";
 
