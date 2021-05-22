@@ -10,8 +10,7 @@ use crate::{context, http};
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     get_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
-        .or(update_filter(ctx.clone()))
-        .or(list_filter(ctx))
+        .or(update_filter(ctx))
         .boxed()
 }
 
@@ -46,16 +45,6 @@ fn get_filter(
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
         .and_then(handler::get)
-}
-
-/// `GET /`
-fn list_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::end()
-        .and(http::with_context_unsealed(ctx))
-        .and(warp::get())
-        .and_then(handler::list)
 }
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
@@ -100,12 +89,6 @@ mod handler {
     pub async fn get(id: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let id = identity::get(&ctx.peer, id.clone()).await?;
         Ok(reply::json(&id))
-    }
-
-    /// Retrieve the list of identities known to the session user.
-    pub async fn list(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let users = identity::list(&ctx.peer).await?;
-        Ok(reply::json(&users))
     }
 }
 

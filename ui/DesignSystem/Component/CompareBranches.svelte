@@ -4,7 +4,6 @@
 
   export let baseBranch: string;
   export let compareBranch: string;
-
 </script>
 
 <style>
@@ -14,7 +13,6 @@
     align-items: center;
     gap: 0.5rem;
   }
-
 </style>
 
 <div class="branches">

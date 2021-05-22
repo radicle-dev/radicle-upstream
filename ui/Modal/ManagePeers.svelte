@@ -1,6 +1,6 @@
 <script lang="typescript">
   import type { PeerId } from "../src/identity";
-  import { PeerType, Role } from "../src/project";
+  import { PeerType, PeerRole } from "../src/project";
   import type { User } from "../src/project";
   import {
     addPeer,
@@ -42,10 +42,9 @@
   // Don't show our own peer in the list unless we have published something.
   const filteredPeers = (peers: [User]) => {
     return peers.filter(peer => {
-      return !(peer.type === PeerType.Local && peer.role === Role.Tracker);
+      return !(peer.type === PeerType.Local && peer.role === PeerRole.Tracker);
     });
   };
-
 </script>
 
 <style>
@@ -63,12 +62,11 @@
     margin-top: 2rem;
     width: 100%;
   }
-
 </style>
 
 <Remote {store} let:data={{ peerSelection, project }}>
   <Modal dataCy="remotes-modal">
-    <Emoji emoji={'💻'} size="huge" style="margin-bottom: 1.5rem;" />
+    <Emoji emoji={"💻"} size="huge" style="margin-bottom: 1.5rem;" />
 
     <h1>Manage remotes</h1>
     <p style="margin-top: 0.5rem; color: var(--color-foreground-level-6);">

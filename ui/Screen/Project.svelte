@@ -60,7 +60,6 @@
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
-
 </script>
 
 <SidebarLayout dataCy="project-screen">
@@ -72,7 +71,13 @@
         name={project.metadata.name}
         description={project.metadata.description}
         stats={project.stats}
-        onClick={() => push( { type: 'project', urn: urn, activeTab: 'files', commitHash: null } )} />
+        onClick={() =>
+          push({
+            type: "project",
+            urn: urn,
+            activeTab: "files",
+            commitHash: null,
+          })} />
 
       <div slot="right" style="display: flex;">
         <PeerSelector
@@ -83,7 +88,9 @@
           selected={selectedPeer} />
         <Tooltip
           position={CSSPosition.Left}
-          value={isMaintainer(session.identity.urn, project) ? trackTooltipMaintainer : trackTooltip}>
+          value={isMaintainer(session.identity.urn, project)
+            ? trackTooltipMaintainer
+            : trackTooltip}>
           <FollowToggle disabled following />
         </Tooltip>
       </div>

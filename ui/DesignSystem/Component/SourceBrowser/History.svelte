@@ -14,7 +14,6 @@
   const onSelect = (commit: CommitHeader) => {
     dispatch("select", commit);
   };
-
 </script>
 
 <style>
@@ -47,7 +46,6 @@
   .commit:hover {
     background: var(--color-foreground-level-1);
   }
-
 </style>
 
 <div data-cy="history">

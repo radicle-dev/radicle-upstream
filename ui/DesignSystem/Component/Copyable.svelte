@@ -37,7 +37,6 @@
       copied = false;
     }, 1000);
   };
-
 </script>
 
 <style>
@@ -61,7 +60,6 @@
     border-radius: 4px;
     color: var(--color-foreground-level-6);
   }
-
 </style>
 
 <div class="wrapper" on:click|stopPropagation={copy}>

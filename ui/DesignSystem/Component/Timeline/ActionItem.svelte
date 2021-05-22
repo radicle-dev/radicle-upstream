@@ -23,7 +23,6 @@
       "close-issue": "reopened the issue",
     }[variant];
   };
-
 </script>
 
 <style>
@@ -31,7 +30,6 @@
     display: flex;
     margin-left: 4px;
   }
-
 </style>
 
 <svelte:component this={icon(item.variant)} />
@@ -42,7 +40,7 @@
   imageUrl={item.user.avatar_url}
   title={item.user.handle} />
 <p style="color: var(--color-foreground-level-6);">{action(item.variant)}</p>
-{#if item.variant === 'label'}
+{#if item.variant === "label"}
   <div class="labels">
     {#each item.labels as label}
       <Label
@@ -51,7 +49,7 @@
         color={label.color} />
     {/each}
   </div>
-{:else if item.variant === 'assign'}
+{:else if item.variant === "assign"}
   <Avatar
     style="margin-left: 8px; height: 24px;"
     size="small"

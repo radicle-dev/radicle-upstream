@@ -29,7 +29,6 @@
       ...calculatePosition(position, containerRect, messageRect),
     };
   };
-
 </script>
 
 <style>
@@ -88,7 +87,6 @@
     bottom: -4px;
     transform: rotate(-45deg);
   }
-
 </style>
 
 {#if value.length > 0}

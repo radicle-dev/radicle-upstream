@@ -23,7 +23,6 @@
   ];
 
   fetchUser(urn);
-
 </script>
 
 <SidebarLayout>

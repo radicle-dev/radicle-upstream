@@ -7,7 +7,6 @@
   import ItemDescription from "./ItemDescription.svelte";
 
   export let tx: Tx;
-
 </script>
 
 <style>
@@ -37,7 +36,6 @@
     margin-right: 1rem;
     vertical-align: middle;
   }
-
 </style>
 
 <div class="item" on:click data-cy="transaction-item">

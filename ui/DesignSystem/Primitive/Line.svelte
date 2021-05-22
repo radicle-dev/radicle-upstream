@@ -8,7 +8,6 @@
   export let y1 = height / 2;
   export let x2 = width;
   export let y2 = height / 2;
-
 </script>
 
 <svg

@@ -18,7 +18,6 @@
   };
 
   fetchProjects(urn);
-
 </script>
 
 <Remote {store} let:data={projects}>

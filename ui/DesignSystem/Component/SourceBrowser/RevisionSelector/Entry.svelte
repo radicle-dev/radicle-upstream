@@ -13,7 +13,6 @@
   export let revision: Branch | Tag;
   export let selected: boolean = false;
   export let style: string | undefined = undefined;
-
 </script>
 
 <style>
@@ -42,7 +41,6 @@
     margin-left: 0.5rem;
     margin-right: 0.5rem;
   }
-
 </style>
 
 <div

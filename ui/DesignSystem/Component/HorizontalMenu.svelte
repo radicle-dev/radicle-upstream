@@ -14,7 +14,6 @@
   export let style: string = "";
 
   const dispatch = createEventDispatcher();
-
 </script>
 
 <style>
@@ -68,7 +67,6 @@
     border-radius: 0.75rem;
     margin-left: 0.5rem;
   }
-
 </style>
 
 <ul data-cy="horizontal-menu" class="tab-bar" {style}>
@@ -76,11 +74,11 @@
     <li
       class="tab"
       data-cy={`${item.title.toLowerCase()}-tab`}
-      on:click={() => dispatch('select', item)}>
+      on:click={() => dispatch("select", item)}>
       <div class="icon">
         <svelte:component
           this={item.icon}
-          style={activeTab === item.tab ? 'fill: var(--color-primary)' : ''} />
+          style={activeTab === item.tab ? "fill: var(--color-primary)" : ""} />
       </div>
 
       <p class="title typo-text-bold" class:active={activeTab === item.tab}>
@@ -88,9 +86,8 @@
       </p>
 
       {#if item.counter}
-        <span
-          class="counter typo-mono-bold"
-          data-cy="counter">{item.counter}</span>
+        <span class="counter typo-mono-bold" data-cy="counter"
+          >{item.counter}</span>
       {/if}
     </li>
   {/each}

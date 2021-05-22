@@ -1,6 +1,5 @@
 <script>
   export let title = null;
-
 </script>
 
 <style>
@@ -15,7 +14,6 @@
   p {
     color: var(--color-foreground-level-5);
   }
-
 </style>
 
 <div class="swatch">

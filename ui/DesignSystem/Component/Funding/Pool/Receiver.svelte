@@ -8,7 +8,6 @@
   export let disabled = false;
   export let status: ReceiverStatus;
   export let onClick: ((title: string) => void) | undefined;
-
 </script>
 
 <style>
@@ -36,7 +35,6 @@
   .receiver.disabled .content {
     color: var(--color-foreground-level-3) !important;
   }
-
 </style>
 
 <span class="receiver {status.toLowerCase()}" class:disabled>

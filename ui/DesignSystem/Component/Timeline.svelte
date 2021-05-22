@@ -4,7 +4,6 @@
   export let startDate = null;
   export let items = null;
   export let style = null;
-
 </script>
 
 <style>
@@ -30,7 +29,6 @@
   .comment-item {
     padding-bottom: 24px;
   }
-
 </style>
 
 <ul {style}>
@@ -38,7 +36,7 @@
     <p style="color: var(--color-foreground-level-4)">{startDate}</p>
   </li>
   {#each items as item}
-    {#if item.variant === 'comment'}
+    {#if item.variant === "comment"}
       <li class="comment-item">
         <CommentItem {item} />
       </li>

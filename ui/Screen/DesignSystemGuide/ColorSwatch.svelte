@@ -3,7 +3,6 @@
 
   export let style = null;
   export let color = null;
-
 </script>
 
 <style>
@@ -18,7 +17,6 @@
   .border {
     border: 1px solid var(--color-foreground-level-3);
   }
-
 </style>
 
 <div class="wrapper" {style}>
@@ -29,7 +27,7 @@
     copyContent={`var(${color});`}>
     <Tooltip value={`var(${color})`} position="top">
       <div
-        class:border={color === '--color-background'}
+        class:border={color === "--color-background"}
         class="color"
         style={`background-color: var(${color});`} />
     </Tooltip>

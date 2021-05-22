@@ -1,5 +1,6 @@
 import { push } from "ui/src/router";
 import * as zod from "zod";
+import * as svelteStore from "svelte/store";
 
 import type * as identity from "./identity";
 import * as config from "./config";
@@ -228,10 +229,12 @@ export const requestEvents: bacon.EventStream<RequestEvent> = bacon.filterMap(
   }
 );
 
-export const status = remote.createStore<Status>();
+export const status = svelteStore.writable<Status>({
+  type: StatusType.Offline,
+});
 
 eventBus.onValue(event => {
   if (event.type === EventType.StatusChanged) {
-    status.success(event.new);
+    status.set(event.new);
   }
 });

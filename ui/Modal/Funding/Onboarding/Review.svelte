@@ -12,7 +12,6 @@
   export let budget = "";
   export let topUp = "";
   export let receivers: PoolReceivers;
-
 </script>
 
 <style>
@@ -36,7 +35,6 @@
   strong {
     font-weight: bold;
   }
-
 </style>
 
 <Emoji emoji="💸" size="huge" />

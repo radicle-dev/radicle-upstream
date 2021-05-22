@@ -4,7 +4,6 @@
 
   export let onCancel: () => void;
   export let onConfirm: () => Promise<void>;
-
 </script>
 
 <style>
@@ -28,7 +27,6 @@
     justify-content: flex-end;
     width: 100%;
   }
-
 </style>
 
 <Emoji emoji="🧐" size="huge" />

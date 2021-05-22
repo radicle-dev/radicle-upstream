@@ -24,7 +24,6 @@
   }
 
   $: disabled = $validation.status !== ValidationStatus.Success;
-
 </script>
 
 <style>
@@ -44,7 +43,6 @@
     justify-content: flex-end;
     width: 100%;
   }
-
 </style>
 
 <Emoji emoji="💸" size="huge" />
@@ -59,7 +57,7 @@
   validation={$validation}
   showLeftItem
   autofocus
-  style={'width: 125px; margin-top: 1.5rem'}>
+  style={"width: 125px; margin-top: 1.5rem"}>
   <div slot="left" style="position: absolute; top: 1px; left: 12px;">
     <Dai />
   </div>

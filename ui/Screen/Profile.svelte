@@ -43,7 +43,6 @@
   }
 
   const session = sess.getUnsealedFromContext();
-
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
@@ -76,11 +75,11 @@
       }} />
   </ActionBar>
 
-  {#if activeTab === 'projects'}
+  {#if activeTab === "projects"}
     <ProjectsTab />
-  {:else if activeTab === 'following'}
+  {:else if activeTab === "following"}
     <FollowingTab />
-  {:else if activeTab === 'funding'}
+  {:else if activeTab === "funding"}
     <FundingTab />
   {/if}
 </SidebarLayout>

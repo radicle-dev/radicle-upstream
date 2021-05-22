@@ -20,7 +20,6 @@
     path = await getDirectoryPath();
     if (path) dispatch("selected");
   };
-
 </script>
 
 <style>
@@ -28,7 +27,6 @@
     display: flex;
     align-items: flex-start;
   }
-
 </style>
 
 <div class="wrapper" {style}>

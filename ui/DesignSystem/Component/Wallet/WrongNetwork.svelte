@@ -2,7 +2,6 @@
   import { Emoji } from "../../Primitive";
 
   export let expectedNetwork = "Mainnet";
-
 </script>
 
 <style>
@@ -31,7 +30,6 @@
     width: 23.75rem;
     margin: 0 auto;
   }
-
 </style>
 
 <div class="wrapper">

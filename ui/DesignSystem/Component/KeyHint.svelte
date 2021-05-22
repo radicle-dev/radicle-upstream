@@ -6,7 +6,6 @@
   export let style = "";
 
   const addModifier = hint.length === 1 && !noModifier && hint !== "↵";
-
 </script>
 
 <style>
@@ -24,7 +23,6 @@
   .hint:first-child {
     margin-right: 0.25rem;
   }
-
 </style>
 
 <div class="hint-container" {style}>

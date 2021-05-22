@@ -6,7 +6,6 @@
   import Notification from "./Notification.svelte";
 
   export let style = "";
-
 </script>
 
 <style>
@@ -20,7 +19,6 @@
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
   }
-
 </style>
 
 <div class="wrapper" {style}>

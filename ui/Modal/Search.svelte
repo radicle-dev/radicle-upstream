@@ -95,7 +95,6 @@
 
   $: tracked = $store.status === remote.Status.Success;
   $: untracked = $store.status === remote.Status.Error;
-
 </script>
 
 <style>
@@ -140,7 +139,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
 </style>
 
 <div class="container" data-cy="search-modal">

@@ -2,7 +2,6 @@
   import { Icon } from "../../Primitive";
 
   export let disabled = false;
-
 </script>
 
 <style>
@@ -24,7 +23,6 @@
   .button.disabled :global(svg) {
     fill: var(--color-foreground-level-3);
   }
-
 </style>
 
 <svg

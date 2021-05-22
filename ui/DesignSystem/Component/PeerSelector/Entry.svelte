@@ -3,7 +3,6 @@
   export let dataCy: string = "";
   export let selected: boolean = false;
   export let style: string = "";
-
 </script>
 
 <style>
@@ -29,7 +28,6 @@
   .entry.selected {
     background-color: var(--color-foreground-level-2);
   }
-
 </style>
 
 <div

@@ -20,7 +20,6 @@
   }
 
   fetchCommit(commitHash);
-
 </script>
 
 <style>
@@ -67,7 +66,6 @@
     border-top: 1px solid var(--color-foreground-level-3);
     margin: 1rem 0 1.5rem 0;
   }
-
 </style>
 
 <div class="commit-page" data-cy="commit-page">
@@ -81,17 +79,16 @@
             it differently. -->
           <span>{$commit.data.header.author.name}</span>
           <span>committed</span>
-          <span
-            class="typo-mono">{$commit.data.header.sha1.substring(0, 7)}</span>
+          <span class="typo-mono"
+            >{$commit.data.header.sha1.substring(0, 7)}</span>
           {#if $commit.data.branches.length > 0}
             <span style="margin-right: -1ch">to</span>
             <span class="branch typo-semi-bold">
               <Icon.Branch
                 style="vertical-align: bottom; fill:
                 var(--color-foreground-level-6)" />
-              <span
-                data-cy="commit-branch"
-                style="margin-left: -0.5ch">{$commit.data.branches[0]}</span>
+              <span data-cy="commit-branch" style="margin-left: -0.5ch"
+                >{$commit.data.branches[0]}</span>
             </span>
           {/if}
           <span style="margin-left: -0.5ch">
@@ -119,8 +116,8 @@
             <span class="author typo-semi-bold">
               {$commit.data.header.author.name}
             </span>
-            <span
-              class="typo-mono">&lt;{$commit.data.header.author.email}&gt;</span>
+            <span class="typo-mono"
+              >&lt;{$commit.data.header.author.email}&gt;</span>
           </p>
           {#if $commit.data.header.committer.email != $commit.data.header.author.email}
             <p class="field">

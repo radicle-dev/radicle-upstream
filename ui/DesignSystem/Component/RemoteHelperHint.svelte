@@ -9,7 +9,6 @@
 
   export let style = null;
   let hover = false;
-
 </script>
 
 <style>
@@ -31,7 +30,6 @@
     float: right;
     cursor: pointer;
   }
-
 </style>
 
 <div class="info" {style} data-cy="remote-helper-hint">
@@ -39,7 +37,7 @@
     data-cy="close-hint-button"
     class="close-hint-button"
     on:click={() => {
-      dispatch('hide');
+      dispatch("hide");
     }}>
     <Icon.CrossSmall />
   </div>

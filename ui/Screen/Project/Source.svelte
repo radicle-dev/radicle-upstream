@@ -106,7 +106,6 @@
   };
 
   $: fetch(project, selectedPeer);
-
 </script>
 
 <style>
@@ -115,7 +114,6 @@
     position: relative;
     margin-right: 2rem;
   }
-
 </style>
 
 <Remote {store} let:data={{ history, revisions, selectedRevision }}>
@@ -144,11 +142,11 @@
     </div>
   </ActionBar>
 
-  {#if activeTab === 'files'}
+  {#if activeTab === "files"}
     <FilesTab />
-  {:else if activeTab === 'commits'}
+  {:else if activeTab === "commits"}
     <CommitsTab />
-  {:else if activeTab === 'commit'}
+  {:else if activeTab === "commit"}
     {#if commitHash}
       <CommitTab {commitHash} />
     {/if}
