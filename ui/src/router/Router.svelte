@@ -7,22 +7,21 @@
   import Profile from "ui/Screen/Profile.svelte";
   import Project from "ui/Screen/Project.svelte";
   import Settings from "ui/Screen/Settings.svelte";
-
 </script>
 
-{#if $routeStore.type === 'designSystemGuide'}
+{#if $routeStore.type === "designSystemGuide"}
   <DesignSystemGuide />
-{:else if $routeStore.type === 'lock'}
+{:else if $routeStore.type === "lock"}
   <Lock />
-{:else if $routeStore.type === 'onboarding'}
+{:else if $routeStore.type === "onboarding"}
   <Onboarding />
-{:else if $routeStore.type === 'profile'}
+{:else if $routeStore.type === "profile"}
   <Profile activeTab={$routeStore.activeTab} />
-{:else if $routeStore.type === 'project'}
+{:else if $routeStore.type === "project"}
   <Project
     activeTab={$routeStore.activeTab}
     urn={$routeStore.urn}
     commitHash={$routeStore.commitHash} />
-{:else if $routeStore.type === 'settings'}
+{:else if $routeStore.type === "settings"}
   <Settings />
 {/if}
