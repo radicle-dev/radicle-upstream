@@ -27,7 +27,15 @@ const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
 
 export const push = (newRoute: Route): void => {
   writableHistory.update(history => [...history, newRoute]);
-  window.history.pushState(newRoute, "", "");
+  let subRoute = "";
+  if (
+    newRoute.type === "profile" ||
+    newRoute.type === "project" ||
+    newRoute.type === "userProfile"
+  ) {
+    subRoute = `/${newRoute.activeTab}`;
+  }
+  window.history.pushState(newRoute, "", `#/${newRoute.type}${subRoute}`);
 };
 
 export const pop = (): void => {
