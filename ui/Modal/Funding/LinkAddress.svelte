@@ -1,13 +1,14 @@
 <script lang="typescript">
-  import EthToRadicle from "./Link/EthToRadicle.svelte";
-  import SavedToRadicle from "./Link/SavedToRadicle.svelte";
-  import RadicleToEth from "./Link/RadicleToEth.svelte";
-  import { Remote } from "../../DesignSystem/Component";
+  import { Remote } from "ui/DesignSystem/Component";
+
+  import { Avatar, Button, Emoji, Icon } from "ui/DesignSystem/Primitive";
+  import { Copyable, TxButton } from "ui/DesignSystem/Component";
 
   import {
     ClaimsContract,
     claimsAddress,
   } from "../../src/attestation/contract";
+  import { lastClaimed } from "../../src/attestation/lastClaimed";
   import * as identity from "../../src/identity";
   import { store as walletStore } from "../../src/wallet";
   import { session } from "../../src/session";
@@ -18,42 +19,17 @@
     modal.hide();
   }
 
-  enum Step {
-    EthToRadicle = "EthToRadicle",
-    SavedToRadicle = "SavedToRadicle",
-    RadicleToEth = "RadicleToEth",
-  }
-
-  let currentStep = Step.EthToRadicle;
-
-  function onContinue() {
-    switch (currentStep) {
-      case Step.EthToRadicle:
-        currentStep = Step.SavedToRadicle;
-        break;
-      case Step.SavedToRadicle:
-        currentStep = Step.RadicleToEth;
-        break;
-      case Step.RadicleToEth:
-        modal.hide();
-        break;
-    }
-  }
-
   $: address = $walletStore.account()?.address || "";
 
-  async function claimEthAddress() {
+  async function claim(ident: identity.Identity) {
+    $lastClaimed = address.toLowerCase();
+    modal.hide();
     await identity.claimEthAddress(address);
-    onContinue();
-  }
-
-  async function claimRadicleIdentity(identity: identity.Identity) {
     const claims = new ClaimsContract(
       $walletStore.signer,
       claimsAddress($walletStore.environment)
     );
-    await claims.claim(identity.urn);
-    onContinue();
+    await claims.claim(ident.urn);
   }
 </script>
 
@@ -63,31 +39,93 @@
     justify-content: space-around;
     align-items: center;
     flex-direction: column;
+    min-height: 31.25rem;
+    text-align: center;
     padding: var(--content-padding);
     width: 37.5rem;
     background: var(--color-background);
     border-radius: 0.5rem;
+  }
 
-    text-align: center;
+  header {
+    padding: 0 var(--content-padding);
+  }
+
+  .data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+
+    width: 100%;
+    height: 10.625rem;
+
+    border: 1px solid var(--color-foreground-level-3);
+    background-color: var(--color-foreground-level-1);
+
+    margin-top: var(--content-padding);
+    padding: calc(var(--content-padding) / 2);
+    border-radius: 1rem;
+  }
+
+  .radicle-user {
+    display: flex;
+    align-items: center;
+  }
+  .submit {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 1.5rem;
   }
 </style>
 
 <Remote store={session} let:data={it}>
   <div class="wrapper">
-    {#if currentStep === Step.EthToRadicle}
-      <EthToRadicle
-        {address}
-        identity={it.identity}
-        {onCancel}
-        onConfirm={claimEthAddress} />
-    {:else if currentStep === Step.SavedToRadicle}
-      <SavedToRadicle {onCancel} {onContinue} />
-    {:else if currentStep === Step.RadicleToEth}
-      <RadicleToEth
-        {address}
-        identity={it.identity}
-        {onCancel}
-        onSendTransaction={() => claimRadicleIdentity(it.identity)} />
-    {/if}
+    <Emoji emoji="🧦" size="huge" />
+
+    <header>
+      <h1 style="margin-top: 1.5rem;">
+        Link your Radicle Identity and Ethereum address
+      </h1>
+      <p style="margin-top: 1.5rem; padding: 0 4rem" class="typo-text">
+        An Ethereum transaction will be sent
+      </p>
+    </header>
+
+    <div class="data">
+      <p class="radicle-user typo-text-bold">
+        <Avatar
+          size="small"
+          avatarFallback={it.identity.avatarFallback}
+          variant="circle"
+          style="margin-right: 10px" />
+        {it.identity.metadata.handle}
+      </p>
+      <Icon.ChevronUpDown />
+      <p class="address typo-text">
+        <Copyable
+          showIcon={false}
+          styleContent={false}
+          copyContent={address}
+          notificationText="Address copied to the clipboard">
+          {address}
+        </Copyable>
+      </p>
+    </div>
+
+    <div class="submit">
+      <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>
+        Cancel
+      </Button>
+
+      <TxButton
+        dataCy="confirm-button"
+        onClick={() => claim(it.identity)}
+        style="margin-left: 14px;"
+        errorLabel="Failed to claim your Radicle Identity on Ethereum">
+        Link your ID
+      </TxButton>
+    </div>
   </div>
 </Remote>

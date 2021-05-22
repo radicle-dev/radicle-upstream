@@ -108,7 +108,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use radicle_daemon::{git_ext::Oid, state, Urn};
-    use radicle_source::surf::vcs::git::BranchSelector;
+    use radicle_source::surf::vcs::git::RefScope;
 
     use crate::{browser, context, error, session, session::settings};
 
@@ -162,7 +162,7 @@ mod handler {
             .await
             .map_err(error::Error::from)?;
         let branches = browser::using(&ctx.peer, default_branch, |browser| {
-            radicle_source::branches(browser, BranchSelector::from(peer_id))
+            radicle_source::branches(browser, RefScope::from(peer_id))
         })
         .await
         .map_err(error::Error::from)?;
@@ -327,7 +327,7 @@ mod test {
     use warp::{http::StatusCode, test::request};
 
     use radicle_daemon::{git_ext, identities, state, Urn};
-    use radicle_source::surf::vcs::git::BranchSelector;
+    use radicle_source::surf::vcs::git::RefScope;
 
     use crate::{browser, context, error, http};
 
@@ -510,7 +510,7 @@ mod test {
 
         let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
-            radicle_source::branches(browser, BranchSelector::All)
+            radicle_source::branches(browser, RefScope::All)
         })
         .await?;
 
