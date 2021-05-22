@@ -1,13 +1,13 @@
-<script>
-  import { push, routeStore } from "ui/src/router.ts";
+<script lang="typescript">
+  import { push, routeStore } from "ui/src/router";
 
-  import * as hotkeys from "./src/hotkeys.ts";
-  import { isExperimental } from "./src/config";
-  import "./src/localPeer.ts";
-  import * as remote from "./src/remote.ts";
-  import * as error from "./src/error.ts";
-  import * as customProtocolHandler from "./src/customProtocolHandler.ts";
-  import { fetch, session as store, Status } from "./src/session.ts";
+  import * as hotkeys from "ui/src/hotkeys";
+  import { isExperimental } from "ui/src/config";
+  import "ui/src/localPeer";
+  import * as remote from "ui/src/remote";
+  import * as error from "ui/src/error";
+  import * as customProtocolHandler from "ui/src/customProtocolHandler";
+  import { fetch, session as store, Status } from "ui/src/session";
 
   import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
   import Lock from "ui/Screen/Lock.svelte";
@@ -21,12 +21,12 @@
     NotificationFaucet,
     Remote,
     ModalOverlay,
-  } from "./DesignSystem/Component";
+  } from "ui/DesignSystem/Component";
 
-  import Hotkeys from "./Hotkeys.svelte";
-  import Theme from "./Theme.svelte";
+  import Hotkeys from "ui/Hotkeys.svelte";
+  import Theme from "ui/Theme.svelte";
 
-  import TransactionCenter from "./App/TransactionCenter.svelte";
+  import TransactionCenter from "ui/App/TransactionCenter.svelte";
 
   import Bsod from "ui/Screen/Bsod.svelte";
 
