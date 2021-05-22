@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { pop } from "ui/src/router";
 
   import { Icon } from "../Primitive";

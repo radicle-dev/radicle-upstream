@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { get } from "svelte/store";
   import { pop } from "ui/src/router";
 
