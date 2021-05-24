@@ -43,13 +43,11 @@ export const pop = (): void => {
   window.history.back();
 };
 
-export const routeStore: svelteStore.Readable<Route> = svelteStore.derived(
-  writableHistory,
-  state => {
+export const activeRouteStore: svelteStore.Readable<Route> =
+  svelteStore.derived(writableHistory, state => {
     if (state.length === 0) {
       return <Route>{ type: "empty" };
     } else {
       return state.slice(-1)[0];
     }
-  }
-);
+  });

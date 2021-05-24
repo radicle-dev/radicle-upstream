@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { push, routeStore } from "ui/src/router";
+  import { push, activeRouteStore } from "ui/src/router";
 
   import * as hotkeys from "ui/src/hotkeys";
   import { isExperimental } from "ui/src/config";
@@ -42,9 +42,9 @@
       } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
-          $routeStore.type === "empty" ||
-          $routeStore.type === "onboarding" ||
-          $routeStore.type === "lock"
+          $activeRouteStore.type === "empty" ||
+          $activeRouteStore.type === "onboarding" ||
+          $activeRouteStore.type === "lock"
         ) {
           push({ type: "profile", activeTab: "projects" });
         }
@@ -83,25 +83,25 @@
 <NotificationFaucet />
 <Theme />
 
-{#if isExperimental && sessionIsUnsealed && $routeStore.type !== "designSystemGuide"}
+{#if isExperimental && sessionIsUnsealed && $activeRouteStore.type !== "designSystemGuide"}
   <TransactionCenter />
 {/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
-  {#if $routeStore.type === "designSystemGuide"}
+  {#if $activeRouteStore.type === "designSystemGuide"}
     <DesignSystemGuide />
-  {:else if $routeStore.type === "lock"}
+  {:else if $activeRouteStore.type === "lock"}
     <Lock />
-  {:else if $routeStore.type === "onboarding"}
+  {:else if $activeRouteStore.type === "onboarding"}
     <Onboarding />
-  {:else if $routeStore.type === "profile"}
-    <Profile activeTab={$routeStore.activeTab} />
-  {:else if $routeStore.type === "project"}
+  {:else if $activeRouteStore.type === "profile"}
+    <Profile activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "project"}
     <Project
-      activeTab={$routeStore.activeTab}
-      urn={$routeStore.urn}
-      commitHash={$routeStore.commitHash} />
-  {:else if $routeStore.type === "settings"}
+      activeTab={$activeRouteStore.activeTab}
+      urn={$activeRouteStore.urn}
+      commitHash={$activeRouteStore.commitHash} />
+  {:else if $activeRouteStore.type === "settings"}
     <Settings />
   {/if}
 

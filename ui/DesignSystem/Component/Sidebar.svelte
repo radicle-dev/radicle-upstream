@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { routeStore, push } from "ui/src/router";
+  import { activeRouteStore, push } from "ui/src/router";
 
   import type { Identity } from "../../src/identity";
   import * as modal from "../../src/modal";
@@ -104,7 +104,7 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={$routeStore.type === "profile"}
+        class:active={$activeRouteStore.type === "profile"}
         on:click|stopPropagation={() =>
           push({ type: "profile", activeTab: "projects" })}>
         <Avatar
@@ -128,7 +128,7 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={$routeStore.type === "settings"}
+        class:active={$activeRouteStore.type === "settings"}
         on:click|stopPropagation={() => push({ type: "settings" })}>
         <Icon.Settings />
       </div>

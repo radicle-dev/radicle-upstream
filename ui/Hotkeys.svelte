@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { pop, push, routeStore } from "ui/src/router";
+  import { pop, push, activeRouteStore } from "ui/src/router";
   import type { SvelteComponent } from "svelte";
 
   import NewProjectModal from "ui/Modal/NewProject.svelte";
@@ -13,7 +13,7 @@
   import { isDev } from "./src/config";
 
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
-    if ($routeStore.type === "designSystemGuide") {
+    if ($activeRouteStore.type === "designSystemGuide") {
       pop();
     }
     modal.toggle(modalComponent);
@@ -56,7 +56,7 @@
         break;
       case hotkeys.ShortcutKey.Settings:
         modal.hide();
-        if ($routeStore.type === "settings") {
+        if ($activeRouteStore.type === "settings") {
           return;
         }
         push({ type: "settings" });
@@ -65,7 +65,7 @@
         toggleModal(SearchModal);
         break;
       case hotkeys.ShortcutKey.DesignSystem:
-        if ($routeStore.type === "designSystemGuide") {
+        if ($activeRouteStore.type === "designSystemGuide") {
           pop();
         } else {
           push({ type: "designSystemGuide" });
