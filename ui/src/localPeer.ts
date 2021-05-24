@@ -1,4 +1,4 @@
-import { push } from "ui/src/router";
+import * as router from "ui/src/router";
 import * as zod from "zod";
 import * as svelteStore from "svelte/store";
 
@@ -185,7 +185,7 @@ eventBus.onValue(event => {
           {
             label: "Show Project",
             handler: () =>
-              push({
+              router.push({
                 type: "project",
                 urn: event.urn,
                 activeTab: "files",
