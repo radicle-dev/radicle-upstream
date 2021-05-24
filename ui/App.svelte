@@ -1,14 +1,15 @@
 <script lang="typescript">
   import { push, activeRouteStore } from "ui/src/router";
 
-  import * as hotkeys from "ui/src/hotkeys";
-  import { isExperimental } from "ui/src/config";
-  import "ui/src/localPeer";
-  import * as remote from "ui/src/remote";
-  import * as error from "ui/src/error";
+  import * as config from "ui/src/config";
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
+  import * as error from "ui/src/error";
+  import * as hotkeys from "ui/src/hotkeys";
+  import * as remote from "ui/src/remote";
   import { fetch, session as store, Status } from "ui/src/session";
+  import "ui/src/localPeer";
 
+  import Bsod from "ui/Screen/Bsod.svelte";
   import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
   import Lock from "ui/Screen/Lock.svelte";
   import Onboarding from "ui/Screen/Onboarding.svelte";
@@ -16,19 +17,16 @@
   import Project from "ui/Screen/Project.svelte";
   import Settings from "ui/Screen/Settings.svelte";
 
+  import Hotkeys from "ui/Hotkeys.svelte";
+  import Theme from "ui/Theme.svelte";
+  import TransactionCenter from "ui/App/TransactionCenter.svelte";
+
   import {
     EmptyState,
     NotificationFaucet,
-    Remote,
     ModalOverlay,
+    Remote,
   } from "ui/DesignSystem/Component";
-
-  import Hotkeys from "ui/Hotkeys.svelte";
-  import Theme from "ui/Theme.svelte";
-
-  import TransactionCenter from "ui/App/TransactionCenter.svelte";
-
-  import Bsod from "ui/Screen/Bsod.svelte";
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -83,7 +81,7 @@
 <NotificationFaucet />
 <Theme />
 
-{#if isExperimental && sessionIsUnsealed && $activeRouteStore.type !== "designSystemGuide"}
+{#if config.isExperimental && sessionIsUnsealed && $activeRouteStore.type !== "designSystemGuide"}
   <TransactionCenter />
 {/if}
 
