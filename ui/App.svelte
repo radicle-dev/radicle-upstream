@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { push, activeRouteStore } from "ui/src/router";
-
   import * as config from "ui/src/config";
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
   import * as error from "ui/src/error";
@@ -8,6 +7,13 @@
   import * as remote from "ui/src/remote";
   import { fetch, session as store, Status } from "ui/src/session";
   import "ui/src/localPeer";
+
+  import {
+    EmptyState,
+    NotificationFaucet,
+    ModalOverlay,
+    Remote,
+  } from "ui/DesignSystem/Component";
 
   import Bsod from "ui/Screen/Bsod.svelte";
   import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
@@ -20,13 +26,6 @@
   import Hotkeys from "ui/Hotkeys.svelte";
   import Theme from "ui/Theme.svelte";
   import TransactionCenter from "ui/App/TransactionCenter.svelte";
-
-  import {
-    EmptyState,
-    NotificationFaucet,
-    ModalOverlay,
-    Remote,
-  } from "ui/DesignSystem/Component";
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
