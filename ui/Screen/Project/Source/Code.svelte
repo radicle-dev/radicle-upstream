@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { push } from "ui/src/router";
-
+  import * as router from "ui/src/router";
   import { selectPath, store } from "../../../src/screen/project/source";
   import { fetchTree } from "../../../src/source";
   import type { Sha1 } from "../../../src/source";
@@ -12,7 +11,7 @@
   import Tree from "../../../DesignSystem/Component/SourceBrowser/Tree.svelte";
 
   const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {
-    push({
+    router.push({
       type: "project",
       activeTab: "commit",
       urn: projectUrn,

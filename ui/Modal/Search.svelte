@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import { push } from "ui/src/router";
   import { onDestroy } from "svelte";
 
   import * as modal from "ui/src/modal";
@@ -7,6 +6,7 @@
   import * as error from "ui/src/error";
   import type { Project } from "ui/src/project";
   import * as remote from "ui/src/remote";
+  import * as router from "ui/src/router";
   import {
     inputStore,
     projectRequest as request,
@@ -35,7 +35,7 @@
 
   const navigateToProject = (project: Project) => {
     reset();
-    push({
+    router.push({
       type: "project",
       urn: project.urn,
       activeTab: "files",
@@ -82,7 +82,7 @@
   // Fire notification when a request has been created.
   $: if ($request.status === remote.Status.Success) {
     reset();
-    push({ type: "profile", activeTab: "following" });
+    router.push({ type: "profile", activeTab: "following" });
     notification.info({
       message: "You’ll be notified when this project has been found.",
     });

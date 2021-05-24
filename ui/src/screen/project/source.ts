@@ -1,11 +1,11 @@
 import { derived, get, writable } from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
-import { push } from "ui/src/router";
 
 import * as error from "ui/src/error";
 import * as config from "ui/src/config";
 import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
+import * as router from "ui/src/router";
 import * as source from "ui/src/source";
 
 export enum ViewKind {
@@ -234,7 +234,7 @@ export const selectCommit = (commit: source.CommitHeader): void => {
       data: { project },
     } = screen;
 
-    push({
+    router.push({
       type: "project",
       activeTab: "commit",
       urn: project.urn,

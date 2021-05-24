@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
-  import { push } from "ui/src/router";
 
   import ModalSearch from "../../Modal/Search.svelte";
 
@@ -8,6 +7,7 @@
   import * as modal from "../../src/modal";
   import { following as store, fetchFollowing } from "../../src/profile";
   import * as proxy from "../../src/proxy";
+  import * as router from "ui/src/router";
   import type { Project } from "../../src/project";
   import * as sess from "../../src/session";
   import type { Urn } from "../../src/urn";
@@ -28,7 +28,7 @@
     proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
-    push({
+    router.push({
       type: "project",
       urn: project.urn,
       activeTab: "files",

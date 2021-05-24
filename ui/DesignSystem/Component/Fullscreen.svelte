@@ -1,12 +1,12 @@
 <script lang="typescript">
-  import { pop } from "ui/src/router";
+  import * as router from "ui/src/router";
 
   import { Icon } from "../Primitive";
 
   export let style = "";
   export let contentStyle = "";
   export let escapable: boolean = true;
-  export let onClose = pop;
+  export let onClose = router.pop;
 
   const onKeydown = (event: KeyboardEvent) => {
     if (

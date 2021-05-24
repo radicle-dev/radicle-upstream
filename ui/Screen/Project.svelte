@@ -1,12 +1,12 @@
 <script lang="typescript">
   import { onMount } from "svelte";
-  import { push } from "ui/src/router";
 
   import * as localPeer from "../src/localPeer";
   import * as modal from "../src/modal";
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
   import { fetch, selectPeer, refresh, store } from "../src/screen/project";
+  import * as router from "ui/src/router";
   import * as sess from "../src/session";
   import { CSSPosition } from "../src/style";
   import type { Urn } from "../src/urn";
@@ -34,9 +34,9 @@
 
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
     if (peer.identity.urn === session.identity.urn) {
-      push({ type: "profile", activeTab: "projects" });
+      router.push({ type: "profile", activeTab: "projects" });
     } else {
-      push({
+      router.push({
         type: "userProfile",
         activeTab: "projects",
         urn: peer.identity.urn,
@@ -72,7 +72,7 @@
         description={project.metadata.description}
         stats={project.stats}
         onClick={() =>
-          push({
+          router.push({
             type: "project",
             urn: urn,
             activeTab: "files",
