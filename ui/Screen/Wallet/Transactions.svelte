@@ -1,32 +1,45 @@
 <script lang="typescript">
-  import * as modal from "ui/src/modal";
-  import { store as transactions, selectedStore } from "ui/src/transaction";
+  import { store as transactions, getShortMonth } from "ui/src/transaction";
 
-  import TxItem from "ui/DesignSystem/Component/Wallet/Transactions/TxItem.svelte";
-  import ModalTransaction from "ui/Modal/Transaction.svelte";
+  import TxList from "ui/DesignSystem/Component/Wallet/Transactions/TxList.svelte";
 
-  const onSelect = (hash: string) => {
-    selectedStore.set(hash);
-    modal.hide();
-    modal.toggle(ModalTransaction);
-  };
+  $: pendingTxs = $transactions.filter(
+    tx => tx.status === "Awaiting inclusion"
+  );
+  $: rejectedTxs = $transactions.filter(tx => tx.status === "Rejected");
 
-  $: pendingTxs = $transactions.filter(tx => tx.status !== "Included");
+  $: txMonthSections = $transactions.reduce((res, cur) => {
+    const txMonth = new Date(cur.date).getMonth();
+    const txYear = new Date(cur.date).getFullYear();
+
+    const currentSectionIndex = res.findIndex(
+      section => section.key === `${txMonth}` + `${txYear}`
+    );
+
+    if (currentSectionIndex !== -1) {
+      res[currentSectionIndex] = {
+        ...res[currentSectionIndex],
+        items: [...res[currentSectionIndex].items, cur],
+      };
+    } else {
+      res = [
+        ...res,
+        {
+          key: `${txMonth}` + `${txYear}`,
+          title: `${getShortMonth(new Date(cur.date))  } ${  txYear}`,
+          items: [cur],
+        },
+      ];
+    }
+    return res;
+  }, []);
 </script>
 
 <style>
   .list {
     border: 1px solid var(--color-foreground-level-2);
-    border-radius: 0.5rem;
-  }
-
-  .title-row {
-    display: flex;
-    flex: 1;
-    padding: 0.25rem 0.75rem;
-    color: var(--color-foreground-level-5);
-    background-color: var(--color-foreground-level-1);
-    border-bottom: 1px solid var(--color-foreground-level-2);
+    border-radius: 0.25rem;
+    margin-bottom: 1.5rem;
   }
 </style>
 
@@ -34,16 +47,17 @@
   {#if $transactions.length > 0}
     {#if pendingTxs.length > 0}
       <div class="list">
-        <h5 class="title-row">Pending transactions</h5>
-        {#each pendingTxs as tx}
-          <TxItem on:click={() => onSelect(tx.hash)} {tx} />
-        {/each}
+        <TxList title="Pending transactions" txs={pendingTxs} />
+      </div>
+    {/if}
+    {#if rejectedTxs.length > 0}
+      <div class="list">
+        <TxList title="Rejected transactions" txs={rejectedTxs} />
       </div>
     {/if}
     <div class="list">
-      <h5 class="title-row">2021</h5>
-      {#each $transactions as tx}
-        <TxItem on:click={() => onSelect(tx.hash)} {tx} />
+      {#each txMonthSections as section}
+        <TxList title={section.title} txs={section.items} />
       {/each}
     </div>
   {/if}
