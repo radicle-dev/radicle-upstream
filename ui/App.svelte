@@ -32,6 +32,7 @@
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
+  import NetworkDiagnostics from "./Screen/NetworkDiagnostics.svelte";
 
   const routes = {
     "/": Blank,
@@ -44,6 +45,7 @@
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
+    "/network-diagnostics/*": NetworkDiagnostics,
     "*": NotFound,
   };
 
