@@ -88,5 +88,7 @@
     <FollowingTab />
   {:else if activeTab === "funding"}
     <FundingTab />
+  {:else}
+    {router.unreachable(activeTab)}
   {/if}
 </SidebarLayout>

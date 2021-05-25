@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { push, activeRouteStore } from "ui/src/router";
+  import * as router from "ui/src/router";
   import * as config from "ui/src/config";
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
   import * as error from "ui/src/error";
@@ -20,12 +20,15 @@
   import Lock from "ui/Screen/Lock.svelte";
   import Onboarding from "ui/Screen/Onboarding.svelte";
   import Profile from "ui/Screen/Profile.svelte";
+  import UserProfile from "ui/Screen/UserProfile.svelte";
   import Project from "ui/Screen/Project.svelte";
   import Settings from "ui/Screen/Settings.svelte";
 
   import Hotkeys from "ui/Hotkeys.svelte";
   import Theme from "ui/Theme.svelte";
   import TransactionCenter from "ui/App/TransactionCenter.svelte";
+
+  const activeRouteStore = router.activeRouteStore;
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -35,19 +38,18 @@
     case remote.Status.Success:
       if ($store.data.status === Status.NoSession) {
         hotkeys.disable();
-        push({ type: "onboarding" });
+        router.push({ type: "onboarding" });
       } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
-          $activeRouteStore.type === "empty" ||
           $activeRouteStore.type === "onboarding" ||
           $activeRouteStore.type === "lock"
         ) {
-          push({ type: "profile", activeTab: "projects" });
+          router.push({ type: "profile", activeTab: "projects" });
         }
       } else {
         hotkeys.disable();
-        push({ type: "lock" });
+        router.push({ type: "lock" });
       }
       break;
 
@@ -93,6 +95,8 @@
     <Onboarding />
   {:else if $activeRouteStore.type === "profile"}
     <Profile activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "userProfile"}
+    <UserProfile urn={$activeRouteStore.urn} />
   {:else if $activeRouteStore.type === "project"}
     <Project
       activeTab={$activeRouteStore.activeTab}
@@ -100,6 +104,8 @@
       commitHash={$activeRouteStore.commitHash} />
   {:else if $activeRouteStore.type === "settings"}
     <Settings />
+  {:else}
+    {router.unreachable($activeRouteStore)}
   {/if}
 
   <div slot="loading" class="error">

@@ -153,5 +153,7 @@
     {#if commitHash}
       <CommitTab {commitHash} />
     {/if}
+  {:else}
+    {router.unreachable(activeTab)}
   {/if}
 </Remote>

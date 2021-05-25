@@ -1,16 +1,15 @@
 import * as svelteStore from "svelte/store";
+import * as error from "ui/src/error";
 
 export type ProfileTab = "projects" | "following" | "funding";
 export type ProjectTab = "files" | "commits" | "commit";
-export type UserProfileTab = "projects";
 
 export type Route =
-  | { type: "empty" }
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
   | { type: "profile"; activeTab: ProfileTab }
-  | { type: "userProfile"; activeTab: UserProfileTab; urn: string }
+  | { type: "userProfile"; urn: string }
   | {
       type: "project";
       activeTab: ProjectTab;
@@ -28,11 +27,7 @@ const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
 const routeToPath = (route: Route): string => {
   let subRoute = "";
 
-  if (
-    route.type === "profile" ||
-    route.type === "project" ||
-    route.type === "userProfile"
-  ) {
+  if (route.type === "profile" || route.type === "project") {
     subRoute = `/${route.activeTab}`;
   }
 
@@ -53,8 +48,16 @@ export const pop = (): void => {
 export const activeRouteStore: svelteStore.Readable<Route> =
   svelteStore.derived(writableHistory, state => {
     if (state.length === 0) {
-      return <Route>{ type: "empty" };
+      return <Route>{ type: "profile", activeTab: "projects" };
     } else {
       return state.slice(-1)[0];
     }
   });
+
+export const unreachable = (value: never): void => {
+  throw new error.Error({
+    code: error.Code.Unreachable,
+    message: "Unreachable code",
+    details: { value },
+  });
+};
