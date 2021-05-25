@@ -25,17 +25,23 @@ const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
   persistedState === null ? [] : [persistedState]
 );
 
+const serializeRoute = (route: Route) => {
+  let subRoute = "";
+
+  if (
+    route.type === "profile" ||
+    route.type === "project" ||
+    route.type === "userProfile"
+  ) {
+    subRoute = `/${route.activeTab}`;
+  }
+
+  return `#/${route.type}${subRoute}`;
+};
+
 export const push = (newRoute: Route): void => {
   writableHistory.update(history => [...history, newRoute]);
-  let subRoute = "";
-  if (
-    newRoute.type === "profile" ||
-    newRoute.type === "project" ||
-    newRoute.type === "userProfile"
-  ) {
-    subRoute = `/${newRoute.activeTab}`;
-  }
-  window.history.pushState(newRoute, "", `#/${newRoute.type}${subRoute}`);
+  window.history.pushState(newRoute, "", serializeRoute(newRoute));
 };
 
 export const pop = (): void => {
