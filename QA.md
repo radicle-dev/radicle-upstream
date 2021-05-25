@@ -14,7 +14,7 @@
 ### Onboarding
 
 - [ ] Start Upstream
-  - on Linux: run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage` by
+  - on Linux: run `PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X-rc.AppImage` by
     executing it from the terminal or clicking on it
   - on macOS: run `/Applications/Radicle Upstream.app` by double clicking it
 - [ ] Complete all the onboarding steps until you land on the Profile screen
@@ -73,16 +73,16 @@ git config --global user.email "email@example.com"
 
 **On macOS:**
 
-  1. open the `radicle-upstream-X.X.X.dmg` package
+  1. open the `radicle-upstream-X.X.X-rc.dmg` package
   2. install Upstream by dragging the `Radicle Upstream` binary to
      `/Applications`
 
 **On Linux (AppImage):**
 
-  1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X.AppImage`
+  1. `chmod +x <PATH_TO_DOWNLOAD>/radicle-upstream-X.X.X-rc.AppImage`
 
 
 
-[ln]: https://releases.radicle.xyz/radicle-upstream-X.X.X.AppImage
-[mc]: https://releases.radicle.xyz/radicle-upstream-X.X.X.dmg
+[ln]: https://releases.radicle.xyz/radicle-upstream-X.X.X-rc.AppImage
+[mc]: https://releases.radicle.xyz/radicle-upstream-X.X.X-rc.dmg
 [rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/scripts/reset-state.sh
