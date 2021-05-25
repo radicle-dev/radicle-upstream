@@ -50,7 +50,7 @@ git = "https://github.com/radicle-dev/radicle-avatar.git"
 rev = "4e34e6b992fd9f465b0547a5693b47b0d41dea01"
 
 [dependencies.radicle-source]
-version = "0.1.1"
+version = "^0.2.0"
 features = ["syntax"]
 
 [dev-dependencies]

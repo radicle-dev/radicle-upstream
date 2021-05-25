@@ -127,43 +127,10 @@ export const createStore = <T>(): Store<T> => {
   };
 };
 
-export const chain = <I, O>(
-  input: Readable<Data<I>>,
-  output: Store<O>
-): Promise<I> => {
-  const promise = new Promise<I>((resolve, reject) => {
-    input.subscribe(state => {
-      if (state.status === Status.Loading) {
-        output.loading();
-      }
-
-      if (state.status === Status.Error) {
-        output.error(state.error);
-        reject(state.error);
-      }
-
-      if (state.status === Status.Success) {
-        resolve(state.data);
-      }
-    });
-  });
-
-  return promise;
-};
-
-export const fetch = <T>(
-  store: Store<T>,
-  req: Promise<T>,
-  filter?: (val: T) => T
-): void => {
+export const fetch = <T>(store: Store<T>, req: Promise<T>): void => {
   if (get(store).status === Status.NotAsked) {
     store.loading();
   }
 
-  req
-    .then(val => {
-      return filter ? filter(val) : val;
-    })
-    .then(store.success)
-    .catch(err => store.error(error.fromUnknown(err)));
+  req.then(store.success).catch(err => store.error(error.fromUnknown(err)));
 };
