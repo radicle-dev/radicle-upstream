@@ -3,12 +3,14 @@ import * as error from "ui/src/error";
 
 export type ProfileTab = "projects" | "following" | "funding";
 export type ProjectTab = "files" | "commits" | "commit";
+export type NetworkDiagnosticsTab = "peers" | "requests";
 
 export type Route =
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
   | { type: "profile"; activeTab: ProfileTab }
+  | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; urn: string }
   | {
       type: "project";
@@ -27,7 +29,11 @@ const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
 const routeToPath = (route: Route): string => {
   let subRoute = "";
 
-  if (route.type === "profile" || route.type === "project") {
+  if (
+    route.type === "profile" ||
+    route.type === "project" ||
+    route.type === "networkDiagnostics"
+  ) {
     subRoute = `/${route.activeTab}`;
   }
 

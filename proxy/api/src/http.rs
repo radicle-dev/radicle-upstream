@@ -7,7 +7,6 @@ use radicle_daemon::{net, signer::BoxedSigner, state, LocalIdentity, PeerId};
 
 use crate::{context, notification::Subscriptions};
 
-mod avatar;
 mod control;
 mod error;
 mod identity;
@@ -41,7 +40,6 @@ pub fn api(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let test = ctx.test();
 
-    let avatar_filter = path("avatars").and(avatar::get_filter());
     let control_filter = path("control")
         .map(move || test)
         .and_then(|enable| async move {
@@ -62,7 +60,6 @@ pub fn api(
     let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
-        avatar_filter,
         control_filter,
         identity_filter,
         notification_filter,

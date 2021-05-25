@@ -75,6 +75,13 @@
       case hotkeys.ShortcutKey.NewProjects:
         toggleModal(NewProjectModal);
         break;
+      case hotkeys.ShortcutKey.NetworkDiagnostics:
+        modal.hide();
+        if ($activeRouteStore.type === "networkDiagnostics") {
+          return;
+        }
+        push({ type: "networkDiagnostics", activeTab: "peers" });
+        break;
     }
   };
 </script>

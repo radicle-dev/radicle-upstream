@@ -31,19 +31,19 @@ export class ResponseParseError extends Error {
   public method: string;
   public path: string;
   public body: unknown;
-  public errors: zod.ZodSuberror[];
+  public zodIssues: zod.ZodIssue[];
 
   constructor(
     method: string,
     path: string,
     body: unknown,
-    zodErrors: zod.ZodSuberror[]
+    zodIssues: zod.ZodIssue[]
   ) {
     super("Failed to parse response body");
     this.method = method;
     this.path = path;
     this.body = body;
-    this.errors = zodErrors;
+    this.zodIssues = zodIssues;
   }
 }
 

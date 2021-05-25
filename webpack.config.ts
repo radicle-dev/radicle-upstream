@@ -91,6 +91,14 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
           extensions: [".svelte", ".ts", ".js"],
         }),
       ],
+      // This is neccessary to prevent multiple versions of the svelte runtime
+      // being bundled when depending on libraries containing svelte
+      // components.
+      // See https://github.com/sveltejs/svelte-loader#resolvealias
+      alias: {
+        svelte: path.resolve("node_modules", "svelte"),
+      },
+      mainFields: ["svelte", "browser", "module", "main"],
     },
     output: {
       filename: "bundle.js",

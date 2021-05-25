@@ -18,6 +18,7 @@
   import Bsod from "ui/Screen/Bsod.svelte";
   import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
   import Lock from "ui/Screen/Lock.svelte";
+  import NetworkDiagnostics from "ui/Screen/NetworkDiagnostics.svelte";
   import Onboarding from "ui/Screen/Onboarding.svelte";
   import Profile from "ui/Screen/Profile.svelte";
   import UserProfile from "ui/Screen/UserProfile.svelte";
@@ -97,6 +98,8 @@
     <Profile activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "userProfile"}
     <UserProfile urn={$activeRouteStore.urn} />
+  {:else if $activeRouteStore.type === "networkDiagnostics"}
+    <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "project"}
     <Project
       activeTab={$activeRouteStore.activeTab}
