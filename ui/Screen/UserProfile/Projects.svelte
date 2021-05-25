@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { push } from "ui/src/router";
+  import * as router from "ui/src/router";
 
   import type { Project } from "../../src/project";
   import { fetchProjects, projects as store } from "../../src/userProfile";
@@ -9,7 +9,7 @@
   export let urn: string;
 
   const select = ({ detail: project }: { detail: Project }) => {
-    push({
+    router.push({
       type: "project",
       urn: project.urn,
       activeTab: "files",
