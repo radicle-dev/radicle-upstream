@@ -4,6 +4,10 @@
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import { List } from "ui/DesignSystem/Component";
+
+  // TODO(rudolfs): make the link go to
+  // `https://gnosis-safe.io/app/#/safes/${$orgMemberTabStore.gnosisSafeAddress}` for
+  // mainnet
 </script>
 
 <style>
@@ -66,7 +70,7 @@
     </span>
     <span class="address">
       <a
-        href={`https://gnosis-safe.io/app/#/safes/${$orgMemberTabStore.gnosisSafeAddress}`}
+        href={`https://rinkeby.gnosis-safe.io/app/#/safes/${$orgMemberTabStore.gnosisSafeAddress}`}
         class="typo-link">
         {$orgMemberTabStore.gnosisSafeAddress}
       </a>↗</span>
