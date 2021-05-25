@@ -25,7 +25,7 @@ const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
   persistedState === null ? [] : [persistedState]
 );
 
-const serializeRoute = (route: Route) => {
+const routeToPath = (route: Route): string => {
   let subRoute = "";
 
   if (
@@ -41,7 +41,8 @@ const serializeRoute = (route: Route) => {
 
 export const push = (newRoute: Route): void => {
   writableHistory.update(history => [...history, newRoute]);
-  window.history.pushState(newRoute, "", serializeRoute(newRoute));
+  const title = "Radicle Upstream";
+  window.history.pushState(newRoute, title, routeToPath(newRoute));
 };
 
 export const pop = (): void => {
