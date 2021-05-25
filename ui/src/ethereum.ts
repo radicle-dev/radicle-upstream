@@ -11,6 +11,8 @@ export enum Environment {
   Local = "Local",
   // The Ropsten testnet network
   Ropsten = "Ropsten",
+  // The Rinkeby testnet  where our orgs and gnosis safe are deployed
+  Rinkeby = "Rinkeby",
   // N.B: We will support 'Mainnet' in the future
 }
 
@@ -19,6 +21,7 @@ export enum Environment {
 // each Environment supports.
 export enum Network {
   Ropsten = "Ropsten",
+  Rinkeby = "Rinkeby",
   Mainnet = "Mainnet",
   Other = "Other",
 }
@@ -30,6 +33,8 @@ export function supportedNetwork(environment: Environment): Network {
       return Network.Mainnet;
     case Environment.Ropsten:
       return Network.Ropsten;
+    case Environment.Rinkeby:
+      return Network.Rinkeby;
   }
 }
 
@@ -41,6 +46,8 @@ export function networkFromChainId(chainId: number): Network {
       return Network.Mainnet;
     case 3:
       return Network.Ropsten;
+    case 4:
+      return Network.Rinkeby;
     default:
       return Network.Other;
   }
@@ -49,7 +56,7 @@ export function networkFromChainId(chainId: number): Network {
 // The store where the selected Ethereum environment is persisted.
 export const selectedEnvironment = persistentStore.local.writable<Environment>(
   "ethereum-environment-v0",
-  Environment.Ropsten
+  Environment.Rinkeby
 );
 
 // EIP-20 token decimals for the tokens we operate with across
