@@ -72,10 +72,11 @@ export const fetchFollowing = (): void => {
   remote.fetch(followingProjectsStore, proxy.client.project.listTracked());
   remote.fetch(
     requestedProjectsStore,
-    proxy.client.project.requestsList(),
-    reqs => {
-      return reqs.filter(req => req.type !== project.RequestStatus.Cloned);
-    }
+    proxy.client.project
+      .requestsList()
+      .then(reqs =>
+        reqs.filter(req => req.type !== project.RequestStatus.Cloned)
+      )
   );
 };
 
