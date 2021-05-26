@@ -20,11 +20,10 @@ export type Route =
     }
   | { type: "settings" };
 
-const persistedState: Route | null = window.history.state;
+// This is only respected by Safari.
+const DOCUMENT_TITLE = "Radicle Upstream";
 
-const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
-  persistedState === null ? [] : [persistedState]
-);
+const DEFAULT_ROUTE: Route = { type: "profile", activeTab: "projects" };
 
 const routeToPath = (route: Route): string => {
   let subRoute = "";
@@ -40,10 +39,25 @@ const routeToPath = (route: Route): string => {
   return `#/${route.type}${subRoute}`;
 };
 
+let persistedState: Route = DEFAULT_ROUTE;
+
+if (window.history.state === null) {
+  window.history.pushState(
+    DEFAULT_ROUTE,
+    DOCUMENT_TITLE,
+    routeToPath(DEFAULT_ROUTE)
+  );
+} else {
+  persistedState = window.history.state;
+}
+
+const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable([
+  persistedState,
+]);
+
 export const push = (newRoute: Route): void => {
   writableHistory.update(history => [...history, newRoute]);
-  const title = "Radicle Upstream";
-  window.history.pushState(newRoute, title, routeToPath(newRoute));
+  window.history.pushState(newRoute, DOCUMENT_TITLE, routeToPath(newRoute));
 };
 
 export const pop = (): void => {
@@ -53,11 +67,7 @@ export const pop = (): void => {
 
 export const activeRouteStore: svelteStore.Readable<Route> =
   svelteStore.derived(writableHistory, state => {
-    if (state.length === 0) {
-      return <Route>{ type: "profile", activeTab: "projects" };
-    } else {
-      return state.slice(-1)[0];
-    }
+    return state.slice(-1)[0];
   });
 
 export const unreachable = (value: never): void => {
