@@ -17,20 +17,26 @@
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
 
-    padding-top: 1.5rem;
     padding-bottom: 0px;
   }
 
-  h3,
-  h2 {
-    padding: 0 1.5rem;
+  .balances {
+    padding: 1.5rem;
   }
 
   h2 {
     margin: 0.75rem 0 1.5rem;
     color: var(--color-primary);
+  }
+
+  .supported {
+    color: var(--color-foreground-level-5);
+  }
+
+  .supported h3 {
+    padding-top: 0.375rem;
   }
 
   .address-box {
@@ -45,10 +51,18 @@
 </style>
 
 <div class="panel" {style}>
-  <h3>Balance</h3>
-  <h2>
-    {wallet.formattedBalance(account.balance.toNumber())} DAI
-  </h2>
+  <div class="balances">
+    <h3>Balance</h3>
+    <h2>
+      {wallet.formattedBalance(account.ethBalance.toNumber())} ETH
+    </h2>
+    <div class="supported">
+      <h5>Supported tokens</h5>
+      <h3>
+        {wallet.formattedBalance(account.daiBalance.toNumber())} DAI
+      </h3>
+    </div>
+  </div>
 
   <div class="address-box typo-text">
     <Copyable
