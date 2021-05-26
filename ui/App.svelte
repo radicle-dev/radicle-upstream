@@ -1,13 +1,13 @@
-<script>
+<script lang="typescript">
   import Router, { push, location } from "svelte-spa-router";
 
-  import * as hotkeys from "./src/hotkeys.ts";
-  import "./src/localPeer.ts";
-  import * as path from "./src/path.ts";
-  import * as remote from "./src/remote.ts";
-  import * as error from "./src/error.ts";
-  import * as customProtocolHandler from "./src/customProtocolHandler.ts";
-  import { fetch, session as store, Status } from "./src/session.ts";
+  import * as hotkeys from "./src/hotkeys";
+  import "./src/localPeer";
+  import * as path from "./src/path";
+  import * as remote from "./src/remote";
+  import * as error from "./src/error";
+  import * as customProtocolHandler from "./src/customProtocolHandler";
+  import { fetch, session as store, Status } from "./src/session";
 
   import {
     EmptyState,
