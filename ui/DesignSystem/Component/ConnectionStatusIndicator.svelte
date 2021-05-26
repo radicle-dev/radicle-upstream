@@ -7,9 +7,11 @@
   import Syncing from "./ConnectionStatusIndicator/Syncing.svelte";
   import Offline from "./ConnectionStatusIndicator/Offline.svelte";
 
-  const connectedPeerCount = (peers: { [peerId: string]: string[] }) => {
+  const connectedPeerCount = (peers: {
+    [peerId: string]: string[];
+  }): string => {
     const count = Object.keys(peers).length;
-    peerCount(count);
+    return peerCount(count);
   };
 
   const peerCount = (count: number) => {
