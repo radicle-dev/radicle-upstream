@@ -28,3 +28,8 @@ export const projectSourceCommits = (urn: Urn): string =>
 export const project = projectSourceFiles;
 
 export const designSystemGuide = (): string => "/design-system-guide";
+
+export const networkDiagnosticsConnectedPeers = (): string =>
+  "/network-diagnostics/connected-peers";
+export const networkDiagnosticsWaitingRoom = (): string =>
+  "/network-diagnostics/waiting-room";
