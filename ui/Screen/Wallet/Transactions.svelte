@@ -26,7 +26,7 @@
         ...res,
         {
           key: `${txMonth}` + `${txYear}`,
-          title: `${getShortMonth(new Date(cur.date))  } ${  txYear}`,
+          title: `${getShortMonth(new Date(cur.date))} ${txYear}`,
           items: [cur],
         },
       ];
