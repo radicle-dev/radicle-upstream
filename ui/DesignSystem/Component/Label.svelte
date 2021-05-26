@@ -1,7 +1,7 @@
-<script>
-  export let title = null;
-  export let color = null;
-  export let style = null;
+<script lang="typescript">
+  export let title: string = "";
+  export let color: string = "";
+  export let style: string = "";
 </script>
 
 <style>
@@ -14,5 +14,5 @@
 </style>
 
 <div class="label" style="--color: {color}; {style}">
-  <p class="typo-text-small">{title}</p>
+  <p class="typo-text-small-bold">{title}</p>
 </div>

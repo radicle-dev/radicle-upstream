@@ -1,7 +1,12 @@
-<script>
-  export let tx;
+<script lang="typescript">
+  import type { Tx } from "ui/src/transaction";
   import { Icon } from "ui/DesignSystem/Primitive";
+  import { Label } from "ui/DesignSystem/Component";
   import { getDay, getShortMonth } from "ui/src/transaction";
+
+  export let tx: Tx;
+
+  const price = 0.0043;
 </script>
 
 <style>
@@ -10,11 +15,17 @@
     padding: 0.75rem;
     border-bottom: 1px solid var(--color-foreground-level-2);
     align-items: center;
+    justify-content: space-between;
     cursor: pointer;
   }
 
   .container:last-child {
     border-bottom: 0;
+  }
+
+  .left {
+    display: flex;
+    align-items: center;
   }
 
   .date {
@@ -36,11 +47,16 @@
 </style>
 
 <div class="container" on:click>
-  <div class="date">
-    <h5>{getShortMonth(new Date(tx.date))}</h5>
-    <p class="typo-text-bold">{getDay(new Date(tx.date))}</p>
+  <div class="left">
+    <div class="date">
+      <h5>{getShortMonth(new Date(tx.date))}</h5>
+      <p class="typo-text-bold">{getDay(new Date(tx.date))}</p>
+    </div>
+    <Icon.Registered />
+    <p class="typo-text-bold" style="margin-left: 0.5rem">{tx.kind}</p>
   </div>
-  <Icon.Registered />
-
-  <p class="typo-text-bold" style="margin-left: 0.5rem">{tx.kind}</p>
+  <Label
+    title={`-${price} ETH`}
+    color="var(--color-negative-level-1)"
+    style="color: var(--color-negative)" />
 </div>
