@@ -15,23 +15,7 @@
     - "cypress/workspace/test-tmp/*/combined-node.log"
 
 steps:
-  - branches: master
-    concurrency: 1
-    concurrency_group: master
-    <<: *test-linux
-  # Build everything but `master` and pull requests from forks
-  - if: build.branch != "master" && build.pull_request.repository.fork != true
-    <<: *test-linux
-  - branches: "master"
-    <<: *test-linux
-    label: "Test and package app on Linux (preview)"
-    agents:
-      queue: agent-preview
   - label: "Test and package app on macOS"
-    if: |
-      build.branch == 'master'
-      || build.branch =~ /^release-candidate\//
-      || build.tag != null
     command: "ci/run.sh"
     agents:
       production: "false"
