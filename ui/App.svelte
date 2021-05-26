@@ -102,9 +102,8 @@
     <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "project"}
     <Project
-      activeTab={$activeRouteStore.activeTab}
-      urn={$activeRouteStore.urn}
-      commitHash={$activeRouteStore.commitHash} />
+      activeView={$activeRouteStore.activeView}
+      urn={$activeRouteStore.urn} />
   {:else if $activeRouteStore.type === "settings"}
     <Settings />
   {:else}

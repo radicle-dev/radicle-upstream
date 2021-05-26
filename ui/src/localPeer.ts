@@ -210,8 +210,7 @@ eventBus.onValue(event => {
               router.push({
                 type: "project",
                 urn: event.urn,
-                activeTab: "files",
-                commitHash: null,
+                activeView: { type: "files" },
               }),
           },
         ],

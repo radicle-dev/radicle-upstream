@@ -236,9 +236,8 @@ export const selectCommit = (commit: source.CommitHeader): void => {
 
     router.push({
       type: "project",
-      activeTab: "commit",
       urn: project.urn,
-      commitHash: commit.sha1,
+      activeView: { type: "commit", commitHash: commit.sha1 },
     });
   }
 };

@@ -79,8 +79,7 @@
       router.push({
         type: "project",
         urn: response.urn,
-        activeTab: "files",
-        commitHash: null,
+        activeView: { type: "files" },
       });
       notification.info({
         message: `Project ${response.metadata.name} successfully created`,

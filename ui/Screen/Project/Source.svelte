@@ -31,39 +31,36 @@
   export let selectedPeer: User;
   export let isContributor: boolean;
 
-  export let activeTab: router.ProjectTab = "files";
-  export let commitHash: string | null;
+  export let activeView: router.ProjectView;
 
-  const tabs = (active: router.ProjectTab, commitCount: number) => {
+  const tabs = (active: router.ProjectView, commitCount: number) => {
     return [
       {
         title: "Files",
-        active: active === "files",
+        active: active.type === "files",
         icon: Icon.File,
         onClick: () => {
-          if (activeTab === "files") {
+          if (activeView.type === "files") {
             selectPath("");
           } else {
             router.push({
               type: "project",
-              activeTab: "files",
               urn: project.urn,
-              commitHash: null,
+              activeView: { type: "files" },
             });
           }
         },
       },
       {
         title: "Commits",
-        active: active === "commits",
+        active: active.type === "commits",
         icon: Icon.Commit,
         counter: commitCount,
         onClick: () => {
           router.push({
             type: "project",
-            activeTab: "commits",
             urn: project.urn,
-            commitHash: null,
+            activeView: { type: "commits" },
           });
         },
       },
@@ -135,7 +132,7 @@
             {revisions} />
         </div>
 
-        <TabBar tabs={tabs(activeTab, history.stats.commits)} />
+        <TabBar tabs={tabs(activeView, history.stats.commits)} />
       </div>
     </div>
     <div slot="right">
@@ -145,15 +142,13 @@
     </div>
   </ActionBar>
 
-  {#if activeTab === "files"}
+  {#if activeView.type === "files"}
     <FilesTab />
-  {:else if activeTab === "commits"}
+  {:else if activeView.type === "commits"}
     <CommitsTab />
-  {:else if activeTab === "commit"}
-    {#if commitHash}
-      <CommitTab {commitHash} />
-    {/if}
+  {:else if activeView.type === "commit"}
+    <CommitTab commitHash={activeView.commitHash} />
   {:else}
-    {router.unreachable(activeTab)}
+    {router.unreachable(activeView)}
   {/if}
 </Remote>

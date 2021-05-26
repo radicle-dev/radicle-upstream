@@ -13,9 +13,8 @@
   const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {
     router.push({
       type: "project",
-      activeTab: "commit",
       urn: projectUrn,
-      commitHash: sha1,
+      activeView: { type: "commit", commitHash: sha1 },
     });
   };
 

@@ -2,7 +2,10 @@ import * as svelteStore from "svelte/store";
 import * as error from "ui/src/error";
 
 export type ProfileTab = "projects" | "following" | "funding";
-export type ProjectTab = "files" | "commits" | "commit";
+export type ProjectView =
+  | { type: "files" }
+  | { type: "commits" }
+  | { type: "commit"; commitHash: string };
 export type NetworkDiagnosticsTab = "peers" | "requests";
 
 export type Route =
@@ -14,9 +17,8 @@ export type Route =
   | { type: "userProfile"; urn: string }
   | {
       type: "project";
-      activeTab: ProjectTab;
       urn: string;
-      commitHash: string | null;
+      activeView: ProjectView;
     }
   | { type: "settings" };
 
@@ -28,12 +30,10 @@ const DEFAULT_ROUTE: Route = { type: "profile", activeTab: "projects" };
 const routeToPath = (route: Route): string => {
   let subRoute = "";
 
-  if (
-    route.type === "profile" ||
-    route.type === "project" ||
-    route.type === "networkDiagnostics"
-  ) {
+  if (route.type === "profile" || route.type === "networkDiagnostics") {
     subRoute = `/${route.activeTab}`;
+  } else if (route.type === "project") {
+    subRoute = `/${route.activeView.type}`;
   }
 
   return `#/${route.type}${subRoute}`;

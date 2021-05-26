@@ -31,8 +31,7 @@
     router.push({
       type: "project",
       urn: project.urn,
-      activeTab: "files",
-      commitHash: null,
+      activeView: { type: "files" },
     });
   };
 

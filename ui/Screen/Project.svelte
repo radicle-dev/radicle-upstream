@@ -25,8 +25,7 @@
   import Source from "./Project/Source.svelte";
 
   export let urn: Urn;
-  export let activeTab: "files" | "commits" | "commit";
-  export let commitHash: string | null;
+  export let activeView: router.ProjectView = { type: "files" };
 
   const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
@@ -75,8 +74,7 @@
           router.push({
             type: "project",
             urn: urn,
-            activeTab: "files",
-            commitHash: null,
+            activeView: { type: "files" },
           })} />
 
       <div slot="right" style="display: flex;">
@@ -96,8 +94,7 @@
       </div>
     </Header>
     <Source
-      {activeTab}
-      {commitHash}
+      {activeView}
       {project}
       {selectedPeer}
       isContributor={isContributor(peerSelection)} />
