@@ -44,7 +44,7 @@
     // App.svelte checks whether to load onboarding or the app depending if
     // the session data is present or not.
     session.fetch();
-    push(path.wallet());
+    push(path.walletTransactions());
   };
 
   const onCreateIdentity = async (handle: string, passphrase: string) => {
