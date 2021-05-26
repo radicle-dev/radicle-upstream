@@ -2,14 +2,13 @@
   import { fade, fly } from "svelte/transition";
   import { push } from "svelte-spa-router";
 
-  import * as path from "ui/src/path";
-
   import { withRetry } from "ui/src/api";
   import { State } from "ui/src/onboarding";
   import { createIdentity } from "ui/src/identity";
   import * as screen from "ui/src/screen";
   import * as session from "ui/src/session";
   import * as error from "ui/src/error";
+  import * as path from "ui/src/path";
 
   import Welcome from "./Onboarding/Welcome.svelte";
   import EnterName from "./Onboarding/EnterName.svelte";

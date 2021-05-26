@@ -127,7 +127,7 @@
       <div
         class="item indicator"
         data-cy="wallet"
-        class:active={$location.startsWith(path.walletTransactions())}
+        class:active={$location.startsWith(path.wallet())}
         on:click|stopPropagation={() => push(path.walletTransactions())}>
         <Icon.Wallet />
       </div>
