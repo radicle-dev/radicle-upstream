@@ -2,7 +2,8 @@
   import Router from "svelte-spa-router";
   import * as router from "svelte-spa-router/wrap";
 
-  import * as path from "../src/path";
+  import * as path from "ui/src/path";
+  import { isDev } from "ui/src/config";
 
   import {
     selectedEnvironment as ethereumEnvironment,
@@ -14,6 +15,7 @@
     AttestationStatus,
   } from "ui/src/attestation/status";
   import { store, Status } from "ui/src/wallet";
+  // TODO: uncomment to make token streams work
   // import * as pool from "ui/src/funding/pool";
 
   import ConnectWallet from "ui/DesignSystem/Component/Wallet/Connect.svelte";
@@ -37,12 +39,15 @@
       title: "Transactions",
       href: path.walletTransactions(),
     },
-    {
+  ];
+
+  if (isDev) {
+    topbarMenuItems.push({
       icon: Icon.TokenStreams,
       title: "Token Streams",
       href: path.walletStreams(),
-    },
-  ];
+    });
+  }
 
   watchAttestationStatus(store);
 
@@ -56,6 +61,7 @@
     "/wallet/streams": router.wrap({
       component: Pool,
       props: {
+        // TODO: uncomment to make token streams work
         // pool: pool.make(wallet),
       },
     }),
