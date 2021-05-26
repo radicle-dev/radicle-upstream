@@ -98,7 +98,7 @@ time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
   "
 log-group-end
 
-if [[ "${BUILDKITE_BRANCH:-}" == "master" || -n "${BUILDKITE_TAG:-}" ]]; then
+if [[ "${BUILDKITE_BRANCH:-}" == "master" || "${BUILDKITE_BRANCH:-}" == release-candidate/v* || -n "${BUILDKITE_TAG:-}" ]]; then
   if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" == "macos" ]]; then
     log-group-start "Packaging, notarizing and uploading app binaries"
     (
