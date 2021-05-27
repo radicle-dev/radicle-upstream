@@ -7,6 +7,13 @@
   import Syncing from "./ConnectionStatusIndicator/Syncing.svelte";
   import Offline from "./ConnectionStatusIndicator/Offline.svelte";
 
+  const connectedPeerCount = (peers: {
+    [peerId: string]: string[];
+  }): string => {
+    const count = Object.keys(peers).length;
+    return peerCount(count);
+  };
+
   const peerCount = (count: number) => {
     if (count === 1) {
       return "1 peer";
@@ -31,7 +38,10 @@
 
 <div>
   {#if $status.type === StatusType.Online}
-    <Tooltip value={`You’re connected to ${peerCount($status.connected)}`}>
+    <Tooltip
+      value={`You’re connected to ${connectedPeerCount(
+        $status.connectedPeers
+      )}`}>
       <div class="item indicator" data-cy="connection-status-online">
         <Icon.Network />
       </div>

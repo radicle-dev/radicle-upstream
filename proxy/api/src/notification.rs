@@ -1,11 +1,14 @@
 //! Machinery to signal significant events to clients.
 
+use radicle_daemon::request::{RequestState, SomeRequest, Status as PeerRequestStatus};
+use radicle_git_ext::Oid;
 use std::{
     collections::HashMap,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
     },
+    time::SystemTime,
 };
 
 use serde::Serialize;
@@ -63,6 +66,12 @@ pub enum LocalPeer {
         /// The new [`PeerStatus`].
         new: PeerStatus,
     },
+    WaitingRoomTransition {
+        event: radicle_daemon::peer::WaitingRoomEvent,
+        state_before: SerializableWaitingRoomState,
+        state_after: SerializableWaitingRoomState,
+        timestamp: u128,
+    },
 }
 
 #[allow(clippy::wildcard_enum_match_arm)]
@@ -89,6 +98,18 @@ impl MaybeFrom<PeerEvent> for Notification {
             },
             PeerEvent::StatusChanged { old, new } => {
                 Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
+            },
+            PeerEvent::WaitingRoomTransition(t) => {
+                let since_the_epoch = t
+                    .timestamp
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .expect("Time went backwards");
+                Some(Self::LocalPeer(LocalPeer::WaitingRoomTransition {
+                    event: t.event,
+                    state_before: t.state_before.into(),
+                    state_after: t.state_after.into(),
+                    timestamp: since_the_epoch.as_millis(),
+                }))
             },
             _ => None,
         }
@@ -127,5 +148,35 @@ impl Subscriptions {
         self.subs.write().await.insert(id, sender);
 
         receiver
+    }
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct SerializableWaitingRoomState(HashMap<String, SerializedRequestState>);
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SerializedRequestState {
+    state: String,
+    peers: HashMap<PeerId, PeerRequestStatus>,
+}
+
+impl From<HashMap<Oid, SomeRequest<SystemTime>>> for SerializableWaitingRoomState {
+    fn from(raw: HashMap<Oid, SomeRequest<SystemTime>>) -> Self {
+        let inner: HashMap<String, SerializedRequestState> = raw
+            .iter()
+            .map(|(urn, request)| {
+                (
+                    urn.to_string(),
+                    SerializedRequestState {
+                        state: RequestState::from(request).to_string(),
+                        peers: request
+                            .peers()
+                            .cloned()
+                            .unwrap_or_else(std::collections::HashMap::new),
+                    },
+                )
+            })
+            .collect();
+        Self(inner)
     }
 }

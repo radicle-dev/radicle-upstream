@@ -1,18 +1,18 @@
-<script>
+<script lang="typescript">
   import Router, { push, location } from "svelte-spa-router";
   import wrap from "svelte-spa-router/wrap";
 
-  import * as hotkeys from "./src/hotkeys.ts";
+  import * as hotkeys from "./src/hotkeys";
   import { isExperimental } from "./src/config";
-  import "./src/localPeer.ts";
-  import * as path from "./src/path.ts";
-  import * as remote from "./src/remote.ts";
-  import * as screen from "./src/screen.ts";
-  import * as error from "./src/error.ts";
-  import * as org from "./src/org.ts";
-  import * as wallet from "./src/wallet.ts";
-  import * as customProtocolHandler from "./src/customProtocolHandler.ts";
-  import { fetch, session as store, Status } from "./src/session.ts";
+  import "./src/localPeer";
+  import * as path from "./src/path";
+  import * as remote from "./src/remote";
+  import * as screen from "./src/screen";
+  import * as error from "./src/error";
+  import * as org from "./src/org";
+  import * as wallet from "./src/wallet";
+  import * as customProtocolHandler from "./src/customProtocolHandler";
+  import { fetch, session as store, Status } from "./src/session";
 
   import {
     EmptyState,
@@ -36,6 +36,7 @@
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
+  import NetworkDiagnostics from "./Screen/NetworkDiagnostics.svelte";
 
   const orgWrap = wrap({
     component: Org,
@@ -73,6 +74,7 @@
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
+    "/network-diagnostics/*": NetworkDiagnostics,
   };
 
   $: switch ($store.status) {

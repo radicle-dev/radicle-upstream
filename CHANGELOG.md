@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.5](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.4...v0.2.5) (2021-05-25)
+
+
+### Bug Fixes
+
+* remote status indicator vanishing ([ea93a31](https://github.com/radicle-dev/radicle-upstream/commit/ea93a31eb16642d7de9d0ca8ba6cec2bc072780c))
+* **ci:** force removal of cache directory on cleanup ([7216e34](https://github.com/radicle-dev/radicle-upstream/commit/7216e3434b7ccd571f415739a2c1702a46883618))
+* **ci:** improved svelte/typescript linting ([535abce](https://github.com/radicle-dev/radicle-upstream/commit/535abce5c4dee4a353e06882da083c3cdf8627b1)), closes [/github.com/sveltejs/eslint-plugin-svelte3/blob/master/CHANGELOG.md#310](https://github.com/radicle-dev//github.com/sveltejs/eslint-plugin-svelte3/blob/master/CHANGELOG.md/issues/310)
+* **dev:** don’t cache latest release information ([6a86f4d](https://github.com/radicle-dev/radicle-upstream/commit/6a86f4d86cb2dbd15037d403b06af75639bc97cb))
+* **dev:** slim down release QA script ([d6e1c29](https://github.com/radicle-dev/radicle-upstream/commit/d6e1c296f4c954192065a8517f3087201d385503))
+* **proxy:** update tests to work with latest git-platinum ([a1de9e5](https://github.com/radicle-dev/radicle-upstream/commit/a1de9e5e53d8eb04018fe3744300b757841ce60d))
+
 ### [0.2.4](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.3...v0.2.4) (2021-05-04)
 
 
