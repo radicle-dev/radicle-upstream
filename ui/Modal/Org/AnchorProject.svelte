@@ -1,5 +1,6 @@
 <script lang="typescript">
   import * as modal from "ui/src/modal";
+  import * as org from "ui/src/org";
 
   import { Button, Emoji } from "ui/DesignSystem/Primitive";
   import { Dropdown, Modal } from "ui/DesignSystem/Component";
@@ -52,6 +53,9 @@
     }} />
   <div class="actions">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
-    <Button on:click={() => {}}>Confirm in your wallet</Button>
+    <Button
+      on:click={() => {
+        org.anchorProject();
+      }}>Confirm in your wallet</Button>
   </div>
 </Modal>

@@ -1,5 +1,8 @@
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
+import EthersSafe, {
+  SafeTransactionDataPartial,
+} from "@gnosis.pm/safe-core-sdk";
 import { push } from "svelte-spa-router";
 
 import * as notification from "./notification";
@@ -9,6 +12,8 @@ import * as theGraphApi from "./theGraphApi";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as proxy from "ui/src/proxy";
+import * as urn from "ui/src/urn";
+import * as project from "ui/src/proxy/project";
 
 import type {
   TransactionReceipt,
@@ -22,7 +27,10 @@ const orgFactoryAbi = [
   "event OrgCreated(address, address)",
 ];
 
-const orgAbi = ["function owner() view returns (address)"];
+const orgAbi = [
+  "function owner() view returns (address)",
+  "function anchor(bytes32, bytes32, uint8, uint8)",
+];
 
 const orgFactoryAddress = (network: ethereum.Environment): string => {
   switch (network) {
@@ -39,6 +47,66 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
     case ethereum.Environment.Rinkeby:
       return "0xe30aA5594FFB52B6bF5bbB21eB7e71Ac525bB028";
   }
+};
+
+export const anchorProject = async (): Promise<void> => {
+  const orgAddress = "0x01acd1dded15eadf7ed8de1885a9541c5481eb60";
+  const gnosisSafeAddress = "0xb173a59b8f315a4bd36e218207b71dc9d5f79d8b";
+  const projectUrn = "rad:git:hnrke3q1pob41qjq5y57xn698xzt86yht74by";
+  const commitHash = "900b6cf6cf1ff822a423bb47cecb9eb80738bff4";
+
+  const walletStore = svelteStore.get(wallet.store);
+  const safeSdk = await EthersSafe.create(
+    ethers,
+    gnosisSafeAddress,
+    walletStore.signer
+  );
+
+  console.log(safeSdk);
+
+  const decodedProjectUrn = urn.parseIdentitySha1(projectUrn);
+  const decodedCommitHash = ethers.utils.arrayify(commitHash);
+
+  const paddedProjectUrn = ethers.utils.zeroPad(decodedProjectUrn, 32);
+  const paddedCommitHash = ethers.utils.zeroPad(decodedCommitHash, 32);
+
+  console.log(paddedProjectUrn);
+  console.log(paddedCommitHash);
+
+  const orgContract = new ethers.Contract(orgAddress, orgAbi);
+
+  console.log("AAAAAAAAAA: ", orgContract);
+  const orgContractInstance = await orgContract.populateTransaction.anchor(
+    paddedProjectUrn,
+    paddedCommitHash,
+    ethers.constants.Zero,
+    ethers.constants.Zero
+  );
+
+  console.log(orgContractInstance);
+
+  const txData = orgContractInstance.data;
+  if (!txData) {
+    throw new Error("Could not generate transaction");
+  }
+  console.log("BBBBBBBB: ", txData);
+
+  const partialTx: SafeTransactionDataPartial = {
+    to: orgAddress,
+    data: txData,
+    value: "0",
+  };
+
+  // THIS WORKS IF THERE'S ONLY ONE OWNER IN THE SAFE
+  console.log("PARTIAL: ", partialTx);
+  const safeTransaction = await safeSdk.createTransaction(partialTx);
+  const approveTxResponse = await safeSdk.executeTransaction(safeTransaction);
+  console.log(approveTxResponse);
+
+  // const safeTransaction = await safeSdk.createTransaction(partialTx);
+  // const txHash = await safeSdk.getTransactionHash(safeTransaction);
+  // const approveTxResponse = await safeSdk.approveTransactionHash(txHash);
+  // await approveTxResponse.wait();
 };
 
 export const createOrg = async (owner: string): Promise<void> => {
@@ -165,16 +233,36 @@ export const fetchMembers = async (
   orgMemberTabStore.set({ gnosisSafeAddress, ...response });
 };
 
+interface UnresolvedAnchoredProject {
+  anchor: theGraphApi.ProjectAnchor;
+}
+
+interface ResolvedAnchoredProject {
+  anchor: theGraphApi.ProjectAnchor;
+  project: project.Project;
+}
+
+type AnchoredProject = UnresolvedAnchoredProject | ResolvedAnchoredProject;
+
+export const orgProjectTabStore =
+  svelteStore.writable<AnchoredProject[] | null>(null);
+
 export const fetchAnchoredProjects = async (
   orgAddress: string
 ): Promise<void> => {
   const ethereumAnchors = await theGraphApi.getOrgProjectAnchors(orgAddress);
-  ethereumAnchors.map(async anchor => {
-    try {
-      const project = await proxy.client.project.get(anchor.projectId);
-      return { anchor, project };
-    } catch (error) {
-      console.log(error);
-    }
-  });
+
+  const anchoredProjects: AnchoredProject[] = await Promise.all(
+    ethereumAnchors.map(async anchor => {
+      try {
+        const project = await proxy.client.project.get(anchor.projectId);
+        return <ResolvedAnchoredProject>{ anchor, project };
+      } catch (error) {
+        // TODO: only catch when backend can't find project, reraise other errors
+        return <UnresolvedAnchoredProject>{ anchor };
+      }
+    })
+  );
+
+  orgProjectTabStore.set(anchoredProjects);
 };

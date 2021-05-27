@@ -137,7 +137,7 @@ export const getGnosisSafeMembers = async (
   return { members: response.owners, threshold: response.threshold };
 };
 
-interface ProjectAnchor {
+export interface ProjectAnchor {
   id: string;
   projectId: string;
   commitSha: string;
@@ -152,9 +152,6 @@ export const getOrgProjectAnchors = async (
         query GetOrgAnchors($orgAddress: String!) {
           anchors(where: {org: $orgAddress, stateType: 0, stateHashFormat: 0 }) {
             id
-            org {
-              id
-            }
             objectId
             stateHash
           }

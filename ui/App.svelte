@@ -47,6 +47,7 @@
           // TODO(rudolfs): clean this up.
           const orgAddress = detail.location.match(/\/org\/(.{42})/)[1];
           await org.fetchOrg(orgAddress);
+          await org.fetchAnchoredProjects(orgAddress);
 
           return true;
         } catch {

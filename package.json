@@ -167,6 +167,7 @@
     "@apollo/client": "^3.3.15",
     "@ethersproject/bytes": "^5.1.0",
     "@ethersproject/properties": "^5.1.0",
+    "@gnosis.pm/safe-core-sdk": "^0.1.2",
     "@types/big.js": "^6.0.2",
     "@types/qs": "^6.9.6",
     "@types/uuid": "^8.3.0",
