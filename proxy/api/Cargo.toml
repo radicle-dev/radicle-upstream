@@ -19,6 +19,7 @@ chrono = { version = "0.4.19", features = [ "serde" ] }
 data-encoding = "2.3"
 directories = "2.0"
 eip55 = "0.1.1"
+either = "1"
 futures = { version = "0.3", features = [ "compat" ] }
 kv = { version = "0.22", features = [ "json-value" ] }
 lazy_static = "1.4"

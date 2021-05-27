@@ -89,10 +89,10 @@ export const createProjectWithFixture = (
 export const createEmptyProject = (
   name: string = "new-project",
   path: string,
-  localhost: number = 17246
+  port: number = 17246
 ): Cypress.Chainable<void> =>
   requestOk({
-    url: `http://localhost:${localhost}/v1/projects`,
+    url: `http://localhost:${port}/v1/projects`,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -106,6 +106,49 @@ export const createEmptyProject = (
       description: "This is the description.",
       defaultBranch: "main",
     }),
+  });
+
+export const followProject = (
+  urn: string,
+  port: number = 17246
+): Cypress.Chainable<void> =>
+  requestOk({
+    url: `http://localhost:${port}/v1/projects/requests/${urn}`,
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+export const checkoutProject = (
+  urn: string,
+  path: string,
+  peerId: string,
+  localhost: number = 17246
+): Cypress.Chainable<void> =>
+  requestOk({
+    url: `http://localhost:${localhost}/v1/projects/${urn}/checkout`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      path,
+      peerId,
+    }),
+  });
+
+export const trackPeer = (
+  urn: string,
+  peerId: string,
+  localhost: number = 17246
+): Cypress.Chainable<void> =>
+  requestOk({
+    url: `http://localhost:${localhost}/v1/projects/${urn}/track/${peerId}`,
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
 export const onboardUser = (
