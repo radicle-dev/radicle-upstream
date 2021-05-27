@@ -1,18 +1,32 @@
 <script lang="typescript">
+  import { push } from "svelte-spa-router";
+  import type { Project } from "ui/src/project";
+
   import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
+  import * as path from "ui/src/path";
+  import * as sess from "ui/src/session";
 
-  import { EmptyState } from "ui/DesignSystem/Component";
+  import { EmptyState, ProjectList } from "ui/DesignSystem/Component";
   import { Variant as IllustrationVariant } from "ui/src/illustration";
 
   const orgProjectTabStore = org.orgProjectTabStore;
+  const session = sess.getUnsealedFromContext();
+
+  $: console.log($orgProjectTabStore);
+  const select = ({ detail: project }: { detail: Project }) => {
+    if (project.type !== "anchor") {
+      push(path.project(project.project.urn));
+    }
+  };
 </script>
 
-{#if $orgProjectTabStore !== null}
-  {$orgProjectTabStore.map(p => {
-    return p.anchor.id;
-  })}
+{#if $orgProjectTabStore.length !== 0}
+  <ProjectList
+    projects={$orgProjectTabStore}
+    userUrn={session.identity.urn}
+    on:select={select} />
 {:else}
   <EmptyState
     illustration={IllustrationVariant.Plant}

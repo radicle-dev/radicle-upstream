@@ -1,4 +1,5 @@
 import Anchor from "./Anchor.svelte";
+import AnchorSmall from "./AnchorSmall.svelte";
 import ArrowBoxUpRight from "./ArrowBoxUpRight.svelte";
 import ArrowCollapse from "./ArrowCollapse.svelte";
 import ArrowDown from "./ArrowDown.svelte";
@@ -70,6 +71,7 @@ import Wallet from "./Wallet.svelte";
 
 export default {
   Anchor,
+  AnchorSmall,
   ArrowBoxUpRight,
   ArrowCollapse,
   ArrowDown,

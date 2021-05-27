@@ -1,5 +1,6 @@
 <script lang="ts">
   import Badge from "../Component/Badge.svelte";
+  import { Icon } from "ui/DesignSystem/Primitive";
   import { BadgeType } from "../../src/badge";
 
   export let title: string;
@@ -7,6 +8,7 @@
   export let description = "";
 
   export let showMaintainerBadge: boolean = false;
+  export let anchored: boolean = false;
 </script>
 
 <style>
@@ -41,6 +43,9 @@
     <p class="typo-text-bold typo-overflow-ellipsis" {title}>{title}</p>
     {#if showMaintainerBadge}
       <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
+    {/if}
+    {#if anchored}
+      <Icon.AnchorSmall style="fill: var(--color-primary)" />
     {/if}
   </div>
   {#if description.length > 0}

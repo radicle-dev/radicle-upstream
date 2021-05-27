@@ -13,7 +13,7 @@ import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as proxy from "ui/src/proxy";
 import * as urn from "ui/src/urn";
-import * as project from "ui/src/proxy/project";
+import type * as project from "ui/src/proxy/project";
 
 import type {
   TransactionReceipt,
@@ -50,10 +50,10 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
 };
 
 export const anchorProject = async (): Promise<void> => {
-  const orgAddress = "0x01acd1dded15eadf7ed8de1885a9541c5481eb60";
-  const gnosisSafeAddress = "0xb173a59b8f315a4bd36e218207b71dc9d5f79d8b";
-  const projectUrn = "rad:git:hnrke3q1pob41qjq5y57xn698xzt86yht74by";
-  const commitHash = "900b6cf6cf1ff822a423bb47cecb9eb80738bff4";
+  const orgAddress = "0xab58d6ce4c2fd470ddb87de62d90691f59bda6e9";
+  const gnosisSafeAddress = "0xb962d6ff2438ffcfa569291bda7e9a0da6f46f2a";
+  const projectUrn = "rad:git:hnrkbjokbt439jk3p1dsi67u3mca85yiy7fiy";
+  const commitHash = "e02d760e86c2c3dff6ab0a3d98ada46451858620";
 
   const walletStore = svelteStore.get(wallet.store);
   const safeSdk = await EthersSafe.create(
@@ -233,36 +233,31 @@ export const fetchMembers = async (
   orgMemberTabStore.set({ gnosisSafeAddress, ...response });
 };
 
-interface UnresolvedAnchoredProject {
+interface AnchoredProject extends project.Project {
   anchor: theGraphApi.ProjectAnchor;
 }
 
-interface ResolvedAnchoredProject {
-  anchor: theGraphApi.ProjectAnchor;
-  project: project.Project;
-}
+export type ResolvedProject =
+  | { type: "anchor"; anchor: theGraphApi.ProjectAnchor }
+  | { type: "project"; project: project.Project }
+  | { type: "anchoredProject"; project: AnchoredProject };
 
-type AnchoredProject = UnresolvedAnchoredProject | ResolvedAnchoredProject;
+export const orgProjectTabStore = svelteStore.writable<ResolvedProject[]>([]);
 
-export const orgProjectTabStore =
-  svelteStore.writable<AnchoredProject[] | null>(null);
+export const resolveProjects = async (orgAddress: string): Promise<void> => {
+  const anchors = await theGraphApi.getOrgProjectAnchors(orgAddress);
 
-export const fetchAnchoredProjects = async (
-  orgAddress: string
-): Promise<void> => {
-  const ethereumAnchors = await theGraphApi.getOrgProjectAnchors(orgAddress);
-
-  const anchoredProjects: AnchoredProject[] = await Promise.all(
-    ethereumAnchors.map(async anchor => {
+  const resolvedProjects: ResolvedProject[] = await Promise.all(
+    anchors.map(async anchor => {
       try {
         const project = await proxy.client.project.get(anchor.projectId);
-        return <ResolvedAnchoredProject>{ anchor, project };
+        return { type: "anchoredProject", project: { anchor, ...project } };
       } catch (error) {
         // TODO: only catch when backend can't find project, reraise other errors
-        return <UnresolvedAnchoredProject>{ anchor };
+        return { type: "anchor", anchor };
       }
     })
   );
 
-  orgProjectTabStore.set(anchoredProjects);
+  orgProjectTabStore.set(resolvedProjects);
 };
