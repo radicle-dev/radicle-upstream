@@ -48,3 +48,14 @@ export function parseIdentitySha1(urn: string): Uint8Array {
   // Drop multihash header, keep only the payload
   return hash.slice(2);
 }
+
+export function identitySha1Urn(hash: Uint8Array): string {
+  // a SHA-1 digest is always 20 bytes
+  if (hash.length != 20) {
+    throw new Error(`SHA1 hash has invalid size: ${hash.length}`);
+  }
+  // Create a multihash by adding prefix 17 for SHA-1 and 20 for the hash length
+  const multihash = new Uint8Array([17, 20, ...hash]);
+  const payload = multibase.encode("base32z", multihash);
+  return `rad:git:${new TextDecoder().decode(payload)}`;
+}

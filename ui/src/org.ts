@@ -8,6 +8,7 @@ import * as wallet from "./wallet";
 import * as theGraphApi from "./theGraphApi";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
+import * as proxy from "ui/src/proxy";
 
 import type {
   TransactionReceipt,
@@ -162,4 +163,18 @@ export const fetchMembers = async (
 ): Promise<void> => {
   const response = await theGraphApi.getGnosisSafeMembers(gnosisSafeAddress);
   orgMemberTabStore.set({ gnosisSafeAddress, ...response });
+};
+
+export const fetchAnchoredProjects = async (
+  orgAddress: string
+): Promise<void> => {
+  const ethereumAnchors = await theGraphApi.getOrgProjectAnchors(orgAddress);
+  ethereumAnchors.map(async anchor => {
+    try {
+      const project = await proxy.client.project.get(anchor.projectId);
+      return { anchor, project };
+    } catch (error) {
+      console.log(error);
+    }
+  });
 };

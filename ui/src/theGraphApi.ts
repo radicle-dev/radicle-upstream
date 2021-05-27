@@ -1,8 +1,11 @@
 import * as apolloCore from "@apollo/client/core";
+import * as ethers from "ethers";
 import * as svelteStore from "svelte/store";
+
 import * as wallet from "ui/src/wallet";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
+import * as urn from "ui/src/urn";
 
 const gnosisClientEndpoint = (): string => {
   const walletStore = svelteStore.get(wallet.store);
@@ -132,4 +135,45 @@ export const getGnosisSafeMembers = async (
   ).data.wallets[0];
 
   return { members: response.owners, threshold: response.threshold };
+};
+
+interface ProjectAnchor {
+  id: string;
+  projectId: string;
+  commitSha: string;
+}
+
+export const getOrgProjectAnchors = async (
+  orgAddress: string
+): Promise<ProjectAnchor[]> => {
+  const response = (
+    await orgsSubgraphClient().query({
+      query: apolloCore.gql`
+        query GetOrgAnchors($orgAddress: String!) {
+          anchors(where: {org: $orgAddress, stateType: 0, stateHashFormat: 0 }) {
+            id
+            org {
+              id
+            }
+            objectId
+            stateHash
+          }
+        }
+      `,
+      variables: { orgAddress },
+      fetchPolicy: "no-cache",
+    })
+  ).data.anchors;
+
+  return response.map(
+    (anchor: { id: string; stateHash: string; objectId: string }) => {
+      return {
+        id: anchor.id,
+        projectId: urn.identitySha1Urn(
+          ethers.utils.arrayify(`0x${anchor.objectId.slice(26)}`)
+        ),
+        commitSha: anchor.stateHash.slice(26, 66),
+      };
+    }
+  );
 };

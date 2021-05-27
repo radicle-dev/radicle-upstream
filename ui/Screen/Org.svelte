@@ -77,6 +77,8 @@
       event: () => console.log("event(Change avatar)"),
     },
   ];
+
+  $: org.fetchAnchoredProjects(params.address);
 </script>
 
 <SidebarLayout>
