@@ -10,7 +10,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != 'radicle-dev/radicle-upstream'
     runs-on: ubuntu-latest
     container:
-      image: "gcr.io/opensourcecoin/radicle-upstream:0.8.0"
+      image: "gcr.io/opensourcecoin/radicle-upstream:0.9.0"
     steps:
       - uses: actions/checkout@master
       - name: Cache Yarn

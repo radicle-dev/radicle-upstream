@@ -28,7 +28,7 @@ RUN set -eux; \
 
 # Rust toolchain
 # Make sure this is in sync with rust-toolchain!
-ENV RUST_VERSION=nightly-2021-03-25 \
+ENV RUST_VERSION=nightly-2021-05-09 \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
     RUSTUP_HOME=/usr/local/rustup \
