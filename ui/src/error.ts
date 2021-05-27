@@ -76,6 +76,9 @@ export enum Code {
   UnkownTransactionFailure = "UnkownTransactionFailure",
   InsufficientGas = "InsufficientGas",
 
+  // Org related error codes
+  FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
+
   // Custom protocol error codes
   CustomProtocolUnsupportedVersion = "CustomProtocolUnsupportedVersion",
   CustomProtocolUnsupportedNamespace = "CustomProtocolUnsupportedNamespace",

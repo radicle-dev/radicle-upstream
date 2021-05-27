@@ -1,16 +1,58 @@
-import { ApolloClient, InMemoryCache, gql } from "@apollo/client/core";
+import * as apolloCore from "@apollo/client/core";
+import * as svelteStore from "svelte/store";
+import * as wallet from "ui/src/wallet";
+import * as ethereum from "ui/src/ethereum";
+import * as error from "ui/src/error";
 
-// TODO(rudolfs): make this respect the network selector in settings
-const gnosisSubgraphClient = new ApolloClient({
-  uri: "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby",
-  cache: new InMemoryCache(),
-});
+const gnosisClientEndpoint = (): string => {
+  const walletStore = svelteStore.get(wallet.store);
+  switch (walletStore.environment) {
+    case ethereum.Environment.Local:
+      error.show(
+        new error.Error({
+          code: error.Code.FeatureNotAvailableForGivenNetwork,
+          message: "Orgs not available on the Local testnet.",
+        })
+      );
+      return "";
+    case ethereum.Environment.Ropsten:
+      return "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-ropsten";
+    case ethereum.Environment.Rinkeby:
+      return "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby";
+  }
+};
 
-// TODO(rudolfs): make this respect the network selector in settings
-const orgsSubgraphClient = new ApolloClient({
-  uri: "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby",
-  cache: new InMemoryCache(),
-});
+const gnosisSubgraphClient = () => {
+  return new apolloCore.ApolloClient({
+    uri: gnosisClientEndpoint(),
+    cache: new apolloCore.InMemoryCache(),
+  });
+};
+
+const orgClientEndpoint = (): string => {
+  const walletStore = svelteStore.get(wallet.store);
+  switch (walletStore.environment) {
+    case ethereum.Environment.Local:
+      error.show(
+        new error.Error({
+          code: error.Code.FeatureNotAvailableForGivenNetwork,
+          message: "Orgs not available on the Local testnet.",
+        })
+      );
+      return "";
+    case ethereum.Environment.Ropsten:
+      return "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-ropsten";
+    case ethereum.Environment.Rinkeby:
+      return "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby";
+  }
+};
+
+const orgsSubgraphClient = () => {
+  return new apolloCore.ApolloClient({
+    uri: orgClientEndpoint(),
+    cache: new apolloCore.InMemoryCache(),
+  });
+};
 
 interface GnosisSafeWallet {
   id: string;
@@ -24,8 +66,8 @@ export interface Org {
 }
 
 const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
-  return await gnosisSubgraphClient.query({
-    query: gql`
+  return await gnosisSubgraphClient().query({
+    query: apolloCore.gql`
       query GetGnosisSafeWallets($owners: [String!]!) {
         wallets(where: { owners_contains: $owners }) {
           id
@@ -44,8 +86,8 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<[Org]> => {
   ).data.wallets;
 
   const orgs: [Org] = (
-    await orgsSubgraphClient.query({
-      query: gql`
+    await orgsSubgraphClient().query({
+      query: apolloCore.gql`
         query GetOrgs($owners: [String!]!) {
           orgs(where: { owner_in: $owners }) {
             id
@@ -75,8 +117,8 @@ export const getGnosisSafeMembers = async (
   walletAddress: string
 ): Promise<MemberResponse> => {
   const response = (
-    await gnosisSubgraphClient.query({
-      query: gql`
+    await gnosisSubgraphClient().query({
+      query: apolloCore.gql`
         query GetGnosisSafeWallets($id: String!) {
           wallets(where: { id: $id }) {
             owners

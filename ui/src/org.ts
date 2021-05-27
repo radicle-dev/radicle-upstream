@@ -7,6 +7,7 @@ import * as path from "./path";
 import * as wallet from "./wallet";
 import * as theGraphApi from "./theGraphApi";
 import * as ethereum from "ui/src/ethereum";
+import * as error from "ui/src/error";
 
 import type {
   TransactionReceipt,
@@ -22,17 +23,20 @@ const orgFactoryAbi = [
 
 const orgAbi = ["function owner() view returns (address)"];
 
-const orgFactoryAddress = (network: ethereum.Environment) => {
+const orgFactoryAddress = (network: ethereum.Environment): string => {
   switch (network) {
     case ethereum.Environment.Local:
-      throw new Error("Not implemented");
-      break;
+      error.show(
+        new error.Error({
+          code: error.Code.FeatureNotAvailableForGivenNetwork,
+          message: "Orgs not available on the Local testnet.",
+        })
+      );
+      return "";
     case ethereum.Environment.Ropsten:
       return "0x2007bcEf1247CD03Bb4262eF420D6487368f473B";
-      break;
     case ethereum.Environment.Rinkeby:
       return "0xe30aA5594FFB52B6bF5bbB21eB7e71Ac525bB028";
-      break;
   }
 };
 
