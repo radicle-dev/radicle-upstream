@@ -1,6 +1,5 @@
 <script lang="ts">
   import Router from "svelte-spa-router";
-  import * as router from "svelte-spa-router/wrap";
 
   import * as path from "ui/src/path";
   import { isDev } from "ui/src/config";
@@ -15,8 +14,6 @@
     AttestationStatus,
   } from "ui/src/attestation/status";
   import { store, Status } from "ui/src/wallet";
-  // TODO: uncomment to make token streams work
-  // import * as pool from "ui/src/funding/pool";
 
   import ConnectWallet from "ui/DesignSystem/Component/Wallet/Connect.svelte";
   import WalletPanel from "ui/DesignSystem/Component/Wallet/Panel.svelte";
@@ -58,13 +55,7 @@
 
   const screenRoutes = {
     "/wallet/transactions": Transactions,
-    "/wallet/streams": router.wrap({
-      component: Pool,
-      props: {
-        // TODO: uncomment to make token streams work
-        // pool: pool.make(wallet),
-      },
-    }),
+    "/wallet/streams": Pool,
   };
 </script>
 
