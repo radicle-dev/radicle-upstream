@@ -65,7 +65,7 @@ export const anchorProject = async (): Promise<void> => {
   console.log(safeSdk);
 
   const decodedProjectUrn = urn.parseIdentitySha1(projectUrn);
-  const decodedCommitHash = ethers.utils.arrayify(commitHash);
+  const decodedCommitHash = ethers.utils.arrayify(`0x${commitHash}`);
 
   const paddedProjectUrn = ethers.utils.zeroPad(decodedProjectUrn, 32);
   const paddedCommitHash = ethers.utils.zeroPad(decodedCommitHash, 32);
