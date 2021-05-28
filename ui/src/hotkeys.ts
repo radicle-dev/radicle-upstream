@@ -23,7 +23,7 @@ export enum ShortcutKey {
   NewProjects = "n",
   Search = "p",
   Settings = ",",
-  NetworkDiagnostics = "y",
+  NetworkDiagnostics = "1",
 }
 
 export interface KeyboardShortcut {
