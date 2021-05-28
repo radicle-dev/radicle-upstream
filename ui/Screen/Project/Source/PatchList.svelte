@@ -56,7 +56,6 @@
         filteredPatches = patches;
         break;
       default:
-        console.log(filter);
         router.unreachable(filter);
         break;
     }
