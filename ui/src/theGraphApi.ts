@@ -59,7 +59,7 @@ const orgsSubgraphClient = () => {
 
 interface GnosisSafeWallet {
   id: string;
-  owners: [string];
+  owners: string[];
 }
 
 export interface Org {
