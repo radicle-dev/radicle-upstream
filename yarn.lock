@@ -10532,7 +10532,6 @@ __metadata:
     stream-browserify: ^3.0.0
     svelte: ^3.38.2
     svelte-check: ^1.5.2
-    svelte-json-tree: ^0.1.0
     svelte-loader: ^3.1.1
     svelte-persistent-store: ^0.1.6
     svelte-preprocess: ^4.7.3
@@ -12193,13 +12192,6 @@ __metadata:
   peerDependencies:
     svelte: ">=3.19.0"
   checksum: 1b7e145c3fdbaa216887d9ed000e564a63f6c73f85239e1d57460518d4a37ab454aa8af9234d6be162bf674c53bef08890436eeeffa7a1c308d1957a313b502d
-  languageName: node
-  linkType: hard
-
-"svelte-json-tree@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "svelte-json-tree@npm:0.1.0"
-  checksum: 7bdf3f097be4f68285deea0dc62cef71ac42ff48afe9e1623289b91402686c6d1e20e30af2f31721752c58105ebfbcf769246262c1d00d8841ae0398cef11def
   languageName: node
   linkType: hard
 

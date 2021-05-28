@@ -1,7 +1,5 @@
 <script lang="typescript">
-  import JSONTree from "svelte-json-tree";
-
-  import StateTable from "./StateTable.svelte";
+  import StateTable from "ui/Screen/NetworkDiagnostics/StateTable.svelte";
   import { waitingRoomEventLog, waitingRoomState } from "ui/src/localPeer";
 </script>
 
@@ -19,6 +17,10 @@
 
   thead th:nth-child(2) {
     width: 10%;
+  }
+
+  pre {
+    overflow: scroll;
   }
 </style>
 
@@ -42,7 +44,10 @@
       {#each $waitingRoomEventLog as transition}
         <tr>
           <td>
-            <JSONTree value={transition.event} />
+            <pre
+              class="typo-text-small">
+              {JSON.stringify(transition.event, null, 2)}
+            </pre>
           </td>
           <td>{new Date(transition.timestamp).toISOString()}</td>
           <td>
