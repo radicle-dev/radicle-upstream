@@ -1,5 +1,6 @@
 import ActionBar from "./ActionBar.svelte";
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
+import AnchorMetadataModal from "./AnchorMetadataModal.svelte";
 import Badge from "./Badge.svelte";
 import BranchBox from "./BranchBox.svelte";
 import Comment from "./Comment.svelte";
@@ -52,6 +53,7 @@ import QR from "./QR.svelte";
 export {
   ActionBar,
   AdditionalActionsDropdown,
+  AnchorMetadataModal,
   Badge,
   BranchBox,
   Comment,

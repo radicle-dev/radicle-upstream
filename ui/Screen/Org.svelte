@@ -83,10 +83,8 @@
   <Header>
     <OrgHeader
       slot="left"
-      gnosisSafeWalletAddress={$orgScreenStore
-        ? $orgScreenStore.orgAddress
-        : ""}
-      gnosisSafeAddress={$orgScreenStore?.gnosisSafeAddress} />
+      orgAddress={$orgScreenStore.orgAddress}
+      gnosisSafeAddress={$orgScreenStore.gnosisSafeAddress} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown

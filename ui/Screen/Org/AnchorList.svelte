@@ -1,9 +1,10 @@
 <script lang="typescript">
   import type * as theGraphApi from "ui/src/theGraphApi";
   import { Icon } from "ui/DesignSystem/Primitive";
-  import { List } from "ui/DesignSystem/Component";
+  import { AnchorMetadataModal, List } from "ui/DesignSystem/Component";
 
   export let anchors: theGraphApi.ProjectAnchor[];
+  export let orgAddress: string;
 </script>
 
 <style>
@@ -51,8 +52,7 @@
     <div class="typo-text anchor-row">
       <Icon.At style="margin-right: 0.5rem;" />
       {anchor.projectId.replace("rad:git:", "")}
-      <Icon.AnchorSmall
-        style="fill: var(--color-primary); margin-left: 0.5rem;" />
+      <AnchorMetadataModal {anchor} {orgAddress} />
     </div>
   </div>
 </List>

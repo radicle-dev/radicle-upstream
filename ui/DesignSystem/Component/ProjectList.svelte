@@ -8,12 +8,14 @@
 
   export let projects: Project[];
   export let userUrn: string;
+  export let orgAddress: string;
 
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
     description: project.metadata.description || "",
     showMaintainerBadge: isMaintainer(userUrn, project),
-    anchored: project.anchor !== undefined,
+    anchor: project.anchor,
+    orgAddress,
   });
 </script>
 

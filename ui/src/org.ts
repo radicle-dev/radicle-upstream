@@ -52,8 +52,8 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
 export const anchorProject = async (): Promise<void> => {
   const orgAddress = "0xab58d6ce4c2fd470ddb87de62d90691f59bda6e9";
   const gnosisSafeAddress = "0xb962d6ff2438ffcfa569291bda7e9a0da6f46f2a";
-  const projectUrn = "rad:git:hnrkbjokbt439jk3p1dsi67u3mca85yiy7fiy";
-  const commitHash = "e02d760e86c2c3dff6ab0a3d98ada46451858620";
+  const projectUrn = "rad:git:hnrkdrk6z38ostgbozp3jq9dzgwxy6owbe8zo";
+  const commitHash = "cda37aa741ba4d0ed7ddcf312aea2d0ac0fe6502";
 
   const walletStore = svelteStore.get(wallet.store);
   const safeSdk = await EthersSafe.create(

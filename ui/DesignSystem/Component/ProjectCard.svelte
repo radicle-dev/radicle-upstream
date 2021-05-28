@@ -1,14 +1,17 @@
-<script lang="ts">
+<script lang="typescript">
+  import type * as theGraphApi from "ui/src/theGraphApi";
+
   import Badge from "../Component/Badge.svelte";
-  import { Icon } from "ui/DesignSystem/Primitive";
   import { BadgeType } from "../../src/badge";
+  import AnchorMetadataModal from "ui/DesignSystem/Component/AnchorMetadataModal.svelte";
 
   export let title: string;
 
   export let description = "";
 
   export let showMaintainerBadge: boolean = false;
-  export let anchored: boolean = false;
+  export let anchor: theGraphApi.ProjectAnchor;
+  export let orgAddress: string;
 </script>
 
 <style>
@@ -44,8 +47,8 @@
     {#if showMaintainerBadge}
       <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
     {/if}
-    {#if anchored}
-      <Icon.AnchorSmall style="fill: var(--color-primary)" />
+    {#if anchor}
+      <AnchorMetadataModal {anchor} {orgAddress} />
     {/if}
   </div>
   {#if description.length > 0}

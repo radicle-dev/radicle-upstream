@@ -33,6 +33,7 @@ import CurrencyUSD from "./CurrencyUSD.svelte";
 import Ellipsis from "./Ellipsis.svelte";
 import EllipsisSmall from "./EllipsisSmall.svelte";
 import Envelope from "./Envelope.svelte";
+import Ethereum from "./Ethereum.svelte";
 import Exclamation from "./Exclamation.svelte";
 import ExclamationCircle from "./ExclamationCircle.svelte";
 import EyeClosed from "./EyeClosed.svelte";
@@ -105,6 +106,7 @@ export default {
   Ellipsis,
   EllipsisSmall,
   Envelope,
+  Ethereum,
   Exclamation,
   ExclamationCircle,
   EyeClosed,

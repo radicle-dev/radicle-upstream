@@ -4,9 +4,8 @@
 
   import * as style from "../../src/style";
 
-  export let name: string | undefined = undefined;
-  export let gnosisSafeWalletAddress: string;
-  export let gnosisSafeAddress: string | null = null;
+  export let orgAddress: string;
+  export let gnosisSafeAddress: string;
 </script>
 
 <style>
@@ -30,17 +29,16 @@
     size="huge"
     variant="square"
     avatarFallback={radicleAvatar.generate(
-      gnosisSafeWalletAddress,
+      orgAddress,
       radicleAvatar.Usage.Any
     )} />
 
   <div class="metadata">
-    <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
-      {name || style.ellipsed(gnosisSafeWalletAddress)}
+    <h1 data-cy="entity-name" class="typo-overflow-ellipsis">
+      {style.ellipsed(orgAddress)}
     </h1>
     <div class="safe-addr">
-      <Icon.Gnosis />
-      {gnosisSafeAddress || "loading…"}
+      <Icon.Gnosis />{gnosisSafeAddress}
     </div>
   </div>
 </div>

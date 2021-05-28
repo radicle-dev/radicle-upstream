@@ -4,6 +4,7 @@
 
   import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
   import AnchorList from "ui/Screen/Org/AnchorList.svelte";
+
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
   import * as path from "ui/src/path";
@@ -13,6 +14,7 @@
   import { Variant as IllustrationVariant } from "ui/src/illustration";
 
   const orgProjectTabStore = org.orgProjectTabStore;
+  const orgScreenStore = org.orgScreenStore;
   const session = sess.getUnsealedFromContext();
 
   const select = ({ detail: project }: { detail: Project }) => {
@@ -32,10 +34,13 @@
   {#if $orgProjectTabStore.anchoredProjects.length !== 0 || $orgProjectTabStore.unresolvedAnchors.length !== 0}
     <ProjectList
       projects={$orgProjectTabStore.anchoredProjects}
+      orgAddress={$orgScreenStore.orgAddress}
       userUrn={session.identity.urn}
       on:select={select} />
 
-    <AnchorList anchors={$orgProjectTabStore.unresolvedAnchors} />
+    <AnchorList
+      anchors={$orgProjectTabStore.unresolvedAnchors}
+      orgAddress={$orgScreenStore.orgAddress} />
   {:else}
     <EmptyState
       illustration={IllustrationVariant.Plant}
