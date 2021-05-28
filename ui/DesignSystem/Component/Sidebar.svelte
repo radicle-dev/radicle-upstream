@@ -1,14 +1,15 @@
 <script lang="typescript">
   import { location, push } from "svelte-spa-router";
 
-  import type { Identity } from "../../src/identity";
-  import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
+  import type { Identity } from "ui/src/identity";
+  import * as modal from "ui/src/modal";
+  import * as path from "ui/src/path";
+  import { isDev } from "ui/src/config";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
-  import ModalSearch from "../../Modal/Search.svelte";
+  import ModalSearch from "ui/Modal/Search.svelte";
 
   export let identity: Identity;
 </script>
@@ -123,15 +124,17 @@
         <Icon.MagnifyingGlass />
       </div>
     </Tooltip>
-    <Tooltip value="Wallet">
-      <div
-        class="item indicator"
-        data-cy="wallet"
-        class:active={$location.startsWith(path.wallet())}
-        on:click|stopPropagation={() => push(path.walletTransactions())}>
-        <Icon.Wallet />
-      </div>
-    </Tooltip>
+    {#if isDev}
+      <Tooltip value="Wallet">
+        <div
+          class="item indicator"
+          data-cy="wallet"
+          class:active={$location.startsWith(path.wallet())}
+          on:click|stopPropagation={() => push(path.walletTransactions())}>
+          <Icon.Wallet />
+        </div>
+      </Tooltip>
+    {/if}
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
       <div
