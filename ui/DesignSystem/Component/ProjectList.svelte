@@ -13,7 +13,7 @@
     title: project.metadata.name,
     description: project.metadata.description || "",
     showMaintainerBadge: isMaintainer(userUrn, project),
-    anchored: project.anchor,
+    anchored: project.anchor !== undefined,
   });
 </script>
 

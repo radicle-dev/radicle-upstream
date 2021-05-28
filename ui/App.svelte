@@ -42,11 +42,16 @@
     component: Org,
     conditions: [
       async detail => {
+        const match = detail.location.match(/\/org\/(.{42})/);
+        let orgAddress;
+        if (match) {
+          orgAddress = match[1];
+        } else {
+          throw new Error("Org address not provided");
+        }
         try {
           screen.lock();
 
-          // TODO(rudolfs): clean this up.
-          const orgAddress = detail.location.match(/\/org\/(.{42})/)[1];
           await org.fetchOrg(orgAddress);
           await org.resolveProjectAnchors(orgAddress);
 

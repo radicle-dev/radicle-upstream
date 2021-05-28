@@ -3,7 +3,7 @@
   import { Icon } from "ui/DesignSystem/Primitive";
   import { List } from "ui/DesignSystem/Component";
 
-  export let anchors: theGraphApi.ProjectAnchor;
+  export let anchors: theGraphApi.ProjectAnchor[];
 </script>
 
 <style>
