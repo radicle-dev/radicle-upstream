@@ -7,54 +7,59 @@ import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as urn from "ui/src/urn";
 
-const gnosisClientEndpoint = (): string => {
-  const walletStore = svelteStore.get(wallet.store);
-  switch (walletStore.environment) {
-    case ethereum.Environment.Local:
-      error.show(
-        new error.Error({
-          code: error.Code.FeatureNotAvailableForGivenNetwork,
-          message: "Orgs not available on the Local testnet.",
-        })
-      );
-      return "";
-    case ethereum.Environment.Ropsten:
-      return "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-ropsten";
-    case ethereum.Environment.Rinkeby:
-      return "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby";
-  }
-};
-
-const gnosisSubgraphClient = () => {
+const createApolloClient = (uri: string): apolloCore.ApolloClient<unknown> => {
   return new apolloCore.ApolloClient({
-    uri: gnosisClientEndpoint(),
+    uri,
     cache: new apolloCore.InMemoryCache(),
+    defaultOptions: {
+      query: {
+        fetchPolicy: "no-cache",
+      },
+    },
   });
 };
 
-const orgClientEndpoint = (): string => {
+const gnosisSubgraphClient = (): apolloCore.ApolloClient<unknown> => {
   const walletStore = svelteStore.get(wallet.store);
+  let uri;
   switch (walletStore.environment) {
     case ethereum.Environment.Local:
-      error.show(
-        new error.Error({
-          code: error.Code.FeatureNotAvailableForGivenNetwork,
-          message: "Orgs not available on the Local testnet.",
-        })
-      );
-      return "";
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Orgs not available on the Local testnet.",
+      });
     case ethereum.Environment.Ropsten:
-      return "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-ropsten";
+      uri =
+        "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-ropsten";
+      break;
     case ethereum.Environment.Rinkeby:
-      return "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby";
+      uri =
+        "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby";
+      break;
   }
+
+  return createApolloClient(uri);
 };
 
 const orgsSubgraphClient = () => {
-  return new apolloCore.ApolloClient({
-    uri: orgClientEndpoint(),
-    cache: new apolloCore.InMemoryCache(),
-  });
+  const walletStore = svelteStore.get(wallet.store);
+  let uri;
+  switch (walletStore.environment) {
+    case ethereum.Environment.Local:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Orgs not available on the Local testnet.",
+      });
+    case ethereum.Environment.Ropsten:
+      uri =
+        "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-ropsten";
+      break;
+    case ethereum.Environment.Rinkeby:
+      uri =
+        "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby";
+      break;
+  }
+  return createApolloClient(uri);
 };
 
 interface GnosisSafeWallet {
@@ -79,16 +84,15 @@ const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
       }
     `,
     variables: { owners: [walletOwnerAddress] },
-    fetchPolicy: "no-cache",
   });
 };
 
-export const getOrgs = async (walletOwnerAddress: string): Promise<[Org]> => {
+export const getOrgs = async (walletOwnerAddress: string): Promise<Org[]> => {
   const gnosisSafeWallets: [GnosisSafeWallet] = (
     await getGnosisSafeWallets(walletOwnerAddress)
   ).data.wallets;
 
-  const orgs: [Org] = (
+  const orgs = (
     await orgsSubgraphClient().query({
       query: apolloCore.gql`
         query GetOrgs($owners: [String!]!) {
@@ -100,7 +104,6 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<[Org]> => {
         }
       `,
       variables: { owners: gnosisSafeWallets.map(owner => owner.id) },
-      fetchPolicy: "no-cache",
     })
   ).data.orgs;
 
@@ -130,7 +133,6 @@ export const getGnosisSafeMembers = async (
         }
       `,
       variables: { id: walletAddress },
-      fetchPolicy: "no-cache",
     })
   ).data.wallets[0];
 
@@ -158,7 +160,6 @@ export const getOrgProjectAnchors = async (
         }
       `,
       variables: { orgAddress },
-      fetchPolicy: "no-cache",
     })
   ).data.anchors;
 
