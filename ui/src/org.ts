@@ -233,31 +233,36 @@ export const fetchMembers = async (
   orgMemberTabStore.set({ gnosisSafeAddress, ...response });
 };
 
-interface AnchoredProject extends project.Project {
-  anchor: theGraphApi.ProjectAnchor;
+interface OrgProjectTabStore {
+  anchoredProjects: project.Project[];
+  unresolvedAnchors: theGraphApi.ProjectAnchor[];
 }
 
-export type ResolvedProject =
-  | { type: "anchor"; anchor: theGraphApi.ProjectAnchor }
-  | { type: "project"; project: project.Project }
-  | { type: "anchoredProject"; project: AnchoredProject };
+export const orgProjectTabStore = svelteStore.writable<OrgProjectTabStore>({
+  anchoredProjects: [],
+  unresolvedAnchors: [],
+});
 
-export const orgProjectTabStore = svelteStore.writable<ResolvedProject[]>([]);
-
-export const resolveProjects = async (orgAddress: string): Promise<void> => {
+export const resolveProjectAnchors = async (
+  orgAddress: string
+): Promise<void> => {
   const anchors = await theGraphApi.getOrgProjectAnchors(orgAddress);
 
-  const resolvedProjects: ResolvedProject[] = await Promise.all(
+  const anchoredProjects: project.Project[] = [];
+  const unresolvedAnchors: theGraphApi.ProjectAnchor[] = [];
+  console.log(anchors);
+
+  await Promise.all(
     anchors.map(async anchor => {
       try {
         const project = await proxy.client.project.get(anchor.projectId);
-        return { type: "anchoredProject", project: { anchor, ...project } };
+        anchoredProjects.push({ ...project, anchor });
       } catch (error) {
         // TODO: only catch when backend can't find project, reraise other errors
-        return { type: "anchor", anchor };
+        unresolvedAnchors.push(anchor);
       }
     })
   );
 
-  orgProjectTabStore.set(resolvedProjects);
+  orgProjectTabStore.set({ anchoredProjects, unresolvedAnchors });
 };

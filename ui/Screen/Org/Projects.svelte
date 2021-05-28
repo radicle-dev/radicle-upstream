@@ -3,6 +3,7 @@
   import type { Project } from "ui/src/project";
 
   import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
+  import AnchorList from "ui/Screen/Org/AnchorList.svelte";
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
   import * as path from "ui/src/path";
@@ -16,17 +17,17 @@
 
   $: console.log($orgProjectTabStore);
   const select = ({ detail: project }: { detail: Project }) => {
-    if (project.type !== "anchor") {
-      push(path.project(project.project.urn));
-    }
+    push(path.project(project.urn));
   };
 </script>
 
-{#if $orgProjectTabStore.length !== 0}
+{#if $orgProjectTabStore.anchoredProjects.length !== 0 || $orgProjectTabStore.unresolvedAnchors.length !== 0}
   <ProjectList
-    projects={$orgProjectTabStore}
+    projects={$orgProjectTabStore.anchoredProjects}
     userUrn={session.identity.urn}
     on:select={select} />
+
+  <AnchorList anchors={$orgProjectTabStore.unresolvedAnchors} />
 {:else}
   <EmptyState
     illustration={IllustrationVariant.Plant}
