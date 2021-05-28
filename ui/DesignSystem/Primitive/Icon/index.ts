@@ -31,6 +31,7 @@ import CurrencyUSD from "./CurrencyUSD.svelte";
 import Ellipsis from "./Ellipsis.svelte";
 import EllipsisSmall from "./EllipsisSmall.svelte";
 import Envelope from "./Envelope.svelte";
+import Ethereum from "./Ethereum.svelte";
 import Exclamation from "./Exclamation.svelte";
 import ExclamationCircle from "./ExclamationCircle.svelte";
 import EyeClosed from "./EyeClosed.svelte";
@@ -63,10 +64,12 @@ import Road from "./Road.svelte";
 import Server from "./Server.svelte";
 import Settings from "./Settings.svelte";
 import TokenStreams from "./TokenStreams.svelte";
+import Topup from "./Topup.svelte";
 import Transactions from "./Transactions.svelte";
 import Trash from "./Trash.svelte";
 import User from "./User.svelte";
 import Wallet from "./Wallet.svelte";
+import Withdraw from "./Withdraw.svelte";
 
 export default {
   ArrowBoxUpRight,
@@ -102,6 +105,7 @@ export default {
   Ellipsis,
   EllipsisSmall,
   Envelope,
+  Ethereum,
   Exclamation,
   ExclamationCircle,
   EyeClosed,
@@ -134,8 +138,10 @@ export default {
   Server,
   Settings,
   TokenStreams,
+  Topup,
   Transactions,
   Trash,
   User,
   Wallet,
+  Withdraw,
 };

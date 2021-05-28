@@ -2,7 +2,7 @@
   import type { Tx } from "ui/src/transaction";
   import { Icon } from "ui/DesignSystem/Primitive";
   import { Label } from "ui/DesignSystem/Component";
-  import { getDay, getShortMonth } from "ui/src/transaction";
+  import { getDay, getShortMonth, txIcon } from "ui/src/transaction";
 
   export let tx: Tx;
 
@@ -52,7 +52,7 @@
       <h5>{getShortMonth(new Date(tx.date))}</h5>
       <p class="typo-text-bold">{getDay(new Date(tx.date))}</p>
     </div>
-    <Icon.Registered />
+    <svelte:component this={Icon[txIcon(tx)]} />
     <p class="typo-text-bold" style="margin-left: 0.5rem">{tx.kind}</p>
   </div>
   <Label

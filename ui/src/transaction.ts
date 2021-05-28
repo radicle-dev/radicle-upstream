@@ -356,6 +356,25 @@ export function emoji(tx: Tx): string {
   }
 }
 
+export function txIcon(tx: Tx): string {
+  switch (tx.kind) {
+    case TxKind.ClaimRadicleIdentity:
+      return "Registered";
+    case TxKind.CollectFunds:
+      return "Withdraw";
+    case TxKind.Withdraw:
+      return "Withdraw";
+    case TxKind.Erc20Allowance:
+      return "Ethereum";
+    case TxKind.SupportOnboarding:
+      return "TokenStreams";
+    case TxKind.TopUp:
+      return "Topup";
+    case TxKind.UpdateSupport:
+      return "TokenStreams";
+  }
+}
+
 export function isIncoming(tx: Tx): boolean {
   return direction(tx) === Direction.Incoming;
 }
