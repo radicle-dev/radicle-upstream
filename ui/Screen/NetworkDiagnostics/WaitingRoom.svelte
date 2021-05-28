@@ -10,7 +10,7 @@
     table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
-    border: 3px solid purple;
+    margin-top: 1rem;
   }
 
   thead th:nth-child(1) {

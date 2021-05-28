@@ -37,6 +37,12 @@
 </script>
 
 <style>
+  .container {
+    margin: 0 auto;
+    min-width: var(--content-min-width);
+    padding: 0 var(--content-padding);
+  }
+
   .title {
     display: flex;
     flex-direction: column;
@@ -50,12 +56,12 @@
       <h1>Status: {$store.type}</h1>
     </div>
   </Header>
-
   <ActionBar>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>
   </ActionBar>
-
-  <Router routes={screenRoutes} />
+  <div class="container">
+    <Router routes={screenRoutes} />
+  </div>
 </SidebarLayout>
