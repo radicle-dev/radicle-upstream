@@ -36,6 +36,12 @@
 </script>
 
 <style>
+  .container {
+    margin: 0 auto;
+    min-width: var(--content-min-width);
+    padding: 0 var(--content-padding);
+  }
+
   .title {
     display: flex;
     flex-direction: column;
@@ -49,18 +55,18 @@
       <h1>Status: {$store.type}</h1>
     </div>
   </Header>
-
   <ActionBar>
     <div slot="left">
       <TabBar tabs={tabs(activeTab)} />
     </div>
   </ActionBar>
-
-  {#if activeTab === "peers"}
-    <ConnectedPeersTab />
-  {:else if activeTab === "requests"}
-    <WaitingRoomTab />
-  {:else}
-    {router.unreachable(activeTab)}
-  {/if}
+  <div class="container">
+    {#if activeTab === "peers"}
+      <ConnectedPeersTab />
+    {:else if activeTab === "requests"}
+      <WaitingRoomTab />
+    {:else}
+      {router.unreachable(activeTab)}
+    {/if}
+  </div>
 </SidebarLayout>

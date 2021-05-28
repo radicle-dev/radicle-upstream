@@ -44,7 +44,10 @@
 </style>
 
 <header {style}>
-  <div class="back-button" on:click={() => onArrowClick()}>
+  <div
+    class="back-button"
+    data-cy="back-button"
+    on:click={() => onArrowClick()}>
     <Icon.ArrowLeft />
   </div>
   <slot />

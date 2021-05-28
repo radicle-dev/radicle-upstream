@@ -41,6 +41,7 @@ mod http;
 mod identifier;
 mod identity;
 mod notification;
+mod patch;
 mod process;
 mod project;
 mod service;

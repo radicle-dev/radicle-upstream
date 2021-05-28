@@ -323,6 +323,7 @@ const formatGroupTime = (t: number): string => {
     year: "numeric",
   });
 };
+
 export interface GroupedCommitsHistory {
   history: CommitGroup[];
   stats: Stats;

@@ -3,6 +3,7 @@ import type { Readable, Writable } from "svelte/store";
 
 import * as error from "ui/src/error";
 import * as config from "ui/src/config";
+import * as patch from "ui/src/project/patch";
 import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
 import * as router from "ui/src/router";
@@ -42,9 +43,10 @@ export interface Code {
   view: View;
 }
 
-interface Screen {
+export interface Screen {
   code: Writable<Code>;
   history: source.GroupedCommitsHistory;
+  patches: patch.Patch[];
   peer: User;
   project: Project;
   revisions: [source.Branch | source.Tag];
@@ -81,6 +83,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
 
   try {
     const revisions = await source.fetchRevisions(project.urn, peer.peerId);
+    const patches = await patch.getAll(project.urn);
     const selectedRevision = defaultRevision(project, revisions);
     const [history, [tree, root]] = await Promise.all([
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
@@ -91,6 +94,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.success({
       code: writable<Code>(root),
       history: groupedHistory,
+      patches,
       peer,
       project,
       revisions: mapRevisions(revisions),

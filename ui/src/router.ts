@@ -5,7 +5,10 @@ export type ProfileTab = "projects" | "following" | "funding";
 export type ProjectView =
   | { type: "files" }
   | { type: "commits" }
-  | { type: "commit"; commitHash: string };
+  | { type: "commit"; commitHash: string }
+  | { type: "patches"; filter: "open" | "closed" | "all" }
+  | { type: "patch"; id: string; peerId: string };
+
 export type NetworkDiagnosticsTab = "peers" | "requests";
 
 export type Route =
