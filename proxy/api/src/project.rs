@@ -132,7 +132,7 @@ impl TryFrom<(RadProject, Stats)> for Full {
 }
 
 /// Codified relation in form of roles and availability of project views.
-#[derive(Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Peer(peer::Peer<peer::Status<identity::Identity>>);
 
 impl Deref for Peer {

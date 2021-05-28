@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { get } from "svelte/store";
   import Router, { location } from "svelte-spa-router";
+  import * as router from "svelte-spa-router/wrap";
 
   import * as error from "../../src/error";
   import { openPath } from "../../src/ipc";
@@ -24,10 +24,13 @@
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
+  import PatchButton from "./Source/PatchButton.svelte";
 
   import Code from "./Source/Code.svelte";
   import Commit from "./Source/Commit.svelte";
   import Commits from "./Source/Commits.svelte";
+  import Patches from "./Source/Patches.svelte";
+  import Patch from "./Source/Patch.svelte";
 
   export let project: Project;
   export let selectedPeer: User;
@@ -37,7 +40,17 @@
     "/projects/:urn/source/code": Code,
     "/projects/:urn/source/commit/:hash": Commit,
     "/projects/:urn/source/commits": Commits,
+    "/projects/:urn/source/patches": Patches,
+    "/projects/:urn/source/patch/:peerId/:id": router.wrap({
+      component: Patch,
+      props: {
+        project,
+      },
+    }),
   };
+  $: patchesTabSelected =
+    $location.startsWith(path.projectSourcePatches(project.urn)) ||
+    $location.startsWith(`/projects/${project.urn}/source/patch`);
 
   const onCheckout = async (
     { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
@@ -78,7 +91,7 @@
   const onMenuSelect = ({ detail: item }: { detail: HorizontalItem }) => {
     if (
       item.title === "Files" &&
-      get(location).startsWith(path.projectSourceFiles(project.urn))
+      $location.startsWith(path.projectSourceFiles(project.urn))
     ) {
       selectPath("");
     }
@@ -102,22 +115,28 @@
   <ActionBar>
     <div slot="left">
       <div style="display: flex">
-        <div class="revision-selector-wrapper">
-          <RevisionSelector
-            loading={selectedRevision.request !== null}
-            on:select={onSelectRevision}
-            selected={selectedRevision.selected}
-            defaultBranch={project.metadata.defaultBranch}
-            {revisions} />
-        </div>
+        {#if !patchesTabSelected}
+          <div class="revision-selector-wrapper">
+            <RevisionSelector
+              loading={selectedRevision.request !== null}
+              on:select={onSelectRevision}
+              selected={selectedRevision.selected}
+              defaultBranch={project.metadata.defaultBranch}
+              {revisions} />
+          </div>
+        {/if}
 
         <HorizontalMenu items={menuItems} on:select={onMenuSelect} />
       </div>
     </div>
     <div slot="right">
-      <CheckoutButton
-        fork={!isContributor}
-        on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
+      {#if patchesTabSelected}
+        <PatchButton />
+      {:else}
+        <CheckoutButton
+          fork={!isContributor}
+          on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
+      {/if}
     </div>
   </ActionBar>
 

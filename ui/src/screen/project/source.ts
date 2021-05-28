@@ -6,12 +6,14 @@ import * as error from "ui/src/error";
 import * as config from "ui/src/config";
 import type { HorizontalItem } from "ui/src/menu";
 import * as path from "ui/src/path";
+import * as patch from "ui/src/project/patch";
 import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
 import * as source from "ui/src/source";
 
 import IconCommit from "ui/DesignSystem/Primitive/Icon/Commit.svelte";
 import IconFile from "ui/DesignSystem/Primitive/Icon/File.svelte";
+import IconRevision from "ui/DesignSystem/Primitive/Icon/Revision.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -51,6 +53,7 @@ interface Screen {
   code: Writable<Code>;
   history: source.GroupedCommitsHistory;
   menuItems: HorizontalItem[];
+  patches: patch.Patch[];
   peer: User;
   project: Project;
   revisions: [source.Branch | source.Tag];
@@ -87,6 +90,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
 
   try {
     const revisions = await source.fetchRevisions(project.urn, peer.peerId);
+    const patches = await patch.getAll(project.urn);
     const selectedRevision = defaultRevision(project, revisions);
     const [history, [tree, root]] = await Promise.all([
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
@@ -97,7 +101,8 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.success({
       code: writable<Code>(root),
       history: groupedHistory,
-      menuItems: menuItems(project, groupedHistory),
+      menuItems: menuItems(project, groupedHistory, patches),
+      patches,
       peer,
       project,
       revisions: mapRevisions(revisions),
@@ -196,7 +201,7 @@ export const selectRevision = async (
       screenStore.success({
         ...screen.data,
         history: groupedHistory,
-        menuItems: menuItems(project, groupedHistory),
+        menuItems: menuItems(project, groupedHistory, screen.data.patches),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -368,7 +373,8 @@ const mapRevisions = (
 
 const menuItems = (
   project: Project,
-  history: source.GroupedCommitsHistory
+  history: source.GroupedCommitsHistory,
+  patches: patch.Patch[]
 ): HorizontalItem[] => {
   return [
     {
@@ -381,6 +387,12 @@ const menuItems = (
       title: "Commits",
       counter: history.stats.commits,
       href: path.projectSourceCommits(project.urn),
+    },
+    {
+      icon: IconRevision,
+      title: "Patches",
+      counter: patches.filter(patch => !patch.merged).length,
+      href: path.projectSourcePatches(project.urn),
     },
   ];
 };

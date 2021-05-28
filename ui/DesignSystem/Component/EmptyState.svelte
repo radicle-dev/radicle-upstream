@@ -86,4 +86,5 @@
       <p>{secondaryActionText}</p>
     </button>
   {/if}
+  <slot />
 </div>

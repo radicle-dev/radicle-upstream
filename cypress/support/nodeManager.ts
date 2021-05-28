@@ -62,6 +62,22 @@ ${cmd}`,
   );
 };
 
+export const withOneOnboardedNode = (
+  options: {
+    dataDir: string;
+    handle?: string;
+  },
+  callback: (node: NodeSession) => void
+): void => {
+  withNodeManager(() => {
+    startAndOnboardNode(options.dataDir, {
+      handle: options.handle,
+    }).then(node => {
+      callback(node);
+    });
+  });
+};
+
 export const withTwoOnboardedNodes = (
   options: WithTwoOnboardedNodesOptions,
   callback: (node1: NodeSession, node2: NodeSession) => void

@@ -166,6 +166,22 @@ const peerSchema: zod.Schema<Peer> = zod.object({
   ]),
 });
 
+export interface Patch {
+  id: string;
+  peer: Peer;
+  message: string | null;
+  commit: string;
+  mergeBase: string | null;
+}
+
+const patchSchema: zod.ZodSchema<Patch> = zod.object({
+  id: zod.string(),
+  peer: peerSchema,
+  message: zod.string().nullable(),
+  commit: zod.string(),
+  mergeBase: zod.string().nullable(),
+});
+
 export class Client {
   private fetcher: Fetcher;
 
@@ -302,6 +318,16 @@ export class Client {
         body: params,
       },
       zod.string()
+    );
+  }
+
+  async patchList(projectUrn: string): Promise<Patch[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `projects/${projectUrn}/patches`,
+      },
+      zod.array(patchSchema)
     );
   }
 }
