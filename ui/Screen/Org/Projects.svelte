@@ -15,25 +15,34 @@
   const orgProjectTabStore = org.orgProjectTabStore;
   const session = sess.getUnsealedFromContext();
 
-  $: console.log($orgProjectTabStore);
   const select = ({ detail: project }: { detail: Project }) => {
     push(path.project(project.urn));
   };
 </script>
 
-{#if $orgProjectTabStore.anchoredProjects.length !== 0 || $orgProjectTabStore.unresolvedAnchors.length !== 0}
-  <ProjectList
-    projects={$orgProjectTabStore.anchoredProjects}
-    userUrn={session.identity.urn}
-    on:select={select} />
+<style>
+  .container {
+    margin: 0 auto;
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+  }
+</style>
 
-  <AnchorList anchors={$orgProjectTabStore.unresolvedAnchors} />
-{:else}
-  <EmptyState
-    illustration={IllustrationVariant.Plant}
-    text="Get started by anchoring your organization’s first project with the radicle gnosis safe app."
-    primaryActionText="Anchor with Gnosis Safe"
-    on:primaryAction={() => {
-      modal.toggle(ModalAnchorProject);
-    }} />
-{/if}
+<div class="container">
+  {#if $orgProjectTabStore.anchoredProjects.length !== 0 || $orgProjectTabStore.unresolvedAnchors.length !== 0}
+    <ProjectList
+      projects={$orgProjectTabStore.anchoredProjects}
+      userUrn={session.identity.urn}
+      on:select={select} />
+
+    <AnchorList anchors={$orgProjectTabStore.unresolvedAnchors} />
+  {:else}
+    <EmptyState
+      illustration={IllustrationVariant.Plant}
+      text="Get started by anchoring your organization’s first project with the radicle gnosis safe app."
+      primaryActionText="Anchor with Gnosis Safe"
+      on:primaryAction={() => {
+        modal.toggle(ModalAnchorProject);
+      }} />
+  {/if}
+</div>

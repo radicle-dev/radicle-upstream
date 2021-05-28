@@ -11,6 +11,12 @@
 </script>
 
 <style>
+  .container {
+    margin: 0 auto;
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+  }
+
   .list-item {
     display: flex;
     width: 100%;
@@ -61,28 +67,30 @@
   }
 </style>
 
-<div class="metadata-container">
-  <div class="metadata">
-    <span class="left typo-text">
-      <Icon.Gnosis style="margin: 0 10px 0 27px;" />
-      Managed by Gnosis Safe • Quorum
-      {$orgMemberTabStore.threshold}/{$orgMemberTabStore.members.length}
-    </span>
-    <span class="address">
-      <a
-        href={`https://rinkeby.gnosis-safe.io/app/#/safes/${$orgMemberTabStore.gnosisSafeAddress}`}
-        class="typo-link">
-        {$orgMemberTabStore.gnosisSafeAddress}
-      </a>↗</span>
+<div class="container">
+  <div class="metadata-container">
+    <div class="metadata">
+      <span class="left typo-text">
+        <Icon.Gnosis style="margin: 0 10px 0 27px;" />
+        Managed by Gnosis Safe • Quorum
+        {$orgMemberTabStore.threshold}/{$orgMemberTabStore.members.length}
+      </span>
+      <span class="address">
+        <a
+          href={`https://rinkeby.gnosis-safe.io/app/#/safes/${$orgMemberTabStore.gnosisSafeAddress}`}
+          class="typo-link">
+          {$orgMemberTabStore.gnosisSafeAddress}
+        </a>↗</span>
+    </div>
   </div>
-</div>
 
-<List
-  items={$orgMemberTabStore.members}
-  let:item={member}
-  styleHoverState={false}>
-  <div class="list-item">
-    <div class="member-name typo-text-bold">{member}</div>
-    <div class="member-address">{ellipsed(member)}</div>
-  </div>
-</List>
+  <List
+    items={$orgMemberTabStore.members}
+    let:item={member}
+    styleHoverState={false}>
+    <div class="list-item">
+      <div class="member-name typo-text-bold">{member}</div>
+      <div class="member-address">{ellipsed(member)}</div>
+    </div>
+  </List>
+</div>

@@ -24,11 +24,6 @@
   .reset-cursor {
     cursor: default;
   }
-  .container {
-    margin: 0 auto;
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-  }
   .header {
     display: flex;
     margin: 1.5rem 3rem 0.5rem;
@@ -37,15 +32,14 @@
 </style>
 
 {#if anchors.length !== 0}
-  <div class="container">
-    <div class="header">
-      <p class="typo-text-bold">Still looking…&nbsp;</p>
-      <p style="color: var(--color-foreground-level-6);">
-        These anchored projects haven't been found in your network yet.
-      </p>
-    </div>
+  <div class="header">
+    <p class="typo-text-bold">Still looking…&nbsp;</p>
+    <p style="color: var(--color-foreground-level-6);">
+      These anchored projects haven't been found in your network yet.
+    </p>
   </div>
 {/if}
+
 <List
   dataCy="project-list"
   items={anchors}
