@@ -22,7 +22,7 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(peers_filter(ctx.clone()))
         .or(path("requests").and(request::filters(ctx.clone())))
         .or(track_filter(ctx.clone()))
-        .or(track_filter(ctx.clone()))
+        .or(patches_filter(ctx.clone()))
         .or(untrack_filter(ctx.clone()))
         .or(user_filter(ctx))
         .boxed()
@@ -147,6 +147,20 @@ fn user_filter(
         .and_then(handler::list_user)
 }
 
+/// `GET /<urn>/patches`
+///
+/// Get the list of patches for the project.
+fn patches_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path::param::<Urn>()
+        .and(path("patches"))
+        .and(path::end())
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
+        .and_then(handler::patches)
+}
+
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
@@ -156,7 +170,7 @@ mod handler {
 
     use radicle_daemon::{state, LocalIdentity, PeerId, Urn};
 
-    use crate::{browser, context, error::Error, http, project};
+    use crate::{browser, context, error::Error, http, patch, project};
 
     /// Checkout a [`project::Project`]'s source code.
     pub async fn checkout(
@@ -273,6 +287,18 @@ mod handler {
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
+    }
+
+    /// Get the list of patches for a project
+    pub async fn patches(
+        project_urn: Urn,
+        ctx: context::Unsealed,
+    ) -> Result<impl Reply, Rejection> {
+        let patches = patch::list(&ctx.peer, project_urn)
+            .await
+            .map_err(Error::from)?;
+
+        Ok(reply::json(&patches))
     }
 }
 
