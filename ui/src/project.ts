@@ -1,5 +1,7 @@
 import { get, writable } from "svelte/store";
 
+import type * as org from "ui/src/org";
+
 import * as error from "./error";
 import * as config from "./config";
 import type * as identity from "./identity";
@@ -38,7 +40,7 @@ export const creation = creationStore.readable;
 const localStateStore = remote.createStore<source.LocalState>();
 export const localState = localStateStore.readable;
 
-const projectsStore = remote.createStore<Project[]>();
+const projectsStore = remote.createStore<org.ResolvedProject[]>();
 export const projects = projectsStore.readable;
 
 export const fetchList = (): void => {
@@ -46,7 +48,12 @@ export const fetchList = (): void => {
 
   proxy.client.project
     .listContributed()
-    .then(projectsStore.success)
+    .then(response => {
+      const projects: org.ResolvedProject[] = response.map(project => {
+        return { type: "project", project };
+      });
+      projectsStore.success(projects);
+    })
     .catch(err => projectsStore.error(error.fromUnknown(err)));
 };
 
