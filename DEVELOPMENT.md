@@ -40,32 +40,16 @@ linting and formatting are enforced locally on a pre-commit basis with
 Additionally we run the same checks as separate build steps on our CI, just to
 make sure only properly formatted and lint-free code lands into master.
 
+## Development prerequisites
+
+* [NodeJS](https://nodejs.org/en/)
+* [Yarn](https://yarnpkg.com/getting-started/install)
+* [Rustup](https://github.com/rust-lang/rustup)
+* Dependencies of [Cypress](https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements)
 
 ### Running Upstream
 
-You'll have to install some external dependencies to be able to compile the
-proxy as well as the UI.
-
-On macOS:
-```
-xcode-select --install
-sudo xcodebuild -license
-brew install yarn pkgconfig nettle
-```
-
-On Linux:
-  - [Autoconf](https://www.gnu.org/software/autoconf)
-  - [Clang](https://clang.llvm.org)
-  - [Git](https://git-scm.com)
-  - [GMP](https://gmplib.org)
-  - [GNU M4](https://www.gnu.org/software/m4)
-  - [Nettle](http://www.lysator.liu.se/~nisse/nettle)
-  - [OpenSSL](https://www.openssl.org)
-  - [Yarn](https://yarnpkg.com)
-
-1. Get Upstream: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
-2. Install dependencies: `cd radicle-upstream && yarn install`.
-3. Start Upstream in development mode: `yarn start`.
+To start Upstream run `yarn start`.
 
 Running upstream will create new directories in `XDG_DATA_HOME` &
 `XDG_CONFIG_HOME` (or `HOME` respectiveley). To overwrite the locations, you
