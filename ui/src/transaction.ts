@@ -9,6 +9,9 @@ import * as error from "./error";
 import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
+import type { SvelteComponent } from "svelte";
+import { Icon } from "../DesignSystem/Primitive";
+
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
 
@@ -356,22 +359,22 @@ export function emoji(tx: Tx): string {
   }
 }
 
-export function txIcon(tx: Tx): string {
+export function txIcon(tx: Tx): typeof SvelteComponent {
   switch (tx.kind) {
     case TxKind.ClaimRadicleIdentity:
-      return "Registered";
+      return Icon.Registered;
     case TxKind.CollectFunds:
-      return "Withdraw";
+      return Icon.Withdraw;
     case TxKind.Withdraw:
-      return "Withdraw";
+      return Icon.Withdraw;
     case TxKind.Erc20Allowance:
-      return "Ethereum";
+      return Icon.Ethereum;
     case TxKind.SupportOnboarding:
-      return "TokenStreams";
+      return Icon.TokenStreams;
     case TxKind.TopUp:
-      return "Topup";
+      return Icon.Topup;
     case TxKind.UpdateSupport:
-      return "TokenStreams";
+      return Icon.TokenStreams;
   }
 }
 
@@ -413,10 +416,6 @@ const monthNames = [
   "November",
   "December",
 ];
-
-export function getDay(date: Date): string {
-  return `${date.getUTCDate()}`;
-}
 
 export function getShortMonth(date: Date): string {
   return `${shortMonthNames[date.getMonth()]}`;

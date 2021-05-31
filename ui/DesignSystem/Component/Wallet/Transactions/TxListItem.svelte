@@ -1,12 +1,8 @@
 <script lang="typescript">
   import type { Tx } from "ui/src/transaction";
-  import { Icon } from "ui/DesignSystem/Primitive";
-  // import { Label } from "ui/DesignSystem/Component";
-  import { getDay, getShortMonth, txIcon } from "ui/src/transaction";
+  import { getShortMonth, txIcon } from "ui/src/transaction";
 
   export let tx: Tx;
-
-  // const price = 0.0043;
 </script>
 
 <style>
@@ -50,9 +46,9 @@
   <div class="left">
     <div class="date">
       <h5>{getShortMonth(new Date(tx.date))}</h5>
-      <p class="typo-text-bold">{getDay(new Date(tx.date))}</p>
+      <p class="typo-text-bold">{new Date(tx.date).getDate()}</p>
     </div>
-    <svelte:component this={Icon[txIcon(tx)]} />
+    <svelte:component this={txIcon(tx)} />
     <p class="typo-text-bold" style="margin-left: 0.5rem">{tx.kind}</p>
   </div>
   <!-- <Label
