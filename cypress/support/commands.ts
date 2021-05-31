@@ -90,7 +90,7 @@ export const createEmptyProject = (
   name: string = "new-project",
   path: string,
   port: number = 17246
-): Cypress.Chainable<void> =>
+): Cypress.Chainable<string> =>
   requestOk({
     url: `http://localhost:${port}/v1/projects`,
     method: "POST",
@@ -106,7 +106,7 @@ export const createEmptyProject = (
       description: "This is the description.",
       defaultBranch: "main",
     }),
-  });
+  }).then(response => response.urn as string);
 
 export const followProject = (
   urn: string,
@@ -169,13 +169,12 @@ export const metaKey = (): string => {
  */
 function requestOk(
   opts: Partial<Cypress.RequestOptions> & { url: string }
-): Cypress.Chainable<void> {
-  return cy
-    .request(opts)
-    .then(response => {
-      expect(response.status).to.be.within(200, 299, "Failed response");
-    })
-    .wrap(undefined);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Cypress.Chainable<any> {
+  return cy.request(opts).then(response => {
+    expect(response.status).to.be.within(200, 299, "Failed response");
+    return response.body;
+  });
 }
 
 function getCurrentTestName() {
