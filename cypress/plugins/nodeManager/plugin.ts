@@ -137,6 +137,7 @@ class Node {
         `${HOST}:${this.httpPort}`,
         "--peer-listen",
         `${HOST}:${this.peerPort}`,
+        "--skip-remote-helper-install",
       ],
       { env: { ...global.process.env, RAD_HOME: this.radHome } }
     );

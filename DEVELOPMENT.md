@@ -51,10 +51,20 @@ make sure only properly formatted and lint-free code lands into master.
 
 To start Upstream run `yarn start`.
 
-Running upstream will create new directories in `XDG_DATA_HOME` &
-`XDG_CONFIG_HOME` (or `HOME` respectiveley). To overwrite the locations, you
-can set `RAD_HOME` to your desired directory. Note that you will also have to
-set it for using git remote helper functionality outside of upstream.
+Running upstream with `yarn start` will use `<repo_root>/sandbox/rad_home` as
+the default `RAD_HOME` value to isolate you development state.
+
+### Using the Git remote
+
+Upstream provides the `git-remote-rad` binary to fetch and push Git
+repositories. If you want to use the rad remote in development you need to set
+the environment in your terminal
+
+```bash
+source ./scripts/env
+```
+
+Make sure to source the script from the repository root.
 
 
 ### Feature flagging
