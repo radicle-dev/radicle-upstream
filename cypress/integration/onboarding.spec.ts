@@ -44,9 +44,9 @@ context("onboarding", () => {
       // Success screen.
       commands.pick("peer-id").contains(VALID_PEER_MATCH).should("exist");
 
-      // Land on profile screen.
+      // Land on wallet screen.
       cy.get("body").type("{enter}");
-      commands.pick("entity-name").contains(validUser.handle);
+      commands.pick("wallet").should("exist");
     });
 
     it("is possible to step through the identity creation flow", () => {

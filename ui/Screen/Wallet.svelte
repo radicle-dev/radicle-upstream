@@ -80,7 +80,7 @@
 </style>
 
 <SidebarLayout>
-  <div class="container">
+  <div class="container" data-cy="wallet">
     {#if w.status === Status.Connected}
       <div class="content">
         <div>
