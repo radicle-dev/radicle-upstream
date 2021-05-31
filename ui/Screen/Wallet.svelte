@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import Router from "svelte-spa-router";
 
   import * as path from "ui/src/path";
