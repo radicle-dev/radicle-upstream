@@ -1,5 +1,6 @@
 <script lang="typescript">
   import { store as transactions, getShortMonth } from "ui/src/transaction";
+  import type { Tx } from "ui/src/transaction";
 
   import TxList from "ui/DesignSystem/Component/Wallet/Transactions/TxList.svelte";
 
@@ -8,31 +9,31 @@
   );
   $: rejectedTxs = $transactions.filter(tx => tx.status === "Rejected");
 
-  $: txMonthSections = $transactions.reduce((res, cur) => {
-    const txMonth = new Date(cur.date).getMonth();
-    const txYear = new Date(cur.date).getFullYear();
-
-    const currentSectionIndex = res.findIndex(
-      section => section.key === `${txMonth}` + `${txYear}`
-    );
-
-    if (currentSectionIndex !== -1) {
-      res[currentSectionIndex] = {
-        ...res[currentSectionIndex],
-        items: [...res[currentSectionIndex].items, cur],
-      };
-    } else {
-      res = [
-        ...res,
-        {
-          key: `${txMonth}` + `${txYear}`,
-          title: `${getShortMonth(new Date(cur.date))} ${txYear}`,
-          items: [cur],
-        },
-      ];
+  const groupTxs = (txs: Tx[]) => {
+    const sections: Array<{ key: string; title: string; items: Tx[] }> = [];
+    // Sort from newest to oldest
+    txs.sort((a, b) => b.date - a.date);
+    for (const tx of txs) {
+      const txDate = new Date(tx.date);
+      const txMonth = txDate.getMonth();
+      const txYear = txDate.getFullYear();
+      const key = `${txYear}-${txMonth}`;
+      const currentSection = sections[sections.length - 1];
+      if (currentSection && currentSection.key === key) {
+        currentSection.items.push(tx);
+      } else {
+        const title = `${getShortMonth(txDate)} ${txYear}`;
+        sections.push({
+          key,
+          title,
+          items: [tx],
+        });
+      }
     }
-    return res;
-  }, []);
+    return sections;
+  };
+
+  $: txMonthSections = groupTxs($transactions);
 </script>
 
 <style>
