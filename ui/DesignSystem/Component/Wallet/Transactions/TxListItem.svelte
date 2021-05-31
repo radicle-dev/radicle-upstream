@@ -1,12 +1,12 @@
 <script lang="typescript">
   import type { Tx } from "ui/src/transaction";
   import { Icon } from "ui/DesignSystem/Primitive";
-  import { Label } from "ui/DesignSystem/Component";
+  // import { Label } from "ui/DesignSystem/Component";
   import { getDay, getShortMonth, txIcon } from "ui/src/transaction";
 
   export let tx: Tx;
 
-  const price = 0.0043;
+  // const price = 0.0043;
 </script>
 
 <style>
@@ -55,8 +55,8 @@
     <svelte:component this={Icon[txIcon(tx)]} />
     <p class="typo-text-bold" style="margin-left: 0.5rem">{tx.kind}</p>
   </div>
-  <Label
+  <!-- <Label
     title={`-${price} ETH`}
     color="var(--color-negative-level-1)"
-    style="color: var(--color-negative)" />
+    style="color: var(--color-negative)" /> -->
 </div>
