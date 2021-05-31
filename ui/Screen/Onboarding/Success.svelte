@@ -1,5 +1,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
+  import { isDev } from "ui/src/config";
 
   import { PeerId } from "ui/DesignSystem/Component";
   import { Button } from "ui/DesignSystem/Primitive";
@@ -68,9 +69,11 @@
         on:click={profile}>
         Go to profile
       </Button>
-      <Button dataCy="go-to-wallet-button" on:click={wallet}>
-        Set up your wallet
-      </Button>
+      {#if isDev}
+        <Button dataCy="go-to-wallet-button" on:click={wallet}>
+          Set up your wallet
+        </Button>
+      {/if}
     </div>
   </div>
 </div>
