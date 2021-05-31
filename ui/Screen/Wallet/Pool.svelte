@@ -7,11 +7,8 @@
 
   import * as modal from "ui/src/modal";
   import * as fundingPool from "ui/src/funding/pool";
-  import type { Pool } from "ui/src/funding/pool";
   import { TxKind, ongoing, store as txs } from "ui/src/transaction";
   import { store } from "ui/src/wallet";
-
-  let pool: Pool;
 
   function onCollect() {
     fundingPool.store.set(pool);
@@ -21,9 +18,6 @@
   let ongoingCollect = false;
   $: ongoingCollect = $txs.some(ongoing(TxKind.CollectFunds));
   $: wallet = $store;
-  // Hack to have Svelte working with checking the $wallet variant
-  // and thus be able to access its appropriate fields.
-  $: w = $wallet;
   $: pool = fundingPool.make(wallet);
 </script>
 
