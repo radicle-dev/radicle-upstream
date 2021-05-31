@@ -83,8 +83,10 @@
   <Header>
     <OrgHeader
       slot="left"
-      orgAddress={$orgScreenStore.orgAddress}
-      gnosisSafeAddress={$orgScreenStore.gnosisSafeAddress} />
+      orgAddress={$orgScreenStore ? $orgScreenStore.orgAddress : ""}
+      gnosisSafeAddress={$orgScreenStore
+        ? $orgScreenStore.gnosisSafeAddress
+        : ""} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown

@@ -8,7 +8,7 @@
 
   export let projects: Project[];
   export let userUrn: string;
-  export let orgAddress: string;
+  export let orgAddress: string | undefined = undefined;
 
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,

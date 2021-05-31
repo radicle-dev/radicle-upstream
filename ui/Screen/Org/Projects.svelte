@@ -34,13 +34,13 @@
   {#if $orgProjectTabStore.anchoredProjects.length !== 0 || $orgProjectTabStore.unresolvedAnchors.length !== 0}
     <ProjectList
       projects={$orgProjectTabStore.anchoredProjects}
-      orgAddress={$orgScreenStore.orgAddress}
+      orgAddress={$orgScreenStore ? $orgScreenStore.orgAddress : ""}
       userUrn={session.identity.urn}
       on:select={select} />
 
     <AnchorList
       anchors={$orgProjectTabStore.unresolvedAnchors}
-      orgAddress={$orgScreenStore.orgAddress} />
+      orgAddress={$orgScreenStore ? $orgScreenStore.orgAddress : ""} />
   {:else}
     <EmptyState
       illustration={IllustrationVariant.Plant}

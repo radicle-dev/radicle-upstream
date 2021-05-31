@@ -8,7 +8,7 @@
   import { Hoverable } from "ui/DesignSystem/Component";
 
   export let anchor: theGraphApi.ProjectAnchor;
-  export let orgAddress: string;
+  export let orgAddress: string | undefined;
 
   let hover: boolean;
 </script>
@@ -57,20 +57,22 @@
       <div class="header">
         <Icon.Anchor style="fill: var(--color-primary); margin-left: 0.5rem;" />
 
-        <p class="typo-text-bold">Anchored in</p>
-        <Avatar
-          size="small"
-          style="margin: 0 0.5rem 0 0.5rem;"
-          variant="square"
-          avatarFallback={radicleAvatar.generate(
-            orgAddress,
-            radicleAvatar.Usage.Any
-          )} />
-        <p
-          class="typo-text-bold org"
-          style="color: var(--color-foreground-level-6);overflow: ellipsed">
-          {orgAddress}
-        </p>
+        {#if orgAddress}
+          <p class="typo-text-bold">Anchored in</p>
+          <Avatar
+            size="small"
+            style="margin: 0 0.5rem 0 0.5rem;"
+            variant="square"
+            avatarFallback={radicleAvatar.generate(
+              orgAddress,
+              radicleAvatar.Usage.Any
+            )} />
+          <p
+            class="typo-text-bold org"
+            style="color: var(--color-foreground-level-6);overflow: ellipsed">
+            {orgAddress}
+          </p>
+        {/if}
       </div>
       <div class="meta">
         <Icon.Commit style="margin-right: 0.5rem;" />

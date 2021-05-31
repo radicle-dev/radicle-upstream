@@ -10,8 +10,8 @@
   export let description = "";
 
   export let showMaintainerBadge: boolean = false;
-  export let anchor: theGraphApi.ProjectAnchor;
-  export let orgAddress: string;
+  export let anchor: theGraphApi.ProjectAnchor | undefined;
+  export let orgAddress: string | undefined;
 </script>
 
 <style>
