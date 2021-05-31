@@ -15,7 +15,7 @@
   let disabled = true;
   let accountBalance = Big(0);
   $: accountBalance =
-    svelteStore.get(walletStore).account()?.balance || accountBalance;
+    svelteStore.get(walletStore).account()?.daiBalance || accountBalance;
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter" && !disabled) {

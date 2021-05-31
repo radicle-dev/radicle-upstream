@@ -78,10 +78,6 @@
       break;
   }
 
-  $: sessionIsUnsealed =
-    $store.status === remote.Status.Success &&
-    $store.data.status === Status.UnsealedSession;
-
   customProtocolHandler.register();
 </script>
 
