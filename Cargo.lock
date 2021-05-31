@@ -68,6 +68,7 @@ dependencies = [
  "data-encoding",
  "directories 2.0.2",
  "eip55",
+ "either",
  "futures 0.3.14",
  "http",
  "kv",

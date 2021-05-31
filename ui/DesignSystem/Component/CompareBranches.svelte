@@ -15,7 +15,7 @@
   }
 </style>
 
-<div class="branches">
+<div class="branches" data-cy="compare-branches">
   <BranchBox name={baseBranch} />
   <Icon.ArrowLeft />
   <BranchBox name={compareBranch} />
