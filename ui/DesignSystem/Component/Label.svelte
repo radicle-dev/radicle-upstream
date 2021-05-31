@@ -1,6 +1,6 @@
 <script lang="typescript">
-  export let title: string = "";
-  export let color: string = "";
+  export let title: string;
+  export let color: string;
   export let style: string = "";
 </script>
 
