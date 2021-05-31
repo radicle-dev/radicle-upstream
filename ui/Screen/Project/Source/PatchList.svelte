@@ -74,7 +74,7 @@
 </style>
 
 <div class="container">
-  <div class="filters">
+  <div class="filters" data-cy="patch-filter-tabs">
     <SegmentedControl
       active={filter}
       options={filterOptions}

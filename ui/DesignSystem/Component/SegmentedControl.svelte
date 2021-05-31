@@ -63,6 +63,7 @@
     <button
       class="typo-semi-bold"
       class:active={option.value === currentlyActive}
+      data-cy="segmented-control-option"
       value={option.value}
       on:click={() => onClick(option)}>
       {option.title}

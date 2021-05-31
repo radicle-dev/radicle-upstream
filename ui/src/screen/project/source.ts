@@ -7,6 +7,7 @@ import * as config from "ui/src/config";
 import type { HorizontalItem } from "ui/src/menu";
 import * as path from "ui/src/path";
 import * as patch from "ui/src/project/patch";
+import * as localPeer from "ui/src/localPeer";
 import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
 import * as source from "ui/src/source";
@@ -57,6 +58,7 @@ interface Screen {
   peer: User;
   project: Project;
   revisions: [source.Branch | source.Tag];
+  requestInProgress: AbortController | null;
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
   tree: Writable<source.Tree>;
@@ -106,6 +108,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       peer,
       project,
       revisions: mapRevisions(revisions),
+      requestInProgress: null,
       selectedPath: derived(pathStore, store => store),
       selectedRevision: {
         request: null,
@@ -115,6 +118,64 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     });
   } catch (err) {
     screenStore.error(error.fromUnknown(err));
+  }
+};
+
+export const watchPatchUpdates = (): (() => void) => {
+  return localPeer.projectEvents.onValue(event => {
+    const screen = get(screenStore);
+    if (screen.status === remote.Status.Success) {
+      const patchUrnPrefix = `${screen.data.project.urn}/tags/${patch.TAG_PREFIX}`;
+      const defaultBranchUrnRe = RegExp(
+        `${screen.data.project.urn}/heads/${screen.data.project.metadata.defaultBranch}`
+      );
+      if (
+        event.urn.startsWith(patchUrnPrefix) ||
+        event.urn.match(defaultBranchUrnRe)
+      ) {
+        refreshPatches();
+      }
+    }
+  });
+};
+
+const refreshPatches = (): void => {
+  const screen = get(screenStore);
+
+  if (screen.status === remote.Status.Success) {
+    const { data: current } = screen;
+    const {
+      menuItems,
+      project: { urn },
+      requestInProgress,
+    } = current;
+
+    if (requestInProgress) {
+      requestInProgress.abort();
+    }
+
+    const request = new AbortController();
+    screenStore.success({
+      ...current,
+      requestInProgress: request,
+    });
+    patch
+      .getAll(urn)
+      .then(patches => {
+        const patchesIndex = menuItems.findIndex(
+          item => item.title == "Patches"
+        );
+        menuItems[patchesIndex].counter = patches.filter(
+          patch => !patch.merged
+        ).length;
+        screenStore.success({
+          ...current,
+          menuItems,
+          patches,
+          requestInProgress: null,
+        });
+      })
+      .catch(err => screenStore.error(error.fromUnknown(err)));
   }
 };
 

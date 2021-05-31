@@ -1,11 +1,9 @@
 <script lang="typescript">
   import Router from "svelte-spa-router";
 
-  import { isExperimental } from "../src/config";
   import * as modal from "../src/modal";
   import * as path from "../src/path";
   import * as sess from "../src/session";
-  import { settings } from "../src/session";
 
   import { Button, Icon } from "../DesignSystem/Primitive";
 
@@ -19,13 +17,11 @@
 
   import Following from "./Profile/Following.svelte";
   import Projects from "./Profile/Projects.svelte";
-  import Funding from "./Profile/Funding.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/following": Following,
     "/profile/projects": Projects,
-    "/profile/funding": Funding,
     "*": NotFound,
   };
 
@@ -41,14 +37,6 @@
       href: path.profileFollowing(),
     },
   ];
-
-  if (isExperimental && $settings.featureFlags.funding) {
-    topbarMenuItems.push({
-      icon: Icon.Wallet,
-      title: "Funding",
-      href: path.profileFunding(),
-    });
-  }
 
   const session = sess.getUnsealedFromContext();
 </script>

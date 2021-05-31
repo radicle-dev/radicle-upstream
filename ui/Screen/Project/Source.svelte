@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import { onDestroy } from "svelte";
   import Router, { location } from "svelte-spa-router";
   import * as router from "svelte-spa-router/wrap";
 
@@ -11,6 +12,7 @@
   import type { Project, User } from "../../src/project";
   import {
     fetch,
+    watchPatchUpdates,
     selectPath,
     selectRevision,
     store,
@@ -100,6 +102,8 @@
     selectRevision(revision);
   };
 
+  const unwatchPatchUpdates = watchPatchUpdates();
+  onDestroy(unwatchPatchUpdates);
   $: fetch(project, selectedPeer);
 </script>
 
