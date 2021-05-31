@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import { fade } from "svelte/transition";
   import type * as theGraphApi from "ui/src/theGraphApi";
 
   import * as radicleAvatar from "radicle-avatar";
@@ -40,7 +41,6 @@
     margin: 1rem;
     align-items: center;
   }
-
   .org {
     color: var(--color-foreground-level-6);
     text-overflow: ellipsis;
@@ -53,41 +53,44 @@
   <Icon.AnchorSmall style="fill: var(--color-primary);" />
 
   <div class="container" on:click|stopPropagation>
-    <div hidden={!hover} class="modal">
-      <div class="header">
-        <Icon.Anchor style="fill: var(--color-primary); margin-left: 0.5rem;" />
+    {#if hover}
+      <div class="modal" out:fade={{ duration: 100, delay: 250 }}>
+        <div class="header">
+          <Icon.Anchor
+            style="fill: var(--color-primary); margin-left: 0.5rem;" />
 
-        {#if orgAddress}
-          <p class="typo-text-bold">Anchored in</p>
-          <Avatar
-            size="small"
-            style="margin: 0 0.5rem 0 0.5rem;"
-            variant="square"
-            avatarFallback={radicleAvatar.generate(
-              orgAddress,
-              radicleAvatar.Usage.Any
-            )} />
-          <p
-            class="typo-text-bold org"
-            style="color: var(--color-foreground-level-6);overflow: ellipsed">
-            {orgAddress}
+          {#if orgAddress}
+            <p class="typo-text-bold">Anchored in</p>
+            <Avatar
+              size="small"
+              style="margin: 0 0.5rem 0 0.5rem;"
+              variant="square"
+              avatarFallback={radicleAvatar.generate(
+                orgAddress,
+                radicleAvatar.Usage.Any
+              )} />
+            <p
+              class="typo-text-bold org"
+              style="color: var(--color-foreground-level-6);overflow: ellipsed">
+              {orgAddress}
+            </p>
+          {/if}
+        </div>
+        <div class="meta">
+          <Icon.Commit style="margin-right: 0.5rem;" />
+          <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
+            Commit hash
           </p>
-        {/if}
+          <p class="typo-text-small-mono">{anchor.commitSha.slice(0, 7)}↗</p>
+        </div>
+        <div class="meta">
+          <Icon.Ethereum style="margin-right: 0.5rem;" />
+          <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
+            Transaction hash
+          </p>
+          <p class="typo-text-small">{style.ellipsed(anchor.id, 6)}↗</p>
+        </div>
       </div>
-      <div class="meta">
-        <Icon.Commit style="margin-right: 0.5rem;" />
-        <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
-          Commit hash
-        </p>
-        <p class="typo-text-small-mono">{anchor.commitSha.slice(0, 7)}↗</p>
-      </div>
-      <div class="meta">
-        <Icon.Ethereum style="margin-right: 0.5rem;" />
-        <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
-          Transaction hash
-        </p>
-        <p class="typo-text-small">{style.ellipsed(anchor.id, 6)}↗</p>
-      </div>
-    </div>
+    {/if}
   </div>
 </Hoverable>
