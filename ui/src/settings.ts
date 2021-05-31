@@ -72,17 +72,6 @@ export const codeFontOptions: Option<string>[] = [
   },
 ];
 
-export const featureFlagOptions: Option<boolean>[] = [
-  {
-    title: "Enabled",
-    value: true,
-  },
-  {
-    title: "Disabled",
-    value: false,
-  },
-];
-
 export const fundingEnvironmentOptions: Option<ethereum.Environment>[] = [
   {
     title: ethereum.Environment.Local.toString(),

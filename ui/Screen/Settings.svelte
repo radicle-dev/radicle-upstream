@@ -11,14 +11,12 @@
     addSeed,
     removeSeed,
     updateAppearance,
-    updateFeatureFlags,
   } from "../src/session";
   import * as sess from "../src/session";
   import {
     themeOptions,
     uiFontOptions,
     codeFontOptions,
-    featureFlagOptions,
     fundingEnvironmentOptions,
   } from "../src/settings";
   import { updateChecker } from "../src/updateChecker";
@@ -41,9 +39,6 @@
 
   const updateCodeFont = (event: CustomEvent) =>
     updateAppearance({ ...$settings.appearance, codeFont: event.detail });
-
-  const updateFundingFeatureFlag = (event: CustomEvent) =>
-    updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -310,35 +305,22 @@
         </div>
       </section>
 
-      {#if config.isExperimental}
+      {#if config.isDev}
         <section>
           <header>
-            <h3>Features</h3>
+            <h3>Funding</h3>
           </header>
           <div class="section-item">
             <div class="info">
-              <p class="typo-text-bold">Funding</p>
+              <p class="typo-text-bold">Funding environment</p>
             </div>
             <div class="action">
               <SegmentedControl
-                active={$settings.featureFlags.funding}
-                options={featureFlagOptions}
-                on:select={updateFundingFeatureFlag} />
+                active={$ethereumEnvironment}
+                options={fundingEnvironmentOptions}
+                on:select={updateEthereumEnvironment} />
             </div>
           </div>
-          {#if $settings.featureFlags.funding}
-            <div class="section-item">
-              <div class="info">
-                <p class="typo-text-bold">Funding environment</p>
-              </div>
-              <div class="action">
-                <SegmentedControl
-                  active={$ethereumEnvironment}
-                  options={fundingEnvironmentOptions}
-                  on:select={updateEthereumEnvironment} />
-              </div>
-            </div>
-          {/if}
         </section>
       {/if}
 

@@ -2,7 +2,6 @@
   import Router, { push, location } from "svelte-spa-router";
 
   import * as hotkeys from "./src/hotkeys";
-  import { isExperimental } from "./src/config";
   import "./src/localPeer";
   import * as path from "./src/path";
   import * as remote from "./src/remote";
@@ -20,8 +19,6 @@
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
 
-  import TransactionCenter from "./App/TransactionCenter.svelte";
-
   import Blank from "./Screen/Blank.svelte";
   import Bsod from "./Screen/Bsod.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
@@ -31,6 +28,7 @@
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
+  import Wallet from "./Screen/Wallet.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
   import NetworkDiagnostics from "./Screen/NetworkDiagnostics.svelte";
 
@@ -39,6 +37,8 @@
     "/onboarding": Onboarding,
     "/lock": Lock,
     "/settings": Settings,
+    "/wallet/*": Wallet,
+    "/wallet": Wallet,
     "/profile/*": Profile,
     "/projects/:urn/*": Project,
     "/projects/:urn": Project,
@@ -78,10 +78,6 @@
       break;
   }
 
-  $: sessionIsUnsealed =
-    $store.status === remote.Status.Success &&
-    $store.data.status === Status.UnsealedSession;
-
   customProtocolHandler.register();
 </script>
 
@@ -101,10 +97,6 @@
 <ModalOverlay />
 <NotificationFaucet />
 <Theme />
-
-{#if isExperimental && sessionIsUnsealed && $location !== path.designSystemGuide()}
-  <TransactionCenter />
-{/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
   <Router {routes} />

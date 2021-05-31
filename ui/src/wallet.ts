@@ -40,7 +40,8 @@ export interface Connected {
 
 export interface Account {
   address: string;
-  balance: Big;
+  daiBalance: Big;
+  ethBalance: Big;
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
@@ -163,15 +164,19 @@ export function build(
   async function loadAccountData() {
     try {
       const accountAddress = await signer.getAddress();
-      const balance = await daiTokenContract
+      const daiBalance = await daiTokenContract
         .balanceOf(accountAddress)
+        .then(ethereum.toBaseUnit);
+      const ethBalance = await provider
+        .getBalance(accountAddress)
         .then(ethereum.toBaseUnit);
       const chainId = walletConnect.chainId;
 
       const connected = {
         account: {
           address: accountAddress,
-          balance,
+          daiBalance,
+          ethBalance,
         },
         network: ethereum.networkFromChainId(chainId),
       };

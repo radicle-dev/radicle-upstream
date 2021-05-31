@@ -12,7 +12,10 @@ export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
 export const profileFollowing = (): string => "/profile/following";
-export const profileFunding = (): string => "/profile/funding";
+
+export const wallet = (): string => "/wallet";
+export const walletTransactions = (): string => "/wallet/transactions";
+export const walletStreams = (): string => "/wallet/streams";
 
 export const onboarding = (): string => "/onboarding";
 export const lock = (): string => "/lock";
