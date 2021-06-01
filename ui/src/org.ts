@@ -3,16 +3,15 @@ import * as ethers from "ethers";
 import EthersSafe, {
   SafeTransactionDataPartial,
 } from "@gnosis.pm/safe-core-sdk";
-import { push } from "svelte-spa-router";
 
 import * as notification from "./notification";
-import * as path from "./path";
 import * as wallet from "./wallet";
 import * as theGraphApi from "./theGraphApi";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as proxy from "ui/src/proxy";
 import * as urn from "ui/src/urn";
+import * as router from "ui/src/router";
 import type * as project from "ui/src/proxy/project";
 
 import type {
@@ -162,7 +161,11 @@ export const createOrg = async (owner: string): Promise<void> => {
       {
         label: "Go to org",
         handler: () => {
-          push(path.orgProjects(orgAddress));
+          router.push({
+            type: "org",
+            address: orgAddress,
+            activeTab: "projects",
+          });
         },
       },
     ],

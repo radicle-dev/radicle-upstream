@@ -1,13 +1,11 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
-
   import ModalNewProject from "../../Modal/NewProject.svelte";
 
   import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
   import { fetchList, projects as store } from "../../src/project";
   import type { Project } from "../../src/project";
   import { showNotificationsForFailedProjects } from "../../src/profile";
+  import * as router from "ui/src/router";
   import * as sess from "../../src/session";
 
   import {
@@ -23,7 +21,11 @@
     modal.toggle(ModalNewProject);
   };
   const select = ({ detail: project }: { detail: Project }) =>
-    push(path.project(project.urn));
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: { type: "files" },
+    });
 
   fetchList();
   showNotificationsForFailedProjects();

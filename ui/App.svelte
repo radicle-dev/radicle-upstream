@@ -1,86 +1,65 @@
 <script lang="typescript">
-  import Router, { push, location } from "svelte-spa-router";
-  import wrap from "svelte-spa-router/wrap";
-
-  import * as hotkeys from "./src/hotkeys";
-  import "./src/localPeer";
-  import * as path from "./src/path";
-  import * as remote from "./src/remote";
-  import * as screen from "./src/screen";
-  import * as error from "./src/error";
+  import * as router from "ui/src/router";
+  import * as customProtocolHandler from "ui/src/customProtocolHandler";
+  import * as error from "ui/src/error";
   import * as org from "./src/org";
   import * as wallet from "./src/wallet";
-  import * as customProtocolHandler from "./src/customProtocolHandler";
-  import { fetch, session as store, Status } from "./src/session";
+  import * as hotkeys from "ui/src/hotkeys";
+  import * as remote from "ui/src/remote";
+  import { fetch, session as store, Status } from "ui/src/session";
+  import "ui/src/localPeer";
 
   import {
     EmptyState,
     NotificationFaucet,
-    Remote,
     ModalOverlay,
-  } from "./DesignSystem/Component";
+    Remote,
+  } from "ui/DesignSystem/Component";
 
-  import Hotkeys from "./Hotkeys.svelte";
-  import Theme from "./Theme.svelte";
+  import Hotkeys from "ui/Hotkeys.svelte";
+  import Theme from "ui/Theme.svelte";
 
-  import Blank from "./Screen/Blank.svelte";
-  import Bsod from "./Screen/Bsod.svelte";
-  import Onboarding from "./Screen/Onboarding.svelte";
-  import Lock from "./Screen/Lock.svelte";
-  import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import Org from "./Screen/Org.svelte";
-  import Profile from "./Screen/Profile.svelte";
-  import Project from "./Screen/Project.svelte";
-  import Settings from "./Screen/Settings.svelte";
-  import Wallet from "./Screen/Wallet.svelte";
-  import UserProfile from "./Screen/UserProfile.svelte";
-  import NetworkDiagnostics from "./Screen/NetworkDiagnostics.svelte";
+  import Bsod from "ui/Screen/Bsod.svelte";
+  import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
+  import Lock from "ui/Screen/Lock.svelte";
+  import NetworkDiagnostics from "ui/Screen/NetworkDiagnostics.svelte";
+  import Onboarding from "ui/Screen/Onboarding.svelte";
+  import Org from "ui/Screen/Org.svelte";
+  import Profile from "ui/Screen/Profile.svelte";
+  import UserProfile from "ui/Screen/UserProfile.svelte";
+  import Project from "ui/Screen/Project.svelte";
+  import Settings from "ui/Screen/Settings.svelte";
+  import Wallet from "ui/Screen/Wallet.svelte";
 
-  const orgWrap = wrap({
-    component: Org,
-    conditions: [
-      async detail => {
-        const match = detail.location.match(/\/org\/(.{42})/);
-        let orgAddress;
-        if (match) {
-          orgAddress = match[1];
-        } else {
-          throw new Error("Org address not provided");
-        }
-        try {
-          screen.lock();
+  const activeRouteStore = router.activeRouteStore;
 
-          await org.fetchOrg(orgAddress);
-          await org.resolveProjectAnchors(orgAddress);
-
-          return true;
-        } catch (error) {
-          console.log(error);
-          return false;
-        } finally {
-          screen.unlock();
-        }
-      },
-    ],
-  });
-
-  const routes = {
-    "/": Blank,
-    "/onboarding": Onboarding,
-    "/lock": Lock,
-    "/settings": Settings,
-    "/wallet/*": Wallet,
-    "/wallet": Wallet,
-    "/profile/*": Profile,
-    "/projects/:urn/*": Project,
-    "/projects/:urn": Project,
-    "/org/:address/*": orgWrap,
-    "/org/:address": orgWrap,
-    "/user/:urn": UserProfile,
-    "/user/:urn/*": UserProfile,
-    "/design-system-guide": DesignSystemGuide,
-    "/network-diagnostics/*": NetworkDiagnostics,
-  };
+  //  const orgWrap = wrap({
+  //    component: Org,
+  //    conditions: [
+  //      async detail => {
+  //        const match = detail.location.match(/\/org\/(.{42})/);
+  //        let orgAddress;
+  //        if (match) {
+  //          orgAddress = match[1];
+  //        } else {
+  //          throw new Error("Org address not provided");
+  //        }
+  //        try {
+  //          screen.lock();
+  //
+  //          await org.fetchOrg(orgAddress);
+  //          await org.resolveProjectAnchors(orgAddress);
+  //
+  //          return true;
+  //        } catch (error) {
+  //          console.log(error);
+  //          return false;
+  //        } finally {
+  //          screen.unlock();
+  //        }
+  //      },
+  //    ],
+  //  });
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -90,19 +69,18 @@
     case remote.Status.Success:
       if ($store.data.status === Status.NoSession) {
         hotkeys.disable();
-        push(path.onboarding());
+        router.push({ type: "onboarding" });
       } else if ($store.data.status === Status.UnsealedSession) {
         hotkeys.enable();
         if (
-          $location === path.blank() ||
-          $location === path.onboarding() ||
-          $location === path.lock()
+          $activeRouteStore.type === "onboarding" ||
+          $activeRouteStore.type === "lock"
         ) {
-          push(path.profileProjects());
+          router.push({ type: "profile", activeTab: "projects" });
         }
       } else {
         hotkeys.disable();
-        push(path.lock());
+        router.push({ type: "lock" });
       }
       break;
 
@@ -141,7 +119,33 @@
 <Theme />
 
 <Remote {store} context="session" disableErrorLogging={true}>
-  <Router {routes} />
+  {#if $activeRouteStore.type === "designSystemGuide"}
+    <DesignSystemGuide />
+  {:else if $activeRouteStore.type === "lock"}
+    <Lock />
+  {:else if $activeRouteStore.type === "onboarding"}
+    <Onboarding />
+  {:else if $activeRouteStore.type === "profile"}
+    <Profile activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "userProfile"}
+    <UserProfile urn={$activeRouteStore.urn} />
+  {:else if $activeRouteStore.type === "networkDiagnostics"}
+    <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "org"}
+    <Org
+      activeTab={$activeRouteStore.activeTab}
+      address={$activeRouteStore.address} />
+  {:else if $activeRouteStore.type === "project"}
+    <Project
+      activeView={$activeRouteStore.activeView}
+      urn={$activeRouteStore.urn} />
+  {:else if $activeRouteStore.type === "settings"}
+    <Settings />
+  {:else if $activeRouteStore.type === "wallet"}
+    <Wallet activeTab={$activeRouteStore.activeTab} />
+  {:else}
+    {router.unreachable($activeRouteStore)}
+  {/if}
 
   <div slot="loading" class="error">
     <EmptyState headerText="Loading..." emoji="🕵️" text="" />

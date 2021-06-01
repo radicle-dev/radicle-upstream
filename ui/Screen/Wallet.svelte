@@ -1,8 +1,6 @@
 <script lang="typescript">
-  import Router from "svelte-spa-router";
-
-  import * as path from "ui/src/path";
-  import { isDev } from "ui/src/config";
+  import * as config from "ui/src/config";
+  import * as router from "ui/src/router";
 
   import {
     selectedEnvironment as ethereumEnvironment,
@@ -23,28 +21,36 @@
   import Transactions from "./Wallet/Transactions.svelte";
   import LinkAddress from "./Wallet/LinkAddress.svelte";
 
-  import {
-    EmptyState,
-    HorizontalMenu,
-    SidebarLayout,
-  } from "ui/DesignSystem/Component";
+  import { EmptyState, SidebarLayout, TabBar } from "ui/DesignSystem/Component";
   import { Icon } from "ui/DesignSystem/Primitive";
 
-  const topbarMenuItems = [
-    {
-      icon: Icon.Transactions,
-      title: "Transactions",
-      href: path.walletTransactions(),
-    },
-  ];
+  export let activeTab: router.WalletTab;
 
-  if (isDev) {
-    topbarMenuItems.push({
-      icon: Icon.TokenStreams,
-      title: "Token Streams",
-      href: path.walletStreams(),
-    });
-  }
+  const tabs = (active: router.WalletTab) => {
+    const items = [
+      {
+        title: "Transactions",
+        icon: Icon.Transactions,
+        active: active === "transactions",
+        onClick: () => {
+          router.push({ type: "wallet", activeTab: "transactions" });
+        },
+      },
+    ];
+
+    if (config.isDev) {
+      items.push({
+        title: "Token Streams",
+        icon: Icon.TokenStreams,
+        active: active === "tokenStreams",
+        onClick: () => {
+          router.push({ type: "wallet", activeTab: "tokenStreams" });
+        },
+      });
+    }
+
+    return items;
+  };
 
   watchAttestationStatus(store);
 
@@ -52,11 +58,6 @@
   // Hack to have Svelte working with checking the $wallet variant
   // and thus be able to access its appropriate fields.
   $: w = $wallet;
-
-  const screenRoutes = {
-    "/wallet/transactions": Transactions,
-    "/wallet/streams": Pool,
-  };
 </script>
 
 <style>
@@ -72,7 +73,6 @@
     margin-top: 1.5rem;
     gap: 1.5rem;
   }
-
   .title {
     padding-left: 0.75rem;
     margin-bottom: 1rem;
@@ -97,11 +97,17 @@
               emoji="🧦" />
           {:else if $attestationStatus === AttestationStatus.Valid}
             <div class="right-column">
-              <HorizontalMenu
+              <TabBar
                 slot="left"
-                items={topbarMenuItems}
+                tabs={tabs(activeTab)}
                 style="padding: 0.5rem 0; margin-bottom: 1rem;" />
-              <Router routes={screenRoutes} />
+              {#if activeTab === "transactions"}
+                <Transactions />
+              {:else if activeTab === "tokenStreams"}
+                <Pool />
+              {:else}
+                {router.unreachable(activeTab)}
+              {/if}
             </div>
           {:else}
             <LinkAddress />

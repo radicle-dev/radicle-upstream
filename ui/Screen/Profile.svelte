@@ -1,40 +1,43 @@
 <script lang="typescript">
-  import Router from "svelte-spa-router";
-
   import * as modal from "../src/modal";
-  import * as path from "../src/path";
   import * as sess from "../src/session";
+  import * as router from "ui/src/router";
 
   import { Button, Icon } from "../DesignSystem/Primitive";
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
   import Header from "../DesignSystem/Component/Header.svelte";
-  import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
+  import TabBar from "ui/DesignSystem/Component/TabBar.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
   import ProfileHeader from "./Profile/ProfileHeader.svelte";
 
   import ModalNewProject from "../Modal/NewProject.svelte";
 
-  import Following from "./Profile/Following.svelte";
-  import Projects from "./Profile/Projects.svelte";
+  import FollowingTab from "ui/Screen/Profile/Following.svelte";
+  import ProjectsTab from "ui/Screen//Profile/Projects.svelte";
 
-  const screenRoutes = {
-    "/profile/following": Following,
-    "/profile/projects": Projects,
+  export let activeTab: router.ProfileTab;
+
+  const tabs = (active: router.ProfileTab) => {
+    return [
+      {
+        title: "Projects",
+        active: active === "projects",
+        icon: Icon.ChevronLeftRight,
+        onClick: () => {
+          router.push({ type: "profile", activeTab: "projects" });
+        },
+      },
+      {
+        title: "Following",
+        active: active === "following",
+        icon: Icon.Network,
+        onClick: () => {
+          router.push({ type: "profile", activeTab: "following" });
+        },
+      },
+    ];
   };
-
-  const topbarMenuItems = [
-    {
-      icon: Icon.ChevronLeftRight,
-      title: "Projects",
-      href: path.profileProjects(),
-    },
-    {
-      icon: Icon.Network,
-      title: "Following",
-      href: path.profileFollowing(),
-    },
-  ];
 
   const session = sess.getUnsealedFromContext();
 </script>
@@ -60,8 +63,14 @@
   </Header>
 
   <ActionBar>
-    <HorizontalMenu slot="left" items={topbarMenuItems} />
+    <TabBar slot="left" tabs={tabs(activeTab)} />
   </ActionBar>
 
-  <Router routes={screenRoutes} />
+  {#if activeTab === "projects"}
+    <ProjectsTab />
+  {:else if activeTab === "following"}
+    <FollowingTab />
+  {:else}
+    {router.unreachable(activeTab)}
+  {/if}
 </SidebarLayout>

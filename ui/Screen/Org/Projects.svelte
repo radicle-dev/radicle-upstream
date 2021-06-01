@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
   import type { Project } from "ui/src/project";
 
   import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
@@ -7,7 +6,7 @@
 
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
-  import * as path from "ui/src/path";
+  import * as router from "ui/src/router";
   import * as sess from "ui/src/session";
 
   import { EmptyState, ProjectList } from "ui/DesignSystem/Component";
@@ -18,7 +17,11 @@
   const session = sess.getUnsealedFromContext();
 
   const select = ({ detail: project }: { detail: Project }) => {
-    push(path.project(project.urn));
+    router.push({
+      type: "project",
+      activeView: { type: "files" },
+      urn: project.urn,
+    });
   };
 </script>
 

@@ -1,10 +1,6 @@
 <script lang="typescript">
-  import Router from "svelte-spa-router";
-  import { wrap } from "svelte-spa-router/wrap";
-
-  import { orgScreenStore } from "ui/src/org";
   import * as org from "ui/src/org";
-  import * as path from "ui/src/path";
+  import * as router from "ui/src/router";
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import {
@@ -12,62 +8,58 @@
     AdditionalActionsDropdown,
     FollowToggle,
     Header,
-    HorizontalMenu,
     SidebarLayout,
+    TabBar,
   } from "ui/DesignSystem/Component";
 
-  import Projects from "ui/Screen/Org/Projects.svelte";
-  import Members from "ui/Screen/Org/Members.svelte";
+  import ProjectsTab from "ui/Screen/Org/Projects.svelte";
+  import MembersTab from "ui/Screen/Org/Members.svelte";
   import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
   import MembersMenu from "ui/Screen/Org/MembersMenu.svelte";
 
-  export let params: { address: string };
+  const orgScreenStore = org.orgScreenStore;
 
-  const membersWrap = wrap({
-    component: Members,
-    conditions: [
-      async () => {
-        try {
-          if ($orgScreenStore) {
-            await org.fetchMembers($orgScreenStore.gnosisSafeAddress);
-            return true;
-          } else {
-            return false;
-          }
-        } catch {
-          return false;
-        }
+  export let activeTab: router.OrgTab;
+  export let address: string;
+
+  //  const membersWrap = wrap({
+  //    component: Members,
+  //    conditions: [
+  //      async () => {
+  //        try {
+  //          if ($orgScreenStore) {
+  //            await org.fetchMembers($orgScreenStore.gnosisSafeAddress);
+  //            return true;
+  //          } else {
+  //            return false;
+  //          }
+  //        } catch {
+  //          return false;
+  //        }
+  //      },
+  //    ],
+  //  });
+
+  const tabs = (address: string, active: router.OrgTab) => {
+    return [
+      {
+        title: "Projects",
+        icon: Icon.ChevronLeftRight,
+        active: active === "projects",
+        onClick: () => {
+          router.push({ type: "org", activeTab: "projects", address });
+        },
       },
-    ],
-  });
-
-  const screenRoutes = {
-    "/org/:address/projects": Projects,
-    "/org/:address/members": membersWrap,
-    "*": Projects,
-  };
-
-  $: topbarMenuItems = [
-    {
-      icon: Icon.ChevronLeftRight,
-      title: "Projects",
-      href: path.orgProjects(params.address),
-    },
-    {
-      icon: Icon.User,
-      title: "Members",
-      href: path.orgMembers(params.address),
-    },
-  ];
-
-  const menuRoutes = {
-    "/org/:address/projects": ProjectsMenu,
-    "/org/:address/members": wrap({
-      component: MembersMenu,
-      props: { gnosisSafeAddress: $orgScreenStore?.gnosisSafeAddress },
-    }),
-    "*": ProjectsMenu,
+      {
+        title: "Members",
+        icon: Icon.User,
+        active: active === "members",
+        onClick: () => {
+          router.push({ type: "org", activeTab: "members", address });
+        },
+      },
+    ];
   };
 
   const additionalActionsDropdownItems = [
@@ -90,7 +82,7 @@
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
-        headerTitle={params.address}
+        headerTitle={address}
         style="margin-left: 10px; border: 1px solid var(--color-foreground-level-3); border-radius: 4px;"
         menuItems={additionalActionsDropdownItems} />
     </div>
@@ -98,12 +90,24 @@
 
   <ActionBar>
     <div slot="left">
-      <HorizontalMenu items={topbarMenuItems} />
+      <TabBar tabs={tabs(address, activeTab)} />
     </div>
     <div slot="right">
-      <Router routes={menuRoutes} />
+      {#if activeTab === "projects"}
+        <ProjectsMenu />
+      {:else if activeTab === "members"}
+        <MembersMenu gnosisSafeAddress={$orgScreenStore?.gnosisSafeAddress} />
+      {:else}
+        {router.unreachable(activeTab)}
+      {/if}
     </div>
   </ActionBar>
 
-  <Router routes={screenRoutes} />
+  {#if activeTab === "projects"}
+    <ProjectsTab />
+  {:else if activeTab === "members"}
+    <MembersTab />
+  {:else}
+    {router.unreachable(activeTab)}
+  {/if}
 </SidebarLayout>

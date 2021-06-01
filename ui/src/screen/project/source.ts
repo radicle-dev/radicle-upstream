@@ -1,20 +1,14 @@
 import { derived, get, writable } from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
-import { push } from "svelte-spa-router";
 
 import * as error from "ui/src/error";
 import * as config from "ui/src/config";
-import type { HorizontalItem } from "ui/src/menu";
-import * as path from "ui/src/path";
 import * as patch from "ui/src/project/patch";
 import * as localPeer from "ui/src/localPeer";
 import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
+import * as router from "ui/src/router";
 import * as source from "ui/src/source";
-
-import IconCommit from "ui/DesignSystem/Primitive/Icon/Commit.svelte";
-import IconFile from "ui/DesignSystem/Primitive/Icon/File.svelte";
-import IconRevision from "ui/DesignSystem/Primitive/Icon/Revision.svelte";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -50,10 +44,9 @@ export interface Code {
   view: View;
 }
 
-interface Screen {
+export interface Screen {
   code: Writable<Code>;
   history: source.GroupedCommitsHistory;
-  menuItems: HorizontalItem[];
   patches: patch.Patch[];
   peer: User;
   project: Project;
@@ -103,7 +96,6 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
     screenStore.success({
       code: writable<Code>(root),
       history: groupedHistory,
-      menuItems: menuItems(project, groupedHistory, patches),
       patches,
       peer,
       project,
@@ -145,7 +137,6 @@ const refreshPatches = (): void => {
   if (screen.status === remote.Status.Success) {
     const { data: current } = screen;
     const {
-      menuItems,
       project: { urn },
       requestInProgress,
     } = current;
@@ -162,15 +153,8 @@ const refreshPatches = (): void => {
     patch
       .getAll(urn)
       .then(patches => {
-        const patchesIndex = menuItems.findIndex(
-          item => item.title == "Patches"
-        );
-        menuItems[patchesIndex].counter = patches.filter(
-          patch => !patch.merged
-        ).length;
         screenStore.success({
           ...current,
-          menuItems,
           patches,
           requestInProgress: null,
         });
@@ -262,7 +246,6 @@ export const selectRevision = async (
       screenStore.success({
         ...screen.data,
         history: groupedHistory,
-        menuItems: menuItems(project, groupedHistory, screen.data.patches),
         selectedRevision: {
           request: null,
           selected: revision,
@@ -308,7 +291,11 @@ export const selectCommit = (commit: source.CommitHeader): void => {
       data: { project },
     } = screen;
 
-    push(path.projectSourceCommit(project.urn, commit.sha1));
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: { type: "commit", commitHash: commit.sha1 },
+    });
   }
 };
 
@@ -430,30 +417,4 @@ const mapRevisions = (
     return branches.concat(tags) as [source.Branch | source.Tag];
   }
   return branches;
-};
-
-const menuItems = (
-  project: Project,
-  history: source.GroupedCommitsHistory,
-  patches: patch.Patch[]
-): HorizontalItem[] => {
-  return [
-    {
-      icon: IconFile,
-      title: "Files",
-      href: path.projectSourceFiles(project.urn),
-    },
-    {
-      icon: IconCommit,
-      title: "Commits",
-      counter: history.stats.commits,
-      href: path.projectSourceCommits(project.urn),
-    },
-    {
-      icon: IconRevision,
-      title: "Patches",
-      counter: patches.filter(patch => !patch.merged).length,
-      href: path.projectSourcePatches(project.urn),
-    },
-  ];
 };

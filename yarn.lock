@@ -10843,7 +10843,6 @@ __metadata:
     svelte-loader: ^3.1.1
     svelte-persistent-store: ^0.1.6
     svelte-preprocess: ^4.7.3
-    svelte-spa-router: ^3.1.0
     timeago.js: ^4.0.2
     ts-jest: ^26.5.6
     ts-loader: ^9.2.2
@@ -11083,13 +11082,6 @@ __metadata:
     extend-shallow: ^3.0.2
     safe-regex: ^1.1.0
   checksum: 3d6d95b4fda3cabe7222b3800876491825a865ae6ca4c90bb10fd0f6442d0c57d180657bb65358b4509bdd1cecad1bd2d23e7d15a69f9c523f501cc4431b950b
-  languageName: node
-  linkType: hard
-
-"regexparam@npm:1.3.0":
-  version: 1.3.0
-  resolution: "regexparam@npm:1.3.0"
-  checksum: 3be8055bc697d720647e2b2a781e8a784013e80d51724dce833524c8f1a9fbfa7efd3dac90572ce64191b82e908c8e70c6ff40b8da3ff0b3fb4199af73d4a8b5
   languageName: node
   linkType: hard
 
@@ -12564,15 +12556,6 @@ __metadata:
     typescript:
       optional: true
   checksum: 8862ba953f521df5cf31ac711e8971555adcd1a52b9d577bb157107da144d83cbccfa07f0d8c8d017837c7bf2f602fbbb39ee61932099ee467a48997399a3c10
-  languageName: node
-  linkType: hard
-
-"svelte-spa-router@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "svelte-spa-router@npm:3.1.0"
-  dependencies:
-    regexparam: 1.3.0
-  checksum: 6951d3871b35022c87a32c7c750724d9840bd42f2180088a09b7077c23fe6751cd2f44b8761178cf96aadda89c13160ef0e152bf2d29a85b4da4f0aa110f347a
   languageName: node
   linkType: hard
 

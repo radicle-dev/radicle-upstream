@@ -1,12 +1,11 @@
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
-  import { location, push } from "svelte-spa-router";
+  import { activeRouteStore, push } from "ui/src/router";
 
   import { orgSidebarStore } from "ui/src/org";
   import type { Identity } from "ui/src/identity";
   import * as modal from "ui/src/modal";
-  import * as path from "ui/src/path";
-  import { isDev } from "ui/src/config";
+  import * as config from "ui/src/config";
   import * as wallet from "ui/src/wallet";
 
   import Tooltip from "./Tooltip.svelte";
@@ -114,8 +113,9 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={$location.startsWith(path.profile())}
-        on:click|stopPropagation={() => push(path.profileProjects())}>
+        class:active={$activeRouteStore.type === "profile"}
+        on:click|stopPropagation={() =>
+          push({ type: "profile", activeTab: "projects" })}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -127,8 +127,10 @@
         <Tooltip value={org.id}>
           <div
             class="item indicator"
-            class:active={$location.startsWith(path.org(org.id))}
-            on:click|stopPropagation={() => push(path.orgProjects(org.id))}>
+            class:active={$activeRouteStore.type === "org" &&
+              $activeRouteStore.address === org.id}
+            on:click|stopPropagation={() =>
+              push({ type: "org", address: org.id, activeTab: "projects" })}>
             <Avatar
               size="regular"
               variant="square"
@@ -165,13 +167,14 @@
         <Icon.MagnifyingGlass />
       </div>
     </Tooltip>
-    {#if isDev}
+    {#if config.isDev}
       <Tooltip value="Wallet">
         <div
           class="item indicator"
           data-cy="wallet"
-          class:active={$location.startsWith(path.wallet())}
-          on:click|stopPropagation={() => push(path.walletTransactions())}>
+          class:active={$activeRouteStore.type === "wallet"}
+          on:click|stopPropagation={() =>
+            push({ type: "wallet", activeTab: "transactions" })}>
           <Icon.Wallet />
         </div>
       </Tooltip>
@@ -181,8 +184,8 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={$location.startsWith(path.settings())}
-        on:click|stopPropagation={() => push(path.settings())}>
+        class:active={$activeRouteStore.type === "settings"}
+        on:click|stopPropagation={() => push({ type: "settings" })}>
         <Icon.Settings />
       </div>
     </Tooltip>

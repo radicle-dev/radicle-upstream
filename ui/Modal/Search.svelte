@@ -1,13 +1,12 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
   import { onDestroy } from "svelte";
 
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
-  import * as path from "ui/src/path";
   import * as error from "ui/src/error";
   import type { Project } from "ui/src/project";
   import * as remote from "ui/src/remote";
+  import * as router from "ui/src/router";
   import {
     inputStore,
     projectRequest as request,
@@ -36,7 +35,11 @@
 
   const navigateToProject = (project: Project) => {
     reset();
-    push(path.project(project.urn));
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: { type: "files" },
+    });
     modal.hide();
   };
   const onKeydown = (event: KeyboardEvent) => {
@@ -78,7 +81,7 @@
   // Fire notification when a request has been created.
   $: if ($request.status === remote.Status.Success) {
     reset();
-    push(path.profileFollowing());
+    router.push({ type: "profile", activeTab: "following" });
     notification.info({
       message: "You’ll be notified when this project has been found.",
     });

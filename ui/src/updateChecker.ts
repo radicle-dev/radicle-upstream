@@ -1,12 +1,11 @@
 import * as svelteStore from "svelte/store";
 import persistentStore from "svelte-persistent-store/dist";
 import * as semver from "semver";
-import * as router from "svelte-spa-router";
+import * as router from "ui/src/router";
 
 import * as ipc from "./ipc";
 import * as modal from "./modal";
 import * as notification from "./notification";
-import * as path from "./path";
 import * as session from "./session";
 
 interface LatestVersionInfo {
@@ -89,7 +88,7 @@ class UpdateChecker {
             label: "Go to settings",
             handler: () => {
               modal.hide();
-              router.push(path.settings());
+              router.push({ type: "settings" });
             },
           },
           {
