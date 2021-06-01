@@ -39,7 +39,7 @@ export const fetch = (projectUrn: Urn): void => {
     .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
-export const fetchPeers = (): void => {
+export const refreshPeers = (): void => {
   const screen = get(screenStore);
 
   if (screen.status === remote.Status.Success) {
@@ -58,42 +58,6 @@ export const fetchPeers = (): void => {
 
     proxy.client.project
       .listPeers(current.project.urn, { abort: request.signal })
-      .then(peers => {
-        const filteredPeers = filterPeers(peers);
-        throwUnlessPeersPresent(filteredPeers, current.project.urn);
-        screenStore.success({
-          ...current,
-          peers,
-          peerSelection: filteredPeers,
-          requestInProgress: null,
-        });
-      })
-      .catch(err => screenStore.error(error.fromUnknown(err)));
-  }
-};
-
-export const refresh = (): void => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const { data: current } = screen;
-    const {
-      project: { urn },
-      requestInProgress,
-    } = current;
-
-    if (requestInProgress) {
-      requestInProgress.abort();
-    }
-
-    const request = new AbortController();
-    screenStore.success({
-      ...current,
-      requestInProgress: request,
-    });
-
-    proxy.client.project
-      .listPeers(urn, { abort: request.signal })
       .then(peers => {
         const filteredPeers = filterPeers(peers);
         throwUnlessPeersPresent(filteredPeers, current.project.urn);
@@ -143,14 +107,14 @@ export const pendingPeers: Readable<
 export const trackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   proxy.client.project
     .peerTrack(projectUrn, peerId)
-    .then(() => fetchPeers())
+    .then(() => refreshPeers())
     .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
 export const untrackPeer = (projectUrn: Urn, peerId: PeerId): void => {
   proxy.client.project
     .peerUntrack(projectUrn, peerId)
-    .then(() => fetchPeers())
+    .then(() => refreshPeers())
     .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
