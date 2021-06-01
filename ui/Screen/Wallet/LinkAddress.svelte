@@ -23,6 +23,7 @@
 
     text-align: center;
     padding: 10vh 0;
+    margin-top: 3.75rem;
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;

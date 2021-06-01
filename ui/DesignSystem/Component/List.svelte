@@ -32,6 +32,7 @@
     flex: 1;
     border-bottom: 1px solid var(--color-foreground-level-2);
     user-select: none;
+    overflow: hidden;
   }
 
   li:last-child {
