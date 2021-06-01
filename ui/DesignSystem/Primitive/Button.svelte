@@ -29,6 +29,7 @@
     padding: 0 12px;
     user-select: none;
     line-height: 22px;
+    gap: 0.5rem;
   }
 
   .button :global(svg) {
@@ -322,7 +323,5 @@
   on:mouseleave
   {style}>
   <svelte:component this={icon} />
-  <div style={icon ? "margin-left: 8px;" : ""}>
-    <slot />
-  </div>
+  <slot />
 </button>

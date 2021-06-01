@@ -1,7 +1,8 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
-  import type { ButtonVariant } from "../../src/style";
+  import { fade } from "svelte/transition";
 
+  import type { ButtonVariant } from "ui/src/style";
   import { Button, Icon } from "../Primitive";
 
   export let disabled: boolean = false;
@@ -48,5 +49,9 @@
   on:click={click}
   on:mouseenter={mouseenter}
   on:mouseleave={mouseleave}>
-  {title}
+  {#if !following || hovering}
+    <div transition:fade={{ duration: 120 }}>
+      {title}
+    </div>
+  {/if}
 </Button>
