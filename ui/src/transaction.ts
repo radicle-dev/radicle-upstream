@@ -372,7 +372,7 @@ export function emoji(tx: Tx): string {
   }
 }
 
-export function txIcon(tx: Tx): typeof SvelteComponent {
+export function txIcon(tx: Tx): typeof SvelteComponent | undefined {
   switch (tx.kind) {
     case TxKind.ClaimRadicleIdentity:
       return Icon.Registered;
