@@ -11,14 +11,12 @@
     addSeed,
     removeSeed,
     updateAppearance,
-    updateFeatureFlags,
   } from "../src/session";
   import * as sess from "../src/session";
   import {
     themeOptions,
     uiFontOptions,
     codeFontOptions,
-    featureFlagOptions,
     fundingEnvironmentOptions,
   } from "../src/settings";
   import { updateChecker } from "../src/updateChecker";
@@ -41,9 +39,6 @@
 
   const updateCodeFont = (event: CustomEvent) =>
     updateAppearance({ ...$settings.appearance, codeFont: event.detail });
-
-  const updateFundingFeatureFlag = (event: CustomEvent) =>
-    updateFeatureFlags({ ...$settings.featureFlags, funding: event.detail });
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -96,7 +91,6 @@
   ];
 
   const session = sess.getUnsealedFromContext();
-
 </script>
 
 <style>
@@ -183,7 +177,6 @@
     align-items: flex-end;
     padding: 0 0.75rem;
   }
-
 </style>
 
 <SidebarLayout dataCy="settings-page">
@@ -208,8 +201,8 @@
               <br /><a
                 style="color: var(--color-foreground-level-5);"
                 class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices">Learn
-                more about managing devices</a>
+                href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
+                >Learn more about managing devices</a>
             </p>
           </div>
           <div class="action">
@@ -233,8 +226,8 @@
               <a
                 style="color: var(--color-foreground-level-5);"
                 class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed">Learn
-                more about seeds</a>
+                href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
+                >Learn more about seeds</a>
             </p>
           </div>
           <form
@@ -312,35 +305,22 @@
         </div>
       </section>
 
-      {#if config.isExperimental}
+      {#if config.isDev}
         <section>
           <header>
-            <h3>Features</h3>
+            <h3>Funding</h3>
           </header>
           <div class="section-item">
             <div class="info">
-              <p class="typo-text-bold">Funding</p>
+              <p class="typo-text-bold">Funding environment</p>
             </div>
             <div class="action">
               <SegmentedControl
-                active={$settings.featureFlags.funding}
-                options={featureFlagOptions}
-                on:select={updateFundingFeatureFlag} />
+                active={$ethereumEnvironment}
+                options={fundingEnvironmentOptions}
+                on:select={updateEthereumEnvironment} />
             </div>
           </div>
-          {#if $settings.featureFlags.funding}
-            <div class="section-item">
-              <div class="info">
-                <p class="typo-text-bold">Funding environment</p>
-              </div>
-              <div class="action">
-                <SegmentedControl
-                  active={$ethereumEnvironment}
-                  options={fundingEnvironmentOptions}
-                  on:select={updateEthereumEnvironment} />
-              </div>
-            </div>
-          {/if}
         </section>
       {/if}
 
@@ -372,7 +352,7 @@
         </div>
       </section>
 
-      <section data-cy="version" style={showVersionAtTop ? 'order: -1' : ''}>
+      <section data-cy="version" style={showVersionAtTop ? "order: -1" : ""}>
         <header>
           <h3>Version</h3>
         </header>
@@ -389,7 +369,8 @@
               <Button
                 style="margin-left: 1em"
                 dataCy="checkout-new-version"
-                on:click={() => ipc.openUrl($latestVersionInfo.announcementUrl)}>
+                on:click={() =>
+                  ipc.openUrl($latestVersionInfo.announcementUrl)}>
                 Check out Version
                 {$latestVersionInfo.version}
               </Button>

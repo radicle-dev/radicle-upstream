@@ -21,7 +21,6 @@
       unlock();
     }
   };
-
 </script>
 
 <style>
@@ -40,11 +39,10 @@
     display: flex;
     margin-top: 1.5rem;
   }
-
 </style>
 
 <div class="lock">
-  <Emoji emoji={'🚪'} size="huge" style="margin-bottom: 0.75rem;" />
+  <Emoji emoji={"🚪"} size="huge" style="margin-bottom: 0.75rem;" />
   <h3>Knock, knock</h3>
   <p style="margin-top: 0.5rem; color: var(--color-foreground-level-6);">
     Unlock the app by granting access to your Radicle secret key.

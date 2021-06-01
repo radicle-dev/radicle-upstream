@@ -22,7 +22,6 @@
   };
 
   $: currentlyActive = active;
-
 </script>
 
 <style>
@@ -57,7 +56,6 @@
     background-color: var(--color-foreground-level-1);
     color: var(--color-primary-level-2);
   }
-
 </style>
 
 <div class="segmented-control">
@@ -65,6 +63,7 @@
     <button
       class="typo-semi-bold"
       class:active={option.value === currentlyActive}
+      data-cy="segmented-control-option"
       value={option.value}
       on:click={() => onClick(option)}>
       {option.title}

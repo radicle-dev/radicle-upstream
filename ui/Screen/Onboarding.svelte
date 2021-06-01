@@ -1,12 +1,14 @@
 <script lang="typescript">
   import { fade, fly } from "svelte/transition";
+  import { push } from "svelte-spa-router";
 
-  import { withRetry } from "../src/api";
-  import { State } from "../src/onboarding";
-  import { createIdentity } from "../src/identity";
-  import * as screen from "../src/screen";
-  import * as session from "../src/session";
-  import * as error from "../src/error";
+  import { withRetry } from "ui/src/api";
+  import { State } from "ui/src/onboarding";
+  import { createIdentity } from "ui/src/identity";
+  import * as screen from "ui/src/screen";
+  import * as session from "ui/src/session";
+  import * as error from "ui/src/error";
+  import * as path from "ui/src/path";
 
   import Welcome from "./Onboarding/Welcome.svelte";
   import EnterName from "./Onboarding/EnterName.svelte";
@@ -31,10 +33,17 @@
     outY = 1000;
   };
 
-  const complete = () => {
+  const goToProfile = () => {
     // App.svelte checks whether to load onboarding or the app depending if
     // the session data is present or not.
     session.fetch();
+  };
+
+  const goToWallet = () => {
+    // App.svelte checks whether to load onboarding or the app depending if
+    // the session data is present or not.
+    session.fetch();
+    push(path.walletTransactions());
   };
 
   const onCreateIdentity = async (handle: string, passphrase: string) => {
@@ -68,7 +77,6 @@
       createIdentityInProgress = false;
     }
   };
-
 </script>
 
 <style>
@@ -88,7 +96,6 @@
   .inner {
     width: 33.75rem;
   }
-
 </style>
 
 <div class="modal">
@@ -131,7 +138,7 @@
   {:else if state === State.SuccessView}
     <div class="content" in:fly={{ y: inY }}>
       <div class="inner">
-        <Success {peerId} on:close={complete} />
+        <Success {peerId} on:profile={goToProfile} on:wallet={goToWallet} />
       </div>
     </div>
   {/if}

@@ -6,7 +6,7 @@
 
   import { BadgeType } from "../../src/badge";
   import { CSSPosition } from "../../src/style";
-  import { PeerType, Role } from "../../src/project";
+  import { PeerType, PeerRole } from "../../src/project";
 
   import { Avatar } from "../../DesignSystem/Primitive";
   import {
@@ -20,7 +20,6 @@
   export let projectUrn: Urn;
 
   const dispatch = createEventDispatcher();
-
 </script>
 
 <style>
@@ -35,7 +34,6 @@
     max-width: 22em;
     flex-direction: column;
   }
-
 </style>
 
 <div class="peer" data-cy={`peer-${peer.identity.metadata.handle}`}>
@@ -49,7 +47,7 @@
       <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
         {peer.identity.metadata.handle}
       </p>
-      {#if peer.role === Role.Maintainer}
+      {#if peer.role === PeerRole.Maintainer}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
       {:else if peer.type === PeerType.Local}
         <Badge style="margin-left: 0.5rem" variant={BadgeType.You} />
@@ -62,7 +60,7 @@
       peerId={peer.peerId} />
   </div>
   {#if peer.type !== PeerType.Local}
-    {#if peer.role === Role.Maintainer}
+    {#if peer.role === PeerRole.Maintainer}
       <Tooltip
         position={CSSPosition.Top}
         value="Can't unfollow the maintainer's remote">
@@ -72,7 +70,7 @@
       <FollowToggle
         following
         on:unfollow={() => {
-          dispatch('unfollow', { projectUrn, peerId: peer.peerId });
+          dispatch("unfollow", { projectUrn, peerId: peer.peerId });
         }} />
     {/if}
   {/if}

@@ -1,5 +1,6 @@
 import * as zod from "zod";
-import type { Fetcher } from "./fetcher";
+import type { Fetcher, RequestOptions } from "./fetcher";
+import { Identity, identitySchema } from "./identity";
 
 export interface Metadata {
   name: string;
@@ -45,13 +46,11 @@ export interface FailedProject {
   metadata: Metadata;
 }
 
-const failedProjectSchema: zod.Schema<FailedProject> = zod
-  .object({
-    urn: zod.string(),
-    shareableEntityIdentifier: zod.string(),
-    metadata: metadataSchema,
-  })
-  .nonstrict();
+const failedProjectSchema: zod.Schema<FailedProject> = zod.object({
+  urn: zod.string(),
+  shareableEntityIdentifier: zod.string(),
+  metadata: metadataSchema,
+});
 
 export interface Stats {
   branches: number;
@@ -91,22 +90,88 @@ export interface Request {
   urn: string;
 }
 
-const requestSchema = zod
-  .object({
-    type: zod.enum([
-      RequestStatus.Created,
-      RequestStatus.Requested,
-      RequestStatus.Found,
-      RequestStatus.Cloning,
-      RequestStatus.Cloned,
-      RequestStatus.Cancelled,
-      RequestStatus.Failed,
-      RequestStatus.TimedOut,
-    ]),
-    urn: zod.string(),
-  })
-  // The API provides some additional fields, that we’re not using yet.
-  .nonstrict();
+const requestSchema = zod.object({
+  type: zod.enum([
+    RequestStatus.Created,
+    RequestStatus.Requested,
+    RequestStatus.Found,
+    RequestStatus.Cloning,
+    RequestStatus.Cloned,
+    RequestStatus.Cancelled,
+    RequestStatus.Failed,
+    RequestStatus.TimedOut,
+  ]),
+  urn: zod.string(),
+});
+
+export interface Peer {
+  type: PeerType;
+  peerId: string;
+  status: PeerReplicationStatus;
+}
+
+export enum PeerType {
+  Local = "local",
+  Remote = "remote",
+}
+
+export enum PeerRole {
+  Contributor = "contributor",
+  Maintainer = "maintainer",
+  Tracker = "tracker",
+}
+
+export enum PeerReplicationStatusType {
+  NotReplicated = "notReplicated",
+  Replicated = "replicated",
+}
+
+export interface PeerNotReplicated {
+  type: PeerReplicationStatusType.NotReplicated;
+}
+
+export interface PeerReplicated {
+  type: PeerReplicationStatusType.Replicated;
+  role: PeerRole;
+  user: Identity;
+}
+
+export type PeerReplicationStatus = PeerNotReplicated | PeerReplicated;
+
+const peerSchema: zod.Schema<Peer> = zod.object({
+  type: zod.enum([PeerType.Local, PeerType.Remote]),
+  peerId: zod.string(),
+  status: zod.union([
+    zod.object({
+      type: zod.literal(PeerReplicationStatusType.NotReplicated),
+    }),
+    zod.object({
+      type: zod.literal(PeerReplicationStatusType.Replicated),
+      role: zod.enum([
+        PeerRole.Tracker,
+        PeerRole.Maintainer,
+        PeerRole.Contributor,
+      ]),
+      user: identitySchema,
+    }),
+  ]),
+});
+
+export interface Patch {
+  id: string;
+  peer: Peer;
+  message: string | null;
+  commit: string;
+  mergeBase: string | null;
+}
+
+const patchSchema: zod.ZodSchema<Patch> = zod.object({
+  id: zod.string(),
+  peer: peerSchema,
+  message: zod.string().nullable(),
+  commit: zod.string(),
+  mergeBase: zod.string().nullable(),
+});
 
 export class Client {
   private fetcher: Fetcher;
@@ -202,6 +267,20 @@ export class Client {
     );
   }
 
+  async listPeers(
+    projectUrn: string,
+    options?: RequestOptions
+  ): Promise<Peer[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `projects/${projectUrn}/peers`,
+        options,
+      },
+      zod.array(peerSchema)
+    );
+  }
+
   async peerTrack(urn: string, peerId: string): Promise<boolean> {
     return this.fetcher.fetchOk(
       {
@@ -230,6 +309,16 @@ export class Client {
         body: params,
       },
       zod.string()
+    );
+  }
+
+  async patchList(projectUrn: string): Promise<Patch[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `projects/${projectUrn}/patches`,
+      },
+      zod.array(patchSchema)
     );
   }
 }

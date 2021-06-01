@@ -1,5 +1,8 @@
 import { push } from "svelte-spa-router";
+import type { Readable, Writable } from "svelte/store";
+import { writable } from "svelte/store";
 import * as zod from "zod";
+import * as svelteStore from "svelte/store";
 
 import type * as identity from "./identity";
 import * as config from "./config";
@@ -10,6 +13,8 @@ import * as session from "./session";
 import type * as urn from "./urn";
 import * as error from "./error";
 import * as bacon from "./bacon";
+import type { Event as RoomEvent, RoomState } from "./waitingRoom";
+import { eventSchema as roomEventSchema, roomStateSchema } from "./waitingRoom";
 
 // TYPES
 export enum StatusType {
@@ -39,10 +44,10 @@ interface Syncing {
 
 interface Online {
   type: StatusType.Online;
-  connected: number;
+  connectedPeers: { [peerId: string]: string[] };
 }
 
-type Status = Stopped | Offline | Started | Syncing | Online;
+export type Status = Stopped | Offline | Started | Syncing | Online;
 
 const statusSchema = zod.union([
   zod.object({
@@ -60,7 +65,7 @@ const statusSchema = zod.union([
   }),
   zod.object({
     type: zod.literal(StatusType.Online),
-    connected: zod.number(),
+    connectedPeers: zod.record(zod.array(zod.string())),
   }),
 ]);
 
@@ -71,6 +76,7 @@ enum EventType {
   RequestCloned = "requestCloned",
   RequestTimedOut = "requestTimedOut",
   StatusChanged = "statusChanged",
+  WaitingRoomTransition = "waitingRoomTransition",
 }
 
 interface ProjectUpdated {
@@ -100,6 +106,14 @@ interface RequestTimedOut {
   urn: urn.Urn;
 }
 
+export interface WaitingRoomTransition {
+  type: EventType.WaitingRoomTransition;
+  event: RoomEvent;
+  timestamp: number;
+  state_before: RoomState;
+  state_after: RoomState;
+}
+
 type RequestEvent =
   | RequestCreated
   | RequestCloned
@@ -109,6 +123,7 @@ type RequestEvent =
 export type Event =
   | ProjectUpdated
   | RequestEvent
+  | WaitingRoomTransition
   | { type: EventType.StatusChanged; old: Status; new: Status };
 
 const eventSchema: zod.Schema<Event> = zod.union([
@@ -133,6 +148,13 @@ const eventSchema: zod.Schema<Event> = zod.union([
   zod.object({
     type: zod.literal(EventType.RequestTimedOut),
     urn: zod.string(),
+  }),
+  zod.object({
+    type: zod.literal(EventType.WaitingRoomTransition),
+    timestamp: zod.number(),
+    state_before: roomStateSchema,
+    state_after: roomStateSchema,
+    event: roomEventSchema,
   }),
   zod.object({
     type: zod.literal(EventType.StatusChanged),
@@ -164,6 +186,7 @@ session.session.subscribe(sess => {
               code: error.Code.ProxyEventParseFailure,
               message: "Failed to parse proxy event",
               details: {
+                event: data,
                 errors: result.error.errors,
               },
             })
@@ -223,10 +246,41 @@ export const requestEvents: bacon.EventStream<RequestEvent> = bacon.filterMap(
   }
 );
 
-export const status = remote.createStore<Status>();
+export const status = svelteStore.writable<Status>({
+  type: StatusType.Offline,
+});
+
+const internalWaitingRoomState = svelteStore.writable<RoomState | null>(null);
+export const waitingRoomState: Readable<RoomState | null> =
+  internalWaitingRoomState;
 
 eventBus.onValue(event => {
   if (event.type === EventType.StatusChanged) {
-    status.success(event.new);
+    status.set(event.new);
+  }
+  if (event.type === EventType.WaitingRoomTransition) {
+    internalWaitingRoomState.set(event.state_after);
   }
 });
+
+const waitingRoomEvents: bacon.Property<WaitingRoomTransition[]> = bacon
+  .filterMap(eventBus, event => {
+    if (
+      event.type === EventType.WaitingRoomTransition &&
+      event.event.type !== "tick"
+    ) {
+      return event;
+    } else {
+      return undefined;
+    }
+  })
+  .scan<WaitingRoomTransition[]>([], (acc, event) =>
+    [...acc, event].slice(-200)
+  );
+
+const waitingRoomEventLogStore: Writable<WaitingRoomTransition[]> = writable(
+  []
+);
+waitingRoomEvents.onValue(events => waitingRoomEventLogStore.set(events));
+export const waitingRoomEventLog: Readable<WaitingRoomTransition[]> =
+  waitingRoomEventLogStore;

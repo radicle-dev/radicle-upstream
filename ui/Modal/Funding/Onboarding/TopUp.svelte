@@ -15,14 +15,13 @@
   let disabled = true;
   let accountBalance = Big(0);
   $: accountBalance =
-    svelteStore.get(walletStore).account()?.balance || accountBalance;
+    svelteStore.get(walletStore).account()?.daiBalance || accountBalance;
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter" && !disabled) {
       onContinue();
     }
   };
-
 </script>
 
 <svelte:window on:keydown={onKeydown} />
@@ -30,7 +29,7 @@
 <TopUp
   bind:amount
   balance={accountBalance}
-  onBack={['Back', onBack]}
+  onBack={["Back", onBack]}
   bind:disabled>
   <Button on:click={onContinue} {disabled}>Continue</Button>
 </TopUp>

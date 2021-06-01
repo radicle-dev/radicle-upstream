@@ -1,10 +1,5 @@
 <script lang="typescript">
-  import {
-    Copyable,
-    Dai,
-    NegativeDai,
-    Identity,
-  } from "../DesignSystem/Component";
+  import { Copyable, Identity } from "../DesignSystem/Component";
   import { Emoji, Icon } from "../DesignSystem/Primitive";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
   import Summary from "../DesignSystem/Component/Transaction/Summary.svelte";
@@ -33,7 +28,6 @@
   $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
   $: transferedAmount = tx ? transferAmount(tx) : undefined;
   $: incoming = tx ? isIncoming(tx) : false;
-
 </script>
 
 <style>
@@ -117,7 +111,6 @@
   .content .section .row + .row {
     margin-top: 1.5rem;
   }
-
 </style>
 
 <div class="wrapper">
@@ -137,7 +130,7 @@
               styleContent={false}
               copyContent={tx.to}
               notificationText="Address copied to the clipboard">
-              <p class="address typo-text">{tx.to || 'n/a'}</p>
+              <p class="address typo-text">{tx.to || "n/a"}</p>
             </Copyable>
           </div>
 
@@ -157,9 +150,9 @@
             <p>Amount</p>
             <p class="typo-semi-bold">
               {#if incoming}
-                <Dai>{transferedAmount}</Dai>
+                {transferedAmount} DAI
               {:else}
-                <NegativeDai>{transferedAmount}</NegativeDai>
+                - {transferedAmount} DAI
               {/if}
             </p>
           </div>

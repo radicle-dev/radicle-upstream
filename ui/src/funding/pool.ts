@@ -1,14 +1,17 @@
 import * as svelteStore from "svelte/store";
 
 import * as contract from "./contract";
+import * as daiToken from "./daiToken";
 import * as transaction from "../transaction";
 import * as validation from "../validation";
 
 import { Wallet, Account, Status as WalletStatus } from "../wallet";
 import * as remote from "../remote";
+import { toBaseUnit } from "../ethereum";
 
 import Big from "big.js";
 import { ContractTransaction, ethers } from "ethers";
+import lodash from "lodash";
 
 export const store = svelteStore.writable<Pool | null>(null);
 
@@ -78,44 +81,26 @@ export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
   const poolAddress = contract.poolAddress(wallet.environment);
   const poolContract = contract.pool(wallet.signer, poolAddress);
-  const daiTokenAddress = contract.daiTokenAddress(wallet.environment);
-  const daiTokenContract = contract.daiToken(wallet.signer, daiTokenAddress);
+  const daiTokenAddress = daiToken.daiTokenAddress(wallet.environment);
+  const daiTokenContract = daiToken.connect(wallet.signer, daiTokenAddress);
+  const watcher = new PoolWatcher(poolContract, daiTokenContract);
 
-  loadPoolData();
+  loadPoolData(watcher);
 
   // Periodically refresh the pool data. Particularly useful to
   // reactively display incoming support made available to the user,
   // update the displayed pool remaining balance, etc.
-  const POLL_INTERVAL_MILLIS = 10000;
+  const POLL_INTERVAL_MILLIS = 1000;
   setInterval(() => {
-    loadPoolData();
+    loadPoolData(watcher);
   }, POLL_INTERVAL_MILLIS);
 
-  async function loadPoolData() {
-    if (svelteStore.get(wallet).status !== WalletStatus.Connected) return;
-
+  async function loadPoolData(watcher: PoolWatcher) {
+    const storedWallet = svelteStore.get(wallet);
+    if (storedWallet.status !== WalletStatus.Connected) return;
+    const ethAddr = storedWallet.connected.account.address;
     try {
-      const balance = await poolContract.withdrawable();
-      const collectableFunds = await poolContract.collectable();
-      const weeklyBudget = await poolContract.weeklyBudget();
-      const contractReceivers = await poolContract.receivers();
-      const receivers = new Map<Address, ReceiverStatus>(
-        contractReceivers.map((e: contract.PoolReceiver) => [
-          e.receiver,
-          ReceiverStatus.Present,
-        ])
-      );
-      const erc20Allowance = await getErc20Allowance();
-
-      data.success({
-        // Handle potential overflow using BN.js
-        balance,
-        weeklyBudget,
-        receivers,
-        // Handle potential overflow using BN.js
-        collectableFunds,
-        erc20Allowance,
-      });
+      data.success(await watcher.poolData(ethAddr));
     } catch (error) {
       data.error(error);
     }
@@ -140,7 +125,7 @@ export function make(wallet: Wallet): Pool {
           transaction.supportOnboarding(tx, topUp, weeklyBudget, receivers)
         );
       })
-      .finally(loadPoolData);
+      .finally(() => loadPoolData(watcher));
   }
 
   async function updateSettings(
@@ -156,7 +141,7 @@ export function make(wallet: Wallet): Pool {
           transaction.updateSupport(tx, weeklyBudget, newReceivers)
         );
       })
-      .finally(loadPoolData);
+      .finally(() => loadPoolData(watcher));
   }
 
   async function topUp(amount: Big): Promise<void> {
@@ -165,7 +150,7 @@ export function make(wallet: Wallet): Pool {
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.topUp(tx, amount));
       })
-      .finally(loadPoolData);
+      .finally(() => loadPoolData(watcher));
   }
 
   async function withdraw(amount: Big): Promise<void> {
@@ -174,7 +159,7 @@ export function make(wallet: Wallet): Pool {
       .then(async (tx: ContractTransaction) => {
         transaction.add(transaction.withdraw(tx, amount));
       })
-      .finally(loadPoolData);
+      .finally(() => loadPoolData(watcher));
   }
 
   async function withdrawAll(): Promise<void> {
@@ -184,7 +169,7 @@ export function make(wallet: Wallet): Pool {
         const remainingBalance = data.unwrap()?.balance || Big(0);
         transaction.add(transaction.withdraw(tx, remainingBalance));
       })
-      .finally(loadPoolData);
+      .finally(() => loadPoolData(watcher));
   }
 
   async function collect(): Promise<void> {
@@ -194,16 +179,7 @@ export function make(wallet: Wallet): Pool {
         const infoAmount = data.unwrap()?.collectableFunds || Big(0);
         transaction.add(transaction.collect(tx, infoAmount));
       })
-      .finally(loadPoolData);
-  }
-
-  async function getErc20Allowance(): Promise<Big> {
-    const account = getAccount();
-    if (account) {
-      return daiTokenContract.allowance(account.address, poolAddress);
-    } else {
-      return Big(0);
-    }
+      .finally(() => loadPoolData(watcher));
   }
 
   async function approveErc20(): Promise<void> {
@@ -213,7 +189,7 @@ export function make(wallet: Wallet): Pool {
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.erc20Allowance(tx));
       })
-      .finally(loadPoolData);
+      .finally(() => loadPoolData(watcher));
   }
 
   return {
@@ -333,5 +309,72 @@ export function isValidBig(value: string): boolean {
     return true;
   } catch {
     return false;
+  }
+}
+
+class PoolWatcher {
+  private pool: contract.PoolContract;
+  private token: daiToken.ERC20;
+  private ethAddr: string | undefined;
+  private unwatch: () => void;
+  private data: PoolData;
+  private getBalance: (now: Date) => Big;
+  private getCollectable: (now: Date) => Big;
+
+  constructor(pool: contract.PoolContract, token: daiToken.ERC20) {
+    this.pool = pool;
+    this.token = token;
+    this.ethAddr = undefined;
+    this.unwatch = () => void 0;
+    this.data = {
+      balance: new Big(0),
+      weeklyBudget: new Big(0),
+      receivers: new Map(),
+      collectableFunds: new Big(0),
+      erc20Allowance: new Big(0),
+    };
+    this.getBalance = () => Big(0);
+    this.getCollectable = () => Big(0);
+  }
+
+  async poolData(ethAddr: string): Promise<PoolData> {
+    if (ethAddr !== this.ethAddr) {
+      this.ethAddr = ethAddr;
+      this.unwatch();
+
+      const unwatchTokenAllowances = await daiToken.watchDaiTokenAllowance(
+        this.token,
+        ethAddr, // owner
+        this.pool.contractAddr(), // spender
+        allowance => (this.data.erc20Allowance = allowance)
+      );
+
+      const unwatchPoolSender = await this.pool.watchPoolSender(
+        ethAddr,
+        ({ getBalance, weeklyBudget, receivers }) => {
+          this.getBalance = getBalance;
+          this.data.weeklyBudget = weeklyBudget;
+          this.data.receivers = new Map(
+            receivers.map(addr => [addr, ReceiverStatus.Present])
+          );
+        }
+      );
+
+      const unwatchPoolReceiver = await this.pool.watchPoolReceiver(
+        ethAddr,
+        getCollectable => (this.getCollectable = getCollectable)
+      );
+
+      this.unwatch = () => {
+        unwatchTokenAllowances();
+        unwatchPoolSender();
+        unwatchPoolReceiver();
+      };
+    }
+
+    const now = new Date();
+    this.data.collectableFunds = toBaseUnit(this.getCollectable(now));
+    this.data.balance = toBaseUnit(this.getBalance(now));
+    return lodash.cloneDeep(this.data);
   }
 }

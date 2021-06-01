@@ -1,6 +1,5 @@
 <script lang="typescript">
   export let dataCy = "";
-
 </script>
 
 <style>
@@ -17,7 +16,6 @@
   .container:focus {
     outline: none;
   }
-
 </style>
 
 <div class="container" data-cy={dataCy}>

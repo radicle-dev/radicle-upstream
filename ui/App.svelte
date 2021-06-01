@@ -1,14 +1,13 @@
-<script>
+<script lang="typescript">
   import Router, { push, location } from "svelte-spa-router";
 
-  import * as hotkeys from "./src/hotkeys.ts";
-  import { isExperimental } from "./src/config";
-  import "./src/localPeer.ts";
-  import * as path from "./src/path.ts";
-  import * as remote from "./src/remote.ts";
-  import * as error from "./src/error.ts";
-  import * as customProtocolHandler from "./src/customProtocolHandler.ts";
-  import { fetch, session as store, Status } from "./src/session.ts";
+  import * as hotkeys from "./src/hotkeys";
+  import "./src/localPeer";
+  import * as path from "./src/path";
+  import * as remote from "./src/remote";
+  import * as error from "./src/error";
+  import * as customProtocolHandler from "./src/customProtocolHandler";
+  import { fetch, session as store, Status } from "./src/session";
 
   import {
     EmptyState,
@@ -20,8 +19,6 @@
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
 
-  import TransactionCenter from "./App/TransactionCenter.svelte";
-
   import Blank from "./Screen/Blank.svelte";
   import Bsod from "./Screen/Bsod.svelte";
   import Onboarding from "./Screen/Onboarding.svelte";
@@ -31,19 +28,24 @@
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Settings from "./Screen/Settings.svelte";
+  import Wallet from "./Screen/Wallet.svelte";
   import UserProfile from "./Screen/UserProfile.svelte";
+  import NetworkDiagnostics from "./Screen/NetworkDiagnostics.svelte";
 
   const routes = {
     "/": Blank,
     "/onboarding": Onboarding,
     "/lock": Lock,
     "/settings": Settings,
+    "/wallet/*": Wallet,
+    "/wallet": Wallet,
     "/profile/*": Profile,
     "/projects/:urn/*": Project,
     "/projects/:urn": Project,
     "/user/:urn": UserProfile,
     "/user/:urn/*": UserProfile,
     "/design-system-guide": DesignSystemGuide,
+    "/network-diagnostics/*": NetworkDiagnostics,
     "*": NotFound,
   };
 
@@ -76,12 +78,7 @@
       break;
   }
 
-  $: sessionIsUnsealed =
-    $store.status === remote.Status.Success &&
-    $store.data.status === Status.UnsealedSession;
-
   customProtocolHandler.register();
-
 </script>
 
 <style>
@@ -93,7 +90,6 @@
     justify-content: center;
     align-items: center;
   }
-
 </style>
 
 <Bsod />
@@ -101,10 +97,6 @@
 <ModalOverlay />
 <NotificationFaucet />
 <Theme />
-
-{#if isExperimental && sessionIsUnsealed && $location !== path.designSystemGuide()}
-  <TransactionCenter />
-{/if}
 
 <Remote {store} context="session" disableErrorLogging={true}>
   <Router {routes} />

@@ -1,8 +1,9 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
+  import { isDev } from "ui/src/config";
 
-  import { PeerId } from "../../DesignSystem/Component";
-  import { Button } from "../../DesignSystem/Primitive";
+  import { PeerId } from "ui/DesignSystem/Component";
+  import { Button } from "ui/DesignSystem/Primitive";
 
   export let peerId: string;
 
@@ -10,14 +11,17 @@
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      next();
+      wallet();
     }
   };
 
-  const next = () => {
-    dispatch("close");
+  const profile = () => {
+    dispatch("profile");
   };
 
+  const wallet = () => {
+    dispatch("wallet");
+  };
 </script>
 
 <style>
@@ -34,6 +38,12 @@
     align-items: center;
   }
 
+  .buttons {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
 </style>
 
 <svelte:window on:keydown={onKeydown} />
@@ -52,9 +62,18 @@
       You can find it at any time on your Profile or Settings page. You'll need
       to share it with others to collaborate.
     </p>
-
-    <Button dataCy="go-to-profile-button" on:click={next}>
-      Go to my projects
-    </Button>
+    <div class="buttons">
+      <Button
+        variant="transparent"
+        dataCy="go-to-profile-button"
+        on:click={profile}>
+        Go to profile
+      </Button>
+      {#if isDev}
+        <Button dataCy="go-to-wallet-button" on:click={wallet}>
+          Set up your wallet
+        </Button>
+      {/if}
+    </div>
   </div>
 </div>

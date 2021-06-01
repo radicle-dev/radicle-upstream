@@ -22,16 +22,10 @@ export const store = screenStore.readable;
 export const fetch = (projectUrn: Urn): void => {
   screenStore.loading();
 
-  let current: project.Project;
-
   proxy.client.project
     .get(projectUrn)
-    .then(p => {
-      current = p;
-
-      return project.fetchPeers(projectUrn);
-    })
-    .then(peers => {
+    .then(async current => {
+      const peers = await proxy.client.project.listPeers(projectUrn);
       const peerSelection = filterPeers(peers);
       throwUnlessPeersPresent(peerSelection, projectUrn);
       screenStore.success({
@@ -62,8 +56,8 @@ export const fetchPeers = (): void => {
       requestInProgress: request,
     });
 
-    project
-      .fetchPeers(current.project.urn, request.signal)
+    proxy.client.project
+      .listPeers(current.project.urn, { abort: request.signal })
       .then(peers => {
         const filteredPeers = filterPeers(peers);
         throwUnlessPeersPresent(filteredPeers, current.project.urn);
@@ -98,8 +92,8 @@ export const refresh = (): void => {
       requestInProgress: request,
     });
 
-    project
-      .fetchPeers(urn, request.signal)
+    proxy.client.project
+      .listPeers(urn, { abort: request.signal })
       .then(peers => {
         const filteredPeers = filterPeers(peers);
         throwUnlessPeersPresent(filteredPeers, current.project.urn);
@@ -133,7 +127,8 @@ export const pendingPeers: Readable<
 > = derived(screenStore, (store): remote.Data<{ peers: project.Peer[] }> => {
   if (store.status === remote.Status.Success) {
     const peers = store.data.peers.filter(
-      peer => peer.status.type === project.ReplicationStatusType.NotReplicated
+      peer =>
+        peer.status.type === project.PeerReplicationStatusType.NotReplicated
     );
 
     return {
@@ -233,39 +228,40 @@ const filterPeers = (peers: project.Peer[]): project.User[] => {
   return peers
     .filter(
       peer =>
-        peer.status.type === project.ReplicationStatusType.Replicated &&
+        peer.status.type === project.PeerReplicationStatusType.Replicated &&
         !(
           peer.type === project.PeerType.Local &&
-          peer.status.role === project.Role.Tracker
+          peer.status.role === project.PeerRole.Tracker
         )
     )
     .map(peer => {
-      const { role, user } = peer.status as project.Replicated;
+      const { role, user } = peer.status as project.PeerReplicated;
       return { type: peer.type, peerId: peer.peerId, identity: user, role };
     })
+    .filter<project.User>((user): user is project.User => user !== undefined)
     .sort((a, b) => {
       if (
-        a.role === project.Role.Maintainer &&
-        b.role !== project.Role.Maintainer
+        a.role === project.PeerRole.Maintainer &&
+        b.role !== project.PeerRole.Maintainer
       ) {
         return -1;
       }
       if (
-        a.role !== project.Role.Maintainer &&
-        b.role === project.Role.Maintainer
+        a.role !== project.PeerRole.Maintainer &&
+        b.role === project.PeerRole.Maintainer
       ) {
         return 1;
       }
 
       if (
-        a.role === project.Role.Contributor &&
-        b.role === project.Role.Tracker
+        a.role === project.PeerRole.Contributor &&
+        b.role === project.PeerRole.Tracker
       ) {
         return -1;
       }
       if (
-        a.role === project.Role.Tracker &&
-        b.role === project.Role.Contributor
+        a.role === project.PeerRole.Tracker &&
+        b.role === project.PeerRole.Contributor
       ) {
         return 1;
       }

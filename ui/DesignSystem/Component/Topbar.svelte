@@ -1,6 +1,5 @@
 <script>
   export let style = null;
-
 </script>
 
 <style>
@@ -33,7 +32,6 @@
     width: 100%;
     justify-content: flex-end;
   }
-
 </style>
 
 <div data-cy="topbar" class="topbar" {style}>

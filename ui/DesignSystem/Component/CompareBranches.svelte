@@ -4,7 +4,6 @@
 
   export let baseBranch: string;
   export let compareBranch: string;
-
 </script>
 
 <style>
@@ -14,10 +13,9 @@
     align-items: center;
     gap: 0.5rem;
   }
-
 </style>
 
-<div class="branches">
+<div class="branches" data-cy="compare-branches">
   <BranchBox name={baseBranch} />
   <Icon.ArrowLeft />
   <BranchBox name={compareBranch} />

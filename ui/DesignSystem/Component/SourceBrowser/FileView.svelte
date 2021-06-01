@@ -21,7 +21,6 @@
 
   let view: View;
   $: view = $code.view;
-
 </script>
 
 <div data-cy="file-view">

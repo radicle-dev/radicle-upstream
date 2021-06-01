@@ -17,7 +17,6 @@
       onClose();
     }
   };
-
 </script>
 
 <style>
@@ -42,7 +41,6 @@
     height: 100%;
     width: 100%;
   }
-
 </style>
 
 <svelte:window on:keydown={onKeydown} />

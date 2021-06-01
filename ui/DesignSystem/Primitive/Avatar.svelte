@@ -22,7 +22,6 @@
 
   let avatarClass: string;
   $: avatarClass = [variant, size].join(" ");
-
 </script>
 
 <style>
@@ -118,7 +117,6 @@
     height: 32px;
     border-radius: 16px;
   }
-
 </style>
 
 <div data-cy={dataCy} class={`container ${size}`} {style}>
@@ -138,9 +136,9 @@
   {/if}
 
   {#if title}
-    {#if size === 'big' || size === 'huge'}
+    {#if size === "big" || size === "huge"}
       <h2 style="white-space: nowrap; margin-left: 12px">{title}</h2>
-    {:else if size === 'small'}
+    {:else if size === "small"}
       <p
         class="typo-text-bold"
         style="white-space: nowrap; margin-left: 0.5rem; color:

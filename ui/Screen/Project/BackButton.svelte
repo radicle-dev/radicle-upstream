@@ -9,7 +9,6 @@
   };
 
   export let style: string = "";
-
 </script>
 
 <style>
@@ -42,11 +41,13 @@
   header .back-button:hover :global(svg) {
     fill: var(--color-foreground-level-6);
   }
-
 </style>
 
 <header {style}>
-  <div class="back-button" on:click={() => onArrowClick()}>
+  <div
+    class="back-button"
+    data-cy="back-button"
+    on:click={() => onArrowClick()}>
     <Icon.ArrowLeft />
   </div>
   <slot />

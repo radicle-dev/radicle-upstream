@@ -34,7 +34,6 @@
   };
 
   $: showHint = hint.length > 0 && value.length === 0;
-
 </script>
 
 <style>
@@ -116,7 +115,6 @@
     top: 50%;
     transform: translateY(-50%);
   }
-
 </style>
 
 <div {style} class="wrapper">
@@ -124,7 +122,8 @@
     type="password"
     data-cy={dataCy}
     class:invalid={validation && validation.status === ValidationStatus.Error}
-    class:padding={validation && validation.status !== ValidationStatus.NotStarted}
+    class:padding={validation &&
+      validation.status !== ValidationStatus.NotStarted}
     {placeholder}
     bind:value
     {disabled}

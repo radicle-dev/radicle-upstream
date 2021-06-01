@@ -19,6 +19,7 @@ chrono = { version = "0.4.19", features = [ "serde" ] }
 data-encoding = "2.3"
 directories = "2.0"
 eip55 = "0.1.1"
+either = "1"
 futures = { version = "0.3", features = [ "compat" ] }
 kv = { version = "0.22", features = [ "json-value" ] }
 lazy_static = "1.4"
@@ -39,18 +40,18 @@ warp = { version = "0.3", default-features = false }
 
 [dependencies.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "49562b86e14889bbf8f96d846d46d94bc32468c0"
+rev = "f9fa8303cd33096d7818f0dcb0a24d3a9f618fab"
 
 [dependencies.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "49562b86e14889bbf8f96d846d46d94bc32468c0"
+rev = "f9fa8303cd33096d7818f0dcb0a24d3a9f618fab"
 
 [dependencies.radicle-avatar]
 git = "https://github.com/radicle-dev/radicle-avatar.git"
 rev = "4e34e6b992fd9f465b0547a5693b47b0d41dea01"
 
 [dependencies.radicle-source]
-version = "0.1.1"
+version = "^0.2.0"
 features = ["syntax"]
 
 [dev-dependencies]

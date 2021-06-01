@@ -8,7 +8,7 @@ use radicle_avatar as avatar;
 
 use radicle_daemon::{
     identities::payload::{self, ExtError, PersonPayload},
-    net, project,
+    net,
     signer::BoxedSigner,
     state, PeerId, Person, Urn,
 };
@@ -174,30 +174,4 @@ pub async fn get(
         )),
         None => Ok(None),
     }
-}
-
-// TODO(finto): Check if this is used and if so, express more elegantly after
-// radicle-dev/radicle-link#374.
-/// Retrieve the list of identities known to the session user.
-///
-/// # Errors
-///
-///  * If we cannot get the list of projects
-///  * If we cannot get the tracked peers for a given project
-pub async fn list(peer: &net::peer::Peer<BoxedSigner>) -> Result<Vec<Identity>, error::Error> {
-    let mut users = vec![];
-    for project in state::list_projects(peer).await? {
-        let project_urn = project.urn();
-        for peer in state::tracked(peer, project_urn)
-            .await?
-            .into_iter()
-            .filter_map(project::Peer::replicated_remote)
-        {
-            let user = peer.into();
-            if !users.contains(&user) {
-                users.push(user)
-            }
-        }
-    }
-    Ok(users)
 }

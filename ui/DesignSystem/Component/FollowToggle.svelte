@@ -37,7 +37,6 @@
       title = "Follow";
     }
   }
-
 </script>
 
 <Button

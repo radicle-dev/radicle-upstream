@@ -60,7 +60,6 @@
         break;
     }
   };
-
 </script>
 
 <style>
@@ -85,7 +84,6 @@
     display: flex;
     justify-content: flex-end;
   }
-
 </style>
 
 <svelte:window on:keydown={onKeydown} />

@@ -8,14 +8,13 @@
   export let title: string;
   export let active: boolean;
   export let counter: number | undefined;
-
 </script>
 
 <style>
   .icon {
     margin-right: 0.5rem;
     align-items: center;
-    padding-top: 1px;
+    padding-top: 2px;
   }
 
   a {
@@ -39,7 +38,6 @@
     border-radius: 0.75rem;
     margin-left: 0.5rem;
   }
-
 </style>
 
 <a data-cy={dataCy} {href} use:link on:click>

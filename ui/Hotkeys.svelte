@@ -83,9 +83,11 @@
       case hotkeys.ShortcutKey.NewProjects:
         toggleModal(ModalNewProject);
         break;
+      case hotkeys.ShortcutKey.NetworkDiagnostics:
+        toggle(path.networkDiagnosticsConnectedPeers());
+        break;
     }
   };
-
 </script>
 
 <svelte:window on:keydown={onKeydown} />

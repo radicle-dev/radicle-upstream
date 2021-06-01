@@ -89,10 +89,10 @@ export const createProjectWithFixture = (
 export const createEmptyProject = (
   name: string = "new-project",
   path: string,
-  localhost: number = 17246
-): Cypress.Chainable<void> =>
+  port: number = 17246
+): Cypress.Chainable<string> =>
   requestOk({
-    url: `http://localhost:${localhost}/v1/projects`,
+    url: `http://localhost:${port}/v1/projects`,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -106,6 +106,49 @@ export const createEmptyProject = (
       description: "This is the description.",
       defaultBranch: "main",
     }),
+  }).then(response => response.urn as string);
+
+export const followProject = (
+  urn: string,
+  port: number = 17246
+): Cypress.Chainable<void> =>
+  requestOk({
+    url: `http://localhost:${port}/v1/projects/requests/${urn}`,
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+export const checkoutProject = (
+  urn: string,
+  path: string,
+  peerId: string,
+  localhost: number = 17246
+): Cypress.Chainable<void> =>
+  requestOk({
+    url: `http://localhost:${localhost}/v1/projects/${urn}/checkout`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      path,
+      peerId,
+    }),
+  });
+
+export const trackPeer = (
+  urn: string,
+  peerId: string,
+  localhost: number = 17246
+): Cypress.Chainable<void> =>
+  requestOk({
+    url: `http://localhost:${localhost}/v1/projects/${urn}/track/${peerId}`,
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
 export const onboardUser = (
@@ -126,13 +169,12 @@ export const metaKey = (): string => {
  */
 function requestOk(
   opts: Partial<Cypress.RequestOptions> & { url: string }
-): Cypress.Chainable<void> {
-  return cy
-    .request(opts)
-    .then(response => {
-      expect(response.status).to.be.within(200, 299, "Failed response");
-    })
-    .wrap(undefined);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Cypress.Chainable<any> {
+  return cy.request(opts).then(response => {
+    expect(response.status).to.be.within(200, 299, "Failed response");
+    return response.body;
+  });
 }
 
 function getCurrentTestName() {
