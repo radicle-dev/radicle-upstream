@@ -48,7 +48,7 @@
   on:click={click}
   on:mouseenter={mouseenter}
   on:mouseleave={mouseleave}>
-  {#if !following || (following && hovering) || (following && disabled && hovering)}
+  {#if !following || hovering}
     {title}
   {/if}
 </Button>
