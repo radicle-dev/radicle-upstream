@@ -51,6 +51,7 @@ export interface Wallet extends svelteStore.Readable<State> {
   provider: ethers.providers.Provider;
   signer: ethers.Signer;
   account(): Account | undefined;
+  destroy(): void;
 }
 
 function getProvider(
@@ -67,7 +68,7 @@ function getProvider(
   }
 }
 
-export function build(
+function build(
   environment: ethereum.Environment,
   provider: ethers.providers.Provider
 ): Wallet {
@@ -192,7 +193,7 @@ export function build(
 
   // Periodically refresh the wallet data
   const REFRESH_INTERVAL_MILLIS = 3000;
-  setInterval(() => {
+  const refreshInterval = setInterval(() => {
     if (svelteStore.get(stateStore).status === Status.Connected) {
       loadAccountData();
     }
@@ -215,6 +216,9 @@ export function build(
     provider,
     signer,
     account,
+    destroy() {
+      clearInterval(refreshInterval);
+    },
   };
 }
 
@@ -377,12 +381,14 @@ export function formattedBalance(balance: number): string {
 
 export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
   ethereum.selectedEnvironment,
-  environment => {
+  (environment, set) => {
     const provider = getProvider(environment);
     if (provider instanceof ethers.providers.JsonRpcProvider) {
       window.ethereumDebug = new EthereumDebug(provider);
     }
 
-    return build(environment, provider);
+    const wallet = build(environment, provider);
+    set(wallet);
+    return () => wallet.destroy();
   }
 );
