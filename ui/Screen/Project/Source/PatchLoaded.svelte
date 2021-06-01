@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { pop } from "svelte-spa-router";
-
+  import * as router from "ui/src/router";
   import { isMaintainer } from "ui/src/project";
   import type { Project } from "ui/src/project";
   import type { UnsealedSession } from "ui/src/session";
@@ -71,7 +70,9 @@
 </style>
 
 <div class="patch-page" data-cy="patch-page">
-  <BackButton style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
+  <BackButton
+    style="padding: 1rem; z-index: 0;"
+    on:arrowClick={() => router.pop()}>
     <div>
       <div class="title" data-cy="patch-title">
         <Icon.Revision style={`fill: ${iconColor};`} />

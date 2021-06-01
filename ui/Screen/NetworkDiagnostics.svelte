@@ -1,37 +1,36 @@
 <script lang="typescript">
-  import Router from "svelte-spa-router";
-
+  import * as router from "ui/src/router";
   import { status as store } from "ui/src/localPeer";
-  import * as path from "ui/src/path";
 
-  import ActionBar from "ui/DesignSystem/Component/ActionBar.svelte";
-  import Header from "ui/DesignSystem/Component/Header.svelte";
-  import HorizontalMenu from "ui/DesignSystem/Component/HorizontalMenu.svelte";
-  import SidebarLayout from "ui/DesignSystem/Component/SidebarLayout.svelte";
+  import { Icon } from "ui/DesignSystem/Primitive";
+  import {
+    ActionBar,
+    Header,
+    TabBar,
+    SidebarLayout,
+  } from "ui/DesignSystem/Component";
 
-  import IconNetwork from "ui/DesignSystem/Primitive/Icon/Network.svelte";
-  import IconRoad from "ui/DesignSystem/Primitive/Icon/Road.svelte";
+  import ConnectedPeersTab from "ui/Screen/NetworkDiagnostics/ConnectedPeers.svelte";
+  import WaitingRoomTab from "ui/Screen/NetworkDiagnostics/WaitingRoom.svelte";
 
-  import ConnectedPeers from "./NetworkDiagnostics/ConnectedPeers.svelte";
-  import WaitingRoom from "./NetworkDiagnostics/WaitingRoom.svelte";
+  export let activeTab: router.NetworkDiagnosticsTab;
 
-  const screenRoutes = {
-    [path.networkDiagnosticsConnectedPeers()]: ConnectedPeers,
-    [path.networkDiagnosticsWaitingRoom()]: WaitingRoom,
-  };
-
-  const topbarMenuItems = [
+  const tabs = (active: router.NetworkDiagnosticsTab) => [
     {
-      icon: IconNetwork,
       title: "Peers",
-      href: path.networkDiagnosticsConnectedPeers(),
-      looseActiveStateMatching: true,
+      active: active === "peers",
+      icon: Icon.Network,
+      onClick: () => {
+        router.push({ type: "networkDiagnostics", activeTab: "peers" });
+      },
     },
     {
-      icon: IconRoad,
       title: "Requests",
-      href: path.networkDiagnosticsWaitingRoom(),
-      looseActiveStateMatching: true,
+      active: active === "requests",
+      icon: Icon.Road,
+      onClick: () => {
+        router.push({ type: "networkDiagnostics", activeTab: "requests" });
+      },
     },
   ];
 </script>
@@ -58,10 +57,16 @@
   </Header>
   <ActionBar>
     <div slot="left">
-      <HorizontalMenu items={topbarMenuItems} />
+      <TabBar tabs={tabs(activeTab)} />
     </div>
   </ActionBar>
   <div class="container">
-    <Router routes={screenRoutes} />
+    {#if activeTab === "peers"}
+      <ConnectedPeersTab />
+    {:else if activeTab === "requests"}
+      <WaitingRoomTab />
+    {:else}
+      {router.unreachable(activeTab)}
+    {/if}
   </div>
 </SidebarLayout>

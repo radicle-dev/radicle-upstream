@@ -1,7 +1,5 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
-
-  import * as path from "../../../src/path";
+  import * as router from "ui/src/router";
   import { selectPath, store } from "../../../src/screen/project/source";
   import { fetchTree } from "../../../src/source";
   import type { Sha1 } from "../../../src/source";
@@ -13,8 +11,13 @@
   import Tree from "../../../DesignSystem/Component/SourceBrowser/Tree.svelte";
 
   const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {
-    push(path.projectSourceCommit(projectUrn, sha1));
+    router.push({
+      type: "project",
+      urn: projectUrn,
+      activeView: { type: "commit", commitHash: sha1 },
+    });
   };
+
   const onSelectPath = ({ detail: path }: { detail: string }) => {
     selectPath(path);
   };

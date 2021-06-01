@@ -1,10 +1,9 @@
 <script lang="typescript">
-  import { location, push } from "svelte-spa-router";
+  import { activeRouteStore, push } from "ui/src/router";
 
   import type { Identity } from "ui/src/identity";
   import * as modal from "ui/src/modal";
-  import * as path from "ui/src/path";
-  import { isDev } from "ui/src/config";
+  import * as config from "ui/src/config";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
@@ -106,8 +105,9 @@
       <div
         class="item indicator"
         data-cy="profile"
-        class:active={$location.startsWith(path.profile())}
-        on:click|stopPropagation={() => push(path.profileProjects())}>
+        class:active={$activeRouteStore.type === "profile"}
+        on:click|stopPropagation={() =>
+          push({ type: "profile", activeTab: "projects" })}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -124,13 +124,14 @@
         <Icon.MagnifyingGlass />
       </div>
     </Tooltip>
-    {#if isDev}
+    {#if config.isDev}
       <Tooltip value="Wallet">
         <div
           class="item indicator"
           data-cy="wallet"
-          class:active={$location.startsWith(path.wallet())}
-          on:click|stopPropagation={() => push(path.walletTransactions())}>
+          class:active={$activeRouteStore.type === "wallet"}
+          on:click|stopPropagation={() =>
+            push({ type: "wallet", activeTab: "transactions" })}>
           <Icon.Wallet />
         </div>
       </Tooltip>
@@ -140,8 +141,8 @@
       <div
         class="item indicator"
         data-cy="settings"
-        class:active={$location.startsWith(path.settings())}
-        on:click|stopPropagation={() => push(path.settings())}>
+        class:active={$activeRouteStore.type === "settings"}
+        on:click|stopPropagation={() => push({ type: "settings" })}>
         <Icon.Settings />
       </div>
     </Tooltip>

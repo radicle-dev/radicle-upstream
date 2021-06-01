@@ -1,36 +1,19 @@
 <script lang="typescript">
-  import { location, pop, push } from "svelte-spa-router";
+  import { pop, push, activeRouteStore } from "ui/src/router";
   import type { SvelteComponent } from "svelte";
 
-  import ModalNewProject from "./Modal/NewProject.svelte";
-  import ModalSearch from "./Modal/Search.svelte";
-  import ModalShortcuts from "./Modal/Shortcuts.svelte";
+  import NewProjectModal from "ui/Modal/NewProject.svelte";
+  import SearchModal from "ui/Modal/Search.svelte";
+  import ShortcutsModal from "ui/Modal/Shortcuts.svelte";
 
   import * as modal from "./src/modal";
-  import * as path from "./src/path";
   import * as screen from "./src/screen";
   import { isMac } from "./src/settings";
   import * as hotkeys from "./src/hotkeys";
   import { isDev } from "./src/config";
 
-  const show = (destination: string) => {
-    modal.hide();
-    if (destination === $location) {
-      return;
-    }
-    push(destination);
-  };
-
-  const toggle = (destination: string) => {
-    if (destination === $location) {
-      pop();
-    }
-    push(destination);
-    modal.hide();
-  };
-
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
-    if (path.designSystemGuide() === $location) {
+    if ($activeRouteStore.type === "designSystemGuide") {
       pop();
     }
     modal.toggle(modalComponent);
@@ -69,22 +52,35 @@
 
     switch (shortcut.key) {
       case hotkeys.ShortcutKey.Help:
-        toggleModal(ModalShortcuts);
+        toggleModal(ShortcutsModal);
         break;
       case hotkeys.ShortcutKey.Settings:
-        show(path.settings());
+        modal.hide();
+        if ($activeRouteStore.type === "settings") {
+          return;
+        }
+        push({ type: "settings" });
         break;
       case hotkeys.ShortcutKey.Search:
-        toggleModal(ModalSearch);
+        toggleModal(SearchModal);
         break;
       case hotkeys.ShortcutKey.DesignSystem:
-        toggle(path.designSystemGuide());
+        if ($activeRouteStore.type === "designSystemGuide") {
+          pop();
+        } else {
+          push({ type: "designSystemGuide" });
+          modal.hide();
+        }
         break;
       case hotkeys.ShortcutKey.NewProjects:
-        toggleModal(ModalNewProject);
+        toggleModal(NewProjectModal);
         break;
       case hotkeys.ShortcutKey.NetworkDiagnostics:
-        toggle(path.networkDiagnosticsConnectedPeers());
+        modal.hide();
+        if ($activeRouteStore.type === "networkDiagnostics") {
+          return;
+        }
+        push({ type: "networkDiagnostics", activeTab: "peers" });
         break;
     }
   };

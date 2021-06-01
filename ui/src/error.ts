@@ -68,6 +68,7 @@ export enum Code {
   UnhandledError = "UnhandledError",
   UnhandledRejection = "UnhandledRejection",
   UnknownException = "UnknownException",
+  Unreachable = "Unreachable",
   UnsealedSessionExpected = "UnsealedSessionExpected",
 
   // Funding related error codes
