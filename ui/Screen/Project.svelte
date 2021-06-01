@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as localPeer from "ui/src/localPeer";
@@ -11,7 +11,6 @@
   import * as sess from "ui/src/session";
   import { CSSPosition } from "ui/src/style";
   import type { Urn } from "ui/src/urn";
-
   import {
     FollowToggle,
     Header,
@@ -47,13 +46,14 @@
     selectPeer(peer);
   };
 
-  onMount(() => {
-    localPeer.projectEvents.onValue(event => {
+  const unsubscribeFromProjectEvents = localPeer.projectEvents.onValue(
+    event => {
       if (event.urn === urn) {
-        refresh();
+        refreshPeers();
       }
-    });
-  });
+    }
+  );
+  onDestroy(unsubscribeFromProjectEvents);
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
