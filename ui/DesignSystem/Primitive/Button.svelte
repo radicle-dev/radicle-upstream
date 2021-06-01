@@ -320,9 +320,7 @@
   on:click
   on:mouseenter
   on:mouseleave
-  {style}>
+  style={`${style}` + "gap: .5rem;"}>
   <svelte:component this={icon} />
-  <div style={icon ? "margin-left: 8px;" : ""}>
-    <slot />
-  </div>
+  <slot />
 </button>
