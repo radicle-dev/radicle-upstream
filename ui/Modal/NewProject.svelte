@@ -1,13 +1,12 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
-  import { push } from "svelte-spa-router";
 
   import { UPSTREAM_DEFAULT_BRANCH } from "../src/config";
   import * as notification from "../src/notification";
   import * as error from "../src/error";
   import * as modal from "../src/modal";
-  import * as path from "../src/path";
   import * as remote from "../src/remote";
+  import * as router from "ui/src/router";
   import {
     clearLocalState,
     defaultBranch,
@@ -77,12 +76,16 @@
           : { type: "existing", path: existingRepositoryPath },
       });
 
-      push(path.project(response.urn));
+      router.push({
+        type: "project",
+        urn: response.urn,
+        activeView: { type: "files" },
+      });
       notification.info({
         message: `Project ${response.metadata.name} successfully created`,
       });
     } catch (err) {
-      push(path.profileProjects());
+      router.push({ type: "profile", activeTab: "projects" });
       error.show(
         new error.Error({
           code: error.Code.ProjectCreationFailure,

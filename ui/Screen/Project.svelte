@@ -1,12 +1,11 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
-  import { push } from "svelte-spa-router";
 
   import * as localPeer from "../src/localPeer";
   import * as modal from "../src/modal";
-  import * as path from "../src/path";
   import { isMaintainer, isContributor } from "../src/project";
   import type { User } from "../src/project";
+  import * as router from "ui/src/router";
   import {
     fetch,
     selectPeer,
@@ -30,18 +29,22 @@
 
   import Source from "./Project/Source.svelte";
 
-  export let params: { urn: Urn };
+  export let urn: Urn;
+  export let activeView: router.ProjectView = { type: "files" };
 
-  const { urn } = params;
   const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
     if (peer.identity.urn === session.identity.urn) {
-      push(path.profileProjects());
+      router.push({ type: "profile", activeTab: "projects" });
     } else {
-      push(path.userProfileProjects(peer.identity.urn));
+      router.push({
+        type: "userProfile",
+        activeTab: "projects",
+        urn: peer.identity.urn,
+      });
     }
   };
   const onPeerModal = () => {
@@ -73,7 +76,12 @@
         name={project.metadata.name}
         description={project.metadata.description}
         stats={project.stats}
-        onClick={() => push(path.project(urn))} />
+        onClick={() =>
+          router.push({
+            type: "project",
+            urn: urn,
+            activeView: { type: "files" },
+          })} />
 
       <div slot="right" style="display: flex;">
         <PeerSelector
@@ -92,6 +100,7 @@
       </div>
     </Header>
     <Source
+      {activeView}
       {project}
       {selectedPeer}
       isContributor={isContributor(peerSelection)} />

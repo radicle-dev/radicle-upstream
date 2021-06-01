@@ -1,19 +1,16 @@
 <script lang="typescript">
-  import { pop } from "svelte-spa-router";
-
   import * as error from "ui/src/error";
   import { formatCommitTime } from "ui/src/source";
   import { commit, fetchCommit } from "ui/src/screen/project/source";
-  import type { Urn } from "ui/src/urn";
   import * as remote from "ui/src/remote";
+  import * as router from "ui/src/router";
 
   import { Icon } from "ui/DesignSystem/Primitive";
-  import BackButton from "../BackButton.svelte";
+  import BackButton from "ui/Screen/Project/BackButton.svelte";
 
   import Changeset from "ui/DesignSystem/Component/SourceBrowser/Changeset.svelte";
 
-  export let params: { hash: string; urn: Urn };
-  const { hash } = params;
+  export let commitHash: string;
 
   $: {
     if ($commit.status === remote.Status.Error) {
@@ -21,7 +18,7 @@
     }
   }
 
-  fetchCommit(hash);
+  fetchCommit(commitHash);
 </script>
 
 <style>
@@ -72,7 +69,9 @@
 
 <div class="commit-page" data-cy="commit-page">
   {#if $commit.status === remote.Status.Success}
-    <BackButton style="padding: 1rem; z-index: 0;" on:arrowClick={() => pop()}>
+    <BackButton
+      style="padding: 1rem; z-index: 0;"
+      on:arrowClick={() => router.pop()}>
       <h3 style="margin-bottom: .75rem">{$commit.data.header.summary}</h3>
       <div class="metadata">
         <span class="field">

@@ -1,14 +1,13 @@
 <script lang="typescript">
   import { fade, fly } from "svelte/transition";
-  import { push } from "svelte-spa-router";
 
   import { withRetry } from "ui/src/api";
   import { State } from "ui/src/onboarding";
   import { createIdentity } from "ui/src/identity";
+  import * as error from "ui/src/error";
+  import * as router from "ui/src/router";
   import * as screen from "ui/src/screen";
   import * as session from "ui/src/session";
-  import * as error from "ui/src/error";
-  import * as path from "ui/src/path";
 
   import Welcome from "./Onboarding/Welcome.svelte";
   import EnterName from "./Onboarding/EnterName.svelte";
@@ -43,7 +42,7 @@
     // App.svelte checks whether to load onboarding or the app depending if
     // the session data is present or not.
     session.fetch();
-    push(path.walletTransactions());
+    router.push({ type: "wallet", activeTab: "transactions" });
   };
 
   const onCreateIdentity = async (handle: string, passphrase: string) => {

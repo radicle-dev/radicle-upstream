@@ -1,6 +1,4 @@
 <script>
-  import * as path from "../../src/path.ts";
-  import { push } from "svelte-spa-router";
   import IssueCard from "./Issues/IssueCard.svelte";
   import {
     EmptyState,
@@ -23,7 +21,6 @@
     },
   ];
 
-  export let params = null;
   const issues = [
     {
       hash: "blka",
@@ -88,13 +85,7 @@
       on:select={option => updateFilter(option.detail)} />
   </div>
   {#if issues.length > 0}
-    <List
-      dataCy="issue-list"
-      items={filteredIssues}
-      on:select={() => {
-        push(path.projectIssue(params.id));
-      }}
-      let:item={issue}>
+    <List dataCy="issue-list" items={filteredIssues} let:item={issue}>
       <IssueCard {issue} />
     </List>
   {:else}

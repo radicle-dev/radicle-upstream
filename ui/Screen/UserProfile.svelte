@@ -1,38 +1,29 @@
 <script lang="typescript">
-  import Router from "svelte-spa-router";
-
-  import * as path from "../src/path";
   import { fetchUser, user as store } from "../src/userProfile";
 
   import { Icon } from "../DesignSystem/Primitive";
 
   import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
   import Header from "../DesignSystem/Component/Header.svelte";
-  import HorizontalMenu from "../DesignSystem/Component/HorizontalMenu.svelte";
+  import TabBar from "ui/DesignSystem/Component/TabBar.svelte";
   import Remote from "../DesignSystem/Component/Remote.svelte";
   import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
 
   import UserProfileHeader from "./UserProfile/UserProfileHeader.svelte";
+  import ProjectsTab from "ui/Screen/UserProfile/Projects.svelte";
 
-  import Projects from "./UserProfile/Projects.svelte";
-  import NotFound from "./NotFound.svelte";
+  export let urn: string;
 
-  export let params: { urn: string };
-
-  const screenRoutes = {
-    "/user/:urn/projects": Projects,
-    "*": NotFound,
-  };
-  const topbarMenuItems = [
+  const tabs = [
     {
-      icon: Icon.ChevronLeftRight,
       title: "Projects",
-      href: path.userProfileProjects(params.urn),
-      looseActiveStateMatching: true,
+      active: true,
+      icon: Icon.ChevronLeftRight,
+      onClick: () => {},
     },
   ];
 
-  fetchUser(params.urn);
+  fetchUser(urn);
 </script>
 
 <SidebarLayout>
@@ -46,9 +37,8 @@
     </Header>
 
     <ActionBar>
-      <HorizontalMenu slot="left" items={topbarMenuItems} />
+      <TabBar slot="left" {tabs} />
     </ActionBar>
-
-    <Router routes={screenRoutes} />
+    <ProjectsTab {urn} />
   </Remote>
 </SidebarLayout>
