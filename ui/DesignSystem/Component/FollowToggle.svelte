@@ -48,5 +48,7 @@
   on:click={click}
   on:mouseenter={mouseenter}
   on:mouseleave={mouseleave}>
-  {title}
+  {#if !following}
+    {title}
+  {/if}
 </Button>
