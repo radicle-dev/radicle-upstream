@@ -29,6 +29,7 @@
     padding: 0 12px;
     user-select: none;
     line-height: 22px;
+    gap: 0.5rem;
   }
 
   .button :global(svg) {
@@ -320,7 +321,7 @@
   on:click
   on:mouseenter
   on:mouseleave
-  style={`${style}` + "gap: .5rem;"}>
+  {style}>
   <svelte:component this={icon} />
   <slot />
 </button>
