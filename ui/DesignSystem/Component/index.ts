@@ -23,7 +23,6 @@ import List from "./List.svelte";
 import Modal from "./Modal.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
-import NegativeDai from "./NegativeDai.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Fullscreen from "./Fullscreen.svelte";
@@ -76,7 +75,6 @@ export {
   Modal,
   ModalOverlay,
   NavigationButtons,
-  NegativeDai,
   Notification,
   NotificationFaucet,
   Fullscreen,

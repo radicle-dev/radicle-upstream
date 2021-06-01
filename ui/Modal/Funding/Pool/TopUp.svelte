@@ -24,7 +24,7 @@
 
   let disabled = true;
   let balance = Big(0);
-  $: balance = $store?.getAccount()?.balance || balance;
+  $: balance = $store?.getAccount()?.daiBalance || balance;
 </script>
 
 <style>

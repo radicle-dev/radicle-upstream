@@ -287,30 +287,6 @@ export const isMarkdown = (path: string): boolean => {
   return /\.(md|mkd|markdown)$/i.test(path);
 };
 
-export const revisionQueryEq = (
-  query1: Revision,
-  query2: Revision
-): boolean => {
-  if (
-    query1.type === RevisionType.Branch &&
-    query2.type === RevisionType.Branch
-  ) {
-    return query1.name === query2.name;
-  } else if (
-    query1.type === RevisionType.Tag &&
-    query2.type === RevisionType.Tag
-  ) {
-    return query1.name === query2.name;
-  } else if (
-    query1.type === RevisionType.Sha &&
-    query2.type === RevisionType.Sha
-  ) {
-    return query1.sha === query2.sha;
-  } else {
-    return false;
-  }
-};
-
 export const formatCommitTime = (t: number): string => {
   return format(t * 1000);
 };

@@ -1,10 +1,5 @@
 <script lang="typescript">
-  import {
-    Copyable,
-    Dai,
-    NegativeDai,
-    Identity,
-  } from "../DesignSystem/Component";
+  import { Copyable, Identity } from "../DesignSystem/Component";
   import { Emoji, Icon } from "../DesignSystem/Primitive";
   import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
   import Summary from "../DesignSystem/Component/Transaction/Summary.svelte";
@@ -155,9 +150,9 @@
             <p>Amount</p>
             <p class="typo-semi-bold">
               {#if incoming}
-                <Dai>{transferedAmount}</Dai>
+                {transferedAmount} DAI
               {:else}
-                <NegativeDai>{transferedAmount}</NegativeDai>
+                - {transferedAmount} DAI
               {/if}
             </p>
           </div>

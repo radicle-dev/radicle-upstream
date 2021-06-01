@@ -9,6 +9,9 @@ import * as error from "./error";
 import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
+import type { SvelteComponent } from "svelte";
+import { Icon } from "../DesignSystem/Primitive";
+
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
 
@@ -369,6 +372,25 @@ export function emoji(tx: Tx): string {
   }
 }
 
+export function txIcon(tx: Tx): typeof SvelteComponent {
+  switch (tx.kind) {
+    case TxKind.ClaimRadicleIdentity:
+      return Icon.Registered;
+    case TxKind.CollectFunds:
+      return Icon.Withdraw;
+    case TxKind.Withdraw:
+      return Icon.Withdraw;
+    case TxKind.Erc20Allowance:
+      return Icon.Ethereum;
+    case TxKind.SupportOnboarding:
+      return Icon.TokenStreams;
+    case TxKind.TopUp:
+      return Icon.Topup;
+    case TxKind.UpdateSupport:
+      return Icon.TokenStreams;
+  }
+}
+
 export function isIncoming(tx: Tx): boolean {
   return direction(tx) === Direction.Incoming;
 }
@@ -406,6 +428,25 @@ const monthNames = [
   "October",
   "November",
   "December",
+];
+
+export function getShortMonth(date: Date): string {
+  return `${shortMonthNames[date.getMonth()]}`;
+}
+
+const shortMonthNames = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
 ];
 
 // Convert a transaction-related `globalThis.Error` to `error.Error`.

@@ -66,9 +66,13 @@ import Revision from "./Revision.svelte";
 import Road from "./Road.svelte";
 import Server from "./Server.svelte";
 import Settings from "./Settings.svelte";
+import TokenStreams from "./TokenStreams.svelte";
+import Topup from "./Topup.svelte";
+import Transactions from "./Transactions.svelte";
 import Trash from "./Trash.svelte";
 import User from "./User.svelte";
 import Wallet from "./Wallet.svelte";
+import Withdraw from "./Withdraw.svelte";
 
 export default {
   Anchor,
@@ -139,7 +143,11 @@ export default {
   Road,
   Server,
   Settings,
+  TokenStreams,
+  Topup,
+  Transactions,
   Trash,
   User,
   Wallet,
+  Withdraw,
 };

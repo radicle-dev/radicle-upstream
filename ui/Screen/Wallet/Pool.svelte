@@ -1,17 +1,14 @@
 <script lang="ts">
-  import { Remote } from "../../DesignSystem/Component";
+  import { Remote } from "ui/DesignSystem/Component";
 
   import Outgoing from "./Pool/Outgoing.svelte";
   import Incoming from "./Pool/Incoming.svelte";
-  import ModalCollect from "../../Modal/Funding/Pool/Collect.svelte";
+  import ModalCollect from "ui/Modal/Funding/Pool/Collect.svelte";
 
-  import * as modal from "../../src/modal";
-  import * as fundingPool from "../../src/funding/pool";
-  import type { Pool } from "../../src/funding/pool";
-  import { TxKind, ongoing } from "../../src/transaction";
-  import { store as txs } from "../../src/transaction";
-
-  export let pool: Pool;
+  import * as modal from "ui/src/modal";
+  import * as fundingPool from "ui/src/funding/pool";
+  import { TxKind, ongoing, store as txs } from "ui/src/transaction";
+  import { store } from "ui/src/wallet";
 
   function onCollect() {
     fundingPool.store.set(pool);
@@ -20,6 +17,8 @@
 
   let ongoingCollect = false;
   $: ongoingCollect = $txs.some(ongoing(TxKind.CollectFunds));
+  $: wallet = $store;
+  $: pool = fundingPool.make(wallet);
 </script>
 
 <style>

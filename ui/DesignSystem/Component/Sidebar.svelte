@@ -2,17 +2,18 @@
   import * as radicleAvatar from "radicle-avatar";
   import { location, push } from "svelte-spa-router";
 
-  import type { Identity } from "../../src/identity";
-  import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
+  import { orgSidebarStore } from "ui/src/org";
+  import type { Identity } from "ui/src/identity";
+  import * as modal from "ui/src/modal";
+  import * as path from "ui/src/path";
+  import { isDev } from "ui/src/config";
   import * as wallet from "ui/src/wallet";
-  import { orgSidebarStore } from "../../src/org";
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
-  import ModalSearch from "../../Modal/Search.svelte";
+  import ModalSearch from "ui/Modal/Search.svelte";
   import ModalCreateOrg from "../../Modal/Org/Create.svelte";
 
   export let identity: Identity;
@@ -164,6 +165,17 @@
         <Icon.MagnifyingGlass />
       </div>
     </Tooltip>
+    {#if isDev}
+      <Tooltip value="Wallet">
+        <div
+          class="item indicator"
+          data-cy="wallet"
+          class:active={$location.startsWith(path.wallet())}
+          on:click|stopPropagation={() => push(path.walletTransactions())}>
+          <Icon.Wallet />
+        </div>
+      </Tooltip>
+    {/if}
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
       <div
