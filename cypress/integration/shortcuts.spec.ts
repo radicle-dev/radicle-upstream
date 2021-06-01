@@ -2,7 +2,7 @@ import * as commands from "../support/commands";
 const metaKey = commands.metaKey();
 
 context("documented shortcuts", () => {
-  before(() => {
+  beforeEach(() => {
     commands.resetProxyState();
     commands.onboardUser("cloudhead");
     cy.visit("./public/index.html");
