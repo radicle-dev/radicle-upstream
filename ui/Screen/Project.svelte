@@ -7,7 +7,12 @@
   import * as path from "ui/src/path";
   import { isMaintainer, isContributor } from "ui/src/project";
   import type { User } from "ui/src/project";
-  import { fetch, selectPeer, refresh, store } from "ui/src/screen/project";
+  import {
+    fetch,
+    selectPeer,
+    refreshPeers,
+    store,
+  } from "ui/src/screen/project";
   import * as sess from "ui/src/session";
   import { CSSPosition } from "ui/src/style";
   import type { Urn } from "ui/src/urn";
