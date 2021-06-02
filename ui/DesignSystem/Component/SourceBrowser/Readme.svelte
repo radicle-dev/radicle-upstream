@@ -10,7 +10,7 @@
 <style>
   .readme {
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     min-width: var(--content-min-width);
   }
 
