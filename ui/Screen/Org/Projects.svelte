@@ -4,17 +4,21 @@
   import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
   import AnchorList from "ui/Screen/Org/AnchorList.svelte";
 
+  import type * as project from "ui/src/project";
+  import type * as theGraphApi from "ui/src/theGraphApi";
+
   import * as modal from "ui/src/modal";
-  import * as org from "ui/src/org";
   import * as router from "ui/src/router";
   import * as sess from "ui/src/session";
 
   import { EmptyState, ProjectList } from "ui/DesignSystem/Component";
   import { Variant as IllustrationVariant } from "ui/src/illustration";
 
-  const orgProjectTabStore = org.orgProjectTabStore;
-  const orgScreenStore = org.orgScreenStore;
   const session = sess.getUnsealedFromContext();
+
+  export let address: string;
+  export let anchoredProjects: project.Project[];
+  export let unresolvedAnchors: theGraphApi.ProjectAnchor[];
 
   const select = ({ detail: project }: { detail: Project }) => {
     router.push({
@@ -34,16 +38,14 @@
 </style>
 
 <div class="container">
-  {#if $orgProjectTabStore.anchoredProjects.length !== 0 || $orgProjectTabStore.unresolvedAnchors.length !== 0}
+  {#if anchoredProjects.length !== 0 || unresolvedAnchors.length !== 0}
     <ProjectList
-      projects={$orgProjectTabStore.anchoredProjects}
-      orgAddress={$orgScreenStore ? $orgScreenStore.orgAddress : ""}
+      projects={anchoredProjects}
+      orgAddress={address}
       userUrn={session.identity.urn}
       on:select={select} />
 
-    <AnchorList
-      anchors={$orgProjectTabStore.unresolvedAnchors}
-      orgAddress={$orgScreenStore ? $orgScreenStore.orgAddress : ""} />
+    <AnchorList anchors={unresolvedAnchors} orgAddress={address} />
   {:else}
     <EmptyState
       illustration={IllustrationVariant.Plant}

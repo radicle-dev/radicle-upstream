@@ -1,9 +1,14 @@
-<script>
-  import { orgMemberTabStore } from "ui/src/org";
+<script lang="typescript">
+  import type * as theGraphApi from "ui/src/theGraphApi";
+
   import { ellipsed } from "ui/src/style";
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import { List } from "ui/DesignSystem/Component";
+
+  export let members: theGraphApi.Member[];
+  export let threshold: number;
+  export let gnosisSafeAddress: string;
 
   // TODO(rudolfs): make the link go to
   // `https://gnosis-safe.io/app/#/safes/${$orgMemberTabStore.gnosisSafeAddress}` for
@@ -73,21 +78,18 @@
       <span class="left typo-text">
         <Icon.Gnosis style="margin: 0 10px 0 27px;" />
         Managed by Gnosis Safe • Quorum
-        {$orgMemberTabStore.threshold}/{$orgMemberTabStore.members.length}
+        {threshold}/{members.length}
       </span>
       <span class="address">
         <a
-          href={`https://rinkeby.gnosis-safe.io/app/#/safes/${$orgMemberTabStore.gnosisSafeAddress}`}
+          href={`https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}`}
           class="typo-link">
-          {$orgMemberTabStore.gnosisSafeAddress}
+          {gnosisSafeAddress}
         </a>↗</span>
     </div>
   </div>
 
-  <List
-    items={$orgMemberTabStore.members}
-    let:item={member}
-    styleHoverState={false}>
+  <List items={members} let:item={member} styleHoverState={false}>
     <div class="list-item">
       <div class="member-name typo-text-bold">{member}</div>
       <div class="member-address">{ellipsed(member)}</div>

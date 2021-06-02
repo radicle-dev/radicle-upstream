@@ -110,7 +110,7 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<Org[]> => {
   return orgs;
 };
 
-interface Member {
+export interface Member {
   id: string;
 }
 

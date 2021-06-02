@@ -31,6 +31,9 @@
   import Settings from "ui/Screen/Settings.svelte";
   import Wallet from "ui/Screen/Wallet.svelte";
 
+  router.initialize();
+  customProtocolHandler.register();
+
   const activeRouteStore = router.activeRouteStore;
 
   $: switch ($store.status) {
@@ -60,8 +63,6 @@
       error.show($store.error);
       break;
   }
-
-  customProtocolHandler.register();
 
   const walletStore = wallet.store;
   $: w = $walletStore;
@@ -106,7 +107,8 @@
   {:else if $activeRouteStore.type === "org"}
     <Org
       activeTab={$activeRouteStore.activeTab}
-      address={$activeRouteStore.address} />
+      address={$activeRouteStore.address}
+      gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress} />
   {:else if $activeRouteStore.type === "project"}
     <Project
       activeView={$activeRouteStore.activeView}
@@ -115,6 +117,8 @@
     <Settings />
   {:else if $activeRouteStore.type === "wallet"}
     <Wallet activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "loading"}
+    <!-- TODO: show some loading screen -->
   {:else}
     {router.unreachable($activeRouteStore)}
   {/if}

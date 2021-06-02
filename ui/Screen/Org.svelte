@@ -1,5 +1,4 @@
 <script lang="typescript">
-  import * as org from "ui/src/org";
   import * as router from "ui/src/router";
 
   import { Icon } from "ui/DesignSystem/Primitive";
@@ -18,17 +17,16 @@
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
   import MembersMenu from "ui/Screen/Org/MembersMenu.svelte";
 
-  const orgScreenStore = org.orgScreenStore;
-
-  export let activeTab: router.OrgTab;
+  export let activeTab: router.LoadedOrgTab;
+  export let gnosisSafeAddress: string;
   export let address: string;
 
-  const tabs = (address: string, active: router.OrgTab) => {
+  const tabs = (address: string, active: router.LoadedOrgTab) => {
     return [
       {
         title: "Projects",
         icon: Icon.ChevronLeftRight,
-        active: active === "projects",
+        active: active.type === "projects",
         onClick: () => {
           router.push({ type: "org", activeTab: "projects", address });
         },
@@ -36,7 +34,7 @@
       {
         title: "Members",
         icon: Icon.User,
-        active: active === "members",
+        active: active.type === "members",
         onClick: () => {
           router.push({ type: "org", activeTab: "members", address });
         },
@@ -55,12 +53,7 @@
 
 <SidebarLayout>
   <Header>
-    <OrgHeader
-      slot="left"
-      orgAddress={$orgScreenStore ? $orgScreenStore.orgAddress : ""}
-      gnosisSafeAddress={$orgScreenStore
-        ? $orgScreenStore.gnosisSafeAddress
-        : ""} />
+    <OrgHeader slot="left" orgAddress={address} {gnosisSafeAddress} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
@@ -75,20 +68,26 @@
       <TabBar tabs={tabs(address, activeTab)} />
     </div>
     <div slot="right">
-      {#if activeTab === "projects"}
+      {#if activeTab.type === "projects"}
         <ProjectsMenu />
-      {:else if activeTab === "members"}
-        <MembersMenu gnosisSafeAddress={$orgScreenStore?.gnosisSafeAddress} />
+      {:else if activeTab.type === "members"}
+        <MembersMenu {gnosisSafeAddress} />
       {:else}
         {router.unreachable(activeTab)}
       {/if}
     </div>
   </ActionBar>
 
-  {#if activeTab === "projects"}
-    <ProjectsTab />
-  {:else if activeTab === "members"}
-    <MembersTab />
+  {#if activeTab.type === "projects"}
+    <ProjectsTab
+      {address}
+      anchoredProjects={activeTab.anchoredProjects}
+      unresolvedAnchors={activeTab.unresolvedAnchors} />
+  {:else if activeTab.type === "members"}
+    <MembersTab
+      {gnosisSafeAddress}
+      members={activeTab.members}
+      threshold={activeTab.threshold} />
   {:else}
     {router.unreachable(activeTab)}
   {/if}

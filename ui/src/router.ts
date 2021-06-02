@@ -1,6 +1,11 @@
 import * as svelteStore from "svelte/store";
+
+import type * as theGraphApi from "ui/src/theGraphApi";
+import type * as project from "ui/src/project";
+
 import * as error from "ui/src/error";
 import * as org from "ui/src/org";
+import * as screen from "ui/src/screen";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type OrgTab = "projects" | "members";
@@ -29,26 +34,45 @@ export type Route =
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "settings" };
 
-const loadViewData = async (route: Route) => {
-  switch (route.type) {
-    case "org":
-      if (route.activeTab === "projects") {
-        await org.loadProjectsTabData(route.address);
-      } else if (route.activeTab === "members") {
-        await org.loadMembersTabData(route.address);
-      }
-      break;
-    default:
-    // NOOP
-  }
-};
+export type LoadedOrgTab =
+  | {
+      type: "projects";
+      anchoredProjects: project.Project[];
+      unresolvedAnchors: theGraphApi.ProjectAnchor[];
+    }
+  | {
+      type: "members";
+      threshold: number;
+      members: theGraphApi.Member[];
+    };
+export type LoadedRoute =
+  | { type: "loading" }
+  | { type: "designSystemGuide" }
+  | { type: "lock" }
+  | { type: "onboarding" }
+  | {
+      type: "org";
+      address: string;
+      gnosisSafeAddress: string;
+      activeTab: LoadedOrgTab;
+    }
+  | { type: "profile"; activeTab: ProfileTab }
+  | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
+  | { type: "userProfile"; urn: string }
+  | {
+      type: "project";
+      urn: string;
+      activeView: ProjectView;
+    }
+  | { type: "wallet"; activeTab: WalletTab }
+  | { type: "settings" };
 
 // This is only respected by Safari.
 const DOCUMENT_TITLE = "Radicle Upstream";
 
 const DEFAULT_ROUTE: Route = { type: "profile", activeTab: "projects" };
 
-const routeToPath = (route: Route): string => {
+const routeToPath = (route: Route | LoadedRoute): string => {
   let subRoute = "";
 
   if (route.type === "profile" || route.type === "networkDiagnostics") {
@@ -60,9 +84,9 @@ const routeToPath = (route: Route): string => {
   return `#/${route.type}${subRoute}`;
 };
 
-const loadHistory = (): Route[] => {
+const loadHistory = async (): Promise<Route[]> => {
   if (window.history.state === null) {
-    loadViewData(DEFAULT_ROUTE);
+    await push(DEFAULT_ROUTE);
     window.history.pushState(
       [DEFAULT_ROUTE],
       DOCUMENT_TITLE,
@@ -72,7 +96,7 @@ const loadHistory = (): Route[] => {
   } else {
     const persistedHistory: Route[] = window.history.state;
     const activeRoute = persistedHistory.slice(-1)[0];
-    loadViewData(activeRoute);
+    await push(activeRoute);
 
     return persistedHistory;
   }
@@ -90,26 +114,79 @@ const persistHistory = () => {
   );
 };
 
-// TODO: make this async so that loadViewData in loadHistory gets executed async, otherwise reloading a route with data breaks
-const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
-  loadHistory()
-);
+const writableHistory: svelteStore.Writable<LoadedRoute[]> =
+  svelteStore.writable([{ type: "loading" }]);
 
 export const push = async (newRoute: Route): Promise<void> => {
-  await loadViewData(newRoute);
+  let loadedRoute: LoadedRoute;
+
+  switch (newRoute.type) {
+    case "org":
+      switch (newRoute.activeTab) {
+        case "projects": {
+          try {
+            screen.lock();
+            const orgScreenData = await org.fetchOrg(newRoute.address);
+            const projectAnchorsData = await org.resolveProjectAnchors(
+              newRoute.address
+            );
+            loadedRoute = {
+              type: "org",
+              address: newRoute.address,
+              gnosisSafeAddress: orgScreenData.gnosisSafeAddress,
+              activeTab: {
+                type: "projects",
+                anchoredProjects: projectAnchorsData.anchoredProjects,
+                unresolvedAnchors: projectAnchorsData.unresolvedAnchors,
+              },
+            };
+          } finally {
+            screen.unlock();
+          }
+          break;
+        }
+        case "members": {
+          try {
+            screen.lock();
+            const orgScreenData = await org.fetchOrg(newRoute.address);
+            const membersData = await org.fetchMembers(
+              orgScreenData.gnosisSafeAddress
+            );
+            loadedRoute = {
+              type: "org",
+              address: newRoute.address,
+              gnosisSafeAddress: orgScreenData.gnosisSafeAddress,
+              activeTab: {
+                type: "members",
+                members: membersData.members,
+                threshold: membersData.threshold,
+              },
+            };
+          } finally {
+            screen.unlock();
+          }
+          break;
+        }
+        default:
+          loadedRoute = newRoute;
+      }
+      break;
+    default:
+      loadedRoute = newRoute;
+  }
+
   // Limit history to a maximum of 10 steps. We shouldn't be doing more than
   // one subsequent pop() anyway.
-  writableHistory.update(history => [...history, newRoute].slice(-10));
+  writableHistory.update(history => [...history, loadedRoute].slice(-10));
   persistHistory();
 };
 
-// TODO: loadViewData here too
 export const pop = (): void => {
   writableHistory.update(history => history.slice(0, -1));
   persistHistory();
 };
 
-export const activeRouteStore: svelteStore.Readable<Route> =
+export const activeRouteStore: svelteStore.Readable<LoadedRoute> =
   svelteStore.derived(writableHistory, state => {
     return state.slice(-1)[0];
   });
@@ -120,4 +197,8 @@ export const unreachable = (value: never): void => {
     message: "Unreachable code",
     details: { value },
   });
+};
+
+export const initialize = (): void => {
+  loadHistory();
 };
