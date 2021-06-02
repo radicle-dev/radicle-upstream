@@ -68,6 +68,7 @@
     <Copyable
       showIcon={false}
       styleContent={false}
+      style="padding-left: 0;"
       copyContent={account.address}
       notificationText="Address copied to the clipboard">
       {ellipsed(account.address)}
