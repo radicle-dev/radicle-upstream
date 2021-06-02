@@ -33,34 +33,6 @@
 
   const activeRouteStore = router.activeRouteStore;
 
-  //  const orgWrap = wrap({
-  //    component: Org,
-  //    conditions: [
-  //      async detail => {
-  //        const match = detail.location.match(/\/org\/(.{42})/);
-  //        let orgAddress;
-  //        if (match) {
-  //          orgAddress = match[1];
-  //        } else {
-  //          throw new Error("Org address not provided");
-  //        }
-  //        try {
-  //          screen.lock();
-  //
-  //          await org.fetchOrg(orgAddress);
-  //          await org.resolveProjectAnchors(orgAddress);
-  //
-  //          return true;
-  //        } catch (error) {
-  //          console.log(error);
-  //          return false;
-  //        } finally {
-  //          screen.unlock();
-  //        }
-  //      },
-  //    ],
-  //  });
-
   $: switch ($store.status) {
     case remote.Status.NotAsked:
       fetch();
