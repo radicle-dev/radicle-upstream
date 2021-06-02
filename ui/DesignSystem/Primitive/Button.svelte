@@ -18,7 +18,7 @@
   .button {
     white-space: nowrap;
     background-color: var(--color-foreground-level-3);
-    border-radius: 8px;
+    border-radius: 0.25rem;
     border: 1px solid var(--color-foreground-level-3);
     color: var(--color-foreground-level-6);
     cursor: pointer;
