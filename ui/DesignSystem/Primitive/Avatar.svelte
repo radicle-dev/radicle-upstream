@@ -88,7 +88,7 @@
   .square.big {
     width: 72px;
     height: 72px;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
 
   .square.huge {
