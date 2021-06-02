@@ -5,11 +5,11 @@
     clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
-    clippy::unwrap_used,
     missing_docs,
     unused_import_braces,
     unused_qualifications
 )]
+#![cfg_attr(not(test), warn(clippy::unwrap_used))]
 // TODO(xla): Handle all Results properly and never panic outside of main.
 // TODO(xla): Remove exception for or_fun_call lint.
 #![allow(
