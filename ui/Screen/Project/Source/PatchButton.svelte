@@ -42,7 +42,7 @@
 
 <Overlay {expanded} on:hide={hide} style="position: relative;">
   <div class="request-dropdown" hidden={!expanded}>
-    <p>1. Make your changes.</p>
+    <p>1. Make your changes and commit them locally.</p>
     <p>
       2. Create an annotated Git Tag that starts with
       <span class="typo-mono-bold">{patch.TAG_PREFIX}</span>

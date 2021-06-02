@@ -10,6 +10,16 @@ Cypress.on("window:before:load", appWindow => {
   ipcStub.setup(appWindow);
 });
 
+// If a test was successful we unload the app so it stops running. If the test
+// was failed we want to keep the app around so we can inspect it.
+//
+// This is to workaround https://github.com/cypress-io/cypress/issues/15247
+afterEach(function () {
+  if (this.currentTest && this.currentTest.state !== "failed") {
+    cy.visit("./cypress/empty.html");
+  }
+});
+
 // Common setup for all tests.
 beforeEach(() => {
   cy.window().then(win => {

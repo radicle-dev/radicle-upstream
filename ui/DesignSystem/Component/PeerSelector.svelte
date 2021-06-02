@@ -30,10 +30,6 @@
   };
 
   const dispatch = createEventDispatcher();
-  const onModal = () => {
-    hide();
-    dispatch("modal");
-  };
   const onOpen = (peer: User) => {
     hide();
     dispatch("open", peer);
@@ -106,10 +102,6 @@
     display: flex;
     justify-content: center;
   }
-
-  p.remotes {
-    white-space: nowrap;
-  }
 </style>
 
 <Overlay
@@ -156,14 +148,6 @@
           </div>
         </Entry>
       {/each}
-
-      <Entry
-        dataCy="manage-remotes"
-        on:click={onModal}
-        style="justify-content: flex-start;">
-        <Icon.Pen style="margin-right: .5rem;" />
-        <p class="remotes">Manage remotes</p>
-      </Entry>
     </div>
   </div>
 </Overlay>

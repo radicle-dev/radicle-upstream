@@ -1,23 +1,26 @@
 <script lang="typescript">
-  import { push } from "svelte-spa-router";
+  import * as router from "ui/src/router";
 
-  import * as path from "../../src/path";
   import type { Project } from "../../src/project";
   import { fetchProjects, projects as store } from "../../src/userProfile";
 
   import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
 
-  export let params: { urn: string };
+  export let urn: string;
 
   const select = ({ detail: project }: { detail: Project }) => {
-    push(path.project(project.urn));
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: { type: "files" },
+    });
   };
 
-  fetchProjects(params.urn);
+  fetchProjects(urn);
 </script>
 
 <Remote {store} let:data={projects}>
-  <ProjectList {projects} userUrn={params.urn} on:select={select} />
+  <ProjectList {projects} userUrn={urn} on:select={select} />
 
   <div slot="error" let:error>
     <Error message={error.message} />

@@ -5,13 +5,7 @@ import * as proxy from "./proxy";
 import * as error from "./error";
 import type * as identity from "./identity";
 import * as remote from "./remote";
-import {
-  Appearance,
-  CoCo,
-  Settings,
-  defaultSetttings,
-  FeatureFlags,
-} from "./settings";
+import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
 
 import { createValidationStore, ValidationStatus } from "./validation";
 
@@ -200,12 +194,6 @@ export const updateAppearance = async (
   appearance: Appearance
 ): Promise<void> => {
   await updateSettings(s => ({ ...s, appearance }));
-};
-
-export const updateFeatureFlags = async (
-  featureFlags: FeatureFlags
-): Promise<void> => {
-  await updateSettings(s => ({ ...s, featureFlags }));
 };
 
 export const dismissRemoteHelperHint = async (): Promise<void> => {

@@ -1,14 +1,13 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
-  import { push } from "svelte-spa-router";
 
   import ModalSearch from "../../Modal/Search.svelte";
 
   import { FADE_DURATION } from "../../src/config";
   import * as modal from "../../src/modal";
-  import * as path from "../../src/path";
   import { following as store, fetchFollowing } from "../../src/profile";
   import * as proxy from "../../src/proxy";
+  import * as router from "ui/src/router";
   import type { Project } from "../../src/project";
   import * as sess from "../../src/session";
   import type { Urn } from "../../src/urn";
@@ -29,7 +28,11 @@
     proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
-    push(path.project(project.urn));
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: { type: "files" },
+    });
   };
 
   fetchFollowing();

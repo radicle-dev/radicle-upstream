@@ -26,7 +26,6 @@ context("project following", () => {
       .pickWithContent(["undiscovered-project"], projectId)
       .trigger("mouseenter")
       .within(() => {
-        commands.pick("follow-toggle").should("contain", "Following");
         commands.pick("follow-toggle").click();
       });
 

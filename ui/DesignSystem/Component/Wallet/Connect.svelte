@@ -11,7 +11,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - var(--bigheader-height));
+    height: 100vh;
     text-align: center;
     max-width: 30rem;
     margin: 0 auto;

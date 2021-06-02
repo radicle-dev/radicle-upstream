@@ -331,6 +331,7 @@ mod test {
 
     use crate::{browser, context, error, http};
 
+    #[allow(clippy::too_many_lines)]
     #[tokio::test]
     async fn blob() -> Result<(), Box<dyn std::error::Error>> {
         let tmp_dir = tempfile::tempdir()?;

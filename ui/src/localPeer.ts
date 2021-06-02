@@ -1,4 +1,4 @@
-import { push } from "svelte-spa-router";
+import * as router from "ui/src/router";
 import type { Readable, Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import * as zod from "zod";
@@ -7,7 +7,6 @@ import * as svelteStore from "svelte/store";
 import type * as identity from "./identity";
 import * as config from "./config";
 import * as notifiation from "./notification";
-import * as path from "./path";
 import * as remote from "./remote";
 import * as session from "./session";
 import type * as urn from "./urn";
@@ -207,7 +206,12 @@ eventBus.onValue(event => {
         actions: [
           {
             label: "Show Project",
-            handler: () => push(path.project(event.urn)),
+            handler: () =>
+              router.push({
+                type: "project",
+                urn: event.urn,
+                activeView: { type: "files" },
+              }),
           },
         ],
       });

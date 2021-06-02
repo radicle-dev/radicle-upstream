@@ -1,3 +1,4 @@
+import ActionBar from "./ActionBar.svelte";
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Badge from "./Badge.svelte";
 import BranchBox from "./BranchBox.svelte";
@@ -11,7 +12,7 @@ import EmptyState from "./EmptyState.svelte";
 import Error from "./Error.svelte";
 import FollowToggle from "./FollowToggle.svelte";
 import Header from "./Header.svelte";
-import HorizontalMenu from "./HorizontalMenu.svelte";
+import TabBar from "./TabBar.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Identity from "./Identity.svelte";
 import Illustration from "./Illustration.svelte";
@@ -21,7 +22,6 @@ import List from "./List.svelte";
 import Modal from "./Modal.svelte";
 import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
-import NegativeDai from "./NegativeDai.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Fullscreen from "./Fullscreen.svelte";
@@ -49,6 +49,7 @@ import Topbar from "./Topbar.svelte";
 import QR from "./QR.svelte";
 
 export {
+  ActionBar,
   AdditionalActionsDropdown,
   Badge,
   BranchBox,
@@ -62,7 +63,7 @@ export {
   Error,
   FollowToggle,
   Header,
-  HorizontalMenu,
+  TabBar,
   Hoverable,
   Identity,
   Illustration,
@@ -72,7 +73,6 @@ export {
   Modal,
   ModalOverlay,
   NavigationButtons,
-  NegativeDai,
   Notification,
   NotificationFaucet,
   Fullscreen,

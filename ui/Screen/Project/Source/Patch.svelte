@@ -10,18 +10,14 @@
   import PatchLoaded from "./PatchLoaded.svelte";
 
   export let project: Project;
-  export let params: {
-    urn: string;
-    peerId: string;
-    id: string;
-  };
+  export let id: string;
+  export let peerId: string;
 
   const session = sess.getUnsealedFromContext();
 
   const patchRemote = remote.createStore<PatchDetails>();
   $: {
-    const id = decodeURIComponent(params.id);
-    remote.fetch(patchRemote, patch.getDetails(project, params.peerId, id));
+    remote.fetch(patchRemote, patch.getDetails(project, peerId, id));
   }
 </script>
 

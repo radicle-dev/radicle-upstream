@@ -67,8 +67,7 @@
 <Remote {store} let:data={{ peerSelection, project }}>
   <Modal dataCy="remotes-modal">
     <Emoji emoji={"💻"} size="huge" style="margin-bottom: 1.5rem;" />
-
-    <h1>Manage remotes</h1>
+    <h1>Add remotes</h1>
     <p style="margin-top: 0.5rem; color: var(--color-foreground-level-6);">
       Add a user's Device ID to collaborate with them on this project.
     </p>

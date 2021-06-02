@@ -40,7 +40,8 @@ export interface Connected {
 
 export interface Account {
   address: string;
-  balance: Big;
+  daiBalance: Big;
+  ethBalance: Big;
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
@@ -50,6 +51,7 @@ export interface Wallet extends svelteStore.Readable<State> {
   provider: ethers.providers.Provider;
   signer: ethers.Signer;
   account(): Account | undefined;
+  destroy(): void;
 }
 
 function getProvider(
@@ -66,7 +68,7 @@ function getProvider(
   }
 }
 
-export function build(
+function build(
   environment: ethereum.Environment,
   provider: ethers.providers.Provider
 ): Wallet {
@@ -163,15 +165,19 @@ export function build(
   async function loadAccountData() {
     try {
       const accountAddress = await signer.getAddress();
-      const balance = await daiTokenContract
+      const daiBalance = await daiTokenContract
         .balanceOf(accountAddress)
+        .then(ethereum.toBaseUnit);
+      const ethBalance = await provider
+        .getBalance(accountAddress)
         .then(ethereum.toBaseUnit);
       const chainId = walletConnect.chainId;
 
       const connected = {
         account: {
           address: accountAddress,
-          balance,
+          daiBalance,
+          ethBalance,
         },
         network: ethereum.networkFromChainId(chainId),
       };
@@ -187,7 +193,7 @@ export function build(
 
   // Periodically refresh the wallet data
   const REFRESH_INTERVAL_MILLIS = 3000;
-  setInterval(() => {
+  const refreshInterval = setInterval(() => {
     if (svelteStore.get(stateStore).status === Status.Connected) {
       loadAccountData();
     }
@@ -210,6 +216,9 @@ export function build(
     provider,
     signer,
     account,
+    destroy() {
+      clearInterval(refreshInterval);
+    },
   };
 }
 
@@ -372,12 +381,20 @@ export function formattedBalance(balance: number): string {
 
 export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
   ethereum.selectedEnvironment,
-  environment => {
+  (environment, set) => {
     const provider = getProvider(environment);
     if (provider instanceof ethers.providers.JsonRpcProvider) {
       window.ethereumDebug = new EthereumDebug(provider);
     }
 
-    return build(environment, provider);
+    const wallet = build(environment, provider);
+    set(wallet);
+    return () => wallet.destroy();
   }
 );
+
+// Activate the store so that the wallet is never destroyed when all views
+// unsubscribe.
+//
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+store.subscribe(() => {});

@@ -1,7 +1,6 @@
 <script lang="typescript">
-  import * as router from "svelte-spa-router";
+  import * as router from "ui/src/router";
 
-  import * as path from "ui/src/path";
   import type { Project } from "ui/src/project";
   import type { Patch } from "ui/src/project/patch";
   import {
@@ -13,30 +12,37 @@
 
   export let patches: Patch[];
   export let project: Project;
+  export let filter: "open" | "closed" | "all";
 
   const defaultBranch = project.metadata.defaultBranch;
 
   const selectPatch = ({ detail: patch }: { detail: Patch }) => {
-    router.push(path.projectSourcePatch(project.urn, patch.peerId, patch.id));
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: {
+        type: "patch",
+        peerId: patch.peerId,
+        id: patch.id,
+      },
+    });
   };
 
   const filterOptions = [
     {
       title: "Open",
-      value: path.PatchFilter.Open,
+      value: "open",
     },
     {
       title: "Closed",
-      value: path.PatchFilter.Closed,
+      value: "closed",
     },
     {
       title: "All",
-      value: path.PatchFilter.All,
+      value: "all",
     },
   ];
 
-  const query = path.projectSourcePatchesQuery();
-  $: filter = $query?.filter;
   let filteredPatches: Patch[];
   $: {
     switch (filter) {
@@ -48,6 +54,9 @@
         break;
       case "all":
         filteredPatches = patches;
+        break;
+      default:
+        router.unreachable(filter);
         break;
     }
   }
@@ -74,14 +83,16 @@
 </style>
 
 <div class="container">
-  <div class="filters">
+  <div class="filters" data-cy="patch-filter-tabs">
     <SegmentedControl
       active={filter}
       options={filterOptions}
       on:select={option => {
-        router.push(
-          path.projectSourcePatchesFilter(project.urn, option.detail)
-        );
+        router.push({
+          type: "project",
+          urn: project.urn,
+          activeView: { type: "patches", filter: option.detail },
+        });
       }} />
   </div>
   {#if filteredPatches.length > 0}

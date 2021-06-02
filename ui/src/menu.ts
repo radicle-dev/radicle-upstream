@@ -1,8 +1,0 @@
-import type { SvelteComponent } from "svelte";
-
-export interface HorizontalItem {
-  icon: typeof SvelteComponent;
-  title: string;
-  href: string;
-  counter?: number;
-}

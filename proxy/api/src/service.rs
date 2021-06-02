@@ -129,7 +129,7 @@ impl Manager {
 }
 
 /// Messages that are sent from [`Handle`] to [`Manager`] to change the service environment.
-#[allow(clippy::clippy::large_enum_variant)]
+#[allow(clippy::large_enum_variant)]
 enum Message {
     /// Reset the service to the initial environment and delete all persisted state
     Reset,

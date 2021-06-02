@@ -1,6 +1,4 @@
 <script>
-  import { pop } from "svelte-spa-router";
-
   import { Markdown } from "../../DesignSystem/Primitive";
   import { Comment, Timeline } from "../../DesignSystem/Component";
   import BackButton from "./BackButton.svelte";
@@ -151,7 +149,6 @@ Part of #277
 
 <div class="container">
   <BackButton
-    on:arrowClick={() => pop()}
     style="padding: 0 16px 24px 16px; border-bottom: 1px solid
     var(--color-foreground-level-3);">
     <h3>{issue.title}</h3>
