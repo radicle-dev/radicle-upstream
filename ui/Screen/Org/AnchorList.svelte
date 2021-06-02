@@ -1,7 +1,10 @@
 <script lang="typescript">
   import type * as theGraphApi from "ui/src/theGraphApi";
-  import { Icon } from "ui/DesignSystem/Primitive";
-  import { AnchorMetadataModal, List } from "ui/DesignSystem/Component";
+  import {
+    AnchorMetadataModal,
+    List,
+    RadicleId,
+  } from "ui/DesignSystem/Component";
 
   export let anchors: theGraphApi.ProjectAnchor[];
   export let orgAddress: string;
@@ -50,8 +53,7 @@
     class="reset-cursor list-item"
     data-cy={`project-list-entry-${anchor.id}`}>
     <div class="typo-text anchor-row">
-      <Icon.At style="margin-right: 0.5rem;" />
-      {anchor.projectId.replace("rad:git:", "")}
+      <RadicleId urn={anchor.projectId} />
       <AnchorMetadataModal {anchor} {orgAddress} />
     </div>
   </div>
