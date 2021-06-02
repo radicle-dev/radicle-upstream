@@ -392,3 +392,9 @@ export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
     return () => wallet.destroy();
   }
 );
+
+// Activate the store so that the wallet is never destroyed when all views
+// unsubscribe.
+//
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+store.subscribe(() => {});
