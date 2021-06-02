@@ -95,7 +95,7 @@ const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
   loadHistory()
 );
 
-export const push = async (newRoute: Route): void => {
+export const push = async (newRoute: Route): Promise<void> => {
   await loadViewData(newRoute);
   // Limit history to a maximum of 10 steps. We shouldn't be doing more than
   // one subsequent pop() anyway.
