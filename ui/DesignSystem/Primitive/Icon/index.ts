@@ -69,6 +69,7 @@ import Transactions from "./Transactions.svelte";
 import Trash from "./Trash.svelte";
 import User from "./User.svelte";
 import Wallet from "./Wallet.svelte";
+import WalletStatus from "./WalletStatus.svelte";
 import Withdraw from "./Withdraw.svelte";
 
 export default {
@@ -143,5 +144,6 @@ export default {
   Trash,
   User,
   Wallet,
+  WalletStatus,
   Withdraw,
 };
