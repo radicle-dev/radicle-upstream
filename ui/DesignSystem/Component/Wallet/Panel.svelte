@@ -17,7 +17,7 @@
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
 
     padding-bottom: 0px;
   }

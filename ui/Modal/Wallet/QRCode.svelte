@@ -17,7 +17,7 @@
     padding: var(--content-padding);
     width: 40.625rem;
     background: var(--color-background);
-    border-radius: 0.5rem;
+    border-radius: 1rem;
 
     text-align: center;
   }
