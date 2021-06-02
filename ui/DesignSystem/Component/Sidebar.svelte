@@ -65,7 +65,7 @@
         dataCy="profile"
         indicator
         active={$activeRouteStore.type === "profile"}
-        on:itemClick={() => push({ type: "profile", activeTab: "projects" })}>
+        onClick={() => push({ type: "profile", activeTab: "projects" })}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
@@ -75,17 +75,14 @@
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
-      <SidebarItem
-        dataCy="search"
-        on:itemClick={() => modal.toggle(ModalSearch)}>
+      <SidebarItem dataCy="search" onClick={() => modal.toggle(ModalSearch)}>
         <Icon.MagnifyingGlass />
       </SidebarItem>
     </Tooltip>
     {#if config.isDev}
       <WalletStatusIndicator
         active={$activeRouteStore.type === "wallet"}
-        on:walletClick={() =>
-          push({ type: "wallet", activeTab: "transactions" })} />
+        onClick={() => push({ type: "wallet", activeTab: "transactions" })} />
     {/if}
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
@@ -93,7 +90,7 @@
         dataCy="settings"
         indicator
         active={$activeRouteStore.type === "settings"}
-        on:itemClick={() => push({ type: "settings" })}>
+        onClick={() => push({ type: "settings" })}>
         <Icon.Settings />
       </SidebarItem>
     </Tooltip>

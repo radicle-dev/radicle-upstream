@@ -1,14 +1,8 @@
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
-
   export let active: boolean = false;
   export let indicator: boolean = false;
   export let dataCy: string;
-
-  const dispatch = createEventDispatcher();
-  const onClick = () => {
-    dispatch("itemClick");
-  };
+  export let onClick: () => void;
 </script>
 
 <style>
