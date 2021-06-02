@@ -1,5 +1,6 @@
 import * as svelteStore from "svelte/store";
 import * as error from "ui/src/error";
+import * as org from "ui/src/org";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type OrgTab = "projects" | "members";
@@ -28,6 +29,20 @@ export type Route =
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "settings" };
 
+const loadViewData = async (route: Route) => {
+  switch (route.type) {
+    case "org":
+      if (route.activeTab === "projects") {
+        await org.loadProjectsTabData(route.address);
+      } else if (route.activeTab === "members") {
+        await org.loadMembersTabData(route.address);
+      }
+      break;
+    default:
+    // NOOP
+  }
+};
+
 // This is only respected by Safari.
 const DOCUMENT_TITLE = "Radicle Upstream";
 
@@ -47,6 +62,7 @@ const routeToPath = (route: Route): string => {
 
 const loadHistory = (): Route[] => {
   if (window.history.state === null) {
+    loadViewData(DEFAULT_ROUTE);
     window.history.pushState(
       [DEFAULT_ROUTE],
       DOCUMENT_TITLE,
@@ -54,7 +70,11 @@ const loadHistory = (): Route[] => {
     );
     return [DEFAULT_ROUTE];
   } else {
-    return window.history.state;
+    const persistedHistory: Route[] = window.history.state;
+    const activeRoute = persistedHistory.slice(-1)[0];
+    loadViewData(activeRoute);
+
+    return persistedHistory;
   }
 };
 
@@ -70,17 +90,20 @@ const persistHistory = () => {
   );
 };
 
+// TODO: make this async so that loadViewData in loadHistory gets executed async, otherwise reloading a route with data breaks
 const writableHistory: svelteStore.Writable<Route[]> = svelteStore.writable(
   loadHistory()
 );
 
-export const push = (newRoute: Route): void => {
+export const push = async (newRoute: Route): void => {
+  await loadViewData(newRoute);
   // Limit history to a maximum of 10 steps. We shouldn't be doing more than
   // one subsequent pop() anyway.
   writableHistory.update(history => [...history, newRoute].slice(-10));
   persistHistory();
 };
 
+// TODO: loadViewData here too
 export const pop = (): void => {
   writableHistory.update(history => history.slice(0, -1));
   persistHistory();

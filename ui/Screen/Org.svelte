@@ -23,24 +23,6 @@
   export let activeTab: router.OrgTab;
   export let address: string;
 
-  //  const membersWrap = wrap({
-  //    component: Members,
-  //    conditions: [
-  //      async () => {
-  //        try {
-  //          if ($orgScreenStore) {
-  //            await org.fetchMembers($orgScreenStore.gnosisSafeAddress);
-  //            return true;
-  //          } else {
-  //            return false;
-  //          }
-  //        } catch {
-  //          return false;
-  //        }
-  //      },
-  //    ],
-  //  });
-
   const tabs = (address: string, active: router.OrgTab) => {
     return [
       {

@@ -12,6 +12,7 @@ import * as error from "ui/src/error";
 import * as proxy from "ui/src/proxy";
 import * as urn from "ui/src/urn";
 import * as router from "ui/src/router";
+import * as screen from "ui/src/screen";
 import type * as project from "ui/src/proxy/project";
 
 import type {
@@ -192,18 +193,15 @@ interface OrgScreenStore {
 
 export const orgScreenStore = svelteStore.writable<OrgScreenStore | null>(null);
 
-export const fetchOrg = async (orgAddress: EthereumAddress): Promise<void> => {
-  // Don't re-fetch if we already have the org.
-  if (svelteStore.get(orgScreenStore)?.orgAddress === orgAddress) {
-    return;
-  }
-
+export const fetchOrg = async (
+  orgAddress: EthereumAddress
+): Promise<OrgScreenStore> => {
   const walletStore = svelteStore.get(wallet.store);
   const gnosisSafeAddress = await getGnosisSafeAddr(
     orgAddress,
     walletStore.provider
   );
-  orgScreenStore.set({ orgAddress, gnosisSafeAddress });
+  return { orgAddress, gnosisSafeAddress };
 };
 
 export const orgSidebarStore = svelteStore.writable<theGraphApi.Org[] | []>([]);
@@ -231,9 +229,9 @@ export const orgMemberTabStore =
 
 export const fetchMembers = async (
   gnosisSafeAddress: string
-): Promise<void> => {
+): Promise<OrgMemberTabStore> => {
   const response = await theGraphApi.getGnosisSafeMembers(gnosisSafeAddress);
-  orgMemberTabStore.set({ gnosisSafeAddress, ...response });
+  return { gnosisSafeAddress, ...response };
 };
 
 interface OrgProjectTabStore {
@@ -248,12 +246,11 @@ export const orgProjectTabStore = svelteStore.writable<OrgProjectTabStore>({
 
 export const resolveProjectAnchors = async (
   orgAddress: string
-): Promise<void> => {
+): Promise<OrgProjectTabStore> => {
   const anchors = await theGraphApi.getOrgProjectAnchors(orgAddress);
 
   const anchoredProjects: project.Project[] = [];
   const unresolvedAnchors: theGraphApi.ProjectAnchor[] = [];
-  console.log(anchors);
 
   await Promise.all(
     anchors.map(async anchor => {
@@ -267,5 +264,35 @@ export const resolveProjectAnchors = async (
     })
   );
 
-  orgProjectTabStore.set({ anchoredProjects, unresolvedAnchors });
+  return { anchoredProjects, unresolvedAnchors };
+};
+
+export const loadProjectsTabData = async (
+  orgAddress: string
+): Promise<void> => {
+  try {
+    screen.lock();
+
+    const orgScreenData = await fetchOrg(orgAddress);
+    const projectAnchorsData = await resolveProjectAnchors(orgAddress);
+
+    orgScreenStore.set(orgScreenData);
+    orgProjectTabStore.set(projectAnchorsData);
+  } finally {
+    screen.unlock();
+  }
+};
+
+export const loadMembersTabData = async (orgAddress: string): Promise<void> => {
+  try {
+    screen.lock();
+
+    const orgScreenData = await fetchOrg(orgAddress);
+    const membersData = await fetchMembers(orgScreenData.gnosisSafeAddress);
+
+    orgScreenStore.set(orgScreenData);
+    orgMemberTabStore.set(membersData);
+  } finally {
+    screen.unlock();
+  }
 };
