@@ -95,7 +95,7 @@ pub fn push_tags(
         .tag_names(None)?
         .into_iter()
         .flatten()
-        .flat_map(|tag| Pushspec::from_str(&format!("+refs/tags/{}:refs/tags/{}", tag, tag)).ok())
+        .filter_map(|tag| Pushspec::from_str(&format!("+refs/tags/{}:refs/tags/{}", tag, tag)).ok())
         .collect::<Vec<_>>();
     let tags = NonEmpty::from_vec(tags);
 

@@ -125,10 +125,7 @@ context("p2p networking", () => {
             .pickWithContent(["followed-peers", "peer-abbey"], shortenedPeerId)
             .should("exist");
           commands
-            .pickWithContent(
-              ["followed-peers", "peer-abbey", "follow-toggle"],
-              "Following"
-            )
+            .pick("followed-peers", "peer-abbey", "follow-toggle")
             .should("exist");
 
           cy.log("test commit replication from maintainer to contributor");

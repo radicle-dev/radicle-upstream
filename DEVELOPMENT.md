@@ -493,45 +493,105 @@ build times. If you need to update this image, proceed as follows:
    create a new branch and build the updated image.
 
 ## Releases
+
+This section describes how to release a new version of Upstream.
+
 ### Prerequisites
-#### Google Cloud CLI
 
-For uploading artifacts to releases.radicle.xyz, you'll need a working `gcloud`
-environment. To do so, follow points 1 and 2 from the
-[Docker image updates][do] section.
+* [`gcloud`][gc] to upload artifacts. You need to ask for access to the
+  `releases.radicle.xyz` storage bucket. See also points 1 and 2 from the
+  [Docker image updates][do] section.
+* [`hub`][hb] version >= 2.14 to interact with GitHub’s API. See [its
+  documentation][hub-config] on how to configure access
+* [`brew`][br] to update the Uptream cask.
 
+All Github access tokens _must_ have the `public_repo` scope.
 
-#### GitHub `hub` CLI tool
+### Process
 
-Please install the [`hub`][hb] CLI tool (version >= **2.14**), we use it in our
-release automation script to:
+1. Create release candidate
+    1. Create a release candidate branch with  a commit that updates the version
+       and changelog and create a pull-request
 
-  - create a pull-request off of a release branch;
-  - to merge the release branch into master;
-  - to close the pull-request.
+       ```bash
+       ./scripts/release.ts create-rc patch
+       ```
 
-Then you'll have to create a _Personal access token_ for it in the
-[GitHub Developer settings][gt] page and authenticate the CLI tool once
-by running any command that does a request to GitHub, like so: `hub api`.
-You'll be asked to provide your GitHub login and the access token.
+    2. Open a draft pull request on [`radicle.xyz`](http://radicle.xyz) to
+       update latest version.
 
-#### Homebrew CLI
+       ```bash
+       cd radicle.xyz
+       git fetch --all
+       git checkout -b update-latest-release origin/master
+       echo -n X.Y.Z > partials/upstream-version.mustache && make
+       git commit --all --message "Point to latest upstream release"
+       hub pull-request --push --draft --no-edit
+       ```
 
-To update a formula at the [Homebrew package manager][br], you'll need a working
-`brew` CLI tool.
+2. Test the release
+    1. Wait for CI of the release candidate PR to pass.
+    2. Publish the CI artifacts as release candidate binaries.
 
-The `brew`  CLI requires a [GitHub Personal access token][gt] to [set up a Cask repository
-fork, commit and push][bs] on your behalf. You can make it available to brew with
-`export HOMEBREW_GITHUB_API_TOKEN='<github-api-token>'`
+       ```bash
+       ./sripts/release.ts publish-rc-binaries
+       ```
 
-Note: this Github access token _must_ grant the `public_repo` scope.
+    3. Create QA issues for the release that link to the release candidate
+       binaries.
 
-### Publishing a release
+       ```bash
+       ./sripts/release.ts create-qa-issues
+       ```
 
-To perform a release run: `git checkout master && yarn release` and follow the
-instructions.
+    4. Test the release by walking through the QA issues.
+    5. (Optional) To fix bugs, create a PR with the fixes based on the release
+       candidate branch. Once it has been approved, squash merge it into the
+       release candidate  branch (see [“Merging Pull Requests"][merging-prs])
+       and continue QA.
+    6. Close the QA issues.
 
+3. Publish and announce the release
+    1. Publish the release candidate binaries under
+       `https://releases.radicle.xyz` and create and publish a release tag.
 
+       ```bash
+       ./sripts/release.ts publish
+       ```
+
+    2. Merge the pull request on `radicle.xyz`.
+    3. Announce the release on discord and `radicle.community`. The community
+       post should highlight the important changes in the release.
+
+       ```bash
+       ./sripts/release.ts announcements
+       ```
+
+    4. Announce the release to the in-app update notification
+
+       ```bash
+       ./sripts/release.ts set-latest-release
+       ```
+
+    5. Update the [Homebrew
+       cask](https://formulae.brew.sh/cask/radicle-upstream)
+
+       ```bash
+       brew tap homebrew/cask
+       brew bump-cask-pr --version X.Y.Z radicle-upstream
+       ```
+
+4. Finish the release by merging the release candidate branch into master.
+
+    ```bash
+    git checkout master
+    git pull --ff-only
+    git merge release-candidates/vX.Y.Z --signoff
+    git push
+    ```
+
+    Merging may produce a merge commit on `master` instead of fast-forwarding.
+    This is ok for release candidate branches.
 
 [an]: #apple-notarization
 [bk]: https://buildkite.com/monadic/radicle-upstream
@@ -555,9 +615,11 @@ instructions.
 [gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
 [gt]: https://github.com/settings/tokens
 [hb]: https://github.com/github/hub
+[hub-config]: https://hub.github.com/hub.1.html#configuration
 [hu]: https://github.com/typicode/husky
 [ls]: https://github.com/okonet/lint-staged
 [ma]: https://appleid.apple.com/account/manage
+[merging-prs]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
 [qa]: QA.md

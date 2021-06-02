@@ -1,31 +1,31 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
 
-  import * as localPeer from "../src/localPeer";
-  import * as modal from "../src/modal";
-  import { isMaintainer, isContributor } from "../src/project";
-  import type { User } from "../src/project";
+  import * as localPeer from "ui/src/localPeer";
+  import * as modal from "ui/src/modal";
+  import { isMaintainer, isContributor } from "ui/src/project";
+  import type { User } from "ui/src/project";
   import * as router from "ui/src/router";
   import {
     fetch,
     selectPeer,
     refreshPeers,
     store,
-  } from "../src/screen/project";
-  import * as sess from "../src/session";
-  import { CSSPosition } from "../src/style";
-  import type { Urn } from "../src/urn";
-
+  } from "ui/src/screen/project";
+  import * as sess from "ui/src/session";
+  import { CSSPosition } from "ui/src/style";
+  import type { Urn } from "ui/src/urn";
   import {
     FollowToggle,
     Header,
     Remote,
     SidebarLayout,
     Tooltip,
-  } from "../DesignSystem/Component";
+  } from "ui/DesignSystem/Component";
+  import { Button, Icon } from "ui/DesignSystem/Primitive";
   import ProjectHeader from "./Project/ProjectHeader.svelte";
-  import PeerSelector from "../DesignSystem/Component/PeerSelector.svelte";
-  import ModalManagePeers from "../Modal/ManagePeers.svelte";
+  import PeerSelector from "ui/DesignSystem/Component/PeerSelector.svelte";
+  import ModalManagePeers from "ui/Modal/ManagePeers.svelte";
 
   import Source from "./Project/Source.svelte";
 
@@ -90,6 +90,14 @@
           on:open={onOpenPeer}
           on:select={onSelectPeer}
           selected={selectedPeer} />
+        <Button
+          dataCy="manage-remotes"
+          icon={Icon.Pen}
+          variant="outline"
+          style="margin-right: 1rem;"
+          on:click={onPeerModal}>
+          Add remotes
+        </Button>
         <Tooltip
           position={CSSPosition.Left}
           value={isMaintainer(session.identity.urn, project)

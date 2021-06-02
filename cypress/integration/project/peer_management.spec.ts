@@ -38,7 +38,7 @@ context("project peer management", () => {
       .pick("pending-peers")
       .contains("li", "hynsejpd…keiuzk4c")
       .within(() => {
-        commands.pick("follow-toggle").contains("Following").should("exist");
+        commands.pick("follow-toggle").should("exist");
         commands.pick("follow-toggle").trigger("mouseenter");
         commands.pick("follow-toggle").contains("Unfollow").should("exist");
         commands.pick("follow-toggle").trigger("mouseleave");
