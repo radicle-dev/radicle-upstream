@@ -11,7 +11,7 @@
     align-items: center;
 
     padding: 3px 6px;
-    border-radius: 3px;
+    border-radius: 0.5rem;
 
     background-color: var(--color-negative-level-1);
     color: var(--color-negative);

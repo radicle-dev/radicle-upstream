@@ -52,7 +52,7 @@
   .peer-selector {
     display: flex;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.5rem;
     padding: 0 0.5rem;
     align-items: center;
     height: 2.5rem;
@@ -86,7 +86,7 @@
 
   .peer-dropdown {
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;
     max-width: 30rem;

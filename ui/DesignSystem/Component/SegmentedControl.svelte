@@ -29,7 +29,7 @@
     display: flex;
     width: fit-content;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
   .segmented-control:hover button.active:not(:hover) {
     background: none;
@@ -37,7 +37,7 @@
   .segmented-control button {
     cursor: pointer;
     padding: 0.5625rem 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);

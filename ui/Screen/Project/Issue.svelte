@@ -133,7 +133,7 @@ Part of #277
   .state-badge {
     color: var(--color-background);
     padding: 8px 12px;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-right: 16px;
   }
   .state-badge.open {
