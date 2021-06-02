@@ -51,16 +51,6 @@
     "linux": {
       "target": [
         "Appimage"
-      ],
-      "extraFiles": [
-        {
-          "from": "/usr/lib/x86_64-linux-gnu/libhogweed.so.4",
-          "to": "usr/lib/libhogweed.so.4"
-        },
-        {
-          "from": "/usr/lib/x86_64-linux-gnu/libnettle.so.6",
-          "to": "usr/lib/libnettle.so.6"
-        }
       ]
     },
     "mac": {
