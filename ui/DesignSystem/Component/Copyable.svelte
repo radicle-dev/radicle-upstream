@@ -51,13 +51,13 @@
     display: flex;
     min-height: 24px;
     width: 100%;
-    padding-left: 0.25rem;
+    padding-left: 0.5rem;
   }
 
   .content {
     align-items: center;
     background-color: var(--color-foreground-level-2);
-    border-radius: 4px;
+    border-radius: 0.5rem;
     color: var(--color-foreground-level-6);
   }
 </style>
@@ -72,7 +72,7 @@
     {#if showIcon && iconBeforeCopy && iconAfterCopy}
       <svelte:component
         this={copyIcon}
-        style="display: flex; margin-left: 0.25rem; min-width: 24px;" />
+        style="display: flex; margin-left: 0.25rem; min-width: 24px; margin-right: .5rem;" />
     {/if}
   </span>
 </div>

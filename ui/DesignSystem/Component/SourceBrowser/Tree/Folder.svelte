@@ -49,7 +49,7 @@
   }
   .folder:hover {
     background-color: var(--color-foreground-level-1);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
 
   .folder-name {

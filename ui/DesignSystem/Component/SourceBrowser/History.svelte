@@ -24,7 +24,7 @@
   }
   .commit-group ul {
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     margin-bottom: 2rem;
   }
   .commit {
@@ -35,13 +35,13 @@
     padding: 0.25rem 0;
   }
   .commit:first-child {
-    border-top-left-radius: 0.25rem;
-    border-top-right-radius: 0.25rem;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
   }
   .commit:last-child {
     border-bottom: none;
-    border-bottom-left-radius: 0.25rem;
-    border-bottom-right-radius: 0.25rem;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
   }
   .commit:hover {
     background: var(--color-foreground-level-1);

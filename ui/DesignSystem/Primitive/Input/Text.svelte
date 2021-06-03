@@ -42,7 +42,7 @@
   input {
     border: 1px solid var(--color-foreground-level-3);
     padding: 0.5rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     width: 100%;
     height: 2.5rem;
     line-height: 3rem;

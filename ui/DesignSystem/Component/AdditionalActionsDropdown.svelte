@@ -53,7 +53,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     cursor: pointer;
     outline-style: none;
   }
@@ -78,7 +78,7 @@
     margin-top: 15px;
     background-color: var(--color-background);
     box-shadow: var(--elevation-medium);
-    border-radius: 4px;
+    border-radius: 0.5rem;
     cursor: pointer;
     border: 1px solid var(--color-foreground-level-3);
     overflow: hidden; /* hack to make inner option rounded corners */

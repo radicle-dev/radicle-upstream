@@ -27,8 +27,8 @@
   }
 
   .title-row:first-child {
-    border-top-left-radius: 0.125rem;
-    border-top-right-radius: 0.125rem;
+    border-top-left-radius: 0.4rem;
+    border-top-right-radius: 0.4rem;
   }
 </style>
 

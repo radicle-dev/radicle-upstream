@@ -43,7 +43,7 @@
   .revision-selector {
     align-items: center;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     cursor: pointer;
     display: flex;
     height: 2.5rem;
@@ -67,8 +67,8 @@
   }
   .revision-dropdown {
     background: var(--color-background);
-    border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.25rem;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
     box-shadow: var(--elevation-medium);
     height: 100%;
     max-height: 60vh;

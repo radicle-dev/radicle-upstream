@@ -101,8 +101,7 @@
     padding: var(--content-padding);
     width: 37.5rem;
     background: var(--color-background);
-    border-radius: 0.5rem;
-
+    border-radius: 1rem;
     text-align: center;
   }
 </style>
