@@ -83,12 +83,11 @@
     {#if $w.status === wallet.Status.Connected}
       {#each $orgSidebarStore as org (org.id)}
         <Tooltip value={org.id}>
-          <div
-            class="item indicator"
-            class:active={$activeRouteStore.type === "org" &&
-              $activeRouteStore.address === org.id}
-            on:click|stopPropagation={() =>
-              push({ type: "org", address: org.id, activeTab: "projects" })}>
+          <SidebarItem
+            onClick={() =>
+              push({ type: "org", address: org.id, activeTab: "projects" })}
+            active={$activeRouteStore.type === "org" &&
+              $activeRouteStore.address === org.id}>
             <Avatar
               size="regular"
               variant="square"
@@ -96,14 +95,12 @@
                 org.id,
                 radicleAvatar.Usage.Any
               )} />
-          </div>
+          </SidebarItem>
         </Tooltip>
       {/each}
       <Tooltip value="Create an org">
-        <div
-          class="item indicator"
-          data-cy="add-org-btn"
-          on:click|stopPropagation={() =>
+        <SidebarItem
+          onClick={() =>
             modal.toggle(ModalCreateOrg, () => {}, {
               identity,
               walletAddress:
@@ -112,7 +109,7 @@
                   : null,
             })}>
           <AddOrgButton />
-        </div>
+        </SidebarItem>
       </Tooltip>
     {/if}
   </div>
