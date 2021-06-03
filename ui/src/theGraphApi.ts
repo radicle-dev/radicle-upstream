@@ -151,27 +151,43 @@ export const getOrgProjectAnchors = async (
   const response = (
     await orgsSubgraphClient().query({
       query: apolloCore.gql`
-        query GetOrgAnchors($orgAddress: String!) {
-          anchors(where: {org: $orgAddress, stateType: 0, stateHashFormat: 0 }) {
+        query GetOrgAnchoredProjects($orgAddress: String!) {
+          projects(where: {org: $orgAddress}) {
             id
-            objectId
-            stateHash
+            anchor {
+              id
+              objectId
+              stateHash
+              stateType
+            }
           }
         }
       `,
       variables: { orgAddress },
     })
-  ).data.anchors;
+  ).data.projects;
 
-  return response.map(
-    (anchor: { id: string; stateHash: string; objectId: string }) => {
-      return {
-        id: anchor.id,
-        projectId: urn.identitySha1Urn(
-          ethers.utils.arrayify(`0x${anchor.objectId.slice(26)}`)
-        ),
-        commitSha: anchor.stateHash.slice(26, 66),
-      };
-    }
-  );
+  return response
+    .map(
+      (project: {
+        id: string;
+        anchor: {
+          id: string;
+          objectId: string;
+          stateHash: string;
+          stateType: number;
+        };
+      }) => {
+        if (project.anchor.stateType === 0) {
+          return {
+            id: project.anchor.id,
+            projectId: urn.identitySha1Urn(
+              ethers.utils.arrayify(`0x${project.id.slice(26)}`)
+            ),
+            commitSha: project.anchor.stateHash.slice(26, 66),
+          };
+        }
+      }
+    )
+    .filter(Boolean);
 };
