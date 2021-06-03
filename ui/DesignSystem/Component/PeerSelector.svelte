@@ -15,6 +15,7 @@
   export let expanded: boolean = false;
   export let peers: User[];
   export let selected: User;
+  export let showProfile: boolean = isExperimental;
 
   const orderPeers = (peers: User[]): User[] => {
     return [selected].concat(
@@ -41,7 +42,6 @@
     hide();
     dispatch("select", peer);
   };
-  const showProfile = isExperimental;
 </script>
 
 <style>

@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { Icon } from "../Primitive";
   import type { Avatar } from "../../src/proxy/identity";
 
@@ -24,6 +24,7 @@
   export let dataCy = "";
   export let style = "";
   export let optionStyle = "";
+  export let menuStyle = "";
 
   export let valid: boolean = true;
   export let validationMessage = "";
@@ -136,7 +137,7 @@
         style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
     </div>
 
-    <div class="menu" hidden={!expanded}>
+    <div style={menuStyle} class="menu" hidden={!expanded}>
       {#each options as option}
         <Option
           style={optionStyle}

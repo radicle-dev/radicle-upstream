@@ -28,6 +28,7 @@ import NotificationFaucet from "./NotificationFaucet.svelte";
 import Fullscreen from "./Fullscreen.svelte";
 import Overlay from "./Overlay.svelte";
 import PeerId from "./PeerId.svelte";
+import PeerSelector from "./PeerSelector.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import RadicleId from "./RadicleId.svelte";
@@ -80,6 +81,7 @@ export {
   Fullscreen,
   Overlay,
   PeerId,
+  PeerSelector,
   ProjectCard,
   ProjectList,
   RadicleId,

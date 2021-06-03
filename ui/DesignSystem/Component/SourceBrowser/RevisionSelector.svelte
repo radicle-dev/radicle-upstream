@@ -13,6 +13,7 @@
   export let revisions: [Branch | Tag];
   export let selected: Branch | Tag;
   export let defaultBranch: string;
+  export let style = "";
 
   const orderRevisions = (revisions: [Branch | Tag]): [Branch | Tag] => {
     return [selected].concat(
@@ -40,6 +41,9 @@
 </script>
 
 <style>
+  .container {
+    position: relative;
+  }
   .revision-selector {
     align-items: center;
     border: 1px solid var(--color-foreground-level-3);
@@ -89,42 +93,44 @@
   }
 </style>
 
-<Overlay {expanded} on:hide={hide}>
-  <div
-    class="revision-selector"
-    data-cy="revision-selector"
-    data-revision={selected.name}
-    hidden={expanded}
-    on:click={toggle}>
-    <div class="selector-avatar typo-overflow-ellipsis">
-      <Entry
-        {loading}
-        on:click={toggle}
-        revision={selected}
-        defaultBranch={selected.name === defaultBranch} />
-    </div>
-    <Icon.ChevronUpDown
-      style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
-  </div>
-  <div class="revision-dropdown-container">
+<div class="container" {style}>
+  <Overlay {expanded} on:hide={hide}>
     <div
-      class="revision-dropdown"
-      data-cy="revision-dropdown"
-      hidden={!expanded}>
-      <ul>
-        {#each orderRevisions(revisions) as revision (revisionKey(revision))}
-          <li>
-            <Entry
-              {loading}
-              on:click={() => select(revision)}
-              {revision}
-              defaultBranch={revision.name === defaultBranch}
-              selected={selected.type === revision.type &&
-                selected.name === revision.name}
-              style="padding: 0 0.5rem;" />
-          </li>
-        {/each}
-      </ul>
+      class="revision-selector"
+      data-cy="revision-selector"
+      data-revision={selected.name}
+      hidden={expanded}
+      on:click={toggle}>
+      <div class="selector-avatar typo-overflow-ellipsis">
+        <Entry
+          {loading}
+          on:click={toggle}
+          revision={selected}
+          defaultBranch={selected.name === defaultBranch} />
+      </div>
+      <Icon.ChevronUpDown
+        style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
     </div>
-  </div>
-</Overlay>
+    <div class="revision-dropdown-container">
+      <div
+        class="revision-dropdown"
+        data-cy="revision-dropdown"
+        hidden={!expanded}>
+        <ul>
+          {#each orderRevisions(revisions) as revision (revisionKey(revision))}
+            <li>
+              <Entry
+                {loading}
+                on:click={() => select(revision)}
+                {revision}
+                defaultBranch={revision.name === defaultBranch}
+                selected={selected.type === revision.type &&
+                  selected.name === revision.name}
+                style="padding: 0 0.5rem;" />
+            </li>
+          {/each}
+        </ul>
+      </div>
+    </div>
+  </Overlay>
+</div>

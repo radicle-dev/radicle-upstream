@@ -244,3 +244,22 @@ export const resolveProjectAnchors = async (
 
   return { anchoredProjects, unresolvedAnchors };
 };
+
+export interface ProjectOption {
+  title: string;
+  value: urn.Urn;
+}
+
+export const fetchProjectDropdownOptions = async (): Promise<
+  ProjectOption[]
+> => {
+  const [tracked, contributed] = await Promise.all([
+    proxy.client.project.listTracked(),
+    proxy.client.project.listContributed(),
+  ]);
+  const allProjects = [...tracked, ...contributed];
+
+  return allProjects.map(project => {
+    return { title: project.metadata.name, value: project.urn };
+  });
+};
