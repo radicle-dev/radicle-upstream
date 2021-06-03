@@ -43,7 +43,7 @@
   .file-header .diff-type {
     margin-left: 1rem;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   .file-header .diff-type.created {

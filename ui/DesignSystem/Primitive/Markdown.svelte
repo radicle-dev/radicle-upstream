@@ -119,14 +119,14 @@
     font-size: 1rem;
     background-color: var(--color-foreground-level-1);
     padding: 0.09rem 0.25rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
   .markdown :global(pre) {
     font-family: var(--typeface-mono-regular), monospace;
     font-size: 1rem;
     background-color: var(--color-foreground-level-1);
     padding: 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     margin: 1rem 0;
     overflow: scroll;
     scrollbar-width: none;

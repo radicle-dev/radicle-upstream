@@ -16,7 +16,7 @@
     padding: 0 12px;
     user-select: none;
     position: relative;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     border: 1px solid transparent;
     background-clip: padding-box;
     transform-style: preserve-3d;

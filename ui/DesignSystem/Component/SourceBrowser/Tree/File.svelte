@@ -10,7 +10,7 @@
 
 <style>
   .file {
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     color: var(--color-foreground-level-6);
     cursor: pointer;
     display: flex;

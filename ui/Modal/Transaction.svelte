@@ -38,7 +38,7 @@
     padding: var(--content-padding);
     width: 40.625rem;
     background: var(--color-background);
-    border-radius: 0.5rem;
+    border-radius: 1rem;
   }
 
   header {
@@ -71,7 +71,7 @@
     background-color: var(--color-foreground-level-1);
 
     margin-top: 1.5rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
 
   .from-to:not(.incoming) {
@@ -95,7 +95,7 @@
     padding: 1rem;
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
 
   p {

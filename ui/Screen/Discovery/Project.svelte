@@ -19,7 +19,7 @@
 <style>
   .container {
     border: 1px solid var(--color-foreground-level-2);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     padding: 24px;
     overflow: hidden;
     cursor: pointer;

@@ -7,7 +7,7 @@
   .comment-box {
     flex: 1;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
   .meta {
     display: flex;

@@ -10,8 +10,10 @@
 
   import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
+  import SidebarItem from "./SidebarItem.svelte";
   import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
+  import WalletStatusIndicator from "./WalletStatusIndicator.svelte";
   import ModalSearch from "ui/Modal/Search.svelte";
   import ModalCreateOrg from "../../Modal/Org/Create.svelte";
 
@@ -62,65 +64,21 @@
       rgba(0, 0, 0, 0) 100%
     );
   }
-
-  .item {
-    width: var(--sidebar-width);
-    height: 32px;
-    margin-bottom: 16px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .indicator:hover:before {
-    position: absolute;
-    content: "";
-    width: 4px;
-    height: 32px;
-    background-color: var(--color-foreground-level-5);
-    top: 0px;
-    left: 0px;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
-
-  .indicator.active:before {
-    position: absolute;
-    content: "";
-    width: 4px;
-    height: 32px;
-    background-color: var(--color-primary);
-    top: 0px;
-    left: 0px;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
-
-  .indicator :global(div:hover svg) {
-    fill: var(--color-primary);
-  }
-
-  .indicator.active :global(svg) {
-    fill: var(--color-primary);
-  }
 </style>
 
 <div class="wrapper" data-cy="sidebar">
   <div class="top">
     <Tooltip value={identity.metadata.handle}>
-      <div
-        class="item indicator"
-        data-cy="profile"
-        class:active={$activeRouteStore.type === "profile"}
-        on:click|stopPropagation={() =>
-          push({ type: "profile", activeTab: "projects" })}>
+      <SidebarItem
+        dataCy="profile"
+        indicator
+        active={$activeRouteStore.type === "profile"}
+        onClick={() => push({ type: "profile", activeTab: "projects" })}>
         <Avatar
           size="regular"
           avatarFallback={identity.avatarFallback}
           variant="circle" />
-      </div>
+      </SidebarItem>
     </Tooltip>
     {#if $w.status === wallet.Status.Connected}
       {#each $orgSidebarStore as org (org.id)}
@@ -160,34 +118,24 @@
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
-      <div
-        class="item indicator"
-        data-cy="search"
-        on:click|stopPropagation={() => modal.toggle(ModalSearch)}>
+      <SidebarItem dataCy="search" onClick={() => modal.toggle(ModalSearch)}>
         <Icon.MagnifyingGlass />
-      </div>
+      </SidebarItem>
     </Tooltip>
     {#if config.isDev}
-      <Tooltip value="Wallet">
-        <div
-          class="item indicator"
-          data-cy="wallet"
-          class:active={$activeRouteStore.type === "wallet"}
-          on:click|stopPropagation={() =>
-            push({ type: "wallet", activeTab: "transactions" })}>
-          <Icon.Wallet />
-        </div>
-      </Tooltip>
+      <WalletStatusIndicator
+        active={$activeRouteStore.type === "wallet"}
+        onClick={() => push({ type: "wallet", activeTab: "transactions" })} />
     {/if}
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
-      <div
-        class="item indicator"
-        data-cy="settings"
-        class:active={$activeRouteStore.type === "settings"}
-        on:click|stopPropagation={() => push({ type: "settings" })}>
+      <SidebarItem
+        dataCy="settings"
+        indicator
+        active={$activeRouteStore.type === "settings"}
+        onClick={() => push({ type: "settings" })}>
         <Icon.Settings />
-      </div>
+      </SidebarItem>
     </Tooltip>
   </div>
 </div>

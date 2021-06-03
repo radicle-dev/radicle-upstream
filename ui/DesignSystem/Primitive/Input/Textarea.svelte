@@ -40,7 +40,7 @@
   textarea {
     border: 1px solid var(--color-foreground-level-2);
     padding: 8px 12px;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     width: 100%;
     background-color: var(--color-background);
     resize: none;

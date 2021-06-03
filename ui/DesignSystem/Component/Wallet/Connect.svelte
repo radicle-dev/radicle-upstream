@@ -26,8 +26,8 @@
 <div class="wrapper" class:connecting>
   <Emoji emoji="👛" size="huge" />
   <p class="typo-text">
-    In order to give and receive funds, you need to connect an Ethereum wallet
-    you own.
+    In order to use our funding features, you need to connect an Ethereum
+    wallet.
   </p>
   <Button disabled={connecting} on:click={onConnect}>
     Connect your wallet
