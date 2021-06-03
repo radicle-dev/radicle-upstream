@@ -10,7 +10,7 @@
   .option {
     border: 0.0625rem solid var(--color-foreground-level-3);
     margin-bottom: 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
 
   .option.active {
@@ -34,7 +34,7 @@
   .body {
     background-color: var(--color-foreground-level-1);
     padding: 0 1rem 1rem 1rem;
-    border-radius: 0 0 0.25rem 0.25rem;
+    border-radius: 0 0 0.5rem 0.5rem;
   }
 </style>
 

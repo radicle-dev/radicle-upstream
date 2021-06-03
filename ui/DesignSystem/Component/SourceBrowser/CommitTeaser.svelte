@@ -23,7 +23,7 @@
     padding: 0 12px 0 8px;
     white-space: nowrap;
     min-width: var(--content-min-width);
-    border-radius: 4px;
+    border-radius: 0.5rem;
     background-color: var(--color-primary-level-1);
   }
 

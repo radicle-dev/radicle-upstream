@@ -39,7 +39,7 @@
 <style>
   .list {
     border: 1px solid var(--color-foreground-level-2);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     margin-bottom: 1.5rem;
   }
 </style>

@@ -31,7 +31,7 @@
 
   .content {
     background: var(--color-foreground-level-1);
-    border-radius: 4px;
+    border-radius: 0.5rem;
     padding: 1.5rem;
   }
 

@@ -14,7 +14,7 @@
 <style>
   .file-source {
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 3px;
+    border-radius: 0.5rem;
     min-width: var(--content-min-width);
   }
 

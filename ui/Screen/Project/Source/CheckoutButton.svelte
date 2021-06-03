@@ -30,9 +30,8 @@
     margin-top: 3rem;
     right: 0;
     position: absolute;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
     background: var(--color-background);
-    border: 1px solid var(--color-foreground-level-3);
     box-shadow: var(--color-shadows);
     padding: 1rem;
     width: 25rem;

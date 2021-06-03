@@ -12,7 +12,7 @@
   .color {
     width: 4rem;
     height: 4rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
   .border {
     border: 1px solid var(--color-foreground-level-3);
