@@ -1,7 +1,7 @@
 <script lang="typescript">
   export let active: boolean = false;
   export let indicator: boolean = false;
-  export let dataCy: string;
+  export let dataCy: string = "";
   export let onClick: () => void;
 </script>
 

@@ -84,6 +84,7 @@
       {#each $orgSidebarStore as org (org.id)}
         <Tooltip value={org.id}>
           <SidebarItem
+            indicator={true}
             onClick={() =>
               push({ type: "org", address: org.id, activeTab: "projects" })}
             active={$activeRouteStore.type === "org" &&
