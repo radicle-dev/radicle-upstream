@@ -64,7 +64,7 @@
       <Button on:click={onLink}>Link your ID</Button>
     {:else}
       <div class="spinner-wrapper">
-        <Spinner height={40} width={40} />
+        <Spinner height={24} width={24} />
         Linking your ID…
         <Button variant="transparent" on:click={onLink}>Retry</Button>
       </div>
