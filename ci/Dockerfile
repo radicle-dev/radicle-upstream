@@ -4,18 +4,36 @@ FROM debian:buster-slim
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-    build-essential \
-    ca-certificates \
-    clang \
-    curl \
-    git \
-    jq \
-    libssl-dev \
-    pkg-config \
-    procps
-
-# install cypress deps
-RUN apt-get -y install --no-install-recommends autoconf git nettle-dev m4 gnupg xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2
+      build-essential \
+      ca-certificates \
+      curl \
+      git \
+      jq \
+      procps \
+      # Cypress deps
+      # See https://github.com/cypress-io/cypress-docker-images/blob/422d5f00ca2bfcaa3b31b347f536817809500f96/base/14.16.0/Dockerfile#L10
+      libgtk2.0-0 \
+      libgtk-3-0 \
+      libnotify-dev \
+      libgconf-2-4 \
+      libgbm-dev \
+      libnss3 \
+      libxss1 \
+      libasound2 \
+      libxtst6 \
+      xauth \
+      xvfb \
+      fonts-noto-color-emoji \
+      fonts-arphic-bkai00mp \
+      fonts-arphic-bsmi00lp \
+      fonts-arphic-gbsn00lp \
+      fonts-arphic-gkai00mp \
+      fonts-arphic-ukai \
+      fonts-arphic-uming \
+      ttf-wqy-zenhei \
+      ttf-wqy-microhei \
+      xfonts-wqy; \
+  rm -rf /var/lib/apt/lists/*;
 
 # install node and yarn
 RUN set -eux; \
