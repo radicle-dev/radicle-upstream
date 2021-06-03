@@ -18,20 +18,30 @@
 
 <div>
   {#if $wallet.status === Status.Connected}
-    <Tooltip value="Wallet · Connected">
-      <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
-        <Icon.Wallet connected />
-      </SidebarItem>
-    </Tooltip>
-  {:else if $wallet.status === Status.Connected && pendingTxs.length > 0}
-    <Tooltip
-      value={`Wallet · ${pendingTxs.length} pending transaction${
-        pendingTxs.length > 1 ? "s" : ""
-      }`}>
-      <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
-        <Icon.WalletStatus statusColor="var(--color-caution)" />
-      </SidebarItem>
-    </Tooltip>
+    {#if pendingTxs.length > 0}
+      <Tooltip
+        value={`Wallet · ${pendingTxs.length} pending transaction${
+          pendingTxs.length > 1 ? "s" : ""
+        }`}>
+        <SidebarItem
+          dataCy="wallet"
+          indicator
+          {active}
+          onClick={() => onClick()}>
+          <Icon.WalletStatus statusColor="var(--color-caution)" />
+        </SidebarItem>
+      </Tooltip>
+    {:else}
+      <Tooltip value="Wallet · Connected">
+        <SidebarItem
+          dataCy="wallet"
+          indicator
+          {active}
+          onClick={() => onClick()}>
+          <Icon.Wallet connected />
+        </SidebarItem>
+      </Tooltip>
+    {/if}
   {:else}
     <Tooltip value="Wallet · Not connected">
       <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
