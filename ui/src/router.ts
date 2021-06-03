@@ -84,7 +84,7 @@ const routeToPath = (route: Route | LoadedRoute): string => {
   return `#/${route.type}${subRoute}`;
 };
 
-const loadHistory = async (): Promise<Route[]> => {
+const loadHistory = async (): Promise<void> => {
   if (window.history.state === null) {
     await push(DEFAULT_ROUTE);
     window.history.pushState(
@@ -92,13 +92,11 @@ const loadHistory = async (): Promise<Route[]> => {
       DOCUMENT_TITLE,
       routeToPath(DEFAULT_ROUTE)
     );
-    return [DEFAULT_ROUTE];
   } else {
     const persistedHistory: Route[] = window.history.state;
     const activeRoute = persistedHistory.slice(-1)[0];
+    writableHistory.set(<LoadedRoute[]>persistedHistory.slice(0, -1));
     await push(activeRoute);
-
-    return persistedHistory;
   }
 };
 
