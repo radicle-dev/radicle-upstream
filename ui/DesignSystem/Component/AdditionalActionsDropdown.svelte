@@ -1,8 +1,8 @@
-<script lang="ts">
+<script lang="typescript">
   import { fade } from "svelte/transition";
   import type { SvelteComponent } from "svelte";
 
-  import { CSSPosition } from "../../src/style";
+  import { CSSPosition } from "ui/src/style";
 
   import { Icon } from "../Primitive";
   import Overlay from "./Overlay.svelte";
@@ -56,6 +56,7 @@
     border-radius: 0.5rem;
     cursor: pointer;
     outline-style: none;
+    border: 1px solid var(--color-foreground-level-3);
   }
 
   .additional-actions-dropdown-button :global(svg) {
@@ -82,7 +83,7 @@
     cursor: pointer;
     border: 1px solid var(--color-foreground-level-3);
     overflow: hidden; /* hack to make inner option rounded corners */
-    z-index: 1;
+    z-index: 10;
     user-select: none;
   }
 
@@ -91,6 +92,7 @@
     color: var(--color-foreground-level-5);
     display: flex;
     justify-content: space-between;
+    border-bottom: solid 1px var(--color-foreground-level-3);
   }
 
   .header:hover {
@@ -99,7 +101,6 @@
 
   .menu {
     cursor: pointer;
-    border-top: solid 1px var(--color-foreground-level-3);
   }
 
   .menu-item {
@@ -142,7 +143,7 @@
           <div class="menu" data-cy="dropdown-menu">
             {#each menuItems as item}
               {#if item !== undefined}
-                <Tooltip value={item.tooltip} position={CSSPosition.Bottom}>
+                <Tooltip value={item.tooltip} position={CSSPosition.Left}>
                   <div
                     data-cy={item.dataCy}
                     class="menu-item"

@@ -1,10 +1,12 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
 
+  import { copyToClipboard } from "ui/src/ipc";
+  import * as notification from "ui/src/notification";
   import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
   import { isMaintainer, isContributor } from "ui/src/project";
-  import type { User } from "ui/src/project";
+  import type { User, Project } from "ui/src/project";
   import * as router from "ui/src/router";
   import {
     fetch,
@@ -13,14 +15,12 @@
     store,
   } from "ui/src/screen/project";
   import * as sess from "ui/src/session";
-  import { CSSPosition } from "ui/src/style";
   import type { Urn } from "ui/src/urn";
   import {
-    FollowToggle,
+    AdditionalActionsDropdown,
     Header,
     Remote,
     SidebarLayout,
-    Tooltip,
   } from "ui/DesignSystem/Component";
   import { Button, Icon } from "ui/DesignSystem/Primitive";
   import ProjectHeader from "./Project/ProjectHeader.svelte";
@@ -35,6 +35,31 @@
   const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
+
+  export const copy = (content: string): void => {
+    if (content) copyToClipboard(content.trim());
+    notification.info({ message: "Copied to your clipboard" });
+  };
+
+  const menuItems = (project: Project) => {
+    return [
+      {
+        title: "Copy Radicle ID",
+        icon: Icon.At,
+        event: () => copy(project.urn),
+        tooltip: project.urn,
+      },
+      {
+        title: "Unfollow",
+        icon: Icon.Network,
+        disabled: true,
+        // event: () => {},
+        tooltip: isMaintainer(session.identity.urn, project)
+          ? trackTooltipMaintainer
+          : trackTooltip,
+      },
+    ];
+  };
 
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
     if (peer.identity.urn === session.identity.urn) {
@@ -96,13 +121,7 @@
           variant="outline"
           style="margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem;"
           on:click={onPeerModal} />
-        <Tooltip
-          position={CSSPosition.Left}
-          value={isMaintainer(session.identity.urn, project)
-            ? trackTooltipMaintainer
-            : trackTooltip}>
-          <FollowToggle disabled following />
-        </Tooltip>
+        <AdditionalActionsDropdown menuItems={menuItems(project)} />
       </div>
     </Header>
     <Source
