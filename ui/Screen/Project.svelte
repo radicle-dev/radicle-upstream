@@ -94,10 +94,8 @@
           dataCy="manage-remotes"
           icon={Icon.Pen}
           variant="outline"
-          style="margin-right: 1rem;"
-          on:click={onPeerModal}>
-          Add remotes
-        </Button>
+          style="margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem;"
+          on:click={onPeerModal} />
         <Tooltip
           position={CSSPosition.Left}
           value={isMaintainer(session.identity.urn, project)

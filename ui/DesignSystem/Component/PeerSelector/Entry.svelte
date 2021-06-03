@@ -17,6 +17,10 @@
     padding: 0 0.5em;
   }
 
+  .entry.active:last-child {
+    border-bottom-right-radius: 0.5rem;
+  }
+
   .entry.active {
     color: var(--color-foreground-level-6);
   }

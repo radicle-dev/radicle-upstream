@@ -48,7 +48,9 @@
   .peer-selector {
     display: flex;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.5rem;
+    border-right: none;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
     padding: 0 0.5rem;
     align-items: center;
     height: 2.5rem;
@@ -61,6 +63,7 @@
   .peer-selector:hover {
     color: var(--color-foreground);
     border: 1px solid var(--color-foreground-level-3);
+    border-right: none;
     background-color: var(--color-foreground-level-1);
   }
 
@@ -82,7 +85,9 @@
 
   .peer-dropdown {
     border: 1px solid transparent;
-    border-radius: 0.5rem;
+    border-right: none;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;
     max-width: 30rem;
@@ -107,7 +112,7 @@
 <Overlay
   {expanded}
   on:hide={hide}
-  style="margin-right: 1rem; position: relative; user-select: none;">
+  style="position: relative; user-select: none;">
   <div
     class="peer-selector typo-overflow-ellipsis"
     data-cy="peer-selector"
