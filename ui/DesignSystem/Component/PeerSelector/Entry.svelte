@@ -21,6 +21,10 @@
     border-bottom-right-radius: 0.5rem;
   }
 
+  .entry.active:first-child {
+    border-bottom-right-radius: 0;
+  }
+
   .entry.active {
     color: var(--color-foreground-level-6);
   }
