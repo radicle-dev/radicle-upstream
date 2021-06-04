@@ -16,6 +16,7 @@
   export let peers: User[];
   export let selected: User;
   export let showProfile: boolean = isExperimental;
+  let dropdownHeight: number;
 
   const orderPeers = (peers: User[]): User[] => {
     return [selected].concat(
@@ -48,7 +49,9 @@
   .peer-selector {
     display: flex;
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.5rem;
+    border-right: none;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
     padding: 0 0.5rem;
     align-items: center;
     height: 2.5rem;
@@ -59,9 +62,7 @@
   }
 
   .peer-selector:hover {
-    color: var(--color-foreground);
-    border: 1px solid var(--color-foreground-level-3);
-    background-color: var(--color-foreground-level-1);
+    background-color: var(--color-foreground-level-2);
   }
 
   .peer-selector[hidden] {
@@ -82,7 +83,9 @@
 
   .peer-dropdown {
     border: 1px solid transparent;
-    border-radius: 0.5rem;
+    border-right: none;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;
     max-width: 30rem;
@@ -107,7 +110,7 @@
 <Overlay
   {expanded}
   on:hide={hide}
-  style="margin-right: 1rem; position: relative; user-select: none;">
+  style="position: relative; user-select: none;">
   <div
     class="peer-selector typo-overflow-ellipsis"
     data-cy="peer-selector"
@@ -120,7 +123,13 @@
     </div>
   </div>
   <div class="peer-dropdown-container" data-cy="peer-dropdown-container">
-    <div class="peer-dropdown" hidden={!expanded}>
+    <div
+      bind:clientHeight={dropdownHeight}
+      class="peer-dropdown"
+      hidden={!expanded}
+      style={`border-bottom-right-radius: ${
+        dropdownHeight > 40 ? "0.5rem" : "0"
+      }`}>
       {#each orderPeers(peers) as peer (peer.peerId)}
         <Entry
           disabled={peer.role === PeerRole.Tracker}

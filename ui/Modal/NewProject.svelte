@@ -1,11 +1,11 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
 
-  import { UPSTREAM_DEFAULT_BRANCH } from "../src/config";
-  import * as notification from "../src/notification";
-  import * as error from "../src/error";
-  import * as modal from "../src/modal";
-  import * as remote from "../src/remote";
+  import { UPSTREAM_DEFAULT_BRANCH } from "ui/src/config";
+  import * as notification from "ui/src/notification";
+  import * as error from "ui/src/error";
+  import * as modal from "ui/src/modal";
+  import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
   import {
     clearLocalState,
@@ -17,12 +17,12 @@
     formatNameInput,
     extractName,
     repositoryPathValidationStore,
-  } from "../src/project";
-  import * as proxy from "../src/proxy";
-  import { ValidationStatus } from "../src/validation";
-  import * as screen from "../src/screen";
-  import type { Settings } from "../src/settings";
-  import { dismissRemoteHelperHint, settings } from "../src/session";
+  } from "ui/src/project";
+  import * as proxy from "ui/src/proxy";
+  import { ValidationStatus } from "ui/src/validation";
+  import * as screen from "ui/src/screen";
+  import type { Settings } from "ui/src/settings";
+  import { dismissRemoteHelperHint, settings } from "ui/src/session";
 
   import { Button, Emoji, Input } from "../DesignSystem/Primitive";
   import {
@@ -32,7 +32,7 @@
     RemoteHelperHint,
     Tooltip,
   } from "../DesignSystem/Component";
-  import { CSSPosition } from "../src/style";
+  import { CSSPosition } from "ui/src/style";
 
   type RepoType = "new" | "existing";
 
@@ -193,7 +193,7 @@
       emoji={"🌠"}
       size="huge"
       style="align-self: center; margin-bottom: 1rem;" />
-    <h2 style="margin-bottom: 3rem;">Start a new project</h2>
+    <h1 style="margin-bottom: 3rem;">Start a new project</h1>
 
     <div class="radio-selector">
       <RadioOption
