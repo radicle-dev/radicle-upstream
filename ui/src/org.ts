@@ -4,9 +4,9 @@ import EthersSafe from "@gnosis.pm/safe-core-sdk";
 import SafeServiceClient from "@gnosis.pm/safe-service-client";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
-import * as notification from "./notification";
-import * as wallet from "./wallet";
-import * as theGraphApi from "./theGraphApi";
+import * as notification from "ui/src//notification";
+import * as wallet from "ui/src/wallet";
+import * as theGraphApi from "ui/src/theGraphApi";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as proxy from "ui/src/proxy";

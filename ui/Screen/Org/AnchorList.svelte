@@ -1,13 +1,26 @@
 <script lang="typescript">
   import type * as theGraphApi from "ui/src/theGraphApi";
+  import * as notification from "ui/src/notification";
+  import * as search from "ui/src/search";
+  import * as router from "ui/src/router";
   import {
     AnchorMetadataModal,
+    FollowToggle,
     List,
     RadicleId,
   } from "ui/DesignSystem/Component";
 
   export let anchors: theGraphApi.ProjectAnchor[];
   export let orgAddress: string;
+
+  const onFollow = (projectId: string) => {
+    search.requestProject(projectId);
+    router.push({ type: "profile", activeTab: "following" });
+    notification.info({
+      message: `Added ${projectId} to the queue`,
+      showIcon: true,
+    });
+  };
 </script>
 
 <style>
@@ -37,9 +50,9 @@
 
 {#if anchors.length !== 0}
   <div class="header">
-    <p class="typo-text-bold">Still looking…&nbsp;</p>
     <p style="color: var(--color-foreground-level-6);">
-      These anchored projects haven't been found in your network yet.
+      These anchored projects haven't been found in your network yet, try
+      following them.
     </p>
   </div>
 {/if}
@@ -56,5 +69,9 @@
       <RadicleId urn={anchor.projectId} />
       <AnchorMetadataModal {anchor} {orgAddress} />
     </div>
+    <FollowToggle
+      on:follow={() => {
+        onFollow(anchor.projectId);
+      }} />
   </div>
 </List>
