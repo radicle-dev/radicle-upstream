@@ -18,6 +18,8 @@
     box-sizing: border-box;
     border-radius: 0.5rem;
     width: 100%;
+
+    margin-top: 3.75rem;
   }
 
   .inner {
