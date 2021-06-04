@@ -15,6 +15,7 @@
   export let expanded: boolean = false;
   export let peers: User[];
   export let selected: User;
+  let dropdownHeight: number;
 
   const orderPeers = (peers: User[]): User[] => {
     return [selected].concat(
@@ -125,7 +126,13 @@
     </div>
   </div>
   <div class="peer-dropdown-container" data-cy="peer-dropdown-container">
-    <div class="peer-dropdown" hidden={!expanded}>
+    <div
+      bind:clientHeight={dropdownHeight}
+      class="peer-dropdown"
+      hidden={!expanded}
+      style={`border-bottom-right-radius: ${
+        dropdownHeight > 40 ? "0.5rem" : "0"
+      }`}>
       {#each orderPeers(peers) as peer (peer.peerId)}
         <Entry
           disabled={peer.role === PeerRole.Tracker}
