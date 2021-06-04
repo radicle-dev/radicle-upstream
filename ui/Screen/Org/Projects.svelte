@@ -1,15 +1,14 @@
 <script lang="typescript">
   import type { Project } from "ui/src/project";
 
-  import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
   import AnchorList from "ui/Screen/Org/AnchorList.svelte";
 
   import type * as project from "ui/src/project";
   import type * as theGraphApi from "ui/src/theGraphApi";
 
-  import * as modal from "ui/src/modal";
   import * as router from "ui/src/router";
   import * as sess from "ui/src/session";
+  import * as org from "ui/src/org";
 
   import { EmptyState, ProjectList } from "ui/DesignSystem/Component";
   import { Variant as IllustrationVariant } from "ui/src/illustration";
@@ -19,6 +18,7 @@
   export let address: string;
   export let anchoredProjects: project.Project[];
   export let unresolvedAnchors: theGraphApi.ProjectAnchor[];
+  export let gnosisSafeAddress: string;
 
   const select = ({ detail: project }: { detail: Project }) => {
     router.push({
@@ -52,7 +52,7 @@
       text="Get started by anchoring your organization’s first project with the radicle gnosis safe app."
       primaryActionText="Anchor with Gnosis Safe"
       on:primaryAction={() => {
-        modal.toggle(ModalAnchorProject);
+        org.openAnchorProjectModal(address, gnosisSafeAddress);
       }} />
   {/if}
 </div>

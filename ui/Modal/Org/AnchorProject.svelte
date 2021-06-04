@@ -24,8 +24,10 @@
   const projectSourceScreenStore = projectSourceScreen.store;
 
   export let projects: org.ProjectOption[];
+  export let orgAddress: string;
+  export let gnosisSafeAddress: string;
+
   let projectUrn: urn.Urn | undefined = undefined;
-  const commitTeaser = undefined;
 
   $: if (projectUrn) {
     projectScreen.fetch(projectUrn);
@@ -54,6 +56,8 @@
   }) => {
     projectSourceScreen.selectRevision(revision);
   };
+
+  $: commitHash = $code ? $code.lastCommit.sha1 : undefined;
 </script>
 
 <style>
@@ -114,9 +118,18 @@
   <div class="actions">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
     <Button
-      disabled={!commitTeaser}
+      disabled={!commitHash}
       on:click={() => {
-        org.anchorProject();
+        if (!projectUrn || !commitHash) {
+          return;
+        }
+        org.anchorProject(
+          orgAddress,
+          gnosisSafeAddress,
+          projectUrn,
+          commitHash
+        );
+        modal.hide();
       }}>Confirm in your wallet</Button>
   </div>
 </Modal>

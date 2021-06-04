@@ -12,7 +12,10 @@ import * as error from "ui/src/error";
 import * as proxy from "ui/src/proxy";
 import * as urn from "ui/src/urn";
 import * as router from "ui/src/router";
+import * as modal from "ui/src/modal";
 import type * as project from "ui/src/proxy/project";
+
+import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
 import type {
   TransactionReceipt,
@@ -48,12 +51,12 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
   }
 };
 
-export const anchorProject = async (): Promise<void> => {
-  const orgAddress = "0xab58d6ce4c2fd470ddb87de62d90691f59bda6e9";
-  const gnosisSafeAddress = "0xb962d6ff2438ffcfa569291bda7e9a0da6f46f2a";
-  const projectUrn = "rad:git:hnrkdrk6z38ostgbozp3jq9dzgwxy6owbe8zo";
-  const commitHash = "cda37aa741ba4d0ed7ddcf312aea2d0ac0fe6502";
-
+export const anchorProject = async (
+  orgAddress: string,
+  gnosisSafeAddress: string,
+  projectUrn: string,
+  commitHash: string
+): Promise<void> => {
   const walletStore = svelteStore.get(wallet.store);
   const safeSdk = await EthersSafe.create(
     ethers,
@@ -61,20 +64,14 @@ export const anchorProject = async (): Promise<void> => {
     walletStore.signer
   );
 
-  console.log(safeSdk);
-
   const decodedProjectUrn = urn.parseIdentitySha1(projectUrn);
   const decodedCommitHash = ethers.utils.arrayify(`0x${commitHash}`);
 
   const paddedProjectUrn = ethers.utils.zeroPad(decodedProjectUrn, 32);
   const paddedCommitHash = ethers.utils.zeroPad(decodedCommitHash, 32);
 
-  console.log(paddedProjectUrn);
-  console.log(paddedCommitHash);
-
   const orgContract = new ethers.Contract(orgAddress, orgAbi);
 
-  console.log("AAAAAAAAAA: ", orgContract);
   const orgContractInstance = await orgContract.populateTransaction.anchor(
     paddedProjectUrn,
     paddedCommitHash,
@@ -82,13 +79,10 @@ export const anchorProject = async (): Promise<void> => {
     ethers.constants.Zero
   );
 
-  console.log(orgContractInstance);
-
   const txData = orgContractInstance.data;
   if (!txData) {
     throw new Error("Could not generate transaction");
   }
-  console.log("BBBBBBBB: ", txData);
 
   const partialTx: SafeTransactionDataPartial = {
     to: orgAddress,
@@ -96,11 +90,26 @@ export const anchorProject = async (): Promise<void> => {
     value: "0",
   };
 
+  // WAITING
+  notification.info({
+    message:
+      "Waiting for you to confirm the anchor transaction in your connected wallet",
+    showIcon: true,
+  });
+
   // THIS WORKS IF THERE'S ONLY ONE OWNER IN THE SAFE
-  console.log("PARTIAL: ", partialTx);
   const safeTransaction = await safeSdk.createTransaction(partialTx);
   const approveTxResponse = await safeSdk.executeTransaction(safeTransaction);
   console.log(approveTxResponse);
+
+  // PENDING
+  notification.info({
+    message:
+      "Project anchoring confirmed, your anchored project will appear shortly",
+    showIcon: true,
+  });
+
+  // TODO: how do we automatically refresh the view to show the anchor?
 
   // const safeTransaction = await safeSdk.createTransaction(partialTx);
   // const txHash = await safeSdk.getTransactionHash(safeTransaction);
@@ -117,7 +126,7 @@ export const createOrg = async (owner: string): Promise<void> => {
   );
   notification.info({
     message:
-      "Waiting for you to confirm the transaction in your connected wallet",
+      "Waiting for you to confirm the org creation transaction in your connected wallet",
     showIcon: true,
   });
   // WAITING
@@ -261,5 +270,18 @@ export const fetchProjectDropdownOptions = async (): Promise<
 
   return allProjects.map(project => {
     return { title: project.metadata.name, value: project.urn };
+  });
+};
+
+export const openAnchorProjectModal = async (
+  orgAddress: string,
+  gnosisSafeAddress: string
+): Promise<void> => {
+  const projects = await fetchProjectDropdownOptions();
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  modal.toggle(ModalAnchorProject, () => {}, {
+    projects,
+    orgAddress,
+    gnosisSafeAddress,
   });
 };

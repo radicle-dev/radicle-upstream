@@ -39,6 +39,7 @@ export type LoadedOrgTab =
       type: "projects";
       anchoredProjects: project.Project[];
       unresolvedAnchors: theGraphApi.ProjectAnchor[];
+      gnosisSafeAddress: string;
     }
   | {
       type: "members";
@@ -136,6 +137,7 @@ export const push = async (newRoute: Route): Promise<void> => {
                 type: "projects",
                 anchoredProjects: projectAnchorsData.anchoredProjects,
                 unresolvedAnchors: projectAnchorsData.unresolvedAnchors,
+                gnosisSafeAddress: orgScreenData.gnosisSafeAddress,
               },
             };
           } finally {

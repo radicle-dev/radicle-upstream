@@ -1,18 +1,14 @@
 <script lang="typescript">
-  import { Button, Icon } from "ui/DesignSystem/Primitive";
-  import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
-  import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
+  import { Button, Icon } from "ui/DesignSystem/Primitive";
 
-  const openAnchorProjectModal = async () => {
-    const projects = await org.fetchProjectDropdownOptions();
-    modal.toggle(ModalAnchorProject, () => {}, { projects });
-  };
+  export let orgAddress: string;
+  export let gnosisSafeAddress: string;
 </script>
 
 <Button
   variant="transparent"
   icon={Icon.Anchor}
-  on:click={openAnchorProjectModal}>
+  on:click={() => org.openAnchorProjectModal(orgAddress, gnosisSafeAddress)}>
   Anchor a project
 </Button>

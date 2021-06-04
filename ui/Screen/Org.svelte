@@ -69,7 +69,7 @@
     </div>
     <div slot="right">
       {#if activeTab.type === "projects"}
-        <ProjectsMenu />
+        <ProjectsMenu orgAddress={address} {gnosisSafeAddress} />
       {:else if activeTab.type === "members"}
         <MembersMenu {gnosisSafeAddress} />
       {:else}
@@ -81,6 +81,7 @@
   {#if activeTab.type === "projects"}
     <ProjectsTab
       {address}
+      {gnosisSafeAddress}
       anchoredProjects={activeTab.anchoredProjects}
       unresolvedAnchors={activeTab.unresolvedAnchors} />
   {:else if activeTab.type === "members"}
