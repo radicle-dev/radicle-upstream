@@ -39,7 +39,7 @@
     <Emoji emoji="👛" size="huge" />
     <h1 style="margin-top: 1.5rem;">Connect your wallet</h1>
     <p style="margin-top: 1.5rem;">
-      Scan this code with your wallet. Not working?
+      Scan this code with your wallet. Not working? <br />
       <a href="https://walletconnect.org/wallets" class="typo-link">
         View compatible wallets.
       </a>
