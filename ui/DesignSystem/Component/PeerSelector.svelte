@@ -62,10 +62,7 @@
   }
 
   .peer-selector:hover {
-    color: var(--color-foreground);
-    border: 1px solid var(--color-foreground-level-3);
-    border-right: none;
-    background-color: var(--color-foreground-level-1);
+    background-color: var(--color-foreground-level-2);
   }
 
   .peer-selector[hidden] {

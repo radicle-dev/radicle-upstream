@@ -31,6 +31,14 @@
 
   export let urn: Urn;
   export let activeView: router.ProjectView = { type: "files" };
+  let hover: boolean = false;
+
+  const mouseenter = () => {
+    hover = true;
+  };
+  const mouseleave = () => {
+    hover = false;
+  };
 
   const session = sess.getUnsealedFromContext();
   const trackTooltipMaintainer = "You can't unfollow your own project";
@@ -75,6 +83,7 @@
   const onPeerModal = () => {
     modal.toggle(ModalManagePeers);
   };
+
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {
     selectPeer(peer);
   };
@@ -119,8 +128,12 @@
           dataCy="manage-remotes"
           icon={Icon.Pen}
           variant="outline"
-          style="margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem;"
-          on:click={onPeerModal} />
+          style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${
+            hover ? "background-color: var(--color-foreground-level-2)" : ""
+          }`}
+          on:click={onPeerModal}
+          on:mouseenter={mouseenter}
+          on:mouseleave={mouseleave} />
         <AdditionalActionsDropdown menuItems={menuItems(project)} />
       </div>
     </Header>
