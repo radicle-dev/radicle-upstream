@@ -1,10 +1,10 @@
 <script lang="typescript">
-  import { Copyable, Identity } from "../DesignSystem/Component";
-  import { Emoji, Icon } from "../DesignSystem/Primitive";
-  import TxSpinner from "../DesignSystem/Component/Transaction/Spinner.svelte";
-  import Summary from "../DesignSystem/Component/Transaction/Summary.svelte";
+  import { Copyable, Identity, Modal } from "ui/DesignSystem/Component";
+  import { Emoji, Icon } from "ui/DesignSystem/Primitive";
+  import TxSpinner from "ui/DesignSystem/Component/Transaction/Spinner.svelte";
+  import Summary from "ui/DesignSystem/Component/Transaction/Summary.svelte";
 
-  import { ellipsed } from "../src/style";
+  import { ellipsed } from "ui/src/style";
   import {
     emoji,
     selectedStore,
@@ -15,8 +15,8 @@
     transferAmount,
     TxStatus,
     TxKind,
-  } from "../src/transaction";
-  import type { Tx } from "../src/transaction";
+  } from "ui/src/transaction";
+  import type { Tx } from "ui/src/transaction";
 
   // In reality, the transaction should never be undefined,
   // but because the only way we currently have use it here
@@ -31,16 +31,6 @@
 </script>
 
 <style>
-  .wrapper {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    padding: var(--content-padding);
-    width: 40.625rem;
-    background: var(--color-background);
-    border-radius: 1rem;
-  }
-
   header {
     display: flex;
     flex-direction: column;
@@ -113,7 +103,7 @@
   }
 </style>
 
-<div class="wrapper">
+<Modal>
   {#if tx}
     <header>
       <Emoji emoji={emoji(tx)} size="huge" />
@@ -186,4 +176,4 @@
       </div>
     </div>
   {/if}
-</div>
+</Modal>
