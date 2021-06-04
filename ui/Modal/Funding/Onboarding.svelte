@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import Modal from "ui/DesignSystem/Component/Modal.svelte";
   import Erc20Allowance from "./Onboarding/Erc20Allowance.svelte";
   import Intro from "./Onboarding/Intro.svelte";
   import SetBudget from "./Onboarding/SetBudget.svelte";
@@ -6,9 +7,9 @@
   import AddReceivers from "./Onboarding/AddReceivers.svelte";
   import Review from "./Onboarding/Review.svelte";
 
-  import * as modal from "../../src/modal";
-  import { store } from "../../src/funding/pool";
-  import type { Receivers } from "../../src/funding/pool";
+  import * as modal from "ui/src/modal";
+  import { store } from "ui/src/funding/pool";
+  import type { Receivers } from "ui/src/funding/pool";
 
   import Big from "big.js";
 
@@ -92,21 +93,8 @@
   let receivers: Receivers = new Map();
 </script>
 
-<style>
-  .wrapper {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-direction: column;
-    padding: var(--content-padding);
-    width: 37.5rem;
-    background: var(--color-background);
-    border-radius: 1rem;
-    text-align: center;
-  }
-</style>
-
-<div class="wrapper">
+<Modal
+  style="text-align: center; display: flex; flex-direction: column; align-items: center;">
   {#if currentStep === Step.Erc20Allowance}
     <Erc20Allowance {onCancel} onConfirm={approveErc20} />
   {:else if currentStep === Step.Intro}
@@ -120,4 +108,4 @@
   {:else}
     <Review {budget} {receivers} {topUp} {onBack} {onConfirmed} />
   {/if}
-</div>
+</Modal>

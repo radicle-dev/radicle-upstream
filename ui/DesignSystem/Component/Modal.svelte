@@ -1,10 +1,11 @@
 <script lang="typescript">
-  export let dataCy = "";
+  export let dataCy: string = "";
+  export let style: string = "";
 </script>
 
 <style>
   .container {
-    width: 38.5rem;
+    width: 37.5rem;
     background: var(--color-background);
     border-radius: 1rem;
     padding: 2rem;
@@ -16,8 +17,13 @@
   .container:focus {
     outline: none;
   }
+  .content {
+    width: 100%;
+  }
 </style>
 
 <div class="container" data-cy={dataCy}>
-  <slot />
+  <div class="content" {style}>
+    <slot />
+  </div>
 </div>
