@@ -18,7 +18,7 @@
     disabled?: boolean;
   }
   export let menuItems: MenuItem[];
-  export let headerTitle: string = "";
+  export let headerTitle: string | undefined = undefined;
 
   export let dataCy = "";
   export let style = "";
@@ -133,7 +133,7 @@
     </button>
     {#if expanded}
       <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
-        {#if headerTitle !== ""}
+        {#if headerTitle}
           <div class="header">
             <StyledCopyable value={headerTitle} />
           </div>
