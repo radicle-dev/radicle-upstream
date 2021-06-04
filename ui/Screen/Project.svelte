@@ -31,13 +31,13 @@
 
   export let urn: Urn;
   export let activeView: router.ProjectView = { type: "files" };
-  let hover: boolean = false;
+  let hoverstyle: string = "";
 
   const mouseenter = () => {
-    hover = true;
+    hoverstyle = "background-color: var(--color-foreground-level-2)";
   };
   const mouseleave = () => {
-    hover = false;
+    hoverstyle = "";
   };
 
   const session = sess.getUnsealedFromContext();
@@ -128,12 +128,10 @@
           dataCy="manage-remotes"
           icon={Icon.Pen}
           variant="outline"
-          style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${
-            hover ? "background-color: var(--color-foreground-level-2)" : ""
-          }`}
           on:click={onPeerModal}
           on:mouseenter={mouseenter}
-          on:mouseleave={mouseleave} />
+          on:mouseleave={mouseleave}
+          style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         <AdditionalActionsDropdown menuItems={menuItems(project)} />
       </div>
     </Header>
