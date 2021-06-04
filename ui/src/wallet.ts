@@ -262,8 +262,8 @@ class WalletConnectSigner extends ethers.Signer {
     return accountAddress;
   }
 
-  async signMessage(_message: ethers.Bytes | string): Promise<string> {
-    throw new Error("not implemented");
+  async signMessage(message: ethers.Bytes | string): Promise<string> {
+    return this.walletConnect.signMessage([message]);
   }
 
   async sendTransaction(

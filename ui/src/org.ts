@@ -1,8 +1,8 @@
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
-import EthersSafe, {
-  SafeTransactionDataPartial,
-} from "@gnosis.pm/safe-core-sdk";
+import EthersSafe from "@gnosis.pm/safe-core-sdk";
+import SafeServiceClient from "@gnosis.pm/safe-service-client";
+import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
 import * as notification from "./notification";
 import * as wallet from "./wallet";
@@ -60,8 +60,14 @@ export const anchorProject = async (
   const walletStore = svelteStore.get(wallet.store);
   const safeSdk = await EthersSafe.create(
     ethers,
-    gnosisSafeAddress,
+    // The Gnosis safe address has to be supplied in a checksummed format.
+    ethers.utils.getAddress(gnosisSafeAddress),
     walletStore.signer
+  );
+
+  // TODO: switch this based on testnet
+  const safeServiceClient = new SafeServiceClient(
+    "https://safe-transaction.rinkeby.gnosis.io"
   );
 
   const decodedProjectUrn = urn.parseIdentitySha1(projectUrn);
@@ -84,12 +90,6 @@ export const anchorProject = async (
     throw new Error("Could not generate transaction");
   }
 
-  const partialTx: SafeTransactionDataPartial = {
-    to: orgAddress,
-    data: txData,
-    value: "0",
-  };
-
   // WAITING
   notification.info({
     message:
@@ -97,10 +97,35 @@ export const anchorProject = async (
     showIcon: true,
   });
 
-  // THIS WORKS IF THERE'S ONLY ONE OWNER IN THE SAFE
-  const safeTransaction = await safeSdk.createTransaction(partialTx);
-  const approveTxResponse = await safeSdk.executeTransaction(safeTransaction);
-  console.log(approveTxResponse);
+  const safeAddress = safeSdk.getAddress();
+  const tx = {
+    to: safeAddress,
+    value: "0",
+    data: txData,
+    operation: OperationType.Call,
+  };
+  const estimation = await safeServiceClient.estimateSafeTransaction(
+    safeAddress,
+    tx
+  );
+  const transaction = await safeSdk.createTransaction({
+    ...tx,
+    safeTxGas: Number(estimation.safeTxGas),
+  });
+  const safeTxHash = await safeSdk.getTransactionHash(transaction);
+
+  const signature = await safeSdk.signTransactionHash(safeTxHash);
+
+  try {
+    await safeServiceClient.proposeTransaction(
+      safeAddress,
+      transaction.data,
+      safeTxHash,
+      signature
+    );
+  } catch (error) {
+    console.log(error);
+  }
 
   // PENDING
   notification.info({
@@ -110,11 +135,6 @@ export const anchorProject = async (
   });
 
   // TODO: how do we automatically refresh the view to show the anchor?
-
-  // const safeTransaction = await safeSdk.createTransaction(partialTx);
-  // const txHash = await safeSdk.getTransactionHash(safeTransaction);
-  // const approveTxResponse = await safeSdk.approveTransactionHash(txHash);
-  // await approveTxResponse.wait();
 };
 
 export const createOrg = async (owner: string): Promise<void> => {

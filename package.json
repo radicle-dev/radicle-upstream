@@ -157,6 +157,8 @@
     "@ethersproject/bytes": "^5.2.0",
     "@ethersproject/properties": "^5.2.0",
     "@gnosis.pm/safe-core-sdk": "^0.1.2",
+    "@gnosis.pm/safe-core-sdk-types": "^0.1.0",
+    "@gnosis.pm/safe-service-client": "^0.1.0-alpha.0",
     "@types/big.js": "^6.1.0",
     "@types/qs": "^6.9.6",
     "@types/uuid": "^8.3.0",

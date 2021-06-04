@@ -1014,12 +1014,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gnosis.pm/safe-core-sdk-types@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@gnosis.pm/safe-core-sdk-types@npm:0.1.0"
+  checksum: 5a82244fc1cd333c7cc71e178349fe691caf31067a03b748b9f427b66102bd6ec5a593014b292cd332f520bff37581c219608df867e23087bc85fe52259a2dbb
+  languageName: node
+  linkType: hard
+
 "@gnosis.pm/safe-core-sdk@npm:^0.1.2":
   version: 0.1.2
   resolution: "@gnosis.pm/safe-core-sdk@npm:0.1.2"
   dependencies:
     ethereumjs-util: ^7.0.10
   checksum: 7ce0553120a2489c5c10985d3a263ad86ed427404b26ffdd3ff793ce6e968d5feca8bd4cd6c8a3b86d447f4207c80e1e6538e677afc288e50d47051efc7101f3
+  languageName: node
+  linkType: hard
+
+"@gnosis.pm/safe-service-client@npm:^0.1.0-alpha.0":
+  version: 0.1.0-alpha.0
+  resolution: "@gnosis.pm/safe-service-client@npm:0.1.0-alpha.0"
+  dependencies:
+    "@gnosis.pm/safe-core-sdk-types": ^0.1.0
+    axios: ^0.21.1
+  checksum: c65f2e6180b183bb21f835ba329d368c99fa6d707efed6b3307b42ab94654bc10eb98122ce44eed9fdc57140014339c63996cfcc601013fdabfe0dfaa567e35f
   languageName: node
   linkType: hard
 
@@ -10780,6 +10797,8 @@ __metadata:
     "@ethersproject/cli": ^5.2.0
     "@ethersproject/properties": ^5.2.0
     "@gnosis.pm/safe-core-sdk": ^0.1.2
+    "@gnosis.pm/safe-core-sdk-types": ^0.1.0
+    "@gnosis.pm/safe-service-client": ^0.1.0-alpha.0
     "@tsconfig/svelte": ^1.0.10
     "@types/big.js": ^6.1.0
     "@types/jest": ^26.0.23
