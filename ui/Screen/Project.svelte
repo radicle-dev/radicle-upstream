@@ -53,7 +53,7 @@
         title: "Unfollow",
         icon: Icon.Network,
         disabled: true,
-        // event: () => {},
+        event: () => {},
         tooltip: isMaintainer(session.identity.urn, project)
           ? trackTooltipMaintainer
           : trackTooltip,
