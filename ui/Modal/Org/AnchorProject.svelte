@@ -91,6 +91,7 @@
       <div style="width: 100%; margin-right: 1rem;">
         <PeerSelector
           showProfile={false}
+          rounded={true}
           peers={peerSelection}
           on:select={onSelectPeer}
           selected={selectedPeer} />
