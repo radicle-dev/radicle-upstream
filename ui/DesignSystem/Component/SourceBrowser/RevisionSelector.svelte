@@ -67,7 +67,7 @@
   }
   .revision-dropdown {
     background: var(--color-background);
-    border: 1px solid transparent;
+    border: 1px solid var(--color-background);
     border-radius: 0.5rem;
     box-shadow: var(--elevation-medium);
     height: 100%;

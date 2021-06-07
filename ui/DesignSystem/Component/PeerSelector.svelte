@@ -78,10 +78,13 @@
     right: 0;
     top: -1px;
     user-select: none;
+    background: var(--color-background);
+    border-radius: 0.5rem;
   }
 
   .peer-dropdown {
-    border: 1px solid transparent;
+    border: 1px solid var(--color-background);
+    background: var(----color-background);
     border-radius: 0.5rem;
     box-shadow: var(--elevation-medium);
     z-index: 8;

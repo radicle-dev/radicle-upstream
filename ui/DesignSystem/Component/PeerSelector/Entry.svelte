@@ -15,6 +15,8 @@
     height: 2.5rem;
     justify-content: space-between;
     padding: 0 0.5em;
+    margin: 0.125rem;
+    border-radius: 0.375rem;
   }
 
   .entry.active {

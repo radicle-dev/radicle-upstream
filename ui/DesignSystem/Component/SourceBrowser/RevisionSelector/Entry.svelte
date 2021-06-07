@@ -21,10 +21,12 @@
     color: var(--color-foreground-level-6);
     cursor: pointer;
     display: flex;
-    height: 2.5rem;
+    height: 2.25rem;
+    margin: 0.125rem;
     overflow: hidden;
     overflow-wrap: anywhere;
     user-select: none;
+    border-radius: 0.375rem;
   }
 
   .revision-entry:hover {

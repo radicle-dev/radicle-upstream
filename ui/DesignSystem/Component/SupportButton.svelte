@@ -17,7 +17,7 @@
     user-select: none;
     position: relative;
     border-radius: 0.5rem;
-    border: 1px solid transparent;
+    border: 1px solid var(--color-background);
     background-clip: padding-box;
     transform-style: preserve-3d;
   }
