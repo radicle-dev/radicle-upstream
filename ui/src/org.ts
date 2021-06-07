@@ -93,7 +93,6 @@ export const anchorProject = async (
     throw new Error("Could not generate transaction");
   }
 
-  // WAITING
   notification.info({
     message:
       "Waiting for you to confirm the anchor transaction in your connected wallet",
@@ -118,25 +117,24 @@ export const anchorProject = async (
 
   const signature = await safeSdk.signTransactionHash(safeTxHash);
 
-  try {
-    await safeServiceClient.proposeTransaction(
-      checksummedGnosisSafeAddress,
-      transaction.data,
-      safeTxHash,
-      signature
-    );
-  } catch (error) {
-    console.log(error);
-  }
+  await safeServiceClient.proposeTransaction(
+    checksummedGnosisSafeAddress,
+    transaction.data,
+    safeTxHash,
+    signature
+  );
 
-  // PENDING
   notification.info({
     message:
       "Project anchoring confirmed, your anchored project will appear shortly",
     showIcon: true,
   });
 
-  // TODO: how do we automatically refresh the view to show the anchor?
+  // TODO: show pending anchors
+  const txs = await safeServiceClient.getPendingTransactions(
+    checksummedGnosisSafeAddress
+  );
+  console.log(txs);
 };
 
 export const createOrg = async (owner: string): Promise<void> => {
@@ -151,10 +149,8 @@ export const createOrg = async (owner: string): Promise<void> => {
       "Waiting for you to confirm the org creation transaction in your connected wallet",
     showIcon: true,
   });
-  // WAITING
   const response: TransactionResponse = await orgFactory.createOrg([owner], 1);
 
-  // PENDING
   notification.info({
     message: "Org creation transaction confirmed, your org will appear shortly",
     showIcon: true,
@@ -184,7 +180,6 @@ export const createOrg = async (owner: string): Promise<void> => {
     throw new Error("Org not found in interface logs");
   }
 
-  // SUCCESS
   notification.info({
     message: `Org ${orgAddress} has been created`,
     showIcon: true,
