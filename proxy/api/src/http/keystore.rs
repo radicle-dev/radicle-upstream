@@ -3,9 +3,7 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use radicle_daemon::keystore;
-
-use crate::{context, http};
+use crate::{context, http, keystore};
 
 /// Combination of all keystore filters.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {

@@ -6,9 +6,9 @@ use data_encoding::HEXLOWER;
 use rand::Rng as _;
 use tokio::sync::RwLock;
 
-use radicle_daemon::{keystore, net, signer::BoxedSigner, PeerControl};
+use radicle_daemon::{net, signer::BoxedSigner, PeerControl};
 
-use crate::service;
+use crate::{keystore, service};
 
 #[cfg(test)]
 use radicle_daemon::{config, keys, signer, Peer, RunConfig};

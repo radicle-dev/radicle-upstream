@@ -81,6 +81,7 @@ dependencies = [
  "radicle-avatar",
  "radicle-daemon",
  "radicle-git-ext",
+ "radicle-keystore",
  "radicle-source",
  "rand 0.7.3",
  "secstr",

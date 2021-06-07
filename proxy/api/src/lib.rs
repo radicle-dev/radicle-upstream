@@ -40,6 +40,7 @@ mod git_helper;
 mod http;
 mod identifier;
 mod identity;
+mod keystore;
 mod notification;
 mod patch;
 mod process;
