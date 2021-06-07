@@ -58,7 +58,7 @@
       <FollowToggle following disabled />
       <AdditionalActionsDropdown
         headerTitle={address}
-        style="margin-left: 10px; border: 1px solid var(--color-foreground-level-3); border-radius: 4px;"
+        style="margin-left: 10px;"
         menuItems={additionalActionsDropdownItems} />
     </div>
   </Header>
