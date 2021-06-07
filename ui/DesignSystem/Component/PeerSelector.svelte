@@ -9,7 +9,6 @@
   import { Icon } from "../Primitive";
   import { Overlay, Tooltip } from "../Component";
 
-  import Entry from "./PeerSelector/Entry.svelte";
   import Peer from "./PeerSelector/Peer.svelte";
 
   export let expanded: boolean = false;
@@ -105,6 +104,29 @@
     display: flex;
     justify-content: center;
   }
+
+  .entry {
+    align-items: center;
+    background-color: var(--color-background);
+    color: var(--color-foreground-level-3);
+    cursor: not-allowed;
+    display: flex;
+    height: 2.5rem;
+    justify-content: space-between;
+    padding: 0 0.5em;
+  }
+
+  .entry.enabled {
+    color: var(--color-foreground-level-6);
+  }
+  .entry.enabled:hover {
+    background-color: var(--color-foreground-level-2);
+    cursor: pointer;
+  }
+
+  .entry.selected {
+    background-color: var(--color-foreground-level-2);
+  }
 </style>
 
 <Overlay
@@ -131,10 +153,12 @@
         dropdownHeight > 40 ? "0.5rem" : "0"
       }`}>
       {#each orderPeers(peers) as peer (peer.peerId)}
-        <Entry
-          disabled={peer.role === PeerRole.Tracker}
-          on:click={() => onSelect(peer)}
-          selected={peer.identity.peerId === selected.identity.peerId}>
+        <div
+          data-cy="peer-dropdown-entry"
+          class="entry"
+          class:enabled={peer.role !== PeerRole.Tracker}
+          class:selected={peer.identity.peerId === selected.identity.peerId}
+          on:click|stopPropagation={() => onSelect(peer)}>
           {#if peer.role === PeerRole.Tracker}
             <Tooltip position={CSSPosition.Left} value="Remote has no changes">
               <Peer {peer} />
@@ -155,7 +179,7 @@
               </Tooltip>
             {/if}
           </div>
-        </Entry>
+        </div>
       {/each}
     </div>
   </div>
