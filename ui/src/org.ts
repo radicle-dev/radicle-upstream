@@ -58,14 +58,17 @@ export const anchorProject = async (
   commitHash: string
 ): Promise<void> => {
   const walletStore = svelteStore.get(wallet.store);
+  const checksummedGnosisSafeAddress =
+    ethers.utils.getAddress(gnosisSafeAddress);
+  const checksummedOrgAddress = ethers.utils.getAddress(orgAddress);
   const safeSdk = await EthersSafe.create(
     ethers,
-    // The Gnosis safe address has to be supplied in a checksummed format.
-    ethers.utils.getAddress(gnosisSafeAddress),
+    checksummedGnosisSafeAddress,
     walletStore.signer
   );
 
-  // TODO: switch this based on testnet
+  // TODO: switch this based on testnet, Gnosis only provides a tx service on
+  // rinkeby though
   const safeServiceClient = new SafeServiceClient(
     "https://safe-transaction.rinkeby.gnosis.io"
   );
@@ -76,7 +79,7 @@ export const anchorProject = async (
   const paddedProjectUrn = ethers.utils.zeroPad(decodedProjectUrn, 32);
   const paddedCommitHash = ethers.utils.zeroPad(decodedCommitHash, 32);
 
-  const orgContract = new ethers.Contract(orgAddress, orgAbi);
+  const orgContract = new ethers.Contract(checksummedGnosisSafeAddress, orgAbi);
 
   const orgContractInstance = await orgContract.populateTransaction.anchor(
     paddedProjectUrn,
@@ -97,15 +100,14 @@ export const anchorProject = async (
     showIcon: true,
   });
 
-  const safeAddress = safeSdk.getAddress();
   const tx = {
-    to: safeAddress,
+    to: checksummedOrgAddress,
     value: "0",
     data: txData,
     operation: OperationType.Call,
   };
   const estimation = await safeServiceClient.estimateSafeTransaction(
-    safeAddress,
+    checksummedGnosisSafeAddress,
     tx
   );
   const transaction = await safeSdk.createTransaction({
@@ -118,7 +120,7 @@ export const anchorProject = async (
 
   try {
     await safeServiceClient.proposeTransaction(
-      safeAddress,
+      checksummedGnosisSafeAddress,
       transaction.data,
       safeTxHash,
       signature
