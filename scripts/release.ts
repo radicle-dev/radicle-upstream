@@ -9,6 +9,7 @@ import standardVersion from "standard-version";
 import prompts from "prompts";
 import chalk from "chalk";
 import * as semver from "semver";
+import fetch from "node-fetch";
 
 const currentVersion: string = require("../package.json").version;
 
@@ -57,7 +58,7 @@ class UserError extends Error {
 type ReleaseType = "major" | "minor" | "patch";
 
 interface StartOptions {
-  releaseType: ReleaseType;
+  type: ReleaseType;
   revision: string;
 }
 
@@ -67,7 +68,7 @@ const createRc: yargs.CommandModule<unknown, StartOptions> = {
     "Create a release candidate branch and a commit that updates the version and changelog",
   builder: yargs => {
     return yargs
-      .positional("releaseType", {
+      .positional("type", {
         demandOption: true,
         choices: ["major", "minor", "patch"] as ReleaseType[],
         required: true,
@@ -78,7 +79,7 @@ const createRc: yargs.CommandModule<unknown, StartOptions> = {
       });
   },
   handler: async options => {
-    const newVersion = semver.inc(currentVersion, options.releaseType);
+    const newVersion = semver.inc(currentVersion, options.type);
     await runVerbose("git", [
       "checkout",
       "-b",
@@ -90,7 +91,7 @@ const createRc: yargs.CommandModule<unknown, StartOptions> = {
       silent: true,
       skip: { tag: true },
       sign: true,
-      releaseAs: options.releaseType,
+      releaseAs: options.type,
     });
     console.log(
       `✔ standard-version --infile ./CHANGELOG.md --silent --sign --release-as ${options.releaseType}`
@@ -116,7 +117,7 @@ const createQaIssues: yargs.CommandModule<unknown, unknown> = {
     await promptContinue("Create QA issues?");
 
     await execa("hub", ["issue", "create", "--file", "-"], {
-      stdio: ["inherit"],
+      stdio: ["pipe", "inherit", "inherit"],
       input: `QA: v${version} Linux\n\n${qaIssueBody}`,
     });
 
@@ -189,7 +190,7 @@ const publish: yargs.CommandModule<unknown, unknown> = {
 };
 
 const announcements: yargs.CommandModule<unknown, unknown> = {
-  command: "announcement",
+  command: "announcements",
   describe: "Show templates for announcing the release",
   handler: async () => {
     const version = await getReleaseCandidateVersion();
@@ -228,6 +229,7 @@ If you encounter a bug, please [open an issue][6].
     console.log(chalk.cyan("Post this to #general on discord"));
     const communityVersion = version.replace(/\./g, "-");
     console.log(`Radicle Upstream v${version} is out! 🎉
+>> highlight some of the changes here <<
 https://radicle.community/t/radicle-upstream-v${communityVersion}-is-out`);
   },
 };

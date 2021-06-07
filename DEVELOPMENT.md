@@ -227,9 +227,6 @@ Here's a list of all scripts that are intended for developer use:
     yarn dist                   # Build an installable Upstream package for the
                                 # current platform
 
-    yarn release                # Start a two-step process to cut a new
-                                # release, see DEVELOPMENT.md for more details
-
     yarn typescript:check       # Type-check all UI *.ts and *.svelte files
     yarn prettier:check         # Check UI code formatting
     yarn prettier:write         # Auto-format UI code
@@ -536,21 +533,22 @@ All Github access tokens _must_ have the `public_repo` scope.
     2. Publish the CI artifacts as release candidate binaries.
 
        ```bash
-       ./sripts/release.ts publish-rc-binaries
+       ./scripts/release.ts publish-rc-binaries
        ```
 
     3. Create QA issues for the release that link to the release candidate
        binaries.
 
        ```bash
-       ./sripts/release.ts create-qa-issues
+       ./scripts/release.ts create-qa-issues
        ```
 
     4. Test the release by walking through the QA issues.
     5. (Optional) To fix bugs, create a PR with the fixes based on the release
        candidate branch. Once it has been approved, squash merge it into the
-       release candidate  branch (see [“Merging Pull Requests"][merging-prs])
-       and continue QA.
+       release candidate branch (see [“Merging Pull Requests"][merging-prs]).
+       Then restart the “Test the release” step. (Skip creating a QA
+       issue in 2.3.)
     6. Close the QA issues.
 
 3. Publish and announce the release
@@ -558,7 +556,7 @@ All Github access tokens _must_ have the `public_repo` scope.
        `https://releases.radicle.xyz` and create and publish a release tag.
 
        ```bash
-       ./sripts/release.ts publish
+       ./scripts/release.ts publish
        ```
 
     2. Merge the pull request on `radicle.xyz`.
@@ -566,13 +564,13 @@ All Github access tokens _must_ have the `public_repo` scope.
        post should highlight the important changes in the release.
 
        ```bash
-       ./sripts/release.ts announcements
+       ./scripts/release.ts announcements
        ```
 
     4. Announce the release to the in-app update notification
 
        ```bash
-       ./sripts/release.ts set-latest-release
+       ./scripts/release.ts set-latest-release
        ```
 
     5. Update the [Homebrew
@@ -588,7 +586,7 @@ All Github access tokens _must_ have the `public_repo` scope.
     ```bash
     git checkout master
     git pull --ff-only
-    git merge release-candidates/vX.Y.Z --signoff
+    git merge release-candidate/vX.Y.Z --signoff
     git push
     ```
 
