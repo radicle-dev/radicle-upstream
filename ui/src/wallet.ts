@@ -263,7 +263,17 @@ class WalletConnectSigner extends ethers.Signer {
   }
 
   async signMessage(message: ethers.Bytes | string): Promise<string> {
-    return this.walletConnect.signMessage([message]);
+    const prefix = ethers.utils.toUtf8Bytes(
+      `\x19Ethereum Signed Message:\n${  message.length}`
+    );
+    const msg = ethers.utils.concat([prefix, message]);
+    const address = await this.getAddress();
+    const keccakMessage = ethers.utils.keccak256(msg);
+    const signature = await this.walletConnect.signMessage([
+      address.toLowerCase(),
+      keccakMessage,
+    ]);
+    return signature;
   }
 
   async sendTransaction(
