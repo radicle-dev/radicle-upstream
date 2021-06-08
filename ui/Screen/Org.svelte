@@ -2,6 +2,7 @@
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
+  import type * as theGraphApi from "ui/src/theGraphApi";
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import {
@@ -22,6 +23,8 @@
   export let activeTab: router.LoadedOrgTab;
   export let gnosisSafeAddress: string;
   export let address: string;
+  export let members: theGraphApi.Member[];
+  export let threshold: number;
 
   const tabs = (address: string, active: router.LoadedOrgTab) => {
     return [
@@ -37,6 +40,7 @@
         title: "Members",
         icon: Icon.User,
         active: active.type === "members",
+        counter: members.length,
         onClick: () => {
           router.push({ type: "org", activeTab: "members", address });
         },
@@ -79,7 +83,11 @@
 
 <SidebarLayout>
   <Header>
-    <OrgHeader slot="left" orgAddress={address} {gnosisSafeAddress} />
+    <OrgHeader
+      slot="left"
+      orgAddress={address}
+      {gnosisSafeAddress}
+      {threshold} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
       <AdditionalActionsDropdown
@@ -109,10 +117,7 @@
       anchoredProjects={activeTab.anchoredProjects}
       unresolvedAnchors={activeTab.unresolvedAnchors} />
   {:else if activeTab.type === "members"}
-    <MembersTab
-      {gnosisSafeAddress}
-      members={activeTab.members}
-      threshold={activeTab.threshold} />
+    <MembersTab members={activeTab.members} />
   {:else}
     {router.unreachable(activeTab)}
   {/if}

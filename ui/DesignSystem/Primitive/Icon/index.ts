@@ -56,6 +56,7 @@ import MagnifyingGlass from "./MagnifyingGlass.svelte";
 import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
 import Network from "./Network.svelte";
+import Orgs from "./Orgs.svelte";
 import Pen from "./Pen.svelte";
 import Plus from "./Plus.svelte";
 import PlusSmall from "./PlusSmall.svelte";
@@ -134,6 +135,7 @@ export default {
   Merge,
   Minus,
   Network,
+  Orgs,
   Pen,
   Plus,
   PlusSmall,

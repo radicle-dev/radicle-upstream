@@ -56,6 +56,8 @@ export type LoadedRoute =
       address: string;
       gnosisSafeAddress: string;
       activeTab: LoadedOrgTab;
+      threshold: number;
+      members: theGraphApi.Member[];
     }
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
@@ -125,19 +127,21 @@ export const push = async (newRoute: Route): Promise<void> => {
         case "projects": {
           try {
             screen.lock();
-            const orgScreenData = await org.fetchOrg(newRoute.address);
-            const projectAnchorsData = await org.resolveProjectAnchors(
+            const orgScreen = await org.fetchOrg(newRoute.address);
+            const projectAnchors = await org.resolveProjectAnchors(
               newRoute.address
             );
             loadedRoute = {
               type: "org",
               address: newRoute.address,
-              gnosisSafeAddress: orgScreenData.gnosisSafeAddress,
+              gnosisSafeAddress: orgScreen.gnosisSafeAddress,
+              members: orgScreen.members,
+              threshold: orgScreen.threshold,
               activeTab: {
                 type: "projects",
-                anchoredProjects: projectAnchorsData.anchoredProjects,
-                unresolvedAnchors: projectAnchorsData.unresolvedAnchors,
-                gnosisSafeAddress: orgScreenData.gnosisSafeAddress,
+                anchoredProjects: projectAnchors.anchoredProjects,
+                unresolvedAnchors: projectAnchors.unresolvedAnchors,
+                gnosisSafeAddress: orgScreen.gnosisSafeAddress,
               },
             };
           } finally {
@@ -148,18 +152,17 @@ export const push = async (newRoute: Route): Promise<void> => {
         case "members": {
           try {
             screen.lock();
-            const orgScreenData = await org.fetchOrg(newRoute.address);
-            const membersData = await org.fetchMembers(
-              orgScreenData.gnosisSafeAddress
-            );
+            const orgScreen = await org.fetchOrg(newRoute.address);
             loadedRoute = {
               type: "org",
               address: newRoute.address,
-              gnosisSafeAddress: orgScreenData.gnosisSafeAddress,
+              gnosisSafeAddress: orgScreen.gnosisSafeAddress,
+              members: orgScreen.members,
+              threshold: orgScreen.threshold,
               activeTab: {
                 type: "members",
-                members: membersData.members,
-                threshold: membersData.threshold,
+                members: orgScreen.members,
+                threshold: orgScreen.threshold,
               },
             };
           } finally {

@@ -136,7 +136,7 @@ export const getGnosisSafeMembers = async (
     })
   ).data.wallets[0];
 
-  return { members: response.owners, threshold: response.threshold };
+  return { members: response.owners, threshold: parseInt(response.threshold) };
 };
 
 export interface ProjectAnchor {

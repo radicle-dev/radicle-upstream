@@ -108,7 +108,9 @@
     <Org
       activeTab={$activeRouteStore.activeTab}
       address={$activeRouteStore.address}
-      gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress} />
+      gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}
+      threshold={$activeRouteStore.threshold}
+      members={$activeRouteStore.members} />
   {:else if $activeRouteStore.type === "project"}
     <Project
       activeView={$activeRouteStore.activeView}

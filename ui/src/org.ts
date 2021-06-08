@@ -209,20 +209,6 @@ const fetchGnosisSafeAddr = async (
   return safeAddr.toLowerCase();
 };
 
-export const fetchOrg = async (
-  orgAddress: string
-): Promise<{
-  orgAddress: string;
-  gnosisSafeAddress: string;
-}> => {
-  const walletStore = svelteStore.get(wallet.store);
-  const gnosisSafeAddress = await fetchGnosisSafeAddr(
-    orgAddress,
-    walletStore.provider
-  );
-  return { orgAddress, gnosisSafeAddress };
-};
-
 export const orgSidebarStore = svelteStore.writable<theGraphApi.Org[] | []>([]);
 
 export const fetchOrgs = async (): Promise<void> => {
@@ -239,7 +225,24 @@ export const fetchOrgs = async (): Promise<void> => {
   orgSidebarStore.set(orgs);
 };
 
-export const fetchMembers = async (
+export const fetchOrg = async (
+  orgAddress: string
+): Promise<{
+  orgAddress: string;
+  gnosisSafeAddress: string;
+  members: theGraphApi.Member[];
+  threshold: number;
+}> => {
+  const walletStore = svelteStore.get(wallet.store);
+  const gnosisSafeAddress = await fetchGnosisSafeAddr(
+    orgAddress,
+    walletStore.provider
+  );
+  const { members, threshold } = await fetchMembers(gnosisSafeAddress);
+  return { orgAddress, gnosisSafeAddress, members, threshold };
+};
+
+const fetchMembers = async (
   gnosisSafeAddress: string
 ): Promise<theGraphApi.MemberResponse> => {
   return await theGraphApi.getGnosisSafeMembers(gnosisSafeAddress);
