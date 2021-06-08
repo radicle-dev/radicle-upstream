@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { blur } from "svelte/transition";
+  import { fade, fly } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { store } from "../../src/notification";
 
@@ -27,7 +27,8 @@
       data-cy="notification"
       style="max-width: 95%;"
       animate:flip
-      transition:blur={{ duration: 300 }}>
+      in:fly={{ y: 1000, duration: 200 }}
+      out:fade>
       <Notification {notification} />
     </div>
   {/each}
