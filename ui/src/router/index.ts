@@ -2,6 +2,7 @@ import * as svelteStore from "svelte/store";
 
 import * as error from "ui/src/error";
 import * as screen from "ui/src/screen";
+import * as mutexExecutor from "ui/src/mutexExecutor";
 
 import { Route, LoadedRoute, loadRoute, routeToPath } from "./definition";
 export * from "./definition";
@@ -15,6 +16,8 @@ const historyStore: svelteStore.Writable<Route[]> = svelteStore.writable([
   BOOT_ROUTE,
 ]);
 
+const historyExecutor = mutexExecutor.create();
+
 // Sets the history to the given value and navigates to the last item
 // in the history.
 const setHistory = async (history: Route[]) => {
@@ -26,7 +29,13 @@ const setHistory = async (history: Route[]) => {
   }
   const targetRoute = history.slice(-1)[0];
 
-  const loadedRoute = await screen.withLock(() => loadRoute(targetRoute));
+  const loadedRoute = await historyExecutor.run(() =>
+    screen.withLock(() => loadRoute(targetRoute))
+  );
+  if (loadedRoute === undefined) {
+    return;
+  }
+
   activeRouteStore.set(loadedRoute);
   historyStore.set(history);
   window.history.replaceState(
