@@ -46,47 +46,13 @@
     z-index: 100;
   }
 
-  .tooltip.bottom,
-  .tooltip.top {
-    transform: translateX(-50%);
-  }
   .tooltip.visible {
     visibility: visible;
   }
+
   .tooltip.hidden {
     visibility: hidden;
   }
-  /* .tooltip:before {
-    content: "";
-    display: block;
-    height: 8px;
-    width: 8px;
-    background-color: inherit;
-    border: inherit;
-    position: absolute;
-    clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
-    border-radius: 0 0 0 0.1875rem;
-  }
-  .tooltip.right:before {
-    bottom: calc(50% - 4px);
-    left: -4px;
-    transform: rotate(45deg);
-  }
-  .tooltip.left:before {
-    bottom: calc(50% - 4px);
-    right: -4px;
-    transform: rotate(-135deg);
-  }
-  .tooltip.bottom:before {
-    left: calc(50% - 4px);
-    top: -4px;
-    transform: rotate(135deg);
-  }
-  .tooltip.top:before {
-    left: calc(50% - 4px);
-    bottom: -4px;
-    transform: rotate(-45deg);
-  } */
 </style>
 
 {#if value.length > 0}
