@@ -136,7 +136,7 @@ const validateNewRepository = async (path: string): Promise<boolean> => {
 
 const projectNameConstraints = {
   presence: {
-    message: "You must provide a display name",
+    message: "You must provide a project name",
     allowEmpty: false,
   },
   firstHandleChar: {
@@ -145,13 +145,14 @@ const projectNameConstraints = {
   length: {
     minimum: 2,
     maximum: 64,
-    tooShort: "Your project name should be at least 2 characters long.",
-    tooLong: "Your project name should not be longer than 64 characters.",
+    tooShort:
+      "Oops, your project’s name needs to be at least 2 characters long.",
+    tooLong: "Oh, your project’s name can’t have more than 64 characters.",
   },
   format: {
     pattern: new RegExp(projectNameMatch, "i"),
     message:
-      "Your project name has unsupported characters in it. You can only use basic letters, numbers, and the _ , - and . characters.",
+      "Your project’s name has some characters that aren’t supported. You can only use basic letters, numbers, and the _ , - and . characters.",
   },
 };
 
@@ -159,7 +160,7 @@ const projectDescriptionConstraints = {
   length: {
     maximum: 256,
     tooLong:
-      "Your project description should not be longer than 256 characters.",
+      "Whoa Shakespeare, your project’s description can’t be longer than 256 characters. Shorten it a bit!",
   },
 };
 
@@ -186,7 +187,7 @@ export const repositoryPathValidationStore = (
         {
           promise: validateNewRepository,
           validationMessage:
-            "Please choose a directory that's not already a git repository.",
+            "Please choose a directory that’s not already a git repository.",
         },
       ]
     );
