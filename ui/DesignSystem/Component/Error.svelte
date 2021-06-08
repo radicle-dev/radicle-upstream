@@ -11,7 +11,7 @@
     vertical-align: middle;
     margin: 1rem;
     padding: 1rem;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: left;

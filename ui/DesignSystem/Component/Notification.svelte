@@ -25,7 +25,7 @@
 <style>
   .notification {
     display: flex;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     height: 32px;
     align-items: center;
     justify-content: center;
