@@ -38,7 +38,7 @@
     background-color: var(--color-foreground);
     color: var(--color-background);
     text-align: center;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     padding: 4px 8px;
     position: fixed;
 
