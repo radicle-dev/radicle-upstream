@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.6](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.5...v0.2.6) (2021-06-07)
+
+
+### Features
+
+* **ui:** add wallet status to wallet sidebar icon ([#1930](https://github.com/radicle-dev/radicle-upstream/issues/1930)) ([1d4b450](https://github.com/radicle-dev/radicle-upstream/commit/1d4b450fc796f17a60d60cd811cee0de556cb1f9))
+* **ui:** Wallet update ([#1900](https://github.com/radicle-dev/radicle-upstream/issues/1900)) ([7ef2ec4](https://github.com/radicle-dev/radicle-upstream/commit/7ef2ec4c4f7bc1ce8e90e7f9b2a9667f3b58f138))
+* patches ([dbf9d1b](https://github.com/radicle-dev/radicle-upstream/commit/dbf9d1b81dfae4b71fe308f4109c9e03bee98e7b))
+
+
+### Bug Fixes
+
+* don’t destroy wallet when all views unsubscribe ([d35b04d](https://github.com/radicle-dev/radicle-upstream/commit/d35b04d2d3d477d8a7cfcdd4e94ea3c7c3a010c1))
+* don’t leak ethereum account polls ([972c000](https://github.com/radicle-dev/radicle-upstream/commit/972c000c5fb9e890f9c961e5b3549d4e1f1eeb70))
+* **tests:** unload app when test is successful ([e92e498](https://github.com/radicle-dev/radicle-upstream/commit/e92e498a96d9fe0b96a2be82232d817af4785dfb))
+* update patches screen when a new patch arrives ([924b747](https://github.com/radicle-dev/radicle-upstream/commit/924b7477a7afaadca45bde616b4d787a82715880))
+* **ui:** fix network diagnostics shortcut ([c697515](https://github.com/radicle-dev/radicle-upstream/commit/c6975154ca5280d6846a09ec01b5001620a13199))
+* show peer count properly in sidebar ([5205959](https://github.com/radicle-dev/radicle-upstream/commit/5205959925c6e776b9464d4b9c047ab1e58fec7d))
+
 ### [0.2.5](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.4...v0.2.5) (2021-05-25)
 
 
