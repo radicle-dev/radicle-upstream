@@ -11,7 +11,11 @@
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      wallet();
+      if (isDev) {
+        wallet();
+      } else {
+        profile();
+      }
     }
   };
 
