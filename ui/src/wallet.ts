@@ -264,7 +264,7 @@ class WalletConnectSigner extends ethers.Signer {
 
   async signMessage(message: ethers.Bytes | string): Promise<string> {
     const prefix = ethers.utils.toUtf8Bytes(
-      `\x19Ethereum Signed Message:\n${  message.length}`
+      `\x19Ethereum Signed Message:\n${message.length}`
     );
     const msg = ethers.utils.concat([prefix, message]);
     const address = await this.getAddress();
