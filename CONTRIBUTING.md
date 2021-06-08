@@ -1,11 +1,11 @@
-# Contributing to this repository
+# Contributing to Radicle Upstream
 
 ## Learn more about Upstream
 
 To familiarise yourself with the Upstream app and the Radicle ecosystem, have a
 look at the following resources:
 
-- [DEVELOPMENT.md][dmd]
+- [DEVELOPMENT.md][dmd] for more information about hacking on the project.
 - [Discord][dc]
 - [radicle.xyz][ra]
 - [Radicle documentation][rd]
@@ -24,6 +24,39 @@ of Pull Requests in Upstream. Learn more about the contribution flow
 [here][cbf]. For us to see you've contributed a Patch, we need to [add your
 Device ID as a remote][ar] to our repo. You can either add it to the [Remotes to
 track issue][rtr] or post it in [#upstream on Discord][dc-up].
+
+## Creating a commit
+
+For you commits to be accepted they have to follow a couple of guidelines.
+
+### Conventional commit message
+
+Your commits should be formatted according to the [conventional commits
+specification][cc].
+
+Here are a couple of examples:
+
+```plain
+fix: fix clippy on CI (#430)
+refactor(ui): improve cypress spec reliability (#429)
+style(ui): icon refresh (#411)
+chore(release): 0.0.11 (#417)
+test(ui): add missing project creation specs (#404)
+feat(proxy): improve session (#380)
+```
+
+### Certificate of Origin
+
+We require commits to be signed off to show your agreement to the [Developer
+Certificate of Origin (DCO)](./DCO). This means that the messages of all your
+commits must include the following line at the end.
+
+    Signed-off-by: John Doe <john.doe@example.com>
+
+You can create commits with this line by running `git commit -s`.
+
+The DCO was created by the Linux Kernel community and is a simple statement that
+you, as a contributor, have the legal right to make the contribution.
 
 ## Documentation
 
@@ -50,3 +83,4 @@ or [contribute][cd]
 [mt]: mailto:julien@monadic.xyz
 [ob]: https://github.com/radicle-dev/radicle-docs/issues/new/choose
 [cd]: https://github.com/radicle-dev/radicle-docs#readme
+[cc]: https://www.conventionalcommits.org/en/v1.0.0
