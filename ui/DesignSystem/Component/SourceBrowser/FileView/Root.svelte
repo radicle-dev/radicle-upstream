@@ -5,6 +5,7 @@
   import EmptyState from "../../EmptyState.svelte";
   import Readme from "../Readme.svelte";
 
+  import PeerStatus from "./PeerStatus.svelte";
   import CommitTeaser from "../CommitTeaser.svelte";
 
   export let commit: CommitHeader;
@@ -14,6 +15,8 @@
 
 <style>
   .commit-header {
+    display: flex;
+    gap: 1rem;
     height: 2.5rem;
     margin-bottom: 1rem;
   }
@@ -21,6 +24,7 @@
 
 <div class="commit-header">
   <CommitTeaser {commit} on:select style="height: 100%" />
+  <PeerStatus />
 </div>
 
 {#if view.readme}

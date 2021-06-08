@@ -19,6 +19,7 @@
   .container {
     display: flex;
     align-items: center;
+    flex: 1;
     height: 40px;
     padding: 0 12px 0 8px;
     white-space: nowrap;
