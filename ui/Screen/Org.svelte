@@ -29,7 +29,7 @@
   const tabs = (address: string, active: router.LoadedOrgTab) => {
     return [
       {
-        title: "Projects",
+        title: "Anchored Projects",
         icon: Icon.ChevronLeftRight,
         active: active.type === "projects",
         onClick: () => {
