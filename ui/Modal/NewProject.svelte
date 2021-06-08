@@ -82,7 +82,7 @@
         activeView: { type: "files" },
       });
       notification.info({
-        message: `Project ${response.metadata.name} successfully created`,
+        message: `Project ${response.metadata.name} was created!`,
       });
     } catch (err) {
       router.push({ type: "profile", activeTab: "projects" });
@@ -259,7 +259,7 @@
           <p
             style="margin-top: 1rem; color: var(--color-foreground-level-6);
             text-align: left;">
-            This will publish the chosen repository to the Radicle network.
+            This will publish your repository to the Radicle network.
           </p>
         </div>
       </RadioOption>
@@ -270,7 +270,7 @@
 
     <Tooltip
       value={isExisting
-        ? "The project name is taken from the chosen repository"
+        ? "The project’s name is taken from the chosen repository"
         : ""}
       position={CSSPosition.Top}>
       <Input.Text
