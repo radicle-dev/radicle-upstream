@@ -66,7 +66,7 @@
     class="reset-cursor list-item"
     data-cy={`project-list-entry-${anchor.id}`}>
     <div class="typo-text anchor-row">
-      <RadicleId urn={anchor.projectId} />
+      <RadicleId urn={anchor.projectId} showIcon={false} />
       <AnchorMetadataModal {anchor} {orgAddress} />
     </div>
     <FollowToggle
