@@ -1,5 +1,7 @@
 <script lang="typescript">
   import * as router from "ui/src/router";
+  import * as ipc from "ui/src/ipc";
+  import * as notification from "ui/src/notification";
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import {
@@ -42,24 +44,46 @@
     ];
   };
 
-  const additionalActionsDropdownItems = [
-    {
-      title: "Change avatar",
-      icon: Icon.Pen,
-      event: () => console.log("event(Change avatar)"),
-    },
-  ];
+  const copy = (content: string): void => {
+    if (content) ipc.copyToClipboard(content.trim());
+    notification.info({ message: "Copied to your clipboard" });
+  };
+
+  const menuItems = (address: string, gnosisSafeAddress: string) => {
+    return [
+      {
+        title: "Copy Org ID",
+        icon: Icon.At,
+        event: () => copy(address),
+      },
+      {
+        title: "View on Gnosis Safe",
+        icon: Icon.ArrowBoxUpRight,
+        // TODO(rudolfs): make the link go to
+        // `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}` for
+        // mainnet
+        event: () => {
+          window.location.href = `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}`;
+        },
+      },
+      {
+        title: "Register ENS name",
+        icon: Icon.Ethereum,
+        disabled: true,
+        event: () => {},
+        tooltip: "Not yet supported",
+      },
+    ];
+  };
 </script>
 
 <SidebarLayout>
   <Header>
     <OrgHeader slot="left" orgAddress={address} {gnosisSafeAddress} />
     <div slot="right" style="display: flex">
-      <FollowToggle following disabled />
+      <FollowToggle following disabled style="margin-right: 1rem;" />
       <AdditionalActionsDropdown
-        headerTitle={address}
-        style="margin-left: 10px;"
-        menuItems={additionalActionsDropdownItems} />
+        menuItems={menuItems(address, gnosisSafeAddress)} />
     </div>
   </Header>
 
