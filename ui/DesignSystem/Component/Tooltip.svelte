@@ -56,7 +56,7 @@
   .tooltip.hidden {
     visibility: hidden;
   }
-  .tooltip:before {
+  /* .tooltip:before {
     content: "";
     display: block;
     height: 8px;
@@ -86,7 +86,7 @@
     left: calc(50% - 4px);
     bottom: -4px;
     transform: rotate(-45deg);
-  }
+  } */
 </style>
 
 {#if value.length > 0}

@@ -27,7 +27,7 @@
       data-cy="notification"
       style="max-width: 95%;"
       animate:flip
-      in:fly={{ y: 1000, duration: 200 }}
+      in:fly={{ y: 1000, duration: 300 }}
       out:fade>
       <Notification {notification} />
     </div>
