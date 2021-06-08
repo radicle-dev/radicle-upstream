@@ -4,7 +4,9 @@ use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
 
-use radicle_daemon::{keys, keystore, profile};
+use radicle_daemon::{keys, profile};
+
+use crate::keystore;
 
 /// Persistent environment with depedencies for running the API and coco peer services.
 pub struct Environment {

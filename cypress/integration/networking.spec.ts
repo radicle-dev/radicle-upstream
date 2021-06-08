@@ -104,7 +104,7 @@ context("p2p networking", () => {
 
           cy.log("current user does not show up in the peer selector");
           commands
-            .pickWithContent(["peer-dropdown-container"], "abbey")
+            .pickWithContent(["peer-dropdown-entry"], "abbey")
             .should("not.exist");
 
           cy.log("add contributor remote on maintainer's node");
@@ -227,9 +227,7 @@ context("p2p networking", () => {
           nodeManager.asNode(maintainerNode);
           commands.pick("project-list-entry-new-fancy-project.xyz").click();
           commands.pick("peer-selector").click();
-          commands
-            .pickWithContent(["peer-dropdown-container"], "abbey")
-            .click();
+          commands.pickWithContent(["peer-dropdown-entry"], "abbey").click();
           commands.pick("commits-tab").click();
           commands
             .pickWithContent(["commits-page"], contributorCommitSubject)

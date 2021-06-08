@@ -36,6 +36,9 @@ pub struct Args {
     /// add one or more default seed addresses to initialise the settings store (default: none)
     #[argh(option, long = "default-seed")]
     pub default_seeds: Vec<String>,
+    /// don’t install the git-remote-rad binary
+    #[argh(switch)]
+    pub skip_remote_helper_install: bool,
 }
 
 /// Data required to run the peer and the API
@@ -56,7 +59,9 @@ struct Rigging {
 pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
-    git_helper::setup(&proxy_path, &bin_dir)?;
+    if !args.skip_remote_helper_install {
+        git_helper::setup(&proxy_path, &bin_dir)?;
+    }
 
     let mut service_manager = service::Manager::new(args.test)?;
     let mut sighup = signal(SignalKind::hangup())?;

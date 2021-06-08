@@ -40,6 +40,7 @@ if (isDev) {
   proxyArgs.push(
     "hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345"
   );
+  proxyArgs.push("--skip-remote-helper-install");
 } else {
   // Packaged app, i.e. production.
   proxyPath = path.join(__dirname, "../../radicle-proxy");
@@ -47,6 +48,10 @@ if (isDev) {
     "--default-seed",
     "hynkyndc6w3p8urucakobzna7sxwgcqny7xxtw88dtx3pkf7m3nrzc@sprout.radicle.xyz:12345",
   ];
+}
+
+if (isDev && !process.env.RAD_HOME) {
+  process.env.RAD_HOME = path.resolve(__dirname, "..", "sandbox", "rad_home");
 }
 
 if (process.env.RAD_HOME) {
