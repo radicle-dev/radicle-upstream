@@ -118,7 +118,7 @@ const persistHistory = () => {
 const writableHistory: svelteStore.Writable<LoadedRoute[]> =
   svelteStore.writable([{ type: "loading" }]);
 
-export const push = async (newRoute: Route): Promise<void> => {
+const load = async (newRoute: Route): Promise<LoadedRoute> => {
   let loadedRoute: LoadedRoute;
 
   switch (newRoute.type) {
@@ -178,6 +178,11 @@ export const push = async (newRoute: Route): Promise<void> => {
       loadedRoute = newRoute;
   }
 
+  return loadedRoute;
+};
+
+export const push = async (newRoute: Route): Promise<void> => {
+  const loadedRoute = await load(newRoute);
   // Limit history to a maximum of 10 steps. We shouldn't be doing more than
   // one subsequent pop() anyway.
   writableHistory.update(history => [...history, loadedRoute].slice(-10));
