@@ -3,6 +3,7 @@
   import type * as theGraphApi from "ui/src/theGraphApi";
 
   import * as radicleAvatar from "radicle-avatar";
+  import * as router from "ui/src/router";
   import * as style from "ui/src/style";
 
   import { Avatar, Icon } from "ui/DesignSystem/Primitive";
@@ -10,8 +11,22 @@
 
   export let anchor: theGraphApi.ProjectAnchor;
   export let orgAddress: string | undefined;
+  export let replicated: boolean = false;
 
   let hover: boolean;
+
+  const openCommit = () => {
+    router.push({
+      type: "project",
+      activeView: { type: "commit", commitHash: anchor.commitSha },
+      urn: anchor.projectId,
+    });
+  };
+
+  // TODO: make this work across different networks
+  const openTx = () => {
+    window.location.href = `https://rinkeby.etherscan.io/tx/${anchor.id}`;
+  };
 </script>
 
 <style>
@@ -81,14 +96,22 @@
           <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
             Commit hash
           </p>
-          <p class="typo-text-small-mono">{anchor.commitSha.slice(0, 7)}↗</p>
+          {#if replicated}
+            <p class="typo-text-small typo-link" on:click={openCommit}>
+              {anchor.commitSha.slice(0, 7)}↗
+            </p>
+          {:else}
+            <p class="typo-text-small">{anchor.commitSha.slice(0, 7)}</p>
+          {/if}
         </div>
         <div class="meta">
           <Icon.Ethereum style="margin-right: 0.5rem;" />
           <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
             Transaction hash
           </p>
-          <p class="typo-text-small">{style.ellipsed(anchor.id, 6)}↗</p>
+          <p class="typo-text-small typo-link" on:click={openTx}>
+            {style.ellipsed(anchor.id, 6)}↗
+          </p>
         </div>
       </div>
     {/if}

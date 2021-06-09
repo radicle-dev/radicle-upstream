@@ -48,7 +48,7 @@
       <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
     {/if}
     {#if anchor}
-      <AnchorMetadataModal {anchor} {orgAddress} />
+      <AnchorMetadataModal {anchor} {orgAddress} replicated={true} />
     {/if}
   </div>
   {#if description.length > 0}
