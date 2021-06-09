@@ -24,10 +24,11 @@ async function main() {
   }
 
   const ganache = execa(
-    "yarn",
+    // We’re not using `yarn run` because it does not forward signals
+    // properly.
+    // https://github.com/yarnpkg/berry/issues/991
+    "./node_modules/.bin/ganache-cli",
     [
-      "run",
-      "ganache-cli",
       "--mnemonic",
       "image napkin cruise dentist name plunge crisp muscle nest floor vessel blush",
       "--defaultBalanceEther",
