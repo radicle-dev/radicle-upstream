@@ -51,6 +51,31 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
   }
 };
 
+const createSafeServiceClient = (): SafeServiceClient => {
+  const walletStore = svelteStore.get(wallet.store);
+  let uri;
+
+  switch (walletStore.environment) {
+    case ethereum.Environment.Local:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message:
+          "Pending Gnosis Safe transactions are not available on the Local testnet.",
+      });
+    case ethereum.Environment.Ropsten:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message:
+          "Pending Gnosis Safe transactions are not available on the Ropsten testnet.",
+      });
+    case ethereum.Environment.Rinkeby:
+      uri = "https://safe-transaction.rinkeby.gnosis.io";
+      break;
+  }
+
+  return new SafeServiceClient(uri);
+};
+
 export const anchorProject = async (
   orgAddress: string,
   gnosisSafeAddress: string,
@@ -67,11 +92,7 @@ export const anchorProject = async (
     walletStore.signer
   );
 
-  // TODO: switch this based on testnet, Gnosis only provides a tx service on
-  // rinkeby though
-  const safeServiceClient = new SafeServiceClient(
-    "https://safe-transaction.rinkeby.gnosis.io"
-  );
+  const safeServiceClient = createSafeServiceClient();
 
   const decodedProjectUrn = urn.parseIdentitySha1(projectUrn);
   const decodedCommitHash = ethers.utils.arrayify(`0x${commitHash}`);
