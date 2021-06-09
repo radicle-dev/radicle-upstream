@@ -49,7 +49,7 @@
 
     <Input.Directory
       style="margin-bottom: 0.5rem;"
-      placeholder="~/path/to/folder"
+      placeholder="~/path/to/directory"
       buttonVariant="outline"
       bind:path={checkoutPath} />
 
@@ -65,7 +65,7 @@
     {/if}
 
     <Tooltip
-      value={!checkoutPath ? "Please select a folder" : ""}
+      value={!checkoutPath ? "First choose a directory for this project" : ""}
       position="bottom">
       <Button
         dataCy="checkout-button"

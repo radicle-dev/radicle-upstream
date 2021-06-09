@@ -109,7 +109,7 @@
   {:else}
     <EmptyState
       emoji="🎏"
-      text="There’s nothing to show here at the moment. If you’re looking
-      for a peer’s Patch, be sure to add that peer’s Device ID as a remote." />
+      text="There are no patches to show at the moment. If you’re looking
+      for someone’s patch, be sure to add their Device ID as a remote using the dropdown above." />
   {/if}
 </div>
