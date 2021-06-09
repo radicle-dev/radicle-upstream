@@ -225,7 +225,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                         (
                             StatusCode::FORBIDDEN,
                             "INCORRECT_PASSPHRASE",
-                            "incorrect passphrase".to_string(),
+                            "That’s the wrong passphrase.".to_string(),
                         )
                     } else if keystore_err.is_key_exists() {
                         (

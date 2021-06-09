@@ -148,7 +148,7 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
     error.show(
       new error.Error({
         code: error.Code.KeyStoreUnsealFailure,
-        message: `Could not unlock the session: ${err.message}`,
+        message: `${err.message}`,
         source: err,
       })
     );
