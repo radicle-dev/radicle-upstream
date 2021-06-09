@@ -147,7 +147,7 @@ export const anchorProject = async (
 
   notification.info({
     message:
-      "Project anchoring confirmed, your anchored project will appear shortly",
+      "Your anchored project will appear after the quorum of members have confirmed the transaction",
     showIcon: true,
   });
 
