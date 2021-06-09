@@ -32,7 +32,7 @@
         </SidebarItem>
       </Tooltip>
     {:else}
-      <Tooltip value={`Wallet · Connected to ${wallet.environment}`}>
+      <Tooltip value={`Wallet • Connected to ${wallet.environment}`}>
         <SidebarItem
           dataCy="wallet"
           indicator
