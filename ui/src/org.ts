@@ -189,6 +189,7 @@ export const createOrg = async (owner: string): Promise<void> => {
   });
   const response: TransactionResponse = await orgFactory.createOrg([owner], 1);
 
+  transaction.add(transaction.createOrg(response));
   notification.info({
     message: "Org creation transaction confirmed, your org will appear shortly",
     showIcon: true,
@@ -196,7 +197,6 @@ export const createOrg = async (owner: string): Promise<void> => {
 
   const receipt: TransactionReceipt =
     await walletStore.provider.waitForTransaction(response.hash);
-  transaction.add(transaction.createOrg(response));
 
   const iface = new ethers.utils.Interface(orgFactoryAbi);
 
