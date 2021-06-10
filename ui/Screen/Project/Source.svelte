@@ -93,36 +93,35 @@
     project: Project,
     peer: User
   ) => {
-    try {
-      screen.lock();
-      const path = await proxy.client.project.checkout(project.urn, {
-        path: checkoutPath,
-        peerId: peer.identity.peerId,
-      });
+    await screen.withLock(async () => {
+      try {
+        const path = await proxy.client.project.checkout(project.urn, {
+          path: checkoutPath,
+          peerId: peer.identity.peerId,
+        });
 
-      notification.info({
-        message: `${project.metadata.name} checked out to ${path}`,
-        showIcon: true,
-        actions: [
-          {
-            label: "Open folder",
-            handler: () => {
-              openPath(path);
+        notification.info({
+          message: `${project.metadata.name} checked out to ${path}`,
+          showIcon: true,
+          actions: [
+            {
+              label: "Open folder",
+              handler: () => {
+                openPath(path);
+              },
             },
-          },
-        ],
-      });
-    } catch (err) {
-      error.show(
-        new error.Error({
-          code: error.Code.ProjectCheckoutFailure,
-          message: `Checkout failed: ${err.message}`,
-          source: err,
-        })
-      );
-    } finally {
-      screen.unlock();
-    }
+          ],
+        });
+      } catch (err) {
+        error.show(
+          new error.Error({
+            code: error.Code.ProjectCheckoutFailure,
+            message: `Checkout failed: ${err.message}`,
+            source: err,
+          })
+        );
+      }
+    });
   };
 
   const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
