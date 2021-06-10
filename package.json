@@ -172,6 +172,7 @@
     "graphql": "^15.5.0",
     "marked": "^2.0.5",
     "mnemonist": "^0.38.3",
+    "multihashes": "^4.0.2",
     "pure-svg-code": "^1.0.6",
     "qs": "^6.10.1",
     "radicle-avatar": "https://github.com/radicle-dev/radicle-avatar.git#commit=0a032c204af7a37b0392d2259e747d66cf258998",

@@ -1,5 +1,6 @@
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
+import * as multihash from "multihashes";
 import EthersSafe from "@gnosis.pm/safe-core-sdk";
 import SafeServiceClient from "@gnosis.pm/safe-service-client";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
@@ -31,7 +32,7 @@ const orgFactoryAbi = [
 
 const orgAbi = [
   "function owner() view returns (address)",
-  "function anchor(bytes32, bytes32, uint8, uint8)",
+  "function anchor(bytes32, bytes, uint8)",
 ];
 
 const orgFactoryAddress = (network: ethereum.Environment): string => {
@@ -45,9 +46,9 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
       );
       return "";
     case ethereum.Environment.Ropsten:
-      return "0x2007bcEf1247CD03Bb4262eF420D6487368f473B";
+      return "0xc074cDd9541960B0AA72D90c8bC642F6ae9C4032";
     case ethereum.Environment.Rinkeby:
-      return "0xe30aA5594FFB52B6bF5bbB21eB7e71Ac525bB028";
+      return "0x57962Eb188146A4942c44545a97478d64dc9e4A5";
   }
 };
 
@@ -94,18 +95,20 @@ export const anchorProject = async (
 
   const safeServiceClient = createSafeServiceClient();
 
-  const decodedProjectUrn = urn.parseIdentitySha1(projectUrn);
-  const decodedCommitHash = ethers.utils.arrayify(`0x${commitHash}`);
-
-  const paddedProjectUrn = ethers.utils.zeroPad(decodedProjectUrn, 32);
-  const paddedCommitHash = ethers.utils.zeroPad(decodedCommitHash, 32);
+  const encodedProjectUrn = ethers.utils.zeroPad(
+    urn.parseIdentitySha1(projectUrn),
+    32
+  );
+  const encodedCommitHash = multihash.encode(
+    ethers.utils.arrayify(`0x${commitHash}`),
+    "sha1"
+  );
 
   const orgContract = new ethers.Contract(checksummedGnosisSafeAddress, orgAbi);
 
   const orgContractInstance = await orgContract.populateTransaction.anchor(
-    paddedProjectUrn,
-    paddedCommitHash,
-    ethers.constants.Zero,
+    encodedProjectUrn,
+    encodedCommitHash,
     ethers.constants.Zero
   );
 

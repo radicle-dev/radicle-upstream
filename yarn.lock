@@ -9509,12 +9509,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multibase@npm:^4.0.4":
+"multibase@npm:^4.0.1, multibase@npm:^4.0.4":
   version: 4.0.4
   resolution: "multibase@npm:4.0.4"
   dependencies:
     "@multiformats/base-x": ^4.0.1
   checksum: 359e8c931ceb2826e46ac518815f26f8e64da0e4601cd61b290c5d95411f189bd4729a163ac6e77642e07977f248b58c349c4a2b20d24de6873993d8743c8694
+  languageName: node
+  linkType: hard
+
+"multihashes@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "multihashes@npm:4.0.2"
+  dependencies:
+    multibase: ^4.0.1
+    uint8arrays: ^2.1.3
+    varint: ^5.0.2
+  checksum: f8dc6909286c659dee1ba042f0627adf8042d3ba4e1a00eba31d12cf0eda96c0f63367b75be710cec080ce3d912f47868e37566e8ea587f1eac65f4670c02f6a
   languageName: node
   linkType: hard
 
@@ -10843,6 +10854,7 @@ __metadata:
     marked: ^2.0.5
     mnemonist: ^0.38.3
     multibase: ^4.0.4
+    multihashes: ^4.0.2
     node-fetch: ^2.6.1
     npm-run-all: ^4.1.5
     patch-package: ^6.4.7
@@ -13238,6 +13250,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uint8arrays@npm:^2.1.3":
+  version: 2.1.5
+  resolution: "uint8arrays@npm:2.1.5"
+  dependencies:
+    multibase: ^4.0.1
+  checksum: 88b9895cff8332c8810b9c155416a8ce4425418eec82b3fef4e0077147d079e03ac85c7381599d61b1eb69877281efcdb4454358ee9cd03b615792728592df3a
+  languageName: node
+  linkType: hard
+
 "umd@npm:^3.0.0":
   version: 3.0.3
   resolution: "umd@npm:3.0.3"
@@ -13472,6 +13493,13 @@ __metadata:
   version: 0.13.1
   resolution: "validate.js@npm:0.13.1"
   checksum: 74e4ba95d8ee6e8c43b38f53f0ce4f5b300a57780c994b563ff181d5ff2a544edc5be18f8cc7d8841e47e8f453d7fb05f0a89c0207159c994ba68fd37e069432
+  languageName: node
+  linkType: hard
+
+"varint@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "varint@npm:5.0.2"
+  checksum: 7af69386a5998d75249cefe04764693b43c1e4c3b03ab54536d9f6150829ea9573c0383a5970685ea517260f011d84e9bb5e5b7dec14606a6fc692fd4c652209
   languageName: node
   linkType: hard
 

@@ -1,6 +1,7 @@
 import * as apolloCore from "@apollo/client/core";
 import * as ethers from "ethers";
 import * as svelteStore from "svelte/store";
+import * as multihash from "multihashes";
 
 import * as wallet from "ui/src/wallet";
 import * as ethereum from "ui/src/ethereum";
@@ -157,8 +158,7 @@ export const getOrgProjectAnchors = async (
             anchor {
               id
               objectId
-              stateHash
-              stateType
+              stateMultihash
             }
           }
         }
@@ -174,19 +174,23 @@ export const getOrgProjectAnchors = async (
         anchor: {
           id: string;
           objectId: string;
-          stateHash: string;
-          stateType: number;
+          stateMultihash: string;
         };
       }) => {
-        if (project.anchor.stateType === 0) {
-          return {
-            id: project.anchor.id,
-            projectId: urn.identitySha1Urn(
-              ethers.utils.arrayify(`0x${project.id.slice(26)}`)
-            ),
-            commitSha: project.anchor.stateHash.slice(26, 66),
-          };
-        }
+        const decodedProjectId = urn.identitySha1Urn(
+          ethers.utils.arrayify(`0x${project.id.slice(26)}`)
+        );
+
+        const byteArray = ethers.utils.arrayify(project.anchor.stateMultihash);
+        const decodedMultihash = multihash.decode(byteArray);
+        const decodedCommitSha = ethers.utils
+          .hexlify(decodedMultihash.digest)
+          .replace(/^0x/, "");
+        return {
+          id: project.anchor.id,
+          projectId: decodedProjectId,
+          commitSha: decodedCommitSha,
+        };
       }
     )
     .filter(Boolean);
