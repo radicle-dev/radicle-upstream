@@ -150,8 +150,19 @@ export const anchorProject = async (
 
   notification.info({
     message:
-      "Your anchored project will appear after the quorum of members have confirmed the transaction",
+      "Your anchored project will appear once the quorum of members have confirmed the transaction",
     showIcon: true,
+    // TODO(rudolfs): make the link go to
+    // `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}` for
+    // mainnet
+    actions: [
+      {
+        label: "View on Gnosis Safe",
+        handler: () => {
+          window.location.href = `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/transactions`;
+        },
+      },
+    ],
   });
 
   // TODO: show pending anchors
